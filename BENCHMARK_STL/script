@@ -1,5 +1,7 @@
 g++ -O2 *.cpp -o nostl
 g++ -O2 *.cpp -DVECTOR_STL -o stl
+g++ -O2 *.cpp -DBELA_COPY -DVECTOR_STL -o bela
 
 ./nostl
 ./stl
+./bela

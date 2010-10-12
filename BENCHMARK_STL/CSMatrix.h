@@ -44,6 +44,20 @@ public:
 	INTEGER _nSize;
 };
 
+#ifdef BELA_COPY
+template<class InputIterator, class OutputIterator>
+void pod_copy(InputIterator first, InputIterator last, OutputIterator out)
+{
+	std::copy(first, last, out);
+}
+
+template<class T>
+void pod_copy(T* first, T* last, T* out)
+{
+	memcpy(first, out, last-first);
+}
+#endif
+
 //Smart Pointer class
 class CSData
 {
@@ -68,8 +82,12 @@ class CSData
 		INTEGER Size = pSData->_pData->Size();
 		_pData = new CArray(Size);
 		
+#ifdef BELA_COPY
+		pod_copy(&pSData->_pData->_pArray[0], &pSData->_pData->_pArray[Size], &_pData->_pArray[0]);
+#else
 		for(INTEGER i = 0; i< Size; i++)
 			_pData->_pArray[i] = pSData->_pData->_pArray[i];
+#endif
 		
 		_pRefCount = new INTEGER(0);
 		

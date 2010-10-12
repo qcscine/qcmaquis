@@ -12,9 +12,9 @@ using namespace std;
 int main (int argc, char * const argv[]) 
 {  
 	int n=1;
-	size_t NUM(40000);
+	size_t NUM(4000);
 	
-	CSMatrix A;
+	//CSMatrix A;
 
 	{
 
@@ -23,9 +23,13 @@ int main (int argc, char * const argv[])
 		
 		CSMatrix B(NUM,NUM);
 		B.Init(0);		
-		A=B;
+		//A=B;
 		tstart = time(NULL);
-		A(1,0) = 10;
+		for (int i = 0; i < 10; ++i) {
+			CSMatrix A;
+			A=B;
+			A(1,0) = 10;
+		}
 		tend = time(NULL);
 		
 		cout << tend - tstart << endl;
