@@ -1,0 +1,5 @@
+g++ -O2 *.cpp -o nostl
+g++ -O2 *.cpp -DVECTOR_STL -o stl
+
+./nostl
+./stl
