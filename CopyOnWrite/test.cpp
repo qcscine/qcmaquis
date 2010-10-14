@@ -9,6 +9,14 @@ using std::cout;
 // I could've just used a static_cast<...>, but this saves me repeating the type ;-)
 template<class T> const T constify(T foo) { return foo; }
 
+class SIC
+{
+public:
+    int val;
+    SIC() { cout << "Scream!" << endl; }
+    SIC(const SIC& o) { cout << "Copied!" << endl; }
+};
+
 int main()
 {
     {
@@ -39,5 +47,10 @@ int main()
         std::copy(bar.begin(), bar.end(), std::ostream_iterator<double>(cout, " ")); cout << endl;
         copy_on_write_vector<double, aligned_allocator<double, 8, true> > bar2(10);
         std::copy(bar2.begin(), bar2.end(), std::ostream_iterator<double>(cout, " ")); cout << endl;
+    }
+    
+    {
+        copy_on_write_vector<SIC, aligned_allocator<SIC, 8, false> > bar(10);
+        copy_on_write_vector<SIC, aligned_allocator<SIC, 8, true> > bar2(10);
     }
 }
