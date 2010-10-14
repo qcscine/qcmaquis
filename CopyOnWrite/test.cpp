@@ -4,6 +4,7 @@ using std::cout;
 
 #include "cow_vector.h"
 
+// I could've just used a static_cast<...>, but this saves me repeating the type ;-)
 template<class T> const T constify(T foo) { return foo; }
 
 int main()
