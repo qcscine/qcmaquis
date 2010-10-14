@@ -5,7 +5,6 @@
 #include <iostream>
 
 #include <boost/type_traits/aligned_storage.hpp>
-#include <boost/utility/enable_if.hpp>
 
 template<class T, std::size_t alignment = 16, bool noconstruct = false>
 class aligned_allocator : public std::allocator<T>
@@ -25,7 +24,6 @@ public:
 	
 	pointer allocate(size_type n) const
 	{
-	    // static_cast unfortunately doesn't work
         return reinterpret_cast<pointer>(new typename boost::aligned_storage<sizeof(T), alignment>::type[n]);
 	}
 	void deallocate(pointer p, size_type n) const
@@ -39,13 +37,13 @@ public:
 	   typedef aligned_allocator<T2, alignment, noconstruct> other;
 	};
 	
-    void construct(pointer p, const_reference val)
+    void construct(pointer p, const_reference val) const
     {
         if (!noconstruct)
             alloc_t::construct(p, val);
     }
     
-    void destroy(pointer p)
+    void destroy(pointer p) const
     {
         if (!noconstruct)
             alloc_t::destroy(p);
