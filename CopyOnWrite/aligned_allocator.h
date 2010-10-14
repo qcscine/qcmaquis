@@ -5,8 +5,9 @@
 #include <iostream>
 
 #include <boost/type_traits/aligned_storage.hpp>
+#include <boost/utility/enable_if.hpp>
 
-template<class T, std::size_t alignment = 16>
+template<class T, std::size_t alignment = 16, bool noconstruct = false>
 class aligned_allocator : public std::allocator<T>
 {
 protected:
@@ -35,8 +36,20 @@ public:
 	template <typename T2>
 	struct rebind
 	{
-	   typedef aligned_allocator<T2, alignment> other;
+	   typedef aligned_allocator<T2, alignment, noconstruct> other;
 	};
+	
+    void construct(pointer p, const_reference val)
+    {
+        if (!noconstruct)
+            alloc_t::construct(p, val);
+    }
+    
+    void destroy(pointer p)
+    {
+        if (!noconstruct)
+            alloc_t::destroy(p);
+    }
 };
 
 #endif

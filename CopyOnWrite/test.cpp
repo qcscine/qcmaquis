@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iterator>
 using std::endl;
 using std::cout;
 
@@ -28,8 +29,15 @@ int main()
     }
 	
     {
-            copy_on_write_vector<double, aligned_allocator<double> > foo(10);
-            foo[0] = 1;
-            copy_on_write_vector<double, aligned_allocator<double, 8> > bar;
+        copy_on_write_vector<double, aligned_allocator<double> > foo(10);
+        foo[0] = 1;
+        copy_on_write_vector<double, aligned_allocator<double, 8> > bar;
+    }
+    
+    {
+        copy_on_write_vector<double, aligned_allocator<double, 8> > bar(10);
+        std::copy(bar.begin(), bar.end(), std::ostream_iterator<double>(cout, " ")); cout << endl;
+        copy_on_write_vector<double, aligned_allocator<double, 8, true> > bar2(10);
+        std::copy(bar2.begin(), bar2.end(), std::ostream_iterator<double>(cout, " ")); cout << endl;
     }
 }

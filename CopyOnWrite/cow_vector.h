@@ -14,7 +14,7 @@ protected:
     
     void make_unique()
     {
-        std::cout << "Making unique" << std::endl;
+        // std::cout << "Making unique" << std::endl;
         if (!data_.unique())
             data_.reset(new data_t(*data_.get()));
     }
