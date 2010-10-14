@@ -6,7 +6,7 @@
 
 #include <boost/type_traits/aligned_storage.hpp>
 
-template<class T>
+template<class T, std::size_t alignment = 16>
 class aligned_allocator : public std::allocator<T>
 {
 protected:
@@ -25,7 +25,7 @@ public:
 	pointer allocate(size_type n) const
 	{
 	    // static_cast unfortunately doesn't work
-        return reinterpret_cast<pointer>(new typename boost::aligned_storage<sizeof(T), 16>::type[n]);
+        return reinterpret_cast<pointer>(new typename boost::aligned_storage<sizeof(T), alignment>::type[n]);
 	}
 	void deallocate(pointer p, size_type n) const
 	{
@@ -35,7 +35,7 @@ public:
 	template <typename T2>
 	struct rebind
 	{
-	   typedef aligned_allocator<T2> other;
+	   typedef aligned_allocator<T2, alignment> other;
 	};
 };
 

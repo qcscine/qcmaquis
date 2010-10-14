@@ -27,8 +27,9 @@ int main()
         cout << s[0] << endl;
     }
 	
-	{
-        copy_on_write_vector<double, aligned_allocator<double> > foo(10);
-        foo[0] = 1;
-	}
+    {
+            copy_on_write_vector<double, aligned_allocator<double> > foo(10);
+            foo[0] = 1;
+            copy_on_write_vector<double, aligned_allocator<double, 8> > bar;
+    }
 }
