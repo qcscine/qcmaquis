@@ -37,13 +37,13 @@ public:
 	   typedef aligned_allocator<T2, alignment, noconstruct> other;
 	};
 	
-    void construct(pointer p, const_reference val) const
+    void construct(pointer p, const_reference val)
     {
         if (!noconstruct)
             alloc_t::construct(p, val);
     }
     
-    void destroy(pointer p) const
+    void destroy(pointer p)
     {
         if (!noconstruct)
             alloc_t::destroy(p);
