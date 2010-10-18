@@ -140,5 +140,84 @@ int main (int argc, char * const argv[])
 #endif	
 	
 	
+	
+	/*------------------------------------------------ DGEQRF Benchmark--------------------------------------------------------------*/	
+	
+#ifdef DGEQRF	
+	{ //<- tip for the memory
+		//outputfile
+		file = "time_DGEQRF_";	
+		file = file + argv[4] + extention;	
+		
+		//Matrix
+		CSMatrix<double> A(NUM_ROWS,NUM_COLS);
+		CSVector<double> TAU(min(NUM_COLS,NUM_ROWS));
+				
+		int info = 0;
+		int lwork = -1;
+		double wkopt = 0;
+
+		int ANumRow = A.GetnNumRow();
+		int ANumCol = A.GetnNumCol();
+		
+		time_start = time(NULL);	
+		
+		dgeqrf_(&ANumRow,&ANumCol,&A(0,0),&ANumRow,&TAU(0), &wkopt,&lwork,&info);
+		
+		lwork = static_cast<int> (wkopt);
+		CSVector<double> work(lwork);
+		
+		dgeqrf_(&ANumRow,&ANumCol,&A(0,0),&ANumRow,&TAU(0), &work(0),&lwork,&info);		
+		
+		time_end = time(NULL);			
+		
+		out.open(file.c_str(),ios::app);
+		out <<  time_end - time_start << " " << argv[3]  << " " << argv[4] << endl;
+		out.close();					
+	}	
+#endif	
+	
+	/*------------------------------------------------ DSYEVD Benchmark--------------------------------------------------------------*/	
+	
+#ifdef DSYEVD	
+	{ //<- tip for the memory
+		//outputfile
+		file = "time_DSYEVD_";	
+		file = file + argv[4] + extention;	
+		
+		CSMatrix<double> A(NUM_ROWS,NUM_COLS);
+		CSVector<double> N(NUM_COLS);
+		
+		int info = 0;
+		int lwork = -1;
+		double wkopt = 0;
+		int wiwork;
+		int liwork = -1;
+		
+		int ANumRow = A.GetnNumRow();
+		int ANumCol = A.GetnNumCol();
+		
+
+		time_start = time(NULL);	
+		
+		dsyevd_("V", "L", &ANumRow, &A(0,0),&ANumRow, &N(0), &wkopt,&lwork,&wiwork,&liwork,&info);
+		
+		lwork = static_cast< int> (wkopt);
+		CSVector<double> work(lwork);
+		
+		liwork = static_cast< int> (wiwork);
+		CSVector<int> iwork(liwork);
+		
+		dsyevd_("V", "L", &ANumRow, &A(0,0),  &ANumRow, &N(0),&work(0),&lwork,&iwork(0),&liwork,&info);
+		
+		time_end = time(NULL);			
+		
+		out.open(file.c_str(),ios::app);
+		out <<  time_end - time_start << " " << argv[3]  << " " << argv[4] << endl;
+		out.close();					
+	}	
+#endif	
+	
     return 0;
 }
+
