@@ -6,8 +6,6 @@
  *  Copyright 2010 University of Geneva. All rights reserved.
  *
  */
-
-
 typedef double __attribute__((aligned(16))) SSE_PTRDOUBLE; /*GCC Only, QuadWord alignement i.e. 16 byte for SIMD and GPU*/
 typedef  int INTEGER; /*Avoid fortran(int 8 bytes) and C(int 4 bytes) conflicts*/
 
@@ -41,7 +39,7 @@ public:
 	std::vector <DataType> _pArray;
 #else
 //	SSE_PTRDOUBLE * _pArray; 
-	DataType __attribute__((aligned(16))) * _pArray; //Allign on qudWord
+	DataType * _pArray; //Allign on qudWord
 #endif	
 	INTEGER _nSize;
 };
@@ -127,7 +125,17 @@ public:
 			srand(2);
 			for(INTEGER i=0;i < _mn; i++)
 			{
+				
+#ifdef 	DOUBLE			
 				_pSData->_pData->_pArray[i] = rand()*3.14;
+#endif
+#ifdef COMPLEX
+				_pSData->_pData->_pArray[i].real() = rand()/3.14;
+				_pSData->_pData->_pArray[i].imag() = rand()*3.14;
+
+				
+#endif				
+				
 			}
 			_pSData->PlusRef();		
 		}
@@ -139,21 +147,23 @@ public:
 		delete _pSData;
 	}
 		
-	void Init(INTEGER a)
-	{
-		
-		srand(2);
-		for(INTEGER i=0;i < _mn; i++)
-		{
-			_pSData->_pData->_pArray[i] = rand()*3.14;
-		}
-		
-	}
+
 	
 	void Print()
 	{
-		for(int i=0;i < GetnNumRow()*GetnNumCol(); i++)
-			std::cout <<  _pSData->_pData->_pArray[i] << std::endl;
+		
+		for(int i =0 ; i< _n;i++)
+		{
+			for(int j=0 ; j< _m;j++)
+			{
+				std::cout <<  _pSData->_pData->_pArray[i*_m+j] << " " ;
+			}	
+			std::cout << std::endl;
+		}
+		
+		
+	//	for(int i=0;i < GetnNumRow()*GetnNumCol(); i++)
+	//		std::cout <<  _pSData->_pData->_pArray[i] << std::endl;
 	
 	}
 	
