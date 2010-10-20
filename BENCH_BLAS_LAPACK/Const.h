@@ -1,4 +1,4 @@
-/*file://localhost/Users/Tim/Mafalda/BENCHMARK_PREL_ETHZ/Const.h%20alias
+/*
  *  Const.h
  *  SMART_MATRIX
  *
