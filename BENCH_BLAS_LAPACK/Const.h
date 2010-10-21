@@ -60,6 +60,6 @@ extern "C" void zgeqrf_(int *m,  int *n,
 						dcomplex *work, int *lwork,  int *info);
 
 
-extern "C" void cheevd_(char *jobz, char *uplo,  int *n,  
-					   fcomplex *A,  int *ldA, float *w, fcomplex *work,  int *lwork, float* rwork, int* lrwork,
+extern "C" void zheevd_(char *jobz, char *uplo,  int *n,  
+					   dcomplex *A,  int *ldA, double *w, dcomplex *work,  int *lwork, double* rwork, int* lrwork,
 					   int *iwork,  int *liwork,  int *info);

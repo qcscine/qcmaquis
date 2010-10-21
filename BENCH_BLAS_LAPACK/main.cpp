@@ -425,23 +425,23 @@ int main (int argc, char * const argv[])
 	}	
 #endif	
 	
-	/*------------------------------------------------ CHEEVD Benchmark--------------------------------------------------------------*/	
+	/*------------------------------------------------ ZHEEVD Benchmark--------------------------------------------------------------*/	
 	
-#ifdef CHEEVD	
+#ifdef ZHEEVD	
 	{ //<- tip for the memory
 		//outputfile
-		file = "time_CHEEVD_";	
+		file = "time_ZHEEVD_";	
 		file = file + argv[4] + extention;	
 		
-		CSMatrix<fcomplex> A(NUM_ROWS,NUM_COLS);
+		CSMatrix<dcomplex> A(NUM_ROWS,NUM_COLS);
 				
 		
-		CSVector<float> N(NUM_COLS);
+		CSVector<double> N(NUM_COLS);
 		
 		int info = 0;
 		int lwork = -1;
-		fcomplex wkopt = (0,0);
-		float rwork =0;
+		dcomplex wkopt = (0,0);
+		double rwork =0;
 		int lrwork = -1;
 		int wiwork;
 		int liwork = -1;
@@ -451,18 +451,18 @@ int main (int argc, char * const argv[])
 		
 		time_start = time(NULL);	
 		
-		cheevd_("V", "L", &ANumRow, &A(0,0),&ANumRow, &N(0), &wkopt,&lwork,&rwork,&lrwork, &wiwork,&liwork,&info);
+		zheevd_("V", "L", &ANumRow, &A(0,0),&ANumRow, &N(0), &wkopt,&lwork,&rwork,&lrwork, &wiwork,&liwork,&info);
 		
-		CSVector<fcomplex> work(wkopt.real());
+		CSVector<dcomplex> work(wkopt.real());
 		lwork = wkopt.real();
 		
-		int riwork = static_cast<int> (lwork);
-		CSVector<float> workr(riwork);
+		int riwork = static_cast<int> (rwork);
+		CSVector<double> workr(riwork);
 		
-	//	liwork = static_cast< int> (wiwork);
-		CSVector<int> iwork(wiwork);
+		liwork = static_cast< int> (wiwork);
+		CSVector<int> iwork(liwork);
 		
-		cheevd_("V", "L", &ANumRow, &A(0,0),&ANumRow, &N(0), &work(0),&lwork,&workr(0),&riwork, &iwork(0),&wiwork,&info);
+		zheevd_("V", "L", &ANumRow, &A(0,0),&ANumRow, &N(0), &work(0),&lwork,&workr(0),&riwork, &iwork(0),&liwork,&info);
 		
 		time_end = time(NULL);			
 		
