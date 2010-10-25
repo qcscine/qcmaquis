@@ -29,7 +29,7 @@ class MPSTensor:
     normalization: 'U' (default), 'L','R': normalization status of M^{s}_{a,b}
         only force 'L', 'R' manually if entirely certain it is true 
     init_random=False (default), True: initializes self.tensor to 0.0 or random complex numbers
-
+    
     attributes:
     self.site_dim(): dimension of local physical space
     self.row_dim():  row dimension of MPS matrices
@@ -79,11 +79,11 @@ class MPSTensor:
     self.mps_tensor_dummy(): returns (1x1x1) with entry 1.0
     
     """
-
+    
 # constructor
     
     def __init__(self, site_dim, row_dim, col_dim, init_random=False, normalization='U'):
-
+        
 # error handling in arguments
         
         if (not isinstance(site_dim, int)) or site_dim < 1:
