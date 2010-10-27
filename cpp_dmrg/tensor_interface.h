@@ -2,18 +2,18 @@
 #define TENSOR_INTERFACE_H
 
 namespace tensor {
-    // wrap a tensor into a matrix for all sorts of lazy evaluation functions
-    // replaces all the transposes/reshapes in Numpy
     // Conjugation or other element-wise operations could be stored in this
     // The template parameter allows inlining. Do we believe that this is necessary?
     struct NoOp { template<class T> static T operator()(T v) { return v; } };
-    struct ConjOp { template<class T> static T operator()(T, v) { return conj(v); } };
+    struct ConjOp { template<class T> static T operator()(T v) { return conj(v); } };
     
     template<class Op> struct conj_trait { };
     template<> struct conj_trait<NoOp> { typedef ConjOp result; };
     template<> struct conj_trait<ConfOp> { typedef NoOp result; };
 
+    // This (lazily) maps a tensor to a matrix and can be used as input to linalg operations
     // ElementOp is purely a flag, a converting constructor will be required
+    // Having that at compile time will allow inlining of complex conjugation
     template<typename T, unsigned int R1, unsigned int R2, class SymmGroup, class ElementOp = NoOp>
     class tensor_matrix_wrapper;
     
@@ -35,12 +35,23 @@ namespace tensor {
         void rename(Index from, Index to);
     
         // Input for matrix-based operations
-        template<int R1, int R2>
-        tensor_matrix_wrapper<T, R1, R2, SymmGroup> operator()(boost::array<Index, R1>, boost::array<Index, R2>);
+        template<int R1, int R2> tensor_matrix_wrapper<T, R1, R2, SymmGroup> operator()(boost::array<Index, R1>, boost::array<Index, R2>);
+        tensor_matrix_wrapper<T, 1, R-1, SymmGroup> operator()(Index, boost::array<Index, R-1>);
+        tensor_matrix_wrapper<T, R-1, 1, SymmGroup> operator()(boost::array<Index, R-1>, Index);
     
         // Random access: cumbersome because of two indices
         // Any better ideas?
-        T & operator()(boost::array<typename SymmGroup::charge, R> const &, boost::array<std::size_t, R> const &)
+        T & operator()(boost::array<typename SymmGroup::charge, R> const &, boost::array<std::size_t, R> const &);
+        T const & operator()(boost::array<typename SymmGroup::charge, R> const &, boost::array<std::size_t, R> const &) const;
+        
+        // linear access
+        // in my current implementation, I can guarantee that everything is linear in memory
+        // I can't guarantee any order (or rather, I don't want to)
+        // if we can't guarantee this, the iterator may be much more complex
+        typedef T * iterator;
+        iterator begin();
+        iterator end();
+        // same for const...
     };
 
     // Multiply the first two tensors into the third one
