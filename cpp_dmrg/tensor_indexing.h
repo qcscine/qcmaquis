@@ -49,16 +49,11 @@ namespace tensor {
         typedef typename SymmGroup::charge_v charge_v;
         typedef std::vector<std::size_t> dim_v;
 
+        Index name;
         charge_v charges;
         dim_v dims;
 
-        DIndex();
-        // construct with only singlet charge
-        DIndex(std::size_t);
-        // construct with equal dimension in each sector
-        DIndex(int, const charge_v &_ch);
-        // provide everything
-        DIndex(const std::vector<int> &_dims, const charge_v &_ch);
+        // all sorts of more or less useful constructors
 
         bool operator==(const DIndex<SymmGroup> &o);
     };
