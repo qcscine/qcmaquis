@@ -1,0 +1,22 @@
+#BOOSTDIR = $(HOME)/dev/boost_1_23_0
+#BOOSTDIR = $(HOME)/dev/boost_1_22_0
+BOOSTDIR = $(HOME)/dev/boost_1_21_1
+CXX = g++
+#CXX = /var/series/gcc-2.95.2.1/bin/g++
+#OPTFLAGS = -g -O5 -fvolatile -mpentiumpro
+OPTFLAGS = -g -a -dp
+CXXFLAGS = -static $(OPTFLAGS) -I $(BOOSTDIR)
+
+all : test_lint
+
+test_lint : test_lint.o
+	$(CXX) -o $@ test_lint.o $(CXXFLAGS)
+
+%.o : %.cpp
+	$(CXX) -c $< $(CXXFLAGS)
+
+%.s : %.cpp
+	$(CXX) -S $< $(CXXFLAGS) -fverbose-asm
+
+clean:
+	rm -rf *~ *.o ti_files/ *.s
