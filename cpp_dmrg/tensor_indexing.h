@@ -46,12 +46,9 @@ namespace tensor {
     {
     public:
         typedef typename SymmGroup::charge charge;
-        typedef typename SymmGroup::charge_v charge_v;
-        typedef std::vector<std::size_t> dim_v;
 
         Index name;
-        charge_v charges;
-        dim_v dims;
+        std::vector<std::pair<charge, std::size_t> > sectors;
 
         // all sorts of more or less useful constructors
 
