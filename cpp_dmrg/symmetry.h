@@ -27,6 +27,10 @@ namespace tensor {
         static template<int L> charge fuse(boost::array<charge, L>);
     };
     ExampleSymmetry::charge operator-(ExampleSymmetry::charge);
+    
+    
 } // namespace tensor
+
+
 
 #endif
