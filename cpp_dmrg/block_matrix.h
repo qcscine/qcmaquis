@@ -1,32 +1,52 @@
-// Symmetric Matrix, where symmetry of course means that the operator is the direct
-// sum of irreducible representations of some internal symmetry group of the system.
+#include <boost/tuple/tuple.hpp>
+#include <boost/iterator/zip_iterator.hpp>
 
-// What's the difference between this and a tensor class? It's stupid!
+#include "indexing.h"
+#include "symmetry.h"
 
-// It doesn't know about its tensor structure. It only has a row and column
-// dimension. It is therefore very easy to implement, at least without any
-// fancy optimizations.
-// It pushes a lot of bookkeeping to the user. In particular, all reshaping
-// has to be carried out explicitly. The class does not have methods for this,
-// but there are global functions. It is probably easiest to have a general one,
-// which I can implement basically by copying to/from my tensor class, and then
-// special ones for the reshapes usually needed, in particular the
-// (alpha,sigma),beta -> alpha,(beta,sigma) reshape
-// We can write these one after another when we see what shows up as most
-// costly operations in benchmarks. This can be done in a 'non-intrusive' way,
-// i.e. no hacking around template specializations, hooks, or other intransparent stuff.
-
-// The huge advantage of this approach is that it makes the structure of the underlying
-// operations very transparent -> easier to optimize, easier to factorize into
-// smaller parts.
+namespace detail
+{
+    template<class SymmGroup, class Matrix>
+    bool cmp0(
+        boost::tuple<
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            Matrix> const & a,
+        boost::tuple<
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            Matrix> const & b)
+    {
+        return boost::tuples::get<0>(a).first < boost::tuples::get<0>(b).first;
+    }
+    
+    template<class SymmGroup, class Matrix>
+    bool cmp1(
+        boost::tuple<
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            Matrix> const & a,
+        boost::tuple<
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            std::pair<typename SymmGroup::charge, std::size_t>,
+            Matrix> const & b)
+    {
+        return boost::tuples::get<1>(a).first < boost::tuples::get<1>(b).first;
+    }
+}
 
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
 public:
-    block_matrix(DIndex<SymmGroup> rows = DIndex<SymmGroup>(), DIndex<SymmGroup> cols = DIndex<SymmGroup>())
+    block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(), Index<SymmGroup> cols = Index<SymmGroup>())
+    : rows_(rows), cols_(cols), data_(rows.size())
+    , left_charge_map_(SymmGroup::get_map(rows_.charges()))
+    , right_charge_map_(SymmGroup::get_map(cols_.charges()))
     {
-        /* to be implemented */
+        assert(rows_.size() == cols_.size());
+        for (std::size_t k = 0; k < data_.size(); ++k)
+            data_[k] = Matrix(rows_[k].second, cols_[k].second);
     }
     
     friend void swap(block_matrix<Matrix, SymmGroup> & x, block_matrix<Matrix, SymmGroup> & y)
@@ -43,19 +63,14 @@ public:
         swap(*this, rhs);
     }
     
-    DIndex<SymmGroup> rows() const { return rows_; }
-    DIndex<SymmGroup> cols() const { return cols_; }
+    Index<SymmGroup> rows() const { return rows_; }
+    Index<SymmGroup> cols() const { return cols_; }
     
-    // Since these matrices are always block-diagonal, at least in the sense of uniquely
-    // mapping rows charge to column charge, only one index (row/col) is necessary to index
-    // them. I therefore would not provide an operator(), since it is not immediately clear
-    // how that would behave.
+    Matrix & atrow(typename SymmGroup::charge c) { return data_[left_charge_map_[c]]; }
+    Matrix const & atrow(typename SymmGroup::charge c) const { return data_[left_charge_map_[c]]; }
     
-    Matrix & atrow(typename SymmGroup::charge c) { return data_[left_charge_map[c]]; }
-    Matrix const & atrow(typename SymmGroup::charge, typename SymmGroup::charge) const { return data_[left_charge_map[c]]; }
-    
-    Matrix & atcol(typename SymmGroup::charge) { return data_[right_charge_map[c]]; }
-    Matrix const & atcol(typename SymmGroup::charge, typename SymmGroup::charge) const { return data_[right_charge_map[c]]; }
+    Matrix & atcol(typename SymmGroup::charge c) { return data_[right_charge_map_[c]]; }
+    Matrix const & atcol(typename SymmGroup::charge c) const { return data_[right_charge_map_[c]]; }
     
     // use with caution!
     Matrix & operator[](std::size_t c) { return data_[c]; }
@@ -63,20 +78,32 @@ public:
     
     std::size_t n_blocks() const { return data_.size(); }
     
-    void sort_rows();
-    void sort_cols();
+    void sort_rows()
+    {
+        // not readable, but elegant
+        // FIXME: check whether this only uses swaps on the Matrix instead of explicit copying
+        std::sort(boost::make_zip_iterator(rows_.begin(), cols_.begin(), data_.begin()),
+            boost::make_zip_iterator(rows_.end(), cols_.end(), data_.end()),
+            detail::cmp0<SymmGroup, Matrix>);
+    }
+    void sort_cols()
+    {
+         std::sort(boost::make_zip_iterator(rows_.begin(), cols_.begin(), data_.begin()),
+                boost::make_zip_iterator(rows_.end(), cols_.end(), data_.end()),
+                detail::cmp1<SymmGroup, Matrix>);
+    }
     
 protected:
     std::vector<Matrix> data_;
-    DIndex<SymmGroup> rows_, cols_;
+    Index<SymmGroup> rows_, cols_;
     typename SymmGroup::charge_map left_charge_map_, right_charge_map_;
 };
 
 // some example functions
 template<class Matrix, class SymmGroup>
 void gemm(
-    block_matrix<Matrix, SymmGroup> & A const,
-    block_matrix<Matrix, SymmGroup> & B const,
+    block_matrix<Matrix, SymmGroup> & A,
+    block_matrix<Matrix, SymmGroup> & B,
     block_matrix<Matrix, SymmGroup> & C)
 {
     C = block_matrix<Matrix, SymmGroup>(A.rows(), B.cols());
@@ -103,15 +130,15 @@ void gemm(
         gemm(A[k], B[k], C[k]);
 }
 
-template<class Matrix, class SymmGroup>
-void svd(
-    block_matrix<Matrix, SymmGroup> & M const,
-    block_matrix<Matrix, SymmGroup> &U, block_matrix<T, SymmGroup> &S, block_matrix<T, SymmGroup> &V,
-    double truncation, DIndex<SymmGroup> maxdim,
-    SVWhere where)
-{
-    /* basically analogous to gemm */
-}
+// template<class Matrix, class SymmGroup>
+// void svd(
+//     block_matrix<Matrix, SymmGroup> & M,
+//     block_matrix<Matrix, SymmGroup> &U, block_matrix<T, SymmGroup> &S, block_matrix<T, SymmGroup> &V,
+//     double truncation, Index<SymmGroup> maxdim,
+//     SVWhere where)
+// {
+//     /* basically analogous to gemm */
+// }
 
 // a general reshape function
 // The semantics of this are similar to the tensor class. In particular, I would
@@ -120,9 +147,9 @@ void svd(
 
 template<class Matrix, class SymmGroup, int R1, int R2, int R3>
 void reshape(
-    block_matrix<Matrix, SymmGroup> & in const,
-    boost::array<DIndex<SymmGroup>, R1> in_left,
-    boost::array<DIndex<SymmGroup>, R2> in_right,
+    block_matrix<Matrix, SymmGroup> & in,
+    boost::array<Index<SymmGroup>, R1> in_left,
+    boost::array<Index<SymmGroup>, R2> in_right,
     block_matrix<Matrix, SymmGroup> & out,
-    boost::array<Index, R3> out_left,
-    boost::array<Index, R1+R2-R3> out_right);
+    boost::array<IndexName, R3> out_left,
+    boost::array<IndexName, R1+R2-R3> out_right);

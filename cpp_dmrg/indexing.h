@@ -1,8 +1,14 @@
 #ifndef TENSOR_INDEXING_H
 #define TENSOR_INDEXING_H
 
-// I think these are better placed in the global namespace
-// lookup would save us for T==Index, but not for T==std::size_t, which we also need
+#include <vector>
+#include <algorithm>
+#include <utility>
+
+#include <boost/array.hpp>
+#include <boost/lambda/lambda.hpp>
+
+enum IndexName { alpha, sigma, beta, empty };
 
 template<class T> boost::array<T,1> _(const T &a)
 { 
@@ -10,9 +16,9 @@ template<class T> boost::array<T,1> _(const T &a)
     return r;
 }
 
-inline boost::array<Index, 2> operator,(const Index a, const Index b)
+inline boost::array<IndexName, 2> operator,(const IndexName a, const IndexName b)
 {
-	boost::array<Index, 2> ret;
+	boost::array<IndexName, 2> ret;
 	ret[0] = a;
 	ret[1] = b;
 	return ret;
@@ -38,22 +44,50 @@ boost::array<T, in+1> operator,(const T a, const boost::array<T, in> b)
 	return ret;
 }
 
-namespace tensor {
-    enum Index { /* s1, s2, ... */ };
+template<class SymmGroup>
+class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
+{
+public:
+    typedef typename SymmGroup::charge charge;
 
-    template<class SymmGroup>
-    class DIndex
+    IndexName name;
+    
+    Index(IndexName n = empty)
+    : std::vector<std::pair<charge, std::size_t> >()
+    , name(n)
+    { }
+    
+    Index(std::size_t M, IndexName n = empty)
+    : std::vector<std::pair<charge, std::size_t> >(std::make_pair(SymmGroup::SingletCharge, M), 1)
+    , name(n)
+    { }
+    
+    Index(std::vector<std::size_t> const & sizes, std::vector<charge> const & charges, IndexName n = empty)
+    : name(n)
     {
-    public:
-        typedef typename SymmGroup::charge charge;
+        assert(sizes.size() == charges.size());
+        std::transform(sizes.begin(), sizes.end(), charges.begin(), std::back_inserter(*this),
+            std::make_pair<charge, std::size_t>);
+    }
 
-        Index name;
-        std::vector<std::pair<charge, std::size_t> > sectors;
+    std::vector<charge> charges() const
+    {
+        std::vector<charge> ret(this->size());
+        for (std::size_t k = 0; k < this->size(); ++k) ret[k] = (*this)[k].first;
+        return ret;
+    }
+    
+    std::vector<std::size_t> sizes() const
+    {
+        std::vector<std::size_t> ret(this->size());
+        for (std::size_t k = 0; k < this->size(); ++k) ret[k] = (*this)[k].second;
+        return ret;
+    }
 
-        // all sorts of more or less useful constructors
-
-        bool operator==(const DIndex<SymmGroup> &o);
-    };
-} // namespace tensor
+    bool operator==(const Index<SymmGroup> &o)
+    {
+        return name == o.name && this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
+    }
+};
 
 #endif
