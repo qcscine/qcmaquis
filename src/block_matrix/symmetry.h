@@ -173,7 +173,8 @@ public:
 	
 	U1map(const std::vector<T> cv)
 	{
-		assert(cv.size() > 0);
+		if (cv.size() == 0)
+            return;
 		
 		T _max = cv[0], _min = cv[0];
 		for (typename std::vector<T>::const_iterator it = cv.begin()+1;

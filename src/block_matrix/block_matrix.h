@@ -1,48 +1,35 @@
+#include <sstream>
+
 #include <boost/tuple/tuple.hpp>
 #include <boost/iterator/zip_iterator.hpp>
+#include <boost/lambda/bind.hpp>
 
 #include "indexing.h"
 #include "symmetry.h"
 
 namespace detail
 {
-    template<class SymmGroup, class Matrix>
-    bool cmp0(
-        boost::tuple<
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            Matrix> const & a,
-        boost::tuple<
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            Matrix> const & b)
-    {
-        return boost::tuples::get<0>(a).first < boost::tuples::get<0>(b).first;
-    }
+    template<class A, class B> A first(std::pair<A, B> const & p) { return p.first; }
+    template<class A, class B> A second(std::pair<A, B> const & p) { return p.second; }
     
-    template<class SymmGroup, class Matrix>
-    bool cmp1(
-        boost::tuple<
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            Matrix> const & a,
-        boost::tuple<
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            std::pair<typename SymmGroup::charge, std::size_t>,
-            Matrix> const & b)
+    template<class SymmGroup> bool match(typename SymmGroup::charge c,
+        std::pair<typename SymmGroup::charge, std::size_t> const & p)
     {
-        return boost::tuples::get<1>(a).first < boost::tuples::get<1>(b).first;
+        return SymmGroup::SingletCharge == SymmGroup::fuse(c, p.first);
     }
 }
 
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
+private:
+    typedef typename SymmGroup::charge charge;
+    
 public:
     block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(), Index<SymmGroup> cols = Index<SymmGroup>())
     : rows_(rows), cols_(cols), data_(rows.size())
-    , left_charge_map_(SymmGroup::get_map(rows_.charges()))
-    , right_charge_map_(SymmGroup::get_map(cols_.charges()))
+    , left_charge_map_(SymmGroup::get_map(rows.charges()))
+    , right_charge_map_(SymmGroup::get_map(cols.charges()))
     {
         assert(rows_.size() == cols_.size());
         for (std::size_t k = 0; k < data_.size(); ++k)
@@ -66,11 +53,11 @@ public:
     Index<SymmGroup> rows() const { return rows_; }
     Index<SymmGroup> cols() const { return cols_; }
     
-    Matrix & atrow(typename SymmGroup::charge c) { return data_[left_charge_map_[c]]; }
-    Matrix const & atrow(typename SymmGroup::charge c) const { return data_[left_charge_map_[c]]; }
+    Matrix & atrow(charge c) { return data_[left_charge_map_[c]]; }
+    Matrix const & atrow(charge c) const { return data_[left_charge_map_[c]]; }
     
-    Matrix & atcol(typename SymmGroup::charge c) { return data_[right_charge_map_[c]]; }
-    Matrix const & atcol(typename SymmGroup::charge c) const { return data_[right_charge_map_[c]]; }
+    Matrix & atcol(charge c) { return data_[right_charge_map_[c]]; }
+    Matrix const & atcol(charge c) const { return data_[right_charge_map_[c]]; }
     
     // use with caution!
     Matrix & operator[](std::size_t c) { return data_[c]; }
@@ -78,25 +65,46 @@ public:
     
     std::size_t n_blocks() const { return data_.size(); }
     
-    void sort_rows()
+    friend void match_blocks(block_matrix<Matrix, SymmGroup> & a, block_matrix<Matrix, SymmGroup> & b)
     {
-        // not readable, but elegant
-        // FIXME: check whether this only uses swaps on the Matrix instead of explicit copying
-        std::sort(boost::make_zip_iterator(rows_.begin(), cols_.begin(), data_.begin()),
-            boost::make_zip_iterator(rows_.end(), cols_.end(), data_.end()),
-            detail::cmp0<SymmGroup, Matrix>);
+        // we match b to a
+        for (std::size_t p1 = 0; p1 < a.n_blocks(); ++p1) {
+            charge findme = a.cols()[p1].first;
+            Index<SymmGroup> brows = b.rows(); // this way, we don't rely on rows() always returning a reference
+            std::size_t p2 = std::find_if(brows.begin(), brows.end(),
+                boost::lambda::bind(detail::match<SymmGroup>, findme, boost::lambda::_1)) - brows.begin();
+            
+            // now move p2 to p1 in the rhs
+            if (p1 != p2) {
+                iter_swap(b.data_.begin()+p2, b.data_.begin()+p1);
+                iter_swap(b.rows_.begin()+p2, b.rows_.begin()+p1);
+                iter_swap(b.cols_.begin()+p2, b.cols_.begin()+p1);
+            }
+            b.left_charge_map_ = SymmGroup::get_map(b.rows_.charges());
+            b.right_charge_map_ = SymmGroup::get_map(b.cols_.charges());
+        }
     }
-    void sort_cols()
+    
+    friend std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
     {
-         std::sort(boost::make_zip_iterator(rows_.begin(), cols_.begin(), data_.begin()),
-                boost::make_zip_iterator(rows_.end(), cols_.end(), data_.end()),
-                detail::cmp1<SymmGroup, Matrix>);
+        os << m.rows() << std::endl;
+        os << m.cols() << std::endl;
+        std::copy(m.data_.begin(), m.data_.end(), std::ostream_iterator<Matrix>(os, " "));
+        os << std::endl;
+        return os;
+    }
+    
+    std::string description() const
+    {
+        std::ostringstream oss;
+        oss << rows_ << cols_;
+        return oss.str();
     }
     
 protected:
     std::vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
-    typename SymmGroup::charge_map left_charge_map_, right_charge_map_;
+    typename SymmGroup::map left_charge_map_, right_charge_map_;
 };
 
 // some example functions
@@ -108,18 +116,16 @@ void gemm(
 {
     C = block_matrix<Matrix, SymmGroup>(A.rows(), B.cols());
     
-    A.sort_rows();
-    B.sort_rows();
-    C.sort_rows();
+    match_blocks(A, B);
     
     // Some checks
     // We should discuss whether we want to use asserts or something that doesn't disappear upon NDEBUG
     assert(A.n_blocks() == B.n_blocks() && B.n_blocks() == C.n_blocks());
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
         // is the dimension of the sectors the same?
-        assert(A.cols().sectors[k].second == B.rows().sector[k].second);
+        assert(A.cols()[k].second == B.rows()[k].second);
         // is the charge of the column of the first the same as the row of the second?
-        assert(A.cols().sectors[k].first == -B.rows().sector[k].first);
+        assert(SymmGroup::fuse(A.cols()[k].first, B.rows()[k].first) == SymmGroup::SingletCharge);
     }
     
     // this would require this function to be a friend of block_matrix<>

@@ -58,15 +58,23 @@ public:
     { }
     
     Index(std::size_t M, IndexName n = empty)
-    : std::vector<std::pair<charge, std::size_t> >(std::make_pair(SymmGroup::SingletCharge, M), 1)
+    : std::vector<std::pair<charge, std::size_t> >(1, std::make_pair(SymmGroup::SingletCharge, M))
     , name(n)
     { }
     
-    Index(std::vector<std::size_t> const & sizes, std::vector<charge> const & charges, IndexName n = empty)
+    Index(std::vector<charge> const & charges, std::vector<std::size_t> const & sizes, IndexName n = empty)
     : name(n)
     {
         assert(sizes.size() == charges.size());
-        std::transform(sizes.begin(), sizes.end(), charges.begin(), std::back_inserter(*this),
+        std::transform(charges.begin(), charges.end(), sizes.begin(), std::back_inserter(*this),
+            std::make_pair<charge, std::size_t>);
+    }
+    
+    template<int L>
+    Index(boost::array<charge, L> const & charges, boost::array<std::size_t, L> const & sizes, IndexName n = empty)
+    : name(n)
+    {
+        std::transform(charges.begin(), charges.end(), sizes.begin(), std::back_inserter(*this),
             std::make_pair<charge, std::size_t>);
     }
 
@@ -89,5 +97,38 @@ public:
         return name == o.name && this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
     }
 };
+
+template<class SymmGroup>
+Index<SymmGroup> transpose(Index<SymmGroup> const & inp)
+{
+    typedef typename SymmGroup::charge charge;
+    
+    std::vector<charge> oc = inp.charges(), nc = inp.charges();
+    std::transform(nc.begin(), nc.end(), nc.begin(), std::negate<charge>());
+    std::sort(nc.begin(), nc.end());
+    
+    std::vector<std::size_t> nd(inp.size()), od = inp.sizes();
+    for (unsigned int i = 0; i < nd.size(); ++i)
+        nd[i] = od[std::find(oc.begin(), oc.end(),
+                                    -nc[i])-oc.begin()];
+    
+    return Index<SymmGroup>(nc, nd, inp.name);
+}
+
+template<class SymmGroup>
+std::ostream& operator<<(std::ostream& os, Index<SymmGroup> const & idx)
+{
+    if (idx.name != empty)
+        os << idx.name << std::endl;
+    std::vector<typename SymmGroup::charge> charges = idx.charges();
+    std::copy(charges.begin(), charges.end(), std::ostream_iterator<typename SymmGroup::charge>(os, " "));
+    os << std::endl;
+    
+    std::vector<std::size_t> sizes = idx.sizes();
+    std::copy(sizes.begin(), sizes.end(), std::ostream_iterator<std::size_t>(os, " "));
+    os << std::endl;
+    
+    return os;
+}
 
 #endif
