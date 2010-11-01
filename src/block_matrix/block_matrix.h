@@ -85,15 +85,6 @@ public:
         }
     }
     
-    friend std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
-    {
-        os << m.rows() << std::endl;
-        os << m.cols() << std::endl;
-        std::copy(m.data_.begin(), m.data_.end(), std::ostream_iterator<Matrix>(os, " "));
-        os << std::endl;
-        return os;
-    }
-    
     std::string description() const
     {
         std::ostringstream oss;
@@ -105,7 +96,18 @@ protected:
     std::vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
     typename SymmGroup::map left_charge_map_, right_charge_map_;
-};
+};    
+
+template<class Matrix, class SymmGroup>    
+std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
+{
+    os << "Rows: " << std::endl << m.rows();
+    os << "Cols: " << std::endl << m.cols();
+    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+        os << "Block (" << m.rows()[k].first << "," << m.cols()[k].first << "):" << std::endl << m[k];
+    os << std::endl;
+    return os;
+}
 
 // some example functions
 template<class Matrix, class SymmGroup>
@@ -136,15 +138,28 @@ void gemm(
         gemm(A[k], B[k], C[k]);
 }
 
-// template<class Matrix, class SymmGroup>
-// void svd(
-//     block_matrix<Matrix, SymmGroup> & M,
-//     block_matrix<Matrix, SymmGroup> &U, block_matrix<T, SymmGroup> &S, block_matrix<T, SymmGroup> &V,
-//     double truncation, Index<SymmGroup> maxdim,
-//     SVWhere where)
-// {
-//     /* basically analogous to gemm */
-// }
+template<class Matrix, class SymmGroup>
+void svd(
+    block_matrix<Matrix, SymmGroup> & M,
+    block_matrix<Matrix, SymmGroup> & U, block_matrix<Matrix, SymmGroup> & V,
+    block_matrix<Matrix, SymmGroup> & S)
+{
+    Index<SymmGroup> r = M.rows(), c = M.cols(), m = M.rows();
+    for (std::size_t i = 0; i < M.n_blocks(); ++i)
+        m[i].second = std::min(r[i].second, c[i].second);
+    
+    U = block_matrix<Matrix, SymmGroup>(r, transpose(m));
+    V = block_matrix<Matrix, SymmGroup>(m, c);
+    S = block_matrix<Matrix, SymmGroup>(m, transpose(m));
+    
+    for (std::size_t k = 0; k < M.n_blocks(); ++k)
+    {
+        std::vector<double> sk;
+        svd(M[k], U[k], V[k], sk);
+        for (std::size_t l = 0; l < sk.size(); ++l)
+            S[k](l,l) = sk[l];
+    }
+}
 
 // a general reshape function
 // The semantics of this are similar to the tensor class. In particular, I would

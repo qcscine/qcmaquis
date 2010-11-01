@@ -3,23 +3,11 @@
 
 using namespace std;
 
-// #include <alps/numeric/detail/matrix.hpp>
-// typedef blas::matrix Matrix;
-
-#include <alps/numeric/detail/general_matrix.hpp>
+#include <boost/numeric/bindings/std/vector.hpp>
+#include <alps/numeric/detail/general_matrix_new.hpp>
 typedef blas::general_matrix<double> Matrix;
 
-void gemm(Matrix const & A, Matrix const & B, Matrix & C)
-{
-    A.matrix_right_multiply(B, C, 1);
-}
-
 #include "block_matrix.h"
-
-double gemm(double a, double b, double c)
-{
-    c = a*b;
-}
 
 int main()
 {
@@ -44,4 +32,10 @@ int main()
     match_blocks(m1, m2);
     cout << m1.description() << endl << m2.description() << endl;
     gemm(m1, m2, m3);
+    
+    block_matrix<Matrix, grp> U, S, V;
+    svd(m3, U, V, S);
+    
+    cout << S << endl;
+    cout << U << endl;
 }
