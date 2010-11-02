@@ -39,16 +39,16 @@
 
 
 namespace blas{
-  template<typename T>
-  class vector : public std::vector<T>  
+  template<typename T, typename Alloc = std::allocator<T> >
+  class vector : public std::vector<T,Alloc>  
   {
     public:
-      vector(std::size_t size=0, T initial_value=0.)
-      : std::vector<T>(size, initial_value)
+      vector(std::size_t size=0, T initial_value=0., Alloc alloc= std::allocator<T>())
+      : std::vector<T>(size, initial_value, alloc)
       {
       }
       
-      friend void swap(vector<T>& x,vector<T>& y)
+      friend void swap(vector& x,vector& y)
       {
           std::swap(x, y);
       }
@@ -65,29 +65,29 @@ namespace blas{
           return this->operator[](i);
       }
     
-      vector<T> & operator+=(const vector<T>& rhs) 
+      vector& operator+=(const vector& rhs) 
       {
           assert(rhs.size() == this->size());
           plus_assign(this->begin(), this->end(), rhs.begin());
           return *this;
       }
       
-      vector<T> & operator-=(const vector<T>& rhs) 
+      vector& operator-=(const vector& rhs) 
       {
           assert(rhs.size() == this->size());
           minus_assign(this->begin(), this->end(), rhs.begin());
           return *this;
       }
       
-      vector<T> & operator*=(const T lambda) 
+      vector& operator*=(const T lambda) 
       {
           multiplies_assign(this->begin(), this->end(), lambda);
           return *this;
       }
   };  
     
-    template<typename T>
-    void insert(vector<T> v, T value, std::size_t i)
+    template<typename T, typename Alloc>
+    void insert(vector<T,Alloc> v, T value, std::size_t i)
     {
         assert((i <= v.size()));
         v.insert(v.begin()+i,value);
@@ -99,11 +99,11 @@ namespace blas{
         std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
     }
    
-    template<typename T>
-    vector<T> operator+(const vector<T> v1, const vector<T> v2)  
+    template<typename T, typename Alloc>
+    vector<T,Alloc> operator+(const vector<T,Alloc> v1, const vector<T,Alloc> v2)  
     {
         assert(v1.size() == v2.size());
-        vector<T> result(v1);     
+        vector<T,Alloc> result(v1);     
         result += v2;           
         return result;              
     }
@@ -114,13 +114,13 @@ namespace blas{
         std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
     }
     
-    template<typename T>
-    vector<T> operator-(const vector<T> v1, const vector<T> v2)  
+    template<typename T, typename Alloc>
+    vector<T,Alloc> operator-(const vector<T,Alloc> v1, const vector<T,Alloc> v2)  
     {
         assert(v1.size() == v2.size());
-        vector<T> result(v1);     
-        result -= v2;           
-        return result;              
+        vector<T,Alloc> result(v1);
+        result -= v2;
+        return result;
     }  
 
     template <class ForwardIterator, typename T>
@@ -129,27 +129,27 @@ namespace blas{
         std::transform(start1, end1, start1, std::bind2nd(std::multiplies<T>(), lambda));
     }
     
-    template<typename T>
-    inline T scalar_product(const vector<T> v1, const vector<T> v2)
+    template <typename T, typename Alloc>
+    inline T scalar_product(const vector<T,Alloc> v1, const vector<T,Alloc> v2)
     {   
         return alps::numeric::scalar_product(v1,v2);
     }
     
-    template<typename T>
-    inline vector<T> exp(T c, vector<T> v)
+    template <typename T, typename Alloc>
+    inline vector<T,Alloc> exp(T c, vector<T,Alloc> v)
     {
         using std::exp;
-        vector<T> result(v);
+        vector<T,Alloc> result(v);
         v*=c;
         std::transform(v.begin(), v.end(), result.begin(), static_cast<T(*)(T)> (&exp));
         return result;
     }
-    
-    template<>
-    inline vector<double> exp(double c, vector<double> v)
+   
+    template <typename Alloc>
+    inline vector<double,Alloc> exp(double c, vector<double,Alloc> v)
     {
         fortran_int_t s=v.size();
-        vector<double> result(s);
+        vector<double,Alloc> result(s);
         v*=c;
 #ifdef VECLIB
         vecLib::vvexp(&result[0], &v[0], &s); 
@@ -168,8 +168,8 @@ namespace blas{
         return result;
     }
 
-  template<typename T>
-  inline std::ostream &operator<<(std::ostream &os, const vector<T> &v)
+  template <typename T, typename Alloc>
+  inline std::ostream &operator<<(std::ostream &os, const vector<T,Alloc> &v)
   {
     os<<"[ ";
     for(unsigned int i=0;i<v.size()-1;++i){
@@ -180,26 +180,30 @@ namespace blas{
   }
 
 #define PLUS_ASSIGN(T) \
-void plus_assign(std::vector<T>::iterator first1, std::vector<T>::iterator last1, std::vector<T>::const_iterator first2) \
+template <typename Alloc> \
+void plus_assign(typename std::vector<T,Alloc>::iterator first1, typename std::vector<T,Alloc>::iterator last1, typename std::vector<T,Alloc>::const_iterator first2) \
 { boost::numeric::bindings::blas::detail::axpy(last1-first1, 1., &*first2, 1, &*first1, 1);}
     IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_ASSIGN)
 #undef MINUS_ASSIGN
     
 
 #define MINUS_ASSIGN(T) \
-void minus_assign(std::vector<T>::iterator first1, std::vector<T>::iterator last1, std::vector<T>::const_iterator first2) \
+template <typename Alloc> \
+void minus_assign(typename std::vector<T,Alloc>::iterator first1, typename std::vector<T,Alloc>::iterator last1, typename std::vector<T,Alloc>::const_iterator first2) \
 { boost::numeric::bindings::blas::detail::axpy(last1-first1, -1., &*first2, 1, &*first1, 1);}
     IMPLEMENT_FOR_ALL_BLAS_TYPES(MINUS_ASSIGN)
 #undef MINUS_ASSIGN
     
 #define MULTIPLIES_ASSIGN(T) \
-void multiplies_assign(std::vector<T>::iterator start1, std::vector<T>::iterator end1, T lambda)                            \
+template <typename Alloc> \
+void multiplies_assign(typename std::vector<T,Alloc>::iterator start1, typename std::vector<T,Alloc>::iterator end1, T lambda)                            \
     { boost::numeric::bindings::blas::detail::scal(end1-start1, lambda, &*start1, 1);}
     IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
 #undef MULTIPLIES_ASSIGN
     
 #define SCALAR_PRODUCT(T) \
-inline T scalar_product(const std::vector<T> v1, const std::vector<T> v2)                                              \
+template <typename Alloc> \
+inline T scalar_product(const std::vector<T,Alloc> v1, const std::vector<T,Alloc> v2)                                              \
     { return boost::numeric::bindings::blas::detail::dot(v1.size(), &v1[0],1,&v2[0],1);}
     IMPLEMENT_FOR_ALL_BLAS_TYPES(SCALAR_PRODUCT)
 #undef SCALAR_PRODUCT
