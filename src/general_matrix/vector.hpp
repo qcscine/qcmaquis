@@ -87,7 +87,7 @@ namespace blas{
   };  
     
     template<typename T, typename Alloc>
-    void insert(vector<T,Alloc> v, T value, std::size_t i)
+    void insert(vector<T,Alloc>& v, T value, std::size_t i)
     {
         assert((i <= v.size()));
         v.insert(v.begin()+i,value);
@@ -100,12 +100,11 @@ namespace blas{
     }
    
     template<typename T, typename Alloc>
-    vector<T,Alloc> operator+(const vector<T,Alloc> v1, const vector<T,Alloc> v2)  
+    vector<T,Alloc> operator+(vector<T,Alloc> v1, const vector<T,Alloc>& v2)  
     {
         assert(v1.size() == v2.size());
-        vector<T,Alloc> result(v1);     
-        result += v2;           
-        return result;              
+        v1 += v2;
+        return v1;
     }
     
     template <class InputIterator1, class InputIterator2>
@@ -115,12 +114,11 @@ namespace blas{
     }
     
     template<typename T, typename Alloc>
-    vector<T,Alloc> operator-(const vector<T,Alloc> v1, const vector<T,Alloc> v2)  
+    vector<T,Alloc> operator-(vector<T,Alloc> v1, const vector<T,Alloc>& v2)  
     {
         assert(v1.size() == v2.size());
-        vector<T,Alloc> result(v1);
-        result -= v2;
-        return result;
+        v1 -= v2;
+        return v1;
     }  
 
     template <class ForwardIterator, typename T>
@@ -130,7 +128,7 @@ namespace blas{
     }
     
     template <typename T, typename Alloc>
-    inline T scalar_product(const vector<T,Alloc> v1, const vector<T,Alloc> v2)
+    inline T scalar_product(const vector<T,Alloc>& v1, const vector<T,Alloc>& v2)
     {   
         return alps::numeric::scalar_product(v1,v2);
     }
@@ -139,7 +137,7 @@ namespace blas{
     inline vector<T,Alloc> exp(T c, vector<T,Alloc> v)
     {
         using std::exp;
-        vector<T,Alloc> result(v);
+        vector<T,Alloc> result(v.size());
         v*=c;
         std::transform(v.begin(), v.end(), result.begin(), static_cast<T(*)(T)> (&exp));
         return result;
