@@ -1,9 +1,9 @@
 #ifndef __ALPS_GENERAL_MATRIX_HPP__
 #define __ALPS_GENERAL_MATRIX_HPP__
 
-#include "blasmacros.h"
+#include "detail/blasmacros.h"
 #include "matrix_iterators.hpp"
-#include "../vector.hpp"
+#include "vector.hpp"
 
 #include <ostream>
 #include <vector>
