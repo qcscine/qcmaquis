@@ -159,10 +159,7 @@ namespace blas {
 
 
 
-
-
-        //TODO: alignment!
-        general_matrix(std::size_t size1 = 0, std::size_t size2 = 0, T init_value = T(0), Alloc const& alloc = std::allocator<T>() )
+        general_matrix(std::size_t size1 = 0, std::size_t size2 = 0, T init_value = T(0), Alloc const& alloc = Alloc() )
         : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value, alloc)
         {
         }
@@ -170,7 +167,6 @@ namespace blas {
         general_matrix(general_matrix const& m)
         : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(m.values_.get_allocator())
         {
-
             // If the size of the matrix corresponds to the allocated size of the matrix...
             if(!m.is_shrinkable())
             {
@@ -185,6 +181,24 @@ namespace blas {
             }
         }
 
+        template <typename OtherAllocator>
+        general_matrix(general_matrix<T,OtherAllocator> const& m)
+        : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(Alloc())
+        {
+            // If the size of the matrix corresponds to the allocated size of the matrix...
+            if(!m.is_shrinkable())
+            {
+                values_.insert(values_.end(), m.values_.begin(), m.values_.end());
+            }
+            else
+            {
+                // copy only a shrinked to size version of the original matrix
+                values_.reserve(m.size1_*m.size2_);
+                for(std::size_t j=0; j < m.size2_; ++j)
+                    values_.insert(values_.end(), m.rows_begin(j), m.rows_end(j));
+            }
+        }
+        
         void swap(general_matrix & r)
         {
             std::swap(values_, r.values_);
@@ -197,7 +211,8 @@ namespace blas {
         {
             x.swap(y);
         }
-        
+       
+       // TODO? operator = for general_matrices with different Allocators?
         general_matrix& operator = (general_matrix rhs)
         {
             // swap(rhs, *this); // anyone have any idea why this doesn't work?
@@ -267,8 +282,8 @@ namespace blas {
             // TODO: Over-resize matrix to 1.4 or 2 times the requested size
             if(size1 <= reserved_size1_)
             {
-                   //TODO Exception safe? -> Are resize() and fill() exception safe?
-                    values_.resize(reserved_size1_*size2,init_value);
+                //TODO What happens if resize or fill throw an exception?
+                values_.resize(reserved_size1_*size2,init_value);
 
                 if(size1 > size1_)
                 {
@@ -283,6 +298,8 @@ namespace blas {
             }
             else // size1 > reserved_size1_
             {
+                // This is exception safe: If an exception is thrown, values_ and tmp won't get swapped.
+
                 std::vector<T,Alloc> tmp(size1*size2,init_value);
                 for(std::size_t j=0; j < size2_; ++j)
                 {
@@ -464,19 +481,22 @@ namespace blas {
 
         general_matrix<T,Alloc>& operator += (general_matrix const& rhs) 
         {
-            detail::plus_assign(*this,rhs);
+            using detail::plus_assign;
+            plus_assign(*this,rhs);
             return *this;
         }
         
         general_matrix<T,Alloc>& operator -= (general_matrix const& rhs) 
         {
-            detail::minus_assign(*this,rhs);
+            using detail::minus_assign;
+            minus_assign(*this,rhs);
             return *this;
         }
         
         general_matrix<T,Alloc>& operator *= (T const& t)
         {
-            detail::multiplies_assign(*this, t);
+            using detail::multiplies_assign;
+            multiplies_assign(*this, t);
             return *this;
         }
 
@@ -536,6 +556,9 @@ namespace blas {
         }
 
     private:
+        template <typename OtherT,typename OtherAlloc>
+        friend class general_matrix;
+
         friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,Alloc>,const general_matrix<T,Alloc>, void>;
         friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,Alloc>,general_matrix<T,Alloc>, void>;
 
@@ -689,13 +712,15 @@ namespace blas {
     template<typename T, typename Alloc>
     const general_matrix<T,Alloc> operator * (general_matrix<T,Alloc> const& m1, general_matrix<T,Alloc> const& m2)
     {
-        return detail::matrix_matrix_multiply(m1,m2);
+        using detail::matrix_matrix_multiply;
+        return matrix_matrix_multiply(m1,m2);
     }
 
     template<typename T,typename Alloc>
     void gemm(general_matrix<T,Alloc> const & A, general_matrix<T,Alloc> const & B, general_matrix<T,Alloc> & C)
     {
-        C = detail::matrix_matrix_multiply(A, B);
+        using detail::matrix_matrix_multiply;
+        C = matrix_matrix_multiply(A, B);
     }
 
     template <typename T, typename Alloc>

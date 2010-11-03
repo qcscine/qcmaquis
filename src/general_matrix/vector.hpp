@@ -43,7 +43,7 @@ namespace blas{
   class vector : public std::vector<T,Alloc>  
   {
     public:
-      vector(std::size_t size=0, T initial_value=0., Alloc alloc= std::allocator<T>())
+      vector(std::size_t size=0, T initial_value=0., Alloc alloc = Alloc())
       : std::vector<T>(size, initial_value, alloc)
       {
       }
