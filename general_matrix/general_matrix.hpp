@@ -409,7 +409,7 @@ namespace blas {
             return const_column_iterator(this,row,size2_);
         }
 
-        void append_column(vector<T> const& v)
+        void append_column(vector<T,Alloc> const& v)
         {
             assert( v.size() == size1_ );
             std::size_t insert_position = size2_;
@@ -417,7 +417,7 @@ namespace blas {
             std::copy( v.begin(), v.end(), rows_begin(insert_position) );
         }
 
-        void apped_row(vector<T> const& v)
+        void apped_row(vector<T,Alloc> const& v)
         {
             assert( v.size() == size2_ );
             std::size_t insert_position = size1_;
@@ -425,7 +425,7 @@ namespace blas {
             std::copy( v.begin(), v.end(), columns_begin(insert_position) );
         }
 
-        void insert_row(std::size_t i, vector<T> const& v)
+        void insert_row(std::size_t i, vector<T,Alloc> const& v)
         {
             assert( i <= size1_ );
             assert( v.size() == size2_ );
@@ -440,7 +440,7 @@ namespace blas {
             }
         }
 
-        void insert_column(std::size_t j, vector<T> const& v)
+        void insert_column(std::size_t j, vector<T,Alloc> const& v)
         {
             assert( j <= size2_);
             assert( v.size() == size1_ );
@@ -679,10 +679,10 @@ namespace blas {
     }
 
     template<typename T, typename Alloc>
-    const vector<T> operator * (general_matrix<T,Alloc> const& m, vector<T> const& v)
+    const vector<T,Alloc> operator * (general_matrix<T,Alloc> const& m, vector<T,Alloc> const& v)
     {
         assert( m.size2() == v.size() );
-        vector<T> result(m.size1());
+        vector<T,Alloc> result(m.size1());
         // Simple Matrix * Vector
         for(std::size_t i = 0; i < m.size1(); ++i)
         {
