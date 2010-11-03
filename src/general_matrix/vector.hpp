@@ -44,7 +44,18 @@ namespace blas{
   {
     public:
       vector(std::size_t size=0, T initial_value=0., Alloc alloc = Alloc())
-      : std::vector<T>(size, initial_value, alloc)
+      : std::vector<T,Alloc>(size, initial_value, alloc)
+      {
+      }
+
+      vector(vector const& v)
+          : std::vector<T,Alloc>(v)
+      {
+      }
+
+      template <typename OtherAlloc>
+      vector(vector<T,OtherAlloc> const& v)
+      : std::vector<T,Alloc>(v.begin(), v.end(), Alloc() )
       {
       }
       
