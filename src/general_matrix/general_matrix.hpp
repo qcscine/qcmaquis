@@ -4,135 +4,19 @@
 #include "detail/blasmacros.h"
 #include "matrix_iterators.hpp"
 #include "vector.hpp"
+#include "detail/general_matrix_hooked_functions.hpp"
+#include "detail/general_matrix_adaptor.hpp"
 
 #include <ostream>
 #include <vector>
 #include <algorithm>
 #include <functional>
-
-#include <boost/numeric/bindings/detail/adaptor.hpp>
-#include <boost/numeric/bindings/detail/if_row_major.hpp>
-#include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
-
-namespace blas {
-    template <typename T, typename Alloc>
-        class general_matrix;
-}
-
-//
-// Hooked general matrix functions
-//
-namespace blas { namespace detail {
-
-#define MATRIX_MATRIX_MULTIPLY(T) \
-    template <typename Alloc> \
-    const general_matrix<T,Alloc> matrix_matrix_multiply(general_matrix<T,Alloc> const& lhs, general_matrix<T,Alloc> const& rhs) \
-    { \
-        assert( lhs.num_columns() == rhs.num_rows() ); \
-        general_matrix<T,Alloc> result(lhs.num_rows(),rhs.num_columns()); \
-        boost::numeric::bindings::blas::gemm \
-            ( \
-               typename general_matrix<T,Alloc>::value_type(1), \
-               lhs, \
-               rhs, \
-               typename general_matrix<T,Alloc>::value_type(1), \
-               result \
-            ); \
-        return result; \
-    }
-IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
-#undef MATRIX_MATRIX_MULTIPLY
-
-    template <typename T, typename Alloc>
-    const general_matrix<T,Alloc> matrix_matrix_multiply(general_matrix<T,Alloc> const& lhs, general_matrix<T,Alloc> const& rhs)
-    {
-        assert( lhs.num_columns() == rhs.num_rows() );
-
-        // Simple matrix matrix multiplication
-        general_matrix<T,Alloc> result(lhs.num_rows(),rhs.num_columns());
-        for(std::size_t i=0; i < lhs.num_rows(); ++i)
-        {
-            for(std::size_t j=0; j<rhs.num_columns(); ++j)
-            {
-                for(std::size_t k=0; k<lhs.num_columns(); ++k)
-                {
-                        result(i,j) += lhs(i,k) * rhs(k,j);
-                }
-            }
-        }
-        return result;
-    } 
-
-// This seems to be the best solution for the *_ASSIGN dispatchers at the moment even though they call functions within the detail namespace
-#define PLUS_MINUS_ASSIGN(T) \
-    template <typename Alloc> \
-    void plus_and_minus_assign_impl(general_matrix<T,Alloc>& m, general_matrix<T,Alloc> const& rhs, typename general_matrix<T,Alloc>::value_type const& sign) \
-    { \
-        assert( m.num_columns() == rhs.num_columns() && m.num_rows() == rhs.num_rows() ); \
-        if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
-        { \
-            boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_columns(), sign, &(*rhs.rows_begin(0)), 1, &(*m.rows_begin(0)), 1); \
-        } \
-        else \
-        { \
-            for(std::size_t j=0; j < m.num_columns(); ++j) \
-                boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.rows_begin(j)), 1, &(*m.rows_begin(j)), 1); \
-        } \
-    } \
-    template <typename Alloc> \
-    void plus_assign(general_matrix<T,Alloc>& m, general_matrix<T,Alloc> const& rhs) \
-        { plus_and_minus_assign_impl(m, rhs, typename general_matrix<T,Alloc>::value_type(1)); } \
-    template <typename Alloc> \
-    void minus_assign(general_matrix<T,Alloc>& m, general_matrix<T,Alloc> const& rhs) \
-        { plus_and_minus_assign_impl(m, rhs, typename general_matrix<T,Alloc>::value_type(-1)); }
-IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
-#undef PLUS_MINUS_ASSIGN
-
-    template <typename T,typename Alloc>
-    void plus_assign(general_matrix<T,Alloc>& m, general_matrix<T,Alloc> const& rhs)
-    {
-        m.plus_assign(rhs);
-    }
-
-    template <typename T, typename Alloc>
-    void minus_assign(general_matrix<T,Alloc>& m, general_matrix<T,Alloc> const& rhs)
-    {
-        m.minus_assign(rhs);
-    }
-
-
-#define MULTIPLIES_ASSIGN(T) \
-    template <typename Alloc> \
-    void multiplies_assign(general_matrix<T,Alloc>& m, T const& t) \
-    { \
-        if( !(m.is_shrinkable()) ) \
-        { \
-            boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_columns(), t, &(*m.rows_begin()), 1 ); \
-        } \
-        else \
-        { \
-            for(std::size_t j=0; j <m.num_columns(); ++j) \
-                boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.rows_begin(j)), 1 ); \
-        } \
-    }
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
-#undef MULTIPLIES_ASSIGN
-
-
-    template <typename T, typename Alloc>
-    void multiplies_assign(general_matrix<T,Alloc>& m, T const& t)
-    {
-        m.multiplies_assign(t);
-    }
-
-}} // namespace detail, namespace blas
-
 //
 // general_matrix template class
 //
 namespace blas {
 
-    template <typename T, typename Alloc = std::allocator<T> >
+    template <typename T, typename MemoryBlock = std::vector<T> >
     class general_matrix {
     public:
         // typedefs required for a std::container concept
@@ -159,13 +43,13 @@ namespace blas {
 
 
 
-        general_matrix(std::size_t size1 = 0, std::size_t size2 = 0, T init_value = T(0), Alloc const& alloc = Alloc() )
-        : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value, alloc)
+        general_matrix(std::size_t size1 = 0, std::size_t size2 = 0, T init_value = T(0) )
+        : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value)
         {
         }
 
         general_matrix(general_matrix const& m)
-        : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(m.values_.get_allocator())
+        : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_()
         {
             // If the size of the matrix corresponds to the allocated size of the matrix...
             if(!m.is_shrinkable())
@@ -181,9 +65,9 @@ namespace blas {
             }
         }
 
-        template <typename OtherAllocator>
-        general_matrix(general_matrix<T,OtherAllocator> const& m)
-        : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(Alloc())
+        template <typename OtherMemoryBlock>
+        general_matrix(general_matrix<T,OtherMemoryBlock> const& m)
+        : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_()
         {
             // If the size of the matrix corresponds to the allocated size of the matrix...
             if(!m.is_shrinkable())
@@ -212,7 +96,6 @@ namespace blas {
             x.swap(y);
         }
        
-       // TODO? operator = for general_matrices with different Allocators?
         general_matrix& operator = (general_matrix rhs)
         {
             // swap(rhs, *this); // anyone have any idea why this doesn't work?
@@ -300,7 +183,7 @@ namespace blas {
             {
                 // This is exception safe: If an exception is thrown, values_ and tmp won't get swapped.
 
-                std::vector<T,Alloc> tmp(size1*size2,init_value);
+                MemoryBlock tmp(size1*size2,init_value);
                 for(std::size_t j=0; j < size2_; ++j)
                 {
                     // Copy column by column
@@ -321,7 +204,7 @@ namespace blas {
             }
             if(size1 > reserved_size1_)
             {
-                std::vector<T,Alloc> tmp(size1*size2);
+                MemoryBlock tmp(size1*size2);
                 for(std::size_t j=0; j < size2_; ++j)
                 {
                     // Copy column by column
@@ -409,7 +292,7 @@ namespace blas {
             return const_column_iterator(this,row,size2_);
         }
 
-        void append_column(vector<T,Alloc> const& v)
+        void append_column(vector<T,MemoryBlock> const& v)
         {
             assert( v.size() == size1_ );
             std::size_t insert_position = size2_;
@@ -417,7 +300,7 @@ namespace blas {
             std::copy( v.begin(), v.end(), rows_begin(insert_position) );
         }
 
-        void apped_row(vector<T,Alloc> const& v)
+        void apped_row(vector<T,MemoryBlock> const& v)
         {
             assert( v.size() == size2_ );
             std::size_t insert_position = size1_;
@@ -425,7 +308,7 @@ namespace blas {
             std::copy( v.begin(), v.end(), columns_begin(insert_position) );
         }
 
-        void insert_row(std::size_t i, vector<T,Alloc> const& v)
+        void insert_row(std::size_t i, vector<T,MemoryBlock> const& v)
         {
             assert( i <= size1_ );
             assert( v.size() == size2_ );
@@ -440,7 +323,7 @@ namespace blas {
             }
         }
 
-        void insert_column(std::size_t j, vector<T,Alloc> const& v)
+        void insert_column(std::size_t j, vector<T,MemoryBlock> const& v)
         {
             assert( j <= size2_);
             assert( v.size() == size1_ );
@@ -479,21 +362,21 @@ namespace blas {
             return true;
         }
 
-        general_matrix<T,Alloc>& operator += (general_matrix const& rhs) 
+        general_matrix<T,MemoryBlock>& operator += (general_matrix const& rhs) 
         {
             using detail::plus_assign;
             plus_assign(*this,rhs);
             return *this;
         }
         
-        general_matrix<T,Alloc>& operator -= (general_matrix const& rhs) 
+        general_matrix<T,MemoryBlock>& operator -= (general_matrix const& rhs) 
         {
             using detail::minus_assign;
             minus_assign(*this,rhs);
             return *this;
         }
         
-        general_matrix<T,Alloc>& operator *= (T const& t)
+        general_matrix<T,MemoryBlock>& operator *= (T const& t)
         {
             using detail::multiplies_assign;
             multiplies_assign(*this, t);
@@ -545,22 +428,22 @@ namespace blas {
             }
         }
         
-        general_matrix<T,Alloc>& operator *= (general_matrix const& rhs) 
+        general_matrix<T,MemoryBlock>& operator *= (general_matrix const& rhs) 
         {
             // It's not common to implement a *= operator in terms of a * operator,
             // but a temporary object has to be created to store the result anyway
             // so it seems reasonable.
-            general_matrix<T,Alloc> tmp = (*this) * rhs;
+            general_matrix tmp = (*this) * rhs;
             std::swap(tmp,*this);
             return *this;
         }
 
     private:
-        template <typename OtherT,typename OtherAlloc>
+        template <typename OtherT,typename OtherMemoryBlock>
         friend class general_matrix;
 
-        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,Alloc>,const general_matrix<T,Alloc>, void>;
-        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,Alloc>,general_matrix<T,Alloc>, void>;
+        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,MemoryBlock>,const general_matrix<T,MemoryBlock>, void>;
+        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,MemoryBlock>,general_matrix<T,MemoryBlock>, void>;
 
 
         std::size_t size1_;
@@ -568,62 +451,9 @@ namespace blas {
         std::size_t reserved_size1_;
         // "reserved_size2_" is done automatically by underlying std::vector (see vector.reserve(), vector.capacity() )
         
-        std::vector<T,Alloc> values_;
+        MemoryBlock values_;
     };
 } // namespace blas
-
-//
-// An adaptor for the matrix to the boost::numeric::bindings
-//
-namespace boost { namespace numeric { namespace bindings { namespace detail {
-        
-    template <typename T, typename Alloc, typename Id, typename Enable>
-    struct adaptor< ::blas::general_matrix<T,Alloc>, Id, Enable>
-    {
-        typedef typename copy_const< Id, T >::type              value_type;
-        // TODO: fix the types of size and stride -> currently it's a workaround, since std::size_t causes problems with boost::numeric::bindings
-        //typedef typename ::blas::general_matrix<T,Alloc>::size_type         size_type;
-        //typedef typename ::blas::general_matrix<T,Alloc>::difference_type   difference_type;
-        typedef std::ptrdiff_t  size_type;
-        typedef std::ptrdiff_t  difference_type;
-
-        typedef mpl::map<
-            mpl::pair< tag::value_type,      value_type >,
-            mpl::pair< tag::entity,          tag::matrix >,
-            mpl::pair< tag::size_type<1>,    size_type >,
-            mpl::pair< tag::size_type<2>,    size_type >,
-            mpl::pair< tag::data_structure,  tag::linear_array >,
-            mpl::pair< tag::data_order,      tag::column_major >,
-            mpl::pair< tag::stride_type<1>,  tag::contiguous >,
-            mpl::pair< tag::stride_type<2>,  difference_type >
-        > property_map;
-
-        static size_type size1( const Id& id ) {
-            return id.num_rows();
-        }
-
-        static size_type size2( const Id& id ) {
-            return id.num_columns();
-        }
-
-        static value_type* begin_value( Id& id ) {
-            return &(*id.rows_begin(0));
-        }
-
-        static value_type* end_value( Id& id ) {
-            return &(*(id.rows_end(id.num_columns()-1)-1));
-        }
-
-        static difference_type stride1( const Id& id ) {
-            return 1;
-        }
-
-        static difference_type stride2( const Id& id ) {
-           return id.reserved_size1_;
-        }
-
-    };
-}}}}
 
 //
 // Free general matrix functions
@@ -664,25 +494,25 @@ namespace blas {
         return tr;
     }
     
-    template <typename T, typename Alloc>
-    const general_matrix<T,Alloc> operator + (general_matrix<T,Alloc> a, general_matrix<T,Alloc> const& b)
+    template <typename T, typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator + (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
     {
         a += b;
         return a;
     }
     
-    template <typename T, typename Alloc>
-    const general_matrix<T,Alloc> operator - (general_matrix<T,Alloc> a, general_matrix<T,Alloc> const& b)
+    template <typename T, typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator - (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
     {
         a -= b;
         return a;
     }
 
-    template<typename T, typename Alloc>
-    const vector<T,Alloc> operator * (general_matrix<T,Alloc> const& m, vector<T,Alloc> const& v)
+    template<typename T, typename MemoryBlock>
+    const vector<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock> const& v)
     {
         assert( m.size2() == v.size() );
-        vector<T,Alloc> result(m.size1());
+        vector<T,MemoryBlock> result(m.size1());
         // Simple Matrix * Vector
         for(std::size_t i = 0; i < m.size1(); ++i)
         {
@@ -697,34 +527,34 @@ namespace blas {
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
 
-    template<typename T,typename Alloc>
-    const general_matrix<T,Alloc> operator * (general_matrix<T,Alloc> m, T const& t)
+    template<typename T,typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> m, T const& t)
     {
         return m*=t;
     }
     
-    template<typename T,typename Alloc>
-    const general_matrix<T,Alloc> operator * (T const& t, general_matrix<T,Alloc> m)
+    template<typename T,typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator * (T const& t, general_matrix<T,MemoryBlock> m)
     {
         return m*=t;
     }
 
-    template<typename T, typename Alloc>
-    const general_matrix<T,Alloc> operator * (general_matrix<T,Alloc> const& m1, general_matrix<T,Alloc> const& m2)
+    template<typename T, typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> const& m1, general_matrix<T,MemoryBlock> const& m2)
     {
         using detail::matrix_matrix_multiply;
         return matrix_matrix_multiply(m1,m2);
     }
 
-    template<typename T,typename Alloc>
-    void gemm(general_matrix<T,Alloc> const & A, general_matrix<T,Alloc> const & B, general_matrix<T,Alloc> & C)
+    template<typename T,typename MemoryBlock>
+    void gemm(general_matrix<T,MemoryBlock> const & A, general_matrix<T,MemoryBlock> const & B, general_matrix<T,MemoryBlock> & C)
     {
         using detail::matrix_matrix_multiply;
         C = matrix_matrix_multiply(A, B);
     }
 
-    template <typename T, typename Alloc>
-    std::ostream& operator << (std::ostream& o, general_matrix<T,Alloc> const& rhs)
+    template <typename T, typename MemoryBlock>
+    std::ostream& operator << (std::ostream& o, general_matrix<T,MemoryBlock> const& rhs)
     {
         for(std::size_t i=0; i< rhs.size1(); ++i)
         {
