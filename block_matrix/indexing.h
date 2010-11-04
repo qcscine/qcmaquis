@@ -44,13 +44,63 @@ boost::array<T, in+1> operator,(const T a, const boost::array<T, in> b)
 	return ret;
 }
 
+namespace index_detail
+{
+    template<class SymmGroup>
+    bool lt(std::pair<typename SymmGroup::charge, std::size_t> const & a,
+            std::pair<typename SymmGroup::charge, std::size_t> const & b)
+    {
+        return a.first < b.first;
+    }
+    
+    template<class SymmGroup>
+    bool gt(std::pair<typename SymmGroup::charge, std::size_t> const & a,
+            std::pair<typename SymmGroup::charge, std::size_t> const & b)
+    {
+        return a.first > b.first;
+    }
+    
+    template<class SymmGroup>
+    typename SymmGroup::charge get_first(std::pair<typename SymmGroup::charge, std::size_t> const & x)
+    {
+        return x.first;
+    }
+}
+
 template<class SymmGroup>
 class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
 {
 public:
     typedef typename SymmGroup::charge charge;
-
+    
     IndexName name;
+    
+    std::size_t at(charge c) const
+    {
+        return std::find_if(this->begin(), this->end(),
+                            c == boost::lambda::bind(index_detail::get_first<SymmGroup>,
+                                                     boost::lambda::_1)) - this->begin();
+    }
+    
+    std::size_t destination(charge c) const
+    {
+        return std::find_if(this->begin(), this->end(),
+                            boost::lambda::bind(index_detail::lt<SymmGroup>,
+                                                boost::lambda::_1,
+                                                std::make_pair(c, 0))) - this->begin();
+    }
+    
+    void sort()
+    {
+        std::sort(this->begin(), this->end(), index_detail::gt<SymmGroup>);
+    }
+    
+    std::size_t insert(std::pair<charge, std::size_t> const & x)
+    {
+        std::size_t d = destination(x.first);
+        std::vector<std::pair<charge, std::size_t> >::insert(this->begin() + d, x);
+        return d;
+    }
     
     Index(IndexName n = empty)
     : std::vector<std::pair<charge, std::size_t> >()
@@ -67,7 +117,7 @@ public:
     {
         assert(sizes.size() == charges.size());
         std::transform(charges.begin(), charges.end(), sizes.begin(), std::back_inserter(*this),
-            std::make_pair<charge, std::size_t>);
+                       std::make_pair<charge, std::size_t>);
     }
     
     template<int L>
@@ -75,9 +125,9 @@ public:
     : name(n)
     {
         std::transform(charges.begin(), charges.end(), sizes.begin(), std::back_inserter(*this),
-            std::make_pair<charge, std::size_t>);
+                       std::make_pair<charge, std::size_t>);
     }
-
+    
     std::vector<charge> charges() const
     {
         std::vector<charge> ret(this->size());
@@ -91,7 +141,7 @@ public:
         for (std::size_t k = 0; k < this->size(); ++k) ret[k] = (*this)[k].second;
         return ret;
     }
-
+    
     bool operator==(const Index<SymmGroup> &o)
     {
         return name == o.name && this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
@@ -110,7 +160,7 @@ Index<SymmGroup> transpose(Index<SymmGroup> const & inp)
     std::vector<std::size_t> nd(inp.size()), od = inp.sizes();
     for (unsigned int i = 0; i < nd.size(); ++i)
         nd[i] = od[std::find(oc.begin(), oc.end(),
-                                    -nc[i])-oc.begin()];
+                             -nc[i])-oc.begin()];
     
     return Index<SymmGroup>(nc, nd, inp.name);
 }
@@ -130,5 +180,8 @@ std::ostream& operator<<(std::ostream& os, Index<SymmGroup> const & idx)
     
     return os;
 }
+
+//operator*
+//operator/
 
 #endif

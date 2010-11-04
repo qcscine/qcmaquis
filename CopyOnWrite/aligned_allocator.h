@@ -11,6 +11,7 @@ class aligned_allocator : public std::allocator<T>
 {
 protected:
 	typedef std::allocator<T> alloc_t;
+    typedef typename boost::aligned_storage<sizeof(T), alignment>::type aligned_type;
 	
 public:
 	typedef typename alloc_t::pointer pointer;
@@ -24,11 +25,11 @@ public:
 	
 	pointer allocate(size_type n) const
 	{
-        return reinterpret_cast<pointer>(new typename boost::aligned_storage<sizeof(T), alignment>::type[n]);
+        return reinterpret_cast<pointer>(new aligned_type[n]);
 	}
 	void deallocate(pointer p, size_type n) const
 	{
-        delete[] p;
+        delete[] reinterpret_cast<aligned_type>(p);
 	}
 	
 	template <typename T2>

@@ -7,18 +7,6 @@
 #include "indexing.h"
 #include "symmetry.h"
 
-namespace detail
-{
-    template<class A, class B> A first(std::pair<A, B> const & p) { return p.first; }
-    template<class A, class B> A second(std::pair<A, B> const & p) { return p.second; }
-    
-    template<class SymmGroup> bool match(typename SymmGroup::charge c,
-        std::pair<typename SymmGroup::charge, std::size_t> const & p)
-    {
-        return SymmGroup::SingletCharge == SymmGroup::fuse(c, p.first);
-    }
-}
-
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
@@ -27,63 +15,70 @@ private:
     
 public:
     block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(), Index<SymmGroup> cols = Index<SymmGroup>())
-    : rows_(rows), cols_(cols), data_(rows.size())
-    , left_charge_map_(SymmGroup::get_map(rows.charges()))
-    , right_charge_map_(SymmGroup::get_map(cols.charges()))
+    : rows_(rows)
+    , cols_(cols)
     {
         assert(rows_.size() == cols_.size());
-        for (std::size_t k = 0; k < data_.size(); ++k)
-            data_[k] = Matrix(rows_[k].second, cols_[k].second);
+        for (std::size_t k = 0; k < rows_.size(); ++k)
+            data_.push_back(Matrix(rows_[k].second, cols_[k].second));
     }
     
-    friend void swap(block_matrix<Matrix, SymmGroup> & x, block_matrix<Matrix, SymmGroup> & y)
+    block_matrix(charge c, Matrix const & m)
+    {
+        rows_.push_back(std::make_pair(c, m.num_rows()));
+        cols_.push_back(std::make_pair(c, m.num_cols()));
+        data_.push_back(m);
+    }
+    
+    block_matrix & operator+=(block_matrix const & rhs)
+    {
+        for (std::size_t k = 0; k < rhs.n_blocks(); ++k)
+        {
+            charge rhs_rc = rhs.rows_[k].first;
+            std::size_t goesto = rows_.at(rhs_rc);
+            if (goesto == rows_.size()) { // it's a new block
+                std::size_t i1 = rows_.insert(rhs.rows_[k]);
+                std::size_t i2 = cols_.insert(rhs.cols_[k]);
+                assert(i1 == i2);
+                data_.insert(data_.begin() + i1, rhs.data_[k]);
+            } else { // this block exists already -> pass to Matrix
+                data_[goesto] += rhs.data_[k];
+            }
+        }
+        return *this;
+    }
+    
+    void insert_block(boost::tuple<Matrix, charge, charge> const & block)
+    {
+        Matrix const & mtx = boost::tuples::get<0>(block);
+        
+        std::pair<charge, std::size_t>
+        p1 = std::make_pair(boost::tuples::get<1>(block), mtx.num_rows()),
+        p2 = std::make_pair(boost::tuples::get<2>(block), mtx.num_columns());
+        
+        std::size_t i1 = rows_.insert(p1);
+        std::size_t i2 = cols_.insert(p2);
+        assert(i1 == i2);
+        data_.insert(data_.begin() + i1, mtx);
+    }
+    
+    friend void swap(block_matrix & x, block_matrix & y)
     {
         std::swap(x.data_, y.data_);
         std::swap(x.rows_, y.rows_);
         std::swap(x.cols_, y.cols_);
-        std::swap(x.left_charge_map_, y.left_charge_map_);
-        std::swap(x.right_charge_map_, y.right_charge_map_);
     }
     
-    block_matrix<Matrix, SymmGroup> & operator=(block_matrix<Matrix, SymmGroup> rhs)
+    block_matrix & operator=(block_matrix rhs)
     {
         swap(*this, rhs);
+        return *this;
     }
     
-    Index<SymmGroup> rows() const { return rows_; }
-    Index<SymmGroup> cols() const { return cols_; }
-    
-    Matrix & atrow(charge c) { return data_[left_charge_map_[c]]; }
-    Matrix const & atrow(charge c) const { return data_[left_charge_map_[c]]; }
-    
-    Matrix & atcol(charge c) { return data_[right_charge_map_[c]]; }
-    Matrix const & atcol(charge c) const { return data_[right_charge_map_[c]]; }
-    
-    // use with caution!
-    Matrix & operator[](std::size_t c) { return data_[c]; }
-    Matrix const & operator[](std::size_t c) const { return data_[c]; }
+    Index<SymmGroup> left_basis() const { return rows_; }
+    Index<SymmGroup> right_basis() const { return cols_; }
     
     std::size_t n_blocks() const { return data_.size(); }
-    
-    friend void match_blocks(block_matrix<Matrix, SymmGroup> & a, block_matrix<Matrix, SymmGroup> & b)
-    {
-        // we match b to a
-        for (std::size_t p1 = 0; p1 < a.n_blocks(); ++p1) {
-            charge findme = a.cols()[p1].first;
-            Index<SymmGroup> brows = b.rows(); // this way, we don't rely on rows() always returning a reference
-            std::size_t p2 = std::find_if(brows.begin(), brows.end(),
-                boost::lambda::bind(detail::match<SymmGroup>, findme, boost::lambda::_1)) - brows.begin();
-            
-            // now move p2 to p1 in the rhs
-            if (p1 != p2) {
-                iter_swap(b.data_.begin()+p2, b.data_.begin()+p1);
-                iter_swap(b.rows_.begin()+p2, b.rows_.begin()+p1);
-                iter_swap(b.cols_.begin()+p2, b.cols_.begin()+p1);
-            }
-            b.left_charge_map_ = SymmGroup::get_map(b.rows_.charges());
-            b.right_charge_map_ = SymmGroup::get_map(b.cols_.charges());
-        }
-    }
     
     std::string description() const
     {
@@ -92,59 +87,54 @@ public:
         return oss.str();
     }
     
-protected:
+    Matrix & operator[](std::size_t c) { return data_[c]; }
+    Matrix const & operator[](std::size_t c) const { return data_[c]; }
+private:
+    
     std::vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
-    typename SymmGroup::map left_charge_map_, right_charge_map_;
 };    
 
 template<class Matrix, class SymmGroup>    
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
-    os << "Rows: " << std::endl << m.rows();
-    os << "Cols: " << std::endl << m.cols();
-    for (std::size_t k = 0; k < m.n_blocks(); ++k)
-        os << "Block (" << m.rows()[k].first << "," << m.cols()[k].first << "):" << std::endl << m[k];
+    os << "Left HS: " << std::endl << m.left_basis();
+    os << "Right HS: " << std::endl << m.right_basis();
+//    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+//        os << "Block (" << m.num_rows()[k].first << "," << m.num_cols()[k].first << "):" << std::endl << m[k];
     os << std::endl;
     return os;
 }
 
 // some example functions
 template<class Matrix, class SymmGroup>
-void gemm(
-    block_matrix<Matrix, SymmGroup> & A,
-    block_matrix<Matrix, SymmGroup> & B,
-    block_matrix<Matrix, SymmGroup> & C)
+void gemm(block_matrix<Matrix, SymmGroup> & A,
+          block_matrix<Matrix, SymmGroup> & B,
+          block_matrix<Matrix, SymmGroup> & C)
 {
-    C = block_matrix<Matrix, SymmGroup>(A.rows(), B.cols());
-    
-    match_blocks(A, B);
+    C = block_matrix<Matrix, SymmGroup>(A.left_basis(), B.right_basis());
     
     // Some checks
     // We should discuss whether we want to use asserts or something that doesn't disappear upon NDEBUG
     assert(A.n_blocks() == B.n_blocks() && B.n_blocks() == C.n_blocks());
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        // is the dimension of the sectors the same?
-        assert(A.cols()[k].second == B.rows()[k].second);
         // is the charge of the column of the first the same as the row of the second?
-        assert(SymmGroup::fuse(A.cols()[k].first, B.rows()[k].first) == SymmGroup::SingletCharge);
+        assert(A.right_basis()[k].first == B.left_basis()[k].first);
+        // is the dimension of the sectors the same?
+        assert(A.right_basis()[k].second == B.left_basis()[k].second);
     }
     
-    // this would require this function to be a friend of block_matrix<>
-    // If we have gemm(A,B) -> C
-    // std::transform(A.data_.begin(), A.data_.end(), B.data_.begin(), C.data_.begin(), gemm);
-    // More likely:
     for (std::size_t k = 0; k < A.n_blocks(); ++k)
-        gemm(A[k], B[k], C[k]);
+        C[k] = A[k] * B[k];
 }
 
 template<class Matrix, class SymmGroup>
-void svd(
-    block_matrix<Matrix, SymmGroup> & M,
-    block_matrix<Matrix, SymmGroup> & U, block_matrix<Matrix, SymmGroup> & V,
-    block_matrix<Matrix, SymmGroup> & S)
+void svd(block_matrix<Matrix, SymmGroup> const & M,
+         block_matrix<Matrix, SymmGroup> & U,
+         block_matrix<Matrix, SymmGroup> & V,
+         block_matrix<Matrix, SymmGroup> & S)
 {
-    Index<SymmGroup> r = M.rows(), c = M.cols(), m = M.rows();
+    Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
     for (std::size_t i = 0; i < M.n_blocks(); ++i)
         m[i].second = std::min(r[i].second, c[i].second);
     
@@ -161,16 +151,5 @@ void svd(
     }
 }
 
-// a general reshape function
-// The semantics of this are similar to the tensor class. In particular, I would
-// assume that the names of indices in/out are the same, just re-ordered. The
-// dimensions do not change, no rank changes -> no index fusion.
-
-template<class Matrix, class SymmGroup, int R1, int R2, int R3>
-void reshape(
-    block_matrix<Matrix, SymmGroup> & in,
-    boost::array<Index<SymmGroup>, R1> in_left,
-    boost::array<Index<SymmGroup>, R2> in_right,
-    block_matrix<Matrix, SymmGroup> & out,
-    boost::array<IndexName, R3> out_left,
-    boost::array<IndexName, R1+R2-R3> out_right);
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> reshape_right(block_matrix<Matrix, SymmGroup>, Index<SymmGroup> phys_space);

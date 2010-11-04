@@ -11,6 +11,8 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <cassert>
+
 //
 // general_matrix template class
 //
