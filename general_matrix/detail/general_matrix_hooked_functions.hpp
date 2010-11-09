@@ -57,12 +57,12 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
         assert( m.num_columns() == rhs.num_columns() && m.num_rows() == rhs.num_rows() ); \
         if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
         { \
-            boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_columns(), sign, &(*rhs.rows_begin(0)), 1, &(*m.rows_begin(0)), 1); \
+            boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_columns(), sign, &(*rhs.column(0).first), 1, &(*m.column(0).first), 1); \
         } \
         else \
         { \
             for(std::size_t j=0; j < m.num_columns(); ++j) \
-                boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.rows_begin(j)), 1, &(*m.rows_begin(j)), 1); \
+                boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.column(j).first), 1, &(*m.column(j).first), 1); \
         } \
     } \
     template <typename MemoryBlock> \
@@ -93,12 +93,12 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
     { \
         if( !(m.is_shrinkable()) ) \
         { \
-            boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_columns(), t, &(*m.rows_begin()), 1 ); \
+            boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_columns(), t, &(*m.column(0).first), 1 ); \
         } \
         else \
         { \
             for(std::size_t j=0; j <m.num_columns(); ++j) \
-                boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.rows_begin(j)), 1 ); \
+                boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.column(j).first), 1 ); \
         } \
     }
     IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
