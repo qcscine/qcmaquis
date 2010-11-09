@@ -64,8 +64,8 @@ namespace blas {
                 values_.reserve(m.size1_*m.size2_);
                 for(size_type j=0; j < m.size2_; ++j)
                 {
-                    std::pair<const_column_element_iterator,const_column_element_iterator> column_range(column(j));
-                    values_.insert(values_.end(), m.column_range.first, m.column_range.second);
+                    std::pair<const_column_element_iterator,const_column_element_iterator> range(m.column(j));
+                    values_.insert(values_.end(), range.first, range.second);
                 }
             }
         }
@@ -85,8 +85,10 @@ namespace blas {
                 values_.reserve(m.size1_*m.size2_);
                 for(size_type j=0; j < m.size2_; ++j)
                 {
-                    std::pair<const_column_element_iterator,const_column_element_iterator> column_range(column(j));
-                    values_.insert(values_.end(), m.column_range.first, m.column_range.second);
+                    std::pair<typename general_matrix<T,OtherMemoryBlock>::const_column_element_iterator,
+                              typename general_matrix<T,OtherMemoryBlock>::const_column_element_iterator
+                             > range(m.column(j));
+                    values_.insert(values_.end(), range.first, range.second);
                 }
             }
         }
@@ -250,22 +252,22 @@ namespace blas {
 
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
-            return std::makepair( row_element_iterator(this,row,0), row_element_iterator(this,row,size2_) );
+            return std::make_pair( row_element_iterator(this,row,0), row_element_iterator(this,row,size2_) );
         }
 
         std::pair<const_row_element_iterator,const_row_element_iterator> row(size_type row = 0) const
         {
-            return std::makepair( const_row_element_iterator(this,row,0), const_row_element_iterator(this,row,size2_) );
+            return std::make_pair( const_row_element_iterator(this,row,0), const_row_element_iterator(this,row,size2_) );
         }
 
         std::pair<column_element_iterator,column_element_iterator> column(size_type col = 0 )
         {
-            return std::makepair( column_element_iterator(this,0,col), column_element_iterator(this,size1_,col) );
+            return std::make_pair( column_element_iterator(this,0,col), column_element_iterator(this,size1_,col) );
         }
         
         std::pair<const_column_element_iterator,const_column_element_iterator> column(size_type col = 0 ) const
         {
-            return std::makepair( const_column_element_iterator(this,0,col), const_column_element_iterator(this,size1_,col) );
+            return std::make_pair( const_column_element_iterator(this,0,col), const_column_element_iterator(this,size1_,col) );
         }
 
         template <typename InputIterator>
@@ -290,7 +292,7 @@ namespace blas {
         void insert_row(size_type i, std::pair<InputIterator,InputIterator> const& range)
         {
             assert( i <= size1_ );
-            assert( v.size() == size2_ );
+            assert( std::distance(range.first, range.second) == size2_ );
 
             // Append the row
             append_row(range);
@@ -306,7 +308,7 @@ namespace blas {
         void insert_column(size_type j, std::pair<InputIterator,InputIterator> const& range)
         {
             assert( j <= size2_);
-            assert( v.size() == size1_ );
+            assert( std::distance(range.first, range.second) == size1_ );
             
             // Append the column
             append_column(range);
@@ -543,12 +545,12 @@ namespace blas {
         C = matrix_matrix_multiply(A, B);
     }
 
-    template <typename MatrixType>
-    std::ostream& operator << (std::ostream& o, MatrixType const& m)
+    template <typename T, typename MemoryBlock>
+    std::ostream& operator << (std::ostream& o, general_matrix<T,MemoryBlock> const& m)
     {
-        for(std::size_t i=0; i< num_rows(m); ++i)
+        for(std::size_t i=0; i< m.num_rows(); ++i)
         {
-            for(std::size_t j=0; j < num_columns(m); ++j)
+            for(std::size_t j=0; j < m.num_columns(); ++j)
                 o<<m(i,j)<<" ";
             o<<std::endl;
         }
