@@ -37,15 +37,15 @@ namespace blas {
 
         // typedefs for matrix specific iterators
         // row_iterator: iterates over the rows of a specific column
-        typedef matrix_row_iterator<general_matrix,value_type>                  row_iterator;
-        typedef matrix_row_iterator<const general_matrix,const value_type>      const_row_iterator;
+        typedef matrix_row_element_iterator<general_matrix,value_type>                  row_element_iterator;
+        typedef matrix_row_element_iterator<const general_matrix,const value_type>      const_row_element_iterator;
         // column_iterator: iterates over the columns of a specific row
-        typedef matrix_column_iterator<general_matrix,value_type>               column_iterator;
-        typedef matrix_column_iterator<const general_matrix,const value_type>   const_column_iterator;
+        typedef matrix_column_element_iterator<general_matrix,value_type>                  column_element_iterator;
+        typedef matrix_column_element_iterator<const general_matrix,const value_type>      const_column_element_iterator;
 
 
 
-        general_matrix(std::size_t size1 = 0, std::size_t size2 = 0, T init_value = T(0) )
+        general_matrix(size_type size1 = 0, size_type size2 = 0, T init_value = T(0) )
         : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value)
         {
         }
@@ -62,8 +62,11 @@ namespace blas {
             {
                 // copy only a shrinked to size version of the original matrix
                 values_.reserve(m.size1_*m.size2_);
-                for(std::size_t j=0; j < m.size2_; ++j)
-                    values_.insert(values_.end(), m.rows_begin(j), m.rows_end(j));
+                for(size_type j=0; j < m.size2_; ++j)
+                {
+                    std::pair<const_column_element_iterator,const_column_element_iterator> column_range(column(j));
+                    values_.insert(values_.end(), m.column_range.first, m.column_range.second);
+                }
             }
         }
 
@@ -80,8 +83,11 @@ namespace blas {
             {
                 // copy only a shrinked to size version of the original matrix
                 values_.reserve(m.size1_*m.size2_);
-                for(std::size_t j=0; j < m.size2_; ++j)
-                    values_.insert(values_.end(), m.rows_begin(j), m.rows_end(j));
+                for(size_type j=0; j < m.size2_; ++j)
+                {
+                    std::pair<const_column_element_iterator,const_column_element_iterator> column_range(column(j));
+                    values_.insert(values_.end(), m.column_range.first, m.column_range.second);
+                }
             }
         }
         
@@ -105,27 +111,13 @@ namespace blas {
             return *this;
         }
 
-        /*
-           // TODO: Can these functions be removed?
-           // This would hide the implementation from the user
-        inline const std::vector<T> values() const
-        {
-            return values_; 
-        }
-        
-        inline std::vector<T> &values() 
-        {
-            return values_; 
-        }
-        */
-
-        inline T &operator()(const std::size_t i, const std::size_t j)
+        inline T &operator()(const size_type i, const size_type j)
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
         }
         
-        inline const T &operator()(const std::size_t i, const std::size_t j) const 
+        inline const T &operator()(const size_type i, const size_type j) const 
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
@@ -136,28 +128,38 @@ namespace blas {
             return (size1_ == 0 || size2_ == 0);
         }
 
-        inline const std::size_t num_rows() const
+        inline const size_type num_rows() const
         {
             return size1_;
         }
 
-        inline const std::size_t num_columns() const
+        inline const size_type num_columns() const
         {
             return size2_;
         }
         
         //TODO: shall these two functions be kept for compatibility or can we drop them?
-        inline const std::size_t size1() const 
+        inline const size_type size1() const 
         {
             return size1_;
         }
   
-        inline const std::size_t size2() const
+        inline const size_type size2() const
         { 
             return size2_;
+        }       
+        
+        inline const difference_type stride1() const
+        {
+            return 1;
         }
-       
-        inline void resize(std::size_t size1, std::size_t size2, T init_value = T())
+        
+        inline const difference_type stride2() const
+        {
+            return reserved_size1_;
+        }
+
+        inline void resize(size_type size1, size_type size2, T init_value = T())
         {
            // Resizes the matrix to the size1 and size2 and allocates enlarges the vector if needed
            // If the new size for any dimension is smaller only elements outside the new size will be deleted.
@@ -174,7 +176,7 @@ namespace blas {
                 {
                     // Reset all new elements which are in already reserved rows of already existing columns to init_value
                     // For all elements of new columns this is already done by values_.resize()
-                    for(std::size_t j=0; j < size2; ++j)
+                    for(size_type j=0; j < size2; ++j)
                     {
                         std::fill(values_.begin()+j*reserved_size1_ + size1_, values_.begin()+j*reserved_size1_ + size1, init_value);
                     }
@@ -186,7 +188,7 @@ namespace blas {
                 // This is exception safe: If an exception is thrown, values_ and tmp won't get swapped.
 
                 MemoryBlock tmp(size1*size2,init_value);
-                for(std::size_t j=0; j < size2_; ++j)
+                for(size_type j=0; j < size2_; ++j)
                 {
                     // Copy column by column
                     std::copy( values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, tmp.begin()+j*size1);
@@ -198,7 +200,7 @@ namespace blas {
             size2_=size2;
         }
         
-        inline void reserve(std::size_t size1, std::size_t size2)
+        inline void reserve(size_type size1, size_type size2)
         {
             if(size1*size2 > values_.capacity() )
             {
@@ -207,7 +209,7 @@ namespace blas {
             if(size1 > reserved_size1_)
             {
                 MemoryBlock tmp(size1*size2);
-                for(std::size_t j=0; j < size2_; ++j)
+                for(size_type j=0; j < size2_; ++j)
                 {
                     // Copy column by column
                     std::copy( values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, tmp.begin()+j*size1);
@@ -217,7 +219,7 @@ namespace blas {
             }
         }
 
-        std::pair<std::size_t,std::size_t> capacity() const
+        std::pair<size_type,size_type> capacity() const
         {
             assert( values_.capacity() % reserved_size1_ == 0 );
             // Evaluate the maximal number of columns (with size reserved_size1_) that the underlying vector could hold.
@@ -225,8 +227,8 @@ namespace blas {
             // the requested amount of memory exactly
             // values_.capacity() % reserved_size1_ == 0 should hold.
             // However these functions guarantee to allocate _at least_ the requested amount.
-            std::size_t reserved_size2_ = values_.capacity() - (values_.capacity() % reserved_size1_) / reserved_size1_;
-            return std::pair<std::size_t,std::size_t>( reserved_size1_, reserved_size2_ );
+            size_type reserved_size2_ = values_.capacity() - (values_.capacity() % reserved_size1_) / reserved_size1_;
+            return std::pair<size_type,size_type>( reserved_size1_, reserved_size2_ );
         }
         
         bool is_shrinkable() const
@@ -246,120 +248,97 @@ namespace blas {
             size2_ = 0;
         }
 
-        row_iterator rows_begin(std::size_t column=0)
+        std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
-            assert( column < size2_);
-            return row_iterator(this,0,column);
+            return std::makepair( row_element_iterator(this,row,0), row_element_iterator(this,row,size2_) );
         }
 
-        const_row_iterator rows_begin(std::size_t column=0) const
+        std::pair<const_row_element_iterator,const_row_element_iterator> row(size_type row = 0) const
         {
-            assert( column < size2_);
-            return const_row_iterator(this,0,column);
+            return std::makepair( const_row_element_iterator(this,row,0), const_row_element_iterator(this,row,size2_) );
         }
 
-        row_iterator rows_end(std::size_t column=0)
+        std::pair<column_element_iterator,column_element_iterator> column(size_type col = 0 )
         {
-            assert( column < size2_);
-            return row_iterator(this,size1_,column);
+            return std::makepair( column_element_iterator(this,0,col), column_element_iterator(this,size1_,col) );
         }
         
-        const_row_iterator rows_end(std::size_t column=0) const
+        std::pair<const_column_element_iterator,const_column_element_iterator> column(size_type col = 0 ) const
         {
-            assert( column < size2_);
-            return const_row_iterator(this,size1_,column);
-        }
-        
-        column_iterator columns_begin(std::size_t row=0)
-        {
-            assert( row < size1_ );
-            return column_iterator(this,row,0);
+            return std::makepair( const_column_element_iterator(this,0,col), const_column_element_iterator(this,size1_,col) );
         }
 
-        const_column_iterator columns_begin(std::size_t row=0) const
+        template <typename InputIterator>
+        void append_column(std::pair<InputIterator,InputIterator> const& range)
         {
-            assert( row < size1_ );
-            return const_column_iterator(this,row,0);
-        }
-
-        column_iterator columns_end(std::size_t row=0)
-        {
-            assert( row < size1_ );
-            return column_iterator(this,row,size2_);
-        }
-        
-        const_column_iterator columns_end(std::size_t row=0) const
-        {
-            assert( row < size1_ );
-            return const_column_iterator(this,row,size2_);
-        }
-
-        void append_column(vector<T,MemoryBlock> const& v)
-        {
-            assert( v.size() == size1_ );
-            std::size_t insert_position = size2_;
+            assert( std::distance(range.first, range.second) == size1_ );
+            size_type insert_position = size2_;
             resize(size1_,size2_+1);    // This call modifies size2_ !
-            std::copy( v.begin(), v.end(), rows_begin(insert_position) );
+            std::copy( range.first, range.second, column(insert_position).first );
         }
 
-        void apped_row(vector<T,MemoryBlock> const& v)
+        template <typename InputIterator>
+        void apped_row(std::pair<InputIterator,InputIterator> const& range)
         {
-            assert( v.size() == size2_ );
-            std::size_t insert_position = size1_;
+            assert( std::distance(range.first, range.second) == size2_ );
+            size_type insert_position = size1_;
             resize(size1_+1,size2_);   // This call modifies size1_ !
-            std::copy( v.begin(), v.end(), columns_begin(insert_position) );
+            std::copy( range.first, range.second, row(insert_position).first );
         }
 
-        void insert_row(std::size_t i, vector<T,MemoryBlock> const& v)
+        template <typename InputIterator>
+        void insert_row(size_type i, std::pair<InputIterator,InputIterator> const& range)
         {
             assert( i <= size1_ );
             assert( v.size() == size2_ );
 
             // Append the row
-            append_row(v);
+            append_row(range);
 
             // Move the row through the matrix to the right possition
-            for(std::size_t k=size1_-1; k>i; ++k)
+            for(size_type k=size1_-1; k>i; ++k)
             {
                 swap_rows(k,k-1);
             }
         }
 
-        void insert_column(std::size_t j, vector<T,MemoryBlock> const& v)
+        template <typename InputIterator>
+        void insert_column(size_type j, std::pair<InputIterator,InputIterator> const& range)
         {
             assert( j <= size2_);
             assert( v.size() == size1_ );
             
             // Append the column
-            append_column(v);
+            append_column(range);
 
             // Move the column through the matrix to the right possition
-            for(std::size_t k=size2_-1; k>j; ++k)
+            for(size_type k=size2_-1; k>j; ++k)
             {
                 swap_columns(k,k-1);
             }
 
         }
-
-        void swap_columns(std::size_t j1, std::size_t j2)
-        {
-            assert( j1 < size2_ && j2 < size2_ );
-            std::swap_ranges(rows_begin(j1), rows_end(j1), rows_begin(j2) );
-        }
         
-        void swap_rows(std::size_t i1, std::size_t i2)
+        void swap_rows(size_type i1, size_type i2)
         {
             assert( i1 < size1_ && i2 < size1_ );
-            // TODO find a better implementation
-            std::swap_ranges( columns_begin(i1), columns_end(i1), columns_begin(i2) );
+            std::pair<const_row_element_iterator, const_row_element_iterator> range( row(i1) );
+            std::swap_ranges( range.first, range.second, row(i2).second );
+        }
+
+        void swap_columns(size_type j1, size_type j2)
+        {
+            assert( j1 < size2_ && j2 < size2_ );
+            std::pair<const_column_element_iterator,const_column_element_iterator> range( column(j1) );
+            std::swap_ranges(range.first, range.second, column(j2).first );
         }
 
         bool operator == (general_matrix const& rhs) const
         {
             if(size1_ != rhs.size1_ || size2_ != rhs.size2_) return false;
             // TODO: reimplement - this is just a quick ugly implementation
-            for(std::size_t j=0; j < size2_; ++j)
-                for(std::size_t i=0; i< size1_; ++i)
+            for(size_type j=0; j < size2_; ++j)
+                for(size_type i=0; i< size1_; ++i)
                     if(operator()(i,j) != rhs(i,j)) return false;
             return true;
         }
@@ -396,8 +375,11 @@ namespace blas {
             else
             {
                 // Do the operation column by column
-                for(std::size_t j=0; j < size2_; ++j)
-                    std::transform(this->rows_begin(j), this->rows_end(j), rhs.rows_begin(j), this->rows_begin(j), std::plus<T>());
+                for(size_type j=0; j < size2_; ++j)
+                {
+                    std::pair<column_element_iterator,column_element_iterator> range(column(j));
+                    std::transform( range.first, range.second, rhs.column(j).first, range.first, std::plus<T>());
+                }
             }
         }
 
@@ -411,8 +393,11 @@ namespace blas {
             else
             {
                 // Do the operation column by column
-                for(std::size_t j=0; j < size2_; ++j)
-                    std::transform(this->rows_begin(j), this->rows_end(j), rhs.rows_begin(j), this->rows_begin(j), std::minus<T>());
+                for(size_type j=0; j < size2_; ++j)
+                {
+                    std::pair<column_element_iterator,column_element_iterator> range(column(j));
+                    std::transform( range.first, range.second, rhs.column(j).first, range.first, std::minus<T>());
+                }
             }
         }
         
@@ -425,8 +410,11 @@ namespace blas {
             else
             {
                 // Do the operation column by column
-                for(std::size_t j=0; j < size2_; ++j)
-                    std::transform(rows_begin(j), rows_end(j), rows_begin(j), bind1st(std::multiplies<T>(),t));
+                for(size_type j=0; j < size2_; ++j)
+                {
+                    std::pair<column_element_iterator,column_element_iterator> range(column(j));
+                    std::transform(range.first, range.second, range.first, bind1st(std::multiplies<T>(),t));
+                }
             }
         }
         
@@ -444,13 +432,13 @@ namespace blas {
         template <typename OtherT,typename OtherMemoryBlock>
         friend class general_matrix;
 
-        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,MemoryBlock>,const general_matrix<T,MemoryBlock>, void>;
-        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,MemoryBlock>,general_matrix<T,MemoryBlock>, void>;
+//        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,MemoryBlock>,const general_matrix<T,MemoryBlock>, void>;
+//        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T,MemoryBlock>,general_matrix<T,MemoryBlock>, void>;
 
 
-        std::size_t size1_;
-        std::size_t size2_;
-        std::size_t reserved_size1_;
+        size_type size1_;
+        size_type size2_;
+        size_type reserved_size1_;
         // "reserved_size2_" is done automatically by underlying std::vector (see vector.reserve(), vector.capacity() )
         
         MemoryBlock values_;
@@ -555,61 +543,17 @@ namespace blas {
         C = matrix_matrix_multiply(A, B);
     }
 
-    template <typename T, typename MemoryBlock>
-    std::ostream& operator << (std::ostream& o, general_matrix<T,MemoryBlock> const& rhs)
+    template <typename MatrixType>
+    std::ostream& operator << (std::ostream& o, MatrixType const& m)
     {
-        for(std::size_t i=0; i< rhs.size1(); ++i)
+        for(std::size_t i=0; i< num_rows(m); ++i)
         {
-            for(std::size_t j=0; j < rhs.size2(); ++j)
-                o<<rhs(i,j)<<" ";
+            for(std::size_t j=0; j < num_columns(m); ++j)
+                o<<m(i,j)<<" ";
             o<<std::endl;
         }
         return o;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /* make external
-        T max() const
-        {
-            if(!is_shrinkable())
-            {
-                    return *max_element(values_.begin(), values_.end());
-            }
-            else
-            {
-                // Create a (shrinked) copy of the matrix and do the operation on the copy
-                general_matrix tmp(*this);
-                assert(tmp.is_shrinkable() == false);
-                return tmp.max();
-            }
-        }
-        
-        T min() const
-        {
-            if(!is_shrinkable())
-            {
-                    return *min_element(values_.begin(), values_.end());
-            }
-            else
-            {
-                // Create a (shrinked) copy of the matrix and do the operation on the copy
-                general_matrix tmp(*this);
-                assert(tmp.is_shrinkable() == false);
-                return tmp.min();
-            }
-        }
-*/
 } // namespace blas
 
 #endif //__ALPS_GENERAL_MATRIX_HPP__
