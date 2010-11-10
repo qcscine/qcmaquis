@@ -4,7 +4,6 @@
 #include "detail/blasmacros.h"
 #include "matrix_iterators.hpp"
 #include "vector.hpp"
-#include "detail/general_matrix_hooked_functions.hpp"
 #include "detail/general_matrix_adaptor.hpp"
 
 #include <ostream>
@@ -324,14 +323,14 @@ namespace blas {
         void swap_rows(size_type i1, size_type i2)
         {
             assert( i1 < size1_ && i2 < size1_ );
-            std::pair<const_row_element_iterator, const_row_element_iterator> range( row(i1) );
+            std::pair<row_element_iterator, row_element_iterator> range( row(i1) );
             std::swap_ranges( range.first, range.second, row(i2).second );
         }
 
         void swap_columns(size_type j1, size_type j2)
         {
             assert( j1 < size2_ && j2 < size2_ );
-            std::pair<const_column_element_iterator,const_column_element_iterator> range( column(j1) );
+            std::pair<column_element_iterator, column_element_iterator> range( column(j1) );
             std::swap_ranges(range.first, range.second, column(j2).first );
         }
 
@@ -347,21 +346,21 @@ namespace blas {
 
         general_matrix<T,MemoryBlock>& operator += (general_matrix const& rhs) 
         {
-            using detail::plus_assign;
+            using blas::plus_assign;
             plus_assign(*this,rhs);
             return *this;
         }
         
         general_matrix<T,MemoryBlock>& operator -= (general_matrix const& rhs) 
         {
-            using detail::minus_assign;
+            using blas::minus_assign;
             minus_assign(*this,rhs);
             return *this;
         }
         
         general_matrix<T,MemoryBlock>& operator *= (T const& t)
         {
-            using detail::multiplies_assign;
+            using blas::multiplies_assign;
             multiplies_assign(*this, t);
             return *this;
         }
@@ -447,11 +446,57 @@ namespace blas {
     };
 } // namespace blas
 
+
+//
+// Function hooks
+//
+
+namespace blas {
+
+    template <typename T, typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> matrix_matrix_multiply(general_matrix<T,MemoryBlock> const& lhs, general_matrix<T,MemoryBlock> const& rhs)
+    {
+        assert( lhs.num_columns() == rhs.num_rows() );
+
+        // Simple matrix matrix multiplication
+        general_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_columns());
+        for(std::size_t i=0; i < lhs.num_rows(); ++i)
+        {
+            for(std::size_t j=0; j<rhs.num_columns(); ++j)
+            {
+                for(std::size_t k=0; k<lhs.num_columns(); ++k)
+                {
+                        result(i,j) += lhs(i,k) * rhs(k,j);
+                }
+            }
+        }
+        return result;
+    } 
+    
+    template <typename T,typename MemoryBlock>
+    void plus_assign(general_matrix<T,MemoryBlock>& m, general_matrix<T,MemoryBlock> const& rhs)
+    {
+        m.plus_assign(rhs);
+    }
+
+    template <typename T, typename MemoryBlock>
+    void minus_assign(general_matrix<T,MemoryBlock>& m, general_matrix<T,MemoryBlock> const& rhs)
+    {
+        m.minus_assign(rhs);
+    }
+
+    template <typename T, typename MemoryBlock>
+    void multiplies_assign(general_matrix<T,MemoryBlock>& m, T const& t)
+    {
+        m.multiplies_assign(t);
+    }
+}
+
 //
 // Free general matrix functions
 //
 namespace blas {
-
+/*
     template<typename MatrixType, class DoubleVector>
     void svd(MatrixType M, MatrixType& U, MatrixType& V, DoubleVector & S)
     {
@@ -462,7 +507,7 @@ namespace blas {
         
         boost::numeric::bindings::lapack::gesdd('S', M, S, U, V);
     }
-
+*/
 
     // 
     template <typename MatrixType>
@@ -486,23 +531,70 @@ namespace blas {
         for(std::size_t i=0; i<m.size1(); ++i) tr+=m(i,i);
         return tr;
     }
+    
+    template <typename T, typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator + (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
+    {
+        a += b;
+        return a;
+    }
+    
+    template <typename T, typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator - (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
+    {
+        a -= b;
+        return a;
+    }
+
+    template<typename T, typename MemoryBlock>
+    const vector<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock> const& v)
+    {
+        assert( m.size2() == v.size() );
+        vector<T,MemoryBlock> result(m.size1());
+        // Simple Matrix * Vector
+        for(typename general_matrix<T,MemoryBlock>::size_type i = 0; i < m.size1(); ++i)
+        {
+            for(typename general_matrix<T,MemoryBlock>::size_type j=0; j <m.size2(); ++j)
+            {
+                result(i) = m(i,j) * v(j);
+            }
+        }
+        return result;
+    }
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
-    // TODO generalize and move to matrix_interface
+
+    template<typename T,typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> m, T const& t)
+    {
+        return m*=t;
+    }
+    
+    template<typename T,typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator * (T const& t, general_matrix<T,MemoryBlock> m)
+    {
+        return m*=t;
+    }
+
+    template<typename T, typename MemoryBlock>
+    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> const& m1, general_matrix<T,MemoryBlock> const& m2)
+    {
+        return matrix_matrix_multiply(m1,m2);
+    }
+
     template<typename T,typename MemoryBlock>
     void gemm(general_matrix<T,MemoryBlock> const & A, general_matrix<T,MemoryBlock> const & B, general_matrix<T,MemoryBlock> & C)
     {
-        using detail::matrix_matrix_multiply;
         C = matrix_matrix_multiply(A, B);
     }
 
     template <typename T, typename MemoryBlock>
     std::ostream& operator << (std::ostream& o, general_matrix<T,MemoryBlock> const& m)
     {
-        for(std::size_t i=0; i< m.num_rows(); ++i)
+        for(typename general_matrix<T,MemoryBlock>::size_type i=0; i< m.num_rows(); ++i)
         {
-            for(std::size_t j=0; j < m.num_columns(); ++j)
+            for(typename general_matrix<T,MemoryBlock>::size_type j=0; j < m.num_columns(); ++j)
                 o<<m(i,j)<<" ";
             o<<std::endl;
         }
