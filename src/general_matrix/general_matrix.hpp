@@ -113,13 +113,13 @@ namespace blas {
             return *this;
         }
 
-        inline T &operator()(const size_type i, const size_type j)
+        inline value_type &operator()(const size_type i, const size_type j)
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
         }
         
-        inline const T &operator()(const size_type i, const size_type j) const 
+        inline const value_type &operator()(const size_type i, const size_type j) const 
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
@@ -451,6 +451,7 @@ namespace blas {
 // Free general matrix functions
 //
 namespace blas {
+
     template<typename MatrixType, class DoubleVector>
     void svd(MatrixType M, MatrixType& U, MatrixType& V, DoubleVector & S)
     {
@@ -485,59 +486,10 @@ namespace blas {
         for(std::size_t i=0; i<m.size1(); ++i) tr+=m(i,i);
         return tr;
     }
-    
-    template <typename T, typename MemoryBlock>
-    const general_matrix<T,MemoryBlock> operator + (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
-    {
-        a += b;
-        return a;
-    }
-    
-    template <typename T, typename MemoryBlock>
-    const general_matrix<T,MemoryBlock> operator - (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
-    {
-        a -= b;
-        return a;
-    }
-
-    template<typename T, typename MemoryBlock>
-    const vector<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock> const& v)
-    {
-        assert( m.size2() == v.size() );
-        vector<T,MemoryBlock> result(m.size1());
-        // Simple Matrix * Vector
-        for(std::size_t i = 0; i < m.size1(); ++i)
-        {
-            for(std::size_t j=0; j <m.size2(); ++j)
-            {
-                result(i) = m(i,j) * v(j);
-            }
-        }
-        return result;
-    }
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
-
-    template<typename T,typename MemoryBlock>
-    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> m, T const& t)
-    {
-        return m*=t;
-    }
-    
-    template<typename T,typename MemoryBlock>
-    const general_matrix<T,MemoryBlock> operator * (T const& t, general_matrix<T,MemoryBlock> m)
-    {
-        return m*=t;
-    }
-
-    template<typename T, typename MemoryBlock>
-    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> const& m1, general_matrix<T,MemoryBlock> const& m2)
-    {
-        using detail::matrix_matrix_multiply;
-        return matrix_matrix_multiply(m1,m2);
-    }
-
+    // TODO generalize and move to matrix_interface
     template<typename T,typename MemoryBlock>
     void gemm(general_matrix<T,MemoryBlock> const & A, general_matrix<T,MemoryBlock> const & B, general_matrix<T,MemoryBlock> & C)
     {
