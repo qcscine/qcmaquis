@@ -193,7 +193,7 @@ template <typename MemoryBlock> \
 void plus_assign(typename std::vector<T,MemoryBlock>::iterator first1, typename std::vector<T,MemoryBlock>::iterator last1, typename std::vector<T,MemoryBlock>::const_iterator first2) \
 { boost::numeric::bindings::blas::detail::axpy(last1-first1, 1., &*first2, 1, &*first1, 1);}
     IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_ASSIGN)
-#undef MINUS_ASSIGN
+#undef PLUS_ASSIGN
     
 
 #define MINUS_ASSIGN(T) \

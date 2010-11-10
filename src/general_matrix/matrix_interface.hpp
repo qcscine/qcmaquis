@@ -7,6 +7,16 @@
 namespace blas
 {
 
+#define IMPLEMENT_FORWARDING(RET,NAME,ARGS,VARS) \
+template <typename MatrixType> \
+typename RET NAME ARGS \
+{ \
+    BOOST_CONCEPT_ASSERT((blas::Matrix<MatrixType>)); \
+    return m.NAME VARS; \
+} \
+
+// IMPLEMENT_FORWARDING(typename MatrixType::size_type, num_rows,(MatrixType const& m),())
+
 template <typename MatrixType>
 typename MatrixType::size_type num_rows(MatrixType const& m)
 {

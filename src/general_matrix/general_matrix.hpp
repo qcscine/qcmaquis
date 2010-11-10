@@ -29,7 +29,7 @@ namespace blas {
         typedef std::ptrdiff_t          difference_type;
 
         // TODO
-        // for compliance with an std::container one would alos need
+        // for compliance with an std::container one would also need
         // -operators == != < > <= >=
         // -size()
         // -typedefs iterator, const_iterator
@@ -280,7 +280,7 @@ namespace blas {
         }
 
         template <typename InputIterator>
-        void apped_row(std::pair<InputIterator,InputIterator> const& range)
+        void append_row(std::pair<InputIterator,InputIterator> const& range)
         {
             assert( std::distance(range.first, range.second) == size2_ );
             size_type insert_position = size1_;
