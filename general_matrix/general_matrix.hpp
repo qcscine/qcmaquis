@@ -2,7 +2,7 @@
 #define __ALPS_GENERAL_MATRIX_HPP__
 
 #include "detail/blasmacros.h"
-#include "matrix_iterators.hpp"
+#include "strided_iterator.hpp"
 #include "vector.hpp"
 #include "detail/general_matrix_adaptor.hpp"
 
@@ -36,11 +36,11 @@ namespace blas {
 
         // typedefs for matrix specific iterators
         // row_iterator: iterates over the rows of a specific column
-        typedef matrix_row_element_iterator<general_matrix,value_type>                  row_element_iterator;
-        typedef matrix_row_element_iterator<const general_matrix,const value_type>      const_row_element_iterator;
+        typedef strided_iterator<general_matrix,value_type>                  row_element_iterator;
+        typedef strided_iterator<const general_matrix,const value_type>      const_row_element_iterator;
         // column_iterator: iterates over the columns of a specific row
-        typedef matrix_column_element_iterator<general_matrix,value_type>                  column_element_iterator;
-        typedef matrix_column_element_iterator<const general_matrix,const value_type>      const_column_element_iterator;
+        typedef value_type*                                                  column_element_iterator;
+        typedef value_type const*                                            const_column_element_iterator;
 
 
 
@@ -251,22 +251,22 @@ namespace blas {
 
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
-            return std::make_pair( row_element_iterator(this,row,0), row_element_iterator(this,row,size2_) );
+            return std::make_pair( row_element_iterator(&values_[row],reserved_size1_), row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
         }
 
         std::pair<const_row_element_iterator,const_row_element_iterator> row(size_type row = 0) const
         {
-            return std::make_pair( const_row_element_iterator(this,row,0), const_row_element_iterator(this,row,size2_) );
+            return std::make_pair( const_row_element_iterator(&values_[row],reserved_size1_), const_row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
         }
 
         std::pair<column_element_iterator,column_element_iterator> column(size_type col = 0 )
         {
-            return std::make_pair( column_element_iterator(this,0,col), column_element_iterator(this,size1_,col) );
+            return std::make_pair( column_element_iterator(&values_[col*reserved_size1_]), column_element_iterator(&values_[col*reserved_size1_+size1_]) );
         }
         
         std::pair<const_column_element_iterator,const_column_element_iterator> column(size_type col = 0 ) const
         {
-            return std::make_pair( const_column_element_iterator(this,0,col), const_column_element_iterator(this,size1_,col) );
+            return std::make_pair( const_column_element_iterator(&values_[col*reserved_size1_]), const_column_element_iterator(&values_[col*reserved_size1_+size1_]) );
         }
 
         template <typename InputIterator>
