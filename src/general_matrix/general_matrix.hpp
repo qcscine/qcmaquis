@@ -171,6 +171,7 @@ namespace blas {
             if(size1 <= reserved_size1_)
             {
                 //TODO What happens if resize or fill throw an exception?
+                // something BAD happens => has to be fixed!
                 values_.resize(reserved_size1_*size2,init_value);
 
                 if(size1 > size1_)
@@ -203,10 +204,10 @@ namespace blas {
         
         void reserve(size_type size1, size_type size2)
         {
-            if(size1*size2 > values_.capacity() )
-            {
-                    values_.reserve(size1*size2);
-            }
+            // Ignore values that would shrink the matrix
+            if(size2 < size2_)
+                size2 = size2_;
+            
             if(size1 > reserved_size1_)
             {
                 MemoryBlock tmp(size1*size2);
@@ -217,6 +218,13 @@ namespace blas {
                 }
                 std::swap(values_,tmp);
                 reserved_size1_ = size1;
+            }
+            else
+            {
+                if(reserved_size1_*size2 > values_.capacity() )
+                {
+                    values_.reserve(reserved_size1_*size2);
+                }
             }
         }
 
@@ -297,7 +305,7 @@ namespace blas {
             append_row(range);
 
             // Move the row through the matrix to the right possition
-            for(size_type k=size1_-1; k>i; ++k)
+            for(size_type k=size1_-1; k>i; --k)
             {
                 swap_rows(k,k-1);
             }
@@ -313,7 +321,7 @@ namespace blas {
             append_column(range);
 
             // Move the column through the matrix to the right possition
-            for(size_type k=size2_-1; k>j; ++k)
+            for(size_type k=size2_-1; k>j; --k)
             {
                 swap_columns(k,k-1);
             }
@@ -341,7 +349,7 @@ namespace blas {
         {
             assert( i1 < size1_ && i2 < size1_ );
             std::pair<row_element_iterator, row_element_iterator> range( row(i1) );
-            std::swap_ranges( range.first, range.second, row(i2).second );
+            std::swap_ranges( range.first, range.second, row(i2).first );
         }
 
         void swap_columns(size_type j1, size_type j2)
@@ -436,16 +444,6 @@ namespace blas {
             }
         }
         
-        general_matrix<T,MemoryBlock>& operator *= (general_matrix const& rhs) 
-        {
-            // It's not common to implement a *= operator in terms of a * operator,
-            // but a temporary object has to be created to store the result anyway
-            // so it seems reasonable.
-            general_matrix tmp = (*this) * rhs;
-            std::swap(tmp,*this);
-            return *this;
-        }
-
     private:
         template <typename OtherT,typename OtherMemoryBlock>
         friend class general_matrix;
