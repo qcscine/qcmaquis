@@ -27,7 +27,12 @@ class strided_iterator : public boost::iterator_facade<
         template<typename Matrix2, typename U>
         strided_iterator(strided_iterator<Matrix2,U> const& r)
             : ptr(r.ptr), stride(r.stride)
-            {}
+        {
+            BOOST_STATIC_ASSERT( (boost::is_same<
+                        typename boost::add_const<Matrix>::type,
+                        typename boost::add_const<Matrix2>::type
+                        >::value ));
+        }
 
     private:
         friend class boost::iterator_core_access;
@@ -36,12 +41,13 @@ class strided_iterator : public boost::iterator_facade<
         value_type& dereference() const
         { return *ptr; }
 
-        // iterators are equal if they point to the same column of the same matrix
-        // WARNING: since the row position is not compared
-        // two iterators can be equal although they point to different elements
-        template <typename U>
-        bool equal(strided_iterator<Matrix,U> const& y) const
+        template <typename Matrix2,typename U>
+        bool equal(strided_iterator<Matrix2,U> const& y) const
         {
+            BOOST_STATIC_ASSERT( (boost::is_same<
+                        typename boost::add_const<Matrix>::type,
+                        typename boost::add_const<Matrix2>::type
+                        >::value ));
             if(ptr == y.ptr)
                 return true;
             else
