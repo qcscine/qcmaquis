@@ -160,7 +160,7 @@ namespace blas {
             return reserved_size1_;
         }
 
-        inline void resize(size_type size1, size_type size2, T init_value = T())
+        void resize(size_type size1, size_type size2, T init_value = T())
         {
            // Resizes the matrix to the size1 and size2 and allocates enlarges the vector if needed
            // If the new size for any dimension is smaller only elements outside the new size will be deleted.
@@ -201,7 +201,7 @@ namespace blas {
             size2_=size2;
         }
         
-        inline void reserve(size_type size1, size_type size2)
+        void reserve(size_type size1, size_type size2)
         {
             if(size1*size2 > values_.capacity() )
             {
@@ -319,7 +319,24 @@ namespace blas {
             }
 
         }
-        
+
+        void remove_row(size_type i)
+        {
+            assert( i < size1_ );
+            // for each column, copy the rows > i one row up
+            for(size_type j = 0; j < size2_; ++j)
+            {
+                std::copy(&values_[reserved_size1_*j + i + 1], &values_[reserved_size1_*j + size1_], &values_[reserved_size1_*j + i] );
+            }
+        }
+
+        void remove_column(size_type j)
+        {
+            assert( j < size2_ );
+            values_.erase(values_.begin()+(reserved_size1_*j), values_.begin()+(reserved_size1_*(j+1)) );
+            --size2_;
+        }
+
         void swap_rows(size_type i1, size_type i2)
         {
             assert( i1 < size1_ && i2 < size1_ );
