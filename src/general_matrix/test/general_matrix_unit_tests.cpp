@@ -6,6 +6,7 @@
 #include <boost/ref.hpp>
 
 #include "../general_matrix.hpp"
+#include "../general_matrix_blas.hpp"
 #include "../matrix_interface.hpp"
 #include "../resizable_matrix_interface.hpp"
 
