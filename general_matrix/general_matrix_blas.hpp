@@ -1,4 +1,5 @@
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
+#include "detail/blasmacros.h"
 
 namespace blas {
     template <typename T, typename MemoryBlock>
@@ -35,7 +36,6 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
     void plus_and_minus_assign_impl(general_matrix<T,MemoryBlock>& m, general_matrix<T,MemoryBlock> const& rhs, typename general_matrix<T,MemoryBlock>::value_type const& sign) \
     { \
         assert( m.num_columns() == rhs.num_columns() && m.num_rows() == rhs.num_rows() ); \
-        std::cout<<"USING BLAS!"<<std::endl; \
         if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
         { \
             boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_columns(), sign, &(*rhs.column(0).first), 1, &(*m.column(0).first), 1); \

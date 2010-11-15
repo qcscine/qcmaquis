@@ -1,7 +1,6 @@
 #ifndef __ALPS_GENERAL_MATRIX_HPP__
 #define __ALPS_GENERAL_MATRIX_HPP__
 
-#include "detail/blasmacros.h"
 #include "strided_iterator.hpp"
 #include "vector.hpp"
 #include "detail/general_matrix_adaptor.hpp"
