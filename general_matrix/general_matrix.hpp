@@ -169,8 +169,11 @@ namespace blas {
             // TODO: Over-resize matrix to 1.4 or 2 times the requested size
             if(size1 <= reserved_size1_)
             {
-                //TODO What happens if resize or fill throw an exception?
-                // something BAD happens => has to be fixed!
+                // Exception behaviour:
+                // As long as the assignment and copy operation of the T values don't throw an exception,
+                // any exception will leave the matrix unchanged.
+                // (Assuming the same behaviour of the underlying MemoryBlock. This is true for std::vector.)
+
                 values_.resize(reserved_size1_*size2,init_value);
 
                 if(size1 > size1_)

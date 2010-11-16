@@ -3,7 +3,6 @@
 #include <boost/mpl/list.hpp>
 
 #include <boost/lambda/lambda.hpp>
-#include <boost/ref.hpp>
 
 #include "../general_matrix.hpp"
 #include "../general_matrix_blas.hpp"
@@ -195,17 +194,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_exception_test, T, test_types )
     // Enlargement within the already reserved range
     // size1 < reserved_size1
     // size1 > size1_
-    /* TODO this test fails at the moment
-    resize(d,1,5);
+    resize(d,2,5);
+    general_matrix<T> ref_d(d);
     try
     {
-        resize(d,2,max_size/2+5);
+        resize(d,4,max_size/2+5);
     }
     catch(...)
     {
-        BOOST_CHECK_EQUAL(d,ref);
+        BOOST_CHECK_EQUAL(d,ref_d);
     }
-    */
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( reserve_test, T, test_types)
