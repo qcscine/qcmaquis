@@ -161,72 +161,76 @@ namespace blas {
 
         void resize(size_type size1, size_type size2, T init_value = T())
         {
-           // Resizes the matrix to the size1 and size2 and allocates enlarges the vector if needed
-           // If the new size for any dimension is smaller only elements outside the new size will be deleted.
-           // If the new size is larger for any dimension the new elements will be initialized by the init_value.
+           // Resizes the matrix to the size1 and size2 and enlarges the
+           // MemoryBlock if needed. If the new size for any dimension is
+           // smaller only elements outside the new size will be deleted.
+           // If the new size is larger for any dimension the new elements
+           // will be initialized by the init_value.
            // All other elements will keep their value.
+            
+            // Exception behaviour:
+            // As long as the assignment and copy operation of the T values don't throw an exception,
+            // any exception will leave the matrix unchanged.
+            // (Assuming the same behaviour of the underlying MemoryBlock. This is true for std::vector.)
 
-            // TODO: Over-resize matrix to 1.4 or 2 times the requested size
-            if(size1 <= reserved_size1_)
+            // Do we need to reserve more space in any dimension?
+            if(size1 > reserved_size1_ || reserved_size1_*size2 > values_.capacity())
             {
-                // Exception behaviour:
-                // As long as the assignment and copy operation of the T values don't throw an exception,
-                // any exception will leave the matrix unchanged.
-                // (Assuming the same behaviour of the underlying MemoryBlock. This is true for std::vector.)
-
-                values_.resize(reserved_size1_*size2,init_value);
-
+                reserve(size1*3/2,size2*3/2,init_value);
+                // reserve fills all elements in the range between size1_
+                // and reserved_size1_ of each EXISTING column with init_value
+                // now we just have to fill the new columns with the init_value
+                // by using values_.resize() (->after this if statement)
+            }
+            else
+            {
                 if(size1 > size1_)
                 {
-                    // Reset all new elements which are in already reserved rows of already existing columns to init_value
-                    // For all elements of new columns this is already done by values_.resize()
-                    for(size_type j=0; j < size2; ++j)
-                    {
-                        std::fill(values_.begin()+j*reserved_size1_ + size1_, values_.begin()+j*reserved_size1_ + size1, init_value);
-                    }
+                    // Reset all "new" elements which are in already reserved
+                    // rows of already existing columns to init_value
+                    // For all elements of new columns this is already done by
+                    // values_.resize() (->after this if statement)
+                    size_type num_of_cols = std::min(size2, size2_);
+                    for(size_type j=0; j < num_of_cols; ++j)
+                        std::fill(
+                                values_.begin()+j*reserved_size1_ + size1_,
+                                values_.begin()+j*reserved_size1_ + size1,
+                                init_value
+                                );
                 }
-
             }
-            else // size1 > reserved_size1_
-            {
-                // This is exception safe: If an exception is thrown, values_ and tmp won't get swapped.
-
-                MemoryBlock tmp(size1*size2,init_value);
-                for(size_type j=0; j < size2_; ++j)
-                {
-                    // Copy column by column
-                    std::copy( values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, tmp.begin()+j*size1);
-                }
-                std::swap(values_,tmp);
-                reserved_size1_ = size1;
-            }
+            values_.resize(reserved_size1_*size2, init_value);
             size1_=size1;
             size2_=size2;
         }
         
-        void reserve(size_type size1, size_type size2)
+        void reserve(size_type size1, size_type size2, T init_value = T())
         {
+            // The init_value may seem a little weird in a reserve method,
+            // but one has to initialize all matrix elements in the
+            // reserved_size1_ range of each column, due to the 1d-structure
+            // of the underlying MemoryBlock (e.g. std::vector)
+
             // Ignore values that would shrink the matrix
-            if(size2 < size2_)
-                size2 = size2_;
-            
-            if(size1 > reserved_size1_)
+            size2 = std::max(size2, size2_);
+            size1 = std::max(size1, reserved_size1_);
+           
+            // Is change of structure or size of the MemoryBlock necessary?
+            if(size1 > reserved_size1_ || size1*size2 > values_.capacity() )
             {
-                MemoryBlock tmp(size1*size2);
+                MemoryBlock tmp;
+                tmp.reserve(size1*size2);
+                // Copy column by column
                 for(size_type j=0; j < size2_; ++j)
                 {
-                    // Copy column by column
-                    std::copy( values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, tmp.begin()+j*size1);
+                    std::pair<column_element_iterator, column_element_iterator> range(column(j));
+                    // Copy the elements from the current MemoryBlock
+                    tmp.insert(tmp.end(),range.first,range.second);
+                    // and fill the rest with the init_value
+                    tmp.insert(tmp.end(),size1-size1_,init_value);
                 }
                 std::swap(values_,tmp);
                 reserved_size1_ = size1;
-            }
-            else
-            {
-                if(reserved_size1_*size2 > values_.capacity() )
-                {
-                    values_.reserve(reserved_size1_*size2);
-                }
             }
         }
 
@@ -513,41 +517,6 @@ namespace blas {
 // Free general matrix functions
 //
 namespace blas {
-/*
-    template<typename MatrixType, class DoubleVector>
-    void svd(MatrixType M, MatrixType& U, MatrixType& V, DoubleVector & S)
-    {
-        std::size_t K = std::min(M.num_rows(), M.num_columns());
-        U.resize(M.num_rows(), K);
-        V.resize(K, M.num_columns());
-        S.resize(K);
-        
-        boost::numeric::bindings::lapack::gesdd('S', M, S, U, V);
-    }
-*/
-
-    // 
-    template <typename MatrixType>
-    MatrixType transpose(MatrixType const& m) 
-    {
-        // TODO: perhaps this could return a proxy object
-        MatrixType tmp(m.size2(),m.size1());
-        for(std::size_t i=0;i<m.size1();++i){
-            for(std::size_t j=0;j<m.size2();++j){
-                tmp(j,i) = m()(i,j);
-            }
-        }
-        return tmp;
-    }
-    
-    template <typename MatrixType>
-    const typename MatrixType::value_type trace(MatrixType const& m)
-    {
-        assert(m.size1() == m.size2());
-        typename MatrixType::value_type tr(0);
-        for(std::size_t i=0; i<m.size1(); ++i) tr+=m(i,i);
-        return tr;
-    }
     
     template <typename T, typename MemoryBlock>
     const general_matrix<T,MemoryBlock> operator + (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
@@ -580,7 +549,6 @@ namespace blas {
     }
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
-
 
     template<typename T,typename MemoryBlock>
     const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> m, T const& t)
