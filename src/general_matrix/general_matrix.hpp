@@ -5,6 +5,7 @@
 #include "vector.hpp"
 #include "detail/general_matrix_adaptor.hpp"
 
+#include <boost/lambda/lambda.hpp>
 #include <ostream>
 #include <vector>
 #include <algorithm>
@@ -43,29 +44,9 @@ namespace blas {
 
 
 
-        general_matrix(size_type size1 = 0, size_type size2 = 0, T init_value = T(0) )
+        general_matrix(size_type size1 = 0, size_type size2 = 0, T init_value = T() )
         : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value)
         {
-        }
-
-        general_matrix(general_matrix const& m)
-        : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_()
-        {
-            // If the size of the matrix corresponds to the allocated size of the matrix...
-            if(!m.is_shrinkable())
-            {
-                values_ = m.values_;
-            }
-            else
-            {
-                // copy only a shrinked to size version of the original matrix
-                values_.reserve(m.size1_*m.size2_);
-                for(size_type j=0; j < m.size2_; ++j)
-                {
-                    std::pair<const_column_element_iterator,const_column_element_iterator> range(m.column(j));
-                    values_.insert(values_.end(), range.first, range.second);
-                }
-            }
         }
 
         template <typename OtherMemoryBlock>
@@ -389,7 +370,8 @@ namespace blas {
             return *this;
         }
         
-        general_matrix<T,MemoryBlock>& operator *= (T const& t)
+        template <typename T2>
+        general_matrix<T,MemoryBlock>& operator *= (T2 const& t)
         {
             using blas::multiplies_assign;
             multiplies_assign(*this, t);
@@ -432,12 +414,13 @@ namespace blas {
                 }
             }
         }
-        
-        void multiplies_assign (T const& t)
+
+        template <typename T2>
+        void multiplies_assign (T2 const& t)
         {
             if(!(is_shrinkable()) )
             {
-                std::transform(values_.begin(),values_.end(),values_.begin(), bind1st(std::multiplies<T>(),t));
+                std::for_each(values_.begin(), values_.end(), boost::lambda::_1 *= t);
             }
             else
             {
@@ -445,7 +428,7 @@ namespace blas {
                 for(size_type j=0; j < size2_; ++j)
                 {
                     std::pair<column_element_iterator,column_element_iterator> range(column(j));
-                    std::transform(range.first, range.second, range.first, bind1st(std::multiplies<T>(),t));
+                    std::for_each(range.first, range.second, boost::lambda::_1 *= t);
                 }
             }
         }
@@ -506,8 +489,8 @@ namespace blas {
         m.minus_assign(rhs);
     }
 
-    template <typename T, typename MemoryBlock>
-    void multiplies_assign(general_matrix<T,MemoryBlock>& m, T const& t)
+    template <typename T, typename MemoryBlock, typename T2>
+    void multiplies_assign(general_matrix<T,MemoryBlock>& m, T2 const& t)
     {
         m.multiplies_assign(t);
     }
@@ -550,14 +533,14 @@ namespace blas {
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
-    template<typename T,typename MemoryBlock>
-    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> m, T const& t)
+    template<typename T,typename MemoryBlock, typename T2>
+    const general_matrix<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> m, T2 const& t)
     {
         return m*=t;
     }
     
-    template<typename T,typename MemoryBlock>
-    const general_matrix<T,MemoryBlock> operator * (T const& t, general_matrix<T,MemoryBlock> m)
+    template<typename T,typename MemoryBlock, typename T2>
+    const general_matrix<T,MemoryBlock> operator * (T2 const& t, general_matrix<T,MemoryBlock> m)
     {
         return m*=t;
     }

@@ -377,12 +377,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_test, T, test_types)
     general_matrix<T> a(20,30);
     fill_matrix_with_numbers(a);
     general_matrix<T> b(a);
+    general_matrix<T> ref_b(b);
     a*= T(2);
     general_matrix<T> c = T(2) * b;
     //TODO Do we really want to assume commutative types?
     general_matrix<T> d = b * T(2);
     BOOST_CHECK_EQUAL(c,a);
     BOOST_CHECK_EQUAL(d,a);
+    BOOST_CHECK_EQUAL(b,ref_b);
+
+    // Check whether or not it works with mixed types.
+    // (value_type != T2 ) - at least for non integer types...
+    general_matrix<T> e(b);
+    b*= 5;
+    for(unsigned int i=0; i<num_rows(c); ++i)
+        for(unsigned int j=0; j<num_columns(c); ++j)
+        {
+            typename general_matrix<T>::value_type tmp (e(i,j));
+            tmp *= 5;
+            BOOST_CHECK_EQUAL(b(i,j),tmp);
+        }
+    general_matrix<T> ref_e(e);
+    general_matrix<T> f ( e * 5 );
+    general_matrix<T> g ( 5 * e );
+    BOOST_CHECK_EQUAL(b,f);
+    BOOST_CHECK_EQUAL(b,g);
+    BOOST_CHECK_EQUAL(ref_e,e);
+
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_matrix_multiply_test, T, test_types)
