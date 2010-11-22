@@ -19,17 +19,23 @@ struct ResizableMatrix
 
         // Append
         std::vector<typename X::value_type> dataA(2,2);
-        std::vector<typename X::value_type> dataB(3,2);
-        append_row(x, std::make_pair(dataA.begin(),dataA.end()) );
-        append_column(x, std::make_pair(dataB.begin(),dataB.end()) );
+        std::vector<typename X::value_type> dataB(4,2);
+        append_rows(x, std::make_pair(dataA.begin(),dataA.end()) );
+        append_rows(x, std::make_pair(dataA.begin(),dataA.end()),1);
+        append_columns(x, std::make_pair(dataB.begin(),dataB.end()) );
+        append_columns(x, std::make_pair(dataB.begin(),dataB.end()),1);
 
         // Remove
-        remove_row(x,1);
-        remove_column(x,1);
+        remove_rows(x,1);
+        remove_rows(x,1,1);
+        remove_columns(x,1);
+        remove_columns(x,1,1);
 
         // Insert
-        insert_row(x,1, std::make_pair(dataA.begin(),dataA.end()) );
-        insert_column(x,1, std::make_pair(dataB.begin(),dataB.end()) );
+        insert_rows(x,1, std::make_pair(dataA.begin(),dataA.end()) );
+        insert_rows(x,1, std::make_pair(dataA.begin(),dataA.end()),1);
+        insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()) );
+        insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()),1);
     }
 };
 

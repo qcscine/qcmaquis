@@ -19,8 +19,8 @@ RET NAME ARGS \
 // resize(), remove_row(), remove_column()
 IMPLEMENT_FORWARDING(void, resize, (ResizableMatrix& m, typename ResizableMatrix::size_type i, typename ResizableMatrix::size_type j), (i,j) )
 IMPLEMENT_FORWARDING(void, resize, (ResizableMatrix& m, typename ResizableMatrix::size_type i, typename ResizableMatrix::size_type j, typename ResizableMatrix::value_type t), (i,j,t) )
-IMPLEMENT_FORWARDING(void, remove_row, (ResizableMatrix& m, typename ResizableMatrix::size_type i), (i) )
-IMPLEMENT_FORWARDING(void, remove_column, (ResizableMatrix& m, typename ResizableMatrix::size_type j), (j) )
+IMPLEMENT_FORWARDING(void, remove_rows, (ResizableMatrix& m, typename ResizableMatrix::size_type i, typename ResizableMatrix::difference_type k = 1), (i,k) )
+IMPLEMENT_FORWARDING(void, remove_columns, (ResizableMatrix& m, typename ResizableMatrix::size_type j, typename ResizableMatrix::difference_type k = 1), (j,k) )
 
 #undef IMPLEMENT_FORWARDING
 
@@ -36,10 +36,10 @@ RET NAME ARGS \
 #define INPUT_ITERATOR_PAIR std::pair<InputIterator,InputIterator>
 
 //append_row(), append_column(), insert_row(), insert_column()
-IMPLEMENT_ITER_FCT_FORWARDING(void, append_row, (ResizableMatrix& m, INPUT_ITERATOR_PAIR range), (range) )
-IMPLEMENT_ITER_FCT_FORWARDING(void, append_column, (ResizableMatrix& m, INPUT_ITERATOR_PAIR range), (range) )
-IMPLEMENT_ITER_FCT_FORWARDING(void, insert_row, (ResizableMatrix& m, typename ResizableMatrix::size_type i, INPUT_ITERATOR_PAIR range), (i,range) )
-IMPLEMENT_ITER_FCT_FORWARDING(void, insert_column, (ResizableMatrix& m, typename ResizableMatrix::size_type j, INPUT_ITERATOR_PAIR range), (j,range) )
+IMPLEMENT_ITER_FCT_FORWARDING(void, append_rows, (ResizableMatrix& m, INPUT_ITERATOR_PAIR range, typename ResizableMatrix::difference_type k = 1), (range,k) )
+IMPLEMENT_ITER_FCT_FORWARDING(void, append_columns, (ResizableMatrix& m, INPUT_ITERATOR_PAIR range, typename ResizableMatrix::difference_type k = 1), (range,k) )
+IMPLEMENT_ITER_FCT_FORWARDING(void, insert_rows, (ResizableMatrix& m, typename ResizableMatrix::size_type i, INPUT_ITERATOR_PAIR range, typename ResizableMatrix::difference_type k = 1), (i,range,k) )
+IMPLEMENT_ITER_FCT_FORWARDING(void, insert_columns, (ResizableMatrix& m, typename ResizableMatrix::size_type j, INPUT_ITERATOR_PAIR range, typename ResizableMatrix::difference_type k = 1), (j,range,k) )
 
 #undef INPUT_ITERATOR_PAIR
 #undef IMPLEMENT_ITER_FCT_FORWARDING

@@ -236,69 +236,266 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reserve_test, T, test_types)
     BOOST_CHECK_EQUAL(a.capacity().first >= 30 && a.capacity().second >= 40, true);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( append_row_column, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( append_rows_test, T, test_types)
 {
-    general_matrix<T> a(20,20,T(1));
+    const unsigned int initsize = 20;
+    general_matrix<T> a(initsize,initsize);
+    fill_matrix_with_numbers(a);
+    general_matrix<T> b(a);
 
-    vector<T> data(20,1);
+    vector<T> data_single(initsize,1);
+    vector<T> data_multiple(3*initsize,2);
     T iota(0);
-    std::transform(data.begin(),data.end(),data.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+    std::transform(data_single.begin(),data_single.end(),data_single.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+    std::transform(data_multiple.begin(),data_multiple.end(),data_multiple.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
 
-    append_row(a, std::make_pair(data.begin(), data.end()) );
+    // Append a single row
+    append_rows(a, std::make_pair(data_single.begin(), data_single.end()) );
     for(unsigned int i=0; i<num_rows(a); ++i)
         for(unsigned int j=0; j<num_columns(a); ++j)
         {
-            if( i == 20)
-                BOOST_CHECK_EQUAL(a(i,j),j);
+            if( i != initsize)
+                BOOST_CHECK_EQUAL(a(i,j),b(i,j));
             else
-                BOOST_CHECK_EQUAL(a(i,j),1);
+                BOOST_CHECK_EQUAL(a(i,j),j);
         }
-
-    data.push_back(iota++);
-    append_column(a, std::make_pair(data.begin(), data.end()) );
+    // Append multiple rows
+    append_rows(a, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
     for(unsigned int i=0; i<num_rows(a); ++i)
         for(unsigned int j=0; j<num_columns(a); ++j)
         {
-            if( i == 20)
-                BOOST_CHECK_EQUAL(a(i,j),j);
-            else if ( j == 20)
-                BOOST_CHECK_EQUAL(a(i,j),i);
+            if( i < initsize)
+                BOOST_CHECK_EQUAL(a(i,j),b(i,j));
             else
-                BOOST_CHECK_EQUAL(a(i,j),1);
+            {
+                switch (i)
+                {
+                    case initsize:
+                        BOOST_CHECK_EQUAL(a(i,j),j);
+                        break;
+                    case initsize+1:
+                        BOOST_CHECK_EQUAL(a(i,j),j+initsize);
+                        break;
+                    case initsize+2:
+                        BOOST_CHECK_EQUAL(a(i,j),j+2*initsize);
+                        break;
+                    case initsize+3:
+                        BOOST_CHECK_EQUAL(a(i,j),j+3*initsize);
+                        break;
+                    default:
+                        // There should not be any other row
+                        // Report an error
+                        BOOST_CHECK( true == false);
+                }
+            }
+
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( insert_rows_columns, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( append_columns_test, T, test_types)
 {
-    general_matrix<T> a(20,20,T(1));
+    const unsigned int initsize = 20;
+    general_matrix<T> a(initsize,initsize);
+    fill_matrix_with_numbers(a);
+    general_matrix<T> b(a);
 
-    vector<T> data(20,1);
+    vector<T> data_single(initsize,1);
+    vector<T> data_multiple(3*initsize,2);
     T iota(0);
-    std::transform(data.begin(),data.end(),data.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+    std::transform(data_single.begin(),data_single.end(),data_single.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+    std::transform(data_multiple.begin(),data_multiple.end(),data_multiple.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
 
-    insert_row(a, 5, std::make_pair(data.begin(), data.end()) );
+    // Append a single column
+    append_columns(a, std::make_pair(data_single.begin(), data_single.end()) );
     for(unsigned int i=0; i<num_rows(a); ++i)
         for(unsigned int j=0; j<num_columns(a); ++j)
         {
-            if( i == 5)
-                BOOST_CHECK_EQUAL(a(i,j),j);
+            if( j != initsize)
+                BOOST_CHECK_EQUAL(a(i,j),b(i,j));
             else
-                BOOST_CHECK_EQUAL(a(i,j),1);
-        }
-
-    data.push_back(iota++);
-    insert_column(a, 10, std::make_pair(data.begin(), data.end()) );
-    for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
-        {
-            if ( j == 10)
                 BOOST_CHECK_EQUAL(a(i,j),i);
-            else if( i == 5 && j < 10)
-                BOOST_CHECK_EQUAL(a(i,j),j);
-            else if( i == 5 && j > 10)
-                BOOST_CHECK_EQUAL(a(i,j),j-1);
+        }
+    // Append multiple rows
+    append_columns(a, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
+    for(unsigned int i=0; i<num_rows(a); ++i)
+        for(unsigned int j=0; j<num_columns(a); ++j)
+        {
+            if( j < initsize)
+                BOOST_CHECK_EQUAL(a(i,j),b(i,j));
             else
-                BOOST_CHECK_EQUAL(a(i,j),1);
+            {
+                switch (j)
+                {
+                    case initsize:
+                        BOOST_CHECK_EQUAL(a(i,j),i);
+                        break;
+                    case initsize+1:
+                        BOOST_CHECK_EQUAL(a(i,j),i+initsize);
+                        break;
+                    case initsize+2:
+                        BOOST_CHECK_EQUAL(a(i,j),i+2*initsize);
+                        break;
+                    case initsize+3:
+                        BOOST_CHECK_EQUAL(a(i,j),i+3*initsize);
+                        break;
+                    default:
+                        // There should not be any other column
+                        // Report an error
+                        BOOST_CHECK( true == false);
+                }
+            }
+        }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows_test, T, test_types)
+{
+    const unsigned int initsize = 20;
+    general_matrix<T> a(initsize,initsize);
+    fill_matrix_with_numbers(a);
+    general_matrix<T> b(a);
+
+    // remove the last row
+    remove_rows(a,initsize-1);
+    // remove the first row
+    remove_rows(a,0);
+    //remove some rows in the middle
+    remove_rows(a,5);
+    remove_rows(a,11,4);
+
+    BOOST_CHECK_EQUAL(num_rows(a),initsize-7);
+
+    for(unsigned int i=0; i<num_rows(a); ++i)
+        for(unsigned int j=0; j<num_columns(a); ++j)
+        {
+            if(i<5)
+                BOOST_CHECK_EQUAL(a(i,j),b(i+1,j));
+            else if (i < 11)
+                BOOST_CHECK_EQUAL(a(i,j),b(i+2,j));
+            else
+                BOOST_CHECK_EQUAL(a(i,j),b(i+6,j));
+        }
+    
+    general_matrix<T> c(b);
+
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( remove_columns_test, T, test_types)
+{
+    const unsigned int initsize = 20;
+    general_matrix<T> a(initsize,initsize);
+    fill_matrix_with_numbers(a);
+    general_matrix<T> b(a);
+
+    // remove the last row
+    remove_columns(a,initsize-1);
+    // remove the first row
+    remove_columns(a,0);
+    //remove some columns in the middle
+    remove_columns(a,5);
+    remove_columns(a,11,4);
+
+    BOOST_CHECK_EQUAL(num_columns(a),initsize-7);
+
+    for(unsigned int i=0; i<num_rows(a); ++i)
+        for(unsigned int j=0; j<num_columns(a); ++j)
+        {
+            if(j<5)
+                BOOST_CHECK_EQUAL(a(i,j),b(i,j+1));
+            else if (j < 11)
+                BOOST_CHECK_EQUAL(a(i,j),b(i,j+2));
+            else
+                BOOST_CHECK_EQUAL(a(i,j),b(i,j+6));
+        }
+    
+    general_matrix<T> c(b);
+
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( insert_rows_test, T, test_types)
+{
+    const unsigned int initsize = 20;
+    general_matrix<T> a(initsize,initsize);
+    fill_matrix_with_numbers(a);
+    general_matrix<T> b(a);
+
+    vector<T> data_single(20,1);
+    vector<T> data_multiple(3*initsize,2);
+    T iota(0);
+    std::transform(data_single.begin(),data_single.end(),data_single.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+    std::transform(data_multiple.begin(),data_multiple.end(),data_multiple.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+
+    // Insert a row in for the 0th line, the last line and in the middle
+    insert_rows(a, initsize, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_rows(a, 0, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_rows(a, 5, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_rows(a, 8, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
+    for(unsigned int i=0; i<num_rows(a); ++i)
+        for(unsigned int j=0; j<num_columns(a); ++j)
+        {
+            switch(i)
+            {
+                case 0:
+                case 5:
+                case 25:
+                    BOOST_CHECK_EQUAL(a(i,j),j);
+                    break;
+                case 8:
+                case 9:
+                case 10:
+                    BOOST_CHECK_EQUAL(a(i,j),j+(i-7)*initsize);
+                    break;
+                default:
+                    if( i>10 )
+                        BOOST_CHECK_EQUAL(a(i,j),b(i-5,j));
+                    else if( i>5 )
+                        BOOST_CHECK_EQUAL(a(i,j),b(i-2,j));
+                    else
+                        BOOST_CHECK_EQUAL(a(i,j),b(i-1,j));
+            }
+        }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( insert_columns_test, T, test_types)
+{ 
+    const unsigned int initsize = 20;
+    general_matrix<T> a(initsize,initsize);
+    fill_matrix_with_numbers(a);
+    general_matrix<T> b(a);
+
+    vector<T> data_single(20,1);
+    vector<T> data_multiple(3*initsize,2);
+    T iota(0);
+    std::transform(data_single.begin(),data_single.end(),data_single.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+    std::transform(data_multiple.begin(),data_multiple.end(),data_multiple.begin(),boost::lambda::_1 = boost::lambda::var(iota)++);
+    
+    // Insert a column in for the 0th line, the last line and in the middle
+    insert_columns(a, initsize, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_columns(a, 0, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_columns(a, 5, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_columns(a, 8, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
+    for(unsigned int i=0; i<num_rows(a); ++i)
+        for(unsigned int j=0; j<num_columns(a); ++j)
+        {
+            switch(j)
+            {
+                case 0:
+                case 5:
+                case 25:
+                    BOOST_CHECK_EQUAL(a(i,j),i);
+                    break;
+                case 8:
+                case 9:
+                case 10:
+                    BOOST_CHECK_EQUAL(a(i,j),i+(j-7)*initsize);
+                    break;
+                default:
+                    if( j>10 )
+                        BOOST_CHECK_EQUAL(a(i,j),b(i,j-5));
+                    else if( j>5 )
+                        BOOST_CHECK_EQUAL(a(i,j),b(i,j-2));
+                    else
+                        BOOST_CHECK_EQUAL(a(i,j),b(i,j-1));
+            }
         }
 }
 
@@ -427,3 +624,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_matrix_multiply_test, T, test_types)
             BOOST_CHECK_EQUAL(c(i,j),result);
         }
 }
+
+
