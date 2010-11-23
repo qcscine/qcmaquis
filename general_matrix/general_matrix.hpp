@@ -6,6 +6,7 @@
 #include "detail/general_matrix_adaptor.hpp"
 
 #include <boost/lambda/lambda.hpp>
+#include <boost/typeof/typeof.hpp>
 #include <ostream>
 #include <vector>
 #include <algorithm>
@@ -90,13 +91,13 @@ namespace blas {
             return *this;
         }
 
-        inline value_type &operator()(const size_type i, const size_type j)
+        inline value_type& operator()(const size_type i, const size_type j)
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
         }
         
-        inline const value_type &operator()(const size_type i, const size_type j) const 
+        inline value_type const& operator()(const size_type i, const size_type j) const 
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
@@ -356,8 +357,8 @@ namespace blas {
         {
             if(size1_ != rhs.size1_ || size2_ != rhs.size2_) return false;
             // TODO: reimplement or remove - this is just a quick ugly implementation
-            for(size_type j=0; j < size2_; ++j)
-                for(size_type i=0; i< size1_; ++i)
+            for(size_type i=0; i< size1_; ++i)
+                for(size_type j=0; j < size2_; ++j)
                     if(operator()(i,j) != rhs(i,j)) return false;
             return true;
         }
@@ -468,9 +469,32 @@ namespace blas {
 
 
 //
+// Type promotion helper for mixed type matrix matrix and matrix vector operations
+//
+namespace blas {
+template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
+struct MultiplyReturnType
+{
+    typedef char one;
+    typedef long unsigned int two;
+    static one test(T1 t) {return one();}
+    static two test(T2 t) {return two();}
+    typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,T1,T2>::type value_type;
+    typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,MemoryBlock1,MemoryBlock2>::type memoryblock_type;
+};
+
+// Specialize for U and T being the same type
+template <typename T,typename MemoryBlock1, typename MemoryBlock2>
+struct MultiplyReturnType<T,MemoryBlock1,T,MemoryBlock2>
+{
+    typedef T value_type;
+    typedef MemoryBlock2 memoryblock_type;
+};
+}
+
+//
 // Function hooks
 //
-
 namespace blas {
 
     template <typename T, typename MemoryBlock>
@@ -492,6 +516,27 @@ namespace blas {
         }
         return result;
     } 
+    
+    template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
+    const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
+    matrix_vector_multiply(general_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
+    {
+        assert( m.num_columns() == v.size() );
+        vector<
+            typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,
+            typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type
+            >
+            result(m.num_rows());
+        // Simple Matrix * Vector
+        for(typename general_matrix<T,MemoryBlock>::size_type i = 0; i < m.num_rows(); ++i)
+        {
+            for(typename general_matrix<T,MemoryBlock>::size_type j=0; j <m.num_columns(); ++j)
+            {
+                result(i) += m(i,j) * v(j);
+            }
+        }
+        return result;
+    }
     
     template <typename T,typename MemoryBlock>
     void plus_assign(general_matrix<T,MemoryBlock>& m, general_matrix<T,MemoryBlock> const& rhs)
@@ -516,6 +561,7 @@ namespace blas {
 // Free general matrix functions
 //
 namespace blas {
+
     
     template <typename T, typename MemoryBlock>
     const general_matrix<T,MemoryBlock> operator + (general_matrix<T,MemoryBlock> a, general_matrix<T,MemoryBlock> const& b)
@@ -531,21 +577,11 @@ namespace blas {
         return a;
     }
 
-    // TODO Return type deduction!
-    template<typename T, typename MemoryBlock>
-    const vector<T,MemoryBlock> operator * (general_matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock> const& v)
+    template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
+    const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type, typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
+    operator * (general_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
     {
-        assert( m.num_columns() == v.size() );
-        vector<T,MemoryBlock> result(m.num_rows());
-        // Simple Matrix * Vector
-        for(typename general_matrix<T,MemoryBlock>::size_type i = 0; i < m.num_rows(); ++i)
-        {
-            for(typename general_matrix<T,MemoryBlock>::size_type j=0; j <m.num_columns(); ++j)
-            {
-                result(i) = m(i,j) * v(j);
-            }
-        }
-        return result;
+        return matrix_vector_multiply(m,v);
     }
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
@@ -585,6 +621,6 @@ namespace blas {
         }
         return o;
     }
-} // namespace blas
 
+} // namespace blas
 #endif //__ALPS_GENERAL_MATRIX_HPP__

@@ -44,7 +44,7 @@ struct Matrix
         
         // Element access
         t = x(0,0);
-        ++x(0,0);
+        x(0,0)+=value_type();
 
         // Swap rows/columns
         swap_rows(x,0,1);

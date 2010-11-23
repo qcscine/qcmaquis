@@ -1,3 +1,6 @@
+#ifndef GENERAL_MATRIX_BLAS_HPP
+#define GENERAL_MATRIX_BLAS_HPP
+
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include "detail/blasmacros.h"
 
@@ -7,7 +10,7 @@ namespace blas {
 }
 
 //
-// Hooked general matrix functions
+// general matrix blas function hooks
 //
 namespace blas {
 
@@ -29,6 +32,25 @@ namespace blas {
     }
 IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
 #undef MATRIX_MATRIX_MULTIPLY
+
+#define MATRIX_VECTOR_MULTIPLY(T) \
+    template <typename MemoryBlock, typename MemoryBlock2> \
+    const vector<T,MemoryBlock2> matrix_vector_multiply(general_matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock2> const& v) \
+    { \
+        assert( m.num_columns() == v.size()); \
+        vector<T,MemoryBlock2> result(m.num_rows()); \
+        boost::numeric::bindings::blas::gemv \
+            ( \
+              typename general_matrix<T,MemoryBlock>::value_type(1), \
+              m, \
+              v, \
+              typename general_matrix<T,MemoryBlock>::value_type(0), \
+              result \
+            ); \
+        return result; \
+    }
+IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)
+#undef MATRIX_VECTOR_MULTIPLY
 
 // This seems to be the best solution for the *_ASSIGN dispatchers at the moment even though they call functions within the detail namespace
 #define PLUS_MINUS_ASSIGN(T) \
@@ -74,3 +96,4 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
 
 } // namespace blas
 
+#endif // GENERAL_MATRIX_BLAS_HPP
