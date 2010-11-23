@@ -1,3 +1,5 @@
+#ifndef __ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP__
+#define __ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP__
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <stdexcept>
@@ -40,3 +42,5 @@ struct ResizableMatrix
 };
 
 }
+
+#endif //__ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP__

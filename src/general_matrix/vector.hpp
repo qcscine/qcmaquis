@@ -27,8 +27,8 @@
 *
 *****************************************************************************/
  
-#ifndef BLAS_VECTOR
-#define BLAS_VECTOR
+#ifndef __ALPS_VECTOR_HPP__
+#define __ALPS_VECTOR_HPP__
 
 #include "detail/vector_adaptor.hpp"
 
@@ -221,4 +221,4 @@ inline T scalar_product(const std::vector<T,MemoryBlock> v1, const std::vector<T
     
 } //namespace
 
-#endif 
+#endif //__ALPS_VECTOR_HPP__

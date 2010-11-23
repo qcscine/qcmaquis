@@ -1,5 +1,5 @@
-#ifndef GENERAL_MATRIX_BLAS_HPP
-#define GENERAL_MATRIX_BLAS_HPP
+#ifndef __ALPS_GENERAL_MATRIX_BLAS_HPP__
+#define __ALPS_GENERAL_MATRIX_BLAS_HPP__
 
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include "detail/blasmacros.h"
@@ -96,4 +96,4 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
 
 } // namespace blas
 
-#endif // GENERAL_MATRIX_BLAS_HPP
+#endif // __ALPS_GENERAL_MATRIX_BLAS_HPP__

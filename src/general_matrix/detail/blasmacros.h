@@ -1,3 +1,6 @@
+#ifndef __ALPS_BLASMACROS_H__
+#define __ALPS_BLASMACROS_H__
+
 #include <boost/numeric/bindings/blas.hpp>
 #include<vector>
 
@@ -15,3 +18,5 @@ F(std::complex<double>)
 IMPLEMENT_FOR_REAL_BLAS_TYPES(F) \
 IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F) 
 } // namespace
+
+#endif // __ALPS_BLASMACROS_H__

@@ -1,3 +1,5 @@
+#ifndef __ALPS_MATRIX_ALGORITHMS_HPP__
+#define __ALPS_MATRIX_ALGORITHMS_HPP__
 
 #include "matrix_concept_check.hpp"
 
@@ -40,3 +42,5 @@ namespace blas
         boost::numeric::bindings::lapack::gesdd('S', M, S, U, V);
     }
 }
+
+#endif //__ALPS_MATRIX_ALGORITHMS_HPP__
