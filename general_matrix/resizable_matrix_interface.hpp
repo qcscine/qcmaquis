@@ -1,5 +1,5 @@
-#ifndef ALPS_RESIZABLE_MATRIX_INTERFACE_HPP
-#define ALPS_RESIZABLE_MATRIX_INTERFACE_HPP
+#ifndef __ALPS_RESIZABLE_MATRIX_INTERFACE_HPP__
+#define __ALPS_RESIZABLE_MATRIX_INTERFACE_HPP__
 
 #include "resizable_matrix_concept_check.hpp"
 
@@ -46,4 +46,4 @@ IMPLEMENT_ITER_FCT_FORWARDING(void, insert_columns, (ResizableMatrix& m, typenam
 
 } // namespace blas
 
-#endif //ALPS_RESIZABLE_MATRIX_INTERFACE_HPP
+#endif //__ALPS_RESIZABLE_MATRIX_INTERFACE_HPP__

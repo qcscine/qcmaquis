@@ -1,3 +1,5 @@
+#ifndef __ALPS_MATRIX_CONCEPT_CHECK_HPP__
+#define __ALPS_MATRIX_CONCEPT_CHECK_HPP__
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
 
@@ -66,7 +68,10 @@ struct Matrix
         z = x - y;
         z = x * y;
 
-        //TODO matrix vector multiplication
+        // Matrix vector multiplication
+        // this does not check for mixed types
+        vector<value_type> v;
+        v = x * v;
 
     }
 
@@ -76,3 +81,5 @@ struct Matrix
 };
 
 }
+
+#endif //__ALPS_MATRIX_CONCEPT_CHECK_HPP__

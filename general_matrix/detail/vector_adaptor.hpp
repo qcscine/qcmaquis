@@ -1,5 +1,5 @@
-#ifndef BLAS_VECTOR_ADAPTOR_HPP
-#define BLAS_VECTOR_ADAPTOR_HPP
+#ifndef __ALPS_VECTOR_ADAPTOR_HPP__
+#define __ALPS_VECTOR_ADAPTOR_HPP__
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 
@@ -45,4 +45,4 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     };
 }}}}
 
-#endif // BLAS_VECTOR_ADAPTOR_HPP
+#endif // __ALPS_VECTOR_ADAPTOR_HPP__

@@ -13,9 +13,16 @@
 using namespace blas;
 
 
+
+//
+// List of types T for which the general_matrix<T> is tested
+//
 typedef boost::mpl::list<float, double, int, unsigned int, long unsigned int,std::complex<float>, std::complex<double> > test_types;
 // long long unsigned int causes problems in boost::iterator facade
 
+
+namespace type_pairs
+{
 struct DComplexDouble
 {
     typedef std::complex<double> first_type;
@@ -39,9 +46,12 @@ struct DoubleInt
     typedef double first_type;
     typedef int second_type;
 };
+};
 
-//typedef boost::mpl::list<IntDouble, DoubleInt, DoubleDComplex> test_type_pairs;
-typedef boost::mpl::list<IntDouble, DoubleInt, DoubleDComplex, DComplexDouble> test_type_pairs;
+//
+// List of type pairs <T,U> for which the mixed type matrix vector multiplication is tested.
+//
+typedef boost::mpl::list<type_pairs::IntDouble, type_pairs::DoubleInt, type_pairs::DoubleDComplex, type_pairs::DComplexDouble> test_type_pairs;
 
 template <typename OutputIterator, typename T>
 T fill_range_with_numbers(OutputIterator begin, OutputIterator end, T iota)

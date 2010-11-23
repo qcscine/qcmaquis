@@ -1,5 +1,5 @@
-#ifndef BLAS_GENERAL_MATRIX_ADAPTOR_HPP
-#define BLAS_GENERAL_MATRIX_ADAPTOR_HPP
+#ifndef __ALPS_GENERAL_MATRIX_ADAPTOR_HPP__
+#define __ALPS_GENERAL_MATRIX_ADAPTOR_HPP__
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 #include <boost/numeric/bindings/detail/if_row_major.hpp>
@@ -64,4 +64,4 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     };
 }}}}
 
-#endif //BLAS_GENERAL_MATRIX_ADAPTOR_HPP
+#endif //__ALPS_GENERAL_MATRIX_ADAPTOR_HPP__
