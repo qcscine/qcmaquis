@@ -30,6 +30,8 @@
 #ifndef BLAS_VECTOR
 #define BLAS_VECTOR
 
+#include "detail/vector_adaptor.hpp"
+
 #include "detail/blasmacros.h"
 #include <iostream>
 #include <vector>
