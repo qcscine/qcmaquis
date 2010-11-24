@@ -3,6 +3,7 @@
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <stdexcept>
+#include "matrix_concept_check.hpp"
 
 namespace blas
 {
@@ -19,6 +20,8 @@ struct ResizableMatrix
         // Resize
         resize(x,2,2);
 
+#warning FIXME
+        /*
         // Append
         std::vector<typename X::value_type> dataA(2,2);
         std::vector<typename X::value_type> dataB(4,2);
@@ -26,7 +29,7 @@ struct ResizableMatrix
         append_rows(x, std::make_pair(dataA.begin(),dataA.end()),1);
         append_columns(x, std::make_pair(dataB.begin(),dataB.end()) );
         append_columns(x, std::make_pair(dataB.begin(),dataB.end()),1);
-
+        
         // Remove
         remove_rows(x,1);
         remove_rows(x,1,1);
@@ -37,7 +40,7 @@ struct ResizableMatrix
         insert_rows(x,1, std::make_pair(dataA.begin(),dataA.end()) );
         insert_rows(x,1, std::make_pair(dataA.begin(),dataA.end()),1);
         insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()) );
-        insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()),1);
+        insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()),1); */
     }
 };
 

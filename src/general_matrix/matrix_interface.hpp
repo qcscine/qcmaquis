@@ -2,39 +2,64 @@
 #define __ALPS_MATRIX_INTERFACE_HPP__
 
 #include "matrix_concept_check.hpp"
+#include "general_matrix.hpp"
 
 namespace blas
 {
 
 // This macro creates free functions that call member functions with the same
 // name, e.g. swap_columns(A,i,j) -> A.swap_columns(i,j)
-#define IMPLEMENT_FORWARDING(RET,NAME,ARGS,VARS) \
-template <typename Matrix> \
+#define COMMA ,
+#define IMPLEMENT_FORWARDING(TEMPLATE_PARS,TYPE,RET,NAME,ARGS,VARS) \
+template TEMPLATE_PARS \
 RET NAME ARGS \
 { \
-    BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); \
+    BOOST_CONCEPT_ASSERT((blas::Matrix<TYPE>)); \
     return m.NAME VARS; \
 } 
 
 // num_rows(), num_columns(), swap_rows(), swap_columns()
-IMPLEMENT_FORWARDING(typename Matrix::size_type, num_rows, (Matrix const& m), () )
-IMPLEMENT_FORWARDING(typename Matrix::size_type, num_columns, (Matrix const& m), () )
-IMPLEMENT_FORWARDING(void, swap_rows, (Matrix& m, typename Matrix::size_type i1, typename Matrix::size_type i2), (i1,i2) )
-IMPLEMENT_FORWARDING(void, swap_columns, (Matrix& m, typename Matrix::size_type i1, typename Matrix::size_type i2), (i1,i2) )
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     typename general_matrix<T COMMA MemoryBlock>::size_type, num_rows, (general_matrix<T, MemoryBlock> const& m), () )
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     typename general_matrix<T COMMA MemoryBlock>::size_type, num_columns, (general_matrix<T, MemoryBlock> const& m), () )
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     void, swap_rows, (general_matrix<T, MemoryBlock>& m, typename general_matrix<T, MemoryBlock>::size_type i1, typename general_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     void, swap_columns, (general_matrix<T, MemoryBlock>& m, typename general_matrix<T, MemoryBlock>::size_type i1, typename general_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
 
 //
 // Matrix Iterator Interface
 //
 
-#define ITERATOR_PAIR(ITERATOR) \
-std::pair<typename Matrix::ITERATOR, typename Matrix::ITERATOR>
+#define ITERATOR_PAIR(TYPE, ITERATOR) \
+std::pair<typename TYPE::ITERATOR, typename TYPE::ITERATOR>
 
-IMPLEMENT_FORWARDING( ITERATOR_PAIR(row_element_iterator), row, (Matrix& m, typename Matrix::size_type i), (i) )
-IMPLEMENT_FORWARDING( ITERATOR_PAIR(const_row_element_iterator), row, (Matrix const& m, typename Matrix::size_type i), (i) )
-IMPLEMENT_FORWARDING( ITERATOR_PAIR(column_element_iterator), column, (Matrix& m, typename Matrix::size_type j), (j) )
-IMPLEMENT_FORWARDING( ITERATOR_PAIR(const_column_element_iterator), column, (Matrix const& m, typename Matrix::size_type j), (j) )
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, row_element_iterator), row,
+                     (general_matrix<T COMMA MemoryBlock> & m,
+                      typename general_matrix<T COMMA MemoryBlock>::size_type i),
+                     (i) )
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, const_row_element_iterator), row,
+                     (general_matrix<T COMMA MemoryBlock> const & m,
+                      typename general_matrix<T COMMA MemoryBlock>::size_type i),
+                     (i) )    
+
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, column_element_iterator), column,
+                     (general_matrix<T COMMA MemoryBlock> & m,
+                      typename general_matrix<T COMMA MemoryBlock>::size_type i),
+                     (i) )
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, const_column_element_iterator), column,
+                     (general_matrix<T COMMA MemoryBlock> const & m,
+                      typename general_matrix<T COMMA MemoryBlock>::size_type i),
+                     (i) )  
+    
 #undef ITERATOR_PAIR
 #undef IMPLEMENT_FORWARDING
+#undef COMMA
 } //namespace blas
 
 #endif //__ALPS_MATRIX_INTERFACE_HPP__
