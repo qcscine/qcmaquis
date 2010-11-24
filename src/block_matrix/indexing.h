@@ -7,6 +7,7 @@
 
 #include <boost/array.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
 
 enum IndexName { alpha, sigma, beta, empty };
 
