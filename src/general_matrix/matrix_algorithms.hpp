@@ -52,6 +52,16 @@ namespace blas
         
         S = diagonal_matrix<T>(S_);
     }
+    
+    template<typename T, class MemoryBlock>
+    void qr(general_matrix<T, MemoryBlock> & M,
+            general_matrix<T, MemoryBlock> & Q,
+            general_matrix<T, MemoryBlock> & R)
+    {
+        /* implement thin QR decomposition, i.e. for a (m,n) matrix, where m >= n, the result should be
+         Q: (m,n)
+         R: (n,n) */
+    }
 }
 
 #endif //__ALPS_MATRIX_ALGORITHMS_HPP__

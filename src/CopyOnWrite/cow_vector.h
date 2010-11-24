@@ -52,7 +52,7 @@ public:
     copy_on_write_vector(const copy_on_write_vector& x)
     : data_(x.data_) { }
     
-    copy_on_write_vector<T,Allocator>& operator=(copy_on_write_vector<T,Allocator> x)
+    copy_on_write_vector<T,Allocator>& operator=(copy_on_write_vector x)
     {
         swap(x, *this);
     }
