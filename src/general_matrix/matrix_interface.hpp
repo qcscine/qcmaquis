@@ -27,7 +27,7 @@ IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMM
                      void, swap_rows, (general_matrix<T, MemoryBlock>& m, typename general_matrix<T, MemoryBlock>::size_type i1, typename general_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
 IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
                      void, swap_columns, (general_matrix<T, MemoryBlock>& m, typename general_matrix<T, MemoryBlock>::size_type i1, typename general_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
-
+    
 //
 // Matrix Iterator Interface
 //
