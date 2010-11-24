@@ -3,6 +3,12 @@
 
 #include "matrix_concept_check.hpp"
 
+#include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
+#include <boost/numeric/bindings/std/vector.hpp>
+
+#include "general_matrix.hpp"
+#include "diagonal_matrix.h"
+
 namespace blas
 {
     template <typename Matrix>
@@ -30,16 +36,21 @@ namespace blas
         return tr;
     }
 
-    template<typename Matrix, class DoubleVector>
-    void svd(Matrix M, Matrix& U, Matrix& V, DoubleVector & S)
+    template<typename T, class MemoryBlock>
+    void svd(general_matrix<T, MemoryBlock> & M,
+             general_matrix<T, MemoryBlock> & U,
+             general_matrix<T, MemoryBlock>& V,
+             diagonal_matrix<T> & S)
     {
-        BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
-        typename Matrix::size_type k = std::min(num_rows(M), num_columns(M));
-        resize(U,num_rows(M), k);
+        BOOST_CONCEPT_ASSERT((blas::Matrix<general_matrix<T, MemoryBlock> >));
+        typename general_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
+        resize(U, num_rows(M), k);
         resize(V, k, num_columns(M));
-        resize(S,k);
         
-        boost::numeric::bindings::lapack::gesdd('S', M, S, U, V);
+        std::vector<double> S_(k);
+        boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
+        
+        S = diagonal_matrix<T>(S_);
     }
 }
 

@@ -1,7 +1,6 @@
 #ifndef __ALPS_GENERAL_MATRIX_BLAS_HPP__
 #define __ALPS_GENERAL_MATRIX_BLAS_HPP__
 
-#include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include "detail/blasmacros.h"
 
 namespace blas {
