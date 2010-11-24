@@ -42,6 +42,7 @@ int main()
         copy_on_write_vector<double, aligned_allocator<double> > foo(10);
         foo[0] = 1;
         copy_on_write_vector<double, aligned_allocator<double, 8> > bar;
+        copy_on_write_vector<double, aligned_allocator<double, 16> > bar2 = bar;
     }
     
     {
