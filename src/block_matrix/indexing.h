@@ -77,6 +77,8 @@ class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size
 {
 public:
     typedef typename SymmGroup::charge charge;
+    typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::iterator self_iterator;
+    typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::const_iterator const_self_iterator;
     
     IndexName name;
     
@@ -156,6 +158,22 @@ public:
     std::size_t py_insert(wrapped_pair<SymmGroup> p)
     {
         return this->insert(p.data_);
+    }
+    
+    list py_sizes() const
+    {
+        list l;
+        for (const_self_iterator it = this->begin(); it != this->end(); ++it)
+            l.append(it->second);
+        return l;
+    }
+    
+    list py_charges() const
+    {
+        list l;
+        for (const_self_iterator it = this->begin(); it != this->end(); ++it)
+            l.append(typename charge_wrapped_as<SymmGroup>::type(it->second));
+        return l;
     }
 #endif /* PYTHON_EXPORTS */
 };
