@@ -44,8 +44,11 @@ class_<wrapped_pair<sgrp> >(name) \
     
 #define EXPORT_INDEX(sgrp, name) \
 class_<Index<sgrp> >(name) \
-.def("insert", &Index<sgrp>::py_insert)
+.def("insert", &Index<sgrp>::py_insert) \
+.def("sizes", &Index<sgrp>::py_sizes) \
+.def("charges", &Index<sgrp>::py_charges)
     EXPORT_INDEX(NullGroup, "NG_index");
+    EXPORT_INDEX(Ztwo, "Z2_index");
 #undef EXPORT_INDEX
     
     /* what needs to be done:
