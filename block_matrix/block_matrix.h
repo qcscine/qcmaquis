@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include <boost/tuple/tuple.hpp>
-#include <boost/iterator/zip_iterator.hpp>
 #include <boost/lambda/bind.hpp>
 
 #include "indexing.h"

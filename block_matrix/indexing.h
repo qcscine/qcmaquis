@@ -10,7 +10,7 @@
 #include <boost/lambda/bind.hpp>
 
 #ifdef PYTHON_EXPORTS
-#include <cpp_dmrg/indexing_wrappers.h>
+#include <cpp_dmrg/wrappers.h>
 #endif
 
 enum IndexName { alpha, sigma, beta, empty };
@@ -211,7 +211,11 @@ std::ostream& operator<<(std::ostream& os, Index<SymmGroup> const & idx)
     return os;
 }
 
-//operator*
-//operator/
+template<class SymmGroup>
+Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
+                           Index<SymmGroup> const & i2)
+{
+    /* implement me! */
+}
 
 #endif

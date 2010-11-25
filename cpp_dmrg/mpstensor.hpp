@@ -1,6 +1,7 @@
 #include "mpstensor.h"
 
-#include <block_matrix/reshapes.h>
+#include "reshapes.h"
+#include "block_matrix_algorithms.h"
 
 template<class Matrix, class SymmGroup>
 Index<SymmGroup> MPSTensor<Matrix, SymmGroup>::site_dim() const
@@ -40,15 +41,15 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired()
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>
-MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method = QR,
-                                             bool multiplied = true,
-                                             double truncation = 0,
-                                             Index<SymmGroup> bond_dim = Index<SymmGroup>())
+MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
+                                             bool multiplied,
+                                             double truncation,
+                                             Index<SymmGroup> bond_dim)
 {
     make_left_paired();
     
     block_matrix<Matrix, SymmGroup> q, r;
-    data_.qr(q, r);
+    qr(data_, q, r);
     swap(data_, q);
     return r;
 }

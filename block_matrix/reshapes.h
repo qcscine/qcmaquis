@@ -12,6 +12,8 @@ void reshape_left_to_right(Index<NullGroup> physical_i,
 {
     using std::size_t;
     
+    m2 = block_matrix<Matrix, NullGroup>(physical_i*left_i, right_i);
+    
     for (size_t s = 0; s < physical_i[0].second; ++s)
         for (size_t l = 0; l < left_i[0].second; ++l)
             for (size_t r = 0; r < right_i[0].second; ++r)
@@ -19,7 +21,7 @@ void reshape_left_to_right(Index<NullGroup> physical_i,
 }
 
 template<class Matrix>
-void reshape_left_to_right(Index<NullGroup> physical_i,
+void reshape_right_to_left(Index<NullGroup> physical_i,
                            Index<NullGroup> left_i,
                            Index<NullGroup> right_i,
                            block_matrix<Matrix, NullGroup> const & m1,
@@ -27,10 +29,12 @@ void reshape_left_to_right(Index<NullGroup> physical_i,
 {
     using std::size_t;
     
+    m2 = block_matrix<Matrix, NullGroup>(left_i, physical_i*right_i);
+    
     for (size_t s = 0; s < physical_i[0].second; ++s)
         for (size_t l = 0; l < left_i[0].second; ++l)
             for (size_t r = 0; r < right_i[0].second; ++r)
-                m2[0](s*left_i[0].second+l, r) = m1[0](l, s*right_i[0].second+r)
+                m2[0](s*left_i[0].second+l, r) = m1[0](l, s*right_i[0].second+r);
 }
                            
 
