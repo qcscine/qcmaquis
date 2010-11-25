@@ -4,14 +4,17 @@
 
 #include "indexing.h"
 #include "symmetry.h"
+#include "block_matrix.h"
+
+#include <general_matrix/general_matrix.hpp>
 
 #include <boost/python.hpp>
 
 using namespace boost::python;
 
-#include "indexing_wrappers.h"
+#include "wrappers.h"
 
-BOOST_PYTHON_MODULE(indexing) {
+BOOST_PYTHON_MODULE(block_matrix) {
 #define EXPORT_CHARGE_ENUM(charge_enum, name) \
 class_<EnumToClass<charge_enum> >(name) \
 .def(init<int>()) \
@@ -51,9 +54,11 @@ class_<Index<sgrp> >(name) \
     EXPORT_INDEX(Ztwo, "Z2_index");
 #undef EXPORT_INDEX
     
-    /* what needs to be done:
-     iii) Export index
-      * Element access
-      * sizes(), charges()
-     */
+#define EXPORT_BLOCK_MATRIX(matrix, sgrp, name) \
+class_<block_matrix<matrix, sgrp> >(name) \
+.def("left_basis", &block_matrix<matrix, sgrp>::left_basis) \
+.def("right_basis", &block_matrix<matrix, sgrp>::right_basis)
+    EXPORT_BLOCK_MATRIX(blas::general_matrix<double>, NullGroup, "NG_d_matrix");
+    EXPORT_BLOCK_MATRIX(blas::general_matrix<double>, Ztwo, "Z2_d_matrix");
+#undef EXPORT_BLOCK_MATRIX
 }
