@@ -9,6 +9,10 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 
+#ifdef PYTHON_EXPORTS
+#include <cpp_dmrg/indexing_wrappers.h>
+#endif
+
 enum IndexName { alpha, sigma, beta, empty };
 
 template<class T> boost::array<T,1> _(const T &a)
@@ -147,6 +151,13 @@ public:
     {
         return name == o.name && this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
     }
+    
+#ifdef PYTHON_EXPORTS
+    std::size_t py_insert(wrapped_pair<SymmGroup> p)
+    {
+        return this->insert(p.data_);
+    }
+#endif /* PYTHON_EXPORTS */
 };
 
 template<class SymmGroup>
