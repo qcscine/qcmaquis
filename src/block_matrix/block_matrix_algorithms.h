@@ -66,8 +66,7 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
         block_matrix<Matrix, SymmGroup> & Q,
         block_matrix<Matrix, SymmGroup> & R)
 {
-    /* thin QR in each block: (m,n) -> (m,n) x (n,n)
-     where m >= n */
+    /* thin QR in each block */
     
     Index<SymmGroup> m = M.left_basis(), n = M.right_basis();
     

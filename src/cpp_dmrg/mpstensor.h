@@ -1,8 +1,8 @@
 #ifndef MPSTENSOR_H
 #define MPSTENSOR_H
 
-#include <block_matrix.h>
-#include <indexing.h>
+#include "block_matrix.h"
+#include "indexing.h"
 
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places
@@ -54,5 +54,7 @@ private:
     void make_left_paired();
     void make_right_paired();
 };
+
+#include "mpstensor.hpp"
 
 #endif
