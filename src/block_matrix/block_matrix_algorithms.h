@@ -77,4 +77,24 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
         qr(M[k], Q[k], R[k]);
 }
 
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> transpose(block_matrix<Matrix, SymmGroup> m)
+{
+    m.inplace_transpose();
+    return m;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> m)
+{
+    m.inplace_adjoin();
+    return m;
+}
+
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> m)
+{
+    return m.trace();
+}
+
 #endif
