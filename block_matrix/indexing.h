@@ -77,8 +77,8 @@ class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size
 {
 public:
     typedef typename SymmGroup::charge charge;
-    typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::iterator self_iterator;
-    typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::const_iterator const_self_iterator;
+    typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::iterator iterator;
+    typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::const_iterator const_iterator;
     
     IndexName name;
     
@@ -95,6 +95,14 @@ public:
                             boost::lambda::bind(index_detail::lt<SymmGroup>,
                                                 boost::lambda::_1,
                                                 std::make_pair(c, 0))) - this->begin();
+    }
+    
+    bool has(charge c) const
+    {
+        return std::count_if(this->begin(), this->end(),
+                             boost::lambda::bind(index_detail::lt<SymmGroup>,
+                                                 boost::lambda::_1,
+                                                 std::make_pair(c, 0))) > 0;
     }
     
     void sort()
@@ -163,7 +171,7 @@ public:
     list py_sizes() const
     {
         list l;
-        for (const_self_iterator it = this->begin(); it != this->end(); ++it)
+        for (const_iterator it = this->begin(); it != this->end(); ++it)
             l.append(it->second);
         return l;
     }
@@ -171,7 +179,7 @@ public:
     list py_charges() const
     {
         list l;
-        for (const_self_iterator it = this->begin(); it != this->end(); ++it)
+        for (const_iterator it = this->begin(); it != this->end(); ++it)
             l.append(typename charge_wrapped_as<SymmGroup>::type(it->second));
         return l;
     }
@@ -215,7 +223,21 @@ template<class SymmGroup>
 Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                            Index<SymmGroup> const & i2)
 {
-    /* implement me! */
+    typedef typename SymmGroup::charge charge;
+    
+    Index<SymmGroup> ret;
+    for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
+        for (typename Index<SymmGroup>::const_iterator it2 = i2.begin(); it2 != i2.end(); ++it2)
+        {
+            charge pdc = SymmGroup::fuse(it1->first, it2->first);
+            std::size_t ps = it1->second * it2->second;
+            if (ret.has(pdc))
+                ret[ret.at(pdc)].second += ps;
+            else
+                ret.insert(std::make_pair(pdc, ps));
+        }
+    ret.sort();
+    return ret;
 }
 
 #endif

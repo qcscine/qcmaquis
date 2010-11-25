@@ -16,6 +16,10 @@ public:
     typedef typename Matrix::value_type scalar_type;
     typedef double real_type;
     
+    MPSTensor(Index<SymmGroup> const & sd = Index<SymmGroup>(),
+              Index<SymmGroup> const & ld = Index<SymmGroup>(),
+              Index<SymmGroup> const & rd = Index<SymmGroup>());
+    
     Index<SymmGroup> site_dim() const;
     Index<SymmGroup> row_dim() const;
     Index<SymmGroup> col_dim() const;
@@ -50,6 +54,7 @@ private:
     Index<SymmGroup> phys_i, left_i, right_i;
     block_matrix<Matrix, SymmGroup> data_;
     MPSStorageLayout cur_storage;
+    Indicator cur_normalization;
     
     void make_left_paired();
     void make_right_paired();

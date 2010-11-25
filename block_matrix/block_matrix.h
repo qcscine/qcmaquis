@@ -2,6 +2,8 @@
 #define BLOCK_MATRIX_H
 
 #include <sstream>
+#include <algorithm>
+#include <numeric>
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/lambda/bind.hpp>
@@ -14,6 +16,7 @@ class block_matrix
 {
 private:
     typedef typename SymmGroup::charge charge;
+    typedef typename Matrix::value_type value_type;
     
 public:
     typedef typename Matrix::size_type size_type;
@@ -104,6 +107,25 @@ public:
     {
         remove_columns(data_[block], r, k);
         cols_[block].second -= k;
+    }
+    
+    block_matrix operator*=(typename Matrix::value_type v)
+    {
+        std::for_each(data_.begin(), data_.end(), boost::lambda::_1 *= v);
+        return *this;
+    }
+    
+    value_type trace() const
+    {
+        std::vector<value_type> vt(n_blocks());
+        std::transform(data_.begin(), data_.end(), vt.begin(),
+                       static_cast<value_type(*)(Matrix const&)>(trace));
+        return std::accumulate(vt.begin(), vt.end(), value_type());
+    }
+    
+    void inplace_adjoin()
+    {
+        /* implement me */
     }
     
 private:
