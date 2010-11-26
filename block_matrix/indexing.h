@@ -187,7 +187,7 @@ public:
 };
 
 template<class SymmGroup>
-Index<SymmGroup> transpose(Index<SymmGroup> const & inp)
+Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
     typedef typename SymmGroup::charge charge;
     

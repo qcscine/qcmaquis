@@ -10,9 +10,7 @@ using namespace std;
 #include "resizable_matrix_interface.hpp"
 #include "matrix_algorithms.hpp"
 typedef blas::general_matrix<double> Matrix;
-
-#include "diagonal_matrix.h"
-typedef blas::diagonal_matrix<double> DiagMatrix;
+typedef Matrix::diagonal_matrix DiagMatrix;
 
 #include "block_matrix.h"
 #include "block_matrix_algorithms.h"

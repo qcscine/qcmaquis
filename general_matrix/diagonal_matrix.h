@@ -55,7 +55,7 @@ namespace blas {
     void gemm(diagonal_matrix<T> const & m1, Matrix const & m2, Matrix & m3)
     {
         assert(num_columns(m1) == num_rows(m2));
-        resize(m2, num_rows(m1), num_cols(m2));
+        resize(m3, num_rows(m1), num_columns(m2));
         for (std::size_t i = 0; i < num_rows(m1); ++i)
             for (std::size_t j = 0; j < num_rows(m2); ++j)
                 m3(i,j) = m1(i,i) * m2(i,j);

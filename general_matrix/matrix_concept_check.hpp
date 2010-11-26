@@ -70,8 +70,10 @@ struct Matrix
 
         // Matrix vector multiplication
         // this does not check for mixed types
-        vector<value_type> v;
-        v = x * v;
+#warning FIXME
+        /* Which vector class is this supposed to use in the general case? */
+//        vector<value_type> v;
+//        v = x * v;
 
     }
 

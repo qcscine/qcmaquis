@@ -2,6 +2,7 @@
 #define BLOCK_MATRIX_ALGORITHMS_H
 
 #include "block_matrix.h"
+#include "matrix_algorithms.hpp"
 
 // some example functions
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
@@ -85,9 +86,17 @@ block_matrix<Matrix, SymmGroup> transpose(block_matrix<Matrix, SymmGroup> m)
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> m)
+block_matrix<Matrix, SymmGroup> conjugate(block_matrix<Matrix, SymmGroup> m)
 {
-    m.inplace_adjoin();
+    m.inplace_conjugate();
+    return m;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> conjugate_transpose(block_matrix<Matrix, SymmGroup> m)
+{
+    m.inplace_transpose();
+    m.inplace_conjugate();
     return m;
 }
 
@@ -95,6 +104,21 @@ template<class Matrix, class SymmGroup>
 typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> m)
 {
     return m.trace();
+}
+
+template<class Matrix, class SymmGroup, class Generator>
+void fill_with_random(block_matrix<Matrix, SymmGroup> & m, Generator & g)
+{
+    m.fill_with_random(g);
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
+{
+    block_matrix<Matrix, SymmGroup> ret(size, size);
+    for (std::size_t k = 0; k < ret.n_blocks(); ++k)
+        ret[k] = blas::identity_matrix<Matrix>(size[k].second);
+    return ret;
 }
 
 #endif
