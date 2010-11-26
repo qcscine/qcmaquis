@@ -12,7 +12,10 @@ void reshape_left_to_right(Index<NullGroup> physical_i,
 {
     using std::size_t;
     
-    m2 = block_matrix<Matrix, NullGroup>(physical_i*left_i, right_i);
+    assert(m1.left_basis() == physical_i*left_i);
+    assert(m1.right_basis() == right_i);
+    
+    m2 = block_matrix<Matrix, NullGroup>(left_i, physical_i*right_i);
     
     for (size_t s = 0; s < physical_i[0].second; ++s)
         for (size_t l = 0; l < left_i[0].second; ++l)
@@ -29,7 +32,10 @@ void reshape_right_to_left(Index<NullGroup> physical_i,
 {
     using std::size_t;
     
-    m2 = block_matrix<Matrix, NullGroup>(left_i, physical_i*right_i);
+    assert(m1.left_basis() == left_i);
+    assert(m1.right_basis() == physical_i*right_i);
+    
+    m2 = block_matrix<Matrix, NullGroup>(physical_i*left_i, right_i);
     
     for (size_t s = 0; s < physical_i[0].second; ++s)
         for (size_t l = 0; l < left_i[0].second; ++l)

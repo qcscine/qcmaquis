@@ -4,6 +4,8 @@
 #include "block_matrix.h"
 #include "indexing.h"
 
+#include <iostream>
+
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places
 enum Indicator { U, L, R };
@@ -50,15 +52,32 @@ public:
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
     
+    template<class Matrix_, class SymmGroup_>
+    friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
+    
+    template<class Matrix_, class SymmGroup_>
+    friend block_matrix<Matrix_, SymmGroup_> overlap_left_step(MPSTensor<Matrix_, SymmGroup_> & bra_tensor,
+                                                               MPSTensor<Matrix_, SymmGroup_> & ket_tensor,
+                                                               block_matrix<Matrix_, SymmGroup_> & left,
+                                                               block_matrix<Matrix_, SymmGroup_> * local_op = NULL);
+    
 private:
     Index<SymmGroup> phys_i, left_i, right_i;
     block_matrix<Matrix, SymmGroup> data_;
     MPSStorageLayout cur_storage;
     Indicator cur_normalization;
     
+    void reflect();
+    
     void make_left_paired();
     void make_right_paired();
 };
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> overlap_left_step(MPSTensor<Matrix, SymmGroup> & bratensor,
+                                                  MPSTensor<Matrix, SymmGroup> & kqettensor,
+                                                  block_matrix<Matrix, SymmGroup> & left,
+                                                  block_matrix<Matrix, SymmGroup> * localop = NULL);
 
 #include "mpstensor.hpp"
 

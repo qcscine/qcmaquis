@@ -4,6 +4,8 @@
 #include "strided_iterator.hpp"
 #include "vector.hpp"
 #include "detail/general_matrix_adaptor.hpp"
+#include "function_objects.h"
+#include "diagonal_matrix.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -12,6 +14,8 @@
 #include <algorithm>
 #include <functional>
 #include <cassert>
+
+//#include "../util/function_objects.h"
 
 //
 // general_matrix template class
@@ -42,7 +46,7 @@ namespace blas {
         typedef value_type*                                                  column_element_iterator;
         typedef value_type const*                                            const_column_element_iterator;
 
-
+        typedef diagonal_matrix<T> diagonal_matrix;
 
         general_matrix(size_type size1 = 0, size_type size2 = 0, T init_value = T() )
         : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value)
@@ -438,6 +442,11 @@ namespace blas {
                     std::for_each(range.first, range.second, boost::lambda::_1 *= t);
                 }
             }
+        }
+        
+        void inplace_conjugate()
+        {
+            std::transform(values_.begin(), values_.end(), values_.begin(), functors::fconj());
         }
         
     private:

@@ -11,6 +11,8 @@
 #include "indexing.h"
 #include "symmetry.h"
 
+#include "function_objects.h"
+
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
@@ -109,7 +111,7 @@ public:
         cols_[block].second -= k;
     }
     
-    block_matrix operator*=(typename Matrix::value_type v)
+    block_matrix operator*=(value_type v)
     {
         std::for_each(data_.begin(), data_.end(), boost::lambda::_1 *= v);
         return *this;
@@ -118,14 +120,30 @@ public:
     value_type trace() const
     {
         std::vector<value_type> vt(n_blocks());
-        std::transform(data_.begin(), data_.end(), vt.begin(),
-                       static_cast<value_type(*)(Matrix const&)>(trace));
+        std::transform(data_.begin(), data_.end(), vt.begin(), functors::ftrace());
         return std::accumulate(vt.begin(), vt.end(), value_type());
     }
     
-    void inplace_adjoin()
+    void inplace_transpose()
     {
-        /* implement me */
+        std::transform(data_.begin(), data_.end(), data_.begin(), functors::ftranspose());
+        std::swap(rows_, cols_);
+    }
+    
+    void inplace_conjugate()
+    {
+        std::transform(data_.begin(), data_.end(), data_.begin(), functors::fconjugate());
+    }
+    
+    template<class Generator>
+    void fill_with_random(Generator & g)
+    {
+        for (std::size_t k = 0; k < n_blocks(); ++k)
+        {
+            for (std::size_t r = 0; r < num_rows(data_[k]); ++r)
+                for (std::size_t c = 0; c < num_columns(data_[k]); ++c)
+                    data_[k](r,c) = g();
+        }
     }
     
 private:

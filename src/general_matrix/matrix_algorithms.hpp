@@ -35,32 +35,14 @@ namespace blas
             tr += m(i,i);
         return tr;
     }
-
-    template<typename T, class MemoryBlock>
-    void svd(general_matrix<T, MemoryBlock> & M,
-             general_matrix<T, MemoryBlock> & U,
-             general_matrix<T, MemoryBlock>& V,
-             diagonal_matrix<T> & S)
-    {
-        BOOST_CONCEPT_ASSERT((blas::Matrix<general_matrix<T, MemoryBlock> >));
-        typename general_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
-        resize(U, num_rows(M), k);
-        resize(V, k, num_columns(M));
         
-        std::vector<double> S_(k);
-        boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
-        
-        S = diagonal_matrix<T>(S_);
-    }
-    
-    template<typename T, class MemoryBlock>
-    void qr(general_matrix<T, MemoryBlock> & M,
-            general_matrix<T, MemoryBlock> & Q,
-            general_matrix<T, MemoryBlock> & R)
+    template<class Matrix>
+    Matrix identity_matrix(typename Matrix::size_type size)
     {
-        /* implement thin QR decomposition, i.e. for a (m,n) matrix, where m >= n, the result should be
-         Q: (m,n)
-         R: (n,n) */
+        Matrix ret(size, size);
+        for (typename Matrix::size_type k = 0; k < size; ++k)
+            ret(k,k) = 1;
+        return ret;
     }
 }
 
