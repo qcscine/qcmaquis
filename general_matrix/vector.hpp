@@ -45,7 +45,7 @@ namespace blas{
   class vector : public MemoryBlock
   {
     public:
-      vector(std::size_t size=0, T initial_value=0. )
+      vector(std::size_t size=0, T const& initial_value = T())
       : MemoryBlock(size, initial_value)
       {
       }

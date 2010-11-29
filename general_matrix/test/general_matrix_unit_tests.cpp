@@ -4,6 +4,7 @@
 
 #include <boost/lambda/lambda.hpp>
 #include <complex>
+#include <numeric>
 
 #include "../general_matrix.hpp"
 #include "../general_matrix_blas.hpp"
@@ -153,6 +154,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( column_iterator_test, T, test_types )
     for(unsigned int i=0; i<num_rows(a); ++i)
         for(unsigned int j=0; j<num_columns(a); ++j)
             BOOST_CHECK_EQUAL(a(i,j),T(i+j));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( element_iterator_test, T, test_types )
+{
+    general_matrix<T> a(10,20);
+    general_matrix<T> b(10,20);
+    std::pair<typename general_matrix<T>::element_iterator,typename general_matrix<T>::element_iterator> range(elements(a));
+    fill_range_with_numbers(range.first,range.second,0);
+
+    T k = T(0);
+    T sum = T(0);
+    for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int i=0; i<num_rows(a); ++i)
+        {
+            b(i,j) = k;
+            sum += k;
+            k += T(1);
+        }
+
+    T acc = std::accumulate(range.first, range.second,T(0));
+    BOOST_CHECK_EQUAL(acc,sum);
+    BOOST_CHECK_EQUAL(a,b);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
