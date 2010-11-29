@@ -20,8 +20,6 @@ struct ResizableMatrix
         // Resize
         resize(x,2,2);
 
-#warning FIXME
-        /*
         // Append
         std::vector<typename X::value_type> dataA(2,2);
         std::vector<typename X::value_type> dataB(4,2);
@@ -40,7 +38,7 @@ struct ResizableMatrix
         insert_rows(x,1, std::make_pair(dataA.begin(),dataA.end()) );
         insert_rows(x,1, std::make_pair(dataA.begin(),dataA.end()),1);
         insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()) );
-        insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()),1); */
+        insert_columns(x,1, std::make_pair(dataB.begin(),dataB.end()),1); 
     }
 };
 

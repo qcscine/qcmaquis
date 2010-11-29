@@ -2,10 +2,12 @@
 #define __ALPS_GENERAL_MATRIX_HPP__
 
 #include "strided_iterator.hpp"
+#include "matrix_element_iterator.hpp"
 #include "vector.hpp"
 #include "detail/general_matrix_adaptor.hpp"
-#include "function_objects.h"
-#include "diagonal_matrix.h"
+
+// This file was not committed
+//#include "function_objects.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -15,22 +17,28 @@
 #include <functional>
 #include <cassert>
 
-//#include "../util/function_objects.h"
-
-//
-// general_matrix template class
-//
 namespace blas {
 
+    /** A matrix template class
+      *
+      * The general_matrix class is a matrix which can take any type T
+      * @param T the type of the elements to be stored in the matrix
+      * @param MemoryBlock the underlying (continous) Memory structure
+      */
     template <typename T, typename MemoryBlock = std::vector<T> >
     class general_matrix {
     public:
         // typedefs required for a std::container concept
         typedef T                       value_type;
+        ///< The type T of the elements of the matrix
         typedef T&                      reference;
+        ///< Reference to value_type
         typedef T const&                const_reference;
+        ///< Const reference to value_type
         typedef std::size_t             size_type;
+        ///< Unsigned integer type that represents the dimensions of the matrix
         typedef std::ptrdiff_t          difference_type;
+        ///< Signed integer type to represent the distance of two elements in the memory
 
         // for compliance with an std::container one would also need
         // -operators == != < > <= >=
@@ -39,20 +47,42 @@ namespace blas {
 
 
         // typedefs for matrix specific iterators
-        // row_iterator: iterates over the rows of a specific column
-        typedef strided_iterator<general_matrix,value_type>                  row_element_iterator;
-        typedef strided_iterator<const general_matrix,const value_type>      const_row_element_iterator;
-        // column_iterator: iterates over the columns of a specific row
-        typedef value_type*                                                  column_element_iterator;
-        typedef value_type const*                                            const_column_element_iterator;
+        typedef strided_iterator<general_matrix,value_type>
+            row_element_iterator;
+        ///< Iterator to iterate through the elements of a row of the matrix
+        typedef strided_iterator<const general_matrix,const value_type>
+            const_row_element_iterator;
+        ///< Const version of row_element_iterator
+        typedef value_type*
+            column_element_iterator;
+        ///< Iterator to iterate through the elements of a columns of the matrix
+        typedef value_type const*
+            const_column_element_iterator;
+        ///< Const version of column_element_iterator
+        
+        typedef matrix_element_iterator<general_matrix,value_type>
+            element_iterator;
+        ///< Iterator to iterate through all elements of the matrix (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
+        typedef matrix_element_iterator<const general_matrix,const value_type>
+            const_element_iterator;
+        ///< Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
-        typedef diagonal_matrix<T> diagonal_matrix;
 
-        general_matrix(size_type size1 = 0, size_type size2 = 0, T init_value = T() )
-        : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value)
+        /**
+          * The constructor
+          * @param rows the number of rows
+          * @param columns the number of columns
+          * @param init_value all matrix elements will be initialized to this value.
+          */
+        general_matrix(size_type rows = 0, size_type columns = 0, T init_value = T() )
+        : size1_(rows), size2_(columns), reserved_size1_(rows), values_(rows*columns, init_value)
         {
         }
 
+        /**
+          * The copy constructor
+          *
+          */
         template <typename OtherMemoryBlock>
         general_matrix(general_matrix<T,OtherMemoryBlock> const& m)
         : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_()
@@ -76,6 +106,10 @@ namespace blas {
             }
         }
         
+        /**
+          * Non-throwing swap function
+          * @param r general_matrix object which should be swapped with the general_matrix (this)
+          */
         void swap(general_matrix & r)
         {
             std::swap(values_, r.values_);
@@ -84,38 +118,64 @@ namespace blas {
             std::swap(reserved_size1_,r.reserved_size1_);
         }
         
+        /**
+          * Swaps two general_matrices
+          */
         friend void swap(general_matrix & x, general_matrix & y)
         {
             x.swap(y);
         }
-       
+
+        /**
+          * Assigns the matrix to matrix rhs
+          */
         general_matrix& operator = (general_matrix rhs)
         {
             this->swap(rhs);
             return *this;
         }
-
+        /**
+          * Access the element in row i, column j
+          * @param i 0<= i <= num_rows()
+          * @param j 0<= j <= num_columns()
+          * @return A mutable reference to the matrix element at position (i,j).
+          */
         inline value_type& operator()(const size_type i, const size_type j)
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
         }
         
+        /**
+          * Access the element in row i, column j
+          * @return A constant reference to the matrix element at position (i,j).
+          */
         inline value_type const& operator()(const size_type i, const size_type j) const 
         {
             assert((i < size1_) && (j < size2_));
             return values_[i+j*reserved_size1_];
         }
 
+        /**
+          * Checks if a matrix is empty
+          * @return true if the matrix is a 0x0 matrix, false otherwise.
+          */
         inline const bool empty() const
         {
             return (size1_ == 0 || size2_ == 0);
         }
 
+        /**
+          * @return number of rows of the matrix
+          */
         inline const size_type num_rows() const
         {
             return size1_;
         }
+
+        /**
+          * @return number of columns of the matrix
+          */
 
         inline const size_type num_columns() const
         {
@@ -131,31 +191,43 @@ namespace blas {
         inline const size_type size2() const
         { 
             return size2_;
-        }       
-        
+        }
+
+        /**
+          * @return The stride for moving to the next element along a row
+          */
         inline const difference_type stride1() const
         {
             return 1;
         }
         
+        /**
+          * @return The stride for moving to the next element along a column
+          */
         inline const difference_type stride2() const
         {
             return reserved_size1_;
         }
 
+        /** Resize the matrix.
+          * Resizes the matrix to size1 rows and size2 columns and initializes
+          * the new elements to init_value. It also enlarges the MemoryBlock
+          * if needed. If the new size for any dimension is
+          * smaller only elements outside the new size will be deleted.
+          * If the new size is larger for any dimension the new elements
+          * will be initialized by the init_value.
+          * All other elements will keep their value.  
+          *
+          * Exception behaviour:
+          * As long as the assignment and copy operation of the T values don't throw an exception,
+          * any exception will leave the matrix unchanged.
+          * (Assuming the same behaviour of the underlying MemoryBlock. This is true for std::vector.)
+          * @param size1 new number of rows
+          * @param size2 new number of columns
+          * @param init_value value to which the new elements will be initalized
+          */
         void resize(size_type size1, size_type size2, T const& init_value = T())
         {
-           // Resizes the matrix to the size1 and size2 and enlarges the
-           // MemoryBlock if needed. If the new size for any dimension is
-           // smaller only elements outside the new size will be deleted.
-           // If the new size is larger for any dimension the new elements
-           // will be initialized by the init_value.
-           // All other elements will keep their value.
-            
-            // Exception behaviour:
-            // As long as the assignment and copy operation of the T values don't throw an exception,
-            // any exception will leave the matrix unchanged.
-            // (Assuming the same behaviour of the underlying MemoryBlock. This is true for std::vector.)
 
             // Do we need more space? Reserve more space if needed!
             //
@@ -186,7 +258,13 @@ namespace blas {
             size1_=size1;
             size2_=size2;
         }
-        
+        /**
+          * Reserves memory for anticipated enlargements of the matrix
+          * @param size1 For how many rows should memory be reserved, value is ignored if it's smaller than the current number of rows
+          * @param size2 For how many columns should memory be reserved, value is ignored if it's smaller than the current number of columns
+          * @param init_value i
+          */
+
         void reserve(size_type size1, size_type size2, T const& init_value = T())
         {
             // The init_value may seem a little weird in a reserve method,
@@ -264,6 +342,16 @@ namespace blas {
         std::pair<const_column_element_iterator,const_column_element_iterator> column(size_type col = 0 ) const
         {
             return std::make_pair( const_column_element_iterator(&values_[col*reserved_size1_]), const_column_element_iterator(&values_[col*reserved_size1_+size1_]) );
+        }
+        
+        std::pair<element_iterator,element_iterator> elements()
+        {
+            return std::make_pair( element_iterator(this,0,0), element_iterator(this,0, num_columns()) );
+        }
+        
+        std::pair<element_iterator,element_iterator> elements() const
+        {
+            return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_columns() ) );
         }
 
         template <typename InputIterator>
@@ -444,10 +532,14 @@ namespace blas {
             }
         }
         
+        /* function_object.h missing
         void inplace_conjugate()
         {
+            // This implementation is inefficient if the virtual size of the
+            // matrix is much bigger than the actual matrix.
             std::transform(values_.begin(), values_.end(), values_.begin(), functors::fconj());
         }
+        */
         
     private:
         template <typename OtherT,typename OtherMemoryBlock>
@@ -475,7 +567,6 @@ namespace blas {
         MemoryBlock values_;
     };
 } // namespace blas
-
 
 //
 // Type promotion helper for mixed type matrix matrix and matrix vector operations

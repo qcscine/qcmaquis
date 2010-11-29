@@ -42,7 +42,7 @@ IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMM
                      (i) )
 IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
                      ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, const_row_element_iterator), row,
-                     (general_matrix<T COMMA MemoryBlock> const & m,
+                     (general_matrix<T COMMA MemoryBlock> const& m,
                       typename general_matrix<T COMMA MemoryBlock>::size_type i),
                      (i) )    
 
@@ -53,10 +53,17 @@ IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMM
                      (i) )
 IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
                      ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, const_column_element_iterator), column,
-                     (general_matrix<T COMMA MemoryBlock> const & m,
+                     (general_matrix<T COMMA MemoryBlock> const& m,
                       typename general_matrix<T COMMA MemoryBlock>::size_type i),
                      (i) )  
-    
+
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, element_iterator), elements,
+                     (general_matrix<T COMMA MemoryBlock>& m), () )
+
+IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, general_matrix<T COMMA MemoryBlock>,
+                     ITERATOR_PAIR(general_matrix<T COMMA MemoryBlock>, const_element_iterator), elements,
+                     (general_matrix<T COMMA MemoryBlock> const& m), () )
 #undef ITERATOR_PAIR
 #undef IMPLEMENT_FORWARDING
 #undef COMMA
