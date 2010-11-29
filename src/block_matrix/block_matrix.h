@@ -139,11 +139,7 @@ public:
     void fill_with_random(Generator & g)
     {
         for (std::size_t k = 0; k < n_blocks(); ++k)
-        {
-            for (std::size_t r = 0; r < num_rows(data_[k]); ++r)
-                for (std::size_t c = 0; c < num_columns(data_[k]); ++c)
-                    data_[k](r,c) = g();
-        }
+            std::generate(elements(data_[k]).first, elements(data_[k]).second, g);
     }
     
 private:

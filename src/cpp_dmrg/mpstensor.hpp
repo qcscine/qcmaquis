@@ -2,7 +2,6 @@
 
 #include "reshapes.h"
 #include "block_matrix_algorithms.h"
-#include "diagonal_matrix.h"
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
@@ -64,6 +63,7 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired()
     reshape_right_to_left<Matrix>(phys_i, left_i, right_i,
                                   data_, tmp);
     swap(data_, tmp);
+    cur_storage = LeftPaired;
 }
 
 template<class Matrix, class SymmGroup>
@@ -76,6 +76,7 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired()
     reshape_left_to_right<Matrix>(phys_i, left_i, right_i,
                                   data_, tmp);
     swap(data_, tmp);
+    cur_storage = RightPaired;
 }
 
 template<class Matrix, class SymmGroup>
@@ -98,7 +99,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
         make_left_paired();
         
         block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename Matrix::diagonal_matrix, SymmGroup> S;
+        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         svd(data_, U, V, S);
         
@@ -119,10 +120,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
     // due to the additional transposes - but I want to reduce code for now.
     reflect();
     block_matrix<Matrix, SymmGroup> r = normalize_left(method, multiplied, truncation, bond_dim);
-//    r = transpose(r);
+    r = transpose(r);
     reflect();
-    return block_matrix<Matrix, SymmGroup>();
-//    return r;
+    
+    return r;
 }
 
 template<class Matrix, class SymmGroup>
@@ -203,6 +204,7 @@ bool MPSTensor<Matrix, SymmGroup>::isnormalized(bool test)
     }
 }
 
+// Let's define the second index of the matrix to be the top index
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> overlap_left_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
                                                   MPSTensor<Matrix, SymmGroup> & ket_tensor,
@@ -220,11 +222,33 @@ block_matrix<Matrix, SymmGroup> overlap_left_step(MPSTensor<Matrix, SymmGroup> &
     
     block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(bra_tensor.data_), t3;
     gemm(left, ket_tensor.data_, t1);
-    reshape_right_to_left(ket_tensor.phys_i, ket_tensor.left_i, ket_tensor.right_i,
+    reshape_right_to_left(ket_tensor.phys_i, left.left_basis(), ket_tensor.right_i,
                           t1, t3);
     t3 = transpose(t3);
     gemm(t3, t2, t1);
-    return t1;
+    return transpose(t1);
 }
 
-
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> overlap_right_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
+                                                   MPSTensor<Matrix, SymmGroup> & ket_tensor,
+                                                   block_matrix<Matrix, SymmGroup> & right,
+                                                   block_matrix<Matrix, SymmGroup> * local_op)
+{
+    if (local_op != NULL)
+        throw std::runtime_error("Not implemented!");
+    
+    assert(right.left_basis() == bra_tensor.right_i);
+    assert(right.right_basis() == ket_tensor.right_i);
+    
+    bra_tensor.make_right_paired();
+    ket_tensor.make_left_paired();
+    
+    block_matrix<Matrix, SymmGroup> t1, t2 = conjugate_transpose(bra_tensor.data_), t3 = transpose(right);
+    gemm(ket_tensor.data_, t3, t1);
+    reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(),
+                          t1, t3);
+    
+    gemm(t3, t2, t1);
+    return transpose(t1);
+}

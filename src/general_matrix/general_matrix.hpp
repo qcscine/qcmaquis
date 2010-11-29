@@ -5,9 +5,8 @@
 #include "matrix_element_iterator.hpp"
 #include "vector.hpp"
 #include "detail/general_matrix_adaptor.hpp"
-
-// This file was not committed
-//#include "function_objects.h"
+#include "function_objects.h"
+#include "diagonal_matrix.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -18,7 +17,6 @@
 #include <cassert>
 
 namespace blas {
-
     /** A matrix template class
       *
       * The general_matrix class is a matrix which can take any type T
@@ -532,14 +530,11 @@ namespace blas {
             }
         }
         
-        /* function_object.h missing
         void inplace_conjugate()
         {
-            // This implementation is inefficient if the virtual size of the
-            // matrix is much bigger than the actual matrix.
-            std::transform(values_.begin(), values_.end(), values_.begin(), functors::fconj());
+            std::transform(this->elements().first, this->elements().second,
+                           this->elements().first, functors::fconj());
         }
-        */
         
     private:
         template <typename OtherT,typename OtherMemoryBlock>
@@ -566,6 +561,14 @@ namespace blas {
         
         MemoryBlock values_;
     };
+    
+    template<typename T, typename MemoryBlock>
+    struct associated_diagonal_matrix<general_matrix<T, MemoryBlock> >
+    {
+        typedef diagonal_matrix<T> type;
+    };
+    
+    
 } // namespace blas
 
 //
