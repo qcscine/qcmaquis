@@ -13,7 +13,7 @@ namespace blas
     void svd(general_matrix<T, MemoryBlock> & M,
              general_matrix<T, MemoryBlock> & U,
              general_matrix<T, MemoryBlock>& V,
-             typename general_matrix<T, MemoryBlock>::diagonal_matrix & S)
+             typename associated_diagonal_matrix<general_matrix<T, MemoryBlock> >::type & S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<general_matrix<T, MemoryBlock> >));
         typename general_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
@@ -23,7 +23,7 @@ namespace blas
         std::vector<double> S_(k);
         boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
         
-        S = typename general_matrix<T, MemoryBlock>::diagonal_matrix(S_);
+        S = typename associated_diagonal_matrix<general_matrix<T, MemoryBlock> >::type(S_);
     }
     
     template<typename T, class MemoryBlock>
