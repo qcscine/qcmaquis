@@ -3,6 +3,7 @@
 
 #include "block_matrix.h"
 #include "matrix_algorithms.hpp"
+#include "general_matrix_algorithms.h"
 
 // some example functions
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
