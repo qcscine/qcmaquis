@@ -82,7 +82,14 @@ public:
     
     IndexName name;
     
-    std::size_t at(charge c) const
+    std::size_t get_size(charge c) const
+    {
+        return std::find_if(this->begin(), this->end(),
+                            c == boost::lambda::bind(index_detail::get_first<SymmGroup>,
+                                                     boost::lambda::_1))->second;
+    }
+    
+    std::size_t position(charge c) const
     {
         return std::find_if(this->begin(), this->end(),
                             c == boost::lambda::bind(index_detail::get_first<SymmGroup>,
@@ -232,7 +239,7 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
             charge pdc = SymmGroup::fuse(it1->first, it2->first);
             std::size_t ps = it1->second * it2->second;
             if (ret.has(pdc))
-                ret[ret.at(pdc)].second += ps;
+                ret[ret.position(pdc)].second += ps;
             else
                 ret.insert(std::make_pair(pdc, ps));
         }

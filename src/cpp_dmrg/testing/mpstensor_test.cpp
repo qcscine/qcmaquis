@@ -13,7 +13,7 @@ typedef blas::general_matrix<double> Matrix;
 
 #include "indexing.h"
 #include "mpstensor.h"
-
+#include "mpotensor.h"
 
 int main()
 {

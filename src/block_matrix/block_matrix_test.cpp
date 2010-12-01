@@ -9,8 +9,9 @@ using namespace std;
 #include "matrix_interface.hpp"
 #include "resizable_matrix_interface.hpp"
 #include "matrix_algorithms.hpp"
+#include "diagonal_matrix.h"
 typedef blas::general_matrix<double> Matrix;
-typedef Matrix::diagonal_matrix DiagMatrix;
+typedef blas::associated_diagonal_matrix<Matrix>::type DiagMatrix;
 
 #include "block_matrix.h"
 #include "block_matrix_algorithms.h"
@@ -29,12 +30,12 @@ int main()
         physical.sort();
         cout << physical << endl;
         
-        cout << physical.destination(0) << endl;
+        cout << physical.position(0) << endl;
         
         physical.insert(make_pair(0,3));
         cout << physical << endl;
         
-        cout << physical.at(-1) << endl;
+        cout << physical.position(-1) << endl;
     }
     
     {

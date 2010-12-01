@@ -44,7 +44,7 @@ public:
         for (size_type k = 0; k < rhs.n_blocks(); ++k)
         {
             charge rhs_rc = rhs.rows_[k].first;
-            size_type goesto = rows_.at(rhs_rc);
+            size_type goesto = rows_.position(rhs_rc);
             if (goesto == rows_.size()) { // it's a new block
                 size_type i1 = rows_.insert(rhs.rows_[k]);
                 size_type i2 = cols_.insert(rhs.cols_[k]);

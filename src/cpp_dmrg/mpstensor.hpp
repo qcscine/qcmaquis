@@ -12,6 +12,7 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 , right_i(rd)
 , data_(sd*ld, rd)
 , cur_storage(LeftPaired)
+, cur_normalization(U)
 {
     data_.fill_with_random(drand48);
 } 
