@@ -92,7 +92,7 @@ namespace blas{
           return *this;
       }
       
-      vector& operator*=(const T lambda) 
+      vector& operator*=(T const& lambda) 
       {
           multiplies_assign(this->begin(), this->end(), lambda);
           return *this;
@@ -138,6 +138,18 @@ namespace blas{
     void multiplies_assign(ForwardIterator start1, ForwardIterator end1, T lambda) 
     {
         std::transform(start1, end1, start1, std::bind2nd(std::multiplies<T>(), lambda));
+    }
+
+    template <typename T, typename MemoryBlock>
+    vector<T,MemoryBlock> operator * (T const& t, vector<T,MemoryBlock> v)
+    {
+        return v *= t;
+    }
+    
+    template <typename T, typename MemoryBlock>
+    vector<T,MemoryBlock> operator * (vector<T,MemoryBlock> v, T const& t)
+    {
+        return v *= t;
     }
     
     template <typename T, typename MemoryBlock>

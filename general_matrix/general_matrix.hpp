@@ -5,7 +5,9 @@
 #include "matrix_element_iterator.hpp"
 #include "vector.hpp"
 #include "detail/general_matrix_adaptor.hpp"
-#include "function_objects.h"
+
+#include "../util/function_objects.h"
+
 #include "diagonal_matrix.h"
 
 #include <boost/lambda/lambda.hpp>
@@ -609,9 +611,9 @@ namespace blas {
         general_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_columns());
         for(std::size_t i=0; i < lhs.num_rows(); ++i)
         {
-            for(std::size_t j=0; j<rhs.num_columns(); ++j)
+            for(std::size_t k=0; k<lhs.num_columns(); ++k)
             {
-                for(std::size_t k=0; k<lhs.num_columns(); ++k)
+                for(std::size_t j=0; j<rhs.num_columns(); ++j)
                 {
                         result(i,j) += lhs(i,k) * rhs(k,j);
                 }
