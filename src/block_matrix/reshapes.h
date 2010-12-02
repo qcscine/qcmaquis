@@ -51,7 +51,7 @@ calculate_index(boost::array<Index<SymmGroup>, L> const & dims,
     typedef typename SymmGroup::charge charge;
     using std::size_t;
     
-    std::pair<charge, size_t> ret = make_pair(SymmGroup::SingletCharge, 0);
+    std::pair<charge, size_t> ret = std::make_pair(SymmGroup::SingletCharge, 0);
     
     // first step: calculate final charge
     for (size_t k = 0; k < L; ++k)
@@ -59,59 +59,16 @@ calculate_index(boost::array<Index<SymmGroup>, L> const & dims,
     
     // second step: strides
     boost::array<size_t, L> strides;
-    for (size_t k = 0; k < L; ++k) {
-        if (k == 0)
-            strides[0] = dims[k].get_size(idx[k].first);
-        else
-            strides[k] = strides[k-1] * dims[k].get_size(idx[k].first);
-    }
+    strides[L-1] = 1;
+    for (size_t k = L-1; k > 0; --k)
+        strides[k-1] = strides[k] * dims[k].get_size(idx[k].first);
+    
+    std::copy(strides.begin(), strides.end(), std::ostream_iterator<size_t>(cout, " ")); cout << endl;
     
     // last step: index
     for (size_t k = 0; k < L; ++k)
         ret.second += strides[k] * idx[k].second;
     
-    return ret;
-}
-
-template<class SymmGroup>
-boost::array<Index<SymmGroup>, 2> operator,(Index<SymmGroup> const & i1,
-                                            Index<SymmGroup> const & i2)
-{
-    boost::array<Index<SymmGroup>, 2> ret;
-    ret[0] = i1;
-    ret[1] = i2;
-    return ret;
-}
-
-template<class SymmGroup, int L>
-boost::array<Index<SymmGroup>, L+1> operator,(boost::array<Index<SymmGroup>, L> const & i1,
-                                              Index<SymmGroup> const & i2)
-{
-    boost::array<Index<SymmGroup>, L+1> ret;
-    std::copy(i1.begin(), i1.end(), ret.begin());
-    ret[L] = i2;
-    return ret;
-}
-
-template<class SymmGroup>
-boost::array<std::pair<typename SymmGroup::charge, std::size_t>, 2>
-operator,(std::pair<typename SymmGroup::charge, std::size_t> const & i1,
-          std::pair<typename SymmGroup::charge, std::size_t> const & i2)
-{
-    boost::array<std::pair<typename SymmGroup::charge, std::size_t>, 2> ret;
-    ret[0] = i1;
-    ret[1] = i2;
-    return ret;
-}
-
-template<class SymmGroup, int L>
-boost::array<std::pair<typename SymmGroup::charge, std::size_t>, L+1>
-operator,(boost::array<std::pair<typename SymmGroup::charge, std::size_t>, L> const & i1,
-          std::pair<typename SymmGroup::charge, std::size_t> const & i2)
-{
-    boost::array<std::pair<typename SymmGroup::charge, std::size_t>, L+1> ret;
-    std::copy(i1.begin(), i1.end(), ret.begin());
-    ret[L] = i2;
     return ret;
 }
 

@@ -25,5 +25,16 @@ int main()
     
     MPOTensor<Matrix, grp> mpo(physical, aux, aux);
     
-    
+    cout << mpo(std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 0)) << endl;
+    cout << mpo(std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 1)) << endl;
+    cout << mpo(std::make_pair(NullGroup::Plus, 1),
+                std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 0),
+                std::make_pair(NullGroup::Plus, 1)) << endl;
 }

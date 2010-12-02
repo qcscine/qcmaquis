@@ -14,6 +14,7 @@ typedef blas::general_matrix<double> Matrix;
 #include "indexing.h"
 #include "mpstensor.h"
 #include "mpotensor.h"
+#include "contractions.h"
 
 int main()
 {
@@ -37,23 +38,23 @@ int main()
     
     MPSTensor<Matrix, grp> mps2 = mps;
     block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
-    left = overlap_left_step(mps, mps2, left);
+    left = contraction::overlap_left_step(mps, mps2, left);
     cout << left << endl;
     
     mps.normalize_right(SVD);
     mps2 = mps;
     block_matrix<Matrix, grp> right = identity_matrix<Matrix, grp>(mps.row_dim());
-    right = overlap_right_step(mps, mps2, right);
+    right = contraction::overlap_right_step(mps, mps2, right);
     cout << right << endl;
     
     mps = MPSTensor<Matrix, grp>(physical, aux1, aux1);
     mps2 = MPSTensor<Matrix, grp>(physical, aux2, aux2);
     
     block_matrix<Matrix, grp> ovlp(aux2, aux1);
-    overlap_left_step(mps2, mps, ovlp);
-    overlap_left_step(mps2, mps, ovlp);
-    overlap_right_step(mps2, mps, ovlp);
-    overlap_right_step(mps2, mps, ovlp);
+    contraction::overlap_left_step(mps2, mps, ovlp);
+    contraction::overlap_left_step(mps2, mps, ovlp);
+    contraction::overlap_right_step(mps2, mps, ovlp);
+    contraction::overlap_right_step(mps2, mps, ovlp);
     
     return 0;
 }

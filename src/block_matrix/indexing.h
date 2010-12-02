@@ -73,6 +73,9 @@ namespace index_detail
 }
 
 template<class SymmGroup>
+class bstate_iterator;
+
+template<class SymmGroup>
 class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
 {
 public:
@@ -194,6 +197,28 @@ public:
 };
 
 template<class SymmGroup>
+class bstate_iterator
+{
+public:
+    typedef typename SymmGroup::charge charge;
+    
+    bstate_iterator(Index<SymmGroup> & idx)
+    : idx_(idx) { }
+    
+    std::pair<charge, std::size_t> operator*() const
+    {
+        return std::make_pair(cur_block->first, cur_i);
+    }
+    
+    
+    
+private:
+    Index<SymmGroup> & idx_;
+    typename Index<SymmGroup>::const_iterator cur_block;
+    std::size_t cur_i;
+};
+
+template<class SymmGroup>
 Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
     typedef typename SymmGroup::charge charge;
@@ -244,6 +269,27 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                 ret.insert(std::make_pair(pdc, ps));
         }
     ret.sort();
+    return ret;
+}
+
+template<class SymmGroup>
+boost::array<Index<SymmGroup>, 2> operator,(Index<SymmGroup> const & i1,
+                                            Index<SymmGroup> const & i2)
+{
+    boost::array<Index<SymmGroup>, 2> ret;
+    ret[0] = i1;
+    ret[1] = i2;
+    return ret;
+}
+
+template<class charge>
+boost::array<std::pair<charge, std::size_t>, 2>
+operator,(std::pair<charge, std::size_t> const & i1,
+          std::pair<charge, std::size_t> const & i2)
+{
+    boost::array<std::pair<charge, std::size_t>, 2> ret;
+    ret[0] = i1;
+    ret[1] = i2;
     return ret;
 }
 

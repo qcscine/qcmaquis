@@ -55,17 +55,7 @@ public:
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
     
-    template<class Matrix_, class SymmGroup_>
-    friend block_matrix<Matrix_, SymmGroup_> overlap_left_step(MPSTensor<Matrix_, SymmGroup_> & bra_tensor,
-                                                               MPSTensor<Matrix_, SymmGroup_> & ket_tensor,
-                                                               block_matrix<Matrix_, SymmGroup_> & left,
-                                                               block_matrix<Matrix_, SymmGroup_> * local_op = NULL);
-    
-    template<class Matrix_, class SymmGroup_>
-    friend block_matrix<Matrix_, SymmGroup_> overlap_right_step(MPSTensor<Matrix_, SymmGroup_> & bra_tensor,
-                                                                MPSTensor<Matrix_, SymmGroup_> & ket_tensor,
-                                                                block_matrix<Matrix_, SymmGroup_> & right,
-                                                                block_matrix<Matrix_, SymmGroup_> * local_op = NULL);
+    friend struct contraction;
     
 private:
     Index<SymmGroup> phys_i, left_i, right_i;
@@ -78,18 +68,6 @@ private:
     void make_left_paired();
     void make_right_paired();
 };
-
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> overlap_left_step(MPSTensor<Matrix, SymmGroup> & bratensor,
-                                                  MPSTensor<Matrix, SymmGroup> & kqettensor,
-                                                  block_matrix<Matrix, SymmGroup> & left,
-                                                  block_matrix<Matrix, SymmGroup> * localop = NULL);
-
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> overlap_right_step(MPSTensor<Matrix, SymmGroup> & bratensor,
-                                                   MPSTensor<Matrix, SymmGroup> & kqettensor,
-                                                   block_matrix<Matrix, SymmGroup> & right,
-                                                   block_matrix<Matrix, SymmGroup> * localop = NULL);
 
 #include "mpstensor.hpp"
 
