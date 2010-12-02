@@ -8,6 +8,17 @@
 
 enum MPOStorageLayout { LeftUp, LeftDown };
 
+/*
+ LeftUp:
+ 
+      i1
+      |
+ i2 - O - o2
+      |
+      o1
+ 
+ */
+
 template<class Matrix, class SymmGroup>
 class MPOTensor
 {

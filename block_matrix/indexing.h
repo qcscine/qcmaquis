@@ -15,22 +15,33 @@
 
 enum IndexName { alpha, sigma, beta, empty };
 
-template<class T> boost::array<T,1> _(const T &a)
+template<class SymmGroup> class Index;
+
+template<class T> boost::array<T, 1> _(T const & a)
 { 
-    boost::array<T,1> r = {a};
+    boost::array<T, 1> r;
+    r[0] = a;
     return r;
 }
 
-inline boost::array<IndexName, 2> operator,(const IndexName a, const IndexName b)
-{
-	boost::array<IndexName, 2> ret;
-	ret[0] = a;
-	ret[1] = b;
-	return ret;
+#define IMPL_COMMA(type) \
+boost::array<type, 2> operator,(type const & a, type const & b) { \
+	boost::array<type, 2> ret; \
+	ret[0] = a; \
+	ret[1] = b; \
+	return ret; \
 }
+#define CO ,
+
+IMPL_COMMA(IndexName)
+template<class SymmGroup> IMPL_COMMA(Index<SymmGroup>)
+template<class charge> IMPL_COMMA(std::pair<charge CO std::size_t>)
+
+#undef CO
+#undef IMPL_COMMA
 
 template<class T, int in>
-boost::array<T, in+1> operator,(const boost::array<T, in> a, const T b)
+boost::array<T, in+1> operator,(boost::array<T, in> const & a, T const & b)
 {
 	boost::array<T, in+1> ret;
 	for (int i = 0; i < in; i++)
@@ -40,7 +51,7 @@ boost::array<T, in+1> operator,(const boost::array<T, in> a, const T b)
 }
 
 template<class T, int in>
-boost::array<T, in+1> operator,(const T a, const boost::array<T, in> b)
+boost::array<T, in+1> operator,(T const & a, boost::array<T, in> const & b)
 {
 	boost::array<T, in+1> ret;
 	ret[0] = a;
@@ -73,7 +84,7 @@ namespace index_detail
 }
 
 template<class SymmGroup>
-class bstate_iterator;
+class basis_iterator;
 
 template<class SymmGroup>
 class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
@@ -82,6 +93,8 @@ public:
     typedef typename SymmGroup::charge charge;
     typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::iterator iterator;
     typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::const_iterator const_iterator;
+    
+    typedef basis_iterator<SymmGroup> basis_iterator;
     
     IndexName name;
     
@@ -172,6 +185,11 @@ public:
         return name == o.name && this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
     }
     
+    basis_iterator basis_begin() const
+    {
+        return basis_iterator(*this);
+    }
+    
 #ifdef PYTHON_EXPORTS
     std::size_t py_insert(wrapped_pair<SymmGroup> p)
     {
@@ -197,25 +215,47 @@ public:
 };
 
 template<class SymmGroup>
-class bstate_iterator
+class basis_iterator
 {
 public:
     typedef typename SymmGroup::charge charge;
     
-    bstate_iterator(Index<SymmGroup> & idx)
-    : idx_(idx) { }
+    basis_iterator(Index<SymmGroup> const & idx, bool at_end = false)
+    : idx_(idx)
+    , cur_block(idx.begin())
+    , cur_i(0)
+    , max_i(cur_block->second)
+    { }
     
     std::pair<charge, std::size_t> operator*() const
     {
         return std::make_pair(cur_block->first, cur_i);
     }
     
+    basis_iterator & operator++()
+    {
+        ++cur_i;
+        if (cur_i != max_i)
+            return *this;
+        else {
+            ++cur_block;
+            if (cur_block != idx_.end()) {
+                cur_i = 0;
+                max_i = cur_block->second;
+            }
+            return *this;
+        }
+    }
     
+    bool end() const
+    {
+        return cur_block == idx_.end();
+    }
     
 private:
-    Index<SymmGroup> & idx_;
+    Index<SymmGroup> const & idx_;
     typename Index<SymmGroup>::const_iterator cur_block;
-    std::size_t cur_i;
+    std::size_t cur_i, max_i;
 };
 
 template<class SymmGroup>
@@ -269,27 +309,6 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                 ret.insert(std::make_pair(pdc, ps));
         }
     ret.sort();
-    return ret;
-}
-
-template<class SymmGroup>
-boost::array<Index<SymmGroup>, 2> operator,(Index<SymmGroup> const & i1,
-                                            Index<SymmGroup> const & i2)
-{
-    boost::array<Index<SymmGroup>, 2> ret;
-    ret[0] = i1;
-    ret[1] = i2;
-    return ret;
-}
-
-template<class charge>
-boost::array<std::pair<charge, std::size_t>, 2>
-operator,(std::pair<charge, std::size_t> const & i1,
-          std::pair<charge, std::size_t> const & i2)
-{
-    boost::array<std::pair<charge, std::size_t>, 2> ret;
-    ret[0] = i1;
-    ret[1] = i2;
     return ret;
 }
 
