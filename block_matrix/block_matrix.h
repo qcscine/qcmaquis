@@ -18,10 +18,10 @@ class block_matrix
 {
 private:
     typedef typename SymmGroup::charge charge;
-    typedef typename Matrix::value_type value_type;
     
 public:
     typedef typename Matrix::size_type size_type;
+    typedef typename Matrix::value_type value_type;
     
     block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(), Index<SymmGroup> cols = Index<SymmGroup>())
     : rows_(rows)
@@ -98,6 +98,20 @@ public:
     
     Matrix & operator[](size_type c) { return data_[c]; }
     Matrix const & operator[](size_type c) const { return data_[c]; }
+    
+    value_type & operator()(std::pair<charge, size_type> const & r,
+                            std::pair<charge, size_type> const & c)
+    {
+        assert( rows_.position(r.first) == cols_.position(c.first) );
+        return data_[rows_.position(r.first)](r.second, c.second);
+    }
+    
+    value_type const & operator()(std::pair<charge, size_type> const & r,
+                                  std::pair<charge, size_type> const & c) const
+    {
+        assert( rows_.position(r.first) == cols_.position(c.first) );
+        return data_[rows_.position(r.first)](r.second, c.second);
+    }
     
     void remove_rows_from_block(size_type block, size_type r, size_type k = 1)
     {

@@ -35,6 +35,8 @@ public:
                                    access_type const & ket_index,
                                    access_type const & bra_index) const;
     
+    friend struct contraction;
+    
 private:
     void make_leftup_paired();
     
