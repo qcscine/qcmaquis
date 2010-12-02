@@ -14,6 +14,7 @@ typedef blas::general_matrix<double> Matrix;
 #include "indexing.h"
 #include "mpstensor.h"
 #include "mpotensor.h"
+#include "contractions.h"
 
 int main()
 {
@@ -24,17 +25,10 @@ int main()
     aux.insert(std::make_pair(NullGroup::Plus, 10));
     
     MPOTensor<Matrix, grp> mpo(physical, aux, aux);
+    MPSTensor<Matrix, grp> mps(physical, aux, aux);
     
-    cout << mpo(std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 0)) << endl;
-    cout << mpo(std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 1)) << endl;
-    cout << mpo(std::make_pair(NullGroup::Plus, 1),
-                std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 0),
-                std::make_pair(NullGroup::Plus, 1)) << endl;
+    block_matrix<Matrix, grp> left(aux*aux, aux);
+    
+    left = contraction::overlap_mpo_left_step(mps, mps, left, mpo);
+    
 }
