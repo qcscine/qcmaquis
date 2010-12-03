@@ -30,5 +30,5 @@ int main()
     block_matrix<Matrix, grp> left(aux*aux, aux);
     
     left = contraction::overlap_mpo_left_step(mps, mps, left, mpo);
-    
+    left = contraction::overlap_mpo_left_step(mps, mps, left, mpo);
 }
