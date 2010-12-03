@@ -12,7 +12,7 @@ struct contraction {
     static block_matrix<Matrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
                       MPSTensor<Matrix, SymmGroup> & ket_tensor,
-                      block_matrix<Matrix, SymmGroup> & left,
+                      block_matrix<Matrix, SymmGroup> left,
                       block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
         if (localop != NULL)
@@ -61,7 +61,7 @@ struct contraction {
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
     mpo_left(MPOTensor<Matrix, SymmGroup> & mpo,
-             block_matrix<Matrix, SymmGroup> & left,
+             block_matrix<Matrix, SymmGroup> left,
              Index<SymmGroup> & i2,
              Index<SymmGroup> & o3)
     {
@@ -86,11 +86,11 @@ struct contraction {
                     for (bit io2 = o2.basis_begin(); !io2.end(); ++io2)
                         for (bit io3 = o3.basis_begin(); !io3.end(); ++io3)
                             for (bit is = s.basis_begin(); !is.end(); ++is)
-                                ret(calculate_index<SymmGroup, 2>(i1 ^ i2, *ii1 ^ *ii2),
-                                    calculate_index<SymmGroup, 3>(o1 ^ o2 ^ o3, *io1 ^ *io2 ^ *io3))
+                                ret(calculate_index(i1 ^ i2, *ii1 ^ *ii2),
+                                    calculate_index(o1 ^ o2 ^ o3, *io1 ^ *io2 ^ *io3))
                                 =
-                                left(calculate_index<SymmGroup, 2>(i2 ^ s, *ii2 ^ *is),
-                                     calculate_index<SymmGroup, 1>(_(o3), _(*io3)))
+                                left(calculate_index(i2 ^ s, *ii2 ^ *is),
+                                     calculate_index(_(o3), _(*io3)))
                                 * mpo(*is, *io1, *ii1, *io2);
         
         return ret;
@@ -100,7 +100,7 @@ struct contraction {
     static block_matrix<Matrix, SymmGroup>
     overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> & ket_tensor,
-                          block_matrix<Matrix, SymmGroup> & left,
+                          block_matrix<Matrix, SymmGroup> left,
                           MPOTensor<Matrix, SymmGroup> & mpo)
     {
         bra_tensor.make_left_paired();
@@ -131,22 +131,36 @@ struct contraction {
             for (bit i1_i2 = mpo.right_i.basis_begin(); !i1_i2.end(); ++i1_i2)
                 for (bit i2_o1 = mpo.phys_i.basis_begin(); !i2_o1.end(); ++i2_o1)
                     for (bit i3_o2 = bra_tensor.left_i.basis_begin(); !i3_o2.end(); ++i3_o2)
-                        t2(calculate_index<SymmGroup, 2>(ket_tensor.right_i ^ mpo.right_i, *o1_i1 ^ *i1_i2),
-                           calculate_index<SymmGroup, 2>(mpo.phys_i ^ bra_tensor.left_i, *i2_o1 ^ *i3_o2))
+                        t2(calculate_index(ket_tensor.right_i ^ mpo.right_i, *o1_i1 ^ *i1_i2),
+                           calculate_index(mpo.phys_i ^ bra_tensor.left_i, *i2_o1 ^ *i3_o2))
                         =
-                        t(calculate_index<SymmGroup, 3>(mpo.right_i ^ mpo.phys_i ^ bra_tensor.left_i,
+                        t(calculate_index(mpo.right_i ^ mpo.phys_i ^ bra_tensor.left_i,
                                                         *i1_i2 ^ *i2_o1 ^ *i3_o2),
-                          calculate_index<SymmGroup, 1>(_(ket_tensor.right_i), _(*o1_i1)));
+                          calculate_index(_(ket_tensor.right_i), _(*o1_i1)));
         
         gemm(t2, bra_tensor.data_, t);
         return t;
     }
     
-//    template<class Matrix, class SymmGroup>
-//    static block_matrix<Matrix, SymmGroup>
-//    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
-//                           MPSTensor<Matrix, SymmGroup> & ket_tensor,
-//                           
+    template<class Matrix, class SymmGroup>
+    static block_matrix<Matrix, SymmGroup>
+    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
+                           MPSTensor<Matrix, SymmGroup> & ket_tensor,
+                           block_matrix<Matrix, SymmGroup> right,
+                           MPOTensor<Matrix, SymmGroup> & mpo)
+    {
+        bra_tensor.reflect();
+        ket_tensor.reflect();
+        mpo.reflect();
+        
+        right = overlap_mpo_left_step(bra_tensor, ket_tensor, right, mpo);
+        
+        bra_tensor.reflect();
+        ket_tensor.reflect();
+        mpo.reflect();
+        
+        return right;
+    }
 };
 
 #endif

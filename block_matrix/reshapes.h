@@ -3,7 +3,7 @@
 
 #include "indexing.h"
 
-template<class SymmGroup, int L>
+template<class SymmGroup, unsigned long L>
 std::pair<typename SymmGroup::charge, std::size_t>
 calculate_index(boost::array<Index<SymmGroup>, L> const & dims,
                 boost::array<std::pair<typename SymmGroup::charge, std::size_t>, L> const & idx)
@@ -51,13 +51,13 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
     for (bit s = physical_i.basis_begin(); !s.end(); ++s)
         for (bit l = left_i.basis_begin(); !l.end(); ++l)
             for (bit r = right_i.basis_begin(); !r.end(); ++r)
-                m2(calculate_index<SymmGroup, 1>(_(left_i), _(*l)),
-                   calculate_index<SymmGroup, 2>(physical_i ^ right_i,
+                m2(calculate_index(_(left_i), _(*l)),
+                   calculate_index(physical_i ^ right_i,
                                                  *s ^ *r))
                 =
-                m1(calculate_index<SymmGroup, 2>(physical_i ^ left_i,
+                m1(calculate_index(physical_i ^ left_i,
                                                  *s ^ *l),
-                   calculate_index<SymmGroup, 1>(_(right_i), _(*r)));
+                   calculate_index(_(right_i), _(*r)));
 }
 
 template<class Matrix, class SymmGroup>
@@ -79,12 +79,12 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
     for (bit s = physical_i.basis_begin(); !s.end(); ++s)
         for (bit l = left_i.basis_begin(); !l.end(); ++l)
             for (bit r = right_i.basis_begin(); !r.end(); ++r)
-                m2(calculate_index<SymmGroup, 2>(physical_i ^ left_i,
+                m2(calculate_index(physical_i ^ left_i,
                                                  *s ^ *l),
-                   calculate_index<SymmGroup, 1>(_(right_i), _(*r)))
+                   calculate_index(_(right_i), _(*r)))
                 =
-                m1(calculate_index<SymmGroup, 1>(_(left_i), _(*l)),
-                   calculate_index<SymmGroup, 2>(physical_i ^ right_i,
+                m1(calculate_index(_(left_i), _(*l)),
+                   calculate_index(physical_i ^ right_i,
                                                  *s ^ *r));
 }
 

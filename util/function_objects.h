@@ -15,6 +15,14 @@ struct f##name { template<class T> return_type operator() (arg_type t) { return 
     
 #undef DEFINE_FUNCTION_OBJECT
     
+    template<class T>
+    struct constant
+    {
+        T val;
+        constant(T v) : val(v) { }
+        T operator()() const { return val; }
+    };
+    
 } /* namespace */
     
 #endif
