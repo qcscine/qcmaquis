@@ -117,7 +117,17 @@ namespace blas {
             std::swap(size2_, r.size2_);
             std::swap(reserved_size1_,r.reserved_size1_);
         }
-        
+#ifdef GPU_COMPUTING		
+		/**
+		 * Construct the GPU using a general_matrix
+		 */
+		general_matrix(gpu::matrix_gpu < T > const& gpu_m)
+		: size1_(gpu_m.size1()), size2_(gpu_m.size2()),reserved_size1_(gpu_m.size1()),values_()
+		{
+			values_.resize(reserved_size1_*size2_);
+			cublasGetMatrix(size1_,size2_,sizeof(T),gpu_m.p(),size1_,&values_[0],size1_);
+		}
+#endif		
         /**
           * Swaps two general_matrices
           */
