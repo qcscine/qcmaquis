@@ -15,51 +15,6 @@
 
 enum IndexName { alpha, sigma, beta, empty };
 
-template<class SymmGroup> class Index;
-
-template<class T> boost::array<T, 1> _(T const & a)
-{ 
-    boost::array<T, 1> r;
-    r[0] = a;
-    return r;
-}
-
-#define IMPL_COMMA(type) \
-boost::array<type, 2> operator,(type const & a, type const & b) { \
-	boost::array<type, 2> ret; \
-	ret[0] = a; \
-	ret[1] = b; \
-	return ret; \
-}
-#define CO ,
-
-IMPL_COMMA(IndexName)
-template<class SymmGroup> IMPL_COMMA(Index<SymmGroup>)
-template<class charge> IMPL_COMMA(std::pair<charge CO std::size_t>)
-
-#undef CO
-#undef IMPL_COMMA
-
-template<class T, int in>
-boost::array<T, in+1> operator,(boost::array<T, in> const & a, T const & b)
-{
-	boost::array<T, in+1> ret;
-	for (int i = 0; i < in; i++)
-		ret[i] = a[i];
-	ret[in] = b;
-	return ret;
-}
-
-template<class T, int in>
-boost::array<T, in+1> operator,(T const & a, boost::array<T, in> const & b)
-{
-	boost::array<T, in+1> ret;
-	ret[0] = a;
-	for (int i = 0; i < in; i++)
-		ret[i+1] = b[i];
-	return ret;
-}
-
 namespace index_detail
 {
     template<class SymmGroup>
@@ -310,6 +265,57 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
         }
     ret.sort();
     return ret;
+}
+
+template<class T> boost::array<T, 1> _(T const & a)
+{ 
+    boost::array<T, 1> r;
+    r[0] = a;
+    return r;
+}
+
+#define IMPL_COMMA(tpl, type) \
+tpl boost::array<type, 2> operator^(type const & a, type const & b) { \
+    boost::array<type, 2> ret; \
+    ret[0] = a; \
+    ret[1] = b; \
+    return ret; \
+}
+#define IMPL_COMMA_2(tpl, type) \
+tpl boost::array<type, L+1> operator^(boost::array<type, L> const & a, type const & b) { \
+    boost::array<type, L+1> ret; \
+    std::copy(a.begin(), a.end(), ret.begin()); \
+    ret[L] = b; \
+    return ret; \
+}
+
+#define CO ,
+
+IMPL_COMMA(inline, IndexName)
+IMPL_COMMA(template<class SymmGroup>, Index<SymmGroup>)
+IMPL_COMMA(template<class charge>, std::pair<charge CO std::size_t>)
+
+#undef CO
+#undef IMPL_COMMA
+#undef IMPL_COMMA_2
+
+template<class T, unsigned long L>
+boost::array<T, L+1> operator^(boost::array<T, L> const & a, T const & b)
+{
+	boost::array<T, L+1> ret;
+    std::copy(a.begin(), a.end(), ret.begin());
+	ret[L] = b;
+	return ret;
+}
+
+template<class T, unsigned long L>
+boost::array<T, L+1> operator^(T const & a, boost::array<T, L> const & b)
+{
+	boost::array<T, L+1> ret;
+	ret[0] = a;
+	for (int i = 0; i < L; i++)
+		ret[i+1] = b[i];
+	return ret;
 }
 
 #endif
