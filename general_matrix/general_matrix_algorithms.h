@@ -20,7 +20,7 @@ namespace blas
         resize(U, num_rows(M), k);
         resize(V, k, num_columns(M));
         
-        std::vector<double> S_(k);
+        std::vector<T> S_(k);
         boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
         
         S = typename associated_diagonal_matrix<general_matrix<T, MemoryBlock> >::type(S_);
