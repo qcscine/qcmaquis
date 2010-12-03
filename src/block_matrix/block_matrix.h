@@ -150,7 +150,7 @@ public:
     }
     
     template<class Generator>
-    void fill_with_random(Generator & g)
+    void fill(Generator g)
     {
         for (std::size_t k = 0; k < n_blocks(); ++k)
             std::generate(elements(data_[k]).first, elements(data_[k]).second, g);

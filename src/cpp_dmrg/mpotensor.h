@@ -48,7 +48,11 @@ public:
     
     friend struct contraction;
     
+    void multiply_by_scalar(scalar_type);
+    
 private:
+    void reflect();
+    
     void make_leftup_paired();
     
     block_matrix<Matrix, SymmGroup> data_;

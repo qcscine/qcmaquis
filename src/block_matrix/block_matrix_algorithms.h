@@ -108,9 +108,9 @@ typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> m)
 }
 
 template<class Matrix, class SymmGroup, class Generator>
-void fill_with_random(block_matrix<Matrix, SymmGroup> & m, Generator & g)
+void fill(block_matrix<Matrix, SymmGroup> & m, Generator & g)
 {
-    m.fill_with_random(g);
+    m.fill(g);
 }
 
 template<class Matrix, class SymmGroup>
