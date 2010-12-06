@@ -52,6 +52,9 @@ public:
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
     
+    block_matrix<Matrix, SymmGroup> & data();
+    block_matrix<Matrix, SymmGroup> const & data() const;
+    
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
     

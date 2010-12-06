@@ -22,6 +22,47 @@ typedef blas::general_matrix<double> Matrix;
 
 typedef NullGroup grp;
 
+//#include <boost/random.hpp>
+//
+//#include <boost/numeric/ublas/vector.hpp>
+//#include <boost/numeric/ublas/matrix_expression.hpp>
+//#include <boost/numeric/ublas/io.hpp>
+//
+//typedef boost::numeric::ublas::vector<double> Vector;
+//
+//struct SiteProblem
+//{
+//    MPSTensor<Matrix, grp> ket_tensor;
+//    block_matrix<Matrix, grp> left_mpo;
+//    block_matrix<Matrix, grp> right;
+//    MPOTensor<Matrix, grp> mpo;
+//};
+//
+//namespace ietl
+//{
+//    void mult(SiteProblem &H, Vector &x, Vector &y)
+//    {
+//        MPSTensor<Matrix, grp> t1(H.ket_tensor), t2;
+//        Vector::iterator it = x.begin();
+//        for (std::size_t k = 0; k < t1.data().n_blocks(); ++k) {
+//            std::copy(it, it+num_rows(t1.data()[k])*num_columns(t1.data()[k]), elements(t1.data()[k]).first);
+//            it += num_rows(t1.data()[k])*num_columns(t1.data()[k]);
+//        }
+//        
+//        t2 = contraction::site_hamil(t1, H.left_mpo, H.right, H.mpo);
+//        
+//        it = y.begin();
+//        for (std::size_t k = 0; k < t2.data().n_blocks(); ++k) {
+//            std::copy(elements(t2.data()[k]).first, elements(t2.data()[k]).second, it);
+//            it += num_rows(t2.data()[k]) * num_columns(t2.data()[k]);
+//        }
+//    }
+//}
+//
+//#include <ietl/interface/ublas.h>
+//#include <ietl/lanczos.h>
+//#include <ietl/vectorspace.h> 
+
 struct MPS
 {
     MPS(int L_, int Mmax)
@@ -126,6 +167,33 @@ struct MPS
             block_matrix<Matrix, grp> t = mps_[i].normalize_right(SVD);
             mps_[i-1].multiply_from_right(t);
         }
+    }
+    
+    void optimize(MPOTensor<Matrix, grp> & mpo)
+    {
+        std::vector<block_matrix<Matrix, grp> >
+        left_ = left_mpo_overlaps(mpo),
+        right_ = right_mpo_overlaps(mpo);
+        
+        normalize_upto(0);
+        
+//        for (int sweep = 0; sweep < 5; ++sweep) {
+//            for (int site = 0; site < L; ++site) {
+//                unsigned int N = 23;
+//                ietl::vectorspace<Vector> vs(N);
+//                boost::lagged_fibonacci607 gen;
+//                
+//                SiteProblem sp;
+//                sp.ket_tensor = mps_[site];
+//                sp.mpo = mpo;
+//                sp.left_mpo = contraction::mpo_left(mpo, left_[0],
+//                                                    ...);
+//                
+//                unsigned int nvals = 1;
+//                ietl::lanczos_iteration<SiteProblem,
+//                ietl::vectorspace<Vector>, boost::lagged_fibonacci607> lanczos(
+//            }
+//        }
     }
     
     int L;
