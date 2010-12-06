@@ -9,6 +9,12 @@
 
 namespace blas
 {
+    namespace detail {
+        template<typename T> struct sv_type { typedef T type; };
+        template<typename T>
+        struct sv_type<std::complex<T> > { typedef T type; };
+    }
+    
     template<typename T, class MemoryBlock>
     void svd(general_matrix<T, MemoryBlock> & M,
              general_matrix<T, MemoryBlock> & U,
@@ -20,7 +26,7 @@ namespace blas
         resize(U, num_rows(M), k);
         resize(V, k, num_columns(M));
         
-        std::vector<T> S_(k);
+        std::vector<typename detail::sv_type<T>::type> S_(k);
         boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
         
         S = typename associated_diagonal_matrix<general_matrix<T, MemoryBlock> >::type(S_);
