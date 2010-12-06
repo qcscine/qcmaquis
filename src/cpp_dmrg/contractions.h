@@ -64,7 +64,7 @@ struct contraction {
              block_matrix<Matrix, SymmGroup> left,
              Index<SymmGroup> & i2,
              Index<SymmGroup> & o3)
-    {
+    {   
         /*
          i2  i1
          |   |
@@ -160,6 +160,41 @@ struct contraction {
         mpo.reflect();
         
         return right;
+    }
+    
+    template<class Matrix, class SymmGroup>
+    static MPSTensor<Matrix, SymmGroup>
+    site_hamil(MPSTensor<Matrix, SymmGroup> & ket_tensor,
+               block_matrix<Matrix, SymmGroup> & left_mpo,
+               block_matrix<Matrix, SymmGroup> & right,
+               MPOTensor<Matrix, SymmGroup> & mpo)
+    {
+        left_mpo = transpose(left_mpo);
+        
+        block_matrix<Matrix, SymmGroup> t, t2(ket_tensor.right_i * mpo.right_i,
+                                              mpo.phys_i * left_mpo.left_basis());
+        gemm(left_mpo, ket_tensor.data_, t);
+        
+        typedef typename Index<SymmGroup>::basis_iterator bit;
+        
+        for (bit o1_i1 = ket_tensor.right_i.basis_begin(); !o1_i1.end(); ++o1_i1)
+            for (bit i1_i2 = mpo.right_i.basis_begin(); !i1_i2.end(); ++i1_i2)
+                for (bit i2_o1 = mpo.phys_i.basis_begin(); !i2_o1.end(); ++i2_o1)
+                    for (bit i3_o2 = left_mpo.left_basis().basis_begin(); !i3_o2.end(); ++i3_o2)
+                        t2(calculate_index(ket_tensor.right_i ^ mpo.right_i, *o1_i1 ^ *i1_i2),
+                           calculate_index(mpo.phys_i ^ left_mpo.left_basis(), *i2_o1 ^ *i3_o2))
+                        =
+                        t(calculate_index(mpo.right_i ^ mpo.phys_i ^ left_mpo.left_basis(),
+                                          *i1_i2 ^ *i2_o1 ^ *i3_o2),
+                          calculate_index(_(ket_tensor.right_i), _(*o1_i1)));
+        
+        gemm(t2, right, t);
+        
+        MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(),
+                                         ket_tensor.row_dim(), ket_tensor.col_dim());
+        ret.data_ = conjugate(t);
+        ret.cur_storage = LeftPaired;
+        return ret;
     }
 };
 

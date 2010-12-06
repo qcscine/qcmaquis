@@ -204,3 +204,17 @@ bool MPSTensor<Matrix, SymmGroup>::isnormalized(bool test)
         return false;
     }
 }
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> &
+MPSTensor<Matrix, SymmGroup>::data()
+{
+    return data_;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> const &
+MPSTensor<Matrix, SymmGroup>::data() const
+{
+    return data_;
+}
