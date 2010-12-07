@@ -86,7 +86,7 @@ class matrix_element_iterator : public boost::iterator_facade<
         template <typename U>
         typename Matrix::difference_type distance_to(matrix_element_iterator<Matrix,U> const& z) const
         {
-            return (j - z.j)*num_rows(*m) + i - z.i;
+            return - ( (j - z.j)*num_rows(*m) + i - z.i );
         }
 
         // Matrix
