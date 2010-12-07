@@ -235,13 +235,15 @@ std::ostream& operator<<(std::ostream& os, Index<SymmGroup> const & idx)
 {
     if (idx.name != empty)
         os << idx.name << std::endl;
-    std::vector<typename SymmGroup::charge> charges = idx.charges();
-    std::copy(charges.begin(), charges.end(), std::ostream_iterator<typename SymmGroup::charge>(os, " "));
-    os << std::endl;
     
-    std::vector<std::size_t> sizes = idx.sizes();
-    std::copy(sizes.begin(), sizes.end(), std::ostream_iterator<std::size_t>(os, " "));
-    os << std::endl;
+    os << "|";
+    for (typename Index<SymmGroup>::const_iterator it = idx.begin();
+         it != idx.end();
+         ++it)
+    {
+        os << "( " << it->first << ": " << it->second << " )";
+    }
+    os << "|";
     
     return os;
 }

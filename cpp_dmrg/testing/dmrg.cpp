@@ -22,46 +22,66 @@ typedef blas::general_matrix<double> Matrix;
 
 typedef NullGroup grp;
 
-//#include <boost/random.hpp>
-//
-//#include <boost/numeric/ublas/vector.hpp>
-//#include <boost/numeric/ublas/matrix_expression.hpp>
-//#include <boost/numeric/ublas/io.hpp>
-//
-//typedef boost::numeric::ublas::vector<double> Vector;
-//
-//struct SiteProblem
-//{
-//    MPSTensor<Matrix, grp> ket_tensor;
-//    block_matrix<Matrix, grp> left_mpo;
-//    block_matrix<Matrix, grp> right;
-//    MPOTensor<Matrix, grp> mpo;
-//};
-//
-//namespace ietl
-//{
-//    void mult(SiteProblem &H, Vector &x, Vector &y)
-//    {
-//        MPSTensor<Matrix, grp> t1(H.ket_tensor), t2;
-//        Vector::iterator it = x.begin();
-//        for (std::size_t k = 0; k < t1.data().n_blocks(); ++k) {
-//            std::copy(it, it+num_rows(t1.data()[k])*num_columns(t1.data()[k]), elements(t1.data()[k]).first);
-//            it += num_rows(t1.data()[k])*num_columns(t1.data()[k]);
-//        }
-//        
-//        t2 = contraction::site_hamil(t1, H.left_mpo, H.right, H.mpo);
-//        
-//        it = y.begin();
-//        for (std::size_t k = 0; k < t2.data().n_blocks(); ++k) {
-//            std::copy(elements(t2.data()[k]).first, elements(t2.data()[k]).second, it);
-//            it += num_rows(t2.data()[k]) * num_columns(t2.data()[k]);
-//        }
-//    }
-//}
-//
-//#include <ietl/interface/ublas.h>
-//#include <ietl/lanczos.h>
-//#include <ietl/vectorspace.h> 
+#include <boost/random.hpp>
+
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/matrix_expression.hpp>
+#include <boost/numeric/ublas/io.hpp>
+
+typedef boost::numeric::ublas::vector<double> Vector;
+
+struct SiteProblem
+{
+    MPSTensor<Matrix, grp> ket_tensor;
+    block_matrix<Matrix, grp> left_mpo;
+    block_matrix<Matrix, grp> right;
+    MPOTensor<Matrix, grp> mpo;
+};
+
+namespace ietl
+{
+    void mult(SiteProblem const & H, Vector const & x, Vector & y)
+    {
+        MPSTensor<Matrix, grp> t1(H.ket_tensor), t2;
+        Vector::const_iterator cit = x.begin();
+        for (std::size_t k = 0; k < t1.data().n_blocks(); ++k) {
+            std::copy(cit, cit+num_rows(t1.data()[k])*num_columns(t1.data()[k]), elements(t1.data()[k]).first);
+            cit += num_rows(t1.data()[k])*num_columns(t1.data()[k]);
+        }
+        
+        t2 = contraction::site_hamil(t1,
+                                     const_cast<SiteProblem&>(H).left_mpo,
+                                     const_cast<SiteProblem&>(H).right,
+                                     const_cast<SiteProblem&>(H).mpo);
+        
+//        cout << "T2: " << t2 << endl;
+        
+        Vector::iterator it = y.begin();
+        for (std::size_t k = 0; k < t2.data().n_blocks(); ++k)
+            it = std::copy(elements(t2.data()[k]).first, elements(t2.data()[k]).second, it);
+        
+//        cout << x << endl << y << endl;
+//        exit(0);
+    }
+}
+
+void v2m(Vector const & x, MPSTensor<Matrix, grp> & t1)
+{
+//    cout << "t1 before: " << t1 << endl;
+    
+    Vector::const_iterator cit = x.begin();
+    for (std::size_t k = 0; k < t1.data().n_blocks(); ++k) {
+        std::copy(cit, cit+num_rows(t1.data()[k])*num_columns(t1.data()[k]), elements(t1.data()[k]).first);
+        cit += num_rows(t1.data()[k])*num_columns(t1.data()[k]);
+    }
+    
+//    cout << "t1 after: " << t1 << endl;
+//    exit(0);
+}
+
+#include <ietl/interface/ublas.h>
+#include <ietl/lanczos.h>
+#include <ietl/vectorspace.h> 
 
 struct MPS
 {
@@ -175,25 +195,70 @@ struct MPS
         left_ = left_mpo_overlaps(mpo),
         right_ = right_mpo_overlaps(mpo);
         
-        normalize_upto(0);
-        
-//        for (int sweep = 0; sweep < 5; ++sweep) {
-//            for (int site = 0; site < L; ++site) {
-//                unsigned int N = 23;
-//                ietl::vectorspace<Vector> vs(N);
-//                boost::lagged_fibonacci607 gen;
-//                
-//                SiteProblem sp;
-//                sp.ket_tensor = mps_[site];
-//                sp.mpo = mpo;
-//                sp.left_mpo = contraction::mpo_left(mpo, left_[0],
-//                                                    ...);
-//                
-//                unsigned int nvals = 1;
-//                ietl::lanczos_iteration<SiteProblem,
-//                ietl::vectorspace<Vector>, boost::lagged_fibonacci607> lanczos(
-//            }
-//        }
+        for (int sweep = 0; sweep < 10; ++sweep) {
+            for (int site = 0; site < L; ++site) {
+                normalize_upto(site);
+                mps_[site].multiply_by_scalar(1/norm());
+                left_ = left_mpo_overlaps(mpo);
+                right_ = right_mpo_overlaps(mpo);
+                
+                unsigned int N = 0;
+                for (std::size_t k = 0; k < mps_[site].data().n_blocks(); ++k)
+                    N += num_rows(mps_[site].data()[k]) * num_columns(mps_[site].data()[k]);
+                ietl::vectorspace<Vector> vs(N);
+                boost::lagged_fibonacci607 gen;
+                
+                SiteProblem sp;
+                sp.ket_tensor = mps_[site];
+                sp.mpo = mpo;
+                sp.left_mpo = contraction::mpo_left(mpo, left_[site],
+                                                    mps_[site].row_dim(), mps_[site].row_dim());
+                sp.right = right_[site+1];
+                
+                typedef ietl::vectorspace<Vector> Vecspace;
+                typedef boost::lagged_fibonacci607 Gen;  
+                
+                Vecspace vec(N);
+                Gen mygen;
+                ietl::lanczos<SiteProblem,Vecspace> lanczos(sp,vec);
+                
+                ietl::lanczos_iteration_nlowest<double> 
+//                iter(max_iter, n_lowest_eigenval, rel_tol, abs_tol);
+                iter(100, 1, 1e-8, 1e-8);
+                
+                std::vector<double> eigen, err;
+                std::vector<int> multiplicity;  
+                
+                try{
+                    lanczos.calculate_eigenvalues(iter,mygen);
+                    eigen = lanczos.eigenvalues();
+                    err = lanczos.errors();
+                    multiplicity = lanczos.multiplicities();
+                    std::cout << "number of iterations: " << iter.iterations() << "\n";
+                }
+                catch (std::runtime_error& e) {
+                    cout << "Error in eigenvalue calculation: " << endl;
+                    cout << e.what() << endl;
+                }
+                
+                cout << eigen[0] << endl;
+                
+                std::vector<double>::iterator start = eigen.begin();  
+                std::vector<double>::iterator end = eigen.begin()+1;
+                std::vector<Vector> eigenvectors; // for storing the eigen vectors. 
+                ietl::Info<double> info; // (m1, m2, ma, eigenvalue, residualm, status).
+                
+                try {
+                    lanczos.eigenvectors(start,end,std::back_inserter(eigenvectors),info,mygen); 
+                }
+                catch (std::runtime_error& e) {
+                    cout << "Error in eigenvector calculation: " << endl;
+                    cout << e.what() << endl;
+                }  
+                
+                v2m(eigenvectors[0], mps_[site]);
+            }
+        }
     }
     
     int L;
@@ -202,7 +267,7 @@ struct MPS
 
 int main()
 {
-    int L = 20, M = 10;
+    int L = 10, M = 5;
     MPS mps(L, M);
     
     MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps.mps_[0].site_dim());
@@ -217,4 +282,7 @@ int main()
     }
     
     cout << mps.norm(&sz_mpo) << endl;
+    mps.optimize(sz_mpo);
+    cout << "Sz: " << mps.norm(&sz_mpo) << endl;
+    cout << "Norm: " << mps.norm() << endl;
 }
