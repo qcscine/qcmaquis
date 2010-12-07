@@ -3,6 +3,7 @@
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
+#include <cassert>
 
 template <typename Matrix, typename T>
 class strided_iterator : public boost::iterator_facade<
@@ -69,8 +70,8 @@ class strided_iterator : public boost::iterator_facade<
         template <typename U>
         typename Matrix::difference_type distance_to(strided_iterator<Matrix,U> const& z) const
         {
-            assert( (ptr - z.ptr) % stride == 0 );
-            return (ptr - z.ptr)/stride;
+            assert( (z.ptr - ptr) % stride == 0 );
+            return (z.ptr - ptr)/stride;
         }
 
         value_type* ptr;
