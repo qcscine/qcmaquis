@@ -39,7 +39,7 @@ namespace index_detail
 }
 
 template<class SymmGroup>
-class basis_iterator;
+class basis_iterator_;
 
 template<class SymmGroup>
 class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
@@ -49,7 +49,7 @@ public:
     typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::iterator iterator;
     typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::const_iterator const_iterator;
     
-    typedef basis_iterator<SymmGroup> basis_iterator;
+    typedef basis_iterator_<SymmGroup> basis_iterator;
     
     IndexName name;
     
@@ -170,12 +170,12 @@ public:
 };
 
 template<class SymmGroup>
-class basis_iterator
+class basis_iterator_
 {
 public:
     typedef typename SymmGroup::charge charge;
     
-    basis_iterator(Index<SymmGroup> const & idx, bool at_end = false)
+    basis_iterator_(Index<SymmGroup> const & idx, bool at_end = false)
     : idx_(idx)
     , cur_block(idx.begin())
     , cur_i(0)
@@ -187,7 +187,7 @@ public:
         return std::make_pair(cur_block->first, cur_i);
     }
     
-    basis_iterator & operator++()
+    basis_iterator_ & operator++()
     {
         ++cur_i;
         if (cur_i != max_i)
