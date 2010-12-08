@@ -68,6 +68,7 @@ private:
     
     void reflect();
     
+public:
     void make_left_paired();
     void make_right_paired();
 };

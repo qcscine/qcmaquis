@@ -41,8 +41,10 @@ struct SiteProblem
 namespace ietl
 {
     void mult(SiteProblem const & H, Vector const & x, Vector & y)
-    {
+    {   
         MPSTensor<Matrix, grp> t1(H.ket_tensor), t2;
+        t1.make_left_paired();
+        
         Vector::const_iterator cit = x.begin();
         for (std::size_t k = 0; k < t1.data().n_blocks(); ++k) {
             std::copy(cit, cit+num_rows(t1.data()[k])*num_columns(t1.data()[k]), elements(t1.data()[k]).first);
@@ -54,14 +56,12 @@ namespace ietl
                                      const_cast<SiteProblem&>(H).right,
                                      const_cast<SiteProblem&>(H).mpo);
         
-//        cout << "T2: " << t2 << endl;
-        
         Vector::iterator it = y.begin();
         for (std::size_t k = 0; k < t2.data().n_blocks(); ++k)
             it = std::copy(elements(t2.data()[k]).first, elements(t2.data()[k]).second, it);
         
-//        cout << x << endl << y << endl;
-//        exit(0);
+//        cout << x << " " << y << endl;
+//        cout << "IP: " << inner_prod(x-y, x-y) << endl;
     }
 }
 
@@ -82,6 +82,8 @@ void v2m(Vector const & x, MPSTensor<Matrix, grp> & t1)
 #include <ietl/interface/ublas.h>
 #include <ietl/lanczos.h>
 #include <ietl/vectorspace.h> 
+
+typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 
 struct MPS
 {
@@ -119,20 +121,21 @@ struct MPS
         return ret;
     }
     
-    std::vector<block_matrix<Matrix, grp> > left_mpo_overlaps(MPOTensor<Matrix, grp> & mpo)
+    std::vector<block_matrix<Matrix, grp> > left_mpo_overlaps(mpo_t mpo)
     {
         std::vector<block_matrix<Matrix, grp> > left_(L+1);
         block_matrix<Matrix, grp> left = start_mtx();
         left_[0] = left;
+        
         for (int i = 0; i < L; ++i) {
             MPSTensor<Matrix, grp> bkp = mps_[i];
-            left = contraction::overlap_mpo_left_step(mps_[i], bkp, left, mpo);
+            left = contraction::overlap_mpo_left_step(mps_[i], bkp, left, mpo[i]);
             left_[i+1] = left;
         }
         return left_;
     }
     
-    std::vector<block_matrix<Matrix, grp> > right_mpo_overlaps(MPOTensor<Matrix, grp> & mpo)
+    std::vector<block_matrix<Matrix, grp> > right_mpo_overlaps(mpo_t mpo)
     {
         std::vector<block_matrix<Matrix, grp> > right_(L+1);
         block_matrix<Matrix, grp> right = start_mtx();
@@ -140,7 +143,7 @@ struct MPS
         
         for (int i = L-1; i >= 0; --i) {
             MPSTensor<Matrix, grp> bkp = mps_[i];
-            right = contraction::overlap_mpo_right_step(mps_[i], bkp, right, mpo);
+            right = contraction::overlap_mpo_right_step(mps_[i], bkp, right, mpo[i]);
             right_[i] = right;
         }
         return right_;
@@ -154,8 +157,17 @@ struct MPS
         else
             id_mpo = identity_mpo<Matrix>(mps_[0].site_dim());
         
-        std::vector<block_matrix<Matrix, grp> > left_ = left_mpo_overlaps(id_mpo);
+        std::vector<block_matrix<Matrix, grp> > left_ = left_mpo_overlaps(mpo_t(L, id_mpo));
         return trace(*left_.rbegin());
+    }
+    
+    double expval(mpo_t mpo)
+    {
+        std::vector<block_matrix<Matrix, grp> > left_ = left_mpo_overlaps(mpo);
+        return trace(*left_.rbegin());
+        
+//        std::vector<block_matrix<Matrix, grp> > right_ = right_mpo_overlaps(mpo);
+//        return trace(right_[0]);
     }
     
     double stupid_site_expval(MPOTensor<Matrix, grp> & mpo, int w)
@@ -163,8 +175,8 @@ struct MPS
         MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps_[0].site_dim());
         
         std::vector<block_matrix<Matrix, grp> >
-        left_ = left_mpo_overlaps(id_mpo),
-        right_ = right_mpo_overlaps(id_mpo);
+        left_ = left_mpo_overlaps(mpo_t(L, id_mpo)),
+        right_ = right_mpo_overlaps(mpo_t(L, id_mpo));
         
         MPSTensor<Matrix, grp> bkp = mps_[w];
         block_matrix<Matrix, grp> t = contraction::overlap_mpo_left_step(mps_[w], bkp, left_[w], mpo), t2;
@@ -189,14 +201,21 @@ struct MPS
         }
     }
     
-    void optimize(MPOTensor<Matrix, grp> & mpo)
+    void optimize(std::vector<MPOTensor<Matrix, grp> > mpo)
     {
         std::vector<block_matrix<Matrix, grp> >
         left_ = left_mpo_overlaps(mpo),
         right_ = right_mpo_overlaps(mpo);
         
         for (int sweep = 0; sweep < 10; ++sweep) {
-            for (int site = 0; site < L; ++site) {
+            for (int _site = 0; _site < 2*L; ++_site) {
+                int site;
+                if (_site < L)
+                    site = _site;
+                else
+                    site = 2*L-_site-1;
+                
+                cout << "Optimizing site " << site << endl;
                 normalize_upto(site);
                 mps_[site].multiply_by_scalar(1/norm());
                 left_ = left_mpo_overlaps(mpo);
@@ -210,8 +229,8 @@ struct MPS
                 
                 SiteProblem sp;
                 sp.ket_tensor = mps_[site];
-                sp.mpo = mpo;
-                sp.left_mpo = contraction::mpo_left(mpo, left_[site],
+                sp.mpo = mpo[site];
+                sp.left_mpo = contraction::mpo_left(mpo[site], left_[site],
                                                     mps_[site].row_dim(), mps_[site].row_dim());
                 sp.right = right_[site+1];
                 
@@ -222,9 +241,11 @@ struct MPS
                 Gen mygen;
                 ietl::lanczos<SiteProblem,Vecspace> lanczos(sp,vec);
                 
+                double rel_tol = 500*std::numeric_limits<double>::epsilon();
+                double abs_tol = std::pow(std::numeric_limits<double>::epsilon(),2./3);
                 ietl::lanczos_iteration_nlowest<double> 
 //                iter(max_iter, n_lowest_eigenval, rel_tol, abs_tol);
-                iter(100, 1, 1e-8, 1e-8);
+                iter(100, 1, rel_tol, abs_tol);
                 
                 std::vector<double> eigen, err;
                 std::vector<int> multiplicity;  
@@ -267,22 +288,29 @@ struct MPS
 
 int main()
 {
-    int L = 10, M = 5;
+    int L = 10, M = 2;
     MPS mps(L, M);
     
     MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps.mps_[0].site_dim());
-    cout << mps.norm() << endl;
-    mps.normalize_upto(3);
-    cout << mps.norm() << endl;
+//    cout << mps.norm() << endl;
+//    mps.normalize_upto(3);
+//    cout << mps.norm() << endl;
     
     MPOTensor<Matrix, grp> sz_mpo = s12_sz_mpo<Matrix>(mps.mps_[0].site_dim());
-    for (int k = 0; k < L; ++k) {
-        cout << mps.stupid_site_expval(id_mpo, k) << " ";
-        cout << mps.stupid_site_expval(sz_mpo, k) << endl;
-    }
+//    for (int k = 0; k < L; ++k) {
+//        cout << mps.stupid_site_expval(id_mpo, k) << " ";
+//        cout << mps.stupid_site_expval(sz_mpo, k) << endl;
+//    }
     
-    cout << mps.norm(&sz_mpo) << endl;
-    mps.optimize(sz_mpo);
-    cout << "Sz: " << mps.norm(&sz_mpo) << endl;
-    cout << "Norm: " << mps.norm() << endl;
+//    cout << mps.norm(&sz_mpo) << endl;
+//    mps.optimize(mpo_t(L, id_mpo));
+//    cout << "Sz: " << mps.norm(&sz_mpo) << endl;
+//    cout << "Norm: " << mps.norm() << endl;
+
+    mpo_t szsz = s12_ising<Matrix>(L, 0*-1, 1);
+    cout << mps.expval(szsz) << endl;
+    mps.optimize(szsz);
+    
+    mpo_t magn = s12_ising<Matrix>(L, 0, 1);
+    cout << mps.expval(magn) << endl;
 }

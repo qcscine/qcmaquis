@@ -24,9 +24,9 @@ MPOTensor<Matrix, SymmGroup>::operator()(MPOTensor<Matrix, SymmGroup>::access_ty
                                          MPOTensor<Matrix, SymmGroup>::access_type const & bra_index)
 {
     return data_(calculate_index(phys_i ^ left_i,
-                                               ket_index ^ left_index),
+                                 ket_index ^ left_index),
                  calculate_index(phys_i ^ right_i,
-                                               bra_index ^ right_index));
+                                 bra_index ^ right_index));
 }
 
 template<class Matrix, class SymmGroup>
@@ -51,6 +51,7 @@ void MPOTensor<Matrix, SymmGroup>::reflect()
                                           *r1 ^ *r2));
     
     swap(data_, t);
+    swap(left_i, right_i);
 }
 
 template<class Matrix, class SymmGroup>
