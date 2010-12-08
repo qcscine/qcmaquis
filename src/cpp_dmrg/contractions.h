@@ -85,13 +85,18 @@ struct contraction {
                 for (bit io1 = o1.basis_begin(); !io1.end(); ++io1)
                     for (bit io2 = o2.basis_begin(); !io2.end(); ++io2)
                         for (bit io3 = o3.basis_begin(); !io3.end(); ++io3)
-                            for (bit is = s.basis_begin(); !is.end(); ++is)
+                            for (bit is = s.basis_begin(); !is.end(); ++is) {
+//                                ret(calculate_index(i1 ^ i2, *ii1 ^ *ii2),
+//                                    calculate_index(o1 ^ o2 ^ o3, *io1 ^ *io2 ^ *io3));
+//                                left(calculate_index(i2 ^ s, *ii2 ^ *is),
+//                                     calculate_index(_(o3), _(*io3)));
                                 ret(calculate_index(i1 ^ i2, *ii1 ^ *ii2),
                                     calculate_index(o1 ^ o2 ^ o3, *io1 ^ *io2 ^ *io3))
-                                =
+                                +=
                                 left(calculate_index(i2 ^ s, *ii2 ^ *is),
                                      calculate_index(_(o3), _(*io3)))
                                 * mpo(*is, *io1, *ii1, *io2);
+                            }
         
         return ret;
     }
@@ -175,8 +180,6 @@ struct contraction {
         
         block_matrix<Matrix, SymmGroup> t, t2(ket_tensor.right_i * mpo.right_i,
                                               mpo.phys_i * ket_tensor.left_i);
-//        cout << left_mpo.left_basis() << left_mpo.right_basis() << endl;
-//        cout << ket_tensor.data_.left_basis() << " " << ket_tensor.data_.right_basis() << endl;
         gemm(left_mpo, ket_tensor.data_, t);
         
         typedef typename Index<SymmGroup>::basis_iterator bit;

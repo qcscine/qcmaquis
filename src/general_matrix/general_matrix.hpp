@@ -152,7 +152,8 @@ namespace blas {
           */
         inline value_type& operator()(const size_type i, const size_type j)
         {
-            assert((i < size1_) && (j < size2_));
+            assert(i < size1_);
+            assert(j < size2_);
             return values_[i+j*reserved_size1_];
         }
         
