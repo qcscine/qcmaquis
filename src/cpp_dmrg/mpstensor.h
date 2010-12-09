@@ -42,8 +42,8 @@ public:
                                                     double truncation = 0,
                                                     Index<SymmGroup> bond_dim = Index<SymmGroup>());
     
-    void multiply_from_left(block_matrix<Matrix, SymmGroup> &);
-    void multiply_from_right(block_matrix<Matrix, SymmGroup> &);
+    void multiply_from_left(block_matrix<Matrix, SymmGroup> const &);
+    void multiply_from_right(block_matrix<Matrix, SymmGroup> const &);
     void multiply_by_scalar(scalar_type);
     
     scalar_type scalar_overlap(MPSTensor&);

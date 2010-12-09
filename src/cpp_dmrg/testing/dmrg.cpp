@@ -22,6 +22,9 @@ typedef blas::general_matrix<double> Matrix;
 
 typedef NullGroup grp;
 
+typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
+typedef Boundary<Matrix, grp> boundary_t;
+
 #include <boost/random.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
@@ -33,8 +36,7 @@ typedef boost::numeric::ublas::vector<double> Vector;
 struct SiteProblem
 {
     MPSTensor<Matrix, grp> ket_tensor;
-    block_matrix<Matrix, grp> left_mpo;
-    block_matrix<Matrix, grp> right;
+    boundary_t left, right;
     MPOTensor<Matrix, grp> mpo;
 };
 
@@ -51,10 +53,7 @@ namespace ietl
             cit += num_rows(t1.data()[k])*num_columns(t1.data()[k]);
         }
         
-        t2 = contraction::site_hamil(t1,
-                                     const_cast<SiteProblem&>(H).left_mpo,
-                                     H.right,
-                                     const_cast<SiteProblem&>(H).mpo);
+        t2 = contraction::site_hamil(t1, H.left, H.right, H.mpo);
         
         Vector::iterator it = y.begin();
         for (std::size_t k = 0; k < t2.data().n_blocks(); ++k)
@@ -81,21 +80,22 @@ void v2m(Vector const & x, MPSTensor<Matrix, grp> & t1)
 
 #include <ietl/interface/ublas.h>
 #include <ietl/lanczos.h>
-#include <ietl/vectorspace.h> 
-
-typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
+#include <ietl/vectorspace.h>
 
 struct MPS
 {
-    MPS(int L_, int Mmax)
+    MPS(std::size_t L_, std::size_t Mmax)
     : mps_(L_), L(L_)
     {
-        std::vector<int> bond_sizes(L+1, Mmax);
-        for (std::size_t k = 0; k < L+1; ++k) {
-            bond_sizes[k] = std::min(bond_sizes[k], (int)powf(2, k));
-            bond_sizes[k] = std::min(bond_sizes[k], (int)powf(2, L-k));
+        std::vector<std::size_t> bond_sizes(L+1, 1);
+        for (std::size_t k = 1; k < L+1; ++k)
+            bond_sizes[k] = std::min(Mmax, 2*bond_sizes[k-1]);
+        bond_sizes[L] = 1;
+        for (std::size_t k = L; k > 0; --k) {
+            bond_sizes[k-1] = std::min(bond_sizes[k-1], 2*bond_sizes[k]);
         }
-        std::copy(bond_sizes.begin(), bond_sizes.end(), std::ostream_iterator<int>(cout, " ")); cout << endl;
+        std::copy(bond_sizes.begin(), bond_sizes.end(), std::ostream_iterator<int>(cout, " "));
+        cout << endl;
         
         Index<grp> phys; phys.insert(std::make_pair(NullGroup::Plus, 2));
         
@@ -113,18 +113,18 @@ struct MPS
 //            mps_[i].normalize_right(SVD);
     }
     
-    block_matrix<Matrix, grp> start_mtx()
+    boundary_t start_mtx()
     {
         Index<grp> i; i.insert(std::make_pair(NullGroup::Plus, 1));
-        block_matrix<Matrix, grp> ret(i, i);
-        ret.fill(functors::constant<double>(1));
+        boundary_t ret(i, i, 1);
+        ret(0, std::make_pair(NullGroup::Plus, 0), std::make_pair(NullGroup::Plus, 0)) = 1;
         return ret;
     }
     
-    std::vector<block_matrix<Matrix, grp> > left_mpo_overlaps(mpo_t mpo)
+    std::vector<boundary_t> left_mpo_overlaps(mpo_t mpo)
     {
-        std::vector<block_matrix<Matrix, grp> > left_(L+1);
-        block_matrix<Matrix, grp> left = start_mtx();
+        std::vector<boundary_t> left_(L+1);
+        boundary_t left = start_mtx();
         left_[0] = left;
         
         for (int i = 0; i < L; ++i) {
@@ -135,10 +135,10 @@ struct MPS
         return left_;
     }
     
-    std::vector<block_matrix<Matrix, grp> > right_mpo_overlaps(mpo_t mpo)
+    std::vector<boundary_t> right_mpo_overlaps(mpo_t mpo)
     {
-        std::vector<block_matrix<Matrix, grp> > right_(L+1);
-        block_matrix<Matrix, grp> right = start_mtx();
+        std::vector<boundary_t> right_(L+1);
+        boundary_t right = start_mtx();
         right_[L] = right;
         
         for (int i = L-1; i >= 0; --i) {
@@ -157,8 +157,8 @@ struct MPS
         else
             id_mpo = identity_mpo<Matrix>(mps_[0].site_dim());
         
-        std::vector<block_matrix<Matrix, grp> > left_ = left_mpo_overlaps(mpo_t(L, id_mpo));
-        return trace(*left_.rbegin());
+        std::vector<boundary_t> left_ = left_mpo_overlaps(mpo_t(L, id_mpo));
+        return left_[L](0, std::make_pair(NullGroup::Plus, 0), std::make_pair(NullGroup::Plus, 0));
     }
     
     void renormalize()
@@ -176,27 +176,11 @@ struct MPS
     
     double expval(mpo_t mpo)
     {
-        std::vector<block_matrix<Matrix, grp> > left_ = left_mpo_overlaps(mpo);
-        return trace(*left_.rbegin());
+        std::vector<boundary_t> left_ = left_mpo_overlaps(mpo);
+        return left_[L](0, std::make_pair(NullGroup::Plus, 0), std::make_pair(NullGroup::Plus, 0));
         
-//        std::vector<block_matrix<Matrix, grp> > right_ = right_mpo_overlaps(mpo);
+//        std::vector<boundary_t> right_ = right_mpo_overlaps(mpo);
 //        return trace(right_[0]);
-    }
-    
-    double stupid_site_expval(MPOTensor<Matrix, grp> & mpo, int w)
-    {
-        MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps_[0].site_dim());
-        
-        std::vector<block_matrix<Matrix, grp> >
-        left_ = left_mpo_overlaps(mpo_t(L, id_mpo)),
-        right_ = right_mpo_overlaps(mpo_t(L, id_mpo));
-        
-        MPSTensor<Matrix, grp> bkp = mps_[w];
-        block_matrix<Matrix, grp> t = contraction::overlap_mpo_left_step(mps_[w], bkp, left_[w], mpo), t2;
-        
-        t2 = transpose(t);
-        gemm(t2, right_[w+1], t);
-        return trace(t);
     }
     
     void normalize_upto(int w)
@@ -216,7 +200,7 @@ struct MPS
     
     void optimize(std::vector<MPOTensor<Matrix, grp> > mpo)
     {
-        std::vector<block_matrix<Matrix, grp> >
+        std::vector<boundary_t>
         left_ = left_mpo_overlaps(mpo),
         right_ = right_mpo_overlaps(mpo);
         normalize_upto(0);
@@ -258,8 +242,7 @@ struct MPS
                 SiteProblem sp;
                 sp.ket_tensor = mps_[site];
                 sp.mpo = mpo[site];
-                sp.left_mpo = contraction::mpo_left(mpo[site], left_[site],
-                                                    mps_[site].row_dim(), mps_[site].row_dim());
+                sp.left = left_[site];
                 sp.right = right_[site+1];
                 
                 typedef ietl::vectorspace<Vector> Vecspace;
@@ -329,13 +312,13 @@ struct MPS
         }
     }
     
-    int L;
+    std::size_t L;
     std::vector<MPSTensor<Matrix, grp> > mps_;
 };
 
 int main()
 {
-    int L = 10, M = 10;
+    int L = 32, M = 20;
     MPS mps(L, M);
     
     MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps.mps_[0].site_dim());
@@ -354,10 +337,11 @@ int main()
 //    cout << "Sz: " << mps.norm(&sz_mpo) << endl;
 //    cout << "Norm: " << mps.norm() << endl;
 
-    mpo_t szsz = s12_ising<Matrix>(L, -1, 0.5);
+    mpo_t szsz = s12_ising<Matrix>(L, -1, 1);
+//    mpo_t szsz(L, id_mpo);
 //    cout << mps.expval(szsz) << endl;
     mps.optimize(szsz);
-    
-    mpo_t magn = s12_ising<Matrix>(L, 0, 1);
-    cout << mps.expval(magn) << endl;
+//    
+//    mpo_t magn = s12_ising<Matrix>(L, 0, 1);
+//    cout << mps.expval(magn) << endl;
 }

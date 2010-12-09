@@ -53,7 +53,7 @@ public:
     
     IndexName name;
     
-    std::size_t get_size(charge c) const
+    std::size_t get_size(charge c) const // rename
     {
         return std::find_if(this->begin(), this->end(),
                             c == boost::lambda::bind(index_detail::get_first<SymmGroup>,

@@ -3,85 +3,58 @@
 #include "reshapes.h"
 
 template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup>::MPOTensor(Index<SymmGroup> const & sd,
-                                        Index<SymmGroup> const & ld,
-                                        Index<SymmGroup> const & rd)
-: phys_i(sd)
-, left_i(ld)
-, right_i(rd)
-, data_(sd*ld, sd*rd)
-, cur_storage(LeftUp)
-, cur_normalization(U)
-{
-    data_.fill(drand48);
-}
+MPOTensor<Matrix, SymmGroup>::MPOTensor(Index<SymmGroup> const & pd,
+                                        std::size_t ld,
+                                        std::size_t rd)
+: data_(ld, rd, block_matrix<Matrix, SymmGroup>(pd, pd))
+, phys_i(pd)
+{ }
 
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::scalar_type & 
-MPOTensor<Matrix, SymmGroup>::operator()(MPOTensor<Matrix, SymmGroup>::access_type const & left_index,
-                                         MPOTensor<Matrix, SymmGroup>::access_type const & right_index,
+MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
+                                         std::size_t right_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & bra_index)
 {
-    return data_(calculate_index(phys_i ^ left_i,
-                                 ket_index ^ left_index),
-                 calculate_index(phys_i ^ right_i,
-                                 bra_index ^ right_index));
+    return data_(left_index, right_index)(ket_index, bra_index);
 }
 
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::scalar_type const & 
-MPOTensor<Matrix, SymmGroup>::operator()(MPOTensor<Matrix, SymmGroup>::access_type const & left_index,
-                                         MPOTensor<Matrix, SymmGroup>::access_type const & right_index,
+MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
+                                         std::size_t right_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & bra_index) const
 {
-    return data_(calculate_index(phys_i ^ left_i,
-                                 ket_index ^ left_index),
-                 calculate_index(phys_i ^ right_i,
-                                 bra_index ^ right_index));
+    return data_(left_index, right_index)(ket_index, bra_index);
 }
 
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup> MPOTensor<Matrix, SymmGroup>::get_reflected() const
 {
-    MPOTensor<Matrix, SymmGroup> r(phys_i, right_i, left_i);
-    
-    typedef typename Index<SymmGroup>::basis_iterator bit;
-    
-//    block_matrix<Matrix, SymmGroup> t(phys_i*right_i, phys_i*left_i);
-    
-    for (bit l1 = phys_i.basis_begin(); !l1.end(); ++l1)
-        for (bit l2 = left_i.basis_begin(); !l2.end(); ++l2)
-            for (bit r1 = phys_i.basis_begin(); !r1.end(); ++r1)
-                for (bit r2 = right_i.basis_begin(); !r2.end(); ++r2)
-                    r.data_(calculate_index(phys_i ^ right_i,
-                                      *l1 ^ *r2),
-                            calculate_index(phys_i ^ left_i,
-                                            *r1 ^ *l2))
-                    =
-                    data_(calculate_index(phys_i ^ left_i,
-                                          *l1 ^ *l2),
-                          calculate_index(phys_i ^ right_i,
-                                          *r1 ^ *r2));
-    
-    return r;
+    MPOTensor<Matrix, SymmGroup> t(*this);
+    t.data_ = transpose(t.data_);
+    return t;
 }
 
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(scalar_type v)
 {
-    data_ *= v;
+//    std::for_each(elements(data_).first, elements(data_).second, boost::lambda::_1 *= v);
+    for (typename blas::general_matrix<block_matrix<Matrix, SymmGroup> >::element_iterator it = elements(data_).first;
+         it != elements(data_).second; ++it)
+        *it *= v;
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> MPOTensor<Matrix, SymmGroup>::row_dim() const
+std::size_t MPOTensor<Matrix, SymmGroup>::row_dim() const
 {
-    return left_i;
+    return num_rows(data_);
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> MPOTensor<Matrix, SymmGroup>::col_dim() const
+std::size_t MPOTensor<Matrix, SymmGroup>::col_dim() const
 {
-    return right_i;
+    return num_columns(data_);
 }
