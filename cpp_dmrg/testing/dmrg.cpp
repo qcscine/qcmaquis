@@ -53,7 +53,7 @@ namespace ietl
         
         t2 = contraction::site_hamil(t1,
                                      const_cast<SiteProblem&>(H).left_mpo,
-                                     const_cast<SiteProblem&>(H).right,
+                                     H.right,
                                      const_cast<SiteProblem&>(H).mpo);
         
         Vector::iterator it = y.begin();
@@ -161,6 +161,19 @@ struct MPS
         return trace(*left_.rbegin());
     }
     
+    void renormalize()
+    {
+        block_matrix<Matrix, grp> t;
+        for (int i = 0; i < L; ++i) {
+            t = mps_[i].normalize_left(SVD);
+            if (i < L-1)
+                mps_[i+1].multiply_from_left(t);
+        }
+        mps_[L-1].multiply_by_scalar(trace(t));
+        cout << "renorm norm: " << norm() << endl;
+    }
+
+    
     double expval(mpo_t mpo)
     {
         std::vector<block_matrix<Matrix, grp> > left_ = left_mpo_overlaps(mpo);
@@ -206,20 +219,32 @@ struct MPS
         std::vector<block_matrix<Matrix, grp> >
         left_ = left_mpo_overlaps(mpo),
         right_ = right_mpo_overlaps(mpo);
+        normalize_upto(0);
         
-        for (int sweep = 0; sweep < 10; ++sweep) {
+        for (int sweep = 0; sweep < 50; ++sweep) {
+            // turn off if you feel numerical errors accumulate
+            // which they shouldn't
+//            renormalize();
+//            normalize_upto(0);
+            
             for (int _site = 0; _site < 2*L; ++_site) {
-                int site;
-                if (_site < L)
+                int site, lr;
+                if (_site < L) {
                     site = _site;
-                else
+                    lr = 1;
+                } else {
                     site = 2*L-_site-1;
+                    lr = -1;
+                }
                 
-                cout << "Optimizing site " << site << endl;
-                normalize_upto(site);
-                mps_[site].multiply_by_scalar(1/norm());
-                left_ = left_mpo_overlaps(mpo);
-                right_ = right_mpo_overlaps(mpo);
+                cout << "Sweep " << sweep << ", optimizing site " << site << endl;
+//                normalize_upto(site);
+//                mps_[site].multiply_by_scalar(1/norm());
+//                left_ = left_mpo_overlaps(mpo);
+//                right_ = right_mpo_overlaps(mpo);
+                
+//                cout << "Normerr: " << norm() - 1 << endl;
+//                assert( fabs(norm() - 1) < 1e-6 );
                 
                 unsigned int N = 0;
                 for (std::size_t k = 0; k < mps_[site].data().n_blocks(); ++k)
@@ -227,6 +252,9 @@ struct MPS
                 ietl::vectorspace<Vector> vs(N);
                 boost::lagged_fibonacci607 gen;
                 
+                // This should not be necessary here.
+                // If you find out why it is, let me know.
+                mps_[site].make_left_paired();
                 SiteProblem sp;
                 sp.ket_tensor = mps_[site];
                 sp.mpo = mpo[site];
@@ -262,7 +290,7 @@ struct MPS
                     cout << e.what() << endl;
                 }
                 
-                cout << eigen[0] << endl;
+                cout << "Energy: " << eigen[0] << endl;
                 
                 std::vector<double>::iterator start = eigen.begin();  
                 std::vector<double>::iterator end = eigen.begin()+1;
@@ -278,6 +306,25 @@ struct MPS
                 }  
                 
                 v2m(eigenvectors[0], mps_[site]);
+                
+                if (lr == +1) {
+                    block_matrix<Matrix, grp> t = mps_[site].normalize_left(SVD);
+                    if (site < L-1)
+                        mps_[site+1].multiply_from_left(t);
+
+                    
+                    MPSTensor<Matrix, grp> bkp = mps_[site];
+                    left_[site+1] = contraction::overlap_mpo_left_step(mps_[site], bkp,
+                                                                       left_[site], mpo[site]);
+                } else if (lr == -1) {
+                    block_matrix<Matrix, grp> t = mps_[site].normalize_right(SVD);
+                    if (site > 0)
+                        mps_[site-1].multiply_from_right(t);
+                    
+                    MPSTensor<Matrix, grp> bkp = mps_[site];
+                    right_[site] = contraction::overlap_mpo_right_step(mps_[site], bkp,
+                                                                       right_[site+1], mpo[site]);
+                }
             }
         }
     }
@@ -288,7 +335,7 @@ struct MPS
 
 int main()
 {
-    int L = 10, M = 2;
+    int L = 10, M = 10;
     MPS mps(L, M);
     
     MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps.mps_[0].site_dim());
@@ -307,8 +354,8 @@ int main()
 //    cout << "Sz: " << mps.norm(&sz_mpo) << endl;
 //    cout << "Norm: " << mps.norm() << endl;
 
-    mpo_t szsz = s12_ising<Matrix>(L, 0*-1, 1);
-    cout << mps.expval(szsz) << endl;
+    mpo_t szsz = s12_ising<Matrix>(L, -1, 0.5);
+//    cout << mps.expval(szsz) << endl;
     mps.optimize(szsz);
     
     mpo_t magn = s12_ising<Matrix>(L, 0, 1);

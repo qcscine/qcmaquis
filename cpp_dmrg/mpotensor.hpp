@@ -30,28 +30,42 @@ MPOTensor<Matrix, SymmGroup>::operator()(MPOTensor<Matrix, SymmGroup>::access_ty
 }
 
 template<class Matrix, class SymmGroup>
-void MPOTensor<Matrix, SymmGroup>::reflect()
+typename MPOTensor<Matrix, SymmGroup>::scalar_type const & 
+MPOTensor<Matrix, SymmGroup>::operator()(MPOTensor<Matrix, SymmGroup>::access_type const & left_index,
+                                         MPOTensor<Matrix, SymmGroup>::access_type const & right_index,
+                                         MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
+                                         MPOTensor<Matrix, SymmGroup>::access_type const & bra_index) const
 {
+    return data_(calculate_index(phys_i ^ left_i,
+                                 ket_index ^ left_index),
+                 calculate_index(phys_i ^ right_i,
+                                 bra_index ^ right_index));
+}
+
+template<class Matrix, class SymmGroup>
+MPOTensor<Matrix, SymmGroup> MPOTensor<Matrix, SymmGroup>::get_reflected() const
+{
+    MPOTensor<Matrix, SymmGroup> r(phys_i, right_i, left_i);
+    
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
-    block_matrix<Matrix, SymmGroup> t(phys_i*right_i, phys_i*left_i);
+//    block_matrix<Matrix, SymmGroup> t(phys_i*right_i, phys_i*left_i);
     
     for (bit l1 = phys_i.basis_begin(); !l1.end(); ++l1)
         for (bit l2 = left_i.basis_begin(); !l2.end(); ++l2)
             for (bit r1 = phys_i.basis_begin(); !r1.end(); ++r1)
                 for (bit r2 = right_i.basis_begin(); !r2.end(); ++r2)
-                    t(calculate_index(phys_i ^ right_i,
+                    r.data_(calculate_index(phys_i ^ right_i,
                                       *l1 ^ *r2),
-                      calculate_index(phys_i ^ left_i,
-                                      *r1 ^ *l2))
+                            calculate_index(phys_i ^ left_i,
+                                            *r1 ^ *l2))
                     =
                     data_(calculate_index(phys_i ^ left_i,
                                           *l1 ^ *l2),
                           calculate_index(phys_i ^ right_i,
                                           *r1 ^ *r2));
     
-    swap(data_, t);
-    swap(left_i, right_i);
+    return r;
 }
 
 template<class Matrix, class SymmGroup>

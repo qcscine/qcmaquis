@@ -10,9 +10,9 @@
 struct contraction {
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
-    overlap_left_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
-                      MPSTensor<Matrix, SymmGroup> & ket_tensor,
-                      block_matrix<Matrix, SymmGroup> left,
+    overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                      MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                      block_matrix<Matrix, SymmGroup> const & left,
                       block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
         if (localop != NULL)
@@ -35,9 +35,9 @@ struct contraction {
     
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
-    overlap_right_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
-                       MPSTensor<Matrix, SymmGroup> & ket_tensor,
-                       block_matrix<Matrix, SymmGroup> & right,
+    overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                       block_matrix<Matrix, SymmGroup> const & right,
                        block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
         if (localop != NULL)
@@ -60,8 +60,8 @@ struct contraction {
     
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
-    mpo_left(MPOTensor<Matrix, SymmGroup> & mpo,
-             block_matrix<Matrix, SymmGroup> left,
+    mpo_left(MPOTensor<Matrix, SymmGroup> const & mpo,
+             block_matrix<Matrix, SymmGroup> const & left,
              Index<SymmGroup> const & i2,
              Index<SymmGroup> const & o3)
     {   
@@ -103,10 +103,10 @@ struct contraction {
     
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
-    overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
-                          MPSTensor<Matrix, SymmGroup> & ket_tensor,
-                          block_matrix<Matrix, SymmGroup> left,
-                          MPOTensor<Matrix, SymmGroup> & mpo)
+    overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                          MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                          block_matrix<Matrix, SymmGroup> const & left,
+                          MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         bra_tensor.make_left_paired();
         ket_tensor.make_left_paired();
@@ -149,30 +149,28 @@ struct contraction {
     
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
-    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> & bra_tensor,
-                           MPSTensor<Matrix, SymmGroup> & ket_tensor,
+    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                            block_matrix<Matrix, SymmGroup> right,
-                           MPOTensor<Matrix, SymmGroup> & mpo)
+                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        bra_tensor.reflect();
-        ket_tensor.reflect();
-        mpo.reflect();
+        MPSTensor<Matrix, SymmGroup>
+        r_bra_tensor = bra_tensor.get_reflected(),
+        r_ket_tensor = ket_tensor.get_reflected();
+        MPOTensor<Matrix, SymmGroup>
+        r_mpo = mpo.get_reflected();
         
-        right = overlap_mpo_left_step(bra_tensor, ket_tensor, right, mpo);
-        
-        bra_tensor.reflect();
-        ket_tensor.reflect();
-        mpo.reflect();
+        right = overlap_mpo_left_step(r_bra_tensor, r_ket_tensor, right, r_mpo);
         
         return right;
     }
     
     template<class Matrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
-    site_hamil(MPSTensor<Matrix, SymmGroup> & ket_tensor,
+    site_hamil(MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                block_matrix<Matrix, SymmGroup> left_mpo,
-               block_matrix<Matrix, SymmGroup> & right,
-               MPOTensor<Matrix, SymmGroup> & mpo)
+               block_matrix<Matrix, SymmGroup> const & right,
+               MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         ket_tensor.make_left_paired();
         
