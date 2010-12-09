@@ -14,7 +14,7 @@ namespace blas
 template TEMPLATE_PARS \
 RET NAME ARGS \
 { \
-    BOOST_CONCEPT_ASSERT((blas::Matrix<TYPE>)); \
+    /* BOOST_CONCEPT_ASSERT((blas::Matrix<TYPE>)); */ \
     return m.NAME VARS; \
 } 
 

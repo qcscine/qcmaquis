@@ -14,7 +14,7 @@ namespace blas
     template <typename Matrix>
     Matrix transpose(Matrix const& m) 
     {
-        BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
+//        BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
         // TODO: perhaps this could return a proxy object
         Matrix tmp(num_columns(m), num_rows(m));
         for(typename Matrix::size_type i=0; i < num_rows(m); ++i){

@@ -139,7 +139,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
 
 template<class Matrix, class SymmGroup>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup> & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup> const & N)
 {
     cur_normalization = U;
     block_matrix<Matrix, SymmGroup> tmp;
@@ -151,7 +151,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup
 
 template<class Matrix, class SymmGroup>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup> & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup> const & N)
 {
     cur_normalization = U;
     block_matrix<Matrix, SymmGroup> tmp;
