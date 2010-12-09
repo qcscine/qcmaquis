@@ -7,8 +7,8 @@
 
 // some example functions
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-void gemm(block_matrix<Matrix1, SymmGroup> & A,
-          block_matrix<Matrix2, SymmGroup> & B,
+void gemm(block_matrix<Matrix1, SymmGroup> const & A,
+          block_matrix<Matrix2, SymmGroup> const & B,
           block_matrix<Matrix3, SymmGroup> & C)
 {
     C = block_matrix<Matrix3, SymmGroup>(A.left_basis(), B.right_basis());
@@ -29,7 +29,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> & A,
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void svd(block_matrix<Matrix, SymmGroup> & M,
+void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & U,
          block_matrix<Matrix, SymmGroup> & V,
          block_matrix<DiagMatrix, SymmGroup> & S)
@@ -102,7 +102,7 @@ block_matrix<Matrix, SymmGroup> conjugate_transpose(block_matrix<Matrix, SymmGro
 }
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> m)
+typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> const & m)
 {
     return m.trace();
 }

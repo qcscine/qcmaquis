@@ -18,16 +18,24 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 } 
 
 template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::reflect()
+MPSTensor<Matrix, SymmGroup> MPSTensor<Matrix, SymmGroup>::get_reflected() const
 {
-    swap(left_i, right_i);
-    data_ = transpose(data_);
-    cur_storage = (cur_storage == LeftPaired ? RightPaired : LeftPaired);
+    MPSTensor<Matrix, SymmGroup> ret;
+    ret.left_i = right_i;
+    ret.right_i = left_i;
+    ret.phys_i = phys_i;
+    
+    ret.data_ = transpose(data_);
+    
+    ret.cur_storage = (cur_storage == LeftPaired ? RightPaired : LeftPaired);
     if (cur_normalization == L)
-        cur_normalization = R;
+        ret.cur_normalization = R;
     else if (cur_normalization == R)
-        cur_normalization = L;
-    // if U, nothing changes
+        ret.cur_normalization = L;
+    else
+        ret.cur_normalization = U;
+    
+    return ret;
 }
 
 template<class Matrix, class SymmGroup>
@@ -55,7 +63,7 @@ bool MPSTensor<Matrix, SymmGroup>::isobccompatible(Indicator i) const
 }
 
 template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::make_left_paired()
+void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
 {
     if (cur_storage == LeftPaired)
         return;
@@ -68,7 +76,7 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired()
 }
 
 template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::make_right_paired()
+void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
 {
     if (cur_storage == RightPaired)
         return;
@@ -119,10 +127,12 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
 {
     // This is more expensive than a full implementation
     // due to the additional transposes - but I want to reduce code for now.
-    reflect();
-    block_matrix<Matrix, SymmGroup> r = normalize_left(method, multiplied, truncation, bond_dim);
+    
+    
+    MPSTensor<Matrix, SymmGroup> rt = get_reflected();
+    block_matrix<Matrix, SymmGroup> r = rt.normalize_left(method, multiplied, truncation, bond_dim);
     r = transpose(r);
-    reflect();
+    *this = rt.get_reflected();
     
     return r;
 }
@@ -136,6 +146,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup
     make_left_paired();
     gemm(data_, N, tmp);
     swap(data_, tmp);
+    right_i = N.right_basis();
 }
 
 template<class Matrix, class SymmGroup>
@@ -147,6 +158,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup>
     make_right_paired();
     gemm(N, data_, tmp);
     swap(data_, tmp);
+    left_i = N.left_basis();
 }
 
 template<class Matrix, class SymmGroup>

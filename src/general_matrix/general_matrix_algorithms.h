@@ -16,7 +16,7 @@ namespace blas
     }
     
     template<typename T, class MemoryBlock>
-    void svd(general_matrix<T, MemoryBlock> & M,
+    void svd(general_matrix<T, MemoryBlock> M,
              general_matrix<T, MemoryBlock> & U,
              general_matrix<T, MemoryBlock>& V,
              typename associated_diagonal_matrix<general_matrix<T, MemoryBlock> >::type & S)
@@ -33,7 +33,7 @@ namespace blas
     }
     
     template<typename T, class MemoryBlock>
-    void qr(general_matrix<T, MemoryBlock> & M,
+    void qr(general_matrix<T, MemoryBlock> M,
             general_matrix<T, MemoryBlock> & Q,
             general_matrix<T, MemoryBlock> & R)
     {

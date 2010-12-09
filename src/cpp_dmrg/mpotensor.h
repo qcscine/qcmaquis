@@ -50,14 +50,14 @@ public:
     
     void multiply_by_scalar(scalar_type);
     
+    
+    void make_leftup_paired() const;
+    MPOTensor get_reflected() const;
+    
 private:
-    void reflect();
-    
-    void make_leftup_paired();
-    
-    block_matrix<Matrix, SymmGroup> data_;
+    mutable block_matrix<Matrix, SymmGroup> data_;
     Index<SymmGroup> phys_i, left_i, right_i;
-    MPOStorageLayout cur_storage;
+    mutable MPOStorageLayout cur_storage;
     Indicator cur_normalization;
 };
   

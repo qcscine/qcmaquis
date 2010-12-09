@@ -43,6 +43,9 @@ MPOTensor<Matrix, NullGroup> s12_sz_mpo(Index<NullGroup> phys_i)
 template<class Matrix>
 std::vector<MPOTensor<Matrix, NullGroup> > s12_ising(std::size_t L, double J, double h)
 {
+    J *= 0.25;
+    h *= 0.5;
+    
     using std::make_pair;
     
     Index<NullGroup> phys; phys.insert(std::make_pair(NullGroup::Plus, 2));

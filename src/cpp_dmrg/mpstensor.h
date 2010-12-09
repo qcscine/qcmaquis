@@ -62,15 +62,15 @@ public:
     
 private:
     Index<SymmGroup> phys_i, left_i, right_i;
-    block_matrix<Matrix, SymmGroup> data_;
-    MPSStorageLayout cur_storage;
+    mutable block_matrix<Matrix, SymmGroup> data_;
+    mutable MPSStorageLayout cur_storage;
     Indicator cur_normalization;
     
-    void reflect();
+    MPSTensor get_reflected() const;
     
 public:
-    void make_left_paired();
-    void make_right_paired();
+    void make_left_paired() const;
+    void make_right_paired() const;
 };
 
 #include "mpstensor.hpp"
