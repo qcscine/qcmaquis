@@ -35,8 +35,8 @@ public:
     , upper_i(ud), lower_i(ld)
     { }
     
-    Index<SymmGroup> upper_dim() const { return upper_i; }
-    Index<SymmGroup> lower_dim() const { return lower_i; }
+    Index<SymmGroup> const & upper_dim() const { return upper_i; }
+    Index<SymmGroup> const & lower_dim() const { return lower_i; }
     std::size_t aux_dim() const { return data_.size(); }
     
     scalar_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); }
@@ -62,8 +62,8 @@ public:
               std::size_t ld = 1,
               std::size_t rd = 1);
     
-    Index<SymmGroup> site_bra_dim() const;
-    Index<SymmGroup> site_ket_dim() const;
+    Index<SymmGroup> const & site_bra_dim() const;
+    Index<SymmGroup> const & site_ket_dim() const;
     std::size_t row_dim() const;
     std::size_t col_dim() const;
     

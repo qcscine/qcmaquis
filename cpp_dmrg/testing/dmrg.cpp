@@ -205,7 +205,7 @@ struct MPS
         right_ = right_mpo_overlaps(mpo);
         normalize_upto(0);
         
-        for (int sweep = 0; sweep < 50; ++sweep) {
+        for (int sweep = 0; sweep < 1; ++sweep) {
             // turn off if you feel numerical errors accumulate
             // which they shouldn't
 //            renormalize();
@@ -255,7 +255,6 @@ struct MPS
                 double rel_tol = 500*std::numeric_limits<double>::epsilon();
                 double abs_tol = std::pow(std::numeric_limits<double>::epsilon(),2./3);
                 ietl::lanczos_iteration_nlowest<double> 
-//                iter(max_iter, n_lowest_eigenval, rel_tol, abs_tol);
                 iter(100, 1, rel_tol, abs_tol);
                 
                 std::vector<double> eigen, err;
@@ -318,7 +317,7 @@ struct MPS
 
 int main()
 {
-    int L = 32, M = 20;
+    int L = 32, M = 100;
     MPS mps(L, M);
     
     MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps.mps_[0].site_dim());
