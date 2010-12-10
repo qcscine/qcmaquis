@@ -58,9 +58,9 @@ public:
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
     
     // the constructor asumes that the upper and lower physical dimension is the same
-    MPOTensor(Index<SymmGroup> const & rd = Index<SymmGroup>(),
-              std::size_t ld = 1,
-              std::size_t rd = 1);
+    MPOTensor(Index<SymmGroup> const & = Index<SymmGroup>(),
+              std::size_t = 1,
+              std::size_t = 1);
     
     Index<SymmGroup> const & site_bra_dim() const;
     Index<SymmGroup> const & site_ket_dim() const;

@@ -1,7 +1,7 @@
 #ifndef SPECIAL_MPOS_H
 #define SPECIAL_MPOS_H
 
-#include "mpotensor.h"
+#include "mpo.h"
 
 template<class Matrix>
 MPOTensor<Matrix, NullGroup> identity_mpo(Index<NullGroup> phys_i)
@@ -33,7 +33,7 @@ MPOTensor<Matrix, NullGroup> s12_sz_mpo(Index<NullGroup> phys_i)
 }
 
 template<class Matrix>
-std::vector<MPOTensor<Matrix, NullGroup> > s12_ising(std::size_t L, double J, double h)
+MPO<Matrix, NullGroup> s12_ising(std::size_t L, double J, double h)
 {
     J *= 0.25;
     h *= 0.5;
@@ -86,7 +86,7 @@ std::vector<MPOTensor<Matrix, NullGroup> > s12_ising(std::size_t L, double J, do
     
 #undef NGI
     
-    std::vector<MPOTensor<Matrix, NullGroup> > ret(L, bulk);
+    MPO<Matrix, NullGroup> ret(L, bulk);
     ret[0] = left;
     ret[L-1] = right;
     return ret;
