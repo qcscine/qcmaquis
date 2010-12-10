@@ -6,7 +6,8 @@
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
                                         Index<SymmGroup> const & ld,
-                                        Index<SymmGroup> const & rd)
+                                        Index<SymmGroup> const & rd,
+                                        bool fillrand)
 : phys_i(sd)
 , left_i(ld)
 , right_i(rd)
@@ -14,7 +15,8 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 , cur_storage(LeftPaired)
 , cur_normalization(U)
 {
-    data_.fill(drand48);
+    if (fillrand)
+        data_.fill(drand48);
 } 
 
 template<class Matrix, class SymmGroup>
@@ -39,19 +41,19 @@ MPSTensor<Matrix, SymmGroup> MPSTensor<Matrix, SymmGroup>::get_reflected() const
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> MPSTensor<Matrix, SymmGroup>::site_dim() const
+Index<SymmGroup> const & MPSTensor<Matrix, SymmGroup>::site_dim() const
 {
     return phys_i;
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> MPSTensor<Matrix, SymmGroup>::row_dim() const
+Index<SymmGroup> const & MPSTensor<Matrix, SymmGroup>::row_dim() const
 {
     return left_i;
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> MPSTensor<Matrix, SymmGroup>::col_dim() const
+Index<SymmGroup> const & MPSTensor<Matrix, SymmGroup>::col_dim() const
 {
     return right_i;
 }

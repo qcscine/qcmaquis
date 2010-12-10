@@ -125,7 +125,7 @@ struct contraction {
         t(left.aux_dim(),
           MPSTensor<Matrix, SymmGroup>(ket_tensor.site_dim(),
                                        left.lower_dim(),
-                                       ket_tensor.col_dim()));
+                                       ket_tensor.col_dim(), false));
         
         for (std::size_t b = 0; b < left.aux_dim(); ++b) {
             gemm(transpose(left.data_[b]), ket_tensor.data_, t[b].data_);
@@ -133,36 +133,43 @@ struct contraction {
             t[b].make_left_paired();
         }
         
-        blas::general_matrix<MPSTensor<Matrix, SymmGroup> >
-        t2(left.aux_dim(), right.aux_dim(),
-           MPSTensor<Matrix, SymmGroup>(ket_tensor.site_dim(),
-                                        left.lower_dim(), right.lower_dim()));
+        MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(),
+                                         left.lower_dim(), right.lower_dim(), false);
+        ret.make_left_paired();
+        ret.data_ = transpose(ret.data_);
+        
+        typedef typename Index<SymmGroup>::basis_iterator bit;
         
         for (std::size_t b1 = 0; b1 < left.aux_dim(); ++b1)
             for (std::size_t b2 = 0; b2 < right.aux_dim(); ++b2) {
-                t2(b1, b2) = t[b1];
-                t2(b1, b2).multiply_from_right(right.data_[b2]);
+                block_matrix<Matrix, SymmGroup> tmp;
+                gemm(t[b1].data_, right.data_[b2], tmp);
+                tmp = transpose(tmp);
+                
+                for (bit l = left.lower_dim().basis_begin(); !l.end(); ++l)
+                    for (bit s1 = ket_tensor.site_dim().basis_begin(); !s1.end(); ++s1)
+                        for (bit s2 = ket_tensor.site_dim().basis_begin(); !s2.end(); ++s2) {
+                            std::pair<typename SymmGroup::charge, std::size_t>
+                            i1 = calculate_index(ket_tensor.site_dim() ^ ket_tensor.left_i, *s2 ^ *l),
+                            i2 = calculate_index(ket_tensor.site_dim() ^ ket_tensor.left_i, *s1 ^ *l);
+                            
+                            typename Matrix::value_type mpo_v = mpo(b1, b2, *s1, *s2);
+
+                            for (typename Index<SymmGroup>::const_iterator sectors = right.lower_dim().begin();
+                                 sectors != right.lower_dim().end(); ++sectors)
+                            {
+                                std::size_t ret_block = ret.data_.left_basis().position(sectors->first);
+                                std::size_t tmp_block = tmp.left_basis().position(sectors->first);
+                                
+                                Matrix &m1 = ret.data_[ret_block], m2 = tmp[tmp_block];
+                                
+                                for (std::size_t elem = 0; elem < sectors->second; ++elem)
+                                    m1(elem, i1.second) += m2(elem, i2.second) * mpo_v;
+                            }
+                        }
             }
         
-        MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(),
-                                         left.lower_dim(), right.lower_dim());
-        ret.make_left_paired();
-        ret.multiply_by_scalar(0);
-        
-        typedef typename Index<SymmGroup>::basis_iterator bit;
-        for (std::size_t b1 = 0; b1 < left.aux_dim(); ++b1)
-            for (std::size_t b2 = 0; b2 < right.aux_dim(); ++b2)
-                for (bit l = left.lower_dim().basis_begin(); !l.end(); ++l)
-                    for (bit r = right.lower_dim().basis_begin(); !r.end(); ++r)
-                        for (bit s1 = ket_tensor.site_dim().basis_begin(); !s1.end(); ++s1)
-                            for (bit s2 = ket_tensor.site_dim().basis_begin(); !s2.end(); ++s2)
-                                ret.data_(calculate_index(ket_tensor.site_dim() ^ ket_tensor.left_i,
-                                                          *s2 ^ *l), *r)
-                                +=
-                                t2(b1, b2).data_(calculate_index(ket_tensor.site_dim() ^ ket_tensor.left_i,
-                                                                 *s1 ^ *l), *r)
-                                *
-                                mpo(b1, b2, *s1, *s2);
+        ret.data_ = transpose(ret.data_);
         
         return ret;
     }

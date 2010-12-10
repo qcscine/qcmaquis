@@ -20,11 +20,12 @@ public:
     
     MPSTensor(Index<SymmGroup> const & sd = Index<SymmGroup>(),
               Index<SymmGroup> const & ld = Index<SymmGroup>(),
-              Index<SymmGroup> const & rd = Index<SymmGroup>());
+              Index<SymmGroup> const & rd = Index<SymmGroup>(),
+              bool fillrand = true);
     
-    Index<SymmGroup> site_dim() const;
-    Index<SymmGroup> row_dim() const;
-    Index<SymmGroup> col_dim() const;
+    Index<SymmGroup> const & site_dim() const;
+    Index<SymmGroup> const & row_dim() const;
+    Index<SymmGroup> const & col_dim() const;
     bool isobccompatible(Indicator) const;
     
     // these are not const because after a numerical test

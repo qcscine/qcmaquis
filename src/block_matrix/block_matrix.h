@@ -84,8 +84,8 @@ public:
         return *this;
     }
     
-    Index<SymmGroup> left_basis() const { return rows_; }
-    Index<SymmGroup> right_basis() const { return cols_; }
+    Index<SymmGroup> const & left_basis() const { return rows_; }
+    Index<SymmGroup> const & right_basis() const { return cols_; }
     
     size_type n_blocks() const { return data_.size(); }
     

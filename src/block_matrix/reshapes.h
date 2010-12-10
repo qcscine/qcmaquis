@@ -49,15 +49,14 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
     for (bit s = physical_i.basis_begin(); !s.end(); ++s)
-        for (bit l = left_i.basis_begin(); !l.end(); ++l)
+        for (bit l = left_i.basis_begin(); !l.end(); ++l) {
+            std::pair<typename SymmGroup::charge, std::size_t>
+            i1 = calculate_index(physical_i ^ left_i, *s ^ *l);
+            
             for (bit r = right_i.basis_begin(); !r.end(); ++r)
-                m2(calculate_index(_(left_i), _(*l)),
-                   calculate_index(physical_i ^ right_i,
-                                                 *s ^ *r))
-                =
-                m1(calculate_index(physical_i ^ left_i,
-                                                 *s ^ *l),
-                   calculate_index(_(right_i), _(*r)));
+                m2(*l, calculate_index(physical_i ^ right_i, *s ^ *r)) = m1(i1, *r);
+        }
+    
 }
 
 template<class Matrix, class SymmGroup>
@@ -77,15 +76,13 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
     for (bit s = physical_i.basis_begin(); !s.end(); ++s)
-        for (bit l = left_i.basis_begin(); !l.end(); ++l)
+        for (bit l = left_i.basis_begin(); !l.end(); ++l) {
+            std::pair<typename SymmGroup::charge, std::size_t>
+            i1 = calculate_index(physical_i ^ left_i, *s ^ *l);
+            
             for (bit r = right_i.basis_begin(); !r.end(); ++r)
-                m2(calculate_index(physical_i ^ left_i,
-                                                 *s ^ *l),
-                   calculate_index(_(right_i), _(*r)))
-                =
-                m1(calculate_index(_(left_i), _(*l)),
-                   calculate_index(physical_i ^ right_i,
-                                                 *s ^ *r));
+                m2(i1, *r) = m1(*l, calculate_index(physical_i ^ right_i, *s ^ *r));
+        }
 }
 
 #endif /* RESHAPE_H */
