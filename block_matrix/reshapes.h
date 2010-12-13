@@ -21,7 +21,7 @@ calculate_index(boost::array<Index<SymmGroup>, L> const & dims,
     boost::array<size_t, L> strides;
     strides[L-1] = 1;
     for (size_t k = L-1; k > 0; --k)
-        strides[k-1] = strides[k] * dims[k].get_size(idx[k].first);
+        strides[k-1] = strides[k] * dims[k].size_of_block(idx[k].first);
     
     //    std::copy(strides.begin(), strides.end(), std::ostream_iterator<size_t>(cout, " ")); cout << endl;
     
