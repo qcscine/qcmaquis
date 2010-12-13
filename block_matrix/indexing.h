@@ -13,8 +13,6 @@
 #include <cpp_dmrg/wrappers.h>
 #endif
 
-enum IndexName { alpha, sigma, beta, empty };
-
 namespace index_detail
 {
     template<class SymmGroup>
@@ -51,9 +49,7 @@ public:
     
     typedef basis_iterator_<SymmGroup> basis_iterator;
     
-    IndexName name;
-    
-    std::size_t get_size(charge c) const // rename
+    std::size_t size_of_block(charge c) const // rename
     {
         return std::find_if(this->begin(), this->end(),
                             c == boost::lambda::bind(index_detail::get_first<SymmGroup>,
@@ -77,10 +73,12 @@ public:
     
     bool has(charge c) const
     {
+//        return std::count_if(this->begin(), this->end(),
+//                             boost::lambda::bind(index_detail::lt<SymmGroup>,
+//                                                 boost::lambda::_1,
+//                                                 std::make_pair(c, 0))) > 0;
         return std::count_if(this->begin(), this->end(),
-                             boost::lambda::bind(index_detail::lt<SymmGroup>,
-                                                 boost::lambda::_1,
-                                                 std::make_pair(c, 0))) > 0;
+                             c == boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1)) > 0;
     }
     
     void sort()
@@ -95,30 +93,14 @@ public:
         return d;
     }
     
-    Index(IndexName n = empty)
-    : std::vector<std::pair<charge, std::size_t> >()
-    , name(n)
-    { }
-    
-    Index(std::size_t M, IndexName n = empty)
-    : std::vector<std::pair<charge, std::size_t> >(1, std::make_pair(SymmGroup::SingletCharge, M))
-    , name(n)
-    { }
-    
-    Index(std::vector<charge> const & charges, std::vector<std::size_t> const & sizes, IndexName n = empty)
-    : name(n)
+    bool operator==(const Index<SymmGroup> &o)
     {
-        assert(sizes.size() == charges.size());
-        std::transform(charges.begin(), charges.end(), sizes.begin(), std::back_inserter(*this),
-                       std::make_pair<charge, std::size_t>);
+        return this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
     }
     
-    template<int L>
-    Index(boost::array<charge, L> const & charges, boost::array<std::size_t, L> const & sizes, IndexName n = empty)
-    : name(n)
+    basis_iterator basis_begin() const
     {
-        std::transform(charges.begin(), charges.end(), sizes.begin(), std::back_inserter(*this),
-                       std::make_pair<charge, std::size_t>);
+        return basis_iterator(*this);
     }
     
     std::vector<charge> charges() const
@@ -135,36 +117,10 @@ public:
         return ret;
     }
     
-    bool operator==(const Index<SymmGroup> &o)
-    {
-        return name == o.name && this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
-    }
-    
-    basis_iterator basis_begin() const
-    {
-        return basis_iterator(*this);
-    }
-    
 #ifdef PYTHON_EXPORTS
     std::size_t py_insert(wrapped_pair<SymmGroup> p)
     {
         return this->insert(p.data_);
-    }
-    
-    list py_sizes() const
-    {
-        list l;
-        for (const_iterator it = this->begin(); it != this->end(); ++it)
-            l.append(it->second);
-        return l;
-    }
-    
-    list py_charges() const
-    {
-        list l;
-        for (const_iterator it = this->begin(); it != this->end(); ++it)
-            l.append(typename charge_wrapped_as<SymmGroup>::type(it->second));
-        return l;
     }
 #endif /* PYTHON_EXPORTS */
 };
@@ -227,15 +183,15 @@ Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
         nd[i] = od[std::find(oc.begin(), oc.end(),
                              -nc[i])-oc.begin()];
     
-    return Index<SymmGroup>(nc, nd, inp.name);
-}
+    Index<SymmGroup> ret;
+    std::transform(nc.begin(), nc.end(), nd.begin(), std::back_inserter(ret),
+                   std::make_pair<charge, std::size_t>);
+    return ret;
+}   
 
 template<class SymmGroup>
 std::ostream& operator<<(std::ostream& os, Index<SymmGroup> const & idx)
 {
-    if (idx.name != empty)
-        os << idx.name << std::endl;
-    
     os << "|";
     for (typename Index<SymmGroup>::const_iterator it = idx.begin();
          it != idx.end();
@@ -269,6 +225,27 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
     return ret;
 }
 
+template<class SymmGroup>
+void common_subset(Index<SymmGroup> & a,
+                   Index<SymmGroup> & b)
+{
+    a.erase(std::remove_if(a.begin(), a.end(),
+                           !boost::lambda::bind(&Index<SymmGroup>::has, b,
+                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            a.end());
+    
+    b.erase(std::remove_if(b.begin(), b.end(),
+                           !boost::lambda::bind(&Index<SymmGroup>::has, a,
+                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            b.end());
+}
+
+template<class charge>
+std::pair<charge, std::size_t> operator-(std::pair<charge, std::size_t> const & p)
+{
+    return std::make_pair(-p.first, p.second);
+}
+
 template<class T> boost::array<T, 1> _(T const & a)
 { 
     boost::array<T, 1> r;
@@ -293,7 +270,6 @@ tpl boost::array<type, L+1> operator^(boost::array<type, L> const & a, type cons
 
 #define CO ,
 
-IMPL_COMMA(inline, IndexName)
 IMPL_COMMA(template<class SymmGroup>, Index<SymmGroup>)
 IMPL_COMMA(template<class charge>, std::pair<charge CO std::size_t>)
 
