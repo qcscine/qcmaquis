@@ -57,7 +57,7 @@ public:
         return *this;
     }
     
-    void insert_block(boost::tuple<Matrix, charge, charge> const & block)
+    void insert_block(boost::tuple<Matrix const &, charge, charge> const & block)
     {
         Matrix const & mtx = boost::tuples::get<0>(block);
         
@@ -156,6 +156,13 @@ public:
             std::generate(elements(data_[k]).first, elements(data_[k]).second, g);
     }
     
+    void clear()
+    {
+        data_.clear();
+        rows_ = Index<SymmGroup>();
+        cols_ = Index<SymmGroup>();
+    }
+    
 private:
     std::vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
@@ -164,10 +171,10 @@ private:
 template<class Matrix, class SymmGroup>    
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
-    os << "Left HS: " << std::endl << m.left_basis();
-    os << "Right HS: " << std::endl << m.right_basis();
-    for (std::size_t k = 0; k < m.n_blocks(); ++k)
-        os << "Block (" << m.left_basis()[k].first << "," << m.right_basis()[k].first << "):" << std::endl << m[k];
+    os << "Left HS: " << m.left_basis() << std::endl;
+    os << "Right HS: " << m.right_basis() << std::endl;
+//    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+//        os << "Block (" << m.left_basis()[k].first << "," << m.right_basis()[k].first << "):" << std::endl << m[k];
     os << std::endl;
     return os;
 }

@@ -11,10 +11,15 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 : phys_i(sd)
 , left_i(ld)
 , right_i(rd)
-, data_(sd*ld, rd)
+//, data_(sd*ld, rd)
 , cur_storage(LeftPaired)
 , cur_normalization(U)
 {
+    Index<SymmGroup> lb = sd*ld, rb = rd;
+    common_subset(lb, rb);
+    
+    data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
+    
     if (fillrand)
         data_.fill(drand48);
 } 

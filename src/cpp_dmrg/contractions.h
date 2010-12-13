@@ -49,7 +49,7 @@ struct contraction {
         bra_tensor.make_right_paired();
         ket_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t2 = conjugate_transpose(bra_tensor.data_), t3 = transpose(right);
+        block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(transpose(bra_tensor.data_)), t3 = transpose(right);
         gemm(ket_tensor.data_, t3, t1);
         reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(),
                               t1, t3);
@@ -73,7 +73,7 @@ struct contraction {
         
         for (std::size_t b = 0; b < left.aux_dim(); ++b)
         {
-            gemm(transpose(bra_tensor.data_), left.data_[b], t1);
+            gemm(conjugate(transpose(bra_tensor.data_)), left.data_[b], t1);
             gemm(t1, ket_tensor.data_, t2[b]);
         }
         
@@ -85,13 +85,24 @@ struct contraction {
                 for (bit u = ket_tensor.col_dim().basis_begin(); !u.end(); ++u)
                     for (bit d = bra_tensor.col_dim().basis_begin(); !d.end(); ++d)
                         for (bit s1 = ket_tensor.site_dim().basis_begin(); !s1.end(); ++s1)
-                            for (bit s2 = bra_tensor.site_dim().basis_begin(); !s2.end(); ++s2)
+                            for (bit s2 = bra_tensor.site_dim().basis_begin(); !s2.end(); ++s2) {
+//                                cout << (*u).first << " " << (*d).first << endl;
+//                                cout << calculate_index(ket_tensor.phys_i ^ ket_tensor.right_i,
+//                                                        -(*s1) ^ *u).first << " ";
+//                                cout << calculate_index(bra_tensor.phys_i ^ bra_tensor.right_i,
+//                                                        -(*s2) ^ *d).first << endl;
+//                                ret.data_[b2](*u, *d);
+                                t2[b1](calculate_index(ket_tensor.phys_i ^ ket_tensor.right_i,
+                                                       -(*s1) ^ *u),
+                                       calculate_index(bra_tensor.phys_i ^ bra_tensor.right_i,
+                                                       -(*s2) ^ *d));
                                 ret.data_[b2](*u, *d) +=
                                 t2[b1](calculate_index(ket_tensor.phys_i ^ ket_tensor.right_i,
-                                                       *s1 ^ *u),
+                                                       -(*s1) ^ *u),
                                        calculate_index(bra_tensor.phys_i ^ bra_tensor.right_i,
-                                                       *s2 ^ *d))
+                                                       -(*s2) ^ *d))
                                 * mpo(b1, b2, *s1, *s2);
+                            }
         
         return ret;
     }
@@ -169,7 +180,7 @@ struct contraction {
                         }
             }
         
-        ret.data_ = transpose(ret.data_);
+        ret.data_ = conjugate(transpose(ret.data_));
         
         return ret;
     }

@@ -11,21 +11,16 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           block_matrix<Matrix2, SymmGroup> const & B,
           block_matrix<Matrix3, SymmGroup> & C)
 {
-    C = block_matrix<Matrix3, SymmGroup>(A.left_basis(), B.right_basis());
+    C.clear();
     
-    // Some checks
-    // We should discuss whether we want to use asserts or something that doesn't disappear upon NDEBUG
-    assert(A.n_blocks() == B.n_blocks() && B.n_blocks() == C.n_blocks());
+    typedef typename SymmGroup::charge charge;
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        // is the charge of the column of the first the same as the row of the second?
-        assert(A.right_basis()[k].first == B.left_basis()[k].first);
-        // is the dimension of the sectors the same?
-        assert(A.right_basis()[k].second == B.left_basis()[k].second);
+        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
+        
+        C.insert_block(boost::tuples::make_tuple(Matrix(num_rows(A[k]), num_columns(B[matched_block])),
+                                                 A.left_basis()[k].first, B.right_basis()[matched_block].first));
+        gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
     }
-    
-    for (std::size_t k = 0; k < A.n_blocks(); ++k)
-        //        C[k] = A[k] * B[k];
-        gemm(A[k], B[k], C[k]);
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>

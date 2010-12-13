@@ -23,21 +23,23 @@ typedef blas::general_matrix<double> Matrix;
 
 #include "ss_optimize.h"
 
-typedef NullGroup grp;
+typedef U1 grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
 
 int main()
 {
-    Index<grp> phys; phys.insert(std::make_pair(NullGroup::Plus, 2));
+    Index<grp> phys;
+    phys.insert(std::make_pair(1, 1));
+    phys.insert(std::make_pair(-1, 1));
     
-    int L = 10, M = 20;
+    int L = 16, M = 20;
     MPS<Matrix, grp> mps(L, M, phys);
     
-    MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
-    MPOTensor<Matrix, grp> sz_mpo = s12_sz_mpo<Matrix>(mps[0].site_dim());
+//    MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
+//    MPOTensor<Matrix, grp> sz_mpo = s12_sz_mpo<Matrix>(mps[0].site_dim());
     
-    MPO<Matrix, grp> szsz = s12_ising<Matrix>(L, -1, 1);
+    MPO<Matrix, grp> szsz = s12_heisenberg<Matrix>(L, -1, 1);
     ss_optimize<Matrix, grp>(mps, szsz);
 }

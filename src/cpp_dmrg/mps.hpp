@@ -1,9 +1,9 @@
 #include "mps.h"
 
-template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup>::MPS(size_t L, size_t Mmax, Index<SymmGroup> phys)
-: std::vector<MPSTensor<Matrix, SymmGroup> >(L)
+template<class Matrix>
+void mps_init(MPS<Matrix, NullGroup> & mps, size_t Mmax, Index<NullGroup> const & phys)
 {
+    std::size_t L = mps.length();
     std::vector<std::size_t> bond_sizes(L+1, 1);
     for (std::size_t k = 1; k < L+1; ++k)
         bond_sizes[k] = std::min(Mmax, 2*bond_sizes[k-1]);
@@ -16,11 +16,44 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, size_t Mmax, Index<SymmGroup> phys)
     
     for (int i = 0; i < L; ++i)
     {
-        Index<SymmGroup> li; li.insert(std::make_pair(NullGroup::Plus, bond_sizes[i]));
-        Index<SymmGroup> ri; ri.insert(std::make_pair(NullGroup::Plus, bond_sizes[i+1]));
+        Index<NullGroup> li; li.insert(std::make_pair(NullGroup::Plus, bond_sizes[i]));
+        Index<NullGroup> ri; ri.insert(std::make_pair(NullGroup::Plus, bond_sizes[i+1]));
         
-        (*this)[i] = MPSTensor<Matrix, SymmGroup>(phys, li, ri);
+        mps[i] = MPSTensor<Matrix, NullGroup>(phys, li, ri);
     }
+}
+
+template<class Matrix>
+void mps_init(MPS<Matrix, U1> & mps, size_t Mmax, Index<U1> const & phys)
+{
+    std::size_t L = mps.length();
+    std::vector<int> max_sz(L+1);
+    for (std::size_t k = 1; k < L+1; ++k)
+        max_sz[k] = std::min(k, L-k);
+    std::copy(max_sz.begin(), max_sz.end(), std::ostream_iterator<int>(cout, " "));
+    cout << endl;
+    
+    for (int i = 0; i < L; ++i)
+    {
+        Index<U1> li, ri;
+        for (int sz = -max_sz[i]; sz <= max_sz[i]; ++sz)
+            li.insert(std::make_pair(sz, 1));
+        for (int sz = -max_sz[i+1]; sz <= max_sz[i+1]; ++sz)
+            ri.insert(std::make_pair(sz, 1));
+        
+        cout << "MPS site " << i << endl;
+        cout << li << endl;
+        cout << ri << endl;
+        
+        mps[i] = MPSTensor<Matrix, U1>(phys, li, ri);
+    }
+}
+
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup>::MPS(size_t L, size_t Mmax, Index<SymmGroup> phys)
+: std::vector<MPSTensor<Matrix, SymmGroup> >(L)
+{
+    mps_init<Matrix>(*this, Mmax, phys);
     
     this->canonize_left();
 }

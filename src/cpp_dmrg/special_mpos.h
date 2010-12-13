@@ -3,12 +3,12 @@
 
 #include "mpo.h"
 
-template<class Matrix>
-MPOTensor<Matrix, NullGroup> identity_mpo(Index<NullGroup> phys_i)
+template<class Matrix, class SymmGroup>
+MPOTensor<Matrix, SymmGroup> identity_mpo(Index<SymmGroup> phys_i)
 {
-    typedef Index<NullGroup>::basis_iterator bit;
+    typedef typename Index<SymmGroup>::basis_iterator bit;
     
-    MPOTensor<Matrix, NullGroup> mpo(phys_i, 1, 1);
+    MPOTensor<Matrix, SymmGroup> mpo(phys_i, 1, 1);
     mpo.multiply_by_scalar(0);
     
     for (bit up = phys_i.basis_begin(); !up.end(); ++up)
@@ -89,6 +89,17 @@ MPO<Matrix, NullGroup> s12_ising(std::size_t L, double J, double h)
     MPO<Matrix, NullGroup> ret(L, bulk);
     ret[0] = left;
     ret[L-1] = right;
+    return ret;
+}
+
+template<class Matrix>
+MPO<Matrix, U1> s12_heisenberg(std::size_t L, double J, double h)
+{
+    Index<U1> phys;
+    phys.insert(std::make_pair(1, 1));
+    phys.insert(std::make_pair(-1, 1));
+    
+    MPO<Matrix, U1> ret(L, identity_mpo<Matrix, U1>(phys));
     return ret;
 }
 
