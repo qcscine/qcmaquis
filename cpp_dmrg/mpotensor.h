@@ -6,8 +6,6 @@
 
 #include <iostream>
 
-#include "general_matrix.hpp"
-
 enum MPOStorageLayout { LeftUp, LeftDown };
 
 /*
@@ -81,7 +79,8 @@ public:
     MPOTensor get_reflected() const;
     
 private:
-    blas::general_matrix<block_matrix<Matrix, SymmGroup> > data_;
+    std::vector<block_matrix<Matrix, SymmGroup> > data_;
+    std::size_t left_i, right_i;
     Index<SymmGroup> phys_i;
 };
   

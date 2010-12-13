@@ -23,7 +23,7 @@ calculate_index(boost::array<Index<SymmGroup>, L> const & dims,
     for (size_t k = L-1; k > 0; --k)
         strides[k-1] = strides[k] * dims[k].size_of_block(idx[k].first);
     
-    //    std::copy(strides.begin(), strides.end(), std::ostream_iterator<size_t>(cout, " ")); cout << endl;
+//    std::copy(strides.begin(), strides.end(), std::ostream_iterator<size_t>(cout, " ")); cout << endl;
     
     // last step: index
     for (size_t k = 0; k < L; ++k)
@@ -41,10 +41,18 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
 {
     using std::size_t;
     
-    assert(m1.left_basis() == physical_i*left_i);
-    assert(m1.right_basis() == right_i);
+//    assert(m1.left_basis() == physical_i*left_i);
+//    assert(m1.right_basis() == right_i);
     
-    m2 = block_matrix<Matrix, NullGroup>(left_i, physical_i*right_i);
+    Index<SymmGroup> new_phys_i = adjoin(physical_i);
+    Index<SymmGroup> newl = left_i, newr = new_phys_i * right_i;
+    common_subset(newl, newr);
+    m2 = block_matrix<Matrix, SymmGroup>(newl, newr);
+    
+//    cout << "Reshaping l2r: " << endl;
+//    cout << physical_i << " " << left_i << " " << right_i << endl;
+//    cout << physical_i * left_i << " " << right_i << endl;
+//    cout << newl << " " << newr << endl;
     
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
@@ -53,10 +61,16 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
             std::pair<typename SymmGroup::charge, std::size_t>
             i1 = calculate_index(physical_i ^ left_i, *s ^ *l);
             
-            for (bit r = right_i.basis_begin(); !r.end(); ++r)
-                m2(*l, calculate_index(physical_i ^ right_i, *s ^ *r)) = m1(i1, *r);
+            for (bit r = right_i.basis_begin(); !r.end(); ++r) {
+                if (i1.first != (*r).first)
+                    continue;
+                
+//                cout << "( " << i1.first << "," << (*r).first << " ) -> ( ";
+//                cout << (*l).first << "," << 
+//                calculate_index(new_phys_i ^ right_i, std::make_pair(-(*s).first, (*s).second) ^ *r).first << ")" << endl;
+                m2(*l, calculate_index(new_phys_i ^ right_i, std::make_pair(-(*s).first, (*s).second) ^ *r)) = m1(i1, *r);
+            }
         }
-    
 }
 
 template<class Matrix, class SymmGroup>
@@ -68,10 +82,13 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
 {
     using std::size_t;
     
-    assert(m1.left_basis() == left_i);
-    assert(m1.right_basis() == physical_i*right_i);
+//    assert(m1.left_basis() == left_i);
+//    assert(m1.right_basis() == physical_i*right_i);
     
-    m2 = block_matrix<Matrix, NullGroup>(physical_i*left_i, right_i);
+    Index<SymmGroup> new_phys_i = adjoin(physical_i);
+    Index<SymmGroup> newl = new_phys_i * left_i, newr = right_i;
+    common_subset(newl, newr);
+    m2 = block_matrix<Matrix, SymmGroup>(newl, newr);
     
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
@@ -80,8 +97,12 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
             std::pair<typename SymmGroup::charge, std::size_t>
             i1 = calculate_index(physical_i ^ left_i, *s ^ *l);
             
-            for (bit r = right_i.basis_begin(); !r.end(); ++r)
-                m2(i1, *r) = m1(*l, calculate_index(physical_i ^ right_i, *s ^ *r));
+            for (bit r = right_i.basis_begin(); !r.end(); ++r) {
+                if (i1.first != (*r).first)
+                    continue;
+                
+                m2(i1, *r) = m1(*l, calculate_index(physical_i ^ right_i, std::make_pair(-(*s).first, (*s).second) ^ *r));
+            }
         }
 }
 
