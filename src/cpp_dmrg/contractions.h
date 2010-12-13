@@ -92,10 +92,10 @@ struct contraction {
 //                                cout << calculate_index(bra_tensor.phys_i ^ bra_tensor.right_i,
 //                                                        -(*s2) ^ *d).first << endl;
 //                                ret.data_[b2](*u, *d);
-                                t2[b1](calculate_index(ket_tensor.phys_i ^ ket_tensor.right_i,
-                                                       -(*s1) ^ *u),
-                                       calculate_index(bra_tensor.phys_i ^ bra_tensor.right_i,
-                                                       -(*s2) ^ *d));
+//                                t2[b1](calculate_index(ket_tensor.phys_i ^ ket_tensor.right_i,
+//                                                       -(*s1) ^ *u),
+//                                       calculate_index(bra_tensor.phys_i ^ bra_tensor.right_i,
+//                                                       -(*s2) ^ *d));
                                 ret.data_[b2](*u, *d) +=
                                 t2[b1](calculate_index(ket_tensor.phys_i ^ ket_tensor.right_i,
                                                        -(*s1) ^ *u),

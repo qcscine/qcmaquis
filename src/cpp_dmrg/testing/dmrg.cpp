@@ -32,7 +32,7 @@ int main()
 {
     Index<grp> phys; phys.insert(std::make_pair(NullGroup::Plus, 2));
     
-    int L = 16, M = 10;
+    int L = 32, M = 100;
     MPS<Matrix, grp> mps(L, M, phys);
     
     MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
