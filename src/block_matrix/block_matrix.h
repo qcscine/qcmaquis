@@ -57,6 +57,24 @@ public:
         return *this;
     }
     
+    block_matrix & operator-=(block_matrix const & rhs)
+    {
+        for (size_type k = 0; k < rhs.n_blocks(); ++k)
+        {
+            charge rhs_rc = rhs.rows_[k].first;
+            size_type goesto = rows_.position(rhs_rc);
+            if (goesto == rows_.size()) { // it's a new block
+                size_type i1 = rows_.insert(rhs.rows_[k]);
+                size_type i2 = cols_.insert(rhs.cols_[k]);
+                assert(i1 == i2);
+                data_.insert(data_.begin() + i1, -1*rhs.data_[k]);
+            } else { // this block exists already -> pass to Matrix
+                data_[goesto] += -1*rhs.data_[k];
+            }
+        }
+        return *this;
+    }
+    
     void insert_block(boost::tuple<Matrix const &, charge, charge> const & block)
     {
         Matrix const & mtx = boost::tuples::get<0>(block);
@@ -73,9 +91,9 @@ public:
     
     friend void swap(block_matrix & x, block_matrix & y)
     {
-        std::swap(x.data_, y.data_);
-        std::swap(x.rows_, y.rows_);
-        std::swap(x.cols_, y.cols_);
+        swap(x.data_, y.data_);
+        swap(x.rows_, y.rows_);
+        swap(x.cols_, y.cols_);
     }
     
     block_matrix & operator=(block_matrix rhs)
@@ -125,9 +143,15 @@ public:
         cols_[block].second -= k;
     }
     
-    block_matrix operator*=(value_type v)
+    block_matrix const & operator*=(value_type v)
     {
         std::for_each(data_.begin(), data_.end(), boost::lambda::_1 *= v);
+        return *this;
+    }
+    
+    block_matrix const & operator/=(value_type v)
+    {
+        std::for_each(data_.begin(), data_.end(), boost::lambda::_1 /= v);
         return *this;
     }
     
@@ -150,7 +174,7 @@ public:
     }
     
     template<class Generator>
-    void fill(Generator g)
+    void generate(Generator g)
     {
         for (std::size_t k = 0; k < n_blocks(); ++k)
             std::generate(elements(data_[k]).first, elements(data_[k]).second, g);
@@ -173,8 +197,8 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
 {
     os << "Left HS: " << m.left_basis() << std::endl;
     os << "Right HS: " << m.right_basis() << std::endl;
-//    for (std::size_t k = 0; k < m.n_blocks(); ++k)
-//        os << "Block (" << m.left_basis()[k].first << "," << m.right_basis()[k].first << "):" << std::endl << m[k];
+    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+        os << "Block (" << m.left_basis()[k].first << "," << m.right_basis()[k].first << "):" << std::endl << m[k];
     os << std::endl;
     return os;
 }

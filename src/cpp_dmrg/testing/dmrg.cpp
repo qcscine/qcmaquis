@@ -32,12 +32,13 @@ int main()
 {
     Index<grp> phys; phys.insert(std::make_pair(NullGroup::Plus, 2));
     
-    int L = 10, M = 20;
+    int L = 16, M = 10;
     MPS<Matrix, grp> mps(L, M, phys);
     
     MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
     MPOTensor<Matrix, grp> sz_mpo = s12_sz_mpo<Matrix>(mps[0].site_dim());
     
     MPO<Matrix, grp> szsz = s12_ising<Matrix>(L, -1, 1);
-    ss_optimize<Matrix, grp>(mps, szsz);
+//    ss_optimize<Matrix, grp>(mps, MPO<Matrix, grp>(L, id_mpo));
+    ss_optimize<Matrix, grp>(mps, szsz, 2);
 }

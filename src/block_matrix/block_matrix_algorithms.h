@@ -103,9 +103,9 @@ typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> const & m)
 }
 
 template<class Matrix, class SymmGroup, class Generator>
-void fill(block_matrix<Matrix, SymmGroup> & m, Generator & g)
+void generate(block_matrix<Matrix, SymmGroup> & m, Generator & g)
 {
-    m.fill(g);
+    m.generate(g);
 }
 
 template<class Matrix, class SymmGroup>

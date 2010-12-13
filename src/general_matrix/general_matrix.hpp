@@ -487,6 +487,14 @@ namespace blas {
             multiplies_assign(*this, t);
             return *this;
         }
+        
+        template <typename T2>
+        general_matrix<T,MemoryBlock>& operator /= (T2 const& t)
+        {
+            using blas::multiplies_assign;
+            multiplies_assign(*this, 1/t);
+            return *this;
+        }
 
         // Default implementations
         void plus_assign(general_matrix const& rhs)
