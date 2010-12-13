@@ -21,7 +21,7 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
     
     if (fillrand)
-        data_.fill(drand48);
+        data_.generate(drand48);
 } 
 
 template<class Matrix, class SymmGroup>
@@ -177,12 +177,23 @@ MPSTensor<Matrix, SymmGroup>::multiply_by_scalar(scalar_type s)
 
 template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::real_type
-MPSTensor<Matrix, SymmGroup>::scalar_norm()
+MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 {
     make_left_paired();
-    block_matrix<Matrix, SymmGroup> cp = conjugate_transpose(data_), t;
-    gemm(cp, data_, t);
+    block_matrix<Matrix, SymmGroup> t;
+    gemm(conjugate_transpose(data_), data_, t);
     return sqrt(trace(t));
+}
+
+template<class Matrix, class SymmGroup>
+typename MPSTensor<Matrix, SymmGroup>::scalar_type
+MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs) const
+{
+    make_left_paired();
+    rhs.make_left_paired();
+    block_matrix<Matrix, SymmGroup> t;
+    gemm(conjugate_transpose(data_), rhs.data_, t);
+    return trace(t);
 }
 
 template<class Matrix, class SymmGroup>
@@ -237,3 +248,93 @@ MPSTensor<Matrix, SymmGroup>::data() const
 {
     return data_;
 }
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> const &
+MPSTensor<Matrix, SymmGroup>::operator*=(scalar_type t)
+{
+    data_ *= t;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> const &
+MPSTensor<Matrix, SymmGroup>::operator/=(scalar_type t)
+{
+    data_ /= t;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> const &
+MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rhs)
+{
+    assert(std::equal(left_i.begin(), left_i.end(), rhs.left_i.begin()));
+    assert(std::equal(right_i.begin(), right_i.end(), rhs.right_i.begin()));
+    assert(std::equal(phys_i.begin(), phys_i.end(), rhs.phys_i.begin()));
+    
+    make_left_paired();
+    rhs.make_left_paired();
+    
+    data_ += rhs.data_;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> const &
+MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rhs)
+{
+    assert(std::equal(left_i.begin(), left_i.end(), rhs.left_i.begin()));
+    assert(std::equal(right_i.begin(), right_i.end(), rhs.right_i.begin()));
+    assert(std::equal(phys_i.begin(), phys_i.end(), rhs.phys_i.begin()));
+    
+    make_left_paired();
+    rhs.make_left_paired();
+    
+    data_ -= rhs.data_;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
+{
+    swap(this->phys_i, b.phys_i);
+    swap(this->left_i, b.left_i);
+    swap(this->right_i, b.right_i);
+    swap(this->data_, b.data_);
+    swap(this->cur_storage, b.cur_storage);
+    swap(this->cur_normalization, b.cur_normalization);
+}
+
+namespace ietl
+{
+    template<class Matrix, class SymmGroup, class Generator> void generate(MPSTensor<Matrix, SymmGroup> & m, Generator g)
+    {
+        m.data().generate(g);
+    }
+        
+    template<class Matrix, class SymmGroup> void generate(MPSTensor<Matrix, SymmGroup> & m, MPSTensor<Matrix, SymmGroup> const & m2)
+    {
+        m = m2;
+    }
+    
+    template<class Matrix, class SymmGroup> void swap(MPSTensor<Matrix, SymmGroup> & x, MPSTensor<Matrix, SymmGroup> & y)
+    {
+        x.swap_with(y);
+    }
+    
+    template<class Matrix, class SymmGroup>
+    typename MPSTensor<Matrix, SymmGroup>::scalar_type
+    dot(MPSTensor<Matrix, SymmGroup> const & x, MPSTensor<Matrix, SymmGroup> const & y)
+    {
+        return x.scalar_overlap(y);
+    }
+    
+    template<class Matrix, class SymmGroup>
+    typename MPSTensor<Matrix, SymmGroup>::scalar_type
+    two_norm(MPSTensor<Matrix, SymmGroup> const & x)
+    {
+        return x.scalar_norm();
+    }
+}
+
