@@ -554,7 +554,7 @@ namespace blas {
         void inplace_conjugate()
         {
             std::transform(this->elements().first, this->elements().second,
-                           this->elements().first, functors::fconj());
+                           this->elements().first, utils::functor_conj());
         }
         
     private:

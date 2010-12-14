@@ -21,7 +21,8 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
     
     if (fillrand)
-        data_.generate(drand48);
+//        data_.generate(drand48);
+        data_.generate(rand);
 } 
 
 template<class Matrix, class SymmGroup>
