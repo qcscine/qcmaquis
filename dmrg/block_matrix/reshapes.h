@@ -1,7 +1,7 @@
 #ifndef RESHAPE_H
 #define RESHAPE_H
 
-#include "indexing.h"
+#include "block_matrix/indexing.h"
 
 template<class SymmGroup, unsigned long L>
 std::pair<typename SymmGroup::charge, std::size_t>

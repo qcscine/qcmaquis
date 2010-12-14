@@ -1,7 +1,7 @@
-#include "mpstensor.h"
+#include "mp_tensors/mpstensor.h"
 
-#include "reshapes.h"
-#include "block_matrix_algorithms.h"
+#include "block_matrix/reshapes.h"
+#include "block_matrix/block_matrix_algorithms.h"
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,

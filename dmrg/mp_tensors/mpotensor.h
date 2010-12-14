@@ -1,8 +1,8 @@
 #ifndef MPOTENSOR_H
 #define MPOTENSOR_H
 
-#include "block_matrix.h"
-#include "indexing.h"
+#include "block_matrix/block_matrix.h"
+#include "block_matrix/indexing.h"
 
 #include <iostream>
 
@@ -84,6 +84,6 @@ private:
     Index<SymmGroup> phys_i;
 };
   
-#include "mpotensor.hpp"
+#include "mp_tensors/mpotensor.hpp"
 
 #endif

@@ -1,8 +1,8 @@
 #ifndef __ALPS_MATRIX_INTERFACE_HPP__
 #define __ALPS_MATRIX_INTERFACE_HPP__
 
-#include "matrix_concept_check.hpp"
-#include "dense_matrix.hpp"
+#include "dense_matrix/matrix_concept_check.hpp"
+#include "dense_matrix/dense_matrix.hpp"
 
 namespace blas
 {

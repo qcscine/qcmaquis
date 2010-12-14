@@ -1,9 +1,9 @@
 #ifndef BLOCK_MATRIX_ALGORITHMS_H
 #define BLOCK_MATRIX_ALGORITHMS_H
 
-#include "block_matrix.h"
-#include "matrix_algorithms.hpp"
-#include "dense_matrix_algorithms.h"
+#include "block_matrix/block_matrix.h"
+#include "dense_matrix/matrix_algorithms.hpp"
+#include "dense_matrix/dense_matrix_algorithms.h"
 
 // some example functions
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>

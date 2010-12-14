@@ -1,6 +1,6 @@
-#include "mpotensor.h"
+#include "mp_tensors/mpotensor.h"
 
-#include "reshapes.h"
+#include "block_matrix/reshapes.h"
 
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(Index<SymmGroup> const & pd,

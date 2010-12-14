@@ -1,8 +1,8 @@
 #ifndef MPS_H
 #define MPS_H
 
-#include "mpstensor.h"
-#include "mpotensor.h"
+#include "mp_tensors/mpstensor.h"
+#include "mp_tensors/mpotensor.h"
 
 template<class Matrix, class SymmGroup>
 class MPS : public std::vector<MPSTensor<Matrix, SymmGroup> >
@@ -32,6 +32,6 @@ private:
     
 };
 
-#include "mps.hpp"
+#include "mp_tensors/mps.hpp"
 
 #endif

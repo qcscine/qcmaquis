@@ -1,8 +1,8 @@
 #ifndef MPSTENSOR_H
 #define MPSTENSOR_H
 
-#include "block_matrix.h"
-#include "indexing.h"
+#include "block_matrix/block_matrix.h"
+#include "block_matrix/indexing.h"
 
 #include <iostream>
 #include <algorithm>
@@ -116,6 +116,6 @@ namespace ietl
     void copy(MPSTensor<Matrix, SymmGroup> const & a, MPSTensor<Matrix, SymmGroup> & b) { b = a; }
 }
 
-#include "mpstensor.hpp"
+#include "mp_tensors/mpstensor.hpp"
 
 #endif

@@ -1,10 +1,10 @@
 #ifndef MPS_MPO_OPS_H
 #define MPS_MPO_OPS_H
 
-#include "mps.h"
-#include "mpo.h"
+#include "mp_tensors/mps.h"
+#include "mp_tensors/mpo.h"
 
-#include "special_mpos.h"
+#include "mp_tensors/special_mpos.h"
 
 template<class Matrix, class SymmGroup>
 std::vector<Boundary<Matrix, SymmGroup> >
