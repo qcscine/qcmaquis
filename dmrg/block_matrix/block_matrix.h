@@ -117,6 +117,17 @@ public:
     Matrix & operator[](size_type c) { return data_[c]; }
     Matrix const & operator[](size_type c) const { return data_[c]; }
     
+    bool has_block(charge r, charge c)
+    {
+        return rows_.has(r) && cols_.has(c) && rows_.position(r) == cols_.position(c);
+    }
+    
+    bool has_block(std::pair<charge, size_type> const & r,
+                   std::pair<charge, size_type> const & c)
+    {
+        return has_block(r.first, c.first);
+    }
+    
     value_type & operator()(std::pair<charge, size_type> const & r,
                             std::pair<charge, size_type> const & c)
     {
@@ -158,19 +169,19 @@ public:
     value_type trace() const
     {
         std::vector<value_type> vt(n_blocks());
-        std::transform(data_.begin(), data_.end(), vt.begin(), functors::ftrace());
+        std::transform(data_.begin(), data_.end(), vt.begin(), utils::functor_trace());
         return std::accumulate(vt.begin(), vt.end(), value_type());
     }
     
     void inplace_transpose()
     {
-        std::transform(data_.begin(), data_.end(), data_.begin(), functors::ftranspose());
+        std::transform(data_.begin(), data_.end(), data_.begin(), utils::functor_transpose());
         std::swap(rows_, cols_);
     }
     
     void inplace_conjugate()
     {
-        std::transform(data_.begin(), data_.end(), data_.begin(), functors::fconjugate());
+        std::transform(data_.begin(), data_.end(), data_.begin(), utils::functor_conjugate());
     }
     
     template<class Generator>
