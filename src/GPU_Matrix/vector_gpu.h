@@ -9,8 +9,7 @@
 #ifndef __VECTOR_GPU__
 #define __VECTOR_GPU__
 
-//#include "cuda.h"
-
+#include "cassert"
 
 namespace gpu
 {
@@ -35,10 +34,17 @@ public:
 		cublasSetVector(size,sizeof(T),&Array[0],1,p(),1);
 		assert(true == CheckError(" cublasSetVector constructor matrix"));
 	}
-	
+		
 	~vector_gpu()
 	{
 		cublasFree(p_);
+	}
+	
+	
+	T& operator()(const size_type i)
+	{
+		assert((i < size_));
+		return p_[i];
 	}
 
 	inline const T* p () const
@@ -55,20 +61,6 @@ public:
 	inline const size_type size() const
 	{
 		return size_;
-	}
-	
-	void Print()
-	{
-		size_type size_vector = size();
-		std::vector<T> PrintArray(size_vector);
-		
-		stat_ = cublasGetVector(size(), sizeof(T), p(), 1, &PrintArray[0], 1);
-		assert(true == CheckError(" cublasGetVector print"));
-		
-		for (int i = 0; i < size(); i++)
-		{
-			std::cout << PrintArray[i] << std::endl;
-		}		
 	}
 	
 	bool CheckError(std::string error)
