@@ -1,4 +1,4 @@
-#include "mps.h"
+#include "mp_tensors/mps.h"
 
 template<class Matrix>
 void mps_init(MPS<Matrix, NullGroup> & mps, size_t Mmax, Index<NullGroup> const & phys)

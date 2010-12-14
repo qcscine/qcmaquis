@@ -3,18 +3,18 @@
 
 using namespace std;
 
-#include "vector_interface.hpp"
+#include "dense_matrix/vector_interface.hpp"
 
-#include "dense_matrix.hpp"
-#include "matrix_interface.hpp"
-#include "resizable_matrix_interface.hpp"
-#include "matrix_algorithms.hpp"
-#include "diagonal_matrix.h"
+#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/matrix_interface.hpp"
+#include "dense_matrix/resizable_matrix_interface.hpp"
+#include "dense_matrix/matrix_algorithms.hpp"
+#include "dense_matrix/diagonal_matrix.h"
 typedef blas::dense_matrix<double> Matrix;
 typedef blas::associated_diagonal_matrix<Matrix>::type DiagMatrix;
 
-#include "block_matrix.h"
-#include "block_matrix_algorithms.h"
+#include "block_matrix/block_matrix.h"
+#include "block_matrix/block_matrix_algorithms.h"
 
 int main()
 {

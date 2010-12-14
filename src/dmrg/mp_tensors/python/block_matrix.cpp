@@ -2,9 +2,9 @@
 
 #define PYTHON_EXPORTS
 
-#include "indexing.h"
-#include "symmetry.h"
-#include "block_matrix.h"
+#include "block_matrix/indexing.h"
+#include "block_matrix/symmetry.h"
+#include "block_matrix/block_matrix.h"
 
 #include <dense_matrix/dense_matrix.hpp>
 
@@ -12,7 +12,7 @@
 
 using namespace boost::python;
 
-#include "wrappers.h"
+#include "mp_tensors/python/wrappers.h"
 
 BOOST_PYTHON_MODULE(block_matrix) {
 #define EXPORT_CHARGE_ENUM(charge_enum, name) \

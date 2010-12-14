@@ -1,11 +1,11 @@
 #ifndef CONTRACTIONS_H
 #define CONTRACTIONS_H
 
-#include "mpstensor.h"
-#include "mpotensor.h"
+#include "mp_tensors/mpstensor.h"
+#include "mp_tensors/mpotensor.h"
 
-#include "reshapes.h"
-#include "indexing.h"
+#include "block_matrix/reshapes.h"
+#include "block_matrix/indexing.h"
 
 struct contraction {
     template<class Matrix, class SymmGroup>

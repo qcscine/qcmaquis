@@ -8,10 +8,10 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/lambda/bind.hpp>
 
-#include "indexing.h"
-#include "symmetry.h"
+#include "block_matrix/indexing.h"
+#include "block_matrix/symmetry.h"
 
-#include "function_objects.h"
+#include "utils/function_objects.h"
 
 template<class Matrix, class SymmGroup>
 class block_matrix

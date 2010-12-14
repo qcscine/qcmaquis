@@ -1,7 +1,7 @@
 #ifndef SPECIAL_MPOS_H
 #define SPECIAL_MPOS_H
 
-#include "mpo.h"
+#include "mp_tensors/mpo.h"
 
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup> identity_mpo(Index<SymmGroup> phys_i)

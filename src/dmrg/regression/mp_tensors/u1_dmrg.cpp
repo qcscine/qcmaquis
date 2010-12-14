@@ -6,22 +6,22 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "dense_matrix.hpp"
-#include "matrix_interface.hpp"
-#include "resizable_matrix_interface.hpp"
-#include "dense_matrix_algorithms.h"
-#include "matrix_algorithms.hpp"
+#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/matrix_interface.hpp"
+#include "dense_matrix/resizable_matrix_interface.hpp"
+#include "dense_matrix/dense_matrix_algorithms.h"
+#include "dense_matrix/matrix_algorithms.hpp"
 typedef blas::dense_matrix<double> Matrix;
 
-#include "indexing.h"
-#include "mps.h"
-#include "mpo.h"
-#include "contractions.h"
-#include "mps_mpo_ops.h"
+#include "block_matrix/indexing.h"
+#include "mp_tensors/mps.h"
+#include "mp_tensors/mpo.h"
+#include "mp_tensors/contractions.h"
+#include "mp_tensors/mps_mpo_ops.h"
 
-#include "special_mpos.h"
+#include "mp_tensors/special_mpos.h"
 
-#include "ss_optimize.h"
+#include "mp_tensors/ss_optimize.h"
 
 typedef U1 grp;
 

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "mpotensor.h"
+#include "mp_tensors/mpotensor.h"
 
 template<class Matrix, class SymmGroup>
 class MPO : public std::vector<MPOTensor<Matrix, SymmGroup> >
