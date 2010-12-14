@@ -19,11 +19,20 @@ typedef std::size_t             size_type;
 #include "cublas.h"
 #include "vector_gpu.h"
 #include "allocator.h"
+#include "assert.h"
+#include "general_matrix.hpp"
+#include "matrix_interface.hpp"
 
 /* Notes */
 /*To be change in futur = lda will be integrated in ETHZ matrix class */
 
-
+/*
+namespace blas 
+{
+    template <typename T, typename MemoryBlock>
+	class general_matrix;
+}
+*/
 namespace gpu
 {
 
@@ -57,8 +66,13 @@ public:
 #endif
 		
 #ifdef __CULA__		
+		culaStatus s;
 		culaShutdown();	
-#endif
+		if(s != culaNoError)
+		{
+			std::cout << " end : " << culaGetErrorInfo() << std::endl;
+		}
+#endif//
 	}
 };
 
@@ -107,6 +121,42 @@ public:
 		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
 	};
 	
+	template<class MemoryBlock>
+	matrix_gpu(blas::general_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.size1()),size2_(Matrix_cpu.size2()),ld_(Matrix_cpu.stride2())
+	{
+		size_type size_matrix = size1_*size2_;
+		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );	
+		assert(true == CheckError(" cudaMalloc constructor matrix"));
+		
+		cublasSetMatrix(size1_,size2_,sizeof(T), &Matrix_cpu(0,0),size1_,p_,ld_);
+		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
+		
+	};
+	
+	template <typename MemoryBlock>
+	void copy_matrix_from_cpu(blas::general_matrix<T,MemoryBlock> const& m_cpu)
+	{
+		assert( size1_ == num_rows(m_cpu) );
+		assert( size2_ == num_columns(m_cpu) );
+		cublasSetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2());
+	}
+	
+	template <typename MemoryBlock>
+	void copy_matrix_to_cpu(blas::general_matrix<T,MemoryBlock>& m_cpu) const
+	{
+		assert( size1_ == blas::num_rows(m_cpu));
+		assert( size2_ == blas::num_columns(m_cpu) );
+		cublasGetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2());			
+	}
+	
+	template <typename MemoryBlock>
+	operator blas::general_matrix<T,MemoryBlock>()
+	{
+		blas::general_matrix<T,MemoryBlock> m(size1_,size2_);
+		copy_matrix_to_cpu(m);
+		return m;
+	}
+	
 	~matrix_gpu()
 	{
 		cublasFree(p_);
@@ -142,28 +192,10 @@ public:
 			Array[i*size1()+i] = 1.0;
 	
 		cublasSetMatrix(size1(),size2(),sizeof(T),&Array[0],size1(),p(),size1());
-		assert(true == CheckError(" cublasSetMatrix Identity"));
-	
-	}
-	
-	template<class M>
-	void copy_cputogpu(M& Matrix_cpu)
-	{
-//		be cautious .... 
-//		assert((size1_ == Matrix.num_rows() ) && (size2_ == Matrix.num_columns()));
-		
-		size_type size1 = Matrix_cpu.num_rows();
-		size_type size2 = Matrix_cpu.num_columns();
-	
-		size1_ = size1 ; 
-		size2_ = size2 ;
-		ld_   = size1 ; //To be change in the futur
-		
-		cublasAlloc( size1*size2, sizeof(T), (void**)&p_ );
-		cublasSetMatrix(size1,size2,sizeof(T), &Matrix_cpu(0,0),size1,p_,ld_);
+		assert(true == CheckError(" cublasSetMatrix Identity"));	
 	}
 
-	
+		
 	inline const T* p () const
 	{
 		return p_;
@@ -176,6 +208,16 @@ public:
 
 	
 	//STL compatibility 
+	size_type& size1() 
+	{
+		return size1_;
+	}
+	
+	size_type& size2() 
+	{
+		return size2_;
+	}
+	
 	inline const size_type size1() const
 	{
 		return size1_;
@@ -200,7 +242,11 @@ public:
 	{
 		return ld_;
 	}
-	
+
+	size_type& ld() 
+	{
+		return ld_;
+	}
 	
 	matrix_gpu<T>& operator += (matrix_gpu<T> const& Matrix_right) 
 	{
@@ -241,6 +287,7 @@ public:
 
 	bool CheckError(std::string error)
 	{
+		
 		switch (stat_) 
 		{
 			case CUBLAS_STATUS_NOT_INITIALIZED:
@@ -276,8 +323,16 @@ private:
 };
 
 template <class T>
-const matrix_gpu<T> operator * ( matrix_gpu<T>& Matrix_left, const matrix_gpu<T>& Matrix_right);		
+ matrix_gpu<T> operator * ( matrix_gpu<T> const &  Matrix_left,  matrix_gpu<T>const & Matrix_right);	
 
+// We keep exact notation of Andreas
+template <class T>
+void gemm( matrix_gpu<T>const & A, matrix_gpu<T> const & B, matrix_gpu<T>& C);	
+
+template <class T>
+matrix_gpu<T> matrix_matrix_multiply( matrix_gpu<T>const & Matrix_left,  matrix_gpu<T>const & Matrix_right);
+	
+	
 /*  WARNING the Matrix_right will be overwrite for M_left + M_right or M_left - M_right  */
 template<class T>
 const matrix_gpu<T> operator + ( matrix_gpu<T>& Matrix_left, const matrix_gpu<T>& Matrix_right);
@@ -287,7 +342,7 @@ const matrix_gpu<T> operator - ( matrix_gpu<T>& Matrix_left, const matrix_gpu<T>
 /* end WARNING */
 
 template<class T>
-void svd(matrix_gpu<T> & M, matrix_gpu<T> & U, matrix_gpu<T> & V, vector_gpu<T> & S);
+void svd(matrix_gpu<T> & M, matrix_gpu<T> & U, matrix_gpu<T> & V, matrix_gpu<T> & S);
 
 template<class T>
 void qr(matrix_gpu<T> & M,  matrix_gpu<T> & Q , matrix_gpu<T> & R);
