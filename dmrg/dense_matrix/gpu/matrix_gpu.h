@@ -30,7 +30,7 @@ typedef std::size_t             size_type;
 namespace blas 
 {
     template <typename T, typename MemoryBlock>
-	class general_matrix;
+	class dense_matrix;
 }
 */
 namespace gpu
@@ -122,7 +122,7 @@ public:
 	};
 	
 	template<class MemoryBlock>
-	matrix_gpu(blas::general_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.size1()),size2_(Matrix_cpu.size2()),ld_(Matrix_cpu.stride2())
+	matrix_gpu(blas::dense_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.size1()),size2_(Matrix_cpu.size2()),ld_(Matrix_cpu.stride2())
 	{
 		size_type size_matrix = size1_*size2_;
 		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );	
@@ -134,7 +134,7 @@ public:
 	};
 	
 	template <typename MemoryBlock>
-	void copy_matrix_from_cpu(blas::general_matrix<T,MemoryBlock> const& m_cpu)
+	void copy_matrix_from_cpu(blas::dense_matrix<T,MemoryBlock> const& m_cpu)
 	{
 		assert( size1_ == num_rows(m_cpu) );
 		assert( size2_ == num_columns(m_cpu) );
@@ -142,7 +142,7 @@ public:
 	}
 	
 	template <typename MemoryBlock>
-	void copy_matrix_to_cpu(blas::general_matrix<T,MemoryBlock>& m_cpu) const
+	void copy_matrix_to_cpu(blas::dense_matrix<T,MemoryBlock>& m_cpu) const
 	{
 		assert( size1_ == blas::num_rows(m_cpu));
 		assert( size2_ == blas::num_columns(m_cpu) );
@@ -150,9 +150,9 @@ public:
 	}
 	
 	template <typename MemoryBlock>
-	operator blas::general_matrix<T,MemoryBlock>()
+	operator blas::dense_matrix<T,MemoryBlock>()
 	{
-		blas::general_matrix<T,MemoryBlock> m(size1_,size2_);
+		blas::dense_matrix<T,MemoryBlock> m(size1_,size2_);
 		copy_matrix_to_cpu(m);
 		return m;
 	}
@@ -315,7 +315,7 @@ public:
 	
 private:
 	T* p_;
-	//size1 and size2 to respect general_matrix implementation
+	//size1 and size2 to respect dense_matrix implementation
 	size_type size1_;
 	size_type size2_;
 	size_type ld_;
