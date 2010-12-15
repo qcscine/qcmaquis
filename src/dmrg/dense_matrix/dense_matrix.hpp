@@ -129,7 +129,7 @@ namespace blas {
 		}
 #endif		
         /**
-          * Swaps two general_matrices
+          * Swaps two dense_matrices
           */
         friend void swap(dense_matrix & x, dense_matrix & y)
         {
@@ -682,7 +682,7 @@ namespace blas {
 }
 
 //
-// Free general matrix functions
+// Free dense matrix functions
 //
 namespace blas {
 

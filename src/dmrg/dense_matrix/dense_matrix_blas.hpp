@@ -9,7 +9,7 @@ namespace blas {
 }
 
 //
-// general matrix blas function hooks
+// dense matrix blas function hooks
 //
 namespace blas {
 
