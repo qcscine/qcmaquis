@@ -56,6 +56,8 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
     
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
+    boost::array<Index<SymmGroup>, 2> new_phys_right_i = new_phys_i ^ right_i;
+    
     for (bit s = physical_i.basis_begin(); !s.end(); ++s)
         for (bit l = left_i.basis_begin(); !l.end(); ++l) {
             std::pair<typename SymmGroup::charge, std::size_t>
@@ -65,10 +67,7 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                 if (i1.first != (*r).first)
                     continue;
                 
-//                cout << "( " << i1.first << "," << (*r).first << " ) -> ( ";
-//                cout << (*l).first << "," << 
-//                calculate_index(new_phys_i ^ right_i, std::make_pair(-(*s).first, (*s).second) ^ *r).first << ")" << endl;
-                m2(*l, calculate_index(new_phys_i ^ right_i, std::make_pair(-(*s).first, (*s).second) ^ *r)) = m1(i1, *r);
+                m2(*l, calculate_index(new_phys_right_i, std::make_pair(-(*s).first, (*s).second) ^ *r)) = m1(i1, *r);
             }
         }
 }
@@ -92,6 +91,8 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
     
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
+    boost::array<Index<SymmGroup>, 2> physical_right_i = physical_i ^ right_i;
+    
     for (bit s = physical_i.basis_begin(); !s.end(); ++s)
         for (bit l = left_i.basis_begin(); !l.end(); ++l) {
             std::pair<typename SymmGroup::charge, std::size_t>
@@ -101,7 +102,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                 if (i1.first != (*r).first)
                     continue;
                 
-                m2(i1, *r) = m1(*l, calculate_index(physical_i ^ right_i, std::make_pair(-(*s).first, (*s).second) ^ *r));
+                m2(i1, *r) = m1(*l, calculate_index(physical_right_i, std::make_pair(-(*s).first, (*s).second) ^ *r));
             }
         }
 }
