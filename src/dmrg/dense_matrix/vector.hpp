@@ -30,9 +30,9 @@
 #ifndef __ALPS_VECTOR_HPP__
 #define __ALPS_VECTOR_HPP__
 
-#include "dense_matrix/detail/vector_adaptor.hpp"
+#include "detail/vector_adaptor.hpp"
 
-#include "dense_matrix/detail/blasmacros.h"
+#include "detail/blasmacros.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>

@@ -1,14 +1,14 @@
 #ifndef __ALPS_DENSE_MATRIX_HPP__
 #define __ALPS_DENSE_MATRIX_HPP__
 
-#include "dense_matrix/strided_iterator.hpp"
-#include "dense_matrix/matrix_element_iterator.hpp"
-#include "dense_matrix/vector.hpp"
-#include "dense_matrix/detail/dense_matrix_adaptor.hpp"
+#include "strided_iterator.hpp"
+#include "matrix_element_iterator.hpp"
+#include "vector.hpp"
+#include "detail/dense_matrix_adaptor.hpp"
 
-#include "utils/function_objects.h"
+#include "../utils/function_objects.h"
 
-#include "dense_matrix/diagonal_matrix.h"
+#include "diagonal_matrix.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
