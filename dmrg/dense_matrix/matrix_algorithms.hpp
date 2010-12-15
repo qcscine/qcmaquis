@@ -1,13 +1,13 @@
 #ifndef __ALPS_MATRIX_ALGORITHMS_HPP__
 #define __ALPS_MATRIX_ALGORITHMS_HPP__
 
-#include "matrix_concept_check.hpp"
+#include "dense_matrix/matrix_concept_check.hpp"
 
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 
-#include "dense_matrix.hpp"
-#include "diagonal_matrix.h"
+#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/diagonal_matrix.h"
 
 namespace blas
 {

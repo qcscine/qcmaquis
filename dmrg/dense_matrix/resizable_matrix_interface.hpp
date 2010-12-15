@@ -1,7 +1,7 @@
 #ifndef __ALPS_RESIZABLE_MATRIX_INTERFACE_HPP__
 #define __ALPS_RESIZABLE_MATRIX_INTERFACE_HPP__
 
-#include "resizable_matrix_concept_check.hpp"
+#include "dense_matrix/resizable_matrix_concept_check.hpp"
 
 namespace blas
 {
