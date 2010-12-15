@@ -10,11 +10,12 @@
 
 #include "block_matrix/indexing.h"
 #include "block_matrix/symmetry.h"
+#include "block_matrix/i_block_matrix.h"
 
 #include "utils/function_objects.h"
 
 template<class Matrix, class SymmGroup>
-class block_matrix
+class block_matrix : implements i_block_matrix
 {
 private:
     typedef typename SymmGroup::charge charge;
@@ -74,7 +75,17 @@ public:
         }
         return *this;
     }
-    
+
+    /**
+      * The i_block_matrix implementation:
+      * @returns memory pointer to the actual matrix memory
+      *
+      */
+    void* memory_pointer(){
+
+        return NULL;
+    }
+   
     void insert_block(boost::tuple<Matrix const &, charge, charge> const & block)
     {
         Matrix const & mtx = boost::tuples::get<0>(block);

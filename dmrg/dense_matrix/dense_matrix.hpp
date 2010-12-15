@@ -5,6 +5,7 @@
 #include "dense_matrix/matrix_element_iterator.hpp"
 #include "dense_matrix/vector.hpp"
 #include "dense_matrix/detail/dense_matrix_adaptor.hpp"
+#include "dense_matrix/i_dense_matrix.h"
 
 #include "utils/function_objects.h"
 
@@ -26,7 +27,7 @@ namespace blas {
       * @param MemoryBlock the underlying (continous) Memory structure
       */
     template <typename T, typename MemoryBlock = std::vector<T> >
-    class dense_matrix {
+    class dense_matrix : implements i_dense_matrix {
     public:
         // typedefs required for a std::container concept
         typedef T                       value_type;
@@ -104,6 +105,16 @@ namespace blas {
                     values_.insert(values_.end(), range.first, range.second);
                 }
             }
+        }
+
+        /**
+          * The i_dense_matrix implementation:
+          * @returns memory pointer to the actual matrix memory
+          *
+          */
+        void* memory_pointer(){
+
+            return NULL;
         }
         
         /**
