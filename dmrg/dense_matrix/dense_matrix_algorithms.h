@@ -1,8 +1,8 @@
 #ifndef __ALPS_DENSE_MATRIX_ALGORITHMS_HPP__
 #define __ALPS_DENSE_MATRIX_ALGORITHMS_HPP__
 
-#include "dense_matrix/matrix_concept_check.hpp"
-#include "dense_matrix/diagonal_matrix.h"
+#include "matrix_concept_check.hpp"
+#include "diagonal_matrix.h"
 
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>

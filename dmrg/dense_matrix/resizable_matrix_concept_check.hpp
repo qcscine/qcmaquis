@@ -3,7 +3,7 @@
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <stdexcept>
-#include "dense_matrix/matrix_concept_check.hpp"
+#include "matrix_concept_check.hpp"
 
 namespace blas
 {

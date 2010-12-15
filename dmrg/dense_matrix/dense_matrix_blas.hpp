@@ -1,7 +1,7 @@
 #ifndef __ALPS_DENSE_MATRIX_BLAS_HPP__
 #define __ALPS_DENSE_MATRIX_BLAS_HPP__
 
-#include "dense_matrix/detail/blasmacros.h"
+#include "detail/blasmacros.h"
 
 namespace blas {
     template <typename T, typename MemoryBlock>
