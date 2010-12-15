@@ -132,30 +132,30 @@ struct contraction {
     {
         ket_tensor.make_right_paired();
         
-        std::vector<MPSTensor<Matrix, SymmGroup> >
-        t(left.aux_dim(),
-          MPSTensor<Matrix, SymmGroup>(ket_tensor.site_dim(),
-                                       left.lower_dim(),
-                                       ket_tensor.col_dim(), false));
+        std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         
         for (std::size_t b = 0; b < left.aux_dim(); ++b) {
-            gemm(transpose(left.data_[b]), ket_tensor.data_, t[b].data_);
-            t[b].cur_storage = RightPaired;
-            t[b].make_left_paired();
+            gemm(transpose(left.data_[b]), ket_tensor.data_, t[b]);
+            block_matrix<Matrix, SymmGroup> tmp;
+            reshape_right_to_left<Matrix>(ket_tensor.site_dim(), left.lower_dim(), ket_tensor.col_dim(),
+                                          t[b], tmp);
+            swap(t[b], tmp);
         }
         
         MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(),
                                          left.lower_dim(), right.lower_dim(), false);
         ret.make_left_paired();
-        ret.data_ = transpose(ret.data_);
+//        ret.data_ = transpose(ret.data_);
+        ret.data_.inplace_transpose();
         
         typedef typename Index<SymmGroup>::basis_iterator bit;
         
         for (std::size_t b1 = 0; b1 < left.aux_dim(); ++b1)
             for (std::size_t b2 = 0; b2 < right.aux_dim(); ++b2) {
                 block_matrix<Matrix, SymmGroup> tmp;
-                gemm(t[b1].data_, right.data_[b2], tmp);
-                tmp = transpose(tmp);
+                gemm(t[b1], right.data_[b2], tmp);
+//                tmp = transpose(tmp);
+                tmp.inplace_transpose();
                 
                 for (bit l = left.lower_dim().basis_begin(); !l.end(); ++l)
                     for (bit s1 = ket_tensor.site_dim().basis_begin(); !s1.end(); ++s1)
@@ -172,15 +172,20 @@ struct contraction {
                                 std::size_t ret_block = ret.data_.left_basis().position(sectors->first);
                                 std::size_t tmp_block = tmp.left_basis().position(sectors->first);
                                 
-                                Matrix &m1 = ret.data_[ret_block], m2 = tmp[tmp_block];
+                                typename Matrix::column_element_iterator
+                                inp = column(tmp[tmp_block], i2.second).first,
+                                max = column(tmp[tmp_block], i2.second).second,
+                                outp = column(ret.data_[ret_block], i1.second).first;
                                 
-                                for (std::size_t elem = 0; elem < sectors->second; ++elem)
-                                    m1(elem, i1.second) += m2(elem, i2.second) * mpo_v;
+                                // replace with axpy
+                                for ( ; inp != max; ++inp, ++outp)
+                                    *outp += *inp * mpo_v;
                             }
                         }
             }
         
-        ret.data_ = conjugate(transpose(ret.data_));
+//        ret.data_ = conjugate(transpose(ret.data_));
+        ret.data_.inplace_transpose();
         
         return ret;
     }
