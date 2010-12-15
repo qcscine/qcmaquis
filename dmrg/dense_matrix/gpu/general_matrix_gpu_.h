@@ -7,7 +7,7 @@
  *
  */
 
-#include "gpu_type_macros.h"
+#include "dense_matrix/gpu/gpu_type_macros.h"
 
 namespace blas
 {

@@ -17,11 +17,11 @@ typedef std::size_t             size_type;
 #include "cuda_runtime_api.h" // need for cudaMemcpy, I do not know why !!!!
 #include "cula.h"
 #include "cublas.h"
-#include "vector_gpu.h"
-#include "allocator.h"
 #include "assert.h"
-#include "general_matrix.hpp"
-#include "matrix_interface.hpp"
+#include "dense_matrix/gpu/vector_gpu.h"
+#include "dense_matrix/gpu/allocator.h"
+#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/matrix_interface.hpp"
 
 /* Notes */
 /*To be change in futur = lda will be integrated in ETHZ matrix class */

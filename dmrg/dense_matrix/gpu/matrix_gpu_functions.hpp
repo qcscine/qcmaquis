@@ -18,8 +18,8 @@
 #include "cublas.h"
 #include "cula.h"
 
-#include "matrix_gpu.h"
-#include "vector_gpu.h"
+#include "dense_matrix/gpu/matrix_gpu.h"
+#include "dense_matrix/gpu/vector_gpu.h"
 
 /*
 My GT 330 does not support double so I develop, and debug with float.
