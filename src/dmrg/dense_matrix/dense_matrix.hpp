@@ -27,7 +27,7 @@ namespace blas {
       * @param MemoryBlock the underlying (continous) Memory structure
       */
     template <typename T, typename MemoryBlock = std::vector<T> >
-    class dense_matrix : implements i_dense_matrix {
+    class dense_matrix : public i_dense_matrix {
     public:
         // typedefs required for a std::container concept
         typedef T                       value_type;

@@ -13,7 +13,7 @@
 
 
 template<class Matrix, class SymmGroup>
-class block_matrix : implements i_block_matrix
+class block_matrix : public i_block_matrix
 {
 private:
     typedef typename SymmGroup::charge charge;
