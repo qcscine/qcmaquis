@@ -9,7 +9,7 @@
 
 #include "block_matrix/indexing.h"
 #include "block_matrix/symmetry.h"
-#include "block_matrix/i_block_matrix.h"
+#include "ambient/interfaces/i_block_matrix.h"
 
 
 template<class Matrix, class SymmGroup>
