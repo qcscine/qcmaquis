@@ -5,7 +5,7 @@
 #include "dense_matrix/matrix_element_iterator.hpp"
 #include "dense_matrix/vector.hpp"
 #include "dense_matrix/detail/dense_matrix_adaptor.hpp"
-#include "dense_matrix/i_dense_matrix.h"
+#include "ambient/interfaces/i_dense_matrix.h"
 
 #include "utils/function_objects.h"
 
