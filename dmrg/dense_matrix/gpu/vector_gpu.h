@@ -10,6 +10,9 @@
 #define __VECTOR_GPU__
 
 #include "cassert"
+#include <vector>
+#include "vector.hpp"
+
 
 namespace gpu
 {
@@ -35,6 +38,31 @@ public:
 		assert(true == CheckError(" cublasSetVector constructor matrix"));
 	}
 		
+	template<class MemoryBlock>
+	vector_gpu(blas::vector<T, MemoryBlock> const & Vector_cpu):size_(Vector_cpu.size())
+	{
+		stat_ = cublasAlloc( size_, sizeof(T), (void**)&p_ );	
+		assert(true == CheckError(" cudaMalloc constructor matrix"));
+		
+		cublasSetVector(size_,sizeof(T), &Vector_cpu(0),1,p_,1);
+		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
+		
+	};
+
+	template <typename MemoryBlock>
+	void copy_vector_to_cpu(blas::vector<T,MemoryBlock>& v_cpu) const
+	{
+		cublasGetVector(size_, sizeof(T),p(),1,&v_cpu(0),1);			
+	}
+	
+	template <typename MemoryBlock>
+	operator blas::vector<T,MemoryBlock>()
+	{
+		blas::vector<T,MemoryBlock> v(size_);
+		copy_vector_to_cpu(v);
+		return v;
+	}
+	
 	~vector_gpu()
 	{
 		cublasFree(p_);
