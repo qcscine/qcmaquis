@@ -6,7 +6,7 @@
 #include "block_matrix/symmetry.h"
 #include "block_matrix/block_matrix.h"
 
-#include <dense_matrix/dense_matrix.hpp>
+#include <dense_matrix/dense_matrix.h>
 
 #include <boost/python.hpp>
 

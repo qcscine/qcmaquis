@@ -6,7 +6,7 @@
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 
-#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/diagonal_matrix.h"
 
 namespace blas

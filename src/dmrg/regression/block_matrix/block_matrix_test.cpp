@@ -5,7 +5,7 @@ using namespace std;
 
 #include "dense_matrix/vector_interface.hpp"
 
-#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/matrix_interface.hpp"
 #include "dense_matrix/resizable_matrix_interface.hpp"
 #include "dense_matrix/matrix_algorithms.hpp"
