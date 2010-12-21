@@ -57,9 +57,13 @@ public:
     bool has_block(charge r, charge c) const;
     bool has_block(std::pair<charge, size_type> const & r,
                    std::pair<charge, size_type> const & c) const;
+    
     void insert_block(boost::tuple<Matrix const &, charge, charge> const & block);
+    void remove_block(charge r, charge c);
+    
     void remove_rows_from_block(size_type block, size_type r, size_type k);
     void remove_cols_from_block(size_type block, size_type r, size_type k);
+    
     value_type trace() const;
     void inplace_transpose();
     void inplace_conjugate();

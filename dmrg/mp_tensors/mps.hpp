@@ -158,12 +158,6 @@ void MPS<Matrix, SymmGroup>::canonize(std::size_t center)
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::stupid_grow_pair(std::size_t l, double alpha, double cutoff)
-{
-    stupid_grow((*this)[l], (*this)[l+1], alpha, cutoff);
-}
-
-template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                             Boundary<Matrix, SymmGroup> const & left,
                                             Boundary<Matrix, SymmGroup> const & right,
