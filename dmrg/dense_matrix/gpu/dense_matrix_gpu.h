@@ -1,5 +1,5 @@
 /*
- *  general_matrix_gpu_.h
+ *  dense_matrix_gpu_.h
  *  mps
  *
  *  Created by Tim Ewart on 13.12.10.
@@ -7,14 +7,14 @@
  *
  */
 
-#include "gpu_type_macros.h"
+#include "dense_matrix/gpu/gpu_type_macros.h"
 
 namespace blas
 {
 
 #define MATRIX_MATRIX_MULTIPLY(T) \
 template <typename MemoryBlock> \
-const general_matrix<T,MemoryBlock> matrix_matrix_multiply(general_matrix<T,MemoryBlock> const& lhs, general_matrix<T,MemoryBlock> const& rhs) \
+const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
 { \
 assert( lhs.num_columns() == rhs.num_rows() ); \
 gpu::matrix_gpu<T> lhs_gpu(lhs); \
@@ -28,7 +28,7 @@ IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
 
 #define MULTIPLIES_ASSIGN(T) \
 template <typename MemoryBlock> \
-void multiplies_assign(general_matrix<T,MemoryBlock>& m, T const& t) \
+void multiplies_assign(dense_matrix<T,MemoryBlock>& m, T const& t) \
 { \
 gpu::matrix_gpu<T> m_gpu(m); \
 if( !(m.is_shrinkable()) ) \
@@ -46,7 +46,7 @@ IMPLEMENT_FOR_ALL_GPU_TYPES(MULTIPLIES_ASSIGN)
 	
 #define PLUS_ASSIGN(T) \
 template <typename MemoryBlock> \
-void plus_assign(general_matrix<T,MemoryBlock>& this_m, general_matrix<T,MemoryBlock> const& rhs) \
+void plus_assign(dense_matrix<T,MemoryBlock>& this_m, dense_matrix<T,MemoryBlock> const& rhs) \
 { \
 gpu::matrix_gpu<T> this_gpu(this_m); \
 gpu::matrix_gpu<T> rhs_gpu(rhs); \
@@ -58,7 +58,7 @@ IMPLEMENT_FOR_ALL_GPU_TYPES(PLUS_ASSIGN)
 
 #define MINUS_ASSIGN(T) \
 template <typename MemoryBlock> \
-void minus_assign(general_matrix<T,MemoryBlock>& this_m, general_matrix<T,MemoryBlock> const& rhs) \
+void minus_assign(dense_matrix<T,MemoryBlock>& this_m, dense_matrix<T,MemoryBlock> const& rhs) \
 { \
 gpu::matrix_gpu<T> this_gpu(this_m); \
 gpu::matrix_gpu<T> rhs_gpu(rhs); \
@@ -67,13 +67,13 @@ this_m = this_gpu; \
 } 
 IMPLEMENT_FOR_ALL_GPU_TYPES(MINUS_ASSIGN)
 #undef MINUS_ASSIGN
-
+/*
 #define SVD(T) \
 template <typename MemoryBlock> \
-void svd(general_matrix<T, MemoryBlock>  M, general_matrix<T, MemoryBlock> & U, general_matrix<T, MemoryBlock>& V, typename associated_diagonal_matrix<general_matrix<T, MemoryBlock> >::type & S) \
+void svd(dense_matrix<T, MemoryBlock>  M, dense_matrix<T, MemoryBlock> & U, dense_matrix<T, MemoryBlock>& V, typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & S) \
 { \
-BOOST_CONCEPT_ASSERT((blas::Matrix<general_matrix<T, MemoryBlock> >)); \
-typename general_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M)); \
+BOOST_CONCEPT_ASSERT((blas::Matrix<dense_matrix<T, MemoryBlock> >)); \
+typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M)); \
 resize(U, num_rows(M), k); \
 resize(V, k, num_columns(M)); \
 std::size_t size1 = M.size1(); \
@@ -90,9 +90,10 @@ V = V_gpu; \
 M = M_gpu; \
 blas::vector<T>  Sres(k); \
 Sres = S_gpu; \
-S = typename associated_diagonal_matrix<general_matrix<T, MemoryBlock> >::type(Sres); \
+S = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(Sres); \
 } 
 IMPLEMENT_FOR_ALL_GPU_TYPES(SVD)
 #undef SVD	
-		
+*/		
 }
+

@@ -18,8 +18,8 @@
 #include "cublas.h"
 #include "cula.h"
 
-#include "matrix_gpu.h"
-#include "vector_gpu.h"
+#include "dense_matrix/gpu/matrix_gpu.h"
+#include "dense_matrix/gpu/vector_gpu.h"
 
 /*
 My GT 330 does not support double so I develop, and debug with float.
@@ -348,8 +348,10 @@ void svd(matrix_gpu<float> & M, matrix_gpu<float> & U, matrix_gpu<float> & V, ve
 	}
 	
 };
+	
+	/*
 
-/* the double version is not inside the basic version 
+// the double version is not inside the basic version 
 template<>
 void svd(matrix_gpu<double> & M, matrix_gpu<double> & U, matrix_gpu<double> & V)
 {
