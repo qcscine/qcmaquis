@@ -40,5 +40,5 @@ int main()
     
     MPO<Matrix, grp> szsz = s12_ising<Matrix>(L, -1, 1);
 //    ss_optimize<Matrix, grp>(mps, MPO<Matrix, grp>(L, id_mpo));
-    ss_optimize<Matrix, grp>(mps, szsz, 2);
+    ss_optimize<Matrix, grp>(mps, szsz, 2, 1e-14, 1000);
 }
