@@ -2,8 +2,6 @@
 
 namespace blas {
 
-
-
     template <typename T, typename MemoryBlock>
     dense_matrix<T, MemoryBlock>::dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T() )
     : size1_(rows), size2_(columns), reserved_size1_(rows), values_(rows*columns, init_value)
@@ -48,7 +46,6 @@ namespace blas {
         std::swap(this->size2_, r.size2_);
         std::swap(this->reserved_size1_,r.reserved_size1_);
     }
-
 
     template <typename T, typename MemoryBlock>
     dense_matrix<T, MemoryBlock>& dense_matrix<T, MemoryBlock>::operator = (dense_matrix<T, MemoryBlock> rhs)
@@ -180,7 +177,6 @@ namespace blas {
         this->size2_=size2;
     }
 
-
     template <typename T, typename MemoryBlock>
     void dense_matrix<T, MemoryBlock>::reserve(size_type size1, size_type size2, T const& init_value = T())
     {
@@ -212,7 +208,6 @@ namespace blas {
         }
     }
 
-
     template <typename T, typename MemoryBlock>
     std::pair<std::size_t,std::size_t> dense_matrix<T, MemoryBlock>::capacity() const
     {
@@ -234,7 +229,6 @@ namespace blas {
         if(this->size1_ < this->reserved_size1_) return true;
         else return false;
     }
-
 
     template <typename T, typename MemoryBlock>
     void dense_matrix<T, MemoryBlock>::clear()
@@ -263,7 +257,6 @@ namespace blas {
         this->size2_ += k;
     }
 
-
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
     void dense_matrix<T, MemoryBlock>::append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k =1)
@@ -276,7 +269,6 @@ namespace blas {
             std::copy( range.first+(l*this->size2_), range.first+((l+1)*this->size2_), row(this->size1_+l).first );
         this->size1_ += k;
     }
-
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
@@ -294,7 +286,6 @@ namespace blas {
             std::copy(range.first+l*this->size2_,range.first+(l+1)*this->size2_,row(i+l).first);
         this->size1_+=k;
     }
-
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
@@ -332,7 +323,6 @@ namespace blas {
         this->size2_ -= k;
     }
 
-
     template <typename T, typename MemoryBlock>
     void dense_matrix<T, MemoryBlock>::swap_rows(size_type i1, size_type i2)
     {
@@ -348,8 +338,6 @@ namespace blas {
         std::pair<column_element_iterator, column_element_iterator> range( column(j1) );
         std::swap_ranges(range.first, range.second, column(j2).first );
     }
-
-
 
     template <typename T, typename MemoryBlock>
     void dense_matrix<T, MemoryBlock>::plus_assign(dense_matrix const& rhs)
@@ -415,7 +403,6 @@ namespace blas {
                        this->elements().first, utils::functor_conj());
     }
 
-
     template <typename T, typename MemoryBlock>
     inline bool dense_matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2, T const& init_value = T())
     {
@@ -430,7 +417,6 @@ namespace blas {
             return false;
         }
     }
-
 
 }
 
