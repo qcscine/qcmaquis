@@ -132,41 +132,30 @@ MPO<Matrix, U1> s12_heisenberg(std::size_t L, double Jxy, double Jz)
     
     sminus.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, -1));
     
-    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));
-    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, -1), -1, -1));
+    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 0.5), 1, 1));
+    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, -0.5), -1, -1));
     
-//    MPOTensor<Matrix, U1> bulk(1, 1);
-//    bulk(0,0) = ident;
-//
-//    MPOTensor<Matrix, U1> ll(1, 2);
-//    ll(0,0) = splus;
-//    ll(0,1) = sminus;
-//    
-//    MPOTensor<Matrix, U1> rr(2, 1);
-//    rr(0,0) = sminus;
-//    rr(1,0) = splus;
-//
-//    MPO<Matrix, U1> ret(L, bulk);
-//    ret[0] = ll;
-//    ret[1] = rr;
-    
-    MPOTensor<Matrix, U1> bulk(4, 4);
+    MPOTensor<Matrix, U1> bulk(5, 5);
     bulk(0,0) = ident;
     bulk(0,1) = Jxy/2*splus;
     bulk(1,3) = sminus;
     bulk(0,2) = Jxy/2*sminus;
     bulk(2,3) = splus;
     bulk(3,3) = ident;
+    bulk(0,4) = Jz*sz;
+    bulk(4,3) = sz;
     
-    MPOTensor<Matrix, U1> left(1, 4);
+    MPOTensor<Matrix, U1> left(1, 5);
     left(0,0) = ident;
     left(0,1) = Jxy/2*splus;
     left(0,2) = Jxy/2*sminus;
+    left(0,4) = Jz*sz;
     
-    MPOTensor<Matrix, U1> right(4, 1);
+    MPOTensor<Matrix, U1> right(5, 1);
     right(1,0) = sminus;
     right(2,0) = splus;
     right(3,0) = ident;
+    right(4,0) = sz;
     
     MPO<Matrix, U1> ret(L, bulk);
     ret[0] = left;

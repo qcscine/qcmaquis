@@ -73,27 +73,37 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
                                         boost::lambda::_1 < Scut)-S[k].elements().first;
         if (keep >= num_rows(S[k]))
             continue;
-        if (keep == 0)
-            keep = 1;
         
-        S.resize_block(S.left_basis()[k].first,
-                       S.right_basis()[k].first,
-                       keep, keep);
+        /* hack for now */
+        keep = std::max(keep, std::size_t(1));
         
-        U.resize_block(U.left_basis()[k].first,
-                       U.right_basis()[k].first,
-                       U.left_basis()[k].second,
-                       keep);
-        
-        V.resize_block(V.left_basis()[k].first,
-                       V.right_basis()[k].first,
-                       keep,
-                       V.right_basis()[k].second);
+        if (keep == 0) {
+            S.remove_block(S.left_basis()[k].first,
+                           S.right_basis()[k].first);
+            U.remove_block(U.left_basis()[k].first,
+                           U.right_basis()[k].first);
+            V.remove_block(V.left_basis()[k].first,
+                           V.right_basis()[k].first);
+        } else {
+            S.resize_block(S.left_basis()[k].first,
+                           S.right_basis()[k].first,
+                           keep, keep);
+            
+            U.resize_block(U.left_basis()[k].first,
+                           U.right_basis()[k].first,
+                           U.left_basis()[k].second,
+                           keep);
+            
+            V.resize_block(V.left_basis()[k].first,
+                           V.right_basis()[k].first,
+                           keep,
+                           V.right_basis()[k].second);
+        }
     }
     
     if (! (old_basis == S.left_basis()) ) {
         cout << "SVD performed a truncation: " << endl;
-//        cout << old_basis << endl << S.left_basis() << endl;
+        cout << old_basis << endl << S.left_basis() << endl;
         cout << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
     }
 }

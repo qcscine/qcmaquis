@@ -67,7 +67,7 @@ namespace ietl
 template<class Matrix, class SymmGroup>
 void ss_optimize(MPS<Matrix, SymmGroup> & mps,
                  MPO<Matrix, SymmGroup> const & mpo,
-                 int nsweeps)
+                 int nsweeps, double cutoff, int Mmax)
 {
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     
@@ -103,23 +103,28 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
             sp.right = right_[site+1];
             
             typedef ietl::vectorspace<Vector> Vecspace;
-            typedef boost::lagged_fibonacci607 Gen;  
-            
-            Gen mygen;
+            typedef boost::lagged_fibonacci607 Gen;
             
             ietl::lanczos<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > lanczos(sp, vs);
             
+//            Vector test;
+//            ietl::mult(sp, mps[site], test);
+//            test.multiply_by_scalar(1/test.scalar_norm());
+//            test -= mps[site];
+//            cout << "How close to eigenstate? " << test.scalar_norm() << endl;
+            
             double rel_tol = sqrt(std::numeric_limits<double>::epsilon());
-            double abs_tol = rel_tol; // std::pow(std::numeric_limits<double>::epsilon(),2./3);
+            double abs_tol = rel_tol;
+            int n_evals = 1;
             ietl::lanczos_iteration_nlowest<double> 
-            iter(100, 1, rel_tol, abs_tol);
+            iter(100, n_evals, rel_tol, abs_tol);
             
             std::vector<double> eigen, err;
             std::vector<int> multiplicity;  
             
             try{
                 if (sweep == 0)
-                    lanczos.calculate_eigenvalues(iter, mygen);
+                    lanczos.calculate_eigenvalues(iter, Gen());
                 else
                     lanczos.calculate_eigenvalues(iter, mps[site]);
                 eigen = lanczos.eigenvalues();
@@ -133,24 +138,37 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
                 exit(1);
             }
             
-            cout << "Energy: " << eigen[0] << endl;
+            cout << "Energies: ";
+            std::copy(eigen.begin(), eigen.begin()+n_evals, std::ostream_iterator<double>(cout, " "));
+            cout << endl;
+//            cout << "Energy: " << eigen[0] << endl;
             
             std::vector<double>::iterator start = eigen.begin();  
             std::vector<double>::iterator end = eigen.begin()+1;
-            std::vector<Vector> eigenvectors; // for storing the eigen vectors. 
+            std::vector<Vector> eigenvectors; // for storing the eigenvectors. 
             ietl::Info<double> info; // (m1, m2, ma, eigenvalue, residualm, status).
             
             try {
                 if (sweep == 0)
-                    lanczos.eigenvectors(start,end,std::back_inserter(eigenvectors), info, mygen); 
+                    lanczos.eigenvectors(start, end, std::back_inserter(eigenvectors), info, Gen(), 100); 
                 else
-                    lanczos.eigenvectors(start,end,std::back_inserter(eigenvectors), info, mps[site]); 
+                    lanczos.eigenvectors(start, end, std::back_inserter(eigenvectors), info, mps[site], 100);
             }
             catch (std::runtime_error& e) {
                 cout << "Error in eigenvector calculation: " << endl;
                 cout << e.what() << endl;
                 exit(1);
-            }  
+            }
+            
+//            for(int i = 0; i < info.size(); i++)
+//                std::cout << " m1(" << i+1 << "): " << info.m1(i) << ", m2(" << i+1 << "): "
+//                << info.m2(i) << ", ma(" << i+1 << "): " << info.ma(i) << " eigenvalue("
+//                << i+1 << "): " << info.eigenvalue(i) << " residual(" << i+1 << "): "
+//                << info.residual(i) << " error_info(" << i+1 << "): "
+//                << info.error_info(i) << "\n\n";
+            
+            assert( eigenvectors[0].scalar_norm() > 1e-8 );
+            assert( info.error_info(0) == 0 );
             
             mps[site] = eigenvectors[0];
             
@@ -158,7 +176,7 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
                 if (site < L-1) {
                     cout << "Growing..." << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, 1e-4, 1e-10);
+                                       site, 1e-4, cutoff);
                 }
                 
                 block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);

@@ -464,7 +464,6 @@ struct contraction {
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
         svd(dm, U, V, S, cutoff);
-//        svd(dm, U, V, S);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = U;

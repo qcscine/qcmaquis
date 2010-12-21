@@ -247,3 +247,15 @@ void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
     cols_[cols_.position(c)].second = new_c;
 }
 
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
+{
+    assert( has_block(r, c) );
+    assert( rows_.position(r) == cols_.position(c) );
+    
+    std::size_t which = rows_.position(r);
+    
+    rows_.erase(rows_.begin() + which);
+    cols_.erase(cols_.begin() + which);
+    data_.erase(data_.begin() + which);
+}
