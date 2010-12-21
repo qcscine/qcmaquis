@@ -18,8 +18,8 @@
 #include "cublas.h"
 #include "cula.h"
 
-#include "dense_matrix/gpu/matrix_gpu.h"
-#include "dense_matrix/gpu/vector_gpu.h"
+#include "matrix_gpu.h"
+#include "vector_gpu.h"
 
 /*
 My GT 330 does not support double so I develop, and debug with float.
@@ -30,6 +30,28 @@ run on CSCS with double, moreover we must respect the f77 philosophy.
 
 namespace gpu 
 {
+	
+template <>
+void multiplies_assign( matrix_gpu<float> &  Matrix_gpu, float const& t)
+{
+	size_type num = Matrix_gpu.num_rows()* Matrix_gpu.num_columns();
+	cublasSscal(num, t , Matrix_gpu.p(), 1);
+	cublasGetError();
+}
+	
+template <>
+void multiplies_assign( matrix_gpu<double> &  Matrix_gpu, double const& t)
+{
+	size_type num = Matrix_gpu.num_rows()* Matrix_gpu.num_columns();
+	cublasDscal(num, t , Matrix_gpu.p(), 1);		
+	cublasGetError();
+}
+	
+	
+	
+	
+	
+	
 
 template<>
 void matrix_gpu<float>::multiplies_assign(matrix_gpu<float> const& Matrix_right)
@@ -111,12 +133,34 @@ matrix_gpu<float> matrix_matrix_multiply(matrix_gpu<float> const & Matrix_left,m
 	size_type K =  Matrix_left.num_columns();
 	
 	matrix_gpu<float> Result(num_rows,num_columns);
-	
+
 	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
+	cublasGetError();
+
 	
 	return Result;
 }
 
+	template<>
+	matrix_gpu<double> matrix_matrix_multiply(matrix_gpu<double> const & Matrix_left,matrix_gpu<double> const & Matrix_right)
+	{
+		//	assert(Matrix_left.num_rows() == Matrix_right.num_columns());
+		
+		char  TRANS_LEFT  = 'N';
+		char  TRANS_RIGHT = 'N';
+		
+		size_type num_rows = Matrix_left.num_rows();
+		size_type num_columns = Matrix_right.num_columns();
+		size_type K =  Matrix_left.num_columns();
+		
+		matrix_gpu<double> Result(num_rows,num_columns);
+		
+		cublasDgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
+		cublasGetError();
+		
+		
+		return Result;
+	}
 
 
 template<>
@@ -285,7 +329,7 @@ const matrix_gpu<double> operator - ( matrix_gpu<double>& Matrix_left, const mat
 /*----------------------------- svd -----------------------------------------*/
 
 template<>
-void svd(matrix_gpu<float> & M, matrix_gpu<float> & U, matrix_gpu<float> & V, matrix_gpu<float> & S )
+void svd(matrix_gpu<float> & M, matrix_gpu<float> & U, matrix_gpu<float> & V, vector_gpu<float> & S )
 {
 
 	culaStatus s;
