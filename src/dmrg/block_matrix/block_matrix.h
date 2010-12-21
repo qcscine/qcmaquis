@@ -22,7 +22,6 @@ public:
     typedef typename Matrix::value_type value_type;
     
     block_matrix(Index<SymmGroup> rows, Index<SymmGroup> cols);
-    block_matrix(charge c, Matrix const & m);
 
     /**
       * The i_block_matrix implementation:
@@ -34,6 +33,12 @@ public:
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
     
+    block_matrix(charge rc, charge cc, Matrix const & m)
+    {
+        rows_.push_back(std::make_pair(rc, num_rows(m)));
+        cols_.push_back(std::make_pair(cc, num_columns(m)));
+        data_.push_back(m);
+    }
     std::string description() const;
     
     block_matrix &       operator=(block_matrix rhs);
@@ -49,9 +54,9 @@ public:
     block_matrix const & operator/=(value_type v);
 
     size_type n_blocks() const;
-    bool has_block(charge r, charge c);
+    bool has_block(charge r, charge c) const;
     bool has_block(std::pair<charge, size_type> const & r,
-                   std::pair<charge, size_type> const & c);
+                   std::pair<charge, size_type> const & c) const;
     void insert_block(boost::tuple<Matrix const &, charge, charge> const & block);
     void remove_rows_from_block(size_type block, size_type r, size_type k);
     void remove_cols_from_block(size_type block, size_type r, size_type k);
@@ -62,11 +67,28 @@ public:
     template<class Generator>
     void generate(Generator g);
 
+    void match_and_add_block(boost::tuple<Matrix const &, charge, charge> const & block);     
+    
+    void resize_block(charge r, charge c,
+                      size_type new_r, size_type new_c);
+    
     friend void swap(block_matrix & x, block_matrix & y)
     {
         swap(x.data_, y.data_);
         swap(x.rows_, y.rows_);
         swap(x.cols_, y.cols_);
+    }
+    
+    Matrix const & operator()(charge r, charge c) const
+    {
+        assert( rows_.position(r) == cols_.position(c) );
+        return data_[rows_.position(r)];
+    }
+    
+    Matrix & operator()(charge r, charge c)
+    {
+        assert( rows_.position(r) == cols_.position(c) );
+        return data_[rows_.position(r)];
     }
     
 private:
@@ -75,4 +97,20 @@ private:
 };    
 
 #include "block_matrix/block_matrix.hpp"
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> operator*(typename Matrix::value_type v,
+                                          block_matrix<Matrix, SymmGroup> bm)
+{
+    bm *= v;
+    return bm;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
+                                          typename Matrix::value_type v)
+{
+    bm *= v;
+    return bm;
+}
+
 #endif

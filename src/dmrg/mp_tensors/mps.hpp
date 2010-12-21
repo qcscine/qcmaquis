@@ -1,5 +1,9 @@
 #include "mp_tensors/mps.h"
 
+#include "contractions.h"
+
+#include <boost/math/special_functions/binomial.hpp>
+
 template<class Matrix>
 void mps_init(MPS<Matrix, NullGroup> & mps, size_t Mmax, Index<NullGroup> const & phys)
 {
@@ -23,6 +27,13 @@ void mps_init(MPS<Matrix, NullGroup> & mps, size_t Mmax, Index<NullGroup> const 
     }
 }
 
+template<class T>
+T tri_min(T a, T b, T c)
+{
+    return std::min(std::min(a, b),
+                    std::min(a, c));
+}
+
 template<class Matrix>
 void mps_init(MPS<Matrix, U1> & mps, size_t Mmax, Index<U1> const & phys)
 {
@@ -36,17 +47,39 @@ void mps_init(MPS<Matrix, U1> & mps, size_t Mmax, Index<U1> const & phys)
     for (int i = 0; i < L; ++i)
     {
         Index<U1> li, ri;
-        for (int sz = -max_sz[i]; sz <= max_sz[i]; ++sz)
-            li.insert(std::make_pair(sz, 1));
-        for (int sz = -max_sz[i+1]; sz <= max_sz[i+1]; ++sz)
-            ri.insert(std::make_pair(sz, 1));
+        for (int sz = -max_sz[i], k = 0; sz <= max_sz[i]; sz += 2, k += 1)
+            li.insert(std::make_pair(sz, tri_min<double>(boost::math::binomial_coefficient<double>(i, k),
+                                                         boost::math::binomial_coefficient<double>(L-i, k),
+                                                         Mmax
+                                                         )));
+        for (int sz = -max_sz[i+1], k = 0; sz <= max_sz[i+1]; sz += 2, k += 1)
+            ri.insert(std::make_pair(sz, tri_min<double>(boost::math::binomial_coefficient<double>(i+1, k),
+                                                         boost::math::binomial_coefficient<double>(L-i-1, k),
+                                                         Mmax
+                                                         )));
         
-        cout << "MPS site " << i << endl;
-        cout << li << endl;
-        cout << ri << endl;
+//        cout << "MPS site " << i << endl;
+//        cout << li << endl;
+//        cout << ri << endl;
         
         mps[i] = MPSTensor<Matrix, U1>(phys, li, ri);
     }
+    cout << mps.description() << endl;
+}
+
+template<class Matrix, class SymmGroup>
+std::string MPS<Matrix, SymmGroup>::description() const
+{
+    std::ostringstream oss;
+    for (int i = 0; i < length(); ++i)
+    {
+        oss << "MPS site " << i << endl;
+        oss << (*this)[i].row_dim() << endl;
+        oss << "Sum: " << (*this)[i].row_dim().sum_of_sizes() << endl;
+        oss << (*this)[i].col_dim() << endl;
+        oss << "Sum: " << (*this)[i].col_dim().sum_of_sizes() << endl;
+    }
+    return oss.str();
 }
 
 template<class Matrix, class SymmGroup>
@@ -55,6 +88,8 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, size_t Mmax, Index<SymmGroup> phys)
 {
     mps_init<Matrix>(*this, Mmax, phys);
     
+    for (int i = 0; i < L; ++i)
+        (*this)[i].normalize_left(SVD);
     this->canonize_left();
 }
 
@@ -120,4 +155,23 @@ void MPS<Matrix, SymmGroup>::canonize(std::size_t center)
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
         (*this)[i-1].multiply_from_right(t);
     }
+}
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::stupid_grow_pair(std::size_t l, double alpha, double cutoff)
+{
+    stupid_grow((*this)[l], (*this)[l+1], alpha, cutoff);
+}
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                            Boundary<Matrix, SymmGroup> const & left,
+                                            Boundary<Matrix, SymmGroup> const & right,
+                                            std::size_t l, double alpha, double cutoff)
+{
+    MPSTensor<Matrix, SymmGroup> new_mps = contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff);
+    
+    (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
+                                                          (*this)[l], new_mps);
+    (*this)[l] = new_mps;
 }

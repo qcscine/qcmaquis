@@ -15,6 +15,9 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     
     typedef typename SymmGroup::charge charge;
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+        if (! B.left_basis().has(A.right_basis()[k].first))
+            continue;
+        
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         C.insert_block(boost::tuples::make_tuple(Matrix(num_rows(A[k]), num_columns(B[matched_block])),
@@ -56,6 +59,43 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
      Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
      (remove_rows/remove_columns methods for that)
      */
+    
+    Index<SymmGroup> old_basis = S.left_basis();
+    
+    double Smax = 0;
+    for (std::size_t k = 0; k < S.n_blocks(); ++k)
+        Smax = std::max(Smax, *std::max_element(S[k].elements().first, S[k].elements().second));
+    double Scut = rel_tol * Smax;
+    
+    for (std::size_t k = 0; k < S.n_blocks(); ++k)
+    {
+        std::size_t keep = std::find_if(S[k].elements().first, S[k].elements().second,
+                                        boost::lambda::_1 < Scut)-S[k].elements().first;
+        if (keep >= num_rows(S[k]))
+            continue;
+        if (keep == 0)
+            keep = 1;
+        
+        S.resize_block(S.left_basis()[k].first,
+                       S.right_basis()[k].first,
+                       keep, keep);
+        
+        U.resize_block(U.left_basis()[k].first,
+                       U.right_basis()[k].first,
+                       U.left_basis()[k].second,
+                       keep);
+        
+        V.resize_block(V.left_basis()[k].first,
+                       V.right_basis()[k].first,
+                       keep,
+                       V.right_basis()[k].second);
+    }
+    
+    if (! (old_basis == S.left_basis()) ) {
+        cout << "SVD performed a truncation: " << endl;
+//        cout << old_basis << endl << S.left_basis() << endl;
+        cout << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -102,6 +142,17 @@ typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> const & m)
     return m.trace();
 }
 
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m)
+{
+    block_matrix<Matrix, SymmGroup> ret;
+    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+        ret.insert_block(boost::tuples::make_tuple(m[k],
+                                                   -m.left_basis()[k].first,
+                                                   -m.right_basis()[k].first));
+    return ret;
+}
+
 template<class Matrix, class SymmGroup, class Generator>
 void generate(block_matrix<Matrix, SymmGroup> & m, Generator & g)
 {
@@ -115,6 +166,14 @@ block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
     for (std::size_t k = 0; k < ret.n_blocks(); ++k)
         ret[k] = blas::identity_matrix<Matrix>(size[k].second);
     return ret;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup> m)
+{
+    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+        m[k] = sqrt(m[k]);
+    return m;
 }
 
 #endif

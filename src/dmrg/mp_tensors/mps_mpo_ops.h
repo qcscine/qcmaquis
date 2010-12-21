@@ -21,6 +21,7 @@ left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> con
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
         left_[i+1] = left;
+//        cout << "Left at " << i+1 << " " << left.data_[0] << endl;
     }
     return left_;
 }
@@ -40,15 +41,21 @@ right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> co
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
         right_[i] = right;
+//        cout << "right at " << i << " " << right.data_[0] << endl;
     }
     return right_;
 }
 
 template<class Matrix, class SymmGroup>
-double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
+double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d = 0)
 {
-    std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
-    return left_[L](0, std::make_pair(SymmGroup::SingletCharge, 0), std::make_pair(SymmGroup::SingletCharge, 0));
+    if (d == 0) {
+        std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
+        return left_[mps.length()](0, std::make_pair(SymmGroup::SingletCharge, 0), std::make_pair(SymmGroup::SingletCharge, 0));
+    } else {
+        std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
+        return right_[0](0, std::make_pair(SymmGroup::SingletCharge, 0), std::make_pair(SymmGroup::SingletCharge, 0));
+    }
 }
 
 template<class Matrix, class SymmGroup>

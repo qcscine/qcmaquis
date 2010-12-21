@@ -12,6 +12,7 @@ struct functor_##name { template<class T> return_type operator() (arg_type t) { 
     DEFINE_FUNCTION_OBJECT(transpose, T, T const &)
     DEFINE_FUNCTION_OBJECT(conj, T, T)
     DEFINE_FUNCTION_OBJECT(conjugate, T, T const &)
+    DEFINE_FUNCTION_OBJECT(sqrt, T, T const &)
     
 #undef DEFINE_FUNCTION_OBJECT
     

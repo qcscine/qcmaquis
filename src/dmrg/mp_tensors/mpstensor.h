@@ -9,7 +9,7 @@
 
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places
-enum Indicator { U, L, R };
+enum Indicator { Unorm, Lnorm, Rnorm };
 enum DecompMethod { QR, SVD };
 
 template<class Matrix, class SymmGroup>
@@ -77,8 +77,6 @@ private:
     mutable block_matrix<Matrix, SymmGroup> data_;
     mutable MPSStorageLayout cur_storage;
     Indicator cur_normalization;
-    
-    MPSTensor get_reflected() const;
     
 public:
     void make_left_paired() const;

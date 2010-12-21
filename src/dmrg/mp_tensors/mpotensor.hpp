@@ -3,13 +3,11 @@
 #include "block_matrix/reshapes.h"
 
 template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup>::MPOTensor(Index<SymmGroup> const & pd,
-                                        std::size_t ld,
+MPOTensor<Matrix, SymmGroup>::MPOTensor(std::size_t ld,
                                         std::size_t rd)
-: data_(ld * rd, block_matrix<Matrix, SymmGroup>(pd, pd))
+: data_(ld * rd)
 , left_i(ld)
 , right_i(rd)
-, phys_i(pd)
 { }
 
 template<class Matrix, class SymmGroup>
@@ -19,6 +17,7 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & bra_index)
 {
+    assert( left_index * right_i + right_index < data_.size() );
     return data_[left_index * right_i + right_index](ket_index, bra_index);
 }
 
@@ -29,17 +28,24 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & bra_index) const
 {
+    assert( left_index * right_i + right_index < data_.size() );
     return data_[left_index * right_i + right_index](ket_index, bra_index);
 }
 
 template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup> MPOTensor<Matrix, SymmGroup>::get_reflected() const
+block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
+                                                                                 std::size_t right_index) const
 {
-    MPOTensor<Matrix, SymmGroup> t(phys_i, right_i, left_i);
-    for (std::size_t r = 0; r < left_i; ++r)
-        for (std::size_t c = 0; c < right_i; ++c)
-            t.data_[c*left_i+r] = data_[r*right_i+c];
-    return t;
+    assert( left_index * right_i + right_index < data_.size() );
+    return data_[left_index * right_i + right_index];
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
+                                                                           std::size_t right_index)
+{
+    assert( left_index * right_i + right_index < data_.size() );
+    return data_[left_index * right_i + right_index];
 }
 
 template<class Matrix, class SymmGroup>

@@ -4,8 +4,10 @@
 #include <boost/lambda/bind.hpp>
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(), Index<SymmGroup> cols = Index<SymmGroup>())
-: rows_(rows), cols_(cols)
+block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(),
+                                              Index<SymmGroup> cols = Index<SymmGroup>())
+: rows_(rows)
+, cols_(cols)
 {
     assert(rows_.size() == cols_.size());
     for (size_type k = 0; k < rows_.size(); ++k)
@@ -13,28 +15,16 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows = Index<Symm
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix(typename SymmGroup::charge c, Matrix const & m)
-{
-    rows_.push_back(std::make_pair(c, num_rows(m)));
-    cols_.push_back(std::make_pair(c, num_columns(m)));
-    data_.push_back(m);
-}
-
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix const & rhs)
+block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix<Matrix, SymmGroup> const & rhs)
 {
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
         charge rhs_rc = rhs.rows_[k].first;
-        size_type goesto = rows_.position(rhs_rc);
-        if (goesto == rows_.size()) { // it's a new block
-            size_type i1 = rows_.insert(rhs.rows_[k]);
-            size_type i2 = cols_.insert(rhs.cols_[k]);
-            assert(i1 == i2);
-            data_.insert(data_.begin() + i1, rhs.data_[k]);
-        } else { // this block exists already -> pass to Matrix
-            data_[goesto] += rhs.data_[k];
-        }
+        charge rhs_cc = rhs.cols_[k].first;
+        if (this->has_block(rhs_rc, rhs_cc))
+            (*this)(rhs_rc, rhs_cc) += rhs.data_[k];
+        else
+            this->insert_block(boost::tuples::make_tuple(rhs.data_[k], rhs_rc, rhs_cc));
     }
     return *this;
 }
@@ -74,8 +64,7 @@ void block_matrix<Matrix, SymmGroup>::insert_block(boost::tuple<Matrix const &, 
     p2 = std::make_pair(boost::tuples::get<2>(block), mtx.num_columns());
     
     size_type i1 = rows_.insert(p1);
-    size_type i2 = cols_.insert(p2);
-    assert(i1 == i2);
+    cols_.insert(i1, p2);
     data_.insert(data_.begin() + i1, mtx);
 }
 
@@ -110,14 +99,14 @@ template<class Matrix, class SymmGroup>
 Matrix const & block_matrix<Matrix, SymmGroup>::operator[](size_type c) const { return data_[c]; }
 
 template<class Matrix, class SymmGroup>
-bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c)
+bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 {
     return rows_.has(r) && cols_.has(c) && rows_.position(r) == cols_.position(c);
 }
 
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(std::pair<charge, size_type> const & r,
-               std::pair<charge, size_type> const & c)
+               std::pair<charge, size_type> const & c) const
 {
     return has_block(r.first, c.first);
 }
@@ -214,3 +203,47 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
     os << std::endl;
     return os;
 }
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::match_and_add_block(boost::tuple<Matrix const &, charge, charge> const & block)
+{
+    using namespace boost::tuples;
+    
+    charge c1 = get<1>(block), c2 = get<2>(block);
+    
+    if (this->has_block(c1, c2))
+    {
+        if (num_rows(get<0>(block)) == num_rows((*this)(c1, c2)) &&
+            num_columns(get<0>(block)) == num_columns((*this)(c1, c2)))
+            (*this)(c1, c2) += get<0>(block);
+        else if (num_rows(get<0>(block)) > num_rows((*this)(c1, c2)) &&
+                 num_columns(get<0>(block)) > num_columns((*this)(c1, c2)))
+        {
+            resize_block(c1, c2, num_rows(get<0>(block)), num_columns(get<0>(block)));
+            (*this)(c1, c2) += get<0>(block);
+        } else {
+            std::size_t maxrows = std::max(num_rows(get<0>(block)),
+                                           num_rows((*this)(get<1>(block), get<2>(block))));
+            std::size_t maxcols = std::max(num_columns(get<0>(block)),
+                                           num_columns((*this)(get<1>(block), get<2>(block))));
+            
+            Matrix cpy = get<0>(block); // only in this case do we need to copy the argument matrix
+            
+            resize_block(c1, c2, maxrows, maxcols);
+            resize(cpy, maxrows, maxcols);
+            
+            (*this)(c1, c2) += cpy;
+        }
+    } else
+        insert_block(block);
+}
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
+                                                   size_type new_r, size_type new_c)
+{
+    resize((*this)(r,c), new_r, new_c);
+    rows_[rows_.position(r)].second = new_r;
+    cols_[cols_.position(c)].second = new_c;
+}
+
