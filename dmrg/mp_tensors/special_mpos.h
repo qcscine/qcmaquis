@@ -4,12 +4,23 @@
 #include "mp_tensors/mpo.h"
 
 template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> make_mpo_identity_block(Index<SymmGroup> phys_i)
+{
+    block_matrix<Matrix, SymmGroup> ret;
+    for (std::size_t k = 0; k < phys_i.size(); ++k)
+        ret.insert_block(boost::tuples::make_tuple(Matrix(phys_i[k].second, phys_i[k].second),
+                                                   phys_i[k].first,
+                                                   phys_i[k].first));
+    return ret;
+}
+
+template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup> identity_mpo(Index<SymmGroup> phys_i)
 {
     typedef typename Index<SymmGroup>::basis_iterator bit;
     
-    MPOTensor<Matrix, SymmGroup> mpo(phys_i, 1, 1);
-    mpo.multiply_by_scalar(0);
+    MPOTensor<Matrix, SymmGroup> mpo(1, 1);
+    mpo(0,0) = make_mpo_identity_block<Matrix>(phys_i);
     
     for (bit up = phys_i.basis_begin(); !up.end(); ++up)
         mpo(0, 0, *up, *up) = 1;
@@ -22,8 +33,8 @@ MPOTensor<Matrix, NullGroup> s12_sz_mpo(Index<NullGroup> phys_i)
 {
     typedef Index<NullGroup>::basis_iterator bit;
     
-    MPOTensor<Matrix, NullGroup> mpo(phys_i, 1, 1);
-    mpo.multiply_by_scalar(0);
+    MPOTensor<Matrix, NullGroup> mpo(1, 1);
+    mpo(0,0) = make_mpo_identity_block<Matrix>(phys_i);
     
     int s = 1;
     for (bit up = phys_i.basis_begin(); !up.end(); ++up, s *= -1)
@@ -40,14 +51,27 @@ MPO<Matrix, NullGroup> s12_ising(std::size_t L, double J, double h)
     
     using std::make_pair;
     
-    Index<NullGroup> phys; phys.insert(std::make_pair(NullGroup::Plus, 2));
+    Index<NullGroup> phys_i; phys_i.insert(std::make_pair(NullGroup::Plus, 2));
     Index<NullGroup> triv; triv.insert(std::make_pair(NullGroup::Plus, 1));
     Index<NullGroup> aux; aux.insert(std::make_pair(NullGroup::Plus, 4));
     
-    MPOTensor<Matrix, NullGroup> bulk(phys, 4, 4), left(phys, 1, 4), right(phys, 4, 1);
-    bulk.multiply_by_scalar(0);
-    left.multiply_by_scalar(0);
-    right.multiply_by_scalar(0);
+    MPOTensor<Matrix, NullGroup> bulk(4, 4), left(1, 4), right(4, 1);
+    
+    bulk(0, 0) = make_mpo_identity_block<Matrix>(phys_i);
+    bulk(1, 1) = make_mpo_identity_block<Matrix>(phys_i);
+    bulk(3, 3) = make_mpo_identity_block<Matrix>(phys_i);
+    bulk(0, 1) = make_mpo_identity_block<Matrix>(phys_i);
+    bulk(0, 2) = make_mpo_identity_block<Matrix>(phys_i);
+    bulk(2, 3) = make_mpo_identity_block<Matrix>(phys_i);
+    
+    left(0, 0) = make_mpo_identity_block<Matrix>(phys_i);
+    left(0, 1) = make_mpo_identity_block<Matrix>(phys_i);
+    left(0, 2) = make_mpo_identity_block<Matrix>(phys_i);
+    
+    right(0, 0) = make_mpo_identity_block<Matrix>(phys_i);
+    right(1, 0) = make_mpo_identity_block<Matrix>(phys_i);
+    right(2, 0) = make_mpo_identity_block<Matrix>(phys_i);
+    right(3, 0) = make_mpo_identity_block<Matrix>(phys_i);
     
 #define NGI(v) make_pair(NullGroup::Plus, v)
     
@@ -93,13 +117,61 @@ MPO<Matrix, NullGroup> s12_ising(std::size_t L, double J, double h)
 }
 
 template<class Matrix>
-MPO<Matrix, U1> s12_heisenberg(std::size_t L, double J, double h)
+MPO<Matrix, U1> s12_heisenberg(std::size_t L, double Jxy, double Jz)
 {
     Index<U1> phys;
     phys.insert(std::make_pair(1, 1));
     phys.insert(std::make_pair(-1, 1));
     
-    MPO<Matrix, U1> ret(L, identity_mpo<Matrix, U1>(phys));
+    block_matrix<Matrix, U1> ident, splus, sminus, sz, zero;
+    
+    ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, -1));
+    ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));
+    
+    splus.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, 1));
+    
+    sminus.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, -1));
+    
+    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));
+    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, -1), -1, -1));
+    
+//    MPOTensor<Matrix, U1> bulk(1, 1);
+//    bulk(0,0) = ident;
+//
+//    MPOTensor<Matrix, U1> ll(1, 2);
+//    ll(0,0) = splus;
+//    ll(0,1) = sminus;
+//    
+//    MPOTensor<Matrix, U1> rr(2, 1);
+//    rr(0,0) = sminus;
+//    rr(1,0) = splus;
+//
+//    MPO<Matrix, U1> ret(L, bulk);
+//    ret[0] = ll;
+//    ret[1] = rr;
+    
+    MPOTensor<Matrix, U1> bulk(4, 4);
+    bulk(0,0) = ident;
+    bulk(0,1) = Jxy/2*splus;
+    bulk(1,3) = sminus;
+    bulk(0,2) = Jxy/2*sminus;
+    bulk(2,3) = splus;
+    bulk(3,3) = ident;
+    
+    MPOTensor<Matrix, U1> left(1, 4);
+    left(0,0) = ident;
+    left(0,1) = Jxy/2*splus;
+    left(0,2) = Jxy/2*sminus;
+    
+    MPOTensor<Matrix, U1> right(4, 1);
+    right(1,0) = sminus;
+    right(2,0) = splus;
+    right(3,0) = ident;
+    
+    MPO<Matrix, U1> ret(L, bulk);
+    ret[0] = left;
+    ret[L-1] = right;
+    
     return ret;
 }
 

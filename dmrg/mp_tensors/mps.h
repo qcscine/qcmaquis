@@ -26,6 +26,14 @@ public:
     
     Boundary<Matrix, SymmGroup> start_mtx() const;
     
+    std::string description() const;
+    
+    void stupid_grow_pair(std::size_t l, double alpha, double cutoff);
+    void grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
+                        Boundary<Matrix, SymmGroup> const & left,
+                        Boundary<Matrix, SymmGroup> const & right,
+                        std::size_t l, double alpha, double cutoff);
+    
 private:
     typename Matrix::value_type canonize_left();
     typename Matrix::value_type canonize_right();

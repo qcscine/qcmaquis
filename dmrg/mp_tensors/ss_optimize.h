@@ -80,6 +80,7 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
     right_ = right_mpo_overlaps(mps, mpo);
     
     for (int sweep = 0; sweep < nsweeps; ++sweep) {
+        cout << mps.description() << endl;
         for (int _site = 0; _site < 2*L; ++_site) {
             int site, lr;
             if (_site < L) {
@@ -108,8 +109,8 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
             
             ietl::lanczos<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > lanczos(sp, vs);
             
-            double rel_tol = 500*std::numeric_limits<double>::epsilon();
-            double abs_tol = std::pow(std::numeric_limits<double>::epsilon(),2./3);
+            double rel_tol = sqrt(std::numeric_limits<double>::epsilon());
+            double abs_tol = rel_tol; // std::pow(std::numeric_limits<double>::epsilon(),2./3);
             ietl::lanczos_iteration_nlowest<double> 
             iter(100, 1, rel_tol, abs_tol);
             
@@ -129,6 +130,7 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
             catch (std::runtime_error& e) {
                 cout << "Error in eigenvalue calculation: " << endl;
                 cout << e.what() << endl;
+                exit(1);
             }
             
             cout << "Energy: " << eigen[0] << endl;
@@ -140,22 +142,28 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
             
             try {
                 if (sweep == 0)
-                    lanczos.eigenvectors(start,end,std::back_inserter(eigenvectors),info,mygen); 
+                    lanczos.eigenvectors(start,end,std::back_inserter(eigenvectors), info, mygen); 
                 else
-                    lanczos.eigenvectors(start,end,std::back_inserter(eigenvectors),info,mps[site]); 
+                    lanczos.eigenvectors(start,end,std::back_inserter(eigenvectors), info, mps[site]); 
             }
             catch (std::runtime_error& e) {
                 cout << "Error in eigenvector calculation: " << endl;
                 cout << e.what() << endl;
+                exit(1);
             }  
             
             mps[site] = eigenvectors[0];
             
             if (lr == +1) {
+                if (site < L-1) {
+                    cout << "Growing..." << endl;
+                    mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
+                                       site, 1e-4, 1e-10);
+                }
+                
                 block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
                 if (site < L-1)
                     mps[site+1].multiply_from_left(t);
-                
                 
                 MPSTensor<Matrix, SymmGroup> bkp = mps[site];
                 left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,

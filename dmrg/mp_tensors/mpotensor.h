@@ -6,19 +6,6 @@
 
 #include <iostream>
 
-enum MPOStorageLayout { LeftUp, LeftDown };
-
-/*
- LeftUp:
- 
-      i1
-      |
- i2 - O - o2
-      |
-      o1
- 
- */
-
 template<class Matrix, class SymmGroup>
 class Boundary
 {
@@ -32,9 +19,7 @@ public:
     : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
     , upper_i(ud), lower_i(ld)
     { }
-    
-    Index<SymmGroup> const & upper_dim() const { return upper_i; }
-    Index<SymmGroup> const & lower_dim() const { return lower_i; }
+
     std::size_t aux_dim() const { return data_.size(); }
     
     scalar_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); }
@@ -42,7 +27,8 @@ public:
     
     friend struct contraction;
     
-private:
+//private:
+public:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
     Index<SymmGroup> upper_i, lower_i;
 };
@@ -56,8 +42,7 @@ public:
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
     
     // the constructor asumes that the upper and lower physical dimension is the same
-    MPOTensor(Index<SymmGroup> const & = Index<SymmGroup>(),
-              std::size_t = 1,
+    MPOTensor(std::size_t = 1,
               std::size_t = 1);
     
     Index<SymmGroup> const & site_bra_dim() const;
@@ -74,16 +59,19 @@ public:
                                    access_type const & ket_index,
                                    access_type const & bra_index) const;
     
-    void multiply_by_scalar(scalar_type);
+    block_matrix<Matrix, SymmGroup> const & operator()(std::size_t left_index,
+                                                       std::size_t right_index) const;
+    block_matrix<Matrix, SymmGroup> & operator()(std::size_t left_index,
+                                                 std::size_t right_index);
     
-    MPOTensor get_reflected() const;
+    void multiply_by_scalar(scalar_type);
     
 private:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
     std::size_t left_i, right_i;
-    Index<SymmGroup> phys_i;
+//    Index<SymmGroup> phys_i;
 };
-  
+
 #include "mp_tensors/mpotensor.hpp"
 
 #endif

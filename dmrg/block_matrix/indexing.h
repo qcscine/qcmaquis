@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <map>
 
 #include <boost/array.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -34,6 +35,12 @@ namespace index_detail
     {
         return x.first;
     }
+    
+    template<class SymmGroup>
+    std::size_t get_second(std::pair<typename SymmGroup::charge, std::size_t> const & x)
+    {
+        return x.second;
+    }
 }
 
 template<class SymmGroup>
@@ -51,6 +58,7 @@ public:
     
     std::size_t size_of_block(charge c) const // rename
     {
+        assert( has(c) );
         return std::find_if(this->begin(), this->end(),
                             c == boost::lambda::bind(index_detail::get_first<SymmGroup>,
                                                      boost::lambda::_1))->second;
@@ -73,10 +81,6 @@ public:
     
     bool has(charge c) const
     {
-//        return std::count_if(this->begin(), this->end(),
-//                             boost::lambda::bind(index_detail::lt<SymmGroup>,
-//                                                 boost::lambda::_1,
-//                                                 std::make_pair(c, 0))) > 0;
         return std::count_if(this->begin(), this->end(),
                              c == boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1)) > 0;
     }
@@ -93,9 +97,14 @@ public:
         return d;
     }
     
-    bool operator==(const Index<SymmGroup> &o)
+    void insert(std::size_t position, std::pair<charge, std::size_t> const & x)
     {
-        return this->size() == o.size() && std::equal(this->begin(), this->end(), o.begin());
+        std::vector<std::pair<charge, std::size_t> >::insert(this->begin() + position, x);
+    }
+    
+    bool operator==(Index const & o) const
+    {
+        return (this->size() == o.size()) && std::equal(this->begin(), this->end(), o.begin());
     }
     
     basis_iterator basis_begin() const
@@ -117,12 +126,68 @@ public:
         return ret;
     }
     
+    std::size_t sum_of_sizes() const
+    {
+        return std::accumulate(this->begin(), this->end(), 0, boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2));
+    }
+    
 #ifdef PYTHON_EXPORTS
     std::size_t py_insert(wrapped_pair<SymmGroup> p)
     {
         return this->insert(p.data_);
     }
 #endif /* PYTHON_EXPORTS */
+};
+
+template<class SymmGroup>
+class ProductBasis
+{
+public:
+    typedef typename SymmGroup::charge charge;
+    typedef std::size_t size_t;
+    
+    ProductBasis(Index<SymmGroup> const & a,
+                 Index<SymmGroup> const & b)
+    {
+        init(a, b, static_cast<charge(*)(charge, charge)>(SymmGroup::fuse));
+    }
+    
+    template<class Fusion>
+    ProductBasis(Index<SymmGroup> const & a,
+                 Index<SymmGroup> const & b,
+                 Fusion f)
+    {
+        init(a, b, f);
+    }
+    
+    template<class Fusion>
+    void init(Index<SymmGroup> const & a,
+              Index<SymmGroup> const & b,
+              Fusion f)
+    {
+        std::map<charge, size_t> block_begins;
+        
+        for (typename Index<SymmGroup>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1)
+            for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
+            {
+                charge pc = f(it1->first, it2->first);
+                
+                keys_.push_back(std::make_pair(it1->first, it2->first));
+                vals_.push_back(block_begins[pc]);
+                block_begins[pc] += it1->second * it2->second;
+            }
+    }
+    
+    size_t operator()(charge a, charge b) const
+    {
+        assert( std::count(keys_.begin(), keys_.end(), std::make_pair(a, b)) > 0 );
+        size_t pos = std::find(keys_.begin(), keys_.end(), std::make_pair(a, b))-keys_.begin();
+        return vals_[pos];
+    }
+    
+private:
+    std::vector<std::pair<charge, charge> > keys_;
+    std::vector<size_t> vals_;
 };
 
 template<class SymmGroup>

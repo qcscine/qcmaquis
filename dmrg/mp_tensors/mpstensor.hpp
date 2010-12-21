@@ -13,7 +13,7 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 , right_i(rd)
 //, data_(sd*ld, rd)
 , cur_storage(LeftPaired)
-, cur_normalization(U)
+, cur_normalization(Unorm)
 {
     Index<SymmGroup> lb = sd*ld, rb = rd;
     common_subset(lb, rb);
@@ -22,28 +22,6 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     
     if (fillrand)
         data_.generate(drand48);
-//        data_.generate(rand);
-} 
-
-template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup> MPSTensor<Matrix, SymmGroup>::get_reflected() const
-{
-    MPSTensor<Matrix, SymmGroup> ret;
-    ret.left_i = right_i;
-    ret.right_i = left_i;
-    ret.phys_i = phys_i;
-    
-    ret.data_ = transpose(data_);
-    
-    ret.cur_storage = (cur_storage == LeftPaired ? RightPaired : LeftPaired);
-    if (cur_normalization == L)
-        ret.cur_normalization = R;
-    else if (cur_normalization == R)
-        ret.cur_normalization = L;
-    else
-        ret.cur_normalization = U;
-    
-    return ret;
 }
 
 template<class Matrix, class SymmGroup>
@@ -85,7 +63,7 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
 
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
-{
+{   
     if (cur_storage == RightPaired)
         return;
     
@@ -110,7 +88,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
         qr(data_, q, r);
         swap(data_, q);
         
-        cur_normalization = L;
+        cur_normalization = Lnorm;
         return r;
     } else {
         make_left_paired();
@@ -120,7 +98,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
         
         svd(data_, U, V, S);
         
+        right_i = U.right_basis();
+        assert(data_.left_basis() == U.left_basis());
         swap(data_, U);
+        
         gemm(S, V, U);
         return U;
     }
@@ -133,23 +114,32 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
                                               double truncation,
                                               Index<SymmGroup> bond_dim)
 {
-    // This is more expensive than a full implementation
-    // due to the additional transposes - but I want to reduce code for now.
+    if (method == QR) {
+        throw std::runtime_error("Not implemented.");
+        
+    } else {
+        make_right_paired();
+        
+        block_matrix<Matrix, SymmGroup> U, V;
+        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        
+        svd(data_, U, V, S);
+        
+        left_i = V.left_basis();
+        assert(data_.right_basis() == V.right_basis());
+        swap(data_, V);
+        
+        gemm(U, S, V);
+        return V;
+    }
     
-    
-    MPSTensor<Matrix, SymmGroup> rt = get_reflected();
-    block_matrix<Matrix, SymmGroup> r = rt.normalize_left(method, multiplied, truncation, bond_dim);
-    r = transpose(r);
-    *this = rt.get_reflected();
-    
-    return r;
 }
 
 template<class Matrix, class SymmGroup>
 void
 MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup> const & N)
 {
-    cur_normalization = U;
+    cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_left_paired();
     gemm(data_, N, tmp);
@@ -161,7 +151,7 @@ template<class Matrix, class SymmGroup>
 void
 MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup> const & N)
 {
-    cur_normalization = U;
+    cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_right_paired();
     gemm(N, data_, tmp);
@@ -213,7 +203,7 @@ bool MPSTensor<Matrix, SymmGroup>::isleftnormalized(bool test)
     if (test)
         throw std::runtime_error("Not implemented!");
     else
-        return cur_normalization == L;
+        return cur_normalization == Lnorm;
 }
 
 template<class Matrix, class SymmGroup>
@@ -222,7 +212,7 @@ bool MPSTensor<Matrix, SymmGroup>::isrightnormalized(bool test)
     if (test)
         throw std::runtime_error("Not implemented!");
     else
-        return cur_normalization == R;
+        return cur_normalization == Rnorm;
 }
 
 template<class Matrix, class SymmGroup>
@@ -231,7 +221,7 @@ bool MPSTensor<Matrix, SymmGroup>::isnormalized(bool test)
     if (isleftnormalized(test) || isrightnormalized(test))
         return true;
     else {
-        cur_normalization = U;
+        cur_normalization = Unorm;
         return false;
     }
 }

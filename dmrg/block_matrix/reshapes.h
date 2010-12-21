@@ -1,36 +1,9 @@
 #ifndef RESHAPE_H
 #define RESHAPE_H
 
-#include "block_matrix/indexing.h"
+#include <map>
 
-template<class SymmGroup, unsigned long L>
-std::pair<typename SymmGroup::charge, std::size_t>
-calculate_index(boost::array<Index<SymmGroup>, L> const & dims,
-                boost::array<std::pair<typename SymmGroup::charge, std::size_t>, L> const & idx)
-{
-    typedef typename SymmGroup::charge charge;
-    using std::size_t;
-    
-    std::pair<charge, size_t> ret = std::make_pair(SymmGroup::SingletCharge, 0);
-    
-    // first step: calculate final charge
-    for (size_t k = 0; k < L; ++k)
-        ret.first = SymmGroup::fuse(ret.first, idx[k].first);
-    
-    // second step: strides
-    boost::array<size_t, L> strides;
-    strides[L-1] = 1;
-    for (size_t k = L-1; k > 0; --k)
-        strides[k-1] = strides[k] * dims[k].size_of_block(idx[k].first);
-    
-//    std::copy(strides.begin(), strides.end(), std::ostream_iterator<size_t>(cout, " ")); cout << endl;
-    
-    // last step: index
-    for (size_t k = 0; k < L; ++k)
-        ret.second += strides[k] * idx[k].second;
-    
-    return ret;
-}
+#include "block_matrix/indexing.h"
 
 template<class Matrix, class SymmGroup>
 void reshape_left_to_right(Index<SymmGroup> physical_i,
@@ -39,37 +12,52 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                            block_matrix<Matrix, SymmGroup> const & m1,
                            block_matrix<Matrix, SymmGroup> & m2)
 {
+    assert(m1.right_basis() == right_i);
+    
     using std::size_t;
     
-//    assert(m1.left_basis() == physical_i*left_i);
-//    assert(m1.right_basis() == right_i);
+    m2 = block_matrix<Matrix, SymmGroup>();
     
-    Index<SymmGroup> new_phys_i = adjoin(physical_i);
-    Index<SymmGroup> newl = left_i, newr = new_phys_i * right_i;
-    common_subset(newl, newr);
-    m2 = block_matrix<Matrix, SymmGroup>(newl, newr);
+    typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
     
-//    cout << "Reshaping l2r: " << endl;
-//    cout << physical_i << " " << left_i << " " << right_i << endl;
-//    cout << physical_i * left_i << " " << right_i << endl;
-//    cout << newl << " " << newr << endl;
+    std::map<charge, size_t> in_offsets, out_offsets;
     
-    typedef typename Index<SymmGroup>::basis_iterator bit;
-    
-    boost::array<Index<SymmGroup>, 2> new_phys_right_i = new_phys_i ^ right_i;
-    
-    for (bit s = physical_i.basis_begin(); !s.end(); ++s)
-        for (bit l = left_i.basis_begin(); !l.end(); ++l) {
-            std::pair<typename SymmGroup::charge, std::size_t>
-            i1 = calculate_index(physical_i ^ left_i, *s ^ *l);
-            
-            for (bit r = right_i.basis_begin(); !r.end(); ++r) {
-                if (i1.first != (*r).first)
+    for (size_t s = 0; s < physical_i.size(); ++s)
+        for (size_t l = 0; l < left_i.size(); ++l)
+            for (size_t r = 0; r < right_i.size(); ++r)
+            {
+                charge in_l_charge = SymmGroup::fuse(physical_i[s].first, left_i[l].first);
+                charge in_r_charge = right_i[r].first;
+                charge out_l_charge = left_i[l].first;
+                charge out_r_charge = SymmGroup::fuse(-physical_i[s].first, right_i[r].first);
+
+                if (! m1.has_block(in_l_charge, in_r_charge) )
                     continue;
                 
-                m2(*l, calculate_index(new_phys_right_i, std::make_pair(-(*s).first, (*s).second) ^ *r)) = m1(i1, *r);
+                size_t in_left_offset = in_offsets[in_l_charge];
+                size_t out_right_offset = out_offsets[out_r_charge];
+                
+                Matrix const & in_block = m1(in_l_charge, in_r_charge);
+                Matrix out_block(left_i[l].second, out_right_offset + physical_i[s].second * right_i[r].second);
+                
+                for (size_t ss = 0; ss < physical_i[s].second; ++ss)
+                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
+                        for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                            out_block(ll, out_right_offset + ss*right_i[r].second+rr) = in_block(in_left_offset + ss*left_i[l].second+ll, rr);
+                
+                in_offsets[in_l_charge] += left_i[l].second * physical_i[s].second;
+                out_offsets[out_r_charge] += right_i[r].second * physical_i[s].second;
+                
+                if (m2.has_block(out_l_charge, out_r_charge))
+                {
+                    m2.resize_block(out_l_charge, out_r_charge, num_rows(out_block), num_columns(out_block));
+                    m2(out_l_charge, out_r_charge) += out_block;
+                } else
+                    m2 += block_matrix<Matrix, SymmGroup>(out_l_charge, out_r_charge, out_block);
             }
-        }
+    
+//    assert(m2.left_basis() == left_i);
 }
 
 template<class Matrix, class SymmGroup>
@@ -79,32 +67,53 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                            block_matrix<Matrix, SymmGroup> const & m1,
                            block_matrix<Matrix, SymmGroup> & m2)
 {
+    assert(m1.left_basis() == left_i);
+    
     using std::size_t;
     
-//    assert(m1.left_basis() == left_i);
-//    assert(m1.right_basis() == physical_i*right_i);
+    m2 = block_matrix<Matrix, SymmGroup>();
     
-    Index<SymmGroup> new_phys_i = adjoin(physical_i);
-    Index<SymmGroup> newl = new_phys_i * left_i, newr = right_i;
-    common_subset(newl, newr);
-    m2 = block_matrix<Matrix, SymmGroup>(newl, newr);
+    typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
     
-    typedef typename Index<SymmGroup>::basis_iterator bit;
+    std::map<charge, size_t> in_offsets, out_offsets;
     
-    boost::array<Index<SymmGroup>, 2> physical_right_i = physical_i ^ right_i;
-    
-    for (bit s = physical_i.basis_begin(); !s.end(); ++s)
-        for (bit l = left_i.basis_begin(); !l.end(); ++l) {
-            std::pair<typename SymmGroup::charge, std::size_t>
-            i1 = calculate_index(physical_i ^ left_i, *s ^ *l);
-            
-            for (bit r = right_i.basis_begin(); !r.end(); ++r) {
-                if (i1.first != (*r).first)
+    for (size_t s = 0; s < physical_i.size(); ++s)
+        for (size_t l = 0; l < left_i.size(); ++l)
+            for (size_t r = 0; r < right_i.size(); ++r)
+            {
+                charge in_l_charge = left_i[l].first;
+                charge in_r_charge = SymmGroup::fuse(-physical_i[s].first, right_i[r].first);
+                charge out_l_charge = SymmGroup::fuse(physical_i[s].first, left_i[l].first);
+                charge out_r_charge = right_i[r].first;
+                
+                if (! m1.has_block(in_l_charge, in_r_charge) )
                     continue;
                 
-                m2(i1, *r) = m1(*l, calculate_index(physical_right_i, std::make_pair(-(*s).first, (*s).second) ^ *r));
+                size_t in_right_offset = in_offsets[in_r_charge];
+                size_t out_left_offset = out_offsets[out_l_charge];
+                
+                Matrix const & in_block = m1(in_l_charge, in_r_charge);
+                Matrix out_block = Matrix(out_left_offset + physical_i[s].second * left_i[l].second, right_i[r].second);
+                
+                for (size_t ss = 0; ss < physical_i[s].second; ++ss)
+                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
+                        for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                            out_block(out_left_offset + ss*left_i[l].second+ll, rr) = in_block(ll, in_right_offset + ss*right_i[r].second+rr);
+                
+                in_offsets[in_r_charge] += right_i[r].second * physical_i[s].second;
+                out_offsets[out_l_charge] += left_i[l].second * physical_i[s].second;
+                
+                if (m2.has_block(out_l_charge, out_r_charge))
+                {
+                    m2.resize_block(out_l_charge, out_r_charge, num_rows(out_block), num_columns(out_block));
+                    m2(out_l_charge, out_r_charge) += out_block;
+                } else
+                    m2 += block_matrix<Matrix, SymmGroup>(out_l_charge, out_r_charge, out_block);
             }
-        }
+    
+//    assert(m2.right_basis() == right_i);
 }
 
 #endif /* RESHAPE_H */
+
