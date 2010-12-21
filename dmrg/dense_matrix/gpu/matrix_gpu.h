@@ -125,7 +125,7 @@ public:
 	};
 	
 	template<class MemoryBlock>
-	matrix_gpu(blas::dense_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.size1()),size2_(Matrix_cpu.size2()),ld_(Matrix_cpu.stride2())
+	matrix_gpu(blas::dense_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.num_rows()),size2_(Matrix_cpu.num_columns()),ld_(Matrix_cpu.stride2())
 	{
 		size_type size_matrix = size1_*size2_;
 		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );	
