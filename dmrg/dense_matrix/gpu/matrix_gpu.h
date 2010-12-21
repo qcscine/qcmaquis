@@ -20,7 +20,7 @@ typedef std::size_t             size_type;
 #include "vector_gpu.h"
 #include "allocator.h"
 #include "assert.h"
-#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/matrix_interface.hpp"
 
 /* Notes */

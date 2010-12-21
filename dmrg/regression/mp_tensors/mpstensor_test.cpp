@@ -4,7 +4,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.hpp"
+#include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/matrix_interface.hpp"
 #include "dense_matrix/resizable_matrix_interface.hpp"
 #include "dense_matrix/dense_matrix_algorithms.h"
