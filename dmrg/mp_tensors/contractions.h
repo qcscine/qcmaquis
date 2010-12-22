@@ -311,17 +311,21 @@ struct contraction {
                                 Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                 Matrix const & iblock = T(T_l_charge, T_r_charge);
                                 Matrix oblock(out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
-                                
+
+                                /* optimize me */ 
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
-                                    for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2)
-                                        for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                                            for (size_t rr = 0; rr < right_i[r].second; ++rr) {
-                                                oblock(out_left_offset + ss2*left_i[l].second+ll, rr);
-                                                iblock(in_left_offset + ss1*left_i[l].second+ll, rr);
-                                                
-                                                oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
-                                                iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock(ss1, ss2);
+                                    for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
+                                        typename Matrix::value_type wblock_t = wblock(ss1, ss2);
+                                        for (size_t rr = 0; rr < right_i[r].second; ++rr) {
+                                            typename Matrix::value_type * p1 = &oblock(out_left_offset + ss2*left_i[l].second, rr);
+                                            typename Matrix::value_type const * p2 = &iblock(in_left_offset + ss1*left_i[l].second, rr);
+                                            for (size_t ll = 0; ll < left_i[l].second; ++ll) {
+                                                *(p1++) += *(p2++) * wblock_t;
+                                                //oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
+                                                //iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock(ss1, ss2);
                                             }
+                                        }
+                                    }
                                 
                                 ret.data_.match_and_add_block(boost::tuples::make_tuple(oblock, out_l_charge, out_r_charge));
                             }
@@ -409,15 +413,15 @@ struct contraction {
                                 
                                 /* optimize me */
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
-                                    for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2)
-                                        for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                                            for (size_t rr = 0; rr < right_i[r].second; ++rr) {
-                                                oblock(out_left_offset + ss2*left_i[l].second+ll, rr);
-                                                iblock(in_left_offset + ss1*left_i[l].second+ll, rr);
-                                                
+                                    for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
+                                        typename Matrix::value_type wblock_t = wblock(ss1, ss2);
+                                        for (size_t rr = 0; rr < right_i[r].second; ++rr) {
+                                            for (size_t ll = 0; ll < left_i[l].second; ++ll) {
                                                 oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
-                                                iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock(ss1, ss2);
+                                                iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
                                             }
+                                        }
+                                    }
                                 
                                 ret.data_[b2].match_and_add_block(boost::tuples::make_tuple(oblock, out_l_charge, out_r_charge));
                             }

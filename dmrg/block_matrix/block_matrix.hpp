@@ -63,9 +63,13 @@ void block_matrix<Matrix, SymmGroup>::insert_block(boost::tuple<Matrix const &, 
     p1 = std::make_pair(boost::tuples::get<1>(block), mtx.num_rows()),
     p2 = std::make_pair(boost::tuples::get<2>(block), mtx.num_columns());
     
-    size_type i1 = rows_.insert(p1);
+    /*size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
-    data_.insert(data_.begin() + i1, mtx);
+    data_.insert(data_.begin() + i1, mtx);*/
+    
+    rows_.push_back(p1);
+    cols_.push_back(p2);
+    data_.push_back(mtx);
 }
 
 template<class Matrix, class SymmGroup>
