@@ -81,6 +81,7 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
     
     for (int sweep = 0; sweep < nsweeps; ++sweep) {
         cout << mps.description() << endl;
+        cutoff *= 0.1;
         for (int _site = 0; _site < 2*L; ++_site) {
             int site, lr;
             if (_site < L) {
