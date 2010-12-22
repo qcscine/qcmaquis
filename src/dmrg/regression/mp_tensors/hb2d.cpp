@@ -32,26 +32,24 @@ typedef U1 grp;
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
 
-int main()
+int main(int argc, char ** argv)
 {
     cout.precision(10);
     
     Index<grp> phys;
     phys.insert(std::make_pair(1, 1));
     phys.insert(std::make_pair(-1, 1));
+
+    int L = atoi(argv[1]), W = atoi(argv[2]);    
+
+    int N = L*W, M = 2;
+    MPS<Matrix, grp> mps(N, M, phys);
     
-    int L = 64, M = 2;
-    MPS<Matrix, grp> mps(L, M, phys);
-    
-//    MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
-//    MPOTensor<Matrix, grp> sz_mpo = s12_sz_mpo<Matrix>(mps[0].site_dim());
-    
-    ChainAdj adj(L);
+    SquareAdj adj(L, W);
     MPO<Matrix, grp> H =
     mpos::MPOMaker<Matrix, grp>::create_mpo(adj,
                                             mpos::MPOMaker<Matrix, grp>::hb_ops(1, 1));
     
-    mps.normalize_left();
     cout << expval(mps, H, 0) << endl;
     cout << expval(mps, H, 1) << endl;
     

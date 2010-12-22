@@ -2,7 +2,7 @@
 #define GENERATE_MPO_H
 
 #include "adjancency.h"
-#include "mpo.h"
+#include "mp_tensors/mpo.h"
 
 #include <boost/tuple/tuple.hpp>
 
