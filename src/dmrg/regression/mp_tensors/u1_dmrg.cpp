@@ -24,6 +24,9 @@ typedef blas::dense_matrix<double> Matrix;
 
 #include "mp_tensors/ss_optimize.h"
 
+#include "adjancency.h"
+#include "mpos/generate_mpo.h"
+
 typedef U1 grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
@@ -37,21 +40,28 @@ int main()
     phys.insert(std::make_pair(1, 1));
     phys.insert(std::make_pair(-1, 1));
     
-    int L = 64, M = 2;
+    int L = 36, M = 2;
     MPS<Matrix, grp> mps(L, M, phys);
     
 //    MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
 //    MPOTensor<Matrix, grp> sz_mpo = s12_sz_mpo<Matrix>(mps[0].site_dim());
     
-    MPO<Matrix, grp> szsz = s12_heisenberg<Matrix>(L, 1, 1);
+//    ChainAdj adj(L);
+    SquareAdj adj(6, 6);
+    MPO<Matrix, grp> H =
+    mpos::MPOMaker<Matrix, grp>::create_mpo(adj,
+                                            mpos::MPOMaker<Matrix, grp>::hb_ops(1, 1));
+    
+//    MPO<Matrix, grp> H = s12_heisenberg<Matrix>(L, 1, 1);
+    
     mps.normalize_left();
-    cout << expval(mps, szsz, 0) << endl;
-    cout << expval(mps, szsz, 1) << endl;
+    cout << expval(mps, H, 0) << endl;
+    cout << expval(mps, H, 1) << endl;
 //    mps.normalize_right();
 //    MPSTensor<Matrix, grp>::stupid_grow(mps[1], mps[2], 0, 0);
-//    cout << expval(mps, szsz, 0) << endl;
-//    cout << expval(mps, szsz, 1) << endl;
+//    cout << expval(mps, H, 0) << endl;
+//    cout << expval(mps, H, 1) << endl;
 //    exit(0);
     
-    ss_optimize<Matrix, grp>(mps, szsz, 10, 1e-14, 1000);
+    ss_optimize<Matrix, grp>(mps, H, 10, 1e-6, 1000);
 }

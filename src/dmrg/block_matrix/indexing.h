@@ -41,6 +41,22 @@ namespace index_detail
     {
         return x.second;
     }
+    
+    // simpler, and potentially faster since inlining is easier for the compiler
+    template<class SymmGroup>
+    class is_first_equal
+    {
+    public:
+        is_first_equal(typename SymmGroup::charge c) : c_(c) { }
+        
+        bool operator()(std::pair<typename SymmGroup::charge, std::size_t> const & x) const
+        {
+            return x.first == c_;
+        }
+        
+    private:
+        typename SymmGroup::charge c_;
+    };
 }
 
 template<class SymmGroup>
@@ -60,15 +76,13 @@ public:
     {
         assert( has(c) );
         return std::find_if(this->begin(), this->end(),
-                            c == boost::lambda::bind(index_detail::get_first<SymmGroup>,
-                                                     boost::lambda::_1))->second;
+                            index_detail::is_first_equal<SymmGroup>(c))->second;
     }
     
     std::size_t position(charge c) const
     {
         return std::find_if(this->begin(), this->end(),
-                            c == boost::lambda::bind(index_detail::get_first<SymmGroup>,
-                                                     boost::lambda::_1)) - this->begin();
+                            index_detail::is_first_equal<SymmGroup>(c)) - this->begin();
     }
     
     std::size_t destination(charge c) const
@@ -81,8 +95,8 @@ public:
     
     bool has(charge c) const
     {
-        return std::count_if(this->begin(), this->end(),
-                             c == boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1)) > 0;
+        return std::find_if(this->begin(), this->end(),
+                            index_detail::is_first_equal<SymmGroup>(c)) != this->end();
     }
     
     void sort()

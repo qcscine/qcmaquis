@@ -407,6 +407,7 @@ struct contraction {
                                 Matrix const & iblock = T(T_l_charge, T_r_charge);
                                 Matrix oblock(out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
                                 
+                                /* optimize me */
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                     for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2)
                                         for (size_t ll = 0; ll < left_i[l].second; ++ll)

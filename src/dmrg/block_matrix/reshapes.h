@@ -41,6 +41,7 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                 Matrix const & in_block = m1(in_l_charge, in_r_charge);
                 Matrix out_block(left_i[l].second, out_right_offset + physical_i[s].second * right_i[r].second);
                 
+                /* optimize me */
                 for (size_t ss = 0; ss < physical_i[s].second; ++ss)
                     for (size_t ll = 0; ll < left_i[l].second; ++ll)
                         for (size_t rr = 0; rr < right_i[r].second; ++rr)
@@ -96,6 +97,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                 Matrix const & in_block = m1(in_l_charge, in_r_charge);
                 Matrix out_block = Matrix(out_left_offset + physical_i[s].second * left_i[l].second, right_i[r].second);
                 
+                /* optimize me */
                 for (size_t ss = 0; ss < physical_i[s].second; ++ss)
                     for (size_t ll = 0; ll < left_i[l].second; ++ll)
                         for (size_t rr = 0; rr < right_i[r].second; ++rr)

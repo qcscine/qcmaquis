@@ -20,8 +20,11 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
-        C.insert_block(boost::tuples::make_tuple(Matrix(num_rows(A[k]), num_columns(B[matched_block])),
+        // avoid copying, use resize
+        C.insert_block(boost::tuples::make_tuple(Matrix(),
                                                  A.left_basis()[k].first, B.right_basis()[matched_block].first));
+        C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
+                       num_rows(A[k]), num_columns(B[matched_block]));
         gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
     }
 }
@@ -102,9 +105,9 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     }
     
     if (! (old_basis == S.left_basis()) ) {
-        cout << "SVD performed a truncation: " << endl;
+        cout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << endl;
         cout << old_basis << endl << S.left_basis() << endl;
-        cout << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
+        cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
     }
 }
 
