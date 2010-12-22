@@ -43,19 +43,14 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                 
                 /* optimize me */
                 for (size_t ss = 0; ss < physical_i[s].second; ++ss)
-                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                        for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                    for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                        for (size_t ll = 0; ll < left_i[l].second; ++ll)
                             out_block(ll, out_right_offset + ss*right_i[r].second+rr) = in_block(in_left_offset + ss*left_i[l].second+ll, rr);
                 
                 in_offsets[in_l_charge] += left_i[l].second * physical_i[s].second;
                 out_offsets[out_r_charge] += right_i[r].second * physical_i[s].second;
-                
-                if (m2.has_block(out_l_charge, out_r_charge))
-                {
-                    m2.resize_block(out_l_charge, out_r_charge, num_rows(out_block), num_columns(out_block));
-                    m2(out_l_charge, out_r_charge) += out_block;
-                } else
-                    m2 += block_matrix<Matrix, SymmGroup>(out_l_charge, out_r_charge, out_block);
+
+                m2.match_and_add_block(boost::tuples::make_tuple(out_block, out_l_charge, out_r_charge));
             }
     
 //    assert(m2.left_basis() == left_i);
@@ -99,19 +94,14 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                 
                 /* optimize me */
                 for (size_t ss = 0; ss < physical_i[s].second; ++ss)
-                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                        for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                    for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                        for (size_t ll = 0; ll < left_i[l].second; ++ll)
                             out_block(out_left_offset + ss*left_i[l].second+ll, rr) = in_block(ll, in_right_offset + ss*right_i[r].second+rr);
                 
                 in_offsets[in_r_charge] += right_i[r].second * physical_i[s].second;
                 out_offsets[out_l_charge] += left_i[l].second * physical_i[s].second;
-                
-                if (m2.has_block(out_l_charge, out_r_charge))
-                {
-                    m2.resize_block(out_l_charge, out_r_charge, num_rows(out_block), num_columns(out_block));
-                    m2(out_l_charge, out_r_charge) += out_block;
-                } else
-                    m2 += block_matrix<Matrix, SymmGroup>(out_l_charge, out_r_charge, out_block);
+
+                m2.match_and_add_block(boost::tuples::make_tuple(out_block, out_l_charge, out_r_charge));
             }
     
 //    assert(m2.right_basis() == right_i);

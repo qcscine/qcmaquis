@@ -53,5 +53,5 @@ int main(int argc, char ** argv)
     cout << expval(mps, H, 0) << endl;
     cout << expval(mps, H, 1) << endl;
     
-    ss_optimize<Matrix, grp>(mps, H, 10, 1e-6, 1000);
+    ss_optimize<Matrix, grp>(mps, H, 2, 1e-6, 1000);
 }
