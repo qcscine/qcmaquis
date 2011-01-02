@@ -12,7 +12,7 @@
 namespace blas
 {
 
-#define IMPLEMENT_FOR_ALL_GPU_TYPES(F) F(float) F(double)
+#define IMPLEMENT_FOR_ALL_GPU_TYPES(F) F(float) 
 
 
 } //namespace blas

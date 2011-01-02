@@ -48,11 +48,6 @@ void multiplies_assign( matrix_gpu<double> &  Matrix_gpu, double const& t)
 }
 	
 	
-	
-	
-	
-	
-
 template<>
 void matrix_gpu<float>::multiplies_assign(matrix_gpu<float> const& Matrix_right)
 {
@@ -161,8 +156,7 @@ matrix_gpu<float> matrix_matrix_multiply(matrix_gpu<float> const & Matrix_left,m
 		
 		return Result;
 	}
-
-
+	
 template<>
 matrix_gpu<double> operator * ( matrix_gpu<double> const & Matrix_left,  matrix_gpu<double> const & Matrix_right)
 {

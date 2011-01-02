@@ -33,7 +33,7 @@ using std::endl;
 #include <omp.h>
 
 
-#ifdef __bGPU__
+#ifdef __GPU__
 #include "dense_matrix/gpu/matrix_gpu.h"
 #include "dense_matrix/gpu/dense_matrix_gpu.h"
 #include "dense_matrix/gpu/matrix_gpu_functions.hpp"
@@ -44,7 +44,7 @@ using std::endl;
 
 int main(int   argc, char * argv[])
 {
-//	gpu::Simu Simulation;
+	gpu::Simu Simulation;
 	
 	srand(0);
 	int NUM = atoi(argv[1]);
@@ -53,28 +53,35 @@ int main(int   argc, char * argv[])
 	blas::dense_matrix<float> B(NUM,NUM);
 	blas::dense_matrix<float> C(NUM,NUM,0);
 	
-	for(int i=0; i++ ; i< NUM)
+	for(int i=0; i< NUM ;i++  )
 	{
-		for(int j=0; j++ ; j< NUM)
+		for(int j=0; j< NUM ; j++ )
 		{
-			A(i,j) = rand();
-			B(i,j) = rand();
+			A(i,j) = i+1;
+			B(i,j) = j+1;
 		}
 	}
 	struct timeval tp;
 	gettimeofday( &tp, NULL );
+	
+	
+	cout << A <<  endl;
+
+	cout << B <<  endl;
+
+	
 	double sec      = static_cast<double>( tp.tv_sec );
 	double usec = static_cast<double>( tp.tv_usec )/1E6;
 	double start = sec + usec;
 	
 	C = matrix_matrix_multiply(A,B);
 	
-	
 	gettimeofday( &tp, NULL );
 	sec = static_cast<double>( tp.tv_sec );
 	usec = static_cast<double>( tp.tv_usec )/1E6;
 	double end = sec + usec;
 	
+	cout << C << endl;
 	
 	double time = end - start;
 	
