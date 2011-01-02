@@ -8,10 +8,11 @@
  */
 
 #include "dense_matrix/gpu/gpu_type_macros.h"
+#include "/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/cblas.h"
 
 namespace blas
-{
-
+{	
+/*	
 #define MATRIX_MATRIX_MULTIPLY(T) \
 template <typename MemoryBlock> \
 const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
@@ -20,12 +21,38 @@ assert( lhs.num_columns() == rhs.num_rows() ); \
 gpu::matrix_gpu<T> lhs_gpu(lhs); \
 gpu::matrix_gpu<T> rhs_gpu(rhs); \
 gpu::matrix_gpu<T> result_gpu(num_rows(lhs), num_columns(rhs)); \
- result_gpu = matrix_matrix_multiply( lhs_gpu, rhs_gpu) ; \
+result_gpu = matrix_matrix_multiply( lhs_gpu, rhs_gpu) ; \
 return result_gpu; \
 }
 IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
 #undef MATRIX_MATRIX_MULTIPLY
+*/
 
+//#define MATRIX_MATRIX_MULTIPLY(T) \
+
+template <typename MemoryBlock> \
+const dense_matrix<float,MemoryBlock> matrix_matrix_multiply(dense_matrix<float,MemoryBlock> const& lhs, dense_matrix<float,MemoryBlock> const& rhs) 
+{ 
+assert( lhs.num_columns() == rhs.num_rows() ); 
+size_type m = lhs.num_rows(); 
+size_type m_gpu = 2 ; 
+size_type k = rhs.num_columns() ; 
+size_type k_gpu = rhs.num_columns() ; 
+size_type n_gpu = 2 ; 
+size_type n_cpu = 1 ; 
+dense_matrix<float,MemoryBlock> result_cpu(lhs.num_rows(),rhs.num_columns()); 
+gpu::matrix_gpu<float> lhs_gpu(lhs,m,k,m); 
+gpu::matrix_gpu<float> rhs_gpu(rhs,k,n_gpu,k_gpu); 
+gpu::matrix_gpu<float> result_gpu(m,n_gpu,m_gpu); 
+cublasSgemm('n', 'n', m, n_gpu, k, 1.0, lhs_gpu.p(), m,rhs_gpu.p(), k, 0.0, result_gpu.p(), m); 
+cblas_sgemm(CblasColMajor,CblasNoTrans,CblasNoTrans,m,n_cpu,k, 1, &lhs(0,0), lhs.stride2(),&rhs(0,0)+rhs.stride2()*n_gpu, rhs.stride2(), 0,&result_cpu(0,0)+result_cpu.stride2()*n_gpu, result_cpu.stride2()); 
+cublasGetMatrix (m, n_gpu, sizeof(float), result_gpu.p(), m, &result_cpu(0,0), result_cpu.stride2()); 
+return result_cpu; 
+}
+
+//IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
+//#undef MATRIX_MATRIX_MULTIPLY
+	
 #define MULTIPLIES_ASSIGN(T) \
 template <typename MemoryBlock> \
 void multiplies_assign(dense_matrix<T,MemoryBlock>& m, T const& t) \

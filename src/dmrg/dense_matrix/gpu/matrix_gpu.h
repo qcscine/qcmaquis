@@ -88,11 +88,16 @@ public:
 	{
 	};
 	
-	matrix_gpu(size_type size1, size_type size2):size1_(size1), size2_(size2), ld_(size1) //To be change in futur	
+	matrix_gpu(size_type size1, size_type size2):size1_(size1), size2_(size2), ld_(size1) 	
 	{
 		cublasAlloc( size1*size2, sizeof(T), (void**)&p_ );
 	};
 
+	matrix_gpu(size_type num_rows, size_type num_cols, size_type ld):size1_(num_rows), size2_(num_cols), ld_(ld) 	
+	{
+		cublasAlloc( num_rows*num_cols, sizeof(T), (void**)&p_ );
+	};
+	
 	matrix_gpu(size_type size1, size_type size2, T value):size1_(size1), size2_(size2), ld_(size1) //To be change in futur	
 	{
 		size_type size_matrix = size1*size2;
@@ -104,8 +109,14 @@ public:
 		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
 	};
 
-
-	
+	template<class MemoryBlock>
+	matrix_gpu(blas::dense_matrix<T, MemoryBlock> const & Matrix_cpu, size_type nrows, size_type ncols, size_type ld)
+	{
+		size_type size_matrix = Matrix_cpu.num_columns()*Matrix_cpu.num_rows();
+		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );	
+		assert(true == CheckError(" cudaMalloc constructor matrix"));
+		cublasSetMatrix (nrows, ncols, sizeof(T),  &Matrix_cpu(0,0), Matrix_cpu.stride2(),p(), ld);	
+	};
 	
 	//Only for me to generate a random matrix
 	matrix_gpu(size_type size1, size_type size2, T value , bool boolean):size1_(size1), size2_(size2), ld_(size1) //To be change in futur	
@@ -340,7 +351,9 @@ void gemm( matrix_gpu<T>const & A, matrix_gpu<T> const & B, matrix_gpu<T>& C);
 
 template <class T>
 matrix_gpu<T> matrix_matrix_multiply( matrix_gpu<T>const & Matrix_left,  matrix_gpu<T>const & Matrix_right);
-	
+
+template <class T>
+void matrix_matrix_multiply( matrix_gpu<T>const & Matrix_left,  matrix_gpu<T>const & Matrix_right, matrix_gpu<T>& Matrix_result);
 	
 /*  WARNING the Matrix_right will be overwrite for M_left + M_right or M_left - M_right  */
 template<class T>
