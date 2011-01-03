@@ -49,9 +49,9 @@ int main(int   argc, char * argv[])
 	srand(0);
 	int NUM = atoi(argv[1]);
 	
-	blas::dense_matrix<float> A(NUM,NUM);
-	blas::dense_matrix<float> B(NUM,NUM);
-	blas::dense_matrix<float> C(NUM,NUM,0);
+	blas::dense_matrix<double> A(NUM,NUM);
+	blas::dense_matrix<double> B(NUM,NUM);
+	blas::dense_matrix<double> C(NUM,NUM,0);
 	
 	for(int i=0; i< NUM ;i++  )
 	{
@@ -63,13 +63,7 @@ int main(int   argc, char * argv[])
 	}
 	struct timeval tp;
 	gettimeofday( &tp, NULL );
-	
-	
-	cout << A <<  endl;
-
-	cout << B <<  endl;
-
-	
+		
 	double sec      = static_cast<double>( tp.tv_sec );
 	double usec = static_cast<double>( tp.tv_usec )/1E6;
 	double start = sec + usec;
@@ -80,8 +74,6 @@ int main(int   argc, char * argv[])
 	sec = static_cast<double>( tp.tv_sec );
 	usec = static_cast<double>( tp.tv_usec )/1E6;
 	double end = sec + usec;
-	
-	cout << C << endl;
 	
 	double time = end - start;
 	
