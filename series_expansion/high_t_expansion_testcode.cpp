@@ -1,8 +1,8 @@
 #include <boost/graph/adjacency_list.hpp>
 #include "numeric/simple_sparse_vector/simple_sparse_vector.hpp"
 #include "numeric/simple_polynomial.hpp"
-#include "zero_expansion.hpp"
-#include "high_t_expansion.hpp"
+#include "expansion_modules/zero_expansion.hpp"
+#include "expansion_modules/high_t_expansion.hpp"
 #include "operators.hpp"
 #include <vector>
 #include <iostream>
