@@ -27,8 +27,8 @@ My GT 330 does not support double so I develop, and debug with float.
 run on CSCS with double, moreover we must respect the f77 philosophy.
 */
 
-/*----------------------------- multiply -----------------------------------------*/
 
+/*----------------------------- multiply -----------------------------------------*/
 namespace gpu 
 {
 	
@@ -115,7 +115,89 @@ matrix_gpu<float> operator* ( matrix_gpu<float> const & Matrix_left,  matrix_gpu
 	
 	return Result;
 };
+
+/**
+* the mix mode CPU/GPU for SGEMM rule to respect : m_gpu = n_gpu + n_cpu 
+* n_gpu = 8.n_cpu seems a good beginning to large matrix (superior to 10 000 ) 
+*/
+template<>
+void matrix_matrix_multiply(blas::dense_matrix<float,std::vector<float, std::allocator<float> > > const & lhs,blas::dense_matrix<float,std::vector<float, std::allocator<float> > > const & rhs,blas::dense_matrix<float,std::vector<float, std::allocator<float> > >  & result_cpu)
+{
 	
+	const char TRANS_LEFT  = 'N';
+	const char TRANS_RIGHT = 'N';
+	
+	const fortran_int_t m_gpu = lhs.num_rows() ; 
+	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/8) ;
+	const fortran_int_t n_gpu = m_gpu - n_cpu ;
+	
+	const fortran_int_t m = lhs.num_rows(); 
+	const fortran_int_t k = rhs.num_columns() ; 
+	const fortran_int_t k_gpu = rhs.num_columns() ; 
+	
+	const float alpha = 1;
+	const float beta = 0;	
+	
+	const fortran_int_t lhs_stride2 =   lhs.stride2();
+	const fortran_int_t rhs_stride2 =   rhs.stride2();
+	const fortran_int_t result_cpu_stride2 =   result_cpu.stride2();		
+	
+	gpu::matrix_gpu<float> lhs_gpu(lhs,m,k,m); 
+	gpu::matrix_gpu<float> rhs_gpu(rhs,k,n_gpu,k_gpu); 
+	gpu::matrix_gpu<float> result_gpu(static_cast<size_t> (m),static_cast<size_t> (n_gpu),static_cast<size_t> (m_gpu)); 
+
+	cublasSgemm('n', 'n', m, n_gpu, k, 1.0, lhs_gpu.p(), m,rhs_gpu.p(), k, 0.0, result_gpu.p(), m); 
+	sgemm_(&TRANS_LEFT,&TRANS_RIGHT,&m, &n_cpu, &k, &alpha, &lhs(0,0), &lhs_stride2 ,&rhs(0,0)+rhs.stride2()*n_gpu, &rhs_stride2, &beta,&result_cpu(0,0)+result_cpu.stride2()*n_gpu, &result_cpu_stride2); 
+	cublasGetMatrix (m, n_gpu, sizeof(float), result_gpu.p(), m, &result_cpu(0,0), result_cpu.stride2()); 
+
+}
+
+	
+template<>
+void matrix_matrix_multiply(blas::dense_matrix<double,std::vector<double, std::allocator<double> > > const & lhs,blas::dense_matrix<double,std::vector<double, std::allocator<double> > > const & rhs,blas::dense_matrix<double,std::vector<double, std::allocator<double> > >  & result_cpu)
+{
+	const char TRANS_LEFT  = 'N';
+	const char TRANS_RIGHT = 'N';
+	
+	const fortran_int_t m_gpu = lhs.num_rows() ; 
+	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/8) ;
+	const fortran_int_t n_gpu = m_gpu - n_cpu ;
+	
+	const fortran_int_t m = lhs.num_rows(); 
+	const fortran_int_t k = rhs.num_columns() ; 
+	const fortran_int_t k_gpu = rhs.num_columns() ; 
+	
+	const double alpha = 1;
+	const double beta = 0;	
+	
+	const fortran_int_t lhs_stride2 =   lhs.stride2();
+	const fortran_int_t rhs_stride2 =   rhs.stride2();
+	const fortran_int_t result_cpu_stride2 =   result_cpu.stride2();		
+	
+	gpu::matrix_gpu<double> lhs_gpu(lhs,m,k,m); 
+	gpu::matrix_gpu<double> rhs_gpu(rhs,k,n_gpu,k_gpu); 
+	gpu::matrix_gpu<double> result_gpu(static_cast<size_t> (m),static_cast<size_t> (n_gpu),static_cast<size_t> (m_gpu)); 
+	
+	cublasDgemm('n', 'n', m, n_gpu, k, 1.0, lhs_gpu.p(), m,rhs_gpu.p(), k, 0.0, result_gpu.p(), m); 
+	dgemm_(&TRANS_LEFT,&TRANS_RIGHT,&m, &n_cpu, &k, &alpha, &lhs(0,0), &lhs_stride2 ,&rhs(0,0)+rhs.stride2()*n_gpu, &rhs_stride2, &beta,&result_cpu(0,0)+result_cpu.stride2()*n_gpu, &result_cpu_stride2); 
+	cublasGetMatrix (m, n_gpu, sizeof(double), result_gpu.p(), m, &result_cpu(0,0), result_cpu.stride2()); 
+	
+}
+	
+
+/* it does not work, I do not why
+template<class MemoryBlock>
+void matrix_matrix_multiply(blas::dense_matrix<float, MemoryBlock> const & Matrix_left,blas::dense_matrix<float, MemoryBlock> const & Matrix_right,blas::dense_matrix<float, MemoryBlock>  & Matrix_result)
+{
+		
+};
+
+template<class MemoryBlock>
+void matrix_matrix_multiply(blas::dense_matrix<double, MemoryBlock> const & Matrix_left,blas::dense_matrix<double, MemoryBlock> const & Matrix_right,blas::dense_matrix<double, MemoryBlock>  & Matrix_result)
+{
+		
+};
+*/	
 template<>
 matrix_gpu<float> matrix_matrix_multiply(matrix_gpu<float> const & Matrix_left,matrix_gpu<float> const & Matrix_right)
 {

@@ -8,11 +8,27 @@
  */
 
 #include "dense_matrix/gpu/gpu_type_macros.h"
-#include "/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/cblas.h"
+//#include "/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/cblas.h"
+
 
 namespace blas
 {	
-/*	
+
+//Mix Mode CPU/GPU
+#define MATRIX_MATRIX_MULTIPLY(T) \
+template <typename MemoryBlock> \
+const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
+{ \
+assert( lhs.num_columns() == rhs.num_rows() ); \
+dense_matrix<T,MemoryBlock> result_cpu(lhs.num_rows(),rhs.num_columns()); \
+gpu::matrix_matrix_multiply(lhs, rhs, result_cpu); \
+return result_cpu; \
+}
+IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
+#undef MATRIX_MATRIX_MULTIPLY
+		
+	
+/*	// PURE GPU version
 #define MATRIX_MATRIX_MULTIPLY(T) \
 template <typename MemoryBlock> \
 const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
@@ -30,6 +46,7 @@ IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
 
 //#define MATRIX_MATRIX_MULTIPLY(T) \
 
+ /* version test
 template <typename MemoryBlock> \
 const dense_matrix<float,MemoryBlock> matrix_matrix_multiply(dense_matrix<float,MemoryBlock> const& lhs, dense_matrix<float,MemoryBlock> const& rhs) 
 { 
@@ -49,7 +66,8 @@ cblas_sgemm(CblasColMajor,CblasNoTrans,CblasNoTrans,m,n_cpu,k, 1, &lhs(0,0), lhs
 cublasGetMatrix (m, n_gpu, sizeof(float), result_gpu.p(), m, &result_cpu(0,0), result_cpu.stride2()); 
 return result_cpu; 
 }
-
+*/
+	
 //IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
 //#undef MATRIX_MATRIX_MULTIPLY
 	
