@@ -33,7 +33,7 @@ using std::endl;
 #include <omp.h>
 
 
-#ifdef __GPU__
+#ifdef __mGPU__
 #include "dense_matrix/gpu/matrix_gpu.h"
 #include "dense_matrix/gpu/dense_matrix_gpu.h"
 #include "dense_matrix/gpu/matrix_gpu_functions.hpp"
@@ -44,23 +44,36 @@ using std::endl;
 
 int main(int   argc, char * argv[])
 {
-	gpu::Simu Simulation;
+	//gpu::Simu Simulation;
 	
 	srand(0);
 	int NUM = atoi(argv[1]);
 	
-	blas::dense_matrix<double> A(NUM,NUM);
-	blas::dense_matrix<double> B(NUM,NUM);
-	blas::dense_matrix<double> C(NUM,NUM,0);
+	blas::dense_matrix<float> A(2*NUM,3*NUM);
+	blas::dense_matrix<float> B(3*NUM,2*NUM);
+	blas::dense_matrix<float> C(2*NUM,3*NUM,0);
 	
-	for(int i=0; i< NUM ;i++  )
+	for(int i=0; i< 2*NUM ;i++  )
 	{
-		for(int j=0; j< NUM ; j++ )
+		for(int j=0; j< 3*NUM ; j++ )
 		{
-			A(i,j) = i+1;
-			B(i,j) = j+1;
+			A(i,j) = rand();
 		}
 	}
+
+	cout << A << endl;
+	
+	for(int i=0; i< 3*NUM ;i++  )
+	{
+		for(int j=0; j<2*NUM ; j++ )
+		{
+				B(i,j) = rand();
+		}
+	}
+
+	cout << B << endl;
+	
+	
 	struct timeval tp;
 	gettimeofday( &tp, NULL );
 		
@@ -69,6 +82,8 @@ int main(int   argc, char * argv[])
 	double start = sec + usec;
 	
 	C = matrix_matrix_multiply(A,B);
+	
+	cout << C << endl;
 	
 	gettimeofday( &tp, NULL );
 	sec = static_cast<double>( tp.tv_sec );
@@ -83,5 +98,11 @@ int main(int   argc, char * argv[])
 	out.close();
 	
 	cout << std::setprecision (6) << time << " " <<  NUM << " " << omp_get_max_threads() <<endl;
+	
+	out.open("resultatcpu.txt",std::ios::app);
+	out << C <<endl;
+	out.close();
+	
+	
 	
 }

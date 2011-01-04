@@ -11,7 +11,7 @@
 
 #include "cassert"
 #include <vector>
-#include "vector.hpp"
+#include "dense_matrix/vector.hpp"
 
 
 namespace gpu

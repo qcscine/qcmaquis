@@ -128,12 +128,12 @@ void matrix_matrix_multiply(blas::dense_matrix<float,std::vector<float, std::all
 	const char TRANS_RIGHT = 'N';
 	
 	const fortran_int_t m_gpu = lhs.num_rows() ; 
-	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/8) ;
+	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/7) ;
 	const fortran_int_t n_gpu = m_gpu - n_cpu ;
 	
 	const fortran_int_t m = lhs.num_rows(); 
-	const fortran_int_t k = rhs.num_columns() ; 
-	const fortran_int_t k_gpu = rhs.num_columns() ; 
+	const fortran_int_t k = lhs.num_columns() ; 
+	const fortran_int_t k_gpu = rhs.num_rows() ; 
 	
 	const float alpha = 1;
 	const float beta = 0;	
@@ -160,12 +160,12 @@ void matrix_matrix_multiply(blas::dense_matrix<double,std::vector<double, std::a
 	const char TRANS_RIGHT = 'N';
 	
 	const fortran_int_t m_gpu = lhs.num_rows() ; 
-	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/8) ;
+	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/7) ;
 	const fortran_int_t n_gpu = m_gpu - n_cpu ;
 	
 	const fortran_int_t m = lhs.num_rows(); 
-	const fortran_int_t k = rhs.num_columns() ; 
-	const fortran_int_t k_gpu = rhs.num_columns() ; 
+	const fortran_int_t k = lhs.num_columns() ; 
+	const fortran_int_t k_gpu = rhs.num_rows() ; 
 	
 	const double alpha = 1;
 	const double beta = 0;	
