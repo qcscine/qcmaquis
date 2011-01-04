@@ -1,7 +1,4 @@
-#include <iostream>
 #include "ambient/ambient.h"
-
-using namespace std;
 
 scheduler* scheduler::singleton = NULL;
 scheduler* scheduler::instance(){
@@ -31,10 +28,34 @@ scheduler& operator>>(scheduler* instance, dim3 dim_distr) {
     return *instance >> dim_distr;
 }
 
-int main(int argc, char **argv)
+void scheduler::initialize(MPI_Comm comm)
 {
-    scheduler::instance() >> dim3(18,5), dim3(19,6), dim3(20,7);
-    cout << "Settings were filled" << endl;
-    return 0;
+    int threading_level;
+    this->comm = comm;
+    if(this->comm == NULL){
+        MPI_Init_thread(0, NULL, MPI_THREAD_MULTIPLE, &threading_level);
+        this->comm = MPI_COMM_WORLD;
+    }
+    MPI_Comm_size(this->comm, &this->size);
+    MPI_Comm_rank(this->comm, &this->rank);
+
+    if(this->rank == 0) this->mode = AMBIENT_MASTER;
+    else this->mode = GROUP_SLAVE;
+
+    printf("R%d has been initialized\n", this->rank);
+
+// AUTO TUNING SHOULD START BELOW...
+
+////////////////////////////////////
+
+
+
 }
 
+void scheduler::finalize()
+{
+    MPI_Barrier(this->comm);
+    MPI_Finalize();
+    delete singleton;
+    singleton = NULL;
+}
