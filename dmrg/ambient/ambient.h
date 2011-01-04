@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <mpi.h>
 
 class dim3
 {
@@ -30,10 +31,23 @@ public:
 public:
     scheduler & operator>>(dim3 dim_distr);
     scheduler & operator,(dim3 dim); 
+    void initialize(MPI_Comm comm = NULL);
+    void finalize();
+
 private:
+    MPI_Comm comm;
+    int size;
+    int rank;
+
+    enum { AMBIENT_MASTER,
+           GROUP_MASTER,
+           GROUP_SLAVE } mode;
+
     dim3 dim_distr; // work-item size of distribution blocks
     dim3 dim_cpu;   // work-item size of cpu core workload fractions
     dim3 dim_gpu;   // work-item size of gpgpu smp workload fractions
 };
+
+scheduler& operator>>(scheduler* instance, dim3 dim_distr);
 
 #endif
