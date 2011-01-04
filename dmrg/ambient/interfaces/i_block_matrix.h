@@ -1,3 +1,6 @@
+#ifndef AMBIENT_BLOCK_MATRIX_IFACE
+#define AMBIENT_BLOCK_MATRIX_IFACE
+
 class i_block_matrix{
    public:
    virtual void* memory_pointer() = 0;
@@ -11,3 +14,4 @@ class i_block_matrix{
    virtual ~i_block_matrix(){}
 };
 
+#endif

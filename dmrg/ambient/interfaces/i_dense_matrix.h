@@ -1,3 +1,6 @@
+#ifndef AMBIENT_DENSE_MATRIX_IFACE
+#define AMBIENT_DENSE_MATRIX_IFACE
+
 class i_dense_matrix{
    public:
    virtual void* memory_pointer() = 0;
@@ -11,3 +14,4 @@ class i_dense_matrix{
    virtual ~i_dense_matrix(){}
 };
 
+#endif
