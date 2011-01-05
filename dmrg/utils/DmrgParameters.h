@@ -137,7 +137,7 @@ public:
         
         try {
             add_option("truncation_initial",value<double>(),"Initial value for the truncation error");
-            add_option("truncation_sweep_factor",value<double>()->default_value(0.5),"After each sweep, the TE is decreased by this factor");
+            add_option("truncation_final",value<double>(),"Final value for the truncation");
             
             add_option("max_bond_dimension",value<std::size_t>(),"");
             
