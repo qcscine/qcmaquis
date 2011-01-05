@@ -97,23 +97,6 @@ MPSTensor<Matrix, SymmGroup> operator*(typename MPSTensor<Matrix, SymmGroup>::sc
     return m;
 }
 
-namespace ietl
-{
-    template<class Matrix, class SymmGroup, class Generator> void generate(MPSTensor<Matrix, SymmGroup> &, Generator);
-    template<class Matrix, class SymmGroup> void swap(MPSTensor<Matrix, SymmGroup> &, MPSTensor<Matrix, SymmGroup> &);
-    
-    template<class Matrix, class SymmGroup>
-    typename MPSTensor<Matrix, SymmGroup>::scalar_type
-    dot(MPSTensor<Matrix, SymmGroup> const &, MPSTensor<Matrix, SymmGroup> const &);
-    
-    template<class Matrix, class SymmGroup>
-    typename MPSTensor<Matrix, SymmGroup>::scalar_type
-    two_norm(MPSTensor<Matrix, SymmGroup> const &);
-    
-    template<class Matrix, class SymmGroup>
-    void copy(MPSTensor<Matrix, SymmGroup> const & a, MPSTensor<Matrix, SymmGroup> & b) { b = a; }
-}
-
 #include "mp_tensors/mpstensor.hpp"
 
 #endif

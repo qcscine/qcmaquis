@@ -52,8 +52,8 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & U,
          block_matrix<Matrix, SymmGroup> & V,
          block_matrix<DiagMatrix, SymmGroup> & S,
-         double rel_tol)
-{
+         double rel_tol, std::size_t Mmax)
+{   
     svd(M, U, V, S);
     
     /* to be done:
@@ -65,10 +65,16 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     
     Index<SymmGroup> old_basis = S.left_basis();
     
-    double Smax = 0;
+    std::vector<double> allS;
+    
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
-        Smax = std::max(Smax, *std::max_element(S[k].elements().first, S[k].elements().second));
-    double Scut = rel_tol * Smax;
+        std::copy(S[k].elements().first, S[k].elements().second, std::back_inserter(allS));
+    std::sort(allS.begin(), allS.end());
+    std::reverse(allS.begin(), allS.end());
+    
+    double Scut = rel_tol * allS[0];
+    if (allS.size() > Mmax)
+        Scut = std::max(Scut, allS[Mmax]);
     
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
     {

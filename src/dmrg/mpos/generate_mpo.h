@@ -4,8 +4,9 @@
 #include "adjancency.h"
 #include "mp_tensors/mpo.h"
 
-#include <boost/tuple/tuple.hpp>
+#include "hamiltonians.h"
 
+#include <boost/tuple/tuple.hpp>
 #include <set>
 
 namespace mpos {
@@ -43,30 +44,6 @@ namespace mpos {
         > op_pairs;
         
     public:
-        static op_pairs hb_ops(double Jxy, double Jz)
-        {
-            block_matrix<Matrix, U1> ident, splus, sminus, sz, zero;
-            
-            ident.insert_block( make_tuple(Matrix(1, 1, 1), -1, -1) );
-            ident.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
-            
-            splus.insert_block( make_tuple(Matrix(1, 1, 1), -1, 1) );
-            
-            sminus.insert_block( make_tuple(Matrix(1, 1, 1), 1, -1) );
-            
-            sz.insert_block( make_tuple(Matrix(1, 1, 0.5), 1, 1) );
-            sz.insert_block( make_tuple(Matrix(1, 1, -0.5), -1, -1) );
-            
-            op_pairs ret;
-            
-            ret.push_back(make_pair(ident, ident));
-            ret.push_back(make_pair(Jxy/2*splus, sminus));
-            ret.push_back(make_pair(Jxy/2*sminus, splus));
-            ret.push_back(make_pair(Jz*sz, sz));
-            
-            return ret;
-        }
-        
         static MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops,
                                                     size_t M)
         {
@@ -109,8 +86,10 @@ namespace mpos {
         
         static MPO<Matrix, SymmGroup>
         create_mpo(Adjacency const & adj,
-                   op_pairs const & ops)
+                   Hamiltonian<Matrix, SymmGroup> & H)
         {
+            op_pairs ops = H.get_ops();
+            
             vector<set<size_t> > used_dims(adj.size()-1);
             
             vector<vector<block> > prempo(adj.size());

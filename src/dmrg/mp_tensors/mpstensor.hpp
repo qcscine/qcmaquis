@@ -22,6 +22,8 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     
     if (fillrand)
         data_.generate(drand48);
+    else
+        data_.generate(utils::constant<typename Matrix::value_type>(0));
 }
 
 template<class Matrix, class SymmGroup>
@@ -295,37 +297,5 @@ void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
     swap(this->data_, b.data_);
     swap(this->cur_storage, b.cur_storage);
     swap(this->cur_normalization, b.cur_normalization);
-}
-
-namespace ietl
-{
-    template<class Matrix, class SymmGroup, class Generator> void generate(MPSTensor<Matrix, SymmGroup> & m, Generator g)
-    {
-        m.data().generate(g);
-    }
-        
-    template<class Matrix, class SymmGroup> void generate(MPSTensor<Matrix, SymmGroup> & m, MPSTensor<Matrix, SymmGroup> const & m2)
-    {
-        m = m2;
-    }
-    
-    template<class Matrix, class SymmGroup> void swap(MPSTensor<Matrix, SymmGroup> & x, MPSTensor<Matrix, SymmGroup> & y)
-    {
-        x.swap_with(y);
-    }
-    
-    template<class Matrix, class SymmGroup>
-    typename MPSTensor<Matrix, SymmGroup>::scalar_type
-    dot(MPSTensor<Matrix, SymmGroup> const & x, MPSTensor<Matrix, SymmGroup> const & y)
-    {
-        return x.scalar_overlap(y);
-    }
-    
-    template<class Matrix, class SymmGroup>
-    typename MPSTensor<Matrix, SymmGroup>::scalar_type
-    two_norm(MPSTensor<Matrix, SymmGroup> const & x)
-    {
-        return x.scalar_norm();
-    }
 }
 

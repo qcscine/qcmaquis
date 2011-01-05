@@ -11,7 +11,10 @@ using std::endl;
 #include "dense_matrix/resizable_matrix_interface.hpp"
 #include "dense_matrix/dense_matrix_algorithms.h"
 #include "dense_matrix/matrix_algorithms.hpp"
+#include "dense_matrix/aligned_allocator.h"
 typedef blas::dense_matrix<double> Matrix;
+//typedef aligned_allocator<double, 16, true> alloc_t;
+//typedef blas::dense_matrix<double, std::vector<double, alloc_t> > Matrix;
 
 #include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"

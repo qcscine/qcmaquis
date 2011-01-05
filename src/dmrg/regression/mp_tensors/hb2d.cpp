@@ -39,19 +39,26 @@ int main(int argc, char ** argv)
     Index<grp> phys;
     phys.insert(std::make_pair(1, 1));
     phys.insert(std::make_pair(-1, 1));
+    
+//    Index<grp> phys;
+//    phys.insert(std::make_pair(1, 1));
+//    phys.insert(std::make_pair(0, 1));
+//    phys.insert(std::make_pair(-1, 1));
 
     int L = atoi(argv[1]), W = atoi(argv[2]);    
+//    double theta = atof(argv[3]);
 
-    int N = L*W, M = 2;
+    int N = L*W, M = 5;
     MPS<Matrix, grp> mps(N, M, phys);
     
     SquareAdj adj(L, W);
-    MPO<Matrix, grp> H =
-    mpos::MPOMaker<Matrix, grp>::create_mpo(adj,
-                                            mpos::MPOMaker<Matrix, grp>::hb_ops(1, 1));
+    Heisenberg<Matrix> H(1,1); // replace by factory, eventually
+//    Spin1BlBq<Matrix> H(cos(theta*M_PI), sin(theta*M_PI));
     
-    cout << expval(mps, H, 0) << endl;
-    cout << expval(mps, H, 1) << endl;
+    MPO<Matrix, grp> mpo = mpos::MPOMaker<Matrix, grp>::create_mpo(adj, H);
     
-    ss_optimize<Matrix, grp>(mps, H, 2, 1e-6, 1000);
+    cout << expval(mps, mpo, 0) << endl;
+    cout << expval(mps, mpo, 1) << endl;
+    
+    ss_optimize<Matrix, grp>(mps, mpo, 8, 1e-5, 1000);
 }

@@ -38,32 +38,30 @@ template<class Matrix>
 void mps_init(MPS<Matrix, U1> & mps, size_t Mmax, Index<U1> const & phys)
 {
     std::size_t L = mps.length();
-    std::vector<int> max_sz(L+1);
-    for (std::size_t k = 1; k < L+1; ++k)
-        max_sz[k] = std::min(k, L-k);
-    std::copy(max_sz.begin(), max_sz.end(), std::ostream_iterator<int>(cout, " "));
-    cout << endl;
+    
+    Index<U1> triv;
+    triv.insert( std::make_pair(U1::SingletCharge, 1) );
+    
+    std::vector<Index<U1> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
+    left_allowed[0] = triv;
+    right_allowed[L] = triv;
+    
+    for (int i = 1; i < L+1; ++i)
+        left_allowed[i] = phys * left_allowed[i-1];
+    for (int i = L-1; i >= 0; --i)
+        right_allowed[i] = phys * right_allowed[i+1];
+    
+    for (int i = 0; i < L+1; ++i) {
+        allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
+        for (typename Index<U1>::iterator it = allowed[i].begin();
+             it != allowed[i].end(); ++it)
+            it->second = tri_min(Mmax,
+                                 left_allowed[i].size_of_block(it->first),
+                                 right_allowed[i].size_of_block(it->first));
+    }
     
     for (int i = 0; i < L; ++i)
-    {
-        Index<U1> li, ri;
-        for (int sz = -max_sz[i], k = 0; sz <= max_sz[i]; sz += 2, k += 1)
-            li.insert(std::make_pair(sz, tri_min<double>(boost::math::binomial_coefficient<double>(i, k),
-                                                         boost::math::binomial_coefficient<double>(L-i, k),
-                                                         Mmax
-                                                         )));
-        for (int sz = -max_sz[i+1], k = 0; sz <= max_sz[i+1]; sz += 2, k += 1)
-            ri.insert(std::make_pair(sz, tri_min<double>(boost::math::binomial_coefficient<double>(i+1, k),
-                                                         boost::math::binomial_coefficient<double>(L-i-1, k),
-                                                         Mmax
-                                                         )));
-        
-//        cout << "MPS site " << i << endl;
-//        cout << li << endl;
-//        cout << ri << endl;
-        
-        mps[i] = MPSTensor<Matrix, U1>(phys, li, ri);
-    }
+        mps[i] = MPSTensor<Matrix, U1>(phys, allowed[i], allowed[i+1]);
     cout << mps.description() << endl;
 }
 
@@ -161,9 +159,11 @@ template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                             Boundary<Matrix, SymmGroup> const & left,
                                             Boundary<Matrix, SymmGroup> const & right,
-                                            std::size_t l, double alpha, double cutoff)
+                                            std::size_t l, double alpha,
+                                            double cutoff,
+                                            std::size_t Mmax)
 {
-    MPSTensor<Matrix, SymmGroup> new_mps = contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff);
+    MPSTensor<Matrix, SymmGroup> new_mps = contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     
     (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
                                                           (*this)[l], new_mps);
