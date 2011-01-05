@@ -62,24 +62,33 @@ std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
             
             timeval now, then;
             
-//            BEGIN_TIMING("IETL")
-//            std::pair<double, MPSTensor<Matrix, SymmGroup> > res = solve_ietl_lanczos(sp, mps[site]);
-//            END_TIMING("IETL")
+            std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
             
-            BEGIN_TIMING("ARPACK")
-            std::pair<double, MPSTensor<Matrix, SymmGroup> > res2 = solve_arpackpp(sp, mps[site]);
-            END_TIMING("ARPACK")
+            if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+                BEGIN_TIMING("IETL")
+                res = solve_ietl_lanczos(sp, mps[site]);
+                END_TIMING("IETL")
+            } else if (parms.get<std::string>("eigensolver") == std::string("ARPACK")) {
+                BEGIN_TIMING("ARPACK")
+                res = solve_arpackpp(sp, mps[site]);
+                END_TIMING("ARPACK")
+            } else {
+                throw std::runtime_error("I don't know this eigensolver.");
+            }
+
             
-            mps[site] = res2.second;
+            mps[site] = res.second;
             
-            cout << "Energy: " << res2.first << endl;
-//            cout << "Energy comparison: " << res.first << " " << res2.first << endl;
-            energies.push_back(res2.first);
+            cout << "Energy: " << res.first << endl;
+            energies.push_back(res.first);
             
             if (lr == +1) {
                 if (site < L-1) {
                     double alpha = parms.get<double>("alpha_initial") * powf(parms.get<double>("alpha_sweep_factor"), sweep);
-                    double cutoff = parms.get<double>("truncation_initial") * powf(parms.get<double>("truncation_sweep_factor"), sweep);
+                    
+                    double t1 = parms.get<double>("truncation_initial"), t2 = parms.get<double>("truncation_final");
+                    double cutoff = t1 + static_cast<double>(sweep)/(parms.get<int>("nsweeps")-1)*(t2-t1);
+                    
                     std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
                     cout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
