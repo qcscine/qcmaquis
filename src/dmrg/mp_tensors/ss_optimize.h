@@ -24,10 +24,12 @@ gettimeofday(&then, NULL); \
 cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
 
 template<class Matrix, class SymmGroup>
-void ss_optimize(MPS<Matrix, SymmGroup> & mps,
-                 MPO<Matrix, SymmGroup> const & mpo,
-                 DmrgParameters & parms)
+std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
+                                MPO<Matrix, SymmGroup> const & mpo,
+                                DmrgParameters & parms)
 {   
+    std::vector<double> energies;
+    
     std::size_t L = mps.length();
     
     mps.normalize_right();
@@ -72,6 +74,7 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
             
             cout << "Energy: " << res2.first << endl;
 //            cout << "Energy comparison: " << res.first << " " << res2.first << endl;
+            energies.push_back(res2.first);
             
             if (lr == +1) {
                 if (site < L-1) {
@@ -101,6 +104,8 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
             }
         }
     }
+    
+    return energies;
 }
 
 #endif

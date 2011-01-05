@@ -14,6 +14,8 @@ using std::endl;
 #include "dense_matrix/dense_matrix_blas.hpp"
 typedef blas::dense_matrix<double> Matrix;
 
+#include <alps/hdf5.hpp>
+
 #include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
@@ -52,25 +54,31 @@ Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
     else if (model.get<std::string>("model") == std::string("biquadratic"))
         return new Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
                                      sin(M_PI * model.get<double>("theta")));
+    else
+        return NULL;
 }
 
 int main(int argc, char ** argv)
 {
     cout.precision(10);
     
-    std::ifstream param_file("params");
+    std::ifstream param_file(argv[1]);
     if (!param_file) {
         cerr << "Could not open parameter file." << endl;
         exit(1);
     }
     DmrgParameters parms(param_file);
     
-    std::ifstream model_file("model");
+    std::ifstream model_file(argv[2]);
     if (!model_file) {
         cerr << "Could not open model file." << endl;
         exit(1);
     }
     ModelParameters model(model_file);
+    
+    alps::hdf5::oarchive h5ar(argv[3]);
+    h5ar << alps::make_pvp("/parameters", parms);
+    h5ar << alps::make_pvp("/parameters", model);
     
     Adjacency * adj = adj_factory(model);
     Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
@@ -82,5 +90,9 @@ int main(int argc, char ** argv)
     cout << expval(mps, mpo, 0) << endl;
     cout << expval(mps, mpo, 1) << endl;
     
-    ss_optimize<Matrix, grp>(mps, mpo, parms);
+    std::vector<double> energies = ss_optimize<Matrix, grp>(mps, mpo, parms);
+    std::vector<double> energy(1, *energies.rbegin());
+    
+    h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
+    h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", energy);
 }
