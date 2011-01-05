@@ -1,7 +1,7 @@
 #ifndef HAMILTONIANS_H
 #define HAMILTONIANS_H
 
-#include "block_matrix.h"
+#include "block_matrix/block_matrix.h"
 
 #include <boost/tuple/tuple.hpp>
 
