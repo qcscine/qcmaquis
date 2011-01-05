@@ -126,6 +126,7 @@ struct contraction {
                                 size_t s2_size = bra_tensor.site_dim()[s2].second;
                                 
                                 Matrix block(upper_size, lower_size);
+                                block *= 0;
                                 
                                 size_t in_l_offset = upper_pb(s1_charge, u_charge);
                                 size_t in_r_offset = lower_pb(s2_charge, l_charge);
@@ -311,6 +312,7 @@ struct contraction {
                                 Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                 Matrix const & iblock = T(T_l_charge, T_r_charge);
                                 Matrix oblock(out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
+                                oblock *= 0;
 
                                 /* optimize me */ 
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
@@ -410,6 +412,7 @@ struct contraction {
                                 Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                 Matrix const & iblock = T(T_l_charge, T_r_charge);
                                 Matrix oblock(out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
+                                oblock *= 0;
                                 
                                 /* optimize me */
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
@@ -436,7 +439,7 @@ struct contraction {
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<Matrix, SymmGroup> const & left,
                                 Boundary<Matrix, SymmGroup> const & right,
-                                double alpha, double cutoff)
+                                double alpha, double cutoff, std::size_t Mmax)
     {
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
@@ -468,7 +471,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-        svd(dm, U, V, S, cutoff);
+        svd(dm, U, V, S, cutoff, Mmax);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = U;

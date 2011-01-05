@@ -24,7 +24,7 @@ namespace blas {
                typename dense_matrix<T,MemoryBlock>::value_type(1), \
                lhs, \
                rhs, \
-               typename dense_matrix<T,MemoryBlock>::value_type(1), \
+               typename dense_matrix<T,MemoryBlock>::value_type(0), \
                result \
             ); \
         return result; \

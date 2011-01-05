@@ -32,7 +32,8 @@ public:
     void grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                         Boundary<Matrix, SymmGroup> const & left,
                         Boundary<Matrix, SymmGroup> const & right,
-                        std::size_t l, double alpha, double cutoff);
+                        std::size_t l, double alpha,
+                        double cutoff, std::size_t Mmax);
     
 private:
     typename Matrix::value_type canonize_left();

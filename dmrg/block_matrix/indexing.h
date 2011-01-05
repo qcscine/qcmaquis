@@ -306,8 +306,8 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
 }
 
 template<class SymmGroup>
-void common_subset(Index<SymmGroup> & a,
-                   Index<SymmGroup> & b)
+Index<SymmGroup> common_subset(Index<SymmGroup> & a,
+                               Index<SymmGroup> & b)
 {
     a.erase(std::remove_if(a.begin(), a.end(),
                            !boost::lambda::bind(&Index<SymmGroup>::has, b,
@@ -318,6 +318,7 @@ void common_subset(Index<SymmGroup> & a,
                            !boost::lambda::bind(&Index<SymmGroup>::has, a,
                                                 boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
             b.end());
+    return a;
 }
 
 template<class charge>

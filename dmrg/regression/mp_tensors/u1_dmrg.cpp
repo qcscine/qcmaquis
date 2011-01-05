@@ -40,7 +40,7 @@ int main()
     phys.insert(std::make_pair(1, 1));
     phys.insert(std::make_pair(-1, 1));
     
-    int L = 64, M = 2;
+    int L = 64, M = 20;
     MPS<Matrix, grp> mps(L, M, phys);
     
 //    MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
@@ -55,5 +55,5 @@ int main()
     cout << expval(mps, H, 0) << endl;
     cout << expval(mps, H, 1) << endl;
     
-    ss_optimize<Matrix, grp>(mps, H, 10, 1e-6, 1000);
+    ss_optimize<Matrix, grp>(mps, H, 2, 1e-14, 1000);
 }
