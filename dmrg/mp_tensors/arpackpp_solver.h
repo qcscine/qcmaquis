@@ -1,12 +1,10 @@
 #ifndef ARPACKPP_SOLVER_H
 #define ARPACKPP_SOLVER_H
 
-// #define BLAS1F_H
-
 namespace arpack {
     
-#include <make_me_header_only.hpp>
-#include <arssym.h>
+#include <arpack++/make_me_header_only.hpp>
+#include <arpack++/arssym.h>
     
     
 }
