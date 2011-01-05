@@ -2,7 +2,7 @@
 #include <iterator>
 #include <iostream>
 
-using std::cout;
+using std::cerr;
 using std::cout;
 using std::endl;
 
@@ -27,33 +27,60 @@ typedef blas::dense_matrix<double> Matrix;
 #include "mpos/adjancency.h"
 #include "mpos/generate_mpo.h"
 
+#include "utils/DmrgParameters.h"
+
 typedef U1 grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
 
-int main()
+Adjacency * adj_factory(ModelParameters & model)
+{
+    if (model.get<std::string>("lattice") == std::string("square_lattice"))
+        return new SquareAdj(model.get<int>("L"), model.get<int>("W"));
+    else if (model.get<std::string>("lattice") == std::string("chain_lattice"))
+        return new ChainAdj(model.get<int>("L"));
+    else
+        return NULL;
+};  
+
+template<class Matrix>
+Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
+{
+    if (model.get<std::string>("model") == std::string("heisenberg"))
+        return new Heisenberg<Matrix>(model.get<double>("Jxy"), model.get<double>("Jz"));
+    else if (model.get<std::string>("model") == std::string("biquadratic"))
+        return new Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
+                                     sin(M_PI * model.get<double>("theta")));
+}
+
+int main(int argc, char ** argv)
 {
     cout.precision(10);
     
-    Index<grp> phys;
-    phys.insert(std::make_pair(1, 1));
-    phys.insert(std::make_pair(-1, 1));
+    std::ifstream param_file("params");
+    if (!param_file) {
+        cerr << "Could not open parameter file." << endl;
+        exit(1);
+    }
+    DmrgParameters parms(param_file);
     
-    int L = 64, M = 20;
-    MPS<Matrix, grp> mps(L, M, phys);
+    std::ifstream model_file("model");
+    if (!model_file) {
+        cerr << "Could not open model file." << endl;
+        exit(1);
+    }
+    ModelParameters model(model_file);
     
-//    MPOTensor<Matrix, grp> id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
-//    MPOTensor<Matrix, grp> sz_mpo = s12_sz_mpo<Matrix>(mps[0].site_dim());
+    Adjacency * adj = adj_factory(model);
+    Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
+    Index<U1> phys = H->get_phys();
     
-    ChainAdj adj(L);
-    MPO<Matrix, grp> H =
-    mpos::MPOMaker<Matrix, grp>::create_mpo(adj,
-                                            mpos::MPOMaker<Matrix, grp>::hb_ops(1, 1));
+    MPS<Matrix, grp> mps(adj->size(), 5, phys);
+    MPO<Matrix, grp> mpo = mpos::MPOMaker<Matrix, grp>::create_mpo(*adj, *H);
     
-    mps.normalize_left();
-    cout << expval(mps, H, 0) << endl;
-    cout << expval(mps, H, 1) << endl;
+    cout << expval(mps, mpo, 0) << endl;
+    cout << expval(mps, mpo, 1) << endl;
     
-    ss_optimize<Matrix, grp>(mps, H, 2, 1e-14, 1000);
+    ss_optimize<Matrix, grp>(mps, mpo, parms);
 }
