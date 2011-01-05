@@ -10,6 +10,10 @@
 #include <fstream>
 #include <iostream>
 
+#ifdef HAVE_ALPS_HDF5
+#include <alps/hdf5.hpp>
+#endif
+
 namespace conversion
 {
     // this can be specialized to provide conversion for types that cannot be read
@@ -45,6 +49,28 @@ namespace conversion
     };
 }
 
+namespace detail
+{
+    struct SerializationHelperBase {
+        virtual void operator()(alps::hdf5::oarchive & ar,
+                                std::string const & path,
+                                boost::program_options::variable_value const & a) const = 0;
+    };
+    
+    template<class T>
+    struct SerializationHelper : public SerializationHelperBase
+    {
+        void operator()(alps::hdf5::oarchive & ar,
+                        std::string const & path,
+                        boost::program_options::variable_value const & a) const
+        {
+            if (!a.empty())
+                ar << alps::make_pvp(path, a.as<T>());
+        }
+    };
+}
+            
+
 class BaseParameters
 {
 public:
@@ -63,9 +89,43 @@ public:
         sv[key] = value;
     }
     
+#ifdef HAVE_ALPS_HDF5
+    void serialize(alps::hdf5::oarchive & ar) const
+    {
+        using boost::program_options::option_description;
+        using boost::shared_ptr;
+        
+        std::vector<shared_ptr<option_description> > opts = config.options();
+        
+        for (std::vector<shared_ptr<option_description> >::iterator it = opts.begin();
+             it != opts.end(); ++it)
+        {
+            std::string name = (*it)->long_name();
+            detail::SerializationHelperBase * helper = shelpers.find(name)->second.get();
+            try {
+                (*helper)(ar, name, vm[name]);
+            } catch (std::exception &e) {
+                cerr << "Error writing parameter " << name << endl;
+                throw e;
+            }
+        }
+    }
+#endif
+    
 protected:
+    boost::program_options::options_description config;
     boost::program_options::variables_map vm;
     std::map<std::string, boost::any> sv;
+    std::map<std::string, boost::shared_ptr<detail::SerializationHelperBase> > shelpers;
+    
+    template<class T>
+    void add_option(const char * name,
+                    boost::program_options::typed_value<T> * val,
+                    const char * desc)
+    {
+        config.add_options()(name, val, desc);
+        shelpers[name] = boost::shared_ptr<detail::SerializationHelperBase>(new detail::SerializationHelper<T>());
+    }
 };
 
 class DmrgParameters : public BaseParameters
@@ -76,21 +136,17 @@ public:
         using namespace boost::program_options;
         
         try {
-            options_description config("Config-file options");
-            config.add_options()
+            add_option("truncation_initial",value<double>(),"Initial value for the truncation error");
+            add_option("truncation_sweep_factor",value<double>()->default_value(0.5),"After each sweep, the TE is decreased by this factor");
             
-            ("truncation_initial",value<double>(),"Initial value for the truncation error")
-            ("truncation_sweep_factor",value<double>()->default_value(0.5),"After each sweep, the TE is decreased by this factor")
+            add_option("max_bond_dimension",value<std::size_t>(),"");
             
-            ("max_bond_dimension",value<std::size_t>(),"")
+            add_option("alpha_initial",value<double>()->default_value(1e-3),"");
+            add_option("alpha_sweep_factor",value<double>()->default_value(0.2),"");
             
-            ("alpha_initial",value<double>()->default_value(1e-3),"")
-            ("alpha_sweep_factor",value<double>()->default_value(0.2),"")
+            add_option("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"");
             
-            ("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"")
-            
-            ("nsweeps",value<int>(),"")
-            ;
+            add_option("nsweeps",value<int>(),"");
             
             store(parse_config_file(param_file, config), vm);
             notify(vm);
@@ -109,20 +165,15 @@ public:
         using namespace boost::program_options;
         
         try {
-            options_description config("Config-file options");
-            config.add_options()
+            add_option("model", value<std::string>(), "");
+            add_option("lattice", value<std::string>(), "");
             
-            ("model", value<std::string>(), "")
-            ("lattice", value<std::string>(), "")
-            ("dof", value<std::string>(), "")
+            add_option("L", value<int>(), "");
+            add_option("W", value<int>(), "");
             
-            ("L", value<int>(), "")
-            ("W", value<int>(), "")
-            
-            ("theta", value<double>(), "")
-            ("Jxy", value<double>(), "")
-            ("Jz", value<double>(), "")
-            ;
+            add_option("theta", value<double>(), "");
+            add_option("Jxy", value<double>(), "");
+            add_option("Jz", value<double>(), "");
             
             store(parse_config_file(param_file, config), vm);
             notify(vm);
