@@ -7,6 +7,8 @@
 #include "ietl_lanczos_solver.h"
 #include "arpackpp_solver.h"
 
+#include "utils/DmrgParameters.h"
+
 template<class Matrix, class SymmGroup>
 struct SiteProblem
 {
@@ -24,7 +26,7 @@ cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (t
 template<class Matrix, class SymmGroup>
 void ss_optimize(MPS<Matrix, SymmGroup> & mps,
                  MPO<Matrix, SymmGroup> const & mpo,
-                 int nsweeps, double cutoff, std::size_t Mmax)
+                 DmrgParameters & parms)
 {   
     std::size_t L = mps.length();
     
@@ -34,9 +36,8 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
     left_ = left_mpo_overlaps(mps, mpo),
     right_ = right_mpo_overlaps(mps, mpo);
     
-    for (int sweep = 0; sweep < nsweeps; ++sweep) {
+    for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
         cout << mps.description() << endl;
-        cutoff *= 0.2;
         for (int _site = 0; _site < 2*L; ++_site) {
             int site, lr;
             if (_site < L) {
@@ -74,7 +75,9 @@ void ss_optimize(MPS<Matrix, SymmGroup> & mps,
             
             if (lr == +1) {
                 if (site < L-1) {
-                    double alpha = 1e-3 * powf(0.5, sweep);
+                    double alpha = parms.get<double>("alpha_initial") * powf(parms.get<double>("alpha_sweep_factor"), sweep);
+                    double cutoff = parms.get<double>("truncation_initial") * powf(parms.get<double>("truncation_sweep_factor"), sweep);
+                    std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
                     cout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax);

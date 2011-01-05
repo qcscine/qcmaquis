@@ -22,6 +22,8 @@ public:
     > op_pairs;
     
     virtual op_pairs get_ops() = 0;
+    
+    virtual Index<SymmGroup> get_phys() = 0;
 };
 
 template<class Matrix>
@@ -56,6 +58,14 @@ public:
         ret.push_back(make_pair(Jz*sz, sz));
         
         return ret;
+    }
+    
+    Index<U1> get_phys()
+    {
+        Index<U1> phys;
+        phys.insert(std::make_pair(1, 1));
+        phys.insert(std::make_pair(-1, 1));
+        return phys;
     }
     
 private:
@@ -127,6 +137,15 @@ public:
         return ret;
     }
 
+    Index<U1> get_phys()
+    {
+        Index<U1> phys;
+        phys.insert(std::make_pair(1, 1));
+        phys.insert(std::make_pair(0, 1));
+        phys.insert(std::make_pair(-1, 1));
+        return phys;
+    }
+    
 private:
     double Jbl, Jbq;
 };
