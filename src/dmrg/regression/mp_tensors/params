@@ -1,0 +1,6 @@
+truncation_initial = 1e-5
+truncation_final = 1e-9
+
+max_bond_dimension = 5000
+
+nsweeps = 6
