@@ -50,11 +50,15 @@ public:
     
     void MultMv(double * v, double * w)
     {
-        MPSTensor<Matrix, SymmGroup> vec = prob.ket_tensor, vec2;
+        MPSTensor<Matrix, SymmGroup> vec = prob.ket_tensor, vec2, vec3;
         
         copy_ptr_to_mps(v, vec);
-        vec2 = contraction::site_hamil(vec, prob.left, prob.right, prob.mpo);
-        copy_mps_to_ptr(vec2, w);
+//        vec2 = contraction::site_hamil(vec, prob.left, prob.right, prob.mpo);
+//        cout << "vec2 " << vec2 << endl;
+        vec3 = contraction::site_hamil2(vec, prob.left, prob.right, prob.mpo);
+//        cout << "vec3 " << vec3 << endl;
+        copy_mps_to_ptr(vec3, w);
+//        cout << endl << endl;
     }
     
 private:

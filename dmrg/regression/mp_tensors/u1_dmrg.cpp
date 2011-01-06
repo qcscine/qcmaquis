@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iterator>
 #include <iostream>
+#include <sys/time.h>
 
 using std::cerr;
 using std::cout;
@@ -90,9 +91,16 @@ int main(int argc, char ** argv)
     cout << expval(mps, mpo, 0) << endl;
     cout << expval(mps, mpo, 1) << endl;
     
+    timeval now, then;
+    gettimeofday(&now, NULL);
     std::vector<double> energies = ss_optimize<Matrix, grp>(mps, mpo, parms);
-    std::vector<double> energy(1, *energies.rbegin());
+    gettimeofday(&then, NULL);
+    double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+    
+    cout << "Task took " << elapsed << " seconds." << endl;
     
     h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
-    h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", energy);
+    h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
+    h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
+    
 }

@@ -435,6 +435,36 @@ struct contraction {
     
     template<class Matrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
+    site_hamil2(MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                Boundary<Matrix, SymmGroup> const & left,
+                Boundary<Matrix, SymmGroup> const & right,
+                MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
+        
+        MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
+        ret.multiply_by_scalar(0);
+        ret.make_left_paired();
+        
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
+        
+        for (size_t b = 0; b < mpo.col_dim(); ++b)
+        {
+            block_matrix<Matrix, SymmGroup> oblock;
+            gemm(left_mpo_mps.data_[b], right.data_[b], oblock);
+            for (size_t k = 0; k < oblock.n_blocks(); ++k)
+                ret.data_.match_and_add_block(boost::tuples::make_tuple(oblock[k],
+                                                                        oblock.left_basis()[k].first,
+                                                                        oblock.right_basis()[k].first));
+            
+        }
+        
+        return ret;
+    }
+    
+    template<class Matrix, class SymmGroup>
+    static MPSTensor<Matrix, SymmGroup>
     predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<Matrix, SymmGroup> const & left,
