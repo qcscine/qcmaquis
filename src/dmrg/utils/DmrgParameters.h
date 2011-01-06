@@ -141,11 +141,12 @@ public:
             
             add_option("max_bond_dimension",value<std::size_t>(),"");
             
-            add_option("alpha_initial",value<double>()->default_value(1e-3),"");
-            add_option("alpha_final",value<double>()->default_value(1e-10),"");
+            add_option("alpha_initial",value<double>()->default_value(1),"");
+            add_option("alpha_final",value<double>()->default_value(1e-4),"");
             
             add_option("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"");
             add_option("arpack_tol",value<double>()->default_value(1e-8),"");
+            add_option("arpack_ncv",value<int>()->default_value(20),"");
             
             add_option("nsweeps",value<int>(),"");
             add_option("ngrowsweeps",value<int>(),"");
