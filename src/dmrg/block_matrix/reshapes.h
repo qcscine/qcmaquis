@@ -12,7 +12,7 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                            block_matrix<Matrix, SymmGroup> const & m1,
                            block_matrix<Matrix, SymmGroup> & m2)
 {
-    assert(m1.right_basis() == right_i);
+//    assert(m1.right_basis() == right_i);
     
     using std::size_t;
     
@@ -63,7 +63,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                            block_matrix<Matrix, SymmGroup> const & m1,
                            block_matrix<Matrix, SymmGroup> & m2)
 {
-    assert(m1.left_basis() == left_i);
+//    assert(m1.left_basis() == left_i);
     
     using std::size_t;
     
