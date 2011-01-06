@@ -14,7 +14,7 @@
 
   Public domain software.
 */
-#include <arerror.h>
+#include "arerror.h"
 
 // "code" initialization.
 ArpackError::ErrorCode ArpackError::code = NO_ERRORS;
