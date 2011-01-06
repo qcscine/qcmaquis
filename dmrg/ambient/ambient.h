@@ -24,7 +24,6 @@ private:
     scheduler();                               // constructor is private
     scheduler(scheduler const&){};             // copy constructor is private
     scheduler& operator=(scheduler const&){};  // assignment operator is private
-    static scheduler* singleton;
 public:
     static scheduler* instance();
 
@@ -32,6 +31,10 @@ public:
     scheduler & operator>>(dim3 dim_distr);
     scheduler & operator,(dim3 dim); 
     void initialize(MPI_Comm comm = NULL);
+
+    template<class packet>
+    void build_packet_type();
+
     void finalize();
 
 private:
