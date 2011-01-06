@@ -23,6 +23,12 @@ gettimeofday(&now, NULL);
 gettimeofday(&then, NULL); \
 cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
 
+double log_interpolate(double y0, double y1, int N, int i)
+{
+    double x = log(y1/y0)/(N-1);
+    return y0*exp(x*i);
+}
+
 template<class Matrix, class SymmGroup>
 std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
                                 MPO<Matrix, SymmGroup> const & mpo,
@@ -66,11 +72,11 @@ std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
             
             if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
                 BEGIN_TIMING("IETL")
-                res = solve_ietl_lanczos(sp, mps[site]);
+                res = solve_ietl_lanczos(sp, mps[site], parms);
                 END_TIMING("IETL")
             } else if (parms.get<std::string>("eigensolver") == std::string("ARPACK")) {
                 BEGIN_TIMING("ARPACK")
-                res = solve_arpackpp(sp, mps[site]);
+                res = solve_arpackpp(sp, mps[site], parms);
                 END_TIMING("ARPACK")
             } else {
                 throw std::runtime_error("I don't know this eigensolver.");
@@ -84,11 +90,12 @@ std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
             
             if (lr == +1) {
                 if (site < L-1) {
-                    double alpha = parms.get<double>("alpha_initial") * powf(parms.get<double>("alpha_sweep_factor"), sweep);
-                    
-                    double t1 = parms.get<double>("truncation_initial"), t2 = parms.get<double>("truncation_final");
-                    double cutoff = t1 + static_cast<double>(sweep)/(parms.get<int>("nsweeps")-1)*(t2-t1);
-                    
+                    double alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"), parms.get<int>("nsweeps"), sweep);
+                    double cutoff;
+                    if (sweep >= parms.get<int>("ngrowsweeps"))
+                        cutoff = parms.get<double>("truncation_final");
+                    else
+                        cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
                     std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
                     cout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
