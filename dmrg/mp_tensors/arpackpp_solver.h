@@ -5,9 +5,8 @@
 
 namespace arpack {
     
-#include <arpack++/make_me_header_only.hpp>
-#include <arpack++/arssym.h>
-    
+#include "arpack++/make_me_header_only.hpp"
+#include "arpack++/arssym.h"    
     
 }
 

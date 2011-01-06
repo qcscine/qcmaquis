@@ -14,8 +14,8 @@
 
   Public domain software.
 */
-#include <arpackf.h>
-#include <debug.h>
+#include "arpackf.h"
+#include "debug.h"
 
 
 extern "C"

@@ -14,7 +14,7 @@
 
   Public domain software.
 */
-#include <arrseig.h>
+#include "arrseig.h"
 
 
 void
