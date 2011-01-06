@@ -1,9 +1,7 @@
-model = heisenberg
 lattice = square_lattice
-
 L = 6
 W = 6
 
+model = heisenberg
 Jxy = 1
 Jz = 1
-

@@ -1,6 +1,8 @@
 #ifndef ARPACKPP_SOLVER_H
 #define ARPACKPP_SOLVER_H
 
+#include "utils/DmrgParameters.h"
+
 namespace arpack {
     
 #include <arpack++/make_me_header_only.hpp>
@@ -64,7 +66,8 @@ private:
 template<class Matrix, class SymmGroup>
 std::pair<double, MPSTensor<Matrix, SymmGroup> >
 solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
-               MPSTensor<Matrix, SymmGroup> initial)
+               MPSTensor<Matrix, SymmGroup> initial,
+               DmrgParameters parms)
 {
     ArpackppMatrix<Matrix, SymmGroup> mtx(sp);
     
@@ -75,7 +78,7 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
     solver(mtx.getN(), 1,
            &mtx, &ArpackppMatrix<Matrix, SymmGroup>::MultMv, "SA",
            // Parameters are: ncvp, tolp, maxitp, residp
-           0, 1e-6, 1000, &initial_ptr[0]);
+           0, parms.get<double>("arpack_tol"), 1000, &initial_ptr[0]);
     
     try {
         int nconv = solver.FindEigenvalues();

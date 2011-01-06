@@ -1,6 +1,8 @@
 #ifndef IETL_LANCZOS_SOLVER_H
 #define IETL_LANCZOS_SOLVER_H
 
+#include "utils/DmrgParameters.h"
+
 namespace ietl
 {
     template<class Matrix, class SymmGroup, class Generator> void generate(MPSTensor<Matrix, SymmGroup> & m, Generator g)
@@ -91,7 +93,8 @@ namespace ietl
 template<class Matrix, class SymmGroup>
 std::pair<double, MPSTensor<Matrix, SymmGroup> >
 solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
-                   MPSTensor<Matrix, SymmGroup> const & initial)
+                   MPSTensor<Matrix, SymmGroup> const & initial,
+                   DmrgParameters & params)
 {
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     
