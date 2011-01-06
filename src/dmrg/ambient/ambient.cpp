@@ -1,7 +1,9 @@
 #include "ambient/ambient.h"
+#include "ambient/packets.h"
+#include "ambient/packet_manager.h"
 
-scheduler* scheduler::singleton = NULL;
 scheduler* scheduler::instance(){
+    static scheduler* singleton = NULL;
     if(!singleton) singleton = new scheduler();
     return singleton;
 }
@@ -42,20 +44,22 @@ void scheduler::initialize(MPI_Comm comm)
     if(this->rank == 0) this->mode = AMBIENT_MASTER;
     else this->mode = GROUP_SLAVE;
 
+
+// initializing our data-types:
+    packet_manager::instance()->commit( packet_type::get<control_packet_type>() );
     printf("R%d has been initialized\n", this->rank);
+
+
 
 // AUTO TUNING SHOULD START BELOW...
 
 ////////////////////////////////////
-
-
-
 }
 
 void scheduler::finalize()
 {
     MPI_Barrier(this->comm);
     MPI_Finalize();
-    delete singleton;
-    singleton = NULL;
+//    delete singleton;
+//    singleton = NULL;
 }
