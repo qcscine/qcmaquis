@@ -76,12 +76,13 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
     
     std::vector<double> initial_ptr(mtx.getN());
     copy_mps_to_ptr(initial, &initial_ptr[0]);
-    
+   
+    int ncv = std::min(mtx.getN(), parms.get<int>("arpack_ncv")); 
     arpack::ARSymStdEig<double, ArpackppMatrix<Matrix, SymmGroup> >
     solver(mtx.getN(), 1,
            &mtx, &ArpackppMatrix<Matrix, SymmGroup>::MultMv, "SA",
            // Parameters are: ncvp, tolp, maxitp, residp
-           0, parms.get<double>("arpack_tol"), 1000, &initial_ptr[0]);
+           ncv, parms.get<double>("arpack_tol"), 1000, &initial_ptr[0]);
     
     try {
         int nconv = solver.FindEigenvalues();
