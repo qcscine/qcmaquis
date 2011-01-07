@@ -361,7 +361,9 @@ struct contraction {
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         
-        for (std::size_t b = 0; b < left.aux_dim(); ++b) {
+        size_t loop_max = left.aux_dim();
+#pragma omp parallel for
+        for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(transpose(left.data_[b]), mps.data_, t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
             reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
@@ -377,7 +379,9 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        for (size_t b1 = 0; b1 < left.aux_dim(); ++b1)
+        for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
+            loop_max = mpo.col_dim();
+#pragma omp parallel for
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
                 block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
@@ -429,6 +433,7 @@ struct contraction {
                                 ret.data_[b2].match_and_add_block(boost::tuples::make_tuple(oblock, out_l_charge, out_r_charge));
                             }
             }
+        }
         
         return ret;
     }
@@ -449,11 +454,15 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        for (size_t b = 0; b < mpo.col_dim(); ++b)
+        size_t loop_max = mpo.col_dim();
+        
+#pragma omp parallel for
+        for (size_t b = 0; b < loop_max; ++b)
         {
             block_matrix<Matrix, SymmGroup> oblock;
             gemm(left_mpo_mps.data_[b], right.data_[b], oblock);
             for (size_t k = 0; k < oblock.n_blocks(); ++k)
+#pragma omp critical
                 ret.data_.match_and_add_block(boost::tuples::make_tuple(oblock[k],
                                                                         oblock.left_basis()[k].first,
                                                                         oblock.right_basis()[k].first));
