@@ -62,4 +62,31 @@ private:
     std::size_t L_, W_;
 };
 
+class CylinderAdj : public Adjacency
+{
+public:
+    CylinderAdj(std::size_t L, std::size_t W)
+    : L_(L)
+    , W_(W)
+    { }
+    
+    std::vector<std::size_t> operator[](std::size_t p) const
+    {
+        std::vector<std::size_t> ret;
+        if (p+1 < L_*W_ && (p+1) % W_ != 0)
+            ret.push_back(p+1);
+        if (p+W_ < L_*W_)
+            ret.push_back(p+W_);
+        if (p+(W_-1) < L_*W_)
+            ret.push_back(p+(W_-1));
+        
+        return ret;
+    }
+    
+    std::size_t size() const { return L_*W_; }
+    
+private:
+    std::size_t L_, W_;
+};
+
 #endif
