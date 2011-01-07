@@ -4,6 +4,7 @@
 class Adjacency
 {
 public:
+	virtual ~Adjacency(){};
     virtual std::vector<std::size_t> operator[](std::size_t) const = 0;
     virtual std::size_t size() const = 0;
 };
