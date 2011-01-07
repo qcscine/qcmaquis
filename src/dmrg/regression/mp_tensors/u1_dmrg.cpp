@@ -43,6 +43,8 @@ Adjacency * adj_factory(ModelParameters & model)
         return new SquareAdj(model.get<int>("L"), model.get<int>("W"));
     else if (model.get<std::string>("lattice") == std::string("chain_lattice"))
         return new ChainAdj(model.get<int>("L"));
+    else if (model.get<std::string>("lattice") == std::string("cylinder_lattice"))
+        return new CylinderAdj(model.get<int>("L"), model.get<int>("W"));
     else
         return NULL;
 };  
