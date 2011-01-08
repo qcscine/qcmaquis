@@ -21,6 +21,7 @@ public:
 	    >
     > op_pairs;
     
+	virtual ~Hamiltonian(){};
     virtual op_pairs get_ops() = 0;
     
     virtual Index<SymmGroup> get_phys() = 0;
