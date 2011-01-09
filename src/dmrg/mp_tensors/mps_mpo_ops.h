@@ -73,4 +73,55 @@ typename Matrix::value_type norm(MPS<Matrix, SymmGroup> const & mps,
     return expval(id_mpo);
 }
 
+template<class Matrix, class SymmGroup>
+std::vector<double>
+calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
+{
+    std::size_t L = mps.length();
+    std::vector<double> ret;
+    
+    mps.normalize_right();
+    
+    for (std::size_t p = 1; p < L; ++p)
+    {
+        block_matrix<Matrix, SymmGroup> t, u, v;
+        
+        mps[p-1].make_left_paired();
+        mps[p].make_right_paired();
+        
+        gemm(mps[p-1].data(), mps[p].data(), t);
+        block_matrix<blas::diagonal_matrix<double>, SymmGroup> s;
+
+        svd(t, u, v, s);
+        std::vector<double> sv;
+        
+        double r = 0;
+        for (std::size_t k = 0; k < s.n_blocks(); ++k)
+            for (typename blas::diagonal_matrix<double>::element_iterator it = elements(s[k]).first;
+                 it != elements(s[k]).second; ++it)
+            {
+                double a = fabs(*it);
+                if (a > 0)
+                    sv.push_back(a);
+            }
+        
+        r = std::accumulate(sv.begin(), sv.end(), double(0));
+        std::transform(sv.begin(), sv.end(), sv.begin(),
+                       boost::lambda::_1 / r);
+        // any suggestions why the next two lines give NaN?
+//        r = -std::accumulate(sv.begin(), sv.end(), double(0),
+//                             boost::lambda::_1 * boost::lambda::bind(log, boost::lambda::_1));
+        r = 0;
+        for (std::vector<double>::const_iterator it = sv.begin();
+             it != sv.end(); ++it)
+            r += *it * log(*it);
+        ret.push_back(-r);
+        
+        t = mps[p-1].normalize_left(SVD);
+        mps[p].multiply_from_left(t);
+    }
+    
+    return ret;
+}
+
 #endif

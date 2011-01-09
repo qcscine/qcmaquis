@@ -84,6 +84,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
                                              Index<SymmGroup> bond_dim)
 {
     if (method == QR) {
+        throw std::runtime_error("Not implemented!");
         make_left_paired();
         
         block_matrix<Matrix, SymmGroup> q, r;
