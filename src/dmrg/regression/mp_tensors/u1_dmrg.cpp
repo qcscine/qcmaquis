@@ -59,6 +59,8 @@ Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
     else if (model.get<std::string>("model") == std::string("biquadratic"))
         return new Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
                                      sin(M_PI * model.get<double>("theta")));
+    else if (model.get<std::string>("model") == std::string("SusyHCB"))
+        return new SusyHCB<Matrix>();
     else {
         throw std::runtime_error("Don't know this model!");
         return NULL;
@@ -97,10 +99,11 @@ int main(int argc, char ** argv)
     Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
     Index<U1> phys = H->get_phys();
     
-    MPS<Matrix, grp> mps(adj->size(), 5, phys);
+    int total_charge = model.get<int>("u1_total_charge");
+    MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge);
     MPO<Matrix, grp> mpo = mpos::MPOMaker<Matrix, grp>::create_mpo(*adj, *H);
-    
-    cout << expval(mps, mpo, 0) << endl;
+  
+//    cout << expval(mps, mpo, 0) << endl;
     cout << expval(mps, mpo, 1) << endl;
     
     std::vector<double> energies, entropies;

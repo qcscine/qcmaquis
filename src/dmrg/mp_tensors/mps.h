@@ -10,7 +10,8 @@ class MPS : public std::vector<MPSTensor<Matrix, SymmGroup> >
 public:
     typedef std::size_t size_t;
     
-    MPS(size_t L, size_t Mmax, Index<SymmGroup> phys);
+    MPS(size_t L, size_t Mmax, Index<SymmGroup> phys,
+        typename SymmGroup::charge right_end = SymmGroup::SingletCharge);
     
     size_t length() const { return this->size(); }
     Index<SymmGroup> const & site_dim(size_t i) const { return (*this)[i].site_dim(); }
@@ -24,8 +25,6 @@ public:
     void normalize_left();
     void normalize_right();
     
-    Boundary<Matrix, SymmGroup> start_mtx() const;
-    
     std::string description() const;
     
     void stupid_grow_pair(std::size_t l, double alpha, double cutoff);
@@ -34,6 +33,9 @@ public:
                         Boundary<Matrix, SymmGroup> const & right,
                         std::size_t l, double alpha,
                         double cutoff, std::size_t Mmax);
+    
+    Boundary<Matrix, SymmGroup> left_boundary() const;
+    Boundary<Matrix, SymmGroup> right_boundary() const;
     
 private:
     typename Matrix::value_type canonize_left();

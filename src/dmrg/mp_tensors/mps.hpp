@@ -5,7 +5,10 @@
 #include <boost/math/special_functions/binomial.hpp>
 
 template<class Matrix>
-void mps_init(MPS<Matrix, NullGroup> & mps, size_t Mmax, Index<NullGroup> const & phys)
+void mps_init(MPS<Matrix, NullGroup> & mps,
+              size_t Mmax,
+              Index<NullGroup> const & phys,
+              NullGroup::charge)
 {
     std::size_t L = mps.length();
     std::vector<std::size_t> bond_sizes(L+1, 1);
@@ -35,21 +38,25 @@ T tri_min(T a, T b, T c)
 }
 
 template<class Matrix>
-void mps_init(MPS<Matrix, U1> & mps, size_t Mmax, Index<U1> const & phys)
+void mps_init(MPS<Matrix, U1> & mps,
+              size_t Mmax,
+              Index<U1> const & phys,
+              U1::charge right_end)
 {
     std::size_t L = mps.length();
     
-    Index<U1> triv;
-    triv.insert( std::make_pair(U1::SingletCharge, 1) );
+    Index<U1> l_triv, r_triv;
+    l_triv.insert( std::make_pair(U1::SingletCharge, 1) );
+    r_triv.insert( std::make_pair(right_end, 1) );
     
     std::vector<Index<U1> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
-    left_allowed[0] = triv;
-    right_allowed[L] = triv;
+    left_allowed[0] = l_triv;
+    right_allowed[L] = r_triv;
     
     for (int i = 1; i < L+1; ++i)
         left_allowed[i] = phys * left_allowed[i-1];
     for (int i = L-1; i >= 0; --i)
-        right_allowed[i] = phys * right_allowed[i+1];
+        right_allowed[i] = adjoin(phys) * right_allowed[i+1];
     
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
@@ -81,24 +88,17 @@ std::string MPS<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup>::MPS(size_t L, size_t Mmax, Index<SymmGroup> phys)
+MPS<Matrix, SymmGroup>::MPS(size_t L,
+                            size_t Mmax,
+                            Index<SymmGroup> phys,
+                            typename SymmGroup::charge right_end)
 : std::vector<MPSTensor<Matrix, SymmGroup> >(L)
 {
-    mps_init<Matrix>(*this, Mmax, phys);
+    mps_init<Matrix>(*this, Mmax, phys, right_end);
     
     for (int i = 0; i < L; ++i)
         (*this)[i].normalize_left(SVD);
     this->canonize_left();
-}
-
-template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup>
-MPS<Matrix, SymmGroup>::start_mtx() const
-{
-    Index<SymmGroup> i; i.insert(std::make_pair(NullGroup::Plus, 1));
-    Boundary<Matrix, SymmGroup> ret(i, i, 1);
-    ret(0, std::make_pair(SymmGroup::SingletCharge, 0), std::make_pair(SymmGroup::SingletCharge, 0)) = 1;
-    return ret;
 }
 
 template<class Matrix, class SymmGroup>
@@ -168,4 +168,32 @@ void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const &
     (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
+}
+
+template<class Matrix, class SymmGroup>
+Boundary<Matrix, SymmGroup>
+MPS<Matrix, SymmGroup>::left_boundary() const
+{
+    Index<SymmGroup> i = (*this)[0].row_dim();
+    Boundary<Matrix, SymmGroup> ret(i, i, 1);
+    
+    for (typename Index<SymmGroup>::basis_iterator it = i.basis_begin();
+         !it.end(); ++it)
+        ret(0, *it, *it) = 1;
+    
+    return ret;
+}
+
+template<class Matrix, class SymmGroup>
+Boundary<Matrix, SymmGroup>
+MPS<Matrix, SymmGroup>::right_boundary() const
+{
+    Index<SymmGroup> i = (*this)[length()-1].col_dim();
+    Boundary<Matrix, SymmGroup> ret(i, i, 1);
+    
+    for (typename Index<SymmGroup>::basis_iterator it = i.basis_begin();
+         !it.end(); ++it)
+        ret(0, *it, *it) = 1;
+    
+    return ret;
 }

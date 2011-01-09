@@ -178,6 +178,8 @@ public:
             add_option("Jxy", value<double>(), "");
             add_option("Jz", value<double>(), "");
             
+            add_option("u1_total_charge", value<int>()->default_value(0), "");
+            
             store(parse_config_file(param_file, config), vm);
             notify(vm);
         } catch(std::exception &e) {
