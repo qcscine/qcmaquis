@@ -3,6 +3,7 @@
 
 #include "block_matrix/block_matrix.h"
 #include "block_matrix/indexing.h"
+#include "utils/function_objects.h"
 
 #include <iostream>
 
@@ -27,7 +28,14 @@ public:
     
     friend struct contraction;
     
-//private:
+    std::vector<scalar_type> traces() const
+    {
+        std::vector<scalar_type> ret;
+        std::transform(data_.begin(), data_.end(), back_inserter(ret),
+                       utils::functor_trace());
+        return ret;
+    }
+    
 public:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
     Index<SymmGroup> upper_i, lower_i;

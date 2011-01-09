@@ -14,7 +14,7 @@ left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> con
     std::size_t L = mps.length();
     
     std::vector<Boundary<Matrix, SymmGroup> > left_(L+1);
-    Boundary<Matrix, SymmGroup> left = mps.start_mtx();
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
     left_[0] = left;
     
     for (int i = 0; i < L; ++i) {
@@ -34,7 +34,7 @@ right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> co
     std::size_t L = mps.length();
     
     std::vector<Boundary<Matrix, SymmGroup> > right_(L+1);
-    Boundary<Matrix, SymmGroup> right = mps.start_mtx();
+    Boundary<Matrix, SymmGroup> right = mps.right_boundary();
     right_[L] = right;
     
     for (int i = L-1; i >= 0; --i) {
@@ -51,10 +51,10 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 {
     if (d == 0) {
         std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
-        return left_[mps.length()](0, std::make_pair(SymmGroup::SingletCharge, 0), std::make_pair(SymmGroup::SingletCharge, 0));
+        return left_[mps.length()].traces()[0];
     } else {
         std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
-        return right_[0](0, std::make_pair(SymmGroup::SingletCharge, 0), std::make_pair(SymmGroup::SingletCharge, 0));
+        return right_[0].traces()[0];
     }
 }
 

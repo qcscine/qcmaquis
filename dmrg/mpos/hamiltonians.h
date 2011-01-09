@@ -74,6 +74,49 @@ private:
 };
 
 template<class Matrix>
+class SusyHCB : public Hamiltonian<Matrix, U1>
+{
+    typedef typename Hamiltonian<Matrix, U1>::op_pairs op_pairs;
+    
+    op_pairs get_ops()
+    {
+        using boost::tuples::make_tuple;
+        
+        block_matrix<Matrix, U1> create, destroy, ident, count;
+        
+        ident.insert_block( make_tuple(Matrix(1, 1, 1), 0, 0) );
+        ident.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
+        
+        create.insert_block( make_tuple(Matrix(1, 1, 1), 0, 1) );
+        destroy.insert_block( make_tuple(Matrix(1, 1, 1), 1, 0) );
+        
+        count.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
+        
+        op_pairs ret;
+        
+        double t = 1;
+        
+#define term(a,b) ret.push_back(make_pair(a, b))
+        
+        term(ident, ident);
+        term(-t*create, destroy);
+        term(-t*destroy, create);
+        
+#undef term
+        
+        return ret;
+    }
+    
+    Index<U1> get_phys()
+    {
+        Index<U1> phys;
+        phys.insert(std::make_pair(0, 1));
+        phys.insert(std::make_pair(1, 1));
+        return phys;
+    }
+};
+
+template<class Matrix>
 class Spin1BlBq : public Hamiltonian<Matrix, U1>
 {
 public:
