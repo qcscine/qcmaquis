@@ -45,8 +45,10 @@ Adjacency * adj_factory(ModelParameters & model)
         return new ChainAdj(model.get<int>("L"));
     else if (model.get<std::string>("lattice") == std::string("cylinder_lattice"))
         return new CylinderAdj(model.get<int>("L"), model.get<int>("W"));
-    else
+    else {
+        throw std::runtime_error("Don't know this lattice!");
         return NULL;
+    }
 };  
 
 template<class Matrix>
@@ -57,12 +59,20 @@ Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
     else if (model.get<std::string>("model") == std::string("biquadratic"))
         return new Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
                                      sin(M_PI * model.get<double>("theta")));
-    else
+    else {
+        throw std::runtime_error("Don't know this model!");
         return NULL;
+    }
 }
 
 int main(int argc, char ** argv)
 {
+    if (argc != 4)
+    {
+        cout << "Usage: <parms> <model_parms> <resultfile>" << endl;
+        exit(1);
+    }
+    
     cout.precision(10);
     
     std::ifstream param_file(argv[1]);
@@ -93,9 +103,34 @@ int main(int argc, char ** argv)
     cout << expval(mps, mpo, 0) << endl;
     cout << expval(mps, mpo, 1) << endl;
     
+    std::vector<double> energies, entropies;
+    
     timeval now, then;
     gettimeofday(&now, NULL);
-    std::vector<double> energies = ss_optimize<Matrix, grp>(mps, mpo, parms);
+    {   
+        ss_optimize<Matrix, grp> optimizer(mps, parms);
+        
+        for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
+            energies = optimizer.sweep(mpo, sweep);
+            entropies = calculate_bond_entropies(mps);
+            
+            std::ostringstream oss;
+            oss << "/simulation/results/sweep" << sweep << "/Iteration Energy/mean/value";
+            h5ar << alps::make_pvp(oss.str().c_str(), energies);
+            
+            oss.str("");
+            oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
+            h5ar << alps::make_pvp(oss.str().c_str(), entropies);
+            
+            gettimeofday(&then, NULL);
+            double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+            
+            cout << "Sweep done after " << elapsed << " seconds." << endl;
+            oss.str("");
+            oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
+            h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
+        }
+    }
     gettimeofday(&then, NULL);
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
     
@@ -103,6 +138,8 @@ int main(int argc, char ** argv)
     
     h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
     h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
+    
+    h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
     h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
     
 }

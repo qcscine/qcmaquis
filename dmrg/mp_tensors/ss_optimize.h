@@ -30,21 +30,28 @@ double log_interpolate(double y0, double y1, int N, int i)
 }
 
 template<class Matrix, class SymmGroup>
-std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
-                                MPO<Matrix, SymmGroup> const & mpo,
-                                DmrgParameters & parms)
-{   
-    std::vector<double> energies;
+class ss_optimize
+{
+public:
+    ss_optimize(MPS<Matrix, SymmGroup> & mps_,
+                DmrgParameters & parms_)
+    : mps(mps_)
+    , parms(parms_)
+    { }
     
-    std::size_t L = mps.length();
-    
-    mps.normalize_right();
-    mps.canonize(0);
-    std::vector<Boundary<Matrix, SymmGroup> >
-    left_ = left_mpo_overlaps(mps, mpo),
-    right_ = right_mpo_overlaps(mps, mpo);
-    
-    for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
+    std::vector<double> sweep(MPO<Matrix, SymmGroup> const & mpo,
+                              int sweep)
+    {
+        mps.normalize_right();
+        mps.canonize(0);
+        
+        left_ = left_mpo_overlaps(mps, mpo);
+        right_ = right_mpo_overlaps(mps, mpo);
+        
+        std::vector<double> energies;
+        
+        std::size_t L = mps.length();
+        
         cout << mps.description() << endl;
         for (int _site = 0; _site < 2*L; ++_site) {
             int site, lr;
@@ -81,7 +88,7 @@ std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
             } else {
                 throw std::runtime_error("I don't know this eigensolver.");
             }
-
+            
             
             mps[site] = res.second;
             
@@ -119,10 +126,15 @@ std::vector<double> ss_optimize(MPS<Matrix, SymmGroup> & mps,
                                                                    right_[site+1], mpo[site]);
             }
         }
+        
+        return energies;
     }
     
-    return energies;
-}
+private:
+    MPS<Matrix, SymmGroup> & mps;
+    DmrgParameters & parms;
+    std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+};
 
 #endif
 

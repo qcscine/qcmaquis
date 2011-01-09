@@ -136,6 +136,20 @@ namespace blas {
     {
         m.resize(r, c, v);
     }
+    
+    template<typename T>
+    std::pair<typename diagonal_matrix<T>::element_iterator, typename diagonal_matrix<T>::element_iterator>
+    elements(diagonal_matrix<T> & m)
+    {
+        return m.elements();
+    }
+    
+    template<typename T>
+    std::pair<typename diagonal_matrix<T>::const_element_iterator, typename diagonal_matrix<T>::const_element_iterator>
+    elements(diagonal_matrix<T> const & m)
+    {
+        return m.elements();
+    }
 }
 
 #endif
