@@ -19,6 +19,10 @@
 #include <functional>
 #include <cassert>
 
+#ifdef HAVE_ALPS_HDF5
+#include <alps/hdf5.hpp>
+#endif
+
 namespace blas {
     /** A matrix template class
       *
@@ -236,7 +240,13 @@ namespace blas {
         void multiplies_assign (T2 const& t);
         
         void inplace_conjugate();
-        
+		
+		// Serialize functions to save dense_matrix using alps::hdf5
+#ifdef HAVE_ALPS_HDF5
+		void serialize(alps::hdf5::iarchive & ar);
+		void serialize(alps::hdf5::oarchive & ar) const;
+#endif
+
     private:
         template <typename OtherT,typename OtherMemoryBlock>
         friend class dense_matrix;

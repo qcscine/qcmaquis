@@ -418,6 +418,25 @@ namespace blas {
         }
     }
 
+#ifdef HAVE_ALPS_HDF5
+	template <typename T, typename MemoryBlock>
+    inline void dense_matrix<T, MemoryBlock>::serialize(alps::hdf5::iarchive & ar)
+    {
+		ar >> alps::make_pvp("size1", size1_);
+		ar >> alps::make_pvp("size2", size2_);
+		ar >> alps::make_pvp("reserved_size1", reserved_size1_);
+		ar >> alps::make_pvp("values", values_);
+    }
+	template <typename T, typename MemoryBlock>
+    inline void dense_matrix<T, MemoryBlock>::serialize(alps::hdf5::oarchive & ar) const
+    {
+		ar << alps::make_pvp("size1", size1_);
+		ar << alps::make_pvp("size2", size2_);
+		ar << alps::make_pvp("reserved_size1", reserved_size1_);
+		ar << alps::make_pvp("values", values_);
+    }
+#endif	
+	
 }
 
 
