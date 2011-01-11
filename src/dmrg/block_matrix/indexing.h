@@ -62,8 +62,8 @@ namespace index_detail
 template<class SymmGroup>
 class basis_iterator_;
 
-template<class SymmGroup>
-class Index : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
+template<class SymmGroup> class Index
+: public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
 {
 public:
     typedef typename SymmGroup::charge charge;

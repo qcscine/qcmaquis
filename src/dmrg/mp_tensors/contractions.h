@@ -329,7 +329,7 @@ struct contraction {
                                         }
                                     }
                                 
-                                ret.data_.match_and_add_block(boost::tuples::make_tuple(oblock, out_l_charge, out_r_charge));
+                                ret.data_.match_and_add_block(oblock, out_l_charge, out_r_charge);
                             }
             }
         
@@ -419,6 +419,7 @@ struct contraction {
                                 oblock *= 0;
                                 
                                 /* optimize me */
+                                /* make me a kernel */
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                     for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                         typename Matrix::value_type wblock_t = wblock(ss1, ss2);
@@ -430,7 +431,7 @@ struct contraction {
                                         }
                                     }
                                 
-                                ret.data_[b2].match_and_add_block(boost::tuples::make_tuple(oblock, out_l_charge, out_r_charge));
+                                ret.data_[b2].match_and_add_block(oblock, out_l_charge, out_r_charge);
                             }
             }
         }
@@ -463,9 +464,9 @@ struct contraction {
             gemm(left_mpo_mps.data_[b], right.data_[b], oblock);
             for (size_t k = 0; k < oblock.n_blocks(); ++k)
 #pragma omp critical
-                ret.data_.match_and_add_block(boost::tuples::make_tuple(oblock[k],
-                                                                        oblock.left_basis()[k].first,
-                                                                        oblock.right_basis()[k].first));
+                ret.data_.match_and_add_block(oblock[k],
+                                              oblock.left_basis()[k].first,
+                                              oblock.right_basis()[k].first);
             
         }
         
@@ -498,9 +499,9 @@ struct contraction {
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
                 if (mps.data_.left_basis().has(tdm.left_basis()[k].first))
-                    dm.match_and_add_block(boost::tuples::make_tuple(tdm[k],
-                                                                     tdm.left_basis()[k].first,
-                                                                     tdm.right_basis()[k].first));
+                    dm.match_and_add_block(tdm[k],
+                                           tdm.left_basis()[k].first,
+                                           tdm.right_basis()[k].first);
             }
         }
         

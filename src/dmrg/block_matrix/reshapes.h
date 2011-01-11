@@ -50,7 +50,7 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                 in_offsets[in_l_charge] += left_i[l].second * physical_i[s].second;
                 out_offsets[out_r_charge] += right_i[r].second * physical_i[s].second;
 
-                m2.match_and_add_block(boost::tuples::make_tuple(out_block, out_l_charge, out_r_charge));
+                m2.match_and_add_block(out_block, out_l_charge, out_r_charge);
             }
     
 //    assert(m2.left_basis() == left_i);
@@ -101,7 +101,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                 in_offsets[in_r_charge] += right_i[r].second * physical_i[s].second;
                 out_offsets[out_l_charge] += left_i[l].second * physical_i[s].second;
 
-                m2.match_and_add_block(boost::tuples::make_tuple(out_block, out_l_charge, out_r_charge));
+                m2.match_and_add_block(out_block, out_l_charge, out_r_charge);
             }
     
 //    assert(m2.right_basis() == right_i);
