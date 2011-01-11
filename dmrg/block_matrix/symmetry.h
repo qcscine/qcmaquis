@@ -114,6 +114,34 @@ public:
 	}
 };
 
+/*
+class TwoU1
+{
+public:
+    typedef std::pair<int, int> charge;
+    
+    static const charge SingletCharge = std::pair<int, int>(0,0);
+    
+    static charge fuse(charge a, charge b)
+    {
+        return std::make_pair(a.first+b.first, a.second+b.second);
+    }
+    
+    template<int R> static charge fuse(const boost::array<charge, R> & v)
+    {
+        assert(R > 0);
+        charge ret = v[0];
+        for (int i = 1; i < R; ++i)
+            ret += v[i];
+        return ret;
+    }
+};
+
+std::pair<int, int> operator-(std::pair<int, int> const & a)
+{
+    return std::make_pair(-a.first, -b.first);
+}*/
+
 template<int Q>
 class ZqCharge
 {

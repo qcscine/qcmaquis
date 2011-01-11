@@ -21,8 +21,8 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         // avoid copying, use resize
-        C.insert_block(boost::tuples::make_tuple(Matrix(),
-                                                 A.left_basis()[k].first, B.right_basis()[matched_block].first));
+        C.insert_block(Matrix(),
+                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
         C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
                        num_rows(A[k]), num_columns(B[matched_block]));
         gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
@@ -166,9 +166,9 @@ block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m
 {
     block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
-        ret.insert_block(boost::tuples::make_tuple(m[k],
-                                                   -m.left_basis()[k].first,
-                                                   -m.right_basis()[k].first));
+        ret.insert_block(m[k],
+                         -m.left_basis()[k].first,
+                         -m.right_basis()[k].first);
     return ret;
 }
 

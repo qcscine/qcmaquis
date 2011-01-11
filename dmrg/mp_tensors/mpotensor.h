@@ -18,7 +18,7 @@ public:
              Index<SymmGroup> const & ld = Index<SymmGroup>(),
              std::size_t ad = 1)
     : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
-    , upper_i(ud), lower_i(ld)
+//    , upper_i(ud), lower_i(ld)
     { }
 
     std::size_t aux_dim() const { return data_.size(); }
@@ -38,7 +38,7 @@ public:
     
 public:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
-    Index<SymmGroup> upper_i, lower_i;
+//    Index<SymmGroup> upper_i, lower_i;
 };
 
 template<class Matrix, class SymmGroup>

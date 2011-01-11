@@ -3,8 +3,6 @@
 
 #include "block_matrix/block_matrix.h"
 
-#include <boost/tuple/tuple.hpp>
-
 #include <vector>
 #include <utility>
 
@@ -13,7 +11,6 @@ class Hamiltonian
 {
 public:
     typedef block_matrix<Matrix, SymmGroup> op_t;
-    typedef boost::tuple<size_t, size_t, op_t> block;
     typedef std::vector<
 	    std::pair<
     		block_matrix<Matrix, SymmGroup>,
@@ -37,19 +34,18 @@ public:
     
     op_pairs get_ops()
     {
-        using boost::tuples::make_tuple;
         
         block_matrix<Matrix, U1> ident, splus, sminus, sz;
         
-        ident.insert_block( make_tuple(Matrix(1, 1, 1), -1, -1) );
-        ident.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
+        ident.insert_block(Matrix(1, 1, 1), -1, -1);
+        ident.insert_block(Matrix(1, 1, 1), 1, 1);
         
-        splus.insert_block( make_tuple(Matrix(1, 1, 1), -1, 1) );
+        splus.insert_block(Matrix(1, 1, 1), -1, 1);
         
-        sminus.insert_block( make_tuple(Matrix(1, 1, 1), 1, -1) );
+        sminus.insert_block(Matrix(1, 1, 1), 1, -1);
         
-        sz.insert_block( make_tuple(Matrix(1, 1, 0.5), 1, 1) );
-        sz.insert_block( make_tuple(Matrix(1, 1, -0.5), -1, -1) );
+        sz.insert_block(Matrix(1, 1, 0.5), 1, 1);
+        sz.insert_block(Matrix(1, 1, -0.5), -1, -1);
         
         op_pairs ret;
         
@@ -79,18 +75,16 @@ class SusyHCB : public Hamiltonian<Matrix, U1>
     typedef typename Hamiltonian<Matrix, U1>::op_pairs op_pairs;
     
     op_pairs get_ops()
-    {
-        using boost::tuples::make_tuple;
-        
+    {   
         block_matrix<Matrix, U1> create, destroy, ident, count;
         
-        ident.insert_block( make_tuple(Matrix(1, 1, 1), 0, 0) );
-        ident.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
+        ident.insert_block(Matrix(1, 1, 1), 0, 0);
+        ident.insert_block(Matrix(1, 1, 1), 1, 1);
         
-        create.insert_block( make_tuple(Matrix(1, 1, 1), 0, 1) );
-        destroy.insert_block( make_tuple(Matrix(1, 1, 1), 1, 0) );
+        create.insert_block(Matrix(1, 1, 1), 0, 1);
+        destroy.insert_block(Matrix(1, 1, 1), 1, 0);
         
-        count.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
+        count.insert_block(Matrix(1, 1, 1), 1, 1);
         
         op_pairs ret;
         
@@ -125,24 +119,22 @@ public:
     typedef typename Hamiltonian<Matrix, U1>::op_pairs op_pairs;
     
     op_pairs get_ops()
-    {
-        using boost::tuples::make_tuple;
-        
+    {   
         block_matrix<Matrix, U1> ident, splus, sminus, sz, spp, smm, spm, smp, szz, szp, spz, szm, smz;
         
-        ident.insert_block( make_tuple(Matrix(1, 1, 1), -1, -1) );
-        ident.insert_block( make_tuple(Matrix(1, 1, 1), 0, 0) );
-        ident.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
+        ident.insert_block(Matrix(1, 1, 1), -1, -1);
+        ident.insert_block(Matrix(1, 1, 1), 0, 0);
+        ident.insert_block(Matrix(1, 1, 1), 1, 1);
         
-        splus.insert_block( make_tuple(Matrix(1, 1, 1), -1, 0) );
-        splus.insert_block( make_tuple(Matrix(1, 1, 1), 0, 1) );
+        splus.insert_block(Matrix(1, 1, 1), -1, 0);
+        splus.insert_block(Matrix(1, 1, 1), 0, 1);
         
-        sminus.insert_block( make_tuple(Matrix(1, 1, 1), 1, 0) );
-        sminus.insert_block( make_tuple(Matrix(1, 1, 1), 0, -1) );
+        sminus.insert_block(Matrix(1, 1, 1), 1, 0);
+        sminus.insert_block(Matrix(1, 1, 1), 0, -1);
         
-        sz.insert_block( make_tuple(Matrix(1, 1, 1), 1, 1) );
-        sz.insert_block( make_tuple(Matrix(1, 1, 0), 0, 0) );
-        sz.insert_block( make_tuple(Matrix(1, 1, -1), -1, -1) );
+        sz.insert_block(Matrix(1, 1, 1), 1, 1);
+        sz.insert_block(Matrix(1, 1, 0), 0, 0);
+        sz.insert_block(Matrix(1, 1, -1), -1, -1);
         
         gemm(splus, splus, spp);
         gemm(sminus, sminus, smm);

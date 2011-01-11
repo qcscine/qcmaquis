@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <numeric>
 
-#include <boost/tuple/tuple.hpp>
-
 #include "block_matrix/indexing.h"
 #include "block_matrix/symmetry.h"
 #include "ambient/interfaces/i_block_matrix.h"
@@ -58,7 +56,7 @@ public:
     bool has_block(std::pair<charge, size_type> const & r,
                    std::pair<charge, size_type> const & c) const;
     
-    void insert_block(boost::tuple<Matrix const &, charge, charge> const & block);
+    void insert_block(Matrix const &, charge, charge);
     void remove_block(charge r, charge c);
     
     void remove_rows_from_block(size_type block, size_type r, size_type k);
@@ -71,7 +69,7 @@ public:
     template<class Generator>
     void generate(Generator g);
 
-    void match_and_add_block(boost::tuple<Matrix const &, charge, charge> const & block);     
+    void match_and_add_block(Matrix const &, charge, charge);     
     
     void resize_block(charge r, charge c,
                       size_type new_r, size_type new_c);

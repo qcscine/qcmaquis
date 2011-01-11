@@ -24,7 +24,7 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(bl
         if (this->has_block(rhs_rc, rhs_cc))
             (*this)(rhs_rc, rhs_cc) += rhs.data_[k];
         else
-            this->insert_block(boost::tuples::make_tuple(rhs.data_[k], rhs_rc, rhs_cc));
+            this->insert_block(rhs.data_[k], rhs_rc, rhs_cc);
     }
     return *this;
 }
@@ -49,19 +49,17 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
 }
 
 template<class Matrix, class SymmGroup>
-void* block_matrix<Matrix, SymmGroup>::memory_pointer(){
-
+void * block_matrix<Matrix, SymmGroup>::memory_pointer()
+{
     return NULL;
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::insert_block(boost::tuple<Matrix const &, charge, charge> const & block)
-{
-    Matrix const & mtx = boost::tuples::get<0>(block);
-    
+void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
+{   
     std::pair<charge, size_type>
-    p1 = std::make_pair(boost::tuples::get<1>(block), mtx.num_rows()),
-    p2 = std::make_pair(boost::tuples::get<2>(block), mtx.num_columns());
+    p1 = std::make_pair(c1, mtx.num_rows()),
+    p2 = std::make_pair(c2, mtx.num_columns());
     
     /*size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
@@ -209,29 +207,25 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::match_and_add_block(boost::tuple<Matrix const &, charge, charge> const & block)
+void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
 {
-    using namespace boost::tuples;
-    
-    charge c1 = get<1>(block), c2 = get<2>(block);
-    
     if (this->has_block(c1, c2))
     {
-        if (num_rows(get<0>(block)) == num_rows((*this)(c1, c2)) &&
-            num_columns(get<0>(block)) == num_columns((*this)(c1, c2)))
-            (*this)(c1, c2) += get<0>(block);
-        else if (num_rows(get<0>(block)) > num_rows((*this)(c1, c2)) &&
-                 num_columns(get<0>(block)) > num_columns((*this)(c1, c2)))
+        if (num_rows(mtx) == num_rows((*this)(c1, c2)) &&
+            num_columns(mtx) == num_columns((*this)(c1, c2)))
+            (*this)(c1, c2) += mtx;
+        else if (num_rows(mtx) > num_rows((*this)(c1, c2)) &&
+                 num_columns(mtx) > num_columns((*this)(c1, c2)))
         {
-            resize_block(c1, c2, num_rows(get<0>(block)), num_columns(get<0>(block)));
-            (*this)(c1, c2) += get<0>(block);
+            resize_block(c1, c2, num_rows(mtx), num_columns(mtx));
+            (*this)(c1, c2) += mtx;
         } else {
-            std::size_t maxrows = std::max(num_rows(get<0>(block)),
-                                           num_rows((*this)(get<1>(block), get<2>(block))));
-            std::size_t maxcols = std::max(num_columns(get<0>(block)),
-                                           num_columns((*this)(get<1>(block), get<2>(block))));
+            std::size_t maxrows = std::max(num_rows(mtx),
+                                           num_rows((*this)(c1, c2)));
+            std::size_t maxcols = std::max(num_columns(mtx),
+                                           num_columns((*this)(c1, c2)));
             
-            Matrix cpy = get<0>(block); // only in this case do we need to copy the argument matrix
+            Matrix cpy = mtx; // only in this case do we need to copy the argument matrix
             
             resize_block(c1, c2, maxrows, maxcols);
             resize(cpy, maxrows, maxcols);
@@ -239,7 +233,7 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(boost::tuple<Matrix co
             (*this)(c1, c2) += cpy;
         }
     } else
-        insert_block(block);
+        insert_block(mtx, c1, c2);
 }
 
 template<class Matrix, class SymmGroup>
