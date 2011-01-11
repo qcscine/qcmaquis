@@ -59,8 +59,10 @@ Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
     else if (model.get<std::string>("model") == std::string("biquadratic"))
         return new Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
                                      sin(M_PI * model.get<double>("theta")));
-    else if (model.get<std::string>("model") == std::string("SusyHCB"))
-        return new SusyHCB<Matrix>();
+    else if (model.get<std::string>("model") == std::string("HCB"))
+        return new HCB<Matrix>();
+    else if (model.get<std::string>("model") == std::string("FreeFermions"))
+        return new FreeFermions<Matrix>();
     else {
         throw std::runtime_error("Don't know this model!");
         return NULL;

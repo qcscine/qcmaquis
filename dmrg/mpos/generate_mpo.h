@@ -88,8 +88,6 @@ namespace mpos {
         create_mpo(Adjacency const & adj,
                    Hamiltonian<Matrix, SymmGroup> & H)
         {
-            op_pairs ops = H.get_ops();
-            
             vector<set<size_t> > used_dims(adj.size()-1);
             
             vector<vector<block> > prempo(adj.size());
@@ -97,26 +95,27 @@ namespace mpos {
             
             for (size_t p = 0; p < adj.size(); ++p)
             {
-                prempo[p].push_back( make_tuple(0, 0, ops[0].first) );
-                prempo[p].push_back( make_tuple(1, 1, ops[0].first) );
+                prempo[p].push_back( make_tuple(0, 0, H.get_identity()) );
+                prempo[p].push_back( make_tuple(1, 1, H.get_identity()) );
                 
                 vector<size_t> neighs = adj[p];
                 for (vector<size_t>::iterator neigh = neighs.begin(); neigh != neighs.end(); ++neigh)
-                    for (typename op_pairs::const_iterator op = ops.begin()+1;
-                         op != ops.end(); ++op)
+                    for (int i = 0; i < H.num_2site_ops(); ++i)
                     {
+                        std::pair<op_t, op_t> op = H.get_2site_op(i);
+                        
                         size_t nfree = next_free(used_dims[p]);
                         maximum = std::max(maximum, nfree);
                         
-                        prempo[p].push_back( make_tuple(0, nfree, op->first) );
+                        prempo[p].push_back( make_tuple(0, nfree, op.first) );
                         used_dims[p].insert(nfree);
                         
                         for (size_t pp = p+1; pp < *neigh; ++pp) {
-                            prempo[pp].push_back( make_tuple(nfree, nfree, ops[0].first) );
+                            prempo[pp].push_back( make_tuple(nfree, nfree, H.get_free()) );
                             used_dims[pp].insert(nfree);
                         }
                         
-                        prempo[*neigh].push_back( make_tuple(nfree, 1, op->second) );
+                        prempo[*neigh].push_back( make_tuple(nfree, 1, op.second) );
                     }
             }
             
