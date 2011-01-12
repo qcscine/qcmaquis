@@ -7,13 +7,9 @@ packet_manager* packet_manager::instance(){
 }
 packet_manager::packet_manager(){};
 
-void packet_manager::commit(packet_type* type)
+void packet_manager::send(packet* pack, int dest)
 {
-    MPI_Type_struct(type->count,                            // count - number of types
-                    type->sizes,                            // number of instances of the same type (blocklengths)
-                    type->displacements,                    // starting positions
-                    &type->type,                            // types being used
-                    &type->mpi_type);
-
-    MPI_Type_commit(&type->mpi_type);
+// correctness check:
+    if(pack->get_mpi_type() != pack->mpi_type) printf("Erroneous packet type: the type has changed since packet's creation\n");
+    MPI_Send(pack->data, 1, pack->mpi_type, dest, pack->get_type_code(), MPI_COMM_WORLD);
 }
