@@ -4,7 +4,7 @@ namespace ambient{ namespace packets{
 
     packet_t::packet_t(): t_size(0), count(0), 
                           displacements(NULL), sizes(NULL),
-                          compounds(NULL)
+                          compounds(NULL), mpi_t(MPI_DATATYPE_NULL)
     {
         type = MPI_BYTE;
         int sizes[] = { 1 };

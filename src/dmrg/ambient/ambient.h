@@ -33,6 +33,10 @@ namespace ambient
         scheduler & operator>>(dim3 dim_distr);
         scheduler & operator,(dim3 dim); 
         void initialize(MPI_Comm comm = NULL);
+        template<int R> void print(const char* str){ 
+            if(this->rank == R) printf("%s", str);
+        }
+        void print(const char* str){ printf("R%d: %s", this->rank, str); }
         void finalize();
 
     private:
