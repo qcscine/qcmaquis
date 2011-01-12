@@ -1,15 +1,15 @@
 #ifndef AMBIENT_PACKETS_H
 #define AMBIENT_PACKETS_H
 #include <mpi.h>
-#include "ambient/packet_t.h"
+#include "ambient/packets/packet_t.h"
 
-namespace ambient
-{
+namespace ambient{ namespace packets{
+
     class packet
     {
     public:
         void* data;
-        MPI_Datatype mpi_type;
+        MPI_Datatype mpi_t;
 
         packet_t* get_t();
         MPI_Datatype get_mpi_t();
@@ -24,6 +24,6 @@ namespace ambient
 
         packet(packet_t* type, void* memory, va_list& fields);
     };
-}
 
+} }
 #endif

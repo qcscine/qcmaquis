@@ -1,8 +1,10 @@
 #include "ambient/ambient.h"
-#include "ambient/types.h"
-#include "ambient/packet.h"
-#include "ambient/packet_manager.h"
-#include "ambient/auxiliary.h"
+#include "ambient/packets/types.h"
+#include "ambient/packets/packet.h"
+#include "ambient/packets/packet_manager.h"
+#include "ambient/packets/auxiliary.h"
+
+using namespace ambient::packets; 
 
 namespace ambient
 {

@@ -10,8 +10,8 @@
 #define __A_PACKET__    MPI_Datatype& __a_packet_start = 
 #define __A_CODE(code)  construct(code, LEN(sizes), \
                         sizes, &__a_packet_start);
-namespace ambient
-{
+namespace ambient{ namespace packets{
+
     class packet_t
     {
 // PACKET-TYPE WORK LOGIC //////////////////////////////////////////////////////////////
@@ -50,5 +50,6 @@ namespace ambient
     protected:
         packet_t();
     };
-}
+
+} }
 #endif

@@ -1,15 +1,15 @@
 #ifndef AMBIENT_TYPES_H
 #define AMBIENT_TYPES_H
 
-#include "ambient/packet_t.h"
+#include "ambient/packets/packet_t.h"
 
 // STANDARD AMBIENT FIELDS DEFINES
 #define A_TYPE_FIELD 0 // MANDATORY FIRST TYPE CODE FIELD
 #define A_DEST_FIELD 1 // RECOMMENDED FIRST FIELD IN DERIVED TYPES
                        // (KEEP IT UNLESS YOU KNOW WHAT YOU ARE DOING)
 
-namespace ambient
-{
+namespace ambient{ namespace packets{
+
 // dest is mandatory first (in order to perform send operation
 // w/o explicitely setting destination in send method). even if the 
 // type is to be nested - dest is required to perform scatter op w/o 
@@ -54,5 +54,6 @@ namespace ambient
             __A_CODE('D');
         }
     };
-}
+
+} }
 #endif

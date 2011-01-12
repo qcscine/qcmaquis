@@ -1,16 +1,16 @@
-#include "ambient/types.h"
-#include "ambient/packet.h"
-#include "ambient/packet_manager.h"
+#include "ambient/packets/types.h"
+#include "ambient/packets/packet.h"
+#include "ambient/packets/packet_manager.h"
 
-namespace ambient
-{
+namespace ambient{ namespace packets {
+
     packet::packet(packet_t* type, void* memory, ...){
         va_list fields;
         va_start(fields, memory); 
         type->fill_packet(memory, type->t_code, fields);
         va_end(fields);
         this->data = memory;
-        this->mpi_type = this->get_mpi_t(); // handy errors checking
+        this->mpi_t = this->get_mpi_t(); // handy errors checking
     }
 
     packet::packet(packet_t* type, ...){
@@ -21,18 +21,18 @@ namespace ambient
         type->fill_packet(memory, type->t_code, fields);
         va_end(fields);
         this->data = memory;
-        this->mpi_type = this->get_mpi_t(); // handy errors checking
+        this->mpi_t = this->get_mpi_t(); // handy errors checking
     }
 
     packet::packet(packet_t* type, void* memory, va_list& fields){
         type->fill_packet(memory, type->t_code, fields);
         this->data = memory;
-        this->mpi_type = this->get_mpi_t(); // handy errors checking
+        this->mpi_t = this->get_mpi_t(); // handy errors checking
     }
  
     packet::packet(void* memory){
         this->data = memory;
-        this->mpi_type = this->get_mpi_t(); // handy errors checking
+        this->mpi_t = this->get_mpi_t(); // handy errors checking
     }
 
     packet_t* packet::get_t()
@@ -57,11 +57,11 @@ namespace ambient
 
     void packet::set(int field, void* value)
     {
-        int   type_size;
+        int   t_size;
         if(field == A_TYPE_FIELD) printf("Warning: attempting to modify the type of the packet.\n");
         void* ptr = this->get(field);
-        MPI_Type_size(this->get_t()->compounds[field], &type_size);
-        memcpy(ptr, value, this->get_t()->sizes[field]*type_size);
+        MPI_Type_size(this->get_t()->compounds[field], &t_size);
+        memcpy(ptr, value, this->get_t()->sizes[field]*t_size);
     }
 
     void packet::set(int field, int value)
@@ -80,4 +80,5 @@ namespace ambient
             packet_manager::instance()->send(this, *(int*)this->get(A_DEST_FIELD));
         }
     }
-}
+
+} }
