@@ -23,12 +23,12 @@ typedef blas::dense_matrix<double> Matrix;
 #include "mp_tensors/contractions.h"
 #include "mp_tensors/mps_mpo_ops.h"
 
-#include "mp_tensors/special_mpos.h"
-
 #include "mp_tensors/ss_optimize.h"
+#include "mpos/measurements.h"
 
 #include "mpos/adjancency.h"
 #include "mpos/generate_mpo.h"
+#include "mpos/hamiltonians.h"
 
 #include "utils/DmrgParameters.h"
 
@@ -52,17 +52,18 @@ Adjacency * adj_factory(ModelParameters & model)
 };  
 
 template<class Matrix>
-Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
+mpos::Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
 {
     if (model.get<std::string>("model") == std::string("heisenberg"))
-        return new Heisenberg<Matrix>(model.get<double>("Jxy"), model.get<double>("Jz"));
+        return new mpos::Heisenberg<Matrix>(model.get<double>("Jxy"), model.get<double>("Jz"));
     else if (model.get<std::string>("model") == std::string("biquadratic"))
-        return new Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
-                                     sin(M_PI * model.get<double>("theta")));
+        return new mpos::Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
+                                           sin(M_PI * model.get<double>("theta")),
+                                           model.get<double>("h0"));
     else if (model.get<std::string>("model") == std::string("HCB"))
-        return new HCB<Matrix>();
+        return new mpos::HCB<Matrix>();
     else if (model.get<std::string>("model") == std::string("FreeFermions"))
-        return new FreeFermions<Matrix>();
+        return new mpos::FreeFermions<Matrix>();
     else {
         throw std::runtime_error("Don't know this model!");
         return NULL;
@@ -98,14 +99,18 @@ int main(int argc, char ** argv)
     h5ar << alps::make_pvp("/parameters", model);
     
     Adjacency * adj = adj_factory(model);
-    Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
+    mpos::Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
     Index<U1> phys = H->get_phys();
+    
+    mpos::MPOMaker<Matrix, grp> mpom(*adj, *H);
+    mpom.add_bond_ops();
+    H->push_extra_terms(mpom);
     
     int total_charge = model.get<int>("u1_total_charge");
     MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge);
-    MPO<Matrix, grp> mpo = mpos::MPOMaker<Matrix, grp>::create_mpo(*adj, *H);
+    MPO<Matrix, grp> mpo = mpom.create_mpo();
   
-//    cout << expval(mps, mpo, 0) << endl;
+    cout << expval(mps, mpo, 0) << endl;
     cout << expval(mps, mpo, 1) << endl;
     
     std::vector<double> energies, entropies;
@@ -147,4 +152,5 @@ int main(int argc, char ** argv)
     h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
     h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
     
+    measure(mps, *adj, *H, model, h5ar);
 }

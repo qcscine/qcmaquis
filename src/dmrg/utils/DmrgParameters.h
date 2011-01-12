@@ -177,6 +177,7 @@ public:
             add_option("theta", value<double>(), "");
             add_option("Jxy", value<double>(), "");
             add_option("Jz", value<double>(), "");
+            add_option("h0", value<double>()->default_value(0), "");
             
             add_option("u1_total_charge", value<int>()->default_value(0), "");
             
