@@ -1,7 +1,7 @@
 #ifndef AMBIENT_PACKET_MANAGER_H
 #define AMBIENT_PACKET_MANAGER_H
 
-#include "ambient/packets.h"
+#include "ambient/packet.h"
 
 class packet_manager
 {
@@ -11,7 +11,7 @@ private:
     packet_manager& operator=(packet_manager const&){};  // assignment operator is private
 public:
     static packet_manager* instance();
-    void commit(packet_type* type);
+    void send(packet* pack, int dest);
 };
 
 
