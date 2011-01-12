@@ -15,6 +15,12 @@ namespace ambient{ namespace packets{
         MPI_Datatype get_mpi_t();
         char  get_t_code();
         void* get(int field);
+
+        template<typename T>
+        T get(int field){
+            return *(T*)this->get(field);
+        }
+
         void  set(int field, void* value);
         void  set(int field, int value);
         void  send(int dest = -1);

@@ -20,13 +20,20 @@ namespace ambient{ namespace packets {
     }
 
     template<typename T>
-    void change_t(int field, int size){
-        get_t<T>()->change_field_size(field, size);
+    void commit_t(){
+        if(get_mpi_t<T>() != MPI_DATATYPE_NULL) MPI_Type_free(&get_t<T>()->mpi_t);
+        get_t<T>()->commit();
     }
 
     template<typename T>
-    void commit_t(){
-        get_t<T>()->commit();
+    void change_t(int field, int size){
+        get_t<T>()->change_field_size(field, size);
+        commit_t<T>();
+    }
+
+    template<typename T>
+    void* alloc_t(){
+        return malloc(sizeof_t<T>());
     }
 
     template<typename T>
@@ -47,6 +54,12 @@ namespace ambient{ namespace packets {
     packet* unpack(void* memory){
         *(char*)memory = get_t<T>()->t_code;
         return unpack(memory);
+    }
+
+    template<typename T>
+    packet* recv(void* memory){
+        packet_manager::instance()->recv(get_t<T>(), memory);
+        return unpack<T>(memory);
     }
 
 } }
