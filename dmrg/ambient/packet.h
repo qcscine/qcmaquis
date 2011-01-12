@@ -1,25 +1,29 @@
 #ifndef AMBIENT_PACKETS_H
 #define AMBIENT_PACKETS_H
 #include <mpi.h>
-#include "ambient/packet_type.h"
+#include "ambient/packet_t.h"
 
-    
-class packet
+namespace ambient
 {
-public:
-    void* data;
-    MPI_Datatype mpi_type;
+    class packet
+    {
+    public:
+        void* data;
+        MPI_Datatype mpi_type;
 
-    packet_type* get_type();
-    MPI_Datatype get_mpi_type();
-    char  get_type_code();
-    void* get(int field);
-    void  set(int field, void* value);
-    void  set(int field, int value);
-    void  send(int dest = -1);
-    packet(packet_type* type, void* memory, ...);
-    packet(packet_type* type, ...);
-    packet(void* memory);
-};
+        packet_t* get_t();
+        MPI_Datatype get_mpi_t();
+        char  get_t_code();
+        void* get(int field);
+        void  set(int field, void* value);
+        void  set(int field, int value);
+        void  send(int dest = -1);
+        packet(packet_t* type, void* memory, ...);
+        packet(packet_t* type, ...);
+        packet(void* memory);
+
+        packet(packet_t* type, void* memory, va_list& fields);
+    };
+}
 
 #endif
