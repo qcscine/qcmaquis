@@ -1,9 +1,9 @@
 #ifndef AMBIENT_PACKET_MANAGER_H
 #define AMBIENT_PACKET_MANAGER_H
 
-#include "ambient/packet.h"
-namespace ambient
-{
+#include "ambient/packets/packet.h"
+namespace ambient{ namespace packets{
+
     class packet_manager
     {
     private: 
@@ -14,5 +14,6 @@ namespace ambient
         static packet_manager* instance();
         void send(packet* pack, int dest);
     };
-}
+
+} }
 #endif

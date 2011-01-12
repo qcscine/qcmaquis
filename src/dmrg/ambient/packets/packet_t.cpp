@@ -1,7 +1,7 @@
-#include "ambient/packet_t.h"
+#include "ambient/packets/packet_t.h"
 
-namespace ambient
-{
+namespace ambient{ namespace packets{
+
     packet_t::packet_t(): t_size(0), count(0), 
                           displacements(NULL), sizes(NULL),
                           compounds(NULL)
@@ -47,7 +47,7 @@ namespace ambient
     {
         void* iterator;
         void* source;
-        int   type_size;
+        int   t_size;
         *(char*)memory = type;
 
         for(int i = 1; i < this->count; i++)
@@ -56,8 +56,8 @@ namespace ambient
             if(sizes[i] == 1 && this->compounds[i] == MPI_INT)
                 *((int *)iterator) = va_arg(fields, int);
             else if((source = va_arg(fields, void*)) != NULL){
-                MPI_Type_size(this->compounds[i], &type_size);
-                memcpy(iterator, source, sizes[i]*type_size);
+                MPI_Type_size(this->compounds[i], &t_size);
+                memcpy(iterator, source, sizes[i]*t_size);
             }
         }
     }
@@ -72,4 +72,5 @@ namespace ambient
 
         MPI_Type_commit(&this->mpi_t);
     }
-}
+
+} }

@@ -1,8 +1,8 @@
 #ifndef AMBIENT_AUXILIARY_H
 #define AMBIENT_AUXILIARY_H
 
-namespace ambient
-{
+namespace ambient{ namespace packets {
+
     template<typename T>
     T* get_t(){
         return packet_t::get<T>();
@@ -48,6 +48,6 @@ namespace ambient
         *(char*)memory = get_t<T>()->t_code;
         return unpack(memory);
     }
-}
 
+} }
 #endif
