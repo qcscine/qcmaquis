@@ -15,15 +15,14 @@
 // copying the data (if to do it implicitely).
 struct standard_packet_type : public packet_type
 {
-    friend class packet_type; 
-protected: 
-    MPI_Datatype dest, op_type;
+    FIELDS dest, op_type;
     standard_packet_type()
     {
+        __A_PACKET__
         dest     = MPI_INT;
         op_type  = MPI_BYTE;
-        int sizes[] = { 1, 1 }; 
-        construct('1', 2, sizes, &dest);
+        PACK { 1, 1 }; 
+        __A_CODE('1');
     }
 };
 
