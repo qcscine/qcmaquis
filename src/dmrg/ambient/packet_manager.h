@@ -2,17 +2,17 @@
 #define AMBIENT_PACKET_MANAGER_H
 
 #include "ambient/packet.h"
-
-class packet_manager
+namespace ambient
 {
-private: 
-    packet_manager();                                    // constructor is private
-    packet_manager(packet_manager const&){};             // copy constructor is private
-    packet_manager& operator=(packet_manager const&){};  // assignment operator is private
-public:
-    static packet_manager* instance();
-    void send(packet* pack, int dest);
-};
-
-
+    class packet_manager
+    {
+    private: 
+        packet_manager();                                    // constructor is private
+        packet_manager(packet_manager const&){};             // copy constructor is private
+        packet_manager& operator=(packet_manager const&){};  // assignment operator is private
+    public:
+        static packet_manager* instance();
+        void send(packet* pack, int dest);
+    };
+}
 #endif
