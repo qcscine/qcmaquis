@@ -385,6 +385,9 @@ struct contraction {
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
                 block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                if (W.n_blocks() == 0)
+                    continue;
+                
                 block_matrix<Matrix, SymmGroup> const & T = t[b1];
                 
                 ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
