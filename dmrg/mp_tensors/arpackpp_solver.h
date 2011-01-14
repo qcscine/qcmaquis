@@ -70,7 +70,7 @@ template<class Matrix, class SymmGroup>
 std::pair<double, MPSTensor<Matrix, SymmGroup> >
 solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
                MPSTensor<Matrix, SymmGroup> initial,
-               BaseParameters parms)
+               BaseParameters & parms)
 {
     ArpackppMatrix<Matrix, SymmGroup> mtx(sp);
     
@@ -89,6 +89,13 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
         nconv = solver.FindEigenvectors();
         
         cout << "ARPACK used " << solver.GetIter() << " iterations." << endl;
+        if (solver.GetIter() <= 2)
+            parms.set<int>("arpack_ncv",
+                           std::max(8, ncv-1));
+        else if (solver.GetIter() > 4)
+            parms.set<int>("arpack_ncv",
+                           std::min(50, ncv+4));
+        cout << "Setting ncv = " << parms.get<int>("arpack_ncv") << endl;
         
         std::vector<double> evals;
         for (int i = 0; i < nconv; ++i)
