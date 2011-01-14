@@ -34,7 +34,7 @@ class ss_optimize
 {
 public:
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
-                DmrgParameters & parms_)
+                BaseParameters & parms_)
     : mps(mps_)
     , parms(parms_)
     { }
@@ -132,7 +132,7 @@ public:
     
 private:
     MPS<Matrix, SymmGroup> & mps;
-    DmrgParameters & parms;
+    BaseParameters & parms;
     std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
 };
 

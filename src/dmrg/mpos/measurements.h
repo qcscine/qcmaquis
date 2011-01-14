@@ -17,7 +17,7 @@ struct measure_
     void operator()(MPS<Matrix, SymmGroup> & mps,
                     Adjacency & adj,
                     mpos::Hamiltonian<Matrix, SymmGroup> & H,
-                    ModelParameters & model,
+                    BaseParameters & model,
                     alps::hdf5::oarchive & ar)
     { }
 };
@@ -28,7 +28,7 @@ struct measure_<Matrix, U1>
     void measure_blbq(MPS<Matrix, U1> & mps,
                       Adjacency & adj,
                       mpos::Hamiltonian<Matrix, U1> & H,
-                      ModelParameters & model,
+                      BaseParameters & model,
                       alps::hdf5::oarchive & ar)
     {
         std::vector<double> magns;
@@ -56,7 +56,7 @@ struct measure_<Matrix, U1>
     void operator()(MPS<Matrix, U1> & mps,
                     Adjacency & adj,
                     mpos::Hamiltonian<Matrix, U1> & H,
-                    ModelParameters & model,
+                    BaseParameters & model,
                     alps::hdf5::oarchive & ar)
     {
         if (model.get<std::string>("model") == std::string("biquadratic"))
@@ -68,7 +68,7 @@ template<class Matrix, class SymmGroup>
 void measure(MPS<Matrix, SymmGroup> & mps,
              Adjacency & adj,
              mpos::Hamiltonian<Matrix, SymmGroup> & H,
-             ModelParameters & model,
+             BaseParameters & model,
              alps::hdf5::oarchive & ar)
 {
     measure_<Matrix, SymmGroup>()(mps, adj, H, model, ar);
