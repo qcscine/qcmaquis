@@ -94,7 +94,7 @@ template<class Matrix, class SymmGroup>
 std::pair<double, MPSTensor<Matrix, SymmGroup> >
 solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
                    MPSTensor<Matrix, SymmGroup> const & initial,
-                   DmrgParameters & params)
+                   BaseParameters & params)
 {
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     

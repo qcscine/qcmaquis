@@ -70,7 +70,7 @@ template<class Matrix, class SymmGroup>
 std::pair<double, MPSTensor<Matrix, SymmGroup> >
 solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
                MPSTensor<Matrix, SymmGroup> initial,
-               DmrgParameters parms)
+               BaseParameters parms)
 {
     ArpackppMatrix<Matrix, SymmGroup> mtx(sp);
     
