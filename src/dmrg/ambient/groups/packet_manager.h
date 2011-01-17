@@ -11,13 +11,11 @@ namespace ambient{ namespace groups{
     class packet_manager
     {
     private: 
-        packet_manager();                                    // constructor is private
         packet_manager(packet_manager const&){};             // copy constructor is private
         packet_manager& operator=(packet_manager const&){};  // assignment operator is private
-        MPI_Comm comm;
+        MPI_Comm* comm;
     public:
-        static packet_manager& instance();
-        void set_comm(MPI_Comm comm);
+        packet_manager(MPI_Comm* comm);
         void send(packet* pack, int dest);
         void recv(const packet_t& type, void* memory);
     };

@@ -4,7 +4,7 @@
 #include "ambient/packets/auxiliary.h"
 #include "ambient/groups/packet_manager.h"
 #include "ambient/groups/group.h"
-#include "ambient/groups/auxiliary.h"
+#include "ambient/auxiliary.h"
 
 #define AMBIENT_MASTER_RANK 0
 
@@ -61,17 +61,16 @@ namespace ambient
 // initializing our data-types:
 
         printf("Initializing packet system...\n");
-        packet_manager::instance().set_comm(MPI_COMM_WORLD);
-        packet* init_packet;
         change_t<control_packet_t>(4,3);
         commit_t<control_packet_t>();
         commit_t<data_packet_t>();
+        packet* init_packet;
         void* buffer = alloc_t<control_packet_t>();
         if(this->rank("nest") == AMBIENT_MASTER_RANK){
             init_packet = pack<control_packet_t>(buffer, 1, "P", this->rank("nest"), "DATA", 1);
-            send(init_packet);
+            send(init_packet, this->nest);
         }else{
-            init_packet = recv<control_packet_t>(buffer);
+            init_packet = recv<control_packet_t>(this->nest, buffer);
             printf("Init packet contents: %c %d %c %d %s %d\n", init_packet->get<char>(0), 
                                                                 init_packet->get<int>(1), 
                                                                 init_packet->get<char>(2),

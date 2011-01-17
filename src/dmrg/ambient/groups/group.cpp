@@ -13,6 +13,7 @@ namespace ambient{ namespace groups {
         multirank::instance().set( this, this->rank );
         this->name = name;
         this->master = master;
+        this->manager = new packet_manager(&this->mpi_comm);
         group_map(name, this);
     }
 
@@ -24,6 +25,7 @@ namespace ambient{ namespace groups {
         this->name = name;
         this->master = master;
         this->parent->children.insert(this);
+        this->manager = new packet_manager(&this->mpi_comm);
         group_map(name, this);
     }
 
