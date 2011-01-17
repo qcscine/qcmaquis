@@ -3,6 +3,8 @@
 #include <mpi.h>
 #include <set>
 
+#include "ambient/groups/packet_manager.h"
+
 namespace ambient{ namespace groups{
 
     class group
@@ -27,6 +29,7 @@ namespace ambient{ namespace groups{
 
         const char* name;
         int master;              // master process in this group
+        packet_manager* manager; // group packet manager
         group* parent;           // parent group of processes
         std::set<group*> children;
         MPI_Comm mpi_comm;
