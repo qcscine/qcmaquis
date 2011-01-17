@@ -1,19 +1,26 @@
 #include "ambient/ambient.h"
 #include "ambient/packets/types.h"
 #include "ambient/packets/packet.h"
-#include "ambient/packets/packet_manager.h"
 #include "ambient/packets/auxiliary.h"
+#include "ambient/groups/packet_manager.h"
+#include "ambient/groups/group.h"
+#include "ambient/groups/auxiliary.h"
+
+#define AMBIENT_MASTER_RANK 0
 
 using namespace ambient::packets; 
+using namespace ambient::groups; 
 
 namespace ambient
 {
-    scheduler* scheduler::instance(){
+    scheduler& scheduler::instance(){
         static scheduler* singleton = NULL;
         if(!singleton) singleton = new scheduler();
-        return singleton;
+        return *singleton;
     }
-    scheduler::scheduler(){};
+    scheduler::scheduler():rank(multirank::instance())
+    {
+    }
 
     scheduler & scheduler::operator>>(dim3 dim_distr) 
     {
@@ -45,24 +52,24 @@ namespace ambient
             this->comm = MPI_COMM_WORLD;
         }
         MPI_Comm_size(this->comm, &this->size);
-        MPI_Comm_rank(this->comm, &this->rank);
-    
-        if(this->rank == 0) this->mode = AMBIENT_MASTER;
+
+        this->nest = new group("nest", AMBIENT_MASTER_RANK, this->comm);
+        if(this->rank("nest") == AMBIENT_MASTER_RANK) this->mode = AMBIENT_MASTER;
         else this->mode = GROUP_SLAVE;
 
 
 // initializing our data-types:
 
-        print<0>("Initializing packet system...\n");
-        packet_manager::instance()->set_comm(MPI_COMM_WORLD);
+        printf("Initializing packet system...\n");
+        packet_manager::instance().set_comm(MPI_COMM_WORLD);
         packet* init_packet;
         change_t<control_packet_t>(4,3);
         commit_t<control_packet_t>();
         commit_t<data_packet_t>();
         void* buffer = alloc_t<control_packet_t>();
-        if(rank == 0){
-            init_packet = pack<control_packet_t>(buffer, 1, "P", this->rank, "DATA", 1);
-            init_packet->send();
+        if(this->rank("nest") == AMBIENT_MASTER_RANK){
+            init_packet = pack<control_packet_t>(buffer, 1, "P", this->rank("nest"), "DATA", 1);
+            send(init_packet);
         }else{
             init_packet = recv<control_packet_t>(buffer);
             printf("Init packet contents: %c %d %c %d %s %d\n", init_packet->get<char>(0), 
@@ -73,7 +80,8 @@ namespace ambient
                                                                 init_packet->get<int>(5));
         }
         MPI_Barrier(this->comm);
-        print("initialized\n");
+
+        printf("initialized\n");
 
 
 // AUTO TUNING SHOULD START BELOW...

@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <mpi.h>
 
+#include "ambient/groups/group.h"
+#include "ambient/groups/multirank.h"
+
 namespace ambient
 {
     class dim3
@@ -23,26 +26,23 @@ namespace ambient
     class scheduler
     {
     private: 
-        scheduler();                               // constructor is private
-        scheduler(scheduler const&){};             // copy constructor is private
-        scheduler& operator=(scheduler const&){};  // assignment operator is private
+        scheduler();                             // constructor is private
+        scheduler(scheduler const&);             // copy constructor is private
+        scheduler& operator=(scheduler const&);  // assignment operator is private
     public:
-        static scheduler* instance();
+        static scheduler& instance();
 
     public:
         scheduler & operator>>(dim3 dim_distr);
         scheduler & operator,(dim3 dim); 
         void initialize(MPI_Comm comm = NULL);
-        template<int R> void print(const char* str){ 
-            if(this->rank == R) printf("%s", str);
-        }
-        void print(const char* str){ printf("R%d: %s", this->rank, str); }
         void finalize();
 
     private:
         MPI_Comm comm;
         int size;
-        int rank;
+        groups::group* nest;
+        groups::multirank& rank;
 
         enum { AMBIENT_MASTER,
                GROUP_MASTER,

@@ -1,5 +1,5 @@
-#ifndef AMBIENT_TYPES_H
-#define AMBIENT_TYPES_H
+#ifndef AMBIENT_PACKETS_TYPES_H
+#define AMBIENT_PACKETS_TYPES_H
 
 #include "ambient/packets/packet_t.h"
 
