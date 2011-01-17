@@ -1,5 +1,5 @@
-#ifndef AMBIENT_PACKET_TYPE_H
-#define AMBIENT_PACKET_TYPE_H
+#ifndef AMBIENT_PACKETS_PACKET_TYPE_H
+#define AMBIENT_PACKETS_PACKET_TYPE_H
 #include <memory.h>
 #include <mpi.h>
 
@@ -20,24 +20,24 @@ namespace ambient{ namespace packets{
         packet_t& operator=(packet_t const&){};  // assignment operator is private
     public:
         template<typename T>
-        static T* get(){
+        static T& get(){
             static T* singleton = NULL;
             if(!singleton){ 
                 singleton = new T(); 
                 type_map(singleton->t_code, (packet_t*)singleton);
             }
-            return singleton;
+            return *singleton;
         }
-        static packet_t* type_map(char t_code, packet_t* type = NULL){
-            static std::map<char,packet_t*> map;
-            if(type != NULL) map.insert(std::pair<char,packet_t*>(t_code,type));
-            else return map.find(t_code)->second;
+        static packet_t& type_map(char t_code, const packet_t* type = NULL){
+            static std::map<char,const packet_t*> map;
+            if(type != NULL) map.insert(std::pair<char,const packet_t*>(t_code,type));
+            else return const_cast<packet_t&>(*(map.find(t_code)->second));
         }
         void change_field_size(int field, int size);
-        void fill_packet(void* memory, const char type, va_list& fields);
+        void fill_packet(void* memory, char type, va_list& fields) const;
         void commit();
     protected:
-        void construct(char code, int count, int* sizes, MPI_Datatype* types);
+        void construct(char code, int count, const int* sizes, const MPI_Datatype* types);
     public:
         char t_code;
         int  t_size;                                   // memory size of the type
