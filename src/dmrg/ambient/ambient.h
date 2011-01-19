@@ -36,6 +36,7 @@ namespace ambient
         scheduler & operator>>(dim3 dim_distr);
         scheduler & operator,(dim3 dim); 
         void initialize(MPI_Comm comm = NULL);
+        void regression_test();
         void finalize();
 
     private:
