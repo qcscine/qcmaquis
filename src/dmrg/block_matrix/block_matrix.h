@@ -69,10 +69,14 @@ public:
     template<class Generator>
     void generate(Generator g);
 
-    void match_and_add_block(Matrix const &, charge, charge);     
+    void match_and_add_block(Matrix const &, charge, charge);
+    
+    void reserve(charge, charge, std::size_t, std::size_t);
+    void allocate_blocks();
     
     void resize_block(charge r, charge c,
-                      size_type new_r, size_type new_c);
+                      size_type new_r, size_type new_c,
+                      bool pretend = false);
     
     friend void swap(block_matrix & x, block_matrix & y)
     {
