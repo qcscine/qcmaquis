@@ -35,6 +35,9 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & V,
          block_matrix<DiagMatrix, SymmGroup> & S)
 {
+    static Timer timer("block_matrix SVD");
+    timer.begin();
+    
     Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
     for (std::size_t i = 0; i < M.n_blocks(); ++i)
         m[i].second = std::min(r[i].second, c[i].second);
@@ -45,6 +48,8 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     
     for (std::size_t k = 0; k < M.n_blocks(); ++k)
         svd(M[k], U[k], V[k], S[k]);
+    
+    timer.end();
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>

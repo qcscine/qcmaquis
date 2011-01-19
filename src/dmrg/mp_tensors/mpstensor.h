@@ -72,13 +72,6 @@ public:
     MPSTensor const & operator+=(MPSTensor const &);
     MPSTensor const & operator-=(MPSTensor const &);
     
-private:
-    Index<SymmGroup> phys_i, left_i, right_i;
-    mutable block_matrix<Matrix, SymmGroup> data_;
-    mutable MPSStorageLayout cur_storage;
-    Indicator cur_normalization;
-    
-public:
     void make_left_paired() const;
     void make_right_paired() const;
     
@@ -87,6 +80,17 @@ public:
     {
         a.swap_with(b);
     }
+    
+#ifdef HAVE_ALPS_HDF5
+    void serialize(alps::hdf5::iarchive & ar);
+    void serialize(alps::hdf5::oarchive & ar) const;
+#endif
+    
+private:
+    Index<SymmGroup> phys_i, left_i, right_i;
+    mutable block_matrix<Matrix, SymmGroup> data_;
+    mutable MPSStorageLayout cur_storage;
+    Indicator cur_normalization;
 };
 
 // this is also required by IETL

@@ -357,19 +357,28 @@ struct contraction {
                              Boundary<Matrix, SymmGroup> const & left,
                              MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        static Timer
+        reshape_timer("Reshape in lbtm"),
+        loop_timer("Prod with MPO in lbtm"),
+        loop1_timer("Prod of left and MPS in lbtm");
+        
         mps.make_right_paired();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         
+        loop1_timer.begin();
         size_t loop_max = left.aux_dim();
 #pragma omp parallel for
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(transpose(left.data_[b]), mps.data_, t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
+            reshape_timer.begin();
             reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
                                           t[b], tmp);
+            reshape_timer.end();
             swap(t[b], tmp);
         }
+        loop1_timer.end();
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = mps.col_dim();
         
@@ -379,6 +388,7 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
+        loop_timer.begin();
         for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
             loop_max = mpo.col_dim();
 #pragma omp parallel for
@@ -438,6 +448,7 @@ struct contraction {
                             }
             }
         }
+        loop_timer.end();
         
         return ret;
     }
@@ -449,7 +460,11 @@ struct contraction {
                 Boundary<Matrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        static Timer lbtm("lbtm in site_hamil2"), loop("loop in site_hamil2");
+        
+        lbtm.begin();
         Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
+        lbtm.end();
         
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
@@ -460,6 +475,7 @@ struct contraction {
         
         size_t loop_max = mpo.col_dim();
         
+        loop.begin();
 #pragma omp parallel for
         for (size_t b = 0; b < loop_max; ++b)
         {
@@ -472,6 +488,7 @@ struct contraction {
                                               oblock.right_basis()[k].first);
             
         }
+        loop.end();
         
         return ret;
     }

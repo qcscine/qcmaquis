@@ -14,6 +14,30 @@
 #include <mp_tensors/wrappers.h>
 #endif
 
+
+#ifdef HAVE_ALPS_HDF5
+template<class A, class B>
+alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
+                                 std::string const & p,
+                                 std::pair<A, B> const & v)
+{
+    ar << alps::make_pvp(p + std::string("/first"), v.first);
+    ar << alps::make_pvp(p + std::string("/second"), v.second);
+    return ar;
+}
+
+template<class A, class B>
+alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
+                                  std::string const & p,
+                                  std::pair<A, B> & v)
+{
+    ar >> alps::make_pvp(p + std::string("/first"), v.first);
+    ar >> alps::make_pvp(p + std::string("/second"), v.second);
+    return ar;
+}
+
+#endif
+
 namespace index_detail
 {
     template<class SymmGroup>
@@ -152,6 +176,21 @@ public:
         return this->insert(p.data_);
     }
 #endif /* PYTHON_EXPORTS */
+    
+#ifdef HAVE_ALPS_HDF5
+    void serialize(alps::hdf5::iarchive & ar)
+    {
+        typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
+        ar >> alps::make_pvp("Index",
+                             static_cast<my_type&>(*this));
+    }
+    void serialize(alps::hdf5::oarchive & ar) const
+    {
+        typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
+        ar << alps::make_pvp("Index",
+                             static_cast<my_type const &>(*this));
+    }
+#endif
 };
 
 template<class SymmGroup>

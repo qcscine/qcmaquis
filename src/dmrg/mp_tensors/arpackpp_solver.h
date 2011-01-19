@@ -55,7 +55,10 @@ public:
         copy_ptr_to_mps(v, vec);
 //        vec2 = contraction::site_hamil(vec, prob.left, prob.right, prob.mpo);
 //        cout << "vec2 " << vec2 << endl;
+        static Timer timer("site_hamil2 from ARPACK");
+        timer.begin();
         vec3 = contraction::site_hamil2(vec, prob.left, prob.right, prob.mpo);
+        timer.end();
 //        cout << "vec3 " << vec3 << endl;
         copy_mps_to_ptr(vec3, w);
 //        cout << endl << endl;
@@ -77,7 +80,9 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
     std::vector<double> initial_ptr(mtx.getN());
     copy_mps_to_ptr(initial, &initial_ptr[0]);
    
-    int ncv = std::min(mtx.getN(), parms.get<int>("arpack_ncv")); 
+    int ncv = std::min(mtx.getN(), parms.get<int>("arpack_ncv"));
+    static Timer timer("All of ARPACK");
+    timer.begin();
     arpack::ARSymStdEig<double, ArpackppMatrix<Matrix, SymmGroup> >
     solver(mtx.getN(), 1,
            &mtx, &ArpackppMatrix<Matrix, SymmGroup>::MultMv, "SA",
@@ -111,6 +116,8 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
         cout << "Error in ARPACK." << endl;
         return std::make_pair(0, initial);
     }
+    
+    timer.end();
 }
 
 #endif

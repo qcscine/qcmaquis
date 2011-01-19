@@ -37,6 +37,11 @@ public:
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
     
+#ifdef HAVE_ALPS_HDF5
+    void serialize(alps::hdf5::iarchive & ar);
+    void serialize(alps::hdf5::oarchive & ar) const;
+#endif
+    
 private:
     typename Matrix::value_type canonize_left();
     typename Matrix::value_type canonize_right();

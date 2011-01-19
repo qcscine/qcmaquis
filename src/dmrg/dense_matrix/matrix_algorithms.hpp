@@ -9,11 +9,16 @@
 #include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/diagonal_matrix.h"
 
+#include "utils/timings.h"
+
 namespace blas
 {
     template <typename Matrix>
     Matrix transpose(Matrix const& m) 
     {
+        static Timer timer("transpose");
+        timer.begin();
+        
         BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
         // TODO: perhaps this could return a proxy object
         Matrix tmp(num_columns(m), num_rows(m));
@@ -22,6 +27,9 @@ namespace blas
                 tmp(j,i) = m(i,j);
             }
         }
+        
+        timer.end();
+        
         return tmp;
     }
     
