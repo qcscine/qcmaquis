@@ -97,6 +97,11 @@ public:
         return data_[rows_.position(r)];
     }
     
+#ifdef HAVE_ALPS_HDF5
+    void serialize(alps::hdf5::iarchive & ar);
+    void serialize(alps::hdf5::oarchive & ar) const;
+#endif
+    
 private:
     std::vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;

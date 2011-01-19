@@ -3,6 +3,8 @@
 
 #include "dense_matrix/detail/blasmacros.h"
 
+#include "utils/timings.h"
+
 namespace blas {
     template <typename T, typename MemoryBlock>
         class dense_matrix;
@@ -12,13 +14,14 @@ namespace blas {
 // dense matrix blas function hooks
 //
 namespace blas {
-
 #define MATRIX_MATRIX_MULTIPLY(T) \
     template <typename MemoryBlock> \
     const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
     { \
         assert( lhs.num_columns() == rhs.num_rows() ); \
         dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_columns()); \
+        static Timer timer("GEMM"); \
+        timer.begin(); \
         boost::numeric::bindings::blas::gemm \
             ( \
                typename dense_matrix<T,MemoryBlock>::value_type(1), \
@@ -27,6 +30,7 @@ namespace blas {
                typename dense_matrix<T,MemoryBlock>::value_type(0), \
                result \
             ); \
+        timer.end(); \
         return result; \
     }
 IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)

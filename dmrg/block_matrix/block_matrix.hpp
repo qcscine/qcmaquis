@@ -103,7 +103,11 @@ Matrix const & block_matrix<Matrix, SymmGroup>::operator[](size_type c) const { 
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 {
-    return rows_.has(r) && cols_.has(c) && rows_.position(r) == cols_.position(c);
+    static Timer hb("has_block");
+    hb.begin();
+    bool ret = rows_.has(r) && cols_.has(c) && rows_.position(r) == cols_.position(c);
+    hb.end();
+    return ret;
 }
 
 template<class Matrix, class SymmGroup>
@@ -209,6 +213,9 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
 {
+    
+    static Timer timer("match_and_add_block");
+    timer.begin();
     if (this->has_block(c1, c2))
     {
         if (num_rows(mtx) == num_rows((*this)(c1, c2)) &&
@@ -234,6 +241,7 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
         }
     } else
         insert_block(mtx, c1, c2);
+    timer.end();
 }
 
 template<class Matrix, class SymmGroup>
@@ -259,6 +267,25 @@ void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
     cols_.erase(cols_.begin() + which);
     data_.erase(data_.begin() + which);
 }
+#ifdef HAVE_ALPS_HDF5
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
+{
+    ar >> alps::make_pvp("rows_", rows_);
+    ar >> alps::make_pvp("cols_", cols_);
+    ar >> alps::make_pvp("data_", data_);
+}
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::serialize(alps::hdf5::oarchive & ar) const
+{
+    ar << alps::make_pvp("rows_", rows_);
+    ar << alps::make_pvp("cols_", cols_);
+    ar << alps::make_pvp("data_", data_);
+}
+
+#endif
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,

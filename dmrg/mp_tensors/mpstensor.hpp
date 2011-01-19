@@ -300,3 +300,28 @@ void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
     swap(this->cur_normalization, b.cur_normalization);
 }
 
+#ifdef HAVE_ALPS_HDF5
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
+{
+    make_left_paired();
+    ar >> alps::make_pvp("phys_i", phys_i);
+    ar >> alps::make_pvp("left_i", left_i);
+    ar >> alps::make_pvp("right_i", right_i);
+    ar >> alps::make_pvp("data_", data_);
+    cur_normalization = Unorm;
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::serialize(alps::hdf5::oarchive & ar) const
+{
+    make_left_paired();
+    ar << alps::make_pvp("phys_i", phys_i);
+    ar << alps::make_pvp("left_i", left_i);
+    ar << alps::make_pvp("right_i", right_i);
+    ar << alps::make_pvp("data_", data_);
+}
+
+#endif
+

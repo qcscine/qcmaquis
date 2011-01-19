@@ -197,3 +197,21 @@ MPS<Matrix, SymmGroup>::right_boundary() const
     
     return ret;
 }
+
+#ifdef HAVE_ALPS_HDF5
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
+{
+    ar >> alps::make_pvp("MPS",
+                         static_cast<std::vector<MPSTensor<Matrix, SymmGroup> >&>(*this));
+}
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::serialize(alps::hdf5::oarchive & ar) const
+{
+    ar << alps::make_pvp("MPS",
+                         static_cast<std::vector<MPSTensor<Matrix, SymmGroup> > const &>(*this));
+}
+
+#endif

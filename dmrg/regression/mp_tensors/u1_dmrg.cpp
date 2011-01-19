@@ -31,6 +31,7 @@ typedef blas::dense_matrix<double> Matrix;
 #include "mpos/hamiltonians.h"
 
 #include "utils/DmrgParameters.h"
+#include "utils/timings.h"
 
 typedef U1 grp;
 
@@ -72,6 +73,9 @@ mpos::Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
 
 int main(int argc, char ** argv)
 {
+    Timer everything("everything");
+    everything.begin();
+    
     if (argc != 4)
     {
         cout << "Usage: <parms> <model_parms> <resultfile>" << endl;
@@ -153,4 +157,6 @@ int main(int argc, char ** argv)
     h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
     
     measure(mps, *adj, *H, model, h5ar);
+    
+    everything.end();
 }
