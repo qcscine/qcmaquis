@@ -1,16 +1,35 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
 
+/*
 unsigned long long getcpuclocks() {
     unsigned long long clk;
-    __asm { rdtsc };
-    __asm { shl rdx,32 };
+    __asm__ ("rdtsc");
+    __asm__("shl %rdx,32");
     __asm { add rax,rdx };
     __asm { mov clk,rax };
     return clk;
+}*/
+
+#if defined(__i386__)
+ 
+unsigned long getcpuclocks()
+{
+ unsigned long tsc;
+ asm(".byte 0x0f, 0x31" : "=A" (x));
+ return( tsc );
+}
+ 
+#elif (defined(__amd64__) || defined(__x86_64__))
+ 
+unsigned long getcpuclocks()
+{
+ unsigned long lo, hi;
+ asm( "rdtsc" : "=a" (lo), "=d" (hi) );
+ return( lo | (hi << 32) );
 }
 
-#define CPU_FREQ 2.2e9
+#endif
 
 class Timer
 {
