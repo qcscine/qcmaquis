@@ -42,7 +42,7 @@ namespace ambient
     private:
         MPI_Comm comm;
         int size;
-        groups::group* nest;
+        groups::group* ambient;
         groups::multirank& rank;
 
         enum { AMBIENT_MASTER,

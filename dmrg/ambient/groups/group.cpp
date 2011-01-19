@@ -121,7 +121,7 @@ namespace ambient{ namespace groups {
 
     void group::commit(){
         if(this->parent == NULL){ 
-            printf("Warning: attempting to commit nest group.\n");
+            printf("Warning: attempting to commit ambient group.\n");
             return;
         }
         MPI_Group_incl(this->parent->mpi_group, this->count, this->members, &this->mpi_group);
