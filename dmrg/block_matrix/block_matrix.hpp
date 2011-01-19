@@ -238,9 +238,11 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
-                                                   size_type new_r, size_type new_c)
+                                                   size_type new_r, size_type new_c,
+                                                   bool pretend)
 {
-    resize((*this)(r,c), new_r, new_c);
+    if (!pretend)
+        resize((*this)(r,c), new_r, new_c);
     rows_[rows_.position(r)].second = new_r;
     cols_[cols_.position(c)].second = new_c;
 }
@@ -256,4 +258,33 @@ void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
     rows_.erase(rows_.begin() + which);
     cols_.erase(cols_.begin() + which);
     data_.erase(data_.begin() + which);
+}
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
+                                              std::size_t r, std::size_t c)
+{
+    if (this->has_block(c1, c2))
+    {
+        std::size_t maxrows = std::max(num_rows((*this)(c1, c2)), r);
+        std::size_t maxcols = std::max(num_columns((*this)(c1, c2)), c);
+    
+        rows_[rows_.position(c1)].second = maxrows;
+        cols_[cols_.position(c2)].second = maxcols;
+    } else {
+        std::pair<charge, size_type>
+        p1 = std::make_pair(c1, r),
+        p2 = std::make_pair(c2, c);
+        
+        rows_.push_back(p1);
+        cols_.push_back(p2);
+        data_.push_back(Matrix());
+    }
+}
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::allocate_blocks()
+{
+    for (std::size_t k = 0; k < n_blocks(); ++k)
+        resize(data_[k], rows_[k].second, cols_[k].second);
 }
