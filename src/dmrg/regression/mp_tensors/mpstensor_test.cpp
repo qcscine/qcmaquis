@@ -4,14 +4,14 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-typedef blas::dense_matrix<double> Matrix;
+#include "p_dense_matrix/p_dense_matrix.h"
+#include "p_dense_matrix/matrix_interface.hpp"
+#include "p_dense_matrix/resizable_matrix_interface.hpp"
+#include "p_dense_matrix/dense_matrix_algorithms.h"
+#include "p_dense_matrix/matrix_algorithms.hpp"
+typedef blas::p_dense_matrix<double> Matrix;
 
-#include "block_matrix/indexing.h"
+#include "p_block_matrix/indexing.h"
 #include "mp_tensors/mpstensor.h"
 #include "mp_tensors/mpotensor.h"
 #include "mp_tensors/contractions.h"
@@ -35,20 +35,20 @@ void ng()
     cout << "Norm after normalization: " << mps.scalar_norm() << endl;
     
     MPSTensor<Matrix, grp> mps2 = mps;
-    block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
+    p_block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
     left = contraction::overlap_left_step(mps, mps2, left);
     cout << left << endl;
     
     mps.normalize_right(SVD);
     mps2 = mps;
-    block_matrix<Matrix, grp> right = identity_matrix<Matrix, grp>(mps.row_dim());
+    p_block_matrix<Matrix, grp> right = identity_matrix<Matrix, grp>(mps.row_dim());
     right = contraction::overlap_right_step(mps, mps2, right);
     cout << right << endl;
     
     mps = MPSTensor<Matrix, grp>(physical, aux1, aux1);
     mps2 = MPSTensor<Matrix, grp>(physical, aux2, aux2);
     
-    block_matrix<Matrix, grp> ovlp(aux2, aux1);
+    p_block_matrix<Matrix, grp> ovlp(aux2, aux1);
     contraction::overlap_left_step(mps2, mps, ovlp);
     contraction::overlap_left_step(mps2, mps, ovlp);
     contraction::overlap_right_step(mps2, mps, ovlp);
@@ -87,7 +87,7 @@ void u1()
 //    cout << mps << endl;
     
     MPSTensor<Matrix, grp> mps2 = mps;
-//    block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
+//    p_block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
 //    left = contraction::overlap_left_step(mps, mps2, left);
 //    cout << left << endl;
 //    mps.normalize_right(SVD);
@@ -96,12 +96,12 @@ void u1()
 //    cout << left << endl;
     
     MPOTensor<Matrix, U1> ident(physical, 1, 1);
-    ident(0,0) = block_matrix<Matrix, U1>();
+    ident(0,0) = p_block_matrix<Matrix, U1>();
     ident(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, -1));
     ident(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));
     
     MPOTensor<Matrix, U1> splus(physical, 1, 1);
-    splus(0,0) = block_matrix<Matrix, U1>();
+    splus(0,0) = p_block_matrix<Matrix, U1>();
     splus(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, -1));
     splus(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, 1));
     

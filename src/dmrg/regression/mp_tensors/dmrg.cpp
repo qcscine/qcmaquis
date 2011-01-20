@@ -6,17 +6,17 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/aligned_allocator.h"
-typedef blas::dense_matrix<double> Matrix;
+#include "p_dense_matrix/p_dense_matrix.h"
+#include "p_dense_matrix/matrix_interface.hpp"
+#include "p_dense_matrix/resizable_matrix_interface.hpp"
+#include "p_dense_matrix/dense_matrix_algorithms.h"
+#include "p_dense_matrix/matrix_algorithms.hpp"
+#include "p_dense_matrix/aligned_allocator.h"
+typedef blas::p_dense_matrix<double> Matrix;
 //typedef aligned_allocator<double, 16, true> alloc_t;
-//typedef blas::dense_matrix<double, std::vector<double, alloc_t> > Matrix;
+//typedef blas::p_dense_matrix<double, std::vector<double, alloc_t> > Matrix;
 
-#include "block_matrix/indexing.h"
+#include "p_block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
 #include "mp_tensors/contractions.h"

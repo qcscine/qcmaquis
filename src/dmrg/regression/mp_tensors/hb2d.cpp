@@ -6,15 +6,15 @@ using std::cout;
 using std::cout;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/dense_matrix_blas.hpp"
-typedef blas::dense_matrix<double> Matrix;
+#include "p_dense_matrix/p_dense_matrix.h"
+#include "p_dense_matrix/matrix_interface.hpp"
+#include "p_dense_matrix/resizable_matrix_interface.hpp"
+#include "p_dense_matrix/dense_matrix_algorithms.h"
+#include "p_dense_matrix/matrix_algorithms.hpp"
+#include "p_dense_matrix/p_dense_matrix_blas.hpp"
+typedef blas::p_dense_matrix<double> Matrix;
 
-#include "block_matrix/indexing.h"
+#include "p_block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
 #include "mp_tensors/contractions.h"
