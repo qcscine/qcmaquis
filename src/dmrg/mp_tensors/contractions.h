@@ -7,6 +7,8 @@
 #include "mp_tensors/reshapes.h"
 #include "block_matrix/indexing.h"
 
+#include "utils/iterator_blas1.h"
+
 struct contraction {
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
@@ -442,10 +444,14 @@ struct contraction {
                                             for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                                 typename Matrix::value_type wblock_t = wblock(ss1, ss2);
                                                 for (size_t rr = 0; rr < right_i[r].second; ++rr) {
-                                                    for (size_t ll = 0; ll < left_i[l].second; ++ll) {
-                                                        oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
-                                                        iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
-                                                    }
+                                                    iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
+                                                                  &iblock(in_left_offset + ss1*left_i[l].second + left_i[l].second, rr),
+                                                                  &oblock(out_left_offset + ss2*left_i[l].second, rr),
+                                                                  wblock_t);
+//                                                    for (size_t ll = 0; ll < left_i[l].second; ++ll) {
+//                                                        oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
+//                                                        iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
+//                                                    }
                                                 }
                                             }
                                     }
