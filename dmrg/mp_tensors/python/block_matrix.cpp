@@ -6,7 +6,7 @@
 #include "block_matrix/symmetry.h"
 #include "block_matrix/block_matrix.h"
 
-#include <dense_matrix/dense_matrix.h>
+#include <p_dense_matrix/p_dense_matrix.h>
 
 #include <boost/python.hpp>
 
@@ -58,7 +58,7 @@ class_<Index<sgrp> >(name) \
 class_<block_matrix<matrix, sgrp> >(name) \
 .def("left_basis", &block_matrix<matrix, sgrp>::left_basis) \
 .def("right_basis", &block_matrix<matrix, sgrp>::right_basis)
-    EXPORT_BLOCK_MATRIX(blas::dense_matrix<double>, NullGroup, "NG_d_matrix");
-    EXPORT_BLOCK_MATRIX(blas::dense_matrix<double>, Ztwo, "Z2_d_matrix");
+    EXPORT_BLOCK_MATRIX(blas::p_dense_matrix<double>, NullGroup, "NG_d_matrix");
+    EXPORT_BLOCK_MATRIX(blas::p_dense_matrix<double>, Ztwo, "Z2_d_matrix");
 #undef EXPORT_BLOCK_MATRIX
 }
