@@ -7,11 +7,10 @@
 
 #include "block_matrix/indexing.h"
 #include "block_matrix/symmetry.h"
-#include "ambient/interfaces/i_block_matrix.h"
 
 
 template<class Matrix, class SymmGroup>
-class block_matrix : public i_block_matrix
+class block_matrix
 {
 private:
     typedef typename SymmGroup::charge charge;
@@ -20,13 +19,6 @@ public:
     typedef typename Matrix::value_type value_type;
     
     block_matrix(Index<SymmGroup> rows, Index<SymmGroup> cols);
-
-    /**
-      * The i_block_matrix implementation:
-      * @returns memory pointer to the actual matrix memory
-      *
-      */
-    void* memory_pointer();
 
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
