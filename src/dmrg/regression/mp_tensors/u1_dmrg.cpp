@@ -11,6 +11,8 @@ using std::endl;
 
 #ifdef MPI_PARALLEL
 
+#include "ambient/ambient.h"
+
 #include "p_dense_matrix/p_dense_matrix.h"
 #include "p_dense_matrix/matrix_interface.hpp"
 #include "p_dense_matrix/resizable_matrix_interface.hpp"
@@ -97,7 +99,11 @@ int main(int argc, char ** argv)
         cout << "Usage: <parms> <model_parms> <resultfile>" << endl;
         exit(1);
     }
-    
+ 
+    #ifdef MPI_PARALLEL
+    ambient::scheduler::instance().initialize();
+    #endif
+
     cout.precision(10);
     
     std::ifstream param_file(argv[1]);
@@ -173,6 +179,9 @@ int main(int argc, char ** argv)
     h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
     
     measure(mps, *adj, *H, model, h5ar);
+    #ifdef MPI_PARALLEL
+    ambient::scheduler::instance().finalize();
+    #endif
     
     everything.end();
 }
