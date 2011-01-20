@@ -3,7 +3,7 @@
 
 #include "p_dense_matrix/strided_iterator.hpp"
 #include "p_dense_matrix/matrix_element_iterator.hpp"
-#include "p_dense_matrix/vector.hpp"
+#include "dense_matrix/vector.hpp"
 #include "p_dense_matrix/detail/dense_matrix_adaptor.hpp"
 #include "ambient/interfaces/i_dense_matrix.h"
 
