@@ -124,7 +124,7 @@ int main(int argc, char ** argv)
     
     mpos::MPOMaker<Matrix, grp> mpom(*adj, *H);
     mpom.add_bond_ops();
-    H->push_extra_terms(mpom);
+    H->push_extra_terms(mpom, *adj);
     
     int total_charge = model.get<int>("u1_total_charge");
     MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge);

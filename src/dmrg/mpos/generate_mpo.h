@@ -1,7 +1,7 @@
 #ifndef GENERATE_MPO_H
 #define GENERATE_MPO_H
 
-#include "b_adjancency.h"
+#include "adjancency.h"
 #include "mp_tensors/mpo.h"
 
 #include "block_matrix/block_matrix.h"
@@ -97,7 +97,7 @@ namespace mpos {
         void add_bond_ops()
         {
             for (size_t p = 0; p < adj.size(); ++p) {
-                vector<size_t> neighs = adj.forward(p);
+                vector<size_t> neighs = adj[p];
                 for (vector<size_t>::iterator neigh = neighs.begin(); neigh != neighs.end(); ++neigh)
                     for (int i = 0; i < H.num_2site_ops(); ++i)
                     {

@@ -45,7 +45,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     
     std::size_t loop_max = M.n_blocks();
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
     for (std::size_t k = 0; k < loop_max; ++k)
         svd(M[k], U[k], V[k], S[k]);
     
