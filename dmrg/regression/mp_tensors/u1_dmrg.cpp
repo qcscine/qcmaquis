@@ -7,6 +7,8 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+//#define MPI_PARALLEL
+
 #ifdef MPI_PARALLEL
 
 #include "p_dense_matrix/p_dense_matrix.h"
