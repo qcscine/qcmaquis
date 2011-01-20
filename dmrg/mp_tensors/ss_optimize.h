@@ -109,7 +109,7 @@ public:
                                        site, alpha, cutoff, Mmax);
                 }
                 
-                p_block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
+                block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
                 if (site < L-1)
                     mps[site+1].multiply_from_left(t);
                 
@@ -117,7 +117,7 @@ public:
                 left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,
                                                                    left_[site], mpo[site]);
             } else if (lr == -1) {
-                p_block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
+                block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
                 if (site > 0)
                     mps[site-1].multiply_from_right(t);
                 

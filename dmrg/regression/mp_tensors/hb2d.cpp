@@ -14,7 +14,7 @@ using std::endl;
 #include "p_dense_matrix/p_dense_matrix_blas.hpp"
 typedef blas::p_dense_matrix<double> Matrix;
 
-#include "p_block_matrix/indexing.h"
+#include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
 #include "mp_tensors/contractions.h"

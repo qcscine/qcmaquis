@@ -1,7 +1,7 @@
 #ifndef HAMILTONIANS_H
 #define HAMILTONIANS_H
 
-#include "p_block_matrix/p_block_matrix.h"
+#include "block_matrix/block_matrix.h"
 #include "mpos/generate_mpo.h"
 
 #include <vector>
@@ -18,7 +18,7 @@ namespace mpos {
         
         Heisenberg(double Jxy_, double Jz_) : Jxy(Jxy_), Jz(Jz_)
         {
-            p_block_matrix<Matrix, U1> ident, splus, sminus, sz;
+            block_matrix<Matrix, U1> ident, splus, sminus, sz;
             
             ident.insert_block(Matrix(1, 1, 1), -1, -1);
             ident.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -68,7 +68,7 @@ namespace mpos {
     public:
         HCB()
         {   
-            p_block_matrix<Matrix, U1> create, destroy, ident, count;
+            block_matrix<Matrix, U1> create, destroy, ident, count;
             
             ident.insert_block(Matrix(1, 1, 1), 0, 0);
             ident.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -118,7 +118,7 @@ namespace mpos {
     public:
         FreeFermions()
         {   
-            p_block_matrix<Matrix, U1> create, destroy;
+            block_matrix<Matrix, U1> create, destroy;
             create.insert_block(Matrix(1, 1, 1), 0, 1);
             destroy.insert_block(Matrix(1, 1, 1), 1, 0);
             
@@ -132,7 +132,7 @@ namespace mpos {
         
         op_t get_identity()
         { 
-            p_block_matrix<Matrix, U1> ident;
+            block_matrix<Matrix, U1> ident;
             
             ident.insert_block(Matrix(1, 1, 1), 0, 0);
             ident.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -142,7 +142,7 @@ namespace mpos {
         
         op_t get_free()
         {
-            p_block_matrix<Matrix, U1> sign;
+            block_matrix<Matrix, U1> sign;
             
             sign.insert_block(Matrix(1, 1, 1), 0, 0);
             sign.insert_block(Matrix(1, 1, -1), 1, 1);
@@ -178,7 +178,7 @@ namespace mpos {
         
         Spin1BlBq(double Jbl_, double Jbq_, double h0_) : Jbl(Jbl_), Jbq(Jbq_), h0(h0_)
         {   
-            p_block_matrix<Matrix, U1> ident, splus, sminus, sz, spp, smm, spm, smp, szz, szp, spz, szm, smz;
+            block_matrix<Matrix, U1> ident, splus, sminus, sz, spp, smm, spm, smp, szz, szp, spz, szm, smz;
             
             ident.insert_block(Matrix(1, 1, 1), -1, -1);
             ident.insert_block(Matrix(1, 1, 1), 0, 0);
@@ -249,7 +249,7 @@ namespace mpos {
         {
             cout << "Adding extra term." << endl;
             std::vector<std::pair<std::size_t, op_t> > terms;
-            p_block_matrix<Matrix, U1> sz, szz;
+            block_matrix<Matrix, U1> sz, szz;
             
             sz.insert_block(Matrix(1, 1, 1), 1, 1);
             sz.insert_block(Matrix(1, 1, 0), 0, 0);

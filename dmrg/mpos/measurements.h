@@ -33,7 +33,7 @@ struct measure_<Matrix, U1>
     {
         std::vector<double> magns;
 
-        p_block_matrix<Matrix, U1> sz;
+        block_matrix<Matrix, U1> sz;
         sz.insert_block(Matrix(1, 1, 1), 1, 1);
         sz.insert_block(Matrix(1, 1, 0), 0, 0);
         sz.insert_block(Matrix(1, 1, -1), -1, -1);
@@ -41,7 +41,7 @@ struct measure_<Matrix, U1>
         for (std::size_t p = 0; p < adj.size(); ++p)
         {
             mpos::MPOMaker<Matrix, U1> mpom(adj, H);
-            std::vector<std::pair<std::size_t, p_block_matrix<Matrix, U1> > > v;
+            std::vector<std::pair<std::size_t, block_matrix<Matrix, U1> > > v;
             v.push_back( std::make_pair( p, sz ) );
             mpom.add_term(v);
             MPO<Matrix, U1> mpo = mpom.create_mpo();

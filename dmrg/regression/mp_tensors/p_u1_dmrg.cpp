@@ -17,7 +17,7 @@ typedef blas::p_dense_matrix<double> Matrix;
 
 #include <alps/hdf5.hpp>
 
-#include "p_block_matrix/indexing.h"
+#include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
 #include "mp_tensors/contractions.h"
