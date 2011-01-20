@@ -4,16 +4,16 @@
 #include "mp_tensors/mpstensor.h"
 #include "mp_tensors/mpotensor.h"
 
-#include "block_matrix/reshapes.h"
-#include "block_matrix/indexing.h"
+#include "p_block_matrix/reshapes.h"
+#include "p_block_matrix/indexing.h"
 
 struct contraction {
     template<class Matrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    static p_block_matrix<Matrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                      block_matrix<Matrix, SymmGroup> const & left,
-                      block_matrix<Matrix, SymmGroup> * localop = NULL)
+                      p_block_matrix<Matrix, SymmGroup> const & left,
+                      p_block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
@@ -24,7 +24,7 @@ struct contraction {
         bra_tensor.make_left_paired();
         ket_tensor.make_right_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(bra_tensor.data_), t3;
+        p_block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(bra_tensor.data_), t3;
         gemm(left, ket_tensor.data_, t1);
         reshape_right_to_left(ket_tensor.phys_i, left.left_basis(), ket_tensor.right_i,
                               t1, t3);
@@ -34,11 +34,11 @@ struct contraction {
     }
     
     template<class Matrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    static p_block_matrix<Matrix, SymmGroup>
     overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                        MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                       block_matrix<Matrix, SymmGroup> const & right,
-                       block_matrix<Matrix, SymmGroup> * localop = NULL)
+                       p_block_matrix<Matrix, SymmGroup> const & right,
+                       p_block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
@@ -49,7 +49,7 @@ struct contraction {
         bra_tensor.make_right_paired();
         ket_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(transpose(bra_tensor.data_)), t3 = transpose(right);
+        p_block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(transpose(bra_tensor.data_)), t3 = transpose(right);
         gemm(ket_tensor.data_, t3, t1);
         reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(),
                               t1, t3);
@@ -70,8 +70,8 @@ struct contraction {
         bra_tensor.make_right_paired();
         ket_tensor.make_right_paired();
         
-        block_matrix<Matrix, SymmGroup> t1;
-        std::vector<block_matrix<Matrix, SymmGroup> > t2(left.aux_dim());
+        p_block_matrix<Matrix, SymmGroup> t1;
+        std::vector<p_block_matrix<Matrix, SymmGroup> > t2(left.aux_dim());
         
         for (std::size_t b = 0; b < left.aux_dim(); ++b)
         {
@@ -88,8 +88,8 @@ struct contraction {
         for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
-                block_matrix<Matrix, SymmGroup> const & T = t2[b1];
-                block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                p_block_matrix<Matrix, SymmGroup> const & T = t2[b1];
+                p_block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                 
                 if (T.n_blocks() == 0 || W.n_blocks() == 0)
                     continue;
@@ -145,7 +145,7 @@ struct contraction {
                                                 T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size+uu,
                                                                         in_r_offset+ss2*lower_size+ll);
                                 
-                                ret.data_[b2] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
+                                ret.data_[b2] += p_block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
                             }
                     }
             }
@@ -165,8 +165,8 @@ struct contraction {
         bra_tensor.make_left_paired();
         ket_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1;
-        std::vector<block_matrix<Matrix, SymmGroup> > t2(right.aux_dim());
+        p_block_matrix<Matrix, SymmGroup> t1;
+        std::vector<p_block_matrix<Matrix, SymmGroup> > t2(right.aux_dim());
         
         for (std::size_t b = 0; b < right.aux_dim(); ++b)
         {
@@ -183,8 +183,8 @@ struct contraction {
         for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
-                block_matrix<Matrix, SymmGroup> const & T = t2[b2];
-                block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                p_block_matrix<Matrix, SymmGroup> const & T = t2[b2];
+                p_block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                 
                 if (T.n_blocks() == 0 || W.n_blocks() == 0)
                     continue;
@@ -231,7 +231,7 @@ struct contraction {
                                                 T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size+uu,
                                                                         in_r_offset+ss2*lower_size+ll);
                                 
-                                ret.data_[b1] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
+                                ret.data_[b1] += p_block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
                             }
                     }
             }
@@ -248,11 +248,11 @@ struct contraction {
     {
         ket_tensor.make_right_paired();
         
-        std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
+        std::vector<p_block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         
         for (std::size_t b = 0; b < left.aux_dim(); ++b) {
             gemm(transpose(left.data_[b]), ket_tensor.data_, t[b]);
-            block_matrix<Matrix, SymmGroup> tmp;
+            p_block_matrix<Matrix, SymmGroup> tmp;
             reshape_right_to_left<Matrix>(ket_tensor.site_dim(), left.data_[b].right_basis(), ket_tensor.col_dim(),
                                           t[b], tmp);
             swap(t[b], tmp);
@@ -273,10 +273,10 @@ struct contraction {
         for (size_t b1 = 0; b1 < left.aux_dim(); ++b1)
             for (size_t b2 = 0; b2 < right.aux_dim(); ++b2)
             {
-                block_matrix<Matrix, SymmGroup> T;
+                p_block_matrix<Matrix, SymmGroup> T;
                 gemm(t[b1], right.data_[b2], T);
                 
-                block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                p_block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                 
                 if (T.n_blocks() == 0 || W.n_blocks() == 0)
                     continue;
@@ -364,14 +364,14 @@ struct contraction {
         
         mps.make_right_paired();
         
-        std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
+        std::vector<p_block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         
         loop1_timer.begin();
         size_t loop_max = left.aux_dim();
 #pragma omp parallel for
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(transpose(left.data_[b]), mps.data_, t[b]);
-            block_matrix<Matrix, SymmGroup> tmp;
+            p_block_matrix<Matrix, SymmGroup> tmp;
             reshape_timer.begin();
             reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
                                           t[b], tmp);
@@ -394,11 +394,11 @@ struct contraction {
 #pragma omp parallel for
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
-                block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                p_block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                 if (W.n_blocks() == 0)
                     continue;
                 
-                block_matrix<Matrix, SymmGroup> const & T = t[b1];
+                p_block_matrix<Matrix, SymmGroup> const & T = t[b1];
                 
                 ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
                 ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
@@ -479,7 +479,7 @@ struct contraction {
 #pragma omp parallel for
         for (size_t b = 0; b < loop_max; ++b)
         {
-            block_matrix<Matrix, SymmGroup> oblock;
+            p_block_matrix<Matrix, SymmGroup> oblock;
             gemm(left_mpo_mps.data_[b], right.data_[b], oblock);
             for (size_t k = 0; k < oblock.n_blocks(); ++k)
 #pragma omp critical
@@ -502,7 +502,7 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax)
     {
         mps.make_left_paired();
-        block_matrix<Matrix, SymmGroup> dm;
+        p_block_matrix<Matrix, SymmGroup> dm;
         gemm(mps.data_, transpose(mps.data_), dm);
         
         Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
@@ -510,7 +510,7 @@ struct contraction {
         mps.make_left_paired();
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
-            block_matrix<Matrix, SymmGroup> tdm;
+            p_block_matrix<Matrix, SymmGroup> tdm;
             gemm(half_dm.data_[b], transpose(half_dm.data_[b]), tdm);
             
 //            cout << "DM: " << dm.left_basis() << " " << dm.right_basis() << endl;
@@ -528,8 +528,8 @@ struct contraction {
         mps.make_left_paired();
         assert(dm.left_basis() == mps.data_.left_basis());
         
-        block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
+        p_block_matrix<Matrix, SymmGroup> U, V;
+        p_block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
         svd(dm, U, V, S, cutoff, Mmax);
         
@@ -548,7 +548,7 @@ struct contraction {
         psi.make_left_paired();
         A.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> tmp;
+        p_block_matrix<Matrix, SymmGroup> tmp;
         gemm(transpose(A.data_), psi.data_, tmp);
         
         B.multiply_from_left(tmp);

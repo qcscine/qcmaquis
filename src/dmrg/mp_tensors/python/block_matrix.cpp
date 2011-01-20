@@ -2,9 +2,9 @@
 
 #define PYTHON_EXPORTS
 
-#include "block_matrix/indexing.h"
-#include "block_matrix/symmetry.h"
-#include "block_matrix/block_matrix.h"
+#include "p_block_matrix/indexing.h"
+#include "p_block_matrix/symmetry.h"
+#include "p_block_matrix/p_block_matrix.h"
 
 #include <p_dense_matrix/p_dense_matrix.h>
 
@@ -14,7 +14,7 @@ using namespace boost::python;
 
 #include "mp_tensors/python/wrappers.h"
 
-BOOST_PYTHON_MODULE(block_matrix) {
+BOOST_PYTHON_MODULE(p_block_matrix) {
 #define EXPORT_CHARGE_ENUM(charge_enum, name) \
 class_<EnumToClass<charge_enum> >(name) \
 .def(init<int>()) \
@@ -55,9 +55,9 @@ class_<Index<sgrp> >(name) \
 #undef EXPORT_INDEX
     
 #define EXPORT_BLOCK_MATRIX(matrix, sgrp, name) \
-class_<block_matrix<matrix, sgrp> >(name) \
-.def("left_basis", &block_matrix<matrix, sgrp>::left_basis) \
-.def("right_basis", &block_matrix<matrix, sgrp>::right_basis)
+class_<p_block_matrix<matrix, sgrp> >(name) \
+.def("left_basis", &p_block_matrix<matrix, sgrp>::left_basis) \
+.def("right_basis", &p_block_matrix<matrix, sgrp>::right_basis)
     EXPORT_BLOCK_MATRIX(blas::p_dense_matrix<double>, NullGroup, "NG_d_matrix");
     EXPORT_BLOCK_MATRIX(blas::p_dense_matrix<double>, Ztwo, "Z2_d_matrix");
 #undef EXPORT_BLOCK_MATRIX

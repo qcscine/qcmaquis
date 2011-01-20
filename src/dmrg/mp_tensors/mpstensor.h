@@ -1,8 +1,8 @@
 #ifndef MPSTENSOR_H
 #define MPSTENSOR_H
 
-#include "block_matrix/block_matrix.h"
-#include "block_matrix/indexing.h"
+#include "p_block_matrix/p_block_matrix.h"
+#include "p_block_matrix/indexing.h"
 
 #include <iostream>
 #include <algorithm>
@@ -38,17 +38,17 @@ public:
     bool isrightnormalized(bool test = false);
     bool isnormalized(bool test = false);
     
-    block_matrix<Matrix, SymmGroup> normalize_left(DecompMethod method = QR,
+    p_block_matrix<Matrix, SymmGroup> normalize_left(DecompMethod method = QR,
                                                    bool multiplied = true,
                                                    double truncation = 0,
                                                    Index<SymmGroup> bond_dim = Index<SymmGroup>());
-    block_matrix<Matrix, SymmGroup> normalize_right(DecompMethod method = QR,
+    p_block_matrix<Matrix, SymmGroup> normalize_right(DecompMethod method = QR,
                                                     bool multiplied = true,
                                                     double truncation = 0,
                                                     Index<SymmGroup> bond_dim = Index<SymmGroup>());
     
-    void multiply_from_left(block_matrix<Matrix, SymmGroup> const &);
-    void multiply_from_right(block_matrix<Matrix, SymmGroup> const &);
+    void multiply_from_left(p_block_matrix<Matrix, SymmGroup> const &);
+    void multiply_from_right(p_block_matrix<Matrix, SymmGroup> const &);
     void multiply_by_scalar(scalar_type);
     
     scalar_type scalar_overlap(MPSTensor const &) const;
@@ -57,8 +57,8 @@ public:
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
     
-    block_matrix<Matrix, SymmGroup> & data();
-    block_matrix<Matrix, SymmGroup> const & data() const;
+    p_block_matrix<Matrix, SymmGroup> & data();
+    p_block_matrix<Matrix, SymmGroup> const & data() const;
     
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
@@ -88,7 +88,7 @@ public:
     
 private:
     Index<SymmGroup> phys_i, left_i, right_i;
-    mutable block_matrix<Matrix, SymmGroup> data_;
+    mutable p_block_matrix<Matrix, SymmGroup> data_;
     mutable MPSStorageLayout cur_storage;
     Indicator cur_normalization;
 };
