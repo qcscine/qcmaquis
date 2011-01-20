@@ -7,7 +7,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-//#define MPI_PARALLEL
+#define MPI_PARALLEL
 
 #ifdef MPI_PARALLEL
 
