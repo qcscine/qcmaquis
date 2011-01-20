@@ -1,7 +1,7 @@
 #ifndef __ALPS_MATRIX_INTERFACE_HPP__
 #define __ALPS_MATRIX_INTERFACE_HPP__
 
-#include "p_dense_matrix/matrix_concept_check.hpp"
+#include "dense_matrix/matrix_concept_check.hpp"
 #include "p_dense_matrix/p_dense_matrix.h"
 
 namespace blas

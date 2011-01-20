@@ -111,13 +111,13 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
             evec.push_back( solver.Eigenvector(0, i) );
         
         copy_ptr_to_mps(&evec[0], initial);
+        
+        timer.end();
         return std::make_pair(evals[0], initial);
     } catch (arpack::ArpackError & e) {
         cout << "Error in ARPACK." << endl;
         return std::make_pair(0, initial);
     }
-    
-    timer.end();
 }
 
 #endif
