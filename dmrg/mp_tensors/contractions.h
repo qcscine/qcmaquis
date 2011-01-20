@@ -445,7 +445,8 @@ struct contraction {
                                                 typename Matrix::value_type wblock_t = wblock(ss1, ss2);
                                                 for (size_t rr = 0; rr < right_i[r].second; ++rr) {
                                                     iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
-                                                                  &iblock(in_left_offset + ss1*left_i[l].second + left_i[l].second, rr),
+                                                                  // Why the pointer addition? I cannot get a pointer beyond the matrix from dense_matrix
+                                                                  &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second,
                                                                   &oblock(out_left_offset + ss2*left_i[l].second, rr),
                                                                   wblock_t);
 //                                                    for (size_t ll = 0; ll < left_i[l].second; ++ll) {
