@@ -4,14 +4,14 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-typedef blas::dense_matrix<double> Matrix;
+#include "p_dense_matrix/p_dense_matrix.h"
+#include "p_dense_matrix/matrix_interface.hpp"
+#include "p_dense_matrix/resizable_matrix_interface.hpp"
+#include "p_dense_matrix/dense_matrix_algorithms.h"
+#include "p_dense_matrix/matrix_algorithms.hpp"
+typedef blas::p_dense_matrix<double> Matrix;
 
-#include "block_matrix/indexing.h"
+#include "p_block_matrix/indexing.h"
 #include "mp_tensors/mpstensor.h"
 #include "mp_tensors/mpotensor.h"
 #include "mp_tensors/contractions.h"
@@ -30,7 +30,7 @@ int main()
     MPOTensor<Matrix, grp> mpo(physical, mpo_aux, mpo_aux);
     MPSTensor<Matrix, grp> mps(physical, aux, aux);
     
-    block_matrix<Matrix, grp> left(aux*aux, aux), right(aux*aux, aux), o;
+    p_block_matrix<Matrix, grp> left(aux*aux, aux), right(aux*aux, aux), o;
     
     left = contraction::overlap_mpo_left_step(mps, mps, left, mpo);
     left = contraction::overlap_mpo_left_step(mps, mps, left, mpo);
