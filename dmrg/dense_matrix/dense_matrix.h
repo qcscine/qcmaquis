@@ -5,7 +5,6 @@
 #include "dense_matrix/matrix_element_iterator.hpp"
 #include "dense_matrix/vector.hpp"
 #include "dense_matrix/detail/dense_matrix_adaptor.hpp"
-#include "ambient/interfaces/i_dense_matrix.h"
 
 #include "utils/function_objects.h"
 
@@ -31,7 +30,7 @@ namespace blas {
       * @param MemoryBlock the underlying (continous) Memory structure
       */
     template <typename T, typename MemoryBlock = std::vector<T> >
-    class dense_matrix : public i_dense_matrix {
+    class dense_matrix {
     public:
         // typedefs required for a std::container concept
         typedef T                       value_type;       // The type T of the elements of the matrix
@@ -74,13 +73,6 @@ namespace blas {
         template <typename OtherMemoryBlock>
         dense_matrix(dense_matrix<T,OtherMemoryBlock> const& m);
 
-        /**
-          * The i_dense_matrix implementation:
-          * @returns memory pointer to the actual matrix memory
-          *
-          */
-        void* memory_pointer();
-        
         /**
           * Non-throwing swap function
           * @param r dense_matrix object which should be swapped with the dense_matrix (this)

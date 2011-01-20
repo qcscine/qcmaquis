@@ -49,12 +49,6 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
 }
 
 template<class Matrix, class SymmGroup>
-void * block_matrix<Matrix, SymmGroup>::memory_pointer()
-{
-    return NULL;
-}
-
-template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
 {   
     std::pair<charge, size_type>
