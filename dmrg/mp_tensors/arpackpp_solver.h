@@ -16,22 +16,28 @@ template<class Matrix, class SymmGroup>
 void copy_mps_to_ptr(MPSTensor<Matrix, SymmGroup> & mps,
                      typename Matrix::value_type * ptr)
 {
+    static Timer timer("copy_mps_to_ptr");
+    timer.begin();
     mps.make_left_paired();
     for (std::size_t k = 0; k < mps.data().n_blocks(); ++k)
         for (typename Matrix::element_iterator it = elements(mps.data()[k]).first;
              it != elements(mps.data()[k]).second; ++it)
             *(ptr++) = *it;
+    timer.end();
 }
 
 template<class Matrix, class SymmGroup>
 void copy_ptr_to_mps(typename Matrix::value_type * ptr,
                      MPSTensor<Matrix, SymmGroup> & mps)
 {
+    static Timer timer("copy_ptr_to_mps");
+    timer.begin();
     mps.make_left_paired();
     for (std::size_t k = 0; k < mps.data().n_blocks(); ++k)
         for (typename Matrix::element_iterator it = elements(mps.data()[k]).first;
              it != elements(mps.data()[k]).second; ++it)
             *it = *(ptr++);
+    timer.end();
 }
 
 template<class Matrix, class SymmGroup>
