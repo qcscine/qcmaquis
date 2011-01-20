@@ -84,13 +84,13 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
     
     for (std::size_t p = 1; p < L; ++p)
     {
-        block_matrix<Matrix, SymmGroup> t, u, v;
+        p_block_matrix<Matrix, SymmGroup> t, u, v;
         
         mps[p-1].make_left_paired();
         mps[p].make_right_paired();
         
         gemm(mps[p-1].data(), mps[p].data(), t);
-        block_matrix<blas::diagonal_matrix<double>, SymmGroup> s;
+        p_block_matrix<blas::diagonal_matrix<double>, SymmGroup> s;
 
         svd(t, u, v, s);
         std::vector<double> sv;

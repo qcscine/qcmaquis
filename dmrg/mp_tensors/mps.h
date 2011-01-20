@@ -19,8 +19,8 @@ public:
     Index<SymmGroup> const & col_dim(size_t i) const { return (*this)[i].col_dim(); }
     
     void canonize(size_t center);
-    block_matrix<Matrix, SymmGroup> canonize_left_step(size_t site);
-    block_matrix<Matrix, SymmGroup> canonize_right_step(size_t site);
+    p_block_matrix<Matrix, SymmGroup> canonize_left_step(size_t site);
+    p_block_matrix<Matrix, SymmGroup> canonize_right_step(size_t site);
     
     void normalize_left();
     void normalize_right();

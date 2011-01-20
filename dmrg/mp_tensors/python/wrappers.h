@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "block_matrix/indexing.h"
-#include "block_matrix/symmetry.h"
+#include "p_block_matrix/indexing.h"
+#include "p_block_matrix/symmetry.h"
 
 #include <boost/python.hpp>
 
