@@ -290,8 +290,8 @@ namespace blas {
 //
 namespace blas {
 
-    template <typename T, typename MemoryBlock>
-    const p_dense_matrix<T,MemoryBlock> matrix_matrix_multiply(p_dense_matrix<T,MemoryBlock> const& lhs, p_dense_matrix<T,MemoryBlock> const& rhs);
+//    template <typename T, typename MemoryBlock>
+//    const p_dense_matrix<T,MemoryBlock> matrix_matrix_multiply(p_dense_matrix<T,MemoryBlock> const& lhs, p_dense_matrix<T,MemoryBlock> const& rhs);
     
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>

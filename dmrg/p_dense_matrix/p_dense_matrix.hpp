@@ -436,26 +436,6 @@ namespace blas {
 
 namespace blas {
 
-    template <typename T, typename MemoryBlock>
-    const p_dense_matrix<T,MemoryBlock> matrix_matrix_multiply(p_dense_matrix<T,MemoryBlock> const& lhs, p_dense_matrix<T,MemoryBlock> const& rhs)
-    {
-        assert( lhs.num_columns() == rhs.num_rows() );
-
-        // Simple matrix matrix multiplication
-        p_dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_columns());
-        for(std::size_t i=0; i < lhs.num_rows(); ++i)
-        {
-            for(std::size_t k=0; k<lhs.num_columns(); ++k)
-            {
-                for(std::size_t j=0; j<rhs.num_columns(); ++j)
-                {
-                        result(i,j) += lhs(i,k) * rhs(k,j);
-                }
-            }
-        }
-        return result;
-    } 
-
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
     matrix_vector_multiply(p_dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
@@ -539,7 +519,8 @@ namespace blas {
     template<typename T,typename MemoryBlock>
     void gemm(p_dense_matrix<T,MemoryBlock> const & A, p_dense_matrix<T,MemoryBlock> const & B, p_dense_matrix<T,MemoryBlock> & C)
     {
-        C = matrix_matrix_multiply(A, B);
+        // insert hooks for ambient here
+        C = matrix_matrix_multiply(A, B); // is being called really
     }
 
     template <typename T, typename MemoryBlock>
