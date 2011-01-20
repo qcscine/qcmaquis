@@ -1,11 +1,10 @@
-#ifndef __ALPS_P_DENSE_MATRIX_HPP__
-#define __ALPS_P_DENSE_MATRIX_HPP__
+#ifndef __ALPS_DENSE_MATRIX_HPP__
+#define __ALPS_DENSE_MATRIX_HPP__
 
 #include "p_dense_matrix/strided_iterator.hpp"
 #include "p_dense_matrix/matrix_element_iterator.hpp"
-#include "dense_matrix/vector.hpp"
-#include "p_dense_matrix/detail/dense_matrix_adaptor.hpp"
-#include "ambient/interfaces/i_dense_matrix.h"
+#include "p_dense_matrix/vector.hpp"
+#include "p_dense_matrix/detail/p_dense_matrix_adaptor.hpp"
 
 #include "utils/function_objects.h"
 
@@ -31,7 +30,7 @@ namespace blas {
       * @param MemoryBlock the underlying (continous) Memory structure
       */
     template <typename T, typename MemoryBlock = std::vector<T> >
-    class p_dense_matrix : public i_dense_matrix {
+    class p_dense_matrix {
     public:
         // typedefs required for a std::container concept
         typedef T                       value_type;       // The type T of the elements of the matrix
@@ -74,13 +73,6 @@ namespace blas {
         template <typename OtherMemoryBlock>
         p_dense_matrix(p_dense_matrix<T,OtherMemoryBlock> const& m);
 
-        /**
-          * The i_dense_matrix implementation:
-          * @returns memory pointer to the actual matrix memory
-          *
-          */
-        void* memory_pointer();
-        
         /**
           * Non-throwing swap function
           * @param r p_dense_matrix object which should be swapped with the p_dense_matrix (this)
@@ -241,7 +233,7 @@ namespace blas {
         
         void inplace_conjugate();
 		
-		// Serialize functions to save dense_matrix using alps::hdf5
+		// Serialize functions to save p_dense_matrix using alps::hdf5
 #ifdef HAVE_ALPS_HDF5
 		void serialize(alps::hdf5::iarchive & ar);
 		void serialize(alps::hdf5::oarchive & ar) const;
@@ -350,4 +342,4 @@ namespace blas {
 } // namespace blas
 
 #include "p_dense_matrix/p_dense_matrix.hpp"
-#endif //__ALPS_P_DENSE_MATRIX_HPP__
+#endif //__ALPS_DENSE_MATRIX_HPP__

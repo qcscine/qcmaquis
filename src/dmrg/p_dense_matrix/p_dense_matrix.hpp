@@ -33,12 +33,6 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    void* p_dense_matrix<T, MemoryBlock>::memory_pointer(){
-
-        return NULL;
-    }
-
-    template <typename T, typename MemoryBlock>
     void p_dense_matrix<T, MemoryBlock>::swap(p_dense_matrix & r)
     {
         std::swap(this->values_, r.values_);

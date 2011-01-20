@@ -1,7 +1,7 @@
 #ifndef __ALPS_DENSE_MATRIX_ALGORITHMS_HPP__
 #define __ALPS_DENSE_MATRIX_ALGORITHMS_HPP__
 
-#include "dense_matrix/matrix_concept_check.hpp"
+#include "p_dense_matrix/matrix_concept_check.hpp"
 #include "p_dense_matrix/diagonal_matrix.h"
 
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
