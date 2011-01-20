@@ -4,9 +4,9 @@
 #include "mp_tensors/mpo.h"
 
 template<class Matrix, class SymmGroup>
-p_block_matrix<Matrix, SymmGroup> make_mpo_identity_block(Index<SymmGroup> phys_i)
+block_matrix<Matrix, SymmGroup> make_mpo_identity_block(Index<SymmGroup> phys_i)
 {
-    p_block_matrix<Matrix, SymmGroup> ret;
+    block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < phys_i.size(); ++k)
         ret.insert_block(boost::tuples::make_tuple(Matrix(phys_i[k].second, phys_i[k].second),
                                                    phys_i[k].first,
@@ -124,7 +124,7 @@ MPO<Matrix, U1> s12_heisenberg(std::size_t L, double Jxy, double Jz)
     phys.insert(std::make_pair(1, 1));
     phys.insert(std::make_pair(-1, 1));
     
-    p_block_matrix<Matrix, U1> ident, splus, sminus, sz, zero;
+    block_matrix<Matrix, U1> ident, splus, sminus, sz, zero;
     
     ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, -1));
     ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));

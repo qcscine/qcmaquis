@@ -1,6 +1,6 @@
 #include "mp_tensors/mpotensor.h"
 
-#include "p_block_matrix/reshapes.h"
+#include "mp_tensors/reshapes.h"
 
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(std::size_t ld,
@@ -33,7 +33,7 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
 }
 
 template<class Matrix, class SymmGroup>
-p_block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
+block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                                                                  std::size_t right_index) const
 {
     assert( left_index * right_i + right_index < data_.size() );
@@ -41,7 +41,7 @@ p_block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator
 }
 
 template<class Matrix, class SymmGroup>
-p_block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
+block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                                                            std::size_t right_index)
 {
     assert( left_index * right_i + right_index < data_.size() );
@@ -52,7 +52,7 @@ template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(scalar_type v)
 {
 //    std::for_each(elements(data_).first, elements(data_).second, boost::lambda::_1 *= v);
-    for (typename std::vector<p_block_matrix<Matrix, SymmGroup> >::iterator it = data_.begin();
+    for (typename std::vector<block_matrix<Matrix, SymmGroup> >::iterator it = data_.begin();
          it != data_.end(); ++it)
         *it *= v;
 }

@@ -13,8 +13,8 @@ using namespace std;
 typedef blas::p_dense_matrix<double> Matrix;
 typedef blas::associated_diagonal_matrix<Matrix>::type DiagMatrix;
 
-#include "p_block_matrix/p_block_matrix.h"
-#include "p_block_matrix/block_matrix_algorithms.h"
+#include "block_matrix/block_matrix.h"
+#include "block_matrix/block_matrix_algorithms.h"
 
 int main()
 {
@@ -42,7 +42,7 @@ int main()
         typedef U1 grp;
         
         Matrix foo(10,10);
-        p_block_matrix<Matrix, grp> test;
+        block_matrix<Matrix, grp> test;
         test.insert_block(boost::tuples::make_tuple(foo, 0, 0));
         
         cout << test.description() << endl;
@@ -65,7 +65,7 @@ int main()
         Index<grp> cols(c, s);
         grp::get_map(cols.charges());
         
-        p_block_matrix<Matrix, grp> m1(rows, cols), m2(cols, rows), m3;
+        block_matrix<Matrix, grp> m1(rows, cols), m2(cols, rows), m3;
         
         cout << m1.description() << endl << m2.description() << endl;
         cout << m1.description() << endl << m2.description() << endl;
@@ -78,14 +78,14 @@ int main()
         
         cout << m3 << endl;
         
-        p_block_matrix<Matrix, grp> U, V;
-        p_block_matrix<DiagMatrix, grp> S;
+        block_matrix<Matrix, grp> U, V;
+        block_matrix<DiagMatrix, grp> S;
         svd(m3, U, V, S);
         
         //cout << S << endl;
         //cout << U << endl;
         
-        p_block_matrix<Matrix, grp> t;
+        block_matrix<Matrix, grp> t;
         gemm(U, S, t);
         gemm(t, V, U);
         

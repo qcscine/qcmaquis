@@ -14,7 +14,7 @@ namespace mpos {
     class Hamiltonian
     {
     public:
-        typedef p_block_matrix<Matrix, SymmGroup> op_t;
+        typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef std::pair<op_t, op_t> op_pair;
         
         virtual ~Hamiltonian() { };
@@ -57,12 +57,12 @@ namespace mpos {
     template<class Matrix, class SymmGroup>
     class MPOMaker
     {
-        typedef p_block_matrix<Matrix, SymmGroup> op_t;
+        typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;
         typedef vector<
           pair<
-            p_block_matrix<Matrix, SymmGroup>,
-            p_block_matrix<Matrix, SymmGroup>
+            block_matrix<Matrix, SymmGroup>,
+            block_matrix<Matrix, SymmGroup>
           >
         > op_pairs;
         

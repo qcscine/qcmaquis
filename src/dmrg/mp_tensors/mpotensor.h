@@ -1,8 +1,8 @@
 #ifndef MPOTENSOR_H
 #define MPOTENSOR_H
 
-#include "p_block_matrix/p_block_matrix.h"
-#include "p_block_matrix/indexing.h"
+#include "block_matrix/block_matrix.h"
+#include "block_matrix/indexing.h"
 #include "utils/function_objects.h"
 
 #include <iostream>
@@ -17,7 +17,7 @@ public:
     Boundary(Index<SymmGroup> const & ud = Index<SymmGroup>(),
              Index<SymmGroup> const & ld = Index<SymmGroup>(),
              std::size_t ad = 1)
-    : data_(ad, p_block_matrix<Matrix, SymmGroup>(ud, ld))
+    : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
 //    , upper_i(ud), lower_i(ld)
     { }
 
@@ -37,7 +37,7 @@ public:
     }
     
 public:
-    std::vector<p_block_matrix<Matrix, SymmGroup> > data_;
+    std::vector<block_matrix<Matrix, SymmGroup> > data_;
 //    Index<SymmGroup> upper_i, lower_i;
 };
 
@@ -67,15 +67,15 @@ public:
                                    access_type const & ket_index,
                                    access_type const & bra_index) const;
     
-    p_block_matrix<Matrix, SymmGroup> const & operator()(std::size_t left_index,
+    block_matrix<Matrix, SymmGroup> const & operator()(std::size_t left_index,
                                                        std::size_t right_index) const;
-    p_block_matrix<Matrix, SymmGroup> & operator()(std::size_t left_index,
+    block_matrix<Matrix, SymmGroup> & operator()(std::size_t left_index,
                                                  std::size_t right_index);
     
     void multiply_by_scalar(scalar_type);
     
 private:
-    std::vector<p_block_matrix<Matrix, SymmGroup> > data_;
+    std::vector<block_matrix<Matrix, SymmGroup> > data_;
     std::size_t left_i, right_i;
 //    Index<SymmGroup> phys_i;
 };

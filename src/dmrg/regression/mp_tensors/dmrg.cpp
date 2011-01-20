@@ -16,7 +16,7 @@ typedef blas::p_dense_matrix<double> Matrix;
 //typedef aligned_allocator<double, 16, true> alloc_t;
 //typedef blas::p_dense_matrix<double, std::vector<double, alloc_t> > Matrix;
 
-#include "p_block_matrix/indexing.h"
+#include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
 #include "mp_tensors/contractions.h"

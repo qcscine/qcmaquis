@@ -105,7 +105,7 @@ template<class Matrix, class SymmGroup>
 typename Matrix::value_type
 MPS<Matrix, SymmGroup>::canonize_left()
 {
-    p_block_matrix<Matrix, SymmGroup> t;
+    block_matrix<Matrix, SymmGroup> t;
     for (int i = 0; i < length(); ++i) {
         t = (*this)[i].normalize_left(SVD);
         if (i < length()-1)
@@ -118,7 +118,7 @@ template<class Matrix, class SymmGroup>
 typename Matrix::value_type
 MPS<Matrix, SymmGroup>::canonize_right()
 {
-    p_block_matrix<Matrix, SymmGroup> t;
+    block_matrix<Matrix, SymmGroup> t;
     for (int i = length()-1; i >= 0; --i) {
         t = (*this)[i].normalize_right(SVD);
         if (i > 0)
@@ -144,13 +144,13 @@ void MPS<Matrix, SymmGroup>::canonize(std::size_t center)
 {
     for (int i = 0; i < center; ++i)
     {
-        p_block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(SVD);
+        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(SVD);
         (*this)[i+1].multiply_from_left(t);
     }
     
     for (int i = length()-1; i > center; --i)
     {
-        p_block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
+        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
         (*this)[i-1].multiply_from_right(t);
     }
 }

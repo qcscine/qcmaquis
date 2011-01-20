@@ -1,7 +1,7 @@
 #include "mp_tensors/mpstensor.h"
 
-#include "p_block_matrix/reshapes.h"
-#include "p_block_matrix/block_matrix_algorithms.h"
+#include "mp_tensors/reshapes.h"
+#include "block_matrix/block_matrix_algorithms.h"
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
@@ -18,7 +18,7 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     Index<SymmGroup> lb = sd*ld, rb = rd;
     common_subset(lb, rb);
     
-    data_ = p_block_matrix<Matrix, SymmGroup>(lb, rb);
+    data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
     
     if (fillrand)
         data_.generate(drand48);
@@ -56,7 +56,7 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
     if (cur_storage == LeftPaired)
         return;
     
-    p_block_matrix<Matrix, SymmGroup> tmp;
+    block_matrix<Matrix, SymmGroup> tmp;
     reshape_right_to_left<Matrix>(phys_i, left_i, right_i,
                                   data_, tmp);
     swap(data_, tmp);
@@ -69,7 +69,7 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
     if (cur_storage == RightPaired)
         return;
     
-    p_block_matrix<Matrix, SymmGroup> tmp;
+    block_matrix<Matrix, SymmGroup> tmp;
     reshape_left_to_right<Matrix>(phys_i, left_i, right_i,
                                   data_, tmp);
     swap(data_, tmp);
@@ -77,7 +77,7 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
 }
 
 template<class Matrix, class SymmGroup>
-p_block_matrix<Matrix, SymmGroup>
+block_matrix<Matrix, SymmGroup>
 MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
                                              bool multiplied,
                                              double truncation,
@@ -87,7 +87,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
         throw std::runtime_error("Not implemented!");
         make_left_paired();
         
-        p_block_matrix<Matrix, SymmGroup> q, r;
+        block_matrix<Matrix, SymmGroup> q, r;
         qr(data_, q, r);
         swap(data_, q);
         
@@ -96,8 +96,8 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
     } else {
         make_left_paired();
         
-        p_block_matrix<Matrix, SymmGroup> U, V;
-        p_block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<Matrix, SymmGroup> U, V;
+        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         svd(data_, U, V, S);
         
@@ -111,7 +111,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
 }
 
 template<class Matrix, class SymmGroup>
-p_block_matrix<Matrix, SymmGroup>
+block_matrix<Matrix, SymmGroup>
 MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
                                               bool multiplied,
                                               double truncation,
@@ -123,8 +123,8 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
     } else {
         make_right_paired();
         
-        p_block_matrix<Matrix, SymmGroup> U, V;
-        p_block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<Matrix, SymmGroup> U, V;
+        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         svd(data_, U, V, S);
         
@@ -140,10 +140,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
 
 template<class Matrix, class SymmGroup>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_right(p_block_matrix<Matrix, SymmGroup> const & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup> const & N)
 {
     cur_normalization = Unorm;
-    p_block_matrix<Matrix, SymmGroup> tmp;
+    block_matrix<Matrix, SymmGroup> tmp;
     make_left_paired();
     gemm(data_, N, tmp);
     swap(data_, tmp);
@@ -152,10 +152,10 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(p_block_matrix<Matrix, SymmGro
 
 template<class Matrix, class SymmGroup>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_left(p_block_matrix<Matrix, SymmGroup> const & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup> const & N)
 {
     cur_normalization = Unorm;
-    p_block_matrix<Matrix, SymmGroup> tmp;
+    block_matrix<Matrix, SymmGroup> tmp;
     make_right_paired();
     gemm(N, data_, tmp);
     swap(data_, tmp);
@@ -174,7 +174,7 @@ typename MPSTensor<Matrix, SymmGroup>::real_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 {
     make_left_paired();
-    p_block_matrix<Matrix, SymmGroup> t;
+    block_matrix<Matrix, SymmGroup> t;
     gemm(conjugate_transpose(data_), data_, t);
     return sqrt(trace(t));
 }
@@ -185,7 +185,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 {
     make_left_paired();
     rhs.make_left_paired();
-    p_block_matrix<Matrix, SymmGroup> t;
+    block_matrix<Matrix, SymmGroup> t;
     gemm(conjugate_transpose(data_), rhs.data_, t);
     return trace(t);
 }
@@ -230,14 +230,14 @@ bool MPSTensor<Matrix, SymmGroup>::isnormalized(bool test)
 }
 
 template<class Matrix, class SymmGroup>
-p_block_matrix<Matrix, SymmGroup> &
+block_matrix<Matrix, SymmGroup> &
 MPSTensor<Matrix, SymmGroup>::data()
 {
     return data_;
 }
 
 template<class Matrix, class SymmGroup>
-p_block_matrix<Matrix, SymmGroup> const &
+block_matrix<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::data() const
 {
     return data_;
