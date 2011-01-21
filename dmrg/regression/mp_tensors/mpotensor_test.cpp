@@ -3,6 +3,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+#include "utils/zout.hpp"
 
 #ifdef MPI_PARALLEL
 #include "p_dense_matrix/p_dense_matrix.h"
@@ -49,5 +50,5 @@ int main()
     
     right = transpose(right);
     gemm(left, right, o);
-    cout << trace(o) << endl;
+    zout << trace(o) << endl;
 }

@@ -21,7 +21,7 @@ left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> con
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
         left_[i+1] = left;
-//        cout << "Left at " << i+1 << " " << left.data_[0] << endl;
+//        zout << "Left at " << i+1 << " " << left.data_[0] << endl;
     }
     return left_;
 }
@@ -41,7 +41,7 @@ right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> co
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
         right_[i] = right;
-//        cout << "right at " << i << " " << right.data_[0] << endl;
+//        zout << "right at " << i << " " << right.data_[0] << endl;
     }
     return right_;
 }

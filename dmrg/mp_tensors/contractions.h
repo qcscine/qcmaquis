@@ -1,6 +1,8 @@
 #ifndef CONTRACTIONS_H
 #define CONTRACTIONS_H
 
+#include "utils/zout.hpp"
+
 #include "mp_tensors/mpstensor.h"
 #include "mp_tensors/mpotensor.h"
 
@@ -336,8 +338,8 @@ struct contraction {
             }
         
 //        ket_tensor.make_left_paired();
-//        cout << "ket_tensor: " << ket_tensor << endl;
-//        cout << "ret: " << ret << endl;
+//        zout << "ket_tensor: " << ket_tensor << endl;
+//        zout << "ret: " << ret << endl;
         
 #ifndef NDEBUG
         ket_tensor.make_left_paired();
@@ -529,8 +531,8 @@ struct contraction {
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(half_dm.data_[b], transpose(half_dm.data_[b]), tdm);
             
-//            cout << "DM: " << dm.left_basis() << " " << dm.right_basis() << endl;
-//            cout << "tDM: " << tdm.left_basis() << " " << tdm.right_basis() << endl;
+//            zout << "DM: " << dm.left_basis() << " " << dm.right_basis() << endl;
+//            zout << "tDM: " << tdm.left_basis() << " " << tdm.right_basis() << endl;
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {

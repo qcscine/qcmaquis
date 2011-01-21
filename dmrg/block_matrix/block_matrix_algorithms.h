@@ -1,6 +1,7 @@
 #ifndef BLOCK_MATRIX_ALGORITHMS_H
 #define BLOCK_MATRIX_ALGORITHMS_H
 
+#include "utils/zout.hpp"
 #include "block_matrix/block_matrix.h"
 
 // some example functions
@@ -116,9 +117,9 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     }
     
     if (! (old_basis == S.left_basis()) ) {
-        cout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << endl;
-        cout << old_basis << endl << S.left_basis() << endl;
-        cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
+        zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << endl;
+        zout << old_basis << endl << S.left_basis() << endl;
+        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
     }
 }
 

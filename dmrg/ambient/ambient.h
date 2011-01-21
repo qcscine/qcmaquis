@@ -34,7 +34,8 @@ namespace ambient
 
     public:
         scheduler & operator>>(dim3 dim_distr);
-        scheduler & operator,(dim3 dim); 
+        scheduler & operator,(dim3 dim);
+        bool is_ambient_master(); 
         void initialize(MPI_Comm comm = NULL);
         void regression_test();
         void finalize();

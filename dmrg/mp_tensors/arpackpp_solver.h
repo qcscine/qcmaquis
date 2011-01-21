@@ -1,6 +1,7 @@
 #ifndef ARPACKPP_SOLVER_H
 #define ARPACKPP_SOLVER_H
 
+#include "utils/zout.hpp"
 #include "utils/DmrgParameters.h"
 
 namespace arpack {
@@ -60,14 +61,14 @@ public:
         
         copy_ptr_to_mps(v, vec);
 //        vec2 = contraction::site_hamil(vec, prob.left, prob.right, prob.mpo);
-//        cout << "vec2 " << vec2 << endl;
+//        zout << "vec2 " << vec2 << endl;
         static Timer timer("site_hamil2 from ARPACK");
         timer.begin();
         vec3 = contraction::site_hamil2(vec, prob.left, prob.right, prob.mpo);
         timer.end();
-//        cout << "vec3 " << vec3 << endl;
+//        zout << "vec3 " << vec3 << endl;
         copy_mps_to_ptr(vec3, w);
-//        cout << endl << endl;
+//        zout << endl << endl;
     }
     
 private:
@@ -99,14 +100,14 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
         int nconv = solver.FindEigenvalues();
         nconv = solver.FindEigenvectors();
         
-        cout << "ARPACK used " << solver.GetIter() << " iterations." << endl;
+        zout << "ARPACK used " << solver.GetIter() << " iterations." << endl;
         if (solver.GetIter() <= 2)
             parms.set<int>("arpack_ncv",
                            std::max(8, ncv-1));
         else if (solver.GetIter() > 4)
             parms.set<int>("arpack_ncv",
                            std::min(50, ncv+4));
-        cout << "Setting ncv = " << parms.get<int>("arpack_ncv") << endl;
+        zout << "Setting ncv = " << parms.get<int>("arpack_ncv") << endl;
         
         std::vector<double> evals;
         for (int i = 0; i < nconv; ++i)
@@ -121,7 +122,7 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
         timer.end();
         return std::make_pair(evals[0], initial);
     } catch (arpack::ArpackError & e) {
-        cout << "Error in ARPACK." << endl;
+        zout << "Error in ARPACK." << endl;
         return std::make_pair(0, initial);
     }
 }

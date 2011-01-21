@@ -1,6 +1,7 @@
 #ifndef GENERATE_MPO_H
 #define GENERATE_MPO_H
 
+#include "utils/zout.hpp"
 #include "adjancency.h"
 #include "mp_tensors/mpo.h"
 
@@ -110,7 +111,7 @@ namespace mpos {
                     }
             }
             
-            cout << "Maximum: " << maximum << endl;
+            zout << "Maximum: " << maximum << endl;
         }
         
         void add_term(vector<pair<size_t, op_t> > & ops)
@@ -122,7 +123,7 @@ namespace mpos {
                  it != ops.end(); ++it)
                 positions.push_back( it->first );
 //            std::copy(positions.begin(), positions.end(),
-//                      std::ostream_iterator<size_t>(cout, " ")); cout << endl;
+//                      std::ostream_iterator<size_t>(cout, " ")); zout << " " << endl;
             size_t minp = *min_element(positions.begin(), positions.end());
             size_t maxp = *max_element(positions.begin(), positions.end());
             
