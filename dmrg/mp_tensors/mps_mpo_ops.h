@@ -59,6 +59,14 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
+std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
+                                 MPO<Matrix, SymmGroup> const & mpo)
+{
+    std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
+    return left_[mps.length()].traces();
+}
+
+template<class Matrix, class SymmGroup>
 typename Matrix::value_type norm(MPS<Matrix, SymmGroup> const & mps,
                                  MPOTensor<Matrix, SymmGroup> * mpo = NULL)
 {

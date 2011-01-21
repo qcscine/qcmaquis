@@ -93,18 +93,19 @@ public:
             
             mps[site] = res.second;
             
-            zout << "Energy: " << res.first << endl;
+            zout << "Energy " << /* sweep+(lr == -1 ? 0.5 : 0) */ lr << " " << res.first << endl;
             energies.push_back(res.first);
+            
+            double alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"), parms.get<int>("nsweeps"), sweep);
+            double cutoff;
+            if (sweep >= parms.get<int>("ngrowsweeps"))
+                cutoff = parms.get<double>("truncation_final");
+            else
+                cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
+            std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
             
             if (lr == +1) {
                 if (site < L-1) {
-                    double alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"), parms.get<int>("nsweeps"), sweep);
-                    double cutoff;
-                    if (sweep >= parms.get<int>("ngrowsweeps"))
-                        cutoff = parms.get<double>("truncation_final");
-                    else
-                        cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
-                    std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax);
@@ -118,6 +119,12 @@ public:
                 left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,
                                                                    left_[site], mpo[site]);
             } else if (lr == -1) {
+                if (site > 1) {
+                    zout << "Growing, alpha = " << alpha << endl;
+                    mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
+                                       site, alpha, cutoff, Mmax);
+                }
+                
                 block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
                 if (site > 0)
                     mps[site-1].multiply_from_right(t);
