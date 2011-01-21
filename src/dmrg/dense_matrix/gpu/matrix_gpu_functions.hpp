@@ -127,8 +127,10 @@ void matrix_matrix_multiply(blas::dense_matrix<float,std::vector<float, std::all
 	const char TRANS_LEFT  = 'N';
 	const char TRANS_RIGHT = 'N';
 	
-	const fortran_int_t m_gpu = lhs.num_rows() ; 
-	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/7) ;
+//	const fortran_int_t m_gpu = lhs.num_rows() ; old
+	const fortran_int_t m_gpu = rhs.num_columns() ; 
+	
+	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/6) ;
 	const fortran_int_t n_gpu = m_gpu - n_cpu ;
 	
 	const fortran_int_t m = lhs.num_rows(); 
@@ -159,7 +161,8 @@ void matrix_matrix_multiply(blas::dense_matrix<double,std::vector<double, std::a
 	const char TRANS_LEFT  = 'N';
 	const char TRANS_RIGHT = 'N';
 	
-	const fortran_int_t m_gpu = lhs.num_rows() ; 
+//	const fortran_int_t m_gpu = lhs.num_rows() ; 
+	const fortran_int_t m_gpu = rhs.num_columns() ; 
 	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/7) ;
 	const fortran_int_t n_gpu = m_gpu - n_cpu ;
 	
@@ -181,7 +184,7 @@ void matrix_matrix_multiply(blas::dense_matrix<double,std::vector<double, std::a
 	cublasDgemm('n', 'n', m, n_gpu, k, 1.0, lhs_gpu.p(), m,rhs_gpu.p(), k, 0.0, result_gpu.p(), m); 
 	dgemm_(&TRANS_LEFT,&TRANS_RIGHT,&m, &n_cpu, &k, &alpha, &lhs(0,0), &lhs_stride2 ,&rhs(0,0)+rhs.stride2()*n_gpu, &rhs_stride2, &beta,&result_cpu(0,0)+result_cpu.stride2()*n_gpu, &result_cpu_stride2); 
 	cublasGetMatrix (m, n_gpu, sizeof(double), result_gpu.p(), m, &result_cpu(0,0), result_cpu.stride2()); 
-	
+	cout << result_cpu << endl;
 }
 	
 
