@@ -50,9 +50,9 @@ public:
         if (p+W_ < L_*W_)
             ret.push_back(p+W_);
         
-//        cout << p << " -> ";
+//        zout << p << " -> ";
 //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<std::size_t>(cout, " "));
-//        cout << endl;
+//        zout << " " << endl;
         
         return ret;
     }

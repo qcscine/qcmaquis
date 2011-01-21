@@ -22,6 +22,10 @@ namespace ambient
     {
     }
 
+    bool scheduler::is_ambient_master(){
+        return (this->mode == AMBIENT_MASTER);
+    }
+
     scheduler & scheduler::operator>>(dim3 dim_distr) 
     {
         this->dim_distr = dim_distr;

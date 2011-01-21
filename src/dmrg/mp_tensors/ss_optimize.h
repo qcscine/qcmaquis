@@ -4,6 +4,7 @@
 #include <boost/random.hpp>
 #include <sys/time.h>
 
+#include "utils/zout.hpp"
 #include "ietl_lanczos_solver.h"
 #include "arpackpp_solver.h"
 
@@ -21,7 +22,7 @@ struct SiteProblem
 gettimeofday(&now, NULL);
 #define END_TIMING(name) \
 gettimeofday(&then, NULL); \
-cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
+zout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
 
 double log_interpolate(double y0, double y1, int N, int i)
 {
@@ -52,7 +53,7 @@ public:
         
         std::size_t L = mps.length();
         
-        cout << mps.description() << endl;
+        zout << mps.description() << endl;
         for (int _site = 0; _site < 2*L; ++_site) {
             int site, lr;
             if (_site < L) {
@@ -63,7 +64,7 @@ public:
                 lr = -1;
             }
             
-            cout << "Sweep " << sweep << ", optimizing site " << site << endl;
+            zout << "Sweep " << sweep << ", optimizing site " << site << endl;
             
             mps[site].make_left_paired();
             
@@ -92,7 +93,7 @@ public:
             
             mps[site] = res.second;
             
-            cout << "Energy: " << res.first << endl;
+            zout << "Energy: " << res.first << endl;
             energies.push_back(res.first);
             
             if (lr == +1) {
@@ -104,7 +105,7 @@ public:
                     else
                         cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
                     std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
-                    cout << "Growing, alpha = " << alpha << endl;
+                    zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax);
                 }

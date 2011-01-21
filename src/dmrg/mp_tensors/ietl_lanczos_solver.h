@@ -1,6 +1,7 @@
 #ifndef IETL_LANCZOS_SOLVER_H
 #define IETL_LANCZOS_SOLVER_H
 
+#include "utils/zout.hpp"
 #include "utils/DmrgParameters.h"
 
 namespace ietl
@@ -109,7 +110,7 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
     //            ietl::mult(sp, mps[site], test);
     //            test.multiply_by_scalar(1/test.scalar_norm());
     //            test -= mps[site];
-    //            cout << "How close to eigenstate? " << test.scalar_norm() << endl;
+    //            zout << "How close to eigenstate? " << test.scalar_norm() << endl;
     
     double rel_tol = sqrt(std::numeric_limits<double>::epsilon());
     double abs_tol = rel_tol;
@@ -125,18 +126,18 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
         eigen = lanczos.eigenvalues();
         err = lanczos.errors();
         multiplicity = lanczos.multiplicities();
-        std::cout << "IETL used " << iter.iterations() << " iterations." << endl;
+        zout << "IETL used " << iter.iterations() << " iterations." << endl;
     }
     catch (std::runtime_error& e) {
-        cout << "Error in eigenvalue calculation: " << endl;
-        cout << e.what() << endl;
+        zout << "Error in eigenvalue calculation: " << endl;
+        zout << e.what() << endl;
         exit(1);
     }
     
-//    cout << "Energies: ";
-//    std::copy(eigen.begin(), eigen.begin()+n_evals, std::ostream_iterator<double>(cout, " "));
-//    cout << endl;
-    //            cout << "Energy: " << eigen[0] << endl;
+//    zout << "Energies: ";
+//    std::copy(eigen.begin(), eigen.begin()+n_evals, std::ostream_iterator<double>(zout, " "));
+//    zout << endl;
+    //            zout << "Energy: " << eigen[0] << endl;
     
     std::vector<double>::iterator start = eigen.begin();  
     std::vector<double>::iterator end = eigen.begin()+1;
@@ -147,13 +148,13 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
         lanczos.eigenvectors(start, end, std::back_inserter(eigenvectors), info, initial, 100);
     }
     catch (std::runtime_error& e) {
-        cout << "Error in eigenvector calculation: " << endl;
-        cout << e.what() << endl;
+        zout << "Error in eigenvector calculation: " << endl;
+        zout << e.what() << endl;
         exit(1);
     }
     
     //            for(int i = 0; i < info.size(); i++)
-    //                std::cout << " m1(" << i+1 << "): " << info.m1(i) << ", m2(" << i+1 << "): "
+    //                std::zout << " m1(" << i+1 << "): " << info.m1(i) << ", m2(" << i+1 << "): "
     //                << info.m2(i) << ", ma(" << i+1 << "): " << info.ma(i) << " eigenvalue("
     //                << i+1 << "): " << info.eigenvalue(i) << " residual(" << i+1 << "): "
     //                << info.residual(i) << " error_info(" << i+1 << "): "

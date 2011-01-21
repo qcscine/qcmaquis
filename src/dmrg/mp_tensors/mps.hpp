@@ -1,3 +1,4 @@
+#include "utils/zout.hpp"
 #include "mp_tensors/mps.h"
 
 #include "contractions.h"
@@ -19,7 +20,7 @@ void mps_init(MPS<Matrix, NullGroup> & mps,
         bond_sizes[k-1] = std::min(bond_sizes[k-1], 2*bond_sizes[k]);
     }
     std::copy(bond_sizes.begin(), bond_sizes.end(), std::ostream_iterator<int>(cout, " "));
-    cout << endl;
+    zout << " " << endl;
     
     for (int i = 0; i < L; ++i)
     {
@@ -69,7 +70,7 @@ void mps_init(MPS<Matrix, U1> & mps,
     
     for (int i = 0; i < L; ++i)
         mps[i] = MPSTensor<Matrix, U1>(phys, allowed[i], allowed[i+1]);
-    cout << mps.description() << endl;
+    zout << mps.description() << endl;
 }
 
 template<class Matrix, class SymmGroup>

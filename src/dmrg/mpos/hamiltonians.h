@@ -1,6 +1,7 @@
 #ifndef HAMILTONIANS_H
 #define HAMILTONIANS_H
 
+#include "utils/zout.hpp"
 #include "block_matrix/block_matrix.h"
 #include "mpos/generate_mpo.h"
 
@@ -247,7 +248,7 @@ namespace mpos {
         
         void push_extra_terms(MPOMaker<Matrix, U1> & mm)
         {
-            cout << "Adding extra term." << endl;
+            zout << "Adding extra term." << endl;
             std::vector<std::pair<std::size_t, op_t> > terms;
             block_matrix<Matrix, U1> sz, szz;
             
