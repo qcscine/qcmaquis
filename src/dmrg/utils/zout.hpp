@@ -7,29 +7,29 @@
 
 class dmrg_cout {
 public:
-	template<class T>
-	dmrg_cout& operator <<(T const & obj)
-	{
+    template<class T>
+    dmrg_cout& operator <<(T const & obj)
+    {
 #ifdef MPI_PARALLEL
-		if(ambient::scheduler::instance().is_ambient_master())
+        if(ambient::scheduler::instance().is_ambient_master())
 #endif
-			std::cout << obj;
-		return *this;
-	}
-	
-	dmrg_cout& operator <<(std::ostream& (*pf)(std::ostream&))
-	{
+            std::cout << obj;
+        return *this;
+    }
+    
+    dmrg_cout& operator <<(std::ostream& (*pf)(std::ostream&))
+    {
 #ifdef MPI_PARALLEL
-		if(ambient::scheduler::instance().is_ambient_master())
+        if(ambient::scheduler::instance().is_ambient_master())
 #endif
-			std::cout << pf;
-		return *this;
-	}
-	
-	void precision(int p)
-	{
-		std::cout.precision(p);
-	}
+            std::cout << pf;
+        return *this;
+    }
+    
+    void precision(int p)
+    {
+        std::cout.precision(p);
+    }
 } zout;
 
 #endif
