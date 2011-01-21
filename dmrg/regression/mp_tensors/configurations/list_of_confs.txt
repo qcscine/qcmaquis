@@ -1,0 +1,18 @@
+default:
+	Time: 1 hour (4 CPUs)
+	Memory: 2 GB
+
+FreeFermions_LW6_M5000:
+	Time: 1 hour (4 CPUs)
+	Memory: 3 GB
+
+ff_short:
+	Time: 5 seconds
+	Memory: 0
+	Energy: -10.94427191
+
+ff_middle:
+	Time: 2-5 minutes
+	Memory: < 1 GB
+	Energy: -17.85642171
+

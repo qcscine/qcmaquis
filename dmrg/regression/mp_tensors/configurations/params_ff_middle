@@ -1,0 +1,10 @@
+arpack_tol = 1e-06
+alpha_initial = 1
+nsweeps = 4
+arpack_ncv = 20
+max_bond_dimension = 1000
+truncation_final = 1e-12
+alpha_final = 0.0001
+ngrowsweeps = 3
+eigensolver = ARPACK
+truncation_initial = 0.0001
