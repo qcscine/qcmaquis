@@ -21,13 +21,15 @@ typedef blas::p_dense_matrix<double> Matrix;
 
 #else
 
+#include "dense_matrix/aligned_allocator.h"
 #include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/matrix_interface.hpp"
 #include "dense_matrix/resizable_matrix_interface.hpp"
 #include "dense_matrix/dense_matrix_algorithms.h"
 #include "dense_matrix/matrix_algorithms.hpp"
 #include "dense_matrix/dense_matrix_blas.hpp"
-typedef blas::dense_matrix<double> Matrix;
+
+typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
 
 #endif
 
