@@ -56,6 +56,7 @@ namespace ambient
     };
 
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
+    size_t get_bound(size_t size);
 }
 
 #endif

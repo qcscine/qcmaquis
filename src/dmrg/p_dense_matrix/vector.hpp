@@ -30,9 +30,6 @@
 #ifndef __ALPS_VECTOR_HPP__
 #define __ALPS_VECTOR_HPP__
 
-#include "p_dense_matrix/detail/vector_adaptor.hpp"
-
-#include "p_dense_matrix/detail/blasmacros.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -41,26 +38,20 @@
 
 
 namespace blas{
-  template<typename T, typename MemoryBlock = std::vector<T> >
-  class vector : public MemoryBlock
+  template<typename T>
+  class vector : public std::vector<T>
   {
     public:
       vector(std::size_t size=0, T const& initial_value = T())
-      : MemoryBlock(size, initial_value)
+      : std::vector<T>(size, initial_value)
       {
       }
 
       vector(vector const& v)
-      : MemoryBlock(v)
+      : std::vector<T>(v)
       {
       }
 
-      template <typename OtherMemoryBlock>
-      vector(vector<T,OtherMemoryBlock> const& v)
-      : MemoryBlock( v.begin(), v.end() )
-      {
-      }
-      
       friend void swap(vector& x,vector& y)
       {
           std::swap(x, y);
@@ -99,8 +90,8 @@ namespace blas{
       }
   };  
     
-    template<typename T, typename MemoryBlock>
-    void insert(vector<T,MemoryBlock>& v, T value, std::size_t i)
+    template<typename T>
+    void insert(vector<T>& v, T value, std::size_t i)
     {
         assert((i <= v.size()));
         v.insert(v.begin()+i,value);
@@ -112,8 +103,8 @@ namespace blas{
         std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
     }
    
-    template<typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator+(vector<T,MemoryBlock> v1, const vector<T,MemoryBlock>& v2)
+    template<typename T>
+    vector<T> operator+(vector<T> v1, const vector<T>& v2)
     {
         assert(v1.size() == v2.size());
         v1 += v2;
@@ -126,8 +117,8 @@ namespace blas{
         std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
     }
     
-    template<typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator-(vector<T,MemoryBlock> v1, const vector<T,MemoryBlock>& v2)  
+    template<typename T>
+    vector<T> operator-(vector<T> v1, const vector<T>& v2)  
     {
         assert(v1.size() == v2.size());
         v1 -= v2;
@@ -140,39 +131,38 @@ namespace blas{
         std::transform(start1, end1, start1, std::bind2nd(std::multiplies<T>(), lambda));
     }
 
-    template <typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator * (T const& t, vector<T,MemoryBlock> v)
+    template <typename T>
+    vector<T> operator * (T const& t, vector<T> v)
     {
         return v *= t;
     }
     
-    template <typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator * (vector<T,MemoryBlock> v, T const& t)
+    template <typename T>
+    vector<T> operator * (vector<T> v, T const& t)
     {
         return v *= t;
     }
     
-    template <typename T, typename MemoryBlock>
-    inline T scalar_product(const vector<T,MemoryBlock>& v1, const vector<T,MemoryBlock>& v2)
+    template <typename T>
+    inline T scalar_product(const vector<T>& v1, const vector<T>& v2)
     {   
         return alps::numeric::scalar_product(v1,v2);
     }
     
-    template <typename T, typename MemoryBlock>
-    inline vector<T,MemoryBlock> exp(T c, vector<T,MemoryBlock> v)
+    template <typename T>
+    inline vector<T> exp(T c, vector<T> v)
     {
         using std::exp;
-        vector<T,MemoryBlock> result(v.size());
+        vector<T> result(v.size());
         v*=c;
         std::transform(v.begin(), v.end(), result.begin(), static_cast<T(*)(T)> (&exp));
         return result;
     }
    
-    template <typename MemoryBlock>
-    inline vector<double,MemoryBlock> exp(double c, vector<double,MemoryBlock> v)
+    inline vector<double> exp(double c, vector<double> v)
     {
-        fortran_int_t s=v.size();
-        vector<double,MemoryBlock> result(s);
+        int s=v.size();
+        vector<double> result(s);
         v*=c;
 #ifdef VECLIB
         vecLib::vvexp(&result[0], &v[0], &s); 
@@ -191,8 +181,8 @@ namespace blas{
         return result;
     }
 
-  template <typename T, typename MemoryBlock>
-  inline std::ostream &operator<<(std::ostream &os, const vector<T,MemoryBlock> &v)
+  template <typename T>
+  inline std::ostream &operator<<(std::ostream &os, const vector<T> &v)
   {
     os<<"[ ";
     for(unsigned int i=0;i<v.size()-1;++i){
@@ -202,34 +192,6 @@ namespace blas{
     return os;
   }
 
-#define PLUS_ASSIGN(T) \
-template <typename MemoryBlock> \
-void plus_assign(typename std::vector<T,MemoryBlock>::iterator first1, typename std::vector<T,MemoryBlock>::iterator last1, typename std::vector<T,MemoryBlock>::const_iterator first2) \
-{ boost::numeric::bindings::blas::detail::axpy(last1-first1, 1., &*first2, 1, &*first1, 1);}
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_ASSIGN)
-#undef PLUS_ASSIGN
-    
-
-#define MINUS_ASSIGN(T) \
-template <typename MemoryBlock> \
-void minus_assign(typename std::vector<T,MemoryBlock>::iterator first1, typename std::vector<T,MemoryBlock>::iterator last1, typename std::vector<T,MemoryBlock>::const_iterator first2) \
-{ boost::numeric::bindings::blas::detail::axpy(last1-first1, -1., &*first2, 1, &*first1, 1);}
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(MINUS_ASSIGN)
-#undef MINUS_ASSIGN
-    
-#define MULTIPLIES_ASSIGN(T) \
-template <typename MemoryBlock> \
-void multiplies_assign(typename std::vector<T,MemoryBlock>::iterator start1, typename std::vector<T,MemoryBlock>::iterator end1, T lambda)                            \
-    { boost::numeric::bindings::blas::detail::scal(end1-start1, lambda, &*start1, 1);}
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
-#undef MULTIPLIES_ASSIGN
-    
-#define SCALAR_PRODUCT(T) \
-template <typename MemoryBlock> \
-inline T scalar_product(const std::vector<T,MemoryBlock> v1, const std::vector<T,MemoryBlock> v2)                                              \
-    { return boost::numeric::bindings::blas::detail::dot(v1.size(), &v1[0],1,&v2[0],1);}
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(SCALAR_PRODUCT)
-#undef SCALAR_PRODUCT
     
 } //namespace
 

@@ -1,6 +1,7 @@
 #ifndef ITERATOR_BLAS1_H
 #define ITERATOR_BLAS1_H
 
+#include <boost/numeric/bindings/blas.hpp>
 #include <algorithm>
 
 template<class ForwardIterator, class T>
