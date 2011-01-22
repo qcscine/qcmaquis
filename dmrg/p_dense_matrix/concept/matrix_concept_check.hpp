@@ -48,10 +48,6 @@ struct Matrix
         t = x(0,0);
         x(0,0)+=value_type();
 
-        // Swap rows/columns
-        swap_rows(x,0,1);
-        swap_columns(x,0,1);
-        
         // Iterator functions
         std::pair<row_element_iterator,row_element_iterator>                    row_range = row(x,0);
         std::pair<column_element_iterator,column_element_iterator>              column_range = column(x,0);

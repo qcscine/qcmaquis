@@ -14,11 +14,9 @@ using std::endl;
 #include "ambient/ambient.h"
 
 #include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/matrix_interface.hpp"
-#include "p_dense_matrix/resizable_matrix_interface.hpp"
-#include "p_dense_matrix/dense_matrix_algorithms.h"
-#include "p_dense_matrix/matrix_algorithms.hpp"
-#include "p_dense_matrix/dense_matrix_blas.hpp"
+#include "p_dense_matrix/concept/matrix_interface.hpp"
+#include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
+#include "p_dense_matrix/p_dense_matrix_algorithms.h"
 typedef blas::p_dense_matrix<double> Matrix;
 
 #else

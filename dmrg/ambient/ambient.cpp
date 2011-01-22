@@ -47,6 +47,10 @@ namespace ambient
         return *instance >> dim_distr;
     }
 
+    size_t get_bound(size_t size){
+        return 200; // to be redo to something normal
+    }
+
     void scheduler::regression_test()
     {
         printf("Initializing packet system...\n");
