@@ -11,6 +11,8 @@ unsigned long long getcpuclocks() {
     return clk;
 }*/
 
+#define CPU_FREQ 1e9
+
 #if defined(__i386__)
  
 unsigned long getcpuclocks()
