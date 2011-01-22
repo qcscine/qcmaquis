@@ -16,8 +16,8 @@
 	Only for double run on INTEL/AMD with gcc 4.4.4 write with SSE2 to be compatible
 	with a large set of precessors
 */
-template<>
-void kernel_vector_scalar(double * p1, double * p2, double  scalaire, std::size_t n )
+
+void kernel_vector_scalar(double * p1, double const * p2, double  scalaire, std::size_t n )
 {
 	/**
 	 vectors register 
@@ -37,6 +37,7 @@ void kernel_vector_scalar(double * p1, double * p2, double  scalaire, std::size_
 		
 		for(std::size_t i = 0; i < m ; i = i+8)
 		{
+			std::cout << "simd" << std::endl;
 			/**
 			 objective :  *(p1++) += *(p2++) * wblock_t;
 			 unroll + SSE2
