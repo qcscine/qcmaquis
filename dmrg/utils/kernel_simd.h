@@ -12,6 +12,9 @@
 
 #include <emmintrin.h>
 
+
+typedef double __attribute__((aligned(16))) SSE_double; 
+
 /**
 	Only for double run on INTEL/AMD with gcc 4.4.4 write with SSE2 to be compatible
 	with a large set of precessors
@@ -22,36 +25,39 @@ void kernel_vector_scalar(double * p1, double const * p2, double  scalaire, std:
 	/**
 	 vectors register 
 	*/
+	
+	
 	 
 	__m128d xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7,xmm8;
 	std::size_t m;
 	
-	double scalaire_array[2] __attribute__ ((aligned (16))) = {scalaire, scalaire};
-	
-	xmm0 = _mm_load_pd(&scalaire_array[0]);
-	
 	if (n/8 >= 1)
 	{
+		double scalaire_array[2] __attribute__ ((aligned (16))) = {scalaire, scalaire};
+		
+		xmm0 = _mm_load_pd(&scalaire_array[0]);
 		
 		m  =  8*std::size_t(n/8);
 		
 		for(std::size_t i = 0; i < m ; i = i+8)
 		{
-			std::cout << "simd" << std::endl;
 			/**
 			 objective :  *(p1++) += *(p2++) * wblock_t;
-			 unroll + SSE2
+			 unroll + SSE2, presently I lost alignement inside the code,
+			 therefore I changed _mm_load_pd and _mm_store_pd by _mm_loadu_pd
+			 and _storeu_pd respectively. It is bad because it is slower.
+			 We keep this version until I found the problemn in the code
 			 */
 			//load p1
-			xmm1 = _mm_load_pd(p1+i);
-			xmm2 = _mm_load_pd(p1+(i+2));
-			xmm3 = _mm_load_pd(p1+(i+4));
-			xmm4 = _mm_load_pd(p1+(i+6));
+			xmm1 = _mm_loadu_pd(p1+i);
+			xmm2 = _mm_loadu_pd(p1+(i+2));
+			xmm3 = _mm_loadu_pd(p1+(i+4));
+			xmm4 = _mm_loadu_pd(p1+(i+6));
 			//load p2
-			xmm5 = _mm_load_pd(p2+i);
-			xmm6 = _mm_load_pd(p2+(i+2));
-			xmm7 = _mm_load_pd(p2+(i+4));
-			xmm8 = _mm_load_pd(p2+(i+6));
+			xmm5 = _mm_loadu_pd(p2+i);
+			xmm6 = _mm_loadu_pd(p2+(i+2));
+			xmm7 = _mm_loadu_pd(p2+(i+4));
+			xmm8 = _mm_loadu_pd(p2+(i+6));
 			//*(p1++) += *(p2++) * wblock_t;
 			xmm5 = _mm_mul_pd(xmm5, xmm0);
 			xmm6 = _mm_mul_pd(xmm6, xmm0);
@@ -63,10 +69,10 @@ void kernel_vector_scalar(double * p1, double const * p2, double  scalaire, std:
 			xmm3 = _mm_add_pd(xmm3, xmm7);
 			xmm4 = _mm_add_pd(xmm4, xmm8);
 			//set p1 et p2 
-			_mm_store_pd(p1+i  , xmm1);
-			_mm_store_pd(p1+(i+2), xmm2);			
-			_mm_store_pd(p1+(i+4), xmm3);
-			_mm_store_pd(p1+(i+6), xmm4);
+			_mm_storeu_pd(p1+i  , xmm1);
+			_mm_storeu_pd(p1+(i+2), xmm2);			
+			_mm_storeu_pd(p1+(i+4), xmm3);
+			_mm_storeu_pd(p1+(i+6), xmm4);
 			
 		}
 		
