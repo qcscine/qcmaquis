@@ -10,6 +10,8 @@
 
 #include "dense_matrix/diagonal_matrix.h"
 
+#include <boost/lambda/lambda.hpp>
+#include <boost/typeof/typeof.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <ostream>
 #include <vector>
@@ -22,6 +24,37 @@
 #endif
 
 namespace blas {
+
+    class p_profile {
+    public:
+        p_profile(const char* type, ambient::dim3 size, ambient::dim3 block_size, int** owners)
+        : type(type), size(size), block_size(block_size), owners(owners) { };
+        p_profile(const char* type) : type(type) { };
+        const char* type;
+        ambient::dim3 size;
+        ambient::dim3 block_size;
+        int** owners;
+    };
+
+    template<typename T>
+    p_profile* get_profile(T& obj){ return obj->profile(); }
+    template<>
+    p_profile* get_profile<>(int& obj){ return new p_profile("int"); }
+    template<>
+    p_profile* get_profile<>(double& obj){ return new p_profile("double"); }
+
+    template <typename L, typename R>
+    class p_action {
+    public:
+        p_action(char op_code, const L& lhs, const R& rhs): action(lhs, rhs), op_code(op_code) {};
+        p_profile* get_profile_lhs(){ return get_profile<L>(this->action.first); }
+        p_profile* get_profile_rhs(){ return get_profile<R>(this->action.second); }
+        p_profile* profile(){ return new p_profile("action"); }
+    private:
+        std::pair<L,R> action;
+        char op_code;
+    };
+
     template <typename T>
     class p_dense_matrix {
     public:
@@ -46,22 +79,9 @@ namespace blas {
         p_dense_matrix(size_type rows, size_type columns, T init_value);
         p_dense_matrix(p_dense_matrix const& m);
         void swap(p_dense_matrix & r);
-        friend void swap(p_dense_matrix & x, p_dense_matrix & y)
-        {
-            x.swap(y);
-        }
+        friend void swap(p_dense_matrix & x, p_dense_matrix & y){ x.swap(y); }
 
-        p_dense_matrix& operator = (p_dense_matrix rhs);
-        inline value_type& operator()(const size_type i, const size_type j);
-        inline value_type const& operator()(const size_type i, const size_type j) const;
-        p_dense_matrix<T>& operator += (p_dense_matrix const& rhs); 
-        p_dense_matrix<T>& operator -= (p_dense_matrix const& rhs);
-        
-        template <typename T2>
-        p_dense_matrix<T>& operator *= (T2 const& t);
-        
-        template <typename T2>
-        p_dense_matrix<T>& operator /= (T2 const& t);
+        p_profile* profile(){ return new p_profile("matrix"); } // AMBIENT REQUIRED PART
 
         inline const bool empty() const;
         inline const size_type num_rows() const;
@@ -70,7 +90,33 @@ namespace blas {
         inline const difference_type stride2() const;
         void reserve(size_type rows, size_type cols);
         void resize(size_type rows, size_type cols);
+        void remove_rows(size_type i, difference_type k);
+        void remove_columns(size_type j, difference_type k);
         void clear();
+       
+        void inplace_conjugate();
+
+        template <typename L, typename R>
+        p_dense_matrix& operator = (const p_action<L,R> & a);
+        p_dense_matrix& operator = (p_dense_matrix rhs);
+        inline value_type& operator()(const size_type i, const size_type j);
+        inline value_type const& operator()(const size_type i, const size_type j) const;
+
+        template <typename L, typename R>
+        p_dense_matrix<T>& operator += (p_action<L,R> const& a);
+        p_dense_matrix<T>& operator += (p_dense_matrix const& rhs); 
+
+        template <typename L, typename R>
+        p_dense_matrix<T>& operator -= (p_action<L,R> const& a);
+        p_dense_matrix<T>& operator -= (p_dense_matrix const& rhs);
+        
+        template <typename L, typename R>
+        p_dense_matrix<T>& operator *= (p_action<L,R> const& a);
+        template <typename T2>
+        p_dense_matrix<T>& operator *= (T2 const& t);
+
+        template <typename T2>
+        p_dense_matrix<T>& operator /= (T2 const& t);
 
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
@@ -97,15 +143,6 @@ namespace blas {
             return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_columns() ) );
         }
 
-        void remove_rows(size_type i, difference_type k);
-        void remove_columns(size_type j, difference_type k);
-        void plus_assign(p_dense_matrix const& rhs);
-        void minus_assign(p_dense_matrix const& rhs);
-
-        template <typename T2>
-        void multiplies_assign (T2 const& t);
-       
-        void inplace_conjugate();
 #ifdef HAVE_ALPS_HDF5
         void serialize(alps::hdf5::iarchive & ar);
         void serialize(alps::hdf5::oarchive & ar) const;
@@ -118,6 +155,8 @@ namespace blas {
         boost::scoped_ptr<T> data_scope;
         T* data;
     };
+
+
     
     template<typename T>
     struct associated_diagonal_matrix< p_dense_matrix<T> >
@@ -127,28 +166,6 @@ namespace blas {
     
 } // namespace blas
 
-
-namespace blas {
-    
-    template <typename T>
-    const p_dense_matrix<T> operator + (p_dense_matrix<T> a, p_dense_matrix<T> const& b);
-    
-    template <typename T>
-    const p_dense_matrix<T> operator - (p_dense_matrix<T> a, p_dense_matrix<T> const& b);
-
-    template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (p_dense_matrix<T> m, T2 const& t);
-    
-    template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (T2 const& t, p_dense_matrix<T> m);
-
-    template<typename T>
-    const p_dense_matrix<T> operator * (p_dense_matrix<T> const& m1, p_dense_matrix<T> const& m2);
-
-    template <typename T>
-    std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m);
-
-} // namespace blas
 
 #include "p_dense_matrix/p_dense_matrix.hpp"
 #endif //__ALPS_DENSE_MATRIX_HPP__

@@ -22,7 +22,6 @@ namespace blas
     {
         static Timer timer("transpose");
         timer.begin();
-        
         BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
         // TODO: perhaps this could return a proxy object
         Matrix tmp(num_columns(m), num_rows(m));
@@ -31,12 +30,18 @@ namespace blas
                 tmp(j,i) = m(i,j);
             }
         }
-        
         timer.end();
-        
         return tmp;
     }
-    
+        
+    template<typename T>
+    p_dense_matrix<T> conjugate(p_dense_matrix<T> M)
+    {
+        printf("Attempting to perform INPCONJ\n");
+        M.inplace_conjugate();
+        return M;
+    }
+
     template <typename Matrix>
     const typename Matrix::value_type trace(Matrix const& m)
     {
@@ -60,6 +65,8 @@ namespace blas
     template<typename T>
     void gemm(p_dense_matrix<T> const & A, p_dense_matrix<T> const & B, p_dense_matrix<T> & C)
     {
+        printf("Attempting to perform GEMM\n");
+        assert(false);
 // insert hooks for ambient here
 // TODO        C = REAL_AMBIENT_GEMM(A, B);
     }
@@ -71,6 +78,8 @@ namespace blas
              typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
+        printf("Attempting to perform SVD\n");
+        assert(false);
 /*        typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_columns(M));
         resize(U, num_rows(M), k);
         resize(V, k, num_columns(M));
@@ -87,16 +96,10 @@ namespace blas
             p_dense_matrix<T> & Q,
             p_dense_matrix<T> & R)
     {
+        assert(false);
         /* implement thin QR decomposition, i.e. for a (m,n) matrix, where m >= n, the result should be
          Q: (m,n)
          R: (n,n) */
-    }
-    
-    template<typename T>
-    p_dense_matrix<T> conjugate(p_dense_matrix<T> M)
-    {
-        M.inplace_conjugate();
-        return M;
     }
     
 } /* namespace blas */

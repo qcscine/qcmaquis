@@ -36,13 +36,15 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
     {
         charge rhs_rc = rhs.rows_[k].first;
         size_type goesto = rows_.position(rhs_rc);
+        Matrix block;
+        block = rhs.data_[k] * -1;
         if (goesto == rows_.size()) { // it's a new block
             size_type i1 = rows_.insert(rhs.rows_[k]);
             size_type i2 = cols_.insert(rhs.cols_[k]);
             assert(i1 == i2);
-            data_.insert(data_.begin() + i1, -1*rhs.data_[k]);
+            data_.insert(data_.begin() + i1, block);
         } else { // this block exists already -> pass to Matrix
-            data_[goesto] += -1*rhs.data_[k];
+            data_[goesto] += block;
         }
     }
     return *this;
