@@ -165,29 +165,29 @@ namespace blas {
 
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
     template <typename T>
-    const ambient::p_profile p_dense_matrix<T>::profile() const { 
-        if(proxy) return ambient::p_profile(this, "proxy"); 
-        else return ambient::p_profile(this, "matrix"); 
+    const ambient::breakdown::p_profile p_dense_matrix<T>::profile() const { 
+        if(proxy) return ambient::breakdown::p_profile(this, "proxy"); 
+        else return ambient::breakdown::p_profile(this, "matrix"); 
     }
     template <typename T> // proxy object construction
-    p_dense_matrix<T>::p_dense_matrix(const ambient::p_action* a): action(a), proxy(true), data_scope(new T()) { }
+    p_dense_matrix<T>::p_dense_matrix(const ambient::breakdown::p_action* a): action(a), proxy(true), data_scope(new T()) { }
     template <typename T>
     p_dense_matrix<T>& p_dense_matrix<T>::operator = (p_dense_matrix const& rhs) // watch out of copying
     {
-        this->action = new ambient::p_action('=', *this, rhs);
+        this->action = new ambient::breakdown::p_action('=', *this, rhs);
         return *this;
     }
 
     template <typename T>
-    const p_dense_matrix<T> operator + (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return p_dense_matrix<T>(new ambient::p_action('+', a, b)); }
+    const p_dense_matrix<T> operator + (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return p_dense_matrix<T>(new ambient::breakdown::p_action('+', a, b)); }
     template <typename T>
-    const p_dense_matrix<T> operator - (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return p_dense_matrix<T>(new ambient::p_action('-', a, b)); }
+    const p_dense_matrix<T> operator - (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return p_dense_matrix<T>(new ambient::breakdown::p_action('-', a, b)); }
     template<typename T>
-    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ return p_dense_matrix<T>(new ambient::p_action('*', lhs, rhs)); }
+    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ return p_dense_matrix<T>(new ambient::breakdown::p_action('*', lhs, rhs)); }
     template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& m, const T2& t){ return p_dense_matrix<T>(new ambient::p_action('*', m, t)); }
+    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& m, const T2& t){ return p_dense_matrix<T>(new ambient::breakdown::p_action('*', m, t)); }
     template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (const T2& t, const p_dense_matrix<T>& m){ return p_dense_matrix<T>(new ambient::p_action('*', t, m)); }
+    const p_dense_matrix<T> operator * (const T2& t, const p_dense_matrix<T>& m){ return p_dense_matrix<T>(new ambient::breakdown::p_action('*', t, m)); }
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
 
     template <typename T>
