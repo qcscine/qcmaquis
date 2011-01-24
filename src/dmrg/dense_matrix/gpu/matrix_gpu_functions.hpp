@@ -130,7 +130,15 @@ void matrix_matrix_multiply(blas::dense_matrix<float,std::vector<float, std::all
 //	const fortran_int_t m_gpu = lhs.num_rows() ; old
 	const fortran_int_t m_gpu = rhs.num_columns() ; 
 	
-	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/6) ;
+//	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/3) ;
+
+	/**
+		note : n_cpu = m_gpu = 0 -> full GPU
+			   n_cpu = m_gpu     -> full CPU
+			   n_cpu = m_gpu/n   -> CPU/GPU
+	*/
+	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu) ;
+
 	const fortran_int_t n_gpu = m_gpu - n_cpu ;
 	
 	const fortran_int_t m = lhs.num_rows(); 
@@ -146,6 +154,7 @@ void matrix_matrix_multiply(blas::dense_matrix<float,std::vector<float, std::all
 	
 	gpu::matrix_gpu<float> lhs_gpu(lhs,m,k,m); 
 	gpu::matrix_gpu<float> rhs_gpu(rhs,k,n_gpu,k_gpu); 
+	 
 	gpu::matrix_gpu<float> result_gpu(static_cast<size_t> (m),static_cast<size_t> (n_gpu),static_cast<size_t> (m_gpu)); 
 
 	cublasSgemm('n', 'n', m, n_gpu, k, 1.0, lhs_gpu.p(), m,rhs_gpu.p(), k, 0.0, result_gpu.p(), m); 
