@@ -1,6 +1,7 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
 
+#include "utils/zout.hpp"
 /*
 unsigned long long getcpuclocks() {
     unsigned long long clk;
@@ -38,7 +39,7 @@ public:
     : val(0), name(name_), freq(CPU_FREQ)
     { }
     
-    ~Timer() { cout << name << " " << val << endl; }
+    ~Timer() { zout << name << " " << val << std::endl; }
     
     Timer & operator+=(double t)
     {

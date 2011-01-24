@@ -27,9 +27,10 @@ namespace blas {
 
     class p_profile {
     public:
-        p_profile(const char* type, ambient::dim3 size, ambient::dim3 block_size, int** owners)
-        : type(type), size(size), block_size(block_size), owners(owners) { };
-        p_profile(const char* type) : type(type) { };
+        p_profile(const void* ptr, const char* type, ambient::dim3 size, ambient::dim3 block_size, int** owners)
+        : ptr(ptr), type(type), size(size), block_size(block_size), owners(owners) { };
+        p_profile(const void* ptr, const char* type) : ptr(ptr), type(type) { };
+        const void* ptr;
         const char* type;
         ambient::dim3 size;
         ambient::dim3 block_size;
@@ -37,27 +38,30 @@ namespace blas {
     };
 
     template<typename T>
-    p_profile* get_profile(T& obj){ return obj->profile(); }
+    const p_profile get_profile(const T& obj){ return obj.profile(); }
     template<>
-    p_profile* get_profile<>(int& obj){ return new p_profile("int"); }
+    const p_profile get_profile<>(const int& obj){ return p_profile(&obj, "int"); }
     template<>
-    p_profile* get_profile<>(double& obj){ return new p_profile("double"); }
+    const p_profile get_profile<>(const double& obj){ return p_profile(&obj, "double"); }
 
-    template <typename L, typename R>
     class p_action {
     public:
-        p_action(char op_code, const L& lhs, const R& rhs): action(lhs, rhs), op_code(op_code) {};
-        p_profile* get_profile_lhs(){ return get_profile<L>(this->action.first); }
-        p_profile* get_profile_rhs(){ return get_profile<R>(this->action.second); }
-        p_profile* profile(){ return new p_profile("action"); }
+        template <typename L, typename R>
+        p_action(char op_code, const L& lhs, const R& rhs): arguments(get_profile<L>(lhs), get_profile<R>(rhs)), op_code(op_code) {};
+        const p_profile profile() const { return p_profile(this, "action"); }
     private:
-        std::pair<L,R> action;
+        std::pair<p_profile,p_profile> arguments;
         char op_code;
     };
 
     template <typename T>
     class p_dense_matrix {
     public:
+//////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
+        const p_action* action;
+        const p_profile profile() const { return p_profile(this, "matrix"); }
+        p_dense_matrix(p_action const& a);
+//////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
         typedef T                       value_type;       // The type T of the elements of the matrix
         typedef std::size_t             size_type;        // Unsigned integer type that represents the dimensions of the matrix
         typedef std::ptrdiff_t          difference_type;  // Signed integer type to represent the distance of two elements in the memory
@@ -78,10 +82,9 @@ namespace blas {
 
         p_dense_matrix(size_type rows, size_type columns, T init_value);
         p_dense_matrix(p_dense_matrix const& m);
+
         void swap(p_dense_matrix & r);
         friend void swap(p_dense_matrix & x, p_dense_matrix & y){ x.swap(y); }
-
-        p_profile* profile(){ return new p_profile("matrix"); } // AMBIENT REQUIRED PART
 
         inline const bool empty() const;
         inline const size_type num_rows() const;
@@ -96,27 +99,16 @@ namespace blas {
        
         void inplace_conjugate();
 
-        template <typename L, typename R>
-        p_dense_matrix& operator = (const p_action<L,R> & a);
-        p_dense_matrix& operator = (p_dense_matrix rhs);
+        p_dense_matrix& operator = (const p_dense_matrix& rhs);
         inline value_type& operator()(const size_type i, const size_type j);
         inline value_type const& operator()(const size_type i, const size_type j) const;
 
-        template <typename L, typename R>
-        p_dense_matrix<T>& operator += (p_action<L,R> const& a);
-        p_dense_matrix<T>& operator += (p_dense_matrix const& rhs); 
-
-        template <typename L, typename R>
-        p_dense_matrix<T>& operator -= (p_action<L,R> const& a);
-        p_dense_matrix<T>& operator -= (p_dense_matrix const& rhs);
-        
-        template <typename L, typename R>
-        p_dense_matrix<T>& operator *= (p_action<L,R> const& a);
+        p_dense_matrix<T>& operator += (const p_dense_matrix& rhs); 
+        p_dense_matrix<T>& operator -= (const p_dense_matrix& rhs);
         template <typename T2>
-        p_dense_matrix<T>& operator *= (T2 const& t);
-
+        p_dense_matrix<T>& operator *= (const T2& t);
         template <typename T2>
-        p_dense_matrix<T>& operator /= (T2 const& t);
+        p_dense_matrix<T>& operator /= (const T2& t);
 
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
