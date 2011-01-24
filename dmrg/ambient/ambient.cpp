@@ -51,7 +51,7 @@ namespace ambient
         return 200; // to be redo to something normal
     }
 
-    void scheduler::push(const p_action* action){
+    void scheduler::push(const breakdown::p_action* action){
         printf("New action pushed: %s %c %s\n", action->arguments.first.type, action->op_code, action->arguments.second.type);
     }
 

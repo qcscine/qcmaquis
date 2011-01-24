@@ -2,7 +2,7 @@
 #define __ALPS_DENSE_MATRIX_HPP__
 
 #include "ambient/ambient.h"
-#include "ambient/p_action.hpp"
+#include "ambient/breakdown/p_action.hpp"
 
 #include "p_dense_matrix/iterators.hpp"
 #include "p_dense_matrix/vector.hpp"
@@ -32,10 +32,10 @@ namespace blas {
     public:
         ~p_dense_matrix();
 // AMBIENT PART <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        const ambient::p_action* action;            // pointer to associated action
-        const ambient::p_profile profile() const;   // ambient profile of the type
-        p_dense_matrix(ambient::p_action const* a); // proxy matrix construction
-        bool proxy;                                 // if object is proxy
+        const ambient::breakdown::p_action* action;            // pointer to associated action
+        const ambient::breakdown::p_profile profile() const;   // ambient profile of the type
+        p_dense_matrix(ambient::breakdown::p_action const* a); // proxy matrix construction
+        bool proxy;                                            // if object is proxy
 // AMBIENT PART >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         typedef T                       value_type;       // The type T of the elements of the matrix
         typedef std::size_t             size_type;        // Unsigned integer type that represents the dimensions of the matrix

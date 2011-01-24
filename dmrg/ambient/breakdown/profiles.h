@@ -1,8 +1,8 @@
 #ifndef AMBIENT_PROFILES_H
 #define AMBIENT_PROFILES_H
-#include "ambient/p_profile.h"
+#include "ambient/breakdown/p_profile.h"
 
-namespace ambient {
+namespace ambient { namespace breakdown {
 
     template<typename T>
     const p_profile get_profile(const T& obj){ return obj.profile(); }
@@ -11,5 +11,5 @@ namespace ambient {
     template<>
     const p_profile get_profile<>(const double& obj){ return p_profile(&obj, "double"); }
 
-}
+} }
 #endif

@@ -1,9 +1,8 @@
 #ifndef AMBIENT_P_ACTION_H
 #define AMBIENT_P_ACTION_H
-#include "ambient/p_profile.h"
+#include "ambient/breakdown/p_profile.h"
 
-namespace ambient
-{
+namespace ambient { namespace breakdown {
     class p_action {
     public:
         template <typename L, typename R>
@@ -12,5 +11,5 @@ namespace ambient
         std::pair<p_profile,p_profile> arguments;
         char op_code;
     };
-}
+} }
 #endif
