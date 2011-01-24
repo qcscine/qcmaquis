@@ -2,10 +2,12 @@
 #define __ALPS_DENSE_MATRIX_HPP__
 
 #include "ambient/ambient.h"
+#include "ambient/p_action.hpp"
 
 #include "p_dense_matrix/iterators.hpp"
 #include "p_dense_matrix/vector.hpp"
 
+#include "utils/zout.hpp"
 #include "utils/function_objects.h"
 
 #include "dense_matrix/diagonal_matrix.h"
@@ -25,43 +27,16 @@
 
 namespace blas {
 
-    class p_profile {
-    public:
-        p_profile(const void* ptr, const char* type, ambient::dim3 size, ambient::dim3 block_size, int** owners)
-        : ptr(ptr), type(type), size(size), block_size(block_size), owners(owners) { };
-        p_profile(const void* ptr, const char* type) : ptr(ptr), type(type) { };
-        const void* ptr;
-        const char* type;
-        ambient::dim3 size;
-        ambient::dim3 block_size;
-        int** owners;
-    };
-
-    template<typename T>
-    const p_profile get_profile(const T& obj){ return obj.profile(); }
-    template<>
-    const p_profile get_profile<>(const int& obj){ return p_profile(&obj, "int"); }
-    template<>
-    const p_profile get_profile<>(const double& obj){ return p_profile(&obj, "double"); }
-
-    class p_action {
-    public:
-        template <typename L, typename R>
-        p_action(char op_code, const L& lhs, const R& rhs): arguments(get_profile<L>(lhs), get_profile<R>(rhs)), op_code(op_code) {};
-        const p_profile profile() const { return p_profile(this, "action"); }
-    private:
-        std::pair<p_profile,p_profile> arguments;
-        char op_code;
-    };
-
     template <typename T>
     class p_dense_matrix {
     public:
-//////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
-        const p_action* action;
-        const p_profile profile() const { return p_profile(this, "matrix"); }
-        p_dense_matrix(p_action const& a);
-//////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
+        ~p_dense_matrix();
+// AMBIENT PART <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        const ambient::p_action* action;            // pointer to associated action
+        const ambient::p_profile profile() const;   // ambient profile of the type
+        p_dense_matrix(ambient::p_action const* a); // proxy matrix construction
+        bool proxy;                                 // if object is proxy
+// AMBIENT PART >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         typedef T                       value_type;       // The type T of the elements of the matrix
         typedef std::size_t             size_type;        // Unsigned integer type that represents the dimensions of the matrix
         typedef std::ptrdiff_t          difference_type;  // Signed integer type to represent the distance of two elements in the memory
@@ -148,8 +123,6 @@ namespace blas {
         T* data;
     };
 
-
-    
     template<typename T>
     struct associated_diagonal_matrix< p_dense_matrix<T> >
     {

@@ -18,7 +18,7 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
-    scheduler::scheduler():rank(multirank::instance())
+    scheduler::scheduler():rank(multirank::instance()), mode(AMBIENT_MASTER)
     {
     }
 
@@ -49,6 +49,10 @@ namespace ambient
 
     size_t get_bound(size_t size){
         return 200; // to be redo to something normal
+    }
+
+    void scheduler::push(const p_action* action){
+        printf("New action pushed: %s %c %s\n", action->arguments.first.type, action->op_code, action->arguments.second.type);
     }
 
     void scheduler::regression_test()

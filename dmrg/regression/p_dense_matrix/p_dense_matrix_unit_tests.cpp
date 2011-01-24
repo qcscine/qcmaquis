@@ -59,12 +59,15 @@ T fill_matrix_with_numbers(p_dense_matrix<T>& a)
     return iota;
 }
 
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 {
     p_dense_matrix<T> a;
     BOOST_CHECK_EQUAL(num_rows(a), 0 );
-
     BOOST_CHECK_EQUAL(num_columns(a), 0 );
+    a.resize(10, 10);
+    BOOST_CHECK_EQUAL(num_rows(a), 10 );
+    BOOST_CHECK_EQUAL(num_columns(a), 10 );
 
     p_dense_matrix<T> b(10,10);
     BOOST_CHECK_EQUAL(num_rows(b), 10 );
@@ -73,13 +76,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
         for(unsigned int j=0; j<10; ++j)
             BOOST_CHECK_EQUAL(b(i,j), T());
 
-    p_dense_matrix<T> c(15,5,5);
-    BOOST_CHECK_EQUAL(num_rows(c), 15 );
-    BOOST_CHECK_EQUAL(num_columns(c), 5 );
-    for(unsigned int i=0; i<15; ++i)
-        for(unsigned int j=0; j<5; ++j)
+    p_dense_matrix<T> c(10,10,5);
+    BOOST_CHECK_EQUAL(num_rows(c), 10 );
+    BOOST_CHECK_EQUAL(num_columns(c), 10 );
+    for(unsigned int i=0; i<10; ++i)
+        for(unsigned int j=0; j<10; ++j)
             BOOST_CHECK_EQUAL(c(i,j), T(5));
+}*/
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
+{
+    p_dense_matrix<T> a(10,10);
+    p_dense_matrix<T> b(10,10,5);
+    p_dense_matrix<T> c(10,10);
+    p_dense_matrix<T> d(10,10);
+
+    a = b + c + d + d;
 }
+
 
 
 
