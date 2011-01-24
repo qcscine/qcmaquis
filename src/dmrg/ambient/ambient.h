@@ -5,24 +5,13 @@
 #include <stdlib.h>
 #include <mpi.h>
 
+#include "dim3.h"
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
+#include "ambient/p_action.h"
 
 namespace ambient
 {
-    class dim3
-    {
-    public:
-        unsigned int x, y, z;
-        dim3(unsigned int x = 1, unsigned int y = 1, unsigned int z = 1) : x(x), y(y), z(z) {}
-        dim3& operator=(int value){
-            x = y = z = value;
-        }
-        bool operator==(int value){
-            return (x == value && y == value && z == value);
-        }
-    };
-
     class scheduler
     {
     private: 
@@ -37,6 +26,7 @@ namespace ambient
         scheduler & operator,(dim3 dim);
         bool is_ambient_master(); 
         void initialize(MPI_Comm comm = NULL);
+        void push(const p_action* action);
         void regression_test();
         void finalize();
 
@@ -57,6 +47,7 @@ namespace ambient
 
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
     size_t get_bound(size_t size);
+    void push(const p_action* action, const p_action* dependent = NULL);
 }
 
 #endif
