@@ -2,6 +2,12 @@
 #define TIMINGS_H
 
 #include "utils/zout.hpp"
+
+#ifdef __CUBLAS__
+#include "cuda_runtime_api.h" 
+#endif
+
+
 /*
 unsigned long long getcpuclocks() {
     unsigned long long clk;
@@ -11,6 +17,7 @@ unsigned long long getcpuclocks() {
     __asm { mov clk,rax };
     return clk;
 }*/
+
 
 #if defined(__i386__)
  
@@ -60,11 +67,52 @@ public:
         else
             val += (getcpuclocks()-t0)/freq;
     }
-    
-private:
+
+    const double GetTime()
+    {
+	return  val;
+    }    
+protected:
     double val, t0;
     unsigned long long freq;
     std::string name;
 };
+
+#ifdef __CUBLAS__
+
+class TimerCuda : public Timer
+{
+public:
+	TimerCuda(std::string name_) : Timer(name_)
+	{}
+	
+	~TimerCuda(){}
+	
+	void begin()
+    {
+        cudaEventCreate(&start);
+		cudaEventCreate(&stop);
+		cudaEventRecord(start, 0);
+    }
+    
+    void end()
+    {
+		cudaEventRecord(stop, 0);
+		cudaEventSynchronize(stop);
+		float elapsedTime;
+		cudaEventElapsedTime(&elapsedTime, start, stop); // that's our time!
+		cudaEventDestroy(start);
+		cudaEventDestroy(stop);
+		val = static_cast<double>(elapsedTime)/1000 ; // because time is in microsecond
+    }
+	
+	
+private:
+	cudaEvent_t start, stop;
+	
+};
+
+#endif
+
 
 #endif
