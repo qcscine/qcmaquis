@@ -58,30 +58,30 @@ int main( int argc, char* argv[])
 	
 	gpu::Simu Simulation;
 	srand(0);
-	
-	double verif = 0 ;
-	double verif2 = 0 ;
 
+	std::size_t M = 2916 ;
+	std::size_t N = 2916 ;
 	
-	for (int NUM = 3 ; NUM <= 15000 ; NUM *= 2)
+	for (int NUM = 0 ; NUM <= 0 ; NUM ++)
 	{
 		
-		blas::dense_matrix<double> A(NUM,NUM);
-		blas::dense_matrix<double> B(NUM,NUM);
-		blas::dense_matrix<double> C_CPU(NUM,NUM,0);
-		blas::dense_matrix<double> C_GPU(NUM,NUM,0);
 		
-		for(int i=0; i< NUM ;i++  )
+		blas::dense_matrix<float> A(N,M);
+		blas::dense_matrix<float> B(M,N);
+		blas::dense_matrix<float> C_CPU(N,N,0);
+		blas::dense_matrix<float> C_GPU(N,N,0);
+		
+		for(int i=0; i< N ;i++  )
 		{
-			for(int j=0; j< NUM ; j++ )
+			for(int j=0; j< M ; j++ )
 			{
 				A(i,j) = rand();
 			}
 		}
 		
-		for(int i=0; i< NUM ;i++  )
+		for(int i=0; i< M ;i++  )
 		{
-			for(int j=0; j< NUM ; j++ )
+			for(int j=0; j< N ; j++ )
 			{
 				B(i,j) = rand();
 			}
@@ -97,8 +97,8 @@ int main( int argc, char* argv[])
 		C_CPU =  matrix_matrix_multiply(A,B);
 		temps_CPU.end();
 		
-		double N = static_cast<double>(NUM);
-		double GFLOP_CPU = N*N*N/temps_CPU.GetTime();
+//		float N = static_cast<float>(NUM);
+		float GFLOP_CPU = 2*M*M*N/temps_CPU.GetTime();
 		
 		
 		
@@ -111,10 +111,10 @@ int main( int argc, char* argv[])
 		cout <<temps_CPU_GPU.GetTime() << endl;	
 
 	
-		double GFLOP_GPU =2*N*N*N/temps_CPU_GPU.GetTime();
+		float GFLOP_GPU =2*M*M*N/temps_CPU_GPU.GetTime();
 		
-		double split = GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU);
-		double split2 =  N*sqrt(GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU)); 
+		float split = GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU);
+		float split2 =  N*sqrt(GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU)); 
 		
 		cout << " GFLOP_GPU   "  << GFLOP_GPU << " GFLOP_CPU " <<  GFLOP_CPU << endl; 
 		cout << " split  " << split << endl;
@@ -130,9 +130,11 @@ int main( int argc, char* argv[])
 		
 		std::ofstream out;
 		out.open("time.txt",std::ios::app);
-		out << std::setprecision (6) <<  NUM << " " << temps_CPU.GetTime() << " " << temps_CPU_GPU.GetTime() << "   " << split << " " << split2 << " "  << omp_get_max_threads() <<endl;
+		out << std::setprecision (6) << " N " << N << " M " << M << " " << temps_CPU.GetTime() << " " << temps_CPU_GPU.GetTime() << "   " << split << " " << split2 << " "  << omp_get_max_threads() <<endl;
 		out.close();
 		
+		N = 3*N;
+		M = 3*M;
 		
 	}	
 	return 0;
