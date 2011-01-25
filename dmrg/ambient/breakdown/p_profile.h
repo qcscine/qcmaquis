@@ -1,21 +1,23 @@
 #ifndef AMBIENT_P_PROFILE_H
 #define AMBIENT_P_PROFILE_H
 #include "ambient/dim3.h"
+#include "ambient/breakdown/p_action.h"
 #include <utility>
 
-namespace ambient { namespace breakdown {
+namespace ambient {
 
     class p_profile {
     public:
-        p_profile(const void* ptr, const char* type, dim3 size, dim3 block_size, int** owners)
-        : ptr(ptr), type(type), size(size), block_size(block_size), owners(owners) { };
-        p_profile(const void* ptr, const char* type) : ptr(ptr), type(type) { };
+        template <typename T>
+        p_profile(const T* ptr);
         const void* ptr;
         const char* type;
+        p_action* action;
+        bool proxy;
         dim3 size;
         dim3 block_size;
         int** owners;
     };
 
-} }
+}
 #endif
