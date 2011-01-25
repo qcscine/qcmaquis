@@ -37,6 +37,13 @@ public:
 		cublasSetVector(size,sizeof(T),&Array[0],1,p(),1);
 		assert(true == CheckError(" cublasSetVector constructor matrix"));
 	}
+
+    vector_gpu(vector_gpu const& v)
+        : size_(v.size_)
+    {
+        cublasAlloc( size_, sizeof(T), (void**)&p_);
+		cudaMemcpy( p_, r.p_, size_*sizeof(T) , cudaMemcpyDeviceToDevice);
+    }
 		
 	template<class MemoryBlock>
 	vector_gpu(blas::vector<T, MemoryBlock> const & Vector_cpu):size_(Vector_cpu.size())
@@ -67,8 +74,18 @@ public:
 	{
 		cublasFree(p_);
 	}
-	
-	
+
+    void swap(vector_gpu& v)
+    {
+        std::swap(size, v.size_);
+        std::swap(p_, v.p_);
+    }
+
+    friend void swap(vector_gpu& v1, vector_gpu& v2)
+    {
+        v1.swap(v2);
+    }
+
 	T& operator()(const size_type i)
 	{
 		assert((i < size_));
