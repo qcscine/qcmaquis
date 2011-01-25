@@ -1,6 +1,6 @@
 #ifndef AMBIENT_INTERFACE_H
 #define AMBIENT_INTERFACE_H
-#include "ambient/breakdown/p_profile.h"
+#include "ambient/interface/p_profile.h"
 
 namespace blas {
     template <typename T> 
