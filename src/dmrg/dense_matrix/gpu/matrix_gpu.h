@@ -92,7 +92,7 @@ public:
 */
 	matrix_gpu():size1_(0), size2_(0), ld_(0)
 	{
-	};
+	}
 	
 /**
 * Constructor m(rows) X n(columns) matrix without given leading dimension, only use for the pure GPU blas operation.
@@ -102,7 +102,7 @@ public:
 	matrix_gpu(size_type size1, size_type size2):size1_(size1), size2_(size2), ld_(size1) 	
 	{
 		cublasAlloc( size1*size2, sizeof(T), (void**)&p_ );
-	};
+	}
 
 	
 /**
@@ -113,7 +113,7 @@ public:
 	matrix_gpu(size_type num_rows, size_type num_cols, size_type ld):size1_(num_rows), size2_(num_cols), ld_(ld) 	
 	{
 		cublasAlloc( num_rows*num_cols, sizeof(T), (void**)&p_ );
-	};
+	}
 
 /**
 * Constructor m(rows) X n(columns) matrix without given leading dimension (ld = # of rows), 
@@ -128,7 +128,17 @@ public:
 		std::vector<T>  Array(size1*size2, value);		
 		cublasSetMatrix(size1,size2,sizeof(T),&Array[0],size1,p(),size1);
 		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
-	};
+	}
+/**
+* Copy constructor
+*/
+    matrix_gpu(matrix_gpu const& r)
+        :size1_(r.size1_), size2_(r.size2_),ld_(ld)
+    {
+        cublasAlloc(size1_*size2_,sizeof(T), (void**) &p_ );
+        CheckError(" cudaMalloc copy constructor matrix")
+		cudaMemcpy( p_, r.p_, size1_*size2_*sizeof(T) , cudaMemcpyDeviceToDevice);
+    }
 	
 /**	
 * Constructor m(rows) X n(columns) matrix using a blas::dense_matrix, m(# of rows), n(# of columns) and ld parameters. 
@@ -223,27 +233,31 @@ public:
 	}
 
 /**
-*Manual destructor could be usefull, just in case !
-*/
- void destroy()
-	{
-		this->~matrix_gpu();
-	}
-	
-
-/**
 * Overload the operator = it copies from GPU to GPU, be cautious of the size of your card
 */	
-	matrix_gpu& operator = (const matrix_gpu& Matrix)
+	matrix_gpu& operator = (matrix_gpu m)
 	{
-		assert( (size1_ == Matrix.num_rows()) && (size2_ == Matrix.num_columns())  );
-		
-		size_type size_matrix = size1()*size2();
-		
-		cudaMemcpy(this->p_, Matrix.p(), size_matrix*sizeof(T) , cudaMemcpyDeviceToDevice);
-
+        swap(m);
 		return *this;
 	}
+
+/**
+* Swaps all content of two matrices
+*/ 
+    void swap(matrix_gpu& m)
+    {
+        std::swap(size1_,m.size1_);
+        std::swap(size2_,m.size2_);
+        std::swap(ld_,m.ld_);
+        std::swap(p_,m.p_);
+    }
+/**
+* Swaps all content of two matrices
+*/ 
+    friend void swap(matrix_gpu& m1, matrix_gpu& m2)
+    {
+        m1.swap(m2);
+    }
 
 /**
 * Initialize a Identity Matrix, the GPU must be allocated before
