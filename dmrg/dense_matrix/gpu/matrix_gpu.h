@@ -133,10 +133,10 @@ public:
 * Copy constructor
 */
     matrix_gpu(matrix_gpu const& r)
-        :size1_(r.size1_), size2_(r.size2_),ld_(ld)
+        :size1_(r.size1_), size2_(r.size2_),ld_(r.ld_)
     {
         cublasAlloc(size1_*size2_,sizeof(T), (void**) &p_ );
-        CheckError(" cudaMalloc copy constructor matrix")
+        CheckError(" cudaMalloc copy constructor matrix");
 		cudaMemcpy( p_, r.p_, size1_*size2_*sizeof(T) , cudaMemcpyDeviceToDevice);
     }
 	

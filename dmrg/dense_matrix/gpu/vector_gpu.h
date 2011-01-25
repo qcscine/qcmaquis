@@ -45,7 +45,7 @@ public:
         : size_(v.size_)
     {
         check_error( cublasAlloc( size_, sizeof(T), (void**)&p_), __LINE__);
-		check_error( cudaMemcpy( p_, r.p_, size_*sizeof(T) , cudaMemcpyDeviceToDevice), __LINE__);
+		check_error( cudaMemcpy( p_, v.p_, size_*sizeof(T) , cudaMemcpyDeviceToDevice), __LINE__);
     }
 		
 	template<class MemoryBlock>
@@ -118,19 +118,20 @@ public:
 		switch (stat) 
 		{
 			case CUBLAS_STATUS_NOT_INITIALIZED:
-                throw(std::runtime_error("CUBLAS_STATUS_NOT_INITIALIZED in " + __FILE__ + boost::lexical_cast<std::string>(line) ));
+//                throw(std::runtime_error("CUBLAS_STATUS_NOT_INITIALIZED in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
 				
 			case CUBLAS_STATUS_MAPPING_ERROR:
-                throw(std::runtime_error("CUBLAS_STATUS_MAPPING_ERROR in " + __FILE__ + boost::lexical_cast<std::string>(line) ));
+//                throw(std::runtime_error("CUBLAS_STATUS_MAPPING_ERROR in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
 				
 			case CUBLAS_STATUS_INVALID_VALUE:
-                throw(std::runtime_error("CUBLAS_STATUS_INVALID_VALUE in " + __FILE__ + boost::lexical_cast<std::string>(line) ));
+//                throw(std::runtime_error("CUBLAS_STATUS_INVALID_VALUE in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;	
 				
 			default:
 				//std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
+                break;
 		}
 		
 	}
