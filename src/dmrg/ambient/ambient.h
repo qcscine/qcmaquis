@@ -8,7 +8,7 @@
 #include "dim3.h"
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
-#include "ambient/breakdown/p_action.h"
+#include "ambient/breakdown/p_profile.h"
 
 namespace ambient
 {
@@ -26,7 +26,7 @@ namespace ambient
         scheduler & operator,(dim3 dim);
         bool is_ambient_master(); 
         void initialize(MPI_Comm comm = NULL);
-        void push(const breakdown::p_action* action);
+        void push(const p_action* action);
         void regression_test();
         void finalize();
 

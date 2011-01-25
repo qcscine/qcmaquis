@@ -51,8 +51,13 @@ namespace ambient
         return 200; // to be redo to something normal
     }
 
-    void scheduler::push(const breakdown::p_action* action){
-        printf("New action pushed: %s %c %s\n", action->arguments.first.type, action->op_code, action->arguments.second.type);
+    void scheduler::push(const p_action* action){
+        if(action->arguments.first->proxy)
+            printf("New action pushed: %s (proxy) %c %s\n", action->arguments.first->type, action->op_code, action->arguments.second->type);
+        else if(action->arguments.second->proxy)
+            printf("New action pushed: %s %c %s (proxy)\n", action->arguments.first->type, action->op_code, action->arguments.second->type);
+        else
+            printf("New action pushed: %s %c %s\n", action->arguments.first->type, action->op_code, action->arguments.second->type);
     }
 
     void scheduler::regression_test()
