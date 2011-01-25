@@ -59,17 +59,17 @@ int main( int argc, char* argv[])
 	gpu::Simu Simulation;
 	srand(0);
 	
-	float verif = 0 ;
-	float verif2 = 0 ;
+	double verif = 0 ;
+	double verif2 = 0 ;
 
 	
-	for (int NUM = 3 ; NUM <= 5000 ; NUM *= 2)
+	for (int NUM = 3 ; NUM <= 15000 ; NUM *= 2)
 	{
 		
-		blas::dense_matrix<float> A(NUM,NUM);
-		blas::dense_matrix<float> B(NUM,NUM);
-		blas::dense_matrix<float> C_CPU(NUM,NUM,0);
-		blas::dense_matrix<float> C_GPU(NUM,NUM,0);
+		blas::dense_matrix<double> A(NUM,NUM);
+		blas::dense_matrix<double> B(NUM,NUM);
+		blas::dense_matrix<double> C_CPU(NUM,NUM,0);
+		blas::dense_matrix<double> C_GPU(NUM,NUM,0);
 		
 		for(int i=0; i< NUM ;i++  )
 		{
@@ -97,7 +97,8 @@ int main( int argc, char* argv[])
 		C_CPU =  matrix_matrix_multiply(A,B);
 		temps_CPU.end();
 		
-		float GFLOP_CPU = NUM*NUM*NUM/temps_CPU.GetTime();
+		double N = static_cast<double>(NUM);
+		double GFLOP_CPU = N*N*N/temps_CPU.GetTime();
 		
 		
 		
@@ -107,15 +108,17 @@ int main( int argc, char* argv[])
 		gpu::matrix_matrix_multiply(A,B,C_GPU);
 		temps_CPU_GPU.end();	
 	
-		
-		float GFLOP_GPU = NUM*NUM*NUM/temps_CPU_GPU.GetTime();
-		
-		float split = GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU);
+		cout <<temps_CPU_GPU.GetTime() << endl;	
 
+	
+		double GFLOP_GPU =2*N*N*N/temps_CPU_GPU.GetTime();
 		
+		double split = GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU);
+		double split2 =  N*sqrt(GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU)); 
 		
+		cout << " GFLOP_GPU   "  << GFLOP_GPU << " GFLOP_CPU " <<  GFLOP_CPU << endl; 
 		cout << " split  " << split << endl;
-		
+	/*	
 		for(int i=0; i< NUM ;i++  )
 		{
 			for(int j=0; j< NUM ; j++ )
@@ -123,11 +126,11 @@ int main( int argc, char* argv[])
 				verif = (C_GPU(i,j) -  C_CPU(i,j) ) * (C_GPU(i,j) -  C_CPU(i,j) ) / C_CPU(i,j);
 			}
 		}
-		
+	*/	
 		
 		std::ofstream out;
 		out.open("time.txt",std::ios::app);
-		out << std::setprecision (6) <<  NUM << " " << temps_CPU.GetTime() << " " << temps_CPU_GPU.GetTime() << "   " << verif << omp_get_max_threads() <<endl;
+		out << std::setprecision (6) <<  NUM << " " << temps_CPU.GetTime() << " " << temps_CPU_GPU.GetTime() << "   " << split << " " << split2 << " "  << omp_get_max_threads() <<endl;
 		out.close();
 		
 		
