@@ -59,17 +59,17 @@ int main( int argc, char* argv[])
 	gpu::Simu Simulation;
 	srand(0);
 
-	std::size_t M = 2916 ;
-	std::size_t N = 2916 ;
+	std::size_t M = 10000 ;
+	std::size_t N = 10000 ;
 	
 	for (int NUM = 0 ; NUM <= 0 ; NUM ++)
 	{
 		
 		
-		blas::dense_matrix<float> A(N,M);
-		blas::dense_matrix<float> B(M,N);
-		blas::dense_matrix<float> C_CPU(N,N,0);
-		blas::dense_matrix<float> C_GPU(N,N,0);
+		blas::dense_matrix<double> A(N,M);
+		blas::dense_matrix<double> B(M,N);
+		blas::dense_matrix<double> C_CPU(N,N,0);
+		blas::dense_matrix<double> C_GPU(N,N,0);
 		
 		for(int i=0; i< N ;i++  )
 		{
@@ -97,12 +97,19 @@ int main( int argc, char* argv[])
 		C_CPU =  matrix_matrix_multiply(A,B);
 		temps_CPU.end();
 		
-//		float N = static_cast<float>(NUM);
-		float GFLOP_CPU = 2*M*M*N/temps_CPU.GetTime();
+//		double N = static_cast<double>(NUM);
+		double GFLOP_CPU = 2*M*M*N/temps_CPU.GetTime();
 		
 		
 		
 		Timer temps_CPU_GPU(name_CPU_GPU += size_n) ;
+		
+		struct timeval tp;
+		gettimeofday( &tp, NULL );
+		double sec      = static_cast<double>( tp.tv_sec );
+		double usec = static_cast<double>( tp.tv_usec )/1E6;
+		double start = sec + usec;
+		
 		
 		temps_CPU_GPU.begin();	
 		gpu::matrix_matrix_multiply(A,B,C_GPU);
@@ -110,11 +117,29 @@ int main( int argc, char* argv[])
 	
 		cout <<temps_CPU_GPU.GetTime() << endl;	
 
-	
-		float GFLOP_GPU =2*M*M*N/temps_CPU_GPU.GetTime();
 		
-		float split = GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU);
-		float split2 =  N*sqrt(GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU)); 
+		gettimeofday( &tp, NULL );
+		sec = static_cast<double>( tp.tv_sec );
+		usec = static_cast<double>( tp.tv_usec )/1E6;
+		double end = sec + usec;
+		
+		double time = end - start;
+		
+		cout <<  " time of the day " << time << endl;
+		
+		
+		
+		
+		
+	
+		double GFLOP_GPU =2*M*M*N/temps_CPU_GPU.GetTime();
+	
+	//	double GFLOP_GPU =2*M*M*N/time;
+		
+		
+		
+		double split = GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU);
+		double split2 =  N*sqrt(GFLOP_GPU/(GFLOP_GPU+GFLOP_CPU)); 
 		
 		cout << " GFLOP_GPU   "  << GFLOP_GPU << " GFLOP_CPU " <<  GFLOP_CPU << endl; 
 		cout << " split  " << split << endl;
