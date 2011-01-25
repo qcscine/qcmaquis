@@ -8,7 +8,7 @@
 #include "dim3.h"
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
-#include "ambient/breakdown/p_profile.h"
+#include "ambient/interface/p_profile.h"
 
 namespace ambient
 {
