@@ -11,55 +11,54 @@
 
 #include "cassert"
 #include <vector>
+#include <stdexcept>
+#include <boost/lexical_cast.hpp>
 #include "dense_matrix/vector.hpp"
 
 
 namespace gpu
 {
 
-typedef std::size_t  size_type;
 
 template<class T>
 class vector_gpu
 {
 public:
+    typedef T   value_type;
+    typedef std::size_t  size_type;
+
+
 	vector_gpu(size_type size):size_(size) 
 	{
-		cublasAlloc( size, sizeof(T), (void**)&p_ );
+		check_error(cublasAlloc( size, sizeof(T), (void**)&p_ ), __LINE__);
 	}
 	
 	vector_gpu(size_type size, T value):size_(size)
 	{
-		cublasAlloc( size, sizeof(T), (void**)&p_ );
-		assert(true == CheckError(" cudaMalloc constructor vector"));
+        check_error( cublasAlloc( size, sizeof(T), (void**)&p_ ), __LINE__);
 	
 		std::vector<T>  Array(size, value);		
-		cublasSetVector(size,sizeof(T),&Array[0],1,p(),1);
-		assert(true == CheckError(" cublasSetVector constructor matrix"));
+		check_error( cublasSetVector(size,sizeof(T),&Array[0],1,p(),1), __LINE__);
 	}
 
     vector_gpu(vector_gpu const& v)
         : size_(v.size_)
     {
-        cublasAlloc( size_, sizeof(T), (void**)&p_);
-		cudaMemcpy( p_, r.p_, size_*sizeof(T) , cudaMemcpyDeviceToDevice);
+        check_error( cublasAlloc( size_, sizeof(T), (void**)&p_), __LINE__);
+		check_error( cudaMemcpy( p_, r.p_, size_*sizeof(T) , cudaMemcpyDeviceToDevice), __LINE__);
     }
 		
 	template<class MemoryBlock>
 	vector_gpu(blas::vector<T, MemoryBlock> const & Vector_cpu):size_(Vector_cpu.size())
 	{
-		stat_ = cublasAlloc( size_, sizeof(T), (void**)&p_ );	
-		assert(true == CheckError(" cudaMalloc constructor matrix"));
-		
-		cublasSetVector(size_,sizeof(T), &Vector_cpu(0),1,p_,1);
-		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
-		
+		check_error( cublasAlloc( size_, sizeof(T), (void**)&p_ ), __LINE__);	
+		check_error( cublasSetVector(size_,sizeof(T), &Vector_cpu(0),1,p_,1), __LINE__);
 	};
 
 	template <typename MemoryBlock>
 	void copy_vector_to_cpu(blas::vector<T,MemoryBlock>& v_cpu) const
 	{
-		cublasGetVector(size_, sizeof(T),p(),1,&v_cpu(0),1);			
+		check_error( cublasGetVector(size_, sizeof(T),p(),1,&v_cpu(0),1), __LINE__);			
 	}
 	
 	template <typename MemoryBlock>
@@ -107,30 +106,31 @@ public:
 	{
 		return size_;
 	}
-	
-	bool CheckError(std::string error)
+
+    vector_gpu& operator = (vector_gpu v)
+    {
+        swap(v);
+        return *this;
+    }
+
+	inline void check_error(cublasStatus const& stat, unsigned int line)
 	{
-		switch (stat_) 
+		switch (stat) 
 		{
 			case CUBLAS_STATUS_NOT_INITIALIZED:
-				std::cout << "CUBLAS_STATUS_NOT_INITIALIZED" + error << std::endl;
-				return false;
+                throw(std::runtime_error("CUBLAS_STATUS_NOT_INITIALIZED in " + __FILE__ + boost::lexical_cast<std::string>(line) ));
 				break;
 				
 			case CUBLAS_STATUS_MAPPING_ERROR:
-				std::cout << "CUBLAS_STATUS_MAPPING_ERROR" + error << std::endl;
-				return false;
+                throw(std::runtime_error("CUBLAS_STATUS_MAPPING_ERROR in " + __FILE__ + boost::lexical_cast<std::string>(line) ));
 				break;
 				
 			case CUBLAS_STATUS_INVALID_VALUE:
-				std::cout << "CUBLAS_STATUS_INVALID_VALUE" + error << std::endl;
-				return false;
+                throw(std::runtime_error("CUBLAS_STATUS_INVALID_VALUE in " + __FILE__ + boost::lexical_cast<std::string>(line) ));
 				break;	
 				
 			default:
-				std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
-				return true;
-				break;
+				//std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
 		}
 		
 	}
@@ -138,8 +138,6 @@ public:
 private:
 	T* p_;
 	size_type size_;
-	cublasStatus stat_;
-	
 };
 
 }
