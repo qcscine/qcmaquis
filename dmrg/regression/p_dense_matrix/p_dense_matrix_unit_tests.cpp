@@ -12,11 +12,12 @@
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
 
 using namespace blas;
+
 //
 // List of types T for which the p_dense_matrix<T> is tested
-//
+// (long long unsigned int causes problems in boost::iterator facade)
 typedef boost::mpl::list<double, int> test_types;
-// long long unsigned int causes problems in boost::iterator facade
+typedef ambient::dim3 dim3;
 
 namespace type_pairs
 {
@@ -95,13 +96,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
-    p_dense_matrix<T> a(10,10);
-    p_dense_matrix<T> b(10,10,5);
-    p_dense_matrix<T> c(10,10);
-    p_dense_matrix<T> d(10,10);
+    ambient::instance() >> dim3(10,5), dim3(50,10), dim3(10,1);
+
+    p_dense_matrix<T> a(100,100);
+    p_dense_matrix<T> b(100,100,5);
+    p_dense_matrix<T> c(100,100);
+    p_dense_matrix<T> d(100,100);
 
     a = b + c + d + d;
-    zout << "\n\n\n";
+    zout << "Done!\n\n\n";
 }
 
 
