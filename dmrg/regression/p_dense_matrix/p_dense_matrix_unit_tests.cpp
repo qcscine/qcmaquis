@@ -92,6 +92,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> d(10,10);
 
     a = b + c + d + d;
+    printf("\n\n\n");
 }
 
 

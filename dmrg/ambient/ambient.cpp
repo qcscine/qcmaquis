@@ -47,7 +47,7 @@ namespace ambient
         return *instance >> dim_distr;
     }
 
-    size_t get_bound(size_t size){
+    size_t get_bound(){
         return 200; // to be redo to something normal
     }
 
