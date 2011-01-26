@@ -185,6 +185,7 @@ public:
             notify(vm);
         } catch(std::exception &e) {
             std::cerr << "Error reading parameter file." << std::endl;
+            std::cerr << e.what() << endl;
             throw e;
         }
     }
