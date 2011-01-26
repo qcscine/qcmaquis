@@ -93,14 +93,21 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
     for (std::size_t p = 1; p < L; ++p)
     {
         block_matrix<Matrix, SymmGroup> t, u, v;
+        block_matrix<blas::diagonal_matrix<double>, SymmGroup> s;
         
         mps[p-1].make_left_paired();
         mps[p].make_right_paired();
         
         gemm(mps[p-1].data(), mps[p].data(), t);
-        block_matrix<blas::diagonal_matrix<double>, SymmGroup> s;
 
         svd(t, u, v, s);
+        
+        /*
+        mps[p-1].make_left_paired();
+        gemm(transpose(mps[p-1].data()), mps[p-1].data(), t);
+        
+        svd(t, u, v, s);*/
+        
         std::vector<double> sv;
         
         double r = 0;
@@ -110,15 +117,13 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
             {
                 double a = fabs(*it);
                 if (a > 0)
-                    sv.push_back(a);
+                    sv.push_back(a*a);
             }
         
         r = std::accumulate(sv.begin(), sv.end(), double(0));
         std::transform(sv.begin(), sv.end(), sv.begin(),
                        boost::lambda::_1 / r);
-        // any suggestions why the next two lines give NaN?
-//        r = -std::accumulate(sv.begin(), sv.end(), double(0),
-//                             boost::lambda::_1 * boost::lambda::bind(log, boost::lambda::_1));
+        
         r = 0;
         for (std::vector<double>::const_iterator it = sv.begin();
              it != sv.end(); ++it)
