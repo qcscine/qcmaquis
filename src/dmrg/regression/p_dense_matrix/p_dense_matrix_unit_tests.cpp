@@ -5,6 +5,7 @@
 #include <complex>
 #include <numeric>
 
+#include "utils/zout.hpp"
 #include "p_dense_matrix/p_dense_matrix.h"
 #include "p_dense_matrix/p_dense_matrix_algorithms.h"
 #include "p_dense_matrix/concept/matrix_interface.hpp"
@@ -33,6 +34,12 @@ struct DoubleInt
 };
 };
 
+struct AmbientConfig {
+    AmbientConfig()   { ambient::instance().init(); }
+    ~AmbientConfig()  { ambient::instance().finalize(); }
+};
+
+
 //
 // List of type pairs <T,U> for which the mixed type matrix vector multiplication is tested.
 //
@@ -58,6 +65,8 @@ T fill_matrix_with_numbers(p_dense_matrix<T>& a)
     }
     return iota;
 }
+
+BOOST_GLOBAL_FIXTURE( AmbientConfig );
 
 /*
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
@@ -92,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> d(10,10);
 
     a = b + c + d + d;
-    printf("\n\n\n");
+    zout << "\n\n\n";
 }
 
 

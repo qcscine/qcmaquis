@@ -28,4 +28,4 @@ all:
            ambient.o        \
         -o $(OUTPUT_BINARY)
 	
-	cd ${BUILD_PATH}; ./${OUTPUT_BINARY}
+	cd ${BUILD_PATH}; mpiexec -np 2 ./${OUTPUT_BINARY}
