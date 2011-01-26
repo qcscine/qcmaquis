@@ -101,7 +101,7 @@ int main(int argc, char ** argv)
     }
  
     #ifdef MPI_PARALLEL
-    ambient::scheduler::instance().initialize();
+    ambient::instance().init();
     #endif
 
     zout.precision(10);
@@ -192,7 +192,7 @@ int main(int argc, char ** argv)
     
     measure(mps, *adj, *H, model, h5ar);
     #ifdef MPI_PARALLEL
-    ambient::scheduler::instance().finalize();
+    ambient::instance().finalize();
     #endif
     
     everything.end();

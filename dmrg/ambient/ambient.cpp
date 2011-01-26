@@ -52,12 +52,13 @@ namespace ambient
     }
 
     void scheduler::push(const p_action* action){
-        if(action->arguments.first->proxy)
+/*        if(action->arguments.first->proxy)
             printf("New action pushed: %s (proxy) %c %s\n", action->arguments.first->type, action->op_code, action->arguments.second->type);
         else if(action->arguments.second->proxy)
             printf("New action pushed: %s %c %s (proxy)\n", action->arguments.first->type, action->op_code, action->arguments.second->type);
         else
             printf("New action pushed: %s %c %s\n", action->arguments.first->type, action->op_code, action->arguments.second->type);
+*/
     }
 
     void scheduler::regression_test()
@@ -105,7 +106,7 @@ namespace ambient
         MPI_Barrier(this->comm);
     }
 
-    void scheduler::initialize(MPI_Comm comm)
+    void scheduler::init(MPI_Comm comm)
     {
         int threading_level;
         this->comm = comm;

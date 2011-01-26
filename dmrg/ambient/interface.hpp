@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "ambient/interface/p_profile.h"
 
+
 namespace blas {
     template <typename T> 
     class p_dense_matrix; // forward declaration of p_dense_matrix
@@ -35,22 +36,24 @@ namespace blas {
     ambient::p_profile* get_profile(const T& obj){ return get_profile(&obj); }
 
     void plus_c_kernel(ambient::p_profile* a, ambient::p_profile* b, ambient::p_profile* out){
-        printf("Executing plus computation kernel...\n");
+        zout << "Executing plus computation kernel...\n";
     }
     void plus_l_kernel(ambient::p_profile* a, ambient::p_profile* b, ambient::p_profile* out){
-        printf("Executing plus logistics kernel...\n");
+        zout << "Executing plus logistics kernel...\n";
     }
 
     void assign_c_kernel(ambient::p_profile* a, ambient::p_profile* b){
-        printf("Executing assign computation kernel...\n");
+        zout << "Executing assign computation kernel...\n";
     }
     void assign_l_kernel(ambient::p_profile* a, ambient::p_profile* b){
-        printf("Executing assign logistics kernel...\n");
+        zout << "Executing assign logistics kernel...\n";
     }
 
 }
 
 namespace ambient {
+
+    scheduler& instance(){ return scheduler::instance(); }
 
     using namespace blas;
 
@@ -68,7 +71,7 @@ namespace ambient {
         {
             if(accept){
                 accept = false;
-                printf("I've accepted group %d %d\n", group->i, group->j);
+                zout << "I've accepted group" << group->i << group->j << std::endl;
                 recvlist.push_back(group);
                 group->owner = 0;
             }else if(group->owner == 0){
@@ -96,7 +99,7 @@ namespace ambient {
 
     template <typename RT, typename FC, typename FL, class T1, class T2> 
     const RT push(FC c_kernel, FL l_kernel, const T1& arg1, const T2& arg2){
-        printf("Calling the template that takes 2 args\n");
+        zout << "Calling the template that takes 2 args\n";
         p_profile* handle = new p_profile((const RT*)NULL);
         RT out(handle);
         push(c_kernel, l_kernel, arg1, arg2, out);
