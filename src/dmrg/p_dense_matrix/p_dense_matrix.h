@@ -64,6 +64,8 @@ namespace blas {
         inline const size_type num_columns() const;
         inline const difference_type stride1() const;
         inline const difference_type stride2() const;
+        inline const difference_type get_lda() const;
+        inline const difference_type get_sda() const;
         void reserve(size_type rows, size_type cols);
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, difference_type k);
@@ -117,7 +119,7 @@ namespace blas {
         size_type cols;
         size_type lda; // leading dimension array
         size_type sda; // subleading dimension array
-        boost::scoped_ptr<T> data_scope;
+        boost::scoped_ptr<T> scope;
         T* data;
     };
 
