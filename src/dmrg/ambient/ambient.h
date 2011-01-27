@@ -26,7 +26,6 @@ namespace ambient
         scheduler & operator,(dim3 dim);
         bool is_ambient_master(); 
         void init(MPI_Comm comm = NULL);
-        void push(const p_action* action);
         void regression_test();
         void finalize();
 

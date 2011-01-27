@@ -15,6 +15,7 @@ all:
 	cd ${BUILD_PATH}; mpic++ -c -g -O0 ambient/groups/packet_manager.cpp -I.
 	cd ${BUILD_PATH}; mpic++ -c -g -O0 ambient/groups/multirank.cpp      -I.
 	cd ${BUILD_PATH}; mpic++ -c -g -O0 ambient/groups/group.cpp          -I.
+	cd ${BUILD_PATH}; mpic++ -c -g -O0 ambient/interface/p_profile.cpp   -I.
 	cd ${BUILD_PATH}; mpic++ -c -g -O0 ambient/ambient.cpp               -I.
 	cd ${BUILD_PATH}; mpic++ -I$(SOURCE_PATH) -I$(BOOST_PATH) -I$(ALPS_PATH)/include -I$(HDF5_PATH)/include \
         -L$(HDF5_PATH)/lib -L$(ALPS_PATH)/lib -L$(LOCAL_LIBS_PATH) -L$(BOOST_LIBS_PATH) -lboost -lalps -lhdf5 -larpack -lz -lsz -lboost_unit_test_framework -DBOOST_TEST_DYN_LINK -framework Accelerate \
@@ -25,6 +26,7 @@ all:
            packet_manager.o \
            multirank.o      \
            group.o          \
+           p_profile.o      \
            ambient.o        \
         -o $(OUTPUT_BINARY)
 	
