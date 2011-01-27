@@ -39,14 +39,15 @@ unsigned long getcpuclocks()
 
 #endif
 
+
 class Timer
 {
 public:
     Timer(std::string name_)
-    : val(0), name(name_), freq(CPU_FREQ)
+    : val(0), name(name_), freq(CPU_FREQ),nCounter(0)
     { }
     
-    ~Timer() { zout << name << " " << val << std::endl; }
+    ~Timer() { zout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
     
     Timer & operator+=(double t)
     {
@@ -61,6 +62,7 @@ public:
     
     void end()
     {
+		nCounter += 1;
         unsigned long long t1 = getcpuclocks();
         if (t1 < t0)
             1+1;
@@ -74,7 +76,7 @@ public:
     }    
 protected:
     double val, t0;
-    unsigned long long freq;
+    unsigned long long freq, nCounter;
     std::string name;
 };
 
