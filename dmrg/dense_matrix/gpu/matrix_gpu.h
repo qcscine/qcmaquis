@@ -23,23 +23,23 @@ typedef std::size_t             size_type;
 #include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/matrix_interface.hpp"
 
+#include <stdexcept>
+#include <boost/lexical_cast.hpp>
+
 /* Notes */
 /*To be change in futur = lda will be integrated in ETHZ matrix class */
 
 
 namespace gpu
 {
-
-/**
-* this class just initialized/shut down the cublas and cula library
-*/	
+	/*
+	
 class Simu
 {
 public:
 
-/**
-* the constructor starts cublas or cula, note : cula initialized also cublas ...
-*/ 
+
+
 	Simu()
 	{
 #ifdef __CUBLAS__	
@@ -59,9 +59,7 @@ public:
 		
 	}
 
-/**
-* The destructor shut down cublas or cula ...
-*/ 	
+	
 	~Simu()
 	{
 #ifdef __CUBLAS__		
@@ -78,6 +76,7 @@ public:
 #endif//
 	}
 };
+*/
 
 /**
 * GPU matrix class (pure GPU or mix mode CPU/GPU). It is based on the cublas library
@@ -101,7 +100,7 @@ public:
 */
 	matrix_gpu(size_type size1, size_type size2):size1_(size1), size2_(size2), ld_(size1) 	
 	{
-		cublasAlloc( size1*size2, sizeof(T), (void**)&p_ );
+		check_error( cublasAlloc( size1*size2, sizeof(T), (void**)&p_ ), __LINE__);
 	}
 
 	
@@ -112,7 +111,7 @@ public:
 */ 	
 	matrix_gpu(size_type num_rows, size_type num_cols, size_type ld):size1_(num_rows), size2_(num_cols), ld_(ld) 	
 	{
-		cublasAlloc( num_rows*num_cols, sizeof(T), (void**)&p_ );
+		check_error( cublasAlloc( num_rows*num_cols, sizeof(T), (void**)&p_ ), __LINE__);
 	}
 
 /**
@@ -122,12 +121,9 @@ public:
 	matrix_gpu(size_type size1, size_type size2, T value):size1_(size1), size2_(size2), ld_(size1) //To be change in futur	
 	{
 		size_type size_matrix = size1*size2;
-		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );		
-		assert(true == CheckError(" cudaMalloc constructor matrix"));
-
+		check_error( cublasAlloc( size_matrix, sizeof(T), (void**)&p_ ), __LINE__);		
 		std::vector<T>  Array(size1*size2, value);		
-		cublasSetMatrix(size1,size2,sizeof(T),&Array[0],size1,p(),size1);
-		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
+		check_error(  cublasSetMatrix(size1,size2,sizeof(T),&Array[0],size1,p(),size1), __LINE__);
 	}
 /**
 * Copy constructor
@@ -135,8 +131,7 @@ public:
     matrix_gpu(matrix_gpu const& r)
         :size1_(r.size1_), size2_(r.size2_),ld_(r.ld_)
     {
-        cublasAlloc(size1_*size2_,sizeof(T), (void**) &p_ );
-        CheckError(" cudaMalloc copy constructor matrix");
+        check_error(   cublasAlloc(size1_*size2_,sizeof(T), (void**) &p_ ), __LINE__);
 		cudaMemcpy( p_, r.p_, size1_*size2_*sizeof(T) , cudaMemcpyDeviceToDevice);
     }
 	
@@ -149,8 +144,7 @@ public:
 	matrix_gpu(blas::dense_matrix<T, MemoryBlock> const & Matrix_cpu, size_type nrows, size_type ncols, size_type ld)
 	{
 		size_type size_matrix = Matrix_cpu.num_columns()*Matrix_cpu.num_rows();
-		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );	
-		assert(true == CheckError(" cudaMalloc constructor matrix"));
+		check_error(   cublasAlloc( size_matrix, sizeof(T), (void**)&p_ ) , __LINE__);
 		cublasSetMatrix (nrows, ncols, sizeof(T),  &Matrix_cpu(0,0), Matrix_cpu.stride2(),p(), ld);	
 	};
 	
@@ -160,8 +154,7 @@ public:
 	matrix_gpu(size_type size1, size_type size2, T value , bool boolean):size1_(size1), size2_(size2), ld_(size1) //To be change in futur	
 	{
 		size_type size_matrix = size1*size2;
-		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );		
-		assert(true == CheckError(" cudaMalloc constructor matrix"));
+		check_error(    cublasAlloc( size_matrix, sizeof(T), (void**)&p_ ) , __LINE__);	
 		
 		srand(value);
 		std::vector<T ,alignment_allocator<T> >  Array(size1*size2);		
@@ -169,8 +162,7 @@ public:
 		for(int i = 0 ; i < size1*size2 ; i++)
 			Array[i] = static_cast<T>(rand());
 		
-		cublasSetMatrix(size1,size2,sizeof(T),&Array[0],size1,p(),size1);
-		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
+		check_error(  cublasSetMatrix(size1,size2,sizeof(T),&Array[0],size1,p(),size1), __LINE__);
 	};
 	
 /**
@@ -180,11 +172,8 @@ public:
 	matrix_gpu(blas::dense_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.num_rows()),size2_(Matrix_cpu.num_columns()),ld_(Matrix_cpu.stride2())
 	{
 		size_type size_matrix = size1_*size2_;
-		stat_ = cublasAlloc( size_matrix, sizeof(T), (void**)&p_ );	
-		assert(true == CheckError(" cudaMalloc constructor matrix"));
-		
-		cublasSetMatrix(size1_,size2_,sizeof(T), &Matrix_cpu(0,0),size1_,p_,ld_);
-		assert(true == CheckError(" cublasSetMatrix constructor matrix"));
+		check_error(  cublasAlloc( size_matrix, sizeof(T), (void**)&p_ ) , __LINE__);	
+		check_error(   cublasSetMatrix(size1_,size2_,sizeof(T), &Matrix_cpu(0,0),size1_,p_,ld_), __LINE__);	
 		
 	};
 
@@ -198,7 +187,7 @@ public:
 	{
 		assert( size1_ == num_rows(m_cpu) );
 		assert( size2_ == num_columns(m_cpu) );
-		cublasSetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2());
+		check_error(   cublasSetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2()), __LINE__);
 	}
 	
 /**
@@ -210,7 +199,7 @@ public:
 	{
 		assert( size1_ == blas::num_rows(m_cpu));
 		assert( size2_ == blas::num_columns(m_cpu) );
-		cublasGetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2());			
+		check_error(   cublasGetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2()), __LINE__);			
 	}
 	
 /**
@@ -387,33 +376,30 @@ public:
 * Check the error of Cublas library, only works if #define NDEBUG is not defined in the main.
 * It is build with the assert function
 */ 
-	bool CheckError(std::string error)
+	
+	inline void check_error(cublasStatus const& stat, unsigned int line)
 	{
-		
-		switch (stat_) 
+		switch (stat) 
 		{
 			case CUBLAS_STATUS_NOT_INITIALIZED:
-				std::cout << "CUBLAS_STATUS_NOT_INITIALIZED" + error << std::endl;
-				return false;
+                throw(std::runtime_error("CUBLAS_STATUS_NOT_INITIALIZED in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
-			
+				
 			case CUBLAS_STATUS_MAPPING_ERROR:
-				std::cout << "CUBLAS_STATUS_MAPPING_ERROR" + error << std::endl;
-				return false;
+                throw(std::runtime_error("CUBLAS_STATUS_MAPPING_ERROR in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
-	
+				
 			case CUBLAS_STATUS_INVALID_VALUE:
-				std::cout << "CUBLAS_STATUS_INVALID_VALUE" + error << std::endl;
-				return false;
+                throw(std::runtime_error("CUBLAS_STATUS_INVALID_VALUE in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;	
 				
 			default:
-				std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
-				return true;
-				break;
+				//std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
+                break;
 		}
-
+		
 	}
+	
 /**
 * Used inside the *= overload
 */
