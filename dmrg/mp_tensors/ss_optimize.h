@@ -7,6 +7,7 @@
 #include "utils/zout.hpp"
 #include "ietl_lanczos_solver.h"
 #include "arpackpp_solver.h"
+#include "ietl_jacobi_davidson.h"
 
 #include "utils/DmrgParameters.h"
 
@@ -86,6 +87,10 @@ public:
                 BEGIN_TIMING("ARPACK")
                 res = solve_arpackpp(sp, mps[site], parms);
                 END_TIMING("ARPACK")
+            } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                BEGIN_TIMING("JCD")
+                res = solve_ietl_jcd(sp, mps[site], parms);
+                END_TIMING("JCD")
             } else {
                 throw std::runtime_error("I don't know this eigensolver.");
             }

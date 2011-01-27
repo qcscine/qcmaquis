@@ -59,12 +59,205 @@ namespace mpos {
     }
     
     template<class Matrix, class SymmGroup>
+    void compress_on_bond(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm1,
+                          std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm2)
+    {
+        using namespace std;
+        using namespace boost::tuples;
+        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef boost::tuple<size_t, size_t, op_t> block;
+        
+        set<size_t> bond_used_dims;
+        for (typename vector<block>::iterator it = pm1.begin(); it != pm1.end(); ++it)
+            bond_used_dims.insert(get<1>(*it));
+        for (typename vector<block>::iterator it = pm2.begin(); it != pm2.end(); ++it)
+            bond_used_dims.insert(get<0>(*it));
+        
+//        cout << "Compression: " << *max_element(bond_used_dims.begin(),
+//                                                bond_used_dims.end()) << " -> " << bond_used_dims.size() << endl;
+        
+        map<size_t, size_t> compression_map;
+        size_t c = 0;
+        for (set<size_t>::iterator it = bond_used_dims.begin();
+             it != bond_used_dims.end(); ++it)
+            compression_map[*it] = c++;
+        
+        for (typename vector<block>::iterator it = pm1.begin(); it != pm1.end(); ++it)
+            get<1>(*it) = compression_map[get<1>(*it)];
+        for (typename vector<block>::iterator it = pm2.begin(); it != pm2.end(); ++it)
+            get<0>(*it) = compression_map[get<0>(*it)];
+    }
+    
+    template<class Matrix, class SymmGroup>
+    std::pair<size_t, size_t>
+    rcdim(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > const & pm)
+    {
+        using namespace std;
+        using namespace boost::tuples;
+        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef boost::tuple<size_t, size_t, op_t> block;
+        
+        list<size_t> l, r;
+        
+        for (typename vector<block>::const_iterator it = pm.begin(); it != pm.end(); ++it) {
+            l.push_back( get<0>(*it) );
+            r.push_back( get<1>(*it) );
+        }
+        
+        return make_pair(*max_element(l.begin(), l.end())+1,
+                         *max_element(r.begin(), r.end())+1);
+    }
+    
+    template<class Matrix, class SymmGroup>
     bool compare(pair<size_t, block_matrix<Matrix, SymmGroup> > const & p1,
                  pair<size_t, block_matrix<Matrix, SymmGroup> > const & p2)
     {
         return p1.first < p2.first;
     }
     
+    template<class Matrix, class SymmGroup>
+    class CorrMaker
+    {
+        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef boost::tuple<size_t, size_t, op_t> block;
+        typedef vector<
+	        pair<
+    		    block_matrix<Matrix, SymmGroup>,
+		        block_matrix<Matrix, SymmGroup>
+	        >
+        > op_pairs;
+        
+    public:
+        CorrMaker(std::size_t L,
+                  op_t const & identity_,
+                  op_t const & fill_,
+                  std::vector<op_t> const & ops_)
+        : prempo(L)
+        , used(1)
+        , identity(identity_)
+        , fill(fill_)
+        , ops(ops_)
+        {
+//            for (size_t p = 1; p < prempo.size(); ++p)
+//                prempo[p].push_back( make_tuple(0, 0, identity) );
+            
+            recurse(0, 0, 1, vector<size_t>());
+        }
+        
+        MPO<Matrix, SymmGroup> create_mpo()
+        {
+            for (typename vector<vector<block> >::iterator it = prempo.begin();
+                 it + 1 != prempo.end();
+                 ++it)
+                compress_on_bond(*it, *(it+1));
+            
+//            for (vector<vector<size_t> >::iterator it = labels.begin();
+//                 it != labels.end(); ++it)
+//            {
+//                cout << "Correlator ";
+//                std::copy(it->begin(), it->end(), std::ostream_iterator<size_t>(cout, " "));
+//                cout << " at " << it-labels.begin() << endl;
+//            }
+            
+            MPO<Matrix, SymmGroup> r(prempo.size());
+            for (size_t p = 1; p < prempo.size()-1; ++p)
+                r[p] = as_bulk(prempo[p]);
+            r[0] = as_left(prempo[0]);
+            r[prempo.size()-1] = as_right(*prempo.rbegin());
+            
+            return r;
+        }
+        
+        vector<string> label_strings()
+        {
+            vector<string> ret(labels.size());
+            vector<string>::iterator ot = ret.begin();
+            for (vector<vector<size_t> >::iterator it = labels.begin();
+                 it != labels.end(); ++it)
+            {
+                ostringstream oss;
+                oss << "( ";
+                for (vector<size_t>::iterator it2 = it->begin(); it2 != it->end(); ++it2) {
+                    oss << *it2;
+                    if (it2 + 1 != it->end())
+                        oss << " ) -- ( ";
+                }
+                oss << " )";
+                *(ot++) = oss.str();
+            }
+            return ret;
+        }
+        
+        vector<vector<size_t> > numeric_labels() { return labels; }
+        
+    private:
+        vector<vector<block> > prempo;
+        vector<vector<size_t> > labels;
+        
+        size_t used;
+        
+        op_t identity, fill;
+        std::vector<op_t> ops;
+        
+        void term(size_t p, size_t u1, size_t u2, op_t const & op, bool trivial)
+        {
+//            if (!trivial)
+//                cout << "Adding a term at " << p << ", " << u1 << " -> " << u2 << endl;
+            prempo[p].push_back( make_tuple(u1, u2, op) );
+        }
+        
+        void recurse(size_t p0, size_t which, size_t use, vector<size_t> label)
+        {
+            for (size_t p1 = p0; p1 < prempo.size() - ops.size() + which + 1; ++p1) {
+                if (p1 + ops.size() - which < prempo.size())
+                    term(p1, use, use,
+                         which == 0 ? identity : fill,
+                         true);
+                term(p1, use, used, ops[which], false);
+                
+                vector<size_t> label_(label);
+                label_.push_back(p1);
+                
+                if (which == ops.size()-1) {
+                    for (size_t p2 = p1+1; p2 < prempo.size(); ++p2)
+                        term(p2, used, used, identity, true);
+                    labels.push_back(label_);
+                    used += 1;
+                } else {
+                    recurse(p1+1, which+1, used, label_);
+                }
+            }
+        }
+        
+        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops)
+        {
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second);
+            for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
+                r(get<0>(*it), get<1>(*it)) = get<2>(*it);
+            return r;
+        }
+        
+        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops)
+        {
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(1, rcd.second);
+            for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
+                r(0, get<1>(*it)) = get<2>(*it);
+            return r;
+        }
+        
+        MPOTensor<Matrix, SymmGroup> as_right(vector<block> const & ops)
+        {
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second-1);
+            for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
+                r(get<0>(*it), get<1>(*it)-1) = get<2>(*it);
+            return r;
+        }
+    };
+                  
+        
     template<class Matrix, class SymmGroup>
     class MPOMaker
     {
@@ -85,20 +278,19 @@ namespace mpos {
         , used_dims(adj.size())
         , prempo(adj.size())
         , maximum(0)
+        , leftmost_right(adj.size())
         {   
             for (size_t p = 0; p < adj.size(); ++p)
             {
                 if (p+1 < adj.size())
                     prempo[p].push_back( make_tuple(0, 0, H.get_identity()) );
-                if (p > 0)
-                    prempo[p].push_back( make_tuple(1, 1, H.get_identity()) );
             }
         }
         
         void add_bond_ops()
         {
             for (size_t p = 0; p < adj.size(); ++p) {
-                vector<size_t> neighs = adj[p];
+                vector<size_t> neighs = adj.forward(p);
                 for (vector<size_t>::iterator neigh = neighs.begin(); neigh != neighs.end(); ++neigh)
                     for (int i = 0; i < H.num_2site_ops(); ++i)
                     {
@@ -155,15 +347,25 @@ namespace mpos {
                     used_dims[p].insert(use_b);
                     done[p] = true;
                 }
+            
+            leftmost_right = std::min(leftmost_right, maxp);
         }
             
         MPO<Matrix, SymmGroup> create_mpo()
         {
+            for (size_t p = leftmost_right + 1; p < adj.size(); ++p)
+                prempo[p].push_back( make_tuple(1, 1, H.get_identity()) );
+            
+            for (typename vector<vector<block> >::iterator it = prempo.begin();
+                 it + 1 != prempo.end();
+                 ++it)
+                compress_on_bond(*it, *(it+1));
+            
             MPO<Matrix, SymmGroup> r(adj.size());
             for (size_t p = 1; p < adj.size() - 1; ++p)
-                r[p] = as_bulk(prempo[p], maximum+1);
-            r[0] = as_left(prempo[0], maximum+1);
-            r[adj.size()-1] = as_right(prempo[adj.size()-1], maximum+1);
+                r[p] = as_bulk(prempo[p]);
+            r[0] = as_left(prempo[0]);
+            r[adj.size()-1] = as_right(prempo[adj.size()-1]);
             
             return r;
         }
@@ -175,12 +377,12 @@ namespace mpos {
         vector<set<size_t> > used_dims;
         vector<vector<block> > prempo;
         
-        size_t maximum;
+        size_t maximum, leftmost_right;
         
-        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops,
-                                             size_t M)
+        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops)
         {
-            MPOTensor<Matrix, SymmGroup> r(M, M);
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {
@@ -189,10 +391,10 @@ namespace mpos {
             return r;
         }
         
-        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops,
-                                             size_t M)
+        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops)
         {
-            MPOTensor<Matrix, SymmGroup> r(1, M);
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(1, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {
@@ -201,10 +403,10 @@ namespace mpos {
             return r;
         }
         
-        MPOTensor<Matrix, SymmGroup> as_right(vector<block> const & ops,
-                                              size_t M)
+        MPOTensor<Matrix, SymmGroup> as_right(vector<block> const & ops)
         {
-            MPOTensor<Matrix, SymmGroup> r(M, 1);
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, 1);
             for (typename vector<block>::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {

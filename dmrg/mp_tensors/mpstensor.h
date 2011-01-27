@@ -100,6 +100,26 @@ MPSTensor<Matrix, SymmGroup> operator*(typename MPSTensor<Matrix, SymmGroup>::sc
     m *= t;
     return m;
 }
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> operator*(MPSTensor<Matrix, SymmGroup> m, typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
+{
+    m *= t;
+    return m;
+}
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> operator/(MPSTensor<Matrix, SymmGroup> m, typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
+{
+    m *= 1/t;
+    return m;
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> operator-(MPSTensor<Matrix, SymmGroup> m,
+                                       MPSTensor<Matrix, SymmGroup> const & m2)
+{
+    m -= m2;
+    return m;
+}
 
 #include "mp_tensors/mpstensor.hpp"
 
