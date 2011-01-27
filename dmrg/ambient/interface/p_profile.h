@@ -1,12 +1,13 @@
 #ifndef AMBIENT_P_PROFILE_H
 #define AMBIENT_P_PROFILE_H
 #include "ambient/dim3.h"
-#include "ambient/interface/p_action.h"
 #include <utility>
 #include <list>
 #include <vector>
 
 namespace ambient {
+
+    class p_profile;
 
     class workgroup {
     public:
@@ -28,12 +29,7 @@ namespace ambient {
 
         const char* type;
         bool proxy;
-        
-        dim3 dim_block;
-        dim3 dim_group;
         int** owners;
-
-        p_action* action; // do I need this -- apparently not
 
         std::vector<workgroup*> skeleton;
         workgroup* group(int i, int j = 0, int k = 0);
