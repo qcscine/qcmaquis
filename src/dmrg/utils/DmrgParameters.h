@@ -147,9 +147,11 @@ public:
             add_option("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"");
             add_option("arpack_tol",value<double>()->default_value(1e-8),"");
             add_option("arpack_ncv",value<int>()->default_value(20),"");
+            add_option("ietl_jcd_tol",value<double>()->default_value(1e-8),"");
             
             add_option("nsweeps",value<int>(),"");
             add_option("ngrowsweeps",value<int>(),"");
+            add_option("donotsave",value<int>()->default_value(0),"");
             
             store(parse_config_file(param_file, config), vm);
             notify(vm);

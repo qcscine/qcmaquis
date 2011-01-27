@@ -19,7 +19,7 @@ void mps_init(MPS<Matrix, NullGroup> & mps,
     for (std::size_t k = L; k > 0; --k) {
         bond_sizes[k-1] = std::min(bond_sizes[k-1], 2*bond_sizes[k]);
     }
-    std::copy(bond_sizes.begin(), bond_sizes.end(), std::ostream_iterator<int>(cout, " "));
+    std::copy(bond_sizes.begin(), bond_sizes.end(), std::ostream_iterator<int>(zout, " "));
     zout << " " << endl;
     
     for (int i = 0; i < L; ++i)

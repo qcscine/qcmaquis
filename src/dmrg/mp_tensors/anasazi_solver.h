@@ -13,21 +13,15 @@ namespace Anasazi {
     
     // They want a shallow copy...what a bunch of morons
     // To avoid confusion, I derive from noncopyable
-    // To implement it, I use a shared_ptr
     
     template<class Vector>
     class IETLMultMv : public boost::noncopyable
     {
     public:
-        typedef std::vector<Vector> data_type;
+        typedef typename std::vector<boost::shared_ptr<Vector> > data_type;
+        data_type data;
         
-        IETLMultMv(std::vector<Vector> const & v)
-        : data( new std::vector<Vector>(v) )
-        { }
-        
-        IETLMultMv() { }
-        
-        boost::shared_ptr<std::vector<Vector> > data;
+        IETLMultMv(std::size_t k = 0) : data(k) { }
     }
     
     template< class ScalarType, class MV >
@@ -44,42 +38,57 @@ namespace Anasazi {
     public:
         static Teuchos::RCP<MV> Clone( const MV& mv, const int numvecs )
         {
-            return Teuchos::RCP<MV>(new MV( typename MV::data_type(numvecs) ));
+            MV * ret = new MV(numvecs);
+            for (int k = 0; i < numvecs; ++k)
+                // any ideas how to get the vectorspacee?
+                MV->data[i].reset( new Vector(mv.data[0]) );
+            return Teuchos::RCP<MV>(ret);
         }
         
         static Teuchos::RCP<MV> CloneCopy( const MV& mv )
         {
-            return Teuchos::RCP<MV>(new MV( mv.data ));
+            MV * ret = new MV(mv.data.size());
+            for (int k = 0; i < numvecs; ++k)
+                ret->data[i].reset( new Vector(mv.data[k]) );
+            return Teuchos::RCP<MV>(ret);
         }
         
         static Teuchos::RCP<MV> CloneCopy( const MV& mv, const std::vector<int>& index )
         {
-            MV * ret = new MV;
-            for (std::vector<int>::const_iterator it = index.begin();
-                 it != index.end(); ++it)
-                ret->data->push_back( (*mv.data)[*it] );
+            MV * ret = new MV(index.size());
+            for (int k = 0; k < index.size(); ++k)
+                ret->data[k].reset( new Vector(mv->data[index[k]]) );
             return Teuchos::RCP<MV>(ret);
         }
         
         static Teuchos::RCP<MV> CloneViewNonConst( MV& mv, const std::vector<int>& index )
         {
-            MV *
+            MV * ret = new MV(index.size());
+            for (int k = 0; k < index.size(); ++k)
+                ret->data[k] = mv->data[k];
+            return Teuchos::RCP<MV>(ret);
+        }
         
         static Teuchos::RCP<const MV> CloneView( const MV& mv, const std::vector<int>& index )
-        { UndefinedMultiVecTraits<ScalarType, MV>::notDefined(); return Teuchos::null; }
-        
-        
+        {
+            MV * ret = new MV(index.size());
+            for (int k = 0; k < index.size(); ++k)
+                ret->data[k] = mv->data[k];
+            return Teuchos::RCP<MV>(ret);
+        }
         
         static int GetVecLength( const MV& mv )
-        { UndefinedMultiVecTraits<ScalarType, MV>::notDefined(); return 0; }     
+        {
+            return 0;
+        }
         
         static int GetNumberVecs( const MV& mv )
-        { UndefinedMultiVecTraits<ScalarType, MV>::notDefined(); return 0; }     
+        {
+            return mv.data.size();
+        }
         
         
-        
-        
-        static void MvTimesMatAddMv( const ScalarType alpha, const MV& A, 
+        static void MvTimesMatAddMv(const ScalarType alpha, const MV& A, 
                                     const Teuchos::SerialDenseMatrix<int,ScalarType>& B, 
                                     const ScalarType beta, MV& mv )
         { UndefinedMultiVecTraits<ScalarType, MV>::notDefined(); }     
