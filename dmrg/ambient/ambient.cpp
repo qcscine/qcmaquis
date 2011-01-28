@@ -26,6 +26,10 @@ namespace ambient
         return (this->mode == AMBIENT_MASTER);
     }
 
+    dim3 scheduler::group_dim(){
+        return this->dim_cpu;
+    }
+
     scheduler & scheduler::operator>>(dim3 dim_distr) 
     {
         this->dim_distr = dim_distr;
