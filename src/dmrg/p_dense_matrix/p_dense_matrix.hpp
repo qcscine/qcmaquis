@@ -171,7 +171,7 @@ namespace blas {
 
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
     template <typename T> // proxy object construction
-    p_dense_matrix<T>::p_dense_matrix(ambient::p_profile* p): profile(p), scope((T*)p->scope) { }
+    p_dense_matrix<T>::p_dense_matrix(ambient::p_profile* p): profile(p){ }
     template <typename T>
     p_dense_matrix<T>& p_dense_matrix<T>::operator = (p_dense_matrix const& rhs) // watch out of copying
     {

@@ -28,6 +28,7 @@ namespace ambient
         void init(MPI_Comm comm = NULL);
         void regression_test();
         void finalize();
+        dim3 group_dim();
 
     private:
         MPI_Comm comm;
@@ -40,7 +41,7 @@ namespace ambient
                GROUP_SLAVE } mode;
 
         dim3 dim_distr; // work-item size of distribution blocks
-        dim3 dim_cpu;   // work-item size of cpu core workload fractions
+        dim3 dim_cpu;   // work-item size of cpu streaming multiprocessor workload fractions
         dim3 dim_gpu;   // work-item size of gpgpu smp workload fractions
     };
 

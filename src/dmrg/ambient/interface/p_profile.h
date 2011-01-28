@@ -1,6 +1,6 @@
 #ifndef AMBIENT_P_PROFILE_H
 #define AMBIENT_P_PROFILE_H
-#include "ambient/dim3.h"
+#include "ambient/ambient.h"
 #include <utility>
 #include <list>
 #include <vector>
@@ -11,11 +11,11 @@ namespace ambient {
 
     class workgroup {
     public:
-        workgroup(p_profile* p, int i, int j);
+        workgroup(p_profile* p, int i, int j = 0, int k = 0);
         void* item(int i, int j = 0, int k = 0);
         p_profile* profile;
         int owner;
-        int i, j;
+        int i, j, k;
     };
 
     class p_profile {
@@ -29,6 +29,8 @@ namespace ambient {
 
         const char* type;
         bool proxy;
+        
+        dim3 dim;
         int** owners;
 
         std::vector<workgroup*> skeleton;
