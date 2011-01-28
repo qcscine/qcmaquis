@@ -1,10 +1,10 @@
 #include "ambient/ambient.h"
 #include "ambient/packets/types.h"
 #include "ambient/packets/packet.h"
-#include "ambient/packets/auxiliary.h"
+#include "ambient/packets/auxiliary.hpp"
 #include "ambient/groups/packet_manager.h"
 #include "ambient/groups/group.h"
-#include "ambient/auxiliary.h"
+#include "ambient/groups/auxiliary.hpp"
 
 #define AMBIENT_MASTER_RANK 0
 
@@ -18,7 +18,7 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
-    scheduler::scheduler():rank(multirank::instance()), mode(AMBIENT_MASTER)
+    scheduler::scheduler():rank(multirank::instance()), mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
     {
     }
 
@@ -27,20 +27,24 @@ namespace ambient
     }
 
     dim3 scheduler::group_dim(){
-        return this->dim_cpu;
+        return this->dim_group*this->dim_item;
+    }
+
+    dim3 scheduler::item_dim(){
+        return this->dim_item;
     }
 
     scheduler & scheduler::operator>>(dim3 dim_distr) 
     {
         this->dim_distr = dim_distr;
-        this->dim_cpu = NULL;
+        this->dim_group = NULL;
         this->dim_gpu = NULL;
         return *this;
     }
     scheduler & scheduler::operator,(dim3 dim) 
     {
-        if(this->dim_cpu == NULL){
-            this->dim_cpu = dim;
+        if(this->dim_group == NULL){
+            this->dim_group = dim;
         }else if(this->dim_gpu == NULL){
             this->dim_gpu = dim;
         }
@@ -54,6 +58,9 @@ namespace ambient
     size_t get_bound(){
         return 200; // to be redo to something normal
     }
+
+    scheduler& instance(){ return scheduler::instance(); }
+    
 
     void scheduler::regression_test()
     {

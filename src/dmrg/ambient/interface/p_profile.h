@@ -1,22 +1,14 @@
 #ifndef AMBIENT_P_PROFILE_H
 #define AMBIENT_P_PROFILE_H
 #include "ambient/ambient.h"
+#include "ambient/interface/workgroup.h"
 #include <utility>
 #include <list>
 #include <vector>
 
 namespace ambient {
 
-    class p_profile;
-
-    class workgroup {
-    public:
-        workgroup(p_profile* p, int i, int j = 0, int k = 0);
-        void* item(int i, int j = 0, int k = 0);
-        p_profile* profile;
-        int owner;
-        int i, j, k;
-    };
+    class workgroup;
 
     class p_profile {
     public:
