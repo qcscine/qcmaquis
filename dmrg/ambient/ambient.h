@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-#include "dim3.h"
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
+#include "ambient/auxiliary.h"
 #include "ambient/interface/p_profile.h"
 
 namespace ambient
@@ -29,6 +29,7 @@ namespace ambient
         void regression_test();
         void finalize();
         dim3 group_dim();
+        dim3 item_dim();
 
     private:
         MPI_Comm comm;
@@ -40,13 +41,15 @@ namespace ambient
                GROUP_MASTER,
                GROUP_SLAVE } mode;
 
-        dim3 dim_distr; // work-item size of distribution blocks
-        dim3 dim_cpu;   // work-item size of cpu streaming multiprocessor workload fractions
-        dim3 dim_gpu;   // work-item size of gpgpu smp workload fractions
+        dim3 dim_distr;   // work-item size of distribution blocks
+        dim3 dim_group;   // work-item size of cpu streaming multiprocessor workload fractions
+        dim3 dim_item;    // size of work-item (i.e. 128) 
+        dim3 dim_gpu;     // work-item size of gpgpu smp workload fractions
     };
 
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
     size_t get_bound();
+    scheduler& instance();
 }
 
 #endif

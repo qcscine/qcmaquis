@@ -1,34 +1,30 @@
 #ifndef AMBIENT_AUX_H
 #define AMBIENT_AUX_H
 
-namespace ambient{ namespace groups{
+namespace ambient{
 
-    template<typename T>
-    packet* recv(group* grp, void* memory){
-        grp->manager->recv(get_t<T>(), memory);
-        return unpack<T>(memory);
-    }
-
-    template<typename T>
-    packet* recv(const char* grp, void* memory)
+    class dim3
     {
-        return recv<T>(group::group_map(grp), memory);
-    }
-
-    void send(packet* pack, group* grp, int dest = -1)
-    {
-        if(dest != -1){
-            grp->manager->send(pack, dest);
-        }else{
-            if(pack->get_t().compounds[1] != MPI_INT) printf("Warning: the dest field (#1) is not of type MPI_INT!\n");
-            grp->manager->send(pack, *(int*)pack->get(A_DEST_FIELD));
+    public:
+        unsigned int x, y, z;
+        dim3(unsigned int x = 1, unsigned int y = 1, unsigned int z = 1) : x(x), y(y), z(z) {}
+        dim3& operator=(int value){
+            x = y = z = value;
         }
-    }
+        dim3 operator*=(const dim3 & b){
+            this->x *= b.x;
+            this->y *= b.y;
+            this->z *= b.z;
+            return *this;
+        }
+        const dim3 operator*(const dim3 & b) const {
+            return dim3(this->x, this->y, this->z) *= b;
+        }
+        bool operator==(int value){
+            return (x == value && y == value && z == value);
+        }
+    };
 
-    void send(packet* pack, const char* grp, int dest = -1)
-    {
-        send(pack, group::group_map(grp), dest);
-    }
+}
 
-} }
 #endif

@@ -27,7 +27,7 @@ namespace ambient{ namespace packets{
         packet(const packet_t& type, ...);
         packet(const void* memory);
 
-        packet(const packet_t& type, void* memory, va_list& fields); // used in auxiliary.h
+        packet(const packet_t& type, void* memory, va_list& fields); // used in auxiliary.hpp
     };
 
 } }
