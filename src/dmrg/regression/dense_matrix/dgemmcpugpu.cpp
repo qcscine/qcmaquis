@@ -41,6 +41,7 @@ using std::string;
 #include "dense_matrix/dense_matrix_blas.hpp"
 #include "dense_matrix/gpu/matrix_gpu.h"
 #include "dense_matrix/gpu/matrix_gpu_functions.hpp"
+#include "GpuManager.h"
 
 
 
@@ -55,8 +56,11 @@ inline std::string to_string (const T& t)
 
 int main( int argc, char* argv[])
 {
+	gpu::gpu_manager*  GPU;
+	GPU->instance();
+
+
 	
-	gpu::Simu Simulation;
 	srand(0);
 
 	std::size_t M = 10000 ;
@@ -162,6 +166,9 @@ int main( int argc, char* argv[])
 		M = 3*M;
 		
 	}	
+	
+	GPU->instance().destructor();
+	
 	return 0;
 }
 
