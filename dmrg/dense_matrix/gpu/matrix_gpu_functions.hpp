@@ -17,7 +17,7 @@
 
 
 #include "cublas.h"
-#include "cula.h"
+//#include "cula.h"
 
 #include "dense_matrix/gpu/matrix_gpu.h"
 #include "dense_matrix/gpu/vector_gpu.h"
@@ -426,7 +426,7 @@ const matrix_gpu<double> operator - ( matrix_gpu<double>& Matrix_left, const mat
 };
 
 /*----------------------------- svd -----------------------------------------*/
-
+/*
 template<>
 void svd(matrix_gpu<float> & M, matrix_gpu<float> & U, matrix_gpu<float> & V, vector_gpu<float> & S )
 {
@@ -447,7 +447,7 @@ void svd(matrix_gpu<float> & M, matrix_gpu<float> & U, matrix_gpu<float> & V, ve
 	}
 	
 };
-	
+*/	
 	/*
 
 // the double version is not inside the basic version 
@@ -477,7 +477,7 @@ void svd(matrix_gpu<double> & M, matrix_gpu<double> & U, matrix_gpu<double> & V)
  */
 
 /*----------------------------- qr -----------------------------------------*/
-
+/*
 template<>
 void qr(matrix_gpu<float> & M,  matrix_gpu<float> & Q , matrix_gpu<float> & R)
 {
@@ -495,7 +495,7 @@ void qr(matrix_gpu<float> & M,  matrix_gpu<float> & Q , matrix_gpu<float> & R)
 	}
 
 };
-
+*/
 /*----------------------------- << -----------------------------------------*/	
 	
 template <class T>

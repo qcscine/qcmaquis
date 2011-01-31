@@ -15,7 +15,7 @@ typedef std::size_t             size_type;
 
 #include "cuda.h"
 #include "cuda_runtime_api.h" // need for cudaMemcpy, I do not know why !!!!
-#include "cula.h"
+//#include "cula.h"
 #include "cublas.h"
 #include "vector_gpu.h"
 #include "allocator.h"
@@ -32,51 +32,6 @@ typedef std::size_t             size_type;
 
 namespace gpu
 {
-	/*
-	
-class Simu
-{
-public:
-
-
-
-	Simu()
-	{
-#ifdef __CUBLAS__	
-		cuInit(0);
-		cublasInit();
-#endif
-		
-#ifdef __CULA__	
-		culaStatus s;
-		culaInitialize();
-		if(s != culaNoError)
-		{
-			std::cout << culaGetErrorInfo() << std::endl;
-		}
-#endif		
-		
-		
-	}
-
-	
-	~Simu()
-	{
-#ifdef __CUBLAS__		
-		cublasShutdown();		
-#endif
-		
-#ifdef __CULA__		
-		culaStatus s;
-		culaShutdown();	
-		if(s != culaNoError)
-		{
-			std::cout << " end : " << culaGetErrorInfo() << std::endl;
-		}
-#endif//
-	}
-};
-*/
 
 /**
 * GPU matrix class (pure GPU or mix mode CPU/GPU). It is based on the cublas library
@@ -261,8 +216,7 @@ public:
 		for (int i=0; i < size1(); i++) 
 			Array[i*size1()+i] = 1.0;
 	
-		cublasSetMatrix(size1(),size2(),sizeof(T),&Array[0],size1(),p(),size1());
-		assert(true == CheckError(" cublasSetMatrix Identity"));	
+			check_error( cublasSetMatrix(size1(),size2(),sizeof(T),&Array[0],size1(),p(),size1()), __LINE__ );
 	}
 
 /**
@@ -424,7 +378,7 @@ private:
 	T* p_;
 
 /**	
-* number of raws,
+* number of rows,
 */
 	size_type size1_;
 
