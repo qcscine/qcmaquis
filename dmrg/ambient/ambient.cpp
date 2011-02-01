@@ -13,27 +13,6 @@ using namespace ambient::groups;
 
 namespace ambient
 {
-    scheduler& scheduler::instance(){
-        static scheduler* singleton = NULL;
-        if(!singleton) singleton = new scheduler();
-        return *singleton;
-    }
-    scheduler::scheduler():rank(multirank::instance()), mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
-    {
-    }
-
-    bool scheduler::is_ambient_master(){
-        return (this->mode == AMBIENT_MASTER);
-    }
-
-    dim3 scheduler::group_dim(){
-        return this->dim_group;
-    }
-
-    dim3 scheduler::item_dim(){
-        return this->dim_item;
-    }
-
     scheduler & scheduler::operator>>(dim3 dim_distr) 
     {
         this->dim_distr = dim_distr;
@@ -50,18 +29,39 @@ namespace ambient
         }
         return *this;
     }
-
-    scheduler& operator>>(scheduler* instance, dim3 dim_distr) {
+    scheduler& operator>>(scheduler* instance, dim3 dim_distr) 
+    {
         return *instance >> dim_distr;
     }
-
-    size_t get_bound(){
+    scheduler& scheduler::instance()
+    {
+        static scheduler* singleton = NULL;
+        if(!singleton) singleton = new scheduler();
+        return *singleton;
+    }
+    scheduler& instance()
+    { 
+        return scheduler::instance(); 
+    }
+    scheduler::scheduler():rank(multirank::instance()), mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
+    {
+    }
+    bool scheduler::is_ambient_master()
+    {
+        return (this->mode == AMBIENT_MASTER);
+    }
+    dim3 scheduler::group_dim()
+    {
+        return this->dim_group;
+    }
+    dim3 scheduler::item_dim()
+    {
+        return this->dim_item;
+    }
+    size_t get_bound()
+    {
         return 200; // to be redo to something normal
     }
-
-    scheduler& instance(){ return scheduler::instance(); }
-    
-
     void scheduler::regression_test()
     {
         printf("Initializing packet system...\n");
@@ -106,7 +106,6 @@ namespace ambient
         }
         MPI_Barrier(this->comm);
     }
-
     void scheduler::init(MPI_Comm comm)
     {
         int threading_level;
@@ -148,10 +147,21 @@ void computation_1(workgroup* block)
 
 ////////////////////////////////////
     }
-
     void scheduler::finalize()
     {
         MPI_Barrier(this->comm);
         MPI_Finalize();
+    }
+    void scheduler::push(core::operation* logistics, core::operation* computing)
+    {
+        this->logistics_stack.push(logistics);
+        this->computing_stack.push(computing);
+    }
+    void scheduler::evaluate_op_stack()
+    {
+        while(!this->logistics_stack.empty()){
+            this->logistics_stack.front()->perform();
+            this->logistics_stack.pop();
+        }
     }
 }

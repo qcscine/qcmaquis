@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include <queue>
 
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
 #include "ambient/auxiliary.h"
-#include "ambient/interface/p_profile.h"
+#include "ambient/core/operation.h"
 
 namespace ambient
 {
@@ -31,6 +32,9 @@ namespace ambient
         dim3 group_dim();
         dim3 item_dim();
 
+        void push(ambient::core::operation* logistics, ambient::core::operation* computing);
+        void evaluate_op_stack(); 
+        void perform_op_stack(); 
     private:
         MPI_Comm comm;
         int size;
@@ -45,6 +49,9 @@ namespace ambient
         dim3 dim_group;   // work-item size of cpu streaming multiprocessor workload fractions
         dim3 dim_item;    // size of work-item (i.e. 128) 
         dim3 dim_gpu;     // work-item size of gpgpu smp workload fractions
+
+        std::queue<ambient::core::operation*> logistics_stack;
+        std::queue<ambient::core::operation*> computing_stack;
     };
 
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
