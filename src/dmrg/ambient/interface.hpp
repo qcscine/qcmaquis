@@ -1,6 +1,7 @@
 #ifndef AMBIENT_INTERFACE_H
 #define AMBIENT_INTERFACE_H
 #include <assert.h>
+#include "ambient/core/operation.h"
 #include "ambient/interface/p_profile.h"
 #include "ambient/interface/charge.hpp"
 
