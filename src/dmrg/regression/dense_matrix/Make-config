@@ -1,0 +1,49 @@
+# Make-config
+
+cpu_gcc_gprof:
+	$(MAKE) targets \
+	"N = cpu_gcc_gprof" \
+	"MPICC = g++ " \
+	"OPTIONS = -pg -g  -Wno-write-strings -O2    -DNDEBUG  -DHAVE_ALPS_HDF5   -DBIND_FORTRAN_LOWERCASE_UNDERSCORE -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING " \
+	"LINK = -o  " \
+	"PATH_INC = -I/cluster/home/phys/bauerb/alps_svn/boost_1_45_0 -I/cluster/home/phys/bauerb/ALPS/include -I$(PWD)" \
+	"LIB = -pg -lhdf5 -larpack_BRUTUS -lacml -lacml_mv -lalps -lboost  -lgfortran  " \
+	"PATH_LIB_LAPACK  =  /cluster/home/phys/ewartt/TEST_MPS/gfortran64/lib  " \
+	"PATH_LIB_ALPS    = /cluster/home/phys/bauerb/ALPS/lib   " \
+	"PATH_LIB_BOOST   = /cluster/home/phys/bauerb/alps_svn/boost_1_45_0/lib   " \
+	"PATH_LIB_ARPACK  = /cluster/home/phys/ewartt/TEST_MPS/ARPACK   " \
+	"PG = " \
+	"P = " \
+	"M = "
+
+gpu:
+	$(MAKE) targets_gpu \
+	"N = gpu" \
+	"MPICC = g++ " \
+	"NVCC = /usr/local/cuda/bin/nvcc " \
+	"OPTIONS =  -O3 -m64 -Wno-write-strings -DCPU_FREQ=2.66e9  -D__CUBLAS__  -DNDEBUG  -DHAVE_ALPS_HDF5   -DBIND_FORTRAN_LOWERCASE_UNDERSCORE -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING " \
+	"OPTIONS_NVCC =  -m64  " \
+	"LINK = -o  " \
+	"PATH_INC = -I/Developer/GPU\ Computing/shared/inc/  -I/usr/local/cula/include  -I/usr/local/cuda/include -I/opt/boost/include -I/opt/alps/include -I/Users/Tim/Documents/DMRG_XCODE/dmrg/MPS/trunk/src/dmrg " \
+	"LIB = -fopenmp -lhdf5 -lalps -lboost -lacml -lacml_mv -lgfortran  " \
+	"PATH_LIB_LAPACK=/cluster/home/phys/ewartt/TEST_MPS/gfortran64/lib  " \
+	"PATH_LIB_ALPS    = /cluster/home/phys/bauerb/ALPS/lib   " \
+	"PATH_LIB_BOOST   = /cluster/home/phys/bauerb/alps_svn/boost_1_45_0/lib   " \
+	"PATH_LIB_ARPACK  = /cluster/home/phys/ewartt/TEST_MPS/ARPACK   " \
+	"PATH_LIB_CUBLAS=/usr/local/cuda/lib " \
+	"P = " \
+	"M = "
+
+cpu_gpu_bench:
+	$(MAKE) targets_bench \
+	"N = cpu_gpu_bench" \
+	"MPICC = g++ " \
+	"OPTIONS = -O3 -fopenmp -DCPU_FREQ=1e9 -D__GPU__ -D__CUBLAS__ -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING " \
+	"LINK = -o " \
+	"PATH_INC =  -I$(PWD)  -I/cluster/home/phys/bauerb/alps_svn/boost_1_45_0 -I/cluster/home/phys/bauerb/ALPS/include -I/cluster/apps/cuda/3.2rc/include   -I$(PWD)/SRC/trunk/src/dmrg " \
+	"LIB = -lacml_mp -lcuda -lcublas -fopenmp -lgfortran " \
+	"PATH_LIB_LAPACK  =  /cluster/home/phys/ewartt/TEST_MPS/gfortran64_mp/lib  " \
+	"PATH_LIB_CUBLAS  =  /cluster/apps/cuda/3.2rc/lib64/  " \
+	"PG = " \
+	"P = " \
+	"M = "
