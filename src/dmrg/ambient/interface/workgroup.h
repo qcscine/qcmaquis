@@ -1,6 +1,5 @@
 #ifndef AMBIENT_INTERFACE_WORKGROUP_H
 #define AMBIENT_INTERFACE_WORKGROUP_H
-#include "ambient/ambient.h"
 #include <utility>
 #include <list>
 #include <vector>

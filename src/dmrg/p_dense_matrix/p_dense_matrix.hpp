@@ -175,7 +175,8 @@ namespace blas {
     template <typename T>
     p_dense_matrix<T>& p_dense_matrix<T>::operator = (p_dense_matrix const& rhs) // watch out of copying
     {
-        ambient::pin(*this, rhs);
+        ambient::pin(rhs, *this);
+        ambient::instance().evaluate_op_stack();
         return *this;
     }
 

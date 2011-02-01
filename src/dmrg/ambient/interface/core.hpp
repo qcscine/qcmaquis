@@ -1,6 +1,12 @@
+    static int get_id(){
+        static int id = 0;
+        return id++;
+    }
+
     template <typename T> p_profile::p_profile(const T* ptr) : specific(false), profile(this) { 
         p_profile_model(this, ptr);
         this->regroup(); 
+        this->id = get_id();
     };
 
     template <typename ST, typename FC, typename FL, class T1, class T2> 
@@ -17,10 +23,8 @@
         if(get_profile(arg1)->proxy) pin(const_cast<T1&>(arg1), structuring_arg);
         if(get_profile(arg2)->proxy) pin(const_cast<T2&>(arg2), structuring_arg);
 
-        core::operation* l_operation = new core::operation(l_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)); 
-        l_operation->perform();
-        core::operation* c_operation = new core::operation(c_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)); 
-        c_operation->perform();
+        ambient::instance().push(new core::operation(l_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)) , 
+                                 new core::operation(c_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)) ); 
     }
 
     template <typename L, typename R>

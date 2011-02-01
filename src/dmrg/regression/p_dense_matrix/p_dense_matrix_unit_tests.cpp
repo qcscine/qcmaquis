@@ -103,6 +103,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> c(512,512);
     p_dense_matrix<T> d(512,512);
 
+    zout << "A is " << a.profile->id << "\n";
+    zout << "B is " << b.profile->id << "\n";
+    zout << "C is " << c.profile->id << "\n";
+    zout << "D is " << d.profile->id << "\n";
+
+
     a = b + c + d + d;
     zout << "Done!\n\n\n";
 }

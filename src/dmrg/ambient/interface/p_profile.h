@@ -1,7 +1,7 @@
 #ifndef AMBIENT_P_PROFILE_H
 #define AMBIENT_P_PROFILE_H
-#include "ambient/ambient.h"
 #include "ambient/interface/workgroup.h"
+#include "ambient/auxiliary.h"
 #include <utility>
 #include <list>
 #include <vector>
@@ -12,6 +12,7 @@ namespace ambient {
 
     class p_profile {
     public:
+        int id;
         template <typename T>
         p_profile(const T* ptr);
         p_profile & operator>>(dim3 dim_distr);

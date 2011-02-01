@@ -1,3 +1,4 @@
+#include "ambient/ambient.h"
 #include "ambient/interface/workgroup.h"
 
 namespace ambient {

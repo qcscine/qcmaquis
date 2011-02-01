@@ -1,3 +1,4 @@
+#include "ambient/ambient.h"
 #include "ambient/interface/p_profile.h"
 
 namespace ambient {
