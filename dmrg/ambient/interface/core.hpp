@@ -17,8 +17,10 @@
         if(get_profile(arg1)->proxy) pin(const_cast<T1&>(arg1), structuring_arg);
         if(get_profile(arg2)->proxy) pin(const_cast<T2&>(arg2), structuring_arg);
 
-	l_kernel(get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)); 
-	c_kernel(get_profile(arg1), get_profile(arg2), get_profile(structuring_arg));
+        core::operation* l_operation = new core::operation(l_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)); 
+        l_operation->perform();
+        core::operation* c_operation = new core::operation(c_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)); 
+        c_operation->perform();
     }
 
     template <typename L, typename R>

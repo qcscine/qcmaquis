@@ -30,6 +30,7 @@ all:
            group.o          \
            p_profile.o      \
            workgroup.o      \
+           operation.o      \
            ambient.o        \
         -o $(OUTPUT_BINARY)
 	
