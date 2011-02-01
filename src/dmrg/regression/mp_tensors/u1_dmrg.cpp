@@ -29,7 +29,7 @@ typedef blas::p_dense_matrix<double> Matrix;
 #include "dense_matrix/matrix_algorithms.hpp"
 #include "dense_matrix/dense_matrix_blas.hpp"
 
-typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
+typedef blas::dense_matrix<double > Matrix;
 
 #endif
 
