@@ -2,7 +2,7 @@ template <typename T>
 class p_dense_matrix; // forward declaration of p_dense_matrix
 
 template <typename T> 
-ambient::p_profile* get_profile(const T* obj){ return obj->profile;      }
+ambient::p_profile* get_profile(const T* obj){ return obj->profile; }
 template <typename T>  
 void p_profile_model(ambient::p_profile* profile, const p_dense_matrix<T>* ptr)
 {

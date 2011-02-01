@@ -27,7 +27,7 @@ namespace ambient
     }
 
     dim3 scheduler::group_dim(){
-        return this->dim_group*this->dim_item;
+        return this->dim_group;
     }
 
     dim3 scheduler::item_dim(){

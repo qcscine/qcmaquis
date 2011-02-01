@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
-    ambient::instance() >> dim3(10,5), dim3(1,1), dim3(10,1);
+    ambient::instance() >> dim3(10,5), dim3(2,2), dim3(10,1);
 
     p_dense_matrix<T> a(512,512);
     p_dense_matrix<T> b(512,512,5);

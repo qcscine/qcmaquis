@@ -11,9 +11,9 @@ namespace ambient {
 
     class workgroup {
     public:
-        workgroup(p_profile* p, int i, int j = 0, int k = 0);
+        workgroup(p_profile** p, int i, int j = 0, int k = 0);
         void* item(int i, int j = 0, int k = 0);
-        p_profile* profile;
+        p_profile** profile;
         void* data;
         int owner;
         int i, j, k;
