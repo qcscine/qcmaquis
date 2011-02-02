@@ -29,7 +29,6 @@
 
     template <typename L, typename R>
     void pin(L& proxy_object, const R& real_object){
-        zout << "pinning arguments \n";
         p_profile* proxy = get_profile(proxy_object);
         p_profile* real  = get_profile(real_object);
         proxy->profile   = real->profile;

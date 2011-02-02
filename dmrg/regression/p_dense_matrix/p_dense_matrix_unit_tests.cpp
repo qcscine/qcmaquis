@@ -98,18 +98,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
     ambient::instance() >> dim3(10,5), dim3(2,2), dim3(10,1);
 
-    p_dense_matrix<T> a(512,512);
-    p_dense_matrix<T> b(512,512,5);
-    p_dense_matrix<T> c(512,512);
-    p_dense_matrix<T> d(512,512);
+    p_dense_matrix<T> a(2048,2048);
+    p_dense_matrix<T> b(2048,2048,5);
+    p_dense_matrix<T> c(2048,2048);
+    p_dense_matrix<T> d(2048,2048);
 
-    zout << "A is " << a.profile->id << "\n";
-    zout << "B is " << b.profile->id << "\n";
-    zout << "C is " << c.profile->id << "\n";
-    zout << "D is " << d.profile->id << "\n";
+    zout << "A is " << a.profile->id << "; ";
+    zout << "B is " << b.profile->id << "; ";
+    zout << "C is " << c.profile->id << "; ";
+    zout << "D is " << d.profile->id << ";\n";
 
 
     a = b + c + d + d;
+
+    ambient::playout();
     zout << "Done!\n\n\n";
 }
 
