@@ -126,6 +126,7 @@ namespace mpos {
 		        block_matrix<Matrix, SymmGroup>
 	        >
         > op_pairs;
+        typedef boost::tuple<size_t, size_t, string> tag;
         
     public:
         CorrMaker(std::size_t L,
@@ -133,7 +134,8 @@ namespace mpos {
                   op_t const & fill_,
                   std::vector<op_t> const & ops_)
         : prempo(L)
-        , used(1)
+        , tags(L)
+        , used(L)
         , identity(identity_)
         , fill(fill_)
         , ops(ops_)
@@ -141,15 +143,15 @@ namespace mpos {
 //            for (size_t p = 1; p < prempo.size(); ++p)
 //                prempo[p].push_back( make_tuple(0, 0, identity) );
             
-            recurse(0, 0, 1, vector<size_t>());
+            recurse(0, 0, 0, vector<size_t>());
         }
         
         MPO<Matrix, SymmGroup> create_mpo()
         {
-            for (typename vector<vector<block> >::iterator it = prempo.begin();
-                 it + 1 != prempo.end();
-                 ++it)
-                compress_on_bond(*it, *(it+1));
+//            for (typename vector<vector<block> >::iterator it = prempo.begin();
+//                 it + 1 != prempo.end();
+//                 ++it)
+//                compress_on_bond(*it, *(it+1));
             
 //            for (vector<vector<size_t> >::iterator it = labels.begin();
 //                 it != labels.end(); ++it)
@@ -157,6 +159,13 @@ namespace mpos {
 //                cout << "Correlator ";
 //                std::copy(it->begin(), it->end(), std::ostream_iterator<size_t>(cout, " "));
 //                cout << " at " << it-labels.begin() << endl;
+//            }
+            
+//            for (size_t p = 0; p < prempo.size(); ++p)
+//            {
+//                cout << "Site: " << p << endl;
+//                for (typename vector<tag>::const_iterator it = tags[p].begin(); it != tags[p].end(); ++it)
+//                    cout << "    " << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << endl;
 //            }
             
             MPO<Matrix, SymmGroup> r(prempo.size());
@@ -192,39 +201,53 @@ namespace mpos {
         
     private:
         vector<vector<block> > prempo;
+        vector<vector<tag> > tags;
         vector<vector<size_t> > labels;
         
-        size_t used;
+        vector<set<size_t> > used;
         
         op_t identity, fill;
-        std::vector<op_t> ops;
+        vector<op_t> ops;
         
-        void term(size_t p, size_t u1, size_t u2, op_t const & op, bool trivial)
+        size_t term(size_t p, size_t u1, op_t const & op, bool trivial)
         {
-//            if (!trivial)
-//                cout << "Adding a term at " << p << ", " << u1 << " -> " << u2 << endl;
+            size_t u2 = 0;
+            while (used[p].count(u2) > 0) ++u2;
             prempo[p].push_back( make_tuple(u1, u2, op) );
+            used[p].insert(u2);
+//            cout << "Adding a " << (trivial ? "trivial " : "") << "term at " << p << ", " << u1 << " -> " << u2 << endl;
+            if (trivial)
+                tags[p].push_back( make_tuple(u1, u2, "trivial") );
+            else
+                tags[p].push_back( make_tuple(u1, u2, "nontriv") );
+            return u2;
         }
         
         void recurse(size_t p0, size_t which, size_t use, vector<size_t> label)
         {
-            for (size_t p1 = p0; p1 < prempo.size() - ops.size() + which + 1; ++p1) {
-                if (p1 + ops.size() - which < prempo.size())
-                    term(p1, use, use,
-                         which == 0 ? identity : fill,
-                         true);
-                term(p1, use, used, ops[which], false);
+            if (p0 + ops.size() - which < prempo.size()) {
+                size_t use_next = term(p0, use,
+                                       which == 0 ? identity : fill,
+                                       true);
+                recurse(p0+1, which, use_next, label);
+            }
+            
+            {
+                size_t use_next = term(p0, use, ops[which], false);
                 
                 vector<size_t> label_(label);
-                label_.push_back(p1);
+                label_.push_back(p0);
                 
                 if (which == ops.size()-1) {
-                    for (size_t p2 = p1+1; p2 < prempo.size(); ++p2)
-                        term(p2, used, used, identity, true);
-                    labels.push_back(label_);
-                    used += 1;
+                    size_t t1 = use_next, t2 = use_next;
+                    for (size_t p2 = p0+1; p2 < prempo.size(); ++p2) {
+                        t2 = term(p2, t1, identity, true);
+                        t1 = t2;
+                    }
+                    labels.resize(std::max(t2+1, labels.size()));
+                    labels[t2] = label_;
                 } else {
-                    recurse(p1+1, which+1, used, label_);
+                    recurse(p0+1, which+1, use_next, label_);
                 }
             }
         }
@@ -250,9 +273,9 @@ namespace mpos {
         MPOTensor<Matrix, SymmGroup> as_right(vector<block> const & ops)
         {
             pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second-1);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-                r(get<0>(*it), get<1>(*it)-1) = get<2>(*it);
+                r(get<0>(*it), get<1>(*it)) = get<2>(*it);
             return r;
         }
     };
@@ -302,8 +325,6 @@ namespace mpos {
                         add_term(ops);
                     }
             }
-            
-            zout << "Maximum: " << maximum << endl;
         }
         
         void add_term(vector<pair<size_t, op_t> > & ops)
