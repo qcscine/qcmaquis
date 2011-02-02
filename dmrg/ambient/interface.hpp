@@ -4,6 +4,7 @@
 #include "ambient/core/operation.h"
 #include "ambient/interface/p_profile.h"
 #include "ambient/interface/charge.hpp"
+#include "ambient/interface/select.h"
 
 namespace blas{ using namespace ambient;
 #include "ambient/profiles.hpp"
