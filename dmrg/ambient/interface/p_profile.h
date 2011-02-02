@@ -9,12 +9,13 @@
 namespace ambient {
 
     class workgroup;
+    class p_profile;
 
-    class p_profile {
+    class p_profile_s {
+    protected:
+        p_profile_s();
     public:
         int id;
-        template <typename T>
-        p_profile(const T* ptr);
         p_profile & operator>>(dim3 dim_distr);
         p_profile & operator,(dim3 dim);
         void regroup();
@@ -44,6 +45,9 @@ namespace ambient {
         dim3 dim_item;    // size of work-item (i.e. 128) 
         dim3 dim_gpu;     // work-item size of gpgpu smp workload fractions
     };
+
+    class p_profile: public p_profile_s 
+    { public: template <typename T> p_profile(const T* ptr); };
 
     p_profile& operator>>(p_profile* instance, dim3 dim_distr);
 

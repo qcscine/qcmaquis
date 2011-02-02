@@ -3,7 +3,11 @@
         return id++;
     }
 
-    template <typename T> p_profile::p_profile(const T* ptr) : specific(false), profile(this) { 
+    template <typename T> p_profile::p_profile(const T* ptr) 
+    : p_profile_s()
+    {
+        this->specific = false;
+        this->profile = this;
         p_profile_model(this, ptr);
         this->regroup(); 
         this->id = get_id();
