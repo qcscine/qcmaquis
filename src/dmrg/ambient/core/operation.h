@@ -6,16 +6,17 @@
 
 namespace ambient{ namespace core{
 
+    typedef p_profile   void_pt;
+    typedef p_profile_s void_spt;
+
     class operation{
     public:
-        operation(void(*fp)(p_profile*, p_profile*), p_profile* arg1, p_profile* arg2);
-        operation(void(*fp)(p_profile*, p_profile*, p_profile*), p_profile* arg1, p_profile* arg2, p_profile* arg3);
-        void prototype_duplet();
+        operation(void(*fp)(void_pt*, void_pt*, void_spt*), void_pt* arg1, void_pt* arg2, void_spt* arg3);
         void prototype_triplet();
         void perform(); // executes operation
         void(operation::*prototype)();
         void(*operation_ptr)();
-        p_profile** arguments;
+        void_pt** arguments;
     };
 
 } }
