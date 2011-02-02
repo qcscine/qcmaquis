@@ -86,6 +86,20 @@ struct measure_<Matrix, U1>
         ident.insert_block(Matrix(1, 1, 1), 0, 0);
         ident.insert_block(Matrix(1, 1, 1), 1, 1);
         
+        std::vector<double> density;
+        for (std::size_t p = 0; p < adj.size(); ++p)
+        {
+            mpos::MPOMaker<Matrix, U1> mpom(adj, H);
+            std::vector<std::pair<std::size_t, block_matrix<Matrix, U1> > > v;
+            v.push_back( std::make_pair( p, dens ) );
+            mpom.add_term(v);
+            MPO<Matrix, U1> mpo = mpom.create_mpo();
+            
+            double val = expval(mps, mpo, 0);
+            density.push_back(val);
+        }
+        ar << alps::make_pvp("/spectrum/results/Density/mean/value", density);
+        
         std::vector<block_matrix<Matrix, U1> > density_corr;
         density_corr.push_back( dens );
         density_corr.push_back( dens );
