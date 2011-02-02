@@ -2,6 +2,7 @@
 #include <iterator>
 #include <iostream>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 using std::cerr;
 using std::cout;
@@ -30,6 +31,7 @@ typedef blas::p_dense_matrix<double> Matrix;
 #include "dense_matrix/dense_matrix_blas.hpp"
 
 typedef blas::dense_matrix<double > Matrix;
+//typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
 
 #endif
 
@@ -94,16 +96,16 @@ int main(int argc, char ** argv)
     Timer everything("everything");
     everything.begin();
     
-    if (argc != 4)
+    if (argc != 3)
     {
-        cout << "Usage: <parms> <model_parms> <resultfile>";// << endl;
+        cout << "Usage: <parms> <model_parms>" << endl;
         exit(1);
     }
- 
-    #ifdef MPI_PARALLEL
+    
+#ifdef MPI_PARALLEL
     ambient::instance().init();
-    #endif
-
+#endif
+    
     zout.precision(10);
     
     std::ifstream param_file(argv[1]);
@@ -120,26 +122,58 @@ int main(int argc, char ** argv)
     }
     ModelParameters model(model_file);
     
-    alps::hdf5::oarchive h5ar(argv[3]);
-    h5ar << alps::make_pvp("/parameters", parms);
-    h5ar << alps::make_pvp("/parameters", model);
+    std::string chkpfile = parms.get<std::string>("chkpfile");
+    std::string rfile = parms.get<std::string>("resultfile");
+    bool dns = (parms.get<int>("donotsave") != 0);
+    
+    bool restore = false;
+    {
+        struct stat tmp;
+        if (stat(chkpfile.c_str(), &tmp) == 0 && S_ISREG(tmp.st_mode))
+        {
+            cout << "Restoring state." << endl;
+            restore = true;
+        }
+    }
     
     Adjacency * adj = adj_factory(model);
     mpos::Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
     Index<U1> phys = H->get_phys();
     
+    int total_charge = model.get<int>("u1_total_charge");
+    MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge);
+    
+    int sweep = 0;
+    if (restore) {
+        alps::hdf5::iarchive h5ar_in(chkpfile);
+        h5ar_in >> alps::make_pvp("/state", mps);
+        h5ar_in >> alps::make_pvp("/status/sweep", sweep);
+        ++sweep;
+    }
+    
+    {
+        alps::hdf5::oarchive h5ar(rfile);
+        h5ar << alps::make_pvp("/parameters", parms);
+        h5ar << alps::make_pvp("/parameters", model);
+    }
+    
+    if (!dns) {
+        alps::hdf5::oarchive h5ar(chkpfile);
+        h5ar << alps::make_pvp("/parameters", parms);
+        h5ar << alps::make_pvp("/parameters", model);
+    }
+    
+    std::vector<double> energies, entropies;
+    
+    bool early_exit = false;
+    
     mpos::MPOMaker<Matrix, grp> mpom(*adj, *H);
     mpom.add_bond_ops();
     H->push_extra_terms(mpom, *adj);
-    
-    int total_charge = model.get<int>("u1_total_charge");
-    MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge);
     MPO<Matrix, grp> mpo = mpom.create_mpo();
-  
+    
     zout << expval(mps, mpo, 0) << endl;
     zout << expval(mps, mpo, 1) << endl;
-    
-    std::vector<double> energies, entropies;
     
     timeval now, then;
     gettimeofday(&now, NULL);
@@ -150,50 +184,76 @@ int main(int argc, char ** argv)
             energies = optimizer.sweep(mpo, sweep);
             entropies = calculate_bond_entropies(mps);
             
-#ifdef MPI_PARALLEL
-            if(ambient::scheduler::instance().is_ambient_master()){
-#endif
-            std::ostringstream oss;
-            oss << "/simulation/results/sweep" << sweep << "/Iteration Energy/mean/value";
-            h5ar << alps::make_pvp(oss.str().c_str(), energies);
-            
-            oss.str("");
-            oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
-            h5ar << alps::make_pvp(oss.str().c_str(), entropies);
-            
             gettimeofday(&then, NULL);
             double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
             
-            zout << "Sweep done after " << elapsed << " seconds." << endl;
-            oss.str("");
-            oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
-            h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
+#ifdef MPI_PARALLEL
+            if(ambient::scheduler::instance().is_ambient_master()) {
+#endif
+                {
+                    alps::hdf5::oarchive h5ar(rfile);
+                    
+                    std::ostringstream oss;
+                    oss << "/simulation/results/sweep" << sweep << "/Iteration Energy/mean/value";
+                    h5ar << alps::make_pvp(oss.str().c_str(), energies);
+                    
+                    oss.str("");
+                    oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
+                    h5ar << alps::make_pvp(oss.str().c_str(), entropies);
+                    
+                    cout << "Sweep done after " << elapsed << " seconds." << endl;
+                    oss.str("");
+                    oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
+                    h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
+                }
+                
+                if (parms.get<int>("donotsave") == 0)
+                {
+                    alps::hdf5::oarchive h5ar(chkpfile);
+                    
+                    h5ar << alps::make_pvp("/state", mps);
+                    h5ar << alps::make_pvp("/status/sweep", sweep);
+                }
+                
 #ifdef MPI_PARALLEL
             }
 #endif
+            
+            int rs = parms.get<int>("run_seconds");
+            if (rs > 0 && elapsed > rs) {
+                early_exit = true;
+                break;
+            }
         }
     }
-    gettimeofday(&then, NULL);
-    double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
     
-    zout << "Task took " << elapsed << " seconds." << endl;
-    
+    if (!early_exit)
+    {
+        alps::hdf5::oarchive h5ar(rfile);
+        
+        measure(mps, *adj, *H, model, h5ar);
+        
+        gettimeofday(&then, NULL);
+        double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+        
+        zout << "Task took " << elapsed << " seconds." << endl;
+        
 #ifdef MPI_PARALLEL
-    if(ambient::scheduler::instance().is_ambient_master()){
+        if(ambient::scheduler::instance().is_ambient_master()){
 #endif
-    h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
-    h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
-    
-    h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
-    h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
+            h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
+            h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
+            
+            h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
+            h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
 #ifdef MPI_PARALLEL
+        }
+#endif
+        
+#ifdef MPI_PARALLEL
+        ambient::instance().finalize();
+#endif
+        
+        everything.end();
     }
-#endif
-    
-    measure(mps, *adj, *H, model, h5ar);
-    #ifdef MPI_PARALLEL
-    ambient::instance().finalize();
-    #endif
-    
-    everything.end();
 }

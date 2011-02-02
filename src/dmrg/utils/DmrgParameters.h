@@ -152,6 +152,9 @@ public:
             add_option("nsweeps",value<int>(),"");
             add_option("ngrowsweeps",value<int>(),"");
             add_option("donotsave",value<int>()->default_value(0),"");
+            add_option("run_seconds",value<int>()->default_value(0),"");
+            add_option("resultfile",value<std::string>(),"");
+            add_option("chkpfile",value<std::string>(),"");
             
             store(parse_config_file(param_file, config), vm);
             notify(vm);

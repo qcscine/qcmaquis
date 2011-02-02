@@ -7,3 +7,7 @@ max_bond_dimension = 1000
 
 truncation_initial = 0.0001
 truncation_final = 1e-10
+
+resultfile = results.h5
+chkpfile = results.h5
+

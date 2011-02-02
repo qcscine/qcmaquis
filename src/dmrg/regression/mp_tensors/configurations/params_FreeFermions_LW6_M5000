@@ -8,3 +8,7 @@ alpha_final = 0.0001
 ngrowsweeps = 2
 eigensolver = ARPACK
 truncation_initial = 0.0001
+
+resultfile = results.h5
+chkpfile = results.h5
+
