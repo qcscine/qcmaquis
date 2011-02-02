@@ -11,6 +11,8 @@
 #include "ambient/auxiliary.h"
 #include "ambient/core/operation.h"
 
+#define ALL -1
+
 namespace ambient
 {
     class scheduler
@@ -33,8 +35,8 @@ namespace ambient
         dim3 item_dim();
 
         void push(ambient::core::operation* logistics, ambient::core::operation* computing);
-        void evaluate_op_stack(); 
-        void perform_op_stack(); 
+        void playout();  // perform actual operations
+        int  get_rank(const char* smp_group);
     private:
         MPI_Comm comm;
         int size;
@@ -57,6 +59,8 @@ namespace ambient
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
     size_t get_bound();
     scheduler& instance();
+    int rank(const char* smp_group);
+    void playout();
 }
 
 #endif

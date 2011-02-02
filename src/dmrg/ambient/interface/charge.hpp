@@ -5,10 +5,10 @@ namespace ambient {
 
     class charge { // workload of individual rank in terms of workgroups 
     public:
-        charge():accept(false){ }
+        charge():accept(false){ this->set_smp_group("ambient"); }
         charge& operator()(const int rank)
         {
-            if(rank == 0){ accept = true; }
+            if(rank == ambient::rank(this->smp_group)){ accept = true; }
             else{ accept = false; target = rank; }
             return *this;
         }
@@ -16,14 +16,19 @@ namespace ambient {
         {
             if(accept){
                 accept = false;
-                zout << "I've accepted group " << group->i << " " << group->j << std::endl;
+                printf("R%d: I've accepted group %d %d\n", ambient::rank(this->smp_group), group->i,group->j);
                 recvlist.push_back(group);
-                group->owner = 0;
-            }else if(group->owner == 0){
+                group->owner = ambient::rank(this->smp_group);
+            }else if(group->owner == ambient::rank(this->smp_group)){
                 group->owner = target;
                 sendlist.push_back(group);
             }
         }
+        void set_smp_group(const char* smp_group)
+        {
+            this->smp_group = smp_group;
+        }
+        const char* smp_group;
         bool accept;
         int target;
         std::list<workgroup*> sendlist;

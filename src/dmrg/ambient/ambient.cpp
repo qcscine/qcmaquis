@@ -43,6 +43,17 @@ namespace ambient
     { 
         return scheduler::instance(); 
     }
+    void playout()
+    {
+        scheduler::instance().playout(); 
+    }
+    int scheduler::get_rank(const char* smp_group){
+        return this->rank(smp_group);
+    }
+    int rank(const char* smp_group)
+    {
+        return ambient::instance().get_rank(smp_group);
+    }
     scheduler::scheduler():rank(multirank::instance()), mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
     {
     }
@@ -157,11 +168,12 @@ void computation_1(workgroup* block)
         this->logistics_stack.push(logistics);
         this->computing_stack.push(computing);
     }
-    void scheduler::evaluate_op_stack()
+    void scheduler::playout()
     {
         while(!this->logistics_stack.empty()){
             this->logistics_stack.front()->perform();
             this->logistics_stack.pop();
         }
+        printf("Performing actual communications/computations\n");
     }
 }
