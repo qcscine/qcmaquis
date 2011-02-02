@@ -15,7 +15,8 @@ void plus_l_kernel(void_pt* a, void_pt* b, void_spt* out){
     a >> dim3(10,5), dim3(1,1), dim3(10,1);
     info(a); info(b); info((void_pt*)out);
 
-//    select(ALL, ambient);
+    select("* from ambient as work as table in fs");
+
 //    int id = csmp_id.x;
 //    assign(a, 0, 0);
 

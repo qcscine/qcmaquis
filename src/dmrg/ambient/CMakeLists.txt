@@ -9,5 +9,6 @@ add_library (ambient
              groups/group.cpp
              interface/p_profile.cpp
              interface/workgroup.cpp
+             interface/select.cpp
              core/operation.cpp
              ambient.cpp)
