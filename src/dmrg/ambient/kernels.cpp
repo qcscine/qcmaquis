@@ -15,16 +15,16 @@ void plus_l_kernel(void_pt* a, void_pt* b, void_spt* out){
     a >> dim3(10,5), dim3(1,1), dim3(10,1);
     info(a); info(b); info((void_pt*)out);
 
-    select("0.3 from ambient as work");
+    select("0.5 from ambient as work");
 
 //    int id = csmp_id.x;
 //    assign(a, 0, 0);
 
-    charge(0) += a->group(0, 0);
-    charge(1) += a->group(0, 1);
-    charge(1) += a->group(0, 2);
-    charge(1) += a->group(2, 3);
-    charge(1) += a->group(3, 4);
+    workload(0) += a->group(0, 0);
+    workload(1) += a->group(0, 1);
+    workload(1) += a->group(0, 2);
+    workload(1) += a->group(2, 3);
+    workload(1) += a->group(3, 4);
 }
 
 void assign_c_kernel(void_pt* a, void_pt* b){

@@ -2,12 +2,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ambient/interface/select.h"
+#include "ambient/interface/charge.h"
+#include "ambient/groups/group.h"
 #include "utils/sqlite3.c"
 
 namespace ambient {
 
     void select(const char* sql)
     {
+        groups::group* grp;
         int i, token_len, token_t;
         char* group; 
         char* as;
@@ -19,16 +22,23 @@ namespace ambient {
 
         i += parseout_id(sql, &group);
         i += parseout_id(&sql[i], &as);
-        if(as == NULL) as = "tmp";
+        if(as == NULL) as = (char*)"tmp";
+        grp = new groups::group(as, 0, group);
+
         if(token_t == TK_STAR){ 
-            printf("selecting everything of %s as %s\n", group, as); 
+            printf("selecting everything of %s as %s\n", group, as);
+            grp->add_every(1); 
         }else if(token_t == TK_FLOAT){ 
             part = strtof(sql, NULL);
             printf("selecting %.2f of %s as %s\n", part, group, as);
+            grp->add_every((int)(1/part)); 
         }else if(token_t == TK_INTEGER){ 
             count = (int)strtol(sql, NULL, 10);
+            grp->add_range(0, count);
             printf("selecting csmps %d of %s as %s\n", count, group, as);
         }
+        grp->commit();
+        workload.set_smp_group(as);
     }
 
     int parseout_id(const char* sql, char** id)

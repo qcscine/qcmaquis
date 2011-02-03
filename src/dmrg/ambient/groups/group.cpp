@@ -29,6 +29,18 @@ namespace ambient{ namespace groups {
         group_map(name, this);
     }
 
+    group::group(const char* name, int master, const char* parent): members(NULL)
+    {
+        this->parent = group_map(parent);
+        this->mpi_group = this->parent->mpi_group;
+        this->mpi_comm = this->parent->mpi_comm;
+        this->name = name;
+        this->master = master;
+        this->parent->children.insert(this);
+        this->manager = new packet_manager(&this->mpi_comm);
+        group_map(name, this);
+    }
+
     void group::add(const int* procs, int count, bool excl){
         this->members = (int*)realloc(this->members, (this->count+count)*sizeof(int));
         memcpy(&(this->members[this->count]), procs, count*sizeof(int));
@@ -131,11 +143,14 @@ namespace ambient{ namespace groups {
     }
 
     group* group::group_map(const char* name, group* instance){
-        static std::map<const char*,group*> map;
+        static std::map<std::string,group*> map;
         if(instance != NULL){ 
             if(map.find(name) != map.end()) printf("Warning: trying to add to groups with the same name\n");
             map.insert(std::pair<const char*,group*>(name,instance));
-        }else return map.find(name)->second;
+        }else{
+            if(map.find(name) == map.end()) printf("Error: wasn't able to find requested group (%s)\n", name);
+            return map.find(name)->second; 
+        }
     }
 
 } }
