@@ -16,7 +16,7 @@ using namespace blas;
 //
 // List of types T for which the p_dense_matrix<T> is tested
 // (long long unsigned int causes problems in boost::iterator facade)
-typedef boost::mpl::list<double, int> test_types;
+typedef boost::mpl::list<double> test_types;
 typedef ambient::dim3 dim3;
 
 namespace type_pairs
@@ -103,16 +103,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> c(2048,2048);
     p_dense_matrix<T> d(2048,2048);
 
-    zout << "A is " << a.profile->id << "; ";
-    zout << "B is " << b.profile->id << "; ";
-    zout << "C is " << c.profile->id << "; ";
-    zout << "D is " << d.profile->id << ";\n";
+//    zout << "A is " << a.profile->id << "; ";
+//    zout << "B is " << b.profile->id << "; ";
+//    zout << "C is " << c.profile->id << "; ";
+//    zout << "D is " << d.profile->id << ";\n";
 
 
-    a = b + c + d + d;
-
+    //a = b + c;// + d + d;
+    a += b;
     ambient::playout();
-    zout << "Done!\n\n\n";
 }
 
 
