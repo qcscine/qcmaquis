@@ -8,6 +8,7 @@ Just very basic C++ or C (template ok).
 	The link between the DMRG code (CPU) and the DMRG code (GPU) is done inside the file  list_functions.h
 	where the definition of function/wrapper are presented
 */
+#include <iostream>
 #include "list_functions.h"
 
 /**
@@ -22,66 +23,35 @@ typedef float TYPE;
 
 
 /**
-transpose kernel, to be tune
+	this kernel comes from Nvidia nevertheless they consider the ROW order and we used the columns order
+	therefore I have adapted it, it is a big mess between x,y and num_columns and num_rows.
 */
-
-/*
 template <typename T>
-__global__ void transposeNaive(T odata, T idata, int num_rows, int num_columns, int ld)
+__global__ void transpose(T odata, T idata, int num_rows, int num_columns, int ld)
 {
-   int x = blockIdx.x*blockDim.x + threadIdx.x;
-   int y = blockIdx.y*blockDim.y + threadIdx.y;
-   int index_in, index_out;
-   
-	if (x < num_columns && y < num_rows) 	
-	{
-		index_out = x + num_columns*y;
-		index_in = y + num_rows*x;
-		odata[index_out] = idata[index_in] ;
-	}			
+		unsigned int BLOCK_DIM = 16;
+       __shared__ float block[16][16+1];
+
+        // read the matrix tile into shared memory
+        unsigned int xIndex = blockIdx.x * BLOCK_DIM + threadIdx.x;
+        unsigned int yIndex = blockIdx.y * BLOCK_DIM + threadIdx.y;
+        if((yIndex < num_rows) && (xIndex < num_columns))
+        {
+                unsigned int index_in = xIndex * num_rows + yIndex;
+                block[threadIdx.y][threadIdx.x] = idata[index_in];
+        }
+
+        __syncthreads();
+
+        // write the transposed matrix tile to global memory
+        xIndex = blockIdx.y * BLOCK_DIM + threadIdx.x;
+        yIndex = blockIdx.x * BLOCK_DIM + threadIdx.y;
+        if((yIndex < num_columns) && (xIndex < num_rows))
+        {
+                unsigned int index_out = xIndex * num_columns + yIndex;
+                odata[index_out] = block[threadIdx.x][threadIdx.y];
+        }		
 }
-*/
-
-template <typename T>
-__global__ void transposeNaive(T odata, T idata, int num_rows, int num_columns, int ld)
-{
-   int x = blockIdx.x*blockDim.x + threadIdx.x;
-   int y = blockIdx.y*blockDim.y + threadIdx.y;
-   int index_in, index_out;
-   
-   __shared__ float block[16][16];
-   
-   
-   	int qx=0;
-	int rx=0;	
-	qx = num_columns/blockDim.x;
-	rx = num_columns - qx*blockDim.x ;
-	
-	int qy=0;
-	int ry=0;	
-	qy = num_rows/blockDim.y;
-	ry = num_rows - qy*blockDim.y ;
-	
-   
-   /*
-	
-   */
-//	if (x < num_columns && y < num_rows) 	
-//	{
-	/*
-		index_out = x + num_columns*y;
-		index_in = y + num_rows*x;
-	*/	
-		index_in = x + num_columns*y;
-
-
-		idata[y] = 999999 ;
-		
-		
-//	}			
-
-}
-
 
 
 /**
@@ -90,137 +60,82 @@ swap row kernel
 template <typename T>
 __global__ void SwapRows(T data, int num_rows, int num_columns, int ld, int i1, int i2)
 {
+		__shared__ float rows_i1[16];
+		__shared__ float rows_i2[16];
 
-	/**
-	We optimize the swap with the local memory of the gpu card -> shared
-	*/
-   __shared__ float rows16[16];
-   
-   int niteration = 0;
-   int nlimit = 0;
-	/**
-	The size of block must be smaller or equal to 16
-	*/
-   int dimensionofblocks = blockDim.x;
-   
-   int x = blockIdx.x*blockDim.x + threadIdx.x;
-   int y = blockIdx.y*blockDim.y + threadIdx.y;
-   
-   /**
-   local index
-   */
-   int index_i1, index_i2;
+		int xIndex = blockIdx.x*blockDim.x + threadIdx.x;
+		int yIndex = blockIdx.y*blockDim.y + threadIdx.y;
 
-	/**
-	Division Euclidian, need to adjust the transpose and avoid the overflow
-	*/
-   	int q=0;
-	int r=0;	
-	q = num_columns/blockDim.x;
-	r = num_columns - q*blockDim.x ;
-
-   if ((y == i1 || y == i2) && x < dimensionofblocks ) 	
-   {
-   
-		nlimit = q*dimensionofblocks;
-		for(niteration ; niteration < nlimit ; niteration += dimensionofblocks)
+		if ((yIndex == i1) && (xIndex < num_columns))
 		{
-			index_i2 = i2 + num_rows*(x+niteration);
-			index_i1 = i1 + num_rows*(x+niteration); 
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				rows_i1[threadIdx.x] = data[index_in];
+		} 
 
-			rows16[x]   =  data[index_i1];
-			data[index_i1] = data[index_i2];
-			data[index_i2] = rows16[x];
-		}
-			
-		/**
-			second part of the swap done on the quotient r
-			original test (r!=0 && x < r) to (x < r) (it should be enough)
-		*/
-		if(x < r)
+		if ((yIndex == i2) && (xIndex < num_columns))
 		{
-			index_i2 =  i2 + num_rows*(niteration+x);
-			index_i1 =  i1 + num_rows*(niteration+x);
-
-			rows16[x]      = data[index_i1];
-			data[index_i1] = data[index_i2];
-			data[index_i2] = rows16[x];
-		}
-   }	
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				rows_i2[threadIdx.x] = data[index_in];
+		} 
+		
+		__syncthreads();
+		
+		if ((yIndex == i1) && (xIndex < num_columns))
+		{
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				data[index_in] = rows_i2[threadIdx.x];
+		} 
+		
+		
+		if ((yIndex == i2) && (xIndex < num_columns))
+		{
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				data[index_in] = rows_i1[threadIdx.x];
+		} 
 }
 
-
-
 /**
-swap column kernel
+swap columns kernel
 */
 template <typename T>
 __global__ void SwapColumns(T data, int num_rows, int num_columns, int ld, int i1, int i2)
 {
-	/**
-	We optimize the swap with the local memory of the gpu card -> shared
-	*/
-   __shared__ float columns16[16];
-   
-   int niteration = 0;
-   int nlimit = 0;
-	/**
-	The size of block must be smaller or equal to 16
-	*/
-   int dimensionofblocks = blockDim.y;
-   
-   int x = blockIdx.x*blockDim.x + threadIdx.x;
-   int y = blockIdx.y*blockDim.y + threadIdx.y;
-   
-   /**
-   local index
-   */
-   int index_i1, index_i2;
+		__shared__ float rows_i1[16];
+		__shared__ float rows_i2[16];
 
-	/**
-	Division Euclidian, need to adjust the swap and avoid the overflow
-	*/
-   	int q=0;
-	int r=0;	
-	q = num_rows/blockDim.y;
-	r = num_rows - q*blockDim.y ;
+        int xIndex = blockIdx.x *blockDim.x + threadIdx.x;
+        int yIndex = blockIdx.y *blockDim.y + threadIdx.y;
 
-   if ((x == i1 || x == i2) && y < dimensionofblocks ) 	
-   {
-		/**
-			num_rows = q * dimensionofblocks + r
-			first part of the swap done on the quotient q
-			to do or not to do : unroll ?
-		*/
-		nlimit =q*dimensionofblocks;
-		
-		for(niteration ; niteration < nlimit ; niteration += dimensionofblocks)
+		if ((xIndex == i1) && (yIndex < num_rows))
 		{
-			index_i2 = i2*num_columns + y + niteration;
-			index_i1 = i1*num_columns + y + niteration;
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				rows_i1[threadIdx.y] = data[index_in];
+		} 
 
-			columns16[y]   =  data[index_i1];
-			data[index_i1] = data[index_i2];
-			data[index_i2] = columns16[y];
-		}
-		
-		/**
-			second part of the swap done on the quotient r
-			original test (r!=0 && y < r) to (y < r) (it should be enough)
-		*/
-		if(y < r)
+		if ((xIndex == i2) && (yIndex < num_rows))
 		{
-			index_i2 = i2*num_columns + y + niteration;
-			index_i1 = i1*num_columns + y + niteration;
-
-			columns16[y]   = data[index_i1];
-			data[index_i1] = data[index_i2];
-			data[index_i2] = columns16[y];
-		}
-	
-   }	
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				rows_i2[threadIdx.y] = data[index_in];
+		} 
+		
+		__syncthreads();
+		
+		if ((xIndex == i1) && (yIndex < num_rows))
+		{
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				data[index_in] = rows_i2[threadIdx.y];
+		} 
+		
+		
+		if ((xIndex == i2) && (yIndex < num_rows))
+		{
+				unsigned int index_in = xIndex * num_rows + yIndex;
+				data[index_in] = rows_i1[threadIdx.y];
+		} 
 
 }
+
+
 
 
 /**
@@ -251,7 +166,7 @@ void transpose(TYPE*  B_GPU_p, TYPE*  A_GPU_p, std::size_t num_rows, std::size_t
 	printf("%i %i \n",dimblock.x, dimblock.y);
 	printf("%i %i \n",dimthread.x, dimthread.y);
 #endif
-	transposeNaive <<< dimgrid, dimblock >>>(B_GPU_p, A_GPU_p, int(num_rows), int(num_columns), int(ld));
+	transpose <<< dimgrid, dimblock >>>(B_GPU_p, A_GPU_p, int(num_rows), int(num_columns), int(ld));
 
 }
 
@@ -302,11 +217,11 @@ void swap_columns(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_columns, 
 	dimgrid.y = (int(ld) + dimblock.y - 1)/ dimblock.y;	
 	dimgrid.z = 1;	
 
-#ifdef NDEBUG
+//#ifdef NDEBUG
 	printf("%i %i \n",dimgrid.x, dimgrid.y);
 	printf("%i %i \n",dimblock.x, dimblock.y);
 	printf("%i %i \n",dimthread.x, dimthread.y);
-#endif
+//#endif
 	SwapColumns <<< dimgrid, dimblock >>>(A_GPU_p, int(num_rows), int(num_columns), int(ld), int(i1), int(i2));
 }
 
