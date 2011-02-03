@@ -15,7 +15,6 @@
 
     template <typename ST, typename FC, typename FL, class T1, class T2> 
     const ST push(FC c_kernel, FL l_kernel, const T1& arg1, const T2& arg2){
-	zout << "Calling the template that takes 2 args\n";
 	p_profile* handle = new p_profile((const ST*)NULL);
 	ST out(handle);
 	push(c_kernel, l_kernel, arg1, arg2, out);
