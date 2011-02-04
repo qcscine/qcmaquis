@@ -36,8 +36,8 @@ struct DoubleInt
 };
 
 struct AmbientConfig {
-    AmbientConfig()   { ambient::instance().init(); }
-    ~AmbientConfig()  { ambient::instance().finalize(); }
+    AmbientConfig()   { ambient::engine.init(); }
+    ~AmbientConfig()  { ambient::engine.finalize(); }
 };
 
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
-    ambient::instance() >> dim3(10,5), dim3(2,2), dim3(10,1);
+    ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1);
 
     p_dense_matrix<T> a(2048,2048);
     p_dense_matrix<T> b(2048,2048,5);

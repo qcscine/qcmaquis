@@ -1,3 +1,4 @@
+#include "ambient/ambient.h"
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
 
@@ -10,7 +11,7 @@ namespace ambient{ namespace groups {
         MPI_Comm_group(this->mpi_comm, &this->mpi_group);
         MPI_Group_size(this->mpi_group, &this->count);
         MPI_Group_rank(this->mpi_group, &this->rank);
-        multirank::instance().set( this, this->rank );
+        ambient::rank.set( this, this->rank );
         this->name = name;
         this->master = master;
         this->manager = new packet_manager(&this->mpi_comm);
@@ -139,7 +140,7 @@ namespace ambient{ namespace groups {
         MPI_Group_incl(this->parent->mpi_group, this->count, this->members, &this->mpi_group);
         MPI_Comm_create(this->parent->mpi_comm, this->mpi_group, &this->mpi_comm);
         MPI_Group_rank(this->mpi_group, &this->rank);
-        multirank::instance().set( this, this->rank );
+        ambient::rank.set( this, this->rank );
     }
 
     group* group::group_map(const char* name, group* instance){

@@ -2,6 +2,7 @@
 #define AMBIENT_INTERFACE_SELECT_H
 
 #include <memory.h>
+#include "ambient/ambient.h"
 
 namespace ambient {
 

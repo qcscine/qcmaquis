@@ -9,9 +9,11 @@
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
 #include "ambient/auxiliary.h"
+#include "ambient/core/smp.h"
 #include "ambient/core/operation.h"
 
 #define ALL -1
+#define UNDEFINED_ID MPI_UNDEFINED
 
 namespace ambient
 {
@@ -36,12 +38,10 @@ namespace ambient
 
         void push(ambient::core::operation* logistics, ambient::core::operation* computing);
         void playout();  // perform actual operations
-        int  get_rank(const char* smp_group);
     private:
         MPI_Comm comm;
         int size;
         groups::group* ambient;
-        groups::multirank& rank;
 
         enum { AMBIENT_MASTER,
                GROUP_MASTER,
@@ -58,9 +58,12 @@ namespace ambient
 
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
     size_t get_bound();
-    scheduler& instance();
-    int rank(const char* smp_group);
     void playout();
+
+    extern smp& asmp;
+    extern scheduler& layout;
+    extern scheduler& engine;
+    extern groups::multirank& rank;
 }
 
 #endif

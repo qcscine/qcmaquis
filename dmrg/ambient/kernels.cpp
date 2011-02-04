@@ -16,15 +16,7 @@ void plus_l_kernel(void_pt* a, void_pt* b, void_spt* out){
     info(a); info(b); info((void_pt*)out);
 
     select("0.5 from ambient as work");
-
-//    int id = csmp_id.x;
-//    assign(a, 0, 0);
-
-    workload(0) += a->group(0, 0);
-    workload(1) += a->group(0, 1);
-    workload(1) += a->group(0, 2);
-    workload(1) += a->group(2, 3);
-    workload(1) += a->group(3, 4);
+    assign(a, 0, asmp.id);
 }
 
 void assign_c_kernel(void_pt* a, void_pt* b){

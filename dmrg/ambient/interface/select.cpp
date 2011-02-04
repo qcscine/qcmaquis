@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ambient/interface/select.h"
-#include "ambient/interface/charge.h"
+#include "ambient/core/smp.h"
 #include "ambient/groups/group.h"
 #include "utils/sqlite3.c"
 
@@ -35,10 +35,10 @@ namespace ambient {
         }else if(token_t == TK_INTEGER){ 
             count = (int)strtol(sql, NULL, 10);
             grp->add_range(0, count);
-            printf("selecting csmps %d of %s as %s\n", count, group, as);
+            printf("selecting asmps %d of %s as %s\n", count, group, as);
         }
         grp->commit();
-        workload.set_smp_group(as);
+        asmp.set_smp_group(as);
     }
 
     int parseout_id(const char* sql, char** id)
