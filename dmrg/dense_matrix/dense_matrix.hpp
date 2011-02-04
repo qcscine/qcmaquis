@@ -393,8 +393,13 @@ namespace blas {
     template <typename T, typename MemoryBlock>
     void dense_matrix<T, MemoryBlock>::inplace_conjugate()
     {
-        std::transform(this->elements().first, this->elements().second,
-                       this->elements().first, utils::functor_conj());
+		// Do the operation column by column
+		for(size_type j=0; j < this->size2_; ++j)
+		{
+			std::pair<column_element_iterator,column_element_iterator> range(column(j));
+			std::transform(range.first, range.second,
+						   range.first, utils::functor_conj());
+		}
     }
 
     template <typename T, typename MemoryBlock>
