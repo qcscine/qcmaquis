@@ -13,6 +13,13 @@ using namespace ambient::groups;
 
 namespace ambient
 {
+// global objects accessible anywhere //
+    scheduler& layout = scheduler::instance();
+    scheduler& engine = scheduler::instance();
+    multirank& rank   = multirank::instance();
+    smp& asmp = smp::instance(); // charge of processes inside kernels
+// global objects accessible anywhere //
+
     scheduler & scheduler::operator>>(dim3 dim_distr) 
     {
         this->dim_distr = dim_distr;
@@ -39,22 +46,11 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
-    scheduler& instance()
-    { 
-        return scheduler::instance(); 
-    }
     void playout()
     {
-        scheduler::instance().playout(); 
+        engine.playout(); 
     }
-    int scheduler::get_rank(const char* smp_group){
-        return this->rank(smp_group);
-    }
-    int rank(const char* smp_group)
-    {
-        return ambient::instance().get_rank(smp_group);
-    }
-    scheduler::scheduler():rank(multirank::instance()), mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
+    scheduler::scheduler(): mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
     {
     }
     bool scheduler::is_ambient_master()
@@ -81,12 +77,12 @@ namespace ambient
         commit_t<data_packet_t>();
         packet* init_packet;
         void* buffer = alloc_t<control_packet_t>();
-        if(this->rank("ambient") == AMBIENT_MASTER_RANK){
-            init_packet = pack<control_packet_t>(buffer, 1, "P", this->rank("ambient"), "DATA", 1);
+        if(rank("ambient") == AMBIENT_MASTER_RANK){
+            init_packet = pack<control_packet_t>(buffer, 1, "P", rank("ambient"), "DATA", 1);
             send(init_packet, "ambient");
         }else{
             init_packet = recv<control_packet_t>("ambient", buffer);
-            printf("%d: Init packet contents: %c %d %c %d %s %d\n", this->rank("ambient"), init_packet->get<char>(0), 
+            printf("%d: Init packet contents: %c %d %c %d %s %d\n", rank("ambient"), init_packet->get<char>(0), 
                                                                     init_packet->get<int>(1), 
                                                                     init_packet->get<char>(2),
                                                                     init_packet->get<int>(3), 
@@ -98,17 +94,17 @@ namespace ambient
         group* work_grp = new group("work", AMBIENT_MASTER_RANK, this->ambient);
         work_grp->add_every(1);
         work_grp->commit();
-        printf("Rank inside work: %d; ambient: %d\n", this->rank("work"), this->rank("ambient"));
+        printf("Rank inside work: %d; ambient: %d\n", rank("work"), rank("ambient"));
         int new_ranks[] = { 1, 0 };
         work_grp->reorder(new_ranks);
         work_grp->commit();
-        printf("Reordered: Rank inside work: %d; ambient: %d\n", this->rank("work"), this->rank("ambient"));
-        if(this->rank("work") == AMBIENT_MASTER_RANK){
-            init_packet = pack<control_packet_t>(buffer, 1, "L", this->rank("work"), "SNCF", 2);
+        printf("Reordered: Rank inside work: %d; ambient: %d\n", rank("work"), rank("ambient"));
+        if(rank("work") == AMBIENT_MASTER_RANK){
+            init_packet = pack<control_packet_t>(buffer, 1, "L", rank("work"), "SNCF", 2);
             send(init_packet, "work");
         }else{
             init_packet = recv<control_packet_t>("work", buffer);
-            printf("%d: Init packet contents: %c %d %c %d %s %d\n", this->rank("ambient"), init_packet->get<char>(0), 
+            printf("%d: Init packet contents: %c %d %c %d %s %d\n", rank("ambient"), init_packet->get<char>(0), 
                                                                     init_packet->get<int>(1), 
                                                                     init_packet->get<char>(2),
                                                                     init_packet->get<int>(3), 
@@ -128,7 +124,7 @@ namespace ambient
         MPI_Comm_size(this->comm, &this->size);
 
         this->ambient = new group("ambient", AMBIENT_MASTER_RANK, this->comm);
-        if(this->rank("ambient") == AMBIENT_MASTER_RANK) this->mode = AMBIENT_MASTER;
+        if(rank("ambient") == AMBIENT_MASTER_RANK) this->mode = AMBIENT_MASTER;
         else this->mode = GROUP_SLAVE;
 
 //      regression_test();

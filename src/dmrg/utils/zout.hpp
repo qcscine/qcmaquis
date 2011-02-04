@@ -11,7 +11,7 @@ public:
     dmrg_cout& operator <<(T const & obj)
     {
 #ifdef MPI_PARALLEL
-        if(ambient::scheduler::instance().is_ambient_master())
+        if(ambient::engine.is_ambient_master())
 #endif
         std::cout << obj;
         return *this;
@@ -20,7 +20,7 @@ public:
     dmrg_cout& operator <<(std::ostream& (*pf)(std::ostream&))
     {
 #ifdef MPI_PARALLEL
-        if(ambient::scheduler::instance().is_ambient_master())
+        if(ambient::engine.is_ambient_master())
 #endif
         std::cout << pf;
         return *this;

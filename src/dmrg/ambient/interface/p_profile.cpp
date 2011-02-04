@@ -65,11 +65,11 @@ namespace ambient {
 
     dim3 p_profile_s::group_dim(){
         if(this->specific) return this->dim_group;
-        else return scheduler::instance().group_dim();
+        else return engine.group_dim();
     }
 
     dim3 p_profile_s::item_dim(){
-        return scheduler::instance().item_dim();
+        return engine.item_dim();
     }
 
 }
