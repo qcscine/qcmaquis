@@ -17,7 +17,7 @@ namespace ambient{ namespace groups{
     public:
         void set(const group* grp, int rank);
         int operator()(const group* grp);
-        int operator()(const char* grp);
+        int operator()(const char* grp = "ambient");
     };
 
 } }

@@ -17,6 +17,7 @@ namespace ambient {
         float part;
         int count;
 
+        if(!asmp.accept) return; // asmp performs kernel check
         i = sqlite3GetToken((const unsigned char*)sql, &token_t);
         if(token_t == TK_ILLEGAL) return;
 
@@ -38,7 +39,7 @@ namespace ambient {
             printf("selecting asmps %d of %s as %s\n", count, group, as);
         }
         grp->commit();
-        asmp.set_smp_group(as);
+        asmp.set_scope(grp);
     }
 
     int parseout_id(const char* sql, char** id)

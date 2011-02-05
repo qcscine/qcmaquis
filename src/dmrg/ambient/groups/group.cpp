@@ -118,9 +118,10 @@ namespace ambient{ namespace groups {
                 (*it)->members[i] = order((*it)->members[i]);
     }
 
-    int group::translate_rank(int rank, group* parent){
+    int group::translate_rank(int rank, group* parent) const{
         int rank_n = rank;
-        group* iterator = this;
+        const group* iterator = this;
+        if(!parent) parent = group_map("ambient");
         do{
             if(rank_n >= iterator->count || (iterator->parent == NULL && parent != NULL)){
                 printf("Warning: the rank doesn't belongs to this group"); 
