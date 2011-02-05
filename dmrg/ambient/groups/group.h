@@ -24,7 +24,7 @@ namespace ambient{ namespace groups{
         void reorder(int* new_ranks);
         void reorder(int(*order)(int r));
 
-        int translate_rank(int rank, group* parent = NULL);
+        int translate_rank(int rank, group* parent = NULL) const;
 
         static group* group_map(const char* name, group* instance = NULL);
 
@@ -35,9 +35,9 @@ namespace ambient{ namespace groups{
         std::set<group*> children;
         MPI_Comm mpi_comm;
         MPI_Group mpi_group;
+        int count;               // number of processes inside group
     private:
         int rank;
-        int count;               // number of processes inside group
         int* members;            // list of member ranks (according to the parent group)
     };
 

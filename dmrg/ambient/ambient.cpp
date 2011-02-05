@@ -168,6 +168,7 @@ void computation_1(workgroup* block)
     {
         while(!this->logistics_stack.empty()){
             this->logistics_stack.front()->perform();
+            asmp.get_info(this->logistics_stack.front());
             this->logistics_stack.pop();
         }
         printf("Performing actual communications/computations\n");
