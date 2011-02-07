@@ -33,6 +33,7 @@ namespace blas {
         ~p_dense_matrix();
 // AMBIENT PART <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         ambient::p_profile* profile;
+        boost::scoped_ptr<ambient::p_profile> scope;
         p_dense_matrix(ambient::p_profile* p);      // proxy matrix construction
 // AMBIENT PART >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         typedef T                       value_type;       // The type T of the elements of the matrix
@@ -119,7 +120,6 @@ namespace blas {
         size_type cols;
         size_type lda; // leading dimension array
         size_type sda; // subleading dimension array
-        boost::scoped_ptr<T> scope;
         T* data;
     };
 

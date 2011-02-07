@@ -17,26 +17,24 @@ namespace ambient {
         float part;
         int count;
 
-        if(!asmp.accept) return; // asmp performs kernel check
         i = sqlite3GetToken((const unsigned char*)sql, &token_t);
         if(token_t == TK_ILLEGAL) return;
 
         i += parseout_id(sql, &group);
         i += parseout_id(&sql[i], &as);
         if(as == NULL) as = (char*)"tmp";
+        printf("i'm not in %d\n", rank(group));
+
         grp = new groups::group(as, 0, group);
 
         if(token_t == TK_STAR){ 
-            printf("selecting everything of %s as %s\n", group, as);
             grp->add_every(1); 
         }else if(token_t == TK_FLOAT){ 
             part = strtof(sql, NULL);
-            printf("selecting %.2f of %s as %s\n", part, group, as);
             grp->add_every((int)(1/part)); 
         }else if(token_t == TK_INTEGER){ 
             count = (int)strtol(sql, NULL, 10);
             grp->add_range(0, count);
-            printf("selecting asmps %d of %s as %s\n", count, group, as);
         }
         grp->commit();
         asmp.set_scope(grp);
@@ -54,8 +52,9 @@ namespace ambient {
 
         if(token_t == TK_ILLEGAL) *id = NULL;
         else{
-            *id = (char*)malloc(sizeof(char)*token_len);
+            *id = (char*)malloc(sizeof(char)*(token_len+1));
             memcpy(*id, &sql[i-token_len], token_len*sizeof(char));
+            (*id)[token_len] = 0; // end of the string
         }
         return i;
     }

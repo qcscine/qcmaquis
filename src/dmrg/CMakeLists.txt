@@ -21,6 +21,7 @@ target(ambient_dmrg)
 # description of targets:
 if(ambient_dmrg)
     set(CMAKE_CXX_COMPILER "mpic++") 
+    add_definitions(-g -O0)
     add(ambient) 
     add(regression/p_dense_matrix)
 endif(ambient_dmrg)

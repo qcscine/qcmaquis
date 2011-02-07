@@ -36,8 +36,8 @@ namespace ambient{ namespace groups{
         MPI_Comm mpi_comm;
         MPI_Group mpi_group;
         int count;               // number of processes inside group
-    private:
         int rank;
+    private:
         int* members;            // list of member ranks (according to the parent group)
     };
 

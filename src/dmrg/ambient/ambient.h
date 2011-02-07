@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <queue>
+#include <string>
 
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"

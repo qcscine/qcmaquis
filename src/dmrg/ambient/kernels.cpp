@@ -3,9 +3,9 @@ typedef ambient::p_profile_s void_spt;
  
 void info(void_pt* p){
     if(!asmp.accept) return;
-    zout << "Matrix "<< p->dereference()->id <<" ("<< p->id <<"): size of the task is "<< p->dereference()->grid_dim().y << " x "<< p->dereference()->grid_dim().x << 
-            " groups sized "<<p->dereference()->group_dim().y <<" x "<< p->dereference()->group_dim().x  <<
-            " items of "<< p->dereference()->item_dim().x << " x " << p->dereference()->item_dim().y << " elements\n";
+    zout << "Matrix "<< p->id <<": size of the task is "<< p->grid_dim().y << " x "<< p->grid_dim().x << 
+            " groups sized "<<p->group_dim().y <<" x "<< p->group_dim().x  <<
+            " items of "<< p->item_dim().x << " x " << p->item_dim().y << " elements\n";
 }
 
 void plus_l_kernel(void_pt* a, void_pt* b, void_spt* out){
