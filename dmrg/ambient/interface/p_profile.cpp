@@ -7,7 +7,7 @@ namespace ambient {
 
     p_profile* p_profile_s::dereference(){
         while((this->profile = this->profile->profile) != this->profile->profile);
-        return this->profile;
+        return this->profile; // todo - deallocate proxy objects
     }
 
     p_profile & p_profile_s::operator>>(dim3 dim_distr) 

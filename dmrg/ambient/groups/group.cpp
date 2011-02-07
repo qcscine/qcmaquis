@@ -11,14 +11,14 @@ namespace ambient{ namespace groups {
         MPI_Comm_group(this->mpi_comm, &this->mpi_group);
         MPI_Group_size(this->mpi_group, &this->count);
         MPI_Group_rank(this->mpi_group, &this->rank);
-        ambient::rank.set( this, this->rank );
         this->name = name;
         this->master = master;
         this->manager = new packet_manager(&this->mpi_comm);
-        group_map(name, this);
+        ambient::rank.set( this, this->rank );
+        group_map(this->name, this);
     }
 
-    group::group(const char* name, int master, group* parent): members(NULL)
+    group::group(const char* name, int master, group* parent): count(0), members(NULL)
     {
         this->parent = parent;
         this->mpi_group = this->parent->mpi_group;
@@ -27,10 +27,10 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->parent->children.insert(this);
         this->manager = new packet_manager(&this->mpi_comm);
-        group_map(name, this);
+        group_map(this->name, this);
     }
 
-    group::group(const char* name, int master, const char* parent): members(NULL)
+    group::group(const char* name, int master, const char* parent): count(0), members(NULL)
     {
         this->parent = group_map(parent);
         this->mpi_group = this->parent->mpi_group;
@@ -39,10 +39,11 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->parent->children.insert(this);
         this->manager = new packet_manager(&this->mpi_comm);
-        group_map(name, this);
+        group_map(this->name, this);
     }
 
     void group::add(const int* procs, int count, bool excl){
+        if(count <= 0) return;
         this->members = (int*)realloc(this->members, (this->count+count)*sizeof(int));
         memcpy(&(this->members[this->count]), procs, count*sizeof(int));
         if(excl == true){
@@ -148,7 +149,7 @@ namespace ambient{ namespace groups {
         static std::map<std::string,group*> map;
         if(instance != NULL){ 
             if(map.find(name) != map.end()) printf("Warning: trying to add to groups with the same name\n");
-            map.insert(std::pair<const char*,group*>(name,instance));
+            map.insert(std::pair<std::string,group*>(name,instance));
         }else{
             if(map.find(name) == map.end()) printf("Error: wasn't able to find requested group (%s)\n", name);
             return map.find(name)->second; 

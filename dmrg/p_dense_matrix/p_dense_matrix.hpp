@@ -7,7 +7,7 @@ namespace blas {
     : rows(rows), cols(columns), lda(rows), sda(columns)
     {
         profile = new ambient::p_profile(this);
-        this->scope.reset((T*)profile->scope);
+        this->scope.reset(profile);
         this->data = (T*)profile->data;
         for(size_type i=0; i < rows*columns; i++) data[i] = init_value; // >_< // 
     }
@@ -17,7 +17,7 @@ namespace blas {
     : rows(m.rows), cols(m.cols), lda(m.lda), sda(m.sda)
     {
         profile = new ambient::p_profile(this);
-        this->scope.reset((T*)profile->scope);
+        this->scope.reset(profile);
         this->data = (T*)profile->data;
         memcpy(this->data, m.data, this->lda*this->cols*sizeof(T));
     }

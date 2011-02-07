@@ -9,12 +9,13 @@ void p_profile_model(ambient::p_profile* profile, const p_dense_matrix<T>* ptr)
     profile->type = "matrix";
     if(ptr == NULL){
 	profile->proxy = true;
+	profile->scope = new T[ambient::get_bound()];
 	profile->dim.x = 0;
 	profile->dim.y = 0;
 	profile->dim.z = 0;
     }else{
 	profile->proxy = false;
-	profile->scope = new T[(size_t)(ptr->get_lda()*ptr->get_sda()) + ambient::get_bound()];
+	profile->scope = (T*)malloc(((size_t)(ptr->get_lda()*ptr->get_sda()) + ambient::get_bound())*sizeof(T));
 	profile->data = (void*)((size_t)profile->scope + ambient::get_bound());
 	profile->dim.x = ptr->num_columns();
 	profile->dim.y = ptr->num_rows();

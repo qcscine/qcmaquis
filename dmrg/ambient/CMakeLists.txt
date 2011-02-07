@@ -1,5 +1,6 @@
 # Create a library called "ambient" which includes the source files. 
 # The extension is already found. Any number of sources could be listed here.
+add_definitions(-g -O0)
 include_directories (${DMRG_SOURCE_DIR}) 
 add_library (ambient 
              packets/packet.cpp

@@ -16,6 +16,7 @@ namespace ambient{ namespace core{
         void(operation::*prototype)();
         void(*operation_ptr)();
         void_pt** arguments;
+        size_t arg_count;
     };
 
 } }

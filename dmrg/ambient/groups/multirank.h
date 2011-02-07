@@ -11,7 +11,7 @@ namespace ambient{ namespace groups{
         multirank();                               // constructor is private
         multirank(multirank const&){};             // copy constructor is private
         multirank& operator=(multirank const&){};  // assignment operator is private
-        std::map<const group*,int> map;
+        std::map<std::string,int> map;
     public:
         static multirank& instance();
     public:
