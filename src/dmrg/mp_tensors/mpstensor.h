@@ -95,19 +95,22 @@ private:
 
 // this is also required by IETL
 template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup> operator*(typename MPSTensor<Matrix, SymmGroup>::scalar_type t, MPSTensor<Matrix, SymmGroup> m)
+MPSTensor<Matrix, SymmGroup> operator*(typename MPSTensor<Matrix, SymmGroup>::scalar_type t,
+                                       MPSTensor<Matrix, SymmGroup> m)
 {
     m *= t;
     return m;
 }
 template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup> operator*(MPSTensor<Matrix, SymmGroup> m, typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
+MPSTensor<Matrix, SymmGroup> operator*(MPSTensor<Matrix, SymmGroup> m,
+                                       typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
 {
     m *= t;
     return m;
 }
 template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup> operator/(MPSTensor<Matrix, SymmGroup> m, typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
+MPSTensor<Matrix, SymmGroup> operator/(MPSTensor<Matrix, SymmGroup> m,
+                                       typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
 {
     m *= 1/t;
     return m;
@@ -118,6 +121,20 @@ MPSTensor<Matrix, SymmGroup> operator-(MPSTensor<Matrix, SymmGroup> m,
                                        MPSTensor<Matrix, SymmGroup> const & m2)
 {
     m -= m2;
+    return m;
+}
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> operator+(MPSTensor<Matrix, SymmGroup> m,
+                                       MPSTensor<Matrix, SymmGroup> const & m2)
+{
+    m += m2;
+    return m;
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> operator-(MPSTensor<Matrix, SymmGroup> m)
+{
+    m *= -1;
     return m;
 }
 
