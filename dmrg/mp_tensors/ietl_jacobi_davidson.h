@@ -22,12 +22,16 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     typedef boost::lagged_fibonacci607 Gen;
     
     ietl::jcd_simple_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > jcd_ss(sp, vs);
+//    ietl::jcd_cg_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > jcd_cg(sp, vs);
     ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > jd(sp, vs, ietl::Smallest);
     
     double tol = params.get<double>("ietl_jcd_tol");
     ietl::basic_iteration<double> iter(100, tol, tol);
     
-    std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_ss, iter);
+    std::pair<double, Vector> r0;
+//    r0 = jd.calculate_eigenvalue(initial, jcd_cg, iter);
+    r0 = jd.calculate_eigenvalue(initial, jcd_ss, iter);
+    
     zout << "JCD used " << iter.iterations() << " iterations." << endl;
     
     return r0;
