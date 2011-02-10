@@ -4,6 +4,7 @@
 #include <set>
 
 #include "ambient/groups/packet_manager.h"
+#define ID_TYPE unsigned long long int
 
 namespace ambient{ namespace groups{
 
@@ -29,17 +30,20 @@ namespace ambient{ namespace groups{
         static group* group_map(const char* name, group* instance = NULL);
 
         const char* name;
-        int master;              // master process in this group
-        packet_manager* manager; // group packet manager
-        group* parent;           // parent group of processes
+        int master;                // master process in this group
+        packet_manager* manager;   // group packet manager
+        group* parent;             // parent group of processes
         std::set<group*> children;
         MPI_Comm mpi_comm;
         MPI_Group mpi_group;
-        int count;               // number of processes inside group
+        int count;                 // number of processes inside group
         int rank;
+        ID_TYPE id; // >_<
     private:
-        int* members;            // list of member ranks (according to the parent group)
+        int* members;              // list of member ranks (according to the parent group)
     };
+
+    ID_TYPE get_id();              // generate id of the group
 
 } }
 #endif

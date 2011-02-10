@@ -1,3 +1,4 @@
+#include "ambient/ambient.h"
 #include "ambient/core/operation.h"
 
 namespace ambient{ namespace core{
@@ -12,9 +13,24 @@ namespace ambient{ namespace core{
         this->prototype = &operation::prototype_triplet;
     }
     void operation::prototype_triplet(){ ((void(*)(void_pt*,void_pt*,void_pt*))this->operation_ptr)(this->arguments[0], this->arguments[1], this->arguments[2]); }
-    void operation::perform(){
+    void operation::perform()
+    {
         for(size_t i=0; i < this->arg_count; i++)
             this->arguments[i] = this->arguments[i]->dereference();
+        asmp.op = this;
         (this->*prototype)(); 
     }
+    void operation::set_ids()
+    {
+        printf("R%d : setting ids for %d args\n", ambient::rank(), this->arg_count);
+        for(size_t i=0; i < this->arg_count; i++)
+            if(this->arguments[i]->id == 0){
+                this->arguments[i]->group_id = ambient::asmp.scope->id;
+                this->arguments[i]->id = ambient::create_id(this->arguments[i]->group_id);
+                printf("R%d : This arg (%d) id is %d - %d\n", ambient::rank(), i, this->arguments[i]->group_id, this->arguments[i]->id);
+            }else{
+                printf("!R%d : This arg (%d) id is %d - %d\n", ambient::rank(), i, this->arguments[i]->group_id, this->arguments[i]->id);
+            }
+    }
+
 } }

@@ -6,7 +6,7 @@ namespace blas {
     p_dense_matrix<T>::p_dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T() )
     : rows(rows), cols(columns), lda(rows), sda(columns)
     {
-        profile = new ambient::p_profile(this);
+        profile = new void_pt(this);
         this->scope.reset(profile);
         this->data = (T*)profile->data;
         for(size_type i=0; i < rows*columns; i++) data[i] = init_value; // >_< // 
@@ -16,7 +16,7 @@ namespace blas {
     p_dense_matrix<T>::p_dense_matrix(p_dense_matrix<T> const& m)
     : rows(m.rows), cols(m.cols), lda(m.lda), sda(m.sda)
     {
-        profile = new ambient::p_profile(this);
+        profile = new void_pt(this);
         this->scope.reset(profile);
         this->data = (T*)profile->data;
         memcpy(this->data, m.data, this->lda*this->cols*sizeof(T));
@@ -171,7 +171,7 @@ namespace blas {
 
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
     template <typename T> // proxy object construction
-    p_dense_matrix<T>::p_dense_matrix(ambient::p_profile* p): profile(p){ }
+    p_dense_matrix<T>::p_dense_matrix(void_pt* p): profile(p){ }
     template <typename T>
     p_dense_matrix<T>& p_dense_matrix<T>::operator = (p_dense_matrix const& rhs) // watch out of copying
     {
@@ -180,15 +180,15 @@ namespace blas {
     }
 
     template <typename T>
-    const p_dense_matrix<T> operator + (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(plus_c_kernel, plus_l_kernel, a, b); }
+    const p_dense_matrix<T> operator + (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(plus_l_kernel, plus_c_kernel, a, b); }
     template <typename T>
-    const p_dense_matrix<T> operator - (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(plus_c_kernel, plus_l_kernel, a, b); }
+    const p_dense_matrix<T> operator - (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(plus_l_kernel, plus_c_kernel, a, b); }
     template<typename T>
-    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ return ambient::push< p_dense_matrix<T> >(plus_c_kernel, plus_l_kernel, lhs, rhs); }
+    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ return ambient::push< p_dense_matrix<T> >(plus_l_kernel, plus_c_kernel, lhs, rhs); }
     template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& m, const T2& t){ return ambient::push< p_dense_matrix<T> >(plus_c_kernel, plus_l_kernel, m, t); }
+    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& m, const T2& t){ return ambient::push< p_dense_matrix<T> >(plus_l_kernel, plus_c_kernel, m, t); }
     template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (const T2& t, const p_dense_matrix<T>& m){ return ambient::push< p_dense_matrix<T> >(plus_c_kernel, plus_l_kernel, t, m); }
+    const p_dense_matrix<T> operator * (const T2& t, const p_dense_matrix<T>& m){ return ambient::push< p_dense_matrix<T> >(plus_l_kernel, plus_c_kernel, t, m); }
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
 
     template <typename T>
