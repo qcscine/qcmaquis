@@ -10,24 +10,23 @@
         this->profile = this;
         p_profile_model(this, ptr);
         this->regroup(); 
-        this->id = get_id();
     };
 
-    template <typename ST, typename FC, typename FL, class T1, class T2> 
-    const ST push(FC c_kernel, FL l_kernel, const T1& arg1, const T2& arg2){
+    template <typename ST, typename FL, typename FC, class T1, class T2> 
+    const ST push(FL l_kernel, FC c_kernel, const T1& arg1, const T2& arg2){
 	p_profile* handle = new p_profile((const ST*)NULL);
 	ST out(handle);
-	push(c_kernel, l_kernel, arg1, arg2, out);
+	push(l_kernel, c_kernel, arg1, arg2, out);
 	return out;
     }
 
-    template <typename FC, typename FL, class T1, class T2, class ST>
-    void push(FC c_kernel, FL l_kernel, const T1& arg1, const T2& arg2, const ST& structuring_arg){
+    template <typename FL, typename FC, class T1, class T2, class ST>
+    void push(FL l_kernel, FC c_kernel, const T1& arg1, const T2& arg2, const ST& structuring_arg){
         if(get_profile(arg1)->proxy) pin(const_cast<T1&>(arg1), structuring_arg);
         if(get_profile(arg2)->proxy) pin(const_cast<T2&>(arg2), structuring_arg);
 
         ambient::engine.push(new core::operation(l_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)) , 
-                                 new core::operation(c_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)) ); 
+                             new core::operation(c_kernel, get_profile(arg1), get_profile(arg2), get_profile(structuring_arg)) ); 
     }
 
     template <typename L, typename R>

@@ -3,9 +3,6 @@
 
 namespace ambient {
 
-typedef ambient::p_profile   void_pt;
-typedef ambient::p_profile_s void_spt;
-
     smp& smp::instance()
     {
         static smp* singleton = NULL;

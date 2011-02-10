@@ -18,6 +18,8 @@ namespace ambient
     scheduler& engine = scheduler::instance();
     multirank& rank   = multirank::instance();
     smp& asmp = smp::instance(); // charge of processes inside kernels
+    core::coherency_table& coherency = core::coherency_table::instance();
+
 // global objects accessible anywhere //
 
     scheduler & scheduler::operator>>(dim3 dim_distr) 
@@ -167,9 +169,23 @@ void computation_1(workgroup* block)
     void scheduler::playout()
     {
         while(!this->logistics_stack.empty()){
-            this->logistics_stack.front()->perform();
-            this->logistics_stack.pop();
+            try{
+                this->logistics_stack.front()->perform();
+                this->logistics_stack.pop();
+            }catch(core::out_of_scope_e e){
+                this->logistics_stack.pop();
+            }
         }
-        printf("Performing actual communications/computations\n");
+//        printf("Performing actual communications/computations\n");
+    }
+
+    ID_TYPE create_id(ID_TYPE group_id)
+    {
+        static std::map<ID_TYPE, ID_TYPE> id_map;
+        if(id_map.find(group_id) == id_map.end()){
+            id_map.insert(std::pair<ID_TYPE,ID_TYPE>(group_id,1));
+            return 1;
+        }else 
+            return ++id_map.find(group_id)->second; 
     }
 }

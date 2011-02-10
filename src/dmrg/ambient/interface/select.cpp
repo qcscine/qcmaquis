@@ -4,6 +4,7 @@
 #include "ambient/interface/select.h"
 #include "ambient/core/smp.h"
 #include "ambient/groups/group.h"
+#include "ambient/core/operation.h"
 #include "utils/sqlite3.c"
 
 namespace ambient {
@@ -23,8 +24,9 @@ namespace ambient {
         i += parseout_id(sql, &group);
         i += parseout_id(&sql[i], &as);
         if(as == NULL) as = (char*)"tmp";
-        printf("i'm not in %d\n", rank(group));
 
+        if(rank(group) == UNDEFINED_ID)
+            throw core::out_of_scope_e();
         grp = new groups::group(as, 0, group);
 
         if(token_t == TK_STAR){ 
@@ -37,7 +39,10 @@ namespace ambient {
             grp->add_range(0, count);
         }
         grp->commit();
+        if(rank(as) == UNDEFINED_ID) 
+            throw core::out_of_scope_e();
         asmp.set_scope(grp);
+        asmp.op->set_ids();
     }
 
     int parseout_id(const char* sql, char** id)

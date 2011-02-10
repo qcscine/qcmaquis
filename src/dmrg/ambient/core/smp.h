@@ -4,8 +4,12 @@
 #include "ambient/core/operation.h"
 #include "ambient/interface/p_profile.h"
 #include "ambient/interface/workgroup.h"
+#include "ambient/core/coherency.h"
 
 namespace ambient {
+
+typedef ambient::p_profile   void_pt;
+typedef ambient::p_profile_s void_spt;
 
     class smp { // workload of individual rank in terms of workgroups 
     private:
@@ -25,11 +29,13 @@ namespace ambient {
         int scope_size;
         int id;
         bool accept;
+        core::operation* op;
     private:
-        std::list<workgroup*> sendlist;
-        std::list<workgroup*> recvlist;
+        core::coherency_table* assignment;
+        std::list<workgroup*>  sendlist;
+        std::list<workgroup*>  recvlist;
     };
-    void assign(p_profile_s* ptr, int i, int j = 0, int k = 0);
+    void assign(void_spt* ptr, int i, int j = 0, int k = 0);
 
 }
 #endif

@@ -15,7 +15,8 @@ namespace ambient {
     protected:
         p_profile_s();
     public:
-        int id;
+        ID_TYPE group_id;
+        ID_TYPE id;
         p_profile & operator>>(dim3 dim_distr);
         p_profile & operator,(dim3 dim);
         void regroup();
@@ -26,13 +27,17 @@ namespace ambient {
         void* data;  // pointer to the actual data
         size_t lda;  // process individual lda
 
+        size_t reserved_x;
+        size_t reserved_y;
+
         const char* type;
         bool proxy;
         
         dim3 dim;
         int** owners;
 
-        std::vector<workgroup*> skeleton;
+        std::vector< std::vector<workgroup*> > skeleton;
+
         workgroup* group(int i, int j = 0, int k = 0);
 
         dim3 grid_dim();

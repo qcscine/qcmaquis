@@ -13,4 +13,5 @@ add_library (ambient
              interface/select.cpp
              core/smp.cpp
              core/operation.cpp
+             core/coherency.cpp
              ambient.cpp)

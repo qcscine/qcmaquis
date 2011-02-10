@@ -14,6 +14,7 @@ namespace ambient{ namespace groups {
         this->name = name;
         this->master = master;
         this->manager = new packet_manager(&this->mpi_comm);
+        this->id = get_id();
         ambient::rank.set( this, this->rank );
         group_map(this->name, this);
     }
@@ -27,6 +28,7 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->parent->children.insert(this);
         this->manager = new packet_manager(&this->mpi_comm);
+        this->id = get_id();
         group_map(this->name, this);
     }
 
@@ -39,6 +41,7 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->parent->children.insert(this);
         this->manager = new packet_manager(&this->mpi_comm);
+        this->id = get_id();
         group_map(this->name, this);
     }
 
@@ -154,6 +157,11 @@ namespace ambient{ namespace groups {
             if(map.find(name) == map.end()) printf("Error: wasn't able to find requested group (%s)\n", name);
             return map.find(name)->second; 
         }
+    }
+
+    ID_TYPE get_id(){
+        static ID_TYPE id = 0;
+        return id++;               // to remove with something meaningfull tomorrow >_<
     }
 
 } }

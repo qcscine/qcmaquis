@@ -12,9 +12,11 @@
 #include "ambient/auxiliary.h"
 #include "ambient/core/smp.h"
 #include "ambient/core/operation.h"
+#include "ambient/core/coherency.h"
 
 #define ALL -1
 #define UNDEFINED_ID MPI_UNDEFINED
+#define ID_TYPE unsigned long long int
 
 namespace ambient
 {
@@ -60,11 +62,13 @@ namespace ambient
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
     size_t get_bound();
     void playout();
+    ID_TYPE create_id(ID_TYPE group_id);
 
     extern smp& asmp;
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;
+    extern core::coherency_table& coherency;
 }
 
 #endif

@@ -32,9 +32,9 @@ namespace blas {
     public:
         ~p_dense_matrix();
 // AMBIENT PART <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        ambient::p_profile* profile;
-        boost::scoped_ptr<ambient::p_profile> scope;
-        p_dense_matrix(ambient::p_profile* p);      // proxy matrix construction
+        void_pt* profile;
+        boost::scoped_ptr<void_pt> scope;
+        p_dense_matrix(void_pt* p);                   // proxy object construction
 // AMBIENT PART >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         typedef T                       value_type;       // The type T of the elements of the matrix
         typedef std::size_t             size_type;        // Unsigned integer type that represents the dimensions of the matrix
