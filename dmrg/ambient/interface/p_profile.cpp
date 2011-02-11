@@ -10,6 +10,11 @@ namespace ambient {
         return this->profile; // todo - deallocate proxy objects
     }
 
+    void p_profile_s::set_id(unsigned int* group_id, unsigned int id){
+        this->group_id = group_id;
+        this->id = id;
+    }
+
     p_profile & p_profile_s::operator>>(dim3 dim_distr) 
     {
         this->specific = true;

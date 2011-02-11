@@ -15,7 +15,7 @@
 #include "ambient/core/coherency.h"
 
 #define ALL -1
-#define UNDEFINED_ID MPI_UNDEFINED
+#define UNDEFINED_RANK MPI_UNDEFINED
 #define ID_TYPE unsigned long long int
 
 namespace ambient
@@ -32,7 +32,8 @@ namespace ambient
     public:
         scheduler & operator>>(dim3 dim_distr);
         scheduler & operator,(dim3 dim);
-        bool is_ambient_master(); 
+        bool is_master() const; 
+        bool is_ambient_master() const; 
         void init(MPI_Comm comm = NULL);
         void regression_test();
         void finalize();
@@ -41,9 +42,9 @@ namespace ambient
 
         void push(ambient::core::operation* logistics, ambient::core::operation* computing);
         void playout();  // perform actual operations
+        int size;
     private:
         MPI_Comm comm;
-        int size;
         groups::group* ambient;
 
         enum { AMBIENT_MASTER,
@@ -62,13 +63,14 @@ namespace ambient
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
     size_t get_bound();
     void playout();
-    ID_TYPE create_id(ID_TYPE group_id);
+    int size();
 
     extern smp& asmp;
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;
     extern core::coherency_table& coherency;
+    extern hash_map<core::coherency_table> void_pt_map;
 }
 
 #endif

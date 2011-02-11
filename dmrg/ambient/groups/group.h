@@ -4,7 +4,6 @@
 #include <set>
 
 #include "ambient/groups/packet_manager.h"
-#define ID_TYPE unsigned long long int
 
 namespace ambient{ namespace groups{
 
@@ -38,12 +37,14 @@ namespace ambient{ namespace groups{
         MPI_Group mpi_group;
         int count;                 // number of processes inside group
         int rank;
-        ID_TYPE id; // >_<
+        unsigned int* id;
+
+        unsigned int* hash_group_id();
+        unsigned int void_pt_id();
     private:
+        unsigned int object_count;
         int* members;              // list of member ranks (according to the parent group)
     };
-
-    ID_TYPE get_id();              // generate id of the group
 
 } }
 #endif

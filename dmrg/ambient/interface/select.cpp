@@ -25,7 +25,7 @@ namespace ambient {
         i += parseout_id(&sql[i], &as);
         if(as == NULL) as = (char*)"tmp";
 
-        if(rank(group) == UNDEFINED_ID)
+        if(rank(group) == UNDEFINED_RANK)
             throw core::out_of_scope_e();
         grp = new groups::group(as, 0, group);
 
@@ -39,7 +39,7 @@ namespace ambient {
             grp->add_range(0, count);
         }
         grp->commit();
-        if(rank(as) == UNDEFINED_ID) 
+        if(rank(as) == UNDEFINED_RANK) 
             throw core::out_of_scope_e();
         asmp.set_scope(grp);
         asmp.op->set_ids();

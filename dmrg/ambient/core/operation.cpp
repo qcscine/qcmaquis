@@ -22,14 +22,11 @@ namespace ambient{ namespace core{
     }
     void operation::set_ids()
     {
-        printf("R%d : setting ids for %d args\n", ambient::rank(), this->arg_count);
+        printf("R%d : setting ids for %d args\n", ambient::rank(), (int)this->arg_count);
         for(size_t i=0; i < this->arg_count; i++)
             if(this->arguments[i]->id == 0){
-                this->arguments[i]->group_id = ambient::asmp.scope->id;
-                this->arguments[i]->id = ambient::create_id(this->arguments[i]->group_id);
-                printf("R%d : This arg (%d) id is %d - %d\n", ambient::rank(), i, this->arguments[i]->group_id, this->arguments[i]->id);
-            }else{
-                printf("!R%d : This arg (%d) id is %d - %d\n", ambient::rank(), i, this->arguments[i]->group_id, this->arguments[i]->id);
+                this->arguments[i]->set_id(ambient::asmp.scope->id, ambient::asmp.scope->void_pt_id());
+                printf("R%d : This arg (%d) id is %d - %d\n", ambient::rank(), (int)i, *(this->arguments[i]->group_id), this->arguments[i]->id);
             }
     }
 
