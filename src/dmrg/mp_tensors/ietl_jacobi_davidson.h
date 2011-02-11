@@ -34,7 +34,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     jd(sp, vs, ietl::Smallest);
     
     double tol = params.get<double>("ietl_jcd_tol");
-    ietl::basic_iteration<double> iter(100, tol, tol);
+    ietl::basic_iteration<double> iter(params.get<int>("ietl_jcd_maxiter"), tol, tol);
     
     std::pair<double, Vector> r0;
     r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
