@@ -55,7 +55,11 @@ namespace ambient
     scheduler::scheduler(): mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
     {
     }
-    bool scheduler::is_ambient_master()
+    bool scheduler::is_master() const
+    {
+        return (this->mode == AMBIENT_MASTER || this->mode == GROUP_MASTER);
+    }
+    bool scheduler::is_ambient_master() const
     {
         return (this->mode == AMBIENT_MASTER);
     }
@@ -179,13 +183,7 @@ void computation_1(workgroup* block)
 //        printf("Performing actual communications/computations\n");
     }
 
-    ID_TYPE create_id(ID_TYPE group_id)
-    {
-        static std::map<ID_TYPE, ID_TYPE> id_map;
-        if(id_map.find(group_id) == id_map.end()){
-            id_map.insert(std::pair<ID_TYPE,ID_TYPE>(group_id,1));
-            return 1;
-        }else 
-            return ++id_map.find(group_id)->second; 
+    int size(){
+        return engine.size;
     }
 }

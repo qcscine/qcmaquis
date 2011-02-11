@@ -1,7 +1,3 @@
-    static int get_id(){
-        static int id = 0;
-        return id++;
-    }
 
     template <typename T> p_profile::p_profile(const T* ptr) 
     : p_profile_s()

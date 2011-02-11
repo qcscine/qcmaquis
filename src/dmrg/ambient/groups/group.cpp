@@ -4,7 +4,7 @@
 
 namespace ambient{ namespace groups {
 
-    group::group(const char* name, int master, MPI_Comm parent): members(NULL)
+    group::group(const char* name, int master, MPI_Comm parent): members(NULL), object_count(0)
     {
         this->parent = NULL;
         this->mpi_comm = parent;
@@ -14,12 +14,31 @@ namespace ambient{ namespace groups {
         this->name = name;
         this->master = master;
         this->manager = new packet_manager(&this->mpi_comm);
-        this->id = get_id();
+        this->id = hash_group_id();
         ambient::rank.set( this, this->rank );
         group_map(this->name, this);
     }
 
-    group::group(const char* name, int master, group* parent): count(0), members(NULL)
+    unsigned int* group::hash_group_id()
+    {
+        unsigned int* hash_id;
+        if(this->count == ambient::size()){
+            hash_id = (unsigned int*)malloc(sizeof(unsigned int));
+            *hash_id = 1; // 1 as a first bit stands for mirroring of all values
+        }else{
+// generate proper id here
+            hash_id = (unsigned int*)malloc(sizeof(unsigned int));
+            *hash_id = 13; // 1 as a first bit stands for mirroring of all values
+        }
+        return hash_id;
+    }
+
+    unsigned int group::void_pt_id()
+    {
+        return ++this->object_count;
+    }
+
+    group::group(const char* name, int master, group* parent): count(0), members(NULL), object_count(0)
     {
         this->parent = parent;
         this->mpi_group = this->parent->mpi_group;
@@ -28,11 +47,10 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->parent->children.insert(this);
         this->manager = new packet_manager(&this->mpi_comm);
-        this->id = get_id();
         group_map(this->name, this);
     }
 
-    group::group(const char* name, int master, const char* parent): count(0), members(NULL)
+    group::group(const char* name, int master, const char* parent): count(0), members(NULL), object_count(0)
     {
         this->parent = group_map(parent);
         this->mpi_group = this->parent->mpi_group;
@@ -41,7 +59,6 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->parent->children.insert(this);
         this->manager = new packet_manager(&this->mpi_comm);
-        this->id = get_id();
         group_map(this->name, this);
     }
 
@@ -145,6 +162,7 @@ namespace ambient{ namespace groups {
         MPI_Group_incl(this->parent->mpi_group, this->count, this->members, &this->mpi_group);
         MPI_Comm_create(this->parent->mpi_comm, this->mpi_group, &this->mpi_comm);
         MPI_Group_rank(this->mpi_group, &this->rank);
+        this->id = hash_group_id();
         ambient::rank.set( this, this->rank );
     }
 
@@ -157,11 +175,6 @@ namespace ambient{ namespace groups {
             if(map.find(name) == map.end()) printf("Error: wasn't able to find requested group (%s)\n", name);
             return map.find(name)->second; 
         }
-    }
-
-    ID_TYPE get_id(){
-        static ID_TYPE id = 0;
-        return id++;               // to remove with something meaningfull tomorrow >_<
     }
 
 } }

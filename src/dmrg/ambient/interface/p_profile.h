@@ -15,11 +15,12 @@ namespace ambient {
     protected:
         p_profile_s();
     public:
-        ID_TYPE group_id;
-        ID_TYPE id;
+        unsigned int* group_id;
+        unsigned int id;
         p_profile & operator>>(dim3 dim_distr);
         p_profile & operator,(dim3 dim);
         void regroup();
+        void set_id(unsigned int* group_id, unsigned int id);
 
         p_profile* profile; // pointer to this profile (this on init - can be changed in proxy objects)
         p_profile* dereference(); // finds out if the profile pointer is up to date

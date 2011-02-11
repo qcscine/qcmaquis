@@ -22,13 +22,11 @@ typedef ambient::p_profile_s void_spt;
     public:
         smp& operator()(const int rank);
         void assign(workgroup* group);
-        void set_scope(const groups::group* scope);
+        void set_scope(groups::group* scope);
         void set_scope(const char* scope);
-        void get_info(core::operation* op);
-        const groups::group* scope;
+        groups::group* scope;
         int scope_size;
-        int id;
-        bool accept;
+        int rank;
         core::operation* op;
     private:
         core::coherency_table* assignment;
