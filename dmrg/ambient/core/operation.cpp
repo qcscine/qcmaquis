@@ -18,14 +18,14 @@ namespace ambient{ namespace core{
         for(size_t i=0; i < this->arg_count; i++)
             this->arguments[i] = this->arguments[i]->dereference();
         asmp.op = this;
+        asmp.set_scope((groups::group*)NULL);
         (this->*prototype)(); 
     }
     void operation::set_ids()
     {
-        printf("R%d : setting ids for %d args\n", ambient::rank(), (int)this->arg_count);
         for(size_t i=0; i < this->arg_count; i++)
             if(this->arguments[i]->id == 0){
-                this->arguments[i]->set_id(ambient::asmp.scope->id, ambient::asmp.scope->void_pt_id());
+                this->arguments[i]->set_id(ambient::asmp.get_scope()->id, ambient::asmp.get_scope()->void_pt_id());
                 printf("R%d : This arg (%d) id is %d - %d\n", ambient::rank(), (int)i, *(this->arguments[i]->group_id), this->arguments[i]->id);
             }
     }

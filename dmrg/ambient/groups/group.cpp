@@ -143,9 +143,10 @@ namespace ambient{ namespace groups {
         int rank_n = rank;
         const group* iterator = this;
         if(!parent) parent = group_map("ambient");
+        if(parent == this) return rank;
         do{
             if(rank_n >= iterator->count || (iterator->parent == NULL && parent != NULL)){
-                printf("Warning: the rank doesn't belongs to this group"); 
+                printf("Warning: the rank doesn't belongs to this group\n"); 
                 break; 
             }
             rank_n = iterator->members[rank_n];
