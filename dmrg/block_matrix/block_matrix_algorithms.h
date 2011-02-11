@@ -120,6 +120,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
         zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << endl;
         zout << old_basis << endl << S.left_basis() << endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
+        zout << "Smallest SV kept: " << Scut / allS[0] << endl;
     }
 }
 

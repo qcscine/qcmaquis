@@ -148,6 +148,8 @@ public:
             add_option("arpack_tol",value<double>()->default_value(1e-8),"");
             add_option("arpack_ncv",value<int>()->default_value(20),"");
             add_option("ietl_jcd_tol",value<double>()->default_value(1e-8),"");
+            add_option("ietl_jcd_gmres",value<int>()->default_value(5),"");
+            add_option("ietl_jcd_maxiter",value<int>()->default_value(100),"");
             
             add_option("nsweeps",value<int>(),"");
             add_option("ngrowsweeps",value<int>(),"");
