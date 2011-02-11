@@ -32,8 +32,6 @@ namespace ambient
     public:
         scheduler & operator>>(dim3 dim_distr);
         scheduler & operator,(dim3 dim);
-        bool is_master() const; 
-        bool is_ambient_master() const; 
         void init(MPI_Comm comm = NULL);
         void regression_test();
         void finalize();
@@ -46,10 +44,6 @@ namespace ambient
     private:
         MPI_Comm comm;
         groups::group* ambient;
-
-        enum { AMBIENT_MASTER,
-               GROUP_MASTER,
-               GROUP_SLAVE } mode;
 
         dim3 dim_distr;   // work-item size of distribution blocks
         dim3 dim_group;   // work-item size of cpu streaming multiprocessor workload fractions
@@ -64,6 +58,7 @@ namespace ambient
     size_t get_bound();
     void playout();
     int size();
+    bool is_master();
 
     extern smp& asmp;
     extern scheduler& layout;

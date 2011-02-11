@@ -24,11 +24,12 @@ typedef ambient::p_profile_s void_spt;
         void assign(workgroup* group);
         void set_scope(groups::group* scope);
         void set_scope(const char* scope);
-        groups::group* scope;
+        groups::group* get_scope();
         int scope_size;
         int rank;
         core::operation* op;
     private:
+        groups::group* scope;
         core::coherency_table* assignment;
         std::list<workgroup*>  sendlist;
         std::list<workgroup*>  recvlist;

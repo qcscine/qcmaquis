@@ -52,16 +52,8 @@ namespace ambient
     {
         engine.playout(); 
     }
-    scheduler::scheduler(): mode(AMBIENT_MASTER), dim_item(dim3(128,128,1))
+    scheduler::scheduler(): dim_item(dim3(128,128,1))
     {
-    }
-    bool scheduler::is_master() const
-    {
-        return (this->mode == AMBIENT_MASTER || this->mode == GROUP_MASTER);
-    }
-    bool scheduler::is_ambient_master() const
-    {
-        return (this->mode == AMBIENT_MASTER);
     }
     dim3 scheduler::group_dim()
     {
@@ -130,8 +122,6 @@ namespace ambient
         MPI_Comm_size(this->comm, &this->size);
 
         this->ambient = new group("ambient", AMBIENT_MASTER_RANK, this->comm);
-        if(rank("ambient") == AMBIENT_MASTER_RANK) this->mode = AMBIENT_MASTER;
-        else this->mode = GROUP_SLAVE;
 
 //      regression_test();
         commit_t<control_packet_t>();
@@ -185,5 +175,9 @@ void computation_1(workgroup* block)
 
     int size(){
         return engine.size;
+    }
+
+    bool is_master(){
+        return ambient::rank.is_master();
     }
 }
