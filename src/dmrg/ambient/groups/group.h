@@ -37,10 +37,9 @@ namespace ambient{ namespace groups{
         MPI_Group mpi_group;
         int count;                 // number of processes inside group
         int rank;
-        unsigned int* id;
+        std::pair<unsigned int*,size_t> id;
 
-        unsigned int* hash_group_id();
-        unsigned int void_pt_id();
+        std::pair<unsigned int*,size_t> hash_group_id();
     private:
         unsigned int object_count;
         int* members;              // list of member ranks (according to the parent group)

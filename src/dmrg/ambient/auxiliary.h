@@ -1,7 +1,7 @@
 #ifndef AMBIENT_AUX_H
 #define AMBIENT_AUX_H
 
-#include "ambient/core/coherency.h"
+#include "ambient/core/layout.h"
 #include <vector>
 
 #define HASH_MAP_PARTITION_BIT_SIZE 8
@@ -32,14 +32,18 @@ namespace ambient{
         }
     };
 
-    template <class T>
     class hash_map {
+    private: 
+        hash_map();                             // constructor is private
+        hash_map(hash_map const&);              // copy constructor is private
+        hash_map& operator=(hash_map const&);   // assignment operator is private
     public:
-        hash_map();
-        void insert(unsigned int* hash, unsigned int hash_len, unsigned int id, T value, int shift = 0);
-        T find(unsigned int* hash, unsigned int hash_len, unsigned int id, int shift = 0);
+        static hash_map& instance();
+    public:
+        unsigned int insert(unsigned int* hash, unsigned int hash_len, core::layout_table* value, int shift = 0);
+        core::layout_table* find(unsigned int* hash, unsigned int hash_len, unsigned int id, int shift = 0) const;
     private:
-        std::vector< std::pair<hash_map*,std::vector<T>* > > content;
+        std::vector< std::pair<hash_map*,std::vector<core::layout_table*>* > > content;
     };
    
 }

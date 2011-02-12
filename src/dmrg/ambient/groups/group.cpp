@@ -19,23 +19,31 @@ namespace ambient{ namespace groups {
         group_map(this->name, this);
     }
 
-    unsigned int* group::hash_group_id()
+    std::pair<unsigned int*,size_t> group::hash_group_id()
     {
-        unsigned int* hash_id;
+        int index;
+        int old_id_len;
+        int id_len = 0;
+        int rank_g;
+        unsigned int* hash_id = NULL;
+
         if(this->count == ambient::size()){
             hash_id = (unsigned int*)malloc(sizeof(unsigned int));
-            *hash_id = 1; // 1 as a first bit stands for mirroring of all values
+            id_len = *hash_id = 1; // 1 as a first bit stands for mirroring of all values
         }else{
-// generate proper id here
-            hash_id = (unsigned int*)malloc(sizeof(unsigned int));
-            *hash_id = 13; // 1 as a first bit stands for mirroring of all values
+            for(int i = 0; i < this->count; i++){
+                rank_g = this->translate_rank(i)+1;
+                if(rank_g >= id_len*32){
+                    old_id_len = id_len;
+                    id_len = rank_g/32 + (rank_g % 32 ? 1:0);
+                    hash_id = (unsigned int*)realloc(hash_id, sizeof(unsigned int)*id_len);
+                    while(old_id_len < id_len) hash_id[old_id_len++] = 0; // memset with 0
+                }
+                index = rank_g/32;
+                hash_id[index] |= 1 << rank_g % 32;
+            }
         }
-        return hash_id;
-    }
-
-    unsigned int group::void_pt_id()
-    {
-        return ++this->object_count;
+        return std::pair<unsigned int*,size_t>(hash_id,1);
     }
 
     group::group(const char* name, int master, group* parent): count(0), members(NULL), object_count(0)
@@ -139,6 +147,8 @@ namespace ambient{ namespace groups {
                 (*it)->members[i] = order((*it)->members[i]);
     }
 
+// note: be sure to feed this with the rank inside group (i) not members[i]
+// as members[i] contains translation to the parent group
     int group::translate_rank(int rank, group* parent) const{
         int rank_n = rank;
         const group* iterator = this;

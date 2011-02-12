@@ -25,7 +25,7 @@ namespace ambient{ namespace core{
     {
         for(size_t i=0; i < this->arg_count; i++)
             if(this->arguments[i]->id == 0){
-                this->arguments[i]->set_id(ambient::asmp.get_scope()->id, ambient::asmp.get_scope()->void_pt_id());
+                this->arguments[i]->set_id(ambient::asmp.get_scope()->id);
                 printf("R%d : This arg (%d) id is %d - %d\n", ambient::rank(), (int)i, *(this->arguments[i]->group_id), this->arguments[i]->id);
             }
     }

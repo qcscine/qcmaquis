@@ -12,7 +12,7 @@
 #include "ambient/auxiliary.h"
 #include "ambient/core/smp.h"
 #include "ambient/core/operation.h"
-#include "ambient/core/coherency.h"
+#include "ambient/core/layout.h"
 
 #define ALL -1
 #define UNDEFINED_RANK MPI_UNDEFINED
@@ -64,8 +64,7 @@ namespace ambient
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;
-    extern core::coherency_table& coherency;
-    extern hash_map<core::coherency_table> void_pt_map;
+    extern hash_map& void_pt_map;
 }
 
 #endif
