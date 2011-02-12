@@ -20,13 +20,14 @@ namespace ambient {
         p_profile & operator>>(dim3 dim_distr);
         p_profile & operator,(dim3 dim);
         void regroup();
-        void set_id(unsigned int* group_id, unsigned int id);
+        void set_id(std::pair<unsigned int*,size_t> group_id);
 
         p_profile* profile; // pointer to this profile (this on init - can be changed in proxy objects)
         p_profile* dereference(); // finds out if the profile pointer is up to date
         void* scope; // includes ambient boundle
         void* data;  // pointer to the actual data
         size_t lda;  // process individual lda
+        core::layout_table* layout;
 
         size_t reserved_x;
         size_t reserved_y;

@@ -4,7 +4,7 @@
 #include "ambient/core/operation.h"
 #include "ambient/interface/p_profile.h"
 #include "ambient/interface/workgroup.h"
-#include "ambient/core/coherency.h"
+#include "ambient/core/layout.h"
 
 namespace ambient {
 
@@ -30,7 +30,7 @@ typedef ambient::p_profile_s void_spt;
         core::operation* op;
     private:
         groups::group* scope;
-        core::coherency_table* assignment;
+        core::layout_table* assignment;
         std::list<workgroup*>  sendlist;
         std::list<workgroup*>  recvlist;
     };
