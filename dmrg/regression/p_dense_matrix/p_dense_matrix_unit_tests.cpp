@@ -109,8 +109,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 //    zout << "D is " << d.profile->id << ";\n";
 
 
-    //a = b + c;// + d + d;
-    a += b;
+//    a = b + c + d + d;
+    a = b + c;
     ambient::playout();
 }
 

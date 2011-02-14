@@ -40,8 +40,8 @@ namespace ambient {
 
         std::vector< std::vector<workgroup*> > skeleton;
 
+        void*(*init_fp)(workgroup* grp);
         workgroup* group(int i, int j = 0, int k = 0);
-
         dim3 grid_dim();
         dim3 group_dim();
         dim3 item_dim();
@@ -54,7 +54,7 @@ namespace ambient {
     };
 
     class p_profile: public p_profile_s 
-    { public: template <typename T> p_profile(const T* ptr); };
+    { public: template <typename T> p_profile(const T* ptr, void*(*init_fp)(workgroup* grp) = NULL); };
 
     p_profile& operator>>(p_profile* instance, dim3 dim_distr);
 

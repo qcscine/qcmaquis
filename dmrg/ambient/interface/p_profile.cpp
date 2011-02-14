@@ -12,7 +12,7 @@ namespace ambient {
 
     void p_profile_s::set_id(std::pair<unsigned int*,size_t> group_id){
         this->group_id = group_id.first;
-        this->layout = new core::layout_table();
+        this->layout = new core::layout_table(this);
         this->id = void_pt_map.insert(group_id.first, group_id.second, this->layout);
     }
 
