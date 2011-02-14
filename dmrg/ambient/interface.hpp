@@ -6,8 +6,10 @@
 #include "ambient/core/select.h"
 
 namespace blas{ using namespace ambient;
-#include "ambient/interface/profiles.hpp"
+typedef ambient::p_profile   void_pt;
+typedef ambient::p_profile_s void_spt;
 #include "ambient/kernels.cpp"
+#include "ambient/interface/profiles.hpp"
 } namespace ambient { using namespace blas;
 #include "ambient/interface/core.hpp"
 }

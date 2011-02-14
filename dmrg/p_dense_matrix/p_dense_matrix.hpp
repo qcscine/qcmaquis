@@ -6,7 +6,7 @@ namespace blas {
     p_dense_matrix<T>::p_dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T() )
     : rows(rows), cols(columns), lda(rows), sda(columns)
     {
-        profile = new void_pt(this, matrix_i_kernel);
+        profile = new void_pt(this);
         this->scope.reset(profile);
         this->data = (T*)profile->data;
         for(size_type i=0; i < rows*columns; i++) data[i] = init_value; // >_< // 
@@ -16,7 +16,7 @@ namespace blas {
     p_dense_matrix<T>::p_dense_matrix(p_dense_matrix<T> const& m)
     : rows(m.rows), cols(m.cols), lda(m.lda), sda(m.sda)
     {
-        profile = new void_pt(this, matrix_i_kernel);
+        profile = new void_pt(this);
         this->scope.reset(profile);
         this->data = (T*)profile->data;
         memcpy(this->data, m.data, this->lda*this->cols*sizeof(T));
