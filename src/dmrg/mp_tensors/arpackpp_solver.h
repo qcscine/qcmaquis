@@ -103,7 +103,7 @@ solve_arpackpp(SiteProblem<Matrix, SymmGroup> & sp,
         zout << "ARPACK used " << solver.GetIter() << " iterations." << endl;
         if (solver.GetIter() <= 2)
             parms.set<int>("arpack_ncv",
-                           std::max(8, ncv-1));
+                           std::max(5, ncv-1));
         else if (solver.GetIter() > 4)
             parms.set<int>("arpack_ncv",
                            std::min(50, ncv+4));
