@@ -9,8 +9,8 @@ add_library (ambient
              groups/packet_manager.cpp
              groups/multirank.cpp
              groups/group.cpp
-             interface/p_profile.cpp
-             interface/workgroup.cpp
+             core/p_profile.cpp
+             core/workgroup.cpp
              core/select.cpp
              core/smp.cpp
              core/operation.cpp

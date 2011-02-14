@@ -1,5 +1,5 @@
-#ifndef AMBIENT_INTERFACE_WORKGROUP_H
-#define AMBIENT_INTERFACE_WORKGROUP_H
+#ifndef AMBIENT_CORE_WORKGROUP_H
+#define AMBIENT_CORE_WORKGROUP_H
 #include <utility>
 #include <list>
 #include <vector>

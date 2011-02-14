@@ -1,5 +1,5 @@
 #include "ambient/ambient.h"
-#include "ambient/interface/workgroup.h"
+#include "ambient/core/workgroup.h"
 
 namespace ambient {
 

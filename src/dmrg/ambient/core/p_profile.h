@@ -1,6 +1,6 @@
-#ifndef AMBIENT_P_PROFILE_H
-#define AMBIENT_P_PROFILE_H
-#include "ambient/interface/workgroup.h"
+#ifndef AMBIENT_CORE_P_PROFILE_H
+#define AMBIENT_CORE_P_PROFILE_H
+#include "ambient/core/workgroup.h"
 #include "ambient/auxiliary.h"
 #include <utility>
 #include <list>

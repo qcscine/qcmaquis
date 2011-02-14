@@ -1,5 +1,5 @@
 #include "ambient/ambient.h"
-#include "ambient/interface/p_profile.h"
+#include "ambient/core/p_profile.h"
 
 namespace ambient {
 

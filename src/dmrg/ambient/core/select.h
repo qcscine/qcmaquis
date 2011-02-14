@@ -1,5 +1,5 @@
-#ifndef AMBIENT_INTERFACE_SELECT_H
-#define AMBIENT_INTERFACE_SELECT_H
+#ifndef AMBIENT_CORE_SELECT_H
+#define AMBIENT_CORE_SELECT_H
 
 #include <memory.h>
 #include "ambient/ambient.h"

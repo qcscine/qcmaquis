@@ -1,9 +1,9 @@
-#ifndef AMBIENT_INTERFACE_CHARGE_H
-#define AMBIENT_INTERFACE_CHARGE_H
+#ifndef AMBIENT_CORE_SMP_H
+#define AMBIENT_CORE_SMP_H
 
 #include "ambient/core/operation.h"
-#include "ambient/interface/p_profile.h"
-#include "ambient/interface/workgroup.h"
+#include "ambient/core/p_profile.h"
+#include "ambient/core/workgroup.h"
 #include "ambient/core/layout.h"
 
 namespace ambient {
