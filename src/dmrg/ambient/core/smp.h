@@ -21,7 +21,6 @@ typedef ambient::p_profile_s void_spt;
 
     public:
         smp& operator()(const int rank);
-        void assign(workgroup* group);
         void set_scope(groups::group* scope);
         void set_scope(const char* scope);
         groups::group* get_scope();

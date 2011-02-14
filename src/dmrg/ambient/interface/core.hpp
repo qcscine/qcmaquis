@@ -1,9 +1,10 @@
 
-    template <typename T> p_profile::p_profile(const T* ptr) 
+    template <typename T> p_profile::p_profile(const T* ptr, void*(*init_fp)(workgroup* grp)) 
     : p_profile_s()
     {
         this->specific = false;
         this->profile = this;
+        this->init_fp = init_fp;
         p_profile_model(this, ptr);
         this->regroup(); 
     };

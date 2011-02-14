@@ -15,13 +15,6 @@ namespace ambient {
     {
         return *this;
     }
-    void smp::assign(workgroup* group)
-    {
-        if(this->rank == UNDEFINED_RANK) return;
-//        printf("%s: p%d: I've accepted group %d %d\n", this->scope->name, this->rank, group->i,group->j);
-        recvlist.push_back(group);
-        group->owner = ambient::rank();
-    }
     void smp::set_scope(groups::group* scope)
     {
         this->scope = scope;
@@ -43,7 +36,15 @@ namespace ambient {
     }
     void assign(void_spt* ptr, int i, int j, int k)
     {
-        asmp.assign(ptr->group(i, j, k));
+        if(asmp.rank == UNDEFINED_RANK) return;
+        workgroup* group = ptr->group(i,j,k);
+//        printf("%s: p%d: I've accepted group %d %d of id%d\n", asmp.get_scope()->name, asmp.rank, group->i, group->j, (*(group->profile))->id );
+        group->owner = ambient::rank();
+        if(!group->initialized){
+            group->data = ptr->init_fp(group);
+            group->initialized = true;
+        }
+        ptr->layout->add_segment_entry(ambient::rank(), i, j, k);
     }
 
 }

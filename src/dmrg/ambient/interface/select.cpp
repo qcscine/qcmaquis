@@ -15,8 +15,6 @@ namespace ambient {
         int i, token_len, token_t;
         char* group; 
         char* as;
-        float part;
-        int count;
 
         i = sqlite3GetToken((const unsigned char*)sql, &token_t);
         if(token_t == TK_ILLEGAL) return;
@@ -27,18 +25,20 @@ namespace ambient {
 
         if(rank(group) == UNDEFINED_RANK)
             throw core::out_of_scope_e();
-        grp = new groups::group(as, 0, group);
+        if((grp = groups::group::group_map(as)) == NULL){
+            grp = new groups::group(as, 0, group);
 
-        if(token_t == TK_STAR){ 
-            grp->add_every(1); 
-        }else if(token_t == TK_FLOAT){ 
-            part = strtof(sql, NULL);
-            grp->add_every((int)(1/part)); 
-        }else if(token_t == TK_INTEGER){ 
-            count = (int)strtol(sql, NULL, 10);
-            grp->add_range(0, count);
+            if(token_t == TK_STAR){ 
+                grp->add_every(1); 
+            }else if(token_t == TK_FLOAT){ 
+                float part = strtof(sql, NULL);
+                grp->add_every((int)(1/part)); 
+            }else if(token_t == TK_INTEGER){ 
+                int count = (int)strtol(sql, NULL, 10);
+                grp->add_range(0, count);
+            }
+            grp->commit();
         }
-        grp->commit();
         if(rank(as) == UNDEFINED_RANK) 
             throw core::out_of_scope_e();
         asmp.set_scope(grp);
