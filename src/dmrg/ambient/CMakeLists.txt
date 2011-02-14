@@ -11,7 +11,7 @@ add_library (ambient
              groups/group.cpp
              interface/p_profile.cpp
              interface/workgroup.cpp
-             interface/select.cpp
+             core/select.cpp
              core/smp.cpp
              core/operation.cpp
              core/layout.cpp
