@@ -6,7 +6,7 @@
 #include "ambient/core/select.h"
 
 namespace blas{ using namespace ambient;
-#include "ambient/profiles.hpp"
+#include "ambient/interface/profiles.hpp"
 #include "ambient/kernels.cpp"
 } namespace ambient { using namespace blas;
 #include "ambient/interface/core.hpp"
