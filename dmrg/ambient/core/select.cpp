@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "ambient/interface/select.h"
+#include "ambient/core/select.h"
 #include "ambient/core/smp.h"
 #include "ambient/groups/group.h"
 #include "ambient/core/operation.h"
