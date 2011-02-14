@@ -54,7 +54,7 @@ namespace ambient {
     };
 
     class p_profile: public p_profile_s 
-    { public: template <typename T> p_profile(const T* ptr, void*(*init_fp)(workgroup* grp) = NULL); };
+    { public: template <typename T> p_profile(const T* ptr); };
 
     p_profile& operator>>(p_profile* instance, dim3 dim_distr);
 

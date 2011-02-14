@@ -14,12 +14,13 @@ void p_profile_model(ambient::p_profile* profile, const p_dense_matrix<T>* ptr)
 	profile->dim.y = 0;
 	profile->dim.z = 0;
     }else{
-	profile->proxy = false;
-	profile->scope = (T*)malloc(((size_t)(ptr->get_lda()*ptr->get_sda()) + ambient::get_bound())*sizeof(T));
-	profile->data = (void*)((size_t)profile->scope + ambient::get_bound());
-	profile->dim.x = ptr->num_columns();
-	profile->dim.y = ptr->num_rows();
-	profile->dim.z = 1;
+	profile->proxy   = false;
+        profile->init_fp = matrix_i_kernel;
+	profile->scope   = (T*)malloc(((size_t)(ptr->get_lda()*ptr->get_sda()) + ambient::get_bound())*sizeof(T));
+	profile->data    = (void*)((size_t)profile->scope + ambient::get_bound());
+	profile->dim.x   = ptr->num_columns();
+	profile->dim.y   = ptr->num_rows();
+	profile->dim.z   = 1;
     }
 }
 

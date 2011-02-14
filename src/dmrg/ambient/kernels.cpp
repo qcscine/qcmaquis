@@ -1,6 +1,3 @@
-typedef ambient::p_profile   void_pt;
-typedef ambient::p_profile_s void_spt;
-
 void* matrix_i_kernel(ambient::workgroup* grp){ 
 
     return NULL; 

@@ -3,7 +3,7 @@
 
 namespace ambient {
 
-    p_profile_s::p_profile_s():reserved_x(0),reserved_y(0),group_id(0),id(0){};
+    p_profile_s::p_profile_s():reserved_x(0),reserved_y(0),group_id(0),id(0),init_fp(NULL){};
 
     p_profile* p_profile_s::dereference(){
         while((this->profile = this->profile->profile) != this->profile->profile);
