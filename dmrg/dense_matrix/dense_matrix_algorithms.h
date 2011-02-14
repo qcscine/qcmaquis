@@ -5,6 +5,7 @@
 #include "dense_matrix/diagonal_matrix.h"
 
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
+#include <boost/numeric/bindings/lapack/driver/syev.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 
 namespace blas
@@ -47,6 +48,34 @@ namespace blas
     {
         M.inplace_conjugate();
         return M;
+    }
+    
+    template<typename T, class MemoryBlock>
+    void syev(dense_matrix<T, MemoryBlock> M,
+              dense_matrix<T, MemoryBlock> & evecs,
+              std::vector<double> & evals)
+    {
+        assert(num_rows(M) == num_columns(M));
+        assert(evals.size() == num_rows(M));
+        boost::numeric::bindings::lapack::syev('V', M, evals);
+        // to be consistent with the SVD, I reorder in decreasing order
+        std::reverse(evals.begin(), evals.end());
+        // and the same with the matrix
+        evecs.resize(num_rows(M), num_columns(M));
+        for (std::size_t c = 0; c < num_columns(M); ++c)
+			std::copy(column(M, c).first, column(M, c).second,
+                      column(evecs, num_columns(M)-1-c).first);
+    }
+    
+    template<typename T, class MemoryBlock>
+    void syev(dense_matrix<T, MemoryBlock> M,
+              dense_matrix<T, MemoryBlock> & evecs,
+              typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
+    {
+        assert(num_rows(M) == num_columns(M));
+        std::vector<double> evals_(num_rows(M));
+        syev(M, evecs, evals_);
+        evals = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(evals_);
     }
     
 } /* namespace blas */

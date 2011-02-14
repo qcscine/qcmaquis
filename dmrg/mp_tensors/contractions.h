@@ -645,7 +645,8 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-        svd(dm, U, V, S, cutoff, Mmax);
+//        svd(dm, U, V, S, cutoff, Mmax);
+        syev_truncate(dm, U, S, cutoff, Mmax);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         assert( U.left_basis() == ret.data_.left_basis() );
@@ -705,7 +706,9 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-        svd(dm, U, V, S, cutoff, Mmax);
+//        svd_truncate(dm, U, V, S, cutoff, Mmax);
+        syev_truncate(dm, U, S, cutoff, Mmax);
+        V = transpose(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         assert( V.right_basis() == ret.data_.right_basis() );
