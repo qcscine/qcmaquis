@@ -2,7 +2,7 @@
 #define AMBIENT_INTERFACE_H
 #include <assert.h>
 #include "ambient/core/operation.h"
-#include "ambient/interface/p_profile.h"
+#include "ambient/core/p_profile.h"
 #include "ambient/core/select.h"
 
 namespace blas{ using namespace ambient;

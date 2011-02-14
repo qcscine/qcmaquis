@@ -1,7 +1,7 @@
 #ifndef AMBIENT_CORE_OPERATION_H
 #define AMBIENT_CORE_OPERATION_H
 #include <stdlib.h>
-#include "ambient/interface/p_profile.h"
+#include "ambient/core/p_profile.h"
 
 namespace ambient{ namespace core{
 
