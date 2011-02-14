@@ -87,7 +87,7 @@ public:
                 BEGIN_TIMING("ARPACK")
                 res = solve_arpackpp(sp, mps[site], parms);
                 END_TIMING("ARPACK")
-			} else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+            } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
                 BEGIN_TIMING("JCD")
                 res = solve_ietl_jcd(sp, mps[site], parms);
                 END_TIMING("JCD")

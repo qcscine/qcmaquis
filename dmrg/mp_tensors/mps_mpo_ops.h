@@ -116,7 +116,7 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
                  it != elements(s[k]).second; ++it)
             {
                 double a = fabs(*it);
-                if (a > 0)
+                if (a > 1e-14)
                     sv.push_back(a*a);
             }
         
