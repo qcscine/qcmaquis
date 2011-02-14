@@ -47,7 +47,7 @@ right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> co
 }
 
 template<class Matrix, class SymmGroup>
-double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d = 0)
+double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d)
 {
     if (d == 0) {
         std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
@@ -59,11 +59,36 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
+double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
+{
+    assert(mpo.length() == mps.length());
+    std::size_t L = mps.length();
+    
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    
+    for (int i = 0; i < L; ++i) {
+        MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+        left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+    }
+    
+    return left.traces()[0];
+}
+
+template<class Matrix, class SymmGroup>
 std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
                                  MPO<Matrix, SymmGroup> const & mpo)
 {
-    std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
-    return left_[mps.length()].traces();
+    assert(mpo.length() == mps.length());
+    std::size_t L = mps.length();
+    
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    
+    for (int i = 0; i < L; ++i) {
+        MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+        left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+    }
+    
+    return left.traces();
 }
 
 template<class Matrix, class SymmGroup>
