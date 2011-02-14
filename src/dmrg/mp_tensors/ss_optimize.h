@@ -96,7 +96,7 @@ public:
             }
             mps[site] = res.second;
             
-            zout << "Energy " << /* sweep+(lr == -1 ? 0.5 : 0) */ lr << " " << res.first << endl;
+            zout << "Energy " << lr << " " << res.first << endl;
             energies.push_back(res.first);
             
             double alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"), parms.get<int>("nsweeps"), sweep);

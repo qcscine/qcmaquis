@@ -54,11 +54,24 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void svd(block_matrix<Matrix, SymmGroup> const & M,
-         block_matrix<Matrix, SymmGroup> & U,
-         block_matrix<Matrix, SymmGroup> & V,
-         block_matrix<DiagMatrix, SymmGroup> & S,
-         double rel_tol, std::size_t Mmax)
+void syev(block_matrix<Matrix, SymmGroup> const & M,
+          block_matrix<Matrix, SymmGroup> & evecs,
+          block_matrix<DiagMatrix, SymmGroup> & evals)
+{
+    evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
+    evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
+    std::size_t loop_max = M.n_blocks();
+#pragma omp parallel for schedule(dynamic)
+    for (std::size_t k = 0; k < loop_max; ++k)
+        syev(M[k], evecs[k], evals[k]);
+}
+
+template<class Matrix, class DiagMatrix, class SymmGroup>
+void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                  block_matrix<Matrix, SymmGroup> & U,
+                  block_matrix<Matrix, SymmGroup> & V,
+                  block_matrix<DiagMatrix, SymmGroup> & S,
+                  double rel_tol, std::size_t Mmax)
 {   
     svd(M, U, V, S);
     
@@ -121,6 +134,63 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
         zout << old_basis << endl << S.left_basis() << endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
         zout << "Smallest SV kept: " << Scut / allS[0] << endl;
+    }
+}
+
+template<class Matrix, class DiagMatrix, class SymmGroup>
+void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                   block_matrix<Matrix, SymmGroup> & evecs,
+                   block_matrix<DiagMatrix, SymmGroup> & evals,
+                   double cutoff, std::size_t Mmax)
+{
+    // very analogous to the above svd method
+    syev(M, evecs, evals);
+    
+    Index<SymmGroup> old_basis = evals.left_basis();
+    
+    std::vector<double> allevals;
+    
+    for (std::size_t k = 0; k < evals.n_blocks(); ++k)
+        std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
+    std::sort(allevals.begin(), allevals.end());
+    std::reverse(allevals.begin(), allevals.end());
+    
+    double evalscut = cutoff * allevals[0];
+    if (allevals.size() > Mmax)
+        evalscut = std::max(evalscut, allevals[Mmax]);
+    
+    for (std::size_t k = 0; k < evals.n_blocks(); ++k)
+    {
+        std::size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
+                                        boost::lambda::_1 < evalscut)-evals[k].elements().first;
+        if (keep >= num_rows(evals[k]))
+            continue;
+        
+        /* hack for now */
+        keep = std::max(keep, std::size_t(1));
+        
+        if (keep == 0) {
+            evals.remove_block(evals.left_basis()[k].first,
+                               evals.right_basis()[k].first);
+            evecs.remove_block(evecs.left_basis()[k].first,
+                               evecs.right_basis()[k].first);
+        } else {
+            evals.resize_block(evals.left_basis()[k].first,
+                               evals.right_basis()[k].first,
+                               keep, keep);
+            
+            evecs.resize_block(evecs.left_basis()[k].first,
+                               evecs.right_basis()[k].first,
+                               evecs.left_basis()[k].second,
+                               keep);
+        }
+    }
+    
+    if (! (old_basis == evals.left_basis()) ) {
+        zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << endl;
+        zout << old_basis << endl << evals.left_basis() << endl;
+        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << endl;
+        zout << "Smallest EV kept: " << evalscut / allevals[0] << endl;
     }
 }
 
