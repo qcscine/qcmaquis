@@ -99,7 +99,13 @@ public:
             zout << "Energy " << lr << " " << res.first << endl;
             energies.push_back(res.first);
             
-            double alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"), parms.get<int>("nsweeps"), sweep);
+            double alpha;
+            if (sweep < parms.get<int>("ngrowsweeps"))
+                alpha = parms.get<double>("alpha_initial");
+            else
+                alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"),
+                                        parms.get<int>("nsweeps")-parms.get<int>("ngrowsweeps"),
+                                        sweep-parms.get<int>("ngrowsweeps"));
             double cutoff;
             if (sweep >= parms.get<int>("ngrowsweeps"))
                 cutoff = parms.get<double>("truncation_final");
