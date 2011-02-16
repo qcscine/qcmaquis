@@ -11,8 +11,13 @@ namespace ambient {
     class workgroup {
     public:
         workgroup(p_profile** p, int i, int j = 0, int k = 0);
+        void set_memory(void* memory);
         void* item(int i, int j = 0, int k = 0);
         p_profile** profile;
+        p_profile* get_profile();
+        dim3 get_group_dim();
+        dim3 get_item_dim();
+        void* header;
         void* data;
         bool initialized;
         int owner;

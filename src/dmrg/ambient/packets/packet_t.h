@@ -4,11 +4,11 @@
 #include <mpi.h>
 
 #define LEN(x) sizeof(x)/sizeof(int)
-#define PACK   static int sizes[] = 
-#define FIELDS friend class packet_t; protected: MPI_Datatype
 #define BASE_FIELDS     MPI_Datatype
-#define __A_PACKET__    MPI_Datatype& __a_packet_start = 
-#define __A_CODE(code)  construct(code, LEN(sizes), \
+#define __a_pack        static int sizes[] = 
+#define __a_fields__    friend class packet_t; protected: MPI_Datatype
+#define __a_packet__    MPI_Datatype& __a_packet_start = 
+#define __a_code(code)  construct(code, LEN(sizes), \
                         sizes, &__a_packet_start);
 namespace ambient{ namespace packets{
 

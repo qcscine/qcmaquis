@@ -45,6 +45,10 @@ namespace ambient {
         asmp.op->set_ids();
     }
 
+    void retain(const char* sql)
+    {
+    }
+
     int parseout_id(const char* sql, char** id)
     {
         int i = 0;

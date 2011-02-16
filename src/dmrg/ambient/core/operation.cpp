@@ -20,6 +20,8 @@ namespace ambient{ namespace core{
         asmp.op = this;
         asmp.set_scope((groups::group*)NULL);
         (this->*prototype)();
+        for(size_t i=0; i < this->arg_count; i++)
+            this->arguments[i]->postprocess();
     }
     void operation::set_ids()
     {

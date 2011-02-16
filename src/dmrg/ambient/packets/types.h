@@ -16,42 +16,42 @@ namespace ambient{ namespace packets{
 // copying the data (if to do it implicitely).
     struct standard_packet_t : public packet_t
     {
-        FIELDS dest, op_type;
+        __a_fields__ dest, op_type;
         standard_packet_t()
         {
-            __A_PACKET__
+            __a_packet__
             dest     = MPI_INT;
             op_type  = MPI_BYTE;
-            PACK { 1, 1 }; 
-            __A_CODE('1');
+            __a_pack{ 1, 1 }; 
+            __a_code('1');
         }
     };
 
     struct control_packet_t : public standard_packet_t
     {
-        FIELDS src, action, priority;
+        __a_fields__ src, action, priority;
         control_packet_t()
         {
-            __A_PACKET__
+            __a_packet__
             src      = MPI_INT;
             action   = MPI_BYTE;
             priority = MPI_INT;
-            PACK {1, 1, 1};
-            __A_CODE('C');
+            __a_pack{ 1, 1, 1 };
+            __a_code('C');
         }
     };
 
     struct data_packet_t : public standard_packet_t
     {
-        FIELDS src, priority, data;
+        __a_fields__ src, priority, data;
         data_packet_t()
         {
-            __A_PACKET__
+            __a_packet__
             src      = MPI_INT;
             priority = MPI_INT;
             data     = MPI_DOUBLE;
-            PACK {1, 1, 100};
-            __A_CODE('D');
+            __a_pack{ 1, 1, 100 };
+            __a_code('D');
         }
     };
 

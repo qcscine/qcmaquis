@@ -30,17 +30,11 @@
         p_profile* proxy = get_profile(proxy_object);
         p_profile* real  = get_profile(real_object);
         proxy->profile   = real->profile;
-        proxy->dim       = real->dim;
+        proxy->set_dim(real->get_dim());
 // copy proxy settings to the actual profile
-        real->specific   = proxy->specific;
-        real->dim_distr  = proxy->dim_distr;
-        real->dim_group  = proxy->dim_group;
-        real->dim_item   = proxy->dim_item;
-        real->dim_gpu    = proxy->dim_gpu;
-        real->regroup();
+        real->imitate(proxy);
     }
 
     template <typename L, typename R>
     void copy(const L& lhs, const R& rhs){
-//        new p_action('|', &lhs, &rhs);
     }
