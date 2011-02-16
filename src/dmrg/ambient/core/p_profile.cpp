@@ -85,6 +85,7 @@ namespace ambient {
             }
         }
 
+// let's copy from separate memory blocks to the general one
         for(j=0; j < this->get_grid_dim().x; j++){
             memory = (void*)((size_t)memory + offset*this->get_group_dim().y*this->get_item_dim().y*this->get_group_dim().x*this->get_item_dim().x*this->type_size);
             offset = 0;
