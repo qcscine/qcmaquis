@@ -33,7 +33,7 @@ typedef ambient::p_profile_s void_spt;
         std::list<workgroup*>  sendlist;
         std::list<workgroup*>  recvlist;
     };
-    void assign(void_spt* ptr, int i, int j = 0, int k = 0);
+    void assign(void_spt& ref, int i, int j = 0, int k = 0);
 
 }
 #endif
