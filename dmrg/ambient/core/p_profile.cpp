@@ -183,7 +183,6 @@ namespace ambient {
     void* p_profile_s::get_data(){
         return this->data; // >_< need to write proper get for groups
     }
-
     dim3 p_profile_s::get_dim(){
         return this->dim;
     }
