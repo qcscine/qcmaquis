@@ -67,6 +67,10 @@ namespace ambient
     {
         return 200; // to be redo to something normal
     }
+    size_t get_block_bound()
+    {
+        return 200; // to be redo to something normal
+    }
     void scheduler::regression_test()
     {
         printf("Initializing packet system...\n");

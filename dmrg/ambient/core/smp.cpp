@@ -40,11 +40,7 @@ namespace ambient {
         workgroup* group = ptr->group(i,j,k);
 //        printf("%s: p%d: I've accepted group %d %d of id%d\n", asmp.get_scope()->name, asmp.rank, group->i, group->j, (*(group->profile))->id );
         group->owner = ambient::rank();
-        if(!group->initialized){
-            group->data = ptr->init_fp(group);
-            group->initialized = true;
-        }
-        ptr->layout->add_segment_entry(ambient::rank(), i, j, k);
+        ptr->layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
     }
 
 }

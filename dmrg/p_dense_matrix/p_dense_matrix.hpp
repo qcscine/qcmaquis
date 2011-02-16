@@ -8,8 +8,6 @@ namespace blas {
     {
         profile = new void_pt(this);
         this->scope.reset(profile);
-        this->data = (T*)profile->data;
-        for(size_type i=0; i < rows*columns; i++) data[i] = init_value; // >_< // 
     }
 
     template <typename T>
@@ -18,8 +16,7 @@ namespace blas {
     {
         profile = new void_pt(this);
         this->scope.reset(profile);
-        this->data = (T*)profile->data;
-        memcpy(this->data, m.data, this->lda*this->cols*sizeof(T));
+//        memcpy(this->data, m.data, this->lda*this->cols*sizeof(T));
     }
 
     template <typename T>

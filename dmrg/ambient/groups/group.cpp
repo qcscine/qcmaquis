@@ -19,6 +19,10 @@ namespace ambient{ namespace groups {
         group_map(this->name, this);
     }
 
+// methods to reduce size of id:
+// 1. discrete regions of procs
+// 2. minus mask
+// 3. ranges of procs (supplementary array?)
     std::pair<unsigned int*,size_t> group::hash_group_id()
     {
         int index;
