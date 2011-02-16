@@ -24,7 +24,7 @@ void plus_l_kernel(void_pt* a, void_pt* b, void_spt* out){
             }
 }
 
-void plus_c_kernel(void_pt& a, void_pt& b, void_spt& out){
+void plus_c_kernel(void_pt* a, void_pt* b, void_spt* out){
 //    __a_once__
     zout << "Executing plus computation kernel...\n";
 }
