@@ -176,7 +176,7 @@ void computation_1(workgroup* block)
         }
         while(!this->computing_stack.empty()){
             try{
-                this->computing_stack.front()->perform();
+//                this->computing_stack.front()->perform();
                 this->computing_stack.pop();
             }catch(core::out_of_scope_e e){
                 this->computing_stack.pop();
