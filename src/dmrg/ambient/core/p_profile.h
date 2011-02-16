@@ -63,7 +63,9 @@ namespace ambient {
         void solidify();
         void disperse();
 
-
+        template<typename T> operator T* ()
+        { return (T*)this->get_data();    }
+        void* get_data();
         void set_dim(dim3 dim);
         void set_distr_dim(dim3 dim);
         void set_gpu_dim(dim3 dim);
