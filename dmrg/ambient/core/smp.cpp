@@ -34,13 +34,13 @@ namespace ambient {
         }
         return this->scope;
     }
-    void assign(void_spt* ptr, int i, int j, int k)
+    void assign(void_spt& ref, int i, int j, int k)
     {
         if(asmp.rank == UNDEFINED_RANK) return;
-        workgroup* group = ptr->group(i,j,k);
+        workgroup* group = ref.group(i,j,k);
 //        printf("%s: p%d: I've accepted group %d %d of id%d\n", asmp.get_scope()->name, asmp.rank, group->i, group->j, (*(group->profile))->id );
         group->owner = ambient::rank();
-        ptr->layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
+        ref.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
     }
 
 }

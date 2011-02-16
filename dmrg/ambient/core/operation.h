@@ -10,7 +10,7 @@ namespace ambient{ namespace core{
 
     class operation{
     public:
-        operation(void(*fp)(void_pt*, void_pt*, void_spt*), void_pt* arg1, void_pt* arg2, void_spt* arg3);
+        operation(void(*fp)(void_pt&, void_pt&, void_spt&), void_pt* arg1, void_pt* arg2, void_spt* arg3);
         void prototype_triplet();
         void perform(); // executes operation
         void set_ids();
