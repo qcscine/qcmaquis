@@ -3,7 +3,7 @@
 
 namespace ambient{ namespace core{
 
-    operation::operation(void(*fp)(void_pt&, void_pt&, void_spt&), void_pt* arg1, void_pt* arg2, void_spt* arg3){
+    operation::operation(void(*fp)(void_pt&, void_pt&, void_spt&), void_pt* arg1, void_pt* arg2, void_spt* arg3):scope(NULL){
         this->operation_ptr = (void(*)())fp;
         this->arg_count = 3;
         this->arguments = (void_pt**)malloc(sizeof(void_pt*)*this->arg_count);
@@ -30,5 +30,12 @@ namespace ambient{ namespace core{
                 this->arguments[i]->set_id(ambient::asmp.get_scope()->id);
         }
     }
-
+    void operation::set_scope(groups::group* scope)
+    {
+        this->scope = scope;
+    }
+    groups::group* operation::get_scope()
+    {
+        return this->scope;
+    }
 } }

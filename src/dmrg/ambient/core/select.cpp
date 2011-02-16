@@ -42,6 +42,7 @@ namespace ambient {
         if(rank(as) == UNDEFINED_RANK) 
             throw core::out_of_scope_e();
         asmp.set_scope(grp);
+        asmp.op->set_scope(grp);
         asmp.op->set_ids();
     }
 

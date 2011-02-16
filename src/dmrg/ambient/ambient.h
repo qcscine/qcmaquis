@@ -38,7 +38,7 @@ namespace ambient
         dim3 group_dim();
         dim3 item_dim();
 
-        void push(ambient::core::operation* logistics, ambient::core::operation* computing);
+        void push(core::operation* logistics, core::operation* computing);
         void playout();  // perform actual operations
         int size;
     private:
@@ -50,8 +50,8 @@ namespace ambient
         dim3 dim_item;    // size of work-item (i.e. 128) 
         dim3 dim_gpu;     // work-item size of gpgpu smp workload fractions
 
-        std::queue<ambient::core::operation*> logistics_stack;
-        std::queue<ambient::core::operation*> computing_stack;
+        std::queue<core::operation*> logistics_stack;
+        std::queue< std::pair<core::operation*,core::operation*> > computing_stack;
     };
 
     scheduler& operator>>(scheduler* instance, dim3 dim_distr);
