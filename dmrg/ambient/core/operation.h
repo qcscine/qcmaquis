@@ -14,8 +14,11 @@ namespace ambient{ namespace core{
         void prototype_triplet();
         void perform(); // executes operation
         void set_ids();
+        void set_scope(groups::group* scope);
+        groups::group* get_scope();
         void(operation::*prototype)();
         void(*operation_ptr)();
+        groups::group* scope;
         void_pt** arguments;
         size_t arg_count;
     };

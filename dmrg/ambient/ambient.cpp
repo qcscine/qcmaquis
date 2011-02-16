@@ -162,10 +162,12 @@ void computation_1(workgroup* block)
     void scheduler::push(core::operation* logistics, core::operation* computing)
     {
         this->logistics_stack.push(logistics);
-        this->computing_stack.push(computing);
+        this->computing_stack.push(std::pair<core::operation*,core::operation*>(logistics,computing));
     }
     void scheduler::playout()
     {
+        core::operation* logistics;
+        core::operation* computing;
         while(!this->logistics_stack.empty()){
             try{
                 this->logistics_stack.front()->perform();
@@ -175,14 +177,14 @@ void computation_1(workgroup* block)
             }
         }
         while(!this->computing_stack.empty()){
-            try{
-//                this->computing_stack.front()->perform();
-                this->computing_stack.pop();
-            }catch(core::out_of_scope_e e){
-                this->computing_stack.pop();
+            logistics = this->computing_stack.front().first;
+            if(logistics->get_scope() != NULL){
+                computing = this->computing_stack.front().second;
+                computing->set_scope(logistics->get_scope());
+                computing->perform(); // now let's perform for every item inside every appointed workgroup
             }
+            this->computing_stack.pop();
         }
-//        printf("Performing actual communications/computations\n");
     }
 
     int size(){
