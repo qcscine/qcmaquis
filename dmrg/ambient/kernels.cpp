@@ -1,3 +1,5 @@
+#define __a_once__ asmp.trigger_interrupt();
+
 void matrix_i_kernel(ambient::workgroup* grp){
         // dumb 0-initialization for the start >_< 
         memset(grp->data, 0, grp->get_group_dim().y*grp->get_item_dim().y*grp->get_group_dim().x*grp->get_item_dim().x*grp->get_profile()->type_size);

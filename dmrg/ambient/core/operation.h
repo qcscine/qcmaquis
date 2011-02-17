@@ -20,6 +20,7 @@ namespace ambient{ namespace core{
         void(*operation_ptr)();
         groups::group* scope;
         void_pt** arguments;
+        void_spt* structuring_arg;
         size_t arg_count;
     };
 
