@@ -100,13 +100,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     Timer time1("ambient");
     Timer time2("pure");
     time2.begin();
-    double* ad = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE);
-    memset(ad, 0, sizeof(double)*M_SIZE*M_SIZE);
-    double* bd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE);
-    memset(bd, 0, sizeof(double)*M_SIZE*M_SIZE);
-    double* cd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE);
-    memset(cd, 0, sizeof(double)*M_SIZE*M_SIZE);
-    for(int i=0; i < M_SIZE*M_SIZE; i++)
+    double* ad = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE/2);
+    memset(ad, 0, sizeof(double)*M_SIZE*M_SIZE/2);
+    double* bd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE/2);
+    memset(bd, 0, sizeof(double)*M_SIZE*M_SIZE/2);
+    double* cd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE/2);
+    memset(cd, 0, sizeof(double)*M_SIZE*M_SIZE/2);
+    for(int i=0; i < M_SIZE*M_SIZE/2; i++)
     ad[i] = bd[i] + cd[i];
     MPI_Barrier(MPI_COMM_WORLD);
     time2.end();
@@ -129,9 +129,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 
 //    a = b + c + d + d;
     a = b + c;
+    ambient::playout();
     MPI_Barrier(MPI_COMM_WORLD);
     time1.end();
-    ambient::playout();
 
 
 

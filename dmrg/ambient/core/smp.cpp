@@ -9,7 +9,7 @@ namespace ambient {
         if(!singleton) singleton = new smp();
         return *singleton;
     }
-    smp::smp():interrupt(false){ }
+    smp::smp():interrupt(false),compute_mode(false){ }
 
     smp& smp::operator()(const int rank)
     {
