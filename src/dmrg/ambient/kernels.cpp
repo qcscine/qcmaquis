@@ -28,8 +28,15 @@ void plus_l_kernel(void_pt& a, void_pt& b, void_spt& out){
 
 void plus_c_kernel(void_pt& a, void_pt& b, void_spt& out){
 //    __a_once__
-    printf("Executing plus computation kernel...\n");
-    int* data = (int*)a;
+    double* output = out;
+    double* ad = a(out.get_group_id().x, out.get_group_id().y);
+    double* bd = b(out.get_group_id().x, out.get_group_id().y);
+    int size = out.get_group_dim().x*out.get_item_dim().x*
+               out.get_group_dim().y*out.get_item_dim().y;
+    printf("R%d: Executing plus computation kernel (%d ops)... for out grp %d %d\n", asmp.rank, size, out.get_group_id().x, out.get_group_id().y);
+    for(int i=0; i < size; i++){
+        output[i] = ad[i]+bd[i];
+    }
 }
 
 
