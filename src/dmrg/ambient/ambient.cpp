@@ -176,6 +176,7 @@ void computation_1(workgroup* block)
                 this->logistics_stack.pop_front();
             }
         }
+        asmp.compute_mode = true;
         while(!this->computing_stack.empty()){
             logistics = this->computing_stack.front().first;
             if(logistics->get_scope() != NULL){
@@ -198,6 +199,7 @@ void computation_1(workgroup* block)
             }
             this->computing_stack.pop_front();
         }
+        asmp.compute_mode = false;
     }
 
     int size(){

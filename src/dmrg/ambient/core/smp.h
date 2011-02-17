@@ -27,6 +27,7 @@ typedef ambient::p_profile_s void_spt;
         void trigger_interrupt();
         bool interrupt;
 
+        bool compute_mode;
         int scope_size;
         int rank;
         core::operation* op;
