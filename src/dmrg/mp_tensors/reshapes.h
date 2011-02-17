@@ -70,6 +70,33 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
 //    assert(m2.left_basis() == left_i);
 }
 
+/*
+ pseudo-code kernel
+ 
+ std::map<std::pair<charge, charge>, std::list<size_t> > block_requirements;
+ 
+ for (s = 0; s < physical_i.size(); ++s)
+	 for (l = 0; ...)
+		 for (r = 0; ...) {
+             charge in_l_charge = SymmGroup::fuse(physical_i[s].first, left_i[l].first);
+             charge in_r_charge = right_i[r].first;
+ 
+			 charge out_l_charge = left_i[l].first;
+			 charge out_r_charge = SymmGroup::fuse(-physical_i[s].first, right_i[r].first);
+ 			
+ 			 block_requirements[make_pair(out_l_charge, out_r_charge)].push_back(m1.position(in_l_charge, in_r_charge);
+ }
+ 
+ A: logistics kernel
+ 
+ // on the node that creates (l,r) in the final block_matrix,
+ // get block_requirements[(l,r)] from other nodes
+ 
+ B: compute kernel
+ 
+ */
+ 
+
 template<class Matrix, class SymmGroup>
 void reshape_right_to_left(Index<SymmGroup> physical_i,
                            Index<SymmGroup> left_i,
