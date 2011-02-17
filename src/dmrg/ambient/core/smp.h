@@ -24,6 +24,9 @@ typedef ambient::p_profile_s void_spt;
         void set_scope(groups::group* scope);
         void set_scope(const char* scope);
         groups::group* get_scope();
+        void trigger_interrupt();
+        bool interrupt;
+
         int scope_size;
         int rank;
         core::operation* op;

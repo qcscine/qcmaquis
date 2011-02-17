@@ -181,7 +181,17 @@ void computation_1(workgroup* block)
             if(logistics->get_scope() != NULL){
                 computing = this->computing_stack.front().second;
                 computing->set_scope(logistics->get_scope());
-                computing->perform(); // now let's perform for every item inside every appointed workgroup
+// performing computation for every item inside every appointed workgroup
+                for(int j=0; j < logistics->structuring_arg->get_grid_dim().x; j++){
+                    for(int i=0; i < logistics->structuring_arg->get_grid_dim().y; i++){
+                        if((*logistics->structuring_arg->layout)(i,j) != NULL){
+                            printf("R%d: Performing for the group %d %d\n", rank(computing->get_scope()), i, j);
+                            computing->perform();
+                            if(asmp.interrupt) break;
+                        }
+                    }
+                    if(asmp.interrupt){ asmp.trigger_interrupt(); break; }
+                }
             }
             this->computing_stack.pop();
         }

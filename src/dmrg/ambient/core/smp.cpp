@@ -9,7 +9,7 @@ namespace ambient {
         if(!singleton) singleton = new smp();
         return *singleton;
     }
-    smp::smp(){ }
+    smp::smp():interrupt(false){ }
 
     smp& smp::operator()(const int rank)
     {
@@ -42,5 +42,8 @@ namespace ambient {
         group->owner = ambient::rank();
         ref.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
     }
-
+    void smp::trigger_interrupt()
+    {
+        this->interrupt = !this->interrupt;
+    }
 }
