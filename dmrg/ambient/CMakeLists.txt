@@ -1,6 +1,6 @@
 # Create a library called "ambient" which includes the source files. 
 # The extension is already found. Any number of sources could be listed here.
-add_definitions(-g -O0)
+add_definitions(-O3)
 include_directories (${DMRG_SOURCE_DIR} 
                      /Users/akosenko/workspace/build/boost_1_45_0)
 add_library (ambient 

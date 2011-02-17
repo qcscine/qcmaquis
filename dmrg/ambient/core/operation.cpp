@@ -10,7 +10,7 @@ namespace ambient{ namespace core{
         this->arguments[0] = arg1;
         this->arguments[1] = arg2;
         this->arguments[2] = (void_pt*)arg3;
-        this->structuring_arg = arg3;
+        this->pin = arg3;
         this->prototype = &operation::prototype_triplet;
     }
     void operation::prototype_triplet(){ ((void(*)(void_pt&,void_pt&,void_pt&))this->operation_ptr)(*this->arguments[0], *this->arguments[1], *this->arguments[2]); }
@@ -18,7 +18,7 @@ namespace ambient{ namespace core{
     {
         for(size_t i=0; i < this->arg_count; i++)
             this->arguments[i] = this->arguments[i]->dereference();
-        this->structuring_arg = this->structuring_arg->dereference();
+        this->pin = this->pin->dereference();
         asmp.op = this;
         asmp.set_scope((groups::group*)NULL);
         (this->*prototype)();

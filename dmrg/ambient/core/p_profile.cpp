@@ -3,7 +3,7 @@
 
 namespace ambient {
 
-    p_profile_s::p_profile_s():reserved_x(0),reserved_y(0),group_id(0),id(0),init_fp(NULL),group_lda(0){};
+    p_profile_s::p_profile_s():reserved_x(0),reserved_y(0),group_id(0),id(0),init_fp(NULL),group_lda(0),default_group(NULL){};
     p_profile::~p_profile(){}
 
     p_profile* p_profile_s::dereference(){
@@ -122,6 +122,17 @@ namespace ambient {
         }
     }
 
+    void p_profile_s::set_default_group(int i, int j, int k)
+    {
+        if(i == -1) this->default_group = NULL;
+        else this->default_group = this->group(i, j, k);
+    }
+
+    dim3 p_profile_s::get_group_id()
+    {
+        return dim3(this->default_group->i, this->default_group->j, this->default_group->k);
+    }
+
     void p_profile_s::postprocess(){
 
 #ifndef DSCALAPACK_COMPATIBLE
@@ -158,6 +169,10 @@ namespace ambient {
 #endif
     }
 
+    workgroup& p_profile_s::operator()(int i, int j, int k){
+        return *(this->group(i, j, k));
+    }
+
     workgroup* p_profile_s::group(int i, int j, int k){
         if(this->proxy){
             return new workgroup(&profile, i, j, k);
@@ -181,7 +196,8 @@ namespace ambient {
     }
 
     void* p_profile_s::get_data(){
-        return this->data; // >_< need to write proper get for groups
+        if(this->default_group == NULL) return NULL; // we asked to convert non structuring arg
+        return this->default_group->data;            // >_< need to write proper get for group's items
     }
     dim3 p_profile_s::get_dim(){
         return this->dim;

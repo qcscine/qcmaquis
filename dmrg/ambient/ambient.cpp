@@ -161,8 +161,8 @@ void computation_1(workgroup* block)
     }
     void scheduler::push(core::operation* logistics, core::operation* computing)
     {
-        this->logistics_stack.push(logistics);
-        this->computing_stack.push(std::pair<core::operation*,core::operation*>(logistics,computing));
+        this->logistics_stack.push_back(logistics);
+        this->computing_stack.push_back(std::pair<core::operation*,core::operation*>(logistics,computing));
     }
     void scheduler::playout()
     {
@@ -171,9 +171,9 @@ void computation_1(workgroup* block)
         while(!this->logistics_stack.empty()){
             try{
                 this->logistics_stack.front()->perform();
-                this->logistics_stack.pop();
+                this->logistics_stack.pop_front();
             }catch(core::out_of_scope_e e){
-                this->logistics_stack.pop();
+                this->logistics_stack.pop_front();
             }
         }
         while(!this->computing_stack.empty()){
@@ -182,18 +182,21 @@ void computation_1(workgroup* block)
                 computing = this->computing_stack.front().second;
                 computing->set_scope(logistics->get_scope());
 // performing computation for every item inside every appointed workgroup
-                for(int j=0; j < logistics->structuring_arg->get_grid_dim().x; j++){
-                    for(int i=0; i < logistics->structuring_arg->get_grid_dim().y; i++){
-                        if((*logistics->structuring_arg->layout)(i,j) != NULL){
-                            printf("R%d: Performing for the group %d %d\n", rank(computing->get_scope()), i, j);
+                int pin_cols = logistics->pin->get_grid_dim().x;
+                int pin_rows = logistics->pin->get_grid_dim().y;
+                for(int j=0; j < pin_cols; j++){
+                    for(int i=0; i < pin_rows; i++){ // todo - extend onto items
+                        if((*logistics->pin->layout)(i,j) != NULL){
+                            logistics->pin->set_default_group(i, j);
                             computing->perform();
                             if(asmp.interrupt) break;
                         }
                     }
                     if(asmp.interrupt){ asmp.trigger_interrupt(); break; }
                 }
+                logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
             }
-            this->computing_stack.pop();
+            this->computing_stack.pop_front();
         }
     }
 

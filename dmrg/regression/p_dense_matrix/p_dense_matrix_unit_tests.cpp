@@ -11,6 +11,7 @@
 #include "p_dense_matrix/concept/matrix_interface.hpp"
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
 
+#define M_SIZE 2048
 using namespace blas;
 
 //
@@ -96,12 +97,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
+    Timer time1("ambient");
+    Timer time2("pure");
+    time2.begin();
+    double* ad = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE);
+    memset(ad, 0, sizeof(double)*M_SIZE*M_SIZE);
+    double* bd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE);
+    memset(bd, 0, sizeof(double)*M_SIZE*M_SIZE);
+    double* cd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE);
+    memset(cd, 0, sizeof(double)*M_SIZE*M_SIZE);
+    for(int i=0; i < M_SIZE*M_SIZE; i++)
+    ad[i] = bd[i] + cd[i];
+    MPI_Barrier(MPI_COMM_WORLD);
+    time2.end();
+    free(ad);
+    free(bd);
+    free(cd); 
+    time1.begin();
     ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1);
 
-    p_dense_matrix<T> a(1024,1024);
-    p_dense_matrix<T> b(1024,1024,5);
-    p_dense_matrix<T> c(1024,1024);
-    p_dense_matrix<T> d(1024,1024);
+    p_dense_matrix<T> a(M_SIZE,M_SIZE);
+    p_dense_matrix<T> b(M_SIZE,M_SIZE);
+    p_dense_matrix<T> c(M_SIZE,M_SIZE);
+//    p_dense_matrix<T> d(1024,1024);
 
 //    zout << "A is " << a.profile->id << "; ";
 //    zout << "B is " << b.profile->id << "; ";
@@ -111,7 +129,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 
 //    a = b + c + d + d;
     a = b + c;
+    MPI_Barrier(MPI_COMM_WORLD);
+    time1.end();
     ambient::playout();
+
+
+
 }
 
 
