@@ -51,23 +51,26 @@ namespace ambient {
         workgroup* default_group;
 
         void(*init_fp)(workgroup* grp);
-        workgroup* group(int i, int j = 0, int k = 0);
-        workgroup& operator()(int i, int j = 0, int k = 0);
+        workgroup* group(int i, int j = 0, int k = 0) const;
+        workgroup& operator()(int i, int j = 0, int k = 0) const;
 
 // parameters can be set specifically for the profile
         bool specific; 
 
-        dim3 get_dim();
-        dim3 get_distr_dim();
-        dim3 get_gpu_dim();
-        dim3 get_grid_dim();
-        dim3 get_group_dim();
-        dim3 get_item_dim();
+        dim3 get_dim()       const;
+        dim3 get_distr_dim() const;
+        dim3 get_gpu_dim()   const;
+        dim3 get_grid_dim()  const;
+        dim3 get_group_dim() const;
+        dim3 get_item_dim()  const;
 
         void imitate(p_profile* profile);
         void solidify();
         void disperse();
 
+    private:
+        template<typename T> operator T ();
+    public:
         template<typename T> operator T* ()
         { return (T*)this->get_data();    }
         void* get_data();

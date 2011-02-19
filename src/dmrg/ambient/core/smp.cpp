@@ -9,7 +9,7 @@ namespace ambient {
         if(!singleton) singleton = new smp();
         return *singleton;
     }
-    smp::smp():interrupt(false),compute_mode(false){ }
+    smp::smp():interrupt(false){ }
 
     smp& smp::operator()(const int rank)
     {
@@ -33,6 +33,10 @@ namespace ambient {
             throw core::out_of_scope_e();
         }
         return this->scope;
+    }
+    void assign(const void_spt& ref, int i, int j, int k)
+    {
+    // something different...
     }
     void assign(void_spt& ref, int i, int j, int k)
     {

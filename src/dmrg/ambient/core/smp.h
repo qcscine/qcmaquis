@@ -27,7 +27,6 @@ typedef ambient::p_profile_s void_spt;
         void trigger_interrupt();
         bool interrupt;
 
-        bool compute_mode;
         int scope_size;
         int rank;
         core::operation* op;
@@ -38,6 +37,7 @@ typedef ambient::p_profile_s void_spt;
         std::list<workgroup*>  recvlist;
     };
     void assign(void_spt& ref, int i, int j = 0, int k = 0);
+    void assign(const void_spt& ref, int i, int j = 0, int k = 0);
 
 }
 #endif
