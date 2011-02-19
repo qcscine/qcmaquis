@@ -176,7 +176,6 @@ void computation_1(workgroup* block)
                 this->logistics_stack.pop_front();
             }
         }
-        asmp.compute_mode = true;
         while(!this->computing_stack.empty()){
             logistics = this->computing_stack.front().first;
             if(logistics->get_scope() != NULL){
@@ -185,21 +184,21 @@ void computation_1(workgroup* block)
 // performing computation for every item inside every appointed workgroup
                 int pin_cols = logistics->pin->get_grid_dim().x;
                 int pin_rows = logistics->pin->get_grid_dim().y;
-                for(int j=0; j < pin_cols; j++){
-                    for(int i=0; i < pin_rows; i++){ // todo - extend onto items
-                        if((*logistics->pin->layout)(i,j) != NULL){
-                            logistics->pin->set_default_group(i, j);
-                            computing->perform();
-                            if(asmp.interrupt) break;
-                        }
+                try{
+                    for(int j=0; j < pin_cols; j++)
+                    for(int i=0; i < pin_rows; i++) // todo - extend onto items
+                    if((*logistics->pin->layout)(i,j) != NULL){
+                        logistics->pin->set_default_group(i, j);
+                        computing->performx();
+                        if(asmp.interrupt) throw core::interrupt_e();
                     }
-                    if(asmp.interrupt){ asmp.trigger_interrupt(); break; }
+                }catch(core::interrupt_e){
+                    asmp.trigger_interrupt();
                 }
-                logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
+//                logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
             }
             this->computing_stack.pop_front();
         }
-        asmp.compute_mode = false;
     }
 
     int size(){

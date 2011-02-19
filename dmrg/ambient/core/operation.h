@@ -11,8 +11,11 @@ namespace ambient{ namespace core{
     class operation{
     public:
         operation(void(*fp)(void_pt&, void_pt&, void_spt&), void_pt* arg1, void_pt* arg2, void_spt* arg3);
+        operation(void(*fp)(const void_pt&, void_pt&, void_spt&), void_pt* arg1, void_pt* arg2, void_spt* arg3);
         void prototype_triplet();
+        void prototype_triplet_const();
         void perform(); // executes operation
+        void performx(); // executes operation (clean way)
         void set_ids();
         void set_scope(groups::group* scope);
         groups::group* get_scope();
@@ -25,6 +28,7 @@ namespace ambient{ namespace core{
     };
 
     class out_of_scope_e{};
+    class interrupt_e{};
 
 } }
 

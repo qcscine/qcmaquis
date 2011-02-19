@@ -19,6 +19,9 @@ namespace ambient {
         dim3 get_item_dim();
         void* header;
         void* data;
+    private:
+        template<typename T> operator T ();
+    public:
         template<typename T> operator T* ()
         { return (T*)this->data;          }
         bool initialized;

@@ -11,7 +11,9 @@
 #include "p_dense_matrix/concept/matrix_interface.hpp"
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
 
-#define M_SIZE 2048
+#define M_SIZE 1024
+#define M_P_SIZE 256
+#define NP 2
 using namespace blas;
 
 //
@@ -98,22 +100,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
     Timer time1("ambient");
-    Timer time2("pure");
+/*    Timer time2("pure");
     time2.begin();
-    double* ad = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE/2);
-    memset(ad, 0, sizeof(double)*M_SIZE*M_SIZE/2);
-    double* bd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE/2);
-    memset(bd, 0, sizeof(double)*M_SIZE*M_SIZE/2);
-    double* cd = (double*)malloc(sizeof(double)*M_SIZE*M_SIZE/2);
-    memset(cd, 0, sizeof(double)*M_SIZE*M_SIZE/2);
-    for(int i=0; i < M_SIZE*M_SIZE/2; i++)
-    ad[i] = bd[i] + cd[i];
+
+    double** ad = (double**)malloc(sizeof(double*)*M_SIZE/M_P_SIZE/NP);
+    for(int i=0; i < M_SIZE/M_P_SIZE/NP; i++){
+        ad[i] = (double*)malloc(sizeof(double)*M_P_SIZE*M_P_SIZE);
+        memset(ad[i], 0, sizeof(double)*M_P_SIZE*M_P_SIZE);
+    }
+    double** bd = (double**)malloc(sizeof(double*)*M_SIZE/M_P_SIZE/NP);
+    for(int i=0; i < M_SIZE/M_P_SIZE/NP; i++){
+        bd[i] = (double*)malloc(sizeof(double)*M_P_SIZE*M_P_SIZE);
+        memset(bd[i], 0, sizeof(double)*M_P_SIZE*M_P_SIZE);
+    }
+    double** cd = (double**)malloc(sizeof(double*)*M_SIZE/M_P_SIZE/NP);
+    for(int i=0; i < M_SIZE/M_P_SIZE/NP; i++){
+        cd[i] = (double*)malloc(sizeof(double)*M_P_SIZE*M_P_SIZE);
+        memset(cd[i], 0, sizeof(double)*M_P_SIZE*M_P_SIZE);
+    }
+
+    for(int k=0; k < M_SIZE/M_P_SIZE/NP; k++)
+    for(int i=0; i < M_P_SIZE*M_P_SIZE; i++)
+    ad[k][i] = bd[k][i] + cd[k][i];
     MPI_Barrier(MPI_COMM_WORLD);
     time2.end();
-    free(ad);
-    free(bd);
-    free(cd); 
-    time1.begin();
+*/
     ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1);
 
     p_dense_matrix<T> a(M_SIZE,M_SIZE);
@@ -129,6 +140,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 
 //    a = b + c + d + d;
     a = b + c;
+    time1.begin();
     ambient::playout();
     MPI_Barrier(MPI_COMM_WORLD);
     time1.end();

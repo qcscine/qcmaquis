@@ -169,13 +169,13 @@ namespace ambient {
 #endif
     }
 
-    workgroup& p_profile_s::operator()(int i, int j, int k){
+    workgroup& p_profile_s::operator()(int i, int j, int k) const {
         return *(this->group(i, j, k));
     }
 
-    workgroup* p_profile_s::group(int i, int j, int k){
+    workgroup* p_profile_s::group(int i, int j, int k) const {
         if(this->proxy){
-            return new workgroup(&profile, i, j, k);
+            assert(false); //return new workgroup(&profile, i, j, k);
         }else{
             int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
             int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
@@ -199,33 +199,33 @@ namespace ambient {
         if(this->default_group == NULL) return NULL; // we asked to convert non structuring arg
         return this->default_group->data;            // >_< need to write proper get for group's items
     }
-    dim3 p_profile_s::get_dim(){
+    dim3 p_profile_s::get_dim() const {
         return this->dim;
     }
     void p_profile_s::set_dim(dim3 dim){
         this->dim = dim;
     }
-    dim3 p_profile_s::get_distr_dim(){
+    dim3 p_profile_s::get_distr_dim() const {
         return this->distr_dim;
     }
     void p_profile_s::set_distr_dim(dim3 dim){
         this->distr_dim = dim;
     }
-    dim3 p_profile_s::get_gpu_dim(){
+    dim3 p_profile_s::get_gpu_dim() const {
         return this->gpu_dim;
     }
     void p_profile_s::set_gpu_dim(dim3 dim){
         this->gpu_dim = dim;
     }
 
-    dim3 p_profile_s::get_grid_dim(){
+    dim3 p_profile_s::get_grid_dim() const {
         int x_size = this->dim.x / (this->get_group_dim().x * this->get_item_dim().x);
         int y_size = this->dim.y / (this->get_group_dim().y * this->get_item_dim().y);
         int z_size = this->dim.z / (this->get_group_dim().z * this->get_item_dim().z);
         return dim3(x_size, y_size, z_size);
     }
 
-    dim3 p_profile_s::get_group_dim(){
+    dim3 p_profile_s::get_group_dim() const {
         if(this->specific) return this->group_dim;
         else return engine.group_dim();
     }
@@ -233,7 +233,7 @@ namespace ambient {
         this->group_dim = dim;
     }
 
-    dim3 p_profile_s::get_item_dim(){
+    dim3 p_profile_s::get_item_dim() const {
         return engine.item_dim();
     }
     void p_profile_s::set_item_dim(dim3 dim){
