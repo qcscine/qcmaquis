@@ -36,6 +36,18 @@ public:
         return ret;
     }
     
+#ifdef HAVE_ALPS_HDF5
+    void serialize(alps::hdf5::iarchive & ar)
+    {
+        ar >> alps::make_pvp("data", data_);
+    }
+    
+    void serialize(alps::hdf5::oarchive & ar) const
+    {
+        ar << alps::make_pvp("data", data_);
+    }
+#endif
+    
 public:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
 //    Index<SymmGroup> upper_i, lower_i;

@@ -52,11 +52,20 @@ typedef blas::dense_matrix<double > Matrix;
 
 #include "utils/DmrgParameters.h"
 #include "utils/timings.h"
+#include "utils/temporary_storage.h"
 
 typedef U1 grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
+
+BaseStorageMaster * bsm_factory(BaseParameters & parms)
+{
+    if (parms.get<std::string>("storagefile").size() == 0)
+        return new TrivialStorageMaster;
+    else
+        return new Hdf5StorageMaster(parms.get<std::string>("storagefile").c_str());
+}
 
 Adjacency * adj_factory(ModelParameters & model)
 {
@@ -66,6 +75,14 @@ Adjacency * adj_factory(ModelParameters & model)
         return new ChainAdj(model.get<int>("L"));
     else if (model.get<std::string>("lattice") == std::string("cylinder_lattice"))
         return new CylinderAdj(model.get<int>("L"), model.get<int>("W"));
+    else if (model.get<std::string>("lattice") == std::string("periodic_chain_lattice"))
+        return new PeriodicChainAdj(model.get<int>("L"));
+    else if (model.get<std::string>("lattice") == std::string("periodic_ladder_lattice"))
+        return new PeriodicLadderAdj(model.get<int>("L"));
+    else if (model.get<std::string>("lattice") == std::string("periodic_square_lattice"))
+        return new PeriodicSquareLatticeAdj(model.get<int>("L"), model.get<int>("W"));
+    else if (model.get<std::string>("lattice") == std::string("snake_square_lattice"))
+        return new SnakeSquareAdj(model.get<int>("L"), model.get<int>("W"));
     else {
         throw std::runtime_error("Don't know this lattice!");
         return NULL;
@@ -163,6 +180,11 @@ int main(int argc, char ** argv)
         h5ar << alps::make_pvp("/parameters", model);
     }
     
+    BaseStorageMaster * bsm = bsm_factory(parms);
+    
+    timeval now, then, snow, sthen;
+    gettimeofday(&now, NULL);
+    
     std::vector<double> energies, entropies;
     
     bool early_exit = false;
@@ -175,17 +197,17 @@ int main(int argc, char ** argv)
     zout << expval(mps, mpo, 0) << endl;
     zout << expval(mps, mpo, 1) << endl;
     
-    timeval now, then;
-    gettimeofday(&now, NULL);
     {   
-        ss_optimize<Matrix, grp> optimizer(mps, parms);
+        ss_optimize<Matrix, grp> optimizer(mps, parms, *bsm);
         
         for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
+            gettimeofday(&snow, NULL);
             energies = optimizer.sweep(mpo, sweep);
+            bsm->sync();
             entropies = calculate_bond_entropies(mps);
             
-            gettimeofday(&then, NULL);
-            double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+            gettimeofday(&sthen, NULL);
+            double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
             
 #ifdef MPI_PARALLEL
             if(ambient::scheduler::instance().is_ambient_master()) {
@@ -219,6 +241,8 @@ int main(int argc, char ** argv)
             }
 #endif
             
+            gettimeofday(&then, NULL);
+            elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec); 
             int rs = parms.get<int>("run_seconds");
             if (rs > 0 && elapsed > rs) {
                 early_exit = true;
@@ -226,6 +250,9 @@ int main(int argc, char ** argv)
             }
         }
     }
+    
+    
+    bsm->sync();
     
     if (!early_exit)
     {
@@ -256,4 +283,6 @@ int main(int argc, char ** argv)
         
         everything.end();
     }
+    
+    delete bsm;
 }

@@ -4,14 +4,33 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
+template<class Object> class BaseStorage;
+
+template<class Object>
+class storage : public boost::noncopyable
+{
+public:
+    boost::shared_ptr<Object> object_;
+    boost::shared_ptr<BaseStorage<Object> > storage_;
+    
+    ~storage()
+    {
+        // this assures that the storage object is destroyed *before* the data
+        // the storage should delete all requests, if necessary
+        storage_.reset();
+        object_.reset();
+    }
+};
+
 template<class Object>
 class BaseStorage : public boost::noncopyable
 {
 public:
     virtual boost::shared_ptr<BaseStorage<Object> > clone() const = 0;
-    virtual void load(boost::shared_ptr<Object>&) = 0;
-    virtual void prefetch(boost::shared_ptr<Object>&) = 0;
-    virtual void store(boost::shared_ptr<Object>&) = 0;
+    virtual void load(boost::shared_ptr<storage<Object> >) = 0;
+    virtual void prefetch(boost::shared_ptr<storage<Object> >) = 0;
+    virtual bool prefetch_barrier(boost::shared_ptr<storage<Object> >) = 0;
+    virtual void store(boost::shared_ptr<storage<Object> >) = 0;
     virtual ~BaseStorage() { }
 };
 
@@ -19,6 +38,8 @@ class BaseStorageMaster
 {
 public:
     virtual int flag() = 0;
+    virtual void sync() = 0;
+    virtual ~BaseStorageMaster() { }
 };
 
 template<int i>
@@ -51,10 +72,11 @@ boost::shared_ptr<BaseStorage<Object> > storage_factory(BaseStorageMaster & bsm)
 {
     switch(bsm.flag())
     {
-#define CASE(i) case i: return reinterpret_cast<typename storage_master_type<i>::type*>(&bsm)->make<Object>(); break;
+#define CASE(i) case i: return dynamic_cast<typename storage_master_type<i>::type*>(&bsm)->make<Object>(); break;
             CASE(0);
             CASE(1);
-//            CASE(2);
+            CASE(2);
+            CASE(4);
         default:
             throw std::runtime_error("Undefined storage manager flag.");
             return boost::shared_ptr<BaseStorage<Object> >();
@@ -66,32 +88,42 @@ class temporary_storage
 {
 public:
     temporary_storage(BaseStorage<Object> const & s)
-    : object_(new Object())
-    , storage_(s.clone())
-    , in_memory(true) { }
+    : data_(new storage<Object>)
+    {
+        data_->object_.reset(new Object());
+        data_->storage_ = s.clone();
+        in_memory = true;
+    }
+        
     
     temporary_storage(BaseStorage<Object> const & s,
                       Object const & o)
-    : object_(new Object(o))
-    , storage_(s.clone())
-    , in_memory(true) { }
+    : data_(new storage<Object>)
+    {
+        data_->object_.reset(new Object(o));
+        data_->storage_ = s.clone();
+        in_memory = true;
+    }
     
     temporary_storage(temporary_storage const & rhs)
-    : object_(new Object(rhs()))
-    , storage_(rhs.storage_->clone())
-    , in_memory(true)
-    { }
+    : data_(new storage<Object>)
+    {
+        data_->object_.reset(new Object(rhs()));
+        data_->storage_ = rhs.data_->storage_->clone();
+        in_memory = true;
+    }
     
     temporary_storage operator=(temporary_storage rhs)
     {
-        std::swap(*this, rhs);
+        swap(*this, rhs);
         return *this;
     }
     
     temporary_storage operator=(Object const & o)
     {
-//        cerr << "Assignment" << endl;
-        object_.reset(new Object(o));
+        if (!in_memory)
+            load();
+        data_->object_.reset(new Object(o));
         in_memory = true;
         return *this;
     }
@@ -100,46 +132,56 @@ public:
     {
         if (!in_memory)
             load();
-        return *object_;
+        return *data_->object_;
     }
     Object const & operator()() const
     {
         if (!in_memory)
             load();
-        return *object_;
+        return *data_->object_;
     }
     
     // postcondition: object_ is loaded, valid and unlocked, and all prefetch requests are terminated
     void load() const
     {
-        storage_->load(object_);
+        if (in_memory)
+            return;
+        data_->storage_->load(data_);
         in_memory = true;
     }
     
     // postcondition: none
     void prefetch() const
     {
-        storage_->prefetch(object_);
+        if (in_memory)
+            return;
+        data_->storage_->prefetch(data_);
+    }
+    
+    void prefetch_barrier() const
+    {
+        if (in_memory)
+            return;
+        if (data_->storage_->prefetch_barrier(data_))
+            in_memory = true;
     }
 
     // postcondition: none
     void store() const
     {
-        storage_->store(object_);
+        data_->storage_->store(data_);
         in_memory = false;
     }
         
     void swap_with(temporary_storage & rhs)
     {
-        swap(this->object_, rhs.object_);
-        swap(this->storage_, rhs.storage_);
-        swap(this->in_memory, rhs.in_memory);
+        swap(this->data_, rhs.data_);
+        std::swap(this->in_memory, rhs.in_memory);
     }
     
 private:
     // const-ness is sort of a joke
-    mutable boost::shared_ptr<Object> object_;
-    mutable boost::shared_ptr<BaseStorage<Object> > storage_;
+    mutable boost::shared_ptr<storage<Object> > data_;
     mutable bool in_memory;
 };
 

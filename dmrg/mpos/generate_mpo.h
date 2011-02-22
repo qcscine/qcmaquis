@@ -132,7 +132,8 @@ namespace mpos {
         CorrMaker(std::size_t L,
                   op_t const & identity_,
                   op_t const & fill_,
-                  std::vector<op_t> const & ops_)
+                  std::vector<op_t> const & ops_,
+                  std::size_t ref = -1)
         : prempo(L)
         , tags(L)
         , used(L)
@@ -140,10 +141,7 @@ namespace mpos {
         , fill(fill_)
         , ops(ops_)
         {
-//            for (size_t p = 1; p < prempo.size(); ++p)
-//                prempo[p].push_back( make_tuple(0, 0, identity) );
-            
-            recurse(0, 0, 0, vector<size_t>());
+            recurse(0, 0, 0, vector<size_t>(), ref);
         }
         
         MPO<Matrix, SymmGroup> create_mpo()
@@ -194,6 +192,7 @@ namespace mpos {
                 oss << " )";
                 *(ot++) = oss.str();
             }
+            assert( ot == ret.end() );
             return ret;
         }
         
@@ -223,16 +222,19 @@ namespace mpos {
             return u2;
         }
         
-        void recurse(size_t p0, size_t which, size_t use, vector<size_t> label)
+        void recurse(size_t p0, size_t which, size_t use, vector<size_t> label, size_t ref)
         {
             if (p0 + ops.size() - which < prempo.size()) {
                 size_t use_next = term(p0, use,
                                        which == 0 ? identity : fill,
                                        true);
-                recurse(p0+1, which, use_next, label);
+                recurse(p0+1, which, use_next, label, ref);
             }
             
             {
+                if (ref >= 0 && which == 0 && p0 != ref)
+                    return;
+                
                 size_t use_next = term(p0, use, ops[which], false);
                 
                 vector<size_t> label_(label);
@@ -247,7 +249,7 @@ namespace mpos {
                     labels.resize(std::max(t2+1, labels.size()));
                     labels[t2] = label_;
                 } else {
-                    recurse(p0+1, which+1, use_next, label_);
+                    recurse(p0+1, which+1, use_next, label_, ref);
                 }
             }
         }
@@ -312,14 +314,14 @@ namespace mpos {
         
         void add_bond_ops()
         {
-            for (size_t p = 0; p < adj.size(); ++p) {
-                vector<size_t> neighs = adj.forward(p);
-                for (vector<size_t>::iterator neigh = neighs.begin(); neigh != neighs.end(); ++neigh)
+            for (int p = 0; p < adj.size(); ++p) {
+                vector<int> neighs = adj.forward(p);
+                for (vector<int>::iterator neigh = neighs.begin(); neigh != neighs.end(); ++neigh)
                     for (int i = 0; i < H.num_2site_ops(); ++i)
                     {
                         pair<op_t, op_t> op = H.get_2site_op(i);
                         
-                        vector<pair<size_t, op_t> > ops;
+                        vector<pair<int, op_t> > ops;
                         ops.push_back( make_pair( p, op.first ) );
                         ops.push_back( make_pair( *neigh, op.second ) );
                         add_term(ops);
@@ -327,23 +329,23 @@ namespace mpos {
             }
         }
         
-        void add_term(vector<pair<size_t, op_t> > & ops)
+        void add_term(vector<pair<int, op_t> > & ops)
         {
             std::sort(ops.begin(), ops.end(), compare<Matrix, SymmGroup>);
             
-            vector<size_t> positions;
-            for (typename vector<pair<size_t, op_t> >::const_iterator it = ops.begin();
+            vector<int> positions;
+            for (typename vector<pair<int, op_t> >::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
                 positions.push_back( it->first );
 //            std::copy(positions.begin(), positions.end(),
 //                      std::ostream_iterator<size_t>(cout, " ")); zout << " " << endl;
-            size_t minp = *min_element(positions.begin(), positions.end());
-            size_t maxp = *max_element(positions.begin(), positions.end());
+            int minp = *min_element(positions.begin(), positions.end());
+            int maxp = *max_element(positions.begin(), positions.end());
             
-            size_t use_b;
+            int use_b;
             for (use_b = 2; true; ++use_b) {
                 bool valid = true;
-                for (size_t p = minp; p < maxp; ++p)
+                for (int p = minp; p < maxp; ++p)
                     valid &= (used_dims[p].count(use_b) == 0);
                 if (valid)
                     break;
@@ -351,7 +353,7 @@ namespace mpos {
             maximum = max(use_b, maximum);
 
             vector<bool> done(adj.size(), false);
-            for (typename vector<pair<size_t, op_t> >::const_iterator it = ops.begin();
+            for (typename vector<pair<int, op_t> >::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {
                 size_t first_use_b = (it->first == minp ? 0 : use_b);
@@ -362,7 +364,7 @@ namespace mpos {
                 done[it->first] = true;
             }
             
-            for (size_t p = minp; p <= maxp; ++p)
+            for (int p = minp; p <= maxp; ++p)
                 if (!done[p]) {
                     prempo[p].push_back( make_tuple(use_b, use_b, H.get_free()) );
                     used_dims[p].insert(use_b);
@@ -374,7 +376,7 @@ namespace mpos {
             
         MPO<Matrix, SymmGroup> create_mpo()
         {
-            for (size_t p = leftmost_right + 1; p < adj.size(); ++p)
+            for (int p = leftmost_right + 1; p < adj.size(); ++p)
                 prempo[p].push_back( make_tuple(1, 1, H.get_identity()) );
             
             for (typename vector<vector<block> >::iterator it = prempo.begin();
@@ -383,7 +385,7 @@ namespace mpos {
                 compress_on_bond(*it, *(it+1));
             
             MPO<Matrix, SymmGroup> r(adj.size());
-            for (size_t p = 1; p < adj.size() - 1; ++p)
+            for (int p = 1; p < adj.size() - 1; ++p)
                 r[p] = as_bulk(prempo[p]);
             r[0] = as_left(prempo[0]);
             r[adj.size()-1] = as_right(prempo[adj.size()-1]);
@@ -398,7 +400,7 @@ namespace mpos {
         vector<set<size_t> > used_dims;
         vector<vector<block> > prempo;
         
-        size_t maximum, leftmost_right;
+        int maximum, leftmost_right;
         
         MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops)
         {
