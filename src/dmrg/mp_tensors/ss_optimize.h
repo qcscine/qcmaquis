@@ -10,6 +10,7 @@
 #include "ietl_jacobi_davidson.h"
 
 #include "utils/DmrgParameters.h"
+#include "utils/temporary_storage.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -36,9 +37,11 @@ class ss_optimize
 {
 public:
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
-                BaseParameters & parms_)
+                BaseParameters & parms_,
+                BaseStorageMaster & serializer_)
     : mps(mps_)
     , parms(parms_)
+    , serializer(serializer_)
     { }
     
     std::vector<double> sweep(MPO<Matrix, SymmGroup> const & mpo,
@@ -47,8 +50,8 @@ public:
         mps.normalize_right();
         mps.canonize(0);
         
-        left_ = left_mpo_overlaps(mps, mpo);
-        right_ = right_mpo_overlaps(mps, mpo);
+        init_left_right(mpo);
+        cerr << "Done init_left_right" << endl;
         
         std::vector<double> energies;
         
@@ -72,8 +75,24 @@ public:
             SiteProblem<Matrix, SymmGroup> sp;
             sp.ket_tensor = mps[site];
             sp.mpo = mpo[site];
-            sp.left = left_[site];
-            sp.right = right_[site+1];
+            
+            left_[site].prefetch_barrier();
+            right_[site+1].prefetch_barrier();
+            left_[site].load();
+            right_[site+1].load();
+            
+            if (lr == +1) {
+                left_[site+1].prefetch();
+                if (site+2 < right_.size())
+                    right_[site+2].prefetch();
+            } else {
+                right_[site].prefetch();
+                if (site > 1)
+                    left_[site-1].prefetch();
+            }
+            
+            sp.left = left_[site]();
+            sp.right = right_[site+1]();
             
             timeval now, then;
             
@@ -116,7 +135,7 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
-                    mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
+                    mps.grow_l2r_sweep(mpo[site], left_[site](), right_[site+1](),
                                        site, alpha, cutoff, Mmax);
                 }
                 
@@ -124,13 +143,18 @@ public:
                 if (site < L-1)
                     mps[site+1].multiply_from_left(t);
                 
+                left_[site+1].prefetch_barrier();
+                
                 MPSTensor<Matrix, SymmGroup> bkp = mps[site];
                 left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,
-                                                                   left_[site], mpo[site]);
+                                                                   left_[site](), mpo[site]);
+                
+                left_[site].store();
+                right_[site+1].store();
             } else if (lr == -1) {
                 if (site > 1) {
                     zout << "Growing, alpha = " << alpha << endl;
-                    mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
+                    mps.grow_r2l_sweep(mpo[site], left_[site](), right_[site+1](),
                                        site, alpha, cutoff, Mmax);
                 }
                 
@@ -138,9 +162,14 @@ public:
                 if (site > 0)
                     mps[site-1].multiply_from_right(t);
                 
+                right_[site].prefetch_barrier();
+                
                 MPSTensor<Matrix, SymmGroup> bkp = mps[site];
                 right_[site] = contraction::overlap_mpo_right_step(mps[site], bkp,
-                                                                   right_[site+1], mpo[site]);
+                                                                   right_[site+1](), mpo[site]);
+                
+                left_[site].store();
+                right_[site+1].store();
             }
         }
         
@@ -148,9 +177,50 @@ public:
     }
     
 private:
+    void init_left_right(MPO<Matrix, SymmGroup> const & mpo)
+    {
+        std::size_t L = mps.length();
+        
+        boost::shared_ptr<BaseStorage<Boundary<Matrix, SymmGroup> > > bs = storage_factory<Boundary<Matrix, SymmGroup> >(serializer);
+        
+        left_.resize(mpo.length()+1,
+                     temporary_storage<Boundary<Matrix, SymmGroup> >(*bs));
+        right_.resize(mpo.length()+1,
+                      temporary_storage<Boundary<Matrix, SymmGroup> >(*bs));
+        
+        {
+            Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+            left_[0] = left;
+            
+            for (int i = 0; i < L; ++i) {
+                left_[i+1].prefetch();
+                MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+                left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+                left_[i+1].prefetch_barrier();
+                left_[i+1] = left;
+                left_[i+1].store();
+            }
+        }
+        
+        {
+            Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+            right_[L] = right;
+            
+            for (int i = L-1; i >= 0; --i) {
+                right_[i].prefetch();
+                MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+                right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
+                right_[i].prefetch_barrier();
+                right_[i] = right;
+                right_[i].store();
+            }
+        }
+    }
+    
     MPS<Matrix, SymmGroup> & mps;
     BaseParameters & parms;
-    std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+    std::vector<temporary_storage<Boundary<Matrix, SymmGroup> > > left_, right_;
+    BaseStorageMaster & serializer;
 };
 
 #endif

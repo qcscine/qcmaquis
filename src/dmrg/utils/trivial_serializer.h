@@ -9,9 +9,10 @@ public:
     {
         return boost::shared_ptr<BaseStorage<Object> >(new TrivialStorage<Object>());
     }
-    void load(boost::shared_ptr<Object>&) { }
-    void prefetch(boost::shared_ptr<Object>&) { }
-    void store(boost::shared_ptr<Object>&) { }
+    void load(boost::shared_ptr<storage<Object> >) { }
+    void prefetch(boost::shared_ptr<storage<Object> >) { }
+    bool prefetch_barrier(boost::shared_ptr<storage<Object> >) { return true; }
+    void store(boost::shared_ptr<storage<Object> >) { }
     ~TrivialStorage() { }
 };
 
@@ -25,6 +26,8 @@ public:
     {
         return boost::shared_ptr<BaseStorage<Object> >(new TrivialStorage<Object>());
     }
+    
+    void sync() { }
 };
 
 template<> struct storage_master_type<0>
