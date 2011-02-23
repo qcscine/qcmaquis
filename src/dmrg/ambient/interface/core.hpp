@@ -12,11 +12,8 @@ private:
 };
 
 template <typename T> 
-void_pt& breakdown(const T* obj){ 
-    void_pt** profile_ptr = const_cast<void_pt**>(&obj->profile);
+void_pt& breakdown(const T& obj){
+    void_pt** profile_ptr = const_cast<void_pt**>(&obj.profile);
     return *(*profile_ptr = (void_pt*)(*profile_ptr)->dereference());
 }
-
-template <typename T> 
-void_pt& breakdown(const T& obj){ return breakdown(&obj); }
 

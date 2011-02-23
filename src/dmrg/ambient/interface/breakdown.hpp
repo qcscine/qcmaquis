@@ -20,9 +20,11 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T>* ptr)
     }
 }
 
-void_pt& breakdown(const int* obj){ return *(new void_pt(obj)); }
+template<>
+void_pt& breakdown(const int& obj){ return *(new void_pt(&obj)); }
 void breakdown_model(void_pt* profile, const int* ptr){  }//assert(false); }
 
-void_pt& breakdown(const double* obj){ return *(new void_pt(obj)); }
+template<>
+void_pt& breakdown(const double& obj){ return *(new void_pt(&obj)); }
 void breakdown_model(void_pt* profile, const double* ptr){ assert(false); }
 
