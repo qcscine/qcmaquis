@@ -4,6 +4,7 @@
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/p_profile.h"
 #include "ambient/core/select.h"
+#include "ambient/interface/profiles.hpp"
 
 namespace blas{ using namespace ambient;
 
@@ -39,7 +40,6 @@ namespace blas{ using namespace ambient;
     }
     #include "ambient/kernels.cpp"
 } 
-#include "ambient/interface/profiles.hpp"
 #include "ambient/core/operation/operation.pp.hpp"
 #include "ambient/interface/core.hpp"
 #endif

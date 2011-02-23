@@ -1,10 +1,6 @@
 template<typename T>
 class p_dense_matrix;
 
-void matrix_i_kernel(ambient::workgroup* grp){
-        // dumb 0-initialization for the start >_< 
-        memset(grp->data, 0, grp->get_group_dim().y*grp->get_item_dim().y*grp->get_group_dim().x*grp->get_item_dim().x*grp->get_profile()->type_size);
-}
 
 template<typename T> 
 void info(T& obj){
@@ -32,9 +28,9 @@ void plus_l_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, p
 }
 
 void plus_c_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
-//    void_pt* profile = get_profile(out);
-//    double* ad = (get_profile(a))(get_group_id(out).x, get_group_id(out).y);
-//    double* bd = (get_profile(b))(get_group_id(out).x, get_group_id(out).y);
+    void_pt* profile = get_profile(out);
+    double* ad = (*get_profile(a))(get_group_id(out).x, get_group_id(out).y);
+    double* bd = (*get_profile(b))(get_group_id(out).x, get_group_id(out).y);
 //    int size = get_group_dim(out).x*get_item_dim(out).x*
 //               get_group_dim(out).y*get_item_dim(out).y;
 //    printf("R%d: Executing plus computation kernel (%d ops)... for out grp %d %d\n", asmp.rank, size, out.get_group_id().x, out.get_group_id().y);
