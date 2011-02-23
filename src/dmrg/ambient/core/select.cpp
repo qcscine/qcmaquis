@@ -4,7 +4,7 @@
 #include "ambient/core/select.h"
 #include "ambient/core/smp.h"
 #include "ambient/groups/group.h"
-#include "ambient/core/operation.h"
+#include "ambient/core/operation/operation.h"
 #include "utils/sqlite3.c"
 
 namespace ambient {

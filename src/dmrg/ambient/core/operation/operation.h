@@ -2,19 +2,18 @@
 #define AMBIENT_CORE_OPERATION_H
 #include <stdlib.h>
 #include "ambient/core/p_profile.h"
+#define pinned ambient::core::ambient_pin* , 
+#define marked NULL,
 
 namespace ambient{ namespace core{
 
-    typedef p_profile   void_pt;
-    typedef p_profile_s void_spt;
+    class ambient_pin{};
 
     class operation{
     public:
-        operation(void(*fp)(void_pt&, void_pt&, void_spt&), void_pt* arg1, void_pt* arg2, void_spt* arg3);
-        operation(void(*fp)(const void_pt&, void_pt&, void_spt&), void_pt* arg1, void_pt* arg2, void_spt* arg3);
-        void prototype_triplet();
-        void prototype_triplet_const();
-        void perform(); // executes operation
+        #include "ambient/core/operation/operation.pp.h"
+        void init();     // some init that doesn't depend upon arguments
+        void perform();  // executes operation
         void performx(); // executes operation (clean way)
         void set_ids();
         void set_scope(groups::group* scope);
@@ -22,8 +21,9 @@ namespace ambient{ namespace core{
         void(operation::*prototype)();
         void(*operation_ptr)();
         groups::group* scope;
-        void_pt** arguments;
-        void_spt* pin;
+        void** arguments;
+        p_profile** profiles;
+        p_profile* pin;
         size_t arg_count;
     };
 

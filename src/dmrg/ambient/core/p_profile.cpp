@@ -3,29 +3,31 @@
 
 namespace ambient {
 
-    p_profile_s::p_profile_s():reserved_x(0),reserved_y(0),group_id(0),id(0),init_fp(NULL),group_lda(0),default_group(NULL){};
-    p_profile::~p_profile(){}
+    void_pt::~void_pt(){}
+    p_profile::p_profile()
+    : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
+      specific(false), profile(this){ };
 
-    p_profile* p_profile_s::dereference(){
+    p_profile* p_profile::dereference(){
         while((this->profile = this->profile->profile) != this->profile->profile);
         return this->profile; // todo - deallocate proxy objects
     }
 
-    void p_profile_s::set_id(std::pair<unsigned int*,size_t> group_id){
+    void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
         this->group_id = group_id.first;
         this->layout = new core::layout_table(this);
-        this->id = void_pt_map.insert(group_id.first, group_id.second, this->layout);
+        this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
     }
 
-    p_profile & p_profile_s::operator>>(dim3 distr_dim) 
+    p_profile & p_profile::operator>>(dim3 distr_dim) 
     {
         this->specific = true;
         this->distr_dim = distr_dim;
         this->group_dim = NULL;
         this->gpu_dim = NULL;
-        return *(p_profile*)this;
+        return *this;
     }
-    p_profile & p_profile_s::operator,(dim3 dim) 
+    p_profile & p_profile::operator,(dim3 dim) 
     {
         if(this->group_dim == NULL){
             this->group_dim = dim;
@@ -33,14 +35,14 @@ namespace ambient {
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;
         }
-        return *(p_profile*)this;
+        return *this;
     }
 
     p_profile & operator>>(p_profile* instance, dim3 distr_dim) {
         return *instance >> distr_dim;
     }
 
-    void p_profile_s::regroup(){
+    void p_profile::regroup(){
         if(!this->proxy){
             int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
             int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
@@ -57,14 +59,14 @@ namespace ambient {
         }
     }
 
-    size_t p_profile_s::get_group_lda(){
+    size_t p_profile::get_group_lda(){
         if(this->group_lda == 0)
             return this->get_group_dim().y*this->get_item_dim().y*this->type_size;
         else
             return this->group_lda;
     }
 
-    void p_profile_s::solidify(){
+    void p_profile::solidify(){
         int i,j;
         size_t offset = 0;
         this->scope = malloc(ambient::get_bound()                            + 
@@ -103,7 +105,7 @@ namespace ambient {
     }
 
 
-    void p_profile_s::disperse(){ 
+    void p_profile::disperse(){ 
         size_t offset = 0;
         void* memory = this->data = (void*)((size_t)this->scope + ambient::get_bound());
         for(int j=0; j < this->get_grid_dim().x; j++){
@@ -122,18 +124,18 @@ namespace ambient {
         }
     }
 
-    void p_profile_s::set_default_group(int i, int j, int k)
+    void p_profile::set_default_group(int i, int j, int k)
     {
         if(i == -1) this->default_group = NULL;
         else this->default_group = this->group(i, j, k);
     }
 
-    dim3 p_profile_s::get_group_id()
+    dim3 p_profile::get_group_id()
     {
         return dim3(this->default_group->i, this->default_group->j, this->default_group->k);
     }
 
-    void p_profile_s::postprocess(){
+    void p_profile::postprocess(){
 
 #ifndef DSCALAPACK_COMPATIBLE
         for(int j=0; j < this->get_grid_dim().x; j++){
@@ -169,11 +171,11 @@ namespace ambient {
 #endif
     }
 
-    workgroup& p_profile_s::operator()(int i, int j, int k) const {
+    workgroup& p_profile::operator()(int i, int j, int k) const {
         return *(this->group(i, j, k));
     }
 
-    workgroup* p_profile_s::group(int i, int j, int k) const {
+    workgroup* p_profile::group(int i, int j, int k) const {
         if(this->proxy){
             assert(false); //return new workgroup(&profile, i, j, k);
         }else{
@@ -186,7 +188,7 @@ namespace ambient {
         }
     }
 
-    void p_profile_s::imitate(p_profile* profile){
+    void p_profile::imitate(p_profile* profile){
         this->specific   =  profile->specific;
         this->set_gpu_dim  (profile->get_gpu_dim  ());
         this->set_distr_dim(profile->get_distr_dim());
@@ -195,48 +197,48 @@ namespace ambient {
         this->regroup();
     }
 
-    void* p_profile_s::get_data(){
+    void* p_profile::get_data(){
         if(this->default_group == NULL) return NULL; // we asked to convert non structuring arg
         return this->default_group->data;            // >_< need to write proper get for group's items
     }
-    dim3 p_profile_s::get_dim() const {
+    dim3 p_profile::get_dim() const {
         return this->dim;
     }
-    void p_profile_s::set_dim(dim3 dim){
+    void p_profile::set_dim(dim3 dim){
         this->dim = dim;
     }
-    dim3 p_profile_s::get_distr_dim() const {
+    dim3 p_profile::get_distr_dim() const {
         return this->distr_dim;
     }
-    void p_profile_s::set_distr_dim(dim3 dim){
+    void p_profile::set_distr_dim(dim3 dim){
         this->distr_dim = dim;
     }
-    dim3 p_profile_s::get_gpu_dim() const {
+    dim3 p_profile::get_gpu_dim() const {
         return this->gpu_dim;
     }
-    void p_profile_s::set_gpu_dim(dim3 dim){
+    void p_profile::set_gpu_dim(dim3 dim){
         this->gpu_dim = dim;
     }
 
-    dim3 p_profile_s::get_grid_dim() const {
+    dim3 p_profile::get_grid_dim() const {
         int x_size = this->dim.x / (this->get_group_dim().x * this->get_item_dim().x);
         int y_size = this->dim.y / (this->get_group_dim().y * this->get_item_dim().y);
         int z_size = this->dim.z / (this->get_group_dim().z * this->get_item_dim().z);
         return dim3(x_size, y_size, z_size);
     }
 
-    dim3 p_profile_s::get_group_dim() const {
+    dim3 p_profile::get_group_dim() const {
         if(this->specific) return this->group_dim;
         else return engine.group_dim();
     }
-    void p_profile_s::set_group_dim(dim3 dim){
+    void p_profile::set_group_dim(dim3 dim){
         this->group_dim = dim;
     }
 
-    dim3 p_profile_s::get_item_dim() const {
+    dim3 p_profile::get_item_dim() const {
         return engine.item_dim();
     }
-    void p_profile_s::set_item_dim(dim3 dim){
+    void p_profile::set_item_dim(dim3 dim){
         this->item_dim = dim;
     }
 
