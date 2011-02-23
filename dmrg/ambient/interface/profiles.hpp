@@ -1,3 +1,5 @@
+namespace blas{ using namespace ambient;
+
 template <typename T> 
 class p_dense_matrix; // forward declaration of p_dense_matrix
 
@@ -39,3 +41,10 @@ void void_pt_model(ambient::void_pt* profile, const double* ptr){ assert(false);
 template <typename T> 
 ambient::void_pt* get_profile(const T& obj){ return get_profile(&obj); }
 
+} namespace ambient { using namespace blas;
+    template <typename T> void_pt::void_pt(const T* ptr) : p_profile()
+    {
+        void_pt_model(this, ptr);
+        this->regroup(); 
+    };
+}
