@@ -31,7 +31,7 @@ void void_pt_model(ambient::void_pt* profile, const p_dense_matrix<T>* ptr)
 }
 
 ambient::void_pt* get_profile(const int* obj){ return new ambient::void_pt(obj); }
-void void_pt_model(ambient::void_pt* profile, const int* ptr){ assert(false); }
+void void_pt_model(ambient::void_pt* profile, const int* ptr){  }//assert(false); }
 
 ambient::void_pt* get_profile(const double* obj){ return new ambient::void_pt(obj); }
 void void_pt_model(ambient::void_pt* profile, const double* ptr){ assert(false); }

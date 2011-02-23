@@ -1,5 +1,3 @@
-#define __a_once__ asmp.trigger_interrupt();
-
 template<typename T>
 class p_dense_matrix;
 
@@ -34,7 +32,6 @@ void plus_l_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, p
 }
 
 void plus_c_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
-//    __a_once__
 //    void_pt* profile = get_profile(out);
 //    double* ad = (get_profile(a))(get_group_id(out).x, get_group_id(out).y);
 //    double* bd = (get_profile(b))(get_group_id(out).x, get_group_id(out).y);
@@ -46,15 +43,15 @@ void plus_c_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, p
 //    }
 }
 
-void extended_l_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out, int input){
+void extended_l_kernel(int& input){
 //    a >> dim3(10,5), dim3(1,1), dim3(10,1); <- kinda non-trivial - need to think
     select("0.5 from ambient as work where master is 0");
     retain("2 from ambient as work_storage");
     printf("OK, the input is %d\n", input);
 }
 
-void extended_c_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out, int input){
-
+void extended_c_kernel(int& input){
+    printf("OK, the input (c) is %d\n", input);
 }
 
 void assign_c_kernel(void_pt& a, void_pt& b){

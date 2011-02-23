@@ -140,6 +140,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 
 //    a = b + c + d + d;
     a = b + c;
+    int *in = (int*)malloc(sizeof(int));
+    *in = 23;
+    ambient::push(extended_l_kernel, extended_c_kernel, *in);
     time1.begin();
     ambient::playout();
     MPI_Barrier(MPI_COMM_WORLD);
