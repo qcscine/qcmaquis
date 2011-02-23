@@ -52,20 +52,13 @@ typedef blas::dense_matrix<double > Matrix;
 
 #include "utils/DmrgParameters.h"
 #include "utils/timings.h"
-#include "utils/temporary_storage.h"
+
+#include "utils/stream_storage.h"
 
 typedef U1 grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
-
-BaseStorageMaster * bsm_factory(BaseParameters & parms)
-{
-    if (parms.get<std::string>("storagefile").size() == 0)
-        return new TrivialStorageMaster;
-    else
-        return new Hdf5StorageMaster(parms.get<std::string>("storagefile").c_str());
-}
 
 Adjacency * adj_factory(ModelParameters & model)
 {
@@ -180,7 +173,7 @@ int main(int argc, char ** argv)
         h5ar << alps::make_pvp("/parameters", model);
     }
     
-    BaseStorageMaster * bsm = bsm_factory(parms);
+    StreamStorageMaster ssm(parms.get<std::string>("storagedir").c_str());
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
@@ -198,12 +191,12 @@ int main(int argc, char ** argv)
     zout << expval(mps, mpo, 1) << endl;
     
     {   
-        ss_optimize<Matrix, grp> optimizer(mps, parms, *bsm);
+        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
         
         for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
             gettimeofday(&snow, NULL);
             energies = optimizer.sweep(mpo, sweep);
-            bsm->sync();
+            ssm.sync();
             entropies = calculate_bond_entropies(mps);
             
             gettimeofday(&sthen, NULL);
@@ -252,7 +245,7 @@ int main(int argc, char ** argv)
     }
     
     
-    bsm->sync();
+    ssm.sync();
     
     if (!early_exit)
     {
@@ -283,6 +276,4 @@ int main(int argc, char ** argv)
         
         everything.end();
     }
-    
-    delete bsm;
 }

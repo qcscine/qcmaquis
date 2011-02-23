@@ -158,7 +158,7 @@ public:
             add_option("run_seconds",value<int>()->default_value(0),"");
             add_option("resultfile",value<std::string>(),"");
             add_option("chkpfile",value<std::string>(),"");
-            add_option("storagefile",value<std::string>()->default_value(std::string()),"");
+            add_option("storagedir",value<std::string>()->default_value(std::string()),"");
             
             store(parse_config_file(param_file, config), vm);
             notify(vm);
