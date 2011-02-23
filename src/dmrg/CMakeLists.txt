@@ -23,6 +23,7 @@ if(ambient_dmrg)
 # note: you can regenerate operation.pp.h/hpp by invoking smth like the following:
 # g++ ambient/core/operation/operation.pp.h.template.h   -P -E -Iboost -I. > operation.pp.h
 # g++ ambient/core/operation/operation.pp.hpp.template.h -P -E -Iboost -I. > operation.pp.hpp
+# g++ ambient/interface/push.pp.hpp.template.h           -P -E -Iboost -I. > push.pp.hpp
     set(CMAKE_CXX_COMPILER "mpic++") 
     add_definitions(-O3)
     add(ambient) 

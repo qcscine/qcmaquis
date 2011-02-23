@@ -25,6 +25,7 @@ namespace ambient{ namespace core{
         p_profile** profiles;
         p_profile* pin;
         size_t arg_count;
+        bool is_extracted;
     };
 
     class out_of_scope_e{};

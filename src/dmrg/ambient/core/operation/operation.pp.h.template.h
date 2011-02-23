@@ -25,7 +25,9 @@ void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))
 template< typename FP, BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 operation( FP op, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER, T, *arg) );
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
-void extract_profiles(size_t pin);
-BOOST_PP_REPEAT(n, body_tn, ~) 
+void extract_profiles(int pin);
+template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >     // specially for unpinned version
+void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ));
+BOOST_PP_REPEAT(TYPES_NUMBER, body_tn, ~) 
 
 #endif

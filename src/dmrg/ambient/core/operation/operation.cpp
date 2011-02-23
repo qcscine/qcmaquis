@@ -7,6 +7,7 @@ namespace ambient{ namespace core{
     {
         this->scope = NULL;
         this->pin = NULL;
+        this->is_extracted = false;
     }
     void operation::perform()
     {
