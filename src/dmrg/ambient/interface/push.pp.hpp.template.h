@@ -1,15 +1,6 @@
 #include <boost/preprocessor.hpp>
 #define ARGS_MAX_LEN 4
 
-#define type_list(z, n, pn)                                                                 \
-    BOOST_PP_COMMA_IF(n)                                                                    \
-    BOOST_PP_IF(BOOST_PP_EQUAL(n,pn), pinned,)                                              \
-    T ## n&                                      
-
-#define body_tn(z, n, text)                                                                 \
-template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                 \
-void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ));
-
 #ifndef BOOST_PP_IS_ITERATING
 #ifndef CONVERTOBJECTS_HPP
 #define CONVERTOBJECTS_HPP
