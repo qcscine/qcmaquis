@@ -48,6 +48,9 @@ public:
     }
 #endif
     
+    block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
+    block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
+    
 public:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
 //    Index<SymmGroup> upper_i, lower_i;

@@ -70,7 +70,7 @@ void mps_init(MPS<Matrix, U1> & mps,
     
     for (int i = 0; i < L; ++i)
         mps[i] = MPSTensor<Matrix, U1>(phys, allowed[i], allowed[i+1]);
-    zout << mps.description() << endl;
+//    zout << mps.description() << endl;
 }
 
 template<class Matrix, class SymmGroup>

@@ -108,7 +108,7 @@ typename Matrix::value_type norm(MPS<Matrix, SymmGroup> const & mps,
 
 template<class Matrix, class SymmGroup>
 std::vector<double>
-calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
+calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
 {
     std::size_t L = mps.length();
     std::vector<double> ret;
@@ -124,14 +124,8 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
         mps[p].make_right_paired();
         
         gemm(mps[p-1].data(), mps[p].data(), t);
-
+        
         svd(t, u, v, s);
-        
-        /*
-        mps[p-1].make_left_paired();
-        gemm(transpose(mps[p-1].data()), mps[p-1].data(), t);
-        
-        svd(t, u, v, s);*/
         
         std::vector<double> sv;
         
@@ -141,7 +135,7 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
                  it != elements(s[k]).second; ++it)
             {
                 double a = fabs(*it);
-                if (a > 1e-14)
+                if (a > 1e-10)
                     sv.push_back(a*a);
             }
         
@@ -149,17 +143,37 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
         std::transform(sv.begin(), sv.end(), sv.begin(),
                        boost::lambda::_1 / r);
         
+//        std::sort(sv.begin(), sv.end());
+//        std::reverse(sv.begin(), sv.end());
+//        std::copy(sv.begin(), sv.begin()+10, std::ostream_iterator<double>(cout, " ")); cout << endl;
+        
         r = 0;
-        for (std::vector<double>::const_iterator it = sv.begin();
-             it != sv.end(); ++it)
-            r += *it * log(*it);
-        ret.push_back(-r);
+        if (n == 1) {
+            for (std::vector<double>::const_iterator it = sv.begin();
+                 it != sv.end(); ++it)
+                r += *it * log(*it);
+            ret.push_back(-r);
+        } else {
+            for (std::vector<double>::const_iterator it = sv.begin();
+                 it != sv.end(); ++it)
+                r += pow(*it, n);
+            ret.push_back(1/(1-n)*log(r));
+        }
+        
+//        cout << ret.back() << endl;
         
         t = mps[p-1].normalize_left(SVD);
         mps[p].multiply_from_left(t);
     }
     
     return ret;
+}
+
+template<class Matrix, class SymmGroup>
+std::vector<double>
+calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
+{
+    return calculate_bond_renyi_entropies(mps, 1);
 }
 
 #endif
