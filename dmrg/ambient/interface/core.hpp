@@ -2,8 +2,8 @@ namespace ambient { using namespace blas;
 
     template <typename FL, typename FC, class T0, class T1, class T2>
     void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2){
-        if(get_profile(arg1)->proxy) pin(arg0, arg2);
-        if(get_profile(arg2)->proxy) pin(arg1, arg2);
+        if(get_profile(arg0)->proxy) pin(arg0, arg2);
+        if(get_profile(arg1)->proxy) pin(arg1, arg2);
         ambient::engine.push(new core::operation(l_kernel, &arg0, &arg1, &arg2),
                              new core::operation(c_kernel, &arg0, &arg1, &arg2));
     }

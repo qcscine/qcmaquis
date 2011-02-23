@@ -3,6 +3,11 @@ namespace blas{ using namespace ambient;
 template <typename T> 
 class p_dense_matrix; // forward declaration of p_dense_matrix
 
+void matrix_i_kernel(ambient::workgroup* grp){
+        // dumb 0-initialization for the start >_< 
+        memset(grp->data, 0, grp->get_group_dim().y*grp->get_item_dim().y*grp->get_group_dim().x*grp->get_item_dim().x*grp->get_profile()->type_size);
+}
+
 void_pt* dereference(void_pt** profile_ptr)
 {
     *profile_ptr = (void_pt*)(*profile_ptr)->dereference();
