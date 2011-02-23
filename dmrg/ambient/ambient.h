@@ -11,7 +11,7 @@
 #include "ambient/groups/multirank.h"
 #include "ambient/auxiliary.h"
 #include "ambient/core/smp.h"
-#include "ambient/core/operation.h"
+#include "ambient/core/operation/operation.h"
 #include "ambient/core/layout.h"
 
 #define ALL -1
@@ -65,7 +65,7 @@ namespace ambient
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;
-    extern hash_map& void_pt_map;
+    extern hash_map& p_profile_map;
 }
 
 #endif

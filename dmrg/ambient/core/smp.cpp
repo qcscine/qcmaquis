@@ -34,18 +34,6 @@ namespace ambient {
         }
         return this->scope;
     }
-    void assign(const void_spt& ref, int i, int j, int k)
-    {
-    // something different...
-    }
-    void assign(void_spt& ref, int i, int j, int k)
-    {
-        if(asmp.rank == UNDEFINED_RANK) return;
-        workgroup* group = ref.group(i,j,k);
-//        printf("%s: p%d: I've accepted group %d %d of id%d\n", asmp.get_scope()->name, asmp.rank, group->i, group->j, (*(group->profile))->id );
-        group->owner = ambient::rank();
-        ref.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
-    }
     void smp::trigger_interrupt()
     {
         this->interrupt = !this->interrupt;

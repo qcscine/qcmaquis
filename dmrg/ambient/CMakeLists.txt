@@ -14,6 +14,6 @@ add_library (ambient
              core/workgroup.cpp
              core/select.cpp
              core/smp.cpp
-             core/operation.cpp
+             core/operation/operation.cpp
              core/layout.cpp
              ambient.cpp)

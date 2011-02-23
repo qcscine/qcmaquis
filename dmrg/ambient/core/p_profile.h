@@ -10,11 +10,10 @@
 namespace ambient {
 
     class workgroup;
-    class p_profile;
 
-    class p_profile_s {
+    class p_profile {
     protected:
-        p_profile_s();
+        p_profile();
     public:
         unsigned int* group_id;
         unsigned int id;
@@ -86,12 +85,12 @@ namespace ambient {
         dim3 gpu_dim;     // work-item size of gpgpu smp workload fractions
     };
 
-    class p_profile: public p_profile_s 
+    class void_pt: public p_profile 
     { 
     public: 
-        template <typename T> p_profile(const T* ptr); 
+        template <typename T> void_pt(const T* ptr); 
     private: 
-        ~p_profile(); // making user unable to delete the profile
+        ~void_pt(); // making user unable to delete the profile
         friend class T; // the container can delete its profile
         template<class T> friend inline void boost::checked_delete(T * x); // so as boost >_<
     };

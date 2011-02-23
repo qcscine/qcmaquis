@@ -23,7 +23,7 @@ namespace ambient {
     }
 
     void* workgroup::item(int i, int j, int k){
-        p_profile* profile = (*this->profile)->dereference();
+        p_profile* profile = *this->profile;
         i = i*profile->get_item_dim().y;
         j = j*profile->get_item_dim().x;
         k = k*profile->get_item_dim().z;

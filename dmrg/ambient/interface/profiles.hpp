@@ -1,10 +1,17 @@
 template <typename T> 
 class p_dense_matrix; // forward declaration of p_dense_matrix
 
+void_pt* dereference(void_pt** profile_ptr)
+{
+    *profile_ptr = (void_pt*)(*profile_ptr)->dereference();
+    return *profile_ptr;
+}
+
 template <typename T> 
-ambient::p_profile* get_profile(const T* obj){ return obj->profile; }
+ambient::void_pt* get_profile(const T* obj){ return dereference(const_cast<ambient::void_pt**>(&obj->profile)); }
+
 template <typename T>  
-void p_profile_model(ambient::p_profile* profile, const p_dense_matrix<T>* ptr)
+void void_pt_model(ambient::void_pt* profile, const p_dense_matrix<T>* ptr)
 {
     profile->type = "matrix";
     if(ptr == NULL){
@@ -23,12 +30,12 @@ void p_profile_model(ambient::p_profile* profile, const p_dense_matrix<T>* ptr)
     }
 }
 
-ambient::p_profile* get_profile(const int* obj){ return new ambient::p_profile(obj); }
-void p_profile_model(ambient::p_profile* profile, const int* ptr){ assert(false); }
+ambient::void_pt* get_profile(const int* obj){ return new ambient::void_pt(obj); }
+void void_pt_model(ambient::void_pt* profile, const int* ptr){ assert(false); }
 
-ambient::p_profile* get_profile(const double* obj){ return new ambient::p_profile(obj); }
-void p_profile_model(ambient::p_profile* profile, const double* ptr){ assert(false); }
+ambient::void_pt* get_profile(const double* obj){ return new ambient::void_pt(obj); }
+void void_pt_model(ambient::void_pt* profile, const double* ptr){ assert(false); }
 
 template <typename T> 
-ambient::p_profile* get_profile(const T& obj){ return get_profile(&obj); }
+ambient::void_pt* get_profile(const T& obj){ return get_profile(&obj); }
 

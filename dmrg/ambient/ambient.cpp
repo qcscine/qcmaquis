@@ -17,7 +17,7 @@ namespace ambient
     scheduler& layout = scheduler::instance();
     scheduler& engine = scheduler::instance();
     multirank& rank   = multirank::instance();
-    hash_map& void_pt_map = hash_map::instance();
+    hash_map& p_profile_map = hash_map::instance();
     smp& asmp = smp::instance(); // charge of processes inside kernels
 
 // global objects accessible anywhere //

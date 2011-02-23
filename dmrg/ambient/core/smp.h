@@ -1,15 +1,12 @@
 #ifndef AMBIENT_CORE_SMP_H
 #define AMBIENT_CORE_SMP_H
 
-#include "ambient/core/operation.h"
+#include "ambient/core/operation/operation.h"
 #include "ambient/core/p_profile.h"
 #include "ambient/core/workgroup.h"
 #include "ambient/core/layout.h"
 
 namespace ambient {
-
-typedef ambient::p_profile   void_pt;
-typedef ambient::p_profile_s void_spt;
 
     class smp { // workload of individual rank in terms of workgroups 
     private:
@@ -36,8 +33,6 @@ typedef ambient::p_profile_s void_spt;
         std::list<workgroup*>  sendlist;
         std::list<workgroup*>  recvlist;
     };
-    void assign(void_spt& ref, int i, int j = 0, int k = 0);
-    void assign(const void_spt& ref, int i, int j = 0, int k = 0);
 
 }
 #endif

@@ -8,7 +8,7 @@ namespace ambient{ namespace core{
     : owner(owner), i(i), j(j), k(k) { }
 
     layout_table::~layout_table(){} // don't forget to delete table entries here
-    layout_table::layout_table(void_pt_s* object) 
+    layout_table::layout_table(p_profile* object) 
     : object(object), count(0)
     {
         this->reserved_x = 0;
