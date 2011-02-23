@@ -6,6 +6,7 @@
 #include <mpi.h>
 #include <queue>
 #include <string>
+#include <assert.h>
 
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"

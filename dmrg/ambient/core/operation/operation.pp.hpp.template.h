@@ -30,7 +30,7 @@ void operation::prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_
 #ifndef CONVERTOBJECTS_HPP
 #define CONVERTOBJECTS_HPP
 
-namespace ambient { namespace core {
+namespace core {
 
 #define BOOST_PP_ITERATION_LIMITS (1, ARGS_MAX_LEN)
 #define BOOST_PP_FILENAME_1 "ambient/core/operation/operation.pp.hpp.template.h"
@@ -68,5 +68,5 @@ void operation::prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_
 }
 BOOST_PP_REPEAT(n, body_tn, ~) 
 
-BOOST_PP_IF(BOOST_PP_EQUAL(TYPES_NUMBER, ARGS_MAX_LEN), }},)
+BOOST_PP_IF(BOOST_PP_EQUAL(TYPES_NUMBER, ARGS_MAX_LEN), },)
 #endif
