@@ -28,6 +28,10 @@ public:
     }
     
     void sync() { }
+    
+    void print_size() {
+        cout << "No storage of size 0" << endl;
+    }
 };
 
 template<> struct storage_master_type<0>

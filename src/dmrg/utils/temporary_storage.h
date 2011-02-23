@@ -16,7 +16,6 @@ public:
     ~storage()
     {
         // this assures that the storage object is destroyed *before* the data
-        // the storage should delete all requests, if necessary
         storage_.reset();
         object_.reset();
     }
@@ -39,6 +38,7 @@ class BaseStorageMaster
 public:
     virtual int flag() = 0;
     virtual void sync() = 0;
+    virtual void print_size() = 0;
     virtual ~BaseStorageMaster() { }
 };
 
@@ -66,6 +66,7 @@ struct storage_master_type
 
 #include "trivial_serializer.h"
 #include "hdf5_storage.h"
+#include "stream_storage.h"
 
 template<class Object>
 boost::shared_ptr<BaseStorage<Object> > storage_factory(BaseStorageMaster & bsm)
