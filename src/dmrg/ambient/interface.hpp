@@ -39,8 +39,8 @@ dim3 get_group_id(T& ref)
 }
 
 #include "ambient/kernels.cpp"
-#include "ambient/interface/profiles.hpp"
 } 
+#include "ambient/interface/profiles.hpp"
 #include "ambient/core/operation/operation.pp.hpp"
 #include "ambient/interface/core.hpp"
 
