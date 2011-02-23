@@ -1,6 +1,10 @@
-template<typename T>
-class p_dense_matrix;
+// nested inside ambient.hpp in ambient namespace
+using namespace blas;
 
+void matrix_i_kernel(workgroup* grp){
+    // dumb 0-initialization for the start >_< 
+    memset(grp->data, 0, grp->get_group_dim().y*grp->get_item_dim().y*grp->get_group_dim().x*grp->get_item_dim().x*grp->get_profile()->type_size);
+}
 
 template<typename T> 
 void info(T& obj){

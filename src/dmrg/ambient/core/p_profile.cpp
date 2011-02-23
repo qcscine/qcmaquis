@@ -3,7 +3,6 @@
 
 namespace ambient {
 
-    void_pt::~void_pt(){}
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
       specific(false), profile(this){ };

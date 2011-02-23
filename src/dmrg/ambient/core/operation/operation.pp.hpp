@@ -1,4 +1,4 @@
-namespace ambient { namespace core {
+namespace core{
 template< typename FP, typename T0 >
 operation::operation( FP op, T0 *arg0 ){
     this->init();
@@ -102,4 +102,4 @@ void operation::prototype_template(void (*)( T0& , T1& , T2& , T3& ))
     ( *static_cast<T0*>(this->arguments[0]) , *static_cast<T1*>(this->arguments[1]) , *static_cast<T2*>(this->arguments[2]) , *static_cast<T3*>(this->arguments[3]) );
 }
 template < typename T0 , typename T1 , typename T2 , typename T3 > void operation::prototype_template(void (*)( pinned T0& , T1& , T2& , T3& )) { if(!this->is_extracted) this->extract_profiles< T0 , T1 , T2 , T3 >(0); ((void (*)( pinned T0& , T1& , T2& , T3& ))this->operation_ptr) ( marked *static_cast<T0*>(this->arguments[0]) , *static_cast<T1*>(this->arguments[1]) , *static_cast<T2*>(this->arguments[2]) , *static_cast<T3*>(this->arguments[3]) ); } template < typename T0 , typename T1 , typename T2 , typename T3 > void operation::prototype_template(void (*)( T0& , pinned T1& , T2& , T3& )) { if(!this->is_extracted) this->extract_profiles< T0 , T1 , T2 , T3 >(1); ((void (*)( T0& , pinned T1& , T2& , T3& ))this->operation_ptr) ( *static_cast<T0*>(this->arguments[0]) , marked *static_cast<T1*>(this->arguments[1]) , *static_cast<T2*>(this->arguments[2]) , *static_cast<T3*>(this->arguments[3]) ); } template < typename T0 , typename T1 , typename T2 , typename T3 > void operation::prototype_template(void (*)( T0& , T1& , pinned T2& , T3& )) { if(!this->is_extracted) this->extract_profiles< T0 , T1 , T2 , T3 >(2); ((void (*)( T0& , T1& , pinned T2& , T3& ))this->operation_ptr) ( *static_cast<T0*>(this->arguments[0]) , *static_cast<T1*>(this->arguments[1]) , marked *static_cast<T2*>(this->arguments[2]) , *static_cast<T3*>(this->arguments[3]) ); } template < typename T0 , typename T1 , typename T2 , typename T3 > void operation::prototype_template(void (*)( T0& , T1& , T2& , pinned T3& )) { if(!this->is_extracted) this->extract_profiles< T0 , T1 , T2 , T3 >(3); ((void (*)( T0& , T1& , T2& , pinned T3& ))this->operation_ptr) ( *static_cast<T0*>(this->arguments[0]) , *static_cast<T1*>(this->arguments[1]) , *static_cast<T2*>(this->arguments[2]) , marked *static_cast<T3*>(this->arguments[3]) ); }
-}}
+}

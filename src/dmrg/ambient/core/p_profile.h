@@ -85,17 +85,6 @@ namespace ambient {
         dim3 gpu_dim;     // work-item size of gpgpu smp workload fractions
     };
 
-    class void_pt: public p_profile 
-    { 
-    public: 
-        template <typename T> void_pt(const T* ptr); 
-    private: 
-        ~void_pt(); // making user unable to delete the profile
-        friend class T; // the container can delete its profile
-        template<class T> friend inline void boost::checked_delete(T * x); // so as boost >_<
-    };
-
     p_profile& operator>>(p_profile* instance, dim3 dim_distr);
-
 }
 #endif
