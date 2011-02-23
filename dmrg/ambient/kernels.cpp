@@ -5,9 +5,9 @@ class p_dense_matrix;
 template<typename T> 
 void info(T& obj){
     if(rank.is_master(asmp.get_scope())){
-        void_pt* p = get_profile(obj);
+        void_pt& p = breakdown(obj);
         printf("Matrix %d:%d size of the task is %d x %d groups sized %d x %d items of %d x %d elements\n", 
-               *p->group_id, p->id, p->get_grid_dim().y, p->get_grid_dim().x, p->get_group_dim().y, p->get_group_dim().x, p->get_item_dim().x, p->get_item_dim().y);
+               *p.group_id, p.id, p.get_grid_dim().y, p.get_grid_dim().x, p.get_group_dim().y, p.get_group_dim().x, p.get_item_dim().x, p.get_item_dim().y);
     }
 }
 
@@ -28,9 +28,9 @@ void plus_l_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, p
 }
 
 void plus_c_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
-    void_pt* profile = get_profile(out);
-    double* ad = (*get_profile(a))(get_group_id(out).x, get_group_id(out).y);
-    double* bd = (*get_profile(b))(get_group_id(out).x, get_group_id(out).y);
+    void_pt& profile = breakdown(out);
+    double* ad = (breakdown(a))(get_group_id(out).x, get_group_id(out).y);
+    double* bd = (breakdown(b))(get_group_id(out).x, get_group_id(out).y);
 //    int size = get_group_dim(out).x*get_item_dim(out).x*
 //               get_group_dim(out).y*get_item_dim(out).y;
 //    printf("R%d: Executing plus computation kernel (%d ops)... for out grp %d %d\n", asmp.rank, size, out.get_group_id().x, out.get_group_id().y);

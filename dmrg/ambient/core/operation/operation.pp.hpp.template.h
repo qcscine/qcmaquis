@@ -2,7 +2,7 @@
 #define ARGS_MAX_LEN 4
 
 #define extract_profile(z, n, unused)                                                       \
-    this->profiles[n] = get_profile(*static_cast<T ## n*>(this->arguments[n]));
+    this->profiles[n] = &breakdown(*static_cast<T ## n*>(this->arguments[n]));
 
 #define extract_arguments(z, n, unused)                                                     \
     this->arguments[n] = (void*)arg ## n;

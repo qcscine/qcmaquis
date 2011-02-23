@@ -1,8 +1,7 @@
 #ifndef __ALPS_DENSE_MATRIX_HPP__
 #define __ALPS_DENSE_MATRIX_HPP__
 
-#include "ambient/ambient.h"
-#include "ambient/interface.hpp"
+#include "ambient/ambient.hpp"
 
 #include "p_dense_matrix/iterators.hpp"
 #include "p_dense_matrix/vector.hpp"

@@ -13,6 +13,7 @@
 #include "ambient/core/smp.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/layout.h"
+#include "ambient/core/select.h"
 
 #define ALL -1
 #define UNDEFINED_RANK MPI_UNDEFINED

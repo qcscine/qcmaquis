@@ -12,7 +12,7 @@ operation::operation( FP op, T0 *arg0 ){
 }
 template < typename T0 >
 void operation::extract_profiles(int pin){
-    this->profiles[0] = get_profile(*static_cast<T0*>(this->arguments[0]));
+    this->profiles[0] = &breakdown(*static_cast<T0*>(this->arguments[0]));
     if(pin >= 0) this->pin = this->profiles[pin];
     this->is_extracted = true;
 }
@@ -38,7 +38,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 ){
 }
 template < typename T0 , typename T1 >
 void operation::extract_profiles(int pin){
-    this->profiles[0] = get_profile(*static_cast<T0*>(this->arguments[0])); this->profiles[1] = get_profile(*static_cast<T1*>(this->arguments[1]));
+    this->profiles[0] = &breakdown(*static_cast<T0*>(this->arguments[0])); this->profiles[1] = &breakdown(*static_cast<T1*>(this->arguments[1]));
     if(pin >= 0) this->pin = this->profiles[pin];
     this->is_extracted = true;
 }
@@ -64,7 +64,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 ){
 }
 template < typename T0 , typename T1 , typename T2 >
 void operation::extract_profiles(int pin){
-    this->profiles[0] = get_profile(*static_cast<T0*>(this->arguments[0])); this->profiles[1] = get_profile(*static_cast<T1*>(this->arguments[1])); this->profiles[2] = get_profile(*static_cast<T2*>(this->arguments[2]));
+    this->profiles[0] = &breakdown(*static_cast<T0*>(this->arguments[0])); this->profiles[1] = &breakdown(*static_cast<T1*>(this->arguments[1])); this->profiles[2] = &breakdown(*static_cast<T2*>(this->arguments[2]));
     if(pin >= 0) this->pin = this->profiles[pin];
     this->is_extracted = true;
 }
@@ -90,7 +90,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 ){
 }
 template < typename T0 , typename T1 , typename T2 , typename T3 >
 void operation::extract_profiles(int pin){
-    this->profiles[0] = get_profile(*static_cast<T0*>(this->arguments[0])); this->profiles[1] = get_profile(*static_cast<T1*>(this->arguments[1])); this->profiles[2] = get_profile(*static_cast<T2*>(this->arguments[2])); this->profiles[3] = get_profile(*static_cast<T3*>(this->arguments[3]));
+    this->profiles[0] = &breakdown(*static_cast<T0*>(this->arguments[0])); this->profiles[1] = &breakdown(*static_cast<T1*>(this->arguments[1])); this->profiles[2] = &breakdown(*static_cast<T2*>(this->arguments[2])); this->profiles[3] = &breakdown(*static_cast<T3*>(this->arguments[3]));
     if(pin >= 0) this->pin = this->profiles[pin];
     this->is_extracted = true;
 }
