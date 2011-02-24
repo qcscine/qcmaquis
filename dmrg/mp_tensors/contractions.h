@@ -264,9 +264,9 @@ struct contraction {
         }
         
         Index<SymmGroup> physical_i = ket_tensor.site_dim(), left_i = ket_tensor.row_dim(), right_i = ket_tensor.col_dim();
-//        MPSTensor<Matrix, SymmGroup> ret(physical_i, left_i, right_i, false);
-//        ret.make_left_paired();
-//        ret.data_.clear();
+        //        MPSTensor<Matrix, SymmGroup> ret(physical_i, left_i, right_i, false);
+        //        ret.make_left_paired();
+        //        ret.data_.clear();
         
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
@@ -318,7 +318,7 @@ struct contraction {
                                 Matrix const & iblock = T(T_l_charge, T_r_charge);
                                 Matrix oblock(out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
                                 oblock *= 0;
-
+                                
                                 /* optimize me */ 
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                     for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
@@ -338,20 +338,11 @@ struct contraction {
                             }
             }
         
-//        ket_tensor.make_left_paired();
-//        zout << "ket_tensor: " << ket_tensor << endl;
-//        zout << "ret: " << ret << endl;
-        
 #ifndef NDEBUG
         ket_tensor.make_left_paired();
         assert(ret.data_.left_basis() == ket_tensor.data_.left_basis());
         assert(ret.data_.right_basis() == ket_tensor.data_.right_basis());
 #endif
-        
-//        
-//        static int c = 20;
-//        if (c-- == 0)
-//            exit(0);
         
         return ret;
     }
@@ -394,16 +385,16 @@ struct contraction {
         typedef std::size_t size_t;
         
         loop_timer.begin();
-        for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
-            loop_max = mpo.col_dim();
+        
+        loop_max = mpo.col_dim();
 #pragma omp parallel for schedule(dynamic)
-            for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
-            {
-                for (int run = 0; run < 2; ++run) {
-                    if (run == 1)
-                        ret.data_[b2].allocate_blocks();
-                    bool pretend = (run == 0);
-                    
+        for (size_t b2 = 0; b2 < loop_max; ++b2) {
+            for (int run = 0; run < 2; ++run) {
+                if (run == 1)
+                    ret.data_[b2].allocate_blocks();
+                bool pretend = (run == 0);
+                
+                for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     if (W.n_blocks() == 0)
                         continue;
@@ -448,7 +439,6 @@ struct contraction {
                                                 typename Matrix::value_type wblock_t = wblock(ss1, ss2);
                                                 for (size_t rr = 0; rr < right_i[r].second; ++rr) {
                                                     iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
-                                                                  // Why the pointer addition? I cannot get a pointer beyond the matrix from dense_matrix
                                                                   &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second,
                                                                   &oblock(out_left_offset + ss2*left_i[l].second, rr),
                                                                   wblock_t);
@@ -464,7 +454,7 @@ struct contraction {
                                         ret.data_[b2].reserve(out_l_charge, out_r_charge,
                                                               out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
                                 }
-                    }
+                }
             }
         }
         loop_timer.end();
@@ -499,14 +489,15 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
-            for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
-            {
-                for (int run = 0; run < 2; ++run) {
-                    if (run == 1)
-                        ret.data_[b1].allocate_blocks();
-                    bool pretend = (run == 0);
-                    
+        loop_max = mpo.row_dim();
+#pragma omp parallel for schedule(dynamic)
+        for (size_t b1 = 0; b1 < loop_max; ++b1) {
+            for (int run = 0; run < 2; ++run) {
+                if (run == 1)
+                    ret.data_[b1].allocate_blocks();
+                bool pretend = (run == 0);
+                for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
+                {   
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     if (W.n_blocks() == 0)
                         continue;
@@ -561,15 +552,16 @@ struct contraction {
                                                               out_left_offset + physical_i[s2].second * left_i[l].second,
                                                               right_i[r].second);
                                 }
-                                                                    
+                    
                 }
             }
+        }
         
         timer.end();
         return ret;
     }
-                
-        
+    
+    
     
     template<class Matrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
@@ -647,7 +639,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-//        svd(dm, U, V, S, cutoff, Mmax);
+        //        svd(dm, U, V, S, cutoff, Mmax);
         truncation = syev_truncate(dm, U, S, cutoff, Mmax);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
@@ -709,7 +701,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-//        svd_truncate(dm, U, V, S, cutoff, Mmax);
+        //        svd_truncate(dm, U, V, S, cutoff, Mmax);
         truncation = syev_truncate(dm, U, S, cutoff, Mmax);
         V = transpose(U);
         

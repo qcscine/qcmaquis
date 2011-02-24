@@ -99,9 +99,19 @@ Matrix const & block_matrix<Matrix, SymmGroup>::operator[](size_type c) const { 
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 {
+    bool ret;
     static Timer hb("has_block");
     hb.begin();
-    bool ret = rows_.has(r) && cols_.has(c) && rows_.position(r) == cols_.position(c);
+    std::size_t p1 = rows_.position(r);
+    if (p1 == rows_.size())
+        ret = false;
+    else {
+        std::size_t p2 = cols_.position(c);
+        if (p2 == cols_.size())
+            ret = false;
+        else
+            ret = (p1 == p2);
+    }
     hb.end();
     return ret;
 }
@@ -289,8 +299,8 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
 {
     if (this->has_block(c1, c2))
     {
-        std::size_t maxrows = std::max(num_rows((*this)(c1, c2)), r);
-        std::size_t maxcols = std::max(num_columns((*this)(c1, c2)), c);
+        std::size_t maxrows = std::max(rows_[rows_.position(c1)].second, r);
+        std::size_t maxcols = std::max(cols_[cols_.position(c2)].second, c);
     
         rows_[rows_.position(c1)].second = maxrows;
         cols_[cols_.position(c2)].second = maxcols;
@@ -298,6 +308,9 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         std::pair<charge, size_type>
         p1 = std::make_pair(c1, r),
         p2 = std::make_pair(c2, c);
+        
+        assert(rows_.size() == cols_.size());
+        assert(rows_.size() == data_.size());
         
         rows_.push_back(p1);
         cols_.push_back(p2);
