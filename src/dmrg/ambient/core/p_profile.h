@@ -78,7 +78,10 @@ namespace ambient {
         void set_gpu_dim(dim3 dim);
         void set_group_dim(dim3 dim);
         void set_item_dim(dim3 dim);
+        void invalidate();
+        bool is_valid();
     private:
+        bool valid;
         dim3 distr_dim;   // work-item size of distribution blocks
         dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
         dim3 item_dim;    // size of work-item (i.e. 128) 

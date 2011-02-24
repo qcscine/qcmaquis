@@ -29,8 +29,8 @@ namespace blas {
     template <typename T>
     class p_dense_matrix {
     public:
-        ~p_dense_matrix();
 // AMBIENT PART <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        ~p_dense_matrix();
         ambient::void_pt* profile;
         boost::scoped_ptr<ambient::void_pt> scope;
         p_dense_matrix(ambient::void_pt* p);              // proxy object construction

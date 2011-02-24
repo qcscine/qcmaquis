@@ -44,15 +44,26 @@ void plus_c_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, p
 //    }
 }
 
+void redistribution_l_kernel(p_dense_matrix<double>& a){
+    scope_select("* from ambient as work_redist where master is 0");
+    if(!scope.involved()) return;
+
+    printf("R%d: Ok, doing redistribution\n", scope.get_rank());
+}
+
+void redistribution_c_kernel(p_dense_matrix<double>& a){
+
+}
+
 void single_integer_l_kernel(int& input){
-//    a >> dim3(10,5), dim3(1,1), dim3(10,1); <- kinda non-trivial - need to think
-    scope_select("0.5 from ambient as work where master is 0");
-    if(!scope.involved()) return; // out of scope quick exit
-    printf("single integer kernel: input is %d\n", input);
+    scope_select("* from ambient as single_integer_work where master is 0");
+    if(!scope.involved()) return;
+    zout << "single integer kernel: input is " << input << "\n";
+    input = 0;
 }
 
 void single_integer_c_kernel(int& input){
-    input+=14;
-    printf("single integer kernel: modified input is %d\n", input);
+    input += 13;
+    zout << "single integer kernel: output is " << input << "\n";
 }
 

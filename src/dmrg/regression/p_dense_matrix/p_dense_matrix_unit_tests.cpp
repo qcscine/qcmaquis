@@ -130,23 +130,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> a(M_SIZE,M_SIZE);
     p_dense_matrix<T> b(M_SIZE,M_SIZE);
     p_dense_matrix<T> c(M_SIZE,M_SIZE);
-//    p_dense_matrix<T> d(1024,1024);
 
-//    zout << "A is " << a.profile->id << "; ";
-//    zout << "B is " << b.profile->id << "; ";
-//    zout << "C is " << c.profile->id << "; ";
-//    zout << "D is " << d.profile->id << ";\n";
-
-
-//    a = b + c + d + d;
     a = b + c;
-    int *input = (int*)malloc(sizeof(int));
-    *input = -1;
-    ambient::push(ambient::single_integer_l_kernel, ambient::single_integer_c_kernel, *input);
     time1.begin();
     ambient::playout();
+
+    ambient::push(ambient::redistribution_l_kernel, ambient::redistribution_c_kernel, a);
     ambient::playout();
+
     MPI_Barrier(MPI_COMM_WORLD);
     time1.end();
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( single_integer_test, T, test_types )
+{
+    int *input = (int*)malloc(sizeof(int));
+    *input = -1;
+    ambient::push(ambient::single_integer_l_kernel, ambient::single_integer_c_kernel, *input);
+    ambient::playout();
+    BOOST_CHECK_EQUAL(*input, 13);
+}
