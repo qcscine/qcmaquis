@@ -24,7 +24,7 @@ unsigned long long getcpuclocks() {
 unsigned long getcpuclocks()
 {
  unsigned long tsc;
- asm(".byte 0x0f, 0x31" : "=A" (x));
+ asm(".byte 0x0f, 0x31" : "=A" (tsc));
  return( tsc );
 }
  
