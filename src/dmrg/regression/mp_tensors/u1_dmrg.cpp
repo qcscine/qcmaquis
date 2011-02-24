@@ -179,6 +179,7 @@ int main(int argc, char ** argv)
     gettimeofday(&now, NULL);
     
     std::vector<double> energies, entropies;
+    std::vector<std::pair<std::size_t, double> > truncations;
     
     bool early_exit = false;
     
@@ -195,8 +196,12 @@ int main(int argc, char ** argv)
         
         for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
             gettimeofday(&snow, NULL);
-            energies = optimizer.sweep(mpo, sweep);
-            ssm.sync();
+            
+            std::pair<std::vector<double>, std::vector<std::pair<std::size_t, double> > > r;
+            r = optimizer.sweep(mpo, sweep);
+            energies = r.first;
+            truncations = r.second;
+            
             entropies = calculate_bond_entropies(mps);
             
             gettimeofday(&sthen, NULL);
@@ -220,6 +225,22 @@ int main(int argc, char ** argv)
                     oss.str("");
                     oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
                     h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
+                    
+                    std::vector<std::size_t> bondd(truncations.size());
+                    std::transform(truncations.begin(), truncations.end(),
+                                   bondd.begin(),
+                                   utils::get_first());
+                    oss.str("");
+                    oss << "/simulation/results/sweep" << sweep << "/BondDimension/mean/value";
+                    h5ar << alps::make_pvp(oss.str().c_str(), bondd);
+                    
+                    std::vector<double> truncw(truncations.size());
+                    std::transform(truncations.begin(), truncations.end(),
+                                   truncw.begin(),
+                                   utils::get_second());
+                    oss.str("");
+                    oss << "/simulation/results/sweep" << sweep << "/TruncatedWeight/mean/value";
+                    h5ar << alps::make_pvp(oss.str().c_str(), truncw);
                 }
                 
                 if (parms.get<int>("donotsave") == 0)

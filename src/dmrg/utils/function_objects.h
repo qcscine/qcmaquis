@@ -25,6 +25,18 @@ struct functor_##name { template<class T> return_type operator() (arg_type t) { 
         T operator()() const { return val; }
     };
     
+    struct get_first
+    {
+        template<class T1, class T2>
+        T1 operator()(std::pair<T1, T2> const & p) { return p.first; }
+    };
+    
+    struct get_second
+    {
+        template<class T1, class T2>
+        T2 operator()(std::pair<T1, T2> const & p) { return p.second; }
+    };
+    
 } /* namespace */
     
 #endif

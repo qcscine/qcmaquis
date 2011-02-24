@@ -161,11 +161,11 @@ void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             Boundary<Matrix, SymmGroup> const & left,
                                             Boundary<Matrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
-                                            double cutoff,
-                                            std::size_t Mmax)
+                                            double cutoff, std::size_t Mmax,
+                                            std::pair<std::size_t, double> & truncation)
 {
     MPSTensor<Matrix, SymmGroup> new_mps =
-    contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, truncation);
     
     (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
                                                           (*this)[l], new_mps);
@@ -177,11 +177,11 @@ void MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             Boundary<Matrix, SymmGroup> const & left,
                                             Boundary<Matrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
-                                            double cutoff,
-                                            std::size_t Mmax)
+                                            double cutoff, std::size_t Mmax,
+                                            std::pair<std::size_t, double> & truncation)
 {
     MPSTensor<Matrix, SymmGroup> new_mps =
-    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, truncation);
     
     (*this)[l-1] = contraction::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);

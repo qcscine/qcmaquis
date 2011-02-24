@@ -10,6 +10,7 @@
 #include "block_matrix/indexing.h"
 
 #include "utils/iterator_blas1.h"
+#include "utils/sizeof.h"
 
 struct contraction {
     template<class Matrix, class SymmGroup>
@@ -616,7 +617,8 @@ struct contraction {
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<Matrix, SymmGroup> const & left,
                                 Boundary<Matrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax)
+                                double alpha, double cutoff, std::size_t Mmax,
+                                std::pair<std::size_t, double> & truncation)
     {
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
@@ -646,7 +648,7 @@ struct contraction {
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
 //        svd(dm, U, V, S, cutoff, Mmax);
-        syev_truncate(dm, U, S, cutoff, Mmax);
+        truncation = syev_truncate(dm, U, S, cutoff, Mmax);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         assert( U.left_basis() == ret.data_.left_basis() );
@@ -677,7 +679,8 @@ struct contraction {
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<Matrix, SymmGroup> const & left,
                                 Boundary<Matrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax)
+                                double alpha, double cutoff, std::size_t Mmax,
+                                std::pair<std::size_t, double> & truncation)
     {
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
@@ -707,7 +710,7 @@ struct contraction {
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
 //        svd_truncate(dm, U, V, S, cutoff, Mmax);
-        syev_truncate(dm, U, S, cutoff, Mmax);
+        truncation = syev_truncate(dm, U, S, cutoff, Mmax);
         V = transpose(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
