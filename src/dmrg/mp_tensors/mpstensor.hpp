@@ -175,7 +175,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 {
     make_left_paired();
     block_matrix<Matrix, SymmGroup> t;
-    gemm(conjugate_transpose(data_), data_, t);
+    pgemm(conjugate_transpose(data_), data_, t);
     return sqrt(trace(t));
 }
 
@@ -186,7 +186,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     make_left_paired();
     rhs.make_left_paired();
     block_matrix<Matrix, SymmGroup> t;
-    gemm(conjugate_transpose(data_), rhs.data_, t);
+    pgemm(conjugate_transpose(data_), rhs.data_, t);
     return trace(t);
 }
 
