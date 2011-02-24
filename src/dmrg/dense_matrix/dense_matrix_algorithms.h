@@ -5,7 +5,7 @@
 #include "dense_matrix/diagonal_matrix.h"
 
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
-#include <boost/numeric/bindings/lapack/driver/syev.hpp>
+#include <boost/numeric/bindings/lapack/driver/syevd.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 
 namespace blas
@@ -57,7 +57,7 @@ namespace blas
     {
         assert(num_rows(M) == num_columns(M));
         assert(evals.size() == num_rows(M));
-        boost::numeric::bindings::lapack::syev('V', M, evals);
+        boost::numeric::bindings::lapack::syevd('V', M, evals);
         // to be consistent with the SVD, I reorder in decreasing order
         std::reverse(evals.begin(), evals.end());
         // and the same with the matrix

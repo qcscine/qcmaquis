@@ -58,12 +58,17 @@ void syev(block_matrix<Matrix, SymmGroup> const & M,
           block_matrix<Matrix, SymmGroup> & evecs,
           block_matrix<DiagMatrix, SymmGroup> & evals)
 {
+    static Timer timer("block_matrix EVD");
+    timer.begin();
+
     evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
 #pragma omp parallel for schedule(dynamic)
     for (std::size_t k = 0; k < loop_max; ++k)
         syev(M[k], evecs[k], evals[k]);
+
+    timer.end();
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -94,6 +99,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     double Scut = rel_tol * allS[0];
     if (allS.size() > Mmax)
         Scut = std::max(Scut, allS[Mmax]);
+    double truncated_weight = std::accumulate(std::find_if(allS.begin(), allS.end(), boost::lambda::_1 < Scut), allS.end(), 0.0);
     
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
     {
@@ -134,6 +140,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
         zout << old_basis << endl << S.left_basis() << endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
         zout << "Smallest SV kept: " << Scut / allS[0] << endl;
+        zout << "Truncated weight: " << truncated_weight/allS[0] << endl;
     }
 }
 
@@ -158,6 +165,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     double evalscut = cutoff * allevals[0];
     if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
+    double truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
     
     for (std::size_t k = 0; k < evals.n_blocks(); ++k)
     {
@@ -191,6 +199,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         zout << old_basis << endl << evals.left_basis() << endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << endl;
         zout << "Smallest EV kept: " << evalscut / allevals[0] << endl;
+        zout << "Truncated weight: " << truncated_weight / allevals[0] << endl;
     }
 }
 
