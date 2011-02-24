@@ -1,7 +1,10 @@
-arpack_tol = 1e-06
+eigensolver = IETL_JCD
+ietl_jcd_gmres = 0
+ietl_jcd_tol = 1e-8
+ietl_jcd_maxiter = 10
 
 nsweeps = 4
-ngrowsweeps = 3
+ngrowsweeps = 1
 
 max_bond_dimension = 1000
 
