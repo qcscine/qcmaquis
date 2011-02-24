@@ -23,6 +23,9 @@ namespace ambient{
     void assign(T& ref, int i, int j = 0, int k = 0);
 
     template<typename T>
+    void assign(const T& ref, int i, int j = 0, int k = 0);
+
+    template<typename T>
     dim3 get_grid_dim(T& ref);
 
     template<typename T>

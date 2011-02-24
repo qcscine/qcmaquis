@@ -18,7 +18,7 @@ namespace ambient
     scheduler& engine = scheduler::instance();
     multirank& rank   = multirank::instance();
     hash_map& p_profile_map = hash_map::instance();
-    smp& asmp = smp::instance(); // charge of processes inside kernels
+    smp& scope = smp::instance(); // charge of processes inside kernels
 
 // global objects accessible anywhere //
 
@@ -169,12 +169,8 @@ void computation_1(workgroup* block)
         core::operation* logistics;
         core::operation* computing;
         while(!this->logistics_stack.empty()){
-            try{
-                this->logistics_stack.front()->perform();
-                this->logistics_stack.pop_front();
-            }catch(core::out_of_scope_e e){
-                this->logistics_stack.pop_front();
-            }
+            this->logistics_stack.front()->perform();
+            this->logistics_stack.pop_front();
         }
         while(!this->computing_stack.empty()){
             logistics = this->computing_stack.front().first;
@@ -187,16 +183,11 @@ void computation_1(workgroup* block)
 // performing computation for every item inside every appointed workgroup
                     int pin_cols = logistics->pin->get_grid_dim().x;
                     int pin_rows = logistics->pin->get_grid_dim().y;
-                    try{
-                        for(int j=0; j < pin_cols; j++)
-                        for(int i=0; i < pin_rows; i++) // todo - extend onto items
-                        if((*logistics->pin->layout)(i,j) != NULL){
-                            logistics->pin->set_default_group(i, j);
-                            computing->performx();
-                            if(asmp.interrupt) throw core::interrupt_e();
-                        }
-                    }catch(core::interrupt_e){
-                        asmp.trigger_interrupt();
+                    for(int j=0; j < pin_cols; j++)
+                    for(int i=0; i < pin_rows; i++) // todo - extend onto items
+                    if((*logistics->pin->layout)(i,j) != NULL){
+                        logistics->pin->set_default_group(i, j);
+                        computing->performx();
                     }
                 }
 //                    logistics->pin->set_default_group(-1); // reset in order to avoid mistakes

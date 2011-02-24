@@ -8,7 +8,7 @@
 
 namespace ambient {
 
-    class smp { // workload of individual rank in terms of workgroups 
+    class smp { // scalable multiprocessor
     private:
         smp();
         smp(smp const&);
@@ -18,17 +18,19 @@ namespace ambient {
 
     public:
         smp& operator()(const int rank);
-        void set_scope(groups::group* scope);
-        void set_scope(const char* scope);
-        groups::group* get_scope();
-        void trigger_interrupt();
-        bool interrupt;
-
-        int scope_size;
-        int rank;
-        core::operation* op;
+        void set_group(groups::group* group);
+        void set_group(const char* group);
+        groups::group* get_group();
+        int get_rank();
+        int get_size();
+        void set_op(core::operation* op);
+        core::operation* get_op();
+        bool involved();
     private:
-        groups::group* scope;
+        int rank;
+        int size;
+        groups::group* group;
+        core::operation* op;
         core::layout_table* assignment;
         std::list<workgroup*>  sendlist;
         std::list<workgroup*>  recvlist;
