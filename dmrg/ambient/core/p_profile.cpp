@@ -5,9 +5,10 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      specific(false), profile(this){ };
+      specific(false), profile(this), valid(true){ };
 
     p_profile* p_profile::dereference(){
+        if(!this->valid) printf("Error: attempting to use invalid profile (object was deleted)\n");
         while((this->profile = this->profile->profile) != this->profile->profile);
         return this->profile; // todo - deallocate proxy objects
     }
@@ -240,5 +241,10 @@ namespace ambient {
     void p_profile::set_item_dim(dim3 dim){
         this->item_dim = dim;
     }
-
+    void p_profile::invalidate(){
+        if(!this->proxy) this->valid = false;
+    }
+    bool p_profile::is_valid(){
+        return this->valid;
+    }
 }

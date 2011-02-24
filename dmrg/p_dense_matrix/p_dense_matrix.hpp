@@ -20,10 +20,6 @@ namespace blas {
     }
 
     template <typename T>
-    p_dense_matrix<T>::~p_dense_matrix<T>(){
-    }
-
-    template <typename T>
     void p_dense_matrix<T>::swap(p_dense_matrix & r)
     {
         this->scope.swap(r.scope);
@@ -167,6 +163,10 @@ namespace blas {
 
 
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
+    template <typename T>
+    p_dense_matrix<T>::~p_dense_matrix(){ // #destructor
+        this->profile->invalidate();      // tricky, possibly the auto_ptr is the best solution but too slow
+    }
     template <typename T> // proxy object construction
     p_dense_matrix<T>::p_dense_matrix(ambient::void_pt* p): profile(p){ }
     template <typename T>
