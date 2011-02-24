@@ -3,8 +3,9 @@ default:
 	Memory: 2 GB
 
 FreeFermions_LW6_M5000:
-	Time: 1 hour (4 CPUs)
-	Memory: 3 GB
+	Time: 1:45 hour (4 CPUs)
+	Memory: 10 GB
+	Storage: 7 GB
 
 ff_short:
 	Time: 5 seconds
