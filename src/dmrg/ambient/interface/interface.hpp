@@ -27,10 +27,19 @@ void pin(L& proxy_object, const R& real_object){
 template<typename T>
 void assign(T& ref, int i, int j, int k)
 {
+// need to check uniqness here...
     void_pt& profile = breakdown(ref);
-    if(asmp.rank == UNDEFINED_RANK) return;
     workgroup* group = profile.group(i,j,k);
-//        printf("%s: p%d: I've accepted group %d %d of id%d\n", asmp.get_scope()->name, asmp.rank, group->i, group->j, (*(group->profile))->id );
+//        printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_group()->name, scope.rank, group->i, group->j, (*(group->profile))->id );
+    group->owner = ambient::rank();
+    profile.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
+}
+template<typename T>
+void assign(const T& ref, int i, int j, int k)
+{
+    void_pt& profile = breakdown(ref);
+    workgroup* group = profile.group(i,j,k);
+//        printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_group()->name, scope.rank, group->i, group->j, (*(group->profile))->id );
     group->owner = ambient::rank();
     profile.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
 }

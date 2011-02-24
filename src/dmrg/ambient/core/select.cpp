@@ -9,7 +9,7 @@
 
 namespace ambient {
 
-    void select(const char* sql)
+    void scope_select(const char* sql)
     {
         groups::group* grp;
         int i, token_len, token_t;
@@ -23,8 +23,8 @@ namespace ambient {
         i += parseout_id(&sql[i], &as);
         if(as == NULL) as = (char*)"tmp";
 
-        if(rank(group) == UNDEFINED_RANK)
-            throw core::out_of_scope_e();
+        scope.set_group(group);
+        if(!scope.involved()) return;
         if((grp = groups::group::group_map(as)) == NULL){
             grp = new groups::group(as, 0, group);
 
@@ -39,14 +39,13 @@ namespace ambient {
             }
             grp->commit();
         }
-        if(rank(as) == UNDEFINED_RANK) 
-            throw core::out_of_scope_e();
-        asmp.set_scope(grp);
-        asmp.op->set_scope(grp);
-        asmp.op->set_ids();
+        scope.set_group(grp);
+        if(!scope.involved()) return;
+        scope.get_op()->set_scope(grp);
+        scope.get_op()->set_ids();
     }
 
-    void retain(const char* sql)
+    void scope_retain(const char* sql)
     {
     }
 

@@ -29,7 +29,6 @@ namespace ambient{ namespace core{
     };
 
     class out_of_scope_e{};
-    class interrupt_e{};
 
 } }
 

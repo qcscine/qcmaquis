@@ -63,7 +63,7 @@ namespace ambient
     int size();
     bool is_master();
 
-    extern smp& asmp;
+    extern smp& scope;
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;

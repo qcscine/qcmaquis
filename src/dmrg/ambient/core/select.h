@@ -6,8 +6,8 @@
 
 namespace ambient {
     int parseout_id(const char* sql, char** id);
-    void select(const char* sql);
-    void retain(const char* sql);
+    void scope_select(const char* sql);
+    void scope_retain(const char* sql);
 }
 
 #endif

@@ -9,33 +9,46 @@ namespace ambient {
         if(!singleton) singleton = new smp();
         return *singleton;
     }
-    smp::smp():interrupt(false){ }
+    smp::smp(){ }
 
     smp& smp::operator()(const int rank)
     {
         return *this;
     }
-    void smp::set_scope(groups::group* scope)
+    void smp::set_group(groups::group* group)
     {
-        this->scope = scope;
-        if(scope == NULL) return;
-        this->scope_size = scope->count;
-        this->rank = ambient::rank(this->scope);
+        this->group = group;
+        if(group == NULL){
+            this->rank = UNDEFINED_RANK; return;
+        }
+        this->size = group->count;
+        this->rank = ambient::rank(this->group);
     }
-    void smp::set_scope(const char* scope)
+    void smp::set_group(const char* group)
     {
-        if(scope == NULL) this->set_scope((groups::group*)NULL);
-        else this->set_scope(groups::group::group_map(scope));
+        if(group == NULL) this->set_group((groups::group*)NULL);
+        else this->set_group(groups::group::group_map(group));
     }
-    groups::group* smp::get_scope(){
-        if(this->scope == NULL){
+    groups::group* smp::get_group(){
+        if(this->group == NULL){
             printf("Attempting to access NULL scope, check if select() was called\n");
             throw core::out_of_scope_e();
         }
-        return this->scope;
+        return this->group;
     }
-    void smp::trigger_interrupt()
-    {
-        this->interrupt = !this->interrupt;
+    int smp::get_size(){
+        return this->size;
+    }
+    int smp::get_rank(){
+        return this->rank;
+    }
+    void smp::set_op(core::operation* op){
+        this->op = op;
+    }
+    core::operation* smp::get_op(){
+        return this->op;
+    }
+    bool smp::involved(){
+        return ((this->rank != MPI_UNDEFINED) ? true : false); 
     }
 }
