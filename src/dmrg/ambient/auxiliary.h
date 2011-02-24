@@ -55,6 +55,7 @@ namespace core{ class operation; }
         void push_back(std::pair<core::operation*,core::operation*> element);
         bool end_reached();
         std::pair<core::operation*,core::operation*>* pick();
+        void clean();
     private:
         std::pair<core::operation*,core::operation*>* content;
         size_t write_iterator; 

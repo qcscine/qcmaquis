@@ -36,30 +36,23 @@ void plus_c_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& b, p
     void_pt& profile = breakdown(out);
     double* ad = breakdown(a)(get_group_id(out).x, get_group_id(out).y);
     double* bd = breakdown(b)(get_group_id(out).x, get_group_id(out).y);
-//    int size = get_group_dim(out).x*get_item_dim(out).x*
-//               get_group_dim(out).y*get_item_dim(out).y;
-//    printf("R%d: Executing plus computation kernel (%d ops)... for out grp %d %d\n", scope.rank, size, out.get_group_id().x, out.get_group_id().y);
+    int size = get_group_dim(out).x*get_item_dim(out).x*
+               get_group_dim(out).y*get_item_dim(out).y;
+    printf("R%d: Executing plus computation kernel (%d ops)... for out grp %d %d\n", scope.get_rank(), size, get_group_id(out).x, get_group_id(out).y);
 //    for(int i=0; i < size; i++){
 //        output[i] = ad[i]+bd[i];
 //    }
 }
 
-void extended_l_kernel(int& input){
+void single_integer_l_kernel(int& input){
 //    a >> dim3(10,5), dim3(1,1), dim3(10,1); <- kinda non-trivial - need to think
     scope_select("0.5 from ambient as work where master is 0");
-    scope_retain("2 from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
-    printf("OK, the input is %d\n", input);
+    printf("single integer kernel: input is %d\n", input);
 }
 
-void extended_c_kernel(int& input){
-    printf("OK, the input (c) is %d\n", input);
-}
-
-void assign_c_kernel(void_pt& a, void_pt& b){
-    zout << "Executing assign computation kernel...\n";
-}
-void assign_l_kernel(void_pt& a, void_pt& b){
-    zout << "Executing assign logistics kernel...\n";
+void single_integer_c_kernel(int& input){
+    input+=14;
+    printf("single integer kernel: modified input is %d\n", input);
 }
 

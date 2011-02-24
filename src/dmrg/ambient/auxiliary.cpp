@@ -73,6 +73,10 @@ namespace ambient{
         return false;
     }
 
+    void operation_stack::clean(){
+        this->length = 0;
+    }
+
     std::pair<core::operation*,core::operation*>* operation_stack::pick(){
         return &this->content[this->read_iterator++];
     }

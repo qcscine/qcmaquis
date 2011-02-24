@@ -48,7 +48,7 @@ namespace ambient{
 
     #include "ambient/interface/core.hpp"
     #include "ambient/interface/kernels.hpp"
-    #include "ambient/interface/breakdown.hpp"
+    #include "ambient/interface/model.hpp"
     #include "ambient/interface/interface.hpp"
 }
 #endif

@@ -18,6 +18,7 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T>* ptr)
         profile->dim.y   = ptr->num_rows();
         profile->dim.z   = 1;
     }
+    profile->regroup();
 }
 
 template<>

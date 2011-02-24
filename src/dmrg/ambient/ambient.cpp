@@ -189,10 +189,10 @@ void computation_1(workgroup* block)
                         logistics->pin->set_default_group(i, j);
                         computing->performx();
                     }
-                }
-//                    logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
+                } // logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
             }
         }
+        this->stack.clean();
     }
 
     int size(){
