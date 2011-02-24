@@ -113,10 +113,6 @@ public:
             cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << endl;
             
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
-//            sp.ket_tensor = mps[site];
-//            sp.mpo = mpo[site];
-//            sp.left = left_[site];
-//            sp.right = right_[site+1];
             
             timeval now, then;
             
@@ -223,13 +219,14 @@ private:
             reset(left_stores_[0]);
             store(left_[0], left_stores_[0]);
             
-            for (int i = 0; i < L; ++i) {
-                MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-                left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
-                left_[i+1] = left;
-                reset(left_stores_[i+1]);
-                store(left_[i+1], left_stores_[i+1]);
-            }
+            // this is not actually necessary
+//            for (int i = 0; i < L; ++i) {
+//                MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+//                left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+//                left_[i+1] = left;
+//                reset(left_stores_[i+1]);
+//                store(left_[i+1], left_stores_[i+1]);
+//            }
         }
         
         {
