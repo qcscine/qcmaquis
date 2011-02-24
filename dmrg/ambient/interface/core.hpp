@@ -4,7 +4,7 @@ class void_pt: public p_profile
 { 
 public: 
     template <typename T> void_pt(const T* ptr) : p_profile()
-    { breakdown_model(this, ptr); this->regroup(); }
+    { breakdown_model(this, ptr); }
 private: 
     ~void_pt(){ };  // making user unable to delete the profile
     friend class T; // the container can delete its profile
