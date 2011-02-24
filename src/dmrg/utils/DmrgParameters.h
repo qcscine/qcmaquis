@@ -105,7 +105,7 @@ public:
             try {
                 (*helper)(ar, name, vm[name]);
             } catch (std::exception &e) {
-                cerr << "Error writing parameter " << name << endl;
+                std::cerr << "Error writing parameter " << name << std::endl;
                 throw e;
             }
         }
