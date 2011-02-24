@@ -37,6 +37,19 @@ void pgemm(block_matrix<Matrix1, SymmGroup> const & A,
     
     typedef typename SymmGroup::charge charge;
     std::size_t loop_max = A.n_blocks();
+    for (std::size_t k = 0; k < loop_max; ++k) {
+        if (! B.left_basis().has(A.right_basis()[k].first))
+            continue;
+
+        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
+
+        // avoid copying, use resize
+        C.insert_block(Matrix(),
+                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
+        C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
+                       num_rows(A[k]), num_columns(B[matched_block]));
+    }
+
 #pragma omp parallel for schedule(dynamic)
     for (std::size_t k = 0; k < loop_max; ++k) {
         if (! B.left_basis().has(A.right_basis()[k].first))
@@ -45,10 +58,6 @@ void pgemm(block_matrix<Matrix1, SymmGroup> const & A,
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         // avoid copying, use resize
-        C.insert_block(Matrix(),
-                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
-        C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
-                       num_rows(A[k]), num_columns(B[matched_block]));
         gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
     }
 }
