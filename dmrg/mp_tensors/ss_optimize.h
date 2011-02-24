@@ -39,6 +39,8 @@ zout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (t
 
 double log_interpolate(double y0, double y1, int N, int i)
 {
+    if (N < 2)
+        return y1;
     double x = log(y1/y0)/(N-1);
     return y0*exp(x*i);
 }
