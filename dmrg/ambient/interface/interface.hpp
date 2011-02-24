@@ -44,6 +44,21 @@ void assign(const T& ref, int i, int j, int k)
     profile.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
 }
 template<typename T>
+dim3 get_dim(T& ref)
+{
+    return breakdown(ref).get_dim();
+}
+template<typename T>
+dim3 get_distr_dim(T& ref)
+{
+    return breakdown(ref).get_distr_dim();
+}
+template<typename T>
+dim3 get_gpu_dim(T& ref)
+{
+    return breakdown(ref).get_gpu_dim();
+}
+template<typename T>
 dim3 get_grid_dim(T& ref)
 {
     return breakdown(ref).get_grid_dim();

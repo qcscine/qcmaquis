@@ -7,8 +7,11 @@
 #define HASH_MAP_PARTITION_BIT_SIZE 8
 #define HASH_MAP_PARTITION_SIZE 256 // 2^HAH_MAP_PARTITION_BIT_SIZE
 #define HASH_MAP_VECTOR_RESERVATION 10
+#define STACK_CONTENT_RESERVATION 10
+
 
 namespace ambient{
+namespace core{ class operation; }
 
     class dim3
     {
@@ -45,7 +48,20 @@ namespace ambient{
     private:
         std::vector< std::pair<hash_map*,std::vector<core::layout_table*>* > > content;
     };
-   
+
+    class operation_stack {
+    public:
+        operation_stack();
+        void push_back(std::pair<core::operation*,core::operation*> element);
+        bool end_reached();
+        std::pair<core::operation*,core::operation*>* pick();
+    private:
+        std::pair<core::operation*,core::operation*>* content;
+        size_t write_iterator; 
+        size_t read_iterator;
+        size_t length;
+        size_t reserved;
+    };
 }
 
 #endif

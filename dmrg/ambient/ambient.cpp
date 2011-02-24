@@ -161,21 +161,21 @@ void computation_1(workgroup* block)
     }
     void scheduler::push(core::operation* logistics, core::operation* computing)
     {
-        this->logistics_stack.push_back(logistics);
-        this->computing_stack.push_back(std::pair<core::operation*,core::operation*>(logistics,computing));
+        this->stack.push_back(std::pair<core::operation*,core::operation*>(logistics,computing));
     }
     void scheduler::playout()
     {
+        std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
         core::operation* computing;
-        while(!this->logistics_stack.empty()){
-            this->logistics_stack.front()->perform();
-            this->logistics_stack.pop_front();
-        }
-        while(!this->computing_stack.empty()){
-            logistics = this->computing_stack.front().first;
+        while(!this->stack.end_reached())
+            this->stack.pick()->first->perform();
+        
+        while(!this->stack.end_reached()){
+            pair = this->stack.pick();
+            logistics = pair->first;
             if(logistics->get_scope() != NULL){
-                computing = this->computing_stack.front().second;
+                computing = pair->second;
                 computing->set_scope(logistics->get_scope());
                 if(logistics->pin == NULL){ // nothing has been pinned
                     computing->performx();  // scalapack style
@@ -192,7 +192,6 @@ void computation_1(workgroup* block)
                 }
 //                    logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
             }
-            this->computing_stack.pop_front();
         }
     }
 
