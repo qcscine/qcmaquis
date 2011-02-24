@@ -372,7 +372,7 @@ struct contraction {
         
         loop1_timer.begin();
         size_t loop_max = left.aux_dim();
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(transpose(left.data_[b]), mps.data_, t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
@@ -395,7 +395,7 @@ struct contraction {
         loop_timer.begin();
         for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
             loop_max = mpo.col_dim();
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
                 for (int run = 0; run < 2; ++run) {
@@ -485,7 +485,7 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         
         size_t loop_max = right.aux_dim();
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(mps.data_, right.data_[b], t[b]);
         }
@@ -593,7 +593,7 @@ struct contraction {
         size_t loop_max = mpo.col_dim();
         
         loop.begin();
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
         for (size_t b = 0; b < loop_max; ++b)
         {
             block_matrix<Matrix, SymmGroup> oblock;
