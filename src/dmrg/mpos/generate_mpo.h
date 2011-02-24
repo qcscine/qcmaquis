@@ -133,7 +133,7 @@ namespace mpos {
                   op_t const & identity_,
                   op_t const & fill_,
                   std::vector<op_t> const & ops_,
-                  std::size_t ref = -1)
+                  int ref = -1)
         : prempo(L)
         , tags(L)
         , used(L)
@@ -222,7 +222,7 @@ namespace mpos {
             return u2;
         }
         
-        void recurse(size_t p0, size_t which, size_t use, vector<size_t> label, size_t ref)
+        void recurse(size_t p0, size_t which, size_t use, vector<size_t> label, int ref)
         {
             if (p0 + ops.size() - which < prempo.size()) {
                 size_t use_next = term(p0, use,

@@ -5,18 +5,30 @@
 #include <sys/time.h>
 
 #include "utils/zout.hpp"
+#include "utils/sizeof.h"
+
 #include "ietl_lanczos_solver.h"
-#include "arpackpp_solver.h"
 #include "ietl_jacobi_davidson.h"
+#include "arpackpp_solver.h"
 
 #include "utils/DmrgParameters.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
 {
-    MPSTensor<Matrix, SymmGroup> ket_tensor;
-    Boundary<Matrix, SymmGroup> left, right;
-    MPOTensor<Matrix, SymmGroup> mpo;
+    SiteProblem(MPSTensor<Matrix, SymmGroup> const & ket_tensor_,
+                Boundary<Matrix, SymmGroup> const & left_,
+                Boundary<Matrix, SymmGroup> const & right_,
+                MPOTensor<Matrix, SymmGroup> const & mpo_)
+    : ket_tensor(ket_tensor_)
+    , left(left_)
+    , right(right_)
+    , mpo(mpo_) { }
+    
+    MPSTensor<Matrix, SymmGroup> const & ket_tensor;
+    Boundary<Matrix, SymmGroup> const & left;
+    Boundary<Matrix, SymmGroup> const & right;
+    MPOTensor<Matrix, SymmGroup> const & mpo;
 };
 
 #define BEGIN_TIMING(name) \
@@ -75,10 +87,6 @@ public:
             
             mps[site].make_left_paired();
             
-            SiteProblem<Matrix, SymmGroup> sp;
-            sp.ket_tensor = mps[site];
-            sp.mpo = mpo[site];
-            
             load(left_[site], left_stores_[site]);
             load(right_[site+1], right_stores_[site+1]);
             
@@ -92,8 +100,17 @@ public:
                     prefetch(left_[site-1], left_stores_[site-1]);
             }
             
-            sp.left = left_[site];
-            sp.right = right_[site+1];
+            cout << "My size: " << endl;
+            cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << endl;
+            cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << endl;
+            cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << endl;
+            cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << endl;
+            
+            SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
+//            sp.ket_tensor = mps[site];
+//            sp.mpo = mpo[site];
+//            sp.left = left_[site];
+//            sp.right = right_[site+1];
             
             timeval now, then;
             
