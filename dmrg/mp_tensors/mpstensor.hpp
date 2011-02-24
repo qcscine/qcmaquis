@@ -173,21 +173,33 @@ template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::real_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 {
+    static Timer timer("scalar_norm");
+    timer.begin();
+
     make_left_paired();
     block_matrix<Matrix, SymmGroup> t;
     pgemm(conjugate_transpose(data_), data_, t);
-    return sqrt(trace(t));
+    real_type r = sqrt(trace(t));
+
+    timer.end();
+    return r;
 }
 
 template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::scalar_type
 MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs) const
 {
+    static Timer timer("scalar_overlap");
+    timer.begin();
+
     make_left_paired();
     rhs.make_left_paired();
     block_matrix<Matrix, SymmGroup> t;
     pgemm(conjugate_transpose(data_), rhs.data_, t);
-    return trace(t);
+    scalar_type r = trace(t);
+
+    timer.end();
+    return r;
 }
 
 template<class Matrix, class SymmGroup>

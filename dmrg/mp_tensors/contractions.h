@@ -70,16 +70,20 @@ struct contraction {
                           Boundary<Matrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        static Timer timer("overlap_mpo_left_step");
+        timer.begin();
         assert(left.aux_dim() == mpo.row_dim());
         
         bra_tensor.make_right_paired();
         ket_tensor.make_right_paired();
         
-        block_matrix<Matrix, SymmGroup> t1;
         std::vector<block_matrix<Matrix, SymmGroup> > t2(left.aux_dim());
-        
-        for (std::size_t b = 0; b < left.aux_dim(); ++b)
+       
+        std::size_t loop_max = left.aux_dim();
+#pragma omp parallel for schedule(guided) 
+        for (std::size_t b = 0; b < loop_max; ++b)
         {
+            block_matrix<Matrix, SymmGroup> t1;
             gemm(transpose(ket_tensor.data_), left.data_[b], t1);
             gemm(t1, conjugate(bra_tensor.data_), t2[b]);
         }
@@ -90,8 +94,10 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
-            for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
+        loop_max = mpo.col_dim();
+#pragma omp parallel for schedule(guided)
+        for (size_t b2 = 0; b2 < loop_max; ++b2)
+            for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
             {
                 block_matrix<Matrix, SymmGroup> const & T = t2[b1];
                 block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
@@ -155,6 +161,7 @@ struct contraction {
                     }
             }
         
+        timer.end(); 
         return ret;
     }
     
@@ -165,16 +172,20 @@ struct contraction {
                            Boundary<Matrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        static Timer timer("overlap_mpo_right_step");
+        timer.begin();
         assert(right.aux_dim() == mpo.col_dim());
         
         bra_tensor.make_left_paired();
         ket_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1;
         std::vector<block_matrix<Matrix, SymmGroup> > t2(right.aux_dim());
         
-        for (std::size_t b = 0; b < right.aux_dim(); ++b)
+        std::size_t loop_max = right.aux_dim();
+#pragma omp parallel for schedule(guided)
+        for (std::size_t b = 0; b < loop_max; ++b)
         {
+            block_matrix<Matrix, SymmGroup> t1;
             gemm(ket_tensor.data_, right.data_[b], t1);
             gemm(t1, conjugate(transpose(bra_tensor.data_)), t2[b]);
         }
@@ -185,7 +196,9 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
+        loop_max = mpo.row_dim();
+#pragma omp parallel for schedule(guided)
+        for (size_t b1 = 0; b1 < loop_max; ++b1)
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
                 block_matrix<Matrix, SymmGroup> const & T = t2[b2];
@@ -241,6 +254,7 @@ struct contraction {
                     }
             }
         
+        timer.end();
         return ret;
     }
     
@@ -364,7 +378,7 @@ struct contraction {
         
         loop1_timer.begin();
         size_t loop_max = left.aux_dim();
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(guided)
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(transpose(left.data_[b]), mps.data_, t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
@@ -387,7 +401,7 @@ struct contraction {
         loop_timer.begin();
         
         loop_max = mpo.col_dim();
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(guided)
         for (size_t b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
@@ -476,7 +490,7 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         
         size_t loop_max = right.aux_dim();
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(guided)
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(mps.data_, right.data_[b], t[b]);
         }
@@ -490,7 +504,7 @@ struct contraction {
         typedef std::size_t size_t;
         
         loop_max = mpo.row_dim();
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(guided)
         for (size_t b1 = 0; b1 < loop_max; ++b1) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
@@ -586,7 +600,7 @@ struct contraction {
         size_t loop_max = mpo.col_dim();
         
         loop.begin();
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(guided)
         for (size_t b = 0; b < loop_max; ++b)
         {
             block_matrix<Matrix, SymmGroup> oblock;
