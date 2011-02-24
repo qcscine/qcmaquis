@@ -57,7 +57,10 @@ public:
     , storage_master(sm)
     { }
     
-    std::vector<double> sweep(MPO<Matrix, SymmGroup> const & mpo,
+    std::pair<
+    std::vector<double>,
+    std::vector<std::pair<std::size_t, double> >
+    > sweep(MPO<Matrix, SymmGroup> const & mpo,
                               int sweep)
     {
         mps.normalize_right();
@@ -67,6 +70,7 @@ public:
         cerr << "Done init_left_right" << endl;
         
         std::vector<double> energies;
+        std::vector<std::pair<std::size_t, double> > truncations;
         
         std::size_t L = mps.length();
         
@@ -152,11 +156,13 @@ public:
                 cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
             std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
             
+            std::pair<std::size_t, double> trunc;
+            
             if (lr == +1) {
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax);
+                                       site, alpha, cutoff, Mmax, trunc);
                 }
                 
                 block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
@@ -175,7 +181,7 @@ public:
                 if (site > 1) {
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax);
+                                       site, alpha, cutoff, Mmax, trunc);
                 }
                 
                 block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
@@ -191,9 +197,11 @@ public:
                 store(left_[site], left_stores_[site]);
                 store(right_[site+1], right_stores_[site+1]);
             }
+            
+            truncations.push_back(trunc);
         }
         
-        return energies;
+        return make_pair(energies, truncations);
     }
     
 private:

@@ -72,11 +72,11 @@ void syev(block_matrix<Matrix, SymmGroup> const & M,
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                  block_matrix<Matrix, SymmGroup> & U,
-                  block_matrix<Matrix, SymmGroup> & V,
-                  block_matrix<DiagMatrix, SymmGroup> & S,
-                  double rel_tol, std::size_t Mmax)
+std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                                            block_matrix<Matrix, SymmGroup> & U,
+                                            block_matrix<Matrix, SymmGroup> & V,
+                                            block_matrix<DiagMatrix, SymmGroup> & S,
+                                            double rel_tol, std::size_t Mmax)
 {   
     svd(M, U, V, S);
     
@@ -142,13 +142,15 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
         zout << "Smallest SV kept: " << Scut / allS[0] << endl;
         zout << "Truncated weight: " << truncated_weight/allS[0] << endl;
     }
+    
+    return std::make_pair(S.left_basis().sum_of_sizes(), truncated_weight/allS[0]);
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                   block_matrix<Matrix, SymmGroup> & evecs,
-                   block_matrix<DiagMatrix, SymmGroup> & evals,
-                   double cutoff, std::size_t Mmax)
+std::pair<std::size_t, double> syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                                             block_matrix<Matrix, SymmGroup> & evecs,
+                                             block_matrix<DiagMatrix, SymmGroup> & evals,
+                                             double cutoff, std::size_t Mmax)
 {
     // very analogous to the above svd method
     syev(M, evecs, evals);
@@ -201,6 +203,8 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         zout << "Smallest EV kept: " << evalscut / allevals[0] << endl;
         zout << "Truncated weight: " << truncated_weight / allevals[0] << endl;
     }
+    
+    return std::make_pair(evals.left_basis().sum_of_sizes(), truncated_weight / allevals[0]);
 }
 
 template<class Matrix, class SymmGroup>
