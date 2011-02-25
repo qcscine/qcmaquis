@@ -418,56 +418,63 @@ struct contraction {
                     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
                     ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
                     
-                    for (size_t s1 = 0; s1 < physical_i.size(); ++s1)
-                        for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
-                            for (size_t l = 0; l < left_i.size(); ++l)
-                                for (size_t r = 0; r < right_i.size(); ++r)
-                                {
-                                    charge T_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
-                                    charge T_r_charge = right_i[r].first;
+                    for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
+                    {
+                        size_t s1 = physical_i.position(W.left_basis()[w_block].first);
+                        size_t s2 = physical_i.position(W.right_basis()[w_block].first);
+                        
+                        for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
+                        {
+                            size_t r = right_i.position(T.right_basis()[t_block].first);
+                            size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
+                                                                       -physical_i[s1].first));
+                            {
+                                charge T_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
+                                charge T_r_charge = right_i[r].first;
+                                
+                                if (! T.has_block(T_l_charge, T_r_charge) )
+                                    continue;
+                                
+                                charge out_l_charge = SymmGroup::fuse(physical_i[s2].first, left_i[l].first);
+                                charge out_r_charge = right_i[r].first;
+                                
+                                if (! left.data_[b1].right_basis().has(left_i[l].first) )
+                                    continue;
+                                if (! mps.col_dim().has(right_i[r].first) )
+                                    continue;
+                                
+                                size_t in_left_offset = in_left_pb(physical_i[s1].first, left_i[l].first);
+                                size_t out_left_offset = out_left_pb(physical_i[s2].first, left_i[l].first);
+                                
+                                if (!pretend) {
+                                    Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
+                                    Matrix const & iblock = T(T_l_charge, T_r_charge);
+                                    Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
                                     
-                                    charge out_l_charge = SymmGroup::fuse(physical_i[s2].first, left_i[l].first);
-                                    charge out_r_charge = right_i[r].first;
-                                    
-                                    if (! T.has_block(T_l_charge, T_r_charge) )
-                                        continue;
-                                    if (! W.has_block(physical_i[s1].first, physical_i[s2].first) )
-                                        continue;
-                                    if (! left.data_[b1].right_basis().has(left_i[l].first) )
-                                        continue;
-                                    if (! mps.col_dim().has(right_i[r].first) )
-                                        continue;
-                                    
-                                    size_t in_left_offset = in_left_pb(physical_i[s1].first, left_i[l].first);
-                                    size_t out_left_offset = out_left_pb(physical_i[s2].first, left_i[l].first);
-                                    
-                                    if (!pretend) {
-                                        Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
-                                        Matrix const & iblock = T(T_l_charge, T_r_charge);
-                                        Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
-                                        
-                                        /* optimize me */
-                                        /* make me a kernel */
-                                        for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
-                                            for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
-                                                typename Matrix::value_type wblock_t = wblock(ss1, ss2);
-                                                for (size_t rr = 0; rr < right_i[r].second; ++rr) {
-                                                    iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
-                                                                  &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second,
-                                                                  &oblock(out_left_offset + ss2*left_i[l].second, rr),
-                                                                  wblock_t);
+                                    /* optimize me */
+                                    /* make me a kernel */
+                                    for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
+                                        for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
+                                            typename Matrix::value_type wblock_t = wblock(ss1, ss2);
+                                            for (size_t rr = 0; rr < right_i[r].second; ++rr) {
+                                                iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
+                                                              &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second,
+                                                              &oblock(out_left_offset + ss2*left_i[l].second, rr),
+                                                              wblock_t);
 //                                                    for (size_t ll = 0; ll < left_i[l].second; ++ll) {
 //                                                        oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
 //                                                        iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
 //                                                    }
-                                                }
                                             }
-                                    }
-                                    
-                                    if (pretend)
-                                        ret.data_[b2].reserve(out_l_charge, out_r_charge,
-                                                              out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
+                                        }
                                 }
+                                
+                                if (pretend)
+                                    ret.data_[b2].reserve(out_l_charge, out_r_charge,
+                                                          out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -520,53 +527,70 @@ struct contraction {
                     
                     ProductBasis<SymmGroup> left_pb(physical_i, left_i);
                     
-                    for (size_t s1 = 0; s1 < physical_i.size(); ++s1)
-                        for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
-                            for (size_t l = 0; l < left_i.size(); ++l)
-                                for (size_t r = 0; r < right_i.size(); ++r)
-                                {
-                                    charge T_l_charge = SymmGroup::fuse(physical_i[s1].first,
-                                                                        left_i[l].first);
-                                    charge T_r_charge = right_i[r].first;
-                                    
-                                    charge out_l_charge = SymmGroup::fuse(physical_i[s2].first,
-                                                                          left_i[l].first);
-                                    charge out_r_charge = right_i[r].first;
-                                    
-                                    if (! T.has_block(T_l_charge, T_r_charge) )
-                                        continue;
-                                    if (! W.has_block(physical_i[s1].first, physical_i[s2].first) )
-                                        continue;
-                                    if (! right.data_[b2].right_basis().has(right_i[r].first) )
-                                        continue;
-                                    if (! mps.row_dim().has(left_i[l].first) )
-                                        continue;
-                                    
-                                    size_t in_left_offset = left_pb(physical_i[s1].first, left_i[l].first);
-                                    size_t out_left_offset = left_pb(physical_i[s2].first, left_i[l].first);
-                                    
-                                    if (!pretend) {
-                                        Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
-                                        Matrix const & iblock = T(T_l_charge, T_r_charge);
-                                        Matrix & oblock = ret.data_[b1](out_l_charge, out_r_charge);
-                                        
-                                        for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
-                                            for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
-                                                typename Matrix::value_type wblock_t = wblock(ss1, ss2);
-                                                for (size_t rr = 0; rr < right_i[r].second; ++rr)
-                                                    for (size_t ll = 0; ll < left_i[l].second; ++ll) {
-                                                        oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
-                                                        iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
-                                                    }
-                                            }
-                                    }
-                                    
-                                    if (pretend)
-                                        ret.data_[b1].reserve(out_l_charge, out_r_charge,
-                                                              out_left_offset + physical_i[s2].second * left_i[l].second,
-                                                              right_i[r].second);
-                                }
+//                    for (size_t s1 = 0; s1 < physical_i.size(); ++s1)
+//                        for (size_t s2 = 0; s2 < physical_i.size(); ++s2) {
+//                            if (! W.has_block(physical_i[s1].first, physical_i[s2].first) )
+//                                continue;
+//                            
+//                            for (size_t l = 0; l < left_i.size(); ++l)
+//                                for (size_t r = 0; r < right_i.size(); ++r)
+//                                {
                     
+                    for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
+                    {
+                        size_t s1 = physical_i.position(W.left_basis()[w_block].first);
+                        size_t s2 = physical_i.position(W.right_basis()[w_block].first);
+                        
+                        for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
+                        {
+                            size_t r = right_i.position(T.right_basis()[t_block].first);
+                            size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
+                                                                       -physical_i[s1].first));
+                            {
+                                
+                                charge T_l_charge = SymmGroup::fuse(physical_i[s1].first,
+                                                                    left_i[l].first);
+                                charge T_r_charge = right_i[r].first;
+                                
+                                if (! T.has_block(T_l_charge, T_r_charge) )
+                                    continue;
+                                
+                                charge out_l_charge = SymmGroup::fuse(physical_i[s2].first,
+                                                                      left_i[l].first);
+                                charge out_r_charge = right_i[r].first;
+                                
+                                if (! right.data_[b2].right_basis().has(right_i[r].first) )
+                                    continue;
+                                if (! mps.row_dim().has(left_i[l].first) )
+                                    continue;
+                                
+                                size_t in_left_offset = left_pb(physical_i[s1].first, left_i[l].first);
+                                size_t out_left_offset = left_pb(physical_i[s2].first, left_i[l].first);
+                                
+                                if (!pretend) {
+                                    Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
+                                    Matrix const & iblock = T(T_l_charge, T_r_charge);
+                                    Matrix & oblock = ret.data_[b1](out_l_charge, out_r_charge);
+                                    
+                                    for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
+                                        for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
+                                            typename Matrix::value_type wblock_t = wblock(ss1, ss2);
+                                            for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                                                for (size_t ll = 0; ll < left_i[l].second; ++ll) {
+                                                    oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
+                                                    iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
+                                                }
+                                        }
+                                }
+                                
+                                if (pretend)
+                                    ret.data_[b1].reserve(out_l_charge, out_r_charge,
+                                                          out_left_offset + physical_i[s2].second * left_i[l].second,
+                                                          right_i[r].second);
+                            }
+                        }
+                        
+                    }
                 }
             }
         }
