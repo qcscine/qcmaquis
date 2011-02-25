@@ -23,14 +23,27 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
     typedef typename SymmGroup::charge charge;
     
     for (int run = 0; run < 2; ++run) {
-        std::map<charge, size_t> in_offsets, out_offsets;
+        ProductBasis<SymmGroup> in_left(physical_i, left_i);
+        ProductBasis<SymmGroup> out_right(physical_i, right_i,
+                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                              -boost::lambda::_1, boost::lambda::_2));
         
         if (run == 1)
             m2.allocate_blocks();
-        
-        for (size_t s = 0; s < physical_i.size(); ++s)
-            for (size_t l = 0; l < left_i.size(); ++l)
-                for (size_t r = 0; r < right_i.size(); ++r)
+       
+        for (size_t block = 0; block < m1.n_blocks(); ++block)
+        {
+            for (size_t s = 0; s < physical_i.size(); ++s)
+            {
+                size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
+                                                           -physical_i[s].first));
+                size_t r = right_i.position(m1.right_basis()[block].first);
+                
+                if (l == left_i.size())
+                    continue;
+                if (r == right_i.size())
+                    continue;
+                
                 {
                     bool pretend = (run == 0);
                     
@@ -42,8 +55,8 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                     if (! m1.has_block(in_l_charge, in_r_charge) )
                         continue;
                     
-                    size_t in_left_offset = in_offsets[in_l_charge];
-                    size_t out_right_offset = out_offsets[out_r_charge];
+                    size_t in_left_offset = in_left(physical_i[s].first, left_i[l].first);
+                    size_t out_right_offset = out_right(physical_i[s].first, right_i[r].first);
                     
                     if (!pretend) {
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
@@ -55,14 +68,13 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                                 for (size_t ll = 0; ll < left_i[l].second; ++ll)
                                     out_block(ll, out_right_offset + ss*right_i[r].second+rr) = in_block(in_left_offset + ss*left_i[l].second+ll, rr);
                     }
-                        
-                    in_offsets[in_l_charge] += left_i[l].second * physical_i[s].second;
-                    out_offsets[out_r_charge] += right_i[r].second * physical_i[s].second;
 
                     if (pretend)
                         m2.reserve(out_l_charge, out_r_charge,
                                    left_i[l].second, out_right_offset + physical_i[s].second * right_i[r].second);
                 }
+            }
+        }
     }
     
     timer.end();
@@ -117,14 +129,27 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
     typedef typename SymmGroup::charge charge;
     
     for (int run = 0; run < 2; ++run) {
-        std::map<charge, size_t> in_offsets, out_offsets;
+        ProductBasis<SymmGroup> in_right(physical_i, right_i,
+                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                             -boost::lambda::_1, boost::lambda::_2));
+        ProductBasis<SymmGroup> out_left(physical_i, left_i);
         
         if (run == 1)
             m2.allocate_blocks();
     
-        for (size_t s = 0; s < physical_i.size(); ++s)
-            for (size_t l = 0; l < left_i.size(); ++l)
-                for (size_t r = 0; r < right_i.size(); ++r)
+        for (size_t block = 0; block < m1.n_blocks(); ++block)
+        {
+            for (size_t s = 0; s < physical_i.size(); ++s)
+            {
+                size_t l = left_i.position(m1.left_basis()[block].first);
+                size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
+                                                            physical_i[s].first));
+                
+                if (l == left_i.size())
+                    continue;
+                if (r == right_i.size())
+                    continue;
+                
                 {
                     bool pretend = (run == 0);
                     
@@ -136,8 +161,8 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                     if (! m1.has_block(in_l_charge, in_r_charge) )
                         continue;
                     
-                    size_t in_right_offset = in_offsets[in_r_charge];
-                    size_t out_left_offset = out_offsets[out_l_charge];
+                    size_t in_right_offset = in_right(physical_i[s].first, right_i[r].first);
+                    size_t out_left_offset = out_left(physical_i[s].first, left_i[l].first);
                     
                     if (!pretend) {
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
@@ -154,14 +179,13 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                                     out_block(out_left_offset + ss*left_i[l].second+ll, rr) 
                                  = in_block(ll, in_right_offset + ss*right_i[r].second+rr);*/
                     }
-                        
-                    in_offsets[in_r_charge] += right_i[r].second * physical_i[s].second;
-                    out_offsets[out_l_charge] += left_i[l].second * physical_i[s].second;
 
                     if (pretend)
                         m2.reserve(out_l_charge, out_r_charge,
                                    out_left_offset + physical_i[s].second * left_i[l].second, right_i[r].second);
                 }
+            }
+        }
     }
     
     timer.end();
