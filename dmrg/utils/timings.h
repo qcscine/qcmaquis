@@ -2,6 +2,8 @@
 #define TIMINGS_H
 
 #include "utils/zout.hpp"
+#include "omp.h"
+
 
 #ifdef __CUBLAS__
 #include "cuda_runtime_api.h" 
@@ -79,6 +81,31 @@ protected:
     unsigned long long freq, nCounter;
     std::string name;
 };
+
+
+class TimerOMP : public Timer
+{
+public:
+	TimerOMP(std::string name_) : Timer(name_), timer_start(0.0), timer_end(0.0){}
+
+	~TimerOMP(){}
+	
+	void begin()
+	{
+		timer_start = omp_get_wtime(); 
+	}
+	
+	void end()
+	{
+		timer_end = omp_get_wtime();
+		val += timer_end - timer_start;
+	}
+	
+private:
+	double timer_start, timer_end;
+	
+};
+
 
 #ifdef __CUBLAS__
 
