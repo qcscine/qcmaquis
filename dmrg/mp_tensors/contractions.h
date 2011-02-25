@@ -116,48 +116,52 @@ struct contraction {
                                                                      -boost::lambda::_1, boost::lambda::_2)
                                                  );
                 
-                for (size_t s1 = 0; s1 < ket_tensor.site_dim().size(); ++s1)
-                    for (size_t u = 0; u < ket_tensor.col_dim().size(); ++u)
+                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
+                    for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
                     {
-                        charge u_charge = ket_tensor.col_dim()[u].first;
-                        charge s1_charge = ket_tensor.site_dim()[s1].first;
-                        charge tu_charge = SymmGroup::fuse(-s1_charge, u_charge);
+                        charge s1_charge = W.left_basis()[w_block].first;
+                        charge s2_charge = W.right_basis()[w_block].first;
                         
-                        size_t upper_size = ket_tensor.col_dim()[u].second;
-                        size_t s1_size = ket_tensor.site_dim()[s1].second;
+                        charge tu_charge = T.left_basis()[t_block].first;
+                        charge tl_charge = T.right_basis()[t_block].first;
                         
-                        for (size_t s2 = 0; s2 < bra_tensor.site_dim().size(); ++s2)
-                            for (size_t l = 0; l < bra_tensor.col_dim().size(); ++l)
-                            {   
-                                charge l_charge = bra_tensor.col_dim()[l].first;
-                                charge s2_charge = bra_tensor.site_dim()[s2].first;                                
-                                charge tl_charge = SymmGroup::fuse(-s2_charge, l_charge);
-                                
-                                size_t lower_size = bra_tensor.col_dim()[l].second;
-                                size_t s2_size = bra_tensor.site_dim()[s2].second;
-                                
-                                Matrix block(upper_size, lower_size);
-                                block *= 0;
-                                
-                                size_t in_l_offset = upper_pb(s1_charge, u_charge);
-                                size_t in_r_offset = lower_pb(s2_charge, l_charge);
-                                
-                                if (! W.has_block(s1_charge, s2_charge) )
-                                    continue;
-                                
-                                if (! T.has_block(tu_charge, tl_charge) )
-                                    continue;
-                                
-                                for (size_t ss1 = 0; ss1 < s1_size; ++ss1)
-                                    for (size_t ss2 = 0; ss2 < s2_size; ++ss2)
-                                        for (size_t uu = 0; uu < upper_size; ++uu)
-                                            for (size_t ll = 0; ll < lower_size; ++ll)
-                                                block(uu, ll) += W(s1_charge, s2_charge)(ss1, ss2) *
-                                                T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size+uu,
-                                                                        in_r_offset+ss2*lower_size+ll);
-                                
-                                ret.data_[b2] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
-                            }
+                        charge u_charge = SymmGroup::fuse(tu_charge, s1_charge);
+                        charge l_charge = SymmGroup::fuse(tl_charge, s2_charge);
+                        
+                        if (! ket_tensor.col_dim().has(u_charge) )
+                            continue;
+                        if (! ket_tensor.col_dim().has(l_charge) )
+                            continue;
+                
+                        size_t upper_size = ket_tensor.col_dim().size_of_block(u_charge);
+                        size_t s1_size = ket_tensor.site_dim().size_of_block(s1_charge);
+                        
+                        size_t lower_size = bra_tensor.col_dim().size_of_block(l_charge);
+                        size_t s2_size = bra_tensor.site_dim().size_of_block(s2_charge);
+                        
+                        Matrix block(upper_size, lower_size);
+                        block *= 0;
+                        
+                        size_t in_l_offset = upper_pb(s1_charge, u_charge);
+                        size_t in_r_offset = lower_pb(s2_charge, l_charge);
+                        
+                        if (! W.has_block(s1_charge, s2_charge) )
+                            continue;
+                        
+                        if (! T.has_block(tu_charge, tl_charge) )
+                            continue;
+                        
+                        for (size_t ss1 = 0; ss1 < s1_size; ++ss1)
+                            for (size_t ss2 = 0; ss2 < s2_size; ++ss2)
+                                for (size_t ll = 0; ll < lower_size; ++ll)
+                                    iterator_axpy(&T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
+                                                                           in_r_offset+ss2*lower_size+ll),
+                                                  &T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
+                                                                           in_r_offset+ss2*lower_size+ll)+upper_size,
+                                                  &block(0, ll),
+                                                  W(s1_charge, s2_charge)(ss1, ss2));
+                        
+                        ret.data_[b2] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
                     }
             }
         
@@ -210,47 +214,51 @@ struct contraction {
                 ProductBasis<SymmGroup> upper_pb(ket_tensor.site_dim(), ket_tensor.row_dim());
                 ProductBasis<SymmGroup> lower_pb(bra_tensor.site_dim(), bra_tensor.row_dim());
                 
-                for (size_t s1 = 0; s1 < ket_tensor.site_dim().size(); ++s1)
-                    for (size_t u = 0; u < ket_tensor.row_dim().size(); ++u)
+                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
+                    for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
                     {
-                        charge u_charge = ket_tensor.row_dim()[u].first;
-                        charge s1_charge = ket_tensor.site_dim()[s1].first;
-                        charge tu_charge = SymmGroup::fuse(u_charge, s1_charge);
+                        charge s1_charge = W.left_basis()[w_block].first;
+                        charge s2_charge = W.right_basis()[w_block].first;
                         
-                        size_t upper_size = ket_tensor.row_dim()[u].second;
-                        size_t s1_size = ket_tensor.site_dim()[s1].second;
+                        charge tu_charge = T.left_basis()[t_block].first;
+                        charge tl_charge = T.right_basis()[t_block].first;
                         
-                        for (size_t s2 = 0; s2 < bra_tensor.site_dim().size(); ++s2)
-                            for (size_t l = 0; l < bra_tensor.row_dim().size(); ++l)
-                            {   
-                                charge l_charge = bra_tensor.row_dim()[l].first;
-                                charge s2_charge = bra_tensor.site_dim()[s2].first;
-                                charge tl_charge = SymmGroup::fuse(l_charge, s2_charge);
-                                
-                                size_t lower_size = bra_tensor.row_dim()[l].second;
-                                size_t s2_size = bra_tensor.site_dim()[s2].second;
-                                
-                                Matrix block(upper_size, lower_size);
-                                
-                                size_t in_l_offset = upper_pb(s1_charge, u_charge);
-                                size_t in_r_offset = lower_pb(s2_charge, l_charge);
-                                
-                                if (! W.has_block(s1_charge, s2_charge) )
-                                    continue;
-                                
-                                if (! T.has_block(tu_charge, tl_charge) )
-                                    continue;
-                                
-                                for (size_t ss1 = 0; ss1 < s1_size; ++ss1)
-                                    for (size_t ss2 = 0; ss2 < s2_size; ++ss2)
-                                        for (size_t uu = 0; uu < upper_size; ++uu)
-                                            for (size_t ll = 0; ll < lower_size; ++ll)
-                                                block(uu, ll) += W(s1_charge, s2_charge)(ss1, ss2) *
-                                                T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size+uu,
-                                                                        in_r_offset+ss2*lower_size+ll);
-                                
-                                ret.data_[b1] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
-                            }
+                        charge u_charge = SymmGroup::fuse(tu_charge, -s1_charge);
+                        charge l_charge = SymmGroup::fuse(tl_charge, -s2_charge);
+                        
+                        if (! ket_tensor.row_dim().has(u_charge) )
+                            continue;
+                        if (! ket_tensor.row_dim().has(l_charge) )
+                            continue;
+                        
+                        size_t upper_size = ket_tensor.row_dim().size_of_block(u_charge);
+                        size_t s1_size = ket_tensor.site_dim().size_of_block(s1_charge);
+                        
+                        size_t lower_size = bra_tensor.row_dim().size_of_block(l_charge);
+                        size_t s2_size = bra_tensor.site_dim().size_of_block(s2_charge);
+                        
+                        Matrix block(upper_size, lower_size);
+                        
+                        size_t in_l_offset = upper_pb(s1_charge, u_charge);
+                        size_t in_r_offset = lower_pb(s2_charge, l_charge);
+                        
+                        if (! W.has_block(s1_charge, s2_charge) )
+                            continue;
+                        
+                        if (! T.has_block(tu_charge, tl_charge) )
+                            continue;
+                        
+                        for (size_t ss1 = 0; ss1 < s1_size; ++ss1)
+                            for (size_t ss2 = 0; ss2 < s2_size; ++ss2)
+                                for (size_t ll = 0; ll < lower_size; ++ll)
+                                    iterator_axpy(&T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
+                                                                           in_r_offset+ss2*lower_size+ll),
+                                                  &T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
+                                                                           in_r_offset+ss2*lower_size+ll)+upper_size,
+                                                  &block(0, ll),
+                                                  W(s1_charge, s2_charge)(ss1, ss2));
+                        
+                        ret.data_[b1] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
                     }
             }
         
@@ -576,10 +584,14 @@ struct contraction {
                                         for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                             typename Matrix::value_type wblock_t = wblock(ss1, ss2);
                                             for (size_t rr = 0; rr < right_i[r].second; ++rr)
-                                                for (size_t ll = 0; ll < left_i[l].second; ++ll) {
-                                                    oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
-                                                    iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
-                                                }
+//                                                for (size_t ll = 0; ll < left_i[l].second; ++ll) {
+//                                                    oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
+//                                                    iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
+//                                                }
+                                                iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
+                                                              &iblock(in_left_offset + ss1*left_i[l].second, rr)+left_i[l].second,
+                                                              &oblock(out_left_offset + ss2*left_i[l].second, rr),
+                                                              wblock_t);
                                         }
                                 }
                                 
@@ -608,12 +620,16 @@ struct contraction {
                 Boundary<Matrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        static Timer lbtm("lbtm in site_hamil2"), loop("loop in site_hamil2");
+        static Timer lbtm("lbtm in site_hamil2"), loop("loop in site_hamil2"), all("site_hamil all");
+        all.begin();
         
         lbtm.begin();
         Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
         lbtm.end();
         
+//        MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(),
+//                                         ket_tensor.row_dim(),
+//                                         ket_tensor.col_dim(), false);
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
         ret.make_left_paired();
@@ -638,6 +654,8 @@ struct contraction {
         }
         loop.end();
         
+        all.end();
+        
         return ret;
     }
     
@@ -650,6 +668,9 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 std::pair<std::size_t, double> & truncation)
     {
+        static Timer timer("predict_new_state_l2r_sweep");
+        timer.begin();
+        
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
         gemm(mps.data_, transpose(mps.data_), dm);
@@ -684,6 +705,8 @@ struct contraction {
         assert( U.left_basis() == ret.data_.left_basis() );
         ret.data_ = U;
         ret.right_i = U.right_basis();
+        
+        timer.end();
         return ret;
     }
     
@@ -693,6 +716,9 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
+        static Timer timer("predict_lanczos_l2r_sweep");
+        timer.begin();
+        
         psi.make_left_paired();
         A.make_left_paired();
         
@@ -700,6 +726,8 @@ struct contraction {
         gemm(transpose(A.data_), psi.data_, tmp);
         
         B.multiply_from_left(tmp);
+        
+        timer.end();
         return B;
     }
     
@@ -712,6 +740,9 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 std::pair<std::size_t, double> & truncation)
     {
+        static Timer timer("predict_new_state_r2l_sweep");
+        timer.begin();
+        
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
         gemm(transpose(mps.data_), mps.data_, dm);
@@ -747,6 +778,8 @@ struct contraction {
         assert( V.right_basis() == ret.data_.right_basis() );
         ret.data_ = V;
         ret.left_i = V.left_basis();
+        
+        timer.end();
         return ret; 
     }
     
@@ -756,6 +789,9 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
+        static Timer timer("predict_lanczos_r2l_sweep");
+        timer.begin();
+        
         psi.make_right_paired();
         A.make_right_paired();
         
@@ -763,6 +799,8 @@ struct contraction {
         gemm(psi.data_, transpose(A.data_), tmp);
         
         B.multiply_from_right(tmp);
+        
+        timer.end();
         return B;
     }
 };

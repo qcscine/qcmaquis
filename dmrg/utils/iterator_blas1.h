@@ -6,7 +6,7 @@
 
 template<class ForwardIterator, class T>
 void iterator_axpy(ForwardIterator in1, ForwardIterator in2,
-                         ForwardIterator out1, T val)
+                   ForwardIterator out1, T val)
 {
     std::transform(in1, in2, out1, std::bind2nd(std::multiplies<T>(), val));
 }

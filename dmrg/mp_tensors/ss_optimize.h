@@ -63,8 +63,10 @@ public:
     > sweep(MPO<Matrix, SymmGroup> const & mpo,
                               int sweep)
     {
-        mps.normalize_right();
-        mps.canonize(0);
+        static Timer
+        t_io("sweep_io"),
+        t_solver("sweep_solver"),
+        t_grow("sweep_grow");
         
         init_left_right(mpo);
         cerr << "Done init_left_right" << endl;
@@ -79,6 +81,9 @@ public:
         
         zout << mps.description() << endl;
         for (int _site = 0; _site < 2*L; ++_site) {
+            Timer iteration_t("Iteration took");
+            iteration_t.begin();
+            
             int site, lr;
             if (_site < L) {
                 site = _site;
@@ -91,7 +96,9 @@ public:
             zout << "Sweep " << sweep << ", optimizing site " << site << endl;
             storage_master.print_size();
             
-            mps[site].make_left_paired();
+//            mps[site].make_left_paired();
+            
+            t_io.begin();
             
             load(left_[site], left_stores_[site]);
             load(right_[site+1], right_stores_[site+1]);
@@ -111,6 +118,10 @@ public:
             cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << endl;
             cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << endl;
             cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << endl;
+            
+            t_io.end();
+            
+            t_solver.begin();
             
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
@@ -135,6 +146,8 @@ public:
             }
             mps[site] = res.second;
             
+            t_solver.end();
+            
             zout << "Energy " << lr << " " << res.first << endl;
             energies.push_back(res.first);
             
@@ -154,16 +167,18 @@ public:
             
             std::pair<std::size_t, double> trunc;
             
+            t_grow.begin();
+            
             if (lr == +1) {
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, trunc);
+                } else {
+                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
+                    if (site < L-1)
+                        mps[site+1].multiply_from_left(t);
                 }
-                
-                block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
-                if (site < L-1)
-                    mps[site+1].multiply_from_left(t);
                 
                 load(left_[site+1], left_stores_[site+1]);
                 
@@ -178,11 +193,11 @@ public:
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, trunc);
+                } else {
+                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
+                    if (site > 0)
+                        mps[site-1].multiply_from_right(t);
                 }
-                
-                block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
-                if (site > 0)
-                    mps[site-1].multiply_from_right(t);
                 
                 load(right_[site], right_stores_[site]);
                 
@@ -194,7 +209,11 @@ public:
                 store(right_[site+1], right_stores_[site+1]);
             }
             
+            t_grow.end();
+            
             truncations.push_back(trunc);
+            
+            iteration_t.end();
         }
         
         return make_pair(energies, truncations);
@@ -203,7 +222,11 @@ public:
 private:
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo)
     {
-        static Timer timer("init_left_right wait");
+        static Timer timer("init_left_right wait"), timer2("init_left_right");
+        timer2.begin();
+        
+//        mps.normalize_right();
+        mps.canonize(0);
         
         std::size_t L = mps.length();
         
@@ -243,6 +266,8 @@ private:
                 store(right_[i], right_stores_[i]);
             }
         }
+        
+        timer2.end();
     }
     
     MPS<Matrix, SymmGroup> & mps;
