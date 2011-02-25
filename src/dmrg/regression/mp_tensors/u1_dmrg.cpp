@@ -216,6 +216,7 @@ int main(int argc, char ** argv)
                     std::ostringstream oss;
                     oss << "/simulation/results/sweep" << sweep << "/Iteration Energy/mean/value";
                     h5ar << alps::make_pvp(oss.str().c_str(), energies);
+                    h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
                     
                     oss.str("");
                     oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
@@ -286,7 +287,6 @@ int main(int argc, char ** argv)
             h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
             
             h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
-            h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
 #ifdef MPI_PARALLEL
         }
 #endif

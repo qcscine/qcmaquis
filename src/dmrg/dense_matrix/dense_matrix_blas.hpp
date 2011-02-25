@@ -60,6 +60,8 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)
     template <typename MemoryBlock> \
     void plus_and_minus_assign_impl(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs, typename dense_matrix<T,MemoryBlock>::value_type const& sign) \
     { \
+        static Timer timer("plus_minus_assign"); \
+        timer.begin(); \
         assert( m.num_columns() == rhs.num_columns() && m.num_rows() == rhs.num_rows() ); \
         if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
         { \
@@ -70,6 +72,7 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)
             for(std::size_t j=0; j < m.num_columns(); ++j) \
                 boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.column(j).first), 1, &(*m.column(j).first), 1); \
         } \
+        timer.end(); \
     } \
     template <typename MemoryBlock> \
     void plus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs) \
