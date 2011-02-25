@@ -40,9 +40,9 @@ namespace ambient {
             grp->commit();
         }
         scope.set_group(grp);
+        scope.get_op()->set_ids();
         if(!scope.involved()) return;
         scope.get_op()->set_scope(grp);
-        scope.get_op()->set_ids();
     }
 
     void scope_retain(const char* sql)
