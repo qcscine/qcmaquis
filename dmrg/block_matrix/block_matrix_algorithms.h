@@ -144,7 +144,7 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
             continue;
         
         /* hack for now */
-        keep = std::max(keep, std::size_t(1));
+//        keep = std::max(keep, std::size_t(1));
         
         if (keep == 0) {
             S.remove_block(S.left_basis()[k].first,
@@ -213,7 +213,7 @@ std::pair<std::size_t, double> syev_truncate(block_matrix<Matrix, SymmGroup> con
             continue;
         
         /* hack for now */
-        keep = std::max(keep, std::size_t(1));
+//        keep = std::max(keep, std::size_t(1));
         
         if (keep == 0) {
             evals.remove_block(evals.left_basis()[k].first,

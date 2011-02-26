@@ -176,13 +176,21 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     static Timer timer("scalar_norm");
     timer.begin();
 
-    make_left_paired();
-    block_matrix<Matrix, SymmGroup> t;
-    pgemm(conjugate_transpose(data_), data_, t);
-    real_type r = sqrt(trace(t));
+//    make_left_paired();
+//    block_matrix<Matrix, SymmGroup> t;
+//    pgemm(conjugate_transpose(data_), data_, t);
+//    real_type r = sqrt(trace(t));
 
+    using utils::conj;
+    
+    scalar_type ret = 0;
+    for (std::size_t b = 0; b < data_.n_blocks(); ++b)
+        for (std::size_t c = 0; c < num_columns(data_[b]); ++c)
+            for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
+                ret += conj(data_[b](r,c)) * data_[b](r,c);
+    
     timer.end();
-    return r;
+    return sqrt(ret);
 }
 
 template<class Matrix, class SymmGroup>
@@ -194,12 +202,20 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 
     make_left_paired();
     rhs.make_left_paired();
-    block_matrix<Matrix, SymmGroup> t;
-    pgemm(conjugate_transpose(data_), rhs.data_, t);
-    scalar_type r = trace(t);
+//    block_matrix<Matrix, SymmGroup> t;
+//    pgemm(conjugate_transpose(data_), rhs.data_, t);
+//    scalar_type r = trace(t);
+    
+    using utils::conj;
+    
+    scalar_type ret = 0;
+    for (std::size_t b = 0; b < data_.n_blocks(); ++b)
+        for (std::size_t c = 0; c < num_columns(data_[b]); ++c)
+            for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
+                ret += conj(data_[b](r,c)) * rhs.data_[b](r,c);
 
     timer.end();
-    return r;
+    return ret;
 }
 
 template<class Matrix, class SymmGroup>
