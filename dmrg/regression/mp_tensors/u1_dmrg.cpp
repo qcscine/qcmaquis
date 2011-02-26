@@ -216,7 +216,8 @@ int main(int argc, char ** argv)
                     std::ostringstream oss;
                     oss << "/simulation/results/sweep" << sweep << "/Iteration Energy/mean/value";
                     h5ar << alps::make_pvp(oss.str().c_str(), energies);
-                    h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
+                    if (energies.size() > 0)
+                        h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
                     
                     oss.str("");
                     oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
