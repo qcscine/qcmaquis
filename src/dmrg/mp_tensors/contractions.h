@@ -702,7 +702,7 @@ struct contraction {
         truncation = syev_truncate(dm, U, S, cutoff, Mmax);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
-        assert( U.left_basis() == ret.data_.left_basis() );
+//        assert( U.left_basis() == ret.data_.left_basis() );
         ret.data_ = U;
         ret.right_i = U.right_basis();
         
@@ -775,7 +775,7 @@ struct contraction {
         V = transpose(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
-        assert( V.right_basis() == ret.data_.right_basis() );
+//        assert( V.right_basis() == ret.data_.right_basis() );
         ret.data_ = V;
         ret.left_i = V.left_basis();
         
