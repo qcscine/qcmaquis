@@ -104,7 +104,7 @@ namespace blas {
     dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator /= (T2 const& t)
     {
         using blas::multiplies_assign;
-        multiplies_assign(*this, 1/t);
+        multiplies_assign(*this, T(1)/t);
         return *this;
     }
 
@@ -516,6 +516,13 @@ namespace blas {
         return a;
     }
 
+	template <typename T, typename MemoryBlock>
+    const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a)
+    {
+        a *= typename dense_matrix<T,MemoryBlock>::value_type(-1);
+        return a;
+    }
+	
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type, typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
     operator * (dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
