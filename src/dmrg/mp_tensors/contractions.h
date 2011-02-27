@@ -423,6 +423,7 @@ struct contraction {
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b1];
                     
+                    // note to self: I think these are always the same
                     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
                     ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
                     
@@ -508,6 +509,10 @@ struct contraction {
 #pragma omp parallel for schedule(guided)
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(mps.data_, right.data_[b], t[b]);
+            block_matrix<Matrix, SymmGroup> tmp;
+            reshape_left_to_right<Matrix>(mps.site_dim(), mps.row_dim(), right.data_[b].right_basis(),
+                                          t[b], tmp);
+            swap(t[b], tmp);
         }
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = mps.col_dim();
@@ -533,16 +538,12 @@ struct contraction {
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b2];
                     
-                    ProductBasis<SymmGroup> left_pb(physical_i, left_i);
-                    
-//                    for (size_t s1 = 0; s1 < physical_i.size(); ++s1)
-//                        for (size_t s2 = 0; s2 < physical_i.size(); ++s2) {
-//                            if (! W.has_block(physical_i[s1].first, physical_i[s2].first) )
-//                                continue;
-//                            
-//                            for (size_t l = 0; l < left_i.size(); ++l)
-//                                for (size_t r = 0; r < right_i.size(); ++r)
-//                                {
+                    ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
+                                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                             -boost::lambda::_1, boost::lambda::_2));
+                    ProductBasis<SymmGroup> in_right_pb(physical_i, right.data_[b2].right_basis(),
+                                                        boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                            -boost::lambda::_1, boost::lambda::_2));
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
@@ -551,29 +552,40 @@ struct contraction {
                         
                         for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
                         {
-                            size_t r = right_i.position(T.right_basis()[t_block].first);
-                            size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
-                                                                       -physical_i[s1].first));
-                            {
+//                            size_t r = right_i.position(T.right_basis()[t_block].first);
+//                            size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
+//                                                                       physical_i[s1].first));
+                            
+                            size_t l = left_i.position(T.left_basis()[t_block].first);
+                            size_t r = right_i.position(SymmGroup::fuse(physical_i[s1].first,
+                                                                        T.right_basis()[t_block].first));
+                            
+                            if (l >= left_i.size())
+                                continue;
+                            if (r >= right_i.size())
+                                continue;
+                            
+                            {   
+                                charge T_l_charge = T.left_basis()[t_block].first;
+                                charge T_r_charge = T.right_basis()[t_block].first;
                                 
-                                charge T_l_charge = SymmGroup::fuse(physical_i[s1].first,
-                                                                    left_i[l].first);
-                                charge T_r_charge = right_i[r].first;
+                                charge out_l_charge = left_i[l].first;
+                                charge out_r_charge = SymmGroup::fuse(-physical_i[s2].first,
+                                                                      right_i[r].first);
                                 
-                                if (! T.has_block(T_l_charge, T_r_charge) )
-                                    continue;
-                                
-                                charge out_l_charge = SymmGroup::fuse(physical_i[s2].first,
-                                                                      left_i[l].first);
-                                charge out_r_charge = right_i[r].first;
+                                assert( T_r_charge == SymmGroup::fuse(-physical_i[s1].first,
+                                                                      right_i[r].first) );
                                 
                                 if (! right.data_[b2].right_basis().has(right_i[r].first) )
                                     continue;
                                 if (! mps.row_dim().has(left_i[l].first) )
                                     continue;
                                 
-                                size_t in_left_offset = left_pb(physical_i[s1].first, left_i[l].first);
-                                size_t out_left_offset = left_pb(physical_i[s2].first, left_i[l].first);
+//                                size_t in_left_offset = left_pb(physical_i[s1].first, left_i[l].first);
+//                                size_t out_left_offset = left_pb(physical_i[s2].first, left_i[l].first);
+                                
+                                size_t in_right_offset = in_right_pb(physical_i[s1].first, right_i[r].first);
+                                size_t out_right_offset = out_right_pb(physical_i[s2].first, right_i[r].first);
                                 
                                 if (!pretend) {
                                     Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
@@ -584,21 +596,24 @@ struct contraction {
                                         for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                             typename Matrix::value_type wblock_t = wblock(ss1, ss2);
                                             for (size_t rr = 0; rr < right_i[r].second; ++rr)
-//                                                for (size_t ll = 0; ll < left_i[l].second; ++ll) {
+                                                for (size_t ll = 0; ll < left_i[l].second; ++ll) {
 //                                                    oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
 //                                                    iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
-//                                                }
-                                                iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
-                                                              &iblock(in_left_offset + ss1*left_i[l].second, rr)+left_i[l].second,
-                                                              &oblock(out_left_offset + ss2*left_i[l].second, rr),
-                                                              wblock_t);
+                                                    oblock(ll, out_right_offset + ss2*right_i[r].second+rr) +=
+                                                    iblock(ll, in_right_offset + ss1*right_i[r].second+rr) * wblock_t;
+                                                }
+//                                                iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
+//                                                              &iblock(in_left_offset + ss1*left_i[l].second, rr)+left_i[l].second,
+//                                                              &oblock(out_left_offset + ss2*left_i[l].second, rr),
+//                                                              wblock_t);
                                         }
                                 }
                                 
                                 if (pretend)
                                     ret.data_[b1].reserve(out_l_charge, out_r_charge,
-                                                          out_left_offset + physical_i[s2].second * left_i[l].second,
-                                                          right_i[r].second);
+                                                          left_i[l].second, out_right_offset + physical_i[s2].second * right_i[r].second);
+//                                                          out_left_offset + physical_i[s2].second * left_i[l].second,
+//                                                          right_i[r].second);
                             }
                         }
                         
@@ -746,7 +761,7 @@ struct contraction {
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
         gemm(transpose(mps.data_), mps.data_, dm);
-        
+            
         Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
         
         mps.make_right_paired();
@@ -757,7 +772,7 @@ struct contraction {
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (mps.data_.right_basis().has(tdm.left_basis()[k].first))
+                if (mps.data_.right_basis().has(tdm.right_basis()[k].first))
                     dm.match_and_add_block(tdm[k],
                                            tdm.left_basis()[k].first,
                                            tdm.right_basis()[k].first);
@@ -778,6 +793,8 @@ struct contraction {
 //        assert( V.right_basis() == ret.data_.right_basis() );
         ret.data_ = V;
         ret.left_i = V.left_basis();
+        
+        cout << "Truncated, alpha!=0: " << truncation.second << endl;
         
         timer.end();
         return ret; 

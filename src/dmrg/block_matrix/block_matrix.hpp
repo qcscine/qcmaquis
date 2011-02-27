@@ -118,7 +118,7 @@ bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(std::pair<charge, size_type> const & r,
-               std::pair<charge, size_type> const & c) const
+                                                std::pair<charge, size_type> const & c) const
 {
     return has_block(r.first, c.first);
 }
