@@ -429,7 +429,7 @@ matrix_gpu<T> matrix_matrix_multiply( matrix_gpu<T>const & Matrix_left,  matrix_
 */
 	
 template <class T>
-void matrix_matrix_addition(vli::vli_matrix<T>const & Matrix_left,  vli::vli_matrix<T>const & Matrix_right, vli::vli_matrix<T>& Matrix_result);
+void addition_classic_gpu(vli::vli_matrix<T>const & Matrix_left,  vli::vli_matrix<T>const & Matrix_right, vli::vli_matrix<T>& Matrix_result);
 	
 /*
 template<class T>

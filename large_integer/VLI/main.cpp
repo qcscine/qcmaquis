@@ -22,18 +22,19 @@ int main (int argc, char * const argv[])
 	int FreqGPU = GPU->instance().GetDeviceProperties().clockRate;
 	std::cout << " FreqGPU : " << FreqGPU << std::endl;
 
-	vli::vli_matrix< int > A(25,5);
-	vli::vli_matrix< int > B(25,5);
-	vli::vli_matrix< int > C(25,5);
+	vli::vli_matrix< int > A(1,5);
+	vli::vli_matrix< int > B(1,5);
+	vli::vli_matrix< int > C(1,5);
 
-	vli::vli_matrix< int > A_c(25,5);
-	vli::vli_matrix< int > B_c(25,5);
-	vli::vli_matrix< int > C_c(25,5);
-	
+	vli::vli_matrix< int > A_c(1,5);
+	vli::vli_matrix< int > B_c(1,5);
+	vli::vli_matrix< int > C_c(1,5);
+	vli::vli_matrix< int > D_c(1,5);	
 	
 
-	for(int i=0 ; i < 25; i++)
+	for(int i=0 ; i < 1; i++)
 	{
+	/*	
 	A(0,i) = -1;
 	A(1,i) = 2;
 	A(2,i) = 0;
@@ -46,16 +47,16 @@ int main (int argc, char * const argv[])
 	B(3,i) = 0;
 	B(4,i) = 2;
 		
-		
-		A_c(0,i) = 2;
-		A_c(1,i) = 2;
-		A_c(2,i) = 3;
-		A_c(3,i) = 3;
+	*/	
+		A_c(0,i) = 200;
+		A_c(1,i) = 200;
+		A_c(2,i) = 300;
+		A_c(3,i) = 200;
 		A_c(4,i) = 0;
 		
-		B_c(0,i) = 1;
+		B_c(0,i) = 100;
 		B_c(1,i) = 0;
-		B_c(2,i) = 1;
+		B_c(2,i) = 100;
 		B_c(3,i) = 0;
 		B_c(4,i) = 0;	
 		
@@ -65,17 +66,22 @@ int main (int argc, char * const argv[])
 
 	
 	
-	std::cout << " cpu avizienis " << std::endl;
+//	std::cout << " cpu avizienis " << std::endl;
 	
-	vli::addition_Avizienis_kernel_cpu(A,B,C);
-	std::cout << C << std::endl;
+//	vli::addition_Avizienis_kernel_cpu(A,B,C);
+//	std::cout << C << std::endl;
 	
-	std::cout << " gpu avizienis " << std::endl;
-	gpu::matrix_matrix_addition(A_c,B_c,C_c);
+//	std::cout << " gpu avizienis " << std::endl;
+//	gpu::matrix_matrix_addition(A_c,B_c,C_c);
 	
 	
 	std::cout << " cpu classique " << std::endl;
-	vli::addition_classic_kernel_cpu(A_c,B_c,C_c);
+	vli::addition_classic_cpu(A_c,B_c,C_c);
+	
+	gpu::addition_classic_gpu(A_c,B_c,D_c);
+	
+//	vli::multiplication_classic_kernel_cpu(A_c,B_c,C_c);
+	
 	std::cout << C_c << std::endl;
 		
 	GPU->instance().destructor();

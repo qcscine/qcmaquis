@@ -36,7 +36,7 @@ namespace gpu
 
 	
 template<class T>
-void matrix_matrix_addition(vli::vli_matrix<T> const & lhs,vli::vli_matrix<T> const & rhs,vli::vli_matrix<T> & result_cpu)
+void addition_classic_gpu(vli::vli_matrix<T> const & lhs,vli::vli_matrix<T> const & rhs,vli::vli_matrix<T> & result_cpu)
 {
 	matrix_gpu<T> lhs_GPU(lhs);
 	matrix_gpu<T> rhs_GPU(rhs);
