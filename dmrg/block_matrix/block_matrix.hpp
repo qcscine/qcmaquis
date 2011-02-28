@@ -57,13 +57,13 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1
     p1 = std::make_pair(c1, mtx.num_rows()),
     p2 = std::make_pair(c2, mtx.num_columns());
     
-    /*size_type i1 = rows_.insert(p1);
+    size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
-    data_.insert(data_.begin() + i1, mtx);*/
+    data_.insert(data_.begin() + i1, mtx);
     
-    rows_.push_back(p1);
-    cols_.push_back(p2);
-    data_.push_back(mtx);
+    //rows_.push_back(p1);
+    //cols_.push_back(p2);
+    //data_.push_back(mtx);
 }
 
 template<class Matrix, class SymmGroup>
@@ -312,9 +312,12 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         assert(rows_.size() == cols_.size());
         assert(rows_.size() == data_.size());
         
-        rows_.push_back(p1);
+        size_type i1 = rows_.insert(p1);
+        cols_.insert(i1, p2);
+        data_.insert(data_.begin() + i1, Matrix()); 
+        /*rows_.push_back(p1);
         cols_.push_back(p2);
-        data_.push_back(Matrix());
+        data_.push_back(Matrix());*/
     }
 }
 
