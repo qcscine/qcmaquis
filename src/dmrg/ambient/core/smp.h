@@ -26,6 +26,7 @@ namespace ambient {
         void set_op(core::operation* op);
         core::operation* get_op();
         bool involved();
+        bool master(); // if the invoking process is master of group
     private:
         int rank;
         int size;

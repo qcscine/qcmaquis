@@ -49,6 +49,9 @@ namespace ambient {
         return this->op;
     }
     bool smp::involved(){
-        return ((this->rank != MPI_UNDEFINED) ? true : false); 
+        return (this->rank != MPI_UNDEFINED); 
+    }
+    bool smp::master(){
+        return (this->involved() && (this->rank == this->group->master));
     }
 }

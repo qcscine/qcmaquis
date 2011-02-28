@@ -1,15 +1,20 @@
 #include "ambient/core/layout.h"
 #include "ambient/ambient.h"
 #include "ambient/core/p_profile.h"
+#include "ambient/packets/auxiliary.hpp"
+#include "ambient/groups/auxiliary.hpp"
 
 namespace ambient{ namespace core{
+
+    layout_table_entry::layout_table_entry()
+    { }
 
     layout_table_entry::layout_table_entry(int owner, int i, int j, int k)
     : owner(owner), i(i), j(j), k(k) { }
 
     layout_table::~layout_table(){} // don't forget to delete table entries here
     layout_table::layout_table(p_profile* object) 
-    : object(object), count(0)
+    : object(object), count(0), segment_count(0)
     {
         this->reserved_x = 0;
         this->reserved_y = 0;
@@ -41,14 +46,64 @@ namespace ambient{ namespace core{
         return map[i][j];
     }
 
-    void layout_table::add_segment_entry(int owner, const int i, const int j, const int k){
-        segment.push_back(layout_table_entry(owner, i, j, k));
+    void layout_table::add_segment_entry(int owner, int i, int j, int k){
+        if(segment_count == segment.size()) segment.resize(segment_count+1);
+        segment[segment_count++] = layout_table_entry(owner, i, j, k);
     }
 
-    void layout_table::update_map_entry(int owner, const int i, const int j, const int k){
+    void layout_table::update_map_entry(int owner, int i, int j, int k){
         if(map[i][j] == NULL) this->count++;
         map[i][j] = new layout_table_entry(owner, i, j, k);
     }
+    void layout_table::record(int owner, int i, int j, int k) {
+        if(ambient::scope.master()){ 
+            update_map_entry(owner, i, j, k);
+            add_segment_entry(owner, i, j, k);
+        }else 
+            add_segment_entry(owner, i, j, k);
+    }
+    void layout_table::clean(){
+        this->segment_count = 0;
+    }
+    void layout_table::print(){
+        for(int i=0; i < this->segment_count; i++){
+            printf("PROFILE: %d; R%d: %d %d\n", this->object->id, this->segment[i].owner, this->segment[i].i, this->segment[i].j);
+        }
+    }
 
+// exit from this function should be blocking
+    void apply_change_set(p_profile** profiles, size_t count)
+    {
+        ambient::packets::packet* layout_packet;
+        for(int k = 0; k < count; k++){
+            if(ambient::scope.master()){
+                for(int i=0; i < (profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y - profiles[k]->layout->segment_count); i++){
+                    layout_packet = ambient::groups::recv<layout_packet_t>(ambient::scope.get_group(), alloc_t<layout_packet_t>());
+                    profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID)]->layout->update_map_entry(layout_packet->get<int>(A_LAYOUT_P_OWNER),
+                                                                                                  layout_packet->get<int>(A_LAYOUT_P_I)    ,
+                                                                                                  layout_packet->get<int>(A_LAYOUT_P_J)    ,
+                                                                                                  layout_packet->get<int>(A_LAYOUT_P_K)    );
+                }
+            }else{
+                for(int i=0; i < profiles[k]->layout->segment_count; i++){
+                    layout_packet = pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+                                                          ambient::scope.get_group()->master, 
+                                                          "P2P", // communication type
+                                                          k,     // profile id (in terms of profiles array positioning
+                                                          profiles[k]->layout->segment[i].owner, 
+                                                          profiles[k]->layout->segment[i].i, 
+                                                          profiles[k]->layout->segment[i].j, 
+                                                          profiles[k]->layout->segment[i].k);
+                    ambient::groups::send(layout_packet, ambient::scope.get_group());
+                }
+            }
+        }
+        for(int k = 0; k < count; k++){
+            if(!profiles[k]->is_inited()) profiles[k]->postprocess();
+            else {
+                printf("Ok, the profile is inited, need to exchange\n");
+            }
+        }
+    }
 
 } }

@@ -192,4 +192,8 @@ namespace ambient{ namespace groups {
         }
     }
 
+    int group::get_master_g(){
+        return translate_rank(this->master);
+    }
+
 } }

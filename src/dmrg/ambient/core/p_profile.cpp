@@ -5,7 +5,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      specific(false), profile(this), valid(true){ };
+      specific(false), profile(this), valid(true), inited(false), master_relay(std::pair<int,int>(-1,-1)) { };
 
     p_profile* p_profile::dereference(){
         if(!this->valid) printf("Error: attempting to use invalid profile (object was deleted)\n");
@@ -17,6 +17,18 @@ namespace ambient {
         this->group_id = group_id.first;
         this->layout = new core::layout_table(this);
         this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
+    }
+
+    void p_profile::set_master(int master){
+        
+    }
+
+    int p_profile::get_master(){
+        return 0;
+    }
+
+    int p_profile::get_xmaster(){
+        return 0;
     }
 
     p_profile & p_profile::operator>>(dim3 distr_dim) 
@@ -135,8 +147,13 @@ namespace ambient {
         return dim3(this->default_group->i, this->default_group->j, this->default_group->k);
     }
 
-    void p_profile::postprocess(){
+    bool p_profile::is_inited(){
+        return this->inited;
+    }
 
+    void p_profile::postprocess(){
+        if(this->is_inited()) return; // init only one time
+        this->inited = true;
 #ifndef DSCALAPACK_COMPATIBLE
         for(int j=0; j < this->get_grid_dim().x; j++){
             for(int i=0; i < this->get_grid_dim().y; i++){

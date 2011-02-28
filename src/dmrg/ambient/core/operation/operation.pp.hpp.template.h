@@ -44,9 +44,9 @@ template< typename FP, BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 operation::operation( FP op, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER, T, *arg) ){
     this->init();
     this->operation_ptr = (void(*)())op;
-    this->arg_count = TYPES_NUMBER;
-    this->arguments = (void**)malloc(sizeof(void*)*this->arg_count);
-    this->profiles  = (p_profile**)malloc(sizeof(p_profile*)*this->arg_count);
+    this->count = TYPES_NUMBER;
+    this->arguments = (void**)malloc(sizeof(void*)*this->count);
+    this->profiles  = (p_profile**)malloc(sizeof(p_profile*)*this->count);
     BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;

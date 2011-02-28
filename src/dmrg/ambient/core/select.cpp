@@ -24,7 +24,7 @@ namespace ambient {
         if(as == NULL) as = (char*)"tmp";
 
         scope.set_group(group);
-        if(!scope.involved()) return;
+        if(!scope.involved()) return; // to rewrite this // need to know master of profile even if I'm not in the group
         if((grp = groups::group::group_map(as)) == NULL){
             grp = new groups::group(as, 0, group);
 
@@ -40,7 +40,11 @@ namespace ambient {
             grp->commit();
         }
         scope.set_group(grp);
-        scope.get_op()->set_ids();
+        for(size_t i=0; i < scope.get_op()->count; i++){
+            if(scope.get_op()->profiles[i]->id == 0)
+                scope.get_op()->profiles[i]->set_id(ambient::scope.get_group()->id);
+            scope.get_op()->profiles[i]->set_master(ambient::scope.get_group()->get_master_g());
+        }
         if(!scope.involved()) return;
         scope.get_op()->set_scope(grp);
     }

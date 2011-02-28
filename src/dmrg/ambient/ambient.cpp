@@ -129,27 +129,9 @@ namespace ambient
 
 //      regression_test();
         commit_t<control_packet_t>();
+        commit_t<layout_packet_t>();
         commit_t<data_packet_t>();
 
-/* Distribution kernel example:
-
-void distribution_1(i_dense_matrix* matrix)
-{
-    group* grp = select(" * from ambient");
-    int count = matrix->block_rows*matrix->block_cols / grp->size;
-    for(int rank=0; rank < grp->size; rank++){
-        for(int j=0; j < count; j++)
-        workload[rank] += matrix(rank*count + j); // adding work-group
-    }
-}
-
-void computation_1(workgroup* block)
-{
-    block.item[1] += workgroup[10].item[9];
-    block += workgroup[7];
-}
-
-*/
 // AUTO TUNING SHOULD START BELOW...
 
 ////////////////////////////////////
@@ -170,7 +152,15 @@ void computation_1(workgroup* block)
         core::operation* computing;
         while(!this->stack.end_reached())
             this->stack.pick()->first->perform();
-        
+// let's make distribution here
+// what we have?
+        while(!this->stack.end_reached()){
+            logistics = this->stack.pick()->first;
+            if(logistics->get_scope() != NULL){
+                ambient::core::apply_change_set(logistics->profiles, logistics->count);
+            }
+        }
+
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
             logistics = pair->first;
@@ -191,6 +181,12 @@ void computation_1(workgroup* block)
                     }
                 } // logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
             }
+        }
+// cleaning the layout
+        while(!this->stack.end_reached()){
+            logistics = this->stack.pick()->first;
+            for(int i=0; i < logistics->count; i++)
+                logistics->profiles[i]->layout->clean();
         }
         this->stack.clean();
     }

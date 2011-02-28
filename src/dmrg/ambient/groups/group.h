@@ -15,6 +15,8 @@ namespace ambient{ namespace groups{
         group(const char* name, int master, MPI_Comm parent); // special constructor for nest group
         void commit();
 
+        int get_master_g(); // get translated rank of the group master
+
         void add(const int* procs, int count, bool excl = false);
         void add_range(int first, int last, bool excl = false);
         void add_every(int nth, bool excl = false);
