@@ -3,9 +3,9 @@ template< typename FP, typename T0 >
 operation::operation( FP op, T0 *arg0 ){
     this->init();
     this->operation_ptr = (void(*)())op;
-    this->arg_count = 1;
-    this->arguments = (void**)malloc(sizeof(void*)*this->arg_count);
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->arg_count);
+    this->count = 1;
+    this->arguments = (void**)malloc(sizeof(void*)*this->count);
+    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
     this->arguments[0] = (void*)arg0;
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;
@@ -29,9 +29,9 @@ template< typename FP, typename T0 , typename T1 >
 operation::operation( FP op, T0 *arg0 , T1 *arg1 ){
     this->init();
     this->operation_ptr = (void(*)())op;
-    this->arg_count = 2;
-    this->arguments = (void**)malloc(sizeof(void*)*this->arg_count);
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->arg_count);
+    this->count = 2;
+    this->arguments = (void**)malloc(sizeof(void*)*this->count);
+    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
     this->arguments[0] = (void*)arg0; this->arguments[1] = (void*)arg1;
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;
@@ -55,9 +55,9 @@ template< typename FP, typename T0 , typename T1 , typename T2 >
 operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 ){
     this->init();
     this->operation_ptr = (void(*)())op;
-    this->arg_count = 3;
-    this->arguments = (void**)malloc(sizeof(void*)*this->arg_count);
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->arg_count);
+    this->count = 3;
+    this->arguments = (void**)malloc(sizeof(void*)*this->count);
+    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
     this->arguments[0] = (void*)arg0; this->arguments[1] = (void*)arg1; this->arguments[2] = (void*)arg2;
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;
@@ -81,9 +81,9 @@ template< typename FP, typename T0 , typename T1 , typename T2 , typename T3 >
 operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 ){
     this->init();
     this->operation_ptr = (void(*)())op;
-    this->arg_count = 4;
-    this->arguments = (void**)malloc(sizeof(void*)*this->arg_count);
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->arg_count);
+    this->count = 4;
+    this->arguments = (void**)malloc(sizeof(void*)*this->count);
+    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
     this->arguments[0] = (void*)arg0; this->arguments[1] = (void*)arg1; this->arguments[2] = (void*)arg2; this->arguments[3] = (void*)arg3;
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;

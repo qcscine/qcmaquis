@@ -14,20 +14,10 @@ namespace ambient{ namespace core{
         ambient::scope.set_op(this);
         ambient::scope.set_group((groups::group*)NULL);
         (this->*prototype)();
-        if(!ambient::scope.involved()) return;
-        for(size_t i=0; i < this->arg_count; i++)
-            this->profiles[i]->postprocess();
     }
     void operation::performx()
     {
         (this->*prototype)();
-    }
-    void operation::set_ids()
-    {
-        for(size_t i=0; i < this->arg_count; i++){
-            if(this->profiles[i]->id == 0)
-                this->profiles[i]->set_id(ambient::scope.get_group()->id);
-        }
     }
     void operation::set_scope(groups::group* scope)
     {

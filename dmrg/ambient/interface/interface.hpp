@@ -30,9 +30,9 @@ void assign(T& ref, int i, int j, int k)
 // need to check uniqness here...
     void_pt& profile = breakdown(ref);
     workgroup* group = profile.group(i,j,k);
-        printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_group()->name, scope.get_rank(), group->i, group->j, (*(group->profile))->id );
-    group->owner = ambient::rank();
-    profile.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
+//        printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_group()->name, scope.get_rank(), group->i, group->j, (*(group->profile))->id );
+    group->owner = ambient::rank(); // maybe will remove
+    profile.layout->record(group->owner, i, j, k);
 }
 template<typename T>
 void assign(const T& ref, int i, int j, int k)
@@ -40,8 +40,8 @@ void assign(const T& ref, int i, int j, int k)
     void_pt& profile = breakdown(ref);
     workgroup* group = profile.group(i,j,k);
 //        printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_group()->name, scope.get_rank(), group->i, group->j, (*(group->profile))->id );
-    group->owner = ambient::rank();
-    profile.layout->update_map_entry(ambient::rank(), i, j, k); // or add_segment_entry
+    group->owner = ambient::rank(); // maybe will remove
+    profile.layout->record(group->owner, i, j, k);
 }
 template<typename T>
 dim3 get_dim(T& ref)

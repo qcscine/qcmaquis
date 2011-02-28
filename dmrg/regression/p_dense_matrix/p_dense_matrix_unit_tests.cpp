@@ -142,11 +142,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     time1.end();
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( single_integer_test, T, test_types )
+/*BOOST_AUTO_TEST_CASE_TEMPLATE( single_integer_test, T, test_types )
 {
     int *input = (int*)malloc(sizeof(int));
     *input = -1;
     ambient::push(ambient::single_integer_l_kernel, ambient::single_integer_c_kernel, *input);
     ambient::playout();
     BOOST_CHECK_EQUAL(*input, 13);
-}
+}*/

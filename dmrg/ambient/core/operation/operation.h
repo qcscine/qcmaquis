@@ -15,7 +15,6 @@ namespace ambient{ namespace core{
         void init();     // some init that doesn't depend upon arguments
         void perform();  // executes operation
         void performx(); // executes operation (clean way)
-        void set_ids();
         void set_scope(groups::group* scope);
         groups::group* get_scope();
         void(operation::*prototype)();
@@ -24,7 +23,7 @@ namespace ambient{ namespace core{
         void** arguments;
         p_profile** profiles;
         p_profile* pin;
-        size_t arg_count;
+        size_t count;
         bool is_extracted;
     };
 

@@ -8,6 +8,14 @@
 #define A_DEST_FIELD 1 // RECOMMENDED FIRST FIELD IN DERIVED TYPES
                        // (KEEP IT UNLESS YOU KNOW WHAT YOU ARE DOING)
 
+// LAYOUT PACKET FIELDS DEFINES
+#define A_LAYOUT_P_OP_ID 3
+#define A_LAYOUT_P_OWNER 4
+#define A_LAYOUT_P_I     5
+#define A_LAYOUT_P_J     6
+#define A_LAYOUT_P_K     7
+
+
 namespace ambient{ namespace packets{
 
 // dest is mandatory first (in order to perform send operation
@@ -38,6 +46,22 @@ namespace ambient{ namespace packets{
             priority = MPI_INT;
             __a_pack{ 1, 1, 1 };
             __a_code('C');
+        }
+    };
+
+    struct layout_packet_t : public standard_packet_t
+    {
+        __a_fields__ op_profile_id, owner, i, j, k;
+        layout_packet_t()
+        {
+            __a_packet__
+            op_profile_id = MPI_INT;
+            owner         = MPI_INT;
+            i             = MPI_INT;
+            j             = MPI_INT;
+            k             = MPI_INT;
+            __a_pack{ 1, 1, 1, 1, 1 };
+            __a_code('L');
         }
     };
 

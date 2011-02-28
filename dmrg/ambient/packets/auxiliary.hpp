@@ -1,5 +1,5 @@
-#ifndef AMBIENT_PACKETS_AUX_H
-#define AMBIENT_PACKETS_AUX_H
+#ifndef AMBIENT_PACKETS_AUX_HPP
+#define AMBIENT_PACKETS_AUX_HPP
 
 namespace ambient{ namespace packets {
 
@@ -46,14 +46,14 @@ namespace ambient{ namespace packets {
         return instance;
     }
 
-    packet* unpack(void* memory){ 
-        return new packet(memory);
-    }
+//    packet* unpack(void* memory){ 
+//        return new packet(memory);
+//    }
 
     template<typename T>
     packet* unpack(void* memory){
         *(char*)memory = get_t<T>().t_code;
-        return unpack(memory);
+        return new packet(memory);
     }
 
 } }

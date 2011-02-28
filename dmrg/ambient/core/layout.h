@@ -11,6 +11,7 @@ namespace core {
 
     class layout_table_entry {
     public:
+        layout_table_entry(); // default constructor
         layout_table_entry(int owner, int i, int j = 0, int k = 0);
         int i;
         int j;
@@ -28,6 +29,10 @@ namespace core {
 
         void add_segment_entry(int owner, int i, int j = 0, int k = 0);
         void update_map_entry(int owner, int i, int j = 0, int k = 0);
+        void record(int owner, int i, int j = 0, int k = 0); // general call invoking one above
+        void clean();
+        void print();
+        void apply();
 
         p_profile* object;
         std::vector< std::vector<layout_table_entry*> > map;
@@ -35,7 +40,10 @@ namespace core {
         size_t reserved_y;
         std::vector<layout_table_entry> segment;
         size_t count;
+        size_t segment_count;
     };
+
+    void apply_change_set(p_profile** profiles, size_t count);
 
 } }
 #endif

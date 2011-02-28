@@ -21,9 +21,13 @@ namespace ambient {
         p_profile & operator,(dim3 dim);
         void regroup();
         void set_id(std::pair<unsigned int*,size_t> group_id);
+        void set_master(int master);
+        int get_master();
+        int get_xmaster();
         void set_default_group(int i, int j = 0, int k = 0);
         dim3 get_group_id();
 
+        std::pair<int,int> master_relay;
         p_profile* profile; // pointer to this profile (this on init - can be changed in proxy objects)
         p_profile* dereference(); // finds out if the profile pointer is up to date
         void postprocess(); // proceed with necessary memory allocations
@@ -80,7 +84,9 @@ namespace ambient {
         void set_item_dim(dim3 dim);
         void invalidate();
         bool is_valid();
+        bool is_inited();
     private:
+        bool inited;
         bool valid;
         dim3 distr_dim;   // work-item size of distribution blocks
         dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
