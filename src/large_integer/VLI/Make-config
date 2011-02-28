@@ -1,0 +1,20 @@
+# Make-config
+
+
+
+gpu:
+	$(MAKE) targets_gpu \
+	"N = gpu" \
+	"MPICC = g++ " \
+	"NVCC = /usr/local/cuda/bin/nvcc " \
+	"OPTIONS =  -m64  " \
+	"OPTIONS_NVCC =  -m64 -DNDEBUG  " \
+	"PREPROC = CPU_FREQ=2.2 " \
+	"LINK = -o  " \
+	"PATH_INC = -I/Developer/GPU\ Computing/shared/inc -I/opt/boost/include -I/usr/local/cuda/include  -I/Users/Tim/Documents/LONGINT_GPU/Untitled " \
+	"LIB = -lcudart -lcublas -lcuda " \
+	"PATH_LIB_CUBLAS=/usr/local/cuda/lib " \
+	"P = " \
+	"M = "
+
+
