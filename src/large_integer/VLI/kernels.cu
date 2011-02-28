@@ -125,14 +125,25 @@ classical addition, the operation " addition " is serial but we sum all number t
 
 */
 template <typename T>
+__device__ void addition_kernel_gpu(T* x, T* y , T* z,int k)
+{
+	int carry_bit; 
+	carry_bit = 0;
+	*(z+k)    += *(x+k) + *(y+k);
+	carry_bit  = *(z+k) >> LOG_BASE;
+	*(z+k)    %= BASE;
+	*(z+k+1)  += carry_bit; //MAYBE PB TO CHECK
+}
+
+template <typename T>
 __global__ void addition_classic_kernel_gpu(T x, T y , T z,int num_integer, int ld)
 {
 	int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	int j = xIndex*ld; // index to be on the beginning of the vli (beginning of every columns)
 
 	int k;
-	int carry_bit; 
-	carry_bit = 0;
+//	int carry_bit; 
+//	carry_bit = 0;
 	k = 0;
 
 	if(xIndex < num_integer) // the classical condition to avoid overflow
@@ -140,6 +151,8 @@ __global__ void addition_classic_kernel_gpu(T x, T y , T z,int num_integer, int 
 		for (size_type i = 0 ; i < ld; i++) 
 		{
 			k = i+j ;
+			addition_kernel_gpu(x,y,z,k);
+			/* old version
 			z[k]    += (x[k] + y[k]);
 			carry_bit  = z[k] >> LOG_BASE;
 			__syncthreads();// wait on read
@@ -147,6 +160,7 @@ __global__ void addition_classic_kernel_gpu(T x, T y , T z,int num_integer, int 
 			z[k+1]  += carry_bit; //MAYBE PB TO CHECK
 			__syncthreads();// wait on write
 			carry_bit = 0; //set to 0 for the nex columns			
+			*/
 		}
 	}
 
