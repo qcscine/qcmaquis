@@ -5,7 +5,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      specific(false), profile(this), valid(true), inited(false), master_relay(std::pair<int,int>(-1,-1)) { };
+      specific(false), profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)) { };
 
     p_profile* p_profile::dereference(){
         if(!this->valid) printf("Error: attempting to use invalid profile (object was deleted)\n");
@@ -14,21 +14,21 @@ namespace ambient {
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
-        this->group_id = group_id.first;
         this->layout = new core::layout_table(this);
+        this->group_id = group_id.first;
         this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
     }
 
     void p_profile::set_master(int master){
-        
+        this->master_relay = std::pair<int,int>(this->master_relay.second, master);
     }
 
     int p_profile::get_master(){
-        return 0;
+        return this->master_relay.second;
     }
 
     int p_profile::get_xmaster(){
-        return 0;
+        return this->master_relay.first;
     }
 
     p_profile & p_profile::operator>>(dim3 distr_dim) 
@@ -151,9 +151,19 @@ namespace ambient {
         return this->inited;
     }
 
+    void p_profile::preprocess(std::pair<unsigned int*,size_t> group_id, int master){
+        if(this->id == 0) this->set_id(group_id);
+        this->set_master(master);
+        if(this->inited){
+            this->need_init = false;
+        }else if(!this->inited){
+            this->need_init = true;
+            this->inited = true;
+        }
+    }
+
     void p_profile::postprocess(){
-        if(this->is_inited()) return; // init only one time
-        this->inited = true;
+        this->need_init = false;
 #ifndef DSCALAPACK_COMPATIBLE
         for(int j=0; j < this->get_grid_dim().x; j++){
             for(int i=0; i < this->get_grid_dim().y; i++){

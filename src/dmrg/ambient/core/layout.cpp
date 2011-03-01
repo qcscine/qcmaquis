@@ -97,11 +97,29 @@ namespace ambient{ namespace core{
                     ambient::groups::send(layout_packet, ambient::scope.get_group());
                 }
             }
-        }
+            printf("This profile's master is %d (old is %d)\n", profiles[k]->get_master(),profiles[k]->get_xmaster()); 
+        } // ok, the layout has been gathered
+
         for(int k = 0; k < count; k++){
-            if(!profiles[k]->is_inited()) profiles[k]->postprocess();
-            else {
+            if(profiles[k]->need_init) profiles[k]->postprocess();
+            else{
                 printf("Ok, the profile is inited, need to exchange\n");
+                if(ambient::scope.master()){
+//                    layout_packet = pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+//                                                          ambient::scope.get_group()->master, 
+//                                                          "P2P", // communication type
+//                                                          k,     // profile id (in terms of profiles array positioning
+//                                                          profiles[k]->layout->segment[i].owner, 
+//                                                          profiles[k]->layout->segment[i].i, 
+//                                                          profiles[k]->layout->segment[i].j, 
+//                                                          profiles[k]->layout->segment[i].k);
+//                    ambient::groups::send(layout_packet, ambient::scope.get_group());
+                }else{
+//                    for(int i=0; i < profiles[k]->layout->segment_count; i++){
+//                        block_packet = ambient::groups::recv<block_packet_t>(ambient::scope.get_group(), alloc_t<layout_packet_t>());
+                        //block_packet->get<int>(A_LAYOUT_P_OP_ID);
+//                    }
+                }
             }
         }
     }

@@ -196,4 +196,8 @@ namespace ambient{ namespace groups {
         return translate_rank(this->master);
     }
 
+    bool group::involved(){
+        return (this->rank != MPI_UNDEFINED);
+    }
+
 } }

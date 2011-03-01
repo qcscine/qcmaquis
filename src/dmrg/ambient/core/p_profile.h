@@ -9,6 +9,8 @@
 
 namespace ambient {
 
+    namespace groups { class group; }
+
     class workgroup;
 
     class p_profile {
@@ -30,6 +32,7 @@ namespace ambient {
         std::pair<int,int> master_relay;
         p_profile* profile; // pointer to this profile (this on init - can be changed in proxy objects)
         p_profile* dereference(); // finds out if the profile pointer is up to date
+        void preprocess(std::pair<unsigned int*,size_t> group_id, int master);
         void postprocess(); // proceed with necessary memory allocations
         void* scope; // includes ambient boundle
         void* data;  // pointer to the actual data
@@ -85,6 +88,7 @@ namespace ambient {
         void invalidate();
         bool is_valid();
         bool is_inited();
+        bool need_init;
     private:
         bool inited;
         bool valid;

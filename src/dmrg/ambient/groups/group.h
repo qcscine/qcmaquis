@@ -16,6 +16,7 @@ namespace ambient{ namespace groups{
         void commit();
 
         int get_master_g(); // get translated rank of the group master
+        bool involved();
 
         void add(const int* procs, int count, bool excl = false);
         void add_range(int first, int last, bool excl = false);
