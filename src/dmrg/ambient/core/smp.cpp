@@ -27,7 +27,7 @@ namespace ambient {
     void smp::set_group(const char* group)
     {
         if(group == NULL) this->set_group((groups::group*)NULL);
-        else this->set_group(groups::group::group_map(group));
+        else this->set_group(groups::group_map(group));
     }
     groups::group* smp::get_group(){
         if(this->group == NULL){

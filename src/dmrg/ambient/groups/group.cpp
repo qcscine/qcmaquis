@@ -181,7 +181,15 @@ namespace ambient{ namespace groups {
         ambient::rank.set( this, this->rank );
     }
 
-    group* group::group_map(const char* name, group* instance){
+    int group::get_master_g(){
+        return translate_rank(this->master);
+    }
+
+    bool group::involved(){
+        return (this->rank != MPI_UNDEFINED);
+    }
+
+    group* group_map(const char* name, group* instance){
         static std::map<std::string,group*> map;
         if(instance != NULL){ 
             if(map.find(name) != map.end()) printf("Warning: trying to add to groups with the same name\n");
@@ -190,14 +198,6 @@ namespace ambient{ namespace groups {
             if(map.find(name) == map.end()) return NULL; // wasn't able to find requested group
             return map.find(name)->second; 
         }
-    }
-
-    int group::get_master_g(){
-        return translate_rank(this->master);
-    }
-
-    bool group::involved(){
-        return (this->rank != MPI_UNDEFINED);
     }
 
 } }

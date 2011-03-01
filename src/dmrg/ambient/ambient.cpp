@@ -155,9 +155,8 @@ namespace ambient
 
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
-            if(logistics->get_scope()->involved()){
-                ambient::core::apply_change_set(logistics->profiles, logistics->count);
-            }
+            if(logistics->get_scope()->involved()) ambient::core::apply_change_set(logistics->profiles, logistics->count);
+            else ambient::core::perform_forwarding(logistics->profiles, logistics->count);
         }
 
         while(!this->stack.end_reached()){
