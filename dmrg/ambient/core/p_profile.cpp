@@ -5,7 +5,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      specific(false), profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)) { };
+      specific(false), profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL) { };
 
     p_profile* p_profile::dereference(){
         if(!this->valid) printf("Error: attempting to use invalid profile (object was deleted)\n");
@@ -29,6 +29,19 @@ namespace ambient {
 
     int p_profile::get_xmaster(){
         return this->master_relay.first;
+    }
+
+    void p_profile::set_scope(groups::group* scope){
+        this->xscope = this->scope;
+        this->scope = scope;
+    }
+    
+    groups::group* p_profile::get_scope(){
+        return this->scope;
+    }
+
+    groups::group* p_profile::get_xscope(){
+        return this->xscope;
     }
 
     p_profile & p_profile::operator>>(dim3 distr_dim) 
@@ -81,12 +94,12 @@ namespace ambient {
     void p_profile::solidify(){
         int i,j;
         size_t offset = 0;
-        this->scope = malloc(ambient::get_bound()                            + 
-                             this->layout->count                             *
-                             this->get_group_dim().x*this->get_group_dim().y *
-                             this->get_item_dim().x*this->get_item_dim().y   *
-                             this->type_size);
-        void* memory = this->data = (void*)((size_t)this->scope + ambient::get_bound());
+        this->framework = malloc(ambient::get_bound()                            + 
+                                 this->layout->count                             *
+                                 this->get_group_dim().x*this->get_group_dim().y *
+                                 this->get_item_dim().x*this->get_item_dim().y   *
+                                 this->type_size);
+        void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
 
 // let's find the solid_lda
         this->solid_lda = 0; 
@@ -119,7 +132,7 @@ namespace ambient {
 
     void p_profile::disperse(){ 
         size_t offset = 0;
-        void* memory = this->data = (void*)((size_t)this->scope + ambient::get_bound());
+        void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
         for(int j=0; j < this->get_grid_dim().x; j++){
             memory = (void*)((size_t)memory + offset*this->get_group_dim().y*this->get_item_dim().y*this->get_group_dim().x*this->get_item_dim().x*this->type_size);
             offset = 0;
@@ -151,9 +164,10 @@ namespace ambient {
         return this->inited;
     }
 
-    void p_profile::preprocess(std::pair<unsigned int*,size_t> group_id, int master){
-        if(this->id == 0) this->set_id(group_id);
-        this->set_master(master);
+    void p_profile::preprocess(groups::group* scope){
+        if(this->id == 0) this->set_id(scope->id);
+        this->set_master(scope->get_master_g());
+        this->set_scope(scope);
         if(this->inited){
             this->need_init = false;
         }else if(!this->inited){

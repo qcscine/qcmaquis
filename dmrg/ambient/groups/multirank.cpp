@@ -27,7 +27,7 @@ namespace ambient{ namespace groups {
 
     bool multirank::is_master(const char* grp_name) const
     {
-          groups::group* grp = groups::group::group_map(grp_name);
+          groups::group* grp = groups::group_map(grp_name);
           return is_master(grp);
     }
 

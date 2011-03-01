@@ -32,14 +32,21 @@ namespace ambient {
         std::pair<int,int> master_relay;
         p_profile* profile; // pointer to this profile (this on init - can be changed in proxy objects)
         p_profile* dereference(); // finds out if the profile pointer is up to date
-        void preprocess(std::pair<unsigned int*,size_t> group_id, int master);
+        void preprocess(groups::group* scope);
         void postprocess(); // proceed with necessary memory allocations
-        void* scope; // includes ambient boundle
+        void* framework; // includes ambient boundle
         void* data;  // pointer to the actual data
         size_t lda;  // process individual lda
         size_t solid_lda;  // process solid state matrix lda
         size_t group_lda;
         size_t get_group_lda();
+
+        groups::group* scope;
+        groups::group* xscope;
+
+        void set_scope(groups::group* scope);
+        groups::group* get_scope();
+        groups::group* get_xscope();
 
         core::layout_table* layout;
 

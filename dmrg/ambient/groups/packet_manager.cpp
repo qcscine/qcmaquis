@@ -30,7 +30,7 @@ namespace ambient{ namespace groups{
 
     void send(packet* pack, const char* grp, int dest = -1)
     {
-        send(pack, group::group_map(grp), dest);
+        send(pack, group_map(grp), dest);
     }
 
 } }

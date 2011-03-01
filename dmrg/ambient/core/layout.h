@@ -25,7 +25,8 @@ namespace core {
         ~layout_table();
 
         void update_map(std::vector<layout_table_entry>* update = NULL);
-        layout_table_entry* operator()(const int i, const int j = 0, const int k = 0);
+        layout_table_entry* get_entry(int i, int j = 0, int k = 0);
+        layout_table_entry* operator()(int i, int j = 0, int k = 0);
 
         void add_segment_entry(int owner, int i, int j = 0, int k = 0);
         void update_map_entry(int owner, int i, int j = 0, int k = 0);
@@ -41,9 +42,11 @@ namespace core {
         std::vector<layout_table_entry> segment;
         size_t count;
         size_t segment_count;
+        size_t xsegment_count;
     };
 
     void apply_change_set(p_profile** profiles, size_t count);
+    void perform_forwarding(p_profile** profiles, size_t count);
 
 } }
 #endif

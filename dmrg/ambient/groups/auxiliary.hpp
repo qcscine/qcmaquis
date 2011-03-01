@@ -12,7 +12,7 @@ namespace ambient{ namespace groups{
     template<typename T>
     packet* recv(const char* grp, void* memory)
     {
-        return recv<T>(group::group_map(grp), memory);
+        return recv<T>(group_map(grp), memory);
     }
 
     void send(packet* pack, group* grp, int dest = -1);

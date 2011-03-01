@@ -29,8 +29,6 @@ namespace ambient{ namespace groups{
 
         int translate_rank(int rank, group* parent = NULL) const;
 
-        static group* group_map(const char* name, group* instance = NULL);
-
         const char* name;
         int master;                // master process in this group
         packet_manager* manager;   // group packet manager
@@ -47,6 +45,8 @@ namespace ambient{ namespace groups{
         unsigned int object_count;
         int* members;              // list of member ranks (according to the parent group)
     };
+
+    group* group_map(const char* name, group* instance = NULL);
 
 } }
 #endif

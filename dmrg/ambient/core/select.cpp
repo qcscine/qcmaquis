@@ -25,7 +25,7 @@ namespace ambient {
 
         scope.set_group(group);
         if(!scope.involved()) return; // to rewrite this // need to know master of profile even if I'm not in the group
-        if((grp = groups::group::group_map(as)) == NULL){
+        if((grp = groups::group_map(as)) == NULL){
             grp = new groups::group(as, 0, group);
 
             if(token_t == TK_STAR){ 
@@ -40,10 +40,8 @@ namespace ambient {
             grp->commit();
         }
         scope.set_group(grp);
-        for(size_t i=0; i < scope.get_op()->count; i++){
-            scope.get_op()->profiles[i]->preprocess(ambient::scope.get_group()->id, 
-                                                    ambient::scope.get_group()->get_master_g());
-        }
+        for(size_t i=0; i < scope.get_op()->count; i++)
+            scope.get_op()->profiles[i]->preprocess(ambient::scope.get_group());
         scope.get_op()->set_scope(grp);
     }
 

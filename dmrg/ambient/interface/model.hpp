@@ -6,7 +6,7 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T>* ptr)
     profile->type = "matrix";
     if(ptr == NULL){
         profile->proxy = true;
-        profile->scope = new T[ambient::get_bound()];
+        profile->framework = new T[ambient::get_bound()];
         profile->dim.x = 0;
         profile->dim.y = 0;
         profile->dim.z = 0;
