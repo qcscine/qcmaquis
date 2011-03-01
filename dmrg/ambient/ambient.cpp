@@ -152,11 +152,10 @@ namespace ambient
         core::operation* computing;
         while(!this->stack.end_reached())
             this->stack.pick()->first->perform();
-// let's make distribution here
-// what we have?
+
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
-            if(logistics->get_scope() != NULL){
+            if(logistics->get_scope()->involved()){
                 ambient::core::apply_change_set(logistics->profiles, logistics->count);
             }
         }
@@ -164,7 +163,7 @@ namespace ambient
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
             logistics = pair->first;
-            if(logistics->get_scope() != NULL){
+            if(logistics->get_scope()->involved()){
                 computing = pair->second;
                 computing->set_scope(logistics->get_scope());
                 if(logistics->pin == NULL){ // nothing has been pinned

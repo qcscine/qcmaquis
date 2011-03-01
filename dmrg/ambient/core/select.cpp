@@ -41,11 +41,9 @@ namespace ambient {
         }
         scope.set_group(grp);
         for(size_t i=0; i < scope.get_op()->count; i++){
-            if(scope.get_op()->profiles[i]->id == 0)
-                scope.get_op()->profiles[i]->set_id(ambient::scope.get_group()->id);
-            scope.get_op()->profiles[i]->set_master(ambient::scope.get_group()->get_master_g());
+            scope.get_op()->profiles[i]->preprocess(ambient::scope.get_group()->id, 
+                                                    ambient::scope.get_group()->get_master_g());
         }
-        if(!scope.involved()) return;
         scope.get_op()->set_scope(grp);
     }
 
