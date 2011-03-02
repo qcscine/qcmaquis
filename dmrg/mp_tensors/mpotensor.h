@@ -87,8 +87,13 @@ public:
     
     void multiply_by_scalar(scalar_type);
     
+    bool has(std::size_t left_index, std::size_t right_index) const;
+    
 private:
-    std::vector<block_matrix<Matrix, SymmGroup> > data_;
+//    std::vector<block_matrix<Matrix, SymmGroup> > data_;
+    
+    mutable std::map<std::size_t, std::map<std::size_t, block_matrix<Matrix, SymmGroup> > > data_;
+    
     std::size_t left_i, right_i;
 //    Index<SymmGroup> phys_i;
 };

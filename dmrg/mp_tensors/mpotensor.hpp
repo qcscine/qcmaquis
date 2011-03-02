@@ -5,8 +5,8 @@
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(std::size_t ld,
                                         std::size_t rd)
-: data_(ld * rd)
-, left_i(ld)
+//: data_(ld * rd)
+: left_i(ld)
 , right_i(rd)
 { }
 
@@ -17,8 +17,7 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & bra_index)
 {
-    assert( left_index * right_i + right_index < data_.size() );
-    return data_[left_index * right_i + right_index](ket_index, bra_index);
+    return data_(left_index, right_index)(ket_index, bra_index);
 }
 
 template<class Matrix, class SymmGroup>
@@ -28,24 +27,48 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          MPOTensor<Matrix, SymmGroup>::access_type const & bra_index) const
 {
-    assert( left_index * right_i + right_index < data_.size() );
-    return data_[left_index * right_i + right_index](ket_index, bra_index);
+    return data_(left_index, right_index)(ket_index, bra_index);
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                                                                  std::size_t right_index) const
 {
-    assert( left_index * right_i + right_index < data_.size() );
-    return data_[left_index * right_i + right_index];
+//    assert( left_index * right_i + right_index < data_.size() );
+    assert( left_index < left_i );
+    assert( right_index < right_i );
+    static Timer timer("MPOTensor const lookup");
+    timer.begin();
+    block_matrix<Matrix, SymmGroup> & ret = data_[left_index][right_index];
+    timer.end();
+    return ret;
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                                                            std::size_t right_index)
 {
-    assert( left_index * right_i + right_index < data_.size() );
-    return data_[left_index * right_i + right_index];
+    //    assert( left_index * right_i + right_index < data_.size() );
+    assert( left_index < left_i );
+    assert( right_index < right_i );
+    static Timer timer("MPOTensor non-const lookup");
+    timer.begin();
+    block_matrix<Matrix, SymmGroup> & ret = data_[left_index][right_index];
+    timer.end();
+    return ret;
+}
+
+template<class Matrix, class SymmGroup>
+bool MPOTensor<Matrix, SymmGroup>::has(std::size_t left_index,
+                                       std::size_t right_index) const
+{
+    typename std::map<std::size_t, std::map<std::size_t, block_matrix<Matrix, SymmGroup> > >::const_iterator it;
+    it = data_.find(left_index);
+    if (it == data_.end())
+        return false;
+    if (it->second.find(right_index) == it->second.end())
+        return false;
+    return true;
 }
 
 template<class Matrix, class SymmGroup>

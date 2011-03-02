@@ -55,6 +55,8 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
 {
     for (std::size_t k = 0; k < in_mpo[p].col_dim(); ++k)
     {
+        if (!in_mpo[p].has(start,k))
+            continue;
         if (in_mpo[p](start,k).n_blocks() == 0)
             continue;
         
@@ -64,7 +66,7 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
             cleanup_mpo_(in_mpo, out_mpo, ops, p+1, k);
         else
         {
-            assert( nops.size() == out_mpo.length() );
+            assert( ops.size() == out_mpo.length() );
             for (std::size_t t = 0; t < in_mpo.length(); ++t)
                 out_mpo[t](boost::tuples::get<0>(ops[t]),
                            boost::tuples::get<1>(ops[t])) =
@@ -107,10 +109,16 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
             for (size_t r2 = 0; r2 < inp.row_dim(); ++r2)
                 for (size_t c1 = 0; c1 < inp.col_dim(); ++c1)
                     for (size_t c2 = 0; c2 < inp.col_dim(); ++c2) {
+                        if (!inp.has(r1, c1))
+                            continue;
+                        if (!inp.has(r2, c2))
+                            continue;
+                        
                         block_matrix<Matrix, SymmGroup> t;
                         gemm(inp(r1, c1), inp(r2, c2), t);
-                        ret(r1*inp.row_dim()+r2,
-                            c1*inp.col_dim()+c2) = t;
+                        if (t.n_blocks() > 0)
+                            ret(r1*inp.row_dim()+r2,
+                                c1*inp.col_dim()+c2) = t;
                     }
         
         sq[p] = ret;
