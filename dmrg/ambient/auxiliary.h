@@ -27,8 +27,10 @@ namespace core{ class operation; }
             this->z *= b.z;
             return *this;
         }
-        const dim3 operator*(const dim3 & b) const {
-            return dim3(this->x, this->y, this->z) *= b;
+        unsigned int operator*(const dim3 & b) const { // multiplication of all components
+            return this->x * b.x *
+                   this->y * b.y *
+                   this->z * b.z ;
         }
         bool operator==(int value){
             return (x == value && y == value && z == value);

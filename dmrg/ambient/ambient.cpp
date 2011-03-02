@@ -22,25 +22,26 @@ namespace ambient
 
 // global objects accessible anywhere //
 
-    scheduler & scheduler::operator>>(dim3 dim_distr) 
+    scheduler & scheduler::operator>>(dim3 distr_dim) 
     {
-        this->dim_distr = dim_distr;
-        this->dim_group = NULL;
-        this->dim_gpu = NULL;
+        this->distr_dim = distr_dim;
+        this->group_dim = NULL;
+        this->gpu_dim = NULL;
         return *this;
     }
     scheduler & scheduler::operator,(dim3 dim) 
     {
-        if(this->dim_group == NULL){
-            this->dim_group = dim;
-        }else if(this->dim_gpu == NULL){
-            this->dim_gpu = dim;
+        if(this->group_dim == NULL){
+            this->group_dim = dim;
+            this->default_data_packet_t = new block_packet_t(this->group_dim*this->item_dim); // to redo in future?
+        }else if(this->gpu_dim == NULL){
+            this->gpu_dim = dim;
         }
         return *this;
     }
-    scheduler& operator>>(scheduler* instance, dim3 dim_distr) 
+    scheduler& operator>>(scheduler* instance, dim3 distr_dim) 
     {
-        return *instance >> dim_distr;
+        return *instance >> distr_dim;
     }
     scheduler& scheduler::instance()
     {
@@ -52,16 +53,16 @@ namespace ambient
     {
         engine.playout(); 
     }
-    scheduler::scheduler(): dim_item(dim3(128,128,1))
+    scheduler::scheduler(): item_dim(dim3(128,128,1))
     {
     }
-    dim3 scheduler::group_dim()
+    dim3 scheduler::get_group_dim()
     {
-        return this->dim_group;
+        return this->group_dim;
     }
-    dim3 scheduler::item_dim()
+    dim3 scheduler::get_item_dim()
     {
-        return this->dim_item;
+        return this->item_dim;
     }
     size_t get_bound()
     {
@@ -76,7 +77,6 @@ namespace ambient
         printf("Initializing packet system...\n");
         change_t<control_packet_t>(4,3);
         commit_t<control_packet_t>();
-        commit_t<data_packet_t>();
         packet* init_packet;
         void* buffer = alloc_t<control_packet_t>();
         if(rank("ambient") == AMBIENT_MASTER_RANK){
@@ -130,7 +130,6 @@ namespace ambient
 //      regression_test();
         commit_t<control_packet_t>();
         commit_t<layout_packet_t>();
-        commit_t<data_packet_t>();
 
 // AUTO TUNING SHOULD START BELOW...
 

@@ -32,30 +32,31 @@ namespace ambient
         static scheduler& instance();
 
     public:
-        scheduler & operator>>(dim3 dim_distr);
+        scheduler & operator>>(dim3 distr_dim);
         scheduler & operator,(dim3 dim);
         void init(MPI_Comm comm = NULL);
         void regression_test();
         void finalize();
-        dim3 group_dim();
-        dim3 item_dim();
+        dim3 get_group_dim();
+        dim3 get_item_dim();
 
         void push(core::operation* logistics, core::operation* computing);
         void playout();  // perform actual operations
         int size;
+        block_packet_t* default_data_packet_t;
     private:
         MPI_Comm comm;
         groups::group* ambient;
 
-        dim3 dim_distr;   // work-item size of distribution blocks
-        dim3 dim_group;   // work-item size of cpu streaming multiprocessor workload fractions
-        dim3 dim_item;    // size of work-item (i.e. 128) 
-        dim3 dim_gpu;     // work-item size of gpgpu smp workload fractions
+        dim3 distr_dim;   // work-item size of distribution blocks
+        dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
+        dim3 item_dim;    // size of work-item (i.e. 128) 
+        dim3 gpu_dim;     // work-item size of gpgpu smp workload fractions
 
         operation_stack stack;
     };
 
-    scheduler& operator>>(scheduler* instance, dim3 dim_distr);
+    scheduler& operator>>(scheduler* instance, dim3 distr_dim);
     size_t get_bound();
     size_t get_block_bound();
     void playout();
