@@ -187,7 +187,7 @@ namespace ambient{ namespace core{
 
             for(int i=0; i < profiles[k]->layout->segment_count; i++){ // receive the blocks and add them to profile
                 packet_t* packet_type = profiles[k]->packet_type;
-//                block_packet = ambient::groups::recv( *packet_type, ambient::groups::group_map("ambient"), alloc_t(*packet_type) );
+                block_packet = ambient::groups::recv( *packet_type, ambient::groups::group_map("ambient"), alloc_t(*packet_type) );
 //                profiles[block_packet->get<int>(A_BLOCK_P_OP_ID_FIELD)]->group(block_packet->get<int>(A_BLOCK_P_I_FIELD),
 //                                                                               block_packet->get<int>(A_BLOCK_P_J_FIELD))->set_memory(block_packet->data);
             }
