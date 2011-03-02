@@ -83,6 +83,8 @@ private:
                 std::set<typename SymmGroup::charge> charge_diffs;
                 for (size_t r = 0; r < (*this)[p-1].row_dim(); ++r) {
                     assert( bond_index_charges[p-1].count(r) > 0 );
+                    if (!(*this)[p-1].has(r,c))
+                        continue;
                     for (size_t b = 0; b < (*this)[p-1](r, c).n_blocks(); ++b) {
                         charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
                                                             SymmGroup::fuse((*this)[p-1](r,c).left_basis()[b].first,
@@ -138,6 +140,8 @@ private:
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
             for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
             {
+                if (!(*this)[p].has(r,c))
+                    continue;
                 for (size_t cs = 0; cs < (*this)[p](r, c).left_basis().size(); ++cs) {
                     std::pair<charge, size_t> sector = (*this)[p](r, c).left_basis()[cs];
                     if (! phys_i.has(sector.first))
@@ -168,6 +172,8 @@ private:
                         
                         outr++;
                         
+                        if (! (*this)[p].has(r,c))
+                            continue;
                         if (! (*this)[p](r,c).has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;                       
                         
@@ -211,6 +217,8 @@ private:
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
             for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
             {
+                if (!(*this)[p].has(r,c))
+                    continue;
                 for (size_t cs = 0; cs < (*this)[p](r, c).left_basis().size(); ++cs) {
                     std::pair<charge, size_t> sector = (*this)[p](r, c).left_basis()[cs];
                     if (! phys_i.has(sector.first))
@@ -241,6 +249,8 @@ private:
                         
                         outc++;
                         
+                        if (! (*this)[p].has(r,c))
+                            continue;
                         if (! (*this)[p](r, c).has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;
                         
@@ -322,10 +332,10 @@ private:
                         typename Matrix::value_type val = left(std::make_pair(lc, outr),
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
-                        block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
-                        charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                        
                         if (fabs(val) > 1e-14) {
+                            block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
+                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            
                             block.insert_block(Matrix(1, 1, val), blc, brc);
                             
 //                            cout << val << " | ";
@@ -360,10 +370,10 @@ private:
                         typename Matrix::value_type val = right(std::make_pair(lc, visited_r_basis[lc]),
                                                                 std::make_pair(rc, outc));
                         
-                        block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
-                        charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                        
                         if (fabs(val) > 1e-14) {
+                            block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
+                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            
                             block.insert_block(Matrix(1, 1, val), blc, brc);
                             
 //                            cout << val << " | ";
