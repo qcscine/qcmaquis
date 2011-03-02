@@ -66,17 +66,18 @@ namespace ambient{ namespace packets{
         }
     };
 
-    struct data_packet_t : public standard_packet_t
+    struct block_packet_t : public standard_packet_t
     {
-        __a_fields__ src, priority, data;
-        data_packet_t()
+        __a_flex_fields__ i, j, k, data;
+        block_packet_t(size_t size) : standard_packet_t()
         {
             __a_packet__
-            src      = MPI_INT;
-            priority = MPI_INT;
-            data     = MPI_DOUBLE;
-            __a_pack{ 1, 1, 100 };
-            __a_code('D');
+            i             = MPI_INT;
+            j             = MPI_INT;
+            k             = MPI_INT;
+            data          = MPI_DOUBLE;
+            __a_pack{ 1, 1, 1, size };
+            __a_code('B');
         }
     };
 

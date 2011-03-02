@@ -66,6 +66,7 @@ namespace ambient {
         void(*init_fp)(workgroup* grp);
         workgroup* group(int i, int j = 0, int k = 0) const;
         workgroup& operator()(int i, int j = 0, int k = 0) const;
+        block_packet_t* packet_type;
 
 // parameters can be set specifically for the profile
         bool specific; 

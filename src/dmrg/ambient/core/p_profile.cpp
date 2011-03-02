@@ -5,7 +5,9 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      specific(false), profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL) { };
+      specific(false), profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL) {
+        this->packet_type = ambient::layout.default_data_packet_t;
+    };
 
     p_profile* p_profile::dereference(){
         if(!this->valid) printf("Error: attempting to use invalid profile (object was deleted)\n");
@@ -56,6 +58,7 @@ namespace ambient {
     {
         if(this->group_dim == NULL){
             this->group_dim = dim;
+            this->packet_type = new block_packet_t(this->group_dim*this->item_dim);
             this->regroup();
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;
@@ -270,14 +273,14 @@ namespace ambient {
 
     dim3 p_profile::get_group_dim() const {
         if(this->specific) return this->group_dim;
-        else return engine.group_dim();
+        else return engine.get_group_dim();
     }
     void p_profile::set_group_dim(dim3 dim){
         this->group_dim = dim;
     }
 
     dim3 p_profile::get_item_dim() const {
-        return engine.item_dim();
+        return engine.get_item_dim();
     }
     void p_profile::set_item_dim(dim3 dim){
         this->item_dim = dim;
