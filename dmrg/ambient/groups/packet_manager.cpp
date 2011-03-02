@@ -1,3 +1,4 @@
+#include "ambient/ambient.h"
 #include "ambient/groups/packet_manager.h"
 #include "ambient/groups/group.h"
 

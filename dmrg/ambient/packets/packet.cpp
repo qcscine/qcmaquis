@@ -36,12 +36,12 @@ namespace ambient{ namespace packets {
 
     packet_t& packet::get_t()
     {
-        return packet_t::type_map(*(char*)this->data);
+        return packet_t::type_map(this->get_t_code());
     }
 
     char packet::get_t_code()
     {
-        return this->get_t().t_code;
+        return *(char*)this->data;
     }
 
     const MPI_Datatype packet::get_mpi_t()
