@@ -60,22 +60,22 @@ typedef U1 grp;
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
 
-Adjacency * adj_factory(ModelParameters & model)
+adj::Adjacency * adj_factory(ModelParameters & model)
 {
     if (model.get<std::string>("lattice") == std::string("square_lattice"))
-        return new SquareAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::SquareAdj(model.get<int>("L"), model.get<int>("W"));
     else if (model.get<std::string>("lattice") == std::string("chain_lattice"))
-        return new ChainAdj(model.get<int>("L"));
+        return new adj::ChainAdj(model.get<int>("L"));
     else if (model.get<std::string>("lattice") == std::string("cylinder_lattice"))
-        return new CylinderAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::CylinderAdj(model.get<int>("L"), model.get<int>("W"));
     else if (model.get<std::string>("lattice") == std::string("periodic_chain_lattice"))
-        return new PeriodicChainAdj(model.get<int>("L"));
+        return new adj::PeriodicChainAdj(model.get<int>("L"));
     else if (model.get<std::string>("lattice") == std::string("periodic_ladder_lattice"))
-        return new PeriodicLadderAdj(model.get<int>("L"));
+        return new adj::PeriodicLadderAdj(model.get<int>("L"));
     else if (model.get<std::string>("lattice") == std::string("periodic_square_lattice"))
-        return new PeriodicSquareLatticeAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::PeriodicSquareLatticeAdj(model.get<int>("L"), model.get<int>("W"));
     else if (model.get<std::string>("lattice") == std::string("snake_square_lattice"))
-        return new SnakeSquareAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::SnakeSquareAdj(model.get<int>("L"), model.get<int>("W"));
     else {
         throw std::runtime_error("Don't know this lattice!");
         return NULL;
@@ -146,7 +146,7 @@ int main(int argc, char ** argv)
         }
     }
     
-    Adjacency * adj = adj_factory(model);
+    adj::Adjacency * adj = adj_factory(model);
     mpos::Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
     Index<U1> phys = H->get_phys();
     
@@ -179,7 +179,7 @@ int main(int argc, char ** argv)
     gettimeofday(&now, NULL);
     
     std::vector<double> energies, entropies;
-    std::vector<std::pair<std::size_t, double> > truncations;
+    std::vector<std::size_t> truncations;
     
     bool early_exit = false;
     
@@ -197,7 +197,7 @@ int main(int argc, char ** argv)
         for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
             gettimeofday(&snow, NULL);
             
-            std::pair<std::vector<double>, std::vector<std::pair<std::size_t, double> > > r;
+            std::pair<std::vector<double>, std::vector<std::size_t> > r;
             r = optimizer.sweep(mpo, sweep);
             energies = r.first;
             truncations = r.second;
@@ -228,21 +228,9 @@ int main(int argc, char ** argv)
                     oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
                     h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
                     
-                    std::vector<std::size_t> bondd(truncations.size());
-                    std::transform(truncations.begin(), truncations.end(),
-                                   bondd.begin(),
-                                   utils::get_first());
                     oss.str("");
                     oss << "/simulation/results/sweep" << sweep << "/BondDimension/mean/value";
-                    h5ar << alps::make_pvp(oss.str().c_str(), bondd);
-                    
-                    std::vector<double> truncw(truncations.size());
-                    std::transform(truncations.begin(), truncations.end(),
-                                   truncw.begin(),
-                                   utils::get_second());
-                    oss.str("");
-                    oss << "/simulation/results/sweep" << sweep << "/TruncatedWeight/mean/value";
-                    h5ar << alps::make_pvp(oss.str().c_str(), truncw);
+                    h5ar << alps::make_pvp(oss.str().c_str(), truncations);
                 }
                 
                 if (parms.get<int>("donotsave") == 0)

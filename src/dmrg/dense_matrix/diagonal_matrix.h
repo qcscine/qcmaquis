@@ -23,7 +23,7 @@ namespace blas {
         diagonal_matrix(Vector const & init)
         : data_(init.begin(), init.end()) { }
 
-        diagonal_matrix(std::size_t size, T const & init = T())
+        diagonal_matrix(std::size_t size = 0, T const & init = T())
         : data_(size, init) { }
         
         std::size_t num_rows() const { return data_.size(); }

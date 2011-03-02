@@ -68,8 +68,6 @@ public:
     MPOTensor(std::size_t = 1,
               std::size_t = 1);
     
-    Index<SymmGroup> const & site_bra_dim() const;
-    Index<SymmGroup> const & site_ket_dim() const;
     std::size_t row_dim() const;
     std::size_t col_dim() const;
     

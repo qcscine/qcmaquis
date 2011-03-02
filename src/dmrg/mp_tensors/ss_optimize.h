@@ -59,9 +59,8 @@ public:
     
     std::pair<
     std::vector<double>,
-    std::vector<std::pair<std::size_t, double> >
-    > sweep(MPO<Matrix, SymmGroup> const & mpo,
-                              int sweep)
+    std::vector<std::size_t> > sweep(MPO<Matrix, SymmGroup> const & mpo,
+                                     int sweep)
     {
         static Timer
         t_io("sweep_io"),
@@ -72,7 +71,7 @@ public:
         cerr << "Done init_left_right" << endl;
         
         std::vector<double> energies;
-        std::vector<std::pair<std::size_t, double> > truncations;
+        std::vector<size_t> truncations;
         
         std::size_t L = mps.length();
         
@@ -211,7 +210,7 @@ public:
             
             t_grow.end();
             
-            truncations.push_back(trunc);
+            truncations.push_back(trunc.first);
             
             iteration_t.end();
         }
