@@ -85,26 +85,49 @@ namespace ambient{ namespace core{
                 printf("I'm the old master of the profile (%d)\n", ambient::rank());
                 for(int i=0; i < (profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y); i++){
                     layout_packet = ambient::groups::recv<layout_packet_t>(ambient::groups::group_map("ambient"), alloc_t<layout_packet_t>());
-                    layout_packet->set(A_DEST_FIELD, profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->
-                                                     layout->get_entry(layout_packet->get<int>(A_LAYOUT_P_I_FIELD), 
-                                                                       layout_packet->get<int>(A_LAYOUT_P_J_FIELD), 
-                                                                       layout_packet->get<int>(A_LAYOUT_P_K_FIELD))->owner); 
-
-                    ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
-                }
-            }
-            for(int i=0; i < profiles[k]->layout->xsegment_count; i++){ // receive commands
-                layout_packet = ambient::groups::recv<layout_packet_t>(ambient::groups::group_map("ambient"), alloc_t<layout_packet_t>());
-                void* header = profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->group(layout_packet->get<int>(A_LAYOUT_P_I_FIELD),
-                                                                                                layout_packet->get<int>(A_LAYOUT_P_J_FIELD),
-                                                                                                layout_packet->get<int>(A_LAYOUT_P_K_FIELD))->header; 
-                block_packet = pack(*profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->packet_type, header, layout_packet->get<int>(A_LAYOUT_P_OWNER_FIELD),
+                    int owner = profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->
+                                layout->get_entry(layout_packet->get<int>(A_LAYOUT_P_I_FIELD), 
+                                                  layout_packet->get<int>(A_LAYOUT_P_J_FIELD), 
+                                                  layout_packet->get<int>(A_LAYOUT_P_K_FIELD))->owner;
+                    layout_packet->set(A_DEST_FIELD, owner);
+                    if(owner == ambient::rank()){
+                        void* header = profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->group(layout_packet->get<int>(A_LAYOUT_P_I_FIELD),
+                                                                                                        layout_packet->get<int>(A_LAYOUT_P_J_FIELD),
+                                                                                                        layout_packet->get<int>(A_LAYOUT_P_K_FIELD))->header; 
+                        block_packet = pack(*profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->packet_type, header,
+                                                                                                                     layout_packet->get<int>(A_LAYOUT_P_OWNER_FIELD),
                                                                                                                      "P2P", // communication type
                                                                                                                      k,     // profile id (in terms of profiles array positioning)
                                                                                                                      layout_packet->get<int>(A_LAYOUT_P_I_FIELD),
                                                                                                                      layout_packet->get<int>(A_LAYOUT_P_J_FIELD),
-                                                                                                                     layout_packet->get<int>(A_LAYOUT_P_K_FIELD));
-                ambient::groups::send(block_packet, ambient::groups::group_map("ambient"));
+                                                                                                                     layout_packet->get<int>(A_LAYOUT_P_K_FIELD),
+                                                                                                                     NULL); // NULL means to leave memory as is
+//                        ambient::groups::send(block_packet, ambient::groups::group_map("ambient"));
+                    }else{
+                        ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
+                                                      printf("OLD MASTER FORWARDED %d %d %d to %d\n", 
+                                                             layout_packet->get<int>(A_LAYOUT_P_I_FIELD), 
+                                                             layout_packet->get<int>(A_LAYOUT_P_J_FIELD), 
+                                                             layout_packet->get<int>(A_LAYOUT_P_K_FIELD), layout_packet->get<int>(A_DEST_FIELD));
+                    }
+                }
+            }else{
+                for(int i=0; i < profiles[k]->layout->xsegment_count; i++){ // receive commands
+                    layout_packet = ambient::groups::recv<layout_packet_t>(ambient::groups::group_map("ambient"), alloc_t<layout_packet_t>());
+                    void* header = profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->group(layout_packet->get<int>(A_LAYOUT_P_I_FIELD),
+                                                                                                    layout_packet->get<int>(A_LAYOUT_P_J_FIELD),
+                                                                                                    layout_packet->get<int>(A_LAYOUT_P_K_FIELD))->header;
+                    assert(header != NULL);
+                    block_packet = pack(*profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->packet_type, header,
+                                                                                                                 layout_packet->get<int>(A_LAYOUT_P_OWNER_FIELD),
+                                                                                                                 "P2P", // communication type
+                                                                                                                 k,     // profile id (in terms of profiles array positioning)
+                                                                                                                 layout_packet->get<int>(A_LAYOUT_P_I_FIELD),
+                                                                                                                 layout_packet->get<int>(A_LAYOUT_P_J_FIELD),
+                                                                                                                 layout_packet->get<int>(A_LAYOUT_P_K_FIELD),
+                                                                                                                 NULL); // NULL means to leave memory as is
+//                    ambient::groups::send(block_packet, ambient::groups::group_map("ambient"));
+                }
             }
         }
     }
@@ -114,6 +137,9 @@ namespace ambient{ namespace core{
     {
         ambient::packets::packet* layout_packet;
         ambient::packets::packet* block_packet;
+        for(int k = 0; k < count; k++)
+            if(profiles[k]->need_init) profiles[k]->postprocess();
+
         for(int k = 0; k < count; k++){
             if(ambient::scope.master()){
                 for(int i=0; i < (profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y - profiles[k]->layout->segment_count); i++){
@@ -136,34 +162,34 @@ namespace ambient{ namespace core{
                     ambient::groups::send(layout_packet, ambient::scope.get_group());
                 }
             }
-//            printf("This profile's master is %d (old is %d)\n", profiles[k]->get_master(),profiles[k]->get_xmaster()); 
         } // ok, the layout has been gathered
-
         for(int k = 0; k < count; k++){
-            if(profiles[k]->need_init) profiles[k]->postprocess();
-            else{
-                if(ambient::scope.master()){ // send the layout to the previous master
-                    for(int i=0; i < profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y; i++){
+            if(profiles[k]->need_init) continue;
+            if(ambient::scope.master()){ // send the layout to the previous master
+                for(int i=0; i < profiles[k]->get_grid_dim().y; i++){
+                    for(int j=0; j < profiles[k]->get_grid_dim().x; j++){
+                        printf("MASTER2XMASTER: %d %d %d\n", profiles[k]->layout->get_entry(i,j)->i,
+                                                             profiles[k]->layout->get_entry(i,j)->j,
+                                                             profiles[k]->layout->get_entry(i,j)->k );
                         layout_packet = pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                               profiles[k]->get_xmaster(), 
                                                               "P2P", // communication type
                                                               k,     // profile id (in terms of profiles array positioning
-                                                              profiles[k]->layout->segment[i].owner, 
-                                                              profiles[k]->layout->segment[i].i, 
-                                                              profiles[k]->layout->segment[i].j,  // not a segment but a map!
-                                                              profiles[k]->layout->segment[i].k);
+                                                              profiles[k]->layout->get_entry(i,j)->owner, 
+                                                              profiles[k]->layout->get_entry(i,j)->i, 
+                                                              profiles[k]->layout->get_entry(i,j)->j,
+                                                              profiles[k]->layout->get_entry(i,j)->k);
                         ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
                     }
                 }
-                perform_forwarding(profiles, count); // in case if old master/block owners are the part of the selected scope
+            }
+            perform_forwarding(profiles, count); // in case if old master/block owners are the part of the selected scope
 
-                for(int i=0; i < profiles[k]->layout->segment_count; i++){
-// receive the blocks and add them to profile
-                    packet_t* packet_type = profiles[k]->packet_type;
-                    block_packet = ambient::groups::recv( *packet_type, ambient::groups::group_map("ambient"), alloc_t(*packet_type) );
-                    profiles[block_packet->get<int>(A_BLOCK_P_OP_ID_FIELD)]->group(block_packet->get<int>(A_BLOCK_P_I_FIELD),
-                                                                                   block_packet->get<int>(A_BLOCK_P_J_FIELD))->set_memory(block_packet->data);
-                }
+            for(int i=0; i < profiles[k]->layout->segment_count; i++){ // receive the blocks and add them to profile
+                packet_t* packet_type = profiles[k]->packet_type;
+//                block_packet = ambient::groups::recv( *packet_type, ambient::groups::group_map("ambient"), alloc_t(*packet_type) );
+//                profiles[block_packet->get<int>(A_BLOCK_P_OP_ID_FIELD)]->group(block_packet->get<int>(A_BLOCK_P_I_FIELD),
+//                                                                               block_packet->get<int>(A_BLOCK_P_J_FIELD))->set_memory(block_packet->data);
             }
         }
     }

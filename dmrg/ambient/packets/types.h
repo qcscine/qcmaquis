@@ -82,7 +82,7 @@ namespace ambient{ namespace packets{
             j             = MPI_INT;
             k             = MPI_INT;
             data          = MPI_DOUBLE;
-            __a_pack{ 1, 1, 1, size };
+            __a_pack{ 1, 1, 1, 1, size };
             __a_code('B');
         }
     };

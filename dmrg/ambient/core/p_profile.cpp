@@ -180,15 +180,13 @@ namespace ambient {
     }
 
     void p_profile::postprocess(){
-        this->need_init = false;
 #ifndef DSCALAPACK_COMPATIBLE
-        for(int j=0; j < this->get_grid_dim().x; j++){
-            for(int i=0; i < this->get_grid_dim().y; i++){
-                if((*this->layout)(i,j) != NULL){
-                    this->group(i,j)->set_memory(malloc(this->get_bound() + (this->get_group_dim()*this->get_item_dim()) * this->type_size));
-                    this->init_fp(this->group(i,j));
-                }
-            }
+        int i, j;
+        for(int k=0; k < this->layout->segment_count; k++){
+            i = this->layout->segment[k].i;
+            j = this->layout->segment[k].j;
+            this->group(i,j)->set_memory(alloc_t(*this->packet_type));
+            this->init_fp(this->group(i,j));
         }
 #else
         size_t offset = 0;
@@ -224,7 +222,7 @@ namespace ambient {
             int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
             int z_size = this->dim.z / (this->get_group_dim().z*this->get_item_dim().z);
 
-            if(i >= y_size || j >= x_size || k >= z_size) printf("Warning: accessing group that is out of range\n");
+            if(i >= y_size || j >= x_size || k >= z_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j, k);
             return this->skeleton[i][j];
         }
     }
@@ -240,7 +238,7 @@ namespace ambient {
 
     size_t p_profile::get_bound() const {
         assert(this->packet_type != NULL);
-        return this->packet_type->displacements[A_BLOCK_P_DATA_FIELD];
+        return (size_t)this->packet_type->displacements[A_BLOCK_P_DATA_FIELD];
     }
 
     void* p_profile::get_data(){
