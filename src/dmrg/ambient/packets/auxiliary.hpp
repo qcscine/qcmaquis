@@ -33,7 +33,7 @@ namespace ambient{ namespace packets {
 
     template<typename T>
     void* alloc_t(){
-        return malloc(sizeof_t<T>());
+        return alloc_t(get_t<T>());
     }
 
     template<typename T>
@@ -46,14 +46,9 @@ namespace ambient{ namespace packets {
         return instance;
     }
 
-//    packet* unpack(void* memory){ 
-//        return new packet(memory);
-//    }
-
     template<typename T>
     packet* unpack(void* memory){
-        *(char*)memory = get_t<T>().t_code;
-        return new packet(memory);
+        return unpack(get_t<T>(), memory);
     }
 
 } }

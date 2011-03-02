@@ -129,9 +129,9 @@ namespace ambient
         this->ambient = new group("ambient", AMBIENT_MASTER_RANK, this->comm);
 
 //      regression_test();
+        this->default_data_packet_t = NULL;
         commit_t<control_packet_t>();
         commit_t<layout_packet_t>();
-
 // AUTO TUNING SHOULD START BELOW...
 
 ////////////////////////////////////

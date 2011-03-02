@@ -62,7 +62,7 @@ namespace ambient{ namespace packets{
         }
     }
 
-    void packet_t::get_size() const {
+    size_t packet_t::get_size() const {
         return this->t_size;
     }
 
@@ -77,4 +77,7 @@ namespace ambient{ namespace packets{
         MPI_Type_commit(&this->mpi_t);
     }
 
+    void* alloc_t(const packet_t& type){
+        return malloc(type.get_size());
+    }
 } }

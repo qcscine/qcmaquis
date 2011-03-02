@@ -87,6 +87,7 @@ namespace ambient {
     public:
         template<typename T> operator T* ()
         { return (T*)this->get_data();    }
+        size_t get_bound() const;
         void* get_data();
         void set_dim(dim3 dim);
         void set_distr_dim(dim3 dim);
