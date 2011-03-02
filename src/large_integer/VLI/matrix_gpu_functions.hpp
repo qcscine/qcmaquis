@@ -33,10 +33,8 @@ run on CSCS with double, moreover we must respect the f77 philosophy.
 namespace gpu 
 {
 	
-
-	
 template<class T>
-void addition_classic_gpu(vli::vli_matrix<T> const & lhs,vli::vli_matrix<T> const & rhs,vli::vli_matrix<T> & result_cpu)
+void multiplication_classic_gpu(vli::vli_matrix<T> const & lhs,vli::vli_matrix<T> const & rhs,vli::vli_matrix<T> & result_cpu)
 {
 	matrix_gpu<T> lhs_GPU(lhs);
 	matrix_gpu<T> rhs_GPU(rhs);
@@ -45,12 +43,33 @@ void addition_classic_gpu(vli::vli_matrix<T> const & lhs,vli::vli_matrix<T> cons
 	int num_integer  = lhs_GPU.num_columns();
 	int ld           = lhs_GPU.num_rows();
 		
-	addition(lhs_GPU.p(),rhs_GPU.p(),result_cpu_GPU.p(), num_integer, ld);
+	multiplication(lhs_GPU.p(),rhs_GPU.p(),result_cpu_GPU.p(), num_integer, ld);
 		
 	std::cout << result_cpu_GPU << std::endl;
 
 }
 
+	
+template<class T>
+void addition_classic_gpu(vli::vli_matrix<T> const & lhs,vli::vli_matrix<T> const & rhs,vli::vli_matrix<T> & result_cpu)
+{
+	matrix_gpu<T> lhs_GPU(lhs);
+	matrix_gpu<T> rhs_GPU(rhs);
+	matrix_gpu<T> result_cpu_GPU(result_cpu);
+		
+	int num_integer  = lhs_GPU.num_columns();
+	int ld           = lhs_GPU.num_rows();
+		
+	addition(lhs_GPU.p(),rhs_GPU.p(),result_cpu_GPU.p(), num_integer, ld);
+		
+	std::cout << result_cpu_GPU << std::endl;
+		
+}	
+	
+	
+	
+	
+	
 
 template <class T>
 std::ostream& operator<< (std::ostream& os, const  matrix_gpu<T> & Matrix_gpu)

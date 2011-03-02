@@ -11,11 +11,6 @@
 #define __DEFINITION__
 
 #define NUM 16;
-/*old seting for testing addition BASE4
-#define LOG_BASE			 2 
-#define BASE				 4
-#define BASE_MINUS2			 2
-#define MINUS_BASE_PLUS2	 -2
 */
 // BASE 255
 #define LOG_BASE			 8 
@@ -26,10 +21,24 @@
 #define MASK_DOWN			 0xF
 #define MASK_UP				 0xF0
 
+// BASE 255å
+#define LOG_BASE			 0x8   // 8 
+#define LOG_BASE_HALF		 0x4   // 4
+#define BASE				 0x100 // 256
+#define BASE_HALF			 0x10  // 16
+#define BASE_MINUS2			 0xFE  // 254   
+#define MINUS_BASE_PLUS2	 -254
+#define MASK_DOWN			 0xF
+#define MASK_UP				 0xF0
+
 
 typedef std::size_t size_type;
 
 template <class T>
 void addition(T A, T B, T C,int num_integer, int ld);  
+
+template <class T>
+void multiplication(T A, T B, T C,int num_integer, int ld);  
+
 
 #endif

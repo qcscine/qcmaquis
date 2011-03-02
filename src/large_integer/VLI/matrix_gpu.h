@@ -393,57 +393,12 @@ private:
 */ 
 	cublasStatus stat_;
 };
-/*	
-template <class T>
-void plus_assign(matrix_gpu<T>& Matrix_this, matrix_gpu<T> const& Matrix_right)
-{
-	Matrix_this.plus_assign(Matrix_right);
-}
-
-template <class T>
-void minus_assign(matrix_gpu<T>& Matrix_this, matrix_gpu<T> const& Matrix_right)
-{
-	Matrix_this.minus_assign(Matrix_right);
-}
-
-template <class T>
-void multiplies_assign(matrix_gpu<T>& Matrix_this, matrix_gpu<T> const& Matrix_right)
-{
-	Matrix_this.multiplies_assign(Matrix_right);
-}
-	
-template <class T>
-void multiplies_assign( matrix_gpu<T> &  Matrix_gpu, T const& t);
-	
-template <class T>
-matrix_gpu<T> operator * ( matrix_gpu<T> const &  Matrix_left,  matrix_gpu<T>const & Matrix_right);	
-
-// We keep exact notation of Andreas
-template <class T>
-void gemm( matrix_gpu<T>const & A, matrix_gpu<T> const & B, matrix_gpu<T>& C);	
-
-
-template <class T>
-matrix_gpu<T> matrix_matrix_multiply( matrix_gpu<T>const & Matrix_left,  matrix_gpu<T>const & Matrix_right);
-	
-*/
 	
 template <class T>
 void addition_classic_gpu(vli::vli_matrix<T>const & Matrix_left,  vli::vli_matrix<T>const & Matrix_right, vli::vli_matrix<T>& Matrix_result);
-	
-/*
-template<class T>
-const matrix_gpu<T> operator + ( matrix_gpu<T>& Matrix_left, const matrix_gpu<T>& Matrix_right);
-
-
-template<class T>
-const matrix_gpu<T> operator - ( matrix_gpu<T>& Matrix_left, const matrix_gpu<T>& Matrix_right);
-
 
 template <class T>
-std::ostream& operator<< (std::ostream& os, const  matrix_gpu<T> & Matrix_gpu);
-
-*/
-
+void multiplication_classic_gpu(vli::vli_matrix<T>const & Matrix_left,  vli::vli_matrix<T>const & Matrix_right, vli::vli_matrix<T>& Matrix_result);
+	
 }
 #endif
