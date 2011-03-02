@@ -36,6 +36,7 @@ namespace ambient{ namespace packets{
         }
         void change_field_size(int field, int size);
         void fill_packet(void* memory, char type, va_list& fields) const;
+        size_t get_size() const;
         void commit();
     protected:
         void construct(char code, int count, const int* sizes, const MPI_Datatype* types);

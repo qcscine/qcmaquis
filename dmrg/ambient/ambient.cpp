@@ -34,6 +34,7 @@ namespace ambient
         if(this->group_dim == NULL){
             this->group_dim = dim;
             this->default_data_packet_t = new block_packet_t(this->group_dim*this->item_dim); // to redo in future?
+            this->default_data_packet_t->commit();
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;
         }
