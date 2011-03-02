@@ -19,7 +19,7 @@ namespace ambient {
 
     void workgroup::set_memory(void* memory){
         this->header = memory;
-        this->data = (void*)((size_t)memory + ambient::get_block_bound());
+        this->data = (void*)((size_t)memory + this->get_profile()->get_bound());
     }
 
     void* workgroup::item(int i, int j, int k){

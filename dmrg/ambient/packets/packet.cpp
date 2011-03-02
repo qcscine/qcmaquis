@@ -70,4 +70,18 @@ namespace ambient{ namespace packets {
         *ptr = value;
     }
 
+    packet* pack(const packet_t& type, void* memory, ...){
+        packet* instance;
+        va_list fields;
+        va_start(fields, memory); 
+        instance = new packet(type, memory, fields);
+        va_end(fields);
+        return instance;
+    }
+
+    packet* unpack(const packet_t& type, void* memory){
+        *(char*)memory = type.t_code;
+        return new packet(memory);
+    }
+
 } }

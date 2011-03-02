@@ -98,9 +98,9 @@ namespace ambient {
     void p_profile::solidify(){
         int i,j;
         size_t offset = 0;
-        this->framework = malloc(ambient::get_bound()                            + 
-                                 this->layout->count                             *
-                                 this->get_group_dim()*this->get_item_dim()      *
+        this->framework = malloc(ambient::get_bound()                         + 
+                                 this->layout->count                          *
+                                 (this->get_group_dim()*this->get_item_dim()) *
                                  this->type_size);
         void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
 
@@ -137,7 +137,7 @@ namespace ambient {
         size_t offset = 0;
         void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
         for(int j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*this->get_group_dim()*this->get_item_dim()*this->type_size);
+            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->type_size);
             offset = 0;
             for(int i=0; i < this->get_grid_dim().y; i++){
                 if((*this->layout)(i,j) != NULL){
@@ -185,18 +185,16 @@ namespace ambient {
         for(int j=0; j < this->get_grid_dim().x; j++){
             for(int i=0; i < this->get_grid_dim().y; i++){
                 if((*this->layout)(i,j) != NULL){
-                    this->group(i,j)->set_memory(malloc(ambient::get_block_bound() + this->get_group_dim().x*this->get_group_dim().y *
-                                                                                     this->get_item_dim().x*this->get_item_dim().y   *
-                                                                                     this->type_size));
+                    this->group(i,j)->set_memory(malloc(this->get_bound() + (this->get_group_dim()*this->get_item_dim()) * this->type_size));
                     this->init_fp(this->group(i,j));
                 }
             }
         }
 #else
         size_t offset = 0;
-        this->scope = malloc(ambient::get_bound()                            + 
-                             this->layout->count                             *
-                             this->get_group_dim()*this->get_item_dim()      *
+        this->scope = malloc(ambient::get_bound()                         + 
+                             this->layout->count                          *
+                             (this->get_group_dim()*this->get_item_dim()) *
                              this->type_size);
         void* memory = this->data = (void*)((size_t)this->scope + ambient::get_bound());
 
@@ -238,6 +236,11 @@ namespace ambient {
         this->set_group_dim(profile->get_group_dim());
         this->set_item_dim (profile->get_item_dim ());
         this->regroup();
+    }
+
+    size_t p_profile::get_bound() const {
+        assert(this->packet_type != NULL);
+        return this->packet_type->displacements[A_BLOCK_P_DATA_FIELD];
     }
 
     void* p_profile::get_data(){

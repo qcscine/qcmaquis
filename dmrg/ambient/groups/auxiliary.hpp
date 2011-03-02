@@ -15,6 +15,9 @@ namespace ambient{ namespace groups{
         return recv<T>(group_map(grp), memory);
     }
 
+    packet* recv(const packet_t& type, group* grp, void* memory);
+    packet* recv(const packet_t& type, const char* grp, void* memory);
+
     void send(packet* pack, group* grp, int dest = -1);
     void send(packet* pack, const char* grp, int dest = -1);
 

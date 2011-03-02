@@ -53,5 +53,7 @@ namespace ambient{ namespace packets{
         packet_t();
     };
 
+    void* alloc_t(const packet_t& type);
+
 } }
 #endif

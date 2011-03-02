@@ -33,4 +33,13 @@ namespace ambient{ namespace groups{
         send(pack, group_map(grp), dest);
     }
 
+    packet* recv(const packet_t& type, group* grp, void* memory){
+        grp->manager->recv(type, memory);
+        return unpack(type, memory);
+    }
+
+    packet* recv(const packet_t& type, const char* grp, void* memory){
+        return recv(type, group_map(grp), memory);
+    }
+
 } }
