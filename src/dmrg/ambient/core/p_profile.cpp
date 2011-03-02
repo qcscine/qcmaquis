@@ -59,6 +59,7 @@ namespace ambient {
         if(this->group_dim == NULL){
             this->group_dim = dim;
             this->packet_type = new block_packet_t(this->group_dim*this->item_dim);
+            this->packet_type->commit();
             this->regroup();
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;
@@ -99,8 +100,7 @@ namespace ambient {
         size_t offset = 0;
         this->framework = malloc(ambient::get_bound()                            + 
                                  this->layout->count                             *
-                                 this->get_group_dim().x*this->get_group_dim().y *
-                                 this->get_item_dim().x*this->get_item_dim().y   *
+                                 this->get_group_dim()*this->get_item_dim()      *
                                  this->type_size);
         void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
 
@@ -137,7 +137,7 @@ namespace ambient {
         size_t offset = 0;
         void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
         for(int j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*this->get_group_dim().y*this->get_item_dim().y*this->get_group_dim().x*this->get_item_dim().x*this->type_size);
+            memory = (void*)((size_t)memory + offset*this->get_group_dim()*this->get_item_dim()*this->type_size);
             offset = 0;
             for(int i=0; i < this->get_grid_dim().y; i++){
                 if((*this->layout)(i,j) != NULL){
@@ -196,8 +196,7 @@ namespace ambient {
         size_t offset = 0;
         this->scope = malloc(ambient::get_bound()                            + 
                              this->layout->count                             *
-                             this->get_group_dim().x*this->get_group_dim().y *
-                             this->get_item_dim().x*this->get_item_dim().y   *
+                             this->get_group_dim()*this->get_item_dim()      *
                              this->type_size);
         void* memory = this->data = (void*)((size_t)this->scope + ambient::get_bound());
 

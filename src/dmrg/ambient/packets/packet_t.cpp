@@ -62,6 +62,10 @@ namespace ambient{ namespace packets{
         }
     }
 
+    void packet_t::get_size() const {
+        return this->t_size;
+    }
+
     void packet_t::commit()
     {
         MPI_Type_create_struct(this->count,                            // count - number of types
