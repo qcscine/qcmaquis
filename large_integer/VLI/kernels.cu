@@ -15,8 +15,6 @@ Just very basic C++ or C (template ok).
 the size of each block is 16X16
 */
 
-
-
 /**
 	Do not forget, change to the desired type inside the kernels because I use special memory
 */
@@ -32,7 +30,7 @@ typedef int TYPE;
 	ld = size of one vli
 */
 
-extern const int NUM_SHARED = 80; // must be equal to the size of a block
+extern const int NUM_SHARED = 128; // must be equal to the size of a block
 
 template <typename T>
 __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, int ld)
@@ -121,8 +119,6 @@ __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, in
 
 /**
 classical addition, the operation " addition " is serial but we sum all number together 
-
-
 */
 template <typename T>
 __device__ void addition_kernel_gpu(T* x, T* y , T* z,int k)
@@ -141,39 +137,115 @@ __global__ void addition_classic_kernel_gpu(T x, T y , T z,int num_integer, int 
 	int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	int j = xIndex*ld; // index to be on the beginning of the vli (beginning of every columns)
 
-	int k;
-//	int carry_bit; 
-//	carry_bit = 0;
-	k = 0;
-
+	int k = 0;
 	if(xIndex < num_integer) // the classical condition to avoid overflow
 	{	
 		for (size_type i = 0 ; i < ld; i++) 
 		{
 			k = i+j ;
 			addition_kernel_gpu(x,y,z,k);
-			/* old version
-			z[k]    += (x[k] + y[k]);
-			carry_bit  = z[k] >> LOG_BASE;
-			__syncthreads();// wait on read
-			z[k]    %= BASE;
-			z[k+1]  += carry_bit; //MAYBE PB TO CHECK
-			__syncthreads();// wait on write
-			carry_bit = 0; //set to 0 for the nex columns			
 			*/
 		}
 	}
 
 }
 
+/**
+classical multiplication, the operation " addition " is serial but we sum all number together 
+*/
 
-template<>
-void addition(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
+template <typename T>
+__device__ void addition_kernel2_gpu(T* x, T* y , T* z)
 {
-	dim3 dimgrid;
-	dim3 dimblock;
-	dim3 dimthread;
+	int carry_bit; 
+	carry_bit = 0;
+	*(z)    = *(x) + *(y);
+	carry_bit  = *(z) >> LOG_BASE;
+	*(z)    %= BASE;
+	*(z+1)  += carry_bit; //MAYBE PB TO CHECK
+}
 
+template <typename T>
+__device__ void multiplication_kernel_up_gpu(T  const * x, T  const *  y, T * r)	
+{
+	*r	    = ((*x & MASK_UP) >> LOG_BASE_HALF ) * (*y & MASK_DOWN);	
+	*(r+1)	= ((*x & MASK_UP) >> LOG_BASE_HALF ) * ((*y & MASK_UP) >> LOG_BASE_HALF);
+}		
+	
+template <typename T>
+__device__ void multiplication_kernel_down_gpu(T  const * x, T  const *  y, T * r)	
+{	
+	*r     = (*x & MASK_DOWN) * (*y & MASK_DOWN);
+	*(r+1) = (*x & MASK_DOWN) * ((*y & MASK_UP) >> LOG_BASE_HALF);
+}
+
+template <typename T>
+__device__ void multiplication_kernel_base_reshaping_gpu(T  const * a, T  const *  b, T * r)	
+{	
+	int q1,q2;
+	int r1,r2;
+	q1 = q2 = r1 =r2 = 0;
+
+	q1 = (*(a+1) + *b)/BASE_HALF;
+	r1 = (*(a+1) + *b)%BASE_HALF;
+	r1 = r1 * BASE_HALF;
+	q2 = (r1 + *a)/BASE; 
+	r2 = (r1 + *a)%BASE;
+	*r  = r2;
+	*(r+1) = q1 + q2 + *(b+1);
+}
+
+template <typename T>
+__device__  void multiplication_block_gpu(T  const * x, T  const *  y, T * r)	
+{
+	int a[2] = {0,0};
+	int b[2] = {0,0};
+	/**
+	 Divide and conquer algo (see my notes - for the euclidian division tips)
+		X <=> Xl Xr (half of the binary number)
+	 x  Y <=> Yl Yr (half of the binary number)
+	-------
+	= 2^n XlYl + 2^(n/2) (XlYr + XrYl) + XrYr (multiplication_kernel_gpu_down and multiplication_kernel_gpu_up)
+	------- 
+	= (q1+q2 + Xl*Yl)*BASE + r2  (multiplication_kernel_base_reshaping)
+	*/
+	multiplication_kernel_down_gpu(x,y, a);
+	multiplication_kernel_up_gpu(x,y, b);
+	multiplication_kernel_base_reshaping_gpu(a,b, r);
+	//r[0] = 9999;
+}	
+
+template <typename T>
+__global__ void multiplication_classic_kernel_gpu(T x, T y , T z,int num_integer, int ld)
+{
+	int r[2] = {0,0};	//for local block calculation
+	
+	int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+	int i_ld = xIndex*ld; // index to be on the beginning of the vli (beginning of every columns)
+	int m=0;
+	
+	if(xIndex < num_integer) // the classical condition to avoid overflow
+	{
+		//One of this two loops could be remove to do
+		for (size_type i = 0 ; i < ld; i++) 
+		{
+			for(size_type j = 0 ; j < ld ; j++)  			{	
+				m = j + i;
+				multiplication_block_gpu((x+i_ld+i), (y+i_ld+j), r);
+				addition_kernel2_gpu((z+i_ld+m),&r[0],(z+i_ld+m));	
+				addition_kernel2_gpu((z+i_ld+m+1),&r[1],(z+i_ld+1+m));
+				__syncthreads(); // Need, why (carry bit propagation) ?
+			}
+		}
+	}
+}
+
+
+/*------------------------ MANAGEMENT ------------------------------------------------------------ */
+
+
+void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_integer, int ld)
+{
 	dimblock.x = NUM;
 	dimblock.y = ld;
 	dimblock.z = 1;
@@ -185,7 +257,18 @@ void addition(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
 	dimgrid.x = (int(num_integer) + dimblock.x - 1)/ dimblock.x;
 	dimgrid.y = (int(ld) + dimblock.y - 1)/ dimblock.y;
 	dimgrid.z = 1;
+}
 
+template<>
+void addition(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
+{
+
+	dim3 dimgrid;
+	dim3 dimblock;
+	dim3 dimthread;
+
+	DeterminationGrid(dimgrid, dimblock, dimthread,num_integer,ld );
+	
 #ifdef NDEBUG
 	printf("%i %i \n",dimgrid.x, dimgrid.y);
 	printf("%i %i \n",dimblock.x, dimblock.y);
@@ -194,8 +277,27 @@ void addition(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
 
 //	addition_Avizienis_kernel_gpu <<< dimgrid, dimblock >>>(A, B, C, num_integer, ld);
 	addition_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B, C, num_integer, ld);
-
 }
+
+template<>
+void multiplication(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
+{
+
+	dim3 dimgrid;
+	dim3 dimblock;
+	dim3 dimthread;
+
+	DeterminationGrid(dimgrid, dimblock, dimthread,num_integer,ld );
+	
+#ifdef NDEBUG
+	printf("%i %i \n",dimgrid.x, dimgrid.y);
+	printf("%i %i \n",dimblock.x, dimblock.y);
+	printf("%i %i \n",dimthread.x, dimthread.y);
+#endif
+
+	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B, C, num_integer, ld);
+}
+
 
 
 

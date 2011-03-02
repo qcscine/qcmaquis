@@ -22,68 +22,47 @@ int main (int argc, char * const argv[])
 	int FreqGPU = GPU->instance().GetDeviceProperties().clockRate;
 	std::cout << " FreqGPU : " << FreqGPU << std::endl;
 
-	vli::vli_matrix< int > A(1,5);
-	vli::vli_matrix< int > B(1,5);
-	vli::vli_matrix< int > C(1,5);
-
-	vli::vli_matrix< int > A_c(1,5);
-	vli::vli_matrix< int > B_c(1,5);
-	vli::vli_matrix< int > C_c(1,5);
-	vli::vli_matrix< int > D_c(1,5);	
+	vli::vli_matrix< int > A_c(8,5);
+	vli::vli_matrix< int > B_c(8,5);
+	vli::vli_matrix< int > Caddition_cpu(8,5);
+	vli::vli_matrix< int > Caddition_gpu(8,5);	
+	vli::vli_matrix< int > Cmultiplication_cpu(8,5);
+	vli::vli_matrix< int > Cmultiplication_gpu(8,5);
 	
 
-	for(int i=0 ; i < 1; i++)
+	for(int i=0 ; i < 8; i++)
 	{
-	/*	
-	A(0,i) = -1;
-	A(1,i) = 2;
-	A(2,i) = 0;
-	A(3,i) = 1;
-	A(4,i) = -3;
-	
-	B(0,i) = -2;
-	B(1,i) = 1;
-	B(2,i) = -1;
-	B(3,i) = 0;
-	B(4,i) = 2;
-		
-	*/	
-		A_c(0,i) = 200;
-		A_c(1,i) = 200;
-		A_c(2,i) = 300;
-		A_c(3,i) = 200;
+		A_c(0,i) = 255;
+		A_c(1,i) = 255;
+		A_c(2,i) = 0;
+		A_c(3,i) = 0;
 		A_c(4,i) = 0;
 		
-		B_c(0,i) = 100;
-		B_c(1,i) = 0;
-		B_c(2,i) = 100;
+		B_c(0,i) = 255;
+		B_c(1,i) = 255;
+		B_c(2,i) = 0;
 		B_c(3,i) = 0;
 		B_c(4,i) = 0;	
-		
-
 	}
 	
 
 	
-	
-//	std::cout << " cpu avizienis " << std::endl;
-	
-//	vli::addition_Avizienis_kernel_cpu(A,B,C);
-//	std::cout << C << std::endl;
-	
-//	std::cout << " gpu avizienis " << std::endl;
-//	gpu::matrix_matrix_addition(A_c,B_c,C_c);
+	std::cout << " cpu addition " << std::endl;
+	vli::addition_classic_cpu(A_c,B_c,Caddition_cpu);
+	std::cout << Caddition_cpu << std::endl;
+
+	std::cout << " gpu addition " << std::endl;
+ 	gpu::addition_classic_gpu(A_c,B_c,Caddition_gpu);
 	
 	
-	std::cout << " cpu classique " << std::endl;
-	vli::addition_classic_cpu(A_c,B_c,C_c);
 	
-	gpu::addition_classic_gpu(A_c,B_c,D_c);
+	std::cout << " cpu multiplication " << std::endl;
+	vli::multiplication_classic_kernel_cpu(A_c,B_c,Cmultiplication_cpu);
+	std::cout << Cmultiplication_cpu << std::endl;
+			
+	std::cout << " gpu multiplication " << std::endl;
+	gpu::multiplication_classic_gpu(A_c,B_c,Cmultiplication_gpu);
 	
-//	vli::multiplication_classic_kernel_cpu(A_c,B_c,C_c);
-	
-	std::cout << C_c << std::endl;
-		
 	GPU->instance().destructor();
 	
     return 0;
