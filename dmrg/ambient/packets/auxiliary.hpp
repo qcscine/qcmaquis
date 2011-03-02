@@ -15,7 +15,7 @@ namespace ambient{ namespace packets {
 
     template<typename T>
     const size_t sizeof_t(int field = -1){
-        if(field == -1) return get_t<T>().t_size;
+        if(field == -1) return get_t<T>().get_size();
         else return get_t<T>().sizes[field];
     }
 
