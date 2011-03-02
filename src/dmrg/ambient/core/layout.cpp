@@ -102,13 +102,9 @@ namespace ambient{ namespace core{
                                                                                                                      layout_packet->get<int>(A_LAYOUT_P_J_FIELD),
                                                                                                                      layout_packet->get<int>(A_LAYOUT_P_K_FIELD),
                                                                                                                      NULL); // NULL means to leave memory as is
-//                        ambient::groups::send(block_packet, ambient::groups::group_map("ambient"));
+                        ambient::groups::send(block_packet, ambient::groups::group_map("ambient"));
                     }else{
                         ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
-                                                      printf("OLD MASTER FORWARDED %d %d %d to %d\n", 
-                                                             layout_packet->get<int>(A_LAYOUT_P_I_FIELD), 
-                                                             layout_packet->get<int>(A_LAYOUT_P_J_FIELD), 
-                                                             layout_packet->get<int>(A_LAYOUT_P_K_FIELD), layout_packet->get<int>(A_DEST_FIELD));
                     }
                 }
             }else{
@@ -126,7 +122,7 @@ namespace ambient{ namespace core{
                                                                                                                  layout_packet->get<int>(A_LAYOUT_P_J_FIELD),
                                                                                                                  layout_packet->get<int>(A_LAYOUT_P_K_FIELD),
                                                                                                                  NULL); // NULL means to leave memory as is
-//                    ambient::groups::send(block_packet, ambient::groups::group_map("ambient"));
+                    ambient::groups::send(block_packet, ambient::groups::group_map("ambient"));
                 }
             }
         }
@@ -168,9 +164,6 @@ namespace ambient{ namespace core{
             if(ambient::scope.master()){ // send the layout to the previous master
                 for(int i=0; i < profiles[k]->get_grid_dim().y; i++){
                     for(int j=0; j < profiles[k]->get_grid_dim().x; j++){
-                        printf("MASTER2XMASTER: %d %d %d\n", profiles[k]->layout->get_entry(i,j)->i,
-                                                             profiles[k]->layout->get_entry(i,j)->j,
-                                                             profiles[k]->layout->get_entry(i,j)->k );
                         layout_packet = pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                               profiles[k]->get_xmaster(), 
                                                               "P2P", // communication type
@@ -188,8 +181,8 @@ namespace ambient{ namespace core{
             for(int i=0; i < profiles[k]->layout->segment_count; i++){ // receive the blocks and add them to profile
                 packet_t* packet_type = profiles[k]->packet_type;
                 block_packet = ambient::groups::recv( *packet_type, ambient::groups::group_map("ambient"), alloc_t(*packet_type) );
-//                profiles[block_packet->get<int>(A_BLOCK_P_OP_ID_FIELD)]->group(block_packet->get<int>(A_BLOCK_P_I_FIELD),
-//                                                                               block_packet->get<int>(A_BLOCK_P_J_FIELD))->set_memory(block_packet->data);
+                profiles[block_packet->get<int>(A_BLOCK_P_OP_ID_FIELD)]->group(block_packet->get<int>(A_BLOCK_P_I_FIELD),
+                                                                               block_packet->get<int>(A_BLOCK_P_J_FIELD))->set_memory(block_packet->data);
             }
         }
     }
