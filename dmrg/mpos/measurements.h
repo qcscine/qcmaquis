@@ -15,7 +15,7 @@ template<class Matrix, class SymmGroup>
 struct measure_
 {
     void operator()(MPS<Matrix, SymmGroup> & mps,
-                    Adjacency & adj,
+                    adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, SymmGroup> & H,
                     BaseParameters & model,
                     alps::hdf5::oarchive & ar)
@@ -24,7 +24,7 @@ struct measure_
 
 template<class Matrix, class SymmGroup>
 void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
-                             Adjacency & adj,
+                             adj::Adjacency & adj,
                              block_matrix<Matrix, SymmGroup> const & identity,
                              block_matrix<Matrix, SymmGroup> const & fill,
                              alps::hdf5::oarchive & ar,
@@ -55,7 +55,7 @@ template<class Matrix>
 struct measure_<Matrix, U1>
 {
     void measure_blbq(MPS<Matrix, U1> & mps,
-                      Adjacency & adj,
+                      adj::Adjacency & adj,
                       mpos::Hamiltonian<Matrix, U1> & H,
                       BaseParameters & model,
                       alps::hdf5::oarchive & ar)
@@ -118,7 +118,7 @@ struct measure_<Matrix, U1>
     }
     
     void measure_superf(MPS<Matrix, U1> & mps,
-                        Adjacency & adj,
+                        adj::Adjacency & adj,
                         mpos::Hamiltonian<Matrix, U1> & H,
                         BaseParameters & model,
                         alps::hdf5::oarchive & ar)
@@ -167,7 +167,7 @@ struct measure_<Matrix, U1>
     }
     
     void measure_ff(MPS<Matrix, U1> & mps,
-                    Adjacency & adj,
+                    adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
                     alps::hdf5::oarchive & ar)
@@ -215,7 +215,7 @@ struct measure_<Matrix, U1>
     
     
     void operator()(MPS<Matrix, U1> & mps,
-                    Adjacency & adj,
+                    adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
                     alps::hdf5::oarchive & ar)
@@ -229,7 +229,7 @@ struct measure_<Matrix, U1>
 
 template<class Matrix, class SymmGroup>
 void measure(MPS<Matrix, SymmGroup> & mps,
-             Adjacency & adj,
+             adj::Adjacency & adj,
              mpos::Hamiltonian<Matrix, SymmGroup> & H,
              BaseParameters & model,
              alps::hdf5::oarchive & ar)

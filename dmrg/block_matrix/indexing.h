@@ -289,6 +289,14 @@ private:
 };
 
 template<class SymmGroup>
+basis_iterator_<SymmGroup> operator+(basis_iterator_<SymmGroup> it, std::size_t p)
+{
+    for ( ; p > 0; --p)
+        ++it;
+    return it;
+}
+
+template<class SymmGroup>
 Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
     typedef typename SymmGroup::charge charge;

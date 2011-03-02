@@ -79,12 +79,14 @@ public:
     
     Matrix const & operator()(charge r, charge c) const
     {
+        assert( has_block(r, c) );
         assert( rows_.position(r) == cols_.position(c) );
         return data_[rows_.position(r)];
     }
     
     Matrix & operator()(charge r, charge c)
     {
+        assert( has_block(r, c) );
         assert( rows_.position(r) == cols_.position(c) );
         return data_[rows_.position(r)];
     }

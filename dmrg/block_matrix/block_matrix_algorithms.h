@@ -110,7 +110,8 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
                                             block_matrix<Matrix, SymmGroup> & U,
                                             block_matrix<Matrix, SymmGroup> & V,
                                             block_matrix<DiagMatrix, SymmGroup> & S,
-                                            double rel_tol, std::size_t Mmax)
+                                            double rel_tol, std::size_t Mmax,
+                                            bool verbose = true)
 {   
     svd(M, U, V, S);
     
@@ -170,7 +171,7 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
         }
     }
     
-    if (! (old_basis == S.left_basis()) ) {
+    if (verbose && ! (old_basis == S.left_basis()) ) {
         zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << endl;
         zout << old_basis << endl << S.left_basis() << endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
@@ -185,7 +186,8 @@ template<class Matrix, class DiagMatrix, class SymmGroup>
 std::pair<std::size_t, double> syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                              block_matrix<Matrix, SymmGroup> & evecs,
                                              block_matrix<DiagMatrix, SymmGroup> & evals,
-                                             double cutoff, std::size_t Mmax)
+                                             double cutoff, std::size_t Mmax,
+                                             bool verbose = true)
 {
     // very analogous to the above svd method
     syev(M, evecs, evals);
@@ -232,7 +234,7 @@ std::pair<std::size_t, double> syev_truncate(block_matrix<Matrix, SymmGroup> con
         }
     }
     
-    if (! (old_basis == evals.left_basis()) ) {
+    if (verbose && ! (old_basis == evals.left_basis()) ) {
         zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << endl;
         zout << old_basis << endl << evals.left_basis() << endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << endl;

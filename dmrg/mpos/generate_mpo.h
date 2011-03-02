@@ -34,7 +34,7 @@ namespace mpos {
         virtual int num_1site_ops() = 0;
         virtual op_t get_1site_op(int) = 0;
         
-        virtual void push_extra_terms(MPOMaker<Matrix, SymmGroup>&, Adjacency&) { }
+        virtual void push_extra_terms(MPOMaker<Matrix, SymmGroup>&, adj::Adjacency&) { }
     };
     
     using namespace std;
@@ -296,7 +296,7 @@ namespace mpos {
         > op_pairs;
         
     public:
-        MPOMaker(Adjacency const & adj_,
+        MPOMaker(adj::Adjacency const & adj_,
                  Hamiltonian<Matrix, SymmGroup> & H_)
         : adj(adj_)
         , H(H_)
@@ -394,7 +394,7 @@ namespace mpos {
         }
         
     private:
-        Adjacency const & adj;
+        adj::Adjacency const & adj;
         Hamiltonian<Matrix, SymmGroup> & H;
 
         vector<set<size_t> > used_dims;
