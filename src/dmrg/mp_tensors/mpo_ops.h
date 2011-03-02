@@ -50,7 +50,7 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
 template<class Matrix, class SymmGroup>
 void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
                                     MPO<Matrix, SymmGroup> & out_mpo,
-                                    std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > ops,
+                                    std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > & ops,
                                     int p, int start)
 {
     for (std::size_t k = 0; k < in_mpo[p].col_dim(); ++k)
@@ -58,18 +58,17 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
         if (in_mpo[p](start,k).n_blocks() == 0)
             continue;
         
-        std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > nops = ops;
-        nops.push_back(boost::make_tuple(start, k, in_mpo[p](start, k)));
+        ops[p] = boost::make_tuple(start, k, in_mpo[p](start, k));
                                         
         if (p+1 < in_mpo.length())
-            cleanup_mpo_(in_mpo, out_mpo, nops, p+1, k);
+            cleanup_mpo_(in_mpo, out_mpo, ops, p+1, k);
         else
         {
             assert( nops.size() == out_mpo.length() );
             for (std::size_t t = 0; t < in_mpo.length(); ++t)
-                out_mpo[t](boost::tuples::get<0>(nops[t]),
-                           boost::tuples::get<1>(nops[t])) =
-                           boost::tuples::get<2>(nops[t]);
+                out_mpo[t](boost::tuples::get<0>(ops[t]),
+                           boost::tuples::get<1>(ops[t])) =
+                           boost::tuples::get<2>(ops[t]);
         }
     }
 }
@@ -77,13 +76,12 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
 template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup> cleanup_mpo(MPO<Matrix, SymmGroup> const & mpo)
 {
-    MPO<Matrix, SymmGroup> ret = mpo;
+    MPO<Matrix, SymmGroup> ret(mpo.length());
     for (std::size_t p = 0; p < ret.length(); ++p)
-        for (std::size_t r = 0; r < ret[p].row_dim(); ++r)
-            for (std::size_t c = 0; c < ret[p].col_dim(); ++c)
-                ret[p](r,c) = block_matrix<Matrix, SymmGroup>();
+        ret[p] = MPOTensor<Matrix, SymmGroup>(mpo[p].row_dim(), mpo[p].col_dim());
     
-    cleanup_mpo_(mpo, ret, std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > >(), 0, 0);
+    std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > prempo(mpo.length());
+    cleanup_mpo_(mpo, ret, prempo, 0, 0);
     return ret;
 }
 
