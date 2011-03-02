@@ -126,8 +126,10 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
     
     cout << "Done squaring." << endl;
     
-//    follow_mpo(sq);
-    return cleanup_mpo(sq);
+    sq = cleanup_mpo(sq);
+    cout << "Done cleaning up." << endl;
+
+    return sq;
 }
 
 #endif
