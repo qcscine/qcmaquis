@@ -17,6 +17,9 @@ namespace core {
         int j;
         int k;
         int owner;
+        int xowner;
+        int get_xowner();
+        int get_owner();
     };
 
     class layout_table {
