@@ -69,19 +69,18 @@ namespace ambient{ namespace groups{
         int count_send = grp->manager->send_requests.size();
         int goal = count_recv + count_send;
 
-        printf("R%d: Need to receive %d and send %d\n", ambient::rank(), count_recv, count_send);
         while(counter != goal){
             if(count_send){
                 if(grp->manager->send_requests[is]->request != MPI_REQUEST_NULL){
                     MPI_Test(&(grp->manager->send_requests[is]->request), &flag, MPI_STATUS_IGNORE);
-                    if(flag){ counter++; }// printf("Request satisfied\n"); }
+                    if(flag) counter++;
                 }
                 is = (is+1) % count_send;
             }
             if(count_recv){
                 if(grp->manager->recv_requests[ir]->request != MPI_REQUEST_NULL){
                     MPI_Test(&(grp->manager->recv_requests[ir]->request), &flag, MPI_STATUS_IGNORE);
-                    if(flag){ counter++; }//printf("Request satisfied\n"); }
+                    if(flag) counter++;
                 }
                 ir = (ir+1) % count_recv;
             }

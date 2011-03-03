@@ -173,7 +173,7 @@ namespace ambient
                     int pin_rows = logistics->pin->get_grid_dim().y;
                     for(int j=0; j < pin_cols; j++)
                     for(int i=0; i < pin_rows; i++) // todo - extend onto items
-                    if((*logistics->pin->layout)(i,j) != NULL){
+                    if((*logistics->pin->layout)(i,j) != NULL){ // rewrite this todo
                         logistics->pin->set_default_group(i, j);
                         computing->performx();
                     }
