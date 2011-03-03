@@ -99,6 +99,9 @@ struct contraction {
         for (size_t b2 = 0; b2 < loop_max; ++b2)
             for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
             {
+                if (!mpo.has(b1, b2))
+                    continue;
+                
                 block_matrix<Matrix, SymmGroup> const & T = t2[b1];
                 block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                 
@@ -205,6 +208,9 @@ struct contraction {
         for (size_t b1 = 0; b1 < loop_max; ++b1)
             for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
             {
+                if (!mpo.has(b1, b2))
+                    continue;
+                
                 block_matrix<Matrix, SymmGroup> const & T = t2[b2];
                 block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                 
@@ -300,13 +306,16 @@ struct contraction {
         for (size_t b1 = 0; b1 < left.aux_dim(); ++b1)
             for (size_t b2 = 0; b2 < right.aux_dim(); ++b2)
             {
-                block_matrix<Matrix, SymmGroup> T;
-                gemm(t[b1], right.data_[b2], T);
+                if (!mpo.has(b1, b2))
+                    continue;
                 
                 block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                 
-                if (T.n_blocks() == 0 || W.n_blocks() == 0)
+                if (W.n_blocks() == 0)
                     continue;
+                
+                block_matrix<Matrix, SymmGroup> T;
+                gemm(t[b1], right.data_[b2], T);
                 
                 ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
                 ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
@@ -417,6 +426,9 @@ struct contraction {
                 bool pretend = (run == 0);
                 
                 for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
+                    if (!mpo.has(b1, b2))
+                        continue;
+                    
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     if (W.n_blocks() == 0)
                         continue;
@@ -531,7 +543,10 @@ struct contraction {
                     ret.data_[b1].allocate_blocks();
                 bool pretend = (run == 0);
                 for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
-                {   
+                {
+                    if (!mpo.has(b1, b2))
+                        continue;
+                    
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     if (W.n_blocks() == 0)
                         continue;

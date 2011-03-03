@@ -114,6 +114,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
     std::vector<double> ret;
     
     mps.normalize_right();
+//    mps.canonize(1);
     
     for (std::size_t p = 1; p < L; ++p)
     {
@@ -135,7 +136,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
                  it != elements(s[k]).second; ++it)
             {
                 double a = fabs(*it);
-                if (a > 1e-10)
+//                if (a > 1e-10)
                     sv.push_back(a*a);
             }
         
