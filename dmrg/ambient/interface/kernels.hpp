@@ -21,7 +21,7 @@ void info(T& obj){
 
 void plus_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
 //    a >> dim3(10,5), dim3(1,1), dim3(10,1); <- kinda non-trivial - need to think
-    scope_select("0.5 from ambient as work where master is 0");
+    scope_select("2 from ambient as work where master is 0");
     scope_retain("2 from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
 
