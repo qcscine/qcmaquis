@@ -49,9 +49,9 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
 
 template<class Matrix, class SymmGroup>
 void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
-                                    MPO<Matrix, SymmGroup> & out_mpo,
-                                    std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > & ops,
-                                    int p, int start)
+                  MPO<Matrix, SymmGroup> & out_mpo,
+                  std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > & ops,
+                  int p, int start)
 {
     for (std::size_t k = 0; k < in_mpo[p].col_dim(); ++k)
     {

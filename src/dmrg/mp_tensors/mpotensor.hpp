@@ -42,7 +42,8 @@ block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()
     // we need a better solution for this!
     block_matrix<Matrix, SymmGroup> * ret;
 #pragma omp critical
-    ret = &data_[left_index][right_index];
+//    ret = &data_[left_index][right_index];
+    ret = &data_[std::make_pair(left_index, right_index)];
     timer.end();
     return *ret;
 }
@@ -58,7 +59,8 @@ block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::
     timer.begin();
     block_matrix<Matrix, SymmGroup> * ret;
 #pragma omp critical
-    ret = &data_[left_index][right_index];
+//    ret = &data_[left_index][right_index];
+    ret = &data_[std::make_pair(left_index, right_index)];
     timer.end();
     return *ret;
 }
@@ -67,13 +69,7 @@ template<class Matrix, class SymmGroup>
 bool MPOTensor<Matrix, SymmGroup>::has(std::size_t left_index,
                                        std::size_t right_index) const
 {
-    typename std::map<std::size_t, std::map<std::size_t, block_matrix<Matrix, SymmGroup> > >::const_iterator it;
-    it = data_.find(left_index);
-    if (it == data_.end())
-        return false;
-    if (it->second.find(right_index) == it->second.end())
-        return false;
-    return true;
+    return data_.find(std::make_pair(left_index, right_index)) != data_.end();
 }
 
 template<class Matrix, class SymmGroup>
