@@ -61,7 +61,7 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
             continue;
         
         ops[p] = boost::make_tuple(start, k, in_mpo[p](start, k));
-                                        
+        
         if (p+1 < in_mpo.length())
             cleanup_mpo_(in_mpo, out_mpo, ops, p+1, k);
         else

@@ -41,6 +41,8 @@ double log_interpolate(double y0, double y1, int N, int i)
 {
     if (N < 2)
         return y1;
+    if (y0 == 0)
+        return 0;
     double x = log(y1/y0)/(N-1);
     return y0*exp(x*i);
 }
