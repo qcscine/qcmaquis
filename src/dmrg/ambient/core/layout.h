@@ -36,7 +36,6 @@ namespace core {
         void record(int owner, int i, int j = 0, int k = 0); // general call invoking one above
         void clean();
         void print();
-        void apply();
 
         p_profile* object;
         std::vector< std::vector<layout_table_entry*> > map;
