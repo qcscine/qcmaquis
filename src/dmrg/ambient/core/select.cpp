@@ -35,7 +35,7 @@ namespace ambient {
                 grp->add_every((int)(1/part)); 
             }else if(token_t == TK_INTEGER){ 
                 int count = (int)strtol(sql, NULL, 10);
-                grp->add_range(0, count);
+                grp->add_range(0, count-1);
             }
             grp->commit();
         }
