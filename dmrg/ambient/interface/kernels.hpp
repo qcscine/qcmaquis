@@ -67,7 +67,6 @@ void redistribution_l_kernel(p_dense_matrix<double>& a){
 }
 
 void redistribution_c_kernel(p_dense_matrix<double>& a){
-
 }
 
 void single_integer_l_kernel(int& input){

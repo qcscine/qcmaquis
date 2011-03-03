@@ -169,11 +169,10 @@ namespace ambient
                     computing->performx();  // scalapack style
                 }else{
 // performing computation for every item inside every appointed workgroup
-                    int pin_cols = logistics->pin->get_grid_dim().x;
-                    int pin_rows = logistics->pin->get_grid_dim().y;
-                    for(int j=0; j < pin_cols; j++)
-                    for(int i=0; i < pin_rows; i++) // todo - extend onto items
-                    if((*logistics->pin->layout)(i,j) != NULL){ // rewrite this todo
+                    int i, j, k;
+                    for(k=0; k < logistics->pin->layout->segment_count; k++){
+                        i = logistics->pin->layout->segment[k].i;
+                        j = logistics->pin->layout->segment[k].j;
                         logistics->pin->set_default_group(i, j);
                         computing->performx();
                     }
