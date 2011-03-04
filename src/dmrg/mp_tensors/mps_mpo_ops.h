@@ -59,7 +59,8 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
-double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
+double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+              bool verbose = false)
 {
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
@@ -67,6 +68,8 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     Boundary<Matrix, SymmGroup> left = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
+        if (verbose)
+            cout << "expval site " << i << endl;
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }

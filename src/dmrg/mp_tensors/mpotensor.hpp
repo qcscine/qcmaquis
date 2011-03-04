@@ -34,7 +34,6 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                                                                  std::size_t right_index) const
 {
-//    assert( left_index * right_i + right_index < data_.size() );
     assert( left_index < left_i );
     assert( right_index < right_i );
     static Timer timer("MPOTensor const lookup");
@@ -42,7 +41,6 @@ block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()
     // we need a better solution for this!
     block_matrix<Matrix, SymmGroup> * ret;
 #pragma omp critical
-//    ret = &data_[left_index][right_index];
     ret = &data_[std::make_pair(left_index, right_index)];
     timer.end();
     return *ret;

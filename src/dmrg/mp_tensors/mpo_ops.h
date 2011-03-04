@@ -67,10 +67,13 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
         else
         {
             assert( ops.size() == out_mpo.length() );
-            for (std::size_t t = 0; t < in_mpo.length(); ++t)
-                out_mpo[t](boost::tuples::get<0>(ops[t]),
-                           boost::tuples::get<1>(ops[t])) =
-                           boost::tuples::get<2>(ops[t]);
+            for (std::size_t t = 0; t < in_mpo.length(); ++t) {
+                block_matrix<Matrix, SymmGroup> & out_b = out_mpo[t](boost::tuples::get<0>(ops[t]),
+                                                                     boost::tuples::get<1>(ops[t]));
+                
+                if (out_b.n_blocks() == 0)
+                    out_b = boost::tuples::get<2>(ops[t]);
+            }
         }
     }
 }

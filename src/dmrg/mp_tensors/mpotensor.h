@@ -76,6 +76,12 @@ namespace MPOTensor_detail
 template<class Matrix, class SymmGroup>
 class MPOTensor
 {
+    typedef std::pair<std::size_t, std::size_t> key_t;
+    typedef block_matrix<Matrix, SymmGroup> value_t;
+    typedef std::map<key_t, value_t, MPOTensor_detail::pair_cmp> data_t;
+    
+    typedef std::set<std::size_t> used_set_t;
+    
 public:
     typedef typename Matrix::value_type scalar_type;
     typedef double real_type;
@@ -107,9 +113,7 @@ public:
     bool has(std::size_t left_index, std::size_t right_index) const;
     
 private:
-    typedef std::pair<std::size_t, std::size_t> key_t;
-    typedef block_matrix<Matrix, SymmGroup> value_t;
-    mutable std::map<key_t, value_t, MPOTensor_detail::pair_cmp> data_;
+    mutable data_t data_;
     
     std::size_t left_i, right_i;
 //    Index<SymmGroup> phys_i;
