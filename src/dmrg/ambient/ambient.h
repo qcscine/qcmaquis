@@ -59,6 +59,8 @@ namespace ambient
     scheduler& operator>>(scheduler* instance, dim3 distr_dim);
     size_t get_bound();
     size_t get_block_bound();
+    void init(MPI_Comm comm = NULL);
+    void finalize();
     void playout();
     int size();
     bool is_master();

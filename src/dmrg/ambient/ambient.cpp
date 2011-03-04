@@ -50,6 +50,14 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
+    void init(MPI_Comm comm)
+    {
+        engine.init(comm); 
+    }
+    void finalize()
+    {
+        engine.finalize(); 
+    }
     void playout()
     {
         engine.playout(); 
