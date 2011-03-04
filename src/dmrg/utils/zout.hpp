@@ -5,6 +5,8 @@
 #include "ambient/ambient.h"
 #endif
 
+#include <iostream>
+
 class dmrg_cout {
 public:
     template<class T>
