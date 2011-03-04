@@ -202,9 +202,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 
     make_left_paired();
     rhs.make_left_paired();
-//    block_matrix<Matrix, SymmGroup> t;
-//    pgemm(conjugate_transpose(data_), rhs.data_, t);
-//    scalar_type r = trace(t);
     
     using utils::conj;
     

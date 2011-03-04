@@ -64,215 +64,6 @@ struct contraction {
     }
     
     template<class Matrix, class SymmGroup>
-    static Boundary<Matrix, SymmGroup>
-    overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
-                          MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                          Boundary<Matrix, SymmGroup> const & left,
-                          MPOTensor<Matrix, SymmGroup> const & mpo)
-    {
-        static Timer timer("overlap_mpo_left_step");
-        timer.begin();
-        assert(left.aux_dim() == mpo.row_dim());
-        
-        bra_tensor.make_right_paired();
-        ket_tensor.make_right_paired();
-        
-        std::vector<block_matrix<Matrix, SymmGroup> > t2(left.aux_dim());
-       
-        std::size_t loop_max = left.aux_dim();
-#pragma omp parallel for schedule(guided) 
-        for (std::size_t b = 0; b < loop_max; ++b)
-        {
-            block_matrix<Matrix, SymmGroup> t1;
-            gemm(transpose(ket_tensor.data_), left.data_[b], t1);
-            gemm(t1, conjugate(bra_tensor.data_), t2[b]);
-        }
-        
-        Boundary<Matrix, SymmGroup> ret;
-        ret.data_.resize(mpo.col_dim());
-        
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
-        
-        loop_max = mpo.col_dim();
-#pragma omp parallel for schedule(guided)
-        for (size_t b2 = 0; b2 < loop_max; ++b2)
-            for (size_t b1 = 0; b1 < mpo.row_dim(); ++b1)
-            {
-                if (!mpo.has(b1, b2))
-                    continue;
-                
-                block_matrix<Matrix, SymmGroup> const & T = t2[b1];
-                block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
-                
-                if (T.n_blocks() == 0 || W.n_blocks() == 0)
-                    continue;
-                
-                // the boost::bind just turns around the physical charges
-                // cf the definition of s1_size, s2_size below
-                ProductBasis<SymmGroup> upper_pb(ket_tensor.site_dim(), ket_tensor.col_dim(),
-                                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                     -boost::lambda::_1, boost::lambda::_2)
-                                                 );
-                ProductBasis<SymmGroup> lower_pb(bra_tensor.site_dim(), bra_tensor.col_dim(),
-                                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                     -boost::lambda::_1, boost::lambda::_2)
-                                                 );
-                
-                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
-                    for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
-                    {
-                        charge s1_charge = W.left_basis()[w_block].first;
-                        charge s2_charge = W.right_basis()[w_block].first;
-                        
-                        charge tu_charge = T.left_basis()[t_block].first;
-                        charge tl_charge = T.right_basis()[t_block].first;
-                        
-                        charge u_charge = SymmGroup::fuse(tu_charge, s1_charge);
-                        charge l_charge = SymmGroup::fuse(tl_charge, s2_charge);
-                        
-                        if (! ket_tensor.col_dim().has(u_charge) )
-                            continue;
-                        if (! ket_tensor.col_dim().has(l_charge) )
-                            continue;
-                
-                        size_t upper_size = ket_tensor.col_dim().size_of_block(u_charge);
-                        size_t s1_size = ket_tensor.site_dim().size_of_block(s1_charge);
-                        
-                        size_t lower_size = bra_tensor.col_dim().size_of_block(l_charge);
-                        size_t s2_size = bra_tensor.site_dim().size_of_block(s2_charge);
-                        
-                        Matrix block(upper_size, lower_size);
-                        block *= 0;
-                        
-                        size_t in_l_offset = upper_pb(s1_charge, u_charge);
-                        size_t in_r_offset = lower_pb(s2_charge, l_charge);
-                        
-                        if (! W.has_block(s1_charge, s2_charge) )
-                            continue;
-                        
-                        if (! T.has_block(tu_charge, tl_charge) )
-                            continue;
-                        
-                        for (size_t ss1 = 0; ss1 < s1_size; ++ss1)
-                            for (size_t ss2 = 0; ss2 < s2_size; ++ss2)
-                                for (size_t ll = 0; ll < lower_size; ++ll)
-                                    iterator_axpy(&T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
-                                                                           in_r_offset+ss2*lower_size+ll),
-                                                  &T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
-                                                                           in_r_offset+ss2*lower_size+ll)+upper_size,
-                                                  &block(0, ll),
-                                                  W(s1_charge, s2_charge)(ss1, ss2));
-                        
-                        ret.data_[b2] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
-                    }
-            }
-        
-        timer.end(); 
-        return ret;
-    }
-    
-    template<class Matrix, class SymmGroup>
-    static Boundary<Matrix, SymmGroup>
-    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
-                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                           Boundary<Matrix, SymmGroup> const & right,
-                           MPOTensor<Matrix, SymmGroup> const & mpo)
-    {
-        static Timer timer("overlap_mpo_right_step");
-        timer.begin();
-        assert(right.aux_dim() == mpo.col_dim());
-        
-        bra_tensor.make_left_paired();
-        ket_tensor.make_left_paired();
-        
-        std::vector<block_matrix<Matrix, SymmGroup> > t2(right.aux_dim());
-        
-        std::size_t loop_max = right.aux_dim();
-#pragma omp parallel for schedule(guided)
-        for (std::size_t b = 0; b < loop_max; ++b)
-        {
-            block_matrix<Matrix, SymmGroup> t1;
-            gemm(ket_tensor.data_, right.data_[b], t1);
-            gemm(t1, conjugate(transpose(bra_tensor.data_)), t2[b]);
-        }
-        
-        Boundary<Matrix, SymmGroup> ret;
-        ret.data_.resize(mpo.row_dim());
-        
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
-        
-        loop_max = mpo.row_dim();
-#pragma omp parallel for schedule(guided)
-        for (size_t b1 = 0; b1 < loop_max; ++b1)
-            for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
-            {
-                if (!mpo.has(b1, b2))
-                    continue;
-                
-                block_matrix<Matrix, SymmGroup> const & T = t2[b2];
-                block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
-                
-                if (T.n_blocks() == 0 || W.n_blocks() == 0)
-                    continue;
-                
-                ProductBasis<SymmGroup> upper_pb(ket_tensor.site_dim(), ket_tensor.row_dim());
-                ProductBasis<SymmGroup> lower_pb(bra_tensor.site_dim(), bra_tensor.row_dim());
-                
-                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
-                    for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
-                    {
-                        charge s1_charge = W.left_basis()[w_block].first;
-                        charge s2_charge = W.right_basis()[w_block].first;
-                        
-                        charge tu_charge = T.left_basis()[t_block].first;
-                        charge tl_charge = T.right_basis()[t_block].first;
-                        
-                        charge u_charge = SymmGroup::fuse(tu_charge, -s1_charge);
-                        charge l_charge = SymmGroup::fuse(tl_charge, -s2_charge);
-                        
-                        if (! ket_tensor.row_dim().has(u_charge) )
-                            continue;
-                        if (! ket_tensor.row_dim().has(l_charge) )
-                            continue;
-                        
-                        size_t upper_size = ket_tensor.row_dim().size_of_block(u_charge);
-                        size_t s1_size = ket_tensor.site_dim().size_of_block(s1_charge);
-                        
-                        size_t lower_size = bra_tensor.row_dim().size_of_block(l_charge);
-                        size_t s2_size = bra_tensor.site_dim().size_of_block(s2_charge);
-                        
-                        Matrix block(upper_size, lower_size);
-                        
-                        size_t in_l_offset = upper_pb(s1_charge, u_charge);
-                        size_t in_r_offset = lower_pb(s2_charge, l_charge);
-                        
-                        if (! W.has_block(s1_charge, s2_charge) )
-                            continue;
-                        
-                        if (! T.has_block(tu_charge, tl_charge) )
-                            continue;
-                        
-                        for (size_t ss1 = 0; ss1 < s1_size; ++ss1)
-                            for (size_t ss2 = 0; ss2 < s2_size; ++ss2)
-                                for (size_t ll = 0; ll < lower_size; ++ll)
-                                    iterator_axpy(&T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
-                                                                           in_r_offset+ss2*lower_size+ll),
-                                                  &T(tu_charge, tl_charge)(in_l_offset+ss1*upper_size,
-                                                                           in_r_offset+ss2*lower_size+ll)+upper_size,
-                                                  &block(0, ll),
-                                                  W(s1_charge, s2_charge)(ss1, ss2));
-                        
-                        ret.data_[b1] += block_matrix<Matrix, SymmGroup>(u_charge, l_charge, block);
-                    }
-            }
-        
-        timer.end();
-        return ret;
-    }
-    
-    template<class Matrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
     site_hamil(MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                Boundary<Matrix, SymmGroup> const & left,
@@ -417,6 +208,8 @@ struct contraction {
         
         loop_timer.begin();
         
+        mps.make_left_paired();
+        
         loop_max = mpo.col_dim();
 #pragma omp parallel for schedule(guided)
         for (size_t b2 = 0; b2 < loop_max; ++b2) {
@@ -463,6 +256,8 @@ struct contraction {
                                     continue;
                                 if (! mps.col_dim().has(right_i[r].first) )
                                     continue;
+                                if (! mps.data().left_basis().has(out_l_charge) )
+                                    continue;
                                 
                                 size_t in_left_offset = in_left_pb(physical_i[s1].first, left_i[l].first);
                                 size_t out_left_offset = out_left_pb(physical_i[s2].first, left_i[l].first);
@@ -482,17 +277,14 @@ struct contraction {
                                                               &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second,
                                                               &oblock(out_left_offset + ss2*left_i[l].second, rr),
                                                               wblock_t);
-//                                                    for (size_t ll = 0; ll < left_i[l].second; ++ll) {
-//                                                        oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
-//                                                        iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
-//                                                    }
                                             }
                                         }
                                 }
                                 
                                 if (pretend)
                                     ret.data_[b2].reserve(out_l_charge, out_r_charge,
-                                                          out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
+                                                          mps.data().left_basis().size_of_block(out_l_charge),
+                                                          right_i[r].second);
                             }
                         }
                     }
@@ -535,6 +327,8 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
+        mps.make_right_paired();
+        
         loop_max = mpo.row_dim();
 #pragma omp parallel for schedule(guided)
         for (size_t b1 = 0; b1 < loop_max; ++b1) {
@@ -567,10 +361,6 @@ struct contraction {
                         
                         for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
                         {
-//                            size_t r = right_i.position(T.right_basis()[t_block].first);
-//                            size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
-//                                                                       physical_i[s1].first));
-                            
                             size_t l = left_i.position(T.left_basis()[t_block].first);
                             size_t r = right_i.position(SymmGroup::fuse(physical_i[s1].first,
                                                                         T.right_basis()[t_block].first));
@@ -595,9 +385,8 @@ struct contraction {
                                     continue;
                                 if (! mps.row_dim().has(left_i[l].first) )
                                     continue;
-                                
-//                                size_t in_left_offset = left_pb(physical_i[s1].first, left_i[l].first);
-//                                size_t out_left_offset = left_pb(physical_i[s2].first, left_i[l].first);
+                                if (! mps.data().right_basis().has(out_r_charge) )
+                                    continue;
                                 
                                 size_t in_right_offset = in_right_pb(physical_i[s1].first, right_i[r].first);
                                 size_t out_right_offset = out_right_pb(physical_i[s2].first, right_i[r].first);
@@ -612,26 +401,18 @@ struct contraction {
                                             typename Matrix::value_type wblock_t = wblock(ss1, ss2);
                                             for (size_t rr = 0; rr < right_i[r].second; ++rr)
                                                 for (size_t ll = 0; ll < left_i[l].second; ++ll) {
-//                                                    oblock(out_left_offset + ss2*left_i[l].second+ll, rr) +=
-//                                                    iblock(in_left_offset + ss1*left_i[l].second+ll, rr) * wblock_t;
                                                     oblock(ll, out_right_offset + ss2*right_i[r].second+rr) +=
                                                     iblock(ll, in_right_offset + ss1*right_i[r].second+rr) * wblock_t;
                                                 }
-//                                                iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
-//                                                              &iblock(in_left_offset + ss1*left_i[l].second, rr)+left_i[l].second,
-//                                                              &oblock(out_left_offset + ss2*left_i[l].second, rr),
-//                                                              wblock_t);
                                         }
                                 }
                                 
                                 if (pretend)
                                     ret.data_[b1].reserve(out_l_charge, out_r_charge,
-                                                          left_i[l].second, out_right_offset + physical_i[s2].second * right_i[r].second);
-//                                                          out_left_offset + physical_i[s2].second * left_i[l].second,
-//                                                          right_i[r].second);
+                                                          left_i[l].second,
+                                                          mps.data().right_basis().size_of_block(out_r_charge));
                             }
                         }
-                        
                     }
                 }
             }
@@ -642,6 +423,59 @@ struct contraction {
     }
     
     
+    
+    template<class Matrix, class SymmGroup>
+    static Boundary<Matrix, SymmGroup>
+    overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                          MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                          Boundary<Matrix, SymmGroup> const & left,
+                          MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        static Timer timer("overlap_mpo_left_step");
+        timer.begin();
+        
+        Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo);
+        
+        bra_tensor.make_left_paired();
+        Boundary<Matrix, SymmGroup> ret;
+        ret.data_.resize(mpo.col_dim());
+        
+        std::size_t loop_max = mpo.col_dim();
+#pragma omp parallel for schedule(guided)
+        for (std::size_t b = 0; b < loop_max; ++b)
+            gemm(transpose(lbtm.data_[b]), bra_tensor.data(), ret.data_[b]);
+        
+        timer.end();
+        
+        return ret;
+    }
+    
+    template<class Matrix, class SymmGroup>
+    static Boundary<Matrix, SymmGroup>
+    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                           Boundary<Matrix, SymmGroup> const & right,
+                           MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        static Timer timer("overlap_mpo_right_step");
+        timer.begin();
+        
+        Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo);
+        
+        bra_tensor.make_right_paired();
+        Boundary<Matrix, SymmGroup> ret;
+        ret.data_.resize(mpo.row_dim());
+        
+        std::size_t loop_max = mpo.row_dim();
+        block_matrix<Matrix, SymmGroup> tmp = transpose(bra_tensor.data());
+#pragma omp parallel for schedule(guided)
+        for (std::size_t b = 0; b < loop_max; ++b)
+            gemm(rbtm.data_[b], tmp, ret.data_[b]);
+        
+        timer.end();
+        
+        return ret;
+    }
     
     template<class Matrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
@@ -656,10 +490,6 @@ struct contraction {
         lbtm.begin();
         Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
         lbtm.end();
-        
-//        MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(),
-//                                         ket_tensor.row_dim(),
-//                                         ket_tensor.col_dim(), false);
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
         ret.make_left_paired();
@@ -728,11 +558,9 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-        //        svd(dm, U, V, S, cutoff, Mmax);
         truncation = syev_truncate(dm, U, S, cutoff, Mmax);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
-//        assert( U.left_basis() == ret.data_.left_basis() );
         ret.data_ = U;
         ret.right_i = U.right_basis();
         
@@ -800,12 +628,10 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-        //        svd_truncate(dm, U, V, S, cutoff, Mmax);
         truncation = syev_truncate(dm, U, S, cutoff, Mmax);
         V = transpose(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
-//        assert( V.right_basis() == ret.data_.right_basis() );
         ret.data_ = V;
         ret.left_i = V.left_basis();
         
