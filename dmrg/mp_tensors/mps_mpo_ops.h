@@ -136,7 +136,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
                  it != elements(s[k]).second; ++it)
             {
                 double a = fabs(*it);
-//                if (a > 1e-10)
+                if (a > 1e-10)
                     sv.push_back(a*a);
             }
         
