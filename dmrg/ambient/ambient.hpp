@@ -47,7 +47,9 @@ namespace ambient{
     dim3 get_group_id(T& ref);
 
     #include "ambient/interface/core.hpp"
-    #include "ambient/interface/kernels.hpp"
+    #include "ambient/interface/i_kernels.hpp"
+    #include "ambient/interface/l_kernels.hpp"
+    #include "ambient/interface/c_kernels.hpp"
     #include "ambient/interface/model.hpp"
     #include "ambient/interface/interface.hpp"
 }

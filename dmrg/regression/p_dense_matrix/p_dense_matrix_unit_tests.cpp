@@ -39,8 +39,8 @@ struct DoubleInt
 };
 
 struct AmbientConfig {
-    AmbientConfig()   { ambient::engine.init(); }
-    ~AmbientConfig()  { ambient::engine.finalize(); }
+    AmbientConfig()   { ambient::init(); }
+    ~AmbientConfig()  { ambient::finalize(); }
 };
 
 
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     time1.begin();
     ambient::playout();
 
-    ambient::push(ambient::redistribution_l_kernel, ambient::redistribution_c_kernel, a);
+    ambient::push(ambient::block_2d_cyclic_l_kernel, ambient::null_c_kernel, a);
     ambient::playout();
 
     MPI_Barrier(MPI_COMM_WORLD);

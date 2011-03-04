@@ -177,15 +177,15 @@ namespace blas {
     }
 
     template <typename T>
-    const p_dense_matrix<T> operator + (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(ambient::plus_l_kernel, ambient::plus_c_kernel, a, b); }
+    const p_dense_matrix<T> operator + (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l_kernel, ambient::add_c_kernel, a, b); }
     template <typename T>
-    const p_dense_matrix<T> operator - (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(ambient::plus_l_kernel, ambient::plus_c_kernel, a, b); }
+    const p_dense_matrix<T> operator - (const p_dense_matrix<T>& a, const p_dense_matrix<T>& b){ return ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l_kernel, ambient::sub_c_kernel, a, b); }
     template<typename T>
-    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ return ambient::push< p_dense_matrix<T> >(ambient::plus_l_kernel, ambient::plus_c_kernel, lhs, rhs); }
+    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ return ambient::push< p_dense_matrix<T> >(ambient::gemm_l_kernel, ambient::gemm_c_kernel, lhs, rhs); }
     template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& m, const T2& t){ return ambient::push< p_dense_matrix<T> >(ambient::plus_l_kernel, ambient::plus_c_kernel, m, t); }
+    const p_dense_matrix<T> operator * (const p_dense_matrix<T>& m, const T2& t){ return ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); }
     template<typename T, typename T2>
-    const p_dense_matrix<T> operator * (const T2& t, const p_dense_matrix<T>& m){ return ambient::push< p_dense_matrix<T> >(ambient::plus_l_kernel, ambient::plus_c_kernel, t, m); }
+    const p_dense_matrix<T> operator * (const T2& t, const p_dense_matrix<T>& m){ return ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); }
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
 
     template <typename T>
