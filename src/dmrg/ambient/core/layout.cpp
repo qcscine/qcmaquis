@@ -71,6 +71,11 @@ namespace ambient{ namespace core{
         }
     }
     void layout_table::record(int owner, int i, int j, int k) {
+        for(int s=0; s < this->segment_count; s++)
+            if(this->segment[s].i == i &&
+               this->segment[s].j == j &&
+               this->segment[s].k == k) return; // avoiding redunant information // that is - hangs in mpi
+
         if(ambient::scope.master()){ 
             update_map_entry(owner, i, j, k);
             add_segment_entry(owner, i, j, k);
@@ -149,6 +154,7 @@ namespace ambient{ namespace core{
 
         for(int k = 0; k < count; k++){
             if(ambient::scope.master()){
+                int count = profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y-profiles[k]->layout->segment_count;
                 for(int i=0; i < (profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y - profiles[k]->layout->segment_count); i++){
                     layout_packet = ambient::groups::recv<layout_packet_t>(ambient::scope.get_group(), alloc_t<layout_packet_t>());
                     profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->layout->update_map_entry(layout_packet->get<int>(A_LAYOUT_P_OWNER_FIELD),
