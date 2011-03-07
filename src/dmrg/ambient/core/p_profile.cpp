@@ -5,8 +5,12 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      specific(false), profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL) {
+      profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
+        this->group_dim = engine.get_group_dim();
+        this->item_dim  = engine.get_item_dim();
+        this->distr_dim = engine.get_distr_dim();
+        this->gpu_dim   = engine.get_gpu_dim();
     };
 
     p_profile* p_profile::dereference(){
@@ -25,30 +29,18 @@ namespace ambient {
         this->master_relay = std::pair<int,int>(this->master_relay.second, master);
     }
 
-    int p_profile::get_master(){
-        return this->master_relay.second;
-    }
-
-    int p_profile::get_xmaster(){
-        return this->master_relay.first;
-    }
-
     void p_profile::set_scope(groups::group* scope){
         this->xscope = this->scope;
         this->scope = scope;
     }
     
-    groups::group* p_profile::get_scope(){
-        return this->scope;
-    }
-
-    groups::group* p_profile::get_xscope(){
-        return this->xscope;
-    }
+    int p_profile::get_master(){ return this->master_relay.second; }
+    int p_profile::get_xmaster(){ return this->master_relay.first; }
+    groups::group* p_profile::get_scope(){ return this->scope; }
+    groups::group* p_profile::get_xscope(){ return this->xscope; } 
 
     p_profile & p_profile::operator>>(dim3 distr_dim) 
     {
-        this->specific = true;
         this->distr_dim = distr_dim;
         this->group_dim = NULL;
         this->gpu_dim = NULL;
@@ -185,6 +177,7 @@ namespace ambient {
         for(int k=0; k < this->layout->segment_count; k++){
             i = this->layout->segment[k].i;
             j = this->layout->segment[k].j;
+            if(this->group(i,j)->header != NULL) continue; // avoiding redunant allocations
             this->group(i,j)->set_memory(alloc_t(*this->packet_type));
             this->init_fp(this->group(i,j));
         }
@@ -228,7 +221,6 @@ namespace ambient {
     }
 
     void p_profile::imitate(p_profile* profile){
-        this->specific   =  profile->specific;
         this->set_gpu_dim  (profile->get_gpu_dim  ());
         this->set_distr_dim(profile->get_distr_dim());
         this->set_group_dim(profile->get_group_dim());
@@ -272,15 +264,14 @@ namespace ambient {
     }
 
     dim3 p_profile::get_group_dim() const {
-        if(this->specific) return this->group_dim;
-        else return engine.get_group_dim();
+        return this->group_dim;
     }
     void p_profile::set_group_dim(dim3 dim){
         this->group_dim = dim;
     }
 
     dim3 p_profile::get_item_dim() const {
-        return engine.get_item_dim();
+        return this->item_dim;
     }
     void p_profile::set_item_dim(dim3 dim){
         this->item_dim = dim;

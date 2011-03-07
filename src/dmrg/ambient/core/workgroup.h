@@ -24,7 +24,6 @@ namespace ambient {
     public:
         template<typename T> operator T* ()
         { return (T*)this->data;          }
-        bool initialized;
         int owner;
         int i, j, k;
     };

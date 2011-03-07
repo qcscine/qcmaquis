@@ -74,7 +74,7 @@ namespace ambient{ namespace core{
         if(ambient::scope.master()){ 
             update_map_entry(owner, i, j, k);
             add_segment_entry(owner, i, j, k);
-        }else 
+        }else
             add_segment_entry(owner, i, j, k);
     }
     void layout_table::clean(){
