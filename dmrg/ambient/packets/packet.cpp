@@ -5,50 +5,30 @@
 
 namespace ambient{ namespace packets {
 
-    packet::packet(const packet_t& type, void* memory, ...){
-        va_list fields;
-        va_start(fields, memory); 
-        type.fill_packet(memory, type.t_code, fields);
-        va_end(fields);
-        this->data = memory;
-        this->mpi_t = this->get_mpi_t(); // handy errors checking
-    }
-
-    packet::packet(const packet_t& type, ...){
-        va_list fields;
-        void* memory;
-        va_start(fields, type); 
-        memory = malloc(type.t_size);
-        type.fill_packet(memory, type.t_code, fields);
-        va_end(fields);
-        this->data = memory;
-        this->mpi_t = this->get_mpi_t(); // handy errors checking
-    }
-
-    packet::packet(const packet_t& type, void* memory, va_list& fields){
+    packet::packet(const packet_t& type, void* memory, va_list& fields) : type(type){
         type.fill_packet(memory, type.t_code, fields);
         this->data = memory;
-        this->mpi_t = this->get_mpi_t(); // handy errors checking
+        this->mpi_t = this->get_mpi_t();
     }
  
-    packet::packet(const void* memory){
+    packet::packet(const packet_t& type, const void* memory) : type(type){
         this->data = const_cast<void*>(memory);
-        this->mpi_t = this->get_mpi_t(); // handy errors checking
+        this->mpi_t = this->get_mpi_t();
     }
 
-    packet_t& packet::get_t()
+    const packet_t& packet::get_t()
     {
-        return packet_t::type_map(this->get_t_code());
+        return this->type;
+    }
+
+    MPI_Datatype packet::get_mpi_t()
+    {
+        return this->type.mpi_t;
     }
 
     char packet::get_t_code()
     {
         return *(char*)this->data;
-    }
-
-    MPI_Datatype packet::get_mpi_t()
-    {
-        return this->get_t().mpi_t;
     }
 
     const void* packet::get(int field)
@@ -83,7 +63,7 @@ namespace ambient{ namespace packets {
 
     packet* unpack(const packet_t& type, void* memory){
         *(char*)memory = type.t_code;
-        return new packet(memory);
+        return new packet(type, memory);
     }
 
 } }

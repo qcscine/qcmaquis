@@ -41,14 +41,12 @@ namespace ambient{ namespace groups{
         if(dest != -1){
             grp->manager->send(pack, dest);
         }else{
-            if(pack->get_t().compounds[1] != MPI_INT) printf("Warning: the dest field (#1) is not of type MPI_INT!\n");
             grp->manager->send(pack, *(int*)pack->get(A_DEST_FIELD));
         }
     }
     ambient_request* isend(packet* pack, group* grp, int dest = -1)
     {
         if(dest != -1) return grp->manager->isend(pack, dest);
-        if(pack->get_t().compounds[1] != MPI_INT) printf("Warning: the dest field (#1) is not of type MPI_INT!\n");
         return grp->manager->isend(pack, *(int*)pack->get(A_DEST_FIELD));
     }
 

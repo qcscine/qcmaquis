@@ -109,19 +109,19 @@ namespace ambient{ namespace core{
             if(profiles[k]->get_xscope() == NULL || !profiles[k]->get_xscope()->involved()) continue;
             if(ambient::rank() == profiles[k]->get_xmaster()){ // receive and forward new layout
                 for(int i=0; i < (profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y); i++){
+                    if(profiles[k]->get_master() == profiles[k]->get_xmaster()) continue; // handled in the main body
                     layout_packet = ambient::groups::recv<layout_packet_t>(ambient::groups::group_map("ambient"), alloc_t<layout_packet_t>());
                     layout_table_entry* entry = profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->layout->get_entry(layout_packet->get<int>(A_LAYOUT_P_I_FIELD), 
                                                                                                                              layout_packet->get<int>(A_LAYOUT_P_J_FIELD), 
                                                                                                                              layout_packet->get<int>(A_LAYOUT_P_K_FIELD));
-                    int owner = profiles[k]->get_master() == profiles[k]->get_xmaster() ? entry->get_xowner() : entry->get_owner();
-                    layout_packet->set(A_DEST_FIELD, owner);
-                    if(owner == ambient::rank()){
+                    if(entry->get_owner() == ambient::rank()){
 //                        if(layout_packet->get<int>(A_LAYOUT_P_OWNER_FIELD) == ambient::rank()) profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->layout->segment_count--;
 //                        else{
                         forward(profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)], k, layout_packet->get<int>(A_LAYOUT_P_I_FIELD), 
                                 layout_packet->get<int>(A_LAYOUT_P_J_FIELD), layout_packet->get<int>(A_LAYOUT_P_K_FIELD), layout_packet->get<int>(A_LAYOUT_P_OWNER_FIELD));
 //                        }
                     }else{
+                        layout_packet->set(A_DEST_FIELD, entry->get_owner());
                         ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
                     }
                 }
@@ -183,7 +183,16 @@ namespace ambient{ namespace core{
                                                               profiles[k]->layout->get_entry(i,j)->i, 
                                                               profiles[k]->layout->get_entry(i,j)->j,
                                                               profiles[k]->layout->get_entry(i,j)->k);
-                        ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
+                        if(profiles[k]->get_xmaster() == profiles[k]->get_master()){
+                            int owner = profiles[k]->layout->get_entry(i,j)->get_xowner();
+                            if(owner == ambient::rank()){
+                                forward(profiles[k], k, i, j, 0, profiles[k]->layout->get_entry(i,j)->owner); 
+                            }else{
+                                layout_packet->set(A_DEST_FIELD, owner);
+                                ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
+                            }
+                        }else
+                            ambient::groups::send(layout_packet, ambient::groups::group_map("ambient"));
                     }
                 }
             }
