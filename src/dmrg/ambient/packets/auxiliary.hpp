@@ -1,6 +1,8 @@
 #ifndef AMBIENT_PACKETS_AUX_HPP
 #define AMBIENT_PACKETS_AUX_HPP
 
+#include <stdarg.h>
+
 namespace ambient{ namespace packets {
 
     template<typename T>
@@ -9,12 +11,12 @@ namespace ambient{ namespace packets {
     }
 
     template<typename T>
-    const MPI_Datatype get_mpi_t(){
+    MPI_Datatype get_mpi_t(){
         return get_t<T>().mpi_t;
     }
 
     template<typename T>
-    const size_t sizeof_t(int field = -1){
+    size_t sizeof_t(int field = -1){
         if(field == -1) return get_t<T>().get_size();
         else return get_t<T>().sizes[field];
     }

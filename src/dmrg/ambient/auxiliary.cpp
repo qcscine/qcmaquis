@@ -1,4 +1,5 @@
 #include "ambient/auxiliary.h"
+#include <stdlib.h>
 
 namespace ambient{
 

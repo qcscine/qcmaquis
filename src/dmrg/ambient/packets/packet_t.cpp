@@ -1,4 +1,5 @@
 #include "ambient/packets/packet_t.h"
+#include <stdarg.h>
 
 namespace ambient{ namespace packets{
 

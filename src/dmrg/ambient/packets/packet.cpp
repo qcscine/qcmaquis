@@ -1,5 +1,7 @@
 #include "ambient/packets/types.h"
 #include "ambient/packets/packet.h"
+#include <stdlib.h>
+#include <stdarg.h>
 
 namespace ambient{ namespace packets {
 
@@ -44,7 +46,7 @@ namespace ambient{ namespace packets {
         return *(char*)this->data;
     }
 
-    const MPI_Datatype packet::get_mpi_t()
+    MPI_Datatype packet::get_mpi_t()
     {
         return this->get_t().mpi_t;
     }

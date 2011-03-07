@@ -59,13 +59,13 @@ namespace blas {
         void swap(p_dense_matrix & r);
         friend void swap(p_dense_matrix & x, p_dense_matrix & y){ x.swap(y); }
 
-        inline const bool empty() const;
-        inline const size_type num_rows() const;
-        inline const size_type num_columns() const;
-        inline const difference_type stride1() const;
-        inline const difference_type stride2() const;
-        inline const difference_type get_lda() const;
-        inline const difference_type get_sda() const;
+        inline bool empty() const;
+        inline size_type num_rows() const;
+        inline size_type num_columns() const;
+        inline difference_type stride1() const;
+        inline difference_type stride2() const;
+        inline difference_type get_lda() const;
+        inline difference_type get_sda() const;
         void reserve(size_type rows, size_type cols);
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, difference_type k);

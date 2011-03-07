@@ -1,9 +1,9 @@
 #ifndef AMBIENT_H
 #define AMBIENT_H
 
+#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mpi.h>
 #include <queue>
 #include <string>
 #include <assert.h>

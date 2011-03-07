@@ -128,7 +128,7 @@ namespace ambient
     {
         int threading_level;
         this->comm = comm;
-        if(this->comm == NULL){
+        if(this->comm == (MPI_Comm)NULL){
             MPI_Init_thread(0, NULL, MPI_THREAD_MULTIPLE, &threading_level);
             this->comm = MPI_COMM_WORLD;
         }

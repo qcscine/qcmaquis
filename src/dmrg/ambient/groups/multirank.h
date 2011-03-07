@@ -8,9 +8,9 @@ namespace ambient{ namespace groups{
     class multirank
     {
     private: 
-        multirank();                               // constructor is private
-        multirank(multirank const&){};             // copy constructor is private
-        multirank& operator=(multirank const&){};  // assignment operator is private
+        multirank();                             // constructor is private
+        multirank(multirank const&);             // copy constructor is private
+        multirank& operator=(multirank const&);  // assignment operator is private
         std::map<std::string,int> map;
     public:
         static multirank& instance();

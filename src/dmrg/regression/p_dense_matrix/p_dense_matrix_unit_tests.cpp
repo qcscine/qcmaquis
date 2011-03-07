@@ -1,15 +1,15 @@
+#include "utils/zout.hpp"
+#include "p_dense_matrix/p_dense_matrix.h"
+#include "p_dense_matrix/p_dense_matrix_algorithms.h"
+#include "p_dense_matrix/concept/matrix_interface.hpp"
+#include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
+
 #define BOOST_TEST_MODULE p_dense_matrix
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <complex>
 #include <numeric>
-
-#include "utils/zout.hpp"
-#include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/p_dense_matrix_algorithms.h"
-#include "p_dense_matrix/concept/matrix_interface.hpp"
-#include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
 
 #define M_SIZE 1024
 #define M_P_SIZE 256

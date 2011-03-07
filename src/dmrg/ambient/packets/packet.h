@@ -12,7 +12,7 @@ namespace ambient{ namespace packets{
         MPI_Datatype mpi_t;
 
         packet_t& get_t();
-        const MPI_Datatype get_mpi_t();
+        MPI_Datatype get_mpi_t();
         char  get_t_code();
         const void* get(int field);
 
