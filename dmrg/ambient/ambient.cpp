@@ -65,14 +65,11 @@ namespace ambient
     scheduler::scheduler(): item_dim(dim3(128,128,1))
     {
     }
-    dim3 scheduler::get_group_dim()
-    {
-        return this->group_dim;
-    }
-    dim3 scheduler::get_item_dim()
-    {
-        return this->item_dim;
-    }
+    dim3 scheduler::get_group_dim(){ return this->group_dim; }
+    dim3 scheduler::get_item_dim(){ return this->item_dim; }
+    dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
+    dim3 scheduler::get_gpu_dim(){ return this->gpu_dim; }
+
     size_t get_bound()
     {
         return 200; // to be redo to something normal

@@ -69,8 +69,6 @@ namespace ambient {
         block_packet_t* packet_type;
 
 // parameters can be set specifically for the profile
-        bool specific; 
-
         dim3 get_dim()       const;
         dim3 get_distr_dim() const;
         dim3 get_gpu_dim()   const;

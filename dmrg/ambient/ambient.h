@@ -39,6 +39,8 @@ namespace ambient
         void finalize();
         dim3 get_group_dim();
         dim3 get_item_dim();
+        dim3 get_distr_dim();
+        dim3 get_gpu_dim();
 
         void push(core::operation* logistics, core::operation* computing);
         void playout();  // perform actual operations

@@ -7,7 +7,7 @@
 
 #define LEN(x) sizeof(x)/sizeof(int)
 #define BASE_FIELDS       MPI_Datatype
-#define __a_pack          static int a_packet_types_sizes[] = 
+#define __a_pack          int a_packet_types_sizes[] = 
 #define __a_fields__      friend class packet_t; protected: MPI_Datatype
 #define __a_flex_fields__ friend class packet_t; public: MPI_Datatype
 #define __a_packet__      MPI_Datatype& __a_packet_start = 

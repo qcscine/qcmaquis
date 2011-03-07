@@ -3,7 +3,7 @@
 
 namespace ambient {
 
-    workgroup::workgroup(p_profile** p, int i, int j, int k): profile(p), i(i), j(j), k(k), initialized(false), header(NULL) {};
+    workgroup::workgroup(p_profile** p, int i, int j, int k): profile(p), i(i), j(j), k(k), header(NULL) {};
 
     p_profile* workgroup::get_profile(){
         return *this->profile;
