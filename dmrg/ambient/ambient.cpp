@@ -157,7 +157,6 @@ namespace ambient
         core::operation* computing;
         while(!this->stack.end_reached())
             this->stack.pick()->first->perform();
-
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
             if(logistics->get_scope()->involved()) ambient::core::apply_change_set(logistics->profiles, logistics->count);
