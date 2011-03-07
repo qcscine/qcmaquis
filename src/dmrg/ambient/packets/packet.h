@@ -11,7 +11,8 @@ namespace ambient{ namespace packets{
         void* data;
         MPI_Datatype mpi_t;
 
-        packet_t& get_t();
+        const packet_t& type;
+        const packet_t& get_t();
         MPI_Datatype get_mpi_t();
         char  get_t_code();
         const void* get(int field);
@@ -23,10 +24,7 @@ namespace ambient{ namespace packets{
 
         void set(int field, const void* value);
         void set(int field, int value);
-        packet(const packet_t& type, void* memory, ...);
-        packet(const packet_t& type, ...);
-        packet(const void* memory);
-
+        packet(const packet_t& type, const void* memory);
         packet(const packet_t& type, void* memory, va_list& fields); // used in auxiliary.hpp
     };
 
