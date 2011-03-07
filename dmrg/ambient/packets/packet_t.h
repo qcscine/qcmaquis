@@ -2,6 +2,8 @@
 #define AMBIENT_PACKETS_PACKET_TYPE_H
 #include <memory.h>
 #include <mpi.h>
+#include <stdlib.h>
+#include <map>
 
 #define LEN(x) sizeof(x)/sizeof(int)
 #define BASE_FIELDS       MPI_Datatype
@@ -17,8 +19,8 @@ namespace ambient{ namespace packets{
     {
 // PACKET-TYPE WORK LOGIC //////////////////////////////////////////////////////////////
     private:
-        packet_t(packet_t const&){};             // copy constructor is private
-        packet_t& operator=(packet_t const&){};  // assignment operator is private
+        packet_t(packet_t const&);             // copy constructor is private
+        packet_t& operator=(packet_t const&);  // assignment operator is private
     public:
         template<typename T>
         static T& get(){
@@ -32,7 +34,7 @@ namespace ambient{ namespace packets{
         static packet_t& type_map(char t_code, const packet_t* type = NULL){
             static std::map<char,const packet_t*> map;
             if(type != NULL) map.insert(std::pair<char,const packet_t*>(t_code,type));
-            else return const_cast<packet_t&>(*(map.find(t_code)->second));
+            return const_cast<packet_t&>(*(map.find(t_code)->second));
         }
         void change_field_size(int field, int size);
         void fill_packet(void* memory, char type, va_list& fields) const;

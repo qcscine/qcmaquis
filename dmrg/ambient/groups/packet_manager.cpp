@@ -97,6 +97,6 @@ namespace ambient{ namespace groups{
 
     void send(packet* pack, const char* grp, int dest = -1){  send(pack, group_map(grp), dest); }
     packet* recv(const packet_t& type, const char* grp, void* memory){ return recv(type, group_map(grp), memory); }
-    ambient_request* isend(packet* pack, const char* grp, int dest = -1){ isend(pack, group_map(grp), dest); }
+    ambient_request* isend(packet* pack, const char* grp, int dest = -1){ return isend(pack, group_map(grp), dest); }
     ambient_request* irecv(const packet_t& type, const char* grp, void* memory){ return irecv(type, group_map(grp), memory); }
 } }

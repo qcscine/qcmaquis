@@ -50,25 +50,25 @@ namespace blas {
 #endif	
 
     template <typename T>
-    inline const bool p_dense_matrix<T>::empty() const { return (this->rows == 0 || this->cols == 0); }
+    inline bool p_dense_matrix<T>::empty() const { return (this->rows == 0 || this->cols == 0); }
 
     template <typename T>
-    inline const std::size_t p_dense_matrix<T>::num_rows() const { return this->rows; }
+    inline std::size_t p_dense_matrix<T>::num_rows() const { return this->rows; }
 
     template <typename T>
-    inline const std::size_t p_dense_matrix<T>::num_columns() const { return this->cols; }
+    inline std::size_t p_dense_matrix<T>::num_columns() const { return this->cols; }
 
     template <typename T>
-    inline const std::ptrdiff_t p_dense_matrix<T>::stride1() const { return 1; }
+    inline std::ptrdiff_t p_dense_matrix<T>::stride1() const { return 1; }
 
     template <typename T>
-    inline const std::ptrdiff_t p_dense_matrix<T>::stride2() const { return this->lda; }
+    inline std::ptrdiff_t p_dense_matrix<T>::stride2() const { return this->lda; }
 
     template <typename T>
-    inline const std::ptrdiff_t p_dense_matrix<T>::get_lda() const { return this->lda; }
+    inline std::ptrdiff_t p_dense_matrix<T>::get_lda() const { return this->lda; }
 
     template <typename T>
-    inline const std::ptrdiff_t p_dense_matrix<T>::get_sda() const { return this->sda; }
+    inline std::ptrdiff_t p_dense_matrix<T>::get_sda() const { return this->sda; }
 
     template <typename T>
     void p_dense_matrix<T>::clear(){ this->rows = this->cols = 0; }

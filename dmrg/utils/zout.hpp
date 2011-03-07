@@ -4,7 +4,6 @@
 #ifdef MPI_PARALLEL
 #include "ambient/ambient.h"
 #endif
-
 #include <iostream>
 
 class dmrg_cout {

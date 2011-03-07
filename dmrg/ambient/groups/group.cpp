@@ -194,10 +194,9 @@ namespace ambient{ namespace groups {
         if(instance != NULL){ 
             if(map.find(name) != map.end()) printf("Warning: trying to add to groups with the same name\n");
             map.insert(std::pair<std::string,group*>(name,instance));
-        }else{
-            if(map.find(name) == map.end()) return NULL; // wasn't able to find requested group
-            return map.find(name)->second; 
         }
+        if(map.find(name) == map.end()) return NULL; // wasn't able to find requested group
+        return map.find(name)->second;
     }
 
 } }

@@ -1,6 +1,4 @@
 #include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include "ambient/core/select.h"
 #include "ambient/core/smp.h"
 #include "ambient/groups/group.h"

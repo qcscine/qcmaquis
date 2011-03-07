@@ -72,7 +72,7 @@ public:
             val += (getcpuclocks()-t0)/freq;
     }
 
-    const double GetTime()
+    double GetTime()
     {
 	return  val;
     }    

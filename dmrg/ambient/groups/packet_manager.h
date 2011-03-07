@@ -21,8 +21,8 @@ namespace ambient{ namespace groups{
     class packet_manager
     {
     private: 
-        packet_manager(packet_manager const&){};             // copy constructor is private
-        packet_manager& operator=(packet_manager const&){};  // assignment operator is private
+        packet_manager(packet_manager const&);             // copy constructor is private
+        packet_manager& operator=(packet_manager const&);  // assignment operator is private
         MPI_Comm* comm;
     public:
         std::vector<ambient_request*> send_requests;

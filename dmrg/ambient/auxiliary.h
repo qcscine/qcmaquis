@@ -19,9 +19,10 @@ namespace core{ class operation; }
         unsigned int x, y, z;
         dim3(unsigned int x = 1, unsigned int y = 1, unsigned int z = 1) : x(x), y(y), z(z) {}
         dim3& operator=(int value){
-            x = y = z = value;
+            this->x = this->y = this->z = value;
+            return *this;
         }
-        dim3 operator*=(const dim3 & b){
+        dim3& operator*=(const dim3 & b){
             this->x *= b.x;
             this->y *= b.y;
             this->z *= b.z;
