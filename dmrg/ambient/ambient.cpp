@@ -170,7 +170,7 @@ namespace ambient
                 computing = pair->second;
                 computing->set_scope(logistics->get_scope());
                 if(logistics->pin == NULL){ // nothing has been pinned
-                    computing->performx();  // scalapack style
+                    computing->invoke();  // scalapack style
                 }else{
 // performing computation for every item inside every appointed workgroup
                     int i, j, k;
@@ -178,7 +178,7 @@ namespace ambient
                         i = logistics->pin->layout->segment[k].i;
                         j = logistics->pin->layout->segment[k].j;
                         logistics->pin->set_default_group(i, j);
-                        computing->performx();
+                        computing->invoke();
                     }
                 } // logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
             }

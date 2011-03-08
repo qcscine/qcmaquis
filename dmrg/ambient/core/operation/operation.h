@@ -1,10 +1,13 @@
 #ifndef AMBIENT_CORE_OPERATION_H
 #define AMBIENT_CORE_OPERATION_H
 #include <stdlib.h>
-#include "ambient/core/p_profile.h"
 #define pinned ambient::core::ambient_pin* , 
 #define marked NULL,
 
+namespace ambient{
+    class p_profile; 
+    namespace groups { class group; }
+}
 namespace ambient{ namespace core{
 
     class ambient_pin{};
@@ -14,7 +17,7 @@ namespace ambient{ namespace core{
         #include "ambient/core/operation/operation.pp.h"
         void init();     // some init that doesn't depend upon arguments
         void perform();  // executes operation
-        void performx(); // executes operation (clean way)
+        void invoke();   // executes operation (clean way)
         void set_scope(groups::group* scope);
         groups::group* get_scope();
         void(operation::*prototype)();

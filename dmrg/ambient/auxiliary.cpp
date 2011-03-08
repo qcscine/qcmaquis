@@ -1,4 +1,5 @@
 #include "ambient/auxiliary.h"
+#include "ambient/core/operation/operation.h"
 #include <stdlib.h>
 
 namespace ambient{
@@ -80,5 +81,24 @@ namespace ambient{
 
     std::pair<core::operation*,core::operation*>* operation_stack::pick(){
         return &this->content[this->read_iterator++];
+    }
+
+
+    delegate::delegate() : length(0) {
+        this->handlers = (core::operation**)malloc(sizeof(core::operation*)*STACK_CONTENT_RESERVATION);
+        this->reserved = STACK_CONTENT_RESERVATION;
+    }
+
+    void delegate::operator+=(core::operation* handler){
+        this->handlers[this->length++] = handler;
+        if(this->length == this->reserved){
+            this->reserved += STACK_CONTENT_RESERVATION;
+            this->handlers = (core::operation**)realloc(this->handlers, sizeof(core::operation*)*this->reserved);
+        }
+    }
+
+    void delegate::operator()(){
+        for(int i=0; i < this->length; i++)
+            this->handlers[i]->invoke();
     }
 }
