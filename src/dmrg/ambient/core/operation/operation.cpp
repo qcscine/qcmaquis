@@ -15,7 +15,7 @@ namespace ambient{ namespace core{
         ambient::scope.set_group((groups::group*)NULL);
         (this->*prototype)();
     }
-    void operation::performx()
+    void operation::invoke()
     {
         (this->*prototype)();
     }

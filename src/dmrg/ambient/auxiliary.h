@@ -66,6 +66,17 @@ namespace core{ class operation; }
         size_t length;
         size_t reserved;
     };
+
+    class delegate {
+    public:
+        delegate();
+        void operator+=(core::operation* handler);
+        void operator()();
+    private:
+        core::operation** handlers;
+        size_t length;
+        size_t reserved;
+    };
 }
 
 #endif

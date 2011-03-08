@@ -154,7 +154,8 @@ namespace ambient{ namespace core{
 
         for(int k = 0; k < count; k++){
             if(ambient::scope.master()){
-                int count = profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y-profiles[k]->layout->segment_count;
+                int cnt = profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y-profiles[k]->layout->segment_count;
+                printf("Receiving %d pieces\n", cnt);
                 for(int i=0; i < (profiles[k]->get_grid_dim().x*profiles[k]->get_grid_dim().y - profiles[k]->layout->segment_count); i++){
                     layout_packet = ambient::groups::recv<layout_packet_t>(ambient::scope.get_group(), alloc_t<layout_packet_t>());
                     profiles[layout_packet->get<int>(A_LAYOUT_P_OP_ID_FIELD)]->layout->update_map_entry(layout_packet->get<int>(A_LAYOUT_P_OWNER_FIELD),
@@ -163,6 +164,7 @@ namespace ambient{ namespace core{
                                                                                                         layout_packet->get<int>(A_LAYOUT_P_K_FIELD)    );
                 }
             }else{
+                printf("R%d: Sending %d pieces\n", ambient::rank(), profiles[k]->layout->segment_count);
                 for(int i=0; i < profiles[k]->layout->segment_count; i++){
                     layout_packet = pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                           ambient::scope.get_group()->master, 
