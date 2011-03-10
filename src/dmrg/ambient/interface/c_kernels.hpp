@@ -8,6 +8,7 @@ void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>&
 //    for(int i=0; i < size; i++){
 //        output[i] = ad[i]+bd[i];
 //    }
+
 }
 
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){

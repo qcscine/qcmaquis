@@ -26,7 +26,8 @@ namespace ambient{ namespace packets{
         static T& get(){
             static T* singleton = NULL;
             if(!singleton){ 
-                singleton = new T(); 
+                singleton = new T();
+                singleton->commit(); 
                 type_map(singleton->t_code, (packet_t*)singleton);
             }
             return *singleton;

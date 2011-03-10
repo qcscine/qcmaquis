@@ -22,6 +22,10 @@
 #define A_BLOCK_P_K_FIELD      6
 #define A_BLOCK_P_DATA_FIELD   7
 
+#define A_CONTROL_P_SRC_FIELD  3
+#define A_CONTROL_P_CODE_FIELD 4
+#define A_CONTROL_P_INFO_FIELD 5
+
 namespace ambient{ namespace packets{
 
 // dest is mandatory first (in order to perform send operation
@@ -43,13 +47,13 @@ namespace ambient{ namespace packets{
 
     struct control_packet_t : public standard_packet_t
     {
-        __a_fields__ src, action, priority;
+        __a_fields__ src, code, info;
         control_packet_t()
         {
             __a_packet__
             src      = MPI_INT;
-            action   = MPI_BYTE;
-            priority = MPI_INT;
+            code     = MPI_BYTE;
+            info     = MPI_BYTE;
             __a_pack{ 1, 1, 1 };
             __a_code('C');
         }

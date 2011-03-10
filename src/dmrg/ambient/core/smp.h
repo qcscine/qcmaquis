@@ -21,6 +21,7 @@ namespace ambient {
         void set_group(groups::group* group);
         void set_group(const char* group);
         groups::group* get_group();
+        groups::packet_manager* get_manager();
         int get_rank();
         int get_size();
         void set_op(core::operation* op);

@@ -17,6 +17,7 @@ namespace ambient{ namespace groups{
 
         int get_master_g(); // get translated rank of the group master
         bool involved();
+        bool is_master();
 
         void add(const int* procs, int count, bool excl = false);
         void add_range(int first, int last, bool excl = false);
@@ -32,6 +33,7 @@ namespace ambient{ namespace groups{
         const char* name;
         int master;                // master process in this group
         packet_manager* manager;   // group packet manager
+        packet_manager* get_manager();
         group* parent;             // parent group of processes
         std::set<group*> children;
         MPI_Comm mpi_comm;
@@ -41,6 +43,7 @@ namespace ambient{ namespace groups{
         std::pair<unsigned int*,size_t> id;
 
         std::pair<unsigned int*,size_t> hash_group_id();
+        size_t get_size();
     private:
         unsigned int object_count;
         int* members;              // list of member ranks (according to the parent group)
