@@ -38,6 +38,7 @@ namespace ambient {
     int p_profile::get_xmaster(){ return this->master_relay.first; }
     groups::group* p_profile::get_scope(){ return this->scope; }
     groups::group* p_profile::get_xscope(){ return this->xscope; } 
+    bool p_profile::xinvolved(){ return (this->get_xscope() != NULL && this->get_xscope()->involved()); }
 
     p_profile & p_profile::operator>>(dim3 distr_dim) 
     {
@@ -172,7 +173,7 @@ namespace ambient {
     }
 
     void p_profile::postprocess(){
-#ifndef DSCALAPACK_COMPATIBLE
+#ifndef SCALAPACK_COMPATIBLE
         int i, j;
         for(int k=0; k < this->layout->segment_count; k++){
             i = this->layout->segment[k].i;

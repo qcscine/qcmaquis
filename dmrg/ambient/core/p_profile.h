@@ -47,6 +47,7 @@ namespace ambient {
         void set_scope(groups::group* scope);
         groups::group* get_scope();
         groups::group* get_xscope();
+        bool xinvolved();
 
         core::layout_table* layout;
 

@@ -46,9 +46,9 @@ namespace ambient
         void playout();  // perform actual operations
         int size;
         block_packet_t* default_data_packet_t;
+        groups::group* ambient;
     private:
         MPI_Comm comm;
-        groups::group* ambient;
 
         dim3 distr_dim;   // work-item size of distribution blocks
         dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
@@ -66,6 +66,7 @@ namespace ambient
     void playout();
     int size();
     bool is_master();
+    groups::group* world();
 
     extern smp& scope;
     extern scheduler& layout;

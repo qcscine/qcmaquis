@@ -36,6 +36,9 @@ namespace ambient {
         }
         return this->group;
     }
+    groups::packet_manager* smp::get_manager(){
+        return this->get_group()->manager;
+    }
     int smp::get_size(){
         return this->size;
     }
