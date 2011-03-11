@@ -60,6 +60,8 @@ namespace ambient{ namespace groups{
         std::list<typed_q*> qs;
         typed_q* control_in;
         typed_q* control_out;
+        typed_q* layout_in_q;
+        typed_q* layout_out_q;
 
         typed_q* add_typed_q(const packet_t& type, direction flow, int reservation = 1, int priority = 1);
         void process();
