@@ -4,6 +4,7 @@
 #include "dense_matrix/matrix_concept_check.hpp"
 #include "dense_matrix/diagonal_matrix.h"
 
+#include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/lapack/driver/syevd.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
@@ -28,7 +29,10 @@ namespace blas
         resize(V, k, num_columns(M));
         
         std::vector<typename detail::sv_type<T>::type> S_(k);
-        boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
+//        int info = boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
+        int info = boost::numeric::bindings::lapack::gesvd('S', 'S', M, S_, U, V);
+        if (info != 0)
+            throw std::runtime_error("Error in SVD!");
         
         S = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(S_);
     }
