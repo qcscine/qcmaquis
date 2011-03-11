@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #ifndef SS_OPTIMIZE_H
 #define SS_OPTIMIZE_H
 

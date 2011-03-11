@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #include "utils/zout.hpp"
 #include "mp_tensors/mps.h"
 

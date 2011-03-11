@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #include "mp_tensors/mpotensor.h"
 
 #include "mp_tensors/reshapes.h"
@@ -67,7 +75,12 @@ template<class Matrix, class SymmGroup>
 bool MPOTensor<Matrix, SymmGroup>::has(std::size_t left_index,
                                        std::size_t right_index) const
 {
-    return data_.find(std::make_pair(left_index, right_index)) != data_.end();
+//    static Timer timer("MPOTensor has");
+//    timer.begin();
+//    bool ret = data_.find(std::make_pair(left_index, right_index)) != data_.end();
+//    timer.end();
+//    return ret;
+    return data_.count(std::make_pair(left_index, right_index)) > 0;
 }
 
 template<class Matrix, class SymmGroup>
