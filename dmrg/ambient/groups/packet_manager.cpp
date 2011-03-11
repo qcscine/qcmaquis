@@ -50,10 +50,12 @@ namespace ambient{ namespace groups{
     packet_manager::packet_manager(group* grp){
         this->scope = grp;
         this->comm = &grp->mpi_comm;
-        this->control_in  = this->add_typed_q(get_t<control_packet_t>(), packet_manager::IN,  30);
-        this->control_out = this->add_typed_q(get_t<control_packet_t>(), packet_manager::OUT);
-        this->state = packet_manager::OPEN;
+        this->control_in   = this->add_typed_q(get_t<control_packet_t>(), packet_manager::IN,  30);
+        this->control_out  = this->add_typed_q(get_t<control_packet_t>(), packet_manager::OUT);
+        this->layout_in_q  = this->add_typed_q(get_t<layout_packet_t>(),  packet_manager::IN, 30);
+        this->layout_out_q = this->add_typed_q(get_t<layout_packet_t>(),  packet_manager::OUT);
         this->control_in->packet_delivered += new core::operation(locking_handler, this->control_in);
+        this->state = packet_manager::OPEN;
         this->closure_mutex = this->scope->get_size();
     };
     void packet_manager::process(){
@@ -142,7 +144,7 @@ namespace ambient{ namespace groups{
                     this->packet_delivered();
                     this->requests[i] = new ambient_request(alloc_t(this->type));
                     this->recv(this->requests[i]); // request renewal
-                    printf("Received info\n");
+//                    printf("Received info\n");
                 }else if(this->flow == OUT){
                     this->active_requests_number--;
                     this->target_packet = (packet*)this->requests[i]->memory;
