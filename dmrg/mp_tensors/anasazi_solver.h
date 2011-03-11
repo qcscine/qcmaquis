@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #ifndef ANASAZI_MULTI_VEC_TRAITS_HPP
 #define ANASAZI_MULTI_VEC_TRAITS_HPP
 

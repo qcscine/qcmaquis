@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #include "block_matrix/block_matrix.h"
 
 #include "utils/function_objects.h"
@@ -52,7 +60,9 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
-{   
+{
+    assert( !has_block(c1, c2) );
+    
     std::pair<charge, size_type>
     p1 = std::make_pair(c1, mtx.num_rows()),
     p2 = std::make_pair(c2, mtx.num_columns());

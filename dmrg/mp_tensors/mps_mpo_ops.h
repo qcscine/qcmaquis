@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #ifndef MPS_MPO_OPS_H
 #define MPS_MPO_OPS_H
 
@@ -119,6 +127,8 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
     mps.normalize_right();
 //    mps.canonize(1);
     
+    block_matrix<Matrix, SymmGroup> lb;
+    
     for (std::size_t p = 1; p < L; ++p)
     {
         block_matrix<Matrix, SymmGroup> t, u, v;
@@ -143,25 +153,27 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
                     sv.push_back(a*a);
             }
         
+//        cout << p << " " << sv[0] << " " << sv[1] << endl;
+        
         r = std::accumulate(sv.begin(), sv.end(), double(0));
-        std::transform(sv.begin(), sv.end(), sv.begin(),
-                       boost::lambda::_1 / r);
+//        std::transform(sv.begin(), sv.end(), sv.begin(),
+//                       boost::lambda::_1 / r);
         
-//        std::sort(sv.begin(), sv.end());
-//        std::reverse(sv.begin(), sv.end());
-//        std::copy(sv.begin(), sv.begin()+10, std::ostream_iterator<double>(cout, " ")); cout << endl;
+//        cout << r << " " << sv.size() << endl;
+//        if (fabs(1-r) < 0.01)
+//            std::copy(sv.begin(), sv.end(), std::ostream_iterator<double>(cout, " ")); cout << endl;
         
-        r = 0;
+        double S = 0;
         if (n == 1) {
             for (std::vector<double>::const_iterator it = sv.begin();
                  it != sv.end(); ++it)
-                r += *it * log(*it);
-            ret.push_back(-r);
+                S += *it * log(*it);
+            ret.push_back(-S);
         } else {
             for (std::vector<double>::const_iterator it = sv.begin();
                  it != sv.end(); ++it)
-                r += pow(*it, n);
-            ret.push_back(1/(1-n)*log(r));
+                S += pow(*it, n);
+            ret.push_back(1/(1-n)*log(S));
         }
         
 //        cout << ret.back() << endl;

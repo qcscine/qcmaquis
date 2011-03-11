@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *
+ *****************************************************************************/
+ 
 #ifndef MPO_H
 #define MPO_H
 
@@ -332,7 +340,7 @@ private:
                         typename Matrix::value_type val = left(std::make_pair(lc, outr),
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
-                        if (fabs(val) > 1e-20) {
+                        if (fabs(val) > 1e-40) {
                             block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             
@@ -370,7 +378,7 @@ private:
                         typename Matrix::value_type val = right(std::make_pair(lc, visited_r_basis[lc]),
                                                                 std::make_pair(rc, outc));
                         
-                        if (fabs(val) > 1e-20) {
+                        if (fabs(val) > 1e-40) {
                             block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             
