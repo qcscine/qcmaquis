@@ -7,6 +7,7 @@
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/lapack/driver/syevd.hpp>
+#include <boost/numeric/bindings/lapack/computational/geqrf.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 
 namespace blas
@@ -42,9 +43,25 @@ namespace blas
             dense_matrix<T, MemoryBlock> & Q,
             dense_matrix<T, MemoryBlock> & R)
     {
-        /* implement thin QR decomposition, i.e. for a (m,n) matrix, where m >= n, the result should be
-         Q: (m,n)
-         R: (n,n) */
+        typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
+        std::vector<double> tau(k);
+        
+        int info = boost::numeric::bindings::lapack::geqrf(M, tau);
+        if (info != 0)
+            throw std::runtime_error("Error in geqrf");
+        
+        resize(Q, num_rows(M), k);
+        resize(R, k, num_columns(M));
+        
+        // get R
+        std::fill(elements(R).first, elements(R).second, 0);
+        for (std::size_t c = 0; c < num_columns(M); ++c)
+            for (std::size_t r = 0; r <= c; ++r)
+                R(r, c) = M(r, c);
+        
+        // get Q from householder reflections in M
+        std::fill(elements(Q).first, elements(Q).second, 0);
+        
     }
     
     template<typename T, class MemoryBlock>
