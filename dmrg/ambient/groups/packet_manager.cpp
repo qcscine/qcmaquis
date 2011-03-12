@@ -3,10 +3,15 @@
 #include "ambient/groups/packet_manager.h"
 #include "ambient/groups/group.h"
 #include "ambient/core/operation/operation.h"
-
-namespace ambient{
 #include "ambient/core/operation/operation.pp.sa.hpp"
-}
+
+namespace ambient{ namespace core{
+using namespace ambient::groups;
+
+    extern void update_layout(packet_manager::typed_q& in_q);
+    extern void forward_layout(packet_manager::typed_q& in_q);
+    extern void forward_block(packet_manager::typed_q& in_q);
+} }
 
 namespace ambient{ namespace groups{
 
@@ -20,25 +25,25 @@ namespace ambient{ namespace groups{
                 in_q.manager->closure_mutex--;
                 if(in_q.manager->closure_mutex == 0){
                     for(int i=0; i < in_q.manager->get_scope()->get_size(); i++)
-                    in_q.manager->control_out->push(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
-                                                                                    ambient::rank(in_q.manager->get_scope()),
-                                                                                    "LOCKING", "TRY TO CLOSE"));
+                    in_q.manager->emit(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
+                                                                       ambient::rank(in_q.manager->get_scope()),
+                                                                       "LOCKING", "TRY TO CLOSE"));
                     in_q.manager->approve_closure_mutex = in_q.manager->get_scope()->get_size();
                 }
             }else if(info == 'A'){ // APPROVE
                 in_q.manager->approve_closure_mutex--;
                 if(in_q.manager->approve_closure_mutex == 0){
                     for(int i=0; i < in_q.manager->get_scope()->get_size(); i++)
-                    in_q.manager->control_out->push(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
-                                                                                    ambient::rank(in_q.manager->get_scope()),
-                                                                                    "LOCKING", "FORCE CLOSURE"));
+                    in_q.manager->emit(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
+                                                                       ambient::rank(in_q.manager->get_scope()),
+                                                                       "LOCKING", "FORCE CLOSURE"));
                     in_q.manager->closure_mutex = in_q.manager->get_scope()->get_size();
                 }
             }else if(info == 'R'){ // REJECT
                     for(int i=0; i < in_q.manager->get_scope()->get_size(); i++)
-                    in_q.manager->control_out->push(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
-                                                                                    ambient::rank(in_q.manager->get_scope()),
-                                                                                    "LOCKING", "WITHDRAW CLOSURE"));
+                    in_q.manager->emit(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
+                                                                       ambient::rank(in_q.manager->get_scope()),
+                                                                       "LOCKING", "WITHDRAW CLOSURE"));
                     in_q.manager->closure_mutex = in_q.manager->get_scope()->get_size();
             }
         }
@@ -47,14 +52,73 @@ namespace ambient{ namespace groups{
         else if(info == 'W') in_q.manager->state = packet_manager::OPEN;    // WITHDRAW CLOSURE
     }
 
+    bool packet_manager::process_locking(size_t active_sends_number){
+// finite state machine (closure proceedure).
+// note: the state also can be modified in callback of control_in queue.
+        if(this->state == OPEN && active_sends_number == 0){
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
+                                                  "P2P", ambient::rank(this->scope), "LOCKING", "CLOSURE")); 
+                this->state = LOOSE;
+        }else if(this->state == CLOSURE){ 
+            if(active_sends_number == 0){
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
+                                                  "P2P", ambient::rank(this->scope), "LOCKING", "APPROVE")); 
+                this->state = LOOSE;
+            }else{
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
+                                                  "P2P", ambient::rank(this->scope), "LOCKING", "REJECT")); 
+                this->state = OPEN;
+            }
+        }else if(this->state == CLOSED){
+            this->state = OPEN; // leaving the door open ^_^
+            printf("Closing the gate\n");
+            return true;
+        }
+        return false;
+    }
+
+    bool packet_manager::subscribed(const packet_t& type){
+        for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
+            if(&((*it)->type) == &type) return true;
+        }
+        return false;
+    }
+
+    void packet_manager::subscribe(const packet_t& type){
+        this->add_typed_q(type, packet_manager::IN,  30);
+    }
+
+    void packet_manager::add_handler(const packet_t& type, core::operation* callback){
+        for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
+            if(&((*it)->type) == &type && (*it)->flow == IN) (*it)->packet_delivered += callback;
+        }
+    }
+
+    void packet_manager::emit(packet* pack){
+        for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
+            if(&((*it)->type) == &(pack->get_t()) && (*it)->flow == OUT){ (*it)->push(pack); return; }
+        }
+        this->add_typed_q(pack->get_t(), packet_manager::OUT)->push(pack);
+    }
+
+    packet_manager::typed_q* packet_manager::get_pipe(const packet_t& type, packet_manager::direction flow){
+        for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
+            if(&((*it)->type) == &(type) && flow == (*it)->flow){ return (*it); }
+        }
+        return this->add_typed_q(type, flow);
+    }
+
     packet_manager::packet_manager(group* grp){
         this->scope = grp;
         this->comm = &grp->mpi_comm;
-        this->control_in   = this->add_typed_q(get_t<control_packet_t>(), packet_manager::IN,  30);
-        this->control_out  = this->add_typed_q(get_t<control_packet_t>(), packet_manager::OUT);
-        this->layout_in_q  = this->add_typed_q(get_t<layout_packet_t>(),  packet_manager::IN, 30);
-        this->layout_out_q = this->add_typed_q(get_t<layout_packet_t>(),  packet_manager::OUT);
-        this->control_in->packet_delivered += new core::operation(locking_handler, this->control_in);
+
+        this->subscribe(get_t<control_packet_t>());
+        this->subscribe(get_t<layout_packet_t>() );
+        this->add_handler( get_t<control_packet_t>(), new core::operation(locking_handler     , this->get_pipe(get_t<control_packet_t>(), IN)) );
+        this->add_handler( get_t<layout_packet_t>() , new core::operation(core::update_layout , this->get_pipe(get_t<layout_packet_t>() , IN)) );
+        this->add_handler( get_t<layout_packet_t>() , new core::operation(core::forward_layout, this->get_pipe(get_t<layout_packet_t>() , IN)) );
+        this->add_handler( get_t<layout_packet_t>() , new core::operation(core::forward_block , this->get_pipe(get_t<layout_packet_t>() , IN)) );
+
         this->state = packet_manager::OPEN;
         this->closure_mutex = this->scope->get_size();
     };
@@ -66,31 +130,7 @@ namespace ambient{ namespace groups{
                 if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->process();
                 if((*it)->flow == OUT) active_sends_number += (*it)->active_requests_number;
             }
-
-// finite state machine (closure proceedure).
-// note: the state also can be modified in callback of control_in queue.
-            if(this->state == OPEN && active_sends_number == 0){
-                this->control_out->push(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
-                                                               "P2P", ambient::rank(this->scope), 
-                                                               "LOCKING", "CLOSURE")); 
-                this->state = LOOSE;
-            }else if(this->state == CLOSURE){ 
-                if(active_sends_number == 0){
-                    this->control_out->push(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
-                                                                   "P2P", ambient::rank(this->scope),
-                                                                   "LOCKING", "APPROVE")); 
-                    this->state = LOOSE;
-                }else{
-                    this->control_out->push(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
-                                                                   "P2P", ambient::rank(this->scope),
-                                                                   "LOCKING", "REJECT")); 
-                    this->state = OPEN;
-                }
-            }else if(this->state == CLOSED){
-                this->state = OPEN; // leaving the door open ^_^
-                printf("Closing the gate\n");
-                return;
-            }
+            if(this->process_locking(active_sends_number)) return;
         }
     }
     packet_manager::typed_q* packet_manager::add_typed_q(const packet_t& type, packet_manager::direction flow, int reservation, int priority){

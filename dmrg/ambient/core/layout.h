@@ -48,7 +48,6 @@ namespace core {
     };
 
     void apply_change_set(p_profile** profiles, size_t count);
-    void perform_forwarding(p_profile** profiles, size_t count);
 
 } }
 #endif

@@ -46,25 +46,28 @@ namespace ambient{ namespace groups{
             size_t active_requests_number;
             direction flow;
             packet_manager* manager;
+            const packet_t& type;
         private:
             void recv(ambient_request* request);
             void send(ambient_request* request);
 
             packet* target_packet;
             int reservation;
-            const packet_t& type;
             std::vector<ambient_request*> requests;
         };
 
         locking_fsm state;
         std::list<typed_q*> qs;
-        typed_q* control_in;
-        typed_q* control_out;
-        typed_q* layout_in_q;
-        typed_q* layout_out_q;
-
         typed_q* add_typed_q(const packet_t& type, direction flow, int reservation = 1, int priority = 1);
+
+        bool     subscribed(const packet_t& type);
+        void     subscribe(const packet_t& type);
+        void     add_handler(const packet_t& type, core::operation* callback);
+        void     emit(packet* pack);
+        typed_q* get_pipe(const packet_t& type, direction flow);
+
         void process();
+        bool process_locking(size_t active_sends_number);
         group* get_scope();
     };
 

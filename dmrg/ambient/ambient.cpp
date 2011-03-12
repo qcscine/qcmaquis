@@ -6,6 +6,9 @@
 #include "ambient/groups/group.h"
 #include "ambient/groups/auxiliary.hpp"
 
+#include "ambient/core/operation/operation.h"
+#include "ambient/core/operation/operation.pp.sa.hpp"
+
 #define AMBIENT_MASTER_RANK 0
 
 using namespace ambient::packets; 
@@ -35,6 +38,11 @@ namespace ambient
             this->group_dim = dim;
             this->default_data_packet_t = new block_packet_t(this->group_dim*this->item_dim); // to redo in future?
             this->default_data_packet_t->commit();
+            if(!world()->get_manager()->subscribed(*this->default_data_packet_t)){
+                world()->get_manager()->subscribe(*this->default_data_packet_t);
+                world()->get_manager()->add_handler(*this->default_data_packet_t, new core::operation(integrate_block, 
+                    world()->get_manager()->get_pipe(*this->default_data_packet_t, packet_manager::IN)) );
+            }
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;
         }
@@ -112,9 +120,10 @@ namespace ambient
             this->stack.pick()->first->perform();
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
-            if(logistics->get_scope()->involved()) ambient::core::apply_change_set(logistics->profiles, logistics->count);
-            else ambient::core::perform_forwarding(logistics->profiles, logistics->count);
+            if(logistics->get_scope()->involved()) 
+                ambient::core::apply_change_set(logistics->profiles, logistics->count);
         }
+        world()->get_manager()->process();
 
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
