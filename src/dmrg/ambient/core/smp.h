@@ -33,9 +33,6 @@ namespace ambient {
         int size;
         groups::group* group;
         core::operation* op;
-        core::layout_table* assignment;
-        std::list<workgroup*>  sendlist;
-        std::list<workgroup*>  recvlist;
     };
 
 }

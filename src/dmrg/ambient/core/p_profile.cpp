@@ -1,7 +1,16 @@
 #include "ambient/ambient.h"
 #include "ambient/core/p_profile.h"
+#include "ambient/groups/packet_manager.h"
+
+#include "ambient/core/operation/operation.h"
+#include "ambient/core/operation/operation.pp.sa.hpp"
 
 namespace ambient {
+    void integrate_block(groups::packet_manager::typed_q& in_q){
+        ambient::packets::packet* pack = in_q.get_target_packet();
+        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
+        profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
+    }
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
@@ -32,6 +41,11 @@ namespace ambient {
     void p_profile::set_scope(groups::group* scope){
         this->xscope = this->scope;
         this->scope = scope;
+        if(!scope->get_manager()->subscribed(*this->packet_type)){
+            scope->get_manager()->subscribe(*this->packet_type);
+            scope->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
+                scope->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
+        }
     }
     
     int p_profile::get_master(){ return this->master_relay.second; }
@@ -54,6 +68,11 @@ namespace ambient {
             this->group_dim = dim;
             this->packet_type = new block_packet_t(this->group_dim*this->item_dim);
             this->packet_type->commit();
+            if(!world()->get_manager()->subscribed(*this->packet_type)){
+                world()->get_manager()->subscribe(*this->packet_type);
+                world()->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
+                    world()->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
+            }
             this->regroup();
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;

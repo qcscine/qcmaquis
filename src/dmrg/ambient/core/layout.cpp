@@ -4,12 +4,8 @@
 #include "ambient/packets/auxiliary.hpp"
 #include "ambient/groups/auxiliary.hpp"
 #include "ambient/groups/packet_manager.h"
-
 #include "ambient/core/operation/operation.h"
-
-namespace ambient{
 #include "ambient/core/operation/operation.pp.sa.hpp"
-}
 
 namespace ambient{ namespace core{
 
@@ -101,35 +97,36 @@ namespace ambient{ namespace core{
         }
     }
 
-
-// REDISTRIBUTION HEAVY STUFF //
-
     ambient::packets::packet* package(p_profile* profile, int i, int j, int k, int dest){
         void* header = profile->group(i, j, k)->header; 
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, i, j, k, NULL);
     }
 
-    void forward_layout(packet_manager::typed_q& in_q, packet_manager::typed_q& out_q){
-        ambient::packets::packet* pack = in_q.get_target_packet();
-        layout_table_entry* entry = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, 
-                                                       pack->get<int>(A_LAYOUT_P_ID_FIELD))->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
-                                                                                                       pack->get<int>(A_LAYOUT_P_J_FIELD), 
-                                                                                                       pack->get<int>(A_LAYOUT_P_K_FIELD));
-        pack->set(A_DEST_FIELD, entry->get_owner());
-        out_q.push(pack);
-    }
-
-    void forward_block(packet_manager::typed_q& in_q, packet_manager::typed_q& out_q){
+    void forward_layout(packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
-        out_q.push(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
-                           pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
+        if(!profile->xinvolved()) return; // can be omitted I guess
+        if(ambient::rank() != profile->get_xmaster()) return;
+        layout_table_entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
+                                                               pack->get<int>(A_LAYOUT_P_J_FIELD), 
+                                                               pack->get<int>(A_LAYOUT_P_K_FIELD));
+        pack->set(A_DEST_FIELD, entry->get_owner());
+        in_q.manager->emit(pack);
     }
 
-    void update_layout(packet_manager::typed_q& in_q, packet_manager::typed_q& out_q)
+    void forward_block(packet_manager::typed_q& in_q){
+        ambient::packets::packet* pack = in_q.get_target_packet();
+        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
+        if(!profile->xinvolved()) return;
+        in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
+                                   pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
+    }
+
+    void update_layout(packet_manager::typed_q& in_q)
     {
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
+        if(!profile->get_scope()->is_master()) return;
         profile->layout->update_map_entry(pack->get<int>(A_LAYOUT_P_OWNER_FIELD),
                                           pack->get<int>(A_LAYOUT_P_I_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_J_FIELD)    ,
@@ -141,68 +138,22 @@ namespace ambient{ namespace core{
                                                                pack->get<int>(A_LAYOUT_P_J_FIELD))->get_xowner());
         else 
             pack->set(A_DEST_FIELD, profile->get_xmaster());
-        out_q.push(pack);
-    }
-
-    void integrate_block(packet_manager::typed_q& in_q){
-        ambient::packets::packet* pack = in_q.get_target_packet();
-        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
-        profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
-    }
-
-    void perform_forwarding(p_profile** profiles, size_t count)
-    {
-        packet_manager::typed_q* layout_in_q  = world()->get_manager()->layout_in_q;
-        packet_manager::typed_q* layout_out_q = world()->get_manager()->layout_out_q;
-        packet_manager::typed_q* block_out_q[count];
-
-        for(int k = 0; k < count; k++){
-            if(!profiles[k]->xinvolved()) continue;
-            if(ambient::rank() == profiles[k]->get_xmaster()){
-                layout_in_q->packet_delivered += new core::operation(forward_layout, layout_in_q, layout_out_q);
-                break;
-            }
-        }
-        for(int k = 0; k < count; k++){
-            if(!profiles[k]->xinvolved()) continue;
-            block_out_q[k] = world()->get_manager()->add_typed_q(*profiles[k]->packet_type, packet_manager::OUT, 30);
-            layout_in_q->packet_delivered += new core::operation(forward_block, layout_in_q, block_out_q[k]);
-            break;
-        }
+        in_q.manager->emit(pack);
     }
 
     void apply_change_set(p_profile** profiles, size_t count)
     {
-        packet_manager::typed_q* layout_in_q;
-        packet_manager::typed_q* layout_out_q;
-        packet_manager::typed_q* block_in_q[count]; 
-
-        layout_out_q = world()->get_manager()->layout_out_q;
-        if(scope.master()){
-            layout_in_q  = world()->get_manager()->layout_in_q;
-            layout_in_q->packet_delivered += new core::operation(update_layout, layout_in_q, layout_out_q);
-        }
-
         for(int k = 0; k < count; k++)
             for(int i=0; i < profiles[k]->layout->segment_count; i++)
-                layout_out_q->push(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
-                                                         scope.get_group()->get_master_g(), 
-                                                        "P2P", // communication type: peer to peer
-                                                        *profiles[k]->group_id,
-                                                         profiles[k]->id,
-                                                         profiles[k]->layout->segment[i].owner, 
-                                                         profiles[k]->layout->segment[i].i, 
-                                                         profiles[k]->layout->segment[i].j, 
-                                                         profiles[k]->layout->segment[i].k));
+                world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+                                                                   scope.get_group()->get_master_g(), "P2P",
+                                                                  *profiles[k]->group_id, profiles[k]->id,
+                                                                   profiles[k]->layout->segment[i].owner, 
+                                                                   profiles[k]->layout->segment[i].i, 
+                                                                   profiles[k]->layout->segment[i].j, 
+                                                                   profiles[k]->layout->segment[i].k));
         for(int k = 0; k < count; k++)
-            if(profiles[k]->need_init) 
-                profiles[k]->postprocess();
-            else{
-                block_in_q[k] = world()->get_manager()->add_typed_q(*profiles[k]->packet_type, packet_manager::IN, 30);
-                block_in_q[k]->packet_delivered += new core::operation(integrate_block, block_in_q[k]);
-            }
-        perform_forwarding(profiles, count);
-        world()->get_manager()->process();
+        if(profiles[k]->need_init) profiles[k]->postprocess();
     }
 
 } }
