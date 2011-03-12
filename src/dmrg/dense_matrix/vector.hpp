@@ -39,6 +39,9 @@
 #include <cassert>
 #include <alps/numeric/scalar_product.hpp>
 
+#ifdef HAVE_ALPS_HDF5
+#include <alps/hdf5.hpp>
+#endif
 
 namespace blas{
   template<typename T, typename MemoryBlock = std::vector<T> >
@@ -61,6 +64,12 @@ namespace blas{
       {
       }
       
+	  template <class InputIterator>
+	  vector (InputIterator first, InputIterator last)
+	  : MemoryBlock( first, last )
+	  {
+	  }
+	  
       friend void swap(vector& x,vector& y)
       {
           std::swap(x, y);
@@ -232,5 +241,31 @@ inline T scalar_product(const std::vector<T,MemoryBlock> v1, const std::vector<T
 #undef SCALAR_PRODUCT
     
 } //namespace
+
+
+#ifdef HAVE_ALPS_HDF5
+namespace alps {
+	namespace hdf5 {
+		template <typename T, typename MemoryBlock>
+		iarchive & serialize(iarchive & ar,
+							 std::string const & p,
+							 blas::vector<T, MemoryBlock> & v)
+		{
+			MemoryBlock tmp;
+			ar >> make_pvp("", tmp);
+			v = blas::vector<T, MemoryBlock>(tmp.begin(), tmp.end());
+			return ar;
+		}
+		template <typename T, typename MemoryBlock>
+		oarchive & serialize(oarchive & ar,
+							 std::string const & p,
+							 blas::vector<T, MemoryBlock> const & v)		{
+			ar << make_pvp(p, MemoryBlock(v.begin(), v.end()));
+			return ar;
+		}
+	}
+}
+#endif							 
+
 
 #endif //__ALPS_VECTOR_HPP__
