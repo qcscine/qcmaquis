@@ -58,19 +58,6 @@ namespace ambient{ namespace groups {
         this->name = name;
         this->master = master;
         this->parent->children.insert(this);
-        this->manager = new packet_manager(this);
-        group_map(this->name, this);
-    }
-
-    group::group(const char* name, int master, const char* parent): count(0), members(NULL), object_count(0)
-    {
-        this->parent = group_map(parent);
-        this->mpi_group = this->parent->mpi_group;
-        this->mpi_comm = this->parent->mpi_comm;
-        this->name = name;
-        this->master = master;
-        this->parent->children.insert(this);
-        this->manager = new packet_manager(this);
         group_map(this->name, this);
     }
 
@@ -179,6 +166,7 @@ namespace ambient{ namespace groups {
         MPI_Group_rank(this->mpi_group, &this->rank);
         this->id = hash_group_id();
         ambient::rank.set( this, this->rank );
+        if(this->involved()) this->manager = new packet_manager(this);
     }
 
     int group::get_master_g(){
