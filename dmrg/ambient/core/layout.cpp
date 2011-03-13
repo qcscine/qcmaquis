@@ -115,6 +115,7 @@ namespace ambient{ namespace core{
     }
 
     void forward_block(packet_manager::typed_q& in_q){
+        printf("I have forwarded the block\n");
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         if(!profile->xinvolved()) return;

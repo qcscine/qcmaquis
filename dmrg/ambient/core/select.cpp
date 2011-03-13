@@ -24,7 +24,7 @@ namespace ambient {
         scope.set_group(group);
         if(!scope.involved()) return; // to rewrite this // need to know master of profile even if I'm not in the group
         if((grp = groups::group_map(as)) == NULL){
-            grp = new groups::group(as, 0, group);
+            grp = new groups::group(as, 0, groups::group_map(group));
 
             if(token_t == TK_STAR){ 
                 grp->add_every(1); 

@@ -7,6 +7,7 @@
 
 namespace ambient {
     void integrate_block(groups::packet_manager::typed_q& in_q){
+        printf("I did integrated the block\n");
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
@@ -41,7 +42,7 @@ namespace ambient {
     void p_profile::set_scope(groups::group* scope){
         this->xscope = this->scope;
         this->scope = scope;
-        if(!scope->get_manager()->subscribed(*this->packet_type)){
+        if(scope->involved() && !scope->get_manager()->subscribed(*this->packet_type)){
             scope->get_manager()->subscribe(*this->packet_type);
             scope->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
                 scope->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
