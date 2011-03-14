@@ -71,7 +71,6 @@ namespace ambient{ namespace groups{
             }
         }else if(this->state == CLOSED){
             this->state = OPEN; // leaving the door open ^_^
-            printf("Closing the gate\n");
             return true;
         }
         return false;
@@ -118,7 +117,7 @@ namespace ambient{ namespace groups{
         this->add_handler( get_t<layout_packet_t>() , new core::operation(core::forward_block , this->get_pipe(get_t<layout_packet_t>() , IN)) );
         this->add_handler( get_t<layout_packet_t>() , new core::operation(core::forward_layout, this->get_pipe(get_t<layout_packet_t>() , IN)) );
         this->add_handler( get_t<layout_packet_t>() , new core::operation(core::update_layout , this->get_pipe(get_t<layout_packet_t>() , IN)) );
-
+// note: the order of handlers really matters
         this->state = packet_manager::OPEN;
         this->closure_mutex = this->scope->get_size();
     };
