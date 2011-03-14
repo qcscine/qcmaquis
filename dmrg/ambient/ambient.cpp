@@ -82,10 +82,6 @@ namespace ambient
     {
         return 200; // to be redo to something normal
     }
-    size_t get_block_bound()
-    {
-        return 200; // to be redo to something normal
-    }
     void scheduler::init(MPI_Comm comm)
     {
         int threading_level;
@@ -130,7 +126,7 @@ namespace ambient
                 computing = pair->second;
                 computing->set_scope(logistics->get_scope());
                 if(logistics->pin == NULL){ // nothing has been pinned
-                    computing->invoke();  // scalapack style
+                    computing->invoke();    // scalapack style
                 }else{
 // performing computation for every item inside every appointed workgroup
                     int i, j, k;
