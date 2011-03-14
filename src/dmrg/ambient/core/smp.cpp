@@ -52,7 +52,7 @@ namespace ambient {
         return this->op;
     }
     bool smp::involved(){
-        return (this->rank != MPI_UNDEFINED); 
+        return this->get_group()->involved();
     }
     bool smp::master(){
         return (this->involved() && (this->rank == this->group->master));

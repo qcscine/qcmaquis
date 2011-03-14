@@ -108,21 +108,19 @@ namespace ambient{ namespace groups{
         return this->add_typed_q(type, flow);
     }
 
-    packet_manager::packet_manager(group* grp) : qs(){
+    packet_manager::packet_manager(group* grp) {
         this->scope = grp;
         this->comm = &grp->mpi_comm;
 
-        printf("Creating packet manager for %s\n", grp->name);
         this->subscribe(get_t<control_packet_t>());
         this->subscribe(get_t<layout_packet_t>() );
         this->add_handler( get_t<control_packet_t>(), new core::operation(locking_handler     , this->get_pipe(get_t<control_packet_t>(), IN)) );
-        this->add_handler( get_t<layout_packet_t>() , new core::operation(core::update_layout , this->get_pipe(get_t<layout_packet_t>() , IN)) );
-        this->add_handler( get_t<layout_packet_t>() , new core::operation(core::forward_layout, this->get_pipe(get_t<layout_packet_t>() , IN)) );
         this->add_handler( get_t<layout_packet_t>() , new core::operation(core::forward_block , this->get_pipe(get_t<layout_packet_t>() , IN)) );
+        this->add_handler( get_t<layout_packet_t>() , new core::operation(core::forward_layout, this->get_pipe(get_t<layout_packet_t>() , IN)) );
+        this->add_handler( get_t<layout_packet_t>() , new core::operation(core::update_layout , this->get_pipe(get_t<layout_packet_t>() , IN)) );
 
         this->state = packet_manager::OPEN;
         this->closure_mutex = this->scope->get_size();
-        printf("Created packet manager for %s\n", grp->name);
     };
     void packet_manager::process(){
         size_t active_sends_number;
