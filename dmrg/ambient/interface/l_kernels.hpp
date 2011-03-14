@@ -26,7 +26,7 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
 
 void gemm_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out)
 {
-    scope_select("2 from ambient as work_redist where master is 0");
+    scope_select("2 from ambient as work where master is 0"); // todo: correct the naming issue
     if(!scope.involved()) return;
 
     breakdown(a) >> dim3(10,5), dim3(8,2), dim3(10,1);
@@ -57,7 +57,6 @@ void block_2d_cyclic_l_kernel(p_dense_matrix<double>& a){
     if(!scope.involved()) return;
 
     zout << "2d-block-cyclic decomposition kernel:\n"; info(a);
-    printf("R%d: I am here\n", ambient::rank());
 ///////////////////////////////////////////// 2D-block-cyclic decomposition
     int np = 1; // can be a function arg   // process grid's num of rows 
     int nq = (int)(scope.get_size() / np); // process grid's num of cols 

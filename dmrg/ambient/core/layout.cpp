@@ -99,6 +99,7 @@ namespace ambient{ namespace core{
 
     ambient::packets::packet* package(p_profile* profile, int i, int j, int k, int dest){
         void* header = profile->group(i, j, k)->header; 
+        assert(header != NULL);
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, i, j, k, NULL);
     }
 
@@ -107,18 +108,21 @@ namespace ambient{ namespace core{
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         if(!profile->xinvolved()) return; // can be omitted I guess
         if(ambient::rank() != profile->get_xmaster()) return;
+        if(pack->get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM X OWNER ACTION
+
         layout_table_entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
                                                                pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                                                pack->get<int>(A_LAYOUT_P_K_FIELD));
         pack->set(A_DEST_FIELD, entry->get_owner());
+        pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
         in_q.manager->emit(pack);
     }
 
     void forward_block(packet_manager::typed_q& in_q){
-        printf("I have forwarded the block\n");
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         if(!profile->xinvolved()) return;
+        if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
         in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                    pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
     }
@@ -128,17 +132,22 @@ namespace ambient{ namespace core{
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         if(!profile->get_scope()->is_master()) return;
+        if(pack->get<char>(A_LAYOUT_P_ACTION) != 'U') return; // UPDATE ACTION
+        if( profile->id == 3 )
         profile->layout->update_map_entry(pack->get<int>(A_LAYOUT_P_OWNER_FIELD),
                                           pack->get<int>(A_LAYOUT_P_I_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_J_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_K_FIELD)    );
         if(profile->need_init) return;
 
-        if(profile->get_xmaster() == profile->get_master())
+        if(profile->get_xmaster() == profile->get_master()){
             pack->set(A_DEST_FIELD, profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD),
                                                                pack->get<int>(A_LAYOUT_P_J_FIELD))->get_xowner());
-        else 
+            pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
+        }else{ 
             pack->set(A_DEST_FIELD, profile->get_xmaster());
+            pack->set(A_LAYOUT_P_ACTION, "INFORM X OWNER");
+        }
         in_q.manager->emit(pack);
     }
 
@@ -147,7 +156,7 @@ namespace ambient{ namespace core{
         for(int k = 0; k < count; k++)
             for(int i=0; i < profiles[k]->layout->segment_count; i++)
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
-                                                                   scope.get_group()->get_master_g(), "P2P",
+                                                                   scope.get_group()->get_master_g(), "P2P", "U",
                                                                   *profiles[k]->group_id, profiles[k]->id,
                                                                    profiles[k]->layout->segment[i].owner, 
                                                                    profiles[k]->layout->segment[i].i, 

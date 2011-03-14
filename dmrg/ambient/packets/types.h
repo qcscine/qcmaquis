@@ -10,12 +10,13 @@
                        // (KEEP IT UNLESS YOU KNOW WHAT YOU ARE DOING)
 
 // LAYOUT PACKET FIELDS DEFINES
-#define A_LAYOUT_P_GID_FIELD   3
-#define A_LAYOUT_P_ID_FIELD    4
-#define A_LAYOUT_P_OWNER_FIELD 5
-#define A_LAYOUT_P_I_FIELD     6
-#define A_LAYOUT_P_J_FIELD     7
-#define A_LAYOUT_P_K_FIELD     8
+#define A_LAYOUT_P_ACTION      3
+#define A_LAYOUT_P_GID_FIELD   4
+#define A_LAYOUT_P_ID_FIELD    5
+#define A_LAYOUT_P_OWNER_FIELD 6
+#define A_LAYOUT_P_I_FIELD     7
+#define A_LAYOUT_P_J_FIELD     8
+#define A_LAYOUT_P_K_FIELD     9
 
 #define A_BLOCK_P_GID_FIELD    3
 #define A_BLOCK_P_ID_FIELD     4
@@ -63,17 +64,18 @@ namespace ambient{ namespace packets{
 
     struct layout_packet_t : public standard_packet_t
     {
-        __a_fields__ profile_gid, profile_id, owner, i, j, k;
+        __a_fields__ action, profile_gid, profile_id, owner, i, j, k;
         layout_packet_t()
         {
             __a_packet__
+            action        = MPI_BYTE;
             profile_gid   = MPI_INT;
             profile_id    = MPI_INT;
             owner         = MPI_INT;
             i             = MPI_INT;
             j             = MPI_INT;
             k             = MPI_INT;
-            __a_pack{ 1, 1, 1, 1, 1, 1 };
+            __a_pack{ 1, 1, 1, 1, 1, 1, 1 };
             __a_code('L');
         }
     };
