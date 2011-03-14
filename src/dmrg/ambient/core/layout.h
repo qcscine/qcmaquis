@@ -47,7 +47,7 @@ namespace core {
         size_t xsegment_count;
     };
 
-    void apply_change_set(p_profile** profiles, size_t count);
+    void apply_changes(p_profile** profiles, size_t count);
 
 } }
 #endif
