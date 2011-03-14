@@ -197,10 +197,10 @@ int main(int argc, char ** argv)
         for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
             gettimeofday(&snow, NULL);
             
+            Logger iteration_log;
+            
             std::pair<std::vector<double>, std::vector<std::size_t> > r;
-            r = optimizer.sweep(mpo, sweep);
-            energies = r.first;
-            truncations = r.second;
+            optimizer.sweep(mpo, sweep, iteration_log);
             
             entropies = calculate_bond_entropies(mps);
             
@@ -214,10 +214,8 @@ int main(int argc, char ** argv)
                     alps::hdf5::oarchive h5ar(rfile);
                     
                     std::ostringstream oss;
-                    oss << "/simulation/results/sweep" << sweep << "/Iteration Energy/mean/value";
-                    h5ar << alps::make_pvp(oss.str().c_str(), energies);
-                    if (energies.size() > 0)
-                        h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, *energies.rbegin()));
+                    oss << "/simulation/results/sweep" << sweep;
+                    h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
                     
                     oss.str("");
                     oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
@@ -227,10 +225,6 @@ int main(int argc, char ** argv)
                     oss.str("");
                     oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
                     h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
-                    
-                    oss.str("");
-                    oss << "/simulation/results/sweep" << sweep << "/BondDimension/mean/value";
-                    h5ar << alps::make_pvp(oss.str().c_str(), truncations);
                 }
                 
                 if (parms.get<int>("donotsave") == 0)

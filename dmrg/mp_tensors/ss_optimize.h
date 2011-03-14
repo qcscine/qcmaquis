@@ -20,6 +20,8 @@
 #include "arpackpp_solver.h"
 
 #include "utils/DmrgParameters.h"
+#include "utils/logger.h"
+#include "utils/stream_storage.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -67,10 +69,8 @@ public:
     , storage_master(sm)
     { }
     
-    std::pair<
-    std::vector<double>,
-    std::vector<std::size_t> > sweep(MPO<Matrix, SymmGroup> const & mpo,
-                                     int sweep)
+    void sweep(MPO<Matrix, SymmGroup> const & mpo,
+                                     int sweep, Logger & iteration_log)
     {
         static Timer
         t_io("sweep_io"),
@@ -80,13 +80,10 @@ public:
         init_left_right(mpo);
         cerr << "Done init_left_right" << endl;
         
-        std::vector<double> energies;
-        std::vector<size_t> truncations;
-        
         std::size_t L = mps.length();
         
-        prefetch(left_[0], left_stores_[0]);
-        prefetch(right_[1], right_stores_[1]);
+        storage::prefetch(left_[0], left_stores_[0]);
+        storage::prefetch(right_[1], right_stores_[1]);
         
         zout << mps.description() << endl;
         for (int _site = 0; _site < 2*L; ++_site) {
@@ -109,17 +106,17 @@ public:
             
             t_io.begin();
             
-            load(left_[site], left_stores_[site]);
-            load(right_[site+1], right_stores_[site+1]);
+            storage::load(left_[site], left_stores_[site]);
+            storage::load(right_[site+1], right_stores_[site+1]);
             
             if (lr == +1) {
-                prefetch(left_[site+1], left_stores_[site+1]);
+                storage::prefetch(left_[site+1], left_stores_[site+1]);
                 if (site+2 < right_.size())
-                    prefetch(right_[site+2], right_stores_[site+2]);
+                    storage::prefetch(right_[site+2], right_stores_[site+2]);
             } else {
-                prefetch(right_[site], right_stores_[site]);
+                storage::prefetch(right_[site], right_stores_[site]);
                 if (site > 1)
-                    prefetch(left_[site-1], left_stores_[site-1]);
+                    storage::prefetch(left_[site-1], left_stores_[site-1]);
             }
             
             cout << "My size: " << endl;
@@ -158,7 +155,8 @@ public:
             t_solver.end();
             
             zout << "Energy " << lr << " " << res.first << endl;
-            energies.push_back(res.first);
+            
+            iteration_log << make_log("Energy", res.first);
             
             double alpha;
             if (sweep < parms.get<int>("ngrowsweeps"))
@@ -182,50 +180,46 @@ public:
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax, trunc);
+                                       site, alpha, cutoff, Mmax, iteration_log);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
                     if (site < L-1)
                         mps[site+1].multiply_from_left(t);
                 }
                 
-                load(left_[site+1], left_stores_[site+1]);
+                storage::load(left_[site+1], left_stores_[site+1]);
                 
                 MPSTensor<Matrix, SymmGroup> bkp = mps[site];
                 left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,
                                                                    left_[site], mpo[site]);
                 
-                store(left_[site], left_stores_[site]);
-                store(right_[site+1], right_stores_[site+1]);
+                storage::store(left_[site], left_stores_[site]);
+                storage::store(right_[site+1], right_stores_[site+1]);
             } else if (lr == -1) {
                 if (site > 1) {
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax, trunc);
+                                       site, alpha, cutoff, Mmax, iteration_log);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
                     if (site > 0)
                         mps[site-1].multiply_from_right(t);
                 }
                 
-                load(right_[site], right_stores_[site]);
+                storage::load(right_[site], right_stores_[site]);
                 
                 MPSTensor<Matrix, SymmGroup> bkp = mps[site];
                 right_[site] = contraction::overlap_mpo_right_step(mps[site], bkp,
                                                                    right_[site+1], mpo[site]);
                 
-                store(left_[site], left_stores_[site]);
-                store(right_[site+1], right_stores_[site+1]);
+                storage::store(left_[site], left_stores_[site]);
+                storage::store(right_[site+1], right_stores_[site+1]);
             }
             
             t_grow.end();
             
-            truncations.push_back(trunc.first);
-            
             iteration_t.end();
         }
-        
-        return make_pair(energies, truncations);
     }
     
 private:
@@ -248,31 +242,31 @@ private:
         {
             Boundary<Matrix, SymmGroup> left = mps.left_boundary();
             left_[0] = left;
-            reset(left_stores_[0]);
-            store(left_[0], left_stores_[0]);
+            storage::reset(left_stores_[0]);
+            storage::store(left_[0], left_stores_[0]);
             
             // this is not actually necessary
 //            for (int i = 0; i < L; ++i) {
 //                MPSTensor<Matrix, SymmGroup> bkp = mps[i];
 //                left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
 //                left_[i+1] = left;
-//                reset(left_stores_[i+1]);
-//                store(left_[i+1], left_stores_[i+1]);
+//                storage::reset(left_stores_[i+1]);
+//                storage::store(left_[i+1], left_stores_[i+1]);
 //            }
         }
         
         {
             Boundary<Matrix, SymmGroup> right = mps.right_boundary();
             right_[L] = right;
-            reset(right_stores_[L]);
-            store(right_[L], right_stores_[L]);
+            storage::reset(right_stores_[L]);
+            storage::store(right_[L], right_stores_[L]);
             
             for (int i = L-1; i >= 0; --i) {
                 MPSTensor<Matrix, SymmGroup> bkp = mps[i];
                 right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
                 right_[i] = right;
-                reset(right_stores_[i]);
-                store(right_[i], right_stores_[i]);
+                storage::reset(right_stores_[i]);
+                storage::store(right_[i], right_stores_[i]);
             }
         }
         
