@@ -103,6 +103,15 @@ namespace ambient{ namespace core{
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, i, j, k, NULL);
     }
 
+    void forward_block(packet_manager::typed_q& in_q){
+        ambient::packets::packet* pack = in_q.get_target_packet();
+        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
+        if(!profile->xinvolved()) return;
+        if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
+        in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
+                                   pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
+    }
+
     void forward_layout(packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
@@ -118,27 +127,18 @@ namespace ambient{ namespace core{
         in_q.manager->emit(pack);
     }
 
-    void forward_block(packet_manager::typed_q& in_q){
-        ambient::packets::packet* pack = in_q.get_target_packet();
-        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
-        if(!profile->xinvolved()) return;
-        if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
-        in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
-                                   pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
-    }
-
     void update_layout(packet_manager::typed_q& in_q)
     {
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         if(!profile->get_scope()->is_master()) return;
-        if(pack->get<char>(A_LAYOUT_P_ACTION) != 'U') return; // UPDATE ACTION
-        if( profile->id == 3 )
+        if(pack->get<char>(A_LAYOUT_P_ACTION) != 'U' &&       // UPDATE ACTION
+           pack->get<char>(A_LAYOUT_P_ACTION) != 'C' ) return;
         profile->layout->update_map_entry(pack->get<int>(A_LAYOUT_P_OWNER_FIELD),
                                           pack->get<int>(A_LAYOUT_P_I_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_J_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_K_FIELD)    );
-        if(profile->need_init) return;
+        if(pack->get<char>(A_LAYOUT_P_ACTION) == 'C') return; // COMPOSE ACTION
 
         if(profile->get_xmaster() == profile->get_master()){
             pack->set(A_DEST_FIELD, profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD),
@@ -151,19 +151,24 @@ namespace ambient{ namespace core{
         in_q.manager->emit(pack);
     }
 
-    void apply_change_set(p_profile** profiles, size_t count)
+    void apply_changes(p_profile** profiles, size_t count)
     {
-        for(int k = 0; k < count; k++)
-            for(int i=0; i < profiles[k]->layout->segment_count; i++)
+        for(int k = 0; k < count; k++){
+            const char* action = "UPDATE";
+            if(profiles[k]->need_init){
+                profiles[k]->postprocess(); 
+                action = "COMPOSE";
+            }
+            for(int i=0; i < profiles[k]->layout->segment_count; i++){
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
-                                                                   scope.get_group()->get_master_g(), "P2P", "U",
+                                                                   scope.get_group()->get_master_g(), "P2P", action,
                                                                   *profiles[k]->group_id, profiles[k]->id,
                                                                    profiles[k]->layout->segment[i].owner, 
                                                                    profiles[k]->layout->segment[i].i, 
                                                                    profiles[k]->layout->segment[i].j, 
                                                                    profiles[k]->layout->segment[i].k));
-        for(int k = 0; k < count; k++)
-        if(profiles[k]->need_init) profiles[k]->postprocess();
+            }
+        }
     }
 
 } }

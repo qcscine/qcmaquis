@@ -116,12 +116,10 @@ namespace ambient
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
         core::operation* computing;
-        while(!this->stack.end_reached())
-            this->stack.pick()->first->perform();
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
-            if(logistics->get_scope()->involved()) 
-                ambient::core::apply_change_set(logistics->profiles, logistics->count);
+            logistics->perform();
+            core::apply_changes(logistics->profiles, logistics->count);
         }
         world()->get_manager()->process();
 
