@@ -10,6 +10,8 @@
 #define BLOCK_MATRIX_ALGORITHMS_H
 
 #include "utils/zout.hpp"
+#include "utils/logger.h"
+
 #include "block_matrix/block_matrix.h"
 
 // some example functions
@@ -191,10 +193,11 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-std::pair<std::size_t, double> syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
+void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                              block_matrix<Matrix, SymmGroup> & evecs,
                                              block_matrix<DiagMatrix, SymmGroup> & evals,
                                              double cutoff, std::size_t Mmax,
+                                             Logger & logger,
                                              bool verbose = true)
 {
     // very analogous to the above svd method
@@ -250,7 +253,9 @@ std::pair<std::size_t, double> syev_truncate(block_matrix<Matrix, SymmGroup> con
         zout << "Truncated weight: " << truncated_weight << endl;
     }
     
-    return std::make_pair(evals.left_basis().sum_of_sizes(), truncated_weight);
+    logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());
+    logger << make_log("TruncatedWeight", truncated_weight);
+    logger << make_log("SmallestEV", evalscut / allevals[0]);
 }
 
 template<class Matrix, class SymmGroup>

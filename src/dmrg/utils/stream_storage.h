@@ -34,10 +34,7 @@ public:
         return *this;
     }
     
-    template<class Matrix, class SymmGroup> friend void load(Boundary<Matrix, SymmGroup> &, StreamStorage &);
-    template<class Matrix, class SymmGroup> friend void prefetch(Boundary<Matrix, SymmGroup> &, StreamStorage &);
-    template<class Matrix, class SymmGroup> friend void store(Boundary<Matrix, SymmGroup> &, StreamStorage &);
-    friend void reset(StreamStorage &);
+    friend struct storage;
     
     enum status_t { Prefetching, Complete, Stored };
     status_t status() { return status_; }
@@ -176,9 +173,7 @@ protected:
     template<class Object_> friend class StreamWriteRequest_impl;
     friend class StreamDeleteRequest;
     
-    template<class Matrix, class SymmGroup> friend void load(Boundary<Matrix, SymmGroup> &, StreamStorage &);
-    template<class Matrix, class SymmGroup> friend void prefetch(Boundary<Matrix, SymmGroup> &, StreamStorage &);
-    template<class Matrix, class SymmGroup> friend void store(Boundary<Matrix, SymmGroup> &, StreamStorage &);
+    friend struct storage;
 };
 
 StreamStorage::StreamStorage(StreamStorage const & rhs)
@@ -253,6 +248,60 @@ private:
     boost::lock_guard<boost::mutex> wait_lock;
 };
 
+template<class Matrix, class SymmGroup>
+class StreamReadRequest_impl<block_matrix<Matrix, SymmGroup> >
+: public StreamRequest
+{
+    typedef block_matrix<Matrix, SymmGroup> Object;
+    
+public:
+    StreamReadRequest_impl(StreamStorage * store_,
+                           Object * ptr_,
+                           boost::shared_ptr<boost::mutex> wait_mutex_)
+    : store(store_)
+    , ptr(ptr_)
+    , wait_mutex(wait_mutex_)
+    , wait_lock(*wait_mutex_)
+    { }
+    
+    void operator()()
+    {
+        static Timer timer("read_timer");
+        timer.begin();
+        
+        if (store->master->base_path.size() == 0)
+            return;
+        
+        std::string fp = store->master->base_path + store->object_path;
+        std::ifstream ifs(fp.c_str(), std::ifstream::binary);
+        if (!ifs) {
+            cerr << "File not found in StreamReadRequest!" << endl;
+            exit(1);
+        }
+        
+        Object & o = *ptr;
+        
+        for (std::size_t k = 0; k < o.n_blocks(); ++k) {
+            o[k] = Matrix(o.left_basis()[k].second,
+                             o.right_basis()[k].second);
+            ifs.read((char*)(&o[k](0,0)),
+                     o.left_basis()[k].second*
+                     o.right_basis()[k].second*
+                     sizeof(typename Matrix::value_type)/sizeof(char));
+        }
+        
+        ifs.close();
+        
+        timer.end();
+    }
+    
+private:
+    StreamStorage * store;
+    Object * ptr;
+    boost::shared_ptr<boost::mutex> wait_mutex;
+    boost::lock_guard<boost::mutex> wait_lock;
+};
+
 template<class Object>
 class StreamWriteRequest_impl : public StreamRequest
 {
@@ -298,6 +347,49 @@ public:
                              sizeof(typename Matrix::value_type)/sizeof(char));
                 o[i][k] = Matrix();
             }
+        
+        of.close();
+        timer.end();
+    }
+    
+private:
+    StreamStorage * store;
+    Object * ptr;
+};
+
+template<class Matrix, class SymmGroup>
+class StreamWriteRequest_impl<block_matrix<Matrix, SymmGroup> >
+: public StreamRequest
+{
+    typedef block_matrix<Matrix, SymmGroup> Object;
+    
+public:
+    StreamWriteRequest_impl(StreamStorage * store_,
+                            Object * ptr_)
+    : store(store_)
+    , ptr(ptr_) { }
+    
+    void operator()()
+    {
+        static Timer timer("write_timer");
+        timer.begin();
+        
+        if (store->master->base_path.size() == 0)
+            return;
+        
+        std::string fp = store->master->base_path + store->object_path;
+        std::ofstream of(fp.c_str(), std::ofstream::binary);
+        
+        Object & o = *ptr;
+        
+        for (std::size_t k = 0; k < o.n_blocks(); ++k) {
+            // workaround until capacity business in dense_matrix is sorted out
+            for (std::size_t c = 0; c < num_columns(o[k]); ++c)
+                of.write((char*)(&o[k](0, c)),
+                         num_rows(o[k]) *
+                         sizeof(typename Matrix::value_type)/sizeof(char));
+            o[k] = Matrix();
+        }
         
         of.close();
         timer.end();
@@ -358,64 +450,62 @@ void StreamWorker::execute()
     }
 }
 
-template<class Matrix, class SymmGroup>
-void prefetch(Boundary<Matrix, SymmGroup> & o,
-              StreamStorage & ss)
-{
-    if (ss.status() == StreamStorage::Prefetching)
-        return;
-    if (ss.status() == StreamStorage::Complete)
-        return;
+struct storage {
+    template<class T>
+    static void prefetch(T & o,
+                         StreamStorage & ss)
+    {
+        if (ss.status() == StreamStorage::Prefetching)
+            return;
+        if (ss.status() == StreamStorage::Complete)
+            return;
+        
+        boost::shared_ptr<boost::mutex> new_mutex(new boost::mutex());
+        boost::shared_ptr<StreamRequest> req(new StreamReadRequest_impl<T>(&ss, &o, new_mutex));
+        
+        ss.master->requests.push_back(req);
+        ss.mutexes.push_back(new_mutex);
+        ss.master->notify();
+        
+        ss.status_ = StreamStorage::Prefetching;
+    }
     
-    typedef Boundary<Matrix, SymmGroup> Object;
+    template<class T>
+    static void load(T & o,
+                     StreamStorage & ss)
+    {
+        if (ss.status() == StreamStorage::Complete)
+            return;
+        else if (ss.status() == StreamStorage::Prefetching)
+            ss.wait();
+        else if (ss.status() == StreamStorage::Stored) {
+            prefetch(o, ss);
+            ss.wait();
+        } else
+            throw std::runtime_error("WTF?");
+        assert(ss.status() == StreamStorage::Complete);
+    }
     
-    boost::shared_ptr<boost::mutex> new_mutex(new boost::mutex());
-    boost::shared_ptr<StreamRequest> req(new StreamReadRequest_impl<Object>(&ss, &o, new_mutex));
+    template<class T>
+    static void store(T & o,
+                      StreamStorage & ss)
+    {
+        if (ss.status() == StreamStorage::Stored)
+            return;
+        
+        boost::shared_ptr<StreamRequest> req(new StreamWriteRequest_impl<T>(&ss, &o));
+        
+        ss.master->requests.push_back(req);
+        ss.master->notify();
+        
+        ss.status_ = StreamStorage::Stored;
+    }
     
-    ss.master->requests.push_back(req);
-    ss.mutexes.push_back(new_mutex);
-    ss.master->notify();
-    
-    ss.status_ = StreamStorage::Prefetching;
-}
-
-template<class Matrix, class SymmGroup>
-void load(Boundary<Matrix, SymmGroup> & o,
-          StreamStorage & ss)
-{
-    if (ss.status() == StreamStorage::Complete)
-        return;
-    else if (ss.status() == StreamStorage::Prefetching)
-        ss.wait();
-    else if (ss.status() == StreamStorage::Stored) {
-        prefetch(o, ss);
-        ss.wait();
-    } else
-        throw std::runtime_error("WTF?");
-    assert(ss.status() == StreamStorage::Complete);
-}
-
-template<class Matrix, class SymmGroup>
-void store(Boundary<Matrix, SymmGroup> & o,
-           StreamStorage & ss)
-{
-    if (ss.status() == StreamStorage::Stored)
-        return;
-    
-    typedef Boundary<Matrix, SymmGroup> Object;
-    
-    boost::shared_ptr<StreamRequest> req(new StreamWriteRequest_impl<Object>(&ss, &o));
-    
-    ss.master->requests.push_back(req);
-    ss.master->notify();
-    
-    ss.status_ = StreamStorage::Stored;
-}
-
-void reset(StreamStorage & ss)
-{
-    ss.status_ = StreamStorage::Complete;
-}
+    static void reset(StreamStorage & ss)
+    {
+        ss.status_ = StreamStorage::Complete;
+    }
+};
 
 
 StreamStorage::~StreamStorage()

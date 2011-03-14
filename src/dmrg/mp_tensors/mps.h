@@ -9,6 +9,8 @@
 #ifndef MPS_H
 #define MPS_H
 
+#include "utils/logger.h"
+
 #include "mp_tensors/mpstensor.h"
 #include "mp_tensors/mpotensor.h"
 
@@ -40,13 +42,13 @@ public:
                         Boundary<Matrix, SymmGroup> const & right,
                         std::size_t l, double alpha,
                         double cutoff, std::size_t Mmax,
-                        std::pair<std::size_t, double> & truncation);
+                        Logger &);
     void grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                         Boundary<Matrix, SymmGroup> const & left,
                         Boundary<Matrix, SymmGroup> const & right,
                         std::size_t l, double alpha,
                         double cutoff, std::size_t Mmax,
-                        std::pair<std::size_t, double> & truncation);
+                        Logger &);
     
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;

@@ -196,13 +196,12 @@ struct contraction {
         size_t loop_max = left.aux_dim();
 #pragma omp parallel for schedule(guided)
         for (std::size_t b = 0; b < loop_max; ++b) {
-            gemm(transpose(left.data_[b]), mps.data_, t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
+            gemm(transpose(left.data_[b]), mps.data_, tmp);
             reshape_timer.begin();
             reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
-                                          t[b], tmp);
+                                          tmp, t[b]);
             reshape_timer.end();
-            swap(t[b], tmp);
         }
         loop1_timer.end();
         
@@ -534,7 +533,7 @@ struct contraction {
                                 Boundary<Matrix, SymmGroup> const & left,
                                 Boundary<Matrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax,
-                                std::pair<std::size_t, double> & truncation)
+                                Logger & logger)
     {
         static Timer timer("predict_new_state_l2r_sweep");
         timer.begin();
@@ -566,7 +565,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-        truncation = syev_truncate(dm, U, S, cutoff, Mmax);
+        syev_truncate(dm, U, S, cutoff, Mmax, logger);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = U;
@@ -604,7 +603,7 @@ struct contraction {
                                 Boundary<Matrix, SymmGroup> const & left,
                                 Boundary<Matrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax,
-                                std::pair<std::size_t, double> & truncation)
+                                Logger & logger)
     {
         static Timer timer("predict_new_state_r2l_sweep");
         timer.begin();
@@ -636,14 +635,12 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
         
-        truncation = syev_truncate(dm, U, S, cutoff, Mmax);
+        syev_truncate(dm, U, S, cutoff, Mmax, logger);
         V = transpose(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = V;
         ret.left_i = V.left_basis();
-        
-        cout << "Truncated, alpha!=0: " << truncation.second << endl;
         
         timer.end();
         return ret; 
