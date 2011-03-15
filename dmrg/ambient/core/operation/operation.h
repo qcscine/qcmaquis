@@ -20,6 +20,7 @@ namespace ambient{ namespace core{
         void invoke();   // executes operation (clean way)
         void set_scope(groups::group* scope);
         groups::group* get_scope();
+        void preprocess();
         void(operation::*prototype)();
         void(*operation_ptr)();
         groups::group* scope;

@@ -1,6 +1,6 @@
 #include <ctype.h>
 #include "ambient/core/select.h"
-#include "ambient/core/smp.h"
+#include "ambient/core/scope_proxy.h"
 #include "ambient/groups/group.h"
 #include "ambient/core/operation/operation.h"
 #include "utils/sqlite3.c"
@@ -21,8 +21,6 @@ namespace ambient {
         i += parseout_id(&sql[i], &as);
         if(as == NULL) as = (char*)"tmp";
 
-        scope.set_group(group);
-        if(!scope.involved()) return; // to rewrite this // need to know master of profile even if I'm not in the group
         if((grp = groups::group_map(as)) == NULL){
             grp = new groups::group(as, 0, groups::group_map(group));
 
@@ -38,9 +36,7 @@ namespace ambient {
             grp->commit();
         }
         scope.set_group(grp);
-        for(size_t i=0; i < scope.get_op()->count; i++)
-            scope.get_op()->profiles[i]->preprocess(ambient::scope.get_group());
-        scope.get_op()->set_scope(grp);
+        scope.get_op()->preprocess();
     }
 
     void scope_retain(const char* sql)

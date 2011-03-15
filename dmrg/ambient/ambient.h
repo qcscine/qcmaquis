@@ -11,7 +11,7 @@
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
 #include "ambient/auxiliary.h"
-#include "ambient/core/smp.h"
+#include "ambient/core/scope_proxy.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/layout.h"
 #include "ambient/core/select.h"
@@ -59,7 +59,6 @@ namespace ambient
     };
 
     scheduler& operator>>(scheduler* instance, dim3 distr_dim);
-    size_t get_bound();
     void init(MPI_Comm comm = NULL);
     void finalize();
     void playout();
@@ -67,7 +66,7 @@ namespace ambient
     bool is_master();
     groups::group* world();
 
-    extern smp& scope;
+    extern scope_proxy& scope;
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;

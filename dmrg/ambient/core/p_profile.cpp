@@ -113,11 +113,10 @@ namespace ambient {
     void p_profile::solidify(){
         int i,j;
         size_t offset = 0;
-        this->framework = malloc(ambient::get_bound()                         + 
-                                 this->layout->count                          *
+        this->framework = malloc(this->layout->count                          *
                                  (this->get_group_dim()*this->get_item_dim()) *
                                  this->type_size);
-        void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
+        void* memory = this->data = this->framework;
 
 // let's find the solid_lda
         this->solid_lda = 0; 
@@ -150,7 +149,7 @@ namespace ambient {
 
     void p_profile::disperse(){ 
         size_t offset = 0;
-        void* memory = this->data = (void*)((size_t)this->framework + ambient::get_bound());
+        void* memory = this->data = this->framework;
         for(int j=0; j < this->get_grid_dim().x; j++){
             memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->type_size);
             offset = 0;
@@ -195,7 +194,6 @@ namespace ambient {
     }
 
     void p_profile::postprocess(){
-#ifndef SCALAPACK_COMPATIBLE
         int i, j;
         for(int k=0; k < this->layout->segment_count; k++){
             i = this->layout->segment[k].i;
@@ -204,26 +202,6 @@ namespace ambient {
             this->group(i,j)->set_memory(alloc_t(*this->packet_type));
             this->init_fp(this->group(i,j));
         }
-#else
-        size_t offset = 0;
-        this->scope = malloc(ambient::get_bound()                         + 
-                             this->layout->count                          *
-                             (this->get_group_dim()*this->get_item_dim()) *
-                             this->type_size);
-        void* memory = this->data = (void*)((size_t)this->scope + ambient::get_bound());
-
-        for(int j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*this->get_group_dim().y*this->get_item_dim().y*this->get_group_dim().x*this->get_item_dim().x*this->type_size);
-            offset = 0;
-            for(int i=0; i < this->get_grid_dim().y; i++){
-                if((*this->layout)(i,j) != NULL){
-                    this->group(i,j)->data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->type_size);
-                    this->init_fp(this->group(i,j));
-                    offset++;
-                }
-            }
-        }
-#endif
     }
 
     workgroup& p_profile::operator()(int i, int j, int k) const {

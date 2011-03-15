@@ -19,13 +19,13 @@ namespace ambient{ namespace groups{
     private: 
         packet_manager(packet_manager const&);             // copy constructor is private
         packet_manager& operator=(packet_manager const&);  // assignment operator is private
-        group* scope;
+        groups::group* grp;
         MPI_Comm* comm;
     public:
         int closure_mutex;
         int approve_closure_mutex;
 
-        packet_manager(group* scope);
+        packet_manager(groups::group* grp);
         class ambient_request
         {
         public:
@@ -68,7 +68,7 @@ namespace ambient{ namespace groups{
 
         void process();
         bool process_locking(size_t active_sends_number);
-        group* get_scope();
+        groups::group* get_group();
     };
 
 } }

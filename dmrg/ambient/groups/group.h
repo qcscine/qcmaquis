@@ -42,7 +42,9 @@ namespace ambient{ namespace groups{
         std::pair<unsigned int*,size_t> id;
 
         std::pair<unsigned int*,size_t> hash_group_id();
+        int get_rank();
         size_t get_size();
+        const char* get_name();
     private:
         unsigned int object_count;
         int* members;              // list of member ranks (according to the parent group)
