@@ -12,7 +12,9 @@
 namespace utils {
     float conj(float v) { return v; }
     double conj(double v) { return v; }
-    
+	template <class T>
+	T unary_minus (T v) {return -v;}
+	
 #define DEFINE_FUNCTION_OBJECT(name, return_type, arg_type) \
 struct functor_##name { template<class T> return_type operator() (arg_type t) { return name(t); } };
     
@@ -22,6 +24,7 @@ struct functor_##name { template<class T> return_type operator() (arg_type t) { 
     DEFINE_FUNCTION_OBJECT(conjugate, T, T const &)
     DEFINE_FUNCTION_OBJECT(sqrt, T, T const &)
     DEFINE_FUNCTION_OBJECT(size_of, std::size_t, T const &)
+	DEFINE_FUNCTION_OBJECT(unary_minus, T, T const &)
     
 #undef DEFINE_FUNCTION_OBJECT
     
