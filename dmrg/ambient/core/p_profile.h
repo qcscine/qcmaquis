@@ -21,6 +21,11 @@ namespace ambient {
         unsigned int id;
         p_profile & operator>>(dim3 dim_distr);
         p_profile & operator,(dim3 dim);
+
+        void constant();
+        void inconstant();
+        bool consted;
+
         void regroup();
         void set_id(std::pair<unsigned int*,size_t> group_id);
         void set_master(int master);

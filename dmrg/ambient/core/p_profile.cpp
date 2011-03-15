@@ -16,7 +16,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      profile(this), valid(true), inited(false), need_init(false), preprocessed(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL) {
+      profile(this), valid(true), inited(false), need_init(false), preprocessed(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->group_dim = engine.get_group_dim();
         this->item_dim  = engine.get_item_dim();
@@ -190,12 +190,17 @@ namespace ambient {
         }
     }
 
+    void p_profile::constant(){ this->consted = true; }
+    void p_profile::inconstant(){ this->consted = false; }
+
     void p_profile::preprocess(){
         groups::group* scope = ambient::scope.get_group();
         if(this->id == 0) this->set_id(scope->id);
-        this->set_master(scope->get_master_g());
-        this->set_scope(scope);
-        this->preprocessed = true;
+        if(!this->consted){
+            this->set_master(scope->get_master_g());
+            this->set_scope(scope);
+        }
+        this->touch();
     }
 
     void p_profile::postprocess(){
