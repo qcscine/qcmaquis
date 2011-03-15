@@ -252,7 +252,7 @@ namespace alps {
 							 blas::vector<T, MemoryBlock> & v)
 		{
 			MemoryBlock tmp;
-			ar >> make_pvp("", tmp);
+			ar >> make_pvp(p, tmp);
 			v = blas::vector<T, MemoryBlock>(tmp.begin(), tmp.end());
 			return ar;
 		}
