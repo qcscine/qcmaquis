@@ -31,7 +31,7 @@ void assign(T& ref, int i, int j, int k)
     void_pt& profile = breakdown(ref);
     workgroup* group = profile.group(i,j,k);
 //    if( (*(group->profile))->id == 3 )
-//    printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_group()->name, ambient::rank(), group->i, group->j, (*(group->profile))->id );
+//    printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_name(), ambient::rank(), group->i, group->j, (*(group->profile))->id );
     group->owner = ambient::rank(); // maybe will remove
     profile.layout->record(group->owner, i, j, k);
 }
@@ -41,7 +41,7 @@ void assign(const T& ref, int i, int j, int k)
     void_pt& profile = breakdown(ref);
     workgroup* group = profile.group(i,j,k);
 //    if( (*(group->profile))->id == 3 )
-//    printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_group()->name, ambient::rank(), group->i, group->j, (*(group->profile))->id );
+//    printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_name(), ambient::rank(), group->i, group->j, (*(group->profile))->id );
     group->owner = ambient::rank(); // maybe will remove
     profile.layout->record(group->owner, i, j, k);
 }

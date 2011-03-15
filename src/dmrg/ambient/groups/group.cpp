@@ -172,6 +172,11 @@ namespace ambient{ namespace groups {
     int group::get_master_g(){
         return translate_rank(this->master);
     }
+
+    int group::get_rank(){
+        return this->rank;
+    }
+
     packet_manager* group::get_manager(){
         return this->manager;
     }
@@ -184,7 +189,9 @@ namespace ambient{ namespace groups {
     size_t group::get_size(){
         return this->count;
     }
-
+    const char* group::get_name(){
+        return this->name;
+    }
     group* group_map(const char* name, group* instance){
         static std::map<std::string,group*> map;
         if(instance != NULL){ 

@@ -13,7 +13,7 @@ add_library (ambient
              core/p_profile.cpp
              core/workgroup.cpp
              core/select.cpp
-             core/smp.cpp
+             core/scope_proxy.cpp
              core/operation/operation.cpp
              core/layout.cpp
              ambient.cpp)

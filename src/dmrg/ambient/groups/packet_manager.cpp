@@ -20,31 +20,31 @@ namespace ambient{ namespace groups{
         char code = pack->get<char>(A_CONTROL_P_CODE_FIELD);
         if(code != 'L') return;
         char info = pack->get<char>(A_CONTROL_P_INFO_FIELD);
-        if(in_q.manager->get_scope()->is_master()){
+        if(in_q.manager->get_group()->is_master()){
             if(info == 'C'){       // CLOSE
                 in_q.manager->closure_mutex--;
                 if(in_q.manager->closure_mutex == 0){
-                    for(int i=0; i < in_q.manager->get_scope()->get_size(); i++)
+                    for(int i=0; i < in_q.manager->get_group()->get_size(); i++)
                     in_q.manager->emit(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
-                                                                       ambient::rank(in_q.manager->get_scope()),
+                                                                       ambient::rank(in_q.manager->get_group()),
                                                                        "LOCKING", "TRY TO CLOSE"));
-                    in_q.manager->approve_closure_mutex = in_q.manager->get_scope()->get_size();
+                    in_q.manager->approve_closure_mutex = in_q.manager->get_group()->get_size();
                 }
             }else if(info == 'A'){ // APPROVE
                 in_q.manager->approve_closure_mutex--;
                 if(in_q.manager->approve_closure_mutex == 0){
-                    for(int i=0; i < in_q.manager->get_scope()->get_size(); i++)
+                    for(int i=0; i < in_q.manager->get_group()->get_size(); i++)
                     in_q.manager->emit(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
-                                                                       ambient::rank(in_q.manager->get_scope()),
+                                                                       ambient::rank(in_q.manager->get_group()),
                                                                        "LOCKING", "FORCE CLOSURE"));
-                    in_q.manager->closure_mutex = in_q.manager->get_scope()->get_size();
+                    in_q.manager->closure_mutex = in_q.manager->get_group()->get_size();
                 }
             }else if(info == 'R'){ // REJECT
-                    for(int i=0; i < in_q.manager->get_scope()->get_size(); i++)
+                    for(int i=0; i < in_q.manager->get_group()->get_size(); i++)
                     in_q.manager->emit(packets::pack<control_packet_t>(alloc_t<control_packet_t>(), i, "P2P",
-                                                                       ambient::rank(in_q.manager->get_scope()),
+                                                                       ambient::rank(in_q.manager->get_group()),
                                                                        "LOCKING", "WITHDRAW CLOSURE"));
-                    in_q.manager->closure_mutex = in_q.manager->get_scope()->get_size();
+                    in_q.manager->closure_mutex = in_q.manager->get_group()->get_size();
             }
         }
         if(info == 'T')      in_q.manager->state = packet_manager::CLOSURE; // TRY TO CLOSE
@@ -56,17 +56,17 @@ namespace ambient{ namespace groups{
 // finite state machine (closure proceedure).
 // note: the state also can be modified in callback of control_in queue.
         if(this->state == OPEN && active_sends_number == 0){
-                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
-                                                  "P2P", ambient::rank(this->scope), "LOCKING", "CLOSURE")); 
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master_g(), 
+                                                  "P2P", ambient::rank(this->grp), "LOCKING", "CLOSURE")); 
                 this->state = LOOSE;
         }else if(this->state == CLOSURE){ 
             if(active_sends_number == 0){
-                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
-                                                  "P2P", ambient::rank(this->scope), "LOCKING", "APPROVE")); 
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master_g(), 
+                                                  "P2P", ambient::rank(this->grp), "LOCKING", "APPROVE")); 
                 this->state = LOOSE;
             }else{
-                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->scope->get_master_g(), 
-                                                  "P2P", ambient::rank(this->scope), "LOCKING", "REJECT")); 
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master_g(), 
+                                                  "P2P", ambient::rank(this->grp), "LOCKING", "REJECT")); 
                 this->state = OPEN;
             }
         }else if(this->state == CLOSED){
@@ -108,7 +108,7 @@ namespace ambient{ namespace groups{
     }
 
     packet_manager::packet_manager(group* grp) {
-        this->scope = grp;
+        this->grp = grp;
         this->comm = &grp->mpi_comm;
 
         this->subscribe(get_t<control_packet_t>());
@@ -119,7 +119,7 @@ namespace ambient{ namespace groups{
         this->add_handler( get_t<layout_packet_t>() , new core::operation(core::update_layout , this->get_pipe(get_t<layout_packet_t>() , IN)) );
 // note: the order of handlers really matters
         this->state = packet_manager::OPEN;
-        this->closure_mutex = this->scope->get_size();
+        this->closure_mutex = this->grp->get_size();
     };
     void packet_manager::process(){
         size_t active_sends_number;
@@ -196,8 +196,8 @@ namespace ambient{ namespace groups{
     packet* packet_manager::typed_q::get_target_packet(){
         return this->target_packet;
     }
-    group* packet_manager::get_scope(){
-        return this->scope;
+    group* packet_manager::get_group(){
+        return this->grp;
     }
     packet_manager::typed_q::~typed_q(){ /* cancelling requests here */ }
 

@@ -81,7 +81,7 @@ namespace ambient{ namespace core{
                this->segment[s].j == j &&
                this->segment[s].k == k) return; // avoiding redunant information // that is - hangs in mpi
 
-        if(ambient::scope.master()){ 
+        if(scope.is_master()){ 
             update_map_entry(owner, i, j, k);
             add_segment_entry(owner, i, j, k);
         }else
@@ -161,7 +161,7 @@ namespace ambient{ namespace core{
             }
             for(int i=0; i < profiles[k]->layout->segment_count; i++){
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
-                                                                   scope.get_group()->get_master_g(), "P2P", action,
+                                                                   scope.get_master_g(), "P2P", action,
                                                                   *profiles[k]->group_id, profiles[k]->id,
                                                                    profiles[k]->layout->segment[i].owner, 
                                                                    profiles[k]->layout->segment[i].i, 

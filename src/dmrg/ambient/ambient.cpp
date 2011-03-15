@@ -21,7 +21,7 @@ namespace ambient
     scheduler& engine = scheduler::instance();
     multirank& rank   = multirank::instance();
     hash_map& p_profile_map = hash_map::instance();
-    smp& scope = smp::instance(); // charge of processes inside kernels
+    scope_proxy& scope = scope_proxy::instance(); // charge of processes inside kernels
 
 // global objects accessible anywhere //
 
@@ -78,10 +78,6 @@ namespace ambient
     dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
     dim3 scheduler::get_gpu_dim(){ return this->gpu_dim; }
 
-    size_t get_bound()
-    {
-        return 200; // to be redo to something normal
-    }
     void scheduler::init(MPI_Comm comm)
     {
         int threading_level;

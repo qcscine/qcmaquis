@@ -12,7 +12,6 @@ namespace ambient{ namespace core{
     void operation::perform()
     {
         ambient::scope.set_op(this);
-        ambient::scope.set_group((groups::group*)NULL);
         (this->*prototype)();
     }
     void operation::invoke()
@@ -22,6 +21,12 @@ namespace ambient{ namespace core{
     void operation::set_scope(groups::group* scope)
     {
         this->scope = scope;
+    }
+    void operation::preprocess()
+    {
+        for(size_t i=0; i < this->count; i++)
+            this->profiles[i]->preprocess(ambient::scope.get_group());
+        this->set_scope(ambient::scope.get_group());
     }
     groups::group* operation::get_scope()
     {
