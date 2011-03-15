@@ -79,17 +79,18 @@ namespace ambient{ namespace core{
             map[i][j]->owner = owner;
         }
     }
-    void layout_table::record(int owner, int i, int j, int k) {
+    void layout_table::record(int i, int j, int k) {
         for(int s=0; s < this->segment_count; s++)
             if(this->segment[s].i == i &&
                this->segment[s].j == j &&
                this->segment[s].k == k) return; // avoiding redunant information // that is - hangs in mpi
 
+        this->object->group(i,j,k)->owner = ambient::rank();
         if(scope.is_master()){ 
-            update_map_entry(owner, i, j, k);
-            add_segment_entry(owner, i, j, k);
+            update_map_entry(ambient::rank(), i, j, k);
+            add_segment_entry(ambient::rank(), i, j, k);
         }else
-            add_segment_entry(owner, i, j, k);
+            add_segment_entry(ambient::rank(), i, j, k);
     }
     void layout_table::request(int i, int j, int k){
         for(int s=0; s < this->request_count; s++)
@@ -118,6 +119,12 @@ namespace ambient{ namespace core{
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         if(!profile->xinvolved()) return;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
+        printf("R%d caught a request for block %d %d %d of %u:%d for %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
+                                                         pack->get<int>(A_LAYOUT_P_J_FIELD),
+                                                         pack->get<int>(A_LAYOUT_P_K_FIELD),
+							     *(unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD),
+	    					     pack->get<int>(A_LAYOUT_P_ID_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD));
+        
         in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                    pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
     }
@@ -136,7 +143,7 @@ namespace ambient{ namespace core{
             pack->set(A_DEST_FIELD, entry->get_owner());
             pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
             in_q.manager->emit(pack);
-            printf("R%d requeting piece of layout %d %d %d of %u:%d from %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
+            printf("R%d requesting piece of layout %d %d %d of %u:%d from %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
                                                              pack->get<int>(A_LAYOUT_P_J_FIELD),
                                                              pack->get<int>(A_LAYOUT_P_K_FIELD),
 	    						     *(unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD),
@@ -158,7 +165,7 @@ namespace ambient{ namespace core{
                                           pack->get<int>(A_LAYOUT_P_I_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_J_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_K_FIELD)    );
-        if(pack->get<char>(A_LAYOUT_P_ACTION) == 'C'){ printf("Actually I did caught that for profile %d\n", profile->id); return; } // COMPOSE ACTION
+        if(pack->get<char>(A_LAYOUT_P_ACTION) == 'C') return; // COMPOSE ACTION
 
         if(profile->get_xmaster() == profile->get_master()){
             pack->set(A_DEST_FIELD, profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD),

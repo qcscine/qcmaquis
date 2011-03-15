@@ -18,19 +18,14 @@ namespace ambient{ namespace core{
     {
         (this->*prototype)();
     }
+    void operation::preprocess()
+    {
+        for(size_t i=0; i < this->count; i++) this->profiles[i]->preprocess();
+        this->set_scope(ambient::scope.get_group());
+    }
     void operation::set_scope(groups::group* scope)
     {
         this->scope = scope;
-    }
-    void operation::preprocess()
-    {
-        for(size_t i=0; i < this->count; i++){
-            this->profiles[i]->preprocessed = false;
-            if(this->profiles[i]->id == 0) 
-                this->profiles[i]->preprocess();
-            this->profiles[i]->touch();
-        }
-        this->set_scope(ambient::scope.get_group());
     }
     groups::group* operation::get_scope()
     {

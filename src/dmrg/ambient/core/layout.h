@@ -35,7 +35,7 @@ namespace core {
         void add_request_entry(int i, int j = 0, int k = 0);
         void update_map_entry(int owner, int i, int j = 0, int k = 0);
 
-        void record(int owner, int i, int j = 0, int k = 0); // general call invoking one above
+        void record(int i, int j = 0, int k = 0); // general call invoking one above
         void request(int i, int j = 0, int k = 0); // request for the block (read-only purpose)
 
         void clean();
