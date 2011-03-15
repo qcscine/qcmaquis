@@ -80,11 +80,11 @@ namespace blas {
         if(rows > this->lda || cols > this->sda){
                 size_type lda = std::max(rows,this->lda)*3/2; // reservation
                 size_type sda = std::max(cols,this->sda)*3/2; // reservation
-                boost::scoped_ptr<T> tmp(new T[ambient::get_bound()+lda*sda]);
+                boost::scoped_ptr<T> tmp(new T[lda*sda]);
                 this->scope.swap(tmp);
-                this->data = this->scope.get() + ambient::get_bound();
+                this->data = this->scope.get();
                 memcpy(this->scope.get(), tmp.get(), 
-                       sizeof(T)*(ambient::get_bound()+this->lda*this->cols)); // restoring original data
+                       sizeof(T)*(this->lda*this->cols)); // restoring original data
                 for(size_type i = this->cols; i-- >= 1;){
                     memmove(this->data+lda*i, this->data+this->lda*i, sizeof(T)*this->rows);
                 }
