@@ -318,6 +318,9 @@ namespace blas {
     template <typename T, typename MemoryBlock>
     const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a, dense_matrix<T,MemoryBlock> const& b);
 
+    template <typename T, typename MemoryBlock>
+    const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a);
+
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type, typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
     operator * (dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
