@@ -32,7 +32,8 @@ namespace ambient {
         std::pair<int,int> master_relay;
         p_profile* profile; // pointer to this profile (this on init - can be changed in proxy objects)
         p_profile* dereference(); // finds out if the profile pointer is up to date
-        void preprocess(groups::group* scope);
+        void touch();
+        void preprocess();
         void postprocess(); // proceed with necessary memory allocations
         void* framework; // includes ambient boundle
         void* data;  // pointer to the actual data
@@ -98,6 +99,7 @@ namespace ambient {
         bool is_valid();
         bool is_inited();
         bool need_init;
+        bool preprocessed;
     private:
         bool inited;
         bool valid;
