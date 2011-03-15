@@ -525,7 +525,7 @@ namespace blas {
 			std::pair<typename dense_matrix<T,MemoryBlock>::column_element_iterator,
 					  typename dense_matrix<T,MemoryBlock>::column_element_iterator> range(a.column(j));
 			std::transform(range.first, range.second,
-						   range.first, utils::functor_unary_minus());
+						   range.first, std::negate<T>());
 		}
 		return a;
     }
