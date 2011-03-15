@@ -11,6 +11,8 @@ namespace ambient{ namespace core{
 
     using namespace ambient::groups;
 
+    class race_condition_e{ };
+
     layout_table_entry::layout_table_entry()
     { }
 
@@ -54,10 +56,12 @@ namespace ambient{ namespace core{
     }
 
     layout_table_entry* layout_table::get_entry(int i, int j, int k){
+        if(map[i][j] == NULL) throw race_condition_e(); // to extend for situation when outdated
         return map[i][j];
     }
 
     layout_table_entry* layout_table::operator()(int i, int j, int k){
+        assert(map[i][j] != NULL);
         return map[i][j];
     }
 
@@ -119,12 +123,22 @@ namespace ambient{ namespace core{
         if(ambient::rank() != profile->get_xmaster()) return;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM X OWNER ACTION
 
-        layout_table_entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
-                                                               pack->get<int>(A_LAYOUT_P_J_FIELD), 
-                                                               pack->get<int>(A_LAYOUT_P_K_FIELD));
-        pack->set(A_DEST_FIELD, entry->get_owner());
-        pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
-        in_q.manager->emit(pack);
+        try{
+            layout_table_entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
+                                                                   pack->get<int>(A_LAYOUT_P_J_FIELD), 
+                                                                   pack->get<int>(A_LAYOUT_P_K_FIELD));
+            pack->set(A_DEST_FIELD, entry->get_owner());
+            pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
+            in_q.manager->emit(pack);
+            printf("R%d requeting piece of layout %d %d %d of %u:%d from %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
+                                                             pack->get<int>(A_LAYOUT_P_J_FIELD),
+                                                             pack->get<int>(A_LAYOUT_P_K_FIELD),
+	    						     *(unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD),
+							     pack->get<int>(A_LAYOUT_P_ID_FIELD), pack->get<int>(A_DEST_FIELD));
+
+        }catch(race_condition_e){
+            in_q.manager->emit(pack); // re-throwing the packet for future handling
+        }
     }
 
     void update_layout(packet_manager::typed_q& in_q)
@@ -138,7 +152,7 @@ namespace ambient{ namespace core{
                                           pack->get<int>(A_LAYOUT_P_I_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_J_FIELD)    ,
                                           pack->get<int>(A_LAYOUT_P_K_FIELD)    );
-        if(pack->get<char>(A_LAYOUT_P_ACTION) == 'C') return; // COMPOSE ACTION
+        if(pack->get<char>(A_LAYOUT_P_ACTION) == 'C'){ printf("Actually I did caught that for profile %d\n", profile->id); return; } // COMPOSE ACTION
 
         if(profile->get_xmaster() == profile->get_master()){
             pack->set(A_DEST_FIELD, profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD),
@@ -147,6 +161,11 @@ namespace ambient{ namespace core{
         }else{ 
             pack->set(A_DEST_FIELD, profile->get_xmaster());
             pack->set(A_LAYOUT_P_ACTION, "INFORM X OWNER");
+            printf("R%d informing old owner of layout %d %d %d of %u:%d - now %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
+                                                             pack->get<int>(A_LAYOUT_P_J_FIELD),
+                                                             pack->get<int>(A_LAYOUT_P_K_FIELD),
+	    						     *(unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD),
+							     pack->get<int>(A_LAYOUT_P_ID_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD));
         }
         in_q.manager->emit(pack);
     }

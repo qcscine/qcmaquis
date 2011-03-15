@@ -26,7 +26,7 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
 
 void gemm_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out)
 {
-    scope_select("2 from ambient as work where master is 0"); // todo: correct the naming issue
+    scope_select("0.5 from ambient as work where master is 0"); // todo: correct the naming issue
     if(!scope.involved()) return;
 
     breakdown(a) >> dim3(10,5), dim3(8,2), dim3(10,1);
