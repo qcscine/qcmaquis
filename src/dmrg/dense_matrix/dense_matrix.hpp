@@ -519,8 +519,15 @@ namespace blas {
 	template <typename T, typename MemoryBlock>
     const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a)
     {
-        a *= typename dense_matrix<T,MemoryBlock>::value_type(-1);
-        return a;
+		// Do the operation column by column
+		for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < a.num_columns(); ++j)
+		{
+			std::pair<typename dense_matrix<T,MemoryBlock>::column_element_iterator,
+					  typename dense_matrix<T,MemoryBlock>::column_element_iterator> range(a.column(j));
+			std::transform(range.first, range.second,
+						   range.first, utils::functor_unary_minus());
+		}
+		return a;
     }
 	
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
