@@ -24,8 +24,12 @@ namespace ambient{ namespace core{
     }
     void operation::preprocess()
     {
-        for(size_t i=0; i < this->count; i++)
-            this->profiles[i]->preprocess(ambient::scope.get_group());
+        for(size_t i=0; i < this->count; i++){
+            this->profiles[i]->preprocessed = false;
+            if(this->profiles[i]->id == 0) 
+                this->profiles[i]->preprocess();
+            this->profiles[i]->touch();
+        }
         this->set_scope(ambient::scope.get_group());
     }
     groups::group* operation::get_scope()

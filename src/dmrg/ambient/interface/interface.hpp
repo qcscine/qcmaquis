@@ -29,6 +29,7 @@ void assign(T& ref, int i, int j, int k)
 {
 // need to check uniqness here...
     void_pt& profile = breakdown(ref);
+    if(!profile.preprocessed) profile.preprocess();
     workgroup* group = profile.group(i,j,k);
 //    if( (*(group->profile))->id == 3 )
 //    printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_name(), ambient::rank(), group->i, group->j, (*(group->profile))->id );
@@ -39,11 +40,10 @@ template<typename T>
 void assign(const T& ref, int i, int j, int k)
 {
     void_pt& profile = breakdown(ref);
-    workgroup* group = profile.group(i,j,k);
+    if(!profile.preprocessed) profile.preprocess();
 //    if( (*(group->profile))->id == 3 )
 //    printf("%s: p%d: I've accepted group %d %d of id%d\n", scope.get_name(), ambient::rank(), group->i, group->j, (*(group->profile))->id );
-    group->owner = ambient::rank(); // maybe will remove
-    profile.layout->record(group->owner, i, j, k);
+    profile.layout->request(i, j, k);
 }
 template<typename T>
 dim3 get_dim(T& ref)

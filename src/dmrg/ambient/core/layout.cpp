@@ -28,31 +28,26 @@ namespace ambient{ namespace core{
 
     layout_table::~layout_table(){} // don't forget to delete table entries here
     layout_table::layout_table(p_profile* object) 
-    : object(object), count(0), segment_count(0), xsegment_count(0)
+    : object(object), count(0), segment_count(0), request_count(0)
     {
         this->reserved_x = 0;
         this->reserved_y = 0;
-        update_map();
+        remap();
     }
 
-    void layout_table::update_map(std::vector<layout_table_entry>* update){
-        if(update == NULL){
-            int y_size = this->object->dim.y / (this->object->get_group_dim().y*this->object->get_item_dim().y);
-            int x_size = this->object->dim.x / (this->object->get_group_dim().x*this->object->get_item_dim().x);
-            if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
-            for(int i = 0; i < y_size; i++){
-                if(i >= this->reserved_y) map.push_back(std::vector<layout_table_entry*>());
-                for(int j = 0; j < x_size; j++){
-                    if(j >= this->reserved_x || i >= this->reserved_y) 
-                        map[i].push_back(NULL); //new layout_table_entry(-1, i, j);
-                }
+    void layout_table::remap(){
+        int y_size = this->object->dim.y / (this->object->get_group_dim().y*this->object->get_item_dim().y);
+        int x_size = this->object->dim.x / (this->object->get_group_dim().x*this->object->get_item_dim().x);
+        if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
+        for(int i = 0; i < y_size; i++){
+            if(i >= this->reserved_y) map.push_back(std::vector<layout_table_entry*>());
+            for(int j = 0; j < x_size; j++){
+                if(j >= this->reserved_x || i >= this->reserved_y) 
+                    map[i].push_back(NULL); //new layout_table_entry(-1, i, j);
             }
-            if(x_size > this->reserved_x) this->reserved_x = x_size;
-            if(y_size > this->reserved_y) this->reserved_y = y_size;
-        }else{
-// run through update
-
         }
+        if(x_size > this->reserved_x) this->reserved_x = x_size;
+        if(y_size > this->reserved_y) this->reserved_y = y_size;
     }
 
     layout_table_entry* layout_table::get_entry(int i, int j, int k){
@@ -68,6 +63,11 @@ namespace ambient{ namespace core{
     void layout_table::add_segment_entry(int owner, int i, int j, int k){
         if(segment_count == segment.size()) segment.resize(segment_count+1);
         segment[segment_count++] = layout_table_entry(owner, i, j, k);
+    }
+
+    void layout_table::add_request_entry(int i, int j, int k){
+        if(request_count == requests.size()) requests.resize(request_count+1);
+        requests[request_count++] = layout_table_entry(-1, i, j, k);
     }
 
     void layout_table::update_map_entry(int owner, int i, int j, int k){
@@ -91,8 +91,14 @@ namespace ambient{ namespace core{
         }else
             add_segment_entry(owner, i, j, k);
     }
+    void layout_table::request(int i, int j, int k){
+        for(int s=0; s < this->request_count; s++)
+            if(this->requests[s].i == i &&
+               this->requests[s].j == j &&
+               this->requests[s].k == k) return; // avoiding redunant requests
+        add_request_entry(i, j, k);
+    }
     void layout_table::clean(){
-        this->xsegment_count = this->segment_count;
         this->segment_count = 0;
     }
     void layout_table::print(){
