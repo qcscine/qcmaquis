@@ -196,11 +196,11 @@ namespace ambient {
     void p_profile::preprocess(){
         groups::group* scope = ambient::scope.get_group();
         if(this->id == 0) this->set_id(scope->id);
-        if(!this->consted){
+        this->touch();
+        if(!this->consted || this->need_init){ // bad case - the same argument twice :/
             this->set_master(scope->get_master_g());
             this->set_scope(scope);
         }
-        this->touch();
     }
 
     void p_profile::postprocess(){
