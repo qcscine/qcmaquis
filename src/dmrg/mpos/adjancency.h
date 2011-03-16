@@ -9,6 +9,9 @@
 #ifndef ADJACENCY_H
 #define ADJACENCY_H
 
+#include <vector>
+#include <stdexcept>
+
 namespace adj {
     class Adjacency
     {
