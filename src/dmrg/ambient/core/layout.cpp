@@ -118,14 +118,8 @@ namespace ambient{ namespace core{
     void forward_block(packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
-        if(!profile->xinvolved()) return;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
-        printf("R%d caught a request for block %d %d %d of %u:%d for %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
-                                                         pack->get<int>(A_LAYOUT_P_J_FIELD),
-                                                         pack->get<int>(A_LAYOUT_P_K_FIELD),
-							     *(unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD),
-	    					     pack->get<int>(A_LAYOUT_P_ID_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD));
-        
+        if(!profile->xinvolved()) return;
         in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                    pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
     }
@@ -134,7 +128,6 @@ namespace ambient{ namespace core{
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
         if(!profile->xinvolved()) return; // can be omitted I guess
-        if(ambient::rank() != profile->get_xmaster()) return;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM X OWNER ACTION
 
         try{
@@ -144,12 +137,6 @@ namespace ambient{ namespace core{
             pack->set(A_DEST_FIELD, entry->get_owner());
             pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
             in_q.manager->emit(pack);
-            printf("R%d requesting piece of layout %d %d %d of %u:%d from %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
-                                                             pack->get<int>(A_LAYOUT_P_J_FIELD),
-                                                             pack->get<int>(A_LAYOUT_P_K_FIELD),
-	    						     *(unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD),
-							     pack->get<int>(A_LAYOUT_P_ID_FIELD), pack->get<int>(A_DEST_FIELD));
-
         }catch(race_condition_e){
             in_q.manager->emit(pack); // re-throwing the packet for future handling
         }
@@ -175,11 +162,6 @@ namespace ambient{ namespace core{
         }else{ 
             pack->set(A_DEST_FIELD, profile->get_xmaster());
             pack->set(A_LAYOUT_P_ACTION, "INFORM X OWNER");
-            printf("R%d informing old owner of layout %d %d %d of %u:%d - now %d\n", ambient::rank(),pack->get<int>(A_LAYOUT_P_I_FIELD),
-                                                             pack->get<int>(A_LAYOUT_P_J_FIELD),
-                                                             pack->get<int>(A_LAYOUT_P_K_FIELD),
-	    						     *(unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD),
-							     pack->get<int>(A_LAYOUT_P_ID_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD));
         }
         in_q.manager->emit(pack);
     }
@@ -200,6 +182,16 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->segment[i].i, 
                                                                    profiles[k]->layout->segment[i].j, 
                                                                    profiles[k]->layout->segment[i].k));
+            }
+            for(int i=0; i < profiles[k]->layout->request_count; i++){
+                world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+                                                                   profiles[k]->get_master(), "P2P", 
+                                                                  "INFORM OWNER ABOUT REQUEST",
+                                                                  *profiles[k]->group_id, profiles[k]->id,
+                                                                   ambient::rank(), // forward target
+                                                                   profiles[k]->layout->requests[i].i, 
+                                                                   profiles[k]->layout->requests[i].j, 
+                                                                   profiles[k]->layout->requests[i].k));
             }
         }
     }
