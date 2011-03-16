@@ -52,7 +52,7 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 // todo
 }
 
-void block_2d_cyclic_l_kernel(p_dense_matrix<double>& a){
+void block_2d_cyclic_l_kernel(const p_dense_matrix<double>& a){
     scope_select("2 from ambient as work_redist where master is 0");
     if(!scope.involved()) return;
 
