@@ -93,6 +93,7 @@ namespace ambient{ namespace core{
             add_segment_entry(ambient::rank(), i, j, k);
     }
     void layout_table::request(int i, int j, int k){
+        if(this->object->need_init) return record(i,j,k);
         for(int s=0; s < this->request_count; s++)
             if(this->requests[s].i == i &&
                this->requests[s].j == j &&
