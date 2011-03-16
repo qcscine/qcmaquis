@@ -27,8 +27,8 @@ namespace ambient{ namespace core{
     }
 
     layout_table::~layout_table(){} // don't forget to delete table entries here
-    layout_table::layout_table(p_profile* object) 
-    : object(object), count(0), segment_count(0), request_count(0)
+    layout_table::layout_table(p_profile* profile) 
+    : profile(profile), count(0), segment_count(0), request_count(0)
     {
         this->reserved_x = 0;
         this->reserved_y = 0;
@@ -36,8 +36,8 @@ namespace ambient{ namespace core{
     }
 
     void layout_table::remap(){
-        int y_size = this->object->dim.y / (this->object->get_group_dim().y*this->object->get_item_dim().y);
-        int x_size = this->object->dim.x / (this->object->get_group_dim().x*this->object->get_item_dim().x);
+        int y_size = this->profile->dim.y / (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
+        int x_size = this->profile->dim.x / (this->profile->get_group_dim().x*this->profile->get_item_dim().x);
         if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
         for(int i = 0; i < y_size; i++){
             if(i >= this->reserved_y) map.push_back(std::vector<layout_table_entry*>());
@@ -85,7 +85,7 @@ namespace ambient{ namespace core{
                this->segment[s].j == j &&
                this->segment[s].k == k) return; // avoiding redunant information // that is - hangs in mpi
 
-        this->object->group(i,j,k)->owner = ambient::rank();
+        this->profile->group(i,j,k)->owner = ambient::rank();
         if(scope.is_master()){ 
             update_map_entry(ambient::rank(), i, j, k);
             add_segment_entry(ambient::rank(), i, j, k);
@@ -93,7 +93,7 @@ namespace ambient{ namespace core{
             add_segment_entry(ambient::rank(), i, j, k);
     }
     void layout_table::request(int i, int j, int k){
-        if(this->object->state == p_profile::COMPOSING) 
+        if(this->profile->state == p_profile::COMPOSING) 
             return record(i,j,k);
         for(int s=0; s < this->request_count; s++)
             if(this->requests[s].i == i &&
@@ -106,7 +106,7 @@ namespace ambient{ namespace core{
     }
     void layout_table::print(){
         for(int i=0; i < this->segment_count; i++){
-            printf("PROFILE: %d; R%d: %d %d\n", this->object->id, this->segment[i].owner, this->segment[i].i, this->segment[i].j);
+            printf("PROFILE: %d; R%d: %d %d\n", this->profile->id, this->segment[i].owner, this->segment[i].i, this->segment[i].j);
         }
     }
 
@@ -118,7 +118,7 @@ namespace ambient{ namespace core{
 
     void forward_block(packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
-        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
+        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->profile;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
         if(!profile->xinvolved()) return;
         in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
@@ -127,7 +127,7 @@ namespace ambient{ namespace core{
 
     void forward_layout(packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
-        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
+        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->profile;
         if(!profile->xinvolved()) return; // can be omitted I guess
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM X OWNER ACTION
 
@@ -146,7 +146,7 @@ namespace ambient{ namespace core{
     void update_layout(packet_manager::typed_q& in_q)
     {
         ambient::packets::packet* pack = in_q.get_target_packet();
-        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->object;
+        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->profile;
         if(!profile->get_scope()->is_master()) return;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'U' &&       // UPDATE ACTION
            pack->get<char>(A_LAYOUT_P_ACTION) != 'C' ) return;
