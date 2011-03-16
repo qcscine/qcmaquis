@@ -104,7 +104,6 @@ namespace ambient {
         bool is_valid();
         bool is_inited();
         bool need_init;
-        bool preprocessed;
     private:
         bool inited;
         bool valid;
