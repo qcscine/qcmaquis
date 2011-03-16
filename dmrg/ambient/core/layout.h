@@ -24,7 +24,7 @@ namespace core {
 
     class layout_table {
     public:
-        layout_table(p_profile* object);
+        layout_table(p_profile* profile);
         ~layout_table();
         void remap();
 
@@ -41,7 +41,7 @@ namespace core {
         void clean();
         void print();
 
-        p_profile* object;
+        p_profile* profile;
         std::vector< std::vector<layout_table_entry*> > map;
         size_t reserved_x;
         size_t reserved_y;

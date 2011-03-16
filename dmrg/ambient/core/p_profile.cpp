@@ -10,7 +10,7 @@ namespace ambient {
         ambient::packets::packet* pack = in_q.get_target_packet();
         printf("R%d: I'm integrating the block of %u:%d - %d %d\n", ambient::rank(), *(unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), pack->get<int>(A_BLOCK_P_ID_FIELD), 
                pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
-        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->object;
+        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
         profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
     }
 
