@@ -54,7 +54,7 @@ namespace ambient {
     int p_profile::get_xmaster(){ return this->master_relay.first; }
     groups::group* p_profile::get_scope(){ return this->scope; }
     groups::group* p_profile::get_xscope(){ return this->xscope; } 
-    bool p_profile::xinvolved(){ return (this->get_xscope() != NULL && this->get_xscope()->involved()); }
+    bool p_profile::xinvolved(){ return ((this->get_xscope() != NULL && this->get_xscope()->involved()) || this->involved()); } // modified
     bool p_profile::involved(){ return this->get_scope()->involved(); }
 
     p_profile & p_profile::operator>>(dim3 distr_dim) 
