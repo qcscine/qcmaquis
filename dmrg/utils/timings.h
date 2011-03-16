@@ -2,7 +2,10 @@
 #define TIMINGS_H
 
 #include "utils/zout.hpp"
+
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 
 
 #ifdef __CUBLAS__
@@ -82,7 +85,7 @@ protected:
     std::string name;
 };
 
-
+#ifdef _OPENMP
 class TimerOMP : public Timer
 {
 public:
@@ -105,6 +108,7 @@ private:
 	double timer_start, timer_end;
 	
 };
+#endif
 
 
 #ifdef __CUBLAS__

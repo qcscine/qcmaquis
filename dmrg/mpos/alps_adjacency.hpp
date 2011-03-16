@@ -1,5 +1,5 @@
 
-#include "alps_adjancency.h"
+#include "alps_adjacency.h"
 
 #include <fstream>
 
