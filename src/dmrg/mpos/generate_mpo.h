@@ -10,7 +10,7 @@
 #define GENERATE_MPO_H
 
 #include "utils/zout.hpp"
-#include "adjancency.h"
+#include "adjacency.h"
 #include "mp_tensors/mpo.h"
 
 #include "block_matrix/block_matrix.h"

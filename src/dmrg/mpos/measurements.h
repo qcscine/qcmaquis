@@ -13,7 +13,7 @@
 
 #include "mp_tensors/mps_mpo_ops.h"
 
-#include "mpos/adjancency.h"
+#include "mpos/adjacency.h"
 #include "mpos/generate_mpo.h"
 #include "mpos/hamiltonians.h"
 

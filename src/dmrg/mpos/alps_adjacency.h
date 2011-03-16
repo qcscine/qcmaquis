@@ -2,7 +2,7 @@
 #ifndef ALPS_ADJACENCY_H
 #define ALPS_ADJACENCY_H
 
-#include "adjancency.h"
+#include "adjacency.h"
 
 #include <string>
 #include <vector>

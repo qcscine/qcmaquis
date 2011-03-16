@@ -46,7 +46,7 @@ typedef blas::dense_matrix<double > Matrix;
 #include "mp_tensors/ss_optimize.h"
 #include "mpos/measurements.h"
 
-#include "mpos/adjancency.h"
+#include "mpos/adjacency.h"
 #include "mpos/generate_mpo.h"
 #include "mpos/hamiltonians.h"
 
