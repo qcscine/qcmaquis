@@ -16,7 +16,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      profile(this), valid(true), inited(false), need_init(false), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false) {
+      profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->group_dim = engine.get_group_dim();
         this->item_dim  = engine.get_item_dim();
@@ -177,17 +177,14 @@ namespace ambient {
         return dim3(this->default_group->i, this->default_group->j, this->default_group->k);
     }
 
-    bool p_profile::is_inited(){
-        return this->inited;
-    }
-
     void p_profile::touch(){
-        if(this->inited){
-            this->need_init = false;
-        }else if(!this->inited){
-            this->need_init = true;
-            this->inited = true;
+        
+        if(this->state == ABSTRACT){
+            this->state = COMPOSING;
+        }else if(this->state == COMPOSING){
+            this->state = GENERIC;
         }
+
     }
 
     void p_profile::constant(){ this->consted = true; }
@@ -197,7 +194,7 @@ namespace ambient {
         groups::group* scope = ambient::scope.get_group();
         if(this->id == 0) this->set_id(scope->id);
         this->touch();
-        if(!this->consted || this->need_init){ // bad case - the same argument twice :/
+        if(!this->consted || this->state == COMPOSING){ // bad case - the same argument twice :/
             this->set_master(scope->get_master_g());
             this->set_scope(scope);
         }

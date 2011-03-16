@@ -102,10 +102,9 @@ namespace ambient {
         void set_item_dim(dim3 dim);
         void invalidate();
         bool is_valid();
-        bool is_inited();
-        bool need_init;
+        enum status { ABSTRACT, COMPOSING, GENERIC };
+        status state;
     private:
-        bool inited;
         bool valid;
         dim3 distr_dim;   // work-item size of distribution blocks
         dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
