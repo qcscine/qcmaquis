@@ -38,6 +38,6 @@ namespace adj {
 		std::vector<std::vector<int> > backward_;		
     };	
 	
-}
+} // namespace (adj)
 
 #endif
