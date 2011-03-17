@@ -18,6 +18,10 @@ namespace ambient {
         return this->get_profile()->get_item_dim();
     }
 
+    bool workgroup::available(){
+        return (this->timestamp == this->get_profile()->timestamp);
+    }
+
     void workgroup::set_memory(void* memory){
         this->header = memory;
         this->data = (void*)((size_t)memory + this->get_profile()->get_bound());

@@ -52,11 +52,11 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 // todo
 }
 
-void block_2d_cyclic_l_kernel(const p_dense_matrix<double>& a){
-    scope_select("2 from ambient as work_redist where master is 0"); // fix the "same name" problem!
+void pdgemm_l_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_dense_matrix<double>& c){
+    scope_select("* from ambient as work_redist where master is 0"); // fix the "same name" problem!
     if(!scope.involved()) return;
 
-    zout << "2d-block-cyclic decomposition kernel:\n"; info(a);
+    zout << "2d-block-cyclic decomposition kernel:\n"; info(a); info(b); info(c);
 ///////////////////////////////////////////// 2D-block-cyclic decomposition
     int np = 1; // can be a function arg   // process grid's num of rows 
     int nq = (int)(scope.get_size() / np); // process grid's num of cols 
@@ -66,6 +66,16 @@ void block_2d_cyclic_l_kernel(const p_dense_matrix<double>& a){
     for(int i = rank_i; i < get_grid_dim(a).y; i += np){
         for(int j = rank_j; j < get_grid_dim(a).x; j += nq){
             assign(a, i, j);
+        }
+    }
+    for(int i = rank_i; i < get_grid_dim(a).y; i += np){
+        for(int j = rank_j; j < get_grid_dim(a).x; j += nq){
+            assign(b, i, j);
+        }
+    }
+    for(int i = rank_i; i < get_grid_dim(a).y; i += np){
+        for(int j = rank_j; j < get_grid_dim(a).x; j += nq){
+            assign(c, i, j);
         }
     }
 }

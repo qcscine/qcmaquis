@@ -96,16 +96,13 @@ namespace ambient {
     }
 
     size_t p_profile::get_group_lda(){
-        if(this->group_lda == 0)
-            return this->get_group_dim().y*this->get_item_dim().y*this->type_size;
-        else
-            return this->group_lda;
+        return this->get_group_dim().y*this->get_item_dim().y*this->type_size;
     }
 
     void p_profile::solidify(){
         int i,j;
         size_t offset = 0;
-        this->framework = malloc(this->layout->count                          *
+        this->framework = malloc(this->layout->segment_count                  *
                                  (this->get_group_dim()*this->get_item_dim()) *
                                  this->type_size);
         void* memory = this->data = this->framework;
@@ -113,22 +110,24 @@ namespace ambient {
 // let's find the solid_lda
         this->solid_lda = 0; 
         for(j=0; j < this->get_grid_dim().x; j++){
-            for(i=0; i < this->get_grid_dim().y; i++) if((*this->layout)(i,j) != NULL) break;
-            if((*this->layout)(i,j) != NULL){
-                for(i=0; i < this->get_grid_dim().y; i++)
-                    if((*this->layout)(i,j) != NULL) this->solid_lda++;
-                break;
+            for(i=0; i < this->get_grid_dim().y; i++){
+                if(this->group(i,j)->available()){
+                    for(i=0; i < this->get_grid_dim().y; i++)
+                        if(this->group(i,j)->available()) this->solid_lda++;
+                    break;
+                }
             }
+            if(this->solid_lda) break;
         }
-
 // let's copy from separate memory blocks to the general one
         for(j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*this->get_group_dim().y*this->get_item_dim().y*this->get_group_dim().x*this->get_item_dim().x*this->type_size);
+            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->type_size);
             offset = 0;
             for(i=0; i < this->get_grid_dim().y; i++){
-                if((*this->layout)(i,j) != NULL){
+                if(this->group(i,j)->available()){
                     void* solid_data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->type_size);
                     for(int k=0; k < this->get_group_dim().x*this->get_item_dim().x; k++){
+                        assert(this->group(i,j)->data != NULL);
                         memcpy((void*)((size_t)solid_data+k*this->solid_lda*this->get_group_dim().y*this->get_item_dim().y), (void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), 
                                this->get_group_dim().y*this->get_item_dim().y*this->type_size);
                     }
@@ -224,7 +223,7 @@ namespace ambient {
                                                               *this->group_id, this->id,
                                                                ambient::rank(), // forward target
                                                                i, j, k));
-            while(this->group(i,j,k)->timestamp != this->timestamp) // spinlock
+            while(!this->group(i,j,k)->available()) // spinlock
                 world()->get_manager()->spin();
         }
         return *(this->group(i, j, k));

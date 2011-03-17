@@ -20,6 +20,7 @@ namespace ambient {
         void* header;
         void* data;
         size_t timestamp;
+        bool available();
     private:
         template<typename T> operator T ();
     public:
