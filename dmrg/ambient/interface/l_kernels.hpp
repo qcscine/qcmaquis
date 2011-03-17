@@ -53,7 +53,7 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 }
 
 void block_2d_cyclic_l_kernel(const p_dense_matrix<double>& a){
-    scope_select("2 from ambient as work_redist where master is 0");
+    scope_select("2 from ambient as work_redist where master is 0"); // fix the "same name" problem!
     if(!scope.involved()) return;
 
     zout << "2d-block-cyclic decomposition kernel:\n"; info(a);

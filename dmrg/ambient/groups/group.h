@@ -14,11 +14,15 @@ namespace ambient{ namespace groups{
         group(const char* name, int master, MPI_Comm parent); // special constructor for nest group
         void commit();
 
+        int vacant_level;
+        int* vacations;
+        int get_vacant();   // get the vacant rank for the child creation
         int get_master_g(); // get translated rank of the group master
         bool involved();
         bool is_master();
 
         void add(const int* procs, int count, bool excl = false);
+        void add(int count, bool excl = false); // loose method
         void add_range(int first, int last, bool excl = false);
         void add_every(int nth, bool excl = false);
         void add_every(bool(*include)(int k), bool excl = false);

@@ -4,13 +4,15 @@
 
 namespace ambient{ namespace groups {
 
-    group::group(const char* name, int master, MPI_Comm parent): members(NULL), object_count(0)
+    group::group(const char* name, int master, MPI_Comm parent): members(NULL), object_count(0), vacant_level(0)
     {
         this->parent = NULL;
         this->mpi_comm = parent;
         MPI_Comm_group(this->mpi_comm, &this->mpi_group);
         MPI_Group_size(this->mpi_group, &this->count);
         MPI_Group_rank(this->mpi_group, &this->rank);
+        this->vacations = (int*)malloc(sizeof(int)*this->count);
+        memset(this->vacations, 0, sizeof(int)*this->count);
         this->name = name;
         this->master = master;
         this->manager = new packet_manager(this);
@@ -50,7 +52,7 @@ namespace ambient{ namespace groups {
         return std::pair<unsigned int*,size_t>(hash_id,1);
     }
 
-    group::group(const char* name, int master, group* parent): count(0), members(NULL), object_count(0)
+    group::group(const char* name, int master, group* parent): count(0), members(NULL), object_count(0), vacations(NULL), vacant_level(0)
     {
         this->parent = parent;
         this->mpi_group = this->parent->mpi_group;
@@ -69,6 +71,28 @@ namespace ambient{ namespace groups {
             // TODO: discard existing groups
         }
         this->count += count;
+    }
+
+    void group::add(int count, bool excl){
+        if(count <= 0) return;
+        this->members = (int*)realloc(this->members, (this->count+count)*sizeof(int));
+        for(int i=0; i < count; i++) this->members[this->count+i] = this->parent->get_vacant();
+        if(excl == true){
+            // TODO: discard existing groups
+        }
+        this->count += count;
+    }
+
+    int group::get_vacant(){
+        for(int i=0; i < this->count; i++){
+            if(this->vacations[i] == this->vacant_level){
+                this->vacations[i]++;
+                return i;
+            }
+        }
+        this->vacant_level++;
+        return this->get_vacant(); 
+// note:recursion will be endless in case of 0-group
     }
 
     void group::add_range(int first, int last, bool excl){
@@ -167,6 +191,8 @@ namespace ambient{ namespace groups {
         this->id = hash_group_id();
         ambient::rank.set( this, this->rank );
         if(this->involved()) this->manager = new packet_manager(this);
+        this->vacations = (int*)malloc(sizeof(int)*this->count);
+        memset(this->vacations, 0, sizeof(int)*this->count);
     }
 
     int group::get_master_g(){
