@@ -26,10 +26,6 @@ using std::cerr;
 using std::endl;
 #endif //EXPANSION_DEBUG
 
-//
-//	INTERFACE
-//
-
 
 template <typename OperatorHo, typename OperatorV, typename InitStateGenFuncObj, typename Graph, typename Vector, typename Polynomial>
 class zero_expansion
@@ -149,9 +145,7 @@ class zero_expansion
                         psi[n][l].print();
                         cout<<"-------------"<<endl;
                         for(unsigned int i=0; i<L; ++i);
-                        {
                             cout<<"H["<<n<<"]("<<l<<","<<i<<"):"<<H[n](l,i)<<endl;
-                        }
                     #endif //EXPANSION_DEBUG
 
                     // TODO: replace following loops by
@@ -221,7 +215,7 @@ class zero_expansion
             for(int n=max_order; n>=0; --n)
                 for(unsigned int j=0; j<num_of_degen_states; ++j)
                     for(unsigned int i=0; i<num_of_degen_states; ++i)
-                        result(i,j)[n] = Heff[n](i,j);
+                        result(i,j)[n] = Heff[n](i,j)/OperatorV::normalization_factor;
 
             return result;
         }
