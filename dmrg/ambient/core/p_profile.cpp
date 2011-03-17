@@ -43,11 +43,7 @@ namespace ambient {
     void p_profile::set_scope(groups::group* scope){
         this->xscope = this->scope;
         this->scope = scope;
-        if(scope->involved() && !scope->get_manager()->subscribed(*this->packet_type)){
-            scope->get_manager()->subscribe(*this->packet_type);
-            scope->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
-                scope->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
-        }
+        this->set_master(scope->get_master_g());
     }
     
     int p_profile::get_master(){ return this->master_relay.second; }
@@ -70,11 +66,6 @@ namespace ambient {
             this->group_dim = dim;
             this->packet_type = new block_packet_t(this->group_dim*this->item_dim);
             this->packet_type->commit();
-            if(!world()->get_manager()->subscribed(*this->packet_type)){
-                world()->get_manager()->subscribe(*this->packet_type);
-                world()->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
-                    world()->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
-            }
             this->regroup();
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;
@@ -195,8 +186,19 @@ namespace ambient {
         if(this->id == 0) this->set_id(scope->id);
         this->touch();
         if(!this->consted || this->state == COMPOSING){ // bad case - the same argument twice :/
-            this->set_master(scope->get_master_g());
             this->set_scope(scope);
+        }
+        if(scope->involved()){
+            if(!scope->get_manager()->subscribed(*this->packet_type)){
+                scope->get_manager()->subscribe(*this->packet_type);
+                scope->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
+                    scope->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
+            }
+            if(!world()->get_manager()->subscribed(*this->packet_type)){
+                world()->get_manager()->subscribe(*this->packet_type);
+                world()->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
+                    world()->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
+            }
         }
     }
 

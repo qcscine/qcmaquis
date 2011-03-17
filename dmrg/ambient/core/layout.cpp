@@ -113,7 +113,6 @@ namespace ambient{ namespace core{
     ambient::packets::packet* package(p_profile* profile, int i, int j, int k, int dest){
         void* header = profile->group(i, j, k)->header; 
         assert(header != NULL);
-        printf("R%d: Forwarding block %d %d to %d (type is %d)\n", ambient::rank(), i, j, dest, profile->packet_type->t_code);
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, i, j, k, NULL);
     }
 
