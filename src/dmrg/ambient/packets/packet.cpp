@@ -26,9 +26,9 @@ namespace ambient{ namespace packets {
         return this->type.mpi_t;
     }
 
-    char packet::get_t_code()
+    int packet::get_t_code()
     {
-        return *(char*)this->data;
+        return *(int*)this->data;
     }
 
     const void* packet::get(int field)
@@ -62,7 +62,7 @@ namespace ambient{ namespace packets {
     }
 
     packet* unpack(const packet_t& type, void* memory){
-        *(char*)memory = type.t_code;
+        *(int*)memory = type.t_code;
         return new packet(type, memory);
     }
 

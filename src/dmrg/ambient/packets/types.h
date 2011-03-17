@@ -93,7 +93,7 @@ namespace ambient{ namespace packets{
             k             = MPI_INT;
             data          = MPI_DOUBLE;
             __a_pack{ 1, 1, 1, 1, 1, size };
-            __a_code('B');
+            __a_code('B'+size); // note: small size is dangerous (code overlap)
         }
     };
 
