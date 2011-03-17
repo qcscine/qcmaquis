@@ -56,6 +56,7 @@ class high_t_expansion
             Polynomial result;
             for(typename Vector::size_type i(0); i != h_space_dim; ++i)
             {
+                // Create a vector for the trace computation
                 Vector state(h_space_dim,value_type(0));
                 state(i) = value_type(1);
                 
@@ -79,6 +80,8 @@ class high_t_expansion
                     result[2*n-1] += inner_product(state,state2);
                 }
             }
+
+            assert( result[0] == h_space_dim );
 
             #ifdef TRACE_STATE_SIZE
             std::streamsize precision = std::cerr.precision(2);
