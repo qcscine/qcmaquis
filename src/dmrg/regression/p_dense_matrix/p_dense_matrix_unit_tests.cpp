@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 
     time1.begin();
     a = b * c;
-    ambient::push(ambient::block_2d_cyclic_l_kernel, ambient::null_c_kernel, c);
+    ambient::push(ambient::block_2d_cyclic_l_kernel, ambient::null_c_kernel, a);
     ambient::playout();
 
     MPI_Barrier(MPI_COMM_WORLD);
