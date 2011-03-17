@@ -20,6 +20,8 @@ namespace adj {
         virtual std::vector<int> forward(int) const = 0;
         virtual std::vector<int> all(int) const = 0;
         virtual int size() const = 0;
+        
+        virtual bool wraps_pbc(int, int) { return false; }
     };
     
     class ChainAdj : public Adjacency
