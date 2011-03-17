@@ -23,7 +23,9 @@ void scale_c_kernel(const p_dense_matrix<double>& a, const double& b, pinned p_d
 // todo
 }
 
-void null_c_kernel(p_dense_matrix<double>& a){}
+void null_c_kernel(p_dense_matrix<double>& a){
+    printf("R%d: Executing NULL kernel\n", scope.get_rank());
+}
 
 void single_integer_c_kernel(int& input){
     input += 13;

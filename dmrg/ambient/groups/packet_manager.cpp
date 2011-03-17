@@ -121,15 +121,22 @@ namespace ambient{ namespace groups{
         this->state = packet_manager::OPEN;
         this->closure_mutex = this->grp->get_size();
     };
-    void packet_manager::process(){
+    void packet_manager::spin_loop(){
         size_t active_sends_number;
         for(;;){
             active_sends_number = 0;
             for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
-                if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->process();
+                if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
                 if((*it)->flow == OUT) active_sends_number += (*it)->active_requests_number;
             }
             if(this->process_locking(active_sends_number)) return;
+        }
+    }
+    void packet_manager::spin(int n){
+        for(int i=0; i < n; i++){
+            for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
+                if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
+            }
         }
     }
     packet_manager::typed_q* packet_manager::add_typed_q(const packet_t& type, packet_manager::direction flow, int reservation, int priority){
@@ -172,7 +179,7 @@ namespace ambient{ namespace groups{
         packet* pack = (packet*)request->memory;
         MPI_Isend(pack->data, 1, pack->mpi_t, *(int*)pack->get(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
     }
-    void packet_manager::typed_q::process(){
+    void packet_manager::typed_q::spin(){
         int flag = 0;
         for(int i=0; i < this->requests.size(); i++)
         if(this->requests[i]->request != MPI_REQUEST_NULL){

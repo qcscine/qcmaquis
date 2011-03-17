@@ -113,7 +113,7 @@ namespace ambient
             logistics->perform();
             core::apply_changes(logistics->profiles, logistics->count);
         }
-        world()->get_manager()->process();
+        world()->get_manager()->spin_loop();
 
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
@@ -132,9 +132,11 @@ namespace ambient
                         logistics->pin->set_default_group(i, j);
                         computing->invoke();
                     }
-                } // logistics->pin->set_default_group(-1); // reset in order to avoid mistakes
+                }
+                world()->get_manager()->spin(); // processing any communications that did occur
             }
         }
+        world()->get_manager()->spin_loop(); // finishing all communications (blocking)
 // cleaning the layout
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;

@@ -19,6 +19,8 @@ namespace ambient {
     public:
         unsigned int* group_id;
         unsigned int id;
+        size_t timestamp;
+
         p_profile & operator>>(dim3 dim_distr);
         p_profile & operator,(dim3 dim);
 
@@ -73,7 +75,7 @@ namespace ambient {
 
         void(*init_fp)(workgroup* grp);
         workgroup* group(int i, int j = 0, int k = 0) const;
-        workgroup& operator()(int i, int j = 0, int k = 0) const;
+        workgroup& operator()(int i, int j = 0, int k = 0);
         block_packet_t* packet_type;
 
 // parameters can be set specifically for the profile

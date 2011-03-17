@@ -3,7 +3,8 @@
 
 namespace ambient {
 
-    workgroup::workgroup(p_profile** p, int i, int j, int k): profile(p), i(i), j(j), k(k), header(NULL) {};
+    workgroup::workgroup(p_profile** p, int i, int j, int k)
+    : profile(p), i(i), j(j), k(k), header(NULL), data(NULL), timestamp(0) {};
 
     p_profile* workgroup::get_profile(){
         return *this->profile;
@@ -20,6 +21,7 @@ namespace ambient {
     void workgroup::set_memory(void* memory){
         this->header = memory;
         this->data = (void*)((size_t)memory + this->get_profile()->get_bound());
+        this->timestamp = this->get_profile()->timestamp;
     }
 
     void* workgroup::item(int i, int j, int k){

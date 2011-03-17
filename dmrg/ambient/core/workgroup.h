@@ -19,6 +19,7 @@ namespace ambient {
         dim3 get_item_dim();
         void* header;
         void* data;
+        size_t timestamp;
     private:
         template<typename T> operator T ();
     public:
