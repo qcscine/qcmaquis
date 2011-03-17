@@ -40,7 +40,7 @@ namespace ambient{ namespace groups{
            ~typed_q();
             delegate packet_delivered;
             void push(packet* pack);
-            void process();
+            void spin();
             packet* get_target_packet();
             int priority;
             size_t active_requests_number;
@@ -66,7 +66,8 @@ namespace ambient{ namespace groups{
         void     emit(packet* pack);
         typed_q* get_pipe(const packet_t& type, direction flow);
 
-        void process();
+        void spin_loop();
+        void spin(int n = 4);
         bool process_locking(size_t active_sends_number);
         groups::group* get_group();
     };

@@ -1,5 +1,6 @@
 #include "ambient/ambient.h"
 #include "ambient/core/p_profile.h"
+#include "ambient/packets/auxiliary.hpp"
 #include "ambient/groups/packet_manager.h"
 
 #include "ambient/core/operation/operation.h"
@@ -16,7 +17,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false) {
+      profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->group_dim = engine.get_group_dim();
         this->item_dim  = engine.get_item_dim();
@@ -186,6 +187,7 @@ namespace ambient {
         if(this->id == 0) this->set_id(scope->id);
         this->touch();
         if(!this->consted || this->state == COMPOSING){ // bad case - the same argument twice :/
+            this->timestamp++;
             this->set_scope(scope);
         }
         if(scope->involved()){
@@ -213,7 +215,18 @@ namespace ambient {
         }
     }
 
-    workgroup& p_profile::operator()(int i, int j, int k) const {
+    workgroup& p_profile::operator()(int i, int j, int k){
+        if(this->group(i,j,k)->timestamp != this->timestamp){
+            printf("R%d: Requesting the group which is outdated\n", ambient::rank()); // let's make the request here!
+            world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+                                                               this->get_master(), "P2P", 
+                                                              "INFORM OWNER ABOUT REQUEST",
+                                                              *this->group_id, this->id,
+                                                               ambient::rank(), // forward target
+                                                               i, j, k));
+            while(this->group(i,j,k)->timestamp != this->timestamp) // spinlock
+                world()->get_manager()->spin();
+        }
         return *(this->group(i, j, k));
     }
 
