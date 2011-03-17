@@ -32,19 +32,19 @@ namespace ambient{ namespace packets{
             }
             return *singleton;
         }
-        static packet_t& type_map(char t_code, const packet_t* type = NULL){
-            static std::map<char,const packet_t*> map;
-            if(type != NULL) map.insert(std::pair<char,const packet_t*>(t_code,type));
+        static packet_t& type_map(int t_code, const packet_t* type = NULL){
+            static std::map<int,const packet_t*> map;
+            if(type != NULL) map.insert(std::pair<int,const packet_t*>(t_code,type));
             return const_cast<packet_t&>(*(map.find(t_code)->second));
         }
         void change_field_size(int field, int size);
-        void fill_packet(void* memory, char type, va_list& fields) const;
+        void fill_packet(void* memory, int type, va_list& fields) const;
         size_t get_size() const;
         void commit();
     protected:
-        void construct(char code, int count, const int* sizes, const MPI_Datatype* types);
+        void construct(int code, int count, const int* sizes, const MPI_Datatype* types);
     public:
-        char t_code;
+        int  t_code;
         int  t_size;                                   // memory size of the type
         int  count;                                    // number of types used
         int* sizes;                                    // block-lengths of used types

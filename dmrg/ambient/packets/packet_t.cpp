@@ -7,12 +7,12 @@ namespace ambient{ namespace packets{
                           displacements(NULL), sizes(NULL),
                           compounds(NULL), mpi_t(MPI_DATATYPE_NULL)
     {
-        type = MPI_BYTE;
+        type = MPI_INT;
         int sizes[] = { 1 };
         construct('0', 1, sizes, &type);
     }
 
-    void packet_t::construct(char code, int count, const int* sizes, const MPI_Datatype* types)
+    void packet_t::construct(int code, int count, const int* sizes, const MPI_Datatype* types)
     {
         MPI_Aint extent;
         this->t_code = code;
@@ -44,12 +44,12 @@ namespace ambient{ namespace packets{
     }
 
 // note: everything except for INT is passed by pointers
-    void packet_t::fill_packet(void* memory, char type, va_list& fields) const
+    void packet_t::fill_packet(void* memory, int type, va_list& fields) const
     {
         void* iterator;
         void* source;
         int   t_size;
-        *(char*)memory = type;
+        *(int*)memory = type;
 
         for(int i = 1; i < this->count; i++)
         {

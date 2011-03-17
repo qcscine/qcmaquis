@@ -14,7 +14,7 @@ namespace ambient{ namespace packets{
         const packet_t& type;
         const packet_t& get_t();
         MPI_Datatype get_mpi_t();
-        char  get_t_code();
+        int   get_t_code();
         const void* get(int field);
 
         template<typename T>
