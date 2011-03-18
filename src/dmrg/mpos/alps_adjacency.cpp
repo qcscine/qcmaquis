@@ -14,6 +14,9 @@ namespace adj {
 		
 		// initializing the lattice
 		std::ifstream ifs(parms_file.c_str());
+        if (!ifs)
+            throw std::runtime_error("ALPS lattice file not found.");
+        
 		alps::Parameters parms (ifs);
 		graph_type graph (parms);
 		
