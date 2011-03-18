@@ -250,7 +250,6 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         zout << old_basis << endl << evals.left_basis() << endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << endl;
         zout << "Smallest EV kept: " << evalscut / allevals[0] << endl;
-        zout << "Truncated weight: " << truncated_weight << endl;
     }
     
     logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());
