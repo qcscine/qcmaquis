@@ -15,78 +15,79 @@
 
 namespace vli
 {
-
+	
+	/**
+	template forward declaration 
+	*/
+	template<class T>
+	class vli_gpu;
 
 	template<class T>
-	class vli_cpu : public bvli
+	class vli_cpu 
 	{
 	public:
 		
-		vli_cpu()
-		{
-			size_ = SIZE_BITS/(8*sizeof(T)); 
-			data_.resize(size_);
-		}	
+		/**
+		constructors 
+		*/
+		vli_cpu();
+		vli_cpu(T num);
 		
-		vli_cpu(T num)
-		{
-			size_ = SIZE_BITS/(8*sizeof(T)); 
-			data_.resize(size_);
-			data_[0] = num;
-		}		
+		/**
+		destructor 
+		*/
+		~vli_cpu();
 		
-		~vli_cpu()
-		{
-			data_.erase(data_.begin(),data_.end());
-		}
+		/**
+		 copy constructors, CPU to CPU and GPU to CPU
+		*/
+		vli_cpu<T> & operator= (vli_cpu<T>  vli);
+		void swap(vli_cpu& vli);
+		operator vli::vli_gpu<T>();
+		void copy_vli_to_gpu(vli::vli_gpu<T>& vli) const;
 		
-		size_int size() const
-		{
-			return size_;
-		}
-		
-		T &operator[](T i) 
-		{
-			return data_[i];
-		}
+		/**
+		logistics operators 
+		*/
+		size_int size() const; 
+		T &operator[](T i); 
+		T const & operator[](T i) const;
+		typename std::vector<T>::const_iterator begin();
+		typename std::vector<T>::const_iterator end();
 
-		T const & operator[](T i) const 
-		{
-			return data_[i];
-		}
+		/**
+		multiply and addition operators
+		*/
+		vli_cpu<T>& operator += (vli_cpu<T> const& vli); 
+		vli_cpu<T>& operator *= (vli_cpu<T> const& vli); 
 		
-		typename std::vector<T>::const_iterator begin()
-		{
-			typename std::vector<T>::const_iterator it= data_.begin();
-			return it;
-		}
-
-		typename std::vector<T>::const_iterator end()
-		{
-			typename std::vector<T>::const_iterator it= data_.end();
-			return it;
-		}
-		
-			
 	private:
 		std::vector<T> data_;
 		size_int size_;
 		
 	};
 
-	template<typename T>
-	std::ostream& operator<< (std::ostream& os,  vli_cpu<T> & vli)
-	{
-		for(typename std::vector<T>::const_iterator it= vli.end(); it != vli.begin(); it--)
-			std::cout << *it << " " ;
-		os<<std::endl; 
-		
-		return os;
-	}
+	/**
+	 multiply and addition operators, suite ...
+	 */
+	template <class T>
+	const vli_cpu<T> operator+(vli_cpu<T> vli_a, vli_cpu<T> const& vli_b);
 	
-
-
-
+	template <class T>
+	void plus_assign(vli_cpu<T> & vli_a, vli_cpu<T> const& vli_b );
+	
+	template <class T>
+	const vli_cpu<T> operator*(vli_cpu<T> vli_a, vli_cpu<T> const& vli_b);
+	
+	template <class T>
+	void multiply_assign(vli_cpu<T> & vli_a, vli_cpu<T> const& vli_b );
+	
+	/**
+	stream 
+	*/
+	template<typename T>
+	std::ostream& operator<< (std::ostream& os,  vli_cpu<T> & vli);
+	 
 }
 
 #endif
