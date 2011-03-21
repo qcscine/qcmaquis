@@ -48,19 +48,19 @@ T tri_min(T a, T b, T c)
                     std::min(a, c));
 }
 
-template<class Matrix>
-void mps_init(MPS<Matrix, U1> & mps,
-              size_t Mmax,
-              Index<U1> const & phys,
-              U1::charge right_end)
+template<class Matrix, class SymmGroup>
+void default_mps_init(MPS<Matrix, SymmGroup> & mps,
+                      size_t Mmax,
+                      Index<SymmGroup> const & phys,
+                      typename SymmGroup::charge right_end)
 {
     std::size_t L = mps.length();
     
-    Index<U1> l_triv, r_triv;
-    l_triv.insert( std::make_pair(U1::SingletCharge, 1) );
+    Index<SymmGroup> l_triv, r_triv;
+    l_triv.insert( std::make_pair(SymmGroup::SingletCharge, 1) );
     r_triv.insert( std::make_pair(right_end, 1) );
     
-    std::vector<Index<U1> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
+    std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
     left_allowed[0] = l_triv;
     right_allowed[L] = r_triv;
     
@@ -71,7 +71,7 @@ void mps_init(MPS<Matrix, U1> & mps,
     
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
-        for (typename Index<U1>::iterator it = allowed[i].begin();
+        for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
              it != allowed[i].end(); ++it)
             it->second = tri_min(Mmax,
                                  left_allowed[i].size_of_block(it->first),
@@ -79,8 +79,36 @@ void mps_init(MPS<Matrix, U1> & mps,
     }
     
     for (int i = 0; i < L; ++i)
-        mps[i] = MPSTensor<Matrix, U1>(phys, allowed[i], allowed[i+1]);
-//    zout << mps.description() << endl;
+        mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1]);
+    
+    cout << mps.description() << endl;
+}
+
+template<class Matrix>
+void mps_init(MPS<Matrix, U1> & mps,
+              size_t Mmax,
+              Index<U1> const & phys,
+              U1::charge right_end)
+{
+    default_mps_init(mps, Mmax, phys, right_end);
+}
+
+template<class Matrix>
+void mps_init(MPS<Matrix, TwoU1> & mps,
+              size_t Mmax,
+              Index<TwoU1> const & phys,
+              TwoU1::charge right_end)
+{
+    default_mps_init(mps, Mmax, phys, right_end);
+}
+
+template<class Matrix>
+void mps_init(MPS<Matrix, ThreeU1> & mps,
+              size_t Mmax,
+              Index<ThreeU1> const & phys,
+              ThreeU1::charge right_end)
+{
+    default_mps_init(mps, Mmax, phys, right_end);
 }
 
 template<class Matrix, class SymmGroup>
