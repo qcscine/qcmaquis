@@ -1,20 +1,15 @@
 #define NODE_COUNT 1
 
-void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
-    void_pt& profile = breakdown(out);
-    double* ad = breakdown(a)(get_group_id(out).x, get_group_id(out).y);
-    double* bd = breakdown(b)(get_group_id(out).x, get_group_id(out).y);
-    int size = get_group_dim(out).x*get_item_dim(out).x*
-               get_group_dim(out).y*get_item_dim(out).y;
-//    printf("R%d: Executing plus computation kernel (%d ops)... for out grp %d %d\n", scope.get_rank(), size, get_group_id(out).x, get_group_id(out).y);
-//    for(int i=0; i < size; i++){
-//        output[i] = ad[i]+bd[i];
-//    }
+#include "mkl.h"
 
-}
-
-void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
-// todo
+extern "C" {
+    void Cblacs_get( int, int, int* );
+    void Cblacs_gridinit( int*, const char*, int, int );
+    void Cblacs_gridinfo( int, int*, int*, int*, int* );
+    int Csys2blacs_handle( MPI_Comm );
+    int numroc_( int*, int*, int*, int*, int* );
+    void descinit_( int*, int*, int*, int*, int*, int*, int*, int*, int*, int* );
+    void pdgemm_(const char*,const char*,int*,int*,int*,double*,double*,int*,int*,int*,double*,int*,int*,int*,double*,double*,int*,int*,int*);
 }
 
 /*
@@ -28,30 +23,45 @@ void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>&
 partial reduce?
 */
 
-void gemm_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
+void gemm_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){
 // todo
-    double a = breakdown(a).(get_group_id(out).x, get_group_id(out).y);
-    printf("I was called actually by %d\n", ambient::rank());
+    double* ad = breakdown(a)(get_group_id(c).x, get_group_id(c).y);
 
-}
+// ok, let's try to use MKL
+    int m = 3;
+    int n = 3;
+    int k = 3;
+    double* a_ = (double*)malloc(sizeof(double)*m*n);
+    int lda = 3;
+    double* b_ = (double*)malloc(sizeof(double)*m*n);
+    int ldb = 3;
+    double* c_ = (double*)malloc(sizeof(double)*m*n);
+    int ldc = 3;
+    double alpha = 1;
+    double beta = 0;
 
-void scale_c_kernel(const p_dense_matrix<double>& a, const double& b, pinned p_dense_matrix<double>& out){
-// todo
-}
+    for(int j=0; j<n; j++)
+    for(int i=0; i<m; i++){
+        a_[j*lda+i] = i+j;
+        b_[j*lda+i] = i+j;
+        c_[j*lda+i] = i+j;
+    }
+    if(scope.get_rank() == 0){
+      for(int i=0; i<m; i++){
+        for(int j=0; j<n; j++) printf("%.2f	", a_[j*lda+i]);
+        printf("\n");
+      }
+      printf("\n");
+    }
 
-void null_c_kernel(p_dense_matrix<double>& a){
-    printf("R%d: Executing NULL kernel\n", scope.get_rank());
-}
+    dgemm("N","N", &m, &n, &k, &alpha, a_, &lda, b_, &ldb, &beta, c_, &ldc);
 
-
-extern "C" {
-    void Cblacs_get( int, int, int* );
-    void Cblacs_gridinit( int*, const char*, int, int );
-    void Cblacs_gridinfo( int, int*, int*, int*, int* );
-    int Csys2blacs_handle( MPI_Comm );
-    int numroc_( int*, int*, int*, int*, int* );
-    void descinit_( int*, int*, int*, int*, int*, int*, int*, int*, int*, int* );
-    void pdgemm_(const char*,const char*,int*,int*,int*,double*,double*,int*,int*,int*,double*,int*,int*,int*,double*,double*,int*,int*,int*);
+    if(scope.get_rank() == 0){
+    for(int i=0; i<m; i++){
+        for(int j=0; j<n; j++) printf("%.2f	", c_[j*ldc+i]);
+        printf("\n");
+    }
+    printf("\n\nDone!\n\n"); }
 }
 
 void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_dense_matrix<double>& c){
@@ -106,6 +116,14 @@ void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_den
     pdgemm_("N","N",&M,&M,&M,&alpha,A,&ONE,&ONE,descA,B,&ONE,&ONE,descB,&beta,C,&ONE,&ONE,descC);
 */
 }
+
+void null_c_kernel(p_dense_matrix<double>& a){}
+void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}
+void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}
+void scale_c_kernel(const p_dense_matrix<double>& a, const double& alfa, pinned p_dense_matrix<double>& out){}
+
+/////////////////////
+// testing kernels // 
 
 void single_integer_c_kernel(int& input){
     input += 13;
