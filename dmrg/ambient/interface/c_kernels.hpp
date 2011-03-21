@@ -14,54 +14,38 @@ extern "C" {
 
 /*
  --- --- ---       --- --- ---       --- --- ---
-| 0 |   |   |     | 0 | ! | ! |     | 0 |   |   |
+| 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
  --- --- ---       --- --- ---       --- --- ---
-| 0 |   |   |  x  |   |   |   |  =  | 0 |   |   |
+| 0 | 1 | 2 |  x  | 0 | 1 | 2 |  =  | 0 | 1 | 2 |
  --- --- ---       --- --- ---       --- --- ---
-| 0 |   |   |     |   |   |   |     | 0 |   |   |
+| 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
  --- --- ---       --- --- ---       --- --- ---
 partial reduce?
 */
 
-void gemm_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){
-// todo
-    double* ad = breakdown(a)(get_group_id(c).x, get_group_id(c).y);
-
-// ok, let's try to use MKL
-    int m = 3;
-    int n = 3;
-    int k = 3;
-    double* a_ = (double*)malloc(sizeof(double)*m*n);
-    int lda = 3;
-    double* b_ = (double*)malloc(sizeof(double)*m*n);
-    int ldb = 3;
-    double* c_ = (double*)malloc(sizeof(double)*m*n);
-    int ldc = 3;
-    double alpha = 1;
-    double beta = 0;
-
-    for(int j=0; j<n; j++)
-    for(int i=0; i<m; i++){
-        a_[j*lda+i] = i+j;
-        b_[j*lda+i] = i+j;
-        c_[j*lda+i] = i+j;
+void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
+{
+    int m   = get_group_dim(a).y*get_item_dim(a).y;
+    int n   = get_group_dim(b).x*get_item_dim(b).x;
+    int k   = get_group_dim(b).y*get_item_dim(b).y;
+    int lda = m;
+    int ldb = k;
+    int ldc = m;
+    double alpha = 1.0; 
+    double beta  = 0.0;
+// a(i,j) => b(j,i) x a(k,j) where k : [0,m)
+// current group of matrix a:
+    int i = get_group_id(a).y;
+    int j = get_group_id(a).x;
+// taking (j,i) of b:
+    double* bd = current(b)(j,i); // remote
+// multiplying with column of a:
+    for(int k = 0; k < get_grid_dim(a).y; k++){
+        double* ad = current(a)(k,j);
+        double* cd = reduced(c,'+')(k,i); // a(k,j) x b(j,i) => c(k,i)
+        printf("Performing DGEMM for %d,%d and %d,%d\n", k,j,j,i);
+        dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     }
-    if(scope.get_rank() == 0){
-      for(int i=0; i<m; i++){
-        for(int j=0; j<n; j++) printf("%.2f	", a_[j*lda+i]);
-        printf("\n");
-      }
-      printf("\n");
-    }
-
-    dgemm("N","N", &m, &n, &k, &alpha, a_, &lda, b_, &ldb, &beta, c_, &ldc);
-
-    if(scope.get_rank() == 0){
-    for(int i=0; i<m; i++){
-        for(int j=0; j<n; j++) printf("%.2f	", c_[j*ldc+i]);
-        printf("\n");
-    }
-    printf("\n\nDone!\n\n"); }
 }
 
 void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_dense_matrix<double>& c){
@@ -70,8 +54,8 @@ void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_den
 /*    int i, j, k;
     int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
     nprow = NODE_COUNT; npcol = (int)(scope.get_size()/NODE_COUNT); 
-    nb = breakdown(c).get_group_dim().x*breakdown(c).get_item_dim().x;
-    int M=breakdown(c).get_grid_dim()*breakdown(c).get_group_dim().x*breakdown(c).get_item_dim().x;
+    nb = get_group_dim(c).x*get_item_dim(c).x;
+    int M = get_grid_dim(c)*get_group_dim(c).x*get_item_dim(c).x;
     int info,itemp;
     int ZERO=0,ONE=1;
  

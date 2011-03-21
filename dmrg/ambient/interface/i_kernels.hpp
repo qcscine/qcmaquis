@@ -2,10 +2,13 @@
 using namespace blas;
 
 void matrix_i_kernel(workgroup* grp){
-    // dumb 0-initialization
-    memset(grp->data, 0, grp->get_group_dim()*grp->get_item_dim()*grp->get_profile()->type_size);
-    // debug fillidfdsfds:
-    size_t size = grp->get_group_dim().y*grp->get_item_dim().y*grp->get_group_dim().x*grp->get_item_dim().x;
-    for(size_t i=0; i < size; i++)
-        ((double*)grp->data)[i] = i;
+    // real temporary initialization
+    int n = grp->get_group_dim().x*grp->get_item_dim().x;
+    int m = grp->get_group_dim().y*grp->get_item_dim().y;
+    int ld = m;
+
+    for(int j=0; j<n; j++)
+    for(int i=0; i<m; i++){
+        ((double*)grp->data)[j*ld+i] = i+j;
+    }
 }
