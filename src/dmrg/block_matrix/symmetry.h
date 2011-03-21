@@ -122,34 +122,6 @@ public:
 	}
 };
 
-/*
-class TwoU1
-{
-public:
-    typedef std::pair<int, int> charge;
-    
-    static const charge SingletCharge = std::pair<int, int>(0,0);
-    
-    static charge fuse(charge a, charge b)
-    {
-        return std::make_pair(a.first+b.first, a.second+b.second);
-    }
-    
-    template<int R> static charge fuse(const boost::array<charge, R> & v)
-    {
-        assert(R > 0);
-        charge ret = v[0];
-        for (int i = 1; i < R; ++i)
-            ret += v[i];
-        return ret;
-    }
-};
-
-std::pair<int, int> operator-(std::pair<int, int> const & a)
-{
-    return std::make_pair(-a.first, -b.first);
-}*/
-
 template<int Q>
 class ZqCharge
 {
@@ -198,7 +170,6 @@ class Zq
 {
 public:
     typedef ZqCharge<Q> charge;
-    typedef std::vector<charge> charge_v;
     
     static const charge SingletCharge;
     static const int q = Q;
@@ -215,15 +186,101 @@ public:
             ret = fuse(ret, v[i]);
         return ret;
     }
+};
+
+template<int Q> const typename Zq<Q>::charge Zq<Q>::SingletCharge = ZqCharge<Q>(0);
+
+template<int N>
+class NU1Charge : public boost::array<int, N>
+{   
+public:
+    NU1Charge()
+    {
+        for (int i = 0; i < N; ++i) (*this)[i] = 0;
+    }
     
-    static charge_v default_charges() {
-        std::vector<charge> ret(Q);
-        for (int i = 0; i < Q; ++i)
-            ret[i] = i;
+    NU1Charge operator-() const
+    {
+        NU1Charge ret;
+        for (int i = 0; i < N; ++i)
+            ret[i] = -(*this)[i];
+        return ret;
+    }
+    
+#ifdef HAVE_ALPS_HDF5
+    void serialize(alps::hdf5::oarchive & ar) const
+    {
+        for (int i = 0; i < N; ++i)
+            ar << alps::make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);
+    }
+    
+    void serialize(alps::hdf5::iarchive & ar)
+    {
+        for (int i = 0; i < N; ++i)
+            ar >> alps::make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);
+    }
+#endif
+};
+
+template<int N>
+NU1Charge<N> operator+(NU1Charge<N> const & a,
+                       NU1Charge<N> const & b)
+{
+    NU1Charge<N> ret;
+    for (int i = 0; i < N; ++i)
+        ret[i] = a[i] + b[i];
+    return ret;
+}
+
+template<int N>
+std::ostream& operator<<(std::ostream& os, NU1Charge<N> const & c)
+{
+    os << "<";
+    for (int i = 0; i < N; ++i)
+        os << c[i] << ",";
+    os << ">";
+    return os;
+}
+
+//template<int N>
+//bool operator<(NU1Charge<N> const & a,
+//               NU1Charge<N> const & b)
+//{
+//    for (int i = 0; i < N; ++i) {
+//        if (a[i] < b[i])
+//            return true;
+//        else if (a[i] > b[i])
+//            return false;
+//    }
+//    return false;
+//}
+
+template<int N>
+class NU1
+{
+public:
+    typedef NU1Charge<N> charge;
+    typedef std::vector<charge> charge_v;
+    
+    static const charge SingletCharge;
+
+    static charge fuse(charge a, charge b)
+    {
+        return a+b;
+    }
+    
+    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    {
+        charge ret = v[0];
+        for (int i = 1; i < R; ++i)
+            ret = fuse(ret, v[i]);
         return ret;
     }
 };
 
-template<int Q> const typename Zq<Q>::charge Zq<Q>::SingletCharge = ZqCharge<Q>(0);
+template<int N> const typename NU1<N>::charge NU1<N>::SingletCharge = typename NU1<N>::charge();
+
+typedef NU1<2> TwoU1;
+typedef NU1<3> ThreeU1;
 
 #endif
