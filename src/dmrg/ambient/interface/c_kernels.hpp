@@ -17,8 +17,22 @@ void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>&
 // todo
 }
 
+/*
+ --- --- ---       --- --- ---       --- --- ---
+| 0 |   |   |     | 0 | ! | ! |     | 0 |   |   |
+ --- --- ---       --- --- ---       --- --- ---
+| 0 |   |   |  x  |   |   |   |  =  | 0 |   |   |
+ --- --- ---       --- --- ---       --- --- ---
+| 0 |   |   |     |   |   |   |     | 0 |   |   |
+ --- --- ---       --- --- ---       --- --- ---
+partial reduce?
+*/
+
 void gemm_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& out){
 // todo
+    double a = breakdown(a).(get_group_id(out).x, get_group_id(out).y);
+    printf("I was called actually by %d\n", ambient::rank());
+
 }
 
 void scale_c_kernel(const p_dense_matrix<double>& a, const double& b, pinned p_dense_matrix<double>& out){
@@ -32,17 +46,18 @@ void null_c_kernel(p_dense_matrix<double>& a){
 
 extern "C" {
     void Cblacs_get( int, int, int* );
-    void Cblacs_gridinit( int*, char*, int, int );
+    void Cblacs_gridinit( int*, const char*, int, int );
     void Cblacs_gridinfo( int, int*, int*, int*, int* );
     int Csys2blacs_handle( MPI_Comm );
     int numroc_( int*, int*, int*, int*, int* );
     void descinit_( int*, int*, int*, int*, int*, int*, int*, int*, int*, int* );
-    void pdgemm_(char*,char*,int*,int*,int*,double*,double*,int*,int*,int*,double*,int*,int*,int*,double*,double*,int*,int*,int*);
+    void pdgemm_(const char*,const char*,int*,int*,int*,double*,double*,int*,int*,int*,double*,int*,int*,int*,double*,double*,int*,int*,int*);
 }
 
 void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_dense_matrix<double>& c){
-    printf("R%d: Executing ScaLAPACK PDGEMM kernel\n", scope.get_rank());
-    int i, j, k;
+//    printf("R%d: Executing ScaLAPACK PDGEMM kernel\n", scope.get_rank());
+
+/*    int i, j, k;
     int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
     nprow = NODE_COUNT; npcol = (int)(scope.get_size()/NODE_COUNT); 
     nb = breakdown(c).get_group_dim().x*breakdown(c).get_item_dim().x;
@@ -89,9 +104,7 @@ void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_den
 //    for(i=0;i<VECTOR_SIZE;i++)
     //pdgemm_("N","N",&M,&M,&M,&alpha,(double*)breakdown(a).data,&ONE,&ONE,descA,(double*)breakdown(b).data,&ONE,&ONE,descB,&beta,(double*)breakdown(c).data,&ONE,&ONE,descC);
     pdgemm_("N","N",&M,&M,&M,&alpha,A,&ONE,&ONE,descA,B,&ONE,&ONE,descB,&beta,C,&ONE,&ONE,descC);
-
-
-
+*/
 }
 
 void single_integer_c_kernel(int& input){

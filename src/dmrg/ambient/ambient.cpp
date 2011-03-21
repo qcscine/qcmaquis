@@ -70,7 +70,7 @@ namespace ambient
     {
         engine.playout(); 
     }
-    scheduler::scheduler(): item_dim(dim3(128,128,1))
+    scheduler::scheduler(): item_dim(dim3(2,2,1))
     {
     }
     dim3 scheduler::get_group_dim(){ return this->group_dim; }
