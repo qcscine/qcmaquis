@@ -27,3 +27,13 @@ void_pt& breakdown(const T& obj){
     return **profile_ptr;
 }
 
+// aliases for computational kernels
+template <typename T>
+void_pt& current(T& obj){
+    return breakdown(obj);
+}
+template <typename T>
+void_pt& reduced(T& obj, char R){
+// mark for reduce operation!
+    return breakdown(obj);
+}

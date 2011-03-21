@@ -59,7 +59,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> b(M_SIZE,M_SIZE);
     p_dense_matrix<T> c(M_SIZE,M_SIZE);
 
-    a = b * c;
+    ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
+    ambient::playout();
+    c = a * b;
     ambient::playout();
 //    ambient::push(ambient::pdgemm_l_kernel, ambient::pdgemm_c_kernel, a, b, c);
 //    ambient::playout();

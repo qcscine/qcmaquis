@@ -25,16 +25,16 @@ void pin(L& proxy_object, const R& real_object){
     real.imitate(&proxy); // copy proxy settings to the actual profile
 }
 template<typename T>
-void assign(T& ref, int i, int j, int k)
-{
-    void_pt& profile = breakdown(ref);
-    profile.layout->record(i, j, k);
-}
-template<typename T>
 void assign(const T& ref, int i, int j, int k)
 {
     void_pt& profile = breakdown(ref);
     profile.layout->request(i, j, k);
+}
+template<typename T>
+void assign(T& ref, int i, int j, int k)
+{
+    void_pt& profile = breakdown(ref);
+    profile.layout->record(i, j, k);
 }
 template<typename T>
 dim3 get_dim(T& ref)

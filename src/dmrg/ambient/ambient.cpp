@@ -5,6 +5,7 @@
 #include "ambient/groups/packet_manager.h"
 #include "ambient/groups/group.h"
 #include "ambient/groups/auxiliary.hpp"
+#include "ambient/core/layout.h"
 
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
@@ -125,11 +126,12 @@ namespace ambient
                     computing->invoke();    // scalapack style
                 }else{
 // performing computation for every item inside every appointed workgroup
-                    int i, j, k;
-                    for(k=0; k < logistics->pin->layout->segment_count; k++){
-                        i = logistics->pin->layout->segment[k].i;
-                        j = logistics->pin->layout->segment[k].j;
-                        logistics->pin->set_default_group(i, j);
+                    std::vector<core::layout_table_entry> & workload = logistics->pin->layout->segment_count != 0 ? 
+                                                                       logistics->pin->layout->segment : logistics->pin->layout->requests;
+                    int workload_size = logistics->pin->layout->segment_count != 0 ? 
+                                        logistics->pin->layout->segment_count : logistics->pin->layout->request_count; 
+                    for(int k=0; k < workload_size; k++){
+                        logistics->pin->set_default_group(workload[k].i, workload[k].j);
                         computing->invoke();
                     }
                 }

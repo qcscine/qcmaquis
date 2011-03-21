@@ -7,7 +7,8 @@ void info(T& obj){
     }
 }
 
-void block_2d_cycle_assign(const p_dense_matrix<double>& target)
+template<typename T>
+void block_2d_cycle_assign(T& target)
 {
 ///////////////////////////////////////////// 2D-block-cyclic decomposition
     int np = 1; // can be a function arg   // process grid's num of rows 
@@ -22,7 +23,7 @@ void block_2d_cycle_assign(const p_dense_matrix<double>& target)
     }
 }
 
-void gemm_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
+void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
     scope_select("0.5 from ambient as work where master is 0"); // todo: correct the naming issue
     if(!scope.involved()) return;
@@ -36,12 +37,34 @@ void gemm_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>
 
 void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
 {
-    scope_select("2 from ambient as work where master is 0");
-    scope_retain("2 from ambient as work_storage");
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
 
     info(a); info(b); info(c);
 
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(b);
+    block_2d_cycle_assign(c);
+}
+
+void mem_bound_l_kernel_2(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+    if(!scope.involved()) return; // out of scope quick exit
+
+    info(a); info(b);
+
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(b);
+}
+
+void mem_bound_l_kernel_3(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c)
+{
+    scope_select("* from ambient as work where master is 0");
+    if(!scope.involved()) return; // out of scope quick exit
+    info(a); info(b); info(c);
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
     block_2d_cycle_assign(c);
