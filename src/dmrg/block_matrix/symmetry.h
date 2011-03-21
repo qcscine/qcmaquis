@@ -236,24 +236,14 @@ template<int N>
 std::ostream& operator<<(std::ostream& os, NU1Charge<N> const & c)
 {
     os << "<";
-    for (int i = 0; i < N; ++i)
-        os << c[i] << ",";
+    for (int i = 0; i < N; ++i) {
+        os << c[i];
+        if (i+1 < N)
+            os << ",";
+    }
     os << ">";
     return os;
 }
-
-//template<int N>
-//bool operator<(NU1Charge<N> const & a,
-//               NU1Charge<N> const & b)
-//{
-//    for (int i = 0; i < N; ++i) {
-//        if (a[i] < b[i])
-//            return true;
-//        else if (a[i] > b[i])
-//            return false;
-//    }
-//    return false;
-//}
 
 template<int N>
 class NU1
