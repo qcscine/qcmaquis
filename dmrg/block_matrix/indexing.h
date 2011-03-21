@@ -22,30 +22,6 @@
 #include <mp_tensors/wrappers.h>
 #endif
 
-
-#ifdef HAVE_ALPS_HDF5
-//template<class A, class B>
-//alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
-//                                 std::string const & p,
-//                                 std::pair<A, B> const & v)
-//{
-//    ar << alps::make_pvp(p + std::string("/first"), v.first);
-//    ar << alps::make_pvp(p + std::string("/second"), v.second);
-//    return ar;
-//}
-//
-//template<class A, class B>
-//alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
-//                                  std::string const & p,
-//                                  std::pair<A, B> & v)
-//{
-//    ar >> alps::make_pvp(p + std::string("/first"), v.first);
-//    ar >> alps::make_pvp(p + std::string("/second"), v.second);
-//    return ar;
-//}
-
-#endif
-
 namespace index_detail
 {
     template<class SymmGroup>
