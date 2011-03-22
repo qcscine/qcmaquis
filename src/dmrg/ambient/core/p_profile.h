@@ -10,14 +10,14 @@
 namespace ambient {
 
     namespace groups { class group; }
-
     class workgroup;
+    enum  p_state { ABSTRACT, COMPOSING, GENERIC, PROXY };
 
     class p_profile {
     protected:
         p_profile();
     public:
-        enum status { ABSTRACT, COMPOSING, GENERIC, PROXY } state;
+        p_state             state;
         unsigned int*       group_id;
         unsigned int        id;
         size_t              timestamp;

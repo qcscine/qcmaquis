@@ -93,7 +93,7 @@ namespace ambient{ namespace core{
             add_segment_entry(ambient::rank(), i, j, k);
     }
     void layout_table::request(int i, int j, int k){
-        if(this->profile->state == p_profile::COMPOSING) 
+        if(this->profile->state == COMPOSING) 
             return record(i,j,k);
         for(int s=0; s < this->request_count; s++)
             if(this->requests[s].i == i &&
@@ -171,7 +171,7 @@ namespace ambient{ namespace core{
     {
         for(int k = 0; k < count; k++){
             const char* action = "UPDATE";
-            if(profiles[k]->state == p_profile::COMPOSING){
+            if(profiles[k]->state == COMPOSING){
                 profiles[k]->postprocess(); 
                 action = "COMPOSE";
             }
