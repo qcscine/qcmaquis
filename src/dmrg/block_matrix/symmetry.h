@@ -245,6 +245,49 @@ std::ostream& operator<<(std::ostream& os, NU1Charge<N> const & c)
     return os;
 }
 
+template<int N, int I>
+struct tpl_lex_cmp_
+{
+    template<typename T>
+    bool operator()(T const * a, T const * b) const
+    {
+        if (a[I] < b[I])
+            return true;
+        else if (a[I] > b[I])
+            return false;
+        else
+            return tpl_lex_cmp_<N, I+1>()(a, b);
+    }
+};
+
+template<int N>
+struct tpl_lex_cmp_<N, N>
+{
+    template<typename T>
+    bool operator()(T const *, T const *) const { return false; }
+};
+
+template<int N>
+inline bool operator<(NU1Charge<N> const & a, NU1Charge<N> const & b)
+{
+    return tpl_lex_cmp_<N, 0>()(a.begin(), b.begin());
+}
+
+template<int N>
+inline bool operator==(NU1Charge<N> const & a, NU1Charge<N> const & b)
+{
+    bool ret = true;
+    for (int i = 0; i < N; ++i)
+        ret &= (a[i] == b[i]);
+    return ret;
+}
+
+template<int N>
+inline bool operator!=(NU1Charge<N> const & a, NU1Charge<N> const & b)
+{
+    return !(a==b);
+}
+
 template<int N>
 class NU1
 {
