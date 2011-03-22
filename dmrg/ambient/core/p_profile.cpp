@@ -17,7 +17,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
-      profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0) {
+      profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->group_dim = engine.get_group_dim();
         this->item_dim  = engine.get_item_dim();
@@ -29,6 +29,40 @@ namespace ambient {
         if(!this->valid) printf("Error: attempting to use invalid profile (object was deleted)\n");
         while((this->profile = this->profile->profile) != this->profile->profile);
         return this->profile; // todo - deallocate proxy objects
+    }
+
+    void p_profile::operator=(const p_profile& profile){
+        // todo I guess
+        this->profile      = const_cast<p_profile*>(&profile);
+        this->proxy        = true;                   // to handle properly
+        this->group_id     = profile.group_id;
+        this->id           = profile.id;
+        this->scope        = profile.scope;
+        this->layout       = profile.layout;         // pointer
+        this->dim          = profile.dim;
+        this->type_size    = profile.type_size; 
+        this->packet_type  = profile.packet_type;    // pointer
+        this->distr_dim    = profile.get_distr_dim();
+        this->group_dim    = profile.get_group_dim();
+        this->item_dim     = profile.get_item_dim(); 
+        this->gpu_dim      = profile.get_gpu_dim();  
+        //this->skeleton; 
+
+        //this->xscope       = profile.xscope;       // not needed
+        //this->data         = profile.data;         // not needed
+        //this->master_relay = profile.master_relay; // not needed ?
+        //this->timestamp    = profile.timestamp;    // not needed
+        //this->lda          = profile.lda;          // not needed
+        //this->solid_lda    = profile.solid_lda;    // not needed
+        //this->group_lda    = profile.group_lda;    // not needed
+        //this->state        = profile.state;        // not needed ?
+        //this->reserved_x   = profile.reserved_x;   // not needed
+        //this->reserved_y   = profile.reserved_y;   // not needed
+    }
+
+    p_profile* p_profile::associate_proxy(p_profile* proxy, char R){
+        this->associated_proxy = proxy;
+        this->associated_proxy->assignment = R;
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
@@ -65,6 +99,7 @@ namespace ambient {
     {
         if(this->group_dim == NULL){
             this->group_dim = dim;
+            this->xpacket_type = this->packet_type;
             this->packet_type = new block_packet_t(this->group_dim*this->item_dim);
             this->packet_type->commit();
             this->regroup();
@@ -92,6 +127,7 @@ namespace ambient {
             }
             if(x_size > this->reserved_x) this->reserved_x = x_size;
             if(y_size > this->reserved_y) this->reserved_y = y_size;
+        }else{
         }
     }
 
@@ -102,10 +138,10 @@ namespace ambient {
     void p_profile::solidify(){
         int i,j;
         size_t offset = 0;
-        this->framework = malloc(this->layout->segment_count                  *
-                                 (this->get_group_dim()*this->get_item_dim()) *
-                                 this->type_size);
-        void* memory = this->data = this->framework;
+        this->data = malloc(this->layout->segment_count                  *
+                            (this->get_group_dim()*this->get_item_dim()) *
+                            this->type_size);
+        void* memory = this->data;
 
 // let's find the solid_lda
         this->solid_lda = 0; 
@@ -140,7 +176,7 @@ namespace ambient {
 
     void p_profile::disperse(){ 
         size_t offset = 0;
-        void* memory = this->data = this->framework;
+        void* memory = this->data;
         for(int j=0; j < this->get_grid_dim().x; j++){
             memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->type_size);
             offset = 0;
@@ -215,7 +251,9 @@ namespace ambient {
     }
 
     workgroup& p_profile::operator()(int i, int j, int k){
-        if(this->group(i,j,k)->timestamp != this->timestamp){
+        if(this->proxy){ // on-touch init for proxy
+            this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
+        }else if(this->group(i,j,k)->timestamp != this->timestamp){
             printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
             world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                this->get_master(), "P2P", 
@@ -230,16 +268,12 @@ namespace ambient {
     }
 
     workgroup* p_profile::group(int i, int j, int k) const {
-        if(this->proxy){
-            assert(false); //return new workgroup(&profile, i, j, k);
-        }else{
-            int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
-            int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
-            int z_size = this->dim.z / (this->get_group_dim().z*this->get_item_dim().z);
-
-            if(i >= y_size || j >= x_size || k >= z_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j, k);
-            return this->skeleton[i][j];
-        }
+        int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
+        int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
+        int z_size = this->dim.z / (this->get_group_dim().z*this->get_item_dim().z);
+        
+        if(i >= y_size || j >= x_size || k >= z_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j, k);
+        return this->skeleton[i][j];
     }
 
     void p_profile::imitate(p_profile* profile){

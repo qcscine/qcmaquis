@@ -33,23 +33,23 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     int ldc = m;
     double alpha = 1.0; 
     double beta  = 0.0;
-// a(i,j) => b(j,i) x a(k,j) where k : [0,m)
+// a(i,j) => b(j,i) x a(z,j) where z : [0,m)
 // current group of matrix a:
     int i = get_group_id(a).y;
     int j = get_group_id(a).x;
 // taking (j,i) of b:
     double* bd = current(b)(j,i); // remote
 // multiplying with column of a:
-    for(int k = 0; k < get_grid_dim(a).y; k++){
-        double* ad = current(a)(k,j);
-        double* cd = reduced(c,'+')(k,i); // a(k,j) x b(j,i) => c(k,i)
-        printf("Performing DGEMM for %d,%d and %d,%d\n", k,j,j,i);
-        //for(int ii=0; ii < m; ii++){
-        //  for(int jj=0; jj < n; jj++)
-        //  printf("%.2f	", cd[jj*ldc + ii]);
-        //  printf("\n");
-        //}
-        //dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+    for(int z = 0; z < get_grid_dim(a).y; z++){
+        double* ad = current(a)(z,j);
+        double* cd = reduced(c,'+')(z,i); // a(z,j) x b(j,i) => c(z,i)
+        printf("Performing DGEMM for %d,%d and %d,%d\n", z,j,j,i);
+        dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+        for(int ii=0; ii < m; ii++){
+          for(int jj=0; jj < n; jj++)
+          printf("%.2f	", cd[jj*ldc + ii]);
+          printf("\n");
+        }
     }
 }
 
