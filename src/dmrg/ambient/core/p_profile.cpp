@@ -34,13 +34,13 @@ namespace ambient {
     void p_profile::operator=(const p_profile& profile){
         // todo I guess
         this->profile      = const_cast<p_profile*>(&profile);
-        this->proxy        = true;                   // to handle properly
+        this->state        = PROXY;                   // to handle properly
         this->group_id     = profile.group_id;
         this->id           = profile.id;
         this->scope        = profile.scope;
         this->layout       = profile.layout;         // pointer
         this->dim          = profile.dim;
-        this->type_size    = profile.type_size; 
+        this->t_size       = profile.t_size; 
         this->packet_type  = profile.packet_type;    // pointer
         this->distr_dim    = profile.get_distr_dim();
         this->group_dim    = profile.get_group_dim();
@@ -114,7 +114,7 @@ namespace ambient {
     }
 
     void p_profile::regroup(){
-        if(!this->proxy){
+        if(this->state != PROXY){
             int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
             int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
             if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
@@ -132,7 +132,7 @@ namespace ambient {
     }
 
     size_t p_profile::get_group_lda(){
-        return this->get_group_dim().y*this->get_item_dim().y*this->type_size;
+        return this->get_group_dim().y*this->get_item_dim().y*this->t_size;
     }
 
     void p_profile::solidify(){
@@ -140,7 +140,7 @@ namespace ambient {
         size_t offset = 0;
         this->data = malloc(this->layout->segment_count                  *
                             (this->get_group_dim()*this->get_item_dim()) *
-                            this->type_size);
+                            this->t_size);
         void* memory = this->data;
 
 // let's find the solid_lda
@@ -157,15 +157,15 @@ namespace ambient {
         }
 // let's copy from separate memory blocks to the general one
         for(j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->type_size);
+            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->t_size);
             offset = 0;
             for(i=0; i < this->get_grid_dim().y; i++){
                 if(this->group(i,j)->available()){
-                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->type_size);
+                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->t_size);
                     for(int k=0; k < this->get_group_dim().x*this->get_item_dim().x; k++){
                         assert(this->group(i,j)->data != NULL);
                         memcpy((void*)((size_t)solid_data+k*this->solid_lda*this->get_group_dim().y*this->get_item_dim().y), (void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), 
-                               this->get_group_dim().y*this->get_item_dim().y*this->type_size);
+                               this->get_group_dim().y*this->get_item_dim().y*this->t_size);
                     }
                     offset++;
                 }
@@ -178,14 +178,14 @@ namespace ambient {
         size_t offset = 0;
         void* memory = this->data;
         for(int j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->type_size);
+            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->t_size);
             offset = 0;
             for(int i=0; i < this->get_grid_dim().y; i++){
                 if((*this->layout)(i,j) != NULL){
-                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->type_size);
+                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->t_size);
                     for(int k=0; k < this->get_group_dim().x*this->get_item_dim().x; k++){
                         memcpy((void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), (void*)((size_t)solid_data+k*this->solid_lda*this->get_group_dim().y*this->get_item_dim().y),
-                               this->get_group_dim().y*this->get_item_dim().y*this->type_size);
+                               this->get_group_dim().y*this->get_item_dim().y*this->t_size);
                     }
                     offset++;
                 }
@@ -251,7 +251,7 @@ namespace ambient {
     }
 
     workgroup& p_profile::operator()(int i, int j, int k){
-        if(this->proxy){ // on-touch init for proxy
+        if(this->state == PROXY){ // on-touch init for proxy
             this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
         }else if(this->group(i,j,k)->timestamp != this->timestamp){
             printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
@@ -333,7 +333,7 @@ namespace ambient {
         this->item_dim = dim;
     }
     void p_profile::invalidate(){
-        if(!this->proxy) this->valid = false;
+        if(this->state != PROXY) this->valid = false;
     }
     bool p_profile::is_valid(){
         return this->valid;
