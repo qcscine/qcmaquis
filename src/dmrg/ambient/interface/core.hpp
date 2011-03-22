@@ -34,6 +34,10 @@ void_pt& current(T& obj){
 }
 template <typename T>
 void_pt& reduced(T& obj, char R){
-// mark for reduce operation!
-    return breakdown(obj);
+    if(breakdown(obj).associated_proxy == NULL){
+        breakdown(obj).associate_proxy(new void_pt((T*)NULL), R);
+        breakdown_proxy_model((void_pt*)breakdown(obj).associated_proxy, &(breakdown(obj)), &obj);
+    }
+    //return breakdown(obj);
+    return *((void_pt*)breakdown(obj).associated_proxy);
 }

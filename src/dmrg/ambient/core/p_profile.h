@@ -17,16 +17,46 @@ namespace ambient {
     protected:
         p_profile();
     public:
-        unsigned int* group_id;
-        unsigned int id;
-        size_t timestamp;
-
+        enum status { ABSTRACT, COMPOSING, GENERIC, PROXY } state;
+        unsigned int*       group_id;
+        unsigned int        id;
+        size_t              timestamp;
+        bool                consted;
+        std::pair<int,int>  master_relay;
+        p_profile*          profile; // pointer to this profile (this on init - can be changed in proxy objects)
+        void*               data;  // pointer to the actual data
+        size_t              lda;  // process individual lda
+        size_t              solid_lda;  // process solid state matrix lda
+        size_t              group_lda;
+        groups::group*      scope;
+        groups::group*      xscope;
+        core::layout_table* layout;
+        size_t              reserved_x;
+        size_t              reserved_y;
+        size_t              type_size;
+        dim3                dim;
+        block_packet_t*     packet_type;
+        block_packet_t*     xpacket_type;
+        std::vector< std::vector<workgroup*> > skeleton;
+        workgroup*          default_group;
+        void(*init_fp)(workgroup* grp);
+        p_profile*          associated_proxy;
+        bool                proxy;
+        char                assignment;
+    private:
+        bool                valid;
+        dim3                distr_dim;   // work-item size of distribution blocks
+        dim3                group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
+        dim3                item_dim;    // size of work-item (i.e. 128) 
+        dim3                gpu_dim;     // work-item size of gpgpu smp workload fractions
+    public:
+        void operator=(const p_profile& profile);
         p_profile & operator>>(dim3 dim_distr);
         p_profile & operator,(dim3 dim);
 
         void constant();
         void inconstant();
-        bool consted;
+        p_profile* associate_proxy(p_profile* proxy, char R);
 
         void regroup();
         void set_id(std::pair<unsigned int*,size_t> group_id);
@@ -36,21 +66,11 @@ namespace ambient {
         void set_default_group(int i, int j = 0, int k = 0);
         dim3 get_group_id();
 
-        std::pair<int,int> master_relay;
-        p_profile* profile; // pointer to this profile (this on init - can be changed in proxy objects)
         p_profile* dereference(); // finds out if the profile pointer is up to date
         void touch();
         void preprocess();
         void postprocess(); // proceed with necessary memory allocations
-        void* framework; // includes ambient boundle
-        void* data;  // pointer to the actual data
-        size_t lda;  // process individual lda
-        size_t solid_lda;  // process solid state matrix lda
-        size_t group_lda;
         size_t get_group_lda();
-
-        groups::group* scope;
-        groups::group* xscope;
 
         void set_scope(groups::group* scope);
         groups::group* get_scope();
@@ -58,25 +78,8 @@ namespace ambient {
         bool involved();
         bool xinvolved();
 
-        core::layout_table* layout;
-
-        size_t reserved_x;
-        size_t reserved_y;
-
-        const char* type;
-        size_t type_size;
-        bool proxy;
-        
-        dim3 dim;
-        int** owners;
-
-        std::vector< std::vector<workgroup*> > skeleton;
-        workgroup* default_group;
-
-        void(*init_fp)(workgroup* grp);
         workgroup* group(int i, int j = 0, int k = 0) const;
         workgroup& operator()(int i, int j = 0, int k = 0);
-        block_packet_t* packet_type;
 
 // parameters can be set specifically for the profile
         dim3 get_dim()       const;
@@ -104,14 +107,6 @@ namespace ambient {
         void set_item_dim(dim3 dim);
         void invalidate();
         bool is_valid();
-        enum status { ABSTRACT, COMPOSING, GENERIC };
-        status state;
-    private:
-        bool valid;
-        dim3 distr_dim;   // work-item size of distribution blocks
-        dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
-        dim3 item_dim;    // size of work-item (i.e. 128) 
-        dim3 gpu_dim;     // work-item size of gpgpu smp workload fractions
     };
 
     p_profile& operator>>(p_profile* instance, dim3 dim_distr);
