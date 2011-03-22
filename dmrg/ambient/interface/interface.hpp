@@ -2,8 +2,8 @@
 
 template <typename FL, typename FC, class T0, class T1, class T2>
 void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2){
-    if(breakdown(arg0).proxy) pin(arg0, arg2);
-    if(breakdown(arg1).proxy) pin(arg1, arg2);
+    if(breakdown(arg0).state == p_profile::PROXY) pin(arg0, arg2);
+    if(breakdown(arg1).state == p_profile::PROXY) pin(arg1, arg2);
     ambient::engine.push(new core::operation(l_kernel, &arg0, &arg1, &arg2),
 			 new core::operation(c_kernel, &arg0, &arg1, &arg2));
 }

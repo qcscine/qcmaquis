@@ -33,7 +33,7 @@ namespace ambient {
         core::layout_table* layout;
         size_t              reserved_x;
         size_t              reserved_y;
-        size_t              type_size;
+        size_t              t_size;
         dim3                dim;
         block_packet_t*     packet_type;
         block_packet_t*     xpacket_type;
@@ -41,7 +41,6 @@ namespace ambient {
         workgroup*          default_group;
         void(*init_fp)(workgroup* grp);
         p_profile*          associated_proxy;
-        bool                proxy;
         char                assignment;
     private:
         bool                valid;
