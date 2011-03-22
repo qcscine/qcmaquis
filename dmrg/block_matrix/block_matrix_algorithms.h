@@ -164,6 +164,7 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
                            U.right_basis()[k].first);
             V.remove_block(V.left_basis()[k].first,
                            V.right_basis()[k].first);
+            --k; // everything gets shifted, to we have to look into the same k again
         } else {
             S.resize_block(S.left_basis()[k].first,
                            S.right_basis()[k].first,
@@ -220,12 +221,12 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     for (std::size_t k = 0; k < evals.n_blocks(); ++k)
     {
-        std::size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
+        int keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
                                         boost::lambda::_1 < evalscut)-evals[k].elements().first;
         if (keep >= num_rows(evals[k]))
             continue;
         
-        /* hack for now */
+        /* uncomment if you want to keep all blocks */
 //        keep = std::max(keep, std::size_t(1));
         
         if (keep == 0) {
@@ -233,6 +234,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                evals.right_basis()[k].first);
             evecs.remove_block(evecs.left_basis()[k].first,
                                evecs.right_basis()[k].first);
+            --k; // everything gets shifted, to we have to look into the same k again
         } else {
             evals.resize_block(evals.left_basis()[k].first,
                                evals.right_basis()[k].first,
