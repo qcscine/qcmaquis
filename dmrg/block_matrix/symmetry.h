@@ -191,14 +191,27 @@ public:
 template<int Q> const typename Zq<Q>::charge Zq<Q>::SingletCharge = ZqCharge<Q>(0);
 
 template<int N>
-class NU1Charge : public boost::array<int, N>
+class NU1Charge
 {   
 public:
-    NU1Charge(bool init = true)
+    NU1Charge(int init = 0)
     {
-        if (init)
-            for (int i = 0; i < N; ++i) (*this)[i] = 0;
+        for (int i = 0; i < N; ++i) (*this)[i] = init;
     }
+    
+    NU1Charge(boost::array<int, N> const & rhs)
+    {
+        std::copy(rhs.begin(), rhs.end(), this->begin());
+    }
+    
+    int * begin() { return &data_[0]; }
+    int * end() { return &data_[N]; }
+    
+    int const * begin() const { return &data_[0]; }
+    int const * end() const { return &data_[N]; }
+    
+    int & operator[](std::size_t p) { return data_[p]; }
+    int const & operator[](std::size_t p) const { return data_[p]; }
     
 #ifdef HAVE_ALPS_HDF5
     void serialize(alps::hdf5::oarchive & ar) const
@@ -213,6 +226,9 @@ public:
             ar >> alps::make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);
     }
 #endif
+    
+private:
+    int data_[N];
 };
 
 template<int N>
@@ -232,14 +248,25 @@ template<int N, int I>
 struct tpl_ops_
 {
     template<typename T>
-    bool operator_le(T const * a, T const * b) const
+    bool operator_lt(T const * a, T const * b) const
     {
         if (a[I] < b[I])
             return true;
         else if (a[I] > b[I])
             return false;
         else
-            return tpl_ops_<N, I+1>().operator_le(a, b);
+            return tpl_ops_<N, I+1>().operator_lt(a, b);
+    }
+    
+    template<typename T>
+    bool operator_gt(T const * a, T const * b) const
+    {
+        if (a[I] > b[I])
+            return true;
+        else if (a[I] < b[I])
+            return false;
+        else
+            return tpl_ops_<N, I+1>().operator_gt(a, b);
     }
     
     template<typename T>
@@ -270,7 +297,10 @@ template<int N>
 struct tpl_ops_<N, N>
 {
     template<typename T>
-    bool operator_le(T const *, T const *) const { return false; }
+    bool operator_lt(T const *, T const *) const { return false; }
+    
+    template<typename T>
+    bool operator_gt(T const *, T const *) const { return false; }
     
     template<typename T>
     bool operator_eq(T const *, T const *) const { return true; }
@@ -285,7 +315,13 @@ struct tpl_ops_<N, N>
 template<int N>
 inline bool operator<(NU1Charge<N> const & a, NU1Charge<N> const & b)
 {
-    return tpl_ops_<N, 0>().operator_le(a.begin(), b.begin());
+    return tpl_ops_<N, 0>().operator_lt(a.begin(), b.begin());
+}
+
+template<int N>
+inline bool operator>(NU1Charge<N> const & a, NU1Charge<N> const & b)
+{
+    return tpl_ops_<N, 0>().operator_gt(a.begin(), b.begin());
 }
 
 template<int N>
@@ -304,7 +340,7 @@ template<int N>
 NU1Charge<N> operator+(NU1Charge<N> const & a,
                        NU1Charge<N> const & b)
 {
-    NU1Charge<N> ret(false);
+    NU1Charge<N> ret;
     tpl_ops_<N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
     return ret;
 }
@@ -312,7 +348,7 @@ NU1Charge<N> operator+(NU1Charge<N> const & a,
 template<int N>
 NU1Charge<N> operator-(NU1Charge<N> const & rhs)
 {
-    NU1Charge<N> ret(false);
+    NU1Charge<N> ret;
     tpl_ops_<N, 0>().operator_uminus(rhs.begin(), ret.begin());
     return ret;
 }
