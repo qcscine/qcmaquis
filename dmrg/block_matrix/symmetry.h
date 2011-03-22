@@ -194,17 +194,10 @@ template<int N>
 class NU1Charge : public boost::array<int, N>
 {   
 public:
-    NU1Charge()
+    NU1Charge(bool init = true)
     {
-        for (int i = 0; i < N; ++i) (*this)[i] = 0;
-    }
-    
-    NU1Charge operator-() const
-    {
-        NU1Charge ret;
-        for (int i = 0; i < N; ++i)
-            ret[i] = -(*this)[i];
-        return ret;
+        if (init)
+            for (int i = 0; i < N; ++i) (*this)[i] = 0;
     }
     
 #ifdef HAVE_ALPS_HDF5
@@ -223,16 +216,6 @@ public:
 };
 
 template<int N>
-NU1Charge<N> operator+(NU1Charge<N> const & a,
-                       NU1Charge<N> const & b)
-{
-    NU1Charge<N> ret;
-    for (int i = 0; i < N; ++i)
-        ret[i] = a[i] + b[i];
-    return ret;
-}
-
-template<int N>
 std::ostream& operator<<(std::ostream& os, NU1Charge<N> const & c)
 {
     os << "<";
@@ -246,46 +229,92 @@ std::ostream& operator<<(std::ostream& os, NU1Charge<N> const & c)
 }
 
 template<int N, int I>
-struct tpl_lex_cmp_
+struct tpl_ops_
 {
     template<typename T>
-    bool operator()(T const * a, T const * b) const
+    bool operator_le(T const * a, T const * b) const
     {
         if (a[I] < b[I])
             return true;
         else if (a[I] > b[I])
             return false;
         else
-            return tpl_lex_cmp_<N, I+1>()(a, b);
+            return tpl_ops_<N, I+1>().operator_le(a, b);
+    }
+    
+    template<typename T>
+    bool operator_eq(T const * a, T const * b) const
+    {
+        if (a[I] != b[I])
+            return false;
+        else
+            return tpl_ops_<N, I+1>().operator_eq(a, b);
+    }
+    
+    template<typename T>
+    void operator_plus(T const * a, T const * b, T * c) const
+    {
+        c[I] = a[I] + b[I];
+        tpl_ops_<N, I+1>().operator_plus(a, b, c);
+    }
+    
+    template<typename T>
+    void operator_uminus(T const * a, T * b) const
+    {
+        b[I] = -a[I];
+        tpl_ops_<N, I+1>().operator_uminus(a, b);
     }
 };
 
 template<int N>
-struct tpl_lex_cmp_<N, N>
+struct tpl_ops_<N, N>
 {
     template<typename T>
-    bool operator()(T const *, T const *) const { return false; }
+    bool operator_le(T const *, T const *) const { return false; }
+    
+    template<typename T>
+    bool operator_eq(T const *, T const *) const { return true; }
+    
+    template<typename T>
+    void operator_plus(T const *, T const *, T *) const { }
+    
+    template<typename T>
+    void operator_uminus(T const *, T *) const { }
 };
 
 template<int N>
 inline bool operator<(NU1Charge<N> const & a, NU1Charge<N> const & b)
 {
-    return tpl_lex_cmp_<N, 0>()(a.begin(), b.begin());
+    return tpl_ops_<N, 0>().operator_le(a.begin(), b.begin());
 }
 
 template<int N>
 inline bool operator==(NU1Charge<N> const & a, NU1Charge<N> const & b)
 {
-    bool ret = true;
-    for (int i = 0; i < N; ++i)
-        ret &= (a[i] == b[i]);
-    return ret;
+    return tpl_ops_<N, 0>().operator_eq(a.begin(), b.begin());
 }
 
 template<int N>
 inline bool operator!=(NU1Charge<N> const & a, NU1Charge<N> const & b)
 {
     return !(a==b);
+}
+
+template<int N>
+NU1Charge<N> operator+(NU1Charge<N> const & a,
+                       NU1Charge<N> const & b)
+{
+    NU1Charge<N> ret(false);
+    tpl_ops_<N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
+    return ret;
+}
+
+template<int N>
+NU1Charge<N> operator-(NU1Charge<N> const & rhs)
+{
+    NU1Charge<N> ret(false);
+    tpl_ops_<N, 0>().operator_uminus(rhs.begin(), ret.begin());
+    return ret;
 }
 
 template<int N>
