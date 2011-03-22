@@ -165,7 +165,7 @@ namespace ambient {
 
     dim3 p_profile::get_group_id()
     {
-        return dim3(this->default_group->i, this->default_group->j, this->default_group->k);
+        return dim3(this->default_group->j, this->default_group->i, this->default_group->k);
     }
 
     void p_profile::touch(){
@@ -216,7 +216,7 @@ namespace ambient {
 
     workgroup& p_profile::operator()(int i, int j, int k){
         if(this->group(i,j,k)->timestamp != this->timestamp){
-            printf("R%d: Requesting the group which is outdated\n", ambient::rank()); // let's make the request here!
+            printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
             world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                this->get_master(), "P2P", 
                                                               "INFORM OWNER ABOUT REQUEST",

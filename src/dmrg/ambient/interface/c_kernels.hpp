@@ -44,7 +44,12 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
         double* ad = current(a)(k,j);
         double* cd = reduced(c,'+')(k,i); // a(k,j) x b(j,i) => c(k,i)
         printf("Performing DGEMM for %d,%d and %d,%d\n", k,j,j,i);
-        dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+        //for(int ii=0; ii < m; ii++){
+        //  for(int jj=0; jj < n; jj++)
+        //  printf("%.2f	", cd[jj*ldc + ii]);
+        //  printf("\n");
+        //}
+        //dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     }
 }
 
