@@ -4,7 +4,7 @@ template <typename T>
 void breakdown_model(void_pt* profile, const p_dense_matrix<T>* ptr)
 {        
     if(ptr == NULL){
-        profile->state = p_profile::PROXY;
+        profile->state = PROXY;
         profile->dim.x = 0;
         profile->dim.y = 0;
         profile->dim.z = 0;
@@ -29,9 +29,9 @@ void breakdown_proxy_model(void_pt* proxy, void_pt* profile, const p_dense_matri
         proxy->dim          = profile->dim;
         proxy->t_size       = profile->t_size; 
         proxy->packet_type  = profile->packet_type;    // pointer
-        proxy->state        = p_profile::GENERIC;                   // spike for now...
+        proxy->state        = GENERIC;                 // spike for now
         proxy->imitate(profile); 
-        proxy->state        = p_profile::PROXY;
+        proxy->state        = PROXY;
 }
 
 template<>
