@@ -9,10 +9,15 @@
 namespace ambient {
     void integrate_block(groups::packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
-        printf("R%d: I'm integrating the block of %u:%d - %d %d\n", ambient::rank(), *(unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), pack->get<int>(A_BLOCK_P_ID_FIELD), 
-               pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
-        profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
+        if(profile->associated_proxy != NULL){
+            profile->associated_proxy->reduce_fp( profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->data,
+                                                  (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
+        }else{
+            printf("R%d: I'm integrating the block of %u:%d - %d %d\n", ambient::rank(), *(unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), pack->get<int>(A_BLOCK_P_ID_FIELD), 
+                   pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
+            profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
+        }
     }
 
     p_profile::p_profile()
@@ -60,9 +65,9 @@ namespace ambient {
         //this->reserved_y   = profile.reserved_y;   // not needed
     }
 
-    p_profile* p_profile::associate_proxy(p_profile* proxy, char R){
+    p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(void*,void*)){
         this->associated_proxy = proxy;
-        this->associated_proxy->assignment = R;
+        this->associated_proxy->reduce_fp = R;
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
@@ -248,6 +253,26 @@ namespace ambient {
             this->group(i,j)->set_memory(alloc_t(*this->packet_type));
             this->init_fp(this->group(i,j));
         }
+    }
+
+    void p_profile::finalize(){
+        if(this->associated_proxy != NULL){
+            for(int i=0; i < this->layout->segment_count; i++){
+                this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+                                                                             NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
+                                                                             *this->group_id, this->id,
+                                                                             this->layout->segment[i].owner, 
+                                                                             this->layout->segment[i].i, 
+                                                                             this->layout->segment[i].j, 
+                                                                             this->layout->segment[i].k));
+            }
+        }
+    }
+
+    void p_profile::clean(){
+        this->layout->clean();
+        delete this->associated_proxy;
+        this->associated_proxy = NULL;
     }
 
     workgroup& p_profile::operator()(int i, int j, int k){

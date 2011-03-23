@@ -39,9 +39,9 @@ namespace ambient {
         block_packet_t*     xpacket_type;
         std::vector< std::vector<workgroup*> > skeleton;
         workgroup*          default_group;
-        void(*init_fp)(workgroup* grp);
+        void(*init_fp)(workgroup*);
+        void(*reduce_fp)(void*,void*);
         p_profile*          associated_proxy;
-        char                assignment;
     private:
         bool                valid;
         dim3                distr_dim;   // work-item size of distribution blocks
@@ -55,7 +55,7 @@ namespace ambient {
 
         void constant();
         void inconstant();
-        p_profile* associate_proxy(p_profile* proxy, char R);
+        p_profile* associate_proxy(p_profile* proxy, void(*R)(void*,void*));
 
         void regroup();
         void set_id(std::pair<unsigned int*,size_t> group_id);
@@ -69,6 +69,8 @@ namespace ambient {
         void touch();
         void preprocess();
         void postprocess(); // proceed with necessary memory allocations
+        void finalize();    // proceed with proxy updates (various reduces)
+        void clean();       // cleanup for proxy/layout junk
         size_t get_group_lda();
 
         void set_scope(groups::group* scope);

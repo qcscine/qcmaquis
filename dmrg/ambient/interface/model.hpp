@@ -42,3 +42,8 @@ template<>
 void_pt& breakdown(const double& obj){ return *(new void_pt(&obj)); }
 void breakdown_model(void_pt* profile, const double* ptr){ assert(false); }
 
+template<>
+void plus_reduce< p_dense_matrix<double> >(void* a, void* b){
+    printf("Adding block (%.2f + %.2f)!\n", ((double*)a)[0], ((double*)b)[0]);
+}
+

@@ -23,6 +23,10 @@ namespace ambient{ namespace core{
         for(size_t i=0; i < this->count; i++) this->profiles[i]->preprocess();
         this->set_scope(ambient::scope.get_group());
     }
+    void operation::finalize()
+    {
+        for(size_t i=0; i < this->count; i++) this->profiles[i]->finalize();
+    }
     void operation::set_scope(groups::group* scope)
     {
         this->scope = scope;

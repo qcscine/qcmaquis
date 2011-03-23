@@ -32,10 +32,16 @@ template <typename T>
 void_pt& current(T& obj){
     return breakdown(obj);
 }
+
 template <typename T>
-void_pt& reduced(T& obj, char R){
+void plus_reduce(void* a, void* b){
+    printf("NON-SPEC! RETHINK THE CODE!\n");
+}
+
+template <char R, typename T>
+void_pt& reduced(T& obj){
     if(breakdown(obj).associated_proxy == NULL){
-        breakdown(obj).associate_proxy(new void_pt((T*)NULL), R);
+        if(R == '+') breakdown(obj).associate_proxy(new void_pt((T*)NULL), plus_reduce<T>);
         breakdown_proxy_model((void_pt*)breakdown(obj).associated_proxy, &(breakdown(obj)), &obj);
     }
     //return breakdown(obj);

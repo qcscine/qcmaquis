@@ -163,8 +163,7 @@ namespace ambient{ namespace groups{
         assert(this->flow == OUT);
         for(int i=0; i < this->requests.size(); i++){ // locating free request
             if(this->requests[i]->request == MPI_REQUEST_NULL){
-                delete((packet*)this->requests[i]->memory);
-                this->requests[i]->memory = (void*)pack;
+                this->requests[i]->memory = (void*)pack; // don't forget to free memory (if not needed)
                 this->send(this->requests[i]);
                 return;
             }
@@ -177,7 +176,17 @@ namespace ambient{ namespace groups{
     }
     void packet_manager::typed_q::send(ambient_request* request){
         packet* pack = (packet*)request->memory;
-        MPI_Isend(pack->data, 1, pack->mpi_t, *(int*)pack->get(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
+        if(pack->get<char>(A_OP_T_FIELD) == 'P')
+            MPI_Isend(pack->data, 1, pack->mpi_t, *(int*)pack->get(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
+        else if(pack->get<char>(A_OP_T_FIELD) == 'B'){
+            pack->set(A_OP_T_FIELD, "P2P");
+            pack->set(A_DEST_FIELD, 0); // using up this request
+            MPI_Isend(pack->data, 1, pack->mpi_t, *(int*)pack->get(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
+            for(int i=1; i < this->manager->get_group()->get_size(); i++){
+                pack->set(A_DEST_FIELD, i);
+                this->push(pack);
+            }
+        }
     }
     void packet_manager::typed_q::spin(){
         int flag = 0;

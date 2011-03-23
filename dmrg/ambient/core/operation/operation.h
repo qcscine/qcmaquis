@@ -21,6 +21,7 @@ namespace ambient{ namespace core{
         void set_scope(groups::group* scope);
         groups::group* get_scope();
         void preprocess();
+        void finalize();
         void(operation::*prototype)();
         void(*operation_ptr)();
         groups::group* scope;
