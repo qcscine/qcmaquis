@@ -134,6 +134,8 @@ namespace ambient
                         logistics->pin->set_default_group(workload[k].i, workload[k].j);
                         computing->invoke();
                     }
+                    logistics->finalize();
+                    logistics->get_scope()->get_manager()->spin_loop();
                 }
                 world()->get_manager()->spin(); // processing any communications that did occur
             }
@@ -143,7 +145,7 @@ namespace ambient
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
             for(int i=0; i < logistics->count; i++)
-                logistics->profiles[i]->layout->clean();
+                logistics->profiles[i]->clean();
         }
         this->stack.clean();
     }

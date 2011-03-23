@@ -26,7 +26,7 @@ void block_2d_cycle_assign(T& target)
 void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
     breakdown(a) >> dim3(), dim3(), dim3();
-    scope_select("0.5 from ambient as work where master is 0"); // todo: correct the naming issue
+    scope_select("2 from ambient as gemm where master is 0"); // todo: correct the naming issue
     if(!scope.involved()) return;
 
     zout << "2d-block-cyclic decomposition kernel in gemm:\n"; info(a); info(b); info(c);

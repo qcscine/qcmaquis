@@ -221,7 +221,7 @@ namespace ambient{ namespace groups {
     group* group_map(const char* name, group* instance){
         static std::map<std::string,group*> map;
         if(instance != NULL){ 
-            if(map.find(name) != map.end()) printf("Warning: trying to add to groups with the same name\n");
+            if(map.find(name) != map.end()){ printf("Warning: trying to add to groups with the same name (skipped)\n"); return map.find(name)->second; } // todo
             map.insert(std::pair<std::string,group*>(name,instance));
         }
         if(map.find(name) == map.end()) return NULL; // wasn't able to find requested group
