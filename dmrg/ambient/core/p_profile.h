@@ -40,7 +40,7 @@ namespace ambient {
         std::vector< std::vector<workgroup*> > skeleton;
         workgroup*          default_group;
         void(*init_fp)(workgroup*);
-        void(*reduce_fp)(void*,void*);
+        void(*reduce_fp)(workgroup*,void*);
         p_profile*          associated_proxy;
     private:
         bool                valid;
@@ -55,7 +55,7 @@ namespace ambient {
 
         void constant();
         void inconstant();
-        p_profile* associate_proxy(p_profile* proxy, void(*R)(void*,void*));
+        p_profile* associate_proxy(p_profile* proxy, void(*R)(workgroup*,void*));
 
         void regroup();
         void set_id(std::pair<unsigned int*,size_t> group_id);

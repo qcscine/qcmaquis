@@ -121,7 +121,7 @@ namespace ambient{ namespace core{
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->profile;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
         if(!profile->xinvolved()) return;
-        if(profile->associated_proxy != NULL) profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING 
+        if(profile->associated_proxy != NULL) profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
         in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                    pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
     }

@@ -135,11 +135,13 @@ namespace ambient
                         computing->invoke();
                     }
                     logistics->finalize();
+                    world()->get_manager()->spin(); // processing any communications that did occur
                     logistics->get_scope()->get_manager()->spin_loop();
                 }
                 world()->get_manager()->spin(); // processing any communications that did occur
             }
         }
+        MPI_Barrier(MPI_COMM_WORLD);
         world()->get_manager()->spin_loop(); // finishing all communications (blocking)
 // cleaning the layout
         while(!this->stack.end_reached()){

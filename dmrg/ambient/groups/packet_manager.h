@@ -32,6 +32,7 @@ namespace ambient{ namespace groups{
             ambient_request(void* memory);
             MPI_Request request;
             void* memory;
+            int fail_count;
         };
         class typed_q
         {

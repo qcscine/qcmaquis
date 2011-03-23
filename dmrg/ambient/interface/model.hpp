@@ -43,7 +43,15 @@ void_pt& breakdown(const double& obj){ return *(new void_pt(&obj)); }
 void breakdown_model(void_pt* profile, const double* ptr){ assert(false); }
 
 template<>
-void plus_reduce< p_dense_matrix<double> >(void* a, void* b){
-    printf("Adding block (%.2f + %.2f)!\n", ((double*)a)[0], ((double*)b)[0]);
+void plus_reduce< p_dense_matrix<double> >(workgroup* grp, void* update){
+    double* a = (double*)grp->data;
+    double* u = (double*)update;
+
+    int n = grp->get_group_dim().x*grp->get_item_dim().x;
+    int m = grp->get_group_dim().y*grp->get_item_dim().y;
+    int ld = m;
+
+    for(int i=0; i<m*n; i++) a[i] += u[i];
+    printf("Updating block (%d,%d)!\n", grp->i, grp->j);
 }
 

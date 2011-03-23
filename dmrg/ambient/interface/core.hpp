@@ -34,8 +34,8 @@ void_pt& current(T& obj){
 }
 
 template <typename T>
-void plus_reduce(void* a, void* b){
-    printf("NON-SPEC! RETHINK THE CODE!\n");
+void plus_reduce(workgroup* grp, void* update){
+    assert(false); // only partially specialized
 }
 
 template <char R, typename T>
@@ -44,6 +44,5 @@ void_pt& reduced(T& obj){
         if(R == '+') breakdown(obj).associate_proxy(new void_pt((T*)NULL), plus_reduce<T>);
         breakdown_proxy_model((void_pt*)breakdown(obj).associated_proxy, &(breakdown(obj)), &obj);
     }
-    //return breakdown(obj);
     return *((void_pt*)breakdown(obj).associated_proxy);
 }

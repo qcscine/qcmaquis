@@ -20,8 +20,8 @@ namespace ambient{ namespace core{
     }
     void operation::preprocess()
     {
-        for(size_t i=0; i < this->count; i++) this->profiles[i]->preprocess();
         this->set_scope(ambient::scope.get_group());
+        for(size_t i=0; i < this->count; i++) this->profiles[i]->preprocess();
     }
     void operation::finalize()
     {
