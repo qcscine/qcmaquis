@@ -11,7 +11,7 @@ namespace ambient {
         ambient::packets::packet* pack = in_q.get_target_packet();
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
         if(profile->associated_proxy != NULL){
-            profile->associated_proxy->reduce_fp( profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->data,
+            profile->associated_proxy->reduce_fp( profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD)),
                                                   (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
         }else{
             printf("R%d: I'm integrating the block of %u:%d - %d %d\n", ambient::rank(), *(unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), pack->get<int>(A_BLOCK_P_ID_FIELD), 
@@ -65,7 +65,7 @@ namespace ambient {
         //this->reserved_y   = profile.reserved_y;   // not needed
     }
 
-    p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(void*,void*)){
+    p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(workgroup*,void*)){
         this->associated_proxy = proxy;
         this->associated_proxy->reduce_fp = R;
     }
@@ -280,14 +280,17 @@ namespace ambient {
             this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
         }else if(this->group(i,j,k)->timestamp != this->timestamp){
             printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
-            world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
-                                                               this->get_master(), "P2P", 
-                                                              "INFORM OWNER ABOUT REQUEST",
-                                                              *this->group_id, this->id,
-                                                               ambient::rank(), // forward target
-                                                               i, j, k));
-            while(!this->group(i,j,k)->available()) // spinlock
+            groups::packet_manager* manager = this->consted ? world()->get_manager() : this->get_scope()->get_manager();
+            manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+                                                this->get_master(), "P2P", 
+                                               "INFORM OWNER ABOUT REQUEST",
+                                               *this->group_id, this->id,
+                                                ambient::rank(), // forward target
+                                                i, j, k));
+            while(!this->group(i,j,k)->available()){ // spinlock
+                this->get_scope()->get_manager()->spin();
                 world()->get_manager()->spin();
+            }
         }
         return *(this->group(i, j, k));
     }
