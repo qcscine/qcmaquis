@@ -1,5 +1,4 @@
 #include <iostream>
-#include <gmp.h>
 
 #define SIZE_BITS 256
 
@@ -12,6 +11,7 @@
 #include "vli_number_cpu.h"
 #include "vli_number_cpu.hpp"
 #include "vli_number_gpu.hpp"
+#include "vli_vector_cpu.hpp"
 
 
 #include "timings.h"
@@ -20,7 +20,7 @@ typedef int TYPE;
 int main (int argc, char * const argv[]) 
 {
 
-	
+/*	
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	TYPE FreqGPU = GPU->instance().GetDeviceProperties().clockRate;
@@ -42,11 +42,13 @@ int main (int argc, char * const argv[])
 	std::cout << A << std::endl;	
 
 //	std::cout << B << std::endl;
+	*/
+	vli::vli_vector<TYPE> U(4);
+	vli::vli_vector<TYPE> V(4);
+	vli::vli_vector<TYPE> W(4);
 	
-	
-	
-	
-	GPU->instance().destructor();
+	U = V + W;
+	//GPU->instance().destructor();
 	
     return 0;
 }
