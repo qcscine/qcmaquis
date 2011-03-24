@@ -11,7 +11,7 @@
 #include <complex>
 #include <numeric>
 
-#define M_SIZE 4
+#define M_SIZE 8
 #define M_P_SIZE 256
 #define NP 2
 using namespace blas;
@@ -61,6 +61,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 
     ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
     ambient::playout();
+    MPI_Barrier(MPI_COMM_WORLD);
     c = a * b;
     ambient::playout();
 //    ambient::push(ambient::pdgemm_l_kernel, ambient::pdgemm_c_kernel, a, b, c);

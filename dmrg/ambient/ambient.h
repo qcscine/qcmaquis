@@ -44,6 +44,8 @@ namespace ambient
 
         void push(core::operation* logistics, core::operation* computing);
         void playout();  // perform actual operations
+        void spin();
+        void spin_loop();
         int size;
         block_packet_t* default_data_packet_t;
         groups::group* ambient;
@@ -55,13 +57,16 @@ namespace ambient
         dim3 item_dim;    // size of work-item (i.e. 128) 
         dim3 gpu_dim;     // work-item size of gpgpu smp workload fractions
 
-        operation_stack stack;
+        operation_stack< std::pair<core::operation*,core::operation*> > stack;
+        operation_stack< groups::packet_manager* > router; // packet_manager router
     };
 
     scheduler& operator>>(scheduler* instance, dim3 distr_dim);
     void init(MPI_Comm comm = NULL);
     void finalize();
     void playout();
+    void spin();
+    void spin_loop();
     int size();
     bool is_master();
     groups::group* world();

@@ -53,37 +53,6 @@ namespace ambient{
         return (*this->content[hash_w].second)[id-1];
     }
 
-    operation_stack::operation_stack() : write_iterator(0), read_iterator(0), length(0) {
-        this->content = (std::pair<core::operation*,core::operation*>*)malloc(sizeof(std::pair<core::operation*,core::operation*>)*STACK_CONTENT_RESERVATION);
-        this->reserved = STACK_CONTENT_RESERVATION;
-    }
-
-    void operation_stack::push_back(std::pair<core::operation*,core::operation*> element){
-        this->content[this->write_iterator++] = element;
-        this->length++;
-        if(this->write_iterator == this->reserved){
-            this->reserved += STACK_CONTENT_RESERVATION;
-            this->content = (std::pair<core::operation*,core::operation*>*)realloc(this->content, sizeof(std::pair<core::operation*,core::operation*>)*this->reserved);
-        }
-    }
-
-    bool operation_stack::end_reached(){
-        if(this->read_iterator == this->length){
-            this->read_iterator = this->write_iterator = 0;
-            return true;
-        }
-        return false;
-    }
-
-    void operation_stack::clean(){
-        this->length = 0;
-    }
-
-    std::pair<core::operation*,core::operation*>* operation_stack::pick(){
-        return &this->content[this->read_iterator++];
-    }
-
-
     delegate::delegate() : length(0) {
         this->handlers = (core::operation**)malloc(sizeof(core::operation*)*STACK_CONTENT_RESERVATION);
         this->reserved = STACK_CONTENT_RESERVATION;

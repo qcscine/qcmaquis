@@ -14,8 +14,8 @@ namespace ambient {
             profile->associated_proxy->reduce_fp( profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD)),
                                                   (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
         }else{
-            printf("R%d: I'm integrating the block of %u:%d - %d %d\n", ambient::rank(), *(unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), pack->get<int>(A_BLOCK_P_ID_FIELD), 
-                   pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
+         //   printf("R%d: I'm integrating the block of %u:%d - %d %d\n", ambient::rank(), *(unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), pack->get<int>(A_BLOCK_P_ID_FIELD), 
+         //          pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
             profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
         }
     }
@@ -258,7 +258,7 @@ namespace ambient {
     void p_profile::finalize(){
         if(this->associated_proxy != NULL){
             for(int i=0; i < this->layout->segment_count; i++){
-                this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
+                this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // was scope-manager
                                                                              NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
                                                                              *this->group_id, this->id,
                                                                              this->layout->segment[i].owner, 
@@ -279,18 +279,15 @@ namespace ambient {
         if(this->state == PROXY){ // on-touch init for proxy
             this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
         }else if(this->group(i,j,k)->timestamp != this->timestamp){
-            printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
-            groups::packet_manager* manager = this->consted ? world()->get_manager() : this->get_scope()->get_manager();
+            //printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
+            groups::packet_manager* manager = world()->get_manager(); //this->consted ? world()->get_manager() : this->get_scope()->get_manager();
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                 this->get_master(), "P2P", 
                                                "INFORM OWNER ABOUT REQUEST",
                                                *this->group_id, this->id,
-                                                ambient::rank(), // forward target
+                                                ambient::rank(),      // forward target
                                                 i, j, k));
-            while(!this->group(i,j,k)->available()){ // spinlock
-                this->get_scope()->get_manager()->spin();
-                world()->get_manager()->spin();
-            }
+            while(!this->group(i,j,k)->available()) ambient::spin();  // spin-lock
         }
         return *(this->group(i, j, k));
     }
