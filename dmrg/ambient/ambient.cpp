@@ -114,6 +114,13 @@ namespace ambient
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
         core::operation* computing;
+
+
+
+
+
+
+
         this->router.push_back(world()->get_manager());
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;

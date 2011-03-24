@@ -57,8 +57,8 @@ namespace ambient
         dim3 item_dim;    // size of work-item (i.e. 128) 
         dim3 gpu_dim;     // work-item size of gpgpu smp workload fractions
 
-        operation_stack< std::pair<core::operation*,core::operation*> > stack;
-        operation_stack< groups::packet_manager* > router; // packet_manager router
+        one_touch_stack< std::pair<core::operation*,core::operation*> > stack;
+        one_touch_stack< groups::packet_manager* > router; // packet_manager router
     };
 
     scheduler& operator>>(scheduler* instance, dim3 distr_dim);
