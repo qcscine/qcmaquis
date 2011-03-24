@@ -41,7 +41,7 @@ namespace ambient
             this->default_data_packet_t->commit();
             if(!world()->get_manager()->subscribed(*this->default_data_packet_t)){
                 world()->get_manager()->subscribe(*this->default_data_packet_t);
-                world()->get_manager()->add_handler(*this->default_data_packet_t, new core::operation(integrate_block, 
+                world()->get_manager()->add_handler(*this->default_data_packet_t, new core::operation(accept_block, 
                     world()->get_manager()->get_pipe(*this->default_data_packet_t, packet_manager::IN)) );
             }
         }else if(this->gpu_dim == NULL){

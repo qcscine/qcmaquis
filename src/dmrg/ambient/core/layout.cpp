@@ -6,12 +6,11 @@
 #include "ambient/groups/packet_manager.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
+#include "ambient/core/auxiliary.h"
 
 namespace ambient{ namespace core{
 
     using namespace ambient::groups;
-
-    class race_condition_e{ };
 
     layout_table_entry::layout_table_entry()
     { }
@@ -110,10 +109,15 @@ namespace ambient{ namespace core{
         }
     }
 
-    ambient::packets::packet* package(p_profile* profile, int i, int j, int k, int dest){
+    ambient::packets::packet* package(p_profile* profile, const char* state, int i, int j, int k, int dest)
+    {
+        if(*state == 'P'){
+             if(profile->associated_proxy == NULL) throw race_condition_e();
+             profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
+        }
         void* header = profile->group(i, j, k)->header; 
         if(header == NULL) throw race_condition_e(); // to extend for situation when outdated
-        return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, i, j, k, NULL);
+        return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, state, i, j, k, NULL);
     }
 
     void forward_block(packet_manager::typed_q& in_q){
@@ -122,8 +126,7 @@ namespace ambient{ namespace core{
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
         if(!profile->xinvolved()) return;
         try{
-            if(profile->associated_proxy != NULL) profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING // WILL REWRITE
-            in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
+            in_q.manager->emit(package(profile, (const char*)pack->get(A_LAYOUT_P_STATE_FIELD), pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                        pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }catch(race_condition_e){
             in_q.manager->emit(pack); // re-throwing the packet for future handling
@@ -182,7 +185,7 @@ namespace ambient{ namespace core{
             for(int i=0; i < profiles[k]->layout->segment_count; i++){
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    scope.get_master_g(), "P2P", action,
-                                                                  *profiles[k]->group_id, profiles[k]->id,
+                                                                  *profiles[k]->group_id, profiles[k]->id, "GENERIC",
                                                                    profiles[k]->layout->segment[i].owner, 
                                                                    profiles[k]->layout->segment[i].i, 
                                                                    profiles[k]->layout->segment[i].j, 
@@ -192,7 +195,7 @@ namespace ambient{ namespace core{
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 
                                                                   "INFORM OWNER ABOUT REQUEST",
-                                                                  *profiles[k]->group_id, profiles[k]->id,
+                                                                  *profiles[k]->group_id, profiles[k]->id, "GENERIC",
                                                                    ambient::rank(), // forward target
                                                                    profiles[k]->layout->requests[i].i, 
                                                                    profiles[k]->layout->requests[i].j, 
