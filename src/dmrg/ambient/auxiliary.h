@@ -52,17 +52,21 @@ namespace core{ class operation; }
         std::vector< std::pair<hash_map*,std::vector<core::layout_table*>* > > content;
     };
 
+    template<typename T>
     class operation_stack {
     public:
         operation_stack();
-        void push_back(std::pair<core::operation*,core::operation*> element);
+        void push_back(T element);
         bool end_reached();
-        std::pair<core::operation*,core::operation*>* pick();
+        bool alt_end_reached();
+        T* pick();
+        T* alt_pick();
         void clean();
     private:
-        std::pair<core::operation*,core::operation*>* content;
+        T* content;
         size_t write_iterator; 
         size_t read_iterator;
+        size_t alt_read_iterator;
         size_t length;
         size_t reserved;
     };

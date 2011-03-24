@@ -125,6 +125,7 @@ namespace ambient{ namespace groups{
         size_t active_sends_number;
         size_t counter = 0;
         for(;;){
+            ambient::spin();
             active_sends_number = 0;
             for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
                 if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
@@ -132,19 +133,8 @@ namespace ambient{ namespace groups{
             }
             if(this->process_locking(active_sends_number)){ this->spin(); break; } // spinning last time
             counter++;
-            if(counter == 1000) printf("R%d: I'm stuck in first!!! (active sends: %d)\n", ambient::rank(), active_sends_number);
+            if(counter == 1000) printf("R%d: I'm stuck!!! (active sends: %d)\n", ambient::rank(), active_sends_number);
         }
-        for(;;){
-            active_sends_number = 0;
-            for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
-                if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
-                if((*it)->flow == OUT) active_sends_number += (*it)->active_requests_number;
-            }
-            if(this->process_locking(active_sends_number)){ this->spin(); break; } // spinning last time
-            counter++;
-            if(counter == 1000) printf("R%d: I'm stuck in second!!! (active sends: %d)\n", ambient::rank(), active_sends_number);
-        }
-        MPI_Barrier(*this->comm);
     }
     void packet_manager::spin(int n){
         for(int i=0; i < n; i++){

@@ -204,6 +204,7 @@ namespace ambient{ namespace groups {
     }
 
     packet_manager* group::get_manager(){
+        assert(this->involved());
         return this->manager;
     }
     bool group::involved(){

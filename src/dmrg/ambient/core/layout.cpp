@@ -87,7 +87,7 @@ namespace ambient{ namespace core{
 
         this->profile->group(i,j,k)->owner = ambient::rank();
         if(scope.is_master()){ 
-            update_map_entry(ambient::rank(), i, j, k);
+//            update_map_entry(ambient::rank(), i, j, k); // >_<
             add_segment_entry(ambient::rank(), i, j, k);
         }else
             add_segment_entry(ambient::rank(), i, j, k);
@@ -112,7 +112,7 @@ namespace ambient{ namespace core{
 
     ambient::packets::packet* package(p_profile* profile, int i, int j, int k, int dest){
         void* header = profile->group(i, j, k)->header; 
-        assert(header != NULL);
+        if(header == NULL) throw race_condition_e(); // to extend for situation when outdated
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, i, j, k, NULL);
     }
 
@@ -121,9 +121,13 @@ namespace ambient{ namespace core{
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->profile;
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
         if(!profile->xinvolved()) return;
-        if(profile->associated_proxy != NULL) profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
-        in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
-                                   pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
+        try{
+            if(profile->associated_proxy != NULL) profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING // WILL REWRITE
+            in_q.manager->emit(package(profile, pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
+                                       pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
+        }catch(race_condition_e){
+            in_q.manager->emit(pack); // re-throwing the packet for future handling
+        }
     }
 
     void forward_layout(packet_manager::typed_q& in_q){
@@ -131,7 +135,6 @@ namespace ambient{ namespace core{
         p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_LAYOUT_P_GID_FIELD), 1, pack->get<int>(A_LAYOUT_P_ID_FIELD))->profile;
         if(!profile->xinvolved()) return; // can be omitted I guess
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM X OWNER ACTION
-
         try{
             layout_table_entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
                                                                    pack->get<int>(A_LAYOUT_P_J_FIELD), 

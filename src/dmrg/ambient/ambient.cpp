@@ -6,6 +6,7 @@
 #include "ambient/groups/group.h"
 #include "ambient/groups/auxiliary.hpp"
 #include "ambient/core/layout.h"
+#include "ambient/auxiliary.hpp"
 
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
@@ -18,12 +19,11 @@ using namespace ambient::groups;
 namespace ambient
 {
 // global objects accessible anywhere //
-    scheduler& layout = scheduler::instance();
-    scheduler& engine = scheduler::instance();
-    multirank& rank   = multirank::instance();
+    scheduler& layout       = scheduler::instance();
+    scheduler& engine       = scheduler::instance();
+    multirank& rank         = multirank::instance();
     hash_map& p_profile_map = hash_map::instance();
-    scope_proxy& scope = scope_proxy::instance(); // charge of processes inside kernels
-
+    scope_proxy& scope      = scope_proxy::instance();
 // global objects accessible anywhere //
 
     scheduler & scheduler::operator>>(dim3 distr_dim) 
@@ -59,25 +59,18 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
-    void init(MPI_Comm comm)
-    {
-        engine.init(comm); 
-    }
-    void finalize()
-    {
-        engine.finalize(); 
-    }
-    void playout()
-    {
-        engine.playout(); 
-    }
-    scheduler::scheduler(): item_dim(dim3(2,2,1))
-    {
-    }
+    void init(MPI_Comm comm){ engine.init(comm);  }
+    void finalize()         { engine.finalize();  }
+    void playout()          { engine.playout();   }
+    void spin()             { engine.spin();      }
+    void spin_loop()        { engine.spin_loop(); }
+    int  size()             { return engine.size; }
+
+    scheduler::scheduler(): item_dim(dim3(2,2,1)){ }
     dim3 scheduler::get_group_dim(){ return this->group_dim; }
-    dim3 scheduler::get_item_dim(){ return this->item_dim; }
+    dim3 scheduler::get_item_dim() { return this->item_dim;  }
     dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
-    dim3 scheduler::get_gpu_dim(){ return this->gpu_dim; }
+    dim3 scheduler::get_gpu_dim()  { return this->gpu_dim;   }
 
     void scheduler::init(MPI_Comm comm)
     {
@@ -104,18 +97,32 @@ namespace ambient
     {
         this->stack.push_back(std::pair<core::operation*,core::operation*>(logistics,computing));
     }
+    void scheduler::spin()
+    {
+        while(!this->router.alt_end_reached()){ // alt is for embedding
+            (*this->router.alt_pick())->spin();
+        }
+    }
+    void scheduler::spin_loop()
+    {
+        while(!this->router.end_reached()){
+            (*this->router.pick())->spin_loop();
+        }
+    }
     void scheduler::playout()
     {
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
         core::operation* computing;
+        this->router.push_back(world()->get_manager());
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
             logistics->perform();
             core::apply_changes(logistics->profiles, logistics->count);
+            if(logistics->get_scope()->involved())
+                this->router.push_back(logistics->get_scope()->get_manager());
         }
-        world()->get_manager()->spin_loop();
-
+        this->spin_loop();
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
             logistics = pair->first;
@@ -133,16 +140,13 @@ namespace ambient
                     for(int k=0; k < workload_size; k++){
                         logistics->pin->set_default_group(workload[k].i, workload[k].j);
                         computing->invoke();
+                        this->spin(); // processing any communications that did occur
                     }
                     logistics->finalize();
-                    world()->get_manager()->spin(); // processing any communications that did occur
-                    logistics->get_scope()->get_manager()->spin_loop();
                 }
-                world()->get_manager()->spin(); // processing any communications that did occur
             }
+            this->spin_loop();
         }
-        MPI_Barrier(MPI_COMM_WORLD);
-        world()->get_manager()->spin_loop(); // finishing all communications (blocking)
 // cleaning the layout
         while(!this->stack.end_reached()){
             logistics = this->stack.pick()->first;
@@ -150,10 +154,7 @@ namespace ambient
                 logistics->profiles[i]->clean();
         }
         this->stack.clean();
-    }
-
-    int size(){
-        return engine.size;
+        this->router.clean();
     }
 
     bool is_master(){
