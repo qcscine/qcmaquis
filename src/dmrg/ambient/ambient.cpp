@@ -66,7 +66,7 @@ namespace ambient
     void spin_loop()        { engine.spin_loop(); }
     int  size()             { return engine.size; }
 
-    scheduler::scheduler(): item_dim(dim3(2,2,1)){ }
+    scheduler::scheduler(): item_dim(dim3(128,128,1)){ }
     dim3 scheduler::get_group_dim(){ return this->group_dim; }
     dim3 scheduler::get_item_dim() { return this->item_dim;  }
     dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
