@@ -127,13 +127,12 @@ namespace ambient{ namespace groups{
         for(;;){
             ambient::spin();
             active_sends_number = 0;
-            for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
-                if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
+            this->spin();
+            for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it)
                 if((*it)->flow == OUT) active_sends_number += (*it)->active_requests_number;
-            }
-            if(this->process_locking(active_sends_number)){ this->spin(); break; } // spinning last time
+            if(this->process_locking(active_sends_number)){ return this->spin(); } // spinning last time
             counter++;
-            if(counter == 1000) printf("R%d: I'm stuck!!! (active sends: %d)\n", ambient::rank(), active_sends_number);
+            if(counter == 1000) printf("R%d: inactive for %d iterations... (active sends: %d)\n", ambient::rank(), (int)counter, (int)active_sends_number);
         }
     }
     void packet_manager::spin(int n){
@@ -212,7 +211,7 @@ namespace ambient{ namespace groups{
             }else{
                 if(this->flow == OUT){ 
                     this->requests[i]->fail_count++;
-                    if(this->requests[i]->fail_count == 200) printf("The failed request: %d\n", i);
+                    if(this->requests[i]->fail_count == 600) printf("The failed request: %d\n", i);
                 }
             }
         }
