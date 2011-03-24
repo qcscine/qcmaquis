@@ -53,9 +53,9 @@ namespace core{ class operation; }
     };
 
     template<typename T>
-    class operation_stack {
+    class one_touch_stack {
     public:
-        operation_stack();
+        one_touch_stack();
         void push_back(T element);
         bool end_reached();
         bool alt_end_reached();

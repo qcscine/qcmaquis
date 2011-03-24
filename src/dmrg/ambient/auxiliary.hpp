@@ -2,13 +2,13 @@
 namespace ambient{
 
     template<typename T>
-    operation_stack<T>::operation_stack() : write_iterator(0), read_iterator(0), alt_read_iterator(0), length(0) {
+    one_touch_stack<T>::one_touch_stack() : write_iterator(0), read_iterator(0), alt_read_iterator(0), length(0) {
         this->content = (T*)malloc(sizeof(T)*STACK_CONTENT_RESERVATION);
         this->reserved = STACK_CONTENT_RESERVATION;
     }
 
     template<typename T>
-    void operation_stack<T>::push_back(T element){
+    void one_touch_stack<T>::push_back(T element){
         this->content[this->write_iterator++] = element;
         this->length++;
         if(this->write_iterator == this->reserved){
@@ -18,7 +18,7 @@ namespace ambient{
     }
 
     template<typename T>
-    bool operation_stack<T>::end_reached(){
+    bool one_touch_stack<T>::end_reached(){
         if(this->read_iterator == this->length){
             this->read_iterator = this->write_iterator = 0;
             return true;
@@ -27,7 +27,7 @@ namespace ambient{
     }
 
     template<typename T>
-    bool operation_stack<T>::alt_end_reached(){
+    bool one_touch_stack<T>::alt_end_reached(){
         if(this->alt_read_iterator == this->length){
             this->alt_read_iterator = 0;
             return true;
@@ -36,17 +36,17 @@ namespace ambient{
     }
 
     template<typename T>
-    void operation_stack<T>::clean(){
+    void one_touch_stack<T>::clean(){
         this->length = 0;
     }
 
     template<typename T>
-    T* operation_stack<T>::pick(){
+    T* one_touch_stack<T>::pick(){
         return &this->content[this->read_iterator++];
     }
 
     template<typename T>
-    T* operation_stack<T>::alt_pick(){
+    T* one_touch_stack<T>::alt_pick(){
         return &this->content[this->alt_read_iterator++];
     }
 }

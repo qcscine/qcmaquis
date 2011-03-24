@@ -211,7 +211,8 @@ namespace ambient{ namespace groups{
             }else{
                 if(this->flow == OUT){ 
                     this->requests[i]->fail_count++;
-                    if(this->requests[i]->fail_count == 600) printf("The failed request: %d\n", i);
+                    if(this->requests[i]->fail_count == 600) 
+                        printf("Warning: The request (%d) took already %d iterations...\n", i, this->requests[i]->fail_count);
                 }
             }
         }
