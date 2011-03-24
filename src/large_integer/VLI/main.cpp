@@ -5,8 +5,10 @@
 #include <cuda.h>
 #include <cublas.h>
 
-#include "GpuManager.h"
 #include "definition.h"
+
+#include "GpuManager.h"
+#include "GpuManager.hpp"
 #include "vli_number_gpu.h"
 #include "vli_number_cpu.h"
 #include "vli_number_cpu.hpp"
@@ -15,12 +17,13 @@
 
 
 #include "timings.h"
+
 typedef int TYPE; 
 
 int main (int argc, char * const argv[]) 
 {
 
-/*	
+	
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	TYPE FreqGPU = GPU->instance().GetDeviceProperties().clockRate;
@@ -42,13 +45,15 @@ int main (int argc, char * const argv[])
 	std::cout << A << std::endl;	
 
 //	std::cout << B << std::endl;
-	*/
+	
 	vli::vli_vector<TYPE> U(4);
 	vli::vli_vector<TYPE> V(4);
 	vli::vli_vector<TYPE> W(4);
 	
 	U = V + W;
-	//GPU->instance().destructor();
+	U = V * W;
+
+	GPU->instance().destructor();
 	
     return 0;
 }

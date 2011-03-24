@@ -144,7 +144,7 @@ __global__ void addition_classic_kernel_gpu(T x, T y , T z,int num_integer, int 
 		{
 			k = i+j ;
 			addition_kernel_gpu(x,y,z,k);
-			*/
+			
 		}
 	}
 

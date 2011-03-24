@@ -45,11 +45,16 @@ namespace vli
 	 access operator
 	 */
 	template<class T>
-	vli_cpu<T>*  vli_vector<T>::operator[](std::size_t i )
+	vli_cpu<T> const &  vli_vector<T>::operator[](std::size_t i ) const
 	{
-		return vector_vli_[i];
+		return *(vector_vli_[i]);
 	}
 	
+	template<class T>
+	vli_cpu<T>  &  vli_vector<T>::operator[](std::size_t i )
+	{
+		return *(vector_vli_[i]);
+	}
 	
 	template<class T>
 	vli_vector<T>& vli_vector<T>::operator += (vli_vector<T> const &  vli)
@@ -57,6 +62,13 @@ namespace vli
 		plus_assign(*this, vli);
 		return *this;
 	}
+
+	template<class T>
+	vli_vector<T>& vli_vector<T>::operator *= (vli_vector<T> const &  vli)
+	{
+		multiply_assign(*this, vli);
+		return *this;
+	}	
 	
 	/**
 	 multiply and addition operators, suite ...
@@ -77,11 +89,30 @@ namespace vli
 		#pragma omp parallel for private(i)
 		for(std::size_t i = 0; i < vli_b.GetSize(); i++)
 		{
-	//		addition_classic_cpu( vli_a[i], vli_b[i]);
+			addition_classic_cpu( vli_a[i], vli_b[i]);
 		}
-		
-			
 	}
+	
+	template <class T>
+	const vli_vector<T> operator*(vli_vector<T> vli_a, vli_vector<T> const& vli_b)
+	{
+		vli_a *= vli_b;
+		return vli_a;
+	}
+	
+	template <class T>
+	void multiply_assign(vli_vector<T> & vli_a, vli_vector<T> const& vli_b )
+	{
+		/**
+		 the vectors have the same size
+		 */
+		#pragma omp parallel for private(i)
+		for(std::size_t i = 0; i < vli_b.GetSize(); i++)
+		{
+			multiplication_classic_cpu( vli_a[i], vli_b[i]);
+		}
+	}
+	
 	
 	template <class T>
 	const vli_vector<T> operator*(vli_vector<T> vli_a, vli_vector<T> const& vli_b);
