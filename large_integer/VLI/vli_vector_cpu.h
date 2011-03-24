@@ -29,7 +29,8 @@ public:
 	/**
 	 access operator
 	*/
-	vli_cpu<T>* operator[](std::size_t i);
+	vli_cpu<T>const& operator[](std::size_t i) const;
+	vli_cpu<T>& operator[](std::size_t i) ;	
 	/**
 	 multiply and addition operators
 	 */															

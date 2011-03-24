@@ -150,8 +150,8 @@ namespace vli
 	template <typename T>
 	void multiplication_block_cpu(T* x, T  const *  y, T * r )	
 	{
-		int a[2] = {0,0};
-		int b[2] = {0,0};
+		T a[2] = {0,0};
+		T b[2] = {0,0};
 		/**
 		 Divide and conquer algo (see my notes - for the euclidian division tips)
 		 X <=> Xl Xr (half of the binary number)
@@ -176,8 +176,8 @@ namespace vli
 		
 		size_int size = x.size()/2; 
 
-		int r[2] = {0,0};	//for local block calculation
-		int m =0;
+		T r[2] = {0,0};	//for local block calculation
+		T m =0;
 		
 		vli::vli_cpu<T> inter;
 		
