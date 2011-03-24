@@ -5,18 +5,23 @@
 
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
+#include "ambient/core/auxiliary.h"
 
 namespace ambient {
-    void integrate_block(groups::packet_manager::typed_q& in_q){
+    void accept_block(groups::packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
-        p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
-        if(profile->associated_proxy != NULL){
-            profile->associated_proxy->reduce_fp( profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD)),
-                                                  (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
-        }else{
-         //   printf("R%d: I'm integrating the block of %u:%d - %d %d\n", ambient::rank(), *(unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), pack->get<int>(A_BLOCK_P_ID_FIELD), 
-         //          pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
-            profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
+        try{
+            p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
+            if(pack->get<char>(A_BLOCK_P_STATE_FIELD) == 'P'){
+                if(profile->associated_proxy == NULL) throw core::race_condition_e();
+                workgroup* grp = profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
+                if(grp->header == NULL) throw core::race_condition_e();
+                profile->associated_proxy->reduce_fp( grp, (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
+            }else{
+                profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
+            }
+        }catch(core::race_condition_e){
+            in_q.manager->emit(pack); // re-throwing the packet for future handling
         }
     }
 
@@ -233,12 +238,12 @@ namespace ambient {
         if(scope->involved()){
             if(!scope->get_manager()->subscribed(*this->packet_type)){
                 scope->get_manager()->subscribe(*this->packet_type);
-                scope->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
+                scope->get_manager()->add_handler(*this->packet_type, new core::operation(accept_block, 
                     scope->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
             }
             if(!world()->get_manager()->subscribed(*this->packet_type)){
                 world()->get_manager()->subscribe(*this->packet_type);
-                world()->get_manager()->add_handler(*this->packet_type, new core::operation(integrate_block, 
+                world()->get_manager()->add_handler(*this->packet_type, new core::operation(accept_block, 
                     world()->get_manager()->get_pipe(*this->packet_type, groups::packet_manager::IN)) );
             }
         }
@@ -260,7 +265,7 @@ namespace ambient {
             for(int i=0; i < this->layout->segment_count; i++){
                 this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // was scope-manager
                                                                              NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
-                                                                             *this->group_id, this->id,
+                                                                             *this->group_id, this->id, "PROXY",
                                                                              this->layout->segment[i].owner, 
                                                                              this->layout->segment[i].i, 
                                                                              this->layout->segment[i].j, 
@@ -284,7 +289,7 @@ namespace ambient {
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                 this->get_master(), "P2P", 
                                                "INFORM OWNER ABOUT REQUEST",
-                                               *this->group_id, this->id,
+                                               *this->group_id, this->id, "GENERIC",
                                                 ambient::rank(),      // forward target
                                                 i, j, k));
             while(!this->group(i,j,k)->available()) ambient::spin();  // spin-lock

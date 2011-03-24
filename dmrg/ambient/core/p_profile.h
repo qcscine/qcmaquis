@@ -111,6 +111,6 @@ namespace ambient {
     };
 
     p_profile& operator>>(p_profile* instance, dim3 dim_distr);
-    void integrate_block(groups::packet_manager::typed_q& in_q);
+    void accept_block(groups::packet_manager::typed_q& in_q);
 }
 #endif
