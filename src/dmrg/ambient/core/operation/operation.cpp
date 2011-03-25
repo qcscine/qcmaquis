@@ -26,6 +26,7 @@ namespace ambient{ namespace core{
         this->dependants = NULL;
         this->dependency_count = 0;
         this->executed = false;
+        this->constness = NULL;
     }
     void operation::perform()
     {
@@ -41,6 +42,12 @@ namespace ambient{ namespace core{
     void operation::extract_profiles()
     {
         (this->*extract)();
+        this->constness = (bool*)malloc(sizeof(bool)*count);
+        for(int i=0; i < this->count; i++)
+            if(this->profiles[i]->state != ABSTRACT && this->profiles[i]->consted){
+                this->constness[i] = true; 
+            }else // playout can be further enhanced for ABSTRACT state 
+                this->constness[i] = false;
     }
     void operation::preprocess()
     {

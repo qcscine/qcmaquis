@@ -35,6 +35,7 @@ namespace ambient{ namespace core{
         void(operation::*prototype)();
         void(*operation_ptr)();
         groups::group* scope;
+        bool* constness;
         void** arguments;
         p_profile** profiles;
         p_profile* pin;
