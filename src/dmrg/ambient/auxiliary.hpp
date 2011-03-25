@@ -48,6 +48,9 @@ namespace ambient{
     template<typename T>
     void one_touch_stack<T>::clean(){
         this->length = 0;
+        this->read_iterator = 0;
+        this->alt_read_iterator = 0;
+        this->write_iterator = 0;
     }
 
     template<typename T>

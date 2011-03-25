@@ -111,76 +111,89 @@ namespace ambient
     }
     void scheduler::playout()
     {
-        one_touch_stack< std::pair<core::operation*,core::operation*> > filtered_stack;
-        one_touch_stack< std::pair<core::operation*,core::operation*> > remaining_stack;
+        one_touch_stack<core::operation*> cleanup_stack;
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
         core::operation* computing;
-
         core::operation* needle_op;
         core::operation* haystack_op;
+        bool repeat = true;
+
+        while(!this->stack.end_reached()){
+            pair = this->stack.pick();
+            pair->first->extract_profiles();
+            pair->second->extract_profiles();
+        }
 // now let's iterate through the stack and mark dependencies
         while(!this->stack.end_reached()){
             //printf("R%d: finding deps!\n", ambient::rank());
             needle_op = this->stack.pick()->first;
-            for(int i=0; i < needle_op->count; i++){
-                do{ haystack_op = this->stack.alt_pick()->first; 
-                } while(needle_op != haystack_op); 
-                while(!this->stack.alt_end_reached()){
-                    //printf("R%d: comparing with the next one!\n", ambient::rank());
-                    haystack_op = this->stack.alt_pick()->first;
-                    for(int j=0; j < haystack_op->count; j++)
-                    if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
-                        //printf("R%d: Added dep! %d eq %d\n", ambient::rank(), needle_op->profiles[i], haystack_op->profiles[j]);
-                        needle_op->add_dependant(haystack_op);
-                        break;
-                    }
+            do{ haystack_op = this->stack.alt_pick()->first; 
+            } while(needle_op != haystack_op); 
+            while(!this->stack.alt_end_reached()){
+                //printf("R%d: comparing with the next one!\n", ambient::rank());
+                haystack_op = this->stack.alt_pick()->first;
+                for(int i=0; i < needle_op->count; i++)
+                for(int j=0; j < haystack_op->count; j++)
+                if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
+                    //printf("R%d: Added dep! %d eq %d\n", ambient::rank(), needle_op->profiles[i], haystack_op->profiles[j]);
+                    needle_op->add_dependant(haystack_op);
+                    goto double_break;
                 }
+                double_break: continue;
             }
         }
-
-
-        this->router.push_back(world()->get_manager());
-        while(!this->stack.end_reached()){
-            logistics = this->stack.pick()->first;
-            logistics->perform();
-            core::apply_changes(logistics->profiles, logistics->count);
-            if(logistics->get_scope()->involved())
-                this->router.push_back(logistics->get_scope()->get_manager());
-        }
-        this->spin_loop();
-        while(!this->stack.end_reached()){
-            pair = this->stack.pick();
-            logistics = pair->first;
-            if(logistics->get_scope()->involved()){
-                computing = pair->second;
-                computing->set_scope(logistics->get_scope());
-                if(logistics->pin == NULL){ // nothing has been pinned
-                    computing->invoke();    // scalapack style
-                }else{
-// performing computation for every item inside every appointed workgroup
-                    std::vector<core::layout_table_entry> & workload = logistics->pin->layout->segment_count != 0 ? 
-                                                                       logistics->pin->layout->segment : logistics->pin->layout->requests;
-                    int workload_size = logistics->pin->layout->segment_count != 0 ? 
-                                        logistics->pin->layout->segment_count : logistics->pin->layout->request_count; 
-                    for(int k=0; k < workload_size; k++){
-                        logistics->pin->set_default_group(workload[k].i, workload[k].j);
-                        computing->invoke();
-                        this->spin(); // processing any communications that did occur
-                    }
-                    logistics->finalize();
-                }
+// now we all set with dependencies!
+        while(repeat)
+        {   repeat = false;
+            this->router.push_back(world()->get_manager());
+            while(!this->stack.end_reached()){
+                logistics = this->stack.pick()->first;
+                if(logistics->executed) continue;
+                if(logistics->dependency_count){ repeat = true; continue; }
+                logistics->perform();
+                core::apply_changes(logistics->profiles, logistics->count);
+                if(logistics->get_scope()->involved())
+                    this->router.push_back(logistics->get_scope()->get_manager());
             }
             this->spin_loop();
-        }
+            while(!this->stack.end_reached()){
+                pair = this->stack.pick();
+                logistics = pair->first;
+                computing = pair->second;
+                if(logistics->dependency_count || computing->executed) continue;
+                cleanup_stack.push_back(logistics);
+                if(logistics->get_scope()->involved()){
+                    computing->set_scope(logistics->get_scope());
+                    if(logistics->pin == NULL){ // nothing has been pinned
+                        computing->invoke();    // scalapack style
+                    }else{
+// performing computation for every item inside every appointed workgroup
+                        std::vector<core::layout_table_entry> & workload = logistics->pin->layout->segment_count != 0 ? 
+                                                                           logistics->pin->layout->segment : logistics->pin->layout->requests;
+                        int workload_size = logistics->pin->layout->segment_count != 0 ? 
+                                            logistics->pin->layout->segment_count : logistics->pin->layout->request_count; 
+                        for(int k=0; k < workload_size; k++){
+                            logistics->pin->set_default_group(workload[k].i, workload[k].j);
+                            computing->invoke();
+                            this->spin(); // processing any communications that did occur
+                        }
+                        logistics->finalize();
+                    }
+                }
+                this->spin_loop();
+            }
 // cleaning the layout
-        while(!this->stack.end_reached()){
-            logistics = this->stack.pick()->first;
-            for(int i=0; i < logistics->count; i++)
-                logistics->profiles[i]->clean();
+            while(!cleanup_stack.end_reached()){
+                logistics = *cleanup_stack.pick();
+                for(int i=0; i < logistics->count; i++)
+                    logistics->profiles[i]->clean();
+                logistics->resolve_dependencies();
+            }
+            cleanup_stack.clean(); // :))
+            this->router.clean();
         }
         this->stack.clean();
-        this->router.clean();
     }
 
     bool is_master(){
