@@ -19,9 +19,14 @@
 
 #define body_tn(z, n, text)                                                                 \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                 \
+void operation::extract_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))   \
+{                                                                                           \
+    BOOST_PP_REPEAT(TYPES_NUMBER, extract_profile, ~)                                       \
+    this->pin = this->profiles[n];                                                          \
+}                                                                                           \
+template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                 \
 void operation::prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) )) \
 {                                                                                           \
-    if(!this->is_extracted) this->extract_profiles< BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, T) >(n);            \
     ((void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))this->operation_ptr)          \
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, n) );                                         \
 }
@@ -50,19 +55,19 @@ operation::operation( FP op, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER, T, *arg) 
     BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;
+    ptr = &operation::extract_template;
+    this->extract = (void(operation::*)())ptr;
 }
 
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
-void operation::extract_profiles(int pin){
+void operation::extract_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ))
+{
     BOOST_PP_REPEAT(TYPES_NUMBER, extract_profile, ~) 
-    if(pin >= 0) this->pin = this->profiles[pin];
-    this->is_extracted = true;
 }
 
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 void operation::prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ))
 {
-    if(!this->is_extracted) this->extract_profiles< BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, T) >(-1);
     ((void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ))this->operation_ptr)
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
 }

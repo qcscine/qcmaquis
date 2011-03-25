@@ -22,11 +22,13 @@ namespace ambient{ namespace core{
         void invoke();   // executes operation (clean way)
         void set_scope(groups::group* scope);
         groups::group* get_scope();
+        void extract_profiles();
         void preprocess();
         void finalize();
         void add_dependant(operation* dep);
         void resolve_dependencies();
 
+        bool executed;
         one_touch_stack<operation*>* dependants;
         size_t dependency_count;
         void(operation::*extract)();
@@ -37,7 +39,6 @@ namespace ambient{ namespace core{
         p_profile** profiles;
         p_profile* pin;
         size_t count;
-        bool is_extracted;
     };
 
     class out_of_scope_e{};

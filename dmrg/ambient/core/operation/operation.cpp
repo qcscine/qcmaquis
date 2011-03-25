@@ -23,18 +23,24 @@ namespace ambient{ namespace core{
         one_touch_stack<operation*> deps;
         this->scope = NULL;
         this->pin = NULL;
-        this->is_extracted = false;
         this->dependants = NULL;
         this->dependency_count = 0;
+        this->executed = false;
     }
     void operation::perform()
     {
         ambient::scope.set_op(this);
         (this->*prototype)();
+        this->executed = true;
     }
     void operation::invoke()
     {
         (this->*prototype)();
+        this->executed = true;
+    }
+    void operation::extract_profiles()
+    {
+        (this->*extract)();
     }
     void operation::preprocess()
     {
@@ -44,7 +50,6 @@ namespace ambient{ namespace core{
     void operation::finalize()
     {
         for(size_t i=0; i < this->count; i++) this->profiles[i]->finalize();
-        this->resolve_dependencies();
     }
     void operation::set_scope(groups::group* scope)
     {
