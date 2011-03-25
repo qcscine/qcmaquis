@@ -27,6 +27,16 @@ namespace ambient{
     }
 
     template<typename T>
+    void one_touch_stack<T>::reset(){
+        this->read_iterator = this->write_iterator = 0;
+    }
+
+    template<typename T>
+    void one_touch_stack<T>::alt_reset(){
+        this->alt_read_iterator = 0;
+    }
+
+    template<typename T>
     bool one_touch_stack<T>::alt_end_reached(){
         if(this->alt_read_iterator == this->length){
             this->alt_read_iterator = 0;

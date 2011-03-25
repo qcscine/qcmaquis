@@ -61,6 +61,8 @@ namespace core{ class operation; }
         bool alt_end_reached();
         T* pick();
         T* alt_pick();
+        void reset();
+        void alt_reset();
         void clean();
     private:
         T* content;

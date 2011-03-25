@@ -1,13 +1,31 @@
 #include "ambient/ambient.h"
 #include "ambient/core/operation/operation.h"
+#include "ambient/auxiliary.hpp"
 
 namespace ambient{ namespace core{
 
+    void operation::add_dependant(operation* dep){
+        if(this->dependants == NULL) 
+            this->dependants = new one_touch_stack<operation*>();
+        this->dependants->push_back(dep);
+        dep->dependency_count++;
+    }
+
+    void operation::resolve_dependencies(){
+        if(this->dependants == NULL) return; 
+        while(!this->dependants->end_reached()){
+            (*this->dependants->pick())->dependency_count--;
+        }
+    }
+
     void operation::init()
     {
+        one_touch_stack<operation*> deps;
         this->scope = NULL;
         this->pin = NULL;
         this->is_extracted = false;
+        this->dependants = NULL;
+        this->dependency_count = 0;
     }
     void operation::perform()
     {
@@ -26,6 +44,7 @@ namespace ambient{ namespace core{
     void operation::finalize()
     {
         for(size_t i=0; i < this->count; i++) this->profiles[i]->finalize();
+        this->resolve_dependencies();
     }
     void operation::set_scope(groups::group* scope)
     {

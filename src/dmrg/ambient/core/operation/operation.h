@@ -4,6 +4,8 @@
 #define pinned ambient::core::ambient_pin* , 
 #define marked NULL,
 
+#include "ambient/auxiliary.h"
+
 namespace ambient{
     class p_profile; 
     namespace groups { class group; }
@@ -22,6 +24,11 @@ namespace ambient{ namespace core{
         groups::group* get_scope();
         void preprocess();
         void finalize();
+        void add_dependant(operation* dep);
+        void resolve_dependencies();
+
+        one_touch_stack<operation*>* dependants;
+        size_t dependency_count;
         void(operation::*prototype)();
         void(*operation_ptr)();
         groups::group* scope;
