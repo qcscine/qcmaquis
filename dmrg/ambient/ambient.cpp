@@ -111,14 +111,33 @@ namespace ambient
     }
     void scheduler::playout()
     {
+        one_touch_stack< std::pair<core::operation*,core::operation*> > filtered_stack;
+        one_touch_stack< std::pair<core::operation*,core::operation*> > remaining_stack;
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
         core::operation* computing;
 
-
-
-
-
+        core::operation* needle_op;
+        core::operation* haystack_op;
+// now let's iterate through the stack and mark dependencies
+        while(!this->stack.end_reached()){
+            printf("R%d: finding deps!\n", ambient::rank());
+            needle_op = this->stack.pick()->first;
+            for(int i=0; i < needle_op->count; i++){
+                do{ haystack_op = this->stack.alt_pick()->first; 
+                } while(needle_op != haystack_op); 
+                while(!this->stack.alt_end_reached()){
+                    printf("R%d: comparing with the next one!\n", ambient::rank());
+                    haystack_op = this->stack.alt_pick()->first;
+                    for(int j=0; j < haystack_op->count; j++)
+                    if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
+                        printf("R%d: Added dep! %d eq %d\n", ambient::rank(), needle_op->profiles[i], haystack_op->profiles[j]);
+                        needle_op->add_dependant(haystack_op);
+                        break;
+                    }
+                }
+            }
+        }
 
 
         this->router.push_back(world()->get_manager());
