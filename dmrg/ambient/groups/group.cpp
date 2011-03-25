@@ -38,7 +38,7 @@ namespace ambient{ namespace groups {
             id_len = *hash_id = 1; // 1 as a first bit stands for mirroring of all values
         }else{
             for(int i = 0; i < this->count; i++){
-                rank_g = this->translate_rank(i)+1;
+                rank_g = this->translate_up_rank(i)+1;
                 if(rank_g >= id_len*32){
                     old_id_len = id_len;
                     id_len = rank_g/32 + (rank_g % 32 ? 1:0);
@@ -164,7 +164,7 @@ namespace ambient{ namespace groups {
 
 // note: be sure to feed this with the rank inside group (i) not members[i]
 // as members[i] contains translation to the parent group
-    int group::translate_rank(int rank, group* parent) const{
+    int group::translate_up_rank(int rank, group* parent) const{
         int rank_n = rank;
         const group* iterator = this;
         if(!parent) parent = group_map("ambient");
@@ -178,6 +178,19 @@ namespace ambient{ namespace groups {
             iterator = iterator->parent;
         }while(iterator != parent);
         return rank_n;
+    }
+
+// note: be sure to feed this with the rank inside group (i) not members[i]
+// as members[i] contains translation to the parent group
+    int group::translate_down_rank(int rank, group* child) const{
+        int rank_n = rank;
+        const group* iterator = child;
+        if(child == this) return rank;
+        else{
+            rank_n = group::translate_down_rank(rank, child->parent);
+            for(int i=0; i < child->count; i++)
+            if(child->members[i] == rank_n) return i;
+        }
     }
 
     void group::commit(){
@@ -195,8 +208,12 @@ namespace ambient{ namespace groups {
         memset(this->vacations, 0, sizeof(int)*this->count);
     }
 
+    int group::get_master(){
+        return this->master;
+    }
+
     int group::get_master_g(){
-        return translate_rank(this->master);
+        return translate_up_rank(this->master);
     }
 
     int group::get_rank(){
@@ -222,7 +239,7 @@ namespace ambient{ namespace groups {
     group* group_map(const char* name, group* instance){
         static std::map<std::string,group*> map;
         if(instance != NULL){ 
-            if(map.find(name) != map.end()){ printf("Warning: trying to add to groups with the same name (skipped)\n"); return map.find(name)->second; } // todo
+            if(map.find(name) != map.end()) return (map.find(name)->second = instance);
             map.insert(std::pair<std::string,group*>(name,instance));
         }
         if(map.find(name) == map.end()) return NULL; // wasn't able to find requested group

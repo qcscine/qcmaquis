@@ -266,7 +266,7 @@ namespace ambient {
                 this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // was scope-manager
                                                                              NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
                                                                              *this->group_id, this->id, "PROXY",
-                                                                             this->layout->segment[i].owner, 
+                                                                             ambient::rank(this->get_scope()),
                                                                              this->layout->segment[i].i, 
                                                                              this->layout->segment[i].j, 
                                                                              this->layout->segment[i].k));

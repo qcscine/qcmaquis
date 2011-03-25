@@ -56,16 +56,16 @@ namespace ambient{ namespace groups{
 // finite state machine (closure proceedure).
 // note: the state also can be modified in callback of control_in queue.
         if(this->state == OPEN && active_sends_number == 0){
-                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master_g(), 
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master(), 
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "CLOSURE")); 
                 this->state = LOOSE;
         }else if(this->state == CLOSURE){ 
             if(active_sends_number == 0){
-                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master_g(), 
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master(), 
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "APPROVE")); 
                 this->state = LOOSE;
             }else{
-                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master_g(), 
+                this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master(), 
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "REJECT")); 
                 this->state = OPEN;
             }
@@ -180,11 +180,11 @@ namespace ambient{ namespace groups{
     void packet_manager::typed_q::send(ambient_request* request){
         packet* pack = (packet*)request->memory;
         if(pack->get<char>(A_OP_T_FIELD) == 'P'){
-            MPI_Isend(pack->data, 1, pack->mpi_t, *(int*)pack->get(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
+            MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
         }else if(pack->get<char>(A_OP_T_FIELD) == 'B'){
             pack->set(A_OP_T_FIELD, "P2P");
             pack->set(A_DEST_FIELD, 0); // using up this request
-            MPI_Isend(pack->data, 1, pack->mpi_t, *(int*)pack->get(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
+            MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
             for(int i=1; i < this->manager->get_group()->get_size(); i++){
                 pack->set(A_DEST_FIELD, i);
                 this->push(pack);

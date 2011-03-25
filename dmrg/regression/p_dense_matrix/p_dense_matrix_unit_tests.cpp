@@ -61,17 +61,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> d(M_SIZE,M_SIZE);
     p_dense_matrix<T> e(M_SIZE,M_SIZE);
 
-  //  ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
-  //  ambient::playout();
-  //  MPI_Barrier(MPI_COMM_WORLD);
-  //  c = a * b;
-  //  ambient::playout();
+   // ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
+   // ambient::playout();
+   //// MPI_Barrier(MPI_COMM_WORLD);
+   // c = a * b;
+   // ambient::playout();
       c = a + b;
       ambient::playout();
       d = a + b;
-      e = a + b;
       ambient::playout();
-
+   
 //    ambient::push(ambient::pdgemm_l_kernel, ambient::pdgemm_c_kernel, a, b, c);
 //    ambient::playout();
 }
