@@ -34,7 +34,7 @@ namespace ambient{ namespace groups {
     bool multirank::is_master(const group* grp) const
     {
           if((*this)(grp) == UNDEFINED_RANK) return false;
-          return grp->translate_rank((*this)(grp)) == grp->translate_rank(grp->master);
+          return grp->translate_up_rank((*this)(grp)) == grp->translate_up_rank(grp->master);
     }
 
 } }

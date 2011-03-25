@@ -85,11 +85,7 @@ namespace ambient{ namespace core{
                this->segment[s].k == k) return; // avoiding redunant information // that is - hangs in mpi
 
         this->profile->group(i,j,k)->owner = ambient::rank();
-        if(scope.is_master()){ 
-//            update_map_entry(ambient::rank(), i, j, k); // >_<
-            add_segment_entry(ambient::rank(), i, j, k);
-        }else
-            add_segment_entry(ambient::rank(), i, j, k);
+        add_segment_entry(ambient::rank(), i, j, k);
     }
     void layout_table::request(int i, int j, int k){
         if(this->profile->state == COMPOSING) 

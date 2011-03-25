@@ -17,6 +17,7 @@ namespace ambient{ namespace groups{
         int vacant_level;
         int* vacations;
         int get_vacant();   // get the vacant rank for the child creation
+        int get_master();   // get rank of the group master
         int get_master_g(); // get translated rank of the group master
         bool involved();
         bool is_master();
@@ -31,7 +32,8 @@ namespace ambient{ namespace groups{
         void reorder(int* new_ranks);
         void reorder(int(*order)(int r));
 
-        int translate_rank(int rank, group* parent = NULL) const;
+        int translate_up_rank(int rank, group* parent = NULL) const;
+        int translate_down_rank(int rank, group* child) const;
 
         const char* name;
         int master;                // master process in this group

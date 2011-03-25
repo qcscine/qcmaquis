@@ -21,20 +21,18 @@ namespace ambient {
         i += parseout_id(&sql[i], &as);
         if(as == NULL) as = (char*)"tmp";
 
-        if((grp = groups::group_map(as)) == NULL){
-            grp = new groups::group(as, 0, groups::group_map(group));
+        grp = new groups::group(as, 0, groups::group_map(group));
 
-            if(token_t == TK_STAR){ 
-                grp->add_every(1); 
-            }else if(token_t == TK_FLOAT){ 
-                float part = strtof(sql, NULL);
-                grp->add_every((int)(1/part)); 
-            }else if(token_t == TK_INTEGER){ 
-                int count = (int)strtol(sql, NULL, 10);
-                grp->add(count);
-            }
-            grp->commit();
+        if(token_t == TK_STAR){ 
+            grp->add_every(1); 
+        }else if(token_t == TK_FLOAT){ 
+            float part = strtof(sql, NULL);
+            grp->add_every((int)(1/part)); 
+        }else if(token_t == TK_INTEGER){ 
+            int count = (int)strtol(sql, NULL, 10);
+            grp->add(count);
         }
+        grp->commit();
         scope.set_group(grp);
         scope.get_op()->preprocess();
     }
