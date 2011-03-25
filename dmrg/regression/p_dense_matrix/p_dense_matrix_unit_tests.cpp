@@ -67,6 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 //    ambient::playout();
       c = a + b;
       d = a2 + b2;
+      ambient::playout();
       d = a + b;
       ambient::playout();
 

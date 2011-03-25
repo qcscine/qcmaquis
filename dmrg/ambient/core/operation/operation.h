@@ -29,6 +29,7 @@ namespace ambient{ namespace core{
 
         one_touch_stack<operation*>* dependants;
         size_t dependency_count;
+        void(operation::*extract)();
         void(operation::*prototype)();
         void(*operation_ptr)();
         groups::group* scope;
