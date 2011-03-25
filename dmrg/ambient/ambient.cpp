@@ -136,6 +136,7 @@ namespace ambient
                 for(int i=0; i < needle_op->count; i++)
                 for(int j=0; j < haystack_op->count; j++)
                 if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
+                    if(needle_op->constness[i] && haystack_op->constness[i]) continue;
                     //printf("R%d: Added dep! %d eq %d\n", ambient::rank(), needle_op->profiles[i], haystack_op->profiles[j]);
                     needle_op->add_dependant(haystack_op);
                     goto double_break;
