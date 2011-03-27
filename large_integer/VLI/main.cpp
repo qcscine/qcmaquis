@@ -30,15 +30,24 @@ int main (int argc, char * const argv[])
 	std::cout << " FreqGPU : " << FreqGPU << std::endl;
 
 	vli::vli_cpu<TYPE> A(254);
-	vli::vli_gpu<TYPE> C;
+	vli::vli_cpu<TYPE> B(254);	
+	vli::vli_cpu<TYPE> C;
+
 	vli::vli_gpu<TYPE> D(A);
-	vli::vli_cpu<TYPE> B(254);
-	vli::vli_cpu<TYPE> E(254);
+	std::cout << D << std::endl;
+	vli::vli_gpu<TYPE> E(B);
+	std::cout << E << std::endl;
+	vli::vli_gpu<TYPE> F(0);
+
 	
-	A = E+B;
-	std::cout << A << std::endl;
-	std::cout << E << std::endl;	
-	std::cout << B << std::endl;
+	A*=B;	
+	multiply_gpu(D.p(),E.p(),F.p(),1,D.size());
+	
+//	D*=E;
+	
+	std::cout << " cpu "<< A << std::endl;
+	std::cout << " gpu "<< F << std::endl;	
+/*	
 	A = E*B;
 
 	C = A;
@@ -52,7 +61,7 @@ int main (int argc, char * const argv[])
 	
 	U = V + W;
 	U = V * W;
-
+*/
 	GPU->instance().destructor();
 	
     return 0;
