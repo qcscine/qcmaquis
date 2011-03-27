@@ -44,29 +44,51 @@ namespace vli
 		destructors 
 		*/
 		~vli_gpu();
-		
-		vli_gpu<T> & operator = (vli_gpu<T> const &  vli);
-		void operator = (vli_cpu<T> const &  vli);
+		//think on the copy swap, I think it is totaly useless for gpu
+	//	vli_gpu<T> & operator = (vli_gpu<T> const &  vli);
+		/**
+		due to gpu architecture the overload is weird
+		*/
+	//	void operator = (vli_cpu<T> const &  vli);
+		void operator = (vli_gpu<T> const &  vli);
 
-		void swap(vli_gpu& vli);
+		void swap(vli_gpu const& vli);
 		void copy_vli_to_cpu(vli::vli_cpu<T>& vli); 
 		operator vli::vli_cpu<T>();
 		
-		
-		std::size_t size() const ;
-		inline const T* p () const ;
-		inline  T* p (); 
+		T size() const ;
+		inline  const T* p() const ;
+		inline  T* p(); 
 
+		/**
+		 multiply and addition operators
+		 */
+		vli_gpu<T>& operator += (vli_gpu<T> const& vli); 
+		vli_gpu<T>& operator *= (vli_gpu<T> const& vli); 
+		
 	private:
 		T* data_;
-		int size_;
+		T size_;
 		
 	};
 	
+	/**
+	 multiply and addition operators, suite ...
+	 */
+	template <class T>
+	const vli_gpu<T> operator+(vli_gpu<T> vli_a, vli_gpu<T> const& vli_b);
+	
+	template <class T>
+	void plus_assign(vli_gpu<T> & vli_a, vli_gpu<T> const& vli_b );
+	
+	template <class T>
+	const vli_gpu<T> operator*(vli_gpu<T> vli_a, vli_gpu<T> const& vli_b);
+	
+	template <class T>
+	void multiply_assign(vli_gpu<T> & vli_a, vli_gpu<T> const& vli_b );
+	
 	template <class T>
 	std::ostream& operator<<(std::ostream& os, const vli_gpu<T> & vli_gpu);
-	
-
 	
 }
 #endif

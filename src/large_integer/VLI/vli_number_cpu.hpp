@@ -44,7 +44,7 @@ namespace vli
 	template <class T>
 	vli_cpu<T>::~vli_cpu()
 	{
-		data_.erase(data_.begin(),data_.end());
+		data_.clear();
 	}
 	
 	/**
