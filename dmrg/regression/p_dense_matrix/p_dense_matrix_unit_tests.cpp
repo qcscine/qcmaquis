@@ -54,22 +54,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1);
 
     p_dense_matrix<T> a(M_SIZE,M_SIZE);
-    p_dense_matrix<T> a2(M_SIZE,M_SIZE);
     p_dense_matrix<T> b(M_SIZE,M_SIZE);
-    p_dense_matrix<T> b2(M_SIZE,M_SIZE);
     p_dense_matrix<T> c(M_SIZE,M_SIZE);
     p_dense_matrix<T> d(M_SIZE,M_SIZE);
-    p_dense_matrix<T> e(M_SIZE,M_SIZE);
 
     ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
-    ambient::playout();
-    c = a + b;
-    d = a * b;
-    ambient::playout();
-    //  d = a + b;
-    //  ambient::playout();
-    //
-//    ambient::push(ambient::pdgemm_l_kernel, ambient::pdgemm_c_kernel, a, b, c);
-//    ambient::playout();
+   // c = a + b;
+   // d = a * b;
+    c(511,511) = 13.0;
+    printf("The element is %.2f\n", c(511,511));
+
+
 }
 

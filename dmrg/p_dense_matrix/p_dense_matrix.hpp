@@ -140,14 +140,21 @@ namespace blas {
     {
         assert(i < this->rows);
         assert(j < this->cols);
-        return this->data[i+j*this->lda];
+        ambient::playout();
+        int group_i = i / (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
+        int group_j = j / (this->profile->get_group_dim().x*this->profile->get_item_dim().x);
+        int element_i = i % (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
+        int element_j = j % (this->profile->get_group_dim().x*this->profile->get_item_dim().x);
+        if(this->profile->group(group_i,group_j)->available()){
+            printf("Will access %d %d group (%d %d element)\n", group_i, group_j, element_i, element_j);
+            return *(T*)(*this->profile)(group_i, group_j).element(element_i, element_j);
+        }else
+            return *(new T()); //using default value of T
     }
 
     template <typename T>
-    inline T const& p_dense_matrix<T>::operator()(const size_type i, const size_type j) const 
-    {
-        assert((i < this->rows) && (j < this->cols));
-        return this->data[i+j*this->lda];
+    inline T const& p_dense_matrix<T>::operator()(const size_type i, const size_type j) const {
+        return this->operator()(i,j);
     }
 
     template <typename T>
