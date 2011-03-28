@@ -23,7 +23,7 @@ namespace ambient
     scheduler& engine       = scheduler::instance();
     multirank& rank         = multirank::instance();
     hash_map& p_profile_map = hash_map::instance();
-    scope_proxy& scope      = scope_proxy::instance();
+    scope_context& scope    = scope_context::instance();
 // global objects accessible anywhere //
 
     scheduler & scheduler::operator>>(dim3 distr_dim) 
@@ -126,18 +126,15 @@ namespace ambient
         }
 // now let's iterate through the stack and mark dependencies
         while(!this->stack.end_reached()){
-            //printf("R%d: finding deps!\n", ambient::rank());
             needle_op = this->stack.pick()->first;
             do{ haystack_op = this->stack.alt_pick()->first; 
             } while(needle_op != haystack_op); 
             while(!this->stack.alt_end_reached()){
-                //printf("R%d: comparing with the next one!\n", ambient::rank());
                 haystack_op = this->stack.alt_pick()->first;
                 for(int i=0; i < needle_op->count; i++)
                 for(int j=0; j < haystack_op->count; j++)
                 if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
                     if(needle_op->constness[i] && haystack_op->constness[i]) continue;
-                    //printf("R%d: Added dep! %d eq %d\n", ambient::rank(), needle_op->profiles[i], haystack_op->profiles[j]);
                     needle_op->add_dependant(haystack_op);
                     goto double_break;
                 }
@@ -183,8 +180,9 @@ namespace ambient
                         logistics->finalize();
                     }
                 }
-                this->spin_loop();
+                computing->executed = true;
             }
+            this->spin_loop();
 // cleaning the layout
             while(!cleanup_stack.end_reached()){
                 logistics = *cleanup_stack.pick();
@@ -199,7 +197,7 @@ namespace ambient
     }
 
     bool is_master(){
-        return ambient::rank.is_master();
+        return ambient::rank.is_master(scope.get_group());
     }
     group* world(){
         return engine.ambient;
