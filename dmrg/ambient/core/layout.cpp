@@ -98,6 +98,7 @@ namespace ambient{ namespace core{
     }
     void layout_table::clean(){
         this->segment_count = 0;
+        this->request_count = 0;
     }
     void layout_table::print(){
         for(int i=0; i < this->segment_count; i++){

@@ -8,17 +8,17 @@
 
 namespace ambient {
 
-    class scope_proxy { // scalable multiprocessor
+    class scope_context { // scalable multiprocessor
     private:
-        scope_proxy();
-        scope_proxy(scope_proxy const&);
-        scope_proxy& operator=(scope_proxy const&);
+        scope_context();
+        scope_context(scope_context const&);
+        scope_context& operator=(scope_context const&);
     public:
-        static scope_proxy& instance();
+        static scope_context& instance();
 
     public:
 // proxy functionality //
-        scope_proxy& operator()(const int rank);
+        scope_context& operator()(const int rank);
         void set_group(groups::group* grp);
         groups::group* get_group();
         void set_op(core::operation* op);

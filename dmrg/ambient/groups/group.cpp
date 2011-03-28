@@ -182,6 +182,7 @@ namespace ambient{ namespace groups {
 
 // note: be sure to feed this with the rank inside group (i) not members[i]
 // as members[i] contains translation to the parent group
+// note: invalid reads unsafe...
     int group::translate_down_rank(int rank, group* child) const{
         int rank_n = rank;
         const group* iterator = child;

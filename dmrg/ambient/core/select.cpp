@@ -1,6 +1,6 @@
 #include <ctype.h>
 #include "ambient/core/select.h"
-#include "ambient/core/scope_proxy.h"
+#include "ambient/core/scope_context.h"
 #include "ambient/groups/group.h"
 #include "ambient/core/operation/operation.h"
 #include "utils/sqlite3.c"

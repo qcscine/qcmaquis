@@ -11,7 +11,7 @@
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
 #include "ambient/auxiliary.h"
-#include "ambient/core/scope_proxy.h"
+#include "ambient/core/scope_context.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/layout.h"
 #include "ambient/core/select.h"
@@ -71,7 +71,7 @@ namespace ambient
     bool is_master();
     groups::group* world();
 
-    extern scope_proxy& scope;
+    extern scope_context& scope;
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;
