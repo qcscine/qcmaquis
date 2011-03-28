@@ -64,6 +64,7 @@ namespace core{ class operation; }
         void reset();
         void alt_reset();
         void clean();
+        bool empty();
     private:
         T* content;
         size_t write_iterator; 

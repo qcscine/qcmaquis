@@ -28,6 +28,16 @@ namespace ambient {
         this->timestamp = this->get_profile()->timestamp;
     }
 
+    void* workgroup::element(int i, int j, int k){
+        p_profile* profile = *this->profile;
+        int lda = profile->get_group_dim().y*profile->get_item_dim().y;
+        return &((char*)this->data)[(j*lda+i)*profile->t_size];
+    }
+
+    void* workgroup::operator()(int i, int j, int k){
+        return this->item(i,j,k);
+    }
+
     void* workgroup::item(int i, int j, int k){
         p_profile* profile = *this->profile;
         i = i*profile->get_item_dim().y;

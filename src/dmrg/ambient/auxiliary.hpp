@@ -54,6 +54,11 @@ namespace ambient{
     }
 
     template<typename T>
+    bool one_touch_stack<T>::empty(){
+        return (this->length == 0);
+    }
+
+    template<typename T>
     T* one_touch_stack<T>::pick(){
         return &this->content[this->read_iterator++];
     }
