@@ -30,7 +30,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         // avoid copying, use resize
-        C.insert_block(Matrix(),
+        C.insert_block(Matrix3(),
                        A.left_basis()[k].first, B.right_basis()[matched_block].first);
         C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
                        num_rows(A[k]), num_columns(B[matched_block]));
@@ -54,7 +54,7 @@ void pgemm(block_matrix<Matrix1, SymmGroup> const & A,
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
 
         // avoid copying, use resize
-        C.insert_block(Matrix(),
+        C.insert_block(Matrix3(),
                        A.left_basis()[k].first, B.right_basis()[matched_block].first);
         C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
                        num_rows(A[k]), num_columns(B[matched_block]));
@@ -183,11 +183,11 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
     }
     
     if (verbose && ! (old_basis == S.left_basis()) ) {
-        zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << endl;
-        zout << old_basis << endl << S.left_basis() << endl;
-        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << endl;
-        zout << "Smallest SV kept: " << Scut / allS[0] << endl;
-        zout << "Truncated weight: " << truncated_weight << endl;
+        zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << std::endl;
+        zout << old_basis << std::endl << S.left_basis() << std::endl;
+        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
+        zout << "Smallest SV kept: " << Scut / allS[0] << std::endl;
+        zout << "Truncated weight: " << truncated_weight << std::endl;
     }
     
     return std::make_pair(S.left_basis().sum_of_sizes(), truncated_weight);
@@ -248,10 +248,10 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
     
     if (verbose && ! (old_basis == evals.left_basis()) ) {
-        zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << endl;
-        zout << old_basis << endl << evals.left_basis() << endl;
-        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << endl;
-        zout << "Smallest EV kept: " << evalscut / allevals[0] << endl;
+        zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << std::endl;
+        zout << old_basis << std::endl << evals.left_basis() << std::endl;
+        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
+        zout << "Smallest EV kept: " << evalscut / allevals[0] << std::endl;
     }
     
     logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());

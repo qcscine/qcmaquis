@@ -45,27 +45,27 @@ public:
 //            V = right;
             gemm(S, V, right);
             
-            cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
+            std::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
             replace_pair(U, right, p);
-            cout << bond_indices[p+1].sum_of_sizes() << endl;
+            std::cout << bond_indices[p+1].sum_of_sizes() << std::endl;
             
 //            left = make_left_matrix(p);
 //            right = make_right_matrix(p+1);
 //            gemm(left, right, M);
-//            cout << M << endl;
+//            std::cout << M << std::endl;
             
 //            assert( (*this)[p].col_dim() == b1.col_dim() );
 //            assert( (*this)[p+1].row_dim() == b2.row_dim() );
             
 //            for (std::size_t r = 0; r < b1.row_dim(); ++r)
 //                for (std::size_t c = 0; c < b1.col_dim(); ++c)
-//                    cout << r << " " << c << endl << b1(r,c) << endl << (*this)[p](r,c) << endl << "###" << endl;
+//                    std::cout << r << " " << c << std::endl << b1(r,c) << endl << (*this)[p](r,c) << std::endl << "###" << std::endl;
 //            
 //            cout << "-----------------------------" << endl;
 //            
 //            for (std::size_t r = 0; r < b2.row_dim(); ++r)
 //                for (std::size_t c = 0; c < b2.col_dim(); ++c)
-//                    cout << r << " " << c << endl << b2(r,c) << endl << (*this)[p+1](r,c) << endl << "###" << endl;
+//                    std::cout << r << " " << c << std::endl << b2(r,c) << std::endl << (*this)[p+1](r,c) << std::endl << "###" << std::endl;
             
 //            return;
         }
@@ -97,20 +97,20 @@ private:
                         charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
                                                             SymmGroup::fuse((*this)[p-1](r,c).left_basis()[b].first,
                                                                             -(*this)[p-1](r,c).right_basis()[b].first)));
-//                        cout << r << " " << c << endl;
-//                        cout << bond_index_charges[p-1][r] << endl;
-//                        cout << (*this)[p-1](r,c).left_basis()[b].first << endl;
-//                        cout << (*this)[p-1](r,c).right_basis()[b].first << endl;
+//                        std::cout << r << " " << c << std::endl;
+//                        std::cout << bond_index_charges[p-1][r] << std::endl;
+//                        std::cout << (*this)[p-1](r,c).left_basis()[b].first << std::endl;
+//                        std::cout << (*this)[p-1](r,c).right_basis()[b].first << std::endl;
 //                        std::copy(charge_diffs.begin(), charge_diffs.end(),
-//                                  std::ostream_iterator<typename SymmGroup::charge>(cout, " "));
-//                        cout << endl << endl;
+//                                  std::ostream_iterator<typename SymmGroup::charge>(std::cout, " "));
+//                        std::cout << std::endl << std::endl;
                     }
                 }
 #ifndef NDEBUG
                 if (charge_diffs.size() > 1) {
                     std::copy(charge_diffs.begin(), charge_diffs.end(),
-                              std::ostream_iterator<typename SymmGroup::charge>(cout, " "));
-                    cout << endl;
+                              std::ostream_iterator<typename SymmGroup::charge>(std::cout, " "));
+                    std::cout << std::endl;
                 }
                 assert( charge_diffs.size() <= 1 );
 #endif
@@ -135,7 +135,7 @@ private:
                 else
                     index.insert(std::make_pair(it->second, 1));
             
-            cout << index << endl;
+            std::cout << index << std::endl;
         }
     }
     
@@ -202,16 +202,16 @@ private:
                             std::make_pair(rc, visited_c_basis[rc])) =
                         (*this)[p](r,c)[cs](0,0);
                         
-//                        cout << (*this)[p](r,c)[cs](0,0) << " | ";
-//                        cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
-//                        cout << " -> ";
-//                        cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << endl;
+//                        std::cout << (*this)[p](r,c)[cs](0,0) << " | ";
+//                        std::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
+//                        std::cout << " -> ";
+//                        std::cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << std::endl;
                     }
             visited_c_basis[bond_index_charges[p+1][c]]++;
         }
         
-//        cout << ret << endl;
-//        cout << "###" << endl;
+//        std::cout << ret << std::endl;
+//        std::cout << "###" << std::endl;
         
         return ret;
     }
