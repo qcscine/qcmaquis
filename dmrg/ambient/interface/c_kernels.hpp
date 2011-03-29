@@ -106,6 +106,15 @@ void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_den
 */
 }
 
+void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
+{    
+    int i = get_group_id(a).y;
+    int j = get_group_id(a).x;
+    double* a_elements  = current(a)(i,j);
+    double* ac_elements = current(ac)(i,j);
+    memcpy(ac_elements, a_elements, sizeof(double)*(get_group_dim(a)*get_item_dim(a)));
+}
+
 void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ }
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ printf("Executed add kernel\n"); }
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}

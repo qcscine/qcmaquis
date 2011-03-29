@@ -123,8 +123,12 @@ namespace ambient {
         return *instance >> distr_dim;
     }
 
+    bool p_profile::is_proxy(){
+        return (this->state == PROXY);
+    }
+
     void p_profile::regroup(){
-        if(this->state != PROXY){
+        if(!this->is_proxy()){
             int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
             int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
             if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
@@ -281,7 +285,7 @@ namespace ambient {
     }
 
     workgroup& p_profile::operator()(int i, int j, int k){
-        if(this->state == PROXY){ // on-touch init for proxy
+        if(this->is_proxy()){ // on-touch init for proxy
             this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
         }else if(!this->group(i,j,k)->available()){
             //printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
@@ -363,7 +367,7 @@ namespace ambient {
         this->item_dim = dim;
     }
     void p_profile::invalidate(){
-        if(this->state != PROXY) this->valid = false;
+        if(!this->is_proxy()) this->valid = false;
     }
     bool p_profile::is_valid(){
         return this->valid;

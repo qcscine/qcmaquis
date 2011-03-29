@@ -36,6 +36,16 @@ void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     block_2d_cycle_assign(c);
 }
 
+void copy_l_kernel(p_dense_matrix<double>& a_copy, pinned const p_dense_matrix<double>& a)
+{
+    scope_select("2 from ambient as copy_ground where master is 0");
+    if(!scope.involved()) return; // out of scope quick exit
+    zout << "2d-block-cyclic decomposition kernel in copy ("<< ambient::rank() <<"):\n"; info(a); info(a_copy);
+
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(a_copy);
+}
+
 void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
 {
     scope_select("2 from ambient as work where master is 0");
