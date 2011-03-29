@@ -53,6 +53,7 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     }
 }
 
+
 void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_dense_matrix<double>& c){
 //    printf("R%d: Executing ScaLAPACK PDGEMM kernel\n", scope.get_rank());
 
@@ -105,6 +106,52 @@ void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_den
     pdgemm_("N","N",&M,&M,&M,&alpha,A,&ONE,&ONE,descA,B,&ONE,&ONE,descB,&beta,C,&ONE,&ONE,descC);
 */
 }
+
+
+template<typename T>
+void svd(p_dense_matrix<T> M, p_dense_matrix<T> & U, p_dense_matrix<T>& V, typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
+{
+			
+}
+
+template<typename T>
+void qr(p_dense_matrix<T> M, p_dense_matrix<T> & Q, p_dense_matrix<T> & R)
+{
+
+}
+
+template<typename T>
+p_dense_matrix<T> conjugate(pinned dense_matrix<T> M)
+{
+
+}
+
+template<typename T>
+void syev(p_dense_matrix<T> M, p_dense_matrix<T> & evecs, std::vector<double> & evals)
+{
+	
+}
+
+
+template <T> 
+const dense_matrix<T> matrix_matrix_multiply(p_dense_matrix<T> const& lhs, p_dense_matrix<T> const& rhs) 
+{
+	
+}
+
+template <typename Matrix>
+Matrix transpose(pinned Matrix const& m) 
+{	
+	
+}
+
+template <typename Matrix>
+const typename Matrix::value_type trace(Matrix const& m)
+{
+	
+}
+
+
 
 void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {    
