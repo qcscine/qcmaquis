@@ -59,10 +59,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> d(M_SIZE,M_SIZE);
 
     ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
-   // c = a + b;
-   // d = a * b;
+    c = a + b;
     c(511,511) = 13.0;
-    printf("The element is %.2f\n", c(511,511));
+    printf("The element of c is %.2f\n", c(511,511));
+    d = c;//a * b;
+    printf("The element of d is %.2f\n", d(511,511));
 
 
 }

@@ -7,7 +7,6 @@ namespace blas {
     : rows(rows), cols(columns), lda(rows), sda(columns)
     {
         profile = new ambient::void_pt(this);
-        this->scope.reset(profile);
     }
 
     template <typename T>
@@ -15,37 +14,35 @@ namespace blas {
     : rows(m.rows), cols(m.cols), lda(m.lda), sda(m.sda)
     {
         profile = new ambient::void_pt(this);
-        this->scope.reset(profile);
-//        memcpy(this->data, m.data, this->lda*this->cols*sizeof(T));
+        ambient::push(ambient::copy_l_kernel, ambient::copy_c_kernel, *this, m);
     }
 
     template <typename T>
     void p_dense_matrix<T>::swap(p_dense_matrix & r)
     {
-        this->scope.swap(r.scope);
-        std::swap(this->data, r.data);
-        std::swap(this->rows, r.rows);
-        std::swap(this->cols, r.cols);
-        std::swap(this->lda,r.lda);
-        std::swap(this->sda,r.sda);
+        std::swap(this->profile, r.profile);
+        std::swap(this->rows,    r.rows);
+        std::swap(this->cols,    r.cols);
+        std::swap(this->lda,     r.lda);
+        std::swap(this->sda,     r.sda);
     }
 
 #ifdef HAVE_ALPS_HDF5
     template <typename T>
     inline void p_dense_matrix<T>::serialize(alps::hdf5::iarchive & ar)
     {
-        ar >> alps::make_pvp("rows", rows);
-        ar >> alps::make_pvp("cols", cols);
-        ar >> alps::make_pvp("lda", lda);
-        ar >> alps::make_pvp("values", data);
+        ar >> alps::make_pvp("rows",   rows);
+        ar >> alps::make_pvp("cols",   cols);
+        ar >> alps::make_pvp("lda",    lda);
+        //ar >> alps::make_pvp("values", data); ???
     }
     template <typename T>
     inline void p_dense_matrix<T>::serialize(alps::hdf5::oarchive & ar) const
     {
         ar << alps::make_pvp("rows", rows);
         ar << alps::make_pvp("cols", cols);
-        ar << alps::make_pvp("lda", lda);
-        ar << alps::make_pvp("values", data);
+        ar << alps::make_pvp("lda",  lda);
+        //ar << alps::make_pvp("values", data); ???
     }
 #endif	
 
@@ -75,8 +72,8 @@ namespace blas {
 
     template <typename T>
     void p_dense_matrix<T>::reserve(size_type rows, size_type cols)
-    {
-        assert(false);
+    { // todo!
+     /*   assert(false);
         if(rows > this->lda || cols > this->sda){
                 size_type lda = std::max(rows,this->lda)*3/2; // reservation
                 size_type sda = std::max(cols,this->sda)*3/2; // reservation
@@ -90,7 +87,7 @@ namespace blas {
                 }
                 this->lda = lda;
                 this->sda = sda;
-        }
+        }*/
     }
 
     template <typename T>
@@ -145,10 +142,9 @@ namespace blas {
         int group_j = j / (this->profile->get_group_dim().x*this->profile->get_item_dim().x);
         int element_i = i % (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
         int element_j = j % (this->profile->get_group_dim().x*this->profile->get_item_dim().x);
-        if(this->profile->group(group_i,group_j)->available()){
-            printf("Will access %d %d group (%d %d element)\n", group_i, group_j, element_i, element_j);
+        if(this->profile->group(group_i,group_j)->available())
             return *(T*)(*this->profile)(group_i, group_j).element(element_i, element_j);
-        }else
+        else
             return *(new T()); //using default value of T
     }
 
@@ -168,8 +164,6 @@ namespace blas {
     template <typename T2>
     p_dense_matrix<T>& p_dense_matrix<T>::operator /= (const T2& t){ return (*this = *this * (1/t)); }
 
-
-//////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
     template <typename T>
     p_dense_matrix<T>::~p_dense_matrix(){ // #destructor
         this->profile->invalidate();      // tricky, possibly the auto_ptr is the best solution but too slow
@@ -177,9 +171,9 @@ namespace blas {
     template <typename T> // proxy object construction
     p_dense_matrix<T>::p_dense_matrix(ambient::void_pt* p): profile(p){ }
     template <typename T>
-    p_dense_matrix<T>& p_dense_matrix<T>::operator = (p_dense_matrix const& rhs) // watch out of copying
-    {
-        ambient::pin(rhs, *this);
+    p_dense_matrix<T>& p_dense_matrix<T>::operator = (p_dense_matrix<T> const& rhs){
+        if(rhs.profile->is_proxy()) ambient::pin(rhs, *this); // no copying - pinning profile
+        else ambient::push(ambient::copy_l_kernel, ambient::copy_c_kernel, *this, rhs);
         return *this;
     }
 

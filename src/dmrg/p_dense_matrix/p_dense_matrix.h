@@ -13,7 +13,6 @@
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <ostream>
 #include <vector>
 #include <algorithm>
@@ -32,7 +31,6 @@ namespace blas {
 // AMBIENT PART <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         ~p_dense_matrix();
         ambient::void_pt* profile;
-        boost::scoped_ptr<ambient::void_pt> scope;
         p_dense_matrix(ambient::void_pt* p);              // proxy object construction
 // AMBIENT PART >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         typedef T                       value_type;       // The type T of the elements of the matrix
