@@ -262,6 +262,15 @@ public:
         }
     }
     
+    basis_iterator_ operator+(int k)
+    {
+        assert( k >= 0 );
+        basis_iterator_ r = *this;
+        for ( ; k > 0; --k)
+            ++r;
+        return r;
+    }
+    
     bool end() const
     {
         return cur_block == idx_.end();
