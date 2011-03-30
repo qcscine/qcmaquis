@@ -120,7 +120,9 @@ void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<doubl
 void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
 {
     typedef double T;
-
+    
+    //breakdown(a).set_dim(ambient::dim3(get_dim(a).x, get_dim(a).y - k));
+    return;
     size_t i   = get_group_id(a).y;
     size_t j   = get_group_id(a).x;
     size_t lda = get_group_t_dim(a).y;
@@ -169,6 +171,7 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
 void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
 {
     typedef double T;
+    breakdown(a).set_dim(ambient::dim3(get_dim(a).x - k, get_dim(a).y));
 
     size_t i   = get_group_id(a).y;
     size_t j   = get_group_id(a).x;
@@ -185,16 +188,13 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     double* ad   = current(a)(i,j);
     double* ad_r = current(a)(i,j+shift);
     if(remains < sda && (remains_l + k) > sda){                                                        // get two following blocks (j+shift-1;j+shift)
+        double* ad_r0 = current(a)(i,j+shift-1);
         if(j == group_j_mark){
-            ad_r = current(a)(i,j+shift-1);
-            memcpy(&ad[lda*remains_l], &ad_r[lda*(sda-remains_r)], sizeof(T)*lda*remains_r);           // memcpy from replacement block #1
+            memcpy(&ad[lda*remains_l], &ad_r0[lda*(sda-remains_r)], sizeof(T)*lda*remains_r);           // memcpy from replacement block #1
         }else if(j >= group_j_mark){
-            ad_r = current(a)(i,j+shift-1);
-            memcpy(ad, &ad_r[lda*(sda-remains)], sizeof(T)*lda*remains);                               // memcpy from replacement block #1
+            memcpy(ad, &ad_r0[lda*(sda-remains)], sizeof(T)*lda*remains);                               // memcpy from replacement block #1
         }
-        ad_r = current(a)(i,j+shift);
         memcpy(&ad[lda*remains], ad_r, sizeof(T)*lda*(sda-remains));                                   // memcpy from replacement block #2
-
     }else{                                                                                             // get only one following block
         if(j == group_j_mark){
             if(remains_l + k < sda){

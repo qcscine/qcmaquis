@@ -37,42 +37,42 @@ void assign(T& ref, int i, int j, int k)
     profile.layout->record(i, j, k);
 }
 template<typename T>
-dim3 get_dim(T& ref)
+inline dim3 get_dim(T& ref)
 {
     return breakdown(ref).get_dim();
 }
 template<typename T>
-dim3 get_distr_dim(T& ref)
+inline dim3 get_distr_dim(T& ref)
 {
     return breakdown(ref).get_distr_dim();
 }
 template<typename T>
-dim3 get_gpu_dim(T& ref)
+inline dim3 get_gpu_dim(T& ref)
 {
     return breakdown(ref).get_gpu_dim();
 }
 template<typename T>
-dim3 get_grid_dim(T& ref)
+inline dim3 get_grid_dim(T& ref)
 {
     return breakdown(ref).get_grid_dim();
 }
 template<typename T>
-dim3 get_group_dim(T& ref)
+inline dim3 get_group_dim(T& ref)
 {
     return breakdown(ref).get_group_dim();
 }
 template<typename T>
-dim3 get_group_t_dim(T& ref)
+inline dim3 get_group_t_dim(T& ref)
 {
     return breakdown(ref).get_group_t_dim();
 }
 template<typename T>
-dim3 get_item_dim(T& ref)
+inline dim3 get_item_dim(T& ref)
 {
     return breakdown(ref).get_item_dim();
 }
 template<typename T>
-dim3 get_group_id(T& ref)
+inline dim3 get_group_id(T& ref)
 {
     return breakdown(ref).get_group_id();
 }
