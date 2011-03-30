@@ -35,6 +35,10 @@ void breakdown_proxy_model(void_pt* proxy, void_pt* profile, const p_dense_matri
 }
 
 template<>
+void_pt& breakdown(const size_t& obj){ return *(new void_pt(&obj)); }
+void breakdown_model(void_pt* profile, const size_t* ptr){  }
+
+template<>
 void_pt& breakdown(const int& obj){ return *(new void_pt(&obj)); }
 void breakdown_model(void_pt* profile, const int* ptr){  }//assert(false); }
 

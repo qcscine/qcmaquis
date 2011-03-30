@@ -82,11 +82,10 @@ namespace blas {
     void p_dense_matrix<T>::remove_rows(size_type i, difference_type k = 1)
     {
         assert( i+k <= this->rows );
-        size_t* ih = new size_t(i); // preventing arguments from destruction
-        size_t* kh = new size_t(k); // preventing arguments from destruction
+        const size_t* ih = new size_t(i); // preventing arguments from destruction
+        const size_t* kh = new size_t(k); // preventing arguments from destruction
         ambient::push(ambient::remove_rows_l_kernel, ambient::remove_rows_c_kernel, *this, *ih, *kh);
         this->rows -= k;
-        this->profile->set_dim(ambient::dim3(this->cols,this->rows));
     }
 
     template <typename T>
@@ -97,7 +96,6 @@ namespace blas {
         size_t* kh = new size_t(k); // preventing arguments from destruction
         ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, *jh, *kh);
         this->cols -= k;
-        this->profile->set_dim(ambient::dim3(this->cols,this->rows));
     }
 
     template <typename T>
@@ -127,8 +125,6 @@ namespace blas {
     inline T& p_dense_matrix<T>::operator()(size_type i, size_type j){ return this->get(i,j); }
     template <typename T>
     inline const T& p_dense_matrix<T>::operator()(size_type i, size_type j) const { return this->get(i,j); }
-
-
     template <typename T>
     p_dense_matrix<T>& p_dense_matrix<T>::operator += (const p_dense_matrix& rhs){ return(*this = *this + rhs); }
     template <typename T>
