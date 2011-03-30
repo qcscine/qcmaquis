@@ -108,7 +108,7 @@ namespace blas {
     }
 
     template <typename T>
-    inline T& p_dense_matrix<T>::operator()(const size_type i, const size_type j)
+    inline T& p_dense_matrix<T>::operator()(const size_type i, const size_type j) const
     {
         assert(i < this->rows);
         assert(j < this->cols);
@@ -123,10 +123,6 @@ namespace blas {
             return *(new T()); //using default value of T
     }
 
-    template <typename T>
-    inline T const& p_dense_matrix<T>::operator()(const size_type i, const size_type j) const {
-        return this->operator()(i,j);
-    }
 
     template <typename T>
     p_dense_matrix<T>& p_dense_matrix<T>::operator += (const p_dense_matrix& rhs){ return(*this = *this + rhs); }

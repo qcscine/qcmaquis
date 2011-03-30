@@ -65,6 +65,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     d = c;//a * b;
     printf("The element of d is %.2f\n", d(511,511));
 
-
 }
 
