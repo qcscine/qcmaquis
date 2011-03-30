@@ -110,7 +110,7 @@ namespace blas {
     {
         assert(i < this->rows);
         assert(j < this->cols);
-        ambient::playout(); // fix the hang!
+        ambient::playout();
         int group_i = i / (this->profile->get_group_t_dim().y);
         int group_j = j / (this->profile->get_group_t_dim().x);
         int element_i = i % (this->profile->get_group_t_dim().y);

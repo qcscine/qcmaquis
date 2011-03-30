@@ -19,6 +19,10 @@ namespace ambient {
     {
         this->grp = grp;
     }
+    void scope_context::reset_group()
+    {
+        this->grp = groups::group_map("ambient");
+    }
     groups::group* scope_context::get_group(){
         if(this->grp == NULL){
             printf("Attempting to access NULL scope, check if select() was called\n");

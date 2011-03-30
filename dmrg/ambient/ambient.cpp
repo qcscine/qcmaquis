@@ -111,6 +111,7 @@ namespace ambient
     }
     void scheduler::playout()
     {
+        if(this->stack.empty()) return; // easy out
         one_touch_stack<core::operation*> cleanup_stack;
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
@@ -194,6 +195,7 @@ namespace ambient
             this->router.clean();
         }
         this->stack.clean();
+        scope.reset_group();
     }
 
     bool is_master(){
