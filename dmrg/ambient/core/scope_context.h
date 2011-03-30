@@ -29,6 +29,7 @@ namespace ambient {
 // proxy functionality //
 // group class method duplicates
     public:
+	int np,nq; //mask of the two cyclic distribution
         int get_master_g();
         groups::packet_manager* get_manager();
         int get_rank();
