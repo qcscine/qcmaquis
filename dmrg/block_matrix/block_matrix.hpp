@@ -23,7 +23,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows = Index<Symm
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix<Matrix, SymmGroup> const & rhs)
+block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix const & rhs)
 {
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
@@ -43,17 +43,11 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
         charge rhs_rc = rhs.rows_[k].first;
-        size_type goesto = rows_.position(rhs_rc);
-        Matrix block;
-        block = rhs.data_[k] * -1;
-        if (goesto == rows_.size()) { // it's a new block
-            size_type i1 = rows_.insert(rhs.rows_[k]);
-            size_type i2 = cols_.insert(rhs.cols_[k]);
-            assert(i1 == i2);
-            data_.insert(data_.begin() + i1, block);
-        } else { // this block exists already -> pass to Matrix
-            data_[goesto] += block;
-        }
+        charge rhs_cc = rhs.cols_[k].first;
+        if (this->has_block(rhs_rc, rhs_cc))
+            (*this)(rhs_rc, rhs_cc) -= rhs.data_[k];
+        else
+            this->insert_block(-1*rhs.data_[k], rhs_rc, rhs_cc);
     }
     return *this;
 }

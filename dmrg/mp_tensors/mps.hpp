@@ -64,10 +64,18 @@ void default_mps_init(MPS<Matrix, SymmGroup> & mps,
     left_allowed[0] = l_triv;
     right_allowed[L] = r_triv;
     
-    for (int i = 1; i < L+1; ++i)
+    for (int i = 1; i < L+1; ++i) {
         left_allowed[i] = phys * left_allowed[i-1];
-    for (int i = L-1; i >= 0; --i)
+        for (typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
+             it != left_allowed[i].end(); ++it)
+            it->second = std::min(Mmax, it->second);
+    }
+    for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys) * right_allowed[i+1];
+        for (typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
+             it != right_allowed[i].end(); ++it)
+            it->second = std::min(Mmax, it->second);
+    }
     
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
