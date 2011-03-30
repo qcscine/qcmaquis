@@ -129,8 +129,8 @@ namespace ambient {
 
     void p_profile::regroup(){
         if(!this->is_proxy()){
-            int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
-            int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
+            int y_size = this->dim.y / (this->get_group_t_dim().y);
+            int x_size = this->dim.x / (this->get_group_t_dim().x);
             if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
             for(int i = 0; i < y_size; i++){
                 if(i >= this->reserved_y) skeleton.push_back(std::vector<workgroup*>());
@@ -146,7 +146,7 @@ namespace ambient {
     }
 
     size_t p_profile::get_group_lda(){
-        return this->get_group_dim().y*this->get_item_dim().y*this->t_size;
+        return this->get_group_t_dim().y*this->t_size;
     }
 
     void p_profile::solidify(){
@@ -175,11 +175,11 @@ namespace ambient {
             offset = 0;
             for(i=0; i < this->get_grid_dim().y; i++){
                 if(this->group(i,j)->available()){
-                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->t_size);
-                    for(int k=0; k < this->get_group_dim().x*this->get_item_dim().x; k++){
+                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_t_dim().y*this->t_size);
+                    for(int k=0; k < this->get_group_t_dim().x; k++){
                         assert(this->group(i,j)->data != NULL);
-                        memcpy((void*)((size_t)solid_data+k*this->solid_lda*this->get_group_dim().y*this->get_item_dim().y), (void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), 
-                               this->get_group_dim().y*this->get_item_dim().y*this->t_size);
+                        memcpy((void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y), (void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), 
+                               this->get_group_t_dim().y*this->t_size);
                     }
                     offset++;
                 }
@@ -196,10 +196,10 @@ namespace ambient {
             offset = 0;
             for(int i=0; i < this->get_grid_dim().y; i++){
                 if((*this->layout)(i,j) != NULL){
-                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_dim().y*this->get_item_dim().y*this->t_size);
-                    for(int k=0; k < this->get_group_dim().x*this->get_item_dim().x; k++){
-                        memcpy((void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), (void*)((size_t)solid_data+k*this->solid_lda*this->get_group_dim().y*this->get_item_dim().y),
-                               this->get_group_dim().y*this->get_item_dim().y*this->t_size);
+                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_t_dim().y*this->t_size);
+                    for(int k=0; k < this->get_group_t_dim().x; k++){
+                        memcpy((void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), (void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y),
+                               this->get_group_t_dim().y*this->t_size);
                     }
                     offset++;
                 }
@@ -302,9 +302,9 @@ namespace ambient {
     }
 
     workgroup* p_profile::group(int i, int j, int k) const {
-        int x_size = this->dim.x / (this->get_group_dim().x*this->get_item_dim().x);
-        int y_size = this->dim.y / (this->get_group_dim().y*this->get_item_dim().y);
-        int z_size = this->dim.z / (this->get_group_dim().z*this->get_item_dim().z);
+        int x_size = this->dim.x / this->get_group_t_dim().x;
+        int y_size = this->dim.y / this->get_group_t_dim().y;
+        int z_size = this->dim.z / this->get_group_t_dim().z;
         
         if(i >= y_size || j >= x_size || k >= z_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j, k);
         return this->skeleton[i][j];
@@ -347,9 +347,9 @@ namespace ambient {
     }
 
     dim3 p_profile::get_grid_dim() const {
-        int x_size = this->dim.x / (this->get_group_dim().x * this->get_item_dim().x);
-        int y_size = this->dim.y / (this->get_group_dim().y * this->get_item_dim().y);
-        int z_size = this->dim.z / (this->get_group_dim().z * this->get_item_dim().z);
+        int x_size = this->dim.x / this->get_group_t_dim().x;
+        int y_size = this->dim.y / this->get_group_t_dim().y;
+        int z_size = this->dim.z / this->get_group_t_dim().z;
         return dim3(x_size, y_size, z_size);
     }
 

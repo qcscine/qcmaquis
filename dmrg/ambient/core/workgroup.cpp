@@ -14,6 +14,10 @@ namespace ambient {
         return this->get_profile()->get_group_dim();
     }
 
+    dim3 workgroup::get_group_t_dim(){
+        return this->get_profile()->get_group_t_dim();
+    }
+
     dim3 workgroup::get_item_dim(){
         return this->get_profile()->get_item_dim();
     }
@@ -30,7 +34,7 @@ namespace ambient {
 
     void* workgroup::element(int i, int j, int k){
         p_profile* profile = *this->profile;
-        int lda = profile->get_group_dim().y*profile->get_item_dim().y;
+        int lda = profile->get_group_t_dim().y;
         return &((char*)this->data)[(j*lda+i)*profile->t_size];
     }
 

@@ -47,8 +47,8 @@ void plus_reduce< p_dense_matrix<double> >(workgroup* grp, void* update){
     double* a = (double*)grp->data;
     double* u = (double*)update;
 
-    int n = grp->get_group_dim().x*grp->get_item_dim().x;
-    int m = grp->get_group_dim().y*grp->get_item_dim().y;
+    int n = grp->get_group_t_dim().x;
+    int m = grp->get_group_t_dim().y;
     int ld = m;
 
     for(int i=0; i<m*n; i++) a[i] += u[i];
