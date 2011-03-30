@@ -353,6 +353,9 @@ namespace ambient {
         return dim3(x_size, y_size, z_size);
     }
 
+    dim3 p_profile::get_group_t_dim() const {
+        return this->get_group_dim() *= this->get_item_dim();
+    }
     dim3 p_profile::get_group_dim() const {
         return this->group_dim;
     }

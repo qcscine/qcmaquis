@@ -41,6 +41,9 @@ namespace ambient{
     dim3 get_group_dim(T& ref);
 
     template<typename T>
+    dim3 get_group_t_dim(T& ref);
+
+    template<typename T>
     dim3 get_item_dim(T& ref);
 
     template<typename T>

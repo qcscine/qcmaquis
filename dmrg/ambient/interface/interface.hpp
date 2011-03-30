@@ -62,6 +62,11 @@ dim3 get_group_dim(T& ref)
     return breakdown(ref).get_group_dim();
 }
 template<typename T>
+dim3 get_group_t_dim(T& ref)
+{
+    return breakdown(ref).get_group_t_dim();
+}
+template<typename T>
 dim3 get_item_dim(T& ref)
 {
     return breakdown(ref).get_item_dim();

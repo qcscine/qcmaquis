@@ -84,12 +84,13 @@ namespace ambient {
         workgroup& operator()(int i, int j = 0, int k = 0);
 
 // parameters can be set specifically for the profile
-        dim3 get_dim()       const;
-        dim3 get_distr_dim() const;
-        dim3 get_gpu_dim()   const;
-        dim3 get_grid_dim()  const;
-        dim3 get_group_dim() const;
-        dim3 get_item_dim()  const;
+        dim3 get_dim()         const;
+        dim3 get_distr_dim()   const;
+        dim3 get_gpu_dim()     const;
+        dim3 get_grid_dim()    const;
+        dim3 get_group_dim()   const;
+        dim3 get_group_t_dim() const;
+        dim3 get_item_dim()    const;
 
         void imitate(p_profile* profile);
         void solidify();

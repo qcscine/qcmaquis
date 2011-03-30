@@ -7,7 +7,7 @@
 #include <boost/numeric/bindings/std/vector.hpp>
 
 #include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/diagonal_matrix.h"
+#include "dense_matrix/diagonal_matrix.h" // remove?
 
 #include "utils/timings.h"
 
