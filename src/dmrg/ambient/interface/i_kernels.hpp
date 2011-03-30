@@ -3,8 +3,8 @@ using namespace blas;
 
 void matrix_i_kernel(workgroup* grp){
     // real temporary initialization
-    int n = grp->get_group_dim().x*grp->get_item_dim().x;
-    int m = grp->get_group_dim().y*grp->get_item_dim().y;
+    int n = grp->get_group_t_dim().x;
+    int m = grp->get_group_t_dim().y;
     int ld = m;
 
     for(int j=0; j<n; j++)

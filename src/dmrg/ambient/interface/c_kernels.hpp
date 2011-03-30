@@ -25,9 +25,9 @@ partial reduce?
 
 void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
-    int m   = get_group_dim(a).y*get_item_dim(a).y;
-    int n   = get_group_dim(b).x*get_item_dim(b).x;
-    int k   = get_group_dim(b).y*get_item_dim(b).y;
+    int m   = get_group_t_dim(a).y;
+    int n   = get_group_t_dim(b).x;
+    int k   = get_group_t_dim(b).y;
     int lda = m;
     int ldb = k;
     int ldc = m;
@@ -119,56 +119,97 @@ void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<doubl
 
 void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
 {
+    typedef double T;
+
     size_t i   = get_group_id(a).y;
     size_t j   = get_group_id(a).x;
     size_t lda = get_group_t_dim(a).y;
 
     size_t remains_u = i_mark % lda;
     size_t remains_l = lda - (remains_u+k) % lda;
+    size_t remains   = remains_u + remains_l;
     size_t shift     = k / lda + (k % lda ? 1 : 0);
+    size_t group_i_mark = i_mark / lda;
+    size_t k_wo_blocks = std::min((2*lda-remains), k);
 
-    if(remains_u + remains_l < lda){
-// get two following blocks
-        //get: i+shift-1 
-        //get: i+shift
+    double* ad   = current(a)(i,j);
+    double* ad_r = current(a)(i+shift,j);
+    if(remains < lda && (remains_u + k) > lda){                                                        // get two following blocks (i+shift-1;i+shift)
+        if(i == group_i_mark){
+            ad_r = current(a)(i+shift-1,j);
+            for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block #1
+                memcpy(&ad[lda*j + remains_u], &ad_r[lda*j+lda-remains_l], sizeof(T)*remains_l);
+        }else if(i >= group_i_mark){
+            ad_r = current(a)(i+shift-1,j);
+            for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block #1
+                memcpy(&ad[lda*j], &ad_r[lda*j + (lda-remains)], sizeof(T)*remains);
+        }
+        ad_r = current(a)(i+shift,j);
+        for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                               // memcpy from replacement block #2
+            memcpy(&ad[lda*j + remains], &ad_r[lda*j], sizeof(T)*(lda-remains));
 
-    }else{
-// get only one following block
-        //get: i+shift;
-
+    }else{                                                                                             // get only one following block
+        if(i == group_i_mark){
+            if(remains_u + k < lda){
+                for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // first memmove inside block
+                    memcpy(&ad[lda*j + remains_u], &ad[lda*j + remains_u+k], sizeof(T)*(lda-remains_u-k));
+                for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // memcpy from replacement block
+                    memcpy(&ad[lda*j + lda - k], &ad_r[lda*j], sizeof(T)*k);
+            }else{
+                for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // memcpy from replacement block
+                    memcpy(&ad[lda*j + remains_u], &ad_r[lda*j + lda-remains_l], sizeof(T)*(lda-remains_u));
+            }
+        }else if(i >= group_i_mark){
+            for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // first memmove inside block
+                memcpy(&ad[lda*j], &ad[lda*j + k_wo_blocks], sizeof(T)*(lda-k_wo_blocks) );
+            for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block
+                memcpy(&ad[lda*j + lda-k_wo_blocks], &ad_r[lda*j], sizeof(T)*k_wo_blocks);
+        }
     }
-/*
-    size_t group_i_mark         = i_mark / lda;
-    size_t group_element_i_mark = i_mark % lda;
-    size_t group_rows_to_replace = lda - (starting_delete_element_i+1);
-
-    size_t ending_delete_group_i   = (i_mark+k) / lda;
-    size_t ending_delete_element_i = (i_mark+k) % lda;
-    size_t group_rows_to_replace_w = lda - ending_delete_element_i;
-
-    int movement_lda = min(k, (lda-starting_delete_element_i));
-
-    if(i == starting_delete_group_i){
-        // proceed with shifting
-        replacement = current(a)(ending_delete_group_i,j);
-        if(group_rows_to_replace > group_rows_to_replace_w)
-        replacement = current(a)(ending_delete_group_i + 1,j);
-    }else if(i > group_start_i){
-        // proceed with shifting
-        replacement = current(a)(ending_delete_group_i + (i - starting_delete_group_i),j);
-        if(group_rows_to_replace > group_rows_to_replace_w)
-        replacement = current(a)(ending_delete_group_i + (i - starting_delete_group_i) + 1,j);
-        // move my data first 
-    }
-
-    int element_i = i % (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
-       // for(size_type j = 0; j < this->cols; ++j) // for each column, copy the rows > i+k to k rows  up
-       //     memmove(&this->data[this->lda*j + i], &this->data[this->lda*j + i + k], sizeof(T)*(this->rows-i-k));
-*/
 }
 
 void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
 {
+    typedef double T;
+
+    size_t i   = get_group_id(a).y;
+    size_t j   = get_group_id(a).x;
+    size_t lda = get_group_t_dim(a).y;
+    size_t sda = get_group_t_dim(a).x;
+
+    size_t remains_l = j_mark % sda;
+    size_t remains_r = sda - (remains_l+k) % sda;
+    size_t remains   = remains_l + remains_r;
+    size_t shift     = k / sda + (k % sda ? 1 : 0);
+    size_t group_j_mark = j_mark / sda;
+    size_t k_wo_blocks = std::min((2*sda-remains), k);
+
+    double* ad   = current(a)(i,j);
+    double* ad_r = current(a)(i,j+shift);
+    if(remains < sda && (remains_l + k) > sda){                                                        // get two following blocks (j+shift-1;j+shift)
+        if(j == group_j_mark){
+            ad_r = current(a)(i,j+shift-1);
+            memcpy(&ad[lda*remains_l], &ad_r[lda*(sda-remains_r)], sizeof(T)*lda*remains_r);           // memcpy from replacement block #1
+        }else if(j >= group_j_mark){
+            ad_r = current(a)(i,j+shift-1);
+            memcpy(ad, &ad_r[lda*(sda-remains)], sizeof(T)*lda*remains);                               // memcpy from replacement block #1
+        }
+        ad_r = current(a)(i,j+shift);
+        memcpy(&ad[lda*remains], ad_r, sizeof(T)*lda*(sda-remains));                                   // memcpy from replacement block #2
+
+    }else{                                                                                             // get only one following block
+        if(j == group_j_mark){
+            if(remains_l + k < sda){
+                memcpy(&ad[lda*remains_l], &ad[lda*(remains_l+k)], sizeof(T)*lda*(sda-remains_l-k));   // first memmove inside block
+                memcpy(&ad[lda*(sda-k)], ad_r, sizeof(T)*lda*k);                                       // memcpy from replacement block
+            }else{
+                memcpy(&ad[lda*remains_l], &ad_r[lda*(sda-remains_r)], sizeof(T)*lda*(sda-remains_l)); // memcpy from replacement block
+            }
+        }else if(i >= group_j_mark){
+            memcpy(ad, &ad[lda*k_wo_blocks], sizeof(T)*lda*(sda-k_wo_blocks) );                        // first memmove inside block
+            memcpy(&ad[lda*(sda-k_wo_blocks)], ad_r, sizeof(T)*lda*k_wo_blocks);                       //  memcpy from replacement block
+        }
+    }
 
 }
 
