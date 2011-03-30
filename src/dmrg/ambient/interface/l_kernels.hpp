@@ -11,13 +11,9 @@ template<typename T>
 void block_2d_cycle_assign(T& target)
 {
 ///////////////////////////////////////////// 2D-block-cyclic decomposition
- 	int np = 1; // can be a function arg   // process grid's num of rows 
- 	int nq = (int)(scope.get_size() / np); // process grid's num of cols 
- 
-	scope.nq = nq;
-	scope.np = np;
-	
-	int rank_i = (int)(scope.get_rank() / nq); // process row
+    int np = scope.np = 1; // can be a function arg   // process grid's num of rows 
+    int nq = scope.nq = (int)(scope.get_size() / np); // process grid's num of cols 
+    int rank_i = (int)(scope.get_rank() / nq); // process row
     int rank_j = (int)(scope.get_rank() % nq); // process col
 ///////////////////////////////////////////////////////////////////////////
     for(int i = rank_i; i < get_grid_dim(target).y; i += np){
@@ -66,7 +62,7 @@ void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     block_2d_cycle_assign(a);
 }
 
-void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
+void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
 {
     scope_select("2 from ambient as work where master is 0");
     scope_retain("2 from ambient as work_storage");
@@ -79,7 +75,6 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
 }
 
 void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out){}
-void null_l_kernel(p_dense_matrix<double> const & A, p_dense_matrix<double> const & B, p_dense_matrix<double> & C){}
 /////////////////////
 // testing kernels // 
 

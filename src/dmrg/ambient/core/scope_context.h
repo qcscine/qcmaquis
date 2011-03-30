@@ -19,6 +19,7 @@ namespace ambient {
     public:
 // proxy functionality //
         scope_context& operator()(const int rank);
+        void reset_group();
         void set_group(groups::group* grp);
         groups::group* get_group();
         void set_op(core::operation* op);
