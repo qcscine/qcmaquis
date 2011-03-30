@@ -108,11 +108,11 @@ namespace blas {
     }
 
     template <typename T>
-    inline T& p_dense_matrix<T>::operator()(const size_type i, const size_type j) const
+    inline T& p_dense_matrix<T>::get(size_type i, size_type j)
     {
         assert(i < this->rows);
         assert(j < this->cols);
-        ambient::playout();
+        ambient::playout(); // fix the hang!
         int group_i = i / (this->profile->get_group_t_dim().y);
         int group_j = j / (this->profile->get_group_t_dim().x);
         int element_i = i % (this->profile->get_group_t_dim().y);
@@ -122,6 +122,11 @@ namespace blas {
         else
             return *(new T()); //using default value of T
     }
+
+    template <typename T>
+    inline T& p_dense_matrix<T>::operator()(size_type i, size_type j){ return this->get(i,j); }
+    template <typename T>
+    inline const T& p_dense_matrix<T>::operator()(size_type i, size_type j) const { return this->get(i,j); }
 
 
     template <typename T>
