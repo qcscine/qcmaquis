@@ -64,7 +64,6 @@ namespace blas {
         inline difference_type stride2() const;
         inline difference_type get_lda() const;
         inline difference_type get_sda() const;
-        void reserve(size_type rows, size_type cols);
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, difference_type k);
         void remove_columns(size_type j, difference_type k);

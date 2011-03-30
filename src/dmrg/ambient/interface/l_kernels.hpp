@@ -46,6 +46,22 @@ void copy_l_kernel(p_dense_matrix<double>& a_copy, pinned const p_dense_matrix<d
     block_2d_cycle_assign(a_copy);
 }
 
+void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
+{
+    scope_select("2 from ambient as copy_ground where master is 0");
+    if(!scope.involved()) return; // out of scope quick exit
+    zout << "2d-block-cyclic decomposition kernel in remove rows ("<< ambient::rank() <<"):\n"; info(a);
+    block_2d_cycle_assign(a);
+}
+
+void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
+{
+    scope_select("2 from ambient as copy_ground where master is 0");
+    if(!scope.involved()) return; // out of scope quick exit
+    zout << "2d-block-cyclic decomposition kernel in remove cols ("<< ambient::rank() <<"):\n"; info(a);
+    block_2d_cycle_assign(a);
+}
+
 void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
 {
     scope_select("2 from ambient as work where master is 0");

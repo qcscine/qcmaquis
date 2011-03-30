@@ -92,7 +92,7 @@ namespace blas {
             for (std::size_t j = 0; j < num_columns(m2); ++j)
                 m3(i,j) = m1(i,i) * m2(i,j);
     }
-    
+
     template<typename T>
     typename diagonal_matrix<T>::size_type num_rows(diagonal_matrix<T> const & m)
     {

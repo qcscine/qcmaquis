@@ -108,51 +108,6 @@ void pdgemm_c_kernel(p_dense_matrix<double>& a, p_dense_matrix<double>& b, p_den
 }
 
 
-template<typename T>
-void svd(p_dense_matrix<T> M, p_dense_matrix<T> & U, p_dense_matrix<T>& V, typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
-{
-			
-}
-
-template<typename T>
-void qr(p_dense_matrix<T> M, p_dense_matrix<T> & Q, p_dense_matrix<T> & R)
-{
-
-}
-
-template<typename T>
-p_dense_matrix<T> conjugate(pinned dense_matrix<T> M)
-{
-
-}
-
-template<typename T>
-void syev(p_dense_matrix<T> M, p_dense_matrix<T> & evecs, std::vector<double> & evals)
-{
-	
-}
-
-
-template <T> 
-const dense_matrix<T> matrix_matrix_multiply(p_dense_matrix<T> const& lhs, p_dense_matrix<T> const& rhs) 
-{
-	
-}
-
-template <typename Matrix>
-Matrix transpose(pinned Matrix const& m) 
-{	
-	
-}
-
-template <typename Matrix>
-const typename Matrix::value_type trace(Matrix const& m)
-{
-	
-}
-
-
-
 void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {    
     int i = get_group_id(a).y;
@@ -160,6 +115,61 @@ void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<doubl
     double* a_elements  = current(a)(i,j);
     double* ac_elements = current(ac)(i,j);
     memcpy(ac_elements, a_elements, sizeof(double)*(get_group_dim(a)*get_item_dim(a)));
+}
+
+void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
+{
+    size_t i   = get_group_id(a).y;
+    size_t j   = get_group_id(a).x;
+    size_t lda = get_group_t_dim(a).y;
+
+    size_t remains_u = i_mark % lda;
+    size_t remains_l = lda - (remains_u+k) % lda;
+    size_t shift     = k / lda + (k % lda ? 1 : 0);
+
+    if(remains_u + remains_l < lda){
+// get two following blocks
+        //get: i+shift-1 
+        //get: i+shift
+
+    }else{
+// get only one following block
+        //get: i+shift;
+
+    }
+/*
+    size_t group_i_mark         = i_mark / lda;
+    size_t group_element_i_mark = i_mark % lda;
+    size_t group_rows_to_replace = lda - (starting_delete_element_i+1);
+
+    size_t ending_delete_group_i   = (i_mark+k) / lda;
+    size_t ending_delete_element_i = (i_mark+k) % lda;
+    size_t group_rows_to_replace_w = lda - ending_delete_element_i;
+
+    int movement_lda = min(k, (lda-starting_delete_element_i));
+
+    if(i == starting_delete_group_i){
+        // proceed with shifting
+        replacement = current(a)(ending_delete_group_i,j);
+        if(group_rows_to_replace > group_rows_to_replace_w)
+        replacement = current(a)(ending_delete_group_i + 1,j);
+    }else if(i > group_start_i){
+        // proceed with shifting
+        replacement = current(a)(ending_delete_group_i + (i - starting_delete_group_i),j);
+        if(group_rows_to_replace > group_rows_to_replace_w)
+        replacement = current(a)(ending_delete_group_i + (i - starting_delete_group_i) + 1,j);
+        // move my data first 
+    }
+
+    int element_i = i % (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
+       // for(size_type j = 0; j < this->cols; ++j) // for each column, copy the rows > i+k to k rows  up
+       //     memmove(&this->data[this->lda*j + i], &this->data[this->lda*j + i + k], sizeof(T)*(this->rows-i-k));
+*/
+}
+
+void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
+{
+
 }
 
 void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ }

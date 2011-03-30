@@ -71,65 +71,40 @@ namespace blas {
     void p_dense_matrix<T>::clear(){ this->rows = this->cols = 0; }
 
     template <typename T>
-    void p_dense_matrix<T>::reserve(size_type rows, size_type cols)
-    { // todo!
-     /*   assert(false);
-        if(rows > this->lda || cols > this->sda){
-                size_type lda = std::max(rows,this->lda)*3/2; // reservation
-                size_type sda = std::max(cols,this->sda)*3/2; // reservation
-                boost::scoped_ptr<T> tmp(new T[lda*sda]);
-                this->scope.swap(tmp);
-                this->data = this->scope.get();
-                memcpy(this->scope.get(), tmp.get(), 
-                       sizeof(T)*(this->lda*this->cols)); // restoring original data
-                for(size_type i = this->cols; i-- >= 1;){
-                    memmove(this->data+lda*i, this->data+this->lda*i, sizeof(T)*this->rows);
-                }
-                this->lda = lda;
-                this->sda = sda;
-        }*/
-    }
-
-    template <typename T>
     void p_dense_matrix<T>::resize(size_type rows, size_type cols)
     {
-        reserve(rows,cols);
-        if(rows > this->rows){
-            for(size_type i = 0; i < this->cols; i++){
-                memset(this->data+this->lda*i+this->rows, 0, sizeof(T)*(rows - this->rows));
-            }
-        }
-        if(cols > this->cols){
-            for(size_type i = this->cols; i < cols; i++){
-                memset(this->data+this->lda*i, 0, sizeof(T)*rows);
-            }
-        }
-        this->rows=rows;
+        this->rows=rows; 
         this->cols=cols;
+        this->profile->set_dim(ambient::dim3(cols,rows));
     }
 
     template <typename T>
     void p_dense_matrix<T>::remove_rows(size_type i, difference_type k = 1)
     {
         assert( i+k <= this->rows );
-        for(size_type j = 0; j < this->cols; ++j)
-            // for each column, copy the rows > i+k to k rows  up
-            memmove(&this->data[this->lda*j + i], &this->data[this->lda*j + i + k], sizeof(T)*(this->rows-i-k));
+        size_t* ih = new size_t(i); // preventing arguments from destruction
+        size_t* kh = new size_t(k); // preventing arguments from destruction
+        ambient::push(ambient::remove_rows_l_kernel, ambient::remove_rows_c_kernel, *this, *ih, *kh);
         this->rows -= k;
+        this->profile->set_dim(ambient::dim3(this->cols,this->rows));
     }
 
     template <typename T>
     void p_dense_matrix<T>::remove_columns(size_type j, difference_type k = 1)
     {
         assert( j+k <= this->cols );
+        size_t* jh = new size_t(j); // preventing arguments from destruction
+        size_t* kh = new size_t(k); // preventing arguments from destruction
+        ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, *jh, *kh);
         this->cols -= k;
+        this->profile->set_dim(ambient::dim3(this->cols,this->rows));
     }
 
     template <typename T>
     void p_dense_matrix<T>::inplace_conjugate()
     {
         assert(false);
-        // TODO
+        // todo
     }
 
     template <typename T>
@@ -138,10 +113,10 @@ namespace blas {
         assert(i < this->rows);
         assert(j < this->cols);
         ambient::playout();
-        int group_i = i / (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
-        int group_j = j / (this->profile->get_group_dim().x*this->profile->get_item_dim().x);
-        int element_i = i % (this->profile->get_group_dim().y*this->profile->get_item_dim().y);
-        int element_j = j % (this->profile->get_group_dim().x*this->profile->get_item_dim().x);
+        int group_i = i / (this->profile->get_group_t_dim().y);
+        int group_j = j / (this->profile->get_group_t_dim().x);
+        int element_i = i % (this->profile->get_group_t_dim().y);
+        int element_j = j % (this->profile->get_group_t_dim().x);
         if(this->profile->group(group_i,group_j)->available())
             return *(T*)(*this->profile)(group_i, group_j).element(element_i, element_j);
         else
