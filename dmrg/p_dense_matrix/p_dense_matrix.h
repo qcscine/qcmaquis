@@ -9,7 +9,7 @@
 #include "utils/zout.hpp"
 #include "utils/function_objects.h"
 
-#include "dense_matrix/diagonal_matrix.h"
+#include "p_dense_matrix/diagonal_matrix.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
