@@ -106,7 +106,7 @@ namespace blas {
     }
 
     template <typename T>
-    inline T& p_dense_matrix<T>::get(size_type i, size_type j)
+    inline T& p_dense_matrix<T>::get(size_type i, size_type j) const
     {
         assert(i < this->rows);
         assert(j < this->cols);

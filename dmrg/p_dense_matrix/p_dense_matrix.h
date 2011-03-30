@@ -71,7 +71,7 @@ namespace blas {
        
         void inplace_conjugate();
 
-        inline value_type& get(size_type i, size_type j);
+        inline value_type& get(size_type i, size_type j) const;
         p_dense_matrix& operator = (const p_dense_matrix& rhs);
         inline value_type& operator()(size_type i, size_type j);
         inline const value_type& operator()(size_type i, size_type j) const;
