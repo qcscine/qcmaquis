@@ -195,7 +195,7 @@ namespace ambient {
             memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->t_size);
             offset = 0;
             for(int i=0; i < this->get_grid_dim().y; i++){
-                if((*this->layout)(i,j) != NULL){
+                if(this->group(i,j)->available()){
                     void* solid_data = (void*)((size_t)memory+offset*this->get_group_t_dim().y*this->t_size);
                     for(int k=0; k < this->get_group_t_dim().x; k++){
                         memcpy((void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), (void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y),
