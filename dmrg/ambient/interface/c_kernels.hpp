@@ -135,16 +135,14 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     double* ad   = current(a)(i,j);
     double* ad_r = current(a)(i+shift,j);
     if(remains < lda && (remains_u + k) > lda){                                                        // get two following blocks (i+shift-1;i+shift)
+        double* ad_r0 = current(a)(i+shift-1,j);
         if(i == group_i_mark){
-            ad_r = current(a)(i+shift-1,j);
             for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block #1
-                memcpy(&ad[lda*j + remains_u], &ad_r[lda*j+lda-remains_l], sizeof(T)*remains_l);
+                memcpy(&ad[lda*j + remains_u], &ad_r0[lda*j+lda-remains_l], sizeof(T)*remains_l);
         }else if(i >= group_i_mark){
-            ad_r = current(a)(i+shift-1,j);
             for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block #1
-                memcpy(&ad[lda*j], &ad_r[lda*j + (lda-remains)], sizeof(T)*remains);
+                memcpy(&ad[lda*j], &ad_r0[lda*j + (lda-remains)], sizeof(T)*remains);
         }
-        ad_r = current(a)(i+shift,j);
         for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                               // memcpy from replacement block #2
             memcpy(&ad[lda*j + remains], &ad_r[lda*j], sizeof(T)*(lda-remains));
 
