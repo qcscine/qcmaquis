@@ -228,6 +228,7 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     }
 }
 
+void resize_c_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols){ }
 void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ }
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ printf("Executed add kernel\n"); }
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}

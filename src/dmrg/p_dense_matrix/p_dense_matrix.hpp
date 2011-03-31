@@ -75,7 +75,9 @@ namespace blas {
     {
         this->rows=rows; 
         this->cols=cols;
-        this->profile->set_dim(ambient::dim3(cols,rows));
+        const size_t* rows_h = new size_t(rows); // preventing arguments from destruction
+        const size_t* cols_h = new size_t(cols); // preventing arguments from destruction
+        ambient::push(ambient::resize_l_kernel, ambient::resize_c_kernel, *this, *rows_h, *cols_h);
     }
 
     template <typename T>
@@ -85,7 +87,7 @@ namespace blas {
         const size_t* ih = new size_t(i); // preventing arguments from destruction
         const size_t* kh = new size_t(k); // preventing arguments from destruction
         ambient::push(ambient::remove_rows_l_kernel, ambient::remove_rows_c_kernel, *this, *ih, *kh);
-        this->rows -= k;
+        this->resize(this->rows - k, this->cols);
     }
 
     template <typename T>
@@ -95,7 +97,7 @@ namespace blas {
         const size_t* jh = new size_t(j); // preventing arguments from destruction
         const size_t* kh = new size_t(k); // preventing arguments from destruction
         ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, *jh, *kh);
-        this->cols -= k;
+        this->resize(this->rows, this->cols - k);
     }
 
     template <typename T>
