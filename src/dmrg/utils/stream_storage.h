@@ -463,7 +463,10 @@ struct storage {
         boost::shared_ptr<boost::mutex> new_mutex(new boost::mutex());
         boost::shared_ptr<StreamRequest> req(new StreamReadRequest_impl<T>(&ss, &o, new_mutex));
         
-        ss.master->requests.push_back(req);
+        {
+            boost::lock_guard<boost::mutex> lock(ss.master->deque_mutex);
+            ss.master->requests.push_back(req);
+        }
         ss.mutexes.push_back(new_mutex);
         ss.master->notify();
         
@@ -495,7 +498,10 @@ struct storage {
         
         boost::shared_ptr<StreamRequest> req(new StreamWriteRequest_impl<T>(&ss, &o));
         
-        ss.master->requests.push_back(req);
+        {
+            boost::lock_guard<boost::mutex> lock(ss.master->deque_mutex);
+            ss.master->requests.push_back(req);
+        }
         ss.master->notify();
         
         ss.status_ = StreamStorage::Stored;
@@ -511,7 +517,11 @@ struct storage {
 StreamStorage::~StreamStorage()
 {
     boost::shared_ptr<StreamRequest> req(new StreamDeleteRequest(this));
-    master->requests.push_back(req);
+    
+    {
+        boost::lock_guard<boost::mutex> lock(master->deque_mutex);
+        master->requests.push_back(req);
+    }
     master->notify();
 }
 
