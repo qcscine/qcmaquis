@@ -13,3 +13,8 @@ void push( FL l_kernel, FC c_kernel, T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 )
     ambient::engine.push(new core::operation( l_kernel, &arg0 , &arg1 , &arg2 , &arg3 ),
                          new core::operation( c_kernel, &arg0 , &arg1 , &arg2 , &arg3 ));
 }
+template < typename FL, typename FC, class T0 , class T1 , class T2 , class T3 , class T4 >
+void push( FL l_kernel, FC c_kernel, T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 ){
+    ambient::engine.push(new core::operation( l_kernel, &arg0 , &arg1 , &arg2 , &arg3 , &arg4 ),
+                         new core::operation( c_kernel, &arg0 , &arg1 , &arg2 , &arg3 , &arg4 ));
+}
