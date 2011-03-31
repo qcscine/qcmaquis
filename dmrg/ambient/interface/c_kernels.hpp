@@ -125,7 +125,6 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
 {
     typedef double T;
     
-    //breakdown(a).set_dim(ambient::dim3(get_dim(a).x, get_dim(a).y - k));
     double* ad    = NULL;
     double* ad_r  = NULL;
     double* ad_r0 = NULL;
@@ -182,7 +181,10 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
 void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
 {
     typedef double T;
-    breakdown(a).set_dim(ambient::dim3(get_dim(a).x - k, get_dim(a).y));
+
+    double* ad    = NULL;
+    double* ad_r  = NULL;
+    double* ad_r0 = NULL;
 
     size_t i   = get_group_id(a).y;
     size_t j   = get_group_id(a).x;
@@ -196,30 +198,36 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     size_t group_j_mark = j_mark / sda;
     size_t k_wo_blocks = std::min((2*sda-remains), k);
 
-    double* ad   = current(a)(i,j);
-    double* ad_r = current(a)(i,j+shift);
+    if(j < group_j_mark) return;                                                                       // easy-out
+    ad   = current(a)(i,j);
+    if(j+shift < get_grid_dim(a).x) ad_r = current(a)(i,j+shift);
+
     if(remains < sda && (remains_l + k) > sda){                                                        // get two following blocks (j+shift-1;j+shift)
-        double* ad_r0 = current(a)(i,j+shift-1);
+        if((j+shift-1) < get_grid_dim(a).x) ad_r0 = current(a)(i,j+shift-1);
+        ambient::memoryfence();
+        if(ad_r0 == NULL) return;                                                                      // out of matrix request
         if(j == group_j_mark){
-            memcpy(&ad[lda*remains_l], &ad_r0[lda*(sda-remains_r)], sizeof(T)*lda*remains_r);           // memcpy from replacement block #1
+            memcpy(&ad[lda*remains_l], &ad_r0[lda*(sda-remains_r)], sizeof(T)*lda*remains_r);          // memcpy from replacement block #1
         }else if(j >= group_j_mark){
-            memcpy(ad, &ad_r0[lda*(sda-remains)], sizeof(T)*lda*remains);                               // memcpy from replacement block #1
+            memcpy(ad, &ad_r0[lda*(sda-remains)], sizeof(T)*lda*remains);                              // memcpy from replacement block #1
         }
         memcpy(&ad[lda*remains], ad_r, sizeof(T)*lda*(sda-remains));                                   // memcpy from replacement block #2
     }else{                                                                                             // get only one following block
+        ambient::memoryfence();
         if(j == group_j_mark){
             if(remains_l + k < sda){
                 memcpy(&ad[lda*remains_l], &ad[lda*(remains_l+k)], sizeof(T)*lda*(sda-remains_l-k));   // first memmove inside block
-                memcpy(&ad[lda*(sda-k)], ad_r, sizeof(T)*lda*k);                                       // memcpy from replacement block
+                if(ad_r != NULL) memcpy(&ad[lda*(sda-k)], ad_r, sizeof(T)*lda*k);                                       // memcpy from replacement block
             }else{
-                memcpy(&ad[lda*remains_l], &ad_r[lda*(sda-remains_r)], sizeof(T)*lda*(sda-remains_l)); // memcpy from replacement block
+                if(ad_r != NULL) memcpy(&ad[lda*remains_l], &ad_r[lda*(sda-remains_r)], sizeof(T)*lda*(sda-remains_l)); // memcpy from replacement block
             }
         }else if(i >= group_j_mark){
             memcpy(ad, &ad[lda*k_wo_blocks], sizeof(T)*lda*(sda-k_wo_blocks) );                        // first memmove inside block
-            memcpy(&ad[lda*(sda-k_wo_blocks)], ad_r, sizeof(T)*lda*k_wo_blocks);                       //  memcpy from replacement block
+            if(ad_r != NULL) memcpy(&ad[lda*(sda-k_wo_blocks)], ad_r, sizeof(T)*lda*k_wo_blocks);                       //  memcpy from replacement block
         }
     }
 }
+
 void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ }
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ printf("Executed add kernel\n"); }
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}

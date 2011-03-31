@@ -43,7 +43,7 @@ namespace blas {
         typedef strided_iterator<const p_dense_matrix,const value_type>
             const_row_element_iterator;                   // Const version of row_element_iterator
         typedef value_type*
-            column_element_iterator;                      // Iterator to iterate through the elements of a columns of the matrix
+            column_element_iterator;                      // Iterator to iterate through the elements of a cols of the matrix
         typedef value_type const*
             const_column_element_iterator;                // Const version of column_element_iterator       
         typedef matrix_element_iterator<p_dense_matrix,value_type>
@@ -51,7 +51,7 @@ namespace blas {
         typedef matrix_element_iterator<const p_dense_matrix,const value_type>
             const_element_iterator;                       // Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
-        p_dense_matrix(size_type rows, size_type columns, T init_value);
+        p_dense_matrix(size_type rows, size_type cols, T init_value);
         p_dense_matrix(p_dense_matrix const& m);
 
         void swap(p_dense_matrix & r);
@@ -59,14 +59,14 @@ namespace blas {
 
         inline bool empty() const;
         inline size_type num_rows() const;
-        inline size_type num_columns() const;
+        inline size_type num_cols() const;
         inline difference_type stride1() const;
         inline difference_type stride2() const;
         inline difference_type get_lda() const;
         inline difference_type get_sda() const;
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, difference_type k);
-        void remove_columns(size_type j, difference_type k);
+        void remove_cols(size_type j, difference_type k);
         void clear();
        
         void inplace_conjugate();
@@ -100,11 +100,11 @@ namespace blas {
         }
         std::pair<element_iterator,element_iterator> elements()
         {
-            return std::make_pair( element_iterator(this,0,0), element_iterator(this,0, num_columns()) );
+            return std::make_pair( element_iterator(this,0,0), element_iterator(this,0, num_cols()) );
         }
         std::pair<element_iterator,element_iterator> elements() const
         {
-            return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_columns() ) );
+            return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_cols() ) );
         }
 
 #ifdef HAVE_ALPS_HDF5

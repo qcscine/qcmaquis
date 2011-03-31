@@ -60,11 +60,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 
     ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
     c = a + b;
-    c(510,510) = 13.0;
-    c(511,510) = 14.0;
-    for(int i=0; i < 512; i++) if(c(i,510) >= 1.0) 
-    printf("The element of c(%d,%d) is %.2f\n", i, 510, c(i,510));
-    c.remove_rows(510,1);
-    printf("The element of c(510,510) now is %.2f\n", c(510,510));
+    c(5,5) = 13.0;
+    c(6,5) = 14.0;
+    c.remove_rows(5,1);
+    c.remove_cols(5,1);
+    for(int i=0; i < 20; i++) if(c(i,5) >= 1.0) 
+    printf("The element of c(%d,%d) is %.2f\n", i, 5, c(i,5));
 }
 
