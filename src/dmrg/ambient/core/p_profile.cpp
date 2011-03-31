@@ -155,6 +155,7 @@ namespace ambient {
         this->data = malloc(this->layout->segment_count                  *
                             (this->get_group_dim()*this->get_item_dim()) *
                             this->t_size);
+
         void* memory = this->data;
 
 // let's find the solid_lda
@@ -169,6 +170,7 @@ namespace ambient {
             }
             if(this->solid_lda) break;
         }
+
 // let's copy from separate memory blocks to the general one
         for(j=0; j < this->get_grid_dim().x; j++){
             memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->t_size);
@@ -177,14 +179,15 @@ namespace ambient {
                 if(this->group(i,j)->available()){
                     void* solid_data = (void*)((size_t)memory+offset*this->get_group_t_dim().y*this->t_size);
                     for(int k=0; k < this->get_group_t_dim().x; k++){
-                        assert(this->group(i,j)->data != NULL);
-                        memcpy((void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y), (void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), 
+                         assert(this->group(i,j)->data != NULL);
+                        memcpy((void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y*this->t_size), (void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), 
                                this->get_group_t_dim().y*this->t_size);
                     }
                     offset++;
                 }
             }
         }
+
     }
 
 
@@ -198,7 +201,7 @@ namespace ambient {
                 if(this->group(i,j)->available()){
                     void* solid_data = (void*)((size_t)memory+offset*this->get_group_t_dim().y*this->t_size);
                     for(int k=0; k < this->get_group_t_dim().x; k++){
-                        memcpy((void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), (void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y),
+                        memcpy((void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), (void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y*this->t_size),
                                this->get_group_t_dim().y*this->t_size);
                     }
                     offset++;

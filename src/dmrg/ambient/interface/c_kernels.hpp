@@ -1,15 +1,19 @@
 #define NODE_COUNT 1
-
 #include "mkl.h"
+
+
 
 extern "C" {
     void Cblacs_get( int, int, int* );
     void Cblacs_gridinit( int*, const char*, int, int );
     void Cblacs_gridinfo( int, int*, int*, int*, int* );
+	void Cblacs_gridexit(int *);
+	void Cblacs_exit(int *);
     int Csys2blacs_handle( MPI_Comm );
     int numroc_( int*, int*, int*, int*, int* );
     void descinit_( int*, int*, int*, int*, int*, int*, int*, int*, int*, int* );
     void pdgemm_(const char*,const char*,int*,int*,int*,double*,double*,int*,int*,int*,double*,int*,int*,int*,double*,double*,int*,int*,int*);
+	void pdgesvd_(char *jobu, char *jobvt, int *m, int *n,double *a, int *ia, int *ja, int *desca,double *s,double *u, int *iu, int *ju, int *descu,double *vt, int *ivt, int *jvt, int *descvt,double *work, int *lwork,int *info);
 }
 
 /*
@@ -208,16 +212,78 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
             memcpy(&ad[lda*(sda-k_wo_blocks)], ad_r, sizeof(T)*lda*k_wo_blocks);                       //  memcpy from replacement block
         }
     }
-
 }
-
 void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ }
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ printf("Executed add kernel\n"); }
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}
 void scale_c_kernel(const p_dense_matrix<double>& a, const double& alfa, pinned p_dense_matrix<double>& out){}
 
-/////////////////////
-// testing kernels // 
+
+
+void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_matrix<double>  & B, p_dense_matrix<double> & C){
+
+	int nmyidBLACS,nnumprocsBLACS,nContinue;
+	int nContxt,nVal;  
+	int i, j, k;
+	int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
+	nprow = scope.np;
+	npcol = scope.nq; 
+	nb = get_group_dim(C).x*get_item_dim(C).x;
+	std::cout << " nb " << nb << std::endl;
+	int nM = 4; //get_grid_dim(C)*get_group_dim(C).x*get_item_dim(C).x;								 
+	std::cout << " nM " << nM << std::endl;
+
+	int nN = nM; //square matrix								 
+	int info,itemp;
+	int ZERO=0,ONE=1;
+	ictxt =Csys2blacs_handle(scope.get_group()->mpi_comm);
+
+	Cblacs_get( -1, 0, &ictxt );
+	Cblacs_gridinit( &ictxt, "Row", nprow, npcol );
+	Cblacs_gridinfo( ictxt, &nprow, &npcol, &myrow, &mycol );
+	
+	int descA[9],descB[9],descC[9];
+
+	//makbreakpoint a;
+	
+	int mA = numroc_( &nM, &nb, &myrow, &ZERO, &nprow );	
+	int nA = numroc_( &nN, &nb, &mycol, &ZERO, &npcol );
+	int mB = numroc_( &nM, &nb, &myrow, &ZERO, &nprow );
+	int nB = numroc_( &nN, &nb, &mycol, &ZERO, &npcol );
+	int mC = numroc_( &nM, &nb, &myrow, &ZERO, &nprow );
+	int nC = numroc_( &nN, &nb, &mycol, &ZERO, &npcol );
+		
+	descinit_(descA, &nM,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mA,  &info);
+	descinit_(descB, &nM,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mB,  &info);
+	descinit_(descC, &nM,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mC,  &info);
+
+
+	zout << A ;
+	
+	void_pt& pA = breakdown(A);
+	pA.solidify();
+
+	if(ambient::rank() == 0)
+{
+	for(int i = 0 ; i < 16;i++)
+	std::cout << *((double*)breakdown(A).data+i) << " rank  " << ambient::rank() << std::endl;}
+/*
+	void_pt& pB = breakdown(B);
+	pB.solidify();
+	void_pt& pC = breakdown(C);
+	pC.solidify();
+	
+	double alpha = 1.0; double beta = 0.0;
+
+	
+//	pdgemm_("N","N",&nM,&nN,&nM,&alpha,(double*)breakdown(A).data,&ONE,&ONE,descA,(double*)breakdown(B).data,&ONE,&ONE,descB,&beta,(double*)breakdown(C).data,&ONE,&ONE,descC);
+*/
+	pA.disperse();
+//	pB.disperse();
+//	pC.disperse();								 
+									 
+}
+
 
 void single_integer_c_kernel(int& input){
     input += 13;
