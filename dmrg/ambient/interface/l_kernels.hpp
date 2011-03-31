@@ -51,7 +51,6 @@ void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     scope_select("2 from ambient as copy_ground where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in remove rows ("<< ambient::rank() <<"):\n"; info(a);
-    printf("Will be removing %d rows from #%d\n", k, i_mark);
     block_2d_cycle_assign(a);
 }
 

@@ -1,7 +1,7 @@
 // nested inside ambient.hpp in ambient namespace
 
 void memoryfence(){
-    ambient::spin_loop(); // global blocking for now
+    ambient::spin(); // just spin for now
 }
 
 template <typename FL, typename FC, class T0, class T1, class T2>
