@@ -1,5 +1,5 @@
 #include <boost/preprocessor.hpp>
-#define ARGS_MAX_LEN 5
+#define ARGS_MAX_LEN 4
 
 #define extract_arguments(z, n, unused)                                                     \
     this->arguments[n] = (void*)arg ## n;
@@ -29,7 +29,7 @@ void operation::prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_
 namespace ambient{ namespace core{
 
 #define BOOST_PP_ITERATION_LIMITS (1, ARGS_MAX_LEN)
-#define BOOST_PP_FILENAME_1 "ambient/core/operation/operation.pp.hpp.template.h"
+#define BOOST_PP_FILENAME_1 "ambient/core/operation/operation.pp.sa.hpp.template.h"
 #include BOOST_PP_ITERATE()
 #endif
 #else
