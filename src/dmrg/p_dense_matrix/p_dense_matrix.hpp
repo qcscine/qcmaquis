@@ -3,8 +3,8 @@
 namespace blas {
 
     template <typename T>
-    p_dense_matrix<T>::p_dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T() )
-    : rows(rows), cols(columns), lda(rows), sda(columns)
+    p_dense_matrix<T>::p_dense_matrix(size_type rows = 0, size_type cols = 0, T init_value = T() )
+    : rows(rows), cols(cols), lda(rows), sda(cols)
     {
         profile = new ambient::void_pt(this);
     }
@@ -53,7 +53,7 @@ namespace blas {
     inline std::size_t p_dense_matrix<T>::num_rows() const { return this->rows; }
 
     template <typename T>
-    inline std::size_t p_dense_matrix<T>::num_columns() const { return this->cols; }
+    inline std::size_t p_dense_matrix<T>::num_cols() const { return this->cols; }
 
     template <typename T>
     inline std::ptrdiff_t p_dense_matrix<T>::stride1() const { return 1; }
@@ -89,11 +89,11 @@ namespace blas {
     }
 
     template <typename T>
-    void p_dense_matrix<T>::remove_columns(size_type j, difference_type k = 1)
+    void p_dense_matrix<T>::remove_cols(size_type j, difference_type k = 1)
     {
         assert( j+k <= this->cols );
-        size_t* jh = new size_t(j); // preventing arguments from destruction
-        size_t* kh = new size_t(k); // preventing arguments from destruction
+        const size_t* jh = new size_t(j); // preventing arguments from destruction
+        const size_t* kh = new size_t(k); // preventing arguments from destruction
         ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, *jh, *kh);
         this->cols -= k;
     }
@@ -166,7 +166,7 @@ namespace blas {
     {
         for(typename p_dense_matrix<T>::size_type i=0; i< m.num_rows(); ++i)
         {
-            for(typename p_dense_matrix<T>::size_type j=0; j < m.num_columns(); ++j)
+            for(typename p_dense_matrix<T>::size_type j=0; j < m.num_cols(); ++j)
                 o<<m(i,j)<<" ";
             o<<std::endl;
         }

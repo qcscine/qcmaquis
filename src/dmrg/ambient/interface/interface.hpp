@@ -1,7 +1,8 @@
 // nested inside ambient.hpp in ambient namespace
 
 void memoryfence(){
-    ambient::spin(); // just spin for now
+    ambient::spin();
+    //scope.get_group()->get_manager()->spin_loop(); // just spin for now
 }
 
 template <typename FL, typename FC, class T0, class T1, class T2>
