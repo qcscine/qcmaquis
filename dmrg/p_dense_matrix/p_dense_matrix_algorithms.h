@@ -66,7 +66,8 @@ namespace blas
     void gemm(p_dense_matrix<T> const & A, p_dense_matrix<T> const & B, p_dense_matrix<T> & C)
     {
         printf("Attempting to perform GEMM\n");
-        assert(false);
+//        assert(false);
+		ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A,B,C );
 // insert hooks for ambient here
 // TODO        C = REAL_AMBIENT_GEMM(A, B);
     }
