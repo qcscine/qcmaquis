@@ -1,5 +1,5 @@
 #include <boost/preprocessor.hpp>
-#define ARGS_MAX_LEN 4
+#define ARGS_MAX_LEN 5
 
 #define extract_arguments(z, n, unused)                                                     \
     this->arguments[n] = (void*)arg ## n;

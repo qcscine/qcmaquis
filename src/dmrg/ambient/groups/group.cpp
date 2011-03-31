@@ -41,7 +41,7 @@ namespace ambient{ namespace groups {
                 rank_g = this->translate_up_rank(i)+1;
                 if(rank_g >= id_len*32){
                     old_id_len = id_len;
-                    id_len = rank_g/32 + (rank_g % 32 ? 1:0);
+                    id_len = __a_ceil(rank_g/32);
                     hash_id = (unsigned int*)realloc(hash_id, sizeof(unsigned int)*id_len);
                     while(old_id_len < id_len) hash_id[old_id_len++] = 0; // memset with 0
                 }
