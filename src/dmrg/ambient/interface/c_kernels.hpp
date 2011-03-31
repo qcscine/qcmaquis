@@ -126,9 +126,9 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     typedef double T;
     
     //breakdown(a).set_dim(ambient::dim3(get_dim(a).x, get_dim(a).y - k));
-    double* ad;
-    double* ad_r;
-    double* ad_r0;
+    double* ad    = NULL;
+    double* ad_r  = NULL;
+    double* ad_r0 = NULL;
 
     size_t i   = get_group_id(a).y;
     size_t j   = get_group_id(a).x;
@@ -141,12 +141,14 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     size_t group_i_mark = i_mark / lda;
     size_t k_wo_blocks = std::min((2*lda-remains), k);
 
+    if(i < group_i_mark) return;                                                                       // easy-out
     ad   = current(a)(i,j);
-    ad_r = NULL; //(i+shift) < get_grid_dim(a).y ? current(a)(i+shift,j) : NULL;
-    
+    if(i+shift < get_grid_dim(a).y) ad_r = current(a)(i+shift,j);
+ 
     if(remains < lda && (remains_u + k) > lda){                                                        // get two following blocks (i+shift-1;i+shift)
-        ad_r0 = NULL; //(i+shift-1) < get_grid_dim(a).y ? current(a)(i+shift-1,j) : NULL;
+        if((i+shift-1) < get_grid_dim(a).y) ad_r0 = current(a)(i+shift-1,j);
         ambient::memoryfence();
+        if(ad_r0 == NULL) return;                                                                      // out of matrix request
         if(i == group_i_mark){
             for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block #1
                 memcpy(&ad[lda*j + remains_u], &ad_r0[lda*j+lda-remains_l], sizeof(T)*remains_l);
@@ -162,16 +164,16 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
             if(remains_u + k < lda){
                 for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // first memmove inside block
                     memcpy(&ad[lda*j + remains_u], &ad[lda*j + remains_u+k], sizeof(T)*(lda-remains_u-k));
-                for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // memcpy from replacement block
+                if(ad_r != NULL) for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                      // memcpy from replacement block
                     memcpy(&ad[lda*j + lda - k], &ad_r[lda*j], sizeof(T)*k);
             }else{
-                for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // memcpy from replacement block
+                if(ad_r != NULL) for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                      // memcpy from replacement block
                     memcpy(&ad[lda*j + remains_u], &ad_r[lda*j + lda-remains_l], sizeof(T)*(lda-remains_u));
             }
         }else if(i >= group_i_mark){
             for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // first memmove inside block
                 memcpy(&ad[lda*j], &ad[lda*j + k_wo_blocks], sizeof(T)*(lda-k_wo_blocks) );
-            for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block
+            if(ad_r != NULL) for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                          // memcpy from replacement block
                 memcpy(&ad[lda*j + lda-k_wo_blocks], &ad_r[lda*j], sizeof(T)*k_wo_blocks);
         }
     }
