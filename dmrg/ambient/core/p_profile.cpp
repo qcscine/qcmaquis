@@ -42,7 +42,8 @@ namespace ambient {
     }
 
     void p_profile::operator=(const p_profile& profile){
-        // todo I guess
+        // todo I guess or update imitate function
+        assert(false);
         this->profile      = const_cast<p_profile*>(&profile);
         this->state        = PROXY;                   // to handle properly
         this->group_id     = profile.group_id;
@@ -129,8 +130,8 @@ namespace ambient {
 
     void p_profile::regroup(){
         if(!this->is_proxy()){
-            int y_size = this->dim.y / (this->get_group_t_dim().y);
-            int x_size = this->dim.x / (this->get_group_t_dim().x);
+            int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
+            int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
             if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
             for(int i = 0; i < y_size; i++){
                 if(i >= this->reserved_y) skeleton.push_back(std::vector<workgroup*>());
@@ -291,7 +292,6 @@ namespace ambient {
         if(this->is_proxy()){ // on-touch init for proxy
             this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
         }else if(!this->group(i,j,k)->available()){
-            //printf("R%d: Requesting the group which is outdated (%d: %d %d)\n", ambient::rank(), this->id, i, j); // let's make the request here!
             groups::packet_manager* manager = world()->get_manager(); //this->consted ? world()->get_manager() : this->get_scope()->get_manager();
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                 this->get_master(), "P2P", 
@@ -305,9 +305,9 @@ namespace ambient {
     }
 
     workgroup* p_profile::group(int i, int j, int k) const {
-        int x_size = this->dim.x / this->get_group_t_dim().x;
-        int y_size = this->dim.y / this->get_group_t_dim().y;
-        int z_size = this->dim.z / this->get_group_t_dim().z;
+        int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
+        int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
+        int z_size = __a_ceil(this->dim.z / this->get_group_t_dim().z);
         
         if(i >= y_size || j >= x_size || k >= z_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j, k);
         return this->skeleton[i][j];
@@ -350,9 +350,9 @@ namespace ambient {
     }
 
     dim3 p_profile::get_grid_dim() const {
-        int x_size = this->dim.x / this->get_group_t_dim().x;
-        int y_size = this->dim.y / this->get_group_t_dim().y;
-        int z_size = this->dim.z / this->get_group_t_dim().z;
+        int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
+        int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
+        int z_size = __a_ceil(this->dim.z / this->get_group_t_dim().z);
         return dim3(x_size, y_size, z_size);
     }
 

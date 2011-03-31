@@ -9,6 +9,7 @@
 #define HASH_MAP_VECTOR_RESERVATION 10
 #define STACK_CONTENT_RESERVATION 10
 
+#define __a_ceil(x) (((double)x-(int)x) == 0 ? (int)x : (int)x+1)
 
 namespace ambient{
 namespace core{ class operation; }

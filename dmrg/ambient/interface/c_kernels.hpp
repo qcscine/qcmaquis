@@ -136,7 +136,7 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     size_t remains_u = i_mark % lda;
     size_t remains_l = lda - (remains_u+k) % lda;
     size_t remains   = remains_u + remains_l;
-    size_t shift     = k / lda + (k % lda ? 1 : 0);
+    size_t shift     = __a_ceil(k / lda);
     size_t group_i_mark = i_mark / lda;
     size_t k_wo_blocks = std::min((2*lda-remains), k);
 
@@ -194,7 +194,7 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     size_t remains_l = j_mark % sda;
     size_t remains_r = sda - (remains_l+k) % sda;
     size_t remains   = remains_l + remains_r;
-    size_t shift     = k / sda + (k % sda ? 1 : 0);
+    size_t shift     = __a_ceil(k / sda);
     size_t group_j_mark = j_mark / sda;
     size_t k_wo_blocks = std::min((2*sda-remains), k);
 
