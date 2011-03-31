@@ -460,6 +460,8 @@ struct storage {
         if (ss.status() == StreamStorage::Complete)
             return;
         
+        ss.status_ = StreamStorage::Prefetching;
+        
         boost::shared_ptr<boost::mutex> new_mutex(new boost::mutex());
         boost::shared_ptr<StreamRequest> req(new StreamReadRequest_impl<T>(&ss, &o, new_mutex));
         
@@ -469,8 +471,6 @@ struct storage {
         }
         ss.mutexes.push_back(new_mutex);
         ss.master->notify();
-        
-        ss.status_ = StreamStorage::Prefetching;
     }
     
     template<class T>
