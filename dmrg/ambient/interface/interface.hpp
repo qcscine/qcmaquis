@@ -1,5 +1,9 @@
 // nested inside ambient.hpp in ambient namespace
 
+void memoryfence(){
+    ambient::spin_loop(); // global blocking for now
+}
+
 template <typename FL, typename FC, class T0, class T1, class T2>
 void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2){
     if(breakdown(arg0).state == PROXY) pin(arg0, arg2);

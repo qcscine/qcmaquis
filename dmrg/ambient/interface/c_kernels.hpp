@@ -126,7 +126,10 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     typedef double T;
     
     //breakdown(a).set_dim(ambient::dim3(get_dim(a).x, get_dim(a).y - k));
-    return;
+    double* ad;
+    double* ad_r;
+    double* ad_r0;
+
     size_t i   = get_group_id(a).y;
     size_t j   = get_group_id(a).x;
     size_t lda = get_group_t_dim(a).y;
@@ -138,10 +141,12 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     size_t group_i_mark = i_mark / lda;
     size_t k_wo_blocks = std::min((2*lda-remains), k);
 
-    double* ad   = current(a)(i,j);
-    double* ad_r = current(a)(i+shift,j);
+    ad   = current(a)(i,j);
+    ad_r = NULL; //(i+shift) < get_grid_dim(a).y ? current(a)(i+shift,j) : NULL;
+    
     if(remains < lda && (remains_u + k) > lda){                                                        // get two following blocks (i+shift-1;i+shift)
-        double* ad_r0 = current(a)(i+shift-1,j);
+        ad_r0 = NULL; //(i+shift-1) < get_grid_dim(a).y ? current(a)(i+shift-1,j) : NULL;
+        ambient::memoryfence();
         if(i == group_i_mark){
             for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // memcpy from replacement block #1
                 memcpy(&ad[lda*j + remains_u], &ad_r0[lda*j+lda-remains_l], sizeof(T)*remains_l);
@@ -151,8 +156,8 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
         }
         for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                               // memcpy from replacement block #2
             memcpy(&ad[lda*j + remains], &ad_r[lda*j], sizeof(T)*(lda-remains));
-
     }else{                                                                                             // get only one following block
+        ambient::memoryfence();
         if(i == group_i_mark){
             if(remains_u + k < lda){
                 for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // first memmove inside block
@@ -221,7 +226,7 @@ void scale_c_kernel(const p_dense_matrix<double>& a, const double& alfa, pinned 
 
 
 void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_matrix<double>  & B, p_dense_matrix<double> & C){
-
+#ifdef SCALAPACK
 	int nmyidBLACS,nnumprocsBLACS,nContinue;
 	int nContxt,nVal;  
 	int i, j, k;
@@ -281,7 +286,7 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_m
 	pA.disperse();
 //	pB.disperse();
 //	pC.disperse();								 
-									 
+#endif							 
 }
 
 

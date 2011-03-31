@@ -10,6 +10,10 @@ namespace blas{
 
 namespace ambient{ 
 
+// synchronization primitives //
+    void memoryfence();
+
+// kernels management //
     template <typename FL, typename FC, class T0, class T1, class T2>
     void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2);
 
@@ -25,6 +29,7 @@ namespace ambient{
     template<typename T>
     void assign(const T& ref, int i, int j = 0, int k = 0);
 
+// breakdown information //
     template<typename T>
     inline dim3 get_dim(T& ref);
 

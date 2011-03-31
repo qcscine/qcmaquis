@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     c(510,510) = 13.0;
     c(511,511) = 14.0;
     printf("The element of c is %.2f\n", c(510,510));
-    c.remove_rows(511,1);
+    c.remove_rows(510,1);
     printf("The element of c now is %.2f\n", c(510,510));
 }
 
