@@ -91,9 +91,9 @@ public:
     StreamStorageMaster(std::string fp)
     : base_path(fp)
     , last_id(0)
+    , active(true)
     , worker(this)
     , worker_thread(worker)
-    , active(true)
     { }
     
     ~StreamStorageMaster()
@@ -165,9 +165,9 @@ protected:
     friend class StreamWorker;
     friend class StreamStorage;
     
+    bool active;
     StreamWorker worker;
     boost::thread worker_thread;
-    bool active;
     
     template<class Object_> friend class StreamReadRequest_impl;
     template<class Object_> friend class StreamWriteRequest_impl;
