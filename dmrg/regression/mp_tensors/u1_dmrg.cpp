@@ -42,6 +42,7 @@ typedef blas::dense_matrix<double > Matrix;
 #include "mp_tensors/mpo.h"
 #include "mp_tensors/contractions.h"
 #include "mp_tensors/mps_mpo_ops.h"
+#include "mp_tensors/mps_initializers.h"
 
 #include "mp_tensors/ss_optimize.h"
 #include "mpos/measurements.h"
@@ -151,7 +152,7 @@ int main(int argc, char ** argv)
     Index<U1> phys = H->get_phys();
     
     int total_charge = model.get<int>("u1_total_charge");
-    MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge, default_mps_initializer<Matrix, grp>);
+    MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge, *new default_mps_init<Matrix, grp>);
     
     int sweep = 0;
     if (restore) {

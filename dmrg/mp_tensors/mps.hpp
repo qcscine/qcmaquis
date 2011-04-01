@@ -15,126 +15,11 @@
 
 #include <boost/math/special_functions/binomial.hpp>
 
-//template<class Matrix>
-//void mps_init(MPS<Matrix, NullGroup> & mps,
-//              size_t Mmax,
-//              Index<NullGroup> const & phys,
-//              NullGroup::charge)
-//{
-//    std::size_t L = mps.length();
-//    std::vector<std::size_t> bond_sizes(L+1, 1);
-//    for (std::size_t k = 1; k < L+1; ++k)
-//        bond_sizes[k] = std::min(Mmax, 2*bond_sizes[k-1]);
-//    bond_sizes[L] = 1;
-//    for (std::size_t k = L; k > 0; --k) {
-//        bond_sizes[k-1] = std::min(bond_sizes[k-1], 2*bond_sizes[k]);
-//    }
-//    std::copy(bond_sizes.begin(), bond_sizes.end(), std::ostream_iterator<int>(zout, " "));
-//    zout << " " << endl;
-//    
-//    for (int i = 0; i < L; ++i)
-//    {
-//        Index<NullGroup> li; li.insert(std::make_pair(NullGroup::Plus, bond_sizes[i]));
-//        Index<NullGroup> ri; ri.insert(std::make_pair(NullGroup::Plus, bond_sizes[i+1]));
-//        
-//        mps[i] = MPSTensor<Matrix, NullGroup>(phys, li, ri);
-//    }
-//}
-
 template<class T>
 T tri_min(T a, T b, T c)
 {
     return std::min(std::min(a, b),
                     std::min(a, c));
-}
-
-
-template<class Matrix, class SymmGroup>
-void default_mps_init::operator()(MPS<Matrix, SymmGroup> & mps,
-                                  std::size_t Mmax,
-                                  Index<SymmGroup> const & phys,
-                                  typename SymmGroup::charge right_end)
-{
-    std::size_t L = mps.length();
-    
-    Index<SymmGroup> l_triv, r_triv;
-    l_triv.insert( std::make_pair(SymmGroup::SingletCharge, 1) );
-    r_triv.insert( std::make_pair(right_end, 1) );
-    
-    std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
-    left_allowed[0] = l_triv;
-    right_allowed[L] = r_triv;
-    
-    for (int i = 1; i < L+1; ++i) {
-        left_allowed[i] = phys * left_allowed[i-1];
-        for (typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
-             it != left_allowed[i].end(); ++it)
-            it->second = std::min(Mmax, it->second);
-    }
-    for (int i = L-1; i >= 0; --i) {
-        right_allowed[i] = adjoin(phys) * right_allowed[i+1];
-        for (typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
-             it != right_allowed[i].end(); ++it)
-            it->second = std::min(Mmax, it->second);
-    }
-    
-    for (int i = 0; i < L+1; ++i) {
-        allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
-        for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
-             it != allowed[i].end(); ++it)
-            it->second = tri_min(Mmax,
-                                 left_allowed[i].size_of_block(it->first),
-                                 right_allowed[i].size_of_block(it->first));
-    }
-    
-    for (int i = 0; i < L; ++i)
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1]);
-    
-    cout << mps.description() << endl;
-}
-
-template<class Matrix, class SymmGroup>
-void mott_mps_init::operator()(MPS<Matrix, SymmGroup> & mps,
-                                  std::size_t Mmax,
-                                  Index<SymmGroup> const & phys,
-                                  typename SymmGroup::charge right_end)
-{
-    std::size_t L = mps.length();
-    
-    Index<SymmGroup> l_triv, r_triv;
-    l_triv.insert( std::make_pair(SymmGroup::SingletCharge, 1) );
-    r_triv.insert( std::make_pair(right_end, 1) );
-    
-    std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
-    left_allowed[0] = l_triv;
-    right_allowed[L] = r_triv;
-    
-    for (int i = 1; i < L+1; ++i) {
-        left_allowed[i] = phys * left_allowed[i-1];
-        for (typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
-             it != left_allowed[i].end(); ++it)
-            it->second = std::min(Mmax, it->second);
-    }
-    for (int i = L-1; i >= 0; --i) {
-        right_allowed[i] = adjoin(phys) * right_allowed[i+1];
-        for (typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
-             it != right_allowed[i].end(); ++it)
-            it->second = std::min(Mmax, it->second);
-    }
-    
-    for (int i = 0; i < L+1; ++i) {
-        allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
-        for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
-             it != allowed[i].end(); ++it)
-            it->second = tri_min(Mmax,
-                                 left_allowed[i].size_of_block(it->first),
-                                 right_allowed[i].size_of_block(it->first));
-    }
-    
-    for (int i = 0; i < L; ++i)
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1]);
-    
-    cout << mps.description() << endl;
 }
 
 template<class Matrix, class SymmGroup>
@@ -153,15 +38,13 @@ std::string MPS<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
-template<class Initializer>
 MPS<Matrix, SymmGroup>::MPS(size_t L,
                             size_t Mmax,
                             Index<SymmGroup> phys,
                             typename SymmGroup::charge right_end,
-                            Initializer init)
+                            mps_initializer<Matrix, SymmGroup> & init)
 : std::vector<MPSTensor<Matrix, SymmGroup> >(L)
 {
-//    mps_init<Matrix>(*this, Mmax, phys, right_end);
     init(*this, Mmax, phys, right_end);
     
     for (int i = 0; i < L; ++i)
