@@ -63,32 +63,36 @@ namespace blas
     }
 
     template<typename T>
-    void gemm(p_dense_matrix<T> const & A, p_dense_matrix<T> const & B, p_dense_matrix<T> & C)
+    void gemm( const p_dense_matrix<T>  & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
     {
         printf("Attempting to perform GEMM\n");
-//        assert(false);
-		ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A,B,C );
-// insert hooks for ambient here
-// TODO        C = REAL_AMBIENT_GEMM(A, B);
+	ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A,B,C );
     }
     
     template<typename T>
-    void svd(p_dense_matrix<T> M,
+    void svd(const p_dense_matrix<T> &  M,
              p_dense_matrix<T> & U,
              p_dense_matrix<T>& V,
              typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
     {
-        BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
+        //BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
         printf("Attempting to perform SVD\n");
-        assert(false);
-/*        typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_columns(M));
+	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
+        //resize(U, num_rows(M), k);
+        //resize(V, k, num_cols(M));
+       // std::vector<typename detail::sv_type<T>::type> S_(k);
+	//const T * S_= new T[k];
+	T* const *  S_ = new T*((T*)malloc(sizeof(T)*k));
+	ambient::push(ambient::null_l_scalapack_svd_kernel, ambient::svd_c_scalapack_kernel, M, U, V, *S_);
+	// TO DO remove memory leak by new diagonal_matrix
+/*      
+	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_columns(M));
         resize(U, num_rows(M), k);
         resize(V, k, num_columns(M));
-        
         std::vector<typename detail::sv_type<T>::type> S_(k);
         boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
-        
         S = typename associated_diagonal_matrix<p_dense_matrix<T> >::type(S_);
+
 */
     }
     

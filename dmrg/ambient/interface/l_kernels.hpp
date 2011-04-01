@@ -73,14 +73,17 @@ void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
 
 void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
 {
-    scope_select("2 from ambient as work where master is 0");
-    scope_retain("2 from ambient as work_storage");
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in membound ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
     block_2d_cycle_assign(c);
+
+
+    zout << " end assign " ;
 }
 
 void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
@@ -98,6 +101,20 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
 void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out){}
 /////////////////////
 // testing kernels // 
+
+//universal logistic kernel, distribution should be donne before
+void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & U, p_dense_matrix<double> & V,  double* & S )
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+   
+ if(!scope.involved()) return; // out of scope quick exit
+
+    block_2d_cycle_assign(M);
+    block_2d_cycle_assign(U);
+    block_2d_cycle_assign(V);
+
+}// do nothing just need to test
 
 void single_integer_l_kernel(int*& input){
     scope_select("* from ambient as single_integer_work where master is 0");
