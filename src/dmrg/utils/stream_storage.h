@@ -469,6 +469,9 @@ struct storage {
             boost::lock_guard<boost::mutex> lock(ss.master->deque_mutex);
             ss.master->requests.push_back(req);
         }
+        
+        // this operation does not have to be protected by a mutex, since ss.mutexes is only
+        // modified by the calling thread
         ss.mutexes.push_back(new_mutex);
         ss.master->notify();
     }
