@@ -34,8 +34,14 @@ namespace core{ class operation; }
                    this->y * b.y *
                    this->z * b.z ;
         }
-        bool operator==(int value){
+        bool operator==(int value) const {
             return (x == value && y == value && z == value);
+        }
+        bool operator==(dim3 m) const {
+            return (x == m.x && y == m.y && z == m.z);
+        }
+        bool operator!=(dim3 m) const {
+            return !(x == m.x && y == m.y && z == m.z);
         }
     };
 

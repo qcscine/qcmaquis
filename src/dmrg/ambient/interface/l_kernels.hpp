@@ -1,3 +1,25 @@
+// AMBIENT USAGE TIPS //
+//
+// Arguments locality:
+//
+// when executing the kernel be sure to remember that arguments
+// that you are feeding to it are bounded by the life time of 
+// C++ scope { }. That is either you need to be sure that the
+// kernel will be executed inside current scope or allocate
+// them inside heap so that they won't be deleted.
+// For example for kernel that takes argument "int*& array"
+// one can allocate the argument array the following way:
+//
+// int*const *array = new int*((int*)malloc(sizeof(int)*LEN));
+// for(int i = 0; i < LEN; i++) (*array)[i] = ...;
+// ambient::push(... *array);
+// 
+// Here I'm purposedly underlying that array is a pointer to
+// constant pointer to ints - that is I don't want it to be
+// deleted. Upon the exit from C++ scope the array ptr will
+// be deleted but we would be safe as its value is still valid
+// because the int*const was alocated inside heap.
+
 template<typename T> 
 void info(T& obj){
     if(rank.is_master(scope.get_group())){
@@ -48,10 +70,13 @@ void copy_l_kernel(p_dense_matrix<double>& a_copy, pinned const p_dense_matrix<d
 
 void resize_l_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
 {
+    breakdown(a).set_dim(ambient::dim3(cols,rows));
+
     scope_select("2 from ambient as copy_ground where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
+
     zout << "2d-block-cyclic decomposition kernel in resize matrix ("<< ambient::rank() <<"):\n"; info(a);
-    breakdown(a).set_dim(ambient::dim3(cols,rows));
+    printf("The size of the group : %d %d\n", get_dim(a).x, get_dim(a).y);
     block_2d_cycle_assign(a);
 }
 
@@ -64,6 +89,14 @@ void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
 }
 
 void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
+{
+    scope_select("2 from ambient as copy_ground where master is 0");
+    if(!scope.involved()) return; // out of scope quick exit
+    zout << "2d-block-cyclic decomposition kernel in remove cols ("<< ambient::rank() <<"):\n"; info(a);
+    block_2d_cycle_assign(a);
+}
+
+void sqrt_diagonal_l_kernel(pinned p_dense_matrix<double>& a)
 {
     scope_select("2 from ambient as copy_ground where master is 0");
     if(!scope.involved()) return; // out of scope quick exit

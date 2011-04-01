@@ -1,9 +1,8 @@
 #define NODE_COUNT 1
 #include "mkl.h"
 
-
-
 extern "C" {
+    double  sqrt( double );
     void Cblacs_get( int, int, int* );
     void Cblacs_gridinit( int*, const char*, int, int );
     void Cblacs_gridinfo( int, int*, int*, int*, int* );
@@ -228,8 +227,26 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     }
 }
 
-void resize_c_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols){ }
-void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ }
+void resize_c_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
+{ 
+    for(int i = 0; i < get_grid_dim(a).y; i++)
+    if(current(a).group(i, get_grid_dim(a).x-1)->available()){
+        printf("R%d is holding last block of row %d\n", ambient::rank(), i);
+    }
+    for(int j = 0; j < get_grid_dim(a).x; j++)
+    if(current(a).group(get_grid_dim(a).y-1, j)->available()){
+        printf("R%d is holding last block of col %d\n", ambient::rank(), j);
+    }
+}
+
+void sqrt_diagonal_c_kernel(pinned p_dense_matrix<double>& a){
+    double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
+    for(int i=0; i < get_group_t_dim(a).y; i++)
+        ad[i] = sqrt(ad[i]);
+}
+
+void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){
+}
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){ printf("Executed add kernel\n"); }
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}
 void scale_c_kernel(const p_dense_matrix<double>& a, const double& alfa, pinned p_dense_matrix<double>& out){}
