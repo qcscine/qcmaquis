@@ -151,7 +151,7 @@ int main(int argc, char ** argv)
     Index<U1> phys = H->get_phys();
     
     int total_charge = model.get<int>("u1_total_charge");
-    MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge);
+    MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge, default_mps_initializer<Matrix, grp>);
     
     int sweep = 0;
     if (restore) {

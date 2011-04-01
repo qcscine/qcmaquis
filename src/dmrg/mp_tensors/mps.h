@@ -20,8 +20,10 @@ class MPS : public std::vector<MPSTensor<Matrix, SymmGroup> >
 public:
     typedef std::size_t size_t;
     
+    template<class Initializer>
     MPS(size_t L, size_t Mmax, Index<SymmGroup> phys,
-        typename SymmGroup::charge right_end = SymmGroup::SingletCharge);
+        typename SymmGroup::charge right_end,
+        Initializer init);
     
     size_t length() const { return this->size(); }
     Index<SymmGroup> const & site_dim(size_t i) const { return (*this)[i].site_dim(); }
@@ -62,6 +64,24 @@ private:
     typename Matrix::value_type canonize_left();
     typename Matrix::value_type canonize_right();
     
+};
+
+struct default_mps_init
+{
+    template<class Matrix, class SymmGroup>
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys,
+                    typename SymmGroup::charge right_end);
+};
+
+struct mott_mps_init
+{
+    template<class Matrix, class SymmGroup>
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys,
+                    typename SymmGroup::charge right_end);
 };
 
 #include "mp_tensors/mps.hpp"
