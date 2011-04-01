@@ -1,29 +1,54 @@
-#include <valarray>
+/*****************************************************************************
+ *
+ * A minimal implementation of a high-temperature series expansion of a
+ *
+ * Ising model with transverse field 'h'.
+ *
+ * (C) 2010 by Andreas Hehn (hehn@phys.ethz.ch)
+ *
+ *****************************************************************************/
 #include <vector>
 #include <map>
 #include <cmath>
 #include <iostream>
 #include <cassert>
+#include "minimal_polynomial.hpp"
+
+
+
 //
 // Typedefs
 //
-#define NOT_IN_USE false
 
 // A large integer of 128-256 bits (fixed size)
 typedef int large_int;
 
 // A polynomial with large_int coefficients
-typedef std::valarray<large_int> polynomial_type;
+using hp2c::polynomial;
+using hp2c::monomial;
+typedef polynomial<large_int> polynomial_type;
 
 // A sparse vector of polynomials (filling about 10%-15%)
 typedef std::size_t index_type;
 typedef std::map<index_type,polynomial_type> sparse_vector_type;
 
+
+
+
+
+/**
+  * Returns the index of the element of the sparse vector to which iterator 'it' points.
+  */
 inline index_type get_index_from_iterator(sparse_vector_type::const_iterator const& it)
 {
     return it->first;
 }
 
+
+
+/**
+  * The inner product of two sparse vectors. (We assume same dimension.)
+  */
 polynomial_type inner_product(sparse_vector_type const& a, sparse_vector_type const& b)
 {
     if(a.size() > b.size())
@@ -31,7 +56,7 @@ polynomial_type inner_product(sparse_vector_type const& a, sparse_vector_type co
         return inner_product(b,a);
     }
 
-    polynomial_type result(1,0);
+    polynomial_type result;
     for(sparse_vector_type::const_iterator it = a.begin(); it != a.end(); ++it)
     {
         index_type index = get_index_from_iterator(it);
@@ -41,6 +66,7 @@ polynomial_type inner_product(sparse_vector_type const& a, sparse_vector_type co
     }
     return result;
 }
+
 
 class sparse_matrix
 {
@@ -52,11 +78,21 @@ class sparse_matrix
         std::vector<edge_type> edge_list;
         
 
+        /**
+          * Extracts the physical state of a single vertex/site from
+          * the index of the sparse vector.
+          * (The state of all vertices/sites is encoded in the index.)
+          */
         inline unsigned int get_vertex_state_from_index(index_type index, vertex_type vertex)
         {
             return (index >> vertex) & index_type(1);
         }
 
+        /**
+          * Encodes the new states of vertices/sites 'vtx_A' and 'vtx_B'
+          * in the index 'index'.
+          * (The information about all other vertices in 'index' is kept.)
+          */
         inline index_type generate_index_from_index_and_vertex_state_pair (
                 index_type index,
                 vertex_type vtx_A,
@@ -65,12 +101,15 @@ class sparse_matrix
                 unsigned int vtx_B_state
                 )
         {
-            assert( NOT_IN_USE );
             index_type bitmask = (index_type(1) << vtx_A) | (index_type(1) << vtx_B);
             index_type changes = index_type(vtx_A_state) << vtx_A | index_type(vtx_B_state) << vtx_B;
             return (index & ~bitmask) | changes;
         }
-        
+       
+        /**
+          * Same as generate_index_from_index_and_vertex_state_pair()
+          * but for a single vertex.
+          */ 
         inline index_type generate_index_from_index_and_vertex_state (
                 index_type index,
                 vertex_type vtx,
@@ -86,15 +125,22 @@ class sparse_matrix
         sparse_matrix()
         {
             // generate a simple graph as example
-            for(vertex_type vtx = 1; vtx <= VERTICES; ++vtx)
+            for(vertex_type vtx = 1; vtx < VERTICES; ++vtx)
                 edge_list.push_back(edge_type(vtx-1,vtx));
         }
 
+        /**
+          * Returns the dimension of the Hilbert space on
+          * which the (square) sparse matrix acts.
+          */
         std::size_t get_dimension()
         {
             return std::pow(2,static_cast<unsigned int>(VERTICES));
         }
 
+        /**
+          * Does a matrix vector multiplication with a sparse vector.
+          */
         sparse_vector_type apply(sparse_vector_type const& v)
         {
 
@@ -119,23 +165,11 @@ class sparse_matrix
 
                     if(vtx_A_state == vtx_B_state)
                     {
-                        result[index] += it->second; // <=> result[index] = v[index];
+                        result[index] += it->second*monomial<large_int>(1,0); // <=> result[index] = v[index];
                     }
                     else
                     {
-//                        index_type second_index =
-//                            generate_index_from_index_and_vertex_states(
-//                                    index,
-//                                    vtx_A,
-//                                    vtx_B,
-//                                    vtx_B_state,
-//                                    vtx_A_state
-//                                    );
-//
-//                        // it->second == v[index]
-//                        result[index] = -1*it->second;
-//                        result[second_index] = 2*it->second;
-                        result[index] += -1*it->second;
+                        result[index] += -1*it->second*monomial<large_int>(1,0);
                     }
                 }
 
@@ -148,20 +182,19 @@ class sparse_matrix
                     {
                         result[
                             generate_index_from_index_and_vertex_state(index,vtx,1)
-                            ] += it->second;
+                            ] += it->second*monomial<large_int>(0,1);
                     }
                     else
                     {
                         assert(vtx_state == 1);
                         result[
                             generate_index_from_index_and_vertex_state(index,vtx,0)
-                            ] += it->second;
+                            ] += it->second*monomial<large_int>(0,1);
                     }
 
                 } 
             }
 
-            // TODO finish implementation of matrix for transverse field ising
             return result;
         }
 };
@@ -169,32 +202,25 @@ class sparse_matrix
 class high_t_expansion
 {
     private:
-        // The dimension of the sparse vector of polynomials
+        // The truncation order of the series expansion
         unsigned int max_order;
     public:
 
         high_t_expansion(unsigned int max_order)
             : max_order(max_order)
         {
-            // Create a simple bond list for the sparse matrix
-            // We will have about a million of these lists.
-//            sparse_vector_dim = 2;
-//            for(unsigned int i=0; i < MAX_ORDER; ++i)
-//            {
-//                bond_list.push_back(i,i+1);
-//                sparse_vector_dim *= 2;
-//            }
         }
 
         polynomial_type exec()
         {
             sparse_matrix sp_matrix;
-            polynomial_type result(max_order);
+            polynomial_type result;
+            result += sp_matrix.get_dimension(); // 0th order contribution
             for(std::size_t i = 0; i < sp_matrix.get_dimension(); ++i)
             {
                 // Create an initial sparse vector with a single entry
                 sparse_vector_type state;
-                state[i] = polynomial_type(1,1);
+                state[i] = (polynomial_type()+= 1);
 
                 for(unsigned int n=1; n < max_order/2; ++n)
                 {
@@ -202,8 +228,6 @@ class high_t_expansion
 
                     state = sp_matrix.apply(state);
 
-//                    result[2*n]     += inner_product(state,state);
-//                    result[2*n-1]   += inner_product(state,previous_state);
                     result += inner_product(state,state);
                     result += inner_product(state,previous_state);
                 }
@@ -213,12 +237,30 @@ class high_t_expansion
 
 };
 
+large_int faculty(int i)
+{
+    if (i <= 1)
+        return 1;
+    return i*faculty(i-1);
+}
+
 int main()
 {
-    high_t_expansion ht(5);
+    high_t_expansion ht(10);
     polynomial_type r = ht.exec();
-    for(std::size_t i = 0; i != r.size(); ++i)
-        std::cout << r[i] << "+";
+    
+    // Print out the result
+    for(std::size_t j = 0; j < r.max_order; ++j)
+    {
+        for(std::size_t h = 0; h < r.max_order; ++h)
+        {
+            if(r(j,h) > 0)
+                std::cout <<" +"<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h;
+            else if(r(j,h) < 0)
+                std::cout <<" "<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h;
+        }
+    }
+
     std::cout<<std::endl;
     return 0;
 }
