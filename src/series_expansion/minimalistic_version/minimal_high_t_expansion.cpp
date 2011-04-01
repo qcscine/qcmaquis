@@ -7,6 +7,7 @@
  * (C) 2010 by Andreas Hehn (hehn@phys.ethz.ch)
  *
  *****************************************************************************/
+#include <cstdlib>
 #include <vector>
 #include <map>
 #include <cmath>
@@ -74,8 +75,9 @@ class sparse_matrix
         // Information for the sparse matrix (given at runtime)
         typedef unsigned int vertex_type;
         typedef std::pair<vertex_type, vertex_type> edge_type;
-        enum{ VERTICES = 5 };
-        std::vector<edge_type> edge_list;
+        
+        const std::vector<edge_type> edge_list;
+        const unsigned int num_vertices;
         
 
         /**
@@ -122,20 +124,18 @@ class sparse_matrix
         }
 
     public:
-        sparse_matrix()
+        sparse_matrix(std::vector<edge_type> const& edge_list, unsigned int num_vertices)
+            :edge_list(edge_list),num_vertices(num_vertices)
         {
-            // generate a simple graph as example
-            for(vertex_type vtx = 1; vtx < VERTICES; ++vtx)
-                edge_list.push_back(edge_type(vtx-1,vtx));
         }
 
         /**
           * Returns the dimension of the Hilbert space on
           * which the (square) sparse matrix acts.
           */
-        std::size_t get_dimension()
+        std::size_t get_dimension() const
         {
-            return std::pow(2,static_cast<unsigned int>(VERTICES));
+            return std::pow(2,static_cast<unsigned int>(num_vertices));
         }
 
         /**
@@ -152,7 +152,7 @@ class sparse_matrix
 
                 // J term
                 for(
-                    std::vector<edge_type>::iterator edge_it
+                    std::vector<edge_type>::const_iterator edge_it
                         = edge_list.begin();
                     edge_it != edge_list.end();
                     ++edge_it
@@ -174,7 +174,7 @@ class sparse_matrix
                 }
 
                 // h term (external field)
-                for(unsigned int vtx=0; vtx <= VERTICES; ++vtx)
+                for(unsigned int vtx=0; vtx <= num_vertices; ++vtx)
                 {
                     // it->second == v[index]
                     unsigned int vtx_state = get_vertex_state_from_index(index,vtx);
@@ -203,17 +203,28 @@ class high_t_expansion
 {
     private:
         // The truncation order of the series expansion
-        unsigned int max_order;
+        const unsigned int max_order;
+        
+        // Information for the sparse matrix
+        typedef unsigned int vertex_type;
+        typedef std::pair<vertex_type, vertex_type> edge_type;
+
+        const unsigned int num_vertices;
+        std::vector<edge_type> edge_list;
     public:
 
-        high_t_expansion(unsigned int max_order)
-            : max_order(max_order)
+        high_t_expansion(unsigned int max_order,unsigned int num_vertices)
+            : max_order(max_order), num_vertices(num_vertices)
         {
+            // generate a simple graph as example
+            for(vertex_type vtx = 1; vtx < num_vertices; ++vtx)
+                edge_list.push_back(edge_type(vtx-1,vtx));
         }
 
         polynomial_type exec()
         {
-            sparse_matrix sp_matrix;
+            sparse_matrix sp_matrix(edge_list,num_vertices);
+
             polynomial_type result;
             result += sp_matrix.get_dimension(); // 0th order contribution
             for(std::size_t i = 0; i < sp_matrix.get_dimension(); ++i)
@@ -244,10 +255,27 @@ large_int faculty(int i)
     return i*faculty(i-1);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    high_t_expansion ht(10);
+    //
+    // Runtime parameters
+    //
+    unsigned int expansion_order = 10;
+    unsigned int num_vertices = 5;
+    if(argc == 3)
+    {
+        // Default values may be overwritten by command line arguments.
+        expansion_order = atoi(argv[1]);
+        num_vertices = atoi(argv[2]);
+    }
+
+    
+    
+    // Run expansion
+    high_t_expansion ht(expansion_order,num_vertices);
     polynomial_type r = ht.exec();
+    
+    
     
     // Print out the result
     for(std::size_t j = 0; j < r.max_order; ++j)
