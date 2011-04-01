@@ -66,5 +66,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     c.remove_cols(5,1);
     for(int i=0; i < 20; i++) if(c(i,5) >= 1.0) 
     printf("The element of c(%d,%d) is %.2f\n", i, 5, c(i,5));
+
+////////////////////
+    printf("\n\n\n\n\n\n\n\n");
+    int*const *num = new int*((int*)malloc(sizeof(int)*10));
+    for(int i = 0; i < 10; i++) (*num)[i] = i+13;
+    ambient::push(ambient::single_integer_l_kernel, ambient::single_integer_c_kernel, *num);
+    ambient::playout();
+
+
 }
 

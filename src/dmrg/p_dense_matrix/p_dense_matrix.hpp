@@ -94,8 +94,8 @@ namespace blas {
     void p_dense_matrix<T>::remove_cols(size_type j, difference_type k = 1)
     {
         assert( j+k <= this->cols );
-        const size_t* jh = new size_t(j); // preventing arguments from destruction
-        const size_t* kh = new size_t(k); // preventing arguments from destruction
+        const size_t *jh = new size_t(j); // preventing arguments from destruction
+        const size_t *kh = new size_t(k); // preventing arguments from destruction
         ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, *jh, *kh);
         this->resize(this->rows, this->cols - k);
     }
