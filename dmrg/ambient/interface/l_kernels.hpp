@@ -99,9 +99,8 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 /////////////////////
 // testing kernels // 
 
-void single_integer_l_kernel(int& input){
+void single_integer_l_kernel(int*& input){
     scope_select("* from ambient as single_integer_work where master is 0");
     if(!scope.involved()) return;
-    zout << "single integer kernel: input is " << input << "\n";
-    input = 0;
+    zout << "single integer kernel: input is " << input[1] << "\n";
 }

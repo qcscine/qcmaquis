@@ -360,6 +360,15 @@ namespace ambient {
         return this->get_group_dim() *= this->get_item_dim();
     }
     dim3 p_profile::get_group_dim() const {
+       // if(this->default_group != NULL)
+       //     if(this->default_group->i == this->get_grid_dim().y-1 || 
+       //        this->default_group->j == this->get_grid_dim().x-1) { // todo: move this to thread group-context
+       //         unsigned int x = this->dim.x % (this->group_dim.x * this->item_dim.x);
+       //         unsigned int y = this->dim.y % (this->group_dim.y * this->item_dim.y);
+       //         if(x == 0) x = this->group_dim.x * this->item_dim.x;
+       //         if(y == 0) y = this->group_dim.y * this->item_dim.y;
+       //         return dim3(x,y);
+       //     }
         return this->group_dim;
     }
     void p_profile::set_group_dim(dim3 dim){

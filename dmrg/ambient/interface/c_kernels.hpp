@@ -301,7 +301,6 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_m
 }
 
 
-void single_integer_c_kernel(int& input){
-    input += 13;
-    zout << "single integer kernel: output is " << input << "\n";
+void single_integer_c_kernel(int*& input){
+    zout << "single integer kernel: output is " << input[2] << "\n";
 }
