@@ -161,7 +161,7 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
         if(i == group_i_mark){
             if(remains_u + k < lda){
                 for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                       // first memmove inside block
-                    memcpy(&ad[lda*j + remains_u], &ad[lda*j + remains_u+k], sizeof(T)*(lda-remains_u-k));
+                    memmove(&ad[lda*j + remains_u], &ad[lda*j + remains_u+k], sizeof(T)*(lda-remains_u-k));
                 if(ad_r != NULL) for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                      // memcpy from replacement block
                     memcpy(&ad[lda*j + lda - k], &ad_r[lda*j], sizeof(T)*k);
             }else{
@@ -170,7 +170,7 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
             }
         }else if(i >= group_i_mark){
             for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                                           // first memmove inside block
-                memcpy(&ad[lda*j], &ad[lda*j + k_wo_blocks], sizeof(T)*(lda-k_wo_blocks) );
+                memmove(&ad[lda*j], &ad[lda*j + k_wo_blocks], sizeof(T)*(lda-k_wo_blocks) );
             if(ad_r != NULL) for(size_t j = 0; j < get_group_t_dim(a).x; ++j)                          // memcpy from replacement block
                 memcpy(&ad[lda*j + lda-k_wo_blocks], &ad_r[lda*j], sizeof(T)*k_wo_blocks);
         }
@@ -215,13 +215,13 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
         ambient::memoryfence();
         if(j == group_j_mark){
             if(remains_l + k < sda){
-                memcpy(&ad[lda*remains_l], &ad[lda*(remains_l+k)], sizeof(T)*lda*(sda-remains_l-k));   // first memmove inside block
+                memmove(&ad[lda*remains_l], &ad[lda*(remains_l+k)], sizeof(T)*lda*(sda-remains_l-k));   // first memmove inside block
                 if(ad_r != NULL) memcpy(&ad[lda*(sda-k)], ad_r, sizeof(T)*lda*k);                                       // memcpy from replacement block
             }else{
                 if(ad_r != NULL) memcpy(&ad[lda*remains_l], &ad_r[lda*(sda-remains_r)], sizeof(T)*lda*(sda-remains_l)); // memcpy from replacement block
             }
         }else if(i >= group_j_mark){
-            memcpy(ad, &ad[lda*k_wo_blocks], sizeof(T)*lda*(sda-k_wo_blocks) );                        // first memmove inside block
+            memmove(ad, &ad[lda*k_wo_blocks], sizeof(T)*lda*(sda-k_wo_blocks) );                        // first memmove inside block
             if(ad_r != NULL) memcpy(&ad[lda*(sda-k_wo_blocks)], ad_r, sizeof(T)*lda*k_wo_blocks);                       //  memcpy from replacement block
         }
     }
@@ -231,11 +231,16 @@ void resize_c_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
 { 
     for(int i = 0; i < get_grid_dim(a).y; i++)
     if(current(a).group(i, get_grid_dim(a).x-1)->available()){
-        printf("R%d is holding last block of row %d\n", ambient::rank(), i);
+        size_t cutoff = get_grid_dim(a).x*get_group_t_dim(a).x - get_dim(a).x;
+        if(cutoff > 0) memset((double*)current(a)(i, get_grid_dim(a).x-1), 0, cutoff*sizeof(double));
     }
     for(int j = 0; j < get_grid_dim(a).x; j++)
     if(current(a).group(get_grid_dim(a).y-1, j)->available()){
-        printf("R%d is holding last block of col %d\n", ambient::rank(), j);
+        double* ad = current(a)(get_grid_dim(a).y-1,j);
+        size_t cutoff = get_grid_dim(a).y*get_group_t_dim(a).y - get_dim(a).y;
+        size_t offset = get_group_t_dim(a).y - cutoff;
+        if(cutoff > 0) for(int jj=0; jj < get_group_t_dim(a).x; jj++)
+            memset(&ad[get_group_t_dim(a).y*jj+offset], 0, cutoff*sizeof(double));
     }
 }
 
