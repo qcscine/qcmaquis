@@ -180,6 +180,7 @@ namespace ambient{ namespace groups{
     void packet_manager::typed_q::send(ambient_request* request){
         packet* pack = (packet*)request->memory;
         if(pack->get<char>(A_OP_T_FIELD) == 'P'){
+            assert(pack->get<int>(A_DEST_FIELD) >= 0);
             MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
         }else if(pack->get<char>(A_OP_T_FIELD) == 'B'){
             pack->set(A_OP_T_FIELD, "P2P");

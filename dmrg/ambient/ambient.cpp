@@ -145,7 +145,6 @@ namespace ambient
 // now we all set with dependencies!
         while(repeat)
         {   repeat = false;
-            printf("MAIN!!!\n");
             this->router.push_back(world()->get_manager());
             while(!this->stack.end_reached()){
                 logistics = this->stack.pick()->first;

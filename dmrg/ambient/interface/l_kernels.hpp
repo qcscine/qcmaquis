@@ -82,7 +82,7 @@ void resize_l_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
 
 void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
 {
-    scope_select("2 from ambient as copy_ground where master is 0");
+    scope_select("2 from ambient as copyd where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in remove rows ("<< ambient::rank() <<"):\n"; info(a);
     block_2d_cycle_assign(a);
@@ -90,7 +90,7 @@ void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
 
 void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
 {
-    scope_select("2 from ambient as copy_ground where master is 0");
+    scope_select("2 from ambient as copd where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in remove cols ("<< ambient::rank() <<"):\n"; info(a);
     block_2d_cycle_assign(a);
@@ -130,6 +130,18 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
     block_2d_cycle_assign(b);
     block_2d_cycle_assign(c);
 }
+void mem_bound_l_kernel2(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
+{
+    scope_select("2 from ambient as work2 where master is 0");
+    scope_retain("2 from ambient as work_storage");
+    if(!scope.involved()) return; // out of scope quick exit
+    zout << "2d-block-cyclic decomposition kernel in membound2 ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(b);
+    block_2d_cycle_assign(c);
+}
+
 
 void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out){}
 /////////////////////
