@@ -130,18 +130,6 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
     block_2d_cycle_assign(b);
     block_2d_cycle_assign(c);
 }
-void mem_bound_l_kernel2(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
-{
-    scope_select("2 from ambient as work2 where master is 0");
-    scope_retain("2 from ambient as work_storage");
-    if(!scope.involved()) return; // out of scope quick exit
-    zout << "2d-block-cyclic decomposition kernel in membound2 ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
-
-    block_2d_cycle_assign(a);
-    block_2d_cycle_assign(b);
-    block_2d_cycle_assign(c);
-}
-
 
 void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out){}
 /////////////////////
