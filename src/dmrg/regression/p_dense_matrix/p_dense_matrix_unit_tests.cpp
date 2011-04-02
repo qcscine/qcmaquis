@@ -58,14 +58,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> c(M_SIZE,M_SIZE);
     p_dense_matrix<T> d(M_SIZE,M_SIZE);
 
-    ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
     c = a + b;
     c(5,5) = 13.0;
     c(6,5) = 14.0;
     a.remove_rows(128,128);
     b.remove_rows(128,128);
     c.remove_rows(128,128);
-    //ambient::push(ambient::mem_bound_l_kernel, ambient::add_c_kernel, a, b, c);
+    ambient::push(ambient::mem_bound_l_kernel2, ambient::null_c_kernel, a, b, c);
     //for(int i=0; i < 20; i++) if(c(i,5) >= 1.0) 
     //printf("The element of c(%d,%d) is %.2f\n", i, 5, c(i,5));
 

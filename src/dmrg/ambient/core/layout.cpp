@@ -126,6 +126,7 @@ namespace ambient{ namespace core{
             in_q.manager->emit(package(profile, (const char*)pack->get(A_LAYOUT_P_STATE_FIELD), pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                        pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }catch(race_condition_e){
+            assert(pack->get<int>(A_DEST_FIELD) >= 0);
             in_q.manager->emit(pack); // re-throwing the packet for future handling
         }
     }
@@ -141,8 +142,10 @@ namespace ambient{ namespace core{
                                                                    pack->get<int>(A_LAYOUT_P_K_FIELD));
             pack->set(A_DEST_FIELD, entry->get_owner());
             pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
+            assert(pack->get<int>(A_DEST_FIELD) >= 0);
             in_q.manager->emit(pack);
         }catch(race_condition_e){
+            assert(pack->get<int>(A_DEST_FIELD) >= 0);
             in_q.manager->emit(pack); // re-throwing the packet for future handling
         }
     }
@@ -164,9 +167,11 @@ namespace ambient{ namespace core{
             pack->set(A_DEST_FIELD, profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD),
                                                                pack->get<int>(A_LAYOUT_P_J_FIELD))->get_xowner());
             pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
-        }else{ 
+            assert(pack->get<int>(A_DEST_FIELD) >= 0);
+        }else{
             pack->set(A_DEST_FIELD, profile->get_xmaster());
             pack->set(A_LAYOUT_P_ACTION, "INFORM X OWNER");
+            assert(pack->get<int>(A_DEST_FIELD) >= 0);
         }
         in_q.manager->emit(pack);
     }
@@ -180,6 +185,7 @@ namespace ambient{ namespace core{
                 action = "COMPOSE";
             }
             for(int i=0; i < profiles[k]->layout->segment_count; i++){
+                assert(scope.get_master_g() != -1);
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    scope.get_master_g(), "P2P", action,
                                                                   *profiles[k]->group_id, profiles[k]->id, "GENERIC",
@@ -189,6 +195,7 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->segment[i].k));
             }
             for(int i=0; i < profiles[k]->layout->request_count; i++){
+                assert(profiles[k]->get_master() != -1);
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 
                                                                   "INFORM OWNER ABOUT REQUEST",

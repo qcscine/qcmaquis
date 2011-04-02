@@ -239,7 +239,7 @@ namespace ambient {
         groups::group* scope = ambient::scope.get_group();
         if(this->id == 0) this->set_id(scope->id);
         this->touch();
-        if(!this->consted || this->state == COMPOSING){ // bad case - the same argument twice :/
+        if(!this->consted){
             this->timestamp++;
             this->set_scope(scope);
         }

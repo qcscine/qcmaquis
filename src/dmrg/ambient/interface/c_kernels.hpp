@@ -138,7 +138,6 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     size_t shift     = __a_ceil(k / lda);
     size_t group_i_mark = i_mark / lda;
     size_t k_wo_blocks = std::min((2*lda-remains), k);
-
     if(i < group_i_mark) return;                                                                       // easy-out
     ad   = current(a)(i,j);
     if(i+shift < get_grid_dim(a).y) ad_r = current(a)(i+shift,j);
