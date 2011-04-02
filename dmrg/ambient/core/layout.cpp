@@ -185,7 +185,6 @@ namespace ambient{ namespace core{
                 action = "COMPOSE";
             }
             for(int i=0; i < profiles[k]->layout->segment_count; i++){
-                assert(scope.get_master_g() != -1);
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    scope.get_master_g(), "P2P", action,
                                                                   *profiles[k]->group_id, profiles[k]->id, "GENERIC",
@@ -195,7 +194,6 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->segment[i].k));
             }
             for(int i=0; i < profiles[k]->layout->request_count; i++){
-                assert(profiles[k]->get_master() != -1);
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 
                                                                   "INFORM OWNER ABOUT REQUEST",
