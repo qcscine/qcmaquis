@@ -64,11 +64,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     a.remove_rows(128,128);
     b.remove_rows(128,128);
     c.remove_rows(128,128);
-    ambient::push(ambient::mem_bound_l_kernel, ambient::null_c_kernel, a, b, c);
-    //for(int i=0; i < 20; i++) if(c(i,5) >= 1.0) 
-    //printf("The element of c(%d,%d) is %.2f\n", i, 5, c(i,5));
+    c = a + b;
+
+    a.resize(640,512);
+    b.resize(640,512);
+    c.resize(640,512);
 
     ambient::playout();
+    if(ambient::rank() == 0) printf("\n\n\n");
+    MPI_Barrier(MPI_COMM_WORLD);
+//    c = a + b;
+//    ambient::playout();
 
 
 }
