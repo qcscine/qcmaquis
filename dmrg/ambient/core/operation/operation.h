@@ -23,7 +23,8 @@ namespace ambient{ namespace core{
         void set_scope(groups::group* scope);
         groups::group* get_scope();
         void extract_profiles();
-        void preprocess();
+        void preprocess();  // occurs in perform
+        void postprocess(); // occurs in perform
         void finalize();
         void add_dependant(operation* dep);
         void resolve_dependencies();

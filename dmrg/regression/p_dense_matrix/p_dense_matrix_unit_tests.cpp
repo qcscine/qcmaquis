@@ -69,12 +69,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     a.resize(640,512);
     b.resize(640,512);
     c.resize(640,512);
-
+    c = a + b; // todo: figure out how to allocate new blocks
     ambient::playout();
-    if(ambient::rank() == 0) printf("\n\n\n");
-    MPI_Barrier(MPI_COMM_WORLD);
-//    c = a + b;
-//    ambient::playout();
 
 
 }

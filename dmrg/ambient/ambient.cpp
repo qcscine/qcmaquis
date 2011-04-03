@@ -152,6 +152,7 @@ namespace ambient
                 if(logistics->dependency_count){ repeat = true; continue; }
                 logistics->perform();
                 core::apply_changes(logistics->profiles, logistics->count);
+                logistics->postprocess();
                 if(logistics->get_scope()->involved()){
                     this->router.push_back(logistics->get_scope()->get_manager());
                 }

@@ -253,6 +253,8 @@ void null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>
 }
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){
     printf("Executing add kernel for %d %d\n", get_group_id(c).y, get_group_id(c).x); 
+    double* ad = current(a)(get_group_id(c).y, get_group_id(c).x);
+    double* bd = current(b)(get_group_id(c).y, get_group_id(c).x);
     double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
 }
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}

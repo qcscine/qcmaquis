@@ -12,6 +12,24 @@ namespace ambient{ namespace core{
 
     using namespace ambient::groups;
 
+    composite_marker::composite_marker(){
+        this->active = true;
+        this->imarker = 0;
+        this->jmarker = 0;
+    }
+    void composite_marker::clear(){
+        this->active = false;
+    }
+    void composite_marker::mark(int i, int j){
+        this->active = true;
+        this->imarker = i;
+        this->jmarker = j;
+    }
+    bool composite_marker::has_marked(int i, int j){
+        if(i >= this->imarker || j >= this->jmarker) return true;
+        return false;
+    }
+
     layout_table_entry::layout_table_entry()
     { }
 
@@ -88,7 +106,7 @@ namespace ambient{ namespace core{
         add_segment_entry(ambient::rank(), i, j, k);
     }
     void layout_table::request(int i, int j, int k){
-        if(this->profile->state == COMPOSING) 
+        if(this->init_marker.has_marked(i,j)) 
             return record(i,j,k);
         for(int s=0; s < this->request_count; s++)
             if(this->requests[s].i == i &&
@@ -179,12 +197,19 @@ namespace ambient{ namespace core{
     void apply_changes(p_profile** profiles, size_t count)
     {
         for(int k = 0; k < count; k++){
-            const char* action = "UPDATE";
-            if(profiles[k]->state == COMPOSING){
-                profiles[k]->postprocess(); 
-                action = "COMPOSE";
-            }
             for(int i=0; i < profiles[k]->layout->segment_count; i++){
+                const char* action = "UPDATE";
+                if(profiles[k]->layout->init_marker.active){
+                    if(profiles[k]->layout->init_marker.
+                                            has_marked(profiles[k]->layout->segment[i].i, 
+                                                       profiles[k]->layout->segment[i].j))
+                    {
+                        action = "COMPOSE";
+                        int ii = profiles[k]->layout->segment[i].i;
+                        int jj = profiles[k]->layout->segment[i].j;
+                        profiles[k]->postprocess(ii,jj);
+                    }
+                }
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    scope.get_master_g(), "P2P", action,
                                                                   *profiles[k]->group_id, profiles[k]->id, "GENERIC",

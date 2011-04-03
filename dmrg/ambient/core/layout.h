@@ -9,6 +9,17 @@ namespace ambient {
 
 namespace core {
 
+    class composite_marker {
+    public:
+        composite_marker();
+        bool active;
+        size_t imarker;
+        size_t jmarker;
+        void mark(int i, int j);
+        bool has_marked(int i, int j);
+        void clear();
+    };
+
     class layout_table_entry {
     public:
         layout_table_entry(); // default constructor
@@ -43,10 +54,11 @@ namespace core {
 
         p_profile* profile;
         std::vector< std::vector<layout_table_entry*> > map;
-        size_t reserved_x;
-        size_t reserved_y;
         std::vector<layout_table_entry> segment;
         std::vector<layout_table_entry> requests;
+        composite_marker init_marker;
+        size_t reserved_x;
+        size_t reserved_y;
         size_t count;
         size_t segment_count;
         size_t request_count;

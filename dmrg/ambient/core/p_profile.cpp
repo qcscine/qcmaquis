@@ -222,14 +222,14 @@ namespace ambient {
         return dim3(this->default_group->j, this->default_group->i, this->default_group->k);
     }
 
-    void p_profile::touch(){
-        
+    void p_profile::touch()
+    {
         if(this->state == ABSTRACT){
             this->state = COMPOSING;
         }else if(this->state == COMPOSING){
             this->state = GENERIC;
+        }else if(this->state == GENERIC){
         }
-
     }
 
     void p_profile::constant(){ this->consted = true; }
@@ -258,14 +258,14 @@ namespace ambient {
     }
 
     void p_profile::postprocess(){
-        int i, j;
-        for(int k=0; k < this->layout->segment_count; k++){
-            i = this->layout->segment[k].i;
-            j = this->layout->segment[k].j;
-            if(this->group(i,j)->header != NULL) continue; // avoiding redunant allocations
-            this->group(i,j)->set_memory(alloc_t(*this->packet_type));
-            this->init_fp(this->group(i,j));
-        }
+        if(this->layout != NULL)
+        if(this->layout->init_marker.active)
+        this->layout->init_marker.clear();
+    }
+    void p_profile::postprocess(int i, int j){
+        if(this->group(i,j)->header != NULL) return; // avoiding redunant allocations // maybe to remove
+        this->group(i,j)->set_memory(alloc_t(*this->packet_type));
+        this->init_fp(this->group(i,j));
     }
 
     void p_profile::finalize(){
@@ -334,6 +334,12 @@ namespace ambient {
         return this->dim;
     }
     void p_profile::set_dim(dim3 dim){
+        if(this->layout != NULL){
+            if(this->get_grid_dim().y < __a_ceil(dim.x / this->get_group_t_dim().y) || 
+               this->get_grid_dim().x < __a_ceil(dim.y / this->get_group_t_dim().x)){
+                this->layout->init_marker.mark(this->get_grid_dim().y, this->get_grid_dim().x);
+            }
+        }
         this->dim = dim;
         this->regroup();
         if(this->layout != NULL)
