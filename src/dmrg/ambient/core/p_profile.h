@@ -69,7 +69,8 @@ namespace ambient {
         p_profile* dereference(); // finds out if the profile pointer is up to date
         void touch();
         void preprocess();
-        void postprocess(); // proceed with necessary memory allocations
+        void postprocess();             // resets init marker
+        void postprocess(int i, int j); // proceed with necessary memory allocations
         void finalize();    // proceed with proxy updates (various reduces)
         void clean();       // cleanup for proxy/layout junk
         size_t get_group_lda();

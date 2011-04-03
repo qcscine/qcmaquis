@@ -76,7 +76,7 @@ void resize_l_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
     if(!scope.involved()) return; // out of scope quick exit
 
     zout << "2d-block-cyclic decomposition kernel in resize matrix ("<< ambient::rank() <<"):\n"; info(a);
-    printf("The size of the group : %d %d\n", get_dim(a).x, get_dim(a).y);
+    printf("The size of the group : %d x %d\n", get_dim(a).y, get_dim(a).x);
     block_2d_cycle_assign(a);
 }
 

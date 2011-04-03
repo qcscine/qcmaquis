@@ -57,6 +57,11 @@ namespace ambient{ namespace core{
             this->profiles[i]->preprocess();
         }
     }
+    void operation::postprocess()
+    {
+        for(size_t i=0; i < this->count; i++)
+            this->profiles[i]->postprocess();
+    }
     void operation::finalize()
     {
         for(size_t i=0; i < this->count; i++) this->profiles[i]->finalize();
