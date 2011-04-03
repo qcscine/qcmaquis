@@ -1,10 +1,11 @@
-#ifndef DIAGONAL_MATRIX_H
-#define DIAGONAL_MATRIX_H
+#ifndef P_DIAGONAL_MATRIX_H
+#define P_DIAGONAL_MATRIX_H
+
 
 namespace blas {
 
     template<class FullMatrixClass>
-    struct associated_diagonal_matrix { };
+    struct associated_p_diagonal_matrix { };
     
 	/**
 	idea the container is a p_dense_matrix of one row and n columns,
@@ -25,11 +26,11 @@ namespace blas {
 
 		//to do
         template<class Vector>
-        diagonal_matrix(Vector const & init)
+        p_diagonal_matrix(Vector const & init)
         : data_(init.begin(), init.end()) { }
 
 		//to do
-        diagonal_matrix(std::size_t size = 0, T const & init = T())
+        p_diagonal_matrix(std::size_t size = 0, T const & init = T())
         : data_(size, init) { }
         
         std::size_t num_rows() const { return data_.num_rows(); }
@@ -78,6 +79,10 @@ namespace blas {
             assert(r == c);
             data_.resize(r, v);
         }
+
+	template<typename T>
+	friend std::ostream & operator <<(std::ostream& os, p_diagonal_matrix<T> const &m);
+
         
     private:
 		ambient::p_dense_matrix<T> data_;
@@ -85,7 +90,8 @@ namespace blas {
 	
 	//all free functions are inside p_diagonal
 	// to do migrate all  class functions/constructors/destructor inside
+
 	
-  }
+ }
 
 #endif
