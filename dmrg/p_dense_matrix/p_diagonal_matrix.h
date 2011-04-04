@@ -1,5 +1,5 @@
-#ifndef P_DIAGONAL_MATRIX_H
-#define P_DIAGONAL_MATRIX_H
+#ifndef __ALPS_P_DIAGONAL_MATRIX_H
+#define __ALPS_P_DIAGONAL_MATRIX_H
 
 
 namespace blas {
@@ -7,10 +7,10 @@ namespace blas {
     template<class FullMatrixClass>
     struct associated_p_diagonal_matrix { };
     
-	/**
-	idea the container is a p_dense_matrix of one row and n columns,
-	we need it to avoid dependency inside SVD kernels and other 
-	*/	
+/**
+idea the container is a p_dense_matrix of one row and n columns,
+we need it to avoid dependency inside SVD kernels and other 
+*/
     template<typename T>
     class p_diagonal_matrix
     {
@@ -24,74 +24,29 @@ namespace blas {
         typedef typename std::vector<T>::iterator element_iterator;
         typedef typename std::vector<T>::const_iterator const_element_iterator;
 
-		//to do
-        template<class Vector>
-        p_diagonal_matrix(Vector const & init)
-        : data_(init.begin(), init.end()) { }
-
-		//to do
-        p_diagonal_matrix(std::size_t size = 0, T const & init = T())
-        : data_(size, init) { }
-        
-        std::size_t num_rows() const { return data_.num_rows(); }
-        std::size_t num_columns() const { return data_.num_rows(); }
-        
-        T const & operator[](std::size_t i) const { return data_(i,1); }
-        T & operator[](std::size_t i) { return data_(i,1); }
-        
-        T const & operator()(std::size_t i, std::size_t j) const
-        {
-            assert(i == j);
-            return data_(i,1);
-        }
-        T & operator()(std::size_t i, std::size_t j)
-        {
-            assert(i == j);
-            return data_(i,1);
-        }
-        
-        std::pair<element_iterator, element_iterator> elements()
-        {
-			int n = data.num_rows(); 
-			return std::make_pair(data_.(1,1), data_.(n,1));
-        }
-        
-        std::pair<const_element_iterator, const_element_iterator> elements() const
-        {
- 			int n = data.num_rows(); 
-			return std::make_pair(data_.(1,1), data_.(n,1));
-        }
-        
-        void remove_rows(std::size_t k, std::size_t n = 1)
-        {
-			remove_rows(k, k+n);
-
-        }
-        
-        void remove_cols(std::size_t k, std::size_t n)
-        {
-			remove_rows(k, k+n);
-		}
-        
-		//to do
-        void resize(std::size_t r, std::size_t c, T v = T())
-        {
-            assert(r == c);
-            data_.resize(r, v);
-        }
-
-	template<typename T>
-	friend std::ostream & operator <<(std::ostream& os, p_diagonal_matrix<T> const &m);
-
-        
+	//to do, usefull ? check with SVD ....
+       // template<class Vector>
+      //  p_diagonal_matrix(Vector const & init)
+      //  : data_(init.begin(), init.end()) { }
+        p_diagonal_matrix(std::size_t rows = 0,  T const & init = T()):data_(rows,1){};
+        std::size_t num_rows() const;
+        std::size_t num_cols() const;
+        T const & operator[](std::size_t i) const;
+        T & operator[](std::size_t i); 
+        T const & operator()(std::size_t i, std::size_t j) const;
+        T & operator()(std::size_t i, std::size_t j);
+        std::pair<element_iterator, element_iterator> elements();
+        std::pair<const_element_iterator, const_element_iterator> elements() const;
+        void remove_rows(std::size_t k, std::size_t n = 1);
+        void remove_cols(std::size_t k, std::size_t n = 1);
+        void resize(std::size_t rows, std::size_t cols, T v = T());
+	template< class T1> 
+        friend std::ostream & operator <<(std::ostream& os, p_diagonal_matrix<T1> const &m);
+        ambient::p_dense_matrix<T> const  & get_data(); 
     private:
-		ambient::p_dense_matrix<T> data_;
+        ambient::p_dense_matrix<T> data_;
     };
-	
-	//all free functions are inside p_diagonal
-	// to do migrate all  class functions/constructors/destructor inside
+}
 
-	
- }
-
+#include "p_dense_matrix/p_diagonal_matrix.hpp"
 #endif

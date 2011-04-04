@@ -1,7 +1,6 @@
 #include "utils/zout.hpp"
 #include "p_dense_matrix/p_dense_matrix.h"
 #include "p_dense_matrix/p_diagonal_matrix.h"
-#include "p_dense_matrix/p_diagonal_matrix.hpp"
 
 #include "p_dense_matrix/p_dense_matrix_algorithms.h"
 #include "p_dense_matrix/concept/matrix_interface.hpp"
@@ -54,12 +53,26 @@ BOOST_GLOBAL_FIXTURE( AmbientConfig );
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
 {
     ambient::layout >> dim3(1,1), dim3(2,2), dim3(10,1);
-
     p_diagonal_matrix<T> A(M_SIZE,1);
 
-
+    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, A.get_data() );
     ambient::playout();
-   std::cout << A << std::endl;
+    zout << A ;
+
+    A.remove_rows(2,3);
+    ambient::playout();
+    zout << A ;
+
+    A.resize(8,8);
+    ambient::playout();
+    A.resize(M_SIZE,M_SIZE);
+    ambient::playout();
+    zout << A ;
+
+    A.remove_rows(2,3);
+    blas::sqrt(A); 
+    ambient::playout();
+    zout << A ;
 
 }
 
