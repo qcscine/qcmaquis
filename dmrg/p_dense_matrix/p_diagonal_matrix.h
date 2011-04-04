@@ -28,7 +28,7 @@ we need it to avoid dependency inside SVD kernels and other
        // template<class Vector>
       //  p_diagonal_matrix(Vector const & init)
       //  : data_(init.begin(), init.end()) { }
-        p_diagonal_matrix(std::size_t rows = 0,  T const & init = T()):data_(rows,1){};
+        p_diagonal_matrix(std::size_t rows = 0,  T const & init = T());
         std::size_t num_rows() const;
         std::size_t num_cols() const;
         T const & operator[](std::size_t i) const;

@@ -3,6 +3,10 @@
 
 namespace blas {
 
+    template<typename T>
+    p_diagonal_matrix<T>::p_diagonal_matrix<T>(size_t rows, T const & init):data_(rows,1)  
+    {
+    }
 
     template<typename T>
     std::size_t p_diagonal_matrix<T>::num_rows() const 
