@@ -10,6 +10,7 @@ namespace ambient {
     void scope_select(const char* sql)
     {
         groups::group* grp;
+        groups::group* vellum = NULL;
         int i, token_len, token_t;
         char* quantity;
         char* group; 
@@ -33,11 +34,12 @@ namespace ambient {
             if(field != NULL)
             if(strcmp(field,"breakdown") == 0){ 
                 i += parseout<TK_INTEGER>(&sql[i], &breakdown_token);
-                int group_id = (int)strtol(breakdown_token, NULL, 10);
+                unsigned int group_id = (unsigned int)strtol(breakdown_token, NULL, 10);
                 if(group_id != 0){
                     i += parseout<TK_INTEGER>(&sql[i], &breakdown_token);
-                    int id = (int)strtol(breakdown_token, NULL, 10);
-// now just need to locate those ranks inside scope of profile
+                    unsigned int id = (unsigned int)strtol(breakdown_token, NULL, 10);
+                    vellum = p_profile_map.find(&group_id, 1, id)->profile->get_scope();
+// now just need to locate needed ranks in vellum
                 }
             }else if(strcmp(field,"master") == 0){ 
                 i += parseout<TK_INTEGER>(&sql[i], &master_token);
