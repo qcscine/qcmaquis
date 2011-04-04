@@ -14,6 +14,8 @@ namespace ambient {
         char* group; 
         char* as;
 
+        printf("The input string : %s\n", sql);
+
         i = sqlite3GetToken((const unsigned char*)sql, &token_t);
         if(token_t == TK_ILLEGAL) return;
 
