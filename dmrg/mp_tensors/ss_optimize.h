@@ -78,7 +78,7 @@ public:
         t_grow("sweep_grow");
         
         init_left_right(mpo);
-        cerr << "Done init_left_right" << endl;
+        cout << "Done init_left_right" << endl;
         
         std::size_t L = mps.length();
         
