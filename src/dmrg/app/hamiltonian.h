@@ -38,10 +38,9 @@ namespace app {
 
 namespace app {
     template<class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_mpo(Lattice const & adj,
-                                    Hamiltonian<Matrix, SymmGroup> const & H)
+    MPO<Matrix, SymmGroup> make_mpo(std::size_t L, Hamiltonian<Matrix, SymmGroup> const & H)
     {
-        MPOMaker<Matrix, SymmGroup> mpom;
+        MPOMaker<Matrix, SymmGroup> mpom(L);
         
         for (int i = 0; i < H.n_terms(); ++i)
         {

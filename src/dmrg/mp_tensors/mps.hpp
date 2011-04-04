@@ -15,13 +15,6 @@
 
 #include <boost/math/special_functions/binomial.hpp>
 
-template<class T>
-T tri_min(T a, T b, T c)
-{
-    return std::min(std::min(a, b),
-                    std::min(a, c));
-}
-
 template<class Matrix, class SymmGroup>
 std::string MPS<Matrix, SymmGroup>::description() const
 {
