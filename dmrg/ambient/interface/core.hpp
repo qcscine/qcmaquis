@@ -1,5 +1,8 @@
 // nested inside ambient.hpp in ambient namespace
 #include "ambient/core/operation/operation.pp.hpp"
+#define MAX_NUM_CHAR_LEN 10
+#define scope_select(...) scope_select(std::string(std::string() + __VA_ARGS__).c_str());
+
 class void_pt: public p_profile 
 { 
 public: 
@@ -45,4 +48,29 @@ void_pt& reduced(T& obj){
         breakdown_proxy_model((void_pt*)breakdown(obj).associated_proxy, &(breakdown(obj)), &obj);
     }
     return *((void_pt*)breakdown(obj).associated_proxy);
+}
+
+std::string & operator+(std::string & lhs, double rhs){
+    char* rhs_str = (char*)malloc(sizeof(char)*MAX_NUM_CHAR_LEN);
+    if(rhs - (int)rhs) sprintf(rhs_str,"%.1f",rhs);
+    else sprintf(rhs_str,"%d",(int)rhs);
+    lhs += rhs_str;
+    free(rhs_str);
+    return lhs;
+}
+std::string & operator+(std::string & lhs, int rhs){
+    char* rhs_str = (char*)malloc(sizeof(char)*MAX_NUM_CHAR_LEN);
+    sprintf(rhs_str,"%d", rhs);
+    lhs += rhs_str;
+    free(rhs_str);
+    return lhs;
+}
+std::string & operator+(const std::string & lhs, double rhs){
+    return const_cast<std::string&>(lhs)+rhs;
+}
+std::string & operator+(std::string & lhs, const char* rhs){
+    return const_cast<std::string&>(lhs) += rhs;
+}
+std::string & operator+(const std::string & lhs, const char* rhs){
+    return const_cast<std::string&>(lhs) += rhs;
 }
