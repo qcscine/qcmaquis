@@ -11,19 +11,41 @@ namespace ambient {
     {
         groups::group* grp;
         int i, token_len, token_t;
+        char* quantity;
         char* group; 
         char* as;
+        char* field;
+        char* master_token;
+        char* breakdown_token;
+        int master = 0;
 
-        printf("The input string : %s\n", sql);
+        printf("SQL: %s\n", sql);
 
         i = sqlite3GetToken((const unsigned char*)sql, &token_t);
         if(token_t == TK_ILLEGAL) return;
 
-        i += parseout_id(sql, &group);
-        i += parseout_id(&sql[i], &as);
+        i += parseout<TK_ID>(sql, &group);
+        i += parseout<TK_ID>(&sql[i], &as);
         if(as == NULL) as = (char*)"tmp";
 
-        grp = new groups::group(as, 0, groups::group_map(group));
+        do{
+            i += parseout<TK_ID>(&sql[i], &field);
+            if(field != NULL)
+            if(strcmp(field,"breakdown") == 0){ 
+                i += parseout<TK_INTEGER>(&sql[i], &breakdown_token);
+                int group_id = (int)strtol(breakdown_token, NULL, 10);
+                if(group_id != 0){
+                    i += parseout<TK_INTEGER>(&sql[i], &breakdown_token);
+                    int id = (int)strtol(breakdown_token, NULL, 10);
+// now just need to locate those ranks inside scope of profile
+                }
+            }else if(strcmp(field,"master") == 0){ 
+                i += parseout<TK_INTEGER>(&sql[i], &master_token);
+                master = (int)strtol(master_token, NULL, 10);
+            }
+        }while(field != NULL);
+
+        grp = new groups::group(as, master, groups::group_map(group));
 
         if(token_t == TK_STAR){ 
             grp->add_every(1); 
@@ -43,7 +65,8 @@ namespace ambient {
     {
     }
 
-    int parseout_id(const char* sql, char** id)
+    template<int TT>
+    int parseout(const char* sql, char** id)
     {
         int i = 0;
         int token_len;
@@ -51,7 +74,7 @@ namespace ambient {
         do{
             token_len = sqlite3GetToken((const unsigned char*)&sql[i], &token_t);
             i += token_len;
-        }while(token_t != TK_ID && token_t != TK_ILLEGAL);
+        }while(token_t != TT && token_t != TK_ILLEGAL);
 
         if(token_t == TK_ILLEGAL) *id = NULL;
         else{

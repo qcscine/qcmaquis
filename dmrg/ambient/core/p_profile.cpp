@@ -82,6 +82,13 @@ namespace ambient {
         this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
     }
 
+    std::pair<unsigned int*,size_t> p_profile::get_id(){
+        if(this->id == 0) 
+            return std::pair<unsigned int*,size_t>((unsigned int*)&this->id, this->id); // returning valid pointer
+        else 
+            return std::pair<unsigned int*,size_t>(this->group_id, this->id);
+    }
+
     void p_profile::set_master(int master){
         this->master_relay = std::pair<int,int>(this->master_relay.second, master);
     }

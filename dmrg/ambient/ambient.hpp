@@ -31,6 +31,9 @@ namespace ambient{
 
 // breakdown information //
     template<typename T>
+    inline std::pair<unsigned int*,size_t> get_id(T& ref);
+
+    template<typename T>
     inline dim3 get_dim(T& ref);
 
     template<typename T>

@@ -42,6 +42,11 @@ void assign(T& ref, int i, int j, int k)
     profile.layout->record(i, j, k);
 }
 template<typename T>
+inline std::pair<unsigned int*,size_t> get_id(T& ref)
+{
+    return breakdown(ref).get_id();
+}
+template<typename T>
 inline dim3 get_dim(T& ref)
 {
     return breakdown(ref).get_dim();
