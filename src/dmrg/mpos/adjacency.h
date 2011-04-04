@@ -22,6 +22,9 @@ namespace adj {
         virtual int size() const = 0;
         
         virtual bool wraps_pbc(int, int) { return false; }
+        
+        virtual int site_type(int) { return 0; }
+        virtual int bond_type(int, int) { return 0; }
     };
     
     class ChainAdj : public Adjacency

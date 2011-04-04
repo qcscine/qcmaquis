@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 namespace adj {
 	
@@ -31,11 +32,17 @@ namespace adj {
 		{
 			return size_;
 		}
+        
+        int site_type(int i) { return site_type_map[i]; }
+        int bond_type(int i, int j) { return bond_type_map[i][j]; }
 		
 	private:
 		int size_;
 		std::vector<std::vector<int> > forward_;
-		std::vector<std::vector<int> > backward_;		
+		std::vector<std::vector<int> > backward_;
+        
+        std::map<int, std::map<int, int> > bond_type_map;
+        std::map<int, int> site_type_map;
     };	
 	
 } // namespace (adj)

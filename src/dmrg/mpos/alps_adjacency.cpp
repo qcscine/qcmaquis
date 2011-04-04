@@ -26,8 +26,18 @@ namespace adj {
 		backward_.resize(size_);
 		
 		for (graph_type::bond_iterator it=graph.bonds().first; it!=graph.bonds().second; ++it) {
-			forward_[graph.vertex_index(graph.source(*it))].push_back(graph.vertex_index(graph.target(*it)));
-			backward_[graph.vertex_index(graph.target(*it))].push_back(graph.vertex_index(graph.source(*it)));
+            graph_type::size_type s, t;
+            s = graph.vertex_index(graph.source(*it));
+            t = graph.vertex_index(graph.target(*it));
+            
+			forward_[s].push_back(t);
+			backward_[t].push_back(s);
+            
+            bond_type_map[s][t] = graph.bond_type(*it);
+            bond_type_map[t][s] = graph.bond_type(*it);
 		}
+        
+        for (graph_type::site_iterator it = graph.sites().first; it != graph.sites().second; ++it)
+            site_type_map[graph.vertex_index(*it)] = graph.site_type(*it);
 	}
 }
