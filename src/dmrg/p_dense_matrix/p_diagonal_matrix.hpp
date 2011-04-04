@@ -1,7 +1,89 @@
+#include "p_dense_matrix/p_diagonal_matrix.h" 
+
 
 namespace blas {
-  
-//to do wrapper scala first
+
+
+    template<typename T>
+    std::size_t p_diagonal_matrix<T>::num_rows() const 
+    {
+       return this->data_.num_rows;
+    }
+
+    template<typename T>
+    std::size_t p_diagonal_matrix<T>::num_cols() const
+    {
+        return this->data_.num_rows();
+    }
+    
+    template<typename T>
+    T const & p_diagonal_matrix<T>::operator[](std::size_t i) const 
+    {
+        return this->data_(i,0);
+    }
+
+    template<typename T>
+    T & p_diagonal_matrix<T>::operator[](std::size_t i)
+    {
+        return this->data_(i,0);
+    }
+    
+    template<typename T>
+    T const & p_diagonal_matrix<T>::operator()(std::size_t i, std::size_t j) const
+    {
+        assert(i == j);
+        return this->data_(i,0);
+    }
+
+    template<typename T>
+    T & p_diagonal_matrix<T>:: operator()(std::size_t i, std::size_t j)
+    {
+        assert(i == j);
+        return this->data_(i,0);
+    }
+
+    template<typename T>
+    std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator> p_diagonal_matrix<T>::elements()
+    {
+        int n = this->data_.num_rows(); 
+        return std::make_pair(this->data_.(0,0), this->data_.(n,0));
+    }
+
+    template<typename T>
+    std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator> p_diagonal_matrix<T>::elements() const
+    {
+        int n = this->data_.num_rows(); 
+        return std::make_pair(this->data_.(0,0), this->data_.(n,0));
+    }
+        
+
+
+    template<typename T>
+    void p_diagonal_matrix<T>::remove_rows(std::size_t k, std::size_t n)
+    {
+       this->data_.remove_rows(k, n);
+    }
+
+    template<typename T>  
+    void p_diagonal_matrix<T>::remove_cols(std::size_t k, std::size_t n)
+    {
+        this->data_.remove_rows(k, n);
+    }
+
+    template<typename T> 
+    void p_diagonal_matrix<T>::resize(std::size_t rows, std::size_t cols, T v)
+    {
+        assert(rows == cols);
+        this->data_.resize(rows, 1);
+    }
+
+    template<typename T>
+    ambient::p_dense_matrix<T> const  & p_diagonal_matrix<T>::get_data() 
+    {
+        return this->data_;                          
+    }                                             
+
+
     template<typename T, class Matrix>
     void gemm(Matrix const & m1, p_diagonal_matrix<T> const & m2, Matrix & m3)
     {
@@ -33,24 +115,22 @@ namespace blas {
     }
     
     template<typename T>
-    typename p_diagonal_matrix<T>::size_type num_columns(p_diagonal_matrix<T> const & m)
+    typename p_diagonal_matrix<T>::size_type num_cols(p_diagonal_matrix<T> const & m)
     {
-        return m.num_columns();
+        return m.num_cols();
     }
  
 
-//to do pinned kernel
     template<typename T>
-    p_diagonal_matrix<T> sqrt(p_diagonal_matrix<T> m)
-    {
-        std::transform(m.elements().first, m.elements().second, m.elements().first, utils::functor_sqrt());
-        return m;
+    void sqrt(p_diagonal_matrix<T> & m)
+    { 
+        ambient::push(ambient::sqrt_diagonal_l_kernel, ambient::sqrt_diagonal_c_kernel, m.get_data());
     }
    
     template<typename T>
     std::ostream& operator<<(std::ostream& os, p_diagonal_matrix<T> const & m)
     {
-	os << m.data_ ; 
+       os << m.data_ ; 
        return os;
     }
  
@@ -61,17 +141,16 @@ namespace blas {
     }
     
     template<typename T>
-    void remove_columns(p_diagonal_matrix<T> & m, std::size_t k, std::size_t n = 1)
+    void remove_cols(p_diagonal_matrix<T> & m, std::size_t k, std::size_t n = 1)
     {
-        m.remove_columns(k, n);
+        m.remove_cols(k, n);
     }
    
 
-//to check
     template<typename T>
-    void resize(p_diagonal_matrix<T> & m, std::size_t r, std::size_t c, T v = T())
+    void resize(p_diagonal_matrix<T> & m, std::size_t rows, std::size_t cols, T v = T())
     {
-        m.resize(r, c, v);
+        m.resize(rows, cols, v);
     }
     
     template<typename T>
