@@ -68,9 +68,23 @@ std::string & operator+(std::string & lhs, int rhs){
 std::string & operator+(const std::string & lhs, double rhs){
     return const_cast<std::string&>(lhs)+rhs;
 }
+std::string & operator+(const std::string & lhs, int rhs){
+    return const_cast<std::string&>(lhs)+rhs;
+}
 std::string & operator+(std::string & lhs, const char* rhs){
-    return const_cast<std::string&>(lhs) += rhs;
+    return lhs += rhs;
 }
 std::string & operator+(const std::string & lhs, const char* rhs){
     return const_cast<std::string&>(lhs) += rhs;
+}
+std::string & operator+(std::string & lhs, std::pair<unsigned int*,size_t> rhs){
+    lhs + (int)(*rhs.first);
+    lhs += "-";
+    lhs + (int)(rhs.second);
+    return lhs;
+}
+std::string & operator+(const std::string & lhs, std::pair<unsigned int*,size_t> rhs){
+    const_cast<std::string&>(lhs) + (int)(*rhs.first);
+    const_cast<std::string&>(lhs) += "-";
+    return const_cast<std::string&>(lhs) + (int)rhs.second;
 }

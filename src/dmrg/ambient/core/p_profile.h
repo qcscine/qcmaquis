@@ -60,6 +60,7 @@ namespace ambient {
         bool is_proxy();
         void regroup();
         void set_id(std::pair<unsigned int*,size_t> group_id);
+        std::pair<unsigned int*,size_t> get_id();
         void set_master(int master);
         int get_master();
         int get_xmaster();

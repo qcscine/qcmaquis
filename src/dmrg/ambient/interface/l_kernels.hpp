@@ -114,14 +114,11 @@ void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matr
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
     block_2d_cycle_assign(c);
-
-
-    zout << " end assign " ;
 }
 
 void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
 {
-    scope_select(3 + " from ambient as work where master is " + 1);
+    scope_select(3 +" from ambient as work where master is "+ 1 +" and breakdown contains "+ get_id(c));
     scope_retain("2 from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in membound ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
