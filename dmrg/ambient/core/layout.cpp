@@ -26,6 +26,7 @@ namespace ambient{ namespace core{
         this->jmarker = j;
     }
     bool composite_marker::has_marked(int i, int j){
+        if(!this->active) return false;
         if(i >= this->imarker || j >= this->jmarker) return true;
         return false;
     }
@@ -221,7 +222,6 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->segment[i].k));
             }
             for(int i=0; i < profiles[k]->layout->request_count; i++){
-                printf("Emiting requests\n");
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 
                                                                   "INFORM OWNER ABOUT REQUEST",
