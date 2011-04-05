@@ -13,6 +13,8 @@ namespace ambient{ namespace groups {
         MPI_Group_rank(this->mpi_group, &this->rank);
         this->vacations = (int*)malloc(sizeof(int)*this->count);
         memset(this->vacations, 0, sizeof(int)*this->count);
+        this->members_g = (int*)malloc(sizeof(int)*this->count);
+        for(int i=0; i < this->count; i++) this->members_g[i] = i;
         this->name = name;
         this->master = master;
         this->manager = new packet_manager(this);
@@ -52,7 +54,7 @@ namespace ambient{ namespace groups {
         return std::pair<unsigned int*,size_t>(hash_id,1);
     }
 
-    group::group(const char* name, int master, group* parent): count(0), members(NULL), object_count(0), vacations(NULL), vacant_level(0)
+    group::group(const char* name, int master, group* parent): count(0), members(NULL), members_g(NULL), object_count(0), vacations(NULL), vacant_level(0)
     {
         this->parent = parent;
         this->mpi_group = this->parent->mpi_group;
@@ -65,8 +67,11 @@ namespace ambient{ namespace groups {
 
     void group::add(const int* procs, int count, bool excl){
         if(count <= 0) return;
-        this->members = (int*)realloc(this->members, (this->count+count)*sizeof(int));
+        this->members   = (int*)realloc(this->members,   (this->count+count)*sizeof(int));
+        this->members_g = (int*)realloc(this->members_g, (this->count+count)*sizeof(int));
         memcpy(&(this->members[this->count]), procs, count*sizeof(int));
+        for(int i=0; i < count; i++)
+            this->members_g[this->count+i] = this->parent->translate_up_rank(this->members[this->count+i]);
         if(excl == true){
             // TODO: discard existing groups
         }
@@ -75,8 +80,12 @@ namespace ambient{ namespace groups {
 
     void group::add(int count, bool excl){
         if(count <= 0) return;
-        this->members = (int*)realloc(this->members, (this->count+count)*sizeof(int));
-        for(int i=0; i < count; i++) this->members[this->count+i] = this->parent->get_vacant();
+        this->members   = (int*)realloc(this->members,   (this->count+count)*sizeof(int));
+        this->members_g = (int*)realloc(this->members_g, (this->count+count)*sizeof(int));
+        for(int i=0; i < count; i++){ 
+            this->members  [this->count+i] = this->parent->get_vacant();
+            this->members_g[this->count+i] = this->parent->translate_up_rank(this->members[this->count+i]);
+        }
         if(excl == true){
             // TODO: discard existing groups
         }
@@ -132,6 +141,44 @@ namespace ambient{ namespace groups {
                     count = 0;
                 }
                 procs[count++] = i;
+            }
+        }
+    }
+
+    void group::add_intersection(const group* b, int* count){
+        for(int i=0; i < this->parent->count; i++){
+            for(int j=0; j < b->count; j++){
+                if(this->parent->members_g[i] == b->members_g[j]){
+                    if(count != NULL && (*count)-- <= 0) return;
+                    this->add(&i, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    void group::add_every_intersection(const group* b, int nth, int* count){
+        assert(false);
+        int countdown = nth;
+        for(int i=0; i < this->parent->count; i++){
+            for(int j=0; j < b->count; j++){
+                if(this->parent->members_g[i] == b->members_g[j]){
+                    if(count != NULL && (*count)-- <= 0) return;
+                    if(--countdown == 0){ this->add(&i, 1); countdown = nth; }
+                    break;
+                }
+            }
+        }
+    }
+
+    void group::add_substraction(const group* b, int* count){
+        for(int i=0; i < this->parent->count; i++){
+            for(int j=0; j < b->count; j++){
+                if(this->parent->members_g[i] == b->members_g[j]) break;
+                if(j == b->count-1){
+                    if(count != NULL && (*count)-- <= 0) return;
+                    this->add(&i, 1);
+                }
             }
         }
     }

@@ -9,6 +9,7 @@ namespace ambient {
 
     void scope_select(const char* sql)
     {
+        groups::group* parent_grp;
         groups::group* grp;
         groups::group* vellum = NULL;
         int i, token_len, token_t;
@@ -27,6 +28,7 @@ namespace ambient {
 
         i += parseout<TK_ID>(sql, &group);
         i += parseout<TK_ID>(&sql[i], &as);
+        parent_grp = groups::group_map(group);
         if(as == NULL) as = (char*)"tmp";
 
         do{
@@ -39,7 +41,6 @@ namespace ambient {
                     i += parseout<TK_INTEGER>(&sql[i], &breakdown_token);
                     unsigned int id = (unsigned int)strtol(breakdown_token, NULL, 10);
                     vellum = p_profile_map.find(&group_id, 1, id)->profile->get_scope();
-// now just need to locate needed ranks in vellum
                 }
             }else if(strcmp(field,"master") == 0){ 
                 i += parseout<TK_INTEGER>(&sql[i], &master_token);
@@ -47,16 +48,29 @@ namespace ambient {
             }
         }while(field != NULL);
 
-        grp = new groups::group(as, master, groups::group_map(group));
+        grp = new groups::group(as, master, parent_grp);
 
-        if(token_t == TK_STAR){ 
-            grp->add_every(1); 
-        }else if(token_t == TK_FLOAT){ 
-            float part = strtof(sql, NULL);
-            grp->add_every((int)(1/part)); 
-        }else if(token_t == TK_INTEGER){ 
+        if(token_t == TK_STAR)
+        {
+            if(vellum != NULL) 
+                grp->add_intersection(vellum);
+            else 
+                grp->add_every(1); 
+        }else if(token_t == TK_FLOAT)
+        {
+            int nth = (int)(1/strtof(sql, NULL));
+            if(vellum != NULL) 
+                grp->add_every_intersection(vellum, nth);
+            else 
+                grp->add_every(nth); 
+        }else if(token_t == TK_INTEGER)
+        { 
             int count = (int)strtol(sql, NULL, 10);
-            grp->add(count);
+            if(vellum != NULL){
+                grp->add_intersection(vellum, &count);
+                grp->add_substraction(vellum, &count);
+            }else 
+                grp->add(count);
         }
         grp->commit();
         scope.set_group(grp);
