@@ -58,21 +58,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
     p_dense_matrix<T> c(M_SIZE,M_SIZE);
     p_dense_matrix<T> d(M_SIZE,M_SIZE);
 
-  //  c = a + b;
-  //  c(5,5) = 13.0;
-  //  c(6,5) = 14.0;
-  //  a.remove_rows(128,128);
-  //  b.remove_rows(128,128);
-  //  c.remove_rows(128,128);
     c = a + b;
-    a.resize(511,512);
-    b.resize(511,512);
-    c.resize(511,512);
+    c(5,5) = 13.0;
+    c(6,5) = 14.0;
+    a.remove_rows(128,128);
+    b.remove_rows(128,128);
+    c.remove_rows(128,128);
+    c = a + b;
+    a.resize(640,512);
+    b.resize(640,512);
+    c.resize(640,512);
     c = a + b;
     ambient::playout();
 }
 
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( sql_test, T, test_types )
 {
     ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1);
@@ -84,5 +84,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sql_test, T, test_types )
     c = a + b;
     c = a + b;
     ambient::playout();
-}*/
+}
 

@@ -43,17 +43,18 @@ namespace ambient{ namespace core{
     {
         (this->*extract)();
         this->constness = (bool*)malloc(sizeof(bool)*count);
-        for(int i=0; i < this->count; i++)
-            if(this->profiles[i]->state != ABSTRACT && this->profiles[i]->consted){
-                this->constness[i] = true; 
-            }else // playout can be further enhanced for ABSTRACT state 
-                this->constness[i] = false;
+        this->extract_constness();
+    }
+    void operation::extract_constness(){
+        for(int i=0; i < this->count; i++){
+            this->constness[i] = this->profiles[i]->consted;
+        } // playout can be further enhanced for ABSTRACT state
     }
     void operation::preprocess()
     {
         this->set_scope(ambient::scope.get_group());
         for(size_t i=0; i < this->count; i++){
-            this->profiles[i]->consted = this->constness[i]; // regaining const info
+            this->profiles[i]->consted = this->constness[i] && this->profiles[i]->state != ABSTRACT; // regaining const info
             this->profiles[i]->preprocess();
         }
     }
