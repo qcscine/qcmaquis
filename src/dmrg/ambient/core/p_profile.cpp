@@ -274,7 +274,7 @@ namespace ambient {
         }
     }
     void p_profile::postprocess(int i, int j){
-        // can check if(this->group(i,j)->header != NULL) and reuse memory 
+        // can check if(this->group(i,j)->header != NULL) and reuse memory (reservation in regroup function) 
         this->group(i,j)->set_memory(alloc_t(*this->packet_type));
         this->init_fp(this->group(i,j));
     }
