@@ -9,7 +9,7 @@ namespace ambient {
         if(!singleton) singleton = new scope_context();
         return *singleton;
     }
-    scope_context::scope_context(){ }
+    scope_context::scope_context():grp(NULL){ }
 
     scope_context& scope_context::operator()(const int rank)
     {
@@ -25,7 +25,7 @@ namespace ambient {
     }
     groups::group* scope_context::get_group(){
         if(this->grp == NULL){
-            printf("Attempting to access NULL scope, check if select() was called\n");
+            //printf("Attempting to access NULL scope, check if select() was called\n");
         }
         return this->grp;
     }
