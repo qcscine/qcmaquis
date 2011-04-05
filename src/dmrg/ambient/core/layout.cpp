@@ -108,7 +108,6 @@ namespace ambient{ namespace core{
     }
     void layout_table::request(int i, int j, int k){
         if(this->init_marker.has_marked(i,j)){
-            printf("Init marker is active!\n"); 
             return record(i,j,k);
         }
         for(int s=0; s < this->request_count; s++)
