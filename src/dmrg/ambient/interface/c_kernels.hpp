@@ -194,11 +194,10 @@ void two_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<dou
 void three_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c){ }
 
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){
-    double* ad = current(a)(get_group_id(c).y, get_group_id(c).x);
-    double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
     printf("Executing add kernel for %d %d\n", get_group_id(c).y, get_group_id(c).x); 
+    double* ad = current(a)(get_group_id(c).y, get_group_id(c).x);
     double* bd = current(b)(get_group_id(c).y, get_group_id(c).x);
-    printf("Executed add kernel for %d %d\n", get_group_id(c).y, get_group_id(c).x); 
+    double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
 }
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}
 
@@ -209,24 +208,26 @@ void gemm_lhs_diagonal_c_kernel(const p_dense_matrix<double> & a_diag, pinned co
 
 }*/
 
-//void gemm_rhs_diagonal_c_kernel(pinned const p_dense_matrix<double> & a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
-void gemm_rhs_diagonal_c_kernel(const p_dense_matrix<double> & a, const p_dense_matrix<double>& c)
+void gemm_rhs_diagonal_c_kernel(pinned const p_dense_matrix<double> & a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
 {
 	std::cout << " computation gemm diag " << std::endl;  
- //  int j = get_group_id(a).x*get_group_t_dim(a).x;
-/*
+   int j = get_group_id(a).x*get_group_t_dim(a).x;
+
     int size = get_group_t_dim(a).y;
     int ONE = 1;
     double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
     double* cd = current(c)(get_group_id(a).y, get_group_id(a).x);
+double  nine = 10;
 
     memset(cd, 0, get_group_t_dim(c).x*get_group_t_dim(c).y*sizeof(double));
+
     for(int jj = 0 ; jj < get_group_t_dim(a).x ; jj++)
     {
 	 double * alpha = current(b_diag)(j/get_group_t_dim(b_diag).y);
-	 daxpy(&size,&alpha[j%get_group_t_dim(b_diag).y],&ad[jj*get_group_t_dim(a).y], &ONE,&cd[jj*get_group_t_dim(c).y],&ONE);
+	 daxpy(&size,&alpha[jj%get_group_t_dim(b_diag).y],&ad[jj*get_group_t_dim(a).y], &ONE,&cd[jj*get_group_t_dim(c).y],&ONE);
+	 //daxpy(&size,&nine,&ad[jj*get_group_t_dim(a).y], &ONE,&cd[jj*get_group_t_dim(c).y],&ONE);
+	 //cd[jj*get_group_t_dim(c).y]= jj%get_group_t_dim(a).y ;
     } 
-*/
 }
 
 
