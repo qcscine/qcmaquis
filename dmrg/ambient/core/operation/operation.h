@@ -22,7 +22,8 @@ namespace ambient{ namespace core{
         void invoke();   // executes operation (clean way)
         void set_scope(groups::group* scope);
         groups::group* get_scope();
-        void extract_profiles();
+	void extract_profiles();
+        void extract_constness();
         void preprocess();  // occurs in perform
         void postprocess(); // occurs in perform
         void finalize();

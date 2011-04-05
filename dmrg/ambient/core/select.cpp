@@ -21,8 +21,6 @@ namespace ambient {
         char* breakdown_token;
         int master = 0;
 
-        printf("SQL: %s\n", sql);
-
         i = sqlite3GetToken((const unsigned char*)sql, &token_t);
         if(token_t == TK_ILLEGAL) return;
 

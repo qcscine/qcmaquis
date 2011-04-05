@@ -18,7 +18,6 @@ namespace ambient {
                 if(grp->header == NULL) throw core::race_condition_e();
                 profile->associated_proxy->reduce_fp( grp, (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
             }else{
-                printf("Accepted block %d %d of %d\n", pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD), profile->id);
                 profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
             }
         }catch(core::race_condition_e){
