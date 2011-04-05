@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag_gemm, T, test_types )
 {
     ambient::layout >> dim3(1,1), dim3(2,2), dim3(10,1);
-    p_dense_matrix<T> B(M_SIZE,M_SIZE);
+    p_diagonal_matrix<T> B(M_SIZE);
 
     B.remove_rows(2,2); 
     B.resize(8,8);
