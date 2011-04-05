@@ -269,8 +269,9 @@ namespace ambient {
 
     void p_profile::postprocess(){
         if(this->layout != NULL)
-        if(this->layout->init_marker.active)
-        this->layout->init_marker.clear();
+        if(this->layout->init_marker.active){
+            this->layout->init_marker.clear();
+        }
     }
     void p_profile::postprocess(int i, int j){
         if(this->group(i,j)->header != NULL) return; // avoiding redunant allocations // maybe to remove
