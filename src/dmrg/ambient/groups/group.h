@@ -28,7 +28,9 @@ namespace ambient{ namespace groups{
         void add_every(int nth, bool excl = false);
         void add_every(bool(*include)(int k), bool excl = false);
         void add_every(bool(*include)(int k), bool(*excl)(int k));
-
+        void add_intersection(const group* b, int* count = NULL);
+        void add_every_intersection(const group* b, int nth, int* count = NULL);
+        void add_substraction(const group* b, int* count = NULL);
         void reorder(int* new_ranks);
         void reorder(int(*order)(int r));
 
@@ -53,7 +55,8 @@ namespace ambient{ namespace groups{
         const char* get_name();
     private:
         unsigned int object_count;
-        int* members;              // list of member ranks (according to the parent group)
+        int* members;              // list of member ranks according to the parent group
+        int* members_g;            // list of member ranks according to the world group
     };
 
     group* group_map(const char* name, group* instance = NULL);
