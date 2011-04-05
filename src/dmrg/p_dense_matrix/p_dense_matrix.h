@@ -34,8 +34,8 @@ namespace blas {
         p_dense_matrix(ambient::void_pt* p);              // proxy object construction
 // AMBIENT PART >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         typedef T                       value_type;       // The type T of the elements of the matrix
-        typedef std::size_t             size_type;        // Unsigned integer type that represents the dimensions of the matrix
-        typedef std::ptrdiff_t          difference_type;  // Signed integer type to represent the distance of two elements in the memory
+        typedef size_t                  size_type;        // Unsigned integer type that represents the dimensions of the matrix
+        typedef ptrdiff_t               difference_type;  // Signed integer type to represent the distance of two elements in the memory
 
         // typedefs for matrix specific iterators
         typedef strided_iterator<p_dense_matrix,value_type>

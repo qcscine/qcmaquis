@@ -27,7 +27,7 @@ if(ambient_dmrg)
     set(CMAKE_CXX_COMPILER "mpic++") 
     add_definitions(-O3)
     add(ambient) 
-    add(regression/p_dense_matrix)
+    #add(regression/p_dense_matrix)
     add(regression/p_diagonal_matrix)
 endif(ambient_dmrg)
 

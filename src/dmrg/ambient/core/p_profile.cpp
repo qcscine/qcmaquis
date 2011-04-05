@@ -274,7 +274,7 @@ namespace ambient {
         }
     }
     void p_profile::postprocess(int i, int j){
-        if(this->group(i,j)->header != NULL) return; // avoiding redunant allocations // maybe to remove
+        // can check if(this->group(i,j)->header != NULL) and reuse memory 
         this->group(i,j)->set_memory(alloc_t(*this->packet_type));
         this->init_fp(this->group(i,j));
     }

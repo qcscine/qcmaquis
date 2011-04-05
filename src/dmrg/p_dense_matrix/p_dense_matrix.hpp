@@ -50,22 +50,22 @@ namespace blas {
     inline bool p_dense_matrix<T>::empty() const { return (this->rows == 0 || this->cols == 0); }
 
     template <typename T>
-    inline std::size_t p_dense_matrix<T>::num_rows() const { return this->rows; }
+    inline size_t p_dense_matrix<T>::num_rows() const { return this->rows; }
 
     template <typename T>
-    inline std::size_t p_dense_matrix<T>::num_cols() const { return this->cols; }
+    inline size_t p_dense_matrix<T>::num_cols() const { return this->cols; }
 
     template <typename T>
-    inline std::ptrdiff_t p_dense_matrix<T>::stride1() const { return 1; }
+    inline ptrdiff_t p_dense_matrix<T>::stride1() const { return 1; }
 
     template <typename T>
-    inline std::ptrdiff_t p_dense_matrix<T>::stride2() const { return this->lda; }
+    inline ptrdiff_t p_dense_matrix<T>::stride2() const { return this->lda; }
 
     template <typename T>
-    inline std::ptrdiff_t p_dense_matrix<T>::get_lda() const { return this->lda; }
+    inline ptrdiff_t p_dense_matrix<T>::get_lda() const { return this->lda; }
 
     template <typename T>
-    inline std::ptrdiff_t p_dense_matrix<T>::get_sda() const { return this->sda; }
+    inline ptrdiff_t p_dense_matrix<T>::get_sda() const { return this->sda; }
 
     template <typename T>
     void p_dense_matrix<T>::clear(){ this->rows = this->cols = 0; }
@@ -119,8 +119,8 @@ namespace blas {
         int element_j = j % (this->profile->get_group_t_dim().x);
         if(this->profile->group(group_i,group_j)->available())
             return *(T*)(*this->profile)(group_i, group_j).element(element_i, element_j);
-        else
-            return *(new T()); //using default value of T
+        else //return *(new T()); //using default value of T
+            throw ambient::core::remote_memory_e();
     }
 
     template <typename T>
@@ -168,9 +168,12 @@ namespace blas {
     {
         for(typename p_dense_matrix<T>::size_type i=0; i< m.num_rows(); ++i)
         {
-            for(typename p_dense_matrix<T>::size_type j=0; j < m.num_cols(); ++j)
-                o<<m(i,j)<<" ";
-            o<<std::endl;
+            for(typename p_dense_matrix<T>::size_type j=0; j < m.num_cols(); ++j){
+                try{
+                    o<<m(i,j)<<" ";
+                    if(j == m.num_cols()-1) o<<std::endl;
+                }catch(...){ }
+            }
         }
         return o;
     }

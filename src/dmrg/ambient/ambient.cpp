@@ -66,7 +66,7 @@ namespace ambient
     void spin_loop()        { engine.spin_loop(); }
     int  size()             { return engine.size; }
 
-    scheduler::scheduler(): item_dim(dim3(128,128,1)){ }
+    scheduler::scheduler(): item_dim(dim3(8,8,1)){ } // to revert to 128,128
     dim3 scheduler::get_group_dim(){ return this->group_dim; }
     dim3 scheduler::get_item_dim() { return this->item_dim;  }
     dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
@@ -200,7 +200,8 @@ namespace ambient
     }
 
     bool is_master(){
-        return ambient::rank.is_master(scope.get_group());
+        if(scope.get_group() != NULL) return ambient::rank.is_master(scope.get_group());
+        return ambient::rank.is_master("ambient");
     }
     group* world(){
         return engine.ambient;
