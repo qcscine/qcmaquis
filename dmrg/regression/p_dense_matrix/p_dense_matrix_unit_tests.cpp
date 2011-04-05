@@ -65,9 +65,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
   //  b.remove_rows(128,128);
   //  c.remove_rows(128,128);
     c = a + b;
-    a.resize(640,512);
-    b.resize(640,512);
-    c.resize(640,512);
+    a.resize(511,512);
+    b.resize(511,512);
+    c.resize(511,512);
     c = a + b;
     ambient::playout();
 }
