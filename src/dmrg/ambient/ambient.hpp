@@ -61,6 +61,7 @@ namespace ambient{
     #include "ambient/interface/i_kernels.hpp"
     #include "ambient/interface/l_kernels.hpp"
     #include "ambient/interface/c_kernels.hpp"
+    #include "ambient/interface/c_scalapack_kernels.hpp"
     #include "ambient/interface/model.hpp"
     #include "ambient/interface/interface.hpp"
 }
