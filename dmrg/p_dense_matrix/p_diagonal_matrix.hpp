@@ -4,7 +4,7 @@
 namespace blas {
 
     template<typename T>
-    p_diagonal_matrix<T>::p_diagonal_matrix<T>(size_t rows, T const & init):data_(rows,1)  
+    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, T const & init):data_(rows,1)  
     {
     }
 
@@ -50,14 +50,14 @@ namespace blas {
     std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator> p_diagonal_matrix<T>::elements()
     {
         int n = this->data_.num_rows(); 
-        return std::make_pair(this->data_.(0,0), this->data_.(n,0));
+        return std::make_pair(this->data_(0,0), this->data_(n,0));
     }
 
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator> p_diagonal_matrix<T>::elements() const
     {
         int n = this->data_.num_rows(); 
-        return std::make_pair(this->data_.(0,0), this->data_.(n,0));
+        return std::make_pair(this->data_(0,0), this->data_(n,0));
     }
         
 
