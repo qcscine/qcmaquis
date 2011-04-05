@@ -104,6 +104,36 @@ void sqrt_diagonal_l_kernel(pinned p_dense_matrix<double>& a)
     block_2d_cycle_assign(a);
 }
 
+
+void one_l_scalapack_kernel(const p_dense_matrix<double>& a)
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+    if(!scope.involved()) return; // out of scope quick exit
+    zout << "2d-block-cyclic decomposition kernel in remove cols ("<< ambient::rank() <<"):\n"; info(a);
+    block_2d_cycle_assign(a);
+}
+
+void two_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+    if(!scope.involved()) return; // out of scope quick exit
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(b);
+}
+
+void tree_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  const p_dense_matrix<double>& c)
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+    if(!scope.involved()) return; // out of scope quick exit
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(b);
+    block_2d_cycle_assign(c);
+}
+
+
 void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
 {
     scope_select("* from ambient as gemm_scope where master is 0");
@@ -145,6 +175,27 @@ void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_mat
     block_2d_cycle_assign(V);
 
 }// do nothing just need to test
+
+
+//void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
+void gemm_rhs_diagonal_l_kernel( const p_dense_matrix<double> & a, const p_dense_matrix<double>& c)
+{
+
+std::cout << " logistic gemm diag " << std::endl;  
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+   
+ if(!scope.involved()) return; // out of scope quick exit
+
+    block_2d_cycle_assign(a);
+   // block_2d_cycle_assign(b_diag);
+    block_2d_cycle_assign(c);
+
+std::cout << " end logistic gemm diag " << std::endl;  
+}
+
+
+
 
 void single_integer_l_kernel(int*& input){
     scope_select("* from ambient as single_integer_scope where master is 0");

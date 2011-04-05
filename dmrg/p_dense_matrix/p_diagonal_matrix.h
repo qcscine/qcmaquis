@@ -42,8 +42,9 @@ we need it to avoid dependency inside SVD kernels and other
         void resize(std::size_t rows, std::size_t cols, T v = T());
 	template< class T1> 
         friend std::ostream & operator <<(std::ostream& os, p_diagonal_matrix<T1> const &m);
-        ambient::p_dense_matrix<T> const  & get_data(); 
-    private:
+        const ambient::p_dense_matrix<T> & get_data() const; 
+        ambient::p_dense_matrix<T> & get_data(); 
+    //private:
         ambient::p_dense_matrix<T> data_;
     };
 }

@@ -50,6 +50,7 @@ struct AmbientConfig {
 typedef boost::mpl::list<type_pairs::IntDouble, type_pairs::DoubleInt> test_type_pairs;
 
 BOOST_GLOBAL_FIXTURE( AmbientConfig );
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
 {
     ambient::layout >> dim3(1,1), dim3(2,2), dim3(10,1);
@@ -68,11 +69,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
     A.resize(M_SIZE,M_SIZE);
     ambient::playout();
     zout << A ;
+}
+*/
 
-    A.remove_rows(2,3);
-    blas::sqrt(A); 
+BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag_gemm, T, test_types )
+{
+    ambient::layout >> dim3(1,1), dim3(2,2), dim3(10,1);
+ //   p_diagonal_matrix<T> A(M_SIZE,1);
+  //  ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, A.get_data() );
+
+    p_dense_matrix<T> B(M_SIZE,M_SIZE);
+
+    //p_dense_matrix<T> C(M_SIZE,M_SIZE);
+    //ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, C);
+    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, B);
+
     ambient::playout();
-    zout << A ;
+
+    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, B);
+    //ambient::push(ambient::gemm_rhs_diagonal_l_kernel,ambient::gemm_rhs_diagonal_c_kernel, B, C); 
+    ambient::playout();
+   
+    //zout << C  << std::endl;
+  
+
+//  blas::gemm(B,A,C);
+
+
+  //  zout << A <<  std::endl;
+  //  zout << B  << std::endl;
+  //  std::cout << C;
 
 }
 

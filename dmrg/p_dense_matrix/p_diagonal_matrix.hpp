@@ -11,13 +11,13 @@ namespace blas {
     template<typename T>
     std::size_t p_diagonal_matrix<T>::num_rows() const 
     {
-       return this->data_.num_rows;
+       return this->data_.num_rows();
     }
 
     template<typename T>
     std::size_t p_diagonal_matrix<T>::num_cols() const
     {
-        return this->data_.num_rows();
+        return this->num_rows();
     }
     
     template<typename T>
@@ -82,34 +82,43 @@ namespace blas {
     }
 
     template<typename T>
-    ambient::p_dense_matrix<T> const  & p_diagonal_matrix<T>::get_data() 
+    ambient::p_dense_matrix<T> const  & p_diagonal_matrix<T>::get_data() const 
     {
         return this->data_;                          
     }                                             
 
+    template<typename T>
+    ambient::p_dense_matrix<T> & p_diagonal_matrix<T>::get_data() 
+    {
+        return this->data_;                          
+    }
 
     template<typename T, class Matrix>
     void gemm(Matrix const & m1, p_diagonal_matrix<T> const & m2, Matrix & m3)
     {
-
-	// to do scalapack kernel pdgemv and home made kernel 
-        assert(num_columns(m1) == num_rows(m2));
-        resize(m3, num_rows(m1), num_columns(m2));
+        assert(num_cols(m1) == num_rows(m2));
+        m3.resize(num_rows(m1), num_cols(m2));
+	ambient::push(ambient::gemm_rhs_diagonal_l_kernel, ambient::gemm_rhs_diagonal_c_kernel, m1, m2.get_data() ,m3);
+        /*
         for (std::size_t i = 0; i < num_rows(m1); ++i)
             for (std::size_t j = 0; j < num_columns(m2); ++j)
                 m3(i,j) = m1(i,j) * m2(j,j);
+        */
     }
     
 //to do wrapper scala first
     template<typename T, class Matrix>
-    void gemm(p_diagonal_matrix<T> const & m1, Matrix const & m2, Matrix & m3)
+    void gemm( const p_diagonal_matrix<T> & m1, Matrix const & m2, Matrix & m3)
     {
-	// to do scalapack kernel pdgemv and home made kernel 
         assert(num_columns(m1) == num_rows(m2));
-        resize(m3, num_rows(m1), num_columns(m2));
+        m3.resize(num_rows(m1), num_columns(m2));
+	//ambient::push(ambient::gemm_rhs_diagonal_l_kernel,ambient::gemm_rhs_diagonal_c_kernel, m2, m1.get_data() ,m3)
+//	ambient::push(ambient::gemm_rhs_diagonal_l_kernel,ambient::gemm_rhs_diagonal_c_kernel, m2, m3)
+/*
         for (std::size_t i = 0; i < num_rows(m1); ++i)
             for (std::size_t j = 0; j < num_columns(m2); ++j)
                 m3(i,j) = m1(i,i) * m2(i,j);
+  */  
     }
 
     template<typename T>
