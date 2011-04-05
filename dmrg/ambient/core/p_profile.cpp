@@ -100,7 +100,10 @@ namespace ambient {
     }
     
     int p_profile::get_master(){ return this->master_relay.second; }
-    int p_profile::get_xmaster(){ return this->master_relay.first; }
+    int p_profile::get_xmaster(){ 
+        if(this->master_relay.first != -1) return this->master_relay.first; 
+        else return this->master_relay.second; 
+    }
     groups::group* p_profile::get_scope(){ return this->scope; }
     groups::group* p_profile::get_xscope(){ return this->xscope; } 
     bool p_profile::xinvolved(){ return ((this->get_xscope() != NULL && this->get_xscope()->involved()) || this->involved()); } // modified
