@@ -106,8 +106,10 @@ namespace ambient{ namespace core{
         add_segment_entry(ambient::rank(), i, j, k);
     }
     void layout_table::request(int i, int j, int k){
-        if(this->init_marker.has_marked(i,j)) 
+        if(this->init_marker.has_marked(i,j)){
+            printf("Init marker is active!\n"); 
             return record(i,j,k);
+        }
         for(int s=0; s < this->request_count; s++)
             if(this->requests[s].i == i &&
                this->requests[s].j == j &&
@@ -219,6 +221,7 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->segment[i].k));
             }
             for(int i=0; i < profiles[k]->layout->request_count; i++){
+                printf("Emiting requests\n");
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 
                                                                   "INFORM OWNER ABOUT REQUEST",
