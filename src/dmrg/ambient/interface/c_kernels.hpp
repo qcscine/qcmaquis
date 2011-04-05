@@ -223,8 +223,8 @@ double  nine = 10;
 
     for(int jj = 0 ; jj < get_group_t_dim(a).x ; jj++)
     {
-	 double * alpha = current(b_diag)((j+jj)/get_group_t_dim(b_diag).y,1);
-	 daxpy(&size,&alpha[(j+jj)%get_group_t_dim(b_diag).y],&ad[jj*get_group_t_dim(a).y], &ONE,&cd[jj*get_group_t_dim(c).y],&ONE);
+	 double * alpha = current(b_diag)((j+jj)/get_group_t_dim(b_diag).y,0);
+	 daxpy(&size, &alpha[(j+jj)%get_group_t_dim(b_diag).y], &ad[jj*get_group_t_dim(a).y], &ONE, &cd[jj*get_group_t_dim(c).y], &ONE);
 	 //daxpy(&size,&nine,&ad[jj*get_group_t_dim(a).y], &ONE,&cd[jj*get_group_t_dim(c).y],&ONE);
 	 //cd[jj*get_group_t_dim(c).y]= jj%get_group_t_dim(a).y ;
     } 
