@@ -75,19 +75,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag_gemm, T, test_types )
 {
     ambient::layout >> dim3(1,1), dim3(2,2), dim3(10,1);
- //   p_diagonal_matrix<T> A(M_SIZE,1);
-  //  ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, A.get_data() );
-
     p_dense_matrix<T> B(M_SIZE,M_SIZE);
 
-    //p_dense_matrix<T> C(M_SIZE,M_SIZE);
-    //ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, C);
     ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, B);
-
     ambient::playout();
-
     ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, B);
-    //ambient::push(ambient::gemm_rhs_diagonal_l_kernel,ambient::gemm_rhs_diagonal_c_kernel, B, C); 
     ambient::playout();
    
     //zout << C  << std::endl;
