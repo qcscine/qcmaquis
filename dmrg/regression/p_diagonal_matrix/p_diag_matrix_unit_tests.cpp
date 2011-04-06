@@ -13,7 +13,7 @@
 #include <complex>
 #include <numeric>
 
-#define M_SIZE 16
+#define M_SIZE 4
 using namespace blas;
 
 //
@@ -75,23 +75,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag_gemm, T, test_types )
 {
     ambient::layout >> dim3(1,1), dim3(2,2), dim3(10,1);
-    p_diagonal_matrix<T> B(M_SIZE);
+    p_diagonal_matrix<T> A(M_SIZE);
+    p_dense_matrix<T> B(M_SIZE,M_SIZE);
+    p_dense_matrix<T> C(M_SIZE,M_SIZE);
+    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, A.get_data() );
+    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, B );
+    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, C );
 
-    B.remove_rows(2,2); 
-    B.resize(8,8);
-    B.remove_rows(2,2); 
-    B.resize(8,8);
-    B.resize(14,14);
-    B.resize(16,16);
-    ambient::playout();
-  
+ //  blas::gemm(B,A,C);  
+   blas::gemm(A,B,C);  
+   ambient::playout();
 
-//  blas::gemm(B,A,C);
-
-
-  //  zout << A <<  std::endl;
-  //  zout << B  << std::endl;
-  //  std::cout << C;
+   std::cout << C ; // << " " << ambient::rank() << " " <<  std::endl;
 
 }
 
