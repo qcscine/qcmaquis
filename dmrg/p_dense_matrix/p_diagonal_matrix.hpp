@@ -93,8 +93,9 @@ namespace blas {
         return this->data_;                          
     }
 
+//pdense*pdiag
     template<typename T, class Matrix>
-    void gemm(Matrix const & m1, p_diagonal_matrix<T> const & m2, Matrix & m3)
+    void gemm(Matrix const & m1, p_diagonal_matrix<T> const & m2, Matrix  & m3)
     {
         assert(num_cols(m1) == num_rows(m2));
         m3.resize(num_rows(m1), num_cols(m2));
@@ -106,19 +107,18 @@ namespace blas {
         */
     }
     
-//to do wrapper scala first
+//pdiag*pdense
     template<typename T, class Matrix>
     void gemm( const p_diagonal_matrix<T> & m1, Matrix const & m2, Matrix & m3)
     {
-        assert(num_columns(m1) == num_rows(m2));
-        m3.resize(num_rows(m1), num_columns(m2));
-	//ambient::push(ambient::gemm_rhs_diagonal_l_kernel,ambient::gemm_rhs_diagonal_c_kernel, m2, m1.get_data() ,m3)
-//	ambient::push(ambient::gemm_rhs_diagonal_l_kernel,ambient::gemm_rhs_diagonal_c_kernel, m2, m3)
-/*
+        assert(num_cols(m1) == num_rows(m2));
+        m3.resize(num_rows(m1), num_cols(m2));
+	ambient::push(ambient::gemm_lhs_diagonal_l_kernel,ambient::gemm_lhs_diagonal_c_kernel, m1.get_data(), m2 ,m3);
+        /*
         for (size_t i = 0; i < num_rows(m1); ++i)
             for (size_t j = 0; j < num_columns(m2); ++j)
                 m3(i,j) = m1(i,i) * m2(i,j);
-  */  
+        */  
     }
 
     template<typename T>
