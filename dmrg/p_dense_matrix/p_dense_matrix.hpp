@@ -113,7 +113,7 @@ namespace blas {
         // todo
     }
 
-    template <typename T>
+    /*template <typename T>
     inline T& p_dense_matrix<T>::get(size_type i, size_type j) const
     {
         assert(i < this->rows);
@@ -127,6 +127,21 @@ namespace blas {
             return *(T*)(*this->profile)(group_i, group_j).element(element_i, element_j);
         else //return *(new T()); //using default value of T
             throw ambient::core::remote_memory_e();
+    }*/
+
+    template <typename T>
+    inline T& p_dense_matrix<T>::get(size_type i, size_type j) const
+    {
+        assert(i < this->rows);
+        assert(j < this->cols);
+        ambient::playout();
+        int group_i = i / (this->profile->get_group_t_dim().y);
+        int group_j = j / (this->profile->get_group_t_dim().x);
+        int element_i = i % (this->profile->get_group_t_dim().y);
+        int element_j = j % (this->profile->get_group_t_dim().x);
+        T& value = *(T*)(*this->profile)(group_i, group_j).element(element_i, element_j);
+        ambient::world_loop();
+        return value;
     }
 
     template <typename T>
@@ -169,7 +184,7 @@ namespace blas {
     const p_dense_matrix<T> operator * (const T2& t, const p_dense_matrix<T>& m){ return ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); }
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
 
-    template <typename T>
+    /*template <typename T>
     std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m)
     {
         ambient::playout();
@@ -182,6 +197,26 @@ namespace blas {
                 try{
                     m(i,j); printf("%.2f ", m(i,j)); // faster than cout
                 }catch(...){ usleep(10*1000); }      // 10 ms sleep
+                STRONG_BARRIER
+            }
+            if(ambient::is_master()) printf("\n");
+            STRONG_BARRIER
+        }
+        return o;
+    }*/
+
+    template <typename T>
+    std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m)
+    {
+        ambient::playout();
+        STRONG_BARRIER
+        for(typename p_dense_matrix<T>::size_type i=0; i< m.num_rows(); ++i)
+        {
+            STRONG_BARRIER
+            for(typename p_dense_matrix<T>::size_type j=0; j < m.num_cols(); ++j){
+                STRONG_BARRIER
+                if(ambient::is_master()) printf("%.2f	", m(i,j));
+                else m(i,j); // just touch
                 STRONG_BARRIER
             }
             if(ambient::is_master()) printf("\n");
