@@ -200,7 +200,14 @@ void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p
 }
 
 
+void init_double_l_kernel(pinned p_dense_matrix<double> & a)
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+ if(!scope.involved()) return; // out of scope quick exit
 
+    block_2d_cycle_assign(a);
+}
 
 void single_integer_l_kernel(int*& input){
     scope_select("* from ambient as single_integer_work where master is 0");
