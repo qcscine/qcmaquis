@@ -47,6 +47,7 @@ namespace ambient
         void playout();  // perform actual operations
         void spin();
         void spin_loop();
+        void world_loop();
         int size;
         block_packet_t* default_data_packet_t;
         groups::group* ambient;
@@ -68,6 +69,7 @@ namespace ambient
     void playout();
     void spin();
     void spin_loop();
+    void world_loop();
     int size();
     bool is_master();
     groups::group* world();

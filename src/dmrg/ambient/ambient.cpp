@@ -59,14 +59,15 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
-    void init(MPI_Comm comm){ engine.init(comm);  }
-    void finalize()         { engine.finalize();  }
-    void playout()          { engine.playout();   }
-    void spin()             { engine.spin();      }
-    void spin_loop()        { engine.spin_loop(); }
-    int  size()             { return engine.size; }
+    void init(MPI_Comm comm){ engine.init(comm);   }
+    void finalize()         { engine.finalize();   }
+    void playout()          { engine.playout();    }
+    void spin()             { engine.spin();       }
+    void spin_loop()        { engine.spin_loop();  }
+    void world_loop()       { engine.world_loop(); }
+    int  size()             { return engine.size;  }
 
-    scheduler::scheduler(): item_dim(dim3(4,4,1)){ } // to revert to 128,128
+    scheduler::scheduler(): item_dim(dim3(128,128,1)){ } // to revert to 128,128
     dim3 scheduler::get_group_dim(){ return this->group_dim; }
     dim3 scheduler::get_item_dim() { return this->item_dim;  }
     dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
@@ -99,15 +100,21 @@ namespace ambient
     }
     void scheduler::spin()
     {
+        world()->get_manager()->spin();
         while(!this->router.alt_end_reached()){ // alt is for embedding
             (*this->router.alt_pick())->spin();
         }
     }
     void scheduler::spin_loop()
     {
+        this->world_loop();
         while(!this->router.end_reached()){
             (*this->router.pick())->spin_loop();
         }
+    }
+    void scheduler::world_loop()
+    {
+        world()->get_manager()->spin_loop();
     }
     void scheduler::playout()
     {
@@ -145,7 +152,6 @@ namespace ambient
 // now we all set with dependencies!
         while(repeat)
         {   repeat = false;
-            this->router.push_back(world()->get_manager());
             while(!this->stack.end_reached()){
                 logistics = this->stack.pick()->first;
                 if(logistics->executed) continue;

@@ -49,7 +49,7 @@ typedef boost::mpl::list<type_pairs::IntDouble, type_pairs::DoubleInt> test_type
 
 BOOST_GLOBAL_FIXTURE( AmbientConfig );
 
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
     ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sql_test, T, test_types )
     c = a + b;
     c = a + b;
     ambient::playout();
-}*/
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( print_test, T, test_types )
 {
