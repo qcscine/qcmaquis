@@ -14,7 +14,7 @@ link_directories (${DMRG_BINARY_DIR}/ambient
                   /opt/boost-1.44-binary/lib
                   /opt/intel/mkl/lib) 
 
-add_executable (p_diagonal_matrix.test p_diag_matrix_unit_tests.cpp) 
+add_executable (p_diagonal_matrix.test p_diagonal_matrix_unit_tests.cpp) 
 target_link_libraries (p_diagonal_matrix.test ambient boost alps hdf5 arpack z sz boost_unit_test_framework mkl_intel_lp64 mkl_sequential mkl_core pthread) 
 
 add_test(unit_test mpiexec -np 2 ./p_diagonal_matrix.test)
