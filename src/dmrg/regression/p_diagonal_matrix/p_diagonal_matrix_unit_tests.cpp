@@ -13,7 +13,7 @@
 #include <complex>
 #include <numeric>
 
-#define M_SIZE 4
+#define M_SIZE 16
 using namespace blas;
 
 //
@@ -78,6 +78,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diagonal_gemm, T, test_types )
     p_diagonal_matrix<T> A(M_SIZE);
     p_dense_matrix<T> B(M_SIZE,M_SIZE);
     p_dense_matrix<T> C(M_SIZE,M_SIZE);
+
+
+    ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, A.get_data());
+    ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, B);
+    ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, C);
+
     ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, A.get_data() );
     ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, B );
     ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, C );
@@ -86,7 +92,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diagonal_gemm, T, test_types )
    blas::gemm(A,B,C);  
    ambient::playout();
 
-   std::cout << C ; // << " " << ambient::rank() << " " <<  std::endl;
+   std::cout << A ; // << " " << ambient::rank() << " " <<  std::endl;
+   std::cout << B ; // << " " << ambient::rank() << " " <<  std::endl;
 
 }
 

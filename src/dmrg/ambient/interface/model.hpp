@@ -9,7 +9,7 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T>* ptr)
         profile->dim.y = 0;
         profile->dim.z = 0;
     }else{
-        profile->init_fp   = matrix_i_kernel;
+        profile->init_fp   = matrix_i_kernel<T>;
         profile->t_size    = sizeof(T);
         profile->dim.x     = ptr->num_cols();
         profile->dim.y     = ptr->num_rows();

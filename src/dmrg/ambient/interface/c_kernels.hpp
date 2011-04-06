@@ -242,7 +242,16 @@ void gemm_rhs_diagonal_c_kernel(pinned const p_dense_matrix<double> & a, const p
     }
 }
 
+void init_double_c_kernel(pinned p_dense_matrix<double> & a)
+{
+    int i = get_group_id(a).x*get_group_t_dim(a).x;
+    double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
 
+    for(int jj = 0 ; jj < get_group_t_dim(a).x*get_group_t_dim(a).y ; jj++)
+    {
+	ad[jj] = drand48();
+    }
+}
 
 void single_integer_c_kernel(int*& input){
     zout << "single integer kernel: output is " << input[2] << "\n";
