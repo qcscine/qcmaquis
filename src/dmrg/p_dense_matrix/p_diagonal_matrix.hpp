@@ -102,7 +102,7 @@ namespace blas {
 	ambient::push(ambient::gemm_rhs_diagonal_l_kernel, ambient::gemm_rhs_diagonal_c_kernel, m1, m2.get_data() ,m3);
         /*
         for (size_t i = 0; i < num_rows(m1); ++i)
-            for (size_t j = 0; j < num_columns(m2); ++j)
+            for (size_t j = 0; j < num_cols(m2); ++j)
                 m3(i,j) = m1(i,j) * m2(j,j);
         */
     }
@@ -116,7 +116,7 @@ namespace blas {
 	ambient::push(ambient::gemm_lhs_diagonal_l_kernel,ambient::gemm_lhs_diagonal_c_kernel, m1.get_data(), m2 ,m3);
         /*
         for (size_t i = 0; i < num_rows(m1); ++i)
-            for (size_t j = 0; j < num_columns(m2); ++j)
+            for (size_t j = 0; j < num_cols(m2); ++j)
                 m3(i,j) = m1(i,i) * m2(i,j);
         */  
     }
