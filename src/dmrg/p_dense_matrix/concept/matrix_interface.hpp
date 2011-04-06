@@ -17,11 +17,11 @@ RET NAME ARGS \
     return m.NAME VARS; \
 } 
 
-// num_rows(), num_columns()
+// num_rows(), num_cols()
 IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
                      typename p_dense_matrix<T>::size_type, num_rows, (p_dense_matrix<T> const& m), () )
 IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
-                     typename p_dense_matrix<T>::size_type, num_columns, (p_dense_matrix<T> const& m), () )
+                     typename p_dense_matrix<T>::size_type, num_cols, (p_dense_matrix<T> const& m), () )
 //
 // Matrix Iterator Interface
 //

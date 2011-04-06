@@ -9,7 +9,7 @@
 #include "utils/zout.hpp"
 #include "utils/function_objects.h"
 
-#include "p_dense_matrix/diagonal_matrix.h"
+#include "p_dense_matrix/p_diagonal_matrix.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -120,9 +120,9 @@ namespace blas {
     };
 
     template<typename T>
-    struct associated_diagonal_matrix< p_dense_matrix<T> >
+    struct associated_p_diagonal_matrix< p_dense_matrix<T> >
     {
-        typedef diagonal_matrix<T> type;
+        typedef p_diagonal_matrix<T> type;
     };
     
 } // namespace blas

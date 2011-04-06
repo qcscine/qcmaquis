@@ -24,9 +24,9 @@ namespace blas
         timer.begin();
         BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
         // TODO: perhaps this could return a proxy object
-        Matrix tmp(num_columns(m), num_rows(m));
+        Matrix tmp(num_cols(m), num_rows(m));
         for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
-            for(typename Matrix::size_type j=0; j < num_columns(m); ++j){
+            for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
                 tmp(j,i) = m(i,j);
             }
         }
@@ -46,7 +46,7 @@ namespace blas
     const typename Matrix::value_type trace(Matrix const& m)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
-        assert(num_rows(m) == num_columns(m));
+        assert(num_rows(m) == num_cols(m));
         typename Matrix::value_type tr(m(0,0));
         for(typename Matrix::size_type i = 1; i<num_rows(m); ++i)
             tr += m(i,i);
@@ -73,7 +73,7 @@ namespace blas
     void svd(const p_dense_matrix<T> &  M,
              p_dense_matrix<T> & U,
              p_dense_matrix<T>& V,
-             typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
+             typename associated_p_diagonal_matrix<p_dense_matrix<T> >::type & S)
     {
         //BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
         printf("Attempting to perform SVD\n");
@@ -86,9 +86,9 @@ namespace blas
 	ambient::push(ambient::null_l_scalapack_svd_kernel, ambient::svd_c_scalapack_kernel, M, U, V, *S_);
 	// TO DO remove memory leak by new diagonal_matrix
 /*      
-	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_columns(M));
+	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
         resize(U, num_rows(M), k);
-        resize(V, k, num_columns(M));
+        resize(V, k, num_cols(M));
         std::vector<typename detail::sv_type<T>::type> S_(k);
         boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
         S = typename associated_diagonal_matrix<p_dense_matrix<T> >::type(S_);
