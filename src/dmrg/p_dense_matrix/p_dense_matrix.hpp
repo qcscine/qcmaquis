@@ -1,4 +1,10 @@
 #include "p_dense_matrix/p_dense_matrix.h"
+#define STRONG_BARRIER MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout); \
+                       MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout); \
+                       MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout); \
+                       MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout); \
+                       MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);MPI_Barrier(MPI_COMM_WORLD);fflush(stdout); 
+
 
 namespace blas {
 
@@ -166,14 +172,20 @@ namespace blas {
     template <typename T>
     std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m)
     {
+        ambient::playout();
+        STRONG_BARRIER
         for(typename p_dense_matrix<T>::size_type i=0; i< m.num_rows(); ++i)
         {
+            STRONG_BARRIER
             for(typename p_dense_matrix<T>::size_type j=0; j < m.num_cols(); ++j){
+                STRONG_BARRIER
                 try{
-                    o<<m(i,j)<<" ";
-                    if(j == m.num_cols()-1) o<<std::endl;
-                }catch(...){ }
+                    m(i,j); printf("%.2f ", m(i,j)); // faster than cout
+                }catch(...){ usleep(10*1000); }      // 10 ms sleep
+                STRONG_BARRIER
             }
+            if(ambient::is_master()) printf("\n");
+            STRONG_BARRIER
         }
         return o;
     }
