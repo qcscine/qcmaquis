@@ -201,22 +201,37 @@ void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>&
 void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}
 
 void scale_c_kernel(const p_dense_matrix<double>& a, const double& alfa, pinned p_dense_matrix<double>& out){}
-/**
+
 void gemm_lhs_diagonal_c_kernel(const p_dense_matrix<double> & a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
+    std::cout << " computation gemm diag left " << std::endl;  
+    int j = get_group_id(b).x*get_group_t_dim(b).x;
 
-}*/
+    int SIZE = get_group_t_dim(b).y;
+    int ONE = 1;
+    double* bd = current(b)(get_group_id(b).x, get_group_id(b).y);
+    double* cd = current(c)(get_group_id(b).x, get_group_id(b).y);
 
-void gemm_rhs_diagonal_c_kernel(pinned const p_dense_matrix<double> & a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
+    memset(cd, 0, get_group_t_dim(c).x*get_group_t_dim(c).y*sizeof(double));
+
+    for(int jj = 0 ; jj < get_group_t_dim(b).y ; jj++)
+    {
+	 double * alpha = current(a_diag)((j+jj)/get_group_t_dim(a_diag).y,0);
+
+	 daxpy(&SIZE, &alpha[(j+jj)%get_group_t_dim(a_diag).y], &bd[jj+j*get_group_t_dim(b).y], &ONE, &cd[jj+j*get_group_t_dim(c).y], &SIZE);
+//         cd[jj+j*get_group_t_dim(c).y ] = 900 + ambient::rank() ;//alpha[(j+jj)%get_group_t_dim(a_diag).y];
+    }
+}
+
+void gemm_rhs_diagonal_c_kernel(pinned const p_dense_matrix<double> & a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>  & c)
 {
-	std::cout << " computation gemm diag " << std::endl;  
-   int j = get_group_id(a).x*get_group_t_dim(a).x;
+    std::cout << " computation gemm diag right " << std::endl;  
+    int j = get_group_id(a).x*get_group_t_dim(a).x;
 
     int size = get_group_t_dim(a).y;
     int ONE = 1;
     double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
     double* cd = current(c)(get_group_id(a).y, get_group_id(a).x);
-double  nine = 10;
 
     memset(cd, 0, get_group_t_dim(c).x*get_group_t_dim(c).y*sizeof(double));
 
@@ -224,9 +239,7 @@ double  nine = 10;
     {
 	 double * alpha = current(b_diag)((j+jj)/get_group_t_dim(b_diag).y,0);
 	 daxpy(&size, &alpha[(j+jj)%get_group_t_dim(b_diag).y], &ad[jj*get_group_t_dim(a).y], &ONE, &cd[jj*get_group_t_dim(c).y], &ONE);
-	 //daxpy(&size,&nine,&ad[jj*get_group_t_dim(a).y], &ONE,&cd[jj*get_group_t_dim(c).y],&ONE);
-	 //cd[jj*get_group_t_dim(c).y]= jj%get_group_t_dim(a).y ;
-    } 
+    }
 }
 
 
