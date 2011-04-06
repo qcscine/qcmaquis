@@ -44,7 +44,7 @@ we need it to avoid dependency inside SVD kernels and other
         friend std::ostream & operator <<(std::ostream& os, p_diagonal_matrix<T1> const &m);
         const ambient::p_dense_matrix<T> & get_data() const; 
         ambient::p_dense_matrix<T> & get_data(); 
-    //private:
+    private:
         ambient::p_dense_matrix<T> data_;
     };
 }
