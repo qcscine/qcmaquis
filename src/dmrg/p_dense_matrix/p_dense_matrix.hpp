@@ -23,6 +23,16 @@ namespace blas {
         ambient::push(ambient::copy_l_kernel, ambient::copy_c_kernel, *this, m);
     }
 
+
+    template <typename T>
+    p_dense_matrix<T>::p_dense_matrix(size_type rows, size_type cols, T* const & Array)
+    : rows(rows), cols(cols), lda(rows), sda(cols)
+    {
+        profile = new ambient::void_pt(this);
+        ambient::push(ambient::copy_svd_l_kernel, ambient::copy_svd_c_kernel , *this,  Array);
+    }
+
+
     template <typename T>
     void p_dense_matrix<T>::swap(p_dense_matrix & r)
     {
@@ -167,9 +177,14 @@ namespace blas {
     p_dense_matrix<T>::p_dense_matrix(ambient::void_pt* p): profile(p){ }
     template <typename T>
     p_dense_matrix<T>& p_dense_matrix<T>::operator = (p_dense_matrix<T> const& rhs){
+        this->rows = rhs.rows;
+        this->cols = rhs.cols;
+        this->lda = rhs.lda;
+        this->sda = rhs.sda;
         if(rhs.profile->is_proxy()) ambient::pin(rhs, *this); // no copying - pinning profile
         else ambient::push(ambient::copy_l_kernel, ambient::copy_c_kernel, *this, rhs);
         return *this;
+
     }
 
     template <typename T>
@@ -215,7 +230,7 @@ namespace blas {
             STRONG_BARRIER
             for(typename p_dense_matrix<T>::size_type j=0; j < m.num_cols(); ++j){
                 STRONG_BARRIER
-                if(ambient::is_master()) printf("%.2f	", m(i,j));
+                if(ambient::is_master()) printf("%.8f	", m(i,j));
                 else m(i,j); // just touch
                 STRONG_BARRIER
             }

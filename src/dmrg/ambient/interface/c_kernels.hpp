@@ -302,6 +302,14 @@ void init_double_c_kernel(pinned p_dense_matrix<double> & a)
     }
 }
 
+void copy_svd_c_kernel(pinned p_dense_matrix<double> & a, double* & S )
+{
+    int j = get_group_id(a).y*get_group_t_dim(a).y;
+    double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
+    int size = (get_group_t_dim(a)*sizeof(double));
+    memcpy(ad,S+j,size);
+}
+
 void one_null_c_kernel(const p_dense_matrix<double>& a){ }
 
 void two_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b){ }
