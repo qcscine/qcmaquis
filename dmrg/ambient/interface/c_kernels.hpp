@@ -2,22 +2,21 @@
 #include "mkl.h"
 
 extern "C" {
-    double  sqrt( double );
+    double sqrt(double);
 }
-
-/*
- --- --- ---       --- --- ---       --- --- ---
-| 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
- --- --- ---       --- --- ---       --- --- ---
-| 0 | 1 | 2 |  x  | 0 | 1 | 2 |  =  | 0 | 1 | 2 |
- --- --- ---       --- --- ---       --- --- ---
-| 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
- --- --- ---       --- --- ---       --- --- ---
-partial reduce?
-*/
 
 void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
+//  --- --- ---       --- --- ---       --- --- ---
+// | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
+//  --- --- ---       --- --- ---       --- --- ---
+// | 0 | 1 | 2 |  x  | 0 | 1 | 2 |  =  | 0 | 1 | 2 |
+//  --- --- ---       --- --- ---       --- --- ---
+// | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
+//  --- --- ---       --- --- ---       --- --- ---
+//
+// partial reduce?..
+/////////////////////////////////////////////////////////////////////////
     int m   = get_group_t_dim(a).y;
     int n   = get_group_t_dim(b).x;
     int k   = get_group_t_dim(b).y;
@@ -125,31 +124,31 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     size_t group_j_mark = j_mark / sda;
     size_t k_wo_blocks = std::min((2*sda-remains), k);
 
-    if(j < group_j_mark) return;                                                                       // easy-out
-    ad   = current(a)(i,j);
-    if(j+shift < get_grid_dim(a).x) ad_r = current(a)(i,j+shift);
-
-    if(remains < sda && (remains_l + k) > sda){                                                        // get two following blocks (j+shift-1;j+shift)
-        if((j+shift-1) < get_grid_dim(a).x) ad_r0 = current(a)(i,j+shift-1);
-        ambient::memoryfence();
-        if(ad_r0 == NULL) return;                                                                      // out of matrix request
-        if(j == group_j_mark){
-            memcpy(&ad[lda*remains_l], &ad_r0[lda*(sda-remains_r)], sizeof(T)*lda*remains_r);          // memcpy from replacement block #1
-        }else if(j >= group_j_mark){
-            memcpy(ad, &ad_r0[lda*(sda-remains)], sizeof(T)*lda*remains);                              // memcpy from replacement block #1
-        }
-        memcpy(&ad[lda*remains], ad_r, sizeof(T)*lda*(sda-remains));                                   // memcpy from replacement block #2
-    }else{                                                                                             // get only one following block
+    if(j < group_j_mark) return;                                                                                        // easy-out
+    ad   = current(a)(i,j);                                                                                        
+    if(j+shift < get_grid_dim(a).x) ad_r = current(a)(i,j+shift);                                                  
+                                                                                                                   
+    if(remains < sda && (remains_l + k) > sda){                                                                         // get two following blocks (j+shift-1;j+shift)
+        if((j+shift-1) < get_grid_dim(a).x) ad_r0 = current(a)(i,j+shift-1);                                       
+        ambient::memoryfence();                                                                                    
+        if(ad_r0 == NULL) return;                                                                                       // out of matrix request
+        if(j == group_j_mark){                                                                                     
+            memcpy(&ad[lda*remains_l], &ad_r0[lda*(sda-remains_r)], sizeof(T)*lda*remains_r);                           // memcpy from replacement block #1
+        }else if(j >= group_j_mark){                                                                               
+            memcpy(ad, &ad_r0[lda*(sda-remains)], sizeof(T)*lda*remains);                                               // memcpy from replacement block #1
+        }                                                                                                          
+        memcpy(&ad[lda*remains], ad_r, sizeof(T)*lda*(sda-remains));                                                    // memcpy from replacement block #2
+    }else{                                                                                                              // get only one following block
         ambient::memoryfence();
         if(j == group_j_mark){
             if(remains_l + k < sda){
-                memmove(&ad[lda*remains_l], &ad[lda*(remains_l+k)], sizeof(T)*lda*(sda-remains_l-k));   // first memmove inside block
+                memmove(&ad[lda*remains_l], &ad[lda*(remains_l+k)], sizeof(T)*lda*(sda-remains_l-k));                   // first memmove inside block
                 if(ad_r != NULL) memcpy(&ad[lda*(sda-k)], ad_r, sizeof(T)*lda*k);                                       // memcpy from replacement block
             }else{
                 if(ad_r != NULL) memcpy(&ad[lda*remains_l], &ad_r[lda*(sda-remains_r)], sizeof(T)*lda*(sda-remains_l)); // memcpy from replacement block
             }
         }else if(i >= group_j_mark){
-            memmove(ad, &ad[lda*k_wo_blocks], sizeof(T)*lda*(sda-k_wo_blocks) );                        // first memmove inside block
+            memmove(ad, &ad[lda*k_wo_blocks], sizeof(T)*lda*(sda-k_wo_blocks) );                                        // first memmove inside block
             if(ad_r != NULL) memcpy(&ad[lda*(sda-k_wo_blocks)], ad_r, sizeof(T)*lda*k_wo_blocks);                       //  memcpy from replacement block
         }
     }
@@ -175,10 +174,11 @@ void resize_c_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
     }
 }
 
-void sqrt_diagonal_c_kernel(pinned p_dense_matrix<double>& a){
+void sqrt_diagonal_c_kernel(pinned p_dense_matrix<double>& a)
+{
     double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
     for(int i=0; i < get_group_t_dim(a).y; i++)
-        ad[i] = sqrt(ad[i]);
+    ad[i] = sqrt(ad[i]);
 }
 
 void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right, size_t& left_offset, size_t& right_offset, size_t& sdim, size_t& ldim, size_t& rdim)
@@ -225,20 +225,31 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
     }
 }
 
-void one_null_c_kernel(const p_dense_matrix<double>& a){ }
-
-void two_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b){ }
-
-void three_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c){ }
-
-void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){
+void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
+{
     double* ad = current(a)(get_group_id(c).y, get_group_id(c).x);
     double* bd = current(b)(get_group_id(c).y, get_group_id(c).x);
     double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
+    for(int i=0; i < get_group_t_dim(c).x*get_group_t_dim(c).y; i++)
+    cd[i] = ad[i] + bd[i];
 }
-void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c){}
 
-void scale_c_kernel(const p_dense_matrix<double>& a, const double& alfa, pinned p_dense_matrix<double>& out){}
+void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
+{
+    double* ad = current(a)(get_group_id(c).y, get_group_id(c).x);
+    double* bd = current(b)(get_group_id(c).y, get_group_id(c).x);
+    double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
+    for(int i=0; i < get_group_t_dim(c).x*get_group_t_dim(c).y; i++)
+    cd[i] = ad[i] - bd[i];
+}
+
+void scale_c_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
+{
+    double* md   = current(m)(get_group_id(out).y, get_group_id(out).x);
+    double* outd = current(out)(get_group_id(out).y, get_group_id(out).x);
+    for(int i=0; i < get_group_t_dim(out).x*get_group_t_dim(out).y; i++)
+    outd[i] = md[i]*t;
+}
 
 void gemm_lhs_diagonal_c_kernel(const p_dense_matrix<double> & a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
@@ -291,6 +302,9 @@ void init_double_c_kernel(pinned p_dense_matrix<double> & a)
     }
 }
 
-void single_integer_c_kernel(int*& input){
-    zout << "single integer kernel: output is " << input[2] << "\n";
-}
+void one_null_c_kernel(const p_dense_matrix<double>& a){ }
+
+void two_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b){ }
+
+void three_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c){ }
+

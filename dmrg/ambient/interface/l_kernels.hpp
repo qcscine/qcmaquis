@@ -157,7 +157,16 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
     block_2d_cycle_assign(c);
 }
 
-void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out){}
+void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
+{
+    scope_select(3 +" from ambient as work where master is "+ 1 +" and breakdown contains "+ get_id(m));
+    scope_retain("2 from ambient as work_storage");
+    if(!scope.involved()) return; // out of scope quick exit
+    zout << "2d-block-cyclic decomposition kernel in membound ("<< ambient::rank() <<"):\n"; info(m); info(out);
+
+    block_2d_cycle_assign(m);
+    block_2d_cycle_assign(out);
+}
 /////////////////////
 // testing kernels // 
 
@@ -209,8 +218,3 @@ void init_double_l_kernel(pinned p_dense_matrix<double> & a)
     block_2d_cycle_assign(a);
 }
 
-void single_integer_l_kernel(int*& input){
-    scope_select("* from ambient as single_integer_work where master is 0");
-    if(!scope.involved()) return;
-    zout << "single integer kernel: input is " << input[1] << "\n";
-}
