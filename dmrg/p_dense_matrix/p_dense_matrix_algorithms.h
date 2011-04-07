@@ -73,27 +73,25 @@ namespace blas
     void svd(const p_dense_matrix<T> &  M,
              p_dense_matrix<T> & U,
              p_dense_matrix<T>& V,
-             typename associated_p_diagonal_matrix<p_dense_matrix<T> >::type & S)
+             typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
     {
         //BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
         printf("Attempting to perform SVD\n");
 	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
-        //resize(U, num_rows(M), k);
-        //resize(V, k, num_cols(M));
+        U.resize( num_rows(M), k);
+        V.resize( k, num_cols(M));
        // std::vector<typename detail::sv_type<T>::type> S_(k);
-	//const T * S_= new T[k];
-	T* const *  S_ = new T*((T*)malloc(sizeof(T)*k));
-	ambient::push(ambient::null_l_scalapack_svd_kernel, ambient::svd_c_scalapack_kernel, M, U, V, *S_);
-	// TO DO remove memory leak by new diagonal_matrix
-/*      
-	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
-        resize(U, num_rows(M), k);
-        resize(V, k, num_cols(M));
-        std::vector<typename detail::sv_type<T>::type> S_(k);
-        boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
-        S = typename associated_diagonal_matrix<p_dense_matrix<T> >::type(S_);
+	T* const *  S_ = new T*((T*)malloc(sizeof(T)*k)); // no choice for this due to pdgesvd specification 
 
-*/
+	ambient::push(ambient::null_l_scalapack_svd_kernel, ambient::svd_c_scalapack_kernel, M, U, V, *S_);
+	ambient::playout();
+
+//	for(int i = 0 ; i < k ; i++)
+//		std::cout << *(*S_ + i) << std::endl;
+
+	p_diagonal_matrix<T> R(k,*S_) ;
+        S.get_data() = R.get_data(); //typename associated_p_diagonal_matrix<p_dense_matrix<T> >::type (R);
+	ambient::playout();
     }
     
     template<typename T>
