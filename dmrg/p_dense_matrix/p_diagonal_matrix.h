@@ -5,7 +5,7 @@
 namespace blas {
 
     template<class FullMatrixClass>
-    struct associated_p_diagonal_matrix { };
+    struct associated_diagonal_matrix { };
     
 /**
 idea the container is a p_dense_matrix of one row and n columns,

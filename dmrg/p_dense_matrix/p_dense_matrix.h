@@ -21,6 +21,7 @@
 
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
+//#include <alps/ngs/hdf5/deprecated.hpp>
 #endif
 
 namespace blas {
@@ -120,7 +121,7 @@ namespace blas {
     };
 
     template<typename T>
-    struct associated_p_diagonal_matrix< p_dense_matrix<T> >
+    struct associated_diagonal_matrix< p_dense_matrix<T> >
     {
         typedef p_diagonal_matrix<T> type;
     };
