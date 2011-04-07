@@ -54,8 +54,9 @@ namespace blas {
 
         p_dense_matrix(size_type rows, size_type cols, T init_value);
         p_dense_matrix(p_dense_matrix const& m);
-
-        void swap(p_dense_matrix & r);
+        p_dense_matrix(size_type rows, size_type cols, T* const & Array);
+  
+      void swap(p_dense_matrix & r);
         friend void swap(p_dense_matrix & x, p_dense_matrix & y){ x.swap(y); }
 
         inline bool empty() const;
@@ -74,7 +75,10 @@ namespace blas {
 
         inline value_type& get(size_type i, size_type j) const;
         p_dense_matrix& operator = (const p_dense_matrix& rhs);
-        inline value_type& operator()(size_type i, size_type j);
+    
+
+
+    inline value_type& operator()(size_type i, size_type j);
         inline const value_type& operator()(size_type i, size_type j) const;
         p_dense_matrix<T>& operator += (const p_dense_matrix& rhs); 
         p_dense_matrix<T>& operator -= (const p_dense_matrix& rhs);

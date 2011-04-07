@@ -171,6 +171,7 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 // testing kernels // 
 
 //universal logistic kernel, distribution should be donne before
+
 void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & U, p_dense_matrix<double> & V,  double* & S )
 {
     scope_select("* from ambient as work where master is 0");
@@ -182,7 +183,25 @@ void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_mat
     block_2d_cycle_assign(U);
     block_2d_cycle_assign(V);
 
+}
+
+/*
+void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & U, p_dense_matrix<double> & V,  p_dense_matrix<double> & S )
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+   
+ if(!scope.involved()) return; // out of scope quick exit
+
+    block_2d_cycle_assign(M);
+    block_2d_cycle_assign(U);
+    block_2d_cycle_assign(V);
+
 }// do nothing just need to test
+*/
+
+
+
 
 // pdiag*pdense
 void gemm_lhs_diagonal_l_kernel(const p_dense_matrix<double> & a_diag, pinned const p_dense_matrix<double>& b,  p_dense_matrix<double>&  c)
@@ -208,6 +227,15 @@ void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p
     block_2d_cycle_assign(c);
 }
 
+
+void copy_svd_l_kernel(pinned p_dense_matrix<double> & a, double* & Array)
+{
+    scope_select("* from ambient as work where master is 0");
+    scope_retain("* from ambient as work_storage");
+ if(!scope.involved()) return; // out of scope quick exit
+
+    block_2d_cycle_assign(a);
+}
 
 void init_double_l_kernel(pinned p_dense_matrix<double> & a)
 {

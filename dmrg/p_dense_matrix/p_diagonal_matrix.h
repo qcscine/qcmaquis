@@ -24,11 +24,12 @@ we need it to avoid dependency inside SVD kernels and other
         typedef typename std::vector<T>::iterator element_iterator;
         typedef typename std::vector<T>::const_iterator const_element_iterator;
 
-	//to do, usefull ? check with SVD ....
+	//to do, usefull ? check with SVD, yes due to the structure of pdgsvd 
        // template<class Vector>
       //  p_diagonal_matrix(Vector const & init)
       //  : data_(init.begin(), init.end()) { }
         p_diagonal_matrix(size_t rows = 0,  T const & init = T());
+        p_diagonal_matrix(size_t rows,  T* const &  Array);
         size_t num_rows() const;
         size_t num_cols() const;
         T const & operator[](size_t i) const;
