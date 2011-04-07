@@ -36,13 +36,7 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     for(int z = 0; z < get_grid_dim(a).y; z++){
         double* ad = current(a)(z,j);
         double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
-        //printf("Performing DGEMM for %d,%d and %d,%d\n", z,j,j,i);
         dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-        //for(int ii=0; ii < m; ii++){
-        //  for(int jj=0; jj < n; jj++)
-        //  printf("%.2f	", cd[jj*ldc + ii]);
-        //  printf("\n");
-        //}
     }
 }
 
@@ -185,6 +179,50 @@ void sqrt_diagonal_c_kernel(pinned p_dense_matrix<double>& a){
     double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
     for(int i=0; i < get_group_t_dim(a).y; i++)
         ad[i] = sqrt(ad[i]);
+}
+
+void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right, size_t& left_offset, size_t& right_offset, size_t& sdim, size_t& ldim, size_t& rdim)
+{
+// The idea of matrix modifications:
+//    for(size_t ss = 0; ss < sdim; ++ss)
+//        for(size_t rr = 0; rr < rdim; ++rr)
+//            memcpy(right(0, ss*rdim + right_offset + rr), left(ss*ldim + left_offset, rr), ldim*sizeof(double));
+//
+// After rethinking: memcpy(right(0,j), left(ss*ldim + left_offset, rr), ldim*sizeof(double));
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    double* rd = current(right)(get_group_id(right).y, get_group_id(right).x);
+    size_t i = get_group_id(right).y * get_group_t_dim(right).y;
+    size_t j = get_group_id(right).x * get_group_t_dim(right).x;
+
+    if(i >= ldim) return;                     // easy-out (need ldim rows only)
+    if(j >= (right_offset+sdim*rdim)) return; // need sdim*rdim-1 cols from right_offset
+    if(j < right_offset) return;              // don't need cols less than right_offset
+
+    size_t j_start = std::max(j, right_offset);
+    size_t j_stop  = std::min((j+get_group_t_dim(right).x), (right_offset+sdim*rdim));
+
+    for(size_t ji = j_start; ji < j_stop; ji++){
+        int li   = ((int)ji/rdim)*ldim + left_offset + i; int lj   = ji  % rdim;                   // global left  indices
+        int lii  = li / get_group_t_dim(left).y;          int ljj  = lj / get_group_t_dim(left).x; // groups left  indices
+        int liii = li % get_group_t_dim(left).y;          int ljjj = lj % get_group_t_dim(left).x; // groups local indices
+
+        int lj_pos   = ljjj*get_group_t_dim(left).y;
+        int to_write = std::min(ldim-i, (size_t)get_group_t_dim(right).y);
+        int n_writes = __a_ceil(to_write / get_group_t_dim(left).y);
+        int w_offset = std::min(to_write,(int)(get_group_t_dim(left).y-liii));
+        to_write    -= w_offset;
+
+        double* ld = current(left)(lii, ljj);
+        memcpy(&rd[ji*get_group_t_dim(right).y], &ld[liii + lj_pos], w_offset*sizeof(double));
+        for(int k = 1; k < n_writes; k++){
+            double* ld = current(left)(lii + k, ljj);
+            memcpy(&rd[ji*get_group_t_dim(right).y + w_offset], &ld[lj_pos], 
+                   std::min(to_write,(int)get_group_t_dim(left).y)*sizeof(double));
+            to_write -= get_group_t_dim(left).y;
+            w_offset += get_group_t_dim(left).y;
+        }
+    }
 }
 
 void one_null_c_kernel(const p_dense_matrix<double>& a){ }
