@@ -53,8 +53,8 @@ namespace blas {
             const_element_iterator;                       // Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
         p_dense_matrix(size_type rows, size_type cols, T init_value);
+        p_dense_matrix(size_type rows, size_type cols, T* const & Array); 
         p_dense_matrix(p_dense_matrix const& m);
-        p_dense_matrix(size_type rows, size_type cols, T* const & Array);
   
       void swap(p_dense_matrix & r);
         friend void swap(p_dense_matrix & x, p_dense_matrix & y){ x.swap(y); }

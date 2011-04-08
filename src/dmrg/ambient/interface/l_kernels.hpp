@@ -60,7 +60,7 @@ void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
 
 void copy_l_kernel(p_dense_matrix<double>& a_copy, pinned const p_dense_matrix<double>& a)
 {
-    scope_select("2 from ambient as copy_ground where master is 0");
+    scope_select("2 from ambient as copy where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in copy ("<< ambient::rank() <<"):\n"; info(a); info(a_copy);
 
@@ -72,7 +72,7 @@ void resize_l_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
 {
     breakdown(a).set_dim(ambient::dim3(cols,rows));
 
-    scope_select("2 from ambient as copy_ground where master is 0");
+    scope_select("2 from ambient as resize where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
 
     zout << "2d-block-cyclic decomposition kernel in resize matrix ("<< ambient::rank() <<"):\n"; info(a);
@@ -81,7 +81,7 @@ void resize_l_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
 
 void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
 {
-    scope_select("2 from ambient as copyd where master is 0");
+    scope_select("2 from ambient as remove_rows where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in remove rows ("<< ambient::rank() <<"):\n"; info(a);
     block_2d_cycle_assign(a);
@@ -89,7 +89,7 @@ void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
 
 void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
 {
-    scope_select("2 from ambient as copd where master is 0");
+    scope_select("2 from ambient as remove_cols where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in remove cols ("<< ambient::rank() <<"):\n"; info(a);
     block_2d_cycle_assign(a);
@@ -97,34 +97,34 @@ void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
 
 void sqrt_diagonal_l_kernel(pinned p_dense_matrix<double>& a)
 {
-    scope_select("2 from ambient as copy_ground where master is 0");
+    scope_select("2 from ambient as sqrt_diagonal where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
-    zout << "2d-block-cyclic decomposition kernel  ("<< ambient::rank() <<"):\n"; info(a);
+    zout << "2d-block-cyclic decomposition kernel in sqrt diagonal  ("<< ambient::rank() <<"):\n"; info(a);
     block_2d_cycle_assign(a);
 }
 
 
 void one_l_scalapack_kernel(const p_dense_matrix<double>& a)
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as one_scalapack where master is 0");
     scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
-    zout << "2d-block-cyclic decomposition kernel one scalapack kernel ("<< ambient::rank() <<"):\n"; info(a);
+    zout << "2d-block-cyclic decomposition kernel in one scalapack kernel ("<< ambient::rank() <<"):\n"; info(a);
     block_2d_cycle_assign(a);
 }
 
 void two_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as two_scalapack where master is 0");
     scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
 }
 
-void tree_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  const p_dense_matrix<double>& c)
+void three_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  const p_dense_matrix<double>& c)
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as three_scalapack where master is 0");
     scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
     block_2d_cycle_assign(a);
@@ -135,10 +135,10 @@ void tree_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matr
 
 void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as gemm_scalapack where master is 0");
     scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
-    zout << "2d-block-cyclic decomposition kernel in membound ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    zout << "2d-block-cyclic decomposition kernel in gemm_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
@@ -147,7 +147,7 @@ void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matr
 
 void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
 {
-    scope_select(3 +" from ambient as work where master is "+ 1 +" and breakdown contains "+ get_id(c));
+    scope_select(3 +" from ambient as mem_bound where master is "+ 1 +" and breakdown contains "+ get_id(c));
     scope_retain("2 from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in membound ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
@@ -159,10 +159,10 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
 
 void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
 {
-    scope_select(3 +" from ambient as work where master is "+ 1 +" and breakdown contains "+ get_id(m));
+    scope_select(3 +" from ambient as scale where master is "+ 1 +" and breakdown contains "+ get_id(m));
     scope_retain("2 from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
-    zout << "2d-block-cyclic decomposition kernel in membound ("<< ambient::rank() <<"):\n"; info(m); info(out);
+    zout << "2d-block-cyclic decomposition kernel in scale ("<< ambient::rank() <<"):\n"; info(m); info(out);
 
     block_2d_cycle_assign(m);
     block_2d_cycle_assign(out);
@@ -174,10 +174,9 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 
 void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & U, p_dense_matrix<double> & V,  double* & S )
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as null_l_scalapack_svd where master is 0");
     scope_retain("* from ambient as work_storage");
-   
- if(!scope.involved()) return; // out of scope quick exit
+    if(!scope.involved()) return; // out of scope quick exit
 
     block_2d_cycle_assign(M);
     block_2d_cycle_assign(U);
@@ -206,7 +205,7 @@ void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_mat
 // pdiag*pdense
 void gemm_lhs_diagonal_l_kernel(const p_dense_matrix<double> & a_diag, pinned const p_dense_matrix<double>& b,  p_dense_matrix<double>&  c)
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as gemm_lhs_diagonal where master is 0");
     scope_retain("* from ambient as work_storage");
  if(!scope.involved()) return; // out of scope quick exit
 
@@ -218,7 +217,7 @@ void gemm_lhs_diagonal_l_kernel(const p_dense_matrix<double> & a_diag, pinned co
 // pdense*pdiag
 void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p_dense_matrix<double>& b_diag,  p_dense_matrix<double>&  c)
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as gemm_rhs_diagonal where master is 0");
     scope_retain("* from ambient as work_storage");
  if(!scope.involved()) return; // out of scope quick exit
 
@@ -227,19 +226,18 @@ void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p
     block_2d_cycle_assign(c);
 }
 
-
-void copy_svd_l_kernel(pinned p_dense_matrix<double> & a, double* & Array)
-{
-    scope_select("* from ambient as work where master is 0");
-    scope_retain("* from ambient as work_storage");
- if(!scope.involved()) return; // out of scope quick exit
-
-    block_2d_cycle_assign(a);
-}
+void copy_svd_l_kernel(pinned p_dense_matrix<double> & a, double* & Array) 
+{ 
+    scope_select("* from ambient as copy_svd where master is 0"); 
+    scope_retain("* from ambient as work_storage"); 
+    if(!scope.involved()) return; // out of scope quick exit 
+ 
+    block_2d_cycle_assign(a); 
+} 
 
 void init_double_l_kernel(pinned p_dense_matrix<double> & a)
 {
-    scope_select("* from ambient as work where master is 0");
+    scope_select("* from ambient as init_double where master is 0");
     scope_retain("* from ambient as work_storage");
  if(!scope.involved()) return; // out of scope quick exit
 

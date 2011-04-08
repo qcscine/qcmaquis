@@ -8,9 +8,8 @@ namespace blas {
     {
     }
 
-
-    template<typename T>
-    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, T* const & Array):data_(rows,1,Array)  
+    template<typename T> 
+    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, T* const & Array):data_(rows,1,Array)
     {
     }
 
