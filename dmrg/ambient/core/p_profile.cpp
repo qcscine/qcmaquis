@@ -163,7 +163,7 @@ namespace ambient {
     void p_profile::solidify(){
         int i,j;
         size_t offset = 0;
-        this->data = malloc(this->layout->segment_count                  *
+        this->data = malloc(std::max(this->layout->segment_count, this->layout->request_count) *
                             (this->get_group_dim()*this->get_item_dim()) *
                             this->t_size);
 
@@ -281,7 +281,7 @@ namespace ambient {
 
     void p_profile::finalize(){
         if(this->associated_proxy != NULL){
-            for(int i=0; i < this->layout->segment_count; i++){
+            for(int i=0; i < this->layout->segment_count; i++){ // watch out of constness
                 this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // was scope-manager
                                                                              NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
                                                                              *this->group_id, this->id, "PROXY",

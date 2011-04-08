@@ -135,5 +135,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_test, T, test_types )
  
     blas::gemm(A,U,V); 
  
-    ambient::playout(); 
+    ambient::playout();
 }
