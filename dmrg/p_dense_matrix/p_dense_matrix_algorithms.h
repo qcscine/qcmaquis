@@ -78,20 +78,16 @@ namespace blas
         //BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
         printf("Attempting to perform SVD\n");
 	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
-        U.resize( num_rows(M), k);
-        V.resize( k, num_cols(M));
+        U.resize(num_rows(M), k);
+        V.resize(k, num_cols(M));
        // std::vector<typename detail::sv_type<T>::type> S_(k);
-	T* const *  S_ = new T*((T*)malloc(sizeof(T)*k)); // no choice for this due to pdgesvd specification 
-
+	//const T * S_= new T[k];
+	T* const *  S_ = new T*((T*)malloc(sizeof(T)*k));
 	ambient::push(ambient::null_l_scalapack_svd_kernel, ambient::svd_c_scalapack_kernel, M, U, V, *S_);
-	ambient::playout();
-
-//	for(int i = 0 ; i < k ; i++)
-//		std::cout << *(*S_ + i) << std::endl;
-
-	p_diagonal_matrix<T> R(k,*S_) ;
-        S.get_data() = R.get_data(); //typename associated_p_diagonal_matrix<p_dense_matrix<T> >::type (R);
-	ambient::playout();
+        ambient::playout();
+        p_diagonal_matrix<T> R(k,*S_) ; 
+        S.get_data() = R.get_data(); //typename associated_p_diagonal_matrix<p_dense_matrix<T> >::type (R); 
+        ambient::playout();
     }
     
     template<typename T>
