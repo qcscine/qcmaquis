@@ -88,7 +88,13 @@ void plus_reduce< p_dense_matrix<double> >(workgroup* grp, void* update){
     int m = grp->get_group_t_dim().y;
     int ld = m;
 
-    for(int i=0; i<m*n; i++) a[i] += u[i];
+    for(int i=0; i<m*n; i++){ 
+//std::cout << a[i]  << " " << u[i] << std::endl ; 
+a[i] += u[i];
+
+}
+
+
     printf("Updating block (%d,%d)!\n", grp->i, grp->j);
 }
 

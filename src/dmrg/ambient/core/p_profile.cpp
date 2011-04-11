@@ -26,7 +26,7 @@ namespace ambient {
     }
 
     p_profile::p_profile()
-    : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL),
+    : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL), finalized(false),
       profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->group_dim = engine.get_group_dim();
@@ -281,6 +281,7 @@ namespace ambient {
 
     void p_profile::finalize(){
         if(this->associated_proxy != NULL){
+            profile->associated_proxy->finalized = true;
             for(int i=0; i < this->layout->segment_count; i++){ // watch out of constness
                 this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // was scope-manager
                                                                              NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
@@ -301,7 +302,10 @@ namespace ambient {
 
     workgroup& p_profile::operator()(int i, int j, int k){
         if(this->is_proxy()){ // on-touch init for proxy
+           if(!this->group(i,j,k)->available()){
             this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
+            memset(this->group(i,j,k)->data,0,this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size);          
+}
         }else if(!this->group(i,j,k)->available()){
             groups::packet_manager* manager = world()->get_manager(); //this->consted ? world()->get_manager() : this->get_scope()->get_manager();
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
