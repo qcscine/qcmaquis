@@ -22,6 +22,7 @@ namespace ambient {
         unsigned int        id;
         size_t              timestamp;
         bool                consted;
+        bool                finalized;
         std::pair<int,int>  master_relay;
         p_profile*          profile; // pointer to this profile (this on init - can be changed in proxy objects)
         void*               data;  // pointer to the actual data

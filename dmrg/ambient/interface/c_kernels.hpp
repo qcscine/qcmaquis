@@ -24,7 +24,7 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     int ldb = k;
     int ldc = m;
     double alpha = 1.0; 
-    double beta  = 0.0;
+    double beta  = 1.0;
 // a(i,j) => b(j,i) x a(z,j) where z : [0,m)
 // current group of matrix a:
     int i = get_group_id(a).y;
@@ -35,6 +35,9 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     for(int z = 0; z < get_grid_dim(a).y; z++){
         double* ad = current(a)(z,j);
         double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
+
+	printf("updating %d %d with %d %d x %d %d \n ", z, i, z,j,j,i );
+
         dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     }
 }
@@ -291,6 +294,14 @@ void gemm_rhs_diagonal_c_kernel(pinned const p_dense_matrix<double> & a, const p
     }
 }
 
+
+void init_double_c_kernel_0(pinned p_dense_matrix<double> & a)
+{
+
+
+}
+
+
 void init_double_c_kernel(pinned p_dense_matrix<double> & a)
 {
     int i = get_group_id(a).x*get_group_t_dim(a).x;
@@ -298,7 +309,7 @@ void init_double_c_kernel(pinned p_dense_matrix<double> & a)
 
     for(int jj = 0 ; jj < get_group_t_dim(a).x*get_group_t_dim(a).y ; jj++)
     {
-	ad[jj] = drand48();
+	ad[jj] =   drand48();
     }
 }
 
