@@ -216,7 +216,6 @@ namespace app {
             for (int p=0; p<lat.size(); ++p) {
                 { // U term
                     hamterm_t term;
-                    term.identity = ident;
                     term.fill_operator = ident;
                     term.operators.push_back( std::make_pair(p, parms.get<double>("U")*doubly_occ) );
                     terms.push_back(term);
@@ -230,7 +229,6 @@ namespace app {
                                       lat.get_prop<int>("type", p, *hopto));
                     { // t*cdag_up*c_up
                         hamterm_t term;
-                        term.identity = ident;
                         term.fill_operator = sign_up;
                         gemm(create_up, sign_up, tmp);
                         term.operators.push_back( std::make_pair(p, ti*tmp) );
@@ -239,7 +237,6 @@ namespace app {
                     }
                     { // t*c_up*cdag_up
                         hamterm_t term;
-                        term.identity = ident;
                         term.fill_operator = sign_up;
                         gemm(destroy_up, sign_up, tmp);
                         term.operators.push_back( std::make_pair(p, ti*tmp) );
@@ -248,7 +245,6 @@ namespace app {
                     }
                     { // t*cdag_down*c_down
                         hamterm_t term;
-                        term.identity = ident;
                         term.fill_operator = sign_down;
                         gemm(create_down, sign_down, tmp);
                         term.operators.push_back( std::make_pair(p, ti*tmp) );
@@ -257,7 +253,6 @@ namespace app {
                     }
                     { // t*c_down*cdag_down
                         hamterm_t term;
-                        term.identity = ident;
                         term.fill_operator = sign_down;
                         gemm(destroy_down, sign_down, tmp);
                         term.operators.push_back( std::make_pair(p, ti*tmp) );
