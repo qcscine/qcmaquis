@@ -231,15 +231,15 @@ namespace app {
                         hamterm_t term;
                         term.fill_operator = sign_up;
                         gemm(create_up, sign_up, tmp);
-                        term.operators.push_back( std::make_pair(p, ti*tmp) );
+                        term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, destroy_up) );
                         terms.push_back(term);
                     }
                     { // t*c_up*cdag_up
                         hamterm_t term;
                         term.fill_operator = sign_up;
-                        gemm(destroy_up, sign_up, tmp);
-                        term.operators.push_back( std::make_pair(p, ti*tmp) );
+                        gemm(sign_up, destroy_up, tmp);
+                        term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, create_up) );
                         terms.push_back(term);
                     }
@@ -247,15 +247,15 @@ namespace app {
                         hamterm_t term;
                         term.fill_operator = sign_down;
                         gemm(create_down, sign_down, tmp);
-                        term.operators.push_back( std::make_pair(p, ti*tmp) );
+                        term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, destroy_down) );
                         terms.push_back(term);
                     }
                     { // t*c_down*cdag_down
                         hamterm_t term;
                         term.fill_operator = sign_down;
-                        gemm(destroy_down, sign_down, tmp);
-                        term.operators.push_back( std::make_pair(p, ti*tmp) );
+                        gemm(sign_down, destroy_down, tmp);
+                        term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, create_down) );
                         terms.push_back(term);
                     }

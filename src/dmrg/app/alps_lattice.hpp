@@ -33,7 +33,7 @@ public:
             graph_type::size_type s, t;
             s = graph.vertex_index(graph.source(*it));
             t = graph.vertex_index(graph.target(*it));
-                        
+            
             forward_[s].push_back(t);
             backward_[t].push_back(s);
             

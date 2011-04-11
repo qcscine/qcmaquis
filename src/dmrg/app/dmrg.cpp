@@ -135,6 +135,12 @@ int main(int argc, char ** argv)
     }
     ModelParameters model(model_file);
     
+    std::ifstream lat_file(argv[2]);
+    if (!lat_file) {
+        cerr << "Could not open lattice file." << endl;
+        exit(1);
+    }
+        
     std::string chkpfile = parms.get<std::string>("chkpfile");
     std::string rfile = parms.get<std::string>("resultfile");
     bool dns = (parms.get<int>("donotsave") != 0);
@@ -151,7 +157,7 @@ int main(int argc, char ** argv)
     
     srand48(parms.get<int>("seed"));
     
-    Lattice * lat = lattice_factory("alps_lattice", model_file);
+    Lattice * lat = lattice_factory("alps_lattice", lat_file);
     Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model, *lat, 0);
     Index<grp> phys = H->get_phys();
         
