@@ -240,7 +240,7 @@ public:
             add_option("u1_total_charge1", value<int>()->default_value(0), "");
             add_option("u1_total_charge2", value<int>()->default_value(0), "");
             
-            store(parse_config_file(param_file, config), vm);
+            store(parse_config_file(param_file, config, true), vm);
             notify(vm);
         } catch(std::exception &e) {
             std::cerr << "Error reading parameter file." << std::endl;
