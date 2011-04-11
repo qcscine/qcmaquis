@@ -10,6 +10,12 @@
 #ifndef HAMILTONIAN_H
 #define HAMILTONIAN_H
 
+#include "block_matrix/block_matrix.h"
+#include "block_matrix/block_matrix_algorithms.h"
+#include "block_matrix/symmetry.h"
+
+#include <vector>
+
 #include "lattice.h"
 
 namespace app {
@@ -20,7 +26,7 @@ namespace app {
         
         std::vector<std::pair<typename Lattice::pos_t, op_t> > operators;
         op_t fill_operator;
-    }
+    };
     
     // implement me for your purpose!
     template<class Matrix, class SymmGroup>
@@ -29,6 +35,8 @@ namespace app {
     public:
         virtual int n_terms() const = 0;
         virtual Hamiltonian_Term<Matrix, SymmGroup> operator[](int) const = 0;
+        virtual Index<SymmGroup> get_phys() const = 0;
+        virtual typename Hamiltonian_Term<Matrix, SymmGroup>::op_t get_identity() const = 0;
     };
 }
 
@@ -40,7 +48,7 @@ namespace app {
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_mpo(std::size_t L, Hamiltonian<Matrix, SymmGroup> const & H)
     {
-        MPOMaker<Matrix, SymmGroup> mpom(L);
+        hamiltonian_detail::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity());
         
         for (int i = 0; i < H.n_terms(); ++i)
         {

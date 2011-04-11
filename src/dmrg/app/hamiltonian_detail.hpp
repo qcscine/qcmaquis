@@ -6,6 +6,8 @@
  *
  *****************************************************************************/
 
+#include "mp_tensors/mpo.h"
+
 namespace hamiltonian_detail
 {
     using namespace std;
@@ -99,8 +101,10 @@ namespace hamiltonian_detail
         > op_pairs;
         
     public:
-        MPOMaker(std::size_t length)
-        : used_dims(length)
+        MPOMaker(std::size_t length_, const block_matrix<Matrix, SymmGroup> & ident_)
+        : length(length_)
+        , used_dims(length)
+        , ident(ident_)
         , prempo(length)
         , maximum(0)
         , leftmost_right(length)
@@ -108,13 +112,14 @@ namespace hamiltonian_detail
             for (size_t p = 0; p < length; ++p)
             {
                 if (p+1 < length)
-                    prempo[p].push_back( make_tuple(0, 0, H.get_identity()) );
+                    prempo[p].push_back( make_tuple(0, 0, ident) );
             }
         }
         
-        void add_term(Hamiltonian_Term const & term)
+        void add_term(app::Hamiltonian_Term<Matrix, SymmGroup> const & term)
         {
-            std::vector<std::pair<typename Lattice::pos_t, op_t> > const & ops = term.operators;
+            // TODO: removed const & because of sorting (non-const operation)
+            std::vector<std::pair<typename Lattice::pos_t, op_t> > ops = term.operators;
             
             std::sort(ops.begin(), ops.end(), compare<Matrix, SymmGroup>);
             
@@ -137,7 +142,7 @@ namespace hamiltonian_detail
             maximum = max(use_b, maximum);
             
             vector<bool> done(length, false);
-            for (typename vector<pair<size_t, op_t> >::const_iterator it = ops.begin();
+            for (typename vector<pair<typename Lattice::pos_t, op_t> >::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {
                 size_t first_use_b = (it->first == minp ? 0 : use_b);
@@ -161,7 +166,7 @@ namespace hamiltonian_detail
         MPO<Matrix, SymmGroup> create_mpo()
         {
             for (size_t p = leftmost_right + 1; p < length; ++p)
-                prempo[p].push_back( make_tuple(1, 1, H.get_identity()) );
+                prempo[p].push_back( make_tuple(1, 1, ident) );
             
 //            for (typename vector<vector<block> >::iterator it = prempo.begin();
 //                 it + 1 != prempo.end();
@@ -178,6 +183,8 @@ namespace hamiltonian_detail
         }
         
     private:
+        std::size_t length;
+        block_matrix<Matrix, SymmGroup> ident;
         vector<set<size_t> > used_dims;
         vector<vector<block> > prempo;
         
