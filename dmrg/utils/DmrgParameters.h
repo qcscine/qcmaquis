@@ -12,6 +12,7 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <boost/any.hpp>
 
@@ -39,6 +40,17 @@ namespace conversion
             }
         }
     };
+
+	// eliminating quatation marks around strings
+	template <> struct get_<std::string>
+    {
+		std::string operator()(boost::program_options::variables_map& vm_, std::string const & key)
+        {
+            std::string ret = vm_[key].as<std::string>();
+			boost::trim_if(ret, boost::is_any_of("\"'"));
+            return ret;
+        }
+    };	
     
     template<class T> struct get_<std::vector<T> >
     {
@@ -82,6 +94,11 @@ namespace detail
 class BaseParameters
 {
 public:
+    bool is_set (std::string const & key)
+    {
+        return (vm.count(key)) || (sv.count(key) > 0);
+    }
+    
     template<class T> T get(std::string const & key)
     {
         if (sv.count(key) > 0) { // has been changed using set()
@@ -147,6 +164,7 @@ public:
             add_option("truncation_initial",value<double>(),"Initial value for the truncation error");
             add_option("truncation_final",value<double>(),"Final value for the truncation");
             
+            add_option("init_bond_dimension",value<std::size_t>()->default_value(5),"");
             add_option("max_bond_dimension",value<std::size_t>(),"");
             
             add_option("alpha_initial",value<double>()->default_value(1e-2),"");
@@ -162,11 +180,18 @@ public:
             add_option("nsweeps",value<int>(),"");
             add_option("ngrowsweeps",value<int>(),"");
             
-            add_option("donotsave",value<int>()->default_value(0),"");
-            add_option("run_seconds",value<int>()->default_value(0),"");
             add_option("resultfile",value<std::string>(),"");
             add_option("chkpfile",value<std::string>(),"");
+            add_option("initfile",value<std::string>()->default_value(std::string()),"");
+            
+            add_option("donotsave",value<int>()->default_value(0),"");
+            add_option("run_seconds",value<int>()->default_value(0),"");
             add_option("storagedir",value<std::string>()->default_value(std::string()),"");
+            add_option("use_compressed",value<int>()->default_value(0),"");
+            add_option("calc_h2",value<int>()->default_value(0),"");
+            add_option("seed",value<int>()->default_value(42),"");
+            
+            add_option("init_state", value<std::string>()->default_value("default"),"");
             
             store(parse_config_file(param_file, config), vm);
             notify(vm);
@@ -187,16 +212,33 @@ public:
         try {
             add_option("model", value<std::string>(), "");
             add_option("lattice", value<std::string>(), "");
+            add_option("alps_lattice",value<std::string>(),"");
             
             add_option("L", value<int>(), "");
             add_option("W", value<int>(), "");
             
-            add_option("theta", value<double>(), "");
             add_option("Jxy", value<double>(), "");
             add_option("Jz", value<double>(), "");
+            
+            add_option("U", value<double>(), "");
+            add_option("t", value<double>()->default_value(1.), "");
+            add_option("t1", value<double>()->default_value(1.), "");
+            add_option("t2", value<double>()->default_value(1.), "");
+            
+            add_option("theta", value<double>(), "");
             add_option("h0", value<double>()->default_value(0), "");
+            add_option("pin", value<int>()->default_value(3), "");
+            
+            add_option("K0", value<double>()->default_value(1), "");
+            add_option("K1", value<double>()->default_value(0), "");
+            
+            add_option("penalty", value<double>()->default_value(10), "");
+            add_option("twist", value<double>()->default_value(0), "");
+            add_option("move", value<double>()->default_value(0), "");
             
             add_option("u1_total_charge", value<int>()->default_value(0), "");
+            add_option("u1_total_charge1", value<int>()->default_value(0), "");
+            add_option("u1_total_charge2", value<int>()->default_value(0), "");
             
             store(parse_config_file(param_file, config), vm);
             notify(vm);
