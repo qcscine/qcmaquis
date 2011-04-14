@@ -9,38 +9,37 @@ namespace ambient {
 
 namespace core {
 
-    class composite_marker {
-    public:
-        composite_marker();
-        bool active;
-        size_t imarker;
-        size_t jmarker;
-        void mark(int i, int j);
-        bool has_marked(int i, int j);
-        void clear();
-    };
-
-    class layout_table_entry {
-    public:
-        layout_table_entry(); // default constructor
-        layout_table_entry(int owner, int i, int j = 0, int k = 0);
-        int i;
-        int j;
-        int k;
-        int owner;
-        int xowner;
-        int get_xowner();
-        int get_owner();
-    };
-
     class layout_table {
     public:
+        class composite_marker {
+        public:
+            composite_marker();
+            bool active;
+            size_t imarker;
+            size_t jmarker;
+            void mark(int i, int j);
+            bool has_marked(int i, int j);
+            void clear();
+        };
+        class entry {
+        public:
+            entry(); // default constructor
+            entry(int owner, int i, int j = 0, int k = 0);
+            int i;
+            int j;
+            int k;
+            int owner;
+            int xowner;
+            int get_xowner();
+            int get_owner();
+        };
+
         layout_table(p_profile* profile);
         ~layout_table();
         void remap();
 
-        layout_table_entry* get_entry(int i, int j = 0, int k = 0);
-        layout_table_entry* operator()(int i, int j = 0, int k = 0);
+        entry* get_entry(int i, int j = 0, int k = 0);
+        entry* operator()(int i, int j = 0, int k = 0);
 
         void add_segment_entry(int owner, int i, int j = 0, int k = 0);
         void add_request_entry(int i, int j = 0, int k = 0);
@@ -53,9 +52,9 @@ namespace core {
         void print();
 
         p_profile* profile;
-        std::vector< std::vector<layout_table_entry*> > map;
-        std::vector<layout_table_entry> segment;
-        std::vector<layout_table_entry> requests;
+        std::vector< std::vector<entry*> > map;
+        std::vector<entry> segment;
+        std::vector<entry> requests;
         composite_marker init_marker;
         size_t reserved_x;
         size_t reserved_y;

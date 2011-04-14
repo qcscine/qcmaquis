@@ -2,10 +2,10 @@
 #define ARGS_MAX_LEN 5
 
 #define extract_profile(z, n, unused)                                                       \
-    this->profiles[n] = &breakdown(*static_cast<T ## n*>(this->arguments[n]));
+    this->profiles[n] = &breakdown(*static_cast<T ## n*>(this->arguments[n].get()));
 
 #define extract_arguments(z, n, unused)                                                     \
-    this->arguments[n] = (void*)arg ## n;
+    this->arguments[n] = boost::shared_ptr<void>(get_handle(*arg ## n));
 
 #define type_list(z, n, pn)                                                                 \
     BOOST_PP_COMMA_IF(n)                                                                    \
@@ -15,7 +15,7 @@
 #define arg_list(z, n, pn)                                                                  \
     BOOST_PP_COMMA_IF(n)                                                                    \
     BOOST_PP_IF(BOOST_PP_EQUAL(n,pn), marked,)                                              \
-    *static_cast<T ## n*>(this->arguments[n])
+    *static_cast<T ## n*>(this->arguments[n].get())
 
 #define body_tn(z, n, text)                                                                 \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                 \
@@ -50,8 +50,8 @@ operation::operation( FP op, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER, T, *arg) 
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = TYPES_NUMBER;
-    this->arguments = (void**)malloc(sizeof(void*)*this->count);
     this->profiles  = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->arguments = new boost::shared_ptr<void>[this->count];
     BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;

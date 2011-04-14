@@ -4,6 +4,10 @@
 
 namespace ambient{ namespace core{
 
+    operation::~operation(){
+        //delete[] this->arguments;//->reset<p_dense_matrix<double> >();
+    }
+
     void operation::add_dependant(operation* dep){
         if(this->dependants == NULL) 
             this->dependants = new one_touch_stack<operation*>();
@@ -66,6 +70,10 @@ namespace ambient{ namespace core{
     void operation::finalize()
     {
         for(size_t i=0; i < this->count; i++) this->profiles[i]->finalize();
+    }
+    void operation::release()
+    {
+        delete[] this->arguments;
     }
     void operation::set_scope(groups::group* scope)
     {

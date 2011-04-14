@@ -1,5 +1,4 @@
 // nested inside ambient.hpp in ambient namespace
-using namespace blas;
 
 template<class T>
 void matrix_i_kernel(workgroup* grp){

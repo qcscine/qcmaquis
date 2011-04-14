@@ -12,35 +12,35 @@ namespace ambient{ namespace core{
 
     using namespace ambient::groups;
 
-    composite_marker::composite_marker(){
+    layout_table::composite_marker::composite_marker(){
         this->active = true;
         this->imarker = 0;
         this->jmarker = 0;
     }
-    void composite_marker::clear(){
+    void layout_table::composite_marker::clear(){
         this->active = false;
     }
-    void composite_marker::mark(int i, int j){
+    void layout_table::composite_marker::mark(int i, int j){
         this->active = true;
         this->imarker = i;
         this->jmarker = j;
     }
-    bool composite_marker::has_marked(int i, int j){
+    bool layout_table::composite_marker::has_marked(int i, int j){
         if(!this->active) return false;
         if(i >= this->imarker || j >= this->jmarker) return true;
         return false;
     }
 
-    layout_table_entry::layout_table_entry()
+    layout_table::entry::entry()
     { }
 
-    layout_table_entry::layout_table_entry(int owner, int i, int j, int k)
+    layout_table::entry::entry(int owner, int i, int j, int k)
     : xowner(-1), owner(owner), i(i), j(j), k(k) { }
 
-    int layout_table_entry::get_xowner(){
+    int layout_table::entry::get_xowner(){
         return (this->xowner == -1 ? this->owner : this->xowner);
     }
-    int layout_table_entry::get_owner(){
+    int layout_table::entry::get_owner(){
         return this->owner;
     }
 
@@ -58,40 +58,40 @@ namespace ambient{ namespace core{
         int x_size = __a_ceil(this->profile->dim.x / this->profile->get_group_t_dim().x);
         if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
         for(int i = 0; i < y_size; i++){
-            if(i >= this->reserved_y) map.push_back(std::vector<layout_table_entry*>());
+            if(i >= this->reserved_y) map.push_back(std::vector<entry*>());
             for(int j = 0; j < x_size; j++){
                 if(j >= this->reserved_x || i >= this->reserved_y) 
-                    map[i].push_back(NULL); //new layout_table_entry(-1, i, j);
+                    map[i].push_back(NULL); //new entry(-1, i, j);
             }
         }
         if(x_size > this->reserved_x) this->reserved_x = x_size;
         if(y_size > this->reserved_y) this->reserved_y = y_size;
     }
 
-    layout_table_entry* layout_table::get_entry(int i, int j, int k){
+    layout_table::entry* layout_table::get_entry(int i, int j, int k){
         if(map[i][j] == NULL) throw race_condition_e(); // to extend for situation when outdated
         return map[i][j];
     }
 
-    layout_table_entry* layout_table::operator()(int i, int j, int k){
+    layout_table::entry* layout_table::operator()(int i, int j, int k){
         assert(map[i][j] != NULL);
         return map[i][j];
     }
 
     void layout_table::add_segment_entry(int owner, int i, int j, int k){
         if(segment_count == segment.size()) segment.resize(segment_count+1);
-        segment[segment_count++] = layout_table_entry(owner, i, j, k);
+        segment[segment_count++] = entry(owner, i, j, k);
     }
 
     void layout_table::add_request_entry(int i, int j, int k){
         if(request_count == requests.size()) requests.resize(request_count+1);
-        requests[request_count++] = layout_table_entry(-1, i, j, k);
+        requests[request_count++] = entry(-1, i, j, k);
     }
 
     void layout_table::update_map_entry(int owner, int i, int j, int k){
         if(map[i][j] == NULL){ 
             this->count++;
-            map[i][j] = new layout_table_entry(owner, i, j, k);
+            map[i][j] = new entry(owner, i, j, k);
         }else{
             map[i][j]->xowner = map[i][j]->owner;
             map[i][j]->owner = owner;
@@ -157,7 +157,7 @@ namespace ambient{ namespace core{
         if(!profile->xinvolved()) return; // can be omitted I guess
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM X OWNER ACTION
         try{
-            layout_table_entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
+            layout_table::entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
                                                                    pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                                                    pack->get<int>(A_LAYOUT_P_K_FIELD));
             pack->set(A_DEST_FIELD, entry->get_owner());
