@@ -84,7 +84,7 @@ namespace ambient{ namespace groups{
     }
 
     void packet_manager::subscribe(const packet_t& type){
-        this->add_typed_q(type, packet_manager::IN,  30);
+        this->add_typed_q(type, packet_manager::IN,  60);
     }
 
     void packet_manager::add_handler(const packet_t& type, core::operation* callback){
@@ -131,8 +131,8 @@ namespace ambient{ namespace groups{
             for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it)
                 if((*it)->flow == OUT) active_sends_number += (*it)->active_requests_number;
             if(this->process_locking(active_sends_number)){ return this->spin(); } // spinning last time
-            counter++;
-            if(counter == 1000) printf("R%d: inactive for %d iterations... (active sends: %d)\n", ambient::rank(), (int)counter, (int)active_sends_number);
+            //counter++;
+            //if(counter == 1000) printf("R%d: inactive for %d iterations... (active sends: %d)\n", ambient::rank(), (int)counter, (int)active_sends_number);
         }
     }
     void packet_manager::spin(int n){
@@ -186,7 +186,7 @@ namespace ambient{ namespace groups{
             pack->set(A_OP_T_FIELD, "P2P");
             pack->set(A_DEST_FIELD, 0); // using up this request
             MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(r->mpi_request));
-            for(int i=1; i < this->manager->get_group()->get_size(); i++){
+            for(size_t i=1; i < this->manager->get_group()->get_size(); i++){
                 pack->set(A_DEST_FIELD, i);
                 this->push(pack);
             }
@@ -208,12 +208,6 @@ namespace ambient{ namespace groups{
                     this->target_packet = (packet*)this->requests[i]->memory;
                     this->packet_delivered();
                     this->requests[i]->fail_count = 0;
-                }
-            }else{
-                if(this->flow == OUT){ 
-                    this->requests[i]->fail_count++;
-                    if(this->requests[i]->fail_count == 600) 
-                        printf("Warning: The request (%d) took already %d iterations...\n", i, this->requests[i]->fail_count);
                 }
             }
         }

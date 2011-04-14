@@ -2,6 +2,7 @@
 
 template<class T>
 void matrix_i_kernel(workgroup* grp){
+    return; // let's omit for now
     // real temporary initialization
     int n = grp->get_group_t_dim().x;
     int m = grp->get_group_t_dim().y;
@@ -10,10 +11,10 @@ void matrix_i_kernel(workgroup* grp){
     memset(grp->data,0,m*n*sizeof(T));
 
 
-/*
-    for(int j=0; j<n; j++)
-    for(int i=0; i<m; i++){
-        ((double*)grp->data)[j*ld+i] = i+j;
-    }
-*/
+
+//    for(int j=0; j<n; j++)
+//    for(int i=0; i<m; i++){
+//        ((double*)grp->data)[j*ld+i] = 1;
+//    }
+
 }

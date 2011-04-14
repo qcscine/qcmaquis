@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
 }*/
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( heap_manual_test, T, test_types ) 
+/*BOOST_AUTO_TEST_CASE_TEMPLATE( heap_manual_test, T, test_types ) 
 { 
     ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
     p_dense_matrix<T,ambient::MANUAL>* A = new p_dense_matrix<T, ambient::MANUAL>(M_SIZE,M_SIZE);
@@ -162,5 +162,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
     ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,U); 
     ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,V); 
     A = U + V;
+    ambient::playout();
+}*/
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_test, T, test_types ) 
+{ 
+    ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
+    p_dense_matrix<T> A(M_SIZE,M_SIZE);
+    p_dense_matrix<T> B(M_SIZE,M_SIZE); 
+    p_dense_matrix<T> C(M_SIZE,M_SIZE); 
+
+    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,A); 
+    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,B); 
+    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,C); 
+    C = A * B;
+    ambient::push(ambient::check_gemm_l_kernel,ambient::check_gemm_c_kernel,C); 
     ambient::playout();
 }
