@@ -36,17 +36,20 @@ public:
             block_matrix<Matrix, SymmGroup> right = make_right_matrix(p+1);
             
             block_matrix<Matrix, SymmGroup> M, U, V;
-            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;;
             
             gemm(left, right, M);
             svd_truncate(M, U, V, S, cutoff, 100000, false);
             
+            Sqrt = sqrt(S);
+            
 //            U = left;
 //            V = right;
-            gemm(S, V, right);
+            gemm(U, Sqrt, left);
+            gemm(Sqrt, V, right);
             
             std::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
-            replace_pair(U, right, p);
+            replace_pair(left, right, p);
             std::cout << bond_indices[p+1].sum_of_sizes() << std::endl;
             
 //            left = make_left_matrix(p);

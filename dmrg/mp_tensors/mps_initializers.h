@@ -100,8 +100,8 @@ struct thin_mps_init : public mps_initializer<Matrix, SymmGroup>
             std::sort(sizes.begin(), sizes.end());
             std::reverse(sizes.begin(), sizes.end());
             std::copy(sizes.begin(), sizes.end(), std::ostream_iterator<std::size_t>(cout, " ")); cout << endl;
-//            std::size_t threshold = sizes[std::min(sizes.size()-1, std::size_t(5))];
-            std::size_t threshold = sizes[0];
+            std::size_t threshold = sizes[std::min(sizes.size()-1, std::size_t(5))];
+//            std::size_t threshold = sizes[0];
             
             for (typename Index<SymmGroup>::iterator it = full.begin();
                  it != full.end(); ++it) {

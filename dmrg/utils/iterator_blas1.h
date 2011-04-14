@@ -10,13 +10,16 @@
 #define ITERATOR_BLAS1_H
 
 #include <boost/numeric/bindings/blas.hpp>
+#include <boost/lambda/lambda.hpp>
+
 #include <algorithm>
 
-template<class ForwardIterator, class T>
-void iterator_axpy(ForwardIterator in1, ForwardIterator in2,
-                   ForwardIterator out1, T val)
+template<class InputIterator, class OutputIterator, class T>
+void iterator_axpy(InputIterator in1, InputIterator in2,
+                   OutputIterator out1, T val)
 {
-    std::transform(in1, in2, out1, std::bind2nd(std::multiplies<T>(), val));
+    using namespace boost::lambda;
+    std::transform(in1, in2, out1, out1, _1*val+_2);
 }
 
 inline void iterator_axpy(double const * in1, double const * in2,
