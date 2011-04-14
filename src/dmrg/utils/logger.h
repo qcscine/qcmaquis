@@ -10,6 +10,7 @@
 #define LOGGER_H
 
 #include <map>
+#include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace detail {

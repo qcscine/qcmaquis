@@ -14,6 +14,7 @@
 #include "utils/function_objects.h"
 
 #include <iostream>
+#include <set>
 
 template<class Matrix, class SymmGroup>
 class Boundary

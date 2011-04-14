@@ -196,7 +196,7 @@ public:
                 storage::store(left_[site], left_stores_[site]);
                 storage::store(right_[site+1], right_stores_[site+1]);
             } else if (lr == -1) {
-                if (site > 1) {
+                if (site > 0) {
                     zout << "Growing, alpha = " << alpha << endl;
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);

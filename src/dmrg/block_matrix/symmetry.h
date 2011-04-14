@@ -13,6 +13,8 @@
 #include <vector>
 #include <list>
 
+#include <boost/lexical_cast.hpp>
+
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
 #endif
