@@ -15,6 +15,7 @@ extern "C" {
 
 void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_matrix<double>  & B, p_dense_matrix<double> & C){
 #ifdef SCALAPACK
+//    ambient::spin_loop();
     int nmyidBLACS,nnumprocsBLACS,nContinue;
     int nContxt,nVal;  
     int i, j, k;
@@ -47,17 +48,42 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_m
     descinit_(descB, &nM,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mB,  &info);
     descinit_(descC, &nM,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mC,  &info);
 
+
+    std::cout << " here 0" << ambient::rank()<< std::endl;
+
+    for(int i=0; i < breakdown(A).layout->request_count; i++){
+        breakdown(A)(breakdown(A).layout->requests[i].i, 
+                     breakdown(A).layout->requests[i].j);
+    }
+    for(int i=0; i < breakdown(B).layout->request_count; i++){
+        breakdown(B)(breakdown(B).layout->requests[i].i, 
+                     breakdown(B).layout->requests[i].j);
+    }
+    for(int i=0; i < breakdown(C).layout->segment_count; i++){
+        breakdown(C)(breakdown(C).layout->segment[i].i, 
+                     breakdown(C).layout->segment[i].j);
+    }
+
+    std::cout << " here 1 " << ambient::rank()<< std::endl;
+ ambient::spin_loop();
+ 
+    std::cout << " here 2 " << ambient::rank()<< std::endl;
+    std::cout << " before  " << std::endl;
     breakdown(A).solidify();
     breakdown(B).solidify();
     breakdown(C).solidify();
+    std::cout << " end  " << std::endl;
 
     double alpha = 1.0; double beta = 0.0;
 
+    std::cout << "start pdegmm  " << std::endl;
     pdgemm_("N","N",&nM,&nN,&nM,&alpha,(double*)breakdown(A).data,&ONE,&ONE,descA,(double*)breakdown(B).data,&ONE,&ONE,descB,&beta,(double*)breakdown(C).data,&ONE,&ONE,descC);
-
+    std::cout << "start end  " << std::endl;
     breakdown(A).disperse();
     breakdown(B).disperse();
     breakdown(C).disperse();
+
+//    MPI_Barrier(comm);
 #endif
 }
 
@@ -105,9 +131,10 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<d
     int lwork = -1;
     double wkopt;
 
+
     //SCALAPACK, firsti, dry run to allocate buffer
     pdgesvd_(JOBU, JOBV, &nM, &nN, (double*)breakdown(M).data,&ONE,&ONE,descA, S, (double*)breakdown(U).data,&ONE,&ONE,descU, (double*)breakdown(V).data,&ONE,&ONE,descV, &wkopt, &lwork, &info);
-
+  
     lwork = static_cast<int> (wkopt);
     double *work = new double[lwork];
 
