@@ -69,12 +69,13 @@ public:
         else if(this->p == MANUAL) return this->handle;
         else if(this->p == WEAK){ ((livelong*)this)->use_count++; return boost::shared_ptr<T>(this->self, &poke_deleter<T>); } // for one-touch only
         else if(this->p == REPLICA) return boost::shared_ptr<T>(this->self);
+        return boost::shared_ptr<T>();
     }
     void_pt*& breakdown() const {
         return self->profile;
     }
     void_pt*& set_breakdown() {
-        self->profile = new void_pt(self);
+        return (self->profile = new void_pt(self));
     }
 public:
     T* self;
