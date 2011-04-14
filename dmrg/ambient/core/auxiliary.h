@@ -6,6 +6,7 @@ namespace ambient{ namespace core{
 // exceptions:
     class race_condition_e{ };
     class remote_memory_e{ };
+    class fsm_interrupt_e{ };
 
 } }
 #endif

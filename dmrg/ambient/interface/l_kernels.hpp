@@ -45,6 +45,15 @@ void block_2d_cycle_assign(T& target)
     }
 }
 
+void check_gemm_l_kernel(pinned const p_dense_matrix<double>& c)
+{
+    scope_select("2 from ambient as gemm_check where master is 0 and breakdown contains "+get_id(c)); // todo: correct the naming issue
+    if(!scope.involved()) return;
+
+    zout << "2d-block-cyclic decomposition kernel in gemm ("<< ambient::rank() <<"):\n"; info(c);
+    block_2d_cycle_assign(c);
+}
+
 void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
     //breakdown(a) >> dim3(), dim3(), dim3();

@@ -5,6 +5,12 @@ extern "C" {
     double sqrt(double);
 }
 
+void check_gemm_c_kernel(pinned const p_dense_matrix<double>& c)
+{
+    double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
+    if((int)cd[0] != get_dim(c).y+1) printf("The wrong value inside block (%d,%d): %d\n", get_group_id(c).y, get_group_id(c).x, (int)cd[0]);
+}
+
 void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
 //  --- --- ---       --- --- ---       --- --- ---
@@ -315,7 +321,7 @@ void init_double_c_kernel(pinned p_dense_matrix<double> & a)
 
     for(int jj = 0 ; jj < get_group_t_dim(a).x*get_group_t_dim(a).y ; jj++)
     {
-	ad[jj] =   drand48();
+	ad[jj] = 1;//  drand48();
     }
 }
 
