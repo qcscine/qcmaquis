@@ -159,12 +159,21 @@ public:
             iteration_log << make_log("Energy", res.first);
             
             double alpha;
-            if (sweep < parms.get<int>("ngrowsweeps"))
+//            if (sweep < parms.get<int>("ngrowsweeps"))
+//                alpha = parms.get<double>("alpha_initial");
+//            else
+//                alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"),
+//                                        parms.get<int>("nsweeps")-parms.get<int>("ngrowsweeps"),
+//                                        sweep-parms.get<int>("ngrowsweeps"));
+            int ngs = parms.get<int>("ngrowsweeps"), nms = parms.get<int>("nmainsweeps");
+            if (sweep < ngs)
                 alpha = parms.get<double>("alpha_initial");
+            else if (sweep < ngs + nms)
+                alpha = parms.get<double>("alpha_main");
             else
-                alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"),
-                                        parms.get<int>("nsweeps")-parms.get<int>("ngrowsweeps"),
-                                        sweep-parms.get<int>("ngrowsweeps"));
+                alpha = parms.get<double>("alpha_final");
+            
+            
             double cutoff;
             if (sweep >= parms.get<int>("ngrowsweeps"))
                 cutoff = parms.get<double>("truncation_final");
