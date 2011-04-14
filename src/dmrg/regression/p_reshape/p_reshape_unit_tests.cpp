@@ -57,9 +57,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reshape_test, T, test_types )
     p_dense_matrix<T> a(M_SIZE,M_SIZE);
     p_dense_matrix<T> b(M_SIZE,M_SIZE);
     p_dense_matrix<T> c(M_SIZE,M_SIZE);
+    p_dense_matrix<T> d(M_SIZE,M_SIZE);
 
-    c = a + b;
-    c = a + b;
+    
+    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,a); 
+    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,b); 
+    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,c); 
+    a = b + c;
+    a = b + c;
     ambient::playout();
 }
 

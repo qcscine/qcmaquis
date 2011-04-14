@@ -26,11 +26,11 @@ namespace ambient{ namespace groups{
         int approve_closure_mutex;
 
         packet_manager(groups::group* grp);
-        class ambient_request
+        class request
         {
         public:
-            ambient_request(void* memory);
-            MPI_Request request;
+            request(void* memory);
+            MPI_Request mpi_request;
             void* memory;
             int fail_count;
         };
@@ -49,12 +49,12 @@ namespace ambient{ namespace groups{
             packet_manager* manager;
             const packet_t& type;
         private:
-            void recv(ambient_request* request);
-            void send(ambient_request* request);
+            void recv(request* r);
+            void send(request* r);
 
             packet* target_packet;
             int reservation;
-            std::vector<ambient_request*> requests;
+            std::vector<request*> requests;
         };
 
         locking_fsm state;

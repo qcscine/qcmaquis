@@ -9,7 +9,7 @@ namespace blas {
     }
 
     template<typename T> 
-    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, T* const & Array):data_(rows,1,Array)
+    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, T* const & array):data_(rows,1,array)
     {
     }
 
@@ -87,43 +87,31 @@ namespace blas {
     }
 
     template<typename T>
-    ambient::p_dense_matrix<T> const  & p_diagonal_matrix<T>::get_data() const 
+    typename p_diagonal_matrix<T>::container const  & p_diagonal_matrix<T>::get_data() const 
     {
         return this->data_;                          
     }                                             
 
     template<typename T>
-    ambient::p_dense_matrix<T> & p_diagonal_matrix<T>::get_data() 
+    typename p_diagonal_matrix<T>::container& p_diagonal_matrix<T>::get_data() 
     {
         return this->data_;                          
     }
 
-//pdense*pdiag
-    template<typename T, class Matrix>
-    void gemm(Matrix const & m1, p_diagonal_matrix<T> const & m2, Matrix  & m3)
+    template<typename T>
+    void gemm(const p_dense_matrix<T> & m1, p_diagonal_matrix<T> const & m2, p_dense_matrix<T> & m3)
     {
         assert(num_cols(m1) == num_rows(m2));
         m3.resize(num_rows(m1), num_cols(m2));
 	ambient::push(ambient::gemm_rhs_diagonal_l_kernel, ambient::gemm_rhs_diagonal_c_kernel, m1, m2.get_data() ,m3);
-        /*
-        for (size_t i = 0; i < num_rows(m1); ++i)
-            for (size_t j = 0; j < num_cols(m2); ++j)
-                m3(i,j) = m1(i,j) * m2(j,j);
-        */
     }
     
-//pdiag*pdense
-    template<typename T, class Matrix>
-    void gemm( const p_diagonal_matrix<T> & m1, Matrix const & m2, Matrix & m3)
+    template<typename T>
+    void gemm( const p_diagonal_matrix<T> & m1, const p_dense_matrix<T> & m2, p_dense_matrix<T> & m3 )
     {
-        assert(num_cols(m1) == num_rows(m2));
-        m3.resize(num_rows(m1), num_cols(m2));
+        assert(m1.num_cols() == m2.num_rows());
+        m3.resize(m1.num_rows(), m2.num_cols());
 	ambient::push(ambient::gemm_lhs_diagonal_l_kernel,ambient::gemm_lhs_diagonal_c_kernel, m1.get_data(), m2 ,m3);
-        /*
-        for (size_t i = 0; i < num_rows(m1); ++i)
-            for (size_t j = 0; j < num_cols(m2); ++j)
-                m3(i,j) = m1(i,i) * m2(i,j);
-        */  
     }
 
     template<typename T>
@@ -138,7 +126,6 @@ namespace blas {
         return m.num_cols();
     }
  
-
     template<typename T>
     void sqrt(p_diagonal_matrix<T> & m)
     { 

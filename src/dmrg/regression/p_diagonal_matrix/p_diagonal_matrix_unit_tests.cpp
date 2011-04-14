@@ -84,16 +84,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diagonal_gemm, T, test_types )
     ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, B);
     ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, C);
 
-    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, A.get_data() );
-    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, B );
-    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, C );
+    blas::gemm(A,B,C);  
+    ambient::playout();
 
- //  blas::gemm(B,A,C);  
-   blas::gemm(A,B,C);  
-   ambient::playout();
-
-   std::cout << A ; // << " " << ambient::rank() << " " <<  std::endl;
-   std::cout << B ; // << " " << ambient::rank() << " " <<  std::endl;
+    std::cout << A;
+    std::cout << B;
 
 }
 

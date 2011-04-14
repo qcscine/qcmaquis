@@ -176,8 +176,8 @@ namespace ambient
                         computing->invoke();    // scalapack style
                     }else{
 // performing computation for every item inside every appointed workgroup
-                        std::vector<core::layout_table_entry> & workload = logistics->pin->layout->segment_count != 0 ? 
-                                                                           logistics->pin->layout->segment : logistics->pin->layout->requests;
+                        std::vector<core::layout_table::entry> & workload = logistics->pin->layout->segment_count != 0 ? 
+                                                                            logistics->pin->layout->segment : logistics->pin->layout->requests;
                         int workload_size = logistics->pin->layout->segment_count != 0 ? 
                                             logistics->pin->layout->segment_count : logistics->pin->layout->request_count; 
                         for(int k=0; k < workload_size; k++){
@@ -189,6 +189,8 @@ namespace ambient
                     }
                 }
                 computing->executed = true;
+                computing->release();
+                logistics->release();
             }
             this->spin_loop();
 // cleaning the layout

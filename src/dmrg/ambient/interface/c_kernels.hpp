@@ -35,14 +35,20 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     for(int z = 0; z < get_grid_dim(a).y; z++){
         double* ad = current(a)(z,j);
         double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
-
-	printf("updating %d %d with %d %d x %d %d \n ", z, i, z,j,j,i );
-
         dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     }
 }
 
 void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
+{    
+    int i = get_group_id(a).y;
+    int j = get_group_id(a).x;
+    double* a_elements  = current(a)(i,j);
+    double* ac_elements = current(ac)(i,j);
+    memcpy(ac_elements, a_elements, sizeof(double)*(get_group_dim(a)*get_item_dim(a)));
+}
+
+void copy_c_kernel3(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a, p_dense_matrix<double>& d)
 {    
     int i = get_group_id(a).y;
     int j = get_group_id(a).x;

@@ -1,8 +1,8 @@
 // nested inside ambient.hpp in ambient namespace
 
-template <typename T>  
-void breakdown_model(void_pt* profile, const p_dense_matrix<T>* ptr)
-{        
+template <typename T, policy P>  
+void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
+{
     if(ptr == NULL){
         profile->state = PROXY;
         profile->dim.x = 0;
@@ -18,8 +18,8 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T>* ptr)
     profile->regroup();
 }
 
-template <typename T>
-void breakdown_proxy_model(void_pt* proxy, void_pt* profile, const p_dense_matrix<T>* ptr)
+template <typename T, policy P>
+void breakdown_proxy_model(void_pt* proxy, void_pt* profile, const p_dense_matrix<T,P>* ptr)
 {
         proxy->profile      = profile;
         proxy->group_id     = profile->group_id;

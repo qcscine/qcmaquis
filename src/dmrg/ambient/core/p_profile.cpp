@@ -36,7 +36,7 @@ namespace ambient {
     };
 
     p_profile* p_profile::dereference(){
-        if(!this->valid) printf("Error: attempting to use invalid profile (object was deleted)\n");
+        if(!this->valid) assert(false);//printf("Error: attempting to use invalid profile (object was deleted)\n");
         while((this->profile = this->profile->profile) != this->profile->profile);
         return this->profile; // todo - deallocate proxy objects
     }

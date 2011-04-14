@@ -13,11 +13,11 @@ void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2){
 			 new core::operation(c_kernel, &arg0, &arg1, &arg2));
 }
 template <typename ST, typename FL, typename FC, class T0, class T1>
-ST push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1){
+ST& push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1){
     void_pt* handle = new void_pt((ST*)NULL);
     ST out(handle);
     push(l_kernel, c_kernel, arg0, arg1, out);
-    return out;
+    return *(ST*)out.self; // trying to omit casting copy
 }
 #include "ambient/interface/push.pp.hpp" // all other variants of push
 
@@ -25,6 +25,7 @@ template <typename L, typename R>
 void pin(L& proxy_object, const R& real_object){
     void_pt& proxy = breakdown(proxy_object);
     void_pt& real  = breakdown(real_object);
+    ((livelong<R,REPLICA>*)(get_handle(real_object).get()))->use_count += 2; // avoiding false deallocation (which is memory leak)
     proxy.profile   = real.profile;
     proxy.set_dim(real.get_dim());
     real.imitate(&proxy); // copy proxy settings to the actual profile

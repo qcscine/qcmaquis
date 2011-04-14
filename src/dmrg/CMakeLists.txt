@@ -28,8 +28,8 @@ if(ambient_dmrg)
     add_definitions(-O3)
     add(ambient) 
     add(regression/p_dense_matrix)
-    #add(regression/p_diagonal_matrix)
-    #add(regression/p_reshape)
+    add(regression/p_diagonal_matrix)
+    add(regression/p_reshape)
 endif(ambient_dmrg)
 
 

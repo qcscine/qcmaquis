@@ -147,15 +147,15 @@ namespace ambient{ namespace groups{
         return this->qs.back();
     }
 
-    packet_manager::ambient_request::ambient_request(void* memory) 
-    : memory(memory), request(MPI_REQUEST_NULL), fail_count(0) { };
+    packet_manager::request::request(void* memory) 
+    : memory(memory), mpi_request(MPI_REQUEST_NULL), fail_count(0) { };
 
     packet_manager::typed_q::typed_q(packet_manager* manager, const packet_t& type, packet_manager::direction flow, int reservation, int priority) 
     : manager(manager), type(type), reservation(reservation), priority(priority), flow(flow), packet_delivered(), active_requests_number(0){
         if(flow == IN){ // make the initial recv request
             this->active_requests_number = this->reservation;
             for(int i=0; i < this->reservation; i++){
-                this->requests.push_back(new ambient_request(alloc_t(this->type)));
+                this->requests.push_back(new request(alloc_t(this->type)));
                 this->recv(this->requests.back());
             }
         }
@@ -165,27 +165,27 @@ namespace ambient{ namespace groups{
         this->active_requests_number++;
         assert(this->flow == OUT);
         for(int i=0; i < this->requests.size(); i++){ // locating free request
-            if(this->requests[i]->request == MPI_REQUEST_NULL){
+            if(this->requests[i]->mpi_request == MPI_REQUEST_NULL){
                 this->requests[i]->memory = (void*)pack; // don't forget to free memory (if not needed)
                 this->send(this->requests[i]);
                 return;
             }
         }
-        this->requests.push_back(new ambient_request((void*)pack)); // subject for a change
+        this->requests.push_back(new request((void*)pack)); // subject for a change
         this->send(this->requests.back());
     }
-    void packet_manager::typed_q::recv(ambient_request* request){
-        MPI_Irecv(request->memory, 1, this->type.mpi_t, MPI_ANY_SOURCE, this->type.t_code, *this->manager->comm, &(request->request));
+    void packet_manager::typed_q::recv(request* r){
+        MPI_Irecv(r->memory, 1, this->type.mpi_t, MPI_ANY_SOURCE, this->type.t_code, *this->manager->comm, &(r->mpi_request));
     }
-    void packet_manager::typed_q::send(ambient_request* request){
-        packet* pack = (packet*)request->memory;
+    void packet_manager::typed_q::send(request* r){
+        packet* pack = (packet*)r->memory;
         if(pack->get<char>(A_OP_T_FIELD) == 'P'){
             assert(pack->get<int>(A_DEST_FIELD) >= 0);
-            MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
+            MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(r->mpi_request));
         }else if(pack->get<char>(A_OP_T_FIELD) == 'B'){
             pack->set(A_OP_T_FIELD, "P2P");
             pack->set(A_DEST_FIELD, 0); // using up this request
-            MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(request->request));
+            MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(r->mpi_request));
             for(int i=1; i < this->manager->get_group()->get_size(); i++){
                 pack->set(A_DEST_FIELD, i);
                 this->push(pack);
@@ -195,13 +195,13 @@ namespace ambient{ namespace groups{
     void packet_manager::typed_q::spin(){
         int flag = 0;
         for(int i=0; i < this->requests.size(); i++)
-        if(this->requests[i]->request != MPI_REQUEST_NULL){
-            MPI_Test(&(this->requests[i]->request), &flag, MPI_STATUS_IGNORE);
+        if(this->requests[i]->mpi_request != MPI_REQUEST_NULL){
+            MPI_Test(&(this->requests[i]->mpi_request), &flag, MPI_STATUS_IGNORE);
             if(flag){
                 if(this->flow == IN){ 
                     this->target_packet = unpack(this->type, this->requests[i]->memory); 
                     this->packet_delivered();
-                    this->requests[i] = new ambient_request(alloc_t(this->type));
+                    this->requests[i] = new request(alloc_t(this->type));
                     this->recv(this->requests[i]); // request renewal
                 }else if(this->flow == OUT){
                     this->active_requests_number--;

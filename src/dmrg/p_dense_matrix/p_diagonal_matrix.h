@@ -15,11 +15,12 @@ we need it to avoid dependency inside SVD kernels and other
     class p_diagonal_matrix
     {
     public:
-        typedef T                       value_type;
-        typedef T&                      reference;
-        typedef T const&                const_reference;
-        typedef size_t             size_type;
-        typedef std::ptrdiff_t          difference_type;
+        typedef typename ambient::p_dense_matrix<T>          container; // can be ::dynamic
+        typedef T                                            value_type;
+        typedef T&                                           reference;
+        typedef T const&                                     const_reference;
+        typedef size_t                                       size_type;
+        typedef size_t                                       difference_type;
         
         typedef typename std::vector<T>::iterator element_iterator;
         typedef typename std::vector<T>::const_iterator const_element_iterator;
@@ -29,7 +30,7 @@ we need it to avoid dependency inside SVD kernels and other
       //  p_diagonal_matrix(Vector const & init)
       //  : data_(init.begin(), init.end()) { }
         p_diagonal_matrix(size_t rows = 0,  T const & init = T());
-        p_diagonal_matrix(size_t rows,  T* const &  Array);
+        p_diagonal_matrix(size_t rows,  T* const &  array);
         size_t num_rows() const;
         size_t num_cols() const;
         T const & operator[](size_t i) const;
@@ -41,12 +42,12 @@ we need it to avoid dependency inside SVD kernels and other
         void remove_rows(size_t k, size_t n = 1);
         void remove_cols(size_t k, size_t n = 1);
         void resize(size_t rows, size_t cols, T v = T());
-	template< class T1> 
+	template< class T1 > 
         friend std::ostream & operator <<(std::ostream& os, p_diagonal_matrix<T1> const &m);
-        const ambient::p_dense_matrix<T> & get_data() const; 
-        ambient::p_dense_matrix<T> & get_data(); 
+        const container & get_data() const; 
+        container & get_data(); 
     private:
-        ambient::p_dense_matrix<T> data_;
+        container data_;
     };
 }
 

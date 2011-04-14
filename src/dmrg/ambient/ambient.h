@@ -16,6 +16,7 @@
 #include "ambient/core/layout.h"
 #include "ambient/core/select.h"
 #include "ambient/core/auxiliary.h"
+#include <boost/shared_ptr.hpp>
 
 #define ALL -1
 #define UNDEFINED_RANK MPI_UNDEFINED
@@ -36,7 +37,6 @@ namespace ambient
         scheduler & operator>>(dim3 distr_dim);
         scheduler & operator,(dim3 dim);
         void init(MPI_Comm comm = NULL);
-        void regression_test();
         void finalize();
         dim3 get_group_dim();
         dim3 get_item_dim();

@@ -2,6 +2,7 @@
 #define AMBIENT_AUX_H
 
 #include "ambient/core/layout.h"
+#include "boost/shared_ptr.hpp"
 #include <vector>
 
 #define HASH_MAP_PARTITION_BIT_SIZE 8
@@ -11,8 +12,17 @@
 
 #define __a_ceil(x) (((double)x-(int)x) == 0 ? (int)x : (int)x+1)
 
+
 namespace ambient{
 namespace core{ class operation; }
+
+    enum policy 
+    {
+      ANY     ,  // used for stack allocs, makes replicas in heap
+      REPLICA ,  // replica created from any (usual for stack vars)
+      MANUAL  ,  // manual deallocation, handling (heap variables)
+      WEAK       // weak userspace deallocs (Ambient will free asap)
+    };
 
     class dim3
     {
