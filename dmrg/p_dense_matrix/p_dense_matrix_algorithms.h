@@ -65,9 +65,17 @@ namespace blas
     template<typename T>
     void gemm( const p_dense_matrix<T>  & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
     {
-        printf("Attempting to perform GEMM\n");
+        printf("Attempting to perform GEMM scalapack\n");
 	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A,B,C );
     }
+
+    template<typename T>
+    void ambient_gemm( const p_dense_matrix<T>  & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
+    {
+        printf("Attempting to perform GEMM ambient\n");
+	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A,B,C );
+    }
+
     
     template<typename T>
     void svd(const p_dense_matrix<T> &  M,
