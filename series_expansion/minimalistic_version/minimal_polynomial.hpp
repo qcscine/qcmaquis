@@ -5,6 +5,10 @@
  * (C) 2010 by Andreas Hehn (hehn@phys.ethz.ch)
  *
  *****************************************************************************/
+
+#ifndef HP2C__MINIMAL_POLYNOMIAL
+#define HP2C__MINIMAL_POLYNOMIAL
+
 #include <vector>
 #include <iostream>
 
@@ -239,3 +243,5 @@ polynomial<CoeffType> operator * (CoeffType const& c, polynomial<CoeffType> cons
 }
 
 }
+
+#endif //HP2C__MINIMAL_POLYNOMIAL

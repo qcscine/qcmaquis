@@ -2,9 +2,34 @@
  *
  * A minimal implementation of a high-temperature series expansion of a
  *
- * Ising model with transverse field 'h'.
+ * Ising chain with transverse field 'h'.
  *
  * (C) 2010 by Andreas Hehn (hehn@phys.ethz.ch)
+ *
+ * The program calculates the contribution of ONE cluster to the partition
+ * function.
+ *
+ * Parameters:
+ *  Compile time (macro):
+ *    POLYNOMIAL_MAX_ORDER : the order at which polynomials are truncated
+ *
+ *  Runtime:
+ *
+ *          ./a.out <expansion_order> <num_vertices>
+ *
+ *      expansion_order: the maximal order of the series expansion.
+ *      num_vertices:    the number of vertices/sites of the cluster to be
+ *                       calculated the program will generate a chain of
+ *                       'num_vertices' sites.
+ *          
+ *
+ * In a real application we will have a few million clusters(=graphs) with
+ * about 20 vertices and 20 edges each. The structure of the graphs will
+ * be more complicated than the chain presented here, but this won't not change
+ * the computation too much.
+ * We would like to calculate the contribution of each cluster up to at least
+ * 20-th order for this model.
+ * 
  *
  *****************************************************************************/
 #include <cstdlib>
@@ -260,8 +285,8 @@ int main(int argc, char** argv)
     //
     // Runtime parameters
     //
-    unsigned int expansion_order = 10;
-    unsigned int num_vertices = 5;
+    unsigned int expansion_order = 20;
+    unsigned int num_vertices = 8;
     if(argc == 3)
     {
         // Default values may be overwritten by command line arguments.
