@@ -1,6 +1,10 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
 
+#include <iostream>
+#include <fstream>
+
+
 #include "utils/zout.hpp"
 
 #ifdef _OPENMP
@@ -79,6 +83,15 @@ public:
     {
 	return  val;
     }    
+
+    void save(int idproc, int num)
+    {
+       std::ofstream o; 
+       o.open(name.c_str(),std::ios::app);
+        o << val <<" " << idproc << " " << num <<  std::endl;
+       o.close();
+    }
+
 protected:
     double val, t0;
     unsigned long long freq, nCounter;
@@ -138,7 +151,7 @@ public:
 		cudaEventDestroy(stop);
 		val = static_cast<double>(elapsedTime)/1000 ; // because time is in microsecond
     }
-	
+
 	
 private:
 	cudaEvent_t start, stop;
