@@ -1,6 +1,4 @@
 #define NODE_COUNT 1
-
-
 #include "mkl.h"
 
 extern "C" {
@@ -309,18 +307,16 @@ void gemm_rhs_diagonal_c_kernel(pinned const p_dense_matrix<double> & a, const p
     }
 }
 
-void init_double_c_kernel_0(pinned p_dense_matrix<double> & a)
-{
 
-}
+void init_double_c_kernel_0(pinned p_dense_matrix<double> & a){}
+
 
 void init_double_c_kernel(pinned p_dense_matrix<double> & a)
 {
     double* ad = current(a)(get_group_id(a).y, get_group_id(a).x);
-    for(int j = 0 ; j < get_group_t_dim(a).x*get_group_t_dim(a).y ; j++)
+    for(int jj = 0 ; jj < get_group_t_dim(a).x*get_group_t_dim(a).y ; jj++)
     {
-	//ad[j] = drand48();
-	ad[j] = 1;//  drand48();
+	ad[jj] = 1;//  drand48();
     }
 }
 
@@ -338,42 +334,41 @@ void two_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<dou
 
 void three_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c){ }
 
-/**
-Validation kernel came from : 
- @article{Dongarra:1990:SLB:77626.79170,
- author = {Dongarra, J. J. and Du Croz, Jeremy and Hammarling, Sven and Duff, I. S.},
- title = {A set of level 3 basic linear algebra subprograms},
- journal = {ACM Trans. Math. Softw.},
- volume = {16},
- issue = {1},
- month = {March},
- year = {1990},
- issn = {0098-3500},
- pages = {1--17},
- numpages = {17},
- url = {http://doi.acm.org/10.1145/77626.79170},
- doi = {http://doi.acm.org/10.1145/77626.79170},
- acmid = {79170},
- publisher = {ACM},
- address = {New York, NY, USA},
+/** 
+Validation kernel came from :  
+ @article{Dongarra:1990:SLB:77626.79170, 
+ author = {Dongarra, J. J. and Du Croz, Jeremy and Hammarling, Sven and Duff, I. S.}, 
+ title = {A set of level 3 basic linear algebra subprograms}, 
+ journal = {ACM Trans. Math. Softw.}, 
+ volume = {16}, 
+ issue = {1}, 
+ month = {March}, 
+ year = {1990}, 
+ issn = {0098-3500}, 
+ pages = {1--17}, 
+ numpages = {17}, 
+ url = {http://doi.acm.org/10.1145/77626.79170}, 
+ doi = {http://doi.acm.org/10.1145/77626.79170}, 
+ acmid = {79170}, 
+ publisher = {ACM}, 
+ address = {New York, NY, USA}, 
+}  
+*/ 
+void validation_c_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala) 
+{ 
+    double* Ad = current(A_ambient)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
+    double* Bd = current(B_scala)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
+ 
+    double res = 0; 
+    double epsilon = 0.0000000000000001; 
+ 
+    for(int i=0; i < get_group_t_dim(A_ambient).x*get_group_t_dim(A_ambient).y; i++) 
+    { 
+        res = (fabs(Ad[i]-Bd[i]))/fabs(epsilon*Bd[i]); 
+        if(res > 16) // 16 is recommended by dongara,  
+        { 
+             printf("validation test failed, res %.10f Ambient: %.10f Scala: %.10f \n",res, Ad[i], Bd[i]); 
+             exit(-1); 
+        }                
+    } 
 } 
-*/
-void validation_c_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala)
-{
-    double* Ad = current(A_ambient)(get_group_id(A_ambient).y, get_group_id(A_ambient).x);
-    double* Bd = current(B_scala)(get_group_id(A_ambient).y, get_group_id(A_ambient).x);
-
-    double res = 0;
-    double epsilon = 0.0000000000000001;
-
-    for(int i=0; i < get_group_t_dim(A_ambient).x*get_group_t_dim(A_ambient).y; i++)
-    {
-        res = (fabs(Ad[i]-Bd[i]))/fabs(epsilon*Bd[i]);
-        if(res > 16) // 16 is recommended by dongara, 
-        {
-             printf("validation test failed, res %.10f Ambient: %.10f Scala: %.10f \n",res, Ad[i], Bd[i]);
-             exit(-1);
-        }		
-    }
-
-}

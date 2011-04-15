@@ -56,11 +56,8 @@ void check_gemm_l_kernel(pinned const p_dense_matrix<double>& c)
 
 void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
-     //breakdown(a) >> dim3(), dim3(), dim3();
-   
-    int num =  get_grid_dim(a).y*get_grid_dim(a).x;
+    int num = get_grid_dim(a).y;
     scope_select(num+" from ambient as gemm where master is 0"); // todo: correct the naming issue
-    scope_select("* from ambient as gemm where master is 0"); // todo: correct the naming issue
     if(!scope.involved()) return;
 
     zout << "2d-block-cyclic decomposition kernel in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
@@ -145,33 +142,17 @@ void two_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matri
     block_2d_cycle_assign(b);
 }
 
-void three_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
-{
-    int num =  get_grid_dim(a).x*get_grid_dim(a).y;
-    scope_select(num+" from ambient as gemm where master is 0"); // todo: correct the naming issue
-    //scope_retain("* from ambient as work_storage");
-    //scope_retain("* from ambient as work_storage");
-    if(!scope.involved()) return; // out of scope quick exit
-    block_2d_cycle_assign(a);
-    block_2d_cycle_assign(b);
-    block_2d_cycle_assign(c);
-}
-
-
 void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
 {
-    int num = get_grid_dim(a).x*get_grid_dim(a).y;
-    scope_select(num+" from ambient as gemm where master is 0"); // todo: correct the naming issue
-
+    int num = get_grid_dim(a).y; 
+    scope_select(num+" from ambient as gemm_scalapack where master is 0");
+    scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
     zout << "2d-block-cyclic decomposition kernel in gemm_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
-    zout << " before " << std::endl;
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
     block_2d_cycle_assign(c);
-
-    zout << " end " << std::endl;
 }
 
 void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
@@ -266,41 +247,20 @@ void copy_svd_l_kernel(pinned p_dense_matrix<double> & a, double* & Array)
 
 void init_double_l_kernel(pinned p_dense_matrix<double> & a)
 {
-    int num =  get_grid_dim(a).y*get_grid_dim(a).x;
-    std::cout <<  " get_grid_dim(a).y  get_group_t_dim(a).y " <<   get_grid_dim(a).y << " " << get_group_t_dim(a).y << std::endl;
-
- 
-
-    scope_select(num+" from ambient as gemm where master is 0"); // todo: correct the naming issue
-    scope_select(num+" from ambient as work_storage"); // todo: correct the naming issue
-
-    zout << "2d-block-cyclic decomposition kernel in init_double_l_kernel ("<< ambient::rank() <<"):\n"; info(a);
-
-   // scope_select("* from ambient as init_double where master is 0");
-   // scope_retain("* from ambient as work_storage");
+    int num = get_grid_dim(a).y;
+    scope_select(num+" from ambient as init_double where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
 
     block_2d_cycle_assign(a);
 }
 
+void validation_l_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala) 
+{ 
+    int num = get_grid_dim(A_ambient).y*get_grid_dim(B_scala).x; 
+    scope_select(num+" from ambient as validation where master is 0"); // todo: correct the naming issue 
 
-void validation_l_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala)
-{
-    int num =  get_grid_dim(A_ambient).y*get_grid_dim(B_scala).x;
-    scope_select(num+" from ambient as gemm where master is 0"); // todo: correct the naming issue
-    scope_select(num+" from ambient as work_storage"); // todo: correct the naming issue
-/*
-    scope_select("* from ambient as copy where master is 0");
-    scope_retain("* from ambient as work_storage");
-*/
-    if(!scope.involved()) return; // out of scope quick exit
-    zout << "2d-block-cyclic decomposition kernel in validation ("<< ambient::rank() <<"):\n"; info(A_ambient); info(B_scala);
-    block_2d_cycle_assign(A_ambient);
-    block_2d_cycle_assign(B_scala);
-}
-
-
-
-
-
-
+    if(!scope.involved()) return; // out of scope quick exit 
+    zout << "2d-block-cyclic decomposition kernel in validation ("<< ambient::rank() <<"):\n"; info(A_ambient); info(B_scala); 
+    block_2d_cycle_assign(A_ambient); 
+    block_2d_cycle_assign(B_scala); 
+} 
