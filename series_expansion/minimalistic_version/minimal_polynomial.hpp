@@ -29,7 +29,7 @@ struct monomial
     /**
       * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
       */
-    monomial(unsigned int j_exp = 0, unsigned int h_exp = 0)
+    explicit monomial(unsigned int j_exp = 0, unsigned int h_exp = 0)
         : j_exp(j_exp), h_exp(h_exp), coeff(1)
     {
     }
@@ -39,19 +39,25 @@ struct monomial
         coeff *= c;
         return *this;
     }
+
+    monomial& operator *= (int c)
+    {
+        coeff *= c;
+        return *this;
+    }
 };
 
-template <typename CoeffType>
-monomial<CoeffType> operator * (monomial<CoeffType> m, CoeffType const& c)
+template <typename CoeffType, typename T>
+monomial<CoeffType> operator * (monomial<CoeffType> m, T const& t)
 {
-    m *= c;
+    m *= t;
     return m;
 }
 
-template <typename CoeffType>
-monomial<CoeffType> operator * (CoeffType const& c, monomial<CoeffType> const& m)
+template <typename CoeffType, typename T>
+monomial<CoeffType> operator * (T const& t, monomial<CoeffType> const& m)
 {
-    return m*c;
+    return m*t;
 }
 
 //

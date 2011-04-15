@@ -47,7 +47,7 @@
 //
 
 // A large integer of 128-256 bits (fixed size)
-typedef int large_int;
+typedef int64_t large_int;
 
 // A polynomial with large_int coefficients
 using hp2c::polynomial;
@@ -194,7 +194,7 @@ class sparse_matrix
                     }
                     else
                     {
-                        result[index] += -1*it->second*monomial<large_int>(1,0);
+                        result[index] += -1*monomial<large_int>(1,0)*it->second;
                     }
                 }
 
