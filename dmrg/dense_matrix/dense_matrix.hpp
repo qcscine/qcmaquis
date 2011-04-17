@@ -3,7 +3,7 @@
 namespace blas {
 
     template <typename T, typename MemoryBlock>
-    dense_matrix<T, MemoryBlock>::dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T() )
+    dense_matrix<T, MemoryBlock>::dense_matrix(size_type rows, size_type columns, T init_value)
     : size1_(rows), size2_(columns), reserved_size1_(rows), values_(rows*columns, init_value)
     {
     }
@@ -139,7 +139,7 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::resize(size_type size1, size_type size2, T const& init_value = T())
+    void dense_matrix<T, MemoryBlock>::resize(size_type size1, size_type size2, T const& init_value)
     {
         // Do we need more space? Reserve more space if needed!
         //
@@ -172,7 +172,7 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::reserve(size_type size1, size_type size2, T const& init_value = T())
+    void dense_matrix<T, MemoryBlock>::reserve(size_type size1, size_type size2, T const& init_value)
     {
         // The init_value may seem a little weird in a reserve method,
         // but one has to initialize all matrix elements in the
@@ -236,7 +236,7 @@ namespace blas {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::append_columns(std::pair<InputIterator,InputIterator> const& range, difference_type k=1)
+    void dense_matrix<T, MemoryBlock>::append_columns(std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( std::distance(range.first, range.second) == k*this->size1_ );
         // Reserve more space if needed
@@ -253,7 +253,7 @@ namespace blas {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k =1)
+    void dense_matrix<T, MemoryBlock>::append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( std::distance(range.first, range.second) == k*this->size2_ );
         // Reserve more space if needed
@@ -266,7 +266,7 @@ namespace blas {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1)
+    void dense_matrix<T, MemoryBlock>::insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( i <= this->size1_ );
         assert( std::distance(range.first, range.second) == k*this->size2_ );
@@ -283,7 +283,7 @@ namespace blas {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::insert_columns(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1)
+    void dense_matrix<T, MemoryBlock>::insert_columns(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( j <= this->size2_);
         assert( std::distance(range.first, range.second) == k*this->size1_ );
@@ -300,7 +300,7 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::remove_rows(size_type i, difference_type k = 1)
+    void dense_matrix<T, MemoryBlock>::remove_rows(size_type i, difference_type k)
     {
         assert( i+k <= this->size1_ );
         // for each column, copy the rows > i+k   k rows  up
@@ -310,7 +310,7 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::remove_columns(size_type j, difference_type k = 1)
+    void dense_matrix<T, MemoryBlock>::remove_columns(size_type j, difference_type k)
     {
         assert( j+k <= this->size2_ );
         this->values_.erase(this->values_.begin()+(this->reserved_size1_*j), this->values_.begin()+(this->reserved_size1_*(j+k)) );
@@ -403,7 +403,7 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    inline bool dense_matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2, T const& init_value = T())
+    inline bool dense_matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2, T const& init_value)
     {
         // Do we need to reserve more space in any dimension?
         if(size1 > this->reserved_size1_ || this->reserved_size1_*size2 > this->values_.capacity())
