@@ -72,6 +72,7 @@ public:
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
     
     friend struct contraction;
+    friend struct compression;
     
     // math functions: these are not part of the Python code, but required by IETL
     MPSTensor const & operator*=(scalar_type);
