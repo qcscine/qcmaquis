@@ -4,17 +4,17 @@ template <typename T, policy P>
 void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
 {
     if(ptr == NULL){
-        profile->state = PROXY;
-        profile->dim.x = 0;
-        profile->dim.y = 0;
-        profile->dim.z = 0;
+        profile->state  = PROXY;
+        profile->dim.x  = 0;
+        profile->dim.y  = 0;
+        profile->dim.z  = 0;
     }else{
-        profile->init_fp   = matrix_i_kernel<T>;
-        profile->t_size    = sizeof(T);
-        profile->dim.x     = ptr->num_cols();
-        profile->dim.y     = ptr->num_rows();
-        profile->dim.z     = 1;
+        profile->t_size = sizeof(T);
+        profile->dim.x  = ptr->num_cols();
+        profile->dim.y  = ptr->num_rows();
+        profile->dim.z  = 1;
     }
+    profile->set_init(matrix_i_kernel<T>);
     profile->regroup();
 }
 
@@ -88,13 +88,6 @@ void plus_reduce< p_dense_matrix<double> >(workgroup* grp, void* update){
     int m = grp->get_group_t_dim().y;
     int ld = m;
 
-    for(int i=0; i<m*n; i++){ 
-//std::cout << a[i]  << " " << u[i] << std::endl ; 
-a[i] += u[i];
-
-}
-
-
-    printf("Updating block (%d,%d)!\n", grp->i, grp->j);
+    for(int i=0; i<m*n; i++) a[i] += u[i];
 }
 

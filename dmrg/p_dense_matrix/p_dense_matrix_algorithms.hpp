@@ -66,6 +66,7 @@ namespace blas
     void gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
     {
         printf("Attempting to perform Ambient GEMM\n");
+        breakdown(C).set_init(ambient::nullify<T>);
 	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A,B,C );
     }
     

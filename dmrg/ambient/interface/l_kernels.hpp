@@ -60,7 +60,7 @@ void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     scope_select(num+" from ambient as gemm where master is 0"); // todo: correct the naming issue
     if(!scope.involved()) return;
 
-    zout << "2d-block-cyclic decomposition kernel in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    zout << "2d-block-cyclic decomposition kernel for "<< num <<" processes in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);

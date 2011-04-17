@@ -1,6 +1,6 @@
 #include "utils/zout.hpp"
 #include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/p_dense_matrix_algorithms.h"
+#include "p_dense_matrix/p_dense_matrix_algorithms.hpp"
 #include "p_dense_matrix/concept/matrix_interface.hpp"
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
 
@@ -168,14 +168,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_test, T, test_types ) 
 { 
     ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
-    p_dense_matrix<T> A(M_SIZE,M_SIZE);
-    p_dense_matrix<T> B(M_SIZE,M_SIZE); 
-    p_dense_matrix<T> C(M_SIZE,M_SIZE); 
 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,A); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,B); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,C); 
+    size_t task_size = M_SIZE;
+
+    p_dense_matrix<T> A(task_size,task_size);
+    p_dense_matrix<T> B(task_size,task_size); 
+    p_dense_matrix<T> C(task_size,task_size);
+
+    p_dense_matrix<T> A2(task_size,task_size);
+    p_dense_matrix<T> B2(task_size,task_size); 
+    p_dense_matrix<T> C2(task_size,task_size); 
+
     C = A * B;
     ambient::push(ambient::check_gemm_l_kernel,ambient::check_gemm_c_kernel,C); 
+    C2 = A2 * B2;
+    ambient::push(ambient::check_gemm_l_kernel,ambient::check_gemm_c_kernel,C2); 
     ambient::playout();
 }

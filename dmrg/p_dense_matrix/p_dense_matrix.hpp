@@ -186,7 +186,11 @@ namespace blas {
     template <typename T, ambient::policy P>
     const p_dense_matrix<T>& operator - (const p_dense_matrix<T,P>& a, const p_dense_matrix<T,P>& b){ return ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l_kernel, ambient::sub_c_kernel, a, b); }
     template<typename T, ambient::policy P>
-    const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& lhs, const p_dense_matrix<T,P>& rhs){ return ambient::push< p_dense_matrix<T> >(ambient::gemm_l_kernel, ambient::gemm_c_kernel, lhs, rhs); }
+    const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& lhs, const p_dense_matrix<T,P>& rhs){ 
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::gemm_l_kernel, ambient::gemm_c_kernel, lhs, rhs);
+        breakdown(out).set_init(ambient::nullify<T>);
+        return out; 
+    }
     template<typename T, ambient::policy P, typename T2>
     const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& m, const T2& t){ return ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); }
     template<typename T, ambient::policy P, typename T2>
