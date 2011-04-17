@@ -20,6 +20,7 @@
 
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5/deprecated.hpp>
 #endif
 
 namespace blas {
@@ -161,7 +162,7 @@ namespace blas {
           * @param size2 new number of columns
           * @param init_value value to which the new elements will be initalized
           */
-        void resize(size_type size1, size_type size2, T const& init_value);
+        void resize(size_type size1, size_type size2, T const & init_value = T());
 
         /**
           * Reserves memory for anticipated enlargements of the matrix
@@ -169,7 +170,7 @@ namespace blas {
           * @param size2 For how many columns should memory be reserved, value is ignored if it's smaller than the current number of columns
           * @param init_value i
           */
-        void reserve(size_type size1, size_type size2, T const& init_value);
+        void reserve(size_type size1, size_type size2, T const & init_value = T());
 
         std::pair<size_type,size_type> capacity() const;
         
@@ -203,20 +204,20 @@ namespace blas {
         }
 
         template <typename InputIterator>
-        void append_columns(std::pair<InputIterator,InputIterator> const& range, difference_type k);
+        void append_columns(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         template <typename InputIterator>
-        void append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k);
+        void append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         template <typename InputIterator>
-        void insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k);
+        void insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         template <typename InputIterator>
-        void insert_columns(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k);
+        void insert_columns(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
-        void remove_rows(size_type i, difference_type k);
+        void remove_rows(size_type i, difference_type k = 1);
 
-        void remove_columns(size_type j, difference_type k);
+        void remove_columns(size_type j, difference_type k = 1);
 
         void swap_rows(size_type i1, size_type i2);
 
@@ -243,7 +244,7 @@ namespace blas {
         template <typename OtherT,typename OtherMemoryBlock>
         friend class dense_matrix;
 
-        inline bool automatic_reserve(size_type size1, size_type size2, T const& init_value);
+        inline bool automatic_reserve(size_type size1, size_type size2, T const& init_value = T());
 
         size_type size1_;
         size_type size2_;
