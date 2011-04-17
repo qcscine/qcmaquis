@@ -16,11 +16,10 @@ namespace ambient{ namespace groups{
     public:
         static multirank& instance();
     public:
-        void set(const group* grp, int rank);
         int operator()(const group* grp) const;
-        int operator()(const char* grp = "ambient") const;
-        bool is_master(const char* grp = "ambient") const;
+        int operator()(const char* name = "ambient") const;
         bool is_master(const group* grp) const;
+        bool is_master(const char* name = "ambient") const;
     };
 
 } }

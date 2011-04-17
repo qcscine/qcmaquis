@@ -16,7 +16,7 @@ namespace ambient {
                 if(profile->associated_proxy == NULL) throw core::race_condition_e();
                 workgroup* grp = profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
                 if(grp->header == NULL) throw core::race_condition_e();
-                profile->associated_proxy->reduce_fp( grp, (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
+                profile->associated_proxy->reduce( grp, (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
             }else{
                 profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
             }
@@ -26,7 +26,7 @@ namespace ambient {
     }
 
     p_profile::p_profile()
-    : reserved_x(0), reserved_y(0), group_id(0), id(0), init_fp(NULL), group_lda(0), default_group(NULL), finalized(false),
+    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), group_lda(0), default_group(NULL), finalized(false),
       profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->group_dim = engine.get_group_dim();
@@ -73,7 +73,7 @@ namespace ambient {
 
     p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(workgroup*,void*)){
         this->associated_proxy = proxy;
-        this->associated_proxy->reduce_fp = R;
+        this->associated_proxy->reduce = R;
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
@@ -276,7 +276,7 @@ namespace ambient {
     void p_profile::postprocess(int i, int j){
         // can check if(this->group(i,j)->header != NULL) and reuse memory (reservation in regroup function) 
         this->group(i,j)->set_memory(alloc_t(*this->packet_type));
-        this->init_fp(this->group(i,j));
+        this->init(this->group(i,j));
     }
 
     void p_profile::finalize(){
@@ -329,6 +329,7 @@ namespace ambient {
     }
 
     void p_profile::imitate(p_profile* profile){
+        this->set_init     (profile->get_init     ());
         this->set_gpu_dim  (profile->get_gpu_dim  ());
         this->set_distr_dim(profile->get_distr_dim());
         this->set_group_dim(profile->get_group_dim());
@@ -344,6 +345,12 @@ namespace ambient {
     void* p_profile::get_data(){
         if(this->default_group == NULL) return NULL; // we asked to convert non structuring arg
         return this->default_group->data;            // >_< need to write proper get for group's items
+    }
+    void p_profile::set_init(void(*f)(workgroup*)){
+        this->init = f;
+    }
+    void(*p_profile::get_init() const)(workgroup*){
+        return this->init;
     }
     dim3 p_profile::get_dim() const {
         return this->dim;

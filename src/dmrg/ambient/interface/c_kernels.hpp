@@ -9,7 +9,7 @@ extern "C" {
 void check_gemm_c_kernel(pinned const p_dense_matrix<double>& c)
 {
     double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
-    if((int)cd[0] != get_dim(c).y+1) printf("The wrong value inside block (%d,%d): %d\n", get_group_id(c).y, get_group_id(c).x, (int)cd[0]);
+    if((int)cd[0] != get_dim(c).y) printf("The wrong value inside block (%d,%d): %d\n", get_group_id(c).y, get_group_id(c).x, (int)cd[0]);
 }
 
 void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)

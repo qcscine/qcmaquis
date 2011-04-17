@@ -19,7 +19,6 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->manager = new packet_manager(this);
         this->id = hash_group_id();
-        ambient::rank.set( this, this->rank );
         group_map(this->name, this);
     }
 
@@ -80,6 +79,7 @@ namespace ambient{ namespace groups {
 
     void group::add(int count, bool excl){
         if(count <= 0) return;
+        count = std::min(count, parent->count); // avoiding over-allocation problems
         this->members   = (int*)realloc(this->members,   (this->count+count)*sizeof(int));
         this->members_g = (int*)realloc(this->members_g, (this->count+count)*sizeof(int));
         for(int i=0; i < count; i++){ 
@@ -252,7 +252,6 @@ namespace ambient{ namespace groups {
         MPI_Comm_create(this->parent->mpi_comm, this->mpi_group, &this->mpi_comm);
         MPI_Group_rank(this->mpi_group, &this->rank);
         this->id = hash_group_id();
-        ambient::rank.set( this, this->rank );
         if(this->involved()) this->manager = new packet_manager(this);
         this->vacations = (int*)malloc(sizeof(int)*this->count);
         memset(this->vacations, 0, sizeof(int)*this->count);
@@ -288,12 +287,14 @@ namespace ambient{ namespace groups {
     }
     group* group_map(const char* name, group* instance){
         static std::map<std::string,group*> map;
-        if(instance != NULL){ 
-            if(map.find(name) != map.end()) return (map.find(name)->second = instance);
-            map.insert(std::pair<std::string,group*>(name,instance));
+        if(instance != NULL){
+            if(map.find(name) != map.end()) map.find(name)->second = instance;
+            else map.insert(std::pair<std::string,group*>(name,instance));
+            return instance;
         }
-        if(map.find(name) == map.end()) return NULL; // wasn't able to find requested group
-        return map.find(name)->second;
+        if(map.find(name) == map.end()) instance = NULL; // wasn't able to find requested group
+        else instance = map.find(name)->second;
+        return instance;
     }
 
 } }

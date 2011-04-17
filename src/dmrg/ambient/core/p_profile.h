@@ -40,8 +40,8 @@ namespace ambient {
         block_packet_t*     xpacket_type;
         std::vector< std::vector<workgroup*> > skeleton;
         workgroup*          default_group;
-        void(*init_fp)(workgroup*);
-        void(*reduce_fp)(workgroup*,void*);
+        void(*init)(workgroup*);
+        void(*reduce)(workgroup*,void*);
         p_profile*          associated_proxy;
     private:
         bool                valid;
@@ -94,6 +94,7 @@ namespace ambient {
         dim3 get_group_dim()   const;
         dim3 get_group_t_dim() const;
         dim3 get_item_dim()    const;
+        void(*get_init() const)(workgroup*);
 
         void imitate(p_profile* profile);
         void solidify();
@@ -111,6 +112,7 @@ namespace ambient {
         void set_gpu_dim(dim3 dim);
         void set_group_dim(dim3 dim);
         void set_item_dim(dim3 dim);
+        void set_init(void(*)(workgroup*));
         void invalidate();
         bool is_valid();
     };
