@@ -114,7 +114,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
         make_left_paired();
         
         block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<blas::diagonal_matrix<double>, SymmGroup> S;
         
         svd(data_, U, V, S);
         
@@ -141,7 +141,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
         make_right_paired();
         
         block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<blas::diagonal_matrix<double>, SymmGroup> S;
         
         svd(data_, U, V, S);
         

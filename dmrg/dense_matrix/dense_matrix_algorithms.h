@@ -22,7 +22,7 @@ namespace blas
     void svd(dense_matrix<T, MemoryBlock> M,
              dense_matrix<T, MemoryBlock> & U,
              dense_matrix<T, MemoryBlock>& V,
-             typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & S)
+             typename associated_diagonal_matrix<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type & S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<dense_matrix<T, MemoryBlock> >));
         typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
@@ -35,7 +35,7 @@ namespace blas
         if (info != 0)
             throw std::runtime_error("Error in SVD!");
         
-        S = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(S_);
+        S = typename associated_diagonal_matrix<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type(S_);
     }
     
     template<typename T, class MemoryBlock>
@@ -46,7 +46,7 @@ namespace blas
         typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
         std::vector<double> tau(k);
         
-        int info = boost::numeric::bindings::lapack::geqrf(M, tau);
+        int info = 0; //boost::numeric::bindings::lapack::geqrf(M, tau);
         if (info != 0)
             throw std::runtime_error("Error in geqrf");
         

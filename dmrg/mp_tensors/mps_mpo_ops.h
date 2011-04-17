@@ -9,10 +9,14 @@
 #ifndef MPS_MPO_OPS_H
 #define MPS_MPO_OPS_H
 
+#include <alps/numeric/real.hpp>
+
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
 
 #include "mp_tensors/special_mpos.h"
+
+#include "mp_tensors/contractions.h"
 
 template<class Matrix, class SymmGroup>
 std::vector<Boundary<Matrix, SymmGroup> >
@@ -82,7 +86,9 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    return left.traces()[0];
+    std::vector<typename Matrix::value_type> traces = left.traces();
+    
+    return alps::numeric::real(traces[0]);
 }
 
 template<class Matrix, class SymmGroup>
@@ -103,18 +109,37 @@ std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
 }
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type norm(MPS<Matrix, SymmGroup> const & mps,
-                                 MPOTensor<Matrix, SymmGroup> * mpo = NULL)
+typename Matrix::value_type norm(MPS<Matrix, SymmGroup> const & mps)
 {
     std::size_t L = mps.length();
     
-    MPOTensor<Matrix, SymmGroup> id_mpo;
-    if (mpo != NULL)
-        id_mpo = *mpo;
-    else
-        id_mpo = identity_mpo<Matrix>(mps[0].site_dim());
+    block_matrix<Matrix, SymmGroup> left;
+    left.insert_block(Matrix(1, 1, 1), SymmGroup::SingletCharge, SymmGroup::SingletCharge);
     
-    return expval(id_mpo);
+    for (int i = 0; i < L; ++i) {
+        MPSTensor<Matrix, SymmGroup> cpy = mps[i];
+        left = contraction::overlap_left_step(mps[i], cpy, left);
+    }
+    
+    return trace(left);
+}
+
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type overlap(MPS<Matrix, SymmGroup> const & mps1,
+                                    MPS<Matrix, SymmGroup> const & mps2)
+{
+    assert(mps1.length() == mps2.length());
+    
+    std::size_t L = mps1.length();
+    
+    block_matrix<Matrix, SymmGroup> left;
+    left.insert_block(Matrix(1, 1, 1), SymmGroup::SingletCharge, SymmGroup::SingletCharge);
+    
+    for (int i = 0; i < L; ++i) {
+        left = contraction::overlap_left_step(mps1[i], mps2[i], left);
+    }
+    
+    return trace(left);
 }
 
 template<class Matrix, class SymmGroup>
