@@ -30,6 +30,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
     
     for (int i = 0; i < 2; ++i) { // odd/even
         mps.canonize(i+1);
+        block_matrix<Matrix, SymmGroup> v0, v1, t;
         
         for (std::size_t p = i; p < L-1; p += 2)
         {
@@ -38,7 +39,6 @@ evolve(MPS<Matrix, SymmGroup> mps,
             mps[p].make_left_paired();
             mps[p+1].make_right_paired();
             
-            block_matrix<Matrix, SymmGroup> v0, v1, t;
             gemm(mps[p].data(), mps[p+1].data(), v0);
             
             v1 = contraction::multiply_with_twosite(v0, op,
@@ -57,6 +57,8 @@ evolve(MPS<Matrix, SymmGroup> mps,
                 }
             }
         }
+        
+//        cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << endl;
     }
     
     return mps;
