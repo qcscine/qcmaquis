@@ -691,45 +691,68 @@ struct contraction {
             for (size_t rs = 0; rs < right_i.size(); ++rs)
                 for (size_t lps = 0; lps < phys_i.size(); ++lps)
                     for (size_t rps = 0; rps < phys_i.size(); ++rps)
-                    {
-                        charge lc = left_i[ls].first, rc = right_i[rs].first, lpc = phys_i[lps].first, rpc = phys_i[rps].first;
-                        
-                        charge left_vec_charge = SymmGroup::fuse(lpc, lc);
-                        charge right_vec_charge = SymmGroup::fuse(-rpc, rc);
-                        
-                        if (left_vec_charge != right_vec_charge)
-                            continue;
-                        if (! vec.has_block(left_vec_charge, right_vec_charge) )
-                            continue;
-                        
-//                        cout << "Yes!" << endl;
-                        
-                        charge both_charge = SymmGroup::fuse(lpc, rpc);
-                        
-                        assert( op.has_block(both_charge, both_charge) );
-                        
-                        Matrix & oblock = ret(left_vec_charge, right_vec_charge);
-                        Matrix const & iblock = vec(left_vec_charge, right_vec_charge);
-                        Matrix const & op_block = op(both_charge, both_charge);
-                        
-                        size_t l_offset = left_pb(lpc, lc);
-                        size_t r_offset = right_pb(rpc, rc);
-                        size_t op_offset = phys_pb(lpc, rpc);
-                        
-                        for (size_t ll = 0; ll < left_i[ls].second; ++ll)
-                            for (size_t rr = 0; rr < right_i[rs].second; ++rr)
-                                for (size_t lp = 0; lp < phys_i[lps].second; ++lp)
-                                    for (size_t rp = 0; rp < phys_i[rps].second; ++rp)
-                                        for (size_t ilp = 0; ilp < phys_i[lps].second; ++ilp)
-                                            for (size_t irp = 0; irp < phys_i[rps].second; ++irp) {
-//                                                cout << "Yo" << endl;
-                                                oblock(l_offset + lp*left_i[ls].second + ll,
-                                                       r_offset + rp*right_i[rs].second + rr) += 
-                                                iblock(l_offset + ilp*left_i[ls].second + ll,
-                                                       r_offset + irp*right_i[rs].second + rr) * op_block(op_offset + ilp*phys_i[rps].second + irp,
-                                                                                                          op_offset + lp*phys_i[rps].second + rp);
-                                            }
-                    }
+                        for (size_t ilps = 0; ilps < phys_i.size(); ++ilps)
+                            for (size_t irps = 0; irps < phys_i.size(); ++irps)
+                            {
+                                charge lc = left_i[ls].first, rc = right_i[rs].first, lpc = phys_i[lps].first, rpc = phys_i[rps].first;
+                                charge ilpc = phys_i[ilps].first, irpc = phys_i[irps].first;
+                                
+                                charge left_vec_charge = SymmGroup::fuse(ilpc, lc);
+                                charge right_vec_charge = SymmGroup::fuse(-irpc, rc);
+                                
+                                charge left_out_charge = SymmGroup::fuse(lpc, lc);
+                                charge right_out_charge = SymmGroup::fuse(-rpc, rc);
+                                
+                                if (left_out_charge != right_out_charge)
+                                    continue;
+                                if (left_vec_charge != right_vec_charge)
+                                    continue;
+                                if (! vec.has_block(left_vec_charge, right_vec_charge) )
+                                    continue;
+                                if (SymmGroup::fuse(lpc, rpc) != SymmGroup::fuse(ilpc, irpc))
+                                    continue;
+                                
+        //                        cout << "Yes!" << endl;
+                                
+                                charge both_charge = SymmGroup::fuse(lpc, rpc);
+                                
+                                assert( op.has_block(both_charge, both_charge) );
+                                
+                                Matrix & oblock = ret(left_out_charge, right_out_charge);
+                                Matrix const & iblock = vec(left_vec_charge, right_vec_charge);
+                                Matrix const & op_block = op(both_charge, both_charge);
+                                
+                                size_t i_l_offset = left_pb(ilpc, lc);
+                                size_t i_r_offset = right_pb(irpc, rc);
+                                size_t l_offset = left_pb(lpc, lc);
+                                size_t r_offset = right_pb(rpc, rc);
+                                size_t i_op_offset = phys_pb(ilpc, irpc);
+                                size_t op_offset = phys_pb(lpc, rpc);
+                                
+//                                cout << ilpc << " " << irpc << " " << lpc << " " << rpc << endl;
+                                
+                                for (size_t ll = 0; ll < left_i[ls].second; ++ll)
+                                    for (size_t rr = 0; rr < right_i[rs].second; ++rr)
+                                        for (size_t lp = 0; lp < phys_i[lps].second; ++lp)
+                                            for (size_t rp = 0; rp < phys_i[rps].second; ++rp)
+                                                for (size_t ilp = 0; ilp < phys_i[lps].second; ++ilp)
+                                                    for (size_t irp = 0; irp < phys_i[rps].second; ++irp) {
+        //                                                cout << "Yo" << endl;
+//                                                        cout << i_op_offset + ilp*phys_i[irps].second + irp << " " << op_offset + lp*phys_i[rps].second + rp << endl;
+//                                                        oblock(l_offset + lp*left_i[ls].second + ll,
+//                                                               r_offset + rp*right_i[rs].second + rr);
+//                                                        iblock(i_l_offset + ilp*left_i[ls].second + ll,
+//                                                               i_r_offset + irp*right_i[rs].second + rr);
+//                                                        op_block(i_op_offset + ilp*phys_i[irps].second + irp,
+//                                                                 op_offset + lp*phys_i[rps].second + rp);
+                                                        oblock(l_offset + lp*left_i[ls].second + ll,
+                                                               r_offset + rp*right_i[rs].second + rr) += 
+                                                        iblock(i_l_offset + ilp*left_i[ls].second + ll,
+                                                               i_r_offset + irp*right_i[rs].second + rr) *
+                                                        op_block(i_op_offset + ilp*phys_i[irps].second + irp,
+                                                                 op_offset + lp*phys_i[rps].second + rp);
+                                                    }
+                            }
         
         return ret;
     }

@@ -10,6 +10,7 @@
 #define MPO_H
 
 #include <vector>
+#include <set>
 
 #include "mp_tensors/mpotensor.h"
 
