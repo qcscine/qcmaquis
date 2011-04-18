@@ -54,10 +54,20 @@ void check_gemm_l_kernel(pinned const p_dense_matrix<double>& c)
     block_2d_cycle_assign(c);
 }
 
+void init_double_l_kernel(pinned p_dense_matrix<double> & a)
+{
+    int num = get_grid_dim(a).y;
+    scope_select(num+" from ambient as init_double"+ num +" where master is 0"); // todo: correct the naming issue
+    scope_select(num+" from ambient as init_double where master is 0");
+    if(!scope.involved()) return; // out of scope quick exit
+
+    block_2d_cycle_assign(a);
+}
+
 void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
     int num = get_grid_dim(a).y;
-    scope_select(num+" from ambient as gemm where master is 0"); // todo: correct the naming issue
+    scope_select(num+" from ambient as gemm"+ num +" where master is 0 and breakdown contains "+get_id(a)); // todo: correct the naming issue
     if(!scope.involved()) return;
 
     zout << "2d-block-cyclic decomposition kernel for "<< num <<" processes in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
@@ -245,19 +255,10 @@ void copy_svd_l_kernel(pinned p_dense_matrix<double> & a, double* & Array)
     block_2d_cycle_assign(a); 
 } 
 
-void init_double_l_kernel(pinned p_dense_matrix<double> & a)
-{
-    int num = get_grid_dim(a).y;
-    scope_select(num+" from ambient as init_double where master is 0");
-    if(!scope.involved()) return; // out of scope quick exit
-
-    block_2d_cycle_assign(a);
-}
-
 void validation_l_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala) 
 { 
-    int num = get_grid_dim(A_ambient).y*get_grid_dim(B_scala).x; 
-    scope_select(num+" from ambient as validation where master is 0"); // todo: correct the naming issue 
+    int num = get_grid_dim(A_ambient).y; 
+    scope_select(num+" from ambient as validation"+ num +" where master is 0 "+get_id(A_ambient)); // todo: correct the naming issue
 
     if(!scope.involved()) return; // out of scope quick exit 
     zout << "2d-block-cyclic decomposition kernel in validation ("<< ambient::rank() <<"):\n"; info(A_ambient); info(B_scala); 
