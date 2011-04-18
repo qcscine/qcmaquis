@@ -108,7 +108,14 @@ namespace blas
          Q: (m,n)
          R: (n,n) */
     }
-    
+   
+   template<typename T>
+   void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala )
+   {
+        printf("Attempting to perform validation kernel\n");
+        ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
+   }
+ 
 } /* namespace blas */
 
 #endif
