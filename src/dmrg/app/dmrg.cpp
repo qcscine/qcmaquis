@@ -133,14 +133,7 @@ int main(int argc, char ** argv)
         cerr << "Could not open model file." << endl;
         exit(1);
     }
-    ModelParameters model(model_file);
     
-    std::ifstream lat_file(argv[2]);
-    if (!lat_file) {
-        cerr << "Could not open lattice file." << endl;
-        exit(1);
-    }
-        
     std::string chkpfile = parms.get<std::string>("chkpfile");
     std::string rfile = parms.get<std::string>("resultfile");
     bool dns = (parms.get<int>("donotsave") != 0);
@@ -157,8 +150,10 @@ int main(int argc, char ** argv)
     
     srand48(parms.get<int>("seed"));
     
-    Lattice * lat = lattice_factory("alps_lattice", lat_file);
-    Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model, *lat, 0);
+    Lattice * lat;
+    Hamiltonian<Matrix, grp> * H;
+    grp::charge initc;
+    model_parser("alps", model_file, lat, H, initc);
     Index<grp> phys = H->get_phys();
         
     MPO<Matrix, grp> mpo = make_mpo(lat->size(), *H);
@@ -166,15 +161,6 @@ int main(int argc, char ** argv)
     if (parms.get<int>("use_compressed") > 0)
         mpoc.compress(1e-12);
     
-#ifdef UseTwoU1
-    int tc1 = model.get<int>("u1_total_charge1");
-    int tc2 = model.get<int>("u1_total_charge2");
-    grp::charge initc;
-    initc[0] = tc1;
-    initc[1] = tc2;
-#else
-    int initc = model.get<int>("u1_total_charge");
-#endif
     MPS<Matrix, grp> mps(lat->size(),
                          parms.get<std::size_t>("init_bond_dimension"),
                          phys, initc,
@@ -194,13 +180,13 @@ int main(int argc, char ** argv)
     {
         alps::hdf5::oarchive h5ar(rfile);
         h5ar << alps::make_pvp("/parameters", parms);
-        h5ar << alps::make_pvp("/parameters", model);
+        //h5ar << alps::make_pvp("/parameters", model);
     }
     
     if (!dns) {
         alps::hdf5::oarchive h5ar(chkpfile);
         h5ar << alps::make_pvp("/parameters", parms);
-        h5ar << alps::make_pvp("/parameters", model);
+        //h5ar << alps::make_pvp("/parameters", model);
     }
     
     //    BaseStorageMaster * bsm = bsm_factory(parms);
