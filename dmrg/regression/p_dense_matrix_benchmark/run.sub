@@ -1,0 +1,6 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=2
+#PBS -l walltime=1:00:00
+#PBS -l cput=1:00:00
+cd $PBS_O_WORKDIR
+mpirun  -np 2 ./bench.exe > out.txt 
