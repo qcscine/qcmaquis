@@ -20,7 +20,6 @@
 
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
-#include <alps/ngs/hdf5/deprecated.hpp>
 #endif
 
 namespace blas {
