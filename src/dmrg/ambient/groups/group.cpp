@@ -241,6 +241,8 @@ namespace ambient{ namespace groups {
             for(int i=0; i < child->count; i++)
             if(child->members[i] == rank_n) return i;
         }
+        assert(false);
+        return -1;
     }
 
     void group::commit(){

@@ -74,6 +74,7 @@ namespace ambient {
     p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(workgroup*,void*)){
         this->associated_proxy = proxy;
         this->associated_proxy->reduce = R;
+        return this->associated_proxy;
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){

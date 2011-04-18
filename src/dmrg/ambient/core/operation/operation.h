@@ -45,9 +45,6 @@ namespace ambient{ namespace core{
         p_profile* pin;
         size_t count;
     };
-
-    class out_of_scope_e{};
-
 } }
 
 #endif

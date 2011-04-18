@@ -1,6 +1,6 @@
 #ifndef AMBIENT_GROUPS_GROUP_H
 #define AMBIENT_GROUPS_GROUP_H
-#include <mpi.h>
+#include "ambient/mpi.h"
 #include <set>
 
 #include "ambient/groups/packet_manager.h"

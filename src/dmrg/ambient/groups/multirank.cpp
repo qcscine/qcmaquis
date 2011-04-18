@@ -1,3 +1,4 @@
+#include "ambient/mpi.h"
 #include "ambient/ambient.h"
 #include "ambient/groups/multirank.h"
 

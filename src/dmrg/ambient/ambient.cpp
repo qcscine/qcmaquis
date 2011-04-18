@@ -59,13 +59,13 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
-    void init(MPI_Comm comm){ engine.init(comm);   }
-    void finalize()         { engine.finalize();   }
-    void playout()          { engine.playout();    }
-    void spin()             { engine.spin();       }
-    void spin_loop()        { engine.spin_loop();  }
-    void world_loop()       { engine.world_loop(); }
-    int  size()             { return engine.size;  }
+    void init()      { engine.init();       }
+    void finalize()  { engine.finalize();   }
+    void playout()   { engine.playout();    }
+    void spin()      { engine.spin();       }
+    void spin_loop() { engine.spin_loop();  }
+    void world_loop(){ engine.world_loop(); }
+    int  size()      { return engine.size;  }
 
     scheduler::scheduler(): item_dim(dim3(128,128,1)){ } // to revert to 128,128
     dim3 scheduler::get_group_dim(){ return this->group_dim; }
@@ -73,17 +73,13 @@ namespace ambient
     dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
     dim3 scheduler::get_gpu_dim()  { return this->gpu_dim;   }
 
-    void scheduler::init(MPI_Comm comm)
+    void scheduler::init()
     {
         int threading_level;
-        this->comm = comm;
-        if(this->comm == (MPI_Comm)NULL){
-            MPI_Init_thread(0, NULL, MPI_THREAD_MULTIPLE, &threading_level);
-            this->comm = MPI_COMM_WORLD;
-        }
-        MPI_Comm_size(this->comm, &this->size);
+        MPI_Init_thread(0, NULL, MPI_THREAD_MULTIPLE, &threading_level);
+        MPI_Comm_size(MPI_COMM_WORLD, &this->size);
 
-        this->ambient = new group("ambient", AMBIENT_MASTER_RANK, this->comm);
+        this->ambient = new group("ambient", AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->default_data_packet_t = NULL;
 // AUTO TUNING SHOULD START BELOW...
 
@@ -91,7 +87,7 @@ namespace ambient
     }
     void scheduler::finalize()
     {
-        MPI_Barrier(this->comm);
+        MPI_Barrier(this->ambient->mpi_comm);
         MPI_Finalize();
     }
     void scheduler::push(core::operation* logistics, core::operation* computing)

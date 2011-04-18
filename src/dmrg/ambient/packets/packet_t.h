@@ -1,7 +1,7 @@
 #ifndef AMBIENT_PACKETS_PACKET_TYPE_H
 #define AMBIENT_PACKETS_PACKET_TYPE_H
 #include <memory.h>
-#include <mpi.h>
+#include "ambient/mpi.h"
 #include <stdlib.h>
 #include <map>
 
