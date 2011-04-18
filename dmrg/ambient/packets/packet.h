@@ -1,6 +1,6 @@
 #ifndef AMBIENT_PACKETS_PACKET_H
 #define AMBIENT_PACKETS_PACKET_H
-#include <mpi.h>
+#include "ambient/mpi.h"
 #include "ambient/packets/packet_t.h"
 
 namespace ambient{ namespace packets{

@@ -1,6 +1,5 @@
 #ifndef AMBIENT_GROUPS_MULTIRANK_H
 #define AMBIENT_GROUPS_MULTIRANK_H
-#include <mpi.h>
 #include "ambient/ambient.h"
 #include "ambient/groups/group.h"
 

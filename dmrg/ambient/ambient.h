@@ -1,7 +1,7 @@
 #ifndef AMBIENT_H
 #define AMBIENT_H
 
-#include <mpi.h>
+#include "ambient/mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <queue>
@@ -36,7 +36,7 @@ namespace ambient
     public:
         scheduler & operator>>(dim3 distr_dim);
         scheduler & operator,(dim3 dim);
-        void init(MPI_Comm comm = NULL);
+        void init();
         void finalize();
         dim3 get_group_dim();
         dim3 get_item_dim();
@@ -52,8 +52,6 @@ namespace ambient
         block_packet_t* default_data_packet_t;
         groups::group* ambient;
     private:
-        MPI_Comm comm;
-
         dim3 distr_dim;   // work-item size of distribution blocks
         dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
         dim3 item_dim;    // size of work-item (i.e. 128) 
@@ -64,7 +62,7 @@ namespace ambient
     };
 
     scheduler& operator>>(scheduler* instance, dim3 distr_dim);
-    void init(MPI_Comm comm = NULL);
+    void init();
     void finalize();
     void playout();
     void spin();
