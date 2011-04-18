@@ -19,6 +19,9 @@
 #include "lattice.h"
 
 namespace app {
+    
+    enum TermsType {All_terms, Site_terms, Odd_terms, Even_terms, ExpSite_terms, ExpOdd_terms, ExpEven_terms};
+
     template<class Matrix, class SymmGroup>
     struct Hamiltonian_Term
     {
@@ -33,8 +36,32 @@ namespace app {
     class Hamiltonian
     {
     public:
-        virtual int n_terms() const = 0;
+        virtual int n_terms(TermsType what=All_terms) const = 0;
         virtual Hamiltonian_Term<Matrix, SymmGroup> operator[](int) const = 0;
+
+        /*
+        virtual int n_site_terms() const = 0;
+        virtual Hamiltonian_Term<Matrix, SymmGroup> site_term(int) const = 0;
+        virtual int n_odd_bonds() const = 0; // 1->2, 3->4, ...
+        virtual Hamiltonian_Term<Matrix, SymmGroup> odd_bond(int) const = 0;
+        virtual int n_even_bonds() const = 0; // 2->3, 4->5, ...
+        virtual Hamiltonian_Term<Matrix, SymmGroup> even_bond(int) const = 0;
+        
+        // TODO: implement default behaviour = exp+svd to decompose
+        virtual Hamiltonian_Term<Matrix, SymmGroup> exp_site_term(int i) const
+        {
+            return Hamitonian_Term<Matrix>();
+        }
+        virtual Hamiltonian_Term<Matrix, SymmGroup> exp_odd_bond(int i) const
+        {
+            return Hamitonian_Term<Matrix>();
+        }
+        virtual Hamiltonian_Term<Matrix, SymmGroup> exp_even_bond(int i) const
+        {
+            return Hamitonian_Term<Matrix>();
+        }
+        */
+         
         virtual Index<SymmGroup> get_phys() const = 0;
         virtual typename Hamiltonian_Term<Matrix, SymmGroup>::op_t get_identity() const = 0;
     };
@@ -45,12 +72,14 @@ namespace app {
 // call me to do something!
 
 namespace app {
+    
+    
     template<class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_mpo(std::size_t L, Hamiltonian<Matrix, SymmGroup> const & H)
+    MPO<Matrix, SymmGroup> make_mpo(std::size_t L, Hamiltonian<Matrix, SymmGroup> const & H, TermsType what=All_terms)
     {
         hamiltonian_detail::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity());
         
-        for (int i = 0; i < H.n_terms(); ++i)
+        for (int i = 0; i < H.n_terms(what); ++i)
         {
             mpom.add_term(H[i]);
         }

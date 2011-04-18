@@ -1,5 +1,5 @@
-#ifndef ALPS_LATTICE_H
-#define ALPS_LATTICE_H
+#ifndef APP_ALPS_LATTICE_H
+#define APP_ALPS_LATTICE_H
 
 #include "lattice.h"
 
@@ -21,8 +21,8 @@ public:
     typedef graph_type::site_descriptor site_descriptor;
     typedef graph_type::site_iterator site_iterator;
     
-    ALPSLattice (std::ifstream & ifs) : 
-    parms(ifs),
+    ALPSLattice (const alps::Parameters& p) : 
+    parms(p),
     graph(parms)
     {
         // storing lattice informations
@@ -80,6 +80,10 @@ public:
         }
     }
 
+    const graph_type& alps_graph() const
+    {
+        return graph;
+    }
     
 private:
     alps::Parameters parms;
