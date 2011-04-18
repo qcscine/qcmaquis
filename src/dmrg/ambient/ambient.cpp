@@ -169,9 +169,9 @@ namespace ambient
                 if(logistics->get_scope()->involved()){
                     computing->set_scope(logistics->get_scope());
                     if(logistics->pin == NULL){ // nothing has been pinned
-                        this->spin_loop();
+                        logistics->get_scope()->get_manager()->spin_loop();
                         computing->invoke();    // scalapack style
-                        this->spin_loop();
+                        logistics->get_scope()->get_manager()->spin_loop();
                     }else{
 // performing computation for every item inside every appointed workgroup
                         std::vector<core::layout_table::entry> & workload = logistics->pin->layout->segment_count != 0 ? 
@@ -183,13 +183,10 @@ namespace ambient
                             computing->invoke();
                             this->spin(); // processing any communications that did occur
                         }
-                        this->spin_loop();
+                        logistics->get_scope()->get_manager()->spin_loop();
                         logistics->finalize();
-                        this->spin_loop();
+                        logistics->get_scope()->get_manager()->spin_loop();
                     }
-                }else{
-                    this->spin_loop();
-                    this->spin_loop();
                 }
                 computing->executed = true;
                 computing->release();
