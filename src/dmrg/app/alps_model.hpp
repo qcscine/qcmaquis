@@ -135,14 +135,15 @@ namespace app {
                 alps::SiteBasisDescriptor<I> b1 = model.site_basis(type_s);
                 alps::SiteBasisDescriptor<I> b2 = model.site_basis(type_t);
                 
-                hamterm_t term;
-                term.fill_operator = tident[0];
                 
                 V  ops = bondop.template templated_split<double>(b1,b2);
                 for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
                     SiteOperator op1 = tit->get<1>();
                     SiteOperator op2 = tit->get<2>();
                     
+                    hamterm_t term;
+                    term.fill_operator = tident[0];
+
                     {
                         alps_matrix m = alps::get_matrix(double(), op1, b1, parms, true);
                         op_t newm;
@@ -165,10 +166,9 @@ namespace app {
                         }
                         term.operators.push_back( std::make_pair(p_t, newm) );
                     }
-                    
-                }
 
-                terms.push_back(term);
+                    terms.push_back(term);
+                }
                 
             }
         }
