@@ -62,7 +62,7 @@ namespace app {
             return Hamitonian_Term<Matrix>();
         }
         */
-         
+
         virtual Index<SymmGroup> get_phys() const = 0;
         virtual typename Hamiltonian_Term<Matrix, SymmGroup>::op_t get_identity() const = 0;
     };
