@@ -55,10 +55,11 @@ namespace app {
         if (type == "alps") {
             std::ifstream ifs(fname.c_str());
             alps::Parameters parms(ifs);
-            ALPSLattice * tmp = new ALPSLattice(parms);
-            H = new ALPSModel<Matrix, SymmGroup>(tmp->alps_graph(), parms);
-            lattice = tmp;
-            initc = init_qn<SymmGroup>(parms);
+            ALPSLattice * lat_tmp = new ALPSLattice(parms);
+            ALPSModel<Matrix, SymmGroup> * Htmp = new ALPSModel<Matrix, SymmGroup>(lat_tmp->alps_graph(), parms);
+            lattice = lat_tmp;
+            H = Htmp;
+            initc = Htmp->init_qn(parms);
         } else if (type == "coded") {
             std::ifstream model_file(fname.c_str());
             std::ifstream ifs(fname.c_str());
