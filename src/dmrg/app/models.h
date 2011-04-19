@@ -57,7 +57,7 @@ namespace app {
             {
                 if (parms.defined(*it+"_total")) {
                     assert( count<1 );
-                    ret = alps::evaluate<double>(static_cast<std::string>(parms[*it+"_total"]),parms);
+                    ret = alps::evaluate<double>(static_cast<std::string>(parms[*it+"_total"]),parms)*2;
                     count++;
                 }
             }
@@ -83,7 +83,7 @@ namespace app {
             {
                 if (parms.defined(*it+"_total")) {
                     assert( count<2 );
-                    ret[count] = alps::evaluate<double>(static_cast<std::string>(parms[*it+"_total"]),parms);
+                    ret[count] = alps::evaluate<double>(static_cast<std::string>(parms[*it+"_total"]),parms)*2;
                     count++;
                 }
             }

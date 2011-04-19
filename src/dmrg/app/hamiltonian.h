@@ -15,6 +15,7 @@
 #include "block_matrix/symmetry.h"
 
 #include <vector>
+#include <iostream>
 
 #include "lattice.h"
 
@@ -87,5 +88,24 @@ namespace app {
         return mpom.create_mpo();
     }
 }
+
+
+template<class Matrix, class SymmGroup>
+std::ostream& operator<<(std::ostream& os, app::Hamiltonian_Term<Matrix, SymmGroup> const & h)
+{
+    os << " - Fill operator:" << std::endl << h.fill_operator;
+    for (int i=0; i<h.operators.size(); ++i)
+        os << " - Operator at " << h.operators[i].first << ":" << std::endl << h.operators[i].second;
+    return os;
+}
+
+template<class Matrix, class SymmGroup>
+std::ostream& operator<<(std::ostream& os, app::Hamiltonian<Matrix, SymmGroup> const & H)
+{
+    for (int i=0; i<H.n_terms(); ++i)
+        os << "* TERM(" << i << ") *" << std::endl << H[i];
+    return os;
+}
+
 
 #endif
