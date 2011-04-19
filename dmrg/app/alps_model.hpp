@@ -96,9 +96,10 @@ namespace app {
                         
                         for (int i=0; i<m.shape()[0]; ++i) {
                             for (int j=0; j<m.shape()[1]; ++j) {
-                                newm.insert_block(Matrix(1, 1, ops[0].get<0>().value()*m[i][j]),
-                                                  tphys[type][i].first,
-                                                  tphys[type][j].first);
+                                if (m[i][j] != 0.)
+                                    newm.insert_block(Matrix(1, 1, ops[0].get<0>().value()*m[i][j]),
+                                                      tphys[type][i].first,
+                                                      tphys[type][j].first);
                             }
                         }
                         used = true;
@@ -147,6 +148,7 @@ namespace app {
                         op_t newm;
                         for (int i=0; i<m.shape()[0]; ++i) {
                             for (int j=0; j<m.shape()[1]; ++j) {
+                                if (m[i][j] != 0.)
                                 newm.insert_block(Matrix(1, 1, m[i][j]), tphys[type_s][i].first, tphys[type_s][j].first);
                             }
                         }
@@ -157,6 +159,7 @@ namespace app {
                         op_t newm;
                         for (int i=0; i<m.shape()[0]; ++i) {
                             for (int j=0; j<m.shape()[1]; ++j) {
+                                if (m[i][j] != 0.)
                                 newm.insert_block(Matrix(1, 1, m[i][j]), tphys[type_t][i].first, tphys[type_t][j].first);
                             }
                         }

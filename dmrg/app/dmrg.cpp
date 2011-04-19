@@ -60,7 +60,6 @@ alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
 
 #include "utils/DmrgParameters.h"
 
-#include "lattice.h"
 #include "models.h"
 
 using namespace app;
