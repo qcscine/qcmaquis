@@ -194,7 +194,9 @@ public:
             add_option("seed",value<int>()->default_value(42),"");
             
             add_option("init_state", value<std::string>()->default_value("default"),"");
-            
+
+            add_option("model_library", value<std::string>()->default_value("alps"),"");
+
             store(parse_config_file(param_file, config), vm);
             notify(vm);
         } catch(std::exception &e) {

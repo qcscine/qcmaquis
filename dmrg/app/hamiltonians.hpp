@@ -65,7 +65,7 @@ namespace app {
             }
         }
         
-        int n_terms() const
+        int n_terms(TermsType what) const
         {
             return terms.size();
         }
@@ -135,7 +135,7 @@ namespace app {
             }
         }
         
-        int n_terms() const
+        int n_terms(TermsType what) const
         {
             return terms.size();
         }
@@ -263,7 +263,7 @@ namespace app {
             }
         }
         
-        int n_terms() const
+        int n_terms(TermsType what) const
         {
             return terms.size();
         }
