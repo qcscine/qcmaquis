@@ -168,6 +168,7 @@ public:
             add_option("max_bond_dimension",value<std::size_t>(),"");
             
             add_option("alpha_initial",value<double>()->default_value(1e-2),"");
+            add_option("alpha_main",value<double>()->default_value(1e-6),"");
             add_option("alpha_final",value<double>()->default_value(1e-6),"");
             
             add_option("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"");
@@ -178,6 +179,7 @@ public:
             add_option("ietl_jcd_maxiter",value<int>()->default_value(100),"");
             
             add_option("nsweeps",value<int>(),"");
+            add_option("nmainsweeps",value<int>(),"");
             add_option("ngrowsweeps",value<int>(),"");
             
             add_option("resultfile",value<std::string>(),"");
