@@ -1,13 +1,17 @@
-arpack_tol = 1e-06
-alpha_initial = 1
-nsweeps = 4
-arpack_ncv = 20
-max_bond_dimension = 1000
-truncation_final = 1e-12
-alpha_final = 0.0001
-ngrowsweeps = 3
-eigensolver = ARPACK
-truncation_initial = 0.0001
-resultfile = results.h5
-chkpfile = results.h5
+alpha_initial = 0.01
+alpha_main = 1e-6
+alpha_final = 0
 
+arpack_ncv = 20
+arpack_tol = 1e-06
+chkpfile = results.h5
+eigensolver = ARPACK
+max_bond_dimension = 1000
+
+nsweeps = 4
+ngrowsweeps = 1
+nmainsweeps = 2
+
+resultfile = results.h5
+truncation_final = 1e-12
+truncation_initial = 0.0001

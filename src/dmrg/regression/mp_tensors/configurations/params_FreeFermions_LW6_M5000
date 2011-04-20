@@ -1,10 +1,12 @@
 truncation_initial = 1e-10
 truncation_final = 1e-12
 
-alpha_initial = 1e-4
-alpha_final = 1e-6
+alpha_initial = 1e-2
+alpha_main = 1e-6
+alpha_final = 0
 
 nsweeps = 3
+nmainsweeps = 1
 ngrowsweeps = 1
 
 eigensolver = IETL_JCD

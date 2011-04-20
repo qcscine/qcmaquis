@@ -4,12 +4,17 @@ ietl_jcd_tol = 1e-8
 ietl_jcd_maxiter = 10
 
 nsweeps = 4
+nmainsweeps = 2
 ngrowsweeps = 1
 
 max_bond_dimension = 1000
 
 truncation_initial = 0.0001
 truncation_final = 1e-10
+
+alpha_initial = 0.01
+alpha_main = 1e-6
+alpha_final = 0
 
 resultfile = results.h5
 chkpfile = results.h5
