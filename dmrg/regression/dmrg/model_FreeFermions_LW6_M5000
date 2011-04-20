@@ -1,0 +1,7 @@
+model = FreeFermions
+lattice = cylinder_lattice
+
+u1_total_charge = 18
+
+L = 6
+W = 6

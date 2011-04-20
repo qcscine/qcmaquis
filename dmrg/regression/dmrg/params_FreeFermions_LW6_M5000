@@ -1,0 +1,23 @@
+truncation_initial = 1e-10
+truncation_final = 1e-12
+
+alpha_initial = 1e-2
+alpha_main = 1e-6
+alpha_final = 0
+
+nsweeps = 3
+nmainsweeps = 1
+ngrowsweeps = 1
+
+eigensolver = IETL_JCD
+ietl_jcd_gmres = 0
+ietl_jcd_tol = 1e-8
+ietl_jcd_maxiter = 10
+
+max_bond_dimension = 5000
+
+resultfile = results.h5
+chkpfile = results.h5
+storagedir = /scratch/eiger/ewartt/5000
+
+run_seconds = 3600
