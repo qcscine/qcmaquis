@@ -163,6 +163,74 @@ namespace app {
     };
     
     
+    /* ****************** FREE FERMIONS */
+    template<class Matrix>
+    class FreeFermions : public Hamiltonian<Matrix, U1>
+    {
+        typedef Hamiltonian_Term<Matrix, U1> hamterm_t;
+        typedef typename hamterm_t::op_t op_t;
+
+    public:
+        FreeFermions(const Lattice& lat, double t=1.)
+        {
+            op_t create, destroy, sign;
+            create.insert_block(Matrix(1, 1, 1), 0, 1);
+            destroy.insert_block(Matrix(1, 1, 1), 1, 0);
+
+            ident.insert_block(Matrix(1, 1, 1), 0, 0);
+            ident.insert_block(Matrix(1, 1, 1), 1, 1);
+            sign.insert_block(Matrix(1, 1, 1), 0, 0);
+            sign.insert_block(Matrix(1, 1, -1), 1, 1);
+
+            for (int p=0; p<lat.size(); ++p) {
+                std::vector<int> neighs = lat.forward(p);
+                for (int n=0; n<neighs.size(); ++n) {
+                    {
+                        hamterm_t term;
+                        term.fill_operator = sign;
+                        term.operators.push_back( std::make_pair(p, -t*create) );
+                        term.operators.push_back( std::make_pair(neighs[n], destroy) );
+                        terms.push_back(term);
+                    }
+                    {
+                        hamterm_t term;
+                        term.fill_operator = sign;
+                        term.operators.push_back( std::make_pair(p, -t*destroy) );
+                        term.operators.push_back( std::make_pair(neighs[n], create) );
+                        terms.push_back(term);
+                    }
+                }
+            }
+        }
+
+        int n_terms(TermsType what) const
+         {
+             return terms.size();
+         }
+         hamterm_t operator[](int i) const
+         {
+             return terms[i];
+         }
+
+         op_t get_identity() const
+         {
+             return ident;
+         }
+
+         Index<U1> get_phys() const
+         {
+             Index<U1> phys;
+             phys.insert(std::make_pair(0, 1));
+             phys.insert(std::make_pair(1, 1));
+             return phys;
+         }
+
+     private:
+         std::vector<hamterm_t> terms;
+         op_t ident;
+    };
+
+
     /* ****************** FERMI HUBBARD */
     template<class Matrix>
     class TwoU1_FermiHubbard : public Hamiltonian<Matrix, TwoU1>
@@ -230,7 +298,7 @@ namespace app {
                     { // t*cdag_up*c_up
                         hamterm_t term;
                         term.fill_operator = sign_up;
-                        gemm(create_up, sign_up, tmp);
+                        gemm(sign_up, create_up, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, destroy_up) );
                         terms.push_back(term);
@@ -238,7 +306,7 @@ namespace app {
                     { // t*c_up*cdag_up
                         hamterm_t term;
                         term.fill_operator = sign_up;
-                        gemm(sign_up, destroy_up, tmp);
+                        gemm(destroy_up, sign_up, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, create_up) );
                         terms.push_back(term);
@@ -246,7 +314,7 @@ namespace app {
                     { // t*cdag_down*c_down
                         hamterm_t term;
                         term.fill_operator = sign_down;
-                        gemm(create_down, sign_down, tmp);
+                        gemm(sign_down, create_down, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, destroy_down) );
                         terms.push_back(term);
@@ -254,7 +322,7 @@ namespace app {
                     { // t*c_down*cdag_down
                         hamterm_t term;
                         term.fill_operator = sign_down;
-                        gemm(sign_down, destroy_down, tmp);
+                        gemm(destroy_down, sign_down, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
                         term.operators.push_back( std::make_pair(*hopto, create_down) );
                         terms.push_back(term);

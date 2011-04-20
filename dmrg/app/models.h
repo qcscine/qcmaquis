@@ -33,6 +33,8 @@ namespace app {
             return new Heisenberg<Matrix>(lattice, model.get<double>("Jxy"), model.get<double>("Jz"));
         else if (model.get<std::string>("model") == std::string("HCB"))
             return new HCB<Matrix>(lattice);
+        else if (model.get<std::string>("model") == std::string("FreeFermions"))
+            return new FreeFermions<Matrix>(lattice, model.get<double>("t"));
         else {
             throw std::runtime_error("Don't know this model!");
             return NULL;
