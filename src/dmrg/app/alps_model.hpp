@@ -73,22 +73,35 @@ public:
 
 		for (int i=0; i<states.size(); ++i) {
 			charge c = convert_alps<SymmGroup>(states[i], conserved_qn);
-			tphys[type].insert(std::make_pair(c, 1));
+			//std::cout << "Inserting " << c << " for " << states[i] << std::endl;
+			tphys[type].push_back(c);
 			tident[type].insert_block(Matrix(1, 1, 1), c, c);
 			int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
 			tfill[type].insert_block(Matrix(1, 1, sign), c, c);
 		}
 	}
 
-	/*
-            std::cout << "BASIS:" << std::endl;
-            for (typename std::map<int, Index<SymmGroup> >::iterator it=tphys.begin();
-                 it != tphys.end();
-                 it++) {
 
-                std::cout << it->first << " " << it->second << std::endl;
-            }
-	 */
+/*
+	{
+		std::cout << "BASIS:" << std::endl;
+		alps::SiteBasisDescriptor<I> b = model.site_basis(0);
+		alps::site_basis<I> states(b);
+		for (typename std::map<int, std::vector<typename SymmGroup::charge> >::iterator it=tphys.begin();
+				it != tphys.end();
+				it++) {
+
+			std::cout << "type " << it->first << ":" << std::endl;
+			alps::SiteBasisDescriptor<I> b = model.site_basis(it->first);
+			alps::site_basis<I> states(b);
+			for (int i=0; i<it->second.size(); ++i) {
+				std::cout << " " << i << ":" <<  " " << it->second[i] << " " << states[i] << std::endl;
+			}
+
+		}
+	}
+ */
+
 
 	// site_term loop with cache to avoid recomputing matrices
 	for (graph_type::site_iterator it=lattice.sites().first; it!=lattice.sites().second; ++it) {
@@ -102,32 +115,29 @@ public:
 			typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator> > V;
 			V  ops = model.site_term(type).templated_split<double>();
 #ifndef NDEBUG
-if (ops.size() != 1) {
-	std::runtime_error("SiteOperator not of length one.");
-}
+			if (ops.size() != 1) {
+				std::runtime_error("SiteOperator not of length one.");
+			}
 #endif
-if (ops[0].get<0>().value() != 0.) {
-	SiteOperator op = ops[0].get<1>();
-	alps_matrix m = alps::get_matrix(double(),
-			op,
-			model.site_basis(type),
-			parms,
-			true);
+			if (ops[0].get<0>().value() != 0.) {
+				SiteOperator op = ops[0].get<1>();
+				alps_matrix m = alps::get_matrix(double(), op, model.site_basis(type), parms, true);
 
-	for (int i=0; i<m.shape()[0]; ++i) {
-		for (int j=0; j<m.shape()[1]; ++j) {
-			if (m[i][j] != 0.)
-				newm.insert_block(Matrix(1, 1, ops[0].get<0>().value()*m[i][j]),
-						tphys[type][j].first,
-						tphys[type][i].first);
-		}
-	}
-	used = true;
-} else {
-	used = false;
-}
+				for (int i=0; i<m.shape()[0]; ++i) {
+					for (int j=0; j<m.shape()[1]; ++j) {
+						if (m[i][j] != 0.)
+							// Notation: going from state i to state j
+							newm.insert_block(Matrix(1, 1, ops[0].get<0>().value()*m[i][j]),
+									tphys[type][i],
+									tphys[type][j]);
+					}
+				}
+				used = true;
+			} else {
+				used = false;
+			}
 
-site_terms[type] = std::make_pair(used, newm);
+			site_terms[type] = std::make_pair(used, newm);
 		} else {
 			newm = site_terms[type].second;
 			used = site_terms[type].first;
@@ -170,10 +180,13 @@ site_terms[type] = std::make_pair(used, newm);
 				for (int i=0; i<m.shape()[0]; ++i) {
 					for (int j=0; j<m.shape()[1]; ++j) {
 						if (m[i][j] != 0.)
-							newm.insert_block(Matrix(1, 1, m[i][j]), tphys[type_s][j].first, tphys[type_s][i].first);
+							// Notation: going from state i to state j
+							newm.insert_block(Matrix(1, 1, m[i][j]), tphys[type_s][i], tphys[type_s][j]);
 					}
 				}
-				term.operators.push_back( std::make_pair(p_s, tit->get<0>().value()*newm) );
+				op_t tmp;
+				gemm(tfill[type_s], newm, tmp); // Note inverse notation because of notation in operator.
+				term.operators.push_back( std::make_pair(p_s, tit->get<0>().value()*tmp) );
 			}
 			{
 				alps_matrix m = alps::get_matrix(double(), op2, b2, parms, true);
@@ -181,7 +194,8 @@ site_terms[type] = std::make_pair(used, newm);
 				for (int i=0; i<m.shape()[0]; ++i) {
 					for (int j=0; j<m.shape()[1]; ++j) {
 						if (m[i][j] != 0.)
-							newm.insert_block(Matrix(1, 1, m[i][j]), tphys[type_t][j].first, tphys[type_t][i].first);
+							// Notation: going from state i to state j
+							newm.insert_block(Matrix(1, 1, m[i][j]), tphys[type_t][i], tphys[type_t][j]);
 					}
 				}
 				term.operators.push_back( std::make_pair(p_t, newm) );
@@ -208,10 +222,14 @@ op_t get_identity() const
 }
 
 Index<SymmGroup> get_phys() const
-        		{
+{
+	Index<SymmGroup> phys;
 	// TODO: do we need multiple site types?
-			return tphys[0];
-        		}
+	for (int i=0; i<tphys[0].size(); ++i) {
+		phys.insert( std::make_pair(tphys[0][i], 1) );
+	}
+	return phys;
+}
 
 typename SymmGroup::charge init_qn (const alps::Parameters& parms) const
 {
@@ -235,7 +253,7 @@ std::vector<hamterm_t> terms;
 std::map<int, std::pair<bool, op_t> > site_terms;
 mutable std::map<int, op_t> tident;
 mutable std::map<int, op_t> tfill;
-mutable std::map<int, Index<SymmGroup> > tphys;
+mutable std::map<int, std::vector<typename SymmGroup::charge> > tphys;
 std::vector<std::pair<int, std::string> > conserved_qn;
 
 };
