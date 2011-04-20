@@ -17,7 +17,9 @@
 
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
+#ifdef HAVE_ARPACK
 #include "arpackpp_solver.h"
+#endif
 
 #include "utils/DmrgParameters.h"
 #include "utils/logger.h"
@@ -139,10 +141,12 @@ public:
                 BEGIN_TIMING("IETL")
                 res = solve_ietl_lanczos(sp, mps[site], parms);
                 END_TIMING("IETL")
+#ifdef HAVE_ARPACK
             } else if (parms.get<std::string>("eigensolver") == std::string("ARPACK")) {
                 BEGIN_TIMING("ARPACK")
                 res = solve_arpackpp(sp, mps[site], parms);
                 END_TIMING("ARPACK")
+#endif
             } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
                 BEGIN_TIMING("JCD")
                 res = solve_ietl_jcd(sp, mps[site], parms);
