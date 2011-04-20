@@ -2,10 +2,12 @@ alpha_initial = 0.01
 alpha_main = 1e-6
 alpha_final = 0
 
-arpack_ncv = 20
-arpack_tol = 1e-06
+eigensolver = IETL_JCD
+ietl_jcd_gmres = 0
+ietl_jcd_tol = 1e-8
+ietl_jcd_maxiter = 10
+
 chkpfile = results.h5
-eigensolver = ARPACK
 max_bond_dimension = 1000
 
 nsweeps = 4
