@@ -45,5 +45,5 @@ private:
 };
 
 
-#endif __DEBUG_MPI__
+#endif 
 
