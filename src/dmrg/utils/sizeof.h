@@ -18,11 +18,20 @@ namespace utils
 {
     using std::size_t;
     
+
+#ifdef MPI_PARALLEL
+    template<class T>
+    size_t size_of(blas::p_dense_matrix<T> const & m)
+    {
+        return num_rows(m)*num_cols(m)*sizeof(T);
+    }
+#else
     template<class T, class MB>
     size_t size_of(blas::dense_matrix<T, MB> const & m)
     {
-        return num_rows(m)*num_columns(m)*sizeof(T);
+        return num_rows(m)*num_cols(m)*sizeof(T);
     }
+#endif
     
     template<class M, class SG>
     size_t size_of(block_matrix<M, SG> const & m)
