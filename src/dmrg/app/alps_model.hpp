@@ -171,8 +171,10 @@ public:
 			SiteOperator op1 = tit->get<1>();
 			SiteOperator op2 = tit->get<2>();
 
+			bool with_sign = fermionic(b1, op1, b2, op2);
+
 			hamterm_t term;
-			if (fermionic(b1, op1, b2, op2))
+			if (with_sign)
 				term.fill_operator = tfill[type_s];
 			else
 				term.fill_operator = tident[type_s];
@@ -187,7 +189,10 @@ public:
 					}
 				}
 				op_t tmp;
-				gemm(tfill[type_s], newm, tmp); // Note inverse notation because of notation in operator.
+				if (with_sign)
+					gemm(tfill[type_s], newm, tmp); // Note inverse notation because of notation in operator.
+				else
+					tmp = newm;
 				term.operators.push_back( std::make_pair(p_s, tit->get<0>().value()*tmp) );
 			}
 			{
