@@ -54,7 +54,7 @@ public:
     : instance(m)
     {
         for (std::size_t k = 0; k < m.data().n_blocks(); ++k)
-            N += num_rows(m.data()[k]) * num_columns(m.data()[k]);
+            N += num_rows(m.data()[k]) * num_cols(m.data()[k]);
     }
     
     friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS const & vs)

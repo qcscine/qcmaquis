@@ -58,7 +58,7 @@ public:
     {
         N = 0;
         for (std::size_t k = 0; k < prob.ket_tensor.data().n_blocks(); ++k)
-            N += num_rows(prob.ket_tensor.data()[k]) * num_columns(prob.ket_tensor.data()[k]);
+            N += num_rows(prob.ket_tensor.data()[k]) * num_cols(prob.ket_tensor.data()[k]);
     }
     
     int getN() { return N; }

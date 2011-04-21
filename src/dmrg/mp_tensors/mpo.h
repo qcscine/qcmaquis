@@ -196,7 +196,7 @@ private:
                         
                         // ...for now...
                         assert( num_rows((*this)[p](r,c)[cs]) == 1 );
-                        assert( num_columns((*this)[p](r,c)[cs]) == 1 );
+                        assert( num_cols((*this)[p](r,c)[cs]) == 1 );
                         
                         ret(std::make_pair(lc, outr),
                             std::make_pair(rc, visited_c_basis[rc]));
@@ -273,7 +273,7 @@ private:
                         
                         // ...for now...
                         assert( num_rows((*this)[p](r,c)[cs]) == 1 );
-                        assert( num_columns((*this)[p](r,c)[cs]) == 1 );
+                        assert( num_cols((*this)[p](r,c)[cs]) == 1 );
                         
                         ret(std::make_pair(lc, visited_r_basis[lc]),
                             std::make_pair(rc, outc)) =
