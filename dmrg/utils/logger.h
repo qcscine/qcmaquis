@@ -12,6 +12,7 @@
 #include <map>
 #include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/any.hpp>
 
 namespace detail {
     class Logger_impl_base

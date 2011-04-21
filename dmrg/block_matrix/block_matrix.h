@@ -26,7 +26,8 @@ public:
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
     
-    block_matrix(Index<SymmGroup> rows, Index<SymmGroup> cols);
+    block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(),
+                 Index<SymmGroup> cols = Index<SymmGroup>());
 
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
@@ -59,8 +60,8 @@ public:
     void insert_block(Matrix const &, charge, charge);
     void remove_block(charge r, charge c);
     
-    void remove_rows_from_block(size_type block, size_type r, size_type k);
-    void remove_cols_from_block(size_type block, size_type r, size_type k);
+    void remove_rows_from_block(size_type block, size_type r, size_type k = 1);
+    void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
     
     value_type trace() const;
     void inplace_transpose();

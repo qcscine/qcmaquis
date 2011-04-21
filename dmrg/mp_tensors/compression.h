@@ -42,9 +42,9 @@ struct compression {
     }
     
     template<class Matrix, class SymmGroup>
-    void compress_two_sites(MPS<Matrix, SymmGroup> & mps,
-                            std::size_t Mmax, double cutoff,
-                            std::size_t p)
+    static void compress_two_sites(MPS<Matrix, SymmGroup> & mps,
+                                   std::size_t Mmax, double cutoff,
+                                   std::size_t p)
     {
         block_matrix<Matrix, SymmGroup> t;
         
