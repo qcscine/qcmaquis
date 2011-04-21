@@ -145,7 +145,7 @@ public:
 
 		if (used) {
 			hamterm_t term;
-			term.fill_operator = tident[0];
+			term.fill_operator = tident[type];
 			term.operators.push_back( std::make_pair(p, newm) );
 			terms.push_back(term);
 		}
@@ -172,8 +172,10 @@ public:
 			SiteOperator op2 = tit->get<2>();
 
 			hamterm_t term;
-			term.fill_operator = tfill[type_s];
-
+			if (fermionic(b1, op1, b2, op2))
+				term.fill_operator = tfill[type_s];
+			else
+				term.fill_operator = tident[type_s];
 			{
 				alps_matrix m = alps::get_matrix(double(), op1, b1, parms, true);
 				op_t newm;
@@ -246,8 +248,19 @@ typename SymmGroup::charge init_qn (const alps::Parameters& parms) const
 
 private:
 
-charge create_charge (alps::site_state<I> const & state) const;
+template <class SiteOp>
+std::string simplify_name(const SiteOp &op) const
+{
+    std::string term = op.term();
+    std::string arg = "("+op.site()+")";
+    boost::algorithm::replace_all(term,arg,"");
+    return term;
+}
 
+bool fermionic (alps::SiteBasisDescriptor<I> b1, SiteOperator op1,
+		alps::SiteBasisDescriptor<I> b2, SiteOperator op2) const {
+	return b1.is_fermionic(simplify_name(op1)) && b2.is_fermionic(simplify_name(op2));
+}
 
 std::vector<hamterm_t> terms;
 std::map<int, std::pair<bool, op_t> > site_terms;
