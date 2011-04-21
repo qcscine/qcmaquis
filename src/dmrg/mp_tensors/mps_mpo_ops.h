@@ -157,7 +157,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
     for (std::size_t p = 1; p < L; ++p)
     {
         block_matrix<Matrix, SymmGroup> t, u, v;
-        block_matrix<blas::diagonal_matrix<double>, SymmGroup> s;
+        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> s;
         
         mps[p-1].make_left_paired();
         mps[p].make_right_paired();
@@ -170,7 +170,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
         
         double r = 0;
         for (std::size_t k = 0; k < s.n_blocks(); ++k)
-            for (typename blas::diagonal_matrix<double>::element_iterator it = elements(s[k]).first;
+            for (typename blas::associated_diagonal_matrix<Matrix>::type::element_iterator it = elements(s[k]).first;
                  it != elements(s[k]).second; ++it)
             {
                 double a = fabs(*it);
