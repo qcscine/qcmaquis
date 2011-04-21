@@ -40,9 +40,9 @@ struct Matrix
         // Swap
         std::swap(x,z);
 
-        // num_rows(), num_columns()
+        // num_rows(), num_cols()
         std::size_t s = num_rows(y);
-        s = num_columns(y);
+        s = num_cols(y);
         
         // Element access
         t = x(0,0);

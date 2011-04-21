@@ -25,9 +25,9 @@ namespace blas
              typename associated_diagonal_matrix<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type & S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<dense_matrix<T, MemoryBlock> >));
-        typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
+        typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
         resize(U, num_rows(M), k);
-        resize(V, k, num_columns(M));
+        resize(V, k, num_cols(M));
         
         std::vector<typename detail::sv_type<T>::type> S_(k);
 //        int info = boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
@@ -43,7 +43,7 @@ namespace blas
             dense_matrix<T, MemoryBlock> & Q,
             dense_matrix<T, MemoryBlock> & R)
     {
-        typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M));
+        typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
         std::vector<double> tau(k);
         
         int info = 0; //boost::numeric::bindings::lapack::geqrf(M, tau);
@@ -51,11 +51,11 @@ namespace blas
             throw std::runtime_error("Error in geqrf");
         
         resize(Q, num_rows(M), k);
-        resize(R, k, num_columns(M));
+        resize(R, k, num_cols(M));
         
         // get R
         std::fill(elements(R).first, elements(R).second, 0);
-        for (std::size_t c = 0; c < num_columns(M); ++c)
+        for (std::size_t c = 0; c < num_cols(M); ++c)
             for (std::size_t r = 0; r <= c; ++r)
                 R(r, c) = M(r, c);
         
@@ -76,16 +76,16 @@ namespace blas
               dense_matrix<T, MemoryBlock> & evecs,
               std::vector<double> & evals)
     {
-        assert(num_rows(M) == num_columns(M));
+        assert(num_rows(M) == num_cols(M));
         assert(evals.size() == num_rows(M));
         boost::numeric::bindings::lapack::syevd('V', M, evals);
         // to be consistent with the SVD, I reorder in decreasing order
         std::reverse(evals.begin(), evals.end());
         // and the same with the matrix
-        evecs.resize(num_rows(M), num_columns(M));
-        for (std::size_t c = 0; c < num_columns(M); ++c)
+        evecs.resize(num_rows(M), num_cols(M));
+        for (std::size_t c = 0; c < num_cols(M); ++c)
 			std::copy(column(M, c).first, column(M, c).second,
-                      column(evecs, num_columns(M)-1-c).first);
+                      column(evecs, num_cols(M)-1-c).first);
     }
     
     template<typename T, class MemoryBlock>
@@ -93,7 +93,7 @@ namespace blas
               dense_matrix<T, MemoryBlock> & evecs,
               typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
     {
-        assert(num_rows(M) == num_columns(M));
+        assert(num_rows(M) == num_cols(M));
         std::vector<double> evals_(num_rows(M));
         syev(M, evecs, evals_);
         evals = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(evals_);
