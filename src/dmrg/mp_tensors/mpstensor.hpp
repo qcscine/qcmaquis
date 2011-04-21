@@ -37,7 +37,7 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
         data_.generate(drand48);
 //        for (int i = 0; i < data_.n_blocks(); ++i)
 //            data_[i](0,0) = 1;
-//            for (int k = 0; k < std::min(num_rows(data_[i]), num_columns(data_[i])); ++k)
+//            for (int k = 0; k < std::min(num_rows(data_[i]), num_cols(data_[i])); ++k)
 //                data_[i](k,k) = 1;
     } else
         data_.generate(utils::constant<typename Matrix::value_type>(0));
@@ -202,7 +202,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     
     scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        for (std::size_t c = 0; c < num_columns(data_[b]); ++c)
+        for (std::size_t c = 0; c < num_cols(data_[b]); ++c)
             for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
                 ret += conj(data_[b](r,c)) * data_[b](r,c);
     
@@ -224,7 +224,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     
     scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        for (std::size_t c = 0; c < num_columns(data_[b]); ++c)
+        for (std::size_t c = 0; c < num_cols(data_[b]); ++c)
             for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
                 ret += conj(data_[b](r,c)) * rhs.data_[b](r,c);
 
