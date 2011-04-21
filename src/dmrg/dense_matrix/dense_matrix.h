@@ -95,7 +95,7 @@ namespace blas {
         /**
           * Access the element in row i, column j
           * @param i 0<= i <= num_rows()
-          * @param j 0<= j <= num_columns()
+          * @param j 0<= j <= num_cols()
           * @return A mutable reference to the matrix element at position (i,j).
           */
         inline value_type& operator()(const size_type i, const size_type j);
@@ -132,7 +132,7 @@ namespace blas {
         /**
           * @return number of columns of the matrix
           */
-        inline const size_type num_columns() const;
+        inline const size_type num_cols() const;
 
         /**
           * @return The stride for moving to the next element along a row
@@ -195,11 +195,11 @@ namespace blas {
         }
         std::pair<element_iterator,element_iterator> elements()
         {
-            return std::make_pair( element_iterator(this,0,0), element_iterator(this,0, num_columns()) );
+            return std::make_pair( element_iterator(this,0,0), element_iterator(this,0, num_cols()) );
         }
         std::pair<element_iterator,element_iterator> elements() const
         {
-            return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_columns() ) );
+            return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_cols() ) );
         }
 
         template <typename InputIterator>

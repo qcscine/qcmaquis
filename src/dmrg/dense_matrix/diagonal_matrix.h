@@ -27,7 +27,7 @@ namespace blas {
         : data_(size, init) { }
         
         std::size_t num_rows() const { return data_.size(); }
-        std::size_t num_columns() const { return data_.size(); }
+        std::size_t num_cols() const { return data_.size(); }
         
         T const & operator[](std::size_t i) const { return data_[i]; }
         T & operator[](std::size_t i) { return data_[i]; }
@@ -76,20 +76,20 @@ namespace blas {
     template<typename T, class Matrix>
     void gemm(Matrix const & m1, diagonal_matrix<T> const & m2, Matrix & m3)
     {
-        assert(num_columns(m1) == num_rows(m2));
-        resize(m3, num_rows(m1), num_columns(m2));
+        assert(num_cols(m1) == num_rows(m2));
+        resize(m3, num_rows(m1), num_cols(m2));
         for (std::size_t i = 0; i < num_rows(m1); ++i)
-            for (std::size_t j = 0; j < num_columns(m2); ++j)
+            for (std::size_t j = 0; j < num_cols(m2); ++j)
                 m3(i,j) = m1(i,j) * m2(j,j);
     }
     
     template<typename T, class Matrix>
     void gemm(diagonal_matrix<T> const & m1, Matrix const & m2, Matrix & m3)
     {
-        assert(num_columns(m1) == num_rows(m2));
-        resize(m3, num_rows(m1), num_columns(m2));
+        assert(num_cols(m1) == num_rows(m2));
+        resize(m3, num_rows(m1), num_cols(m2));
         for (std::size_t i = 0; i < num_rows(m1); ++i)
-            for (std::size_t j = 0; j < num_columns(m2); ++j)
+            for (std::size_t j = 0; j < num_cols(m2); ++j)
                 m3(i,j) = m1(i,i) * m2(i,j);
     }
 
@@ -100,9 +100,9 @@ namespace blas {
     }
     
     template<typename T>
-    typename diagonal_matrix<T>::size_type num_columns(diagonal_matrix<T> const & m)
+    typename diagonal_matrix<T>::size_type num_cols(diagonal_matrix<T> const & m)
     {
-        return m.num_columns();
+        return m.num_cols();
     }
     
     template<typename T>

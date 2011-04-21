@@ -121,7 +121,7 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    inline const std::size_t dense_matrix<T, MemoryBlock>::num_columns() const
+    inline const std::size_t dense_matrix<T, MemoryBlock>::num_cols() const
     {
         return this->size2_;
     }
@@ -444,15 +444,15 @@ namespace blas {
     template <typename T, typename MemoryBlock>
     const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs)
     {
-        assert( lhs.num_columns() == rhs.num_rows() );
+        assert( lhs.num_cols() == rhs.num_rows() );
 
         // Simple matrix matrix multiplication
-        dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_columns());
+        dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols());
         for(std::size_t i=0; i < lhs.num_rows(); ++i)
         {
-            for(std::size_t k=0; k<lhs.num_columns(); ++k)
+            for(std::size_t k=0; k<lhs.num_cols(); ++k)
             {
-                for(std::size_t j=0; j<rhs.num_columns(); ++j)
+                for(std::size_t j=0; j<rhs.num_cols(); ++j)
                 {
                         result(i,j) += lhs(i,k) * rhs(k,j);
                 }
@@ -465,7 +465,7 @@ namespace blas {
     const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
     matrix_vector_multiply(dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
     {
-        assert( m.num_columns() == v.size() );
+        assert( m.num_cols() == v.size() );
         vector<
             typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,
             typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type
@@ -474,7 +474,7 @@ namespace blas {
         // Simple Matrix * Vector
         for(typename dense_matrix<T,MemoryBlock>::size_type i = 0; i < m.num_rows(); ++i)
         {
-            for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j <m.num_columns(); ++j)
+            for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j <m.num_cols(); ++j)
             {
                 result(i) += m(i,j) * v(j);
             }
@@ -520,7 +520,7 @@ namespace blas {
     const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a)
     {
 		// Do the operation column by column
-		for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < a.num_columns(); ++j)
+		for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < a.num_cols(); ++j)
 		{
 			std::pair<typename dense_matrix<T,MemoryBlock>::column_element_iterator,
 					  typename dense_matrix<T,MemoryBlock>::column_element_iterator> range(a.column(j));
@@ -566,7 +566,7 @@ namespace blas {
     {
         for(typename dense_matrix<T,MemoryBlock>::size_type i=0; i< m.num_rows(); ++i)
         {
-            for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < m.num_columns(); ++j)
+            for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < m.num_cols(); ++j)
                 o<<m(i,j)<<" ";
             o<<std::endl;
         }

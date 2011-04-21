@@ -42,7 +42,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
         }
 
         static size_type size2( const Id& id ) {
-            return id.num_columns();
+            return id.num_cols();
         }
 
         static value_type* begin_value( Id& id ) {
@@ -50,7 +50,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
         }
 
         static value_type* end_value( Id& id ) {
-            return &(*(id.column(id.num_columns()-1).second-1));
+            return &(*(id.column(id.num_cols()-1).second-1));
         }
 
         static difference_type stride1( const Id& id ) {

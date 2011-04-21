@@ -18,8 +18,8 @@ namespace blas {
     template <typename MemoryBlock> \
     const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
     { \
-        assert( lhs.num_columns() == rhs.num_rows() ); \
-        dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_columns()); \
+        assert( lhs.num_cols() == rhs.num_rows() ); \
+        dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
         static Timer timer("GEMM"); \
         timer.begin(); \
         boost::numeric::bindings::blas::gemm \
@@ -40,7 +40,7 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
     template <typename MemoryBlock, typename MemoryBlock2> \
     const vector<T,MemoryBlock2> matrix_vector_multiply(dense_matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock2> const& v) \
     { \
-        assert( m.num_columns() == v.size()); \
+        assert( m.num_cols() == v.size()); \
         vector<T,MemoryBlock2> result(m.num_rows()); \
         boost::numeric::bindings::blas::gemv \
             ( \
@@ -62,14 +62,14 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)
     { \
         static Timer timer("plus_minus_assign"); \
         timer.begin(); \
-        assert( m.num_columns() == rhs.num_columns() && m.num_rows() == rhs.num_rows() ); \
+        assert( m.num_cols() == rhs.num_cols() && m.num_rows() == rhs.num_rows() ); \
         if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
         { \
-            boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_columns(), sign, &(*rhs.column(0).first), 1, &(*m.column(0).first), 1); \
+            boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_cols(), sign, &(*rhs.column(0).first), 1, &(*m.column(0).first), 1); \
         } \
         else \
         { \
-            for(std::size_t j=0; j < m.num_columns(); ++j) \
+            for(std::size_t j=0; j < m.num_cols(); ++j) \
                 boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.column(j).first), 1, &(*m.column(j).first), 1); \
         } \
         timer.end(); \
@@ -89,11 +89,11 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
     { \
         if( !(m.is_shrinkable()) ) \
         { \
-            boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_columns(), t, &(*m.column(0).first), 1 ); \
+            boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_cols(), t, &(*m.column(0).first), 1 ); \
         } \
         else \
         { \
-            for(std::size_t j=0; j <m.num_columns(); ++j) \
+            for(std::size_t j=0; j <m.num_cols(); ++j) \
                 boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.column(j).first), 1 ); \
         } \
     }
