@@ -18,8 +18,7 @@ template<class InputIterator, class OutputIterator, class T>
 void iterator_axpy(InputIterator in1, InputIterator in2,
                    OutputIterator out1, T val)
 {
-    using namespace boost::lambda;
-    std::transform(in1, in2, out1, out1, _1*val+_2);
+    std::transform(in1, in2, out1, out1, boost::lambda::_1*val+boost::lambda::_2);
 }
 
 inline void iterator_axpy(double const * in1, double const * in2,

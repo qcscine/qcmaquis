@@ -12,8 +12,8 @@
 #include <boost/lambda/bind.hpp>
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(),
-                                              Index<SymmGroup> cols = Index<SymmGroup>())
+block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
+                                              Index<SymmGroup> cols)
 : rows_(rows)
 , cols_(cols)
 {
@@ -144,14 +144,14 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k = 1)
+void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k)
 {
     remove_rows(data_[block], r, k);
     rows_[block].second -= k;
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k = 1)
+void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k)
 {
     remove_columns(data_[block], r, k);
     cols_[block].second -= k;
