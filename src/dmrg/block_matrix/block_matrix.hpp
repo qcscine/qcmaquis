@@ -59,7 +59,7 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1
     
     std::pair<charge, size_type>
     p1 = std::make_pair(c1, mtx.num_rows()),
-    p2 = std::make_pair(c2, mtx.num_columns());
+    p2 = std::make_pair(c2, mtx.num_cols());
     
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
@@ -229,18 +229,18 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
     if (this->has_block(c1, c2))
     {
         if (num_rows(mtx) == num_rows((*this)(c1, c2)) &&
-            num_columns(mtx) == num_columns((*this)(c1, c2)))
+            num_cols(mtx) == num_cols((*this)(c1, c2)))
             (*this)(c1, c2) += mtx;
         else if (num_rows(mtx) > num_rows((*this)(c1, c2)) &&
-                 num_columns(mtx) > num_columns((*this)(c1, c2)))
+                 num_cols(mtx) > num_cols((*this)(c1, c2)))
         {
-            resize_block(c1, c2, num_rows(mtx), num_columns(mtx));
+            resize_block(c1, c2, num_rows(mtx), num_cols(mtx));
             (*this)(c1, c2) += mtx;
         } else {
             std::size_t maxrows = std::max(num_rows(mtx),
                                            num_rows((*this)(c1, c2)));
-            std::size_t maxcols = std::max(num_columns(mtx),
-                                           num_columns((*this)(c1, c2)));
+            std::size_t maxcols = std::max(num_cols(mtx),
+                                           num_cols((*this)(c1, c2)));
             
             Matrix cpy = mtx; // only in this case do we need to copy the argument matrix
             

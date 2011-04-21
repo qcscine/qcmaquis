@@ -33,7 +33,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         C.insert_block(Matrix3(),
                        A.left_basis()[k].first, B.right_basis()[matched_block].first);
         C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
-                       num_rows(A[k]), num_columns(B[matched_block]));
+                       num_rows(A[k]), num_cols(B[matched_block]));
         gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
     }
 }
@@ -57,7 +57,7 @@ void pgemm(block_matrix<Matrix1, SymmGroup> const & A,
         C.insert_block(Matrix3(),
                        A.left_basis()[k].first, B.right_basis()[matched_block].first);
         C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
-                       num_rows(A[k]), num_columns(B[matched_block]));
+                       num_rows(A[k]), num_cols(B[matched_block]));
     }
 
 #pragma omp parallel for schedule(dynamic)
