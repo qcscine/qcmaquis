@@ -24,7 +24,19 @@ namespace blas {
     {
         return this->num_rows();
     }
-    
+   
+    template<typename T>
+    size_t p_diagonal_matrix<T>::num_columns() const
+    {
+        return this->num_cols();
+    }
+
+    template<typename T>
+    p_diagonal_matrix<T>& p_diagonal_matrix<T>::operator=(const p_diagonal_matrix<T>& rhs)
+    {
+        this->data_ = rhs.get_data();    
+    }
+ 
     template<typename T>
     T const & p_diagonal_matrix<T>::operator[](size_t i) const 
     {

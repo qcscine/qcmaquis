@@ -57,7 +57,7 @@ namespace blas {
             const_element_iterator;                       // Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
         p_dense_matrix(size_type rows, size_type cols, T init_value);
-        p_dense_matrix(size_type rows, size_type cols, T* const & array); 
+        p_dense_matrix(size_type rows, size_type cols, T init_value,  T* const & array); 
         template<typename TM, ambient::policy PM>
         p_dense_matrix(p_dense_matrix<TM,PM> const& m);
   
@@ -74,6 +74,7 @@ namespace blas {
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, difference_type k);
         void remove_cols(size_type j, difference_type k);
+        void remove_columns(size_type j, difference_type k);
         void clear();
        
         void inplace_conjugate();
