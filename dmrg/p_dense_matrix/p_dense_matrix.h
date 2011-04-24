@@ -80,6 +80,8 @@ namespace blas {
         void inplace_conjugate();
 
         inline value_type& get(size_type i, size_type j) const;
+
+        template<ambient::policy PR> operator p_dense_matrix<T,PR> ();
         template<ambient::policy PR> p_dense_matrix<T,P>& operator = (p_dense_matrix<T,PR>& rhs);
         p_dense_matrix<T,P>& operator = (const p_dense_matrix<T>& rhs);
         inline value_type& operator()(size_type i, size_type j);

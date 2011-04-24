@@ -183,6 +183,12 @@ namespace blas {
 
     template <typename T, ambient::policy P>
     template <ambient::policy PR>
+    p_dense_matrix<T,P>::operator p_dense_matrix<T,PR>(){
+        return (*(p_dense_matrix<T,PR>*)this);
+    }
+
+    template <typename T, ambient::policy P>
+    template <ambient::policy PR>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator = (p_dense_matrix<T,PR>& rhs){
         return (*this = *(const p_dense_matrix<T>*)&rhs);
     }

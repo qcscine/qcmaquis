@@ -65,7 +65,6 @@ namespace blas
     template<typename T>
     void gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
     {
-        printf("Attempting to perform Ambient GEMM\n");
         breakdown(C).set_init(ambient::nullify<T>);
 	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A,B,C );
     }
@@ -73,7 +72,7 @@ namespace blas
     template<typename T>
     void pblas_gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
     {
-        printf("Attempting to perform PBLAS GEMM\n");
+        breakdown(C).set_init(ambient::nullify<T>);
 	ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A,B,C );
     }
     
@@ -112,7 +111,6 @@ namespace blas
    template<typename T>
    void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala )
    {
-        printf("Attempting to perform validation kernel\n");
         ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
    }
  

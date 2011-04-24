@@ -168,17 +168,15 @@ namespace ambient
                 cleanup_stack.push_back(logistics);
                 if(logistics->get_scope()->involved()){
                     computing->set_scope(logistics->get_scope());
+                    scope.set_group(logistics->get_scope());
                     if(logistics->pin == NULL){ // nothing has been pinned
                         logistics->get_scope()->get_manager()->spin_loop();
                         computing->invoke();    // scalapack style
                         logistics->get_scope()->get_manager()->spin_loop();
                     }else{
 // performing computation for every item inside every appointed workgroup
-                        std::vector<core::layout_table::entry> & workload = logistics->pin->layout->segment_count != 0 ? 
-                                                                            logistics->pin->layout->segment : logistics->pin->layout->requests;
-                        int workload_size = logistics->pin->layout->segment_count != 0 ? 
-                                            logistics->pin->layout->segment_count : logistics->pin->layout->request_count; 
-                        for(int k=0; k < workload_size; k++){
+                        std::vector<core::layout_table::entry>& workload = logistics->pin->layout->get_list();
+                        for(int k=0; k < workload.size(); k++){
                             logistics->pin->set_default_group(workload[k].i, workload[k].j);
                             computing->invoke();
                             this->spin(); // processing any communications that did occur

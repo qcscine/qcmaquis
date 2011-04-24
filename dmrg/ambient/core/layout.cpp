@@ -68,6 +68,10 @@ namespace ambient{ namespace core{
         if(y_size > this->reserved_y) this->reserved_y = y_size;
     }
 
+    std::vector<core::layout_table::entry>& layout_table::get_list(){
+        return (this->segment_count != 0 ? this->segment : this->requests);
+    }
+
     layout_table::entry* layout_table::get_entry(int i, int j, int k){
         if(map[i][j] == NULL) throw race_condition_e(); // to extend for situation when outdated
         return map[i][j];
@@ -221,6 +225,9 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->segment[i].k));
             }
             for(int i=0; i < profiles[k]->layout->request_count; i++){
+                if(profiles[k]->group(profiles[k]->layout->requests[i].i, 
+                                      profiles[k]->layout->requests[i].j, 
+                                      profiles[k]->layout->requests[i].k)->available()) continue; // avoiding redunant requests
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 
                                                                   "INFORM OWNER ABOUT REQUEST",
