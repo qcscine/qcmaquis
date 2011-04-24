@@ -97,8 +97,8 @@ namespace ambient {
         void(*get_init() const)(workgroup*);
 
         void imitate(p_profile* profile);
-        void solidify();
-        void disperse();
+        void solidify(std::vector<core::layout_table::entry>& entries);
+        void disperse(std::vector<core::layout_table::entry>& entries);
 
     private:
         template<typename T> operator T ();

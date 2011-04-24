@@ -13,9 +13,8 @@ extern "C" {
     void pdgesvd_(char *jobu, char *jobvt, int *m, int *n,double *a, int *ia, int *ja, int *desca,double *s,double *u, int *iu, int *ju, int *descu,double *vt, int *ivt, int *jvt, int *descvt,double *work, int *lwork,int *info);
 }
 
-void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_matrix<double>  & B, p_dense_matrix<double> & C){
+void gemm_c_scalapack_kernel(const p_dense_matrix<double>&  A, const p_dense_matrix<double>& B, p_dense_matrix<double>& C){
 #ifdef SCALAPACK
-//    ambient::spin_loop();
     int nmyidBLACS,nnumprocsBLACS,nContinue;
     int nContxt,nVal;  
     int i, j, k;
@@ -30,8 +29,7 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_m
     npcol = scope.nq; 
     nb = get_group_dim(C).x*get_item_dim(C).x;
 
-    ictxt =Csys2blacs_handle(scope.get_group()->mpi_comm);
-    Cblacs_get( -1, 0, &ictxt );
+    ictxt = Csys2blacs_handle(scope.get_group()->mpi_comm);
     Cblacs_gridinit( &ictxt, "Row", nprow, npcol );
     Cblacs_gridinfo( ictxt, &nprow, &npcol, &myrow, &mycol );
 
@@ -48,42 +46,15 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>  &  A, const p_dense_m
     descinit_(descB, &nM,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mB,  &info);
     descinit_(descC, &nM,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mC,  &info);
 
-
-    std::cout << " here 0" << ambient::rank()<< std::endl;
-
-    for(int i=0; i < breakdown(A).layout->request_count; i++){
-        breakdown(A)(breakdown(A).layout->requests[i].i, 
-                     breakdown(A).layout->requests[i].j);
-    }
-    for(int i=0; i < breakdown(B).layout->request_count; i++){
-        breakdown(B)(breakdown(B).layout->requests[i].i, 
-                     breakdown(B).layout->requests[i].j);
-    }
-    for(int i=0; i < breakdown(C).layout->segment_count; i++){
-        breakdown(C)(breakdown(C).layout->segment[i].i, 
-                     breakdown(C).layout->segment[i].j);
-    }
-
-    std::cout << " here 1 " << ambient::rank()<< std::endl;
- ambient::spin_loop();
- 
-    std::cout << " here 2 " << ambient::rank()<< std::endl;
-    std::cout << " before  " << std::endl;
-    breakdown(A).solidify();
-    breakdown(B).solidify();
-    breakdown(C).solidify();
-    std::cout << " end  " << std::endl;
+    assert(current(A).layout->get_list().size() != 0);
+    current(A).solidify(current(A).layout->get_list());
+    current(B).solidify(current(B).layout->get_list());
+    current(C).solidify(current(C).layout->get_list());
 
     double alpha = 1.0; double beta = 0.0;
-
-    std::cout << "start pdegmm  " << std::endl;
     pdgemm_("N","N",&nM,&nN,&nM,&alpha,(double*)breakdown(A).data,&ONE,&ONE,descA,(double*)breakdown(B).data,&ONE,&ONE,descB,&beta,(double*)breakdown(C).data,&ONE,&ONE,descC);
-    std::cout << "start end  " << std::endl;
-    breakdown(A).disperse();
-    breakdown(B).disperse();
-    breakdown(C).disperse();
 
-//    MPI_Barrier(comm);
+    current(C).disperse(current(C).layout->get_list());
 #endif
 }
 
@@ -106,8 +77,7 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<d
     npcol = scope.nq; 
     nb = get_group_dim(M).x*get_item_dim(M).x;
 
-    ictxt =Csys2blacs_handle(scope.get_group()->mpi_comm);
-    Cblacs_get( -1, 0, &ictxt );
+    ictxt = Csys2blacs_handle(scope.get_group()->mpi_comm);
     Cblacs_gridinit( &ictxt, "Row", nprow, npcol );
     Cblacs_gridinfo( ictxt, &nprow, &npcol, &myrow, &mycol );
 
@@ -122,9 +92,9 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<d
     descinit_(descU, &nM,   &nM,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mU,  &info);
     descinit_(descV, &nN,   &nN,   &nb,  &nb,  &ZERO, &ZERO, &ictxt, &mV,  &info);
 
-    breakdown(M).solidify();
-    breakdown(U).solidify();
-    breakdown(V).solidify();
+    breakdown(M).solidify(breakdown(M).layout->get_list());
+    breakdown(U).solidify(breakdown(U).layout->get_list());
+    breakdown(V).solidify(breakdown(V).layout->get_list());
 
     char JOBU[1] ={'V'};
     char JOBV[1] ={'V'};
@@ -141,9 +111,8 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<d
     //COMPUTATIONAL run
     pdgesvd_(JOBU, JOBV, &nM, &nN, (double*)breakdown(M).data,&ONE,&ONE,descA, S, (double*)breakdown(U).data,&ONE,&ONE,descU, (double*)breakdown(V).data,&ONE,&ONE,descV, work, &lwork, &info);
 
-    breakdown(M).disperse();
-    breakdown(U).disperse();
-    breakdown(V).disperse();
+    current(U).disperse(current(U).layout->get_list());
+    current(V).disperse(current(V).layout->get_list());
 
     delete[] work; //clean the working buffer
 

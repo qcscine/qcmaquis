@@ -161,64 +161,49 @@ namespace ambient {
         return this->get_group_t_dim().y*this->t_size;
     }
 
-    void p_profile::solidify(){
-        int i,j;
-        size_t offset = 0;
-        this->data = malloc(std::max(this->layout->segment_count, this->layout->request_count) *
-                            (this->get_group_dim()*this->get_item_dim()) *
-                            this->t_size);
 
-        void* memory = this->data;
+    bool matrix_order_predicate(const core::layout_table::entry& e1, const core::layout_table::entry& e2)
+    {
+        if(e1.j != e2.j) return e1.j < e2.j;
+        return e1.i < e2.i;
+    }
 
+    void p_profile::solidify(std::vector<core::layout_table::entry>& entries)
+    {
+        int jumper = 0;
 // let's find the solid_lda
-        this->solid_lda = 0; 
-        for(j=0; j < this->get_grid_dim().x; j++){
-            for(i=0; i < this->get_grid_dim().y; i++){
-                if(this->group(i,j)->available()){
-                    for(i=0; i < this->get_grid_dim().y; i++)
-                        if(this->group(i,j)->available()) this->solid_lda++;
-                    break;
-                }
-            }
-            if(this->solid_lda) break;
-        }
-
+        std::sort(entries.begin(), entries.end(), matrix_order_predicate);
+        this->solid_lda = 0;
+        for(int k=0; k < entries.size(); k++) if(entries[k].j == entries[0].j) this->solid_lda++;
+        this->data = malloc(__a_ceil(std::max(this->layout->segment_count, this->layout->request_count)/this->solid_lda) *
+                            this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size*this->solid_lda);
+        assert(this->data != NULL);
+        char* memory = (char*)this->data;
 // let's copy from separate memory blocks to the general one
-        for(j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->t_size);
-            offset = 0;
-            for(i=0; i < this->get_grid_dim().y; i++){
-                if(this->group(i,j)->available()){
-                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_t_dim().y*this->t_size);
-                    for(int k=0; k < this->get_group_t_dim().x; k++){
-                         assert(this->group(i,j)->data != NULL);
-                        memcpy((void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y*this->t_size), (void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), 
-                               this->get_group_t_dim().y*this->t_size);
-                    }
-                    offset++;
-                }
+        for(int k=0; k < entries.size(); k++){
+            for(int j=0; j < this->get_group_t_dim().x; j++){
+                memcpy(memory+j*this->solid_lda*this->get_group_t_dim().y*this->t_size, 
+                       &((char*)this->group(entries[k].i, entries[k].j)->data)[j*this->get_group_lda()], 
+                       this->get_group_t_dim().y*this->t_size);
             }
+            memory += this->get_group_t_dim().y*this->t_size;
+            if(++jumper == this->solid_lda){ jumper = 0; memory += this->get_group_t_dim().y*this->solid_lda*this->t_size*(this->get_group_t_dim().x-1); }
         }
-
     }
 
 
-    void p_profile::disperse(){ 
-        size_t offset = 0;
-        void* memory = this->data;
-        for(int j=0; j < this->get_grid_dim().x; j++){
-            memory = (void*)((size_t)memory + offset*(this->get_group_dim()*this->get_item_dim())*this->t_size);
-            offset = 0;
-            for(int i=0; i < this->get_grid_dim().y; i++){
-                if(this->group(i,j)->available()){
-                    void* solid_data = (void*)((size_t)memory+offset*this->get_group_t_dim().y*this->t_size);
-                    for(int k=0; k < this->get_group_t_dim().x; k++){
-                        memcpy((void*)((size_t)this->group(i,j)->data + k*this->get_group_lda()), (void*)((size_t)solid_data+k*this->solid_lda*this->get_group_t_dim().y*this->t_size),
-                               this->get_group_t_dim().y*this->t_size);
-                    }
-                    offset++;
-                }
+    void p_profile::disperse(std::vector<core::layout_table::entry>& entries)
+    { 
+        int jumper = 0;
+        char* memory = (char*)this->data;
+        for(int k=0; k < entries.size(); k++){
+            for(int j=0; j < this->get_group_t_dim().x; j++){
+                 memcpy(&((char*)this->group(entries[k].i, entries[k].j)->data)[j*this->get_group_lda()], 
+                        memory+j*this->solid_lda*this->get_group_t_dim().y*this->t_size, 
+                        this->get_group_t_dim().y*this->t_size);
             }
+            memory += this->get_group_t_dim().y*this->t_size;
+            if(++jumper == this->solid_lda){ jumper = 0; memory += this->get_group_t_dim().y*this->solid_lda*this->t_size*(this->get_group_t_dim().x-1); }
         }
     }
 
@@ -303,10 +288,10 @@ namespace ambient {
 
     workgroup& p_profile::operator()(int i, int j, int k){
         if(this->is_proxy()){ // on-touch init for proxy
-           if(!this->group(i,j,k)->available()){
-            this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
-            memset(this->group(i,j,k)->data,0,this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size);          
-}
+            if(!this->group(i,j,k)->available()){
+                this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
+                memset(this->group(i,j,k)->data,0,this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size);          
+            }
         }else if(!this->group(i,j,k)->available()){
             groups::packet_manager* manager = world()->get_manager(); //this->consted ? world()->get_manager() : this->get_scope()->get_manager();
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 

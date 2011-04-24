@@ -38,6 +38,7 @@ namespace core {
         ~layout_table();
         void remap();
 
+        std::vector<core::layout_table::entry>& get_list();
         entry* get_entry(int i, int j = 0, int k = 0);
         entry* operator()(int i, int j = 0, int k = 0);
 
