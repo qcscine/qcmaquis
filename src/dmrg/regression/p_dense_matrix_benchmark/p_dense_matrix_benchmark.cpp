@@ -43,24 +43,26 @@ BOOST_GLOBAL_FIXTURE( caveats );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
-     ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1); 
+     ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
      int LENGTH = 16;
-     int M = 1024;
+     int M = 2048;
 
      std::vector<ambient::p_dense_matrix<T> * > V;
      V.resize(LENGTH*4);
 
      for(int i = 0 ; i < LENGTH*4 ; i++) V[i] = (p_dense_matrix<T>*) new p_dense_matrix<T,MANUAL>(M,M);
-     for(int i = 0 ; i < LENGTH ; i++) blas::gemm(*V[i*4],*V[i*4+1],*V[i*4+2]);
-     
-     Timer t("Ambient series of GEMM"); t.begin();
-     ambient::playout();
-     t.end();
-     if(ambient::rank() == 0){
- 	 t.save(ambient::size(),M);
-     }
 
      for(int i = 0 ; i < LENGTH ; i++) blas::pblas_gemm(*V[i*4],*V[i*4+1],*V[i*4+3]);
+     Timer tp("PBLAS series of GEMM"); tp.begin();
+     ambient::playout();
+     tp.end();
+     //if(ambient::rank() == 0) ta.save(ambient::size(),M);
+     for(int i = 0 ; i < LENGTH ; i++) blas::gemm(*V[i*4],*V[i*4+1],*V[i*4+2]);
+     Timer ta("Ambient series of GEMM"); ta.begin();
+     ambient::playout();
+     ta.end();
+
+
      for(int i = 0 ; i < LENGTH ; i++) blas::validation(*V[i*4+2],*V[i*4+3]);
      ambient::playout();
 }
