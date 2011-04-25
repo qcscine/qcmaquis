@@ -129,7 +129,7 @@ namespace ambient{ namespace groups{
             active_sends_number = 0;
             this->spin();
             for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it)
-                if((*it)->flow == OUT) active_sends_number += (*it)->active_requests_number;
+                if((*it)->flow == OUT) active_sends_number += (*it)->get_active();
             if(this->process_locking(active_sends_number)){ return this->spin(); } // spinning last time
             //counter++;
             //if(counter == 1000) printf("R%d: inactive for %d iterations... (active sends: %d)\n", ambient::rank(), (int)counter, (int)active_sends_number);
@@ -138,7 +138,7 @@ namespace ambient{ namespace groups{
     void packet_manager::spin(int n){
         for(int i=0; i < n; i++){
             for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
-                if((*it)->active_requests_number > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
+                if((*it)->get_active() > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
             }
         }
     }
@@ -150,29 +150,36 @@ namespace ambient{ namespace groups{
     packet_manager::request::request(void* memory) 
     : memory(memory), mpi_request(MPI_REQUEST_NULL), fail_count(0) { };
 
+    packet_manager::request* packet_manager::typed_q::get_request(){
+        if(this->free_reqs.size() == 0){
+            this->free_reqs.push_back(new request(alloc_t(this->type)));
+        }
+        request* handle = this->free_reqs.back();
+        this->free_reqs.pop_back();
+        return handle;
+    }
+    void packet_manager::typed_q::return_request(request* r){
+        this->free_reqs.push_back(r);
+    }
     packet_manager::typed_q::typed_q(packet_manager* manager, const packet_t& type, packet_manager::direction flow, int reservation, int priority) 
-    : manager(manager), type(type), reservation(reservation), priority(priority), flow(flow), packet_delivered(), active_requests_number(0){
+    : manager(manager), type(type), priority(priority), flow(flow), packet_delivered()
+    {    
+        for(int i=0; i < PULL_RESERVATION; i++){
+            this->free_reqs.push_back(new request(alloc_t(this->type)));
+        }
         if(flow == IN){ // make the initial recv request
-            this->active_requests_number = this->reservation;
-            for(int i=0; i < this->reservation; i++){
-                this->requests.push_back(new request(alloc_t(this->type)));
-                this->recv(this->requests.back());
+            for(int i=0; i < reservation; i++){
+                this->reqs.push_back(this->get_request());
+                this->recv(this->reqs.back());
             }
         }
     }
-
     void packet_manager::typed_q::push(packet* pack){
-        this->active_requests_number++;
         assert(this->flow == OUT);
-        for(int i=0; i < this->requests.size(); i++){ // locating free request
-            if(this->requests[i]->mpi_request == MPI_REQUEST_NULL){
-                this->requests[i]->memory = (void*)pack; // don't forget to free memory (if not needed)
-                this->send(this->requests[i]);
-                return;
-            }
-        }
-        this->requests.push_back(new request((void*)pack)); // subject for a change
-        this->send(this->requests.back());
+        this->reqs.push_back(this->get_request());
+        request* target = this->reqs.back();
+        target->memory = (void*)pack; // don't forget to free memory (if not needed)
+        this->send(target);
     }
     void packet_manager::typed_q::recv(request* r){
         MPI_Irecv(r->memory, 1, this->type.mpi_t, MPI_ANY_SOURCE, this->type.t_code, *this->manager->comm, &(r->mpi_request));
@@ -192,23 +199,30 @@ namespace ambient{ namespace groups{
             }
         }
     }
+    size_t packet_manager::typed_q::get_active(){
+        if(this->flow == IN) return 1;
+        return this->reqs.size();
+    }
     void packet_manager::typed_q::spin(){
         int flag = 0;
-        for(int i=0; i < this->requests.size(); i++)
-        if(this->requests[i]->mpi_request != MPI_REQUEST_NULL){
-            MPI_Test(&(this->requests[i]->mpi_request), &flag, MPI_STATUS_IGNORE);
+        std::list<request*>::iterator it;
+        if(this->flow == IN)
+        for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
+            MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
             if(flag){
-                if(this->flow == IN){ 
-                    this->target_packet = unpack(this->type, this->requests[i]->memory); 
-                    this->packet_delivered();
-                    this->requests[i] = new request(alloc_t(this->type));
-                    this->recv(this->requests[i]); // request renewal
-                }else if(this->flow == OUT){
-                    this->active_requests_number--;
-                    this->target_packet = (packet*)this->requests[i]->memory;
-                    this->packet_delivered();
-                    this->requests[i]->fail_count = 0;
-                }
+                this->target_packet = unpack(this->type, (*it)->memory); 
+                this->packet_delivered();
+                this->recv(*it); // request renewal
+            }
+        }
+        else 
+        for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
+            MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
+            if(flag){
+                this->target_packet = (packet*)(*it)->memory;
+                this->packet_delivered();
+                this->return_request(*it);
+                it = this->reqs.erase(it);
             }
         }
     }
