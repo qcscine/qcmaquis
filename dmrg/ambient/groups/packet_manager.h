@@ -6,6 +6,8 @@
 #include "ambient/auxiliary.h"
 #include <list>
 
+#define PULL_RESERVATION 20
+
 using namespace ambient::packets; 
 
 namespace ambient{ namespace groups{
@@ -44,17 +46,20 @@ namespace ambient{ namespace groups{
             void spin();
             packet* get_target_packet();
             int priority;
-            size_t active_requests_number;
             direction flow;
             packet_manager* manager;
             const packet_t& type;
+            size_t get_active();
         private:
+            request* get_request();
+            void return_request(request* r);
             void recv(request* r);
             void send(request* r);
 
             packet* target_packet;
             int reservation;
-            std::vector<request*> requests;
+            std::list<request*> reqs;
+            std::list<request*> free_reqs;
         };
 
         locking_fsm state;
