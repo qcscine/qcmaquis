@@ -17,13 +17,6 @@ namespace blas {
     : livelong(rows, cols, init_value), rows(rows), cols(cols), lda(rows), sda(cols){
         self->set_breakdown();
     }
- 
-    template <typename T, ambient::policy P> 
-    p_dense_matrix<T,P>::p_dense_matrix(size_type rows, size_type cols, T init_value, T* const & array) 
-    : livelong(rows, cols, array), rows(rows), cols(cols), lda(rows), sda(cols) { 
-        self->set_breakdown();
-        ambient::push(ambient::copy_svd_l_kernel, ambient::copy_svd_c_kernel , *this, array); 
-    } 
 
     template <typename T, ambient::policy P>
     template <typename TM, ambient::policy PM>
@@ -96,7 +89,7 @@ namespace blas {
     }
 
     template <typename T, ambient::policy P>
-    void p_dense_matrix<T,P>::remove_rows(size_type i, difference_type k = 1)
+    void p_dense_matrix<T,P>::remove_rows(size_type i, size_type k = 1)
     {
         assert( i+k <= self->rows );
         ambient::push(ambient::remove_rows_l_kernel, ambient::remove_rows_c_kernel, *this, i, k);
@@ -104,17 +97,11 @@ namespace blas {
     }
 
     template <typename T, ambient::policy P>
-    void p_dense_matrix<T,P>::remove_cols(size_type j, difference_type k = 1)
+    void p_dense_matrix<T,P>::remove_cols(size_type j, size_type k = 1)
     {
         assert( j+k <= self->cols );
         ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, j, k);
         this->resize(self->rows, self->cols - k);
-    }
-
-    template <typename T, ambient::policy P>
-    void p_dense_matrix<T,P>::remove_columns(size_type j, difference_type k = 1)
-    {
-        this->remove_cols(j,k); //mistake dense_matrix, p_dense_matrix
     }
 
     template <typename T, ambient::policy P>
