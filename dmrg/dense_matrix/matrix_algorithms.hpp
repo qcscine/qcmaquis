@@ -47,10 +47,7 @@ namespace blas
     template<class Matrix>
     Matrix identity_matrix(typename Matrix::size_type size)
     {
-        Matrix ret(size, size);
-        for (typename Matrix::size_type k = 0; k < size; ++k)
-            ret(k,k) = 1;
-        return ret;
+        return Matrix::identity_matrix(size);
     }
 }
 

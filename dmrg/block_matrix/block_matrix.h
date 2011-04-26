@@ -16,6 +16,7 @@
 #include "block_matrix/indexing.h"
 #include "block_matrix/symmetry.h"
 
+#include "utils/timings.h"
 
 template<class Matrix, class SymmGroup>
 class block_matrix

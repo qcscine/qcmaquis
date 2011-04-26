@@ -2,6 +2,15 @@
 
 namespace blas {
 
+	template <typename T, typename MemoryBlock>
+	dense_matrix<T, MemoryBlock> dense_matrix<T, MemoryBlock>::identity_matrix(size_type size)
+	{
+		dense_matrix<T, MemoryBlock> ret(size, size);
+        for (size_type k = 0; k < size; ++k)
+            ret(k,k) = 1;
+        return ret;
+	}
+
     template <typename T, typename MemoryBlock>
     dense_matrix<T, MemoryBlock>::dense_matrix(size_type rows, size_type columns, T init_value)
     : size1_(rows), size2_(columns), reserved_size1_(rows), values_(rows*columns, init_value)

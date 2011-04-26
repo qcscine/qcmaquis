@@ -11,6 +11,7 @@
 
 #include "utils/zout.hpp"
 #include "utils/logger.h"
+#include "utils/timings.h"
 
 #include "block_matrix/block_matrix.h"
 
@@ -325,7 +326,7 @@ block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
 {
     block_matrix<Matrix, SymmGroup> ret(size, size);
     for (std::size_t k = 0; k < ret.n_blocks(); ++k)
-        ret[k] = blas::identity_matrix<Matrix>(size[k].second);
+        ret[k] = Matrix::identity_matrix(size[k].second);
     return ret;
 }
 
