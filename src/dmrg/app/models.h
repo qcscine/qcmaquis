@@ -1,11 +1,18 @@
 #ifndef APP_MODELS_H
 #define APP_MODELS_H
 
-#include <fstream>
-
 #include "hamiltonian.h"
 #include "lattice.h"
 
+namespace app {
+
+template <class Matrix, class SymmGroup>
+void model_parser (std::string const & type, std::string const & fname,
+                   Lattice* & lattice, Hamiltonian<Matrix, SymmGroup>* & H, typename SymmGroup::charge& initc);
+}
+
+
+/*
 #include "utils/DmrgParameters.h"
 #include <alps/parameter.h>
 #include "alps_lattice.hpp"
@@ -14,7 +21,6 @@
 
 #include <boost/tokenizer.hpp>
 
-namespace app {
     typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
     
     
@@ -42,10 +48,7 @@ namespace app {
 #endif
     }
 
-    
-    //    void model_parser (std::string const & type, std::ifstream & ifs,
-    //                        Lattice & lattice, Hamiltonian<> & H);
-    
+
     template <class SymmGroup>
     typename SymmGroup::charge init_qn (alps::Parameters const& parms);
     
@@ -133,7 +136,6 @@ namespace app {
         
         return ret;
     }
-    
-}
+*/
 
 #endif

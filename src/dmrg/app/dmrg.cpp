@@ -74,28 +74,6 @@ typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
 
 template<class Matrix>
-Hamiltonian<Matrix, grp> * hamil_factory(BaseParameters & model, Lattice const & lattice, int sweep)
-{
-#ifdef UseTwoU1
-    if (model.get<std::string>("model") == std::string("fermi_hubbard"))
-        return new TwoU1_FermiHubbard<Matrix>(lattice, model);
-    else {
-        throw std::runtime_error("Don't know this model!");
-        return NULL;
-    }
-#else
-    if (model.get<std::string>("model") == std::string("heisenberg"))
-        return new Heisenberg<Matrix>(lattice, model.get<double>("Jxy"), model.get<double>("Jz"));
-    else if (model.get<std::string>("model") == std::string("HCB"))
-        return new HCB<Matrix>(lattice);
-    else {
-        throw std::runtime_error("Don't know this model!");
-        return NULL;
-    }
-#endif
-}
-
-template<class Matrix>
 mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 {
     if (params.get<std::string>("init_state") == "default")

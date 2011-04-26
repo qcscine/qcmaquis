@@ -13,6 +13,7 @@
 #include <sstream>
 
 #include "hamiltonian.h"
+#include "utils/DmrgParameters.h"
 
 namespace app {
     /* ****************** HEISENBERG */

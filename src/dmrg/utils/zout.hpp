@@ -31,6 +31,19 @@ public:
     {
         std::cout.precision(p);
     }
-} zout;
+};
+
+
+#ifdef NO_ZOUT_IN_HEADERS
+// zout in different compilation unit!
+
+extern dmrg_cout zout;
+
+#else
+// define zout here!
+
+dmrg_cout zout;
+
+#endif
 
 #endif
