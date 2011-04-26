@@ -45,6 +45,20 @@ void block_2d_cycle_assign(T& target)
     }
 }
 
+template<typename T>
+void block_vector_scalapack_assign(T& target)
+{
+ // this no "distribution" is only need inside scalapack solver (SVD, ...) where we need a contiguous array (no split between proc) for the output (schmidt values ...), one row and one column 
+///////////////////////////////////////////////////////////////////////////
+    for(int i = 0; i < get_grid_dim(target).y; i++){
+        for(int j = 0; j < get_grid_dim(target).x; j++){
+            assign(target, i, j);
+        }
+    }
+}
+
+
+
 void check_gemm_l_kernel(pinned const p_dense_matrix<double>& c)
 {
     scope_select("2 from ambient as gemm_check where master is 0 and breakdown contains "+get_id(c)); // todo: correct the naming issue
@@ -189,37 +203,30 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 /////////////////////
 // testing kernels // 
 
-//universal logistic kernel, distribution should be donne before
-
-void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & U, p_dense_matrix<double> & V,  double* & S )
+void svd_l_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & U, p_dense_matrix<double> & V,  p_dense_matrix<double>& S )
 {
-    scope_select("* from ambient as null_l_scalapack_svd where master is 0");
+    int num = 2;
+    scope_select(num+" from ambient as SVD"+ num +" where master is 0 and breakdown contains "+get_id(M)); // todo: correct the naming issue
     scope_retain("* from ambient as work_storage");
     if(!scope.involved()) return; // out of scope quick exit
 
+    block_vector_scalapack_assign(S);
     block_2d_cycle_assign(M);
     block_2d_cycle_assign(U);
     block_2d_cycle_assign(V);
-
 }
 
-/*
-void null_l_scalapack_svd_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & U, p_dense_matrix<double> & V,  p_dense_matrix<double> & S )
+void syev_l_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<double>  & W, p_dense_matrix<double> & Z )
 {
-    scope_select("* from ambient as work where master is 0");
+    int num = 2;
+    scope_select(num+" from ambient as SYEV"+ num +" where master is 0 and breakdown contains "+get_id(M)); // todo: correct the naming issue
     scope_retain("* from ambient as work_storage");
-   
     if(!scope.involved()) return; // out of scope quick exit
 
+    block_vector_scalapack_assign(W);
     block_2d_cycle_assign(M);
-    block_2d_cycle_assign(U);
-    block_2d_cycle_assign(V);
-
-}// do nothing just need to test
-*/
-
-
-
+    block_2d_cycle_assign(Z);
+}
 
 // pdiag*pdense
 void gemm_lhs_diagonal_l_kernel(const p_dense_matrix<double> & a_diag, pinned const p_dense_matrix<double>& b,  p_dense_matrix<double>&  c)
@@ -244,15 +251,6 @@ void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p
     block_2d_cycle_assign(b_diag);
     block_2d_cycle_assign(c);
 }
-
-void copy_svd_l_kernel(pinned p_dense_matrix<double> & a, double* & Array) 
-{ 
-    scope_select("* from ambient as copy_svd where master is 0"); 
-    scope_retain("* from ambient as work_storage"); 
-    if(!scope.involved()) return; // out of scope quick exit 
- 
-    block_2d_cycle_assign(a); 
-} 
 
 void validation_l_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala) 
 { 
