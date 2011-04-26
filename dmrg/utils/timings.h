@@ -30,7 +30,7 @@ unsigned long long getcpuclocks() {
 
 #if defined(__i386__)
  
-unsigned long getcpuclocks()
+inline unsigned long getcpuclocks()
 {
  unsigned long tsc;
  asm(".byte 0x0f, 0x31" : "=A" (tsc));
@@ -39,7 +39,7 @@ unsigned long getcpuclocks()
  
 #elif (defined(__amd64__) || defined(__x86_64__))
  
-unsigned long getcpuclocks()
+inline unsigned long getcpuclocks()
 {
  unsigned long lo, hi;
  asm( "rdtsc" : "=a" (lo), "=d" (hi) );

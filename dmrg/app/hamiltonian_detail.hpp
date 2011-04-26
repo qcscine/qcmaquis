@@ -13,7 +13,7 @@ namespace hamiltonian_detail
     using namespace std;
     using namespace boost::tuples;
     
-    size_t next_free(vector<size_t> const & out_taken,
+    inline size_t next_free(vector<size_t> const & out_taken,
                      vector<size_t> const & in_taken)
     {
         for (size_t k = 0; true; ++k)
@@ -24,7 +24,7 @@ namespace hamiltonian_detail
         }
     }
     
-    size_t next_free(set<size_t> const & s)
+    inline size_t next_free(set<size_t> const & s)
     {
         for (size_t k = 2; true; ++k)
             if (s.count(k) == 0)

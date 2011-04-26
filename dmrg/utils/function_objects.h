@@ -10,8 +10,8 @@
 #define FUNCTION_OBJECTS_H
 
 namespace utils {
-    float conj(float v) { return v; }
-    double conj(double v) { return v; }
+    inline float conj(float v) { return v; }
+    inline double conj(double v) { return v; }
 
 #define DEFINE_FUNCTION_OBJECT(name, return_type, arg_type) \
 struct functor_##name { template<class T> return_type operator() (arg_type t) { return name(t); } };
