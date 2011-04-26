@@ -11,7 +11,7 @@ add_library (ambient
              groups/multirank.cpp
              groups/group.cpp
              core/p_profile.cpp
-             core/workgroup.cpp
+             core/memblock.cpp
              core/select.cpp
              core/scope_context.cpp
              core/operation/operation.cpp

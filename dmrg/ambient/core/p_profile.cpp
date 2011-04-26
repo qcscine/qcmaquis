@@ -14,7 +14,7 @@ namespace ambient {
             p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
             if(pack->get<char>(A_BLOCK_P_STATE_FIELD) == 'P'){
                 if(profile->associated_proxy == NULL) throw core::race_condition_e();
-                workgroup* grp = profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
+                memblock* grp = profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
                 if(grp->header == NULL) throw core::race_condition_e();
                 profile->associated_proxy->reduce( grp, (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
             }else{
@@ -71,7 +71,7 @@ namespace ambient {
         //this->reserved_y   = profile.reserved_y;   // not needed
     }
 
-    p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(workgroup*,void*)){
+    p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(memblock*,void*)){
         this->associated_proxy = proxy;
         this->associated_proxy->reduce = R;
         return this->associated_proxy;
@@ -110,14 +110,14 @@ namespace ambient {
     bool p_profile::xinvolved(){ return ((this->get_xscope() != NULL && this->get_xscope()->involved()) || this->involved()); } // modified
     bool p_profile::involved(){ return this->get_scope()->involved(); }
 
-    p_profile & p_profile::operator>>(dim3 distr_dim) 
+    p_profile & p_profile::operator>>(dim2 distr_dim) 
     {
         this->distr_dim = distr_dim;
         this->group_dim = NULL;
         this->gpu_dim = NULL;
         return *this;
     }
-    p_profile & p_profile::operator,(dim3 dim) 
+    p_profile & p_profile::operator,(dim2 dim) 
     {
         if(this->group_dim == NULL){
             this->group_dim = dim;
@@ -131,7 +131,7 @@ namespace ambient {
         return *this;
     }
 
-    p_profile & operator>>(p_profile* instance, dim3 distr_dim) {
+    p_profile & operator>>(p_profile* instance, dim2 distr_dim) {
         return *instance >> distr_dim;
     }
 
@@ -145,10 +145,10 @@ namespace ambient {
             int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
             if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
             for(int i = 0; i < y_size; i++){
-                if(i >= this->reserved_y) skeleton.push_back(std::vector<workgroup*>());
+                if(i >= this->reserved_y) skeleton.push_back(std::vector<memblock*>());
                 for(int j = 0; j < x_size; j++){
                     if(j >= this->reserved_x || i >= this->reserved_y) 
-                        skeleton[i].push_back(new workgroup(&profile, i, j));
+                        skeleton[i].push_back(new memblock(&profile, i, j));
                 }
             }
             if(x_size > this->reserved_x) this->reserved_x = x_size;
@@ -168,7 +168,7 @@ namespace ambient {
         return e1.i < e2.i;
     }
 
-    void p_profile::solidify(std::vector<core::layout_table::entry>& entries)
+    void p_profile::solidify(std::vector<core::layout_table::entry> entries)
     {
         int jumper = 0;
 // let's find the solid_lda
@@ -192,9 +192,10 @@ namespace ambient {
     }
 
 
-    void p_profile::disperse(std::vector<core::layout_table::entry>& entries)
+    void p_profile::disperse(std::vector<core::layout_table::entry> entries)
     { 
         int jumper = 0;
+        std::sort(entries.begin(), entries.end(), matrix_order_predicate);
         char* memory = (char*)this->data;
         for(int k=0; k < entries.size(); k++){
             for(int j=0; j < this->get_group_t_dim().x; j++){
@@ -207,15 +208,15 @@ namespace ambient {
         }
     }
 
-    void p_profile::set_default_group(int i, int j, int k)
+    void p_profile::set_default_group(int i, int j)
     {
         if(i == -1) this->default_group = NULL;
-        else this->default_group = this->group(i, j, k);
+        else this->default_group = this->group(i, j);
     }
 
-    dim3 p_profile::get_group_id()
+    dim2 p_profile::get_group_id()
     {
-        return dim3(this->default_group->j, this->default_group->i, this->default_group->k);
+        return dim2(this->default_group->j, this->default_group->i);
     }
 
     void p_profile::touch()
@@ -274,8 +275,7 @@ namespace ambient {
                                                                              *this->group_id, this->id, "PROXY",
                                                                              ambient::rank(this->get_scope()),
                                                                              this->layout->segment[i].i, 
-                                                                             this->layout->segment[i].j, 
-                                                                             this->layout->segment[i].k));
+                                                                             this->layout->segment[i].j));
             }
         }
     }
@@ -286,31 +286,30 @@ namespace ambient {
         this->associated_proxy = NULL;
     }
 
-    workgroup& p_profile::operator()(int i, int j, int k){
+    memblock& p_profile::operator()(int i, int j){
         if(this->is_proxy()){ // on-touch init for proxy
-            if(!this->group(i,j,k)->available()){
-                this->group(i,j,k)->set_memory(alloc_t(*this->packet_type));
-                memset(this->group(i,j,k)->data,0,this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size);          
+            if(!this->group(i,j)->available()){
+                this->group(i,j)->set_memory(alloc_t(*this->packet_type));
+                memset(this->group(i,j)->data,0,this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size);          
             }
-        }else if(!this->group(i,j,k)->available()){
+        }else if(!this->group(i,j)->available()){
             groups::packet_manager* manager = world()->get_manager(); //this->consted ? world()->get_manager() : this->get_scope()->get_manager();
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                 this->get_master(), "P2P", 
                                                "INFORM OWNER ABOUT REQUEST",
                                                *this->group_id, this->id, "GENERIC",
                                                 ambient::rank(),      // forward target
-                                                i, j, k));
-            while(!this->group(i,j,k)->available()) ambient::spin();  // spin-lock
+                                                i, j));
+            while(!this->group(i,j)->available()) ambient::spin();  // spin-lock
         }
-        return *(this->group(i, j, k));
+        return *(this->group(i,j));
     }
 
-    workgroup* p_profile::group(int i, int j, int k) const {
+    memblock* p_profile::group(int i, int j) const {
         int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
         int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
-        int z_size = __a_ceil(this->dim.z / this->get_group_t_dim().z);
         
-        if(i >= y_size || j >= x_size || k >= z_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j, k);
+        if(i >= y_size || j >= x_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j);
         return this->skeleton[i][j];
     }
 
@@ -332,16 +331,16 @@ namespace ambient {
         if(this->default_group == NULL) return NULL; // we asked to convert non structuring arg
         return this->default_group->data;            // >_< need to write proper get for group's items
     }
-    void p_profile::set_init(void(*f)(workgroup*)){
+    void p_profile::set_init(void(*f)(memblock*)){
         this->init = f;
     }
-    void(*p_profile::get_init() const)(workgroup*){
+    void(*p_profile::get_init() const)(memblock*){
         return this->init;
     }
-    dim3 p_profile::get_dim() const {
+    dim2 p_profile::get_dim() const {
         return this->dim;
     }
-    void p_profile::set_dim(dim3 dim){
+    void p_profile::set_dim(dim2 dim){
         if(this->layout != NULL){
             if(this->get_grid_dim().y < __a_ceil(dim.x / this->get_group_t_dim().y) || 
                this->get_grid_dim().x < __a_ceil(dim.y / this->get_group_t_dim().x)){
@@ -353,40 +352,39 @@ namespace ambient {
         if(this->layout != NULL)
             this->layout->remap();
     }
-    dim3 p_profile::get_distr_dim() const {
+    dim2 p_profile::get_distr_dim() const {
         return this->distr_dim;
     }
-    void p_profile::set_distr_dim(dim3 dim){
+    void p_profile::set_distr_dim(dim2 dim){
         this->distr_dim = dim;
     }
-    dim3 p_profile::get_gpu_dim() const {
+    dim2 p_profile::get_gpu_dim() const {
         return this->gpu_dim;
     }
-    void p_profile::set_gpu_dim(dim3 dim){
+    void p_profile::set_gpu_dim(dim2 dim){
         this->gpu_dim = dim;
     }
 
-    dim3 p_profile::get_grid_dim() const {
+    dim2 p_profile::get_grid_dim() const {
         int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
         int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
-        int z_size = __a_ceil(this->dim.z / this->get_group_t_dim().z);
-        return dim3(x_size, y_size, z_size);
+        return dim2(x_size, y_size);
     }
 
-    dim3 p_profile::get_group_t_dim() const {
+    dim2 p_profile::get_group_t_dim() const {
         return this->get_group_dim() *= this->get_item_dim();
     }
-    dim3 p_profile::get_group_dim() const {
+    dim2 p_profile::get_group_dim() const {
         return this->group_dim;
     }
-    void p_profile::set_group_dim(dim3 dim){
+    void p_profile::set_group_dim(dim2 dim){
         this->group_dim = dim;
     }
 
-    dim3 p_profile::get_item_dim() const {
+    dim2 p_profile::get_item_dim() const {
         return this->item_dim;
     }
-    void p_profile::set_item_dim(dim3 dim){
+    void p_profile::set_item_dim(dim2 dim){
         this->item_dim = dim;
     }
     void p_profile::invalidate(){

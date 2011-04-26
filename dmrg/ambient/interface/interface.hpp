@@ -31,16 +31,16 @@ void pin(L& proxy_object, const R& real_object){
     real.imitate(&proxy); // copy proxy settings to the actual profile
 }
 template<typename T>
-void assign(const T& ref, int i, int j, int k)
+void assign(const T& ref, int i, int j)
 {
     void_pt& profile = breakdown(ref);
-    profile.layout->request(i, j, k);
+    profile.layout->request(i, j);
 }
 template<typename T>
-void assign(T& ref, int i, int j, int k)
+void assign(T& ref, int i, int j)
 {
     void_pt& profile = breakdown(ref);
-    profile.layout->record(i, j, k);
+    profile.layout->record(i, j);
 }
 template<typename T>
 inline std::pair<unsigned int*,size_t> get_id(T& ref)
@@ -48,42 +48,42 @@ inline std::pair<unsigned int*,size_t> get_id(T& ref)
     return breakdown(ref).get_id();
 }
 template<typename T>
-inline dim3 get_dim(T& ref)
+inline dim2 get_dim(T& ref)
 {
     return breakdown(ref).get_dim();
 }
 template<typename T>
-inline dim3 get_distr_dim(T& ref)
+inline dim2 get_distr_dim(T& ref)
 {
     return breakdown(ref).get_distr_dim();
 }
 template<typename T>
-inline dim3 get_gpu_dim(T& ref)
+inline dim2 get_gpu_dim(T& ref)
 {
     return breakdown(ref).get_gpu_dim();
 }
 template<typename T>
-inline dim3 get_grid_dim(T& ref)
+inline dim2 get_grid_dim(T& ref)
 {
     return breakdown(ref).get_grid_dim();
 }
 template<typename T>
-inline dim3 get_group_dim(T& ref)
+inline dim2 get_group_dim(T& ref)
 {
     return breakdown(ref).get_group_dim();
 }
 template<typename T>
-inline dim3 get_group_t_dim(T& ref)
+inline dim2 get_group_t_dim(T& ref)
 {
     return breakdown(ref).get_group_t_dim();
 }
 template<typename T>
-inline dim3 get_item_dim(T& ref)
+inline dim2 get_item_dim(T& ref)
 {
     return breakdown(ref).get_item_dim();
 }
 template<typename T>
-inline dim3 get_group_id(T& ref)
+inline dim2 get_group_id(T& ref)
 {
     return breakdown(ref).get_group_id();
 }

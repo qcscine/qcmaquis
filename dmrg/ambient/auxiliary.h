@@ -24,34 +24,32 @@ namespace core{ class operation; }
       WEAK       // weak userspace deallocs (Ambient will free asap)
     };
 
-    class dim3
+    class dim2
     {
     public:
-        unsigned int x, y, z;
-        dim3(unsigned int x = 1, unsigned int y = 1, unsigned int z = 1) : x(x), y(y), z(z) {}
-        dim3& operator=(int value){
-            this->x = this->y = this->z = value;
+        unsigned int x, y;
+        dim2(unsigned int x = 1, unsigned int y = 1) : x(x), y(y) {}
+        dim2& operator=(int value){
+            this->x = this->y = value;
             return *this;
         }
-        dim3& operator*=(const dim3 & b){
+        dim2& operator*=(const dim2 & b){
             this->x *= b.x;
             this->y *= b.y;
-            this->z *= b.z;
             return *this;
         }
-        unsigned int operator*(const dim3 & b) const { // multiplication of all components
+        unsigned int operator*(const dim2 & b) const { // multiplication of all components
             return this->x * b.x *
-                   this->y * b.y *
-                   this->z * b.z ;
+                   this->y * b.y ;
         }
         bool operator==(int value) const {
-            return (x == value && y == value && z == value);
+            return (x == value && y == value);
         }
-        bool operator==(dim3 m) const {
-            return (x == m.x && y == m.y && z == m.z);
+        bool operator==(dim2 m) const {
+            return (x == m.x && y == m.y);
         }
-        bool operator!=(dim3 m) const {
-            return !(x == m.x && y == m.y && z == m.z);
+        bool operator!=(dim2 m) const {
+            return !(x == m.x && y == m.y);
         }
     };
 

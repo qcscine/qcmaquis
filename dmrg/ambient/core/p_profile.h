@@ -1,6 +1,6 @@
 #ifndef AMBIENT_CORE_P_PROFILE_H
 #define AMBIENT_CORE_P_PROFILE_H
-#include "ambient/core/workgroup.h"
+#include "ambient/core/memblock.h"
 #include "ambient/auxiliary.h"
 #include <boost/scoped_ptr.hpp>
 #include <utility>
@@ -10,7 +10,7 @@
 namespace ambient {
 
     namespace groups { class group; }
-    class workgroup;
+    class memblock;
     enum  p_state { ABSTRACT, COMPOSING, GENERIC, PROXY };
 
     class p_profile {
@@ -35,28 +35,28 @@ namespace ambient {
         size_t              reserved_x;
         size_t              reserved_y;
         size_t              t_size;
-        dim3                dim;
+        dim2                dim;
         block_packet_t*     packet_type;
         block_packet_t*     xpacket_type;
-        std::vector< std::vector<workgroup*> > skeleton;
-        workgroup*          default_group;
-        void(*init)(workgroup*);
-        void(*reduce)(workgroup*,void*);
+        std::vector< std::vector<memblock*> > skeleton;
+        memblock*          default_group;
+        void(*init)(memblock*);
+        void(*reduce)(memblock*,void*);
         p_profile*          associated_proxy;
     private:
         bool                valid;
-        dim3                distr_dim;   // work-item size of distribution blocks
-        dim3                group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
-        dim3                item_dim;    // size of work-item (i.e. 128) 
-        dim3                gpu_dim;     // work-item size of gpgpu smp workload fractions
+        dim2                distr_dim;   // work-item size of distribution blocks
+        dim2                group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
+        dim2                item_dim;    // size of work-item (i.e. 128) 
+        dim2                gpu_dim;     // work-item size of gpgpu smp workload fractions
     public:
         void operator=(const p_profile& profile);
-        p_profile & operator>>(dim3 dim_distr);
-        p_profile & operator,(dim3 dim);
+        p_profile & operator>>(dim2 dim_distr);
+        p_profile & operator,(dim2 dim);
 
         void constant();
         void inconstant();
-        p_profile* associate_proxy(p_profile* proxy, void(*R)(workgroup*,void*));
+        p_profile* associate_proxy(p_profile* proxy, void(*R)(memblock*,void*));
 
         bool is_proxy();
         void regroup();
@@ -65,8 +65,8 @@ namespace ambient {
         void set_master(int master);
         int get_master();
         int get_xmaster();
-        void set_default_group(int i, int j = 0, int k = 0);
-        dim3 get_group_id();
+        void set_default_group(int i, int j = 0);
+        dim2 get_group_id();
 
         p_profile* dereference(); // finds out if the profile pointer is up to date
         void touch();
@@ -83,22 +83,22 @@ namespace ambient {
         bool involved();
         bool xinvolved();
 
-        workgroup* group(int i, int j = 0, int k = 0) const;
-        workgroup& operator()(int i, int j = 0, int k = 0);
+        memblock* group(int i, int j = 0) const;
+        memblock& operator()(int i, int j = 0);
 
 // parameters can be set specifically for the profile
-        dim3 get_dim()         const;
-        dim3 get_distr_dim()   const;
-        dim3 get_gpu_dim()     const;
-        dim3 get_grid_dim()    const;
-        dim3 get_group_dim()   const;
-        dim3 get_group_t_dim() const;
-        dim3 get_item_dim()    const;
-        void(*get_init() const)(workgroup*);
+        dim2 get_dim()         const;
+        dim2 get_distr_dim()   const;
+        dim2 get_gpu_dim()     const;
+        dim2 get_grid_dim()    const;
+        dim2 get_group_dim()   const;
+        dim2 get_group_t_dim() const;
+        dim2 get_item_dim()    const;
+        void(*get_init() const)(memblock*);
 
         void imitate(p_profile* profile);
-        void solidify(std::vector<core::layout_table::entry>& entries);
-        void disperse(std::vector<core::layout_table::entry>& entries);
+        void solidify(std::vector<core::layout_table::entry> entries);
+        void disperse(std::vector<core::layout_table::entry> entries);
 
     private:
         template<typename T> operator T ();
@@ -107,17 +107,17 @@ namespace ambient {
         { return (T*)this->get_data();    }
         size_t get_bound() const;
         void* get_data();
-        void set_dim(dim3 dim);
-        void set_distr_dim(dim3 dim);
-        void set_gpu_dim(dim3 dim);
-        void set_group_dim(dim3 dim);
-        void set_item_dim(dim3 dim);
-        void set_init(void(*)(workgroup*));
+        void set_dim(dim2 dim);
+        void set_distr_dim(dim2 dim);
+        void set_gpu_dim(dim2 dim);
+        void set_group_dim(dim2 dim);
+        void set_item_dim(dim2 dim);
+        void set_init(void(*)(memblock*));
         void invalidate();
         bool is_valid();
     };
 
-    p_profile& operator>>(p_profile* instance, dim3 dim_distr);
+    p_profile& operator>>(p_profile* instance, dim2 dim_distr);
     void accept_block(groups::packet_manager::typed_q& in_q);
 }
 #endif

@@ -4,7 +4,6 @@
 #include "ambient/packets/auxiliary.hpp"
 #include "ambient/groups/packet_manager.h"
 #include "ambient/groups/group.h"
-#include "ambient/groups/auxiliary.hpp"
 #include "ambient/core/layout.h"
 #include "ambient/auxiliary.hpp"
 
@@ -26,14 +25,14 @@ namespace ambient
     scope_context& scope    = scope_context::instance();
 // global objects accessible anywhere //
 
-    scheduler & scheduler::operator>>(dim3 distr_dim) 
+    scheduler & scheduler::operator>>(dim2 distr_dim) 
     {
         this->distr_dim = distr_dim;
         this->group_dim = NULL;
         this->gpu_dim = NULL;
         return *this;
     }
-    scheduler & scheduler::operator,(dim3 dim) 
+    scheduler & scheduler::operator,(dim2 dim) 
     {
         if(this->group_dim == NULL){
             this->group_dim = dim;
@@ -49,7 +48,7 @@ namespace ambient
         }
         return *this;
     }
-    scheduler& operator>>(scheduler* instance, dim3 distr_dim) 
+    scheduler& operator>>(scheduler* instance, dim2 distr_dim) 
     {
         return *instance >> distr_dim;
     }
@@ -67,11 +66,11 @@ namespace ambient
     void world_loop(){ engine.world_loop(); }
     int  size()      { return engine.size;  }
 
-    scheduler::scheduler(): item_dim(dim3(128,128,1)){ } // to revert to 128,128
-    dim3 scheduler::get_group_dim(){ return this->group_dim; }
-    dim3 scheduler::get_item_dim() { return this->item_dim;  }
-    dim3 scheduler::get_distr_dim(){ return this->distr_dim; }
-    dim3 scheduler::get_gpu_dim()  { return this->gpu_dim;   }
+    scheduler::scheduler(): item_dim(dim2(128,128)){ } // to revert to 128,128
+    dim2 scheduler::get_group_dim(){ return this->group_dim; }
+    dim2 scheduler::get_item_dim() { return this->item_dim;  }
+    dim2 scheduler::get_distr_dim(){ return this->distr_dim; }
+    dim2 scheduler::get_gpu_dim()  { return this->gpu_dim;   }
 
     void scheduler::init()
     {
@@ -174,7 +173,7 @@ namespace ambient
                         computing->invoke();    // scalapack style
                         logistics->get_scope()->get_manager()->spin_loop();
                     }else{
-// performing computation for every item inside every appointed workgroup
+// performing computation for every item inside every appointed memblock
                         std::vector<core::layout_table::entry>& workload = logistics->pin->layout->get_list();
                         for(int k=0; k < workload.size(); k++){
                             logistics->pin->set_default_group(workload[k].i, workload[k].j);

@@ -212,6 +212,7 @@ namespace ambient{ namespace groups{
             if(flag){
                 this->target_packet = unpack(this->type, (*it)->memory); 
                 this->packet_delivered();
+                (*it)->memory = alloc_t(this->type); // otherwise will overwrite old memory
                 this->recv(*it); // request renewal
             }
         }

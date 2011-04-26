@@ -2,7 +2,6 @@
 #include "ambient/ambient.h"
 #include "ambient/core/p_profile.h"
 #include "ambient/packets/auxiliary.hpp"
-#include "ambient/groups/auxiliary.hpp"
 #include "ambient/groups/packet_manager.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
@@ -34,8 +33,8 @@ namespace ambient{ namespace core{
     layout_table::entry::entry()
     { }
 
-    layout_table::entry::entry(int owner, int i, int j, int k)
-    : xowner(-1), owner(owner), i(i), j(j), k(k) { }
+    layout_table::entry::entry(int owner, int i, int j)
+    : xowner(-1), owner(owner), i(i), j(j) { }
 
     int layout_table::entry::get_xowner(){
         return (this->xowner == -1 ? this->owner : this->xowner);
@@ -72,57 +71,57 @@ namespace ambient{ namespace core{
         return (this->segment_count != 0 ? this->segment : this->requests);
     }
 
-    layout_table::entry* layout_table::get_entry(int i, int j, int k){
+    layout_table::entry* layout_table::get_entry(int i, int j){
         if(map[i][j] == NULL) throw race_condition_e(); // to extend for situation when outdated
         return map[i][j];
     }
 
-    layout_table::entry* layout_table::operator()(int i, int j, int k){
+    layout_table::entry* layout_table::operator()(int i, int j){
         assert(map[i][j] != NULL);
         return map[i][j];
     }
 
-    void layout_table::add_segment_entry(int owner, int i, int j, int k){
+    void layout_table::add_segment_entry(int owner, int i, int j){
         if(segment_count == segment.size()) segment.resize(segment_count+1);
-        segment[segment_count++] = entry(owner, i, j, k);
+        segment[segment_count++] = entry(owner, i, j);
     }
 
-    void layout_table::add_request_entry(int i, int j, int k){
+    void layout_table::add_request_entry(int i, int j){
         if(request_count == requests.size()) requests.resize(request_count+1);
-        requests[request_count++] = entry(-1, i, j, k);
+        requests[request_count++] = entry(-1, i, j);
     }
 
-    void layout_table::update_map_entry(int owner, int i, int j, int k){
+    void layout_table::update_map_entry(int owner, int i, int j){
         if(map[i][j] == NULL){ 
             this->count++;
-            map[i][j] = new entry(owner, i, j, k);
+            map[i][j] = new entry(owner, i, j);
         }else{
             map[i][j]->xowner = map[i][j]->owner;
             map[i][j]->owner = owner;
         }
     }
-    void layout_table::record(int i, int j, int k) {
+    void layout_table::record(int i, int j) {
         for(int s=0; s < this->segment_count; s++)
             if(this->segment[s].i == i &&
-               this->segment[s].j == j &&
-               this->segment[s].k == k) return; // avoiding redunant information // that is - hangs in mpi
+               this->segment[s].j == j) return; // avoiding redunant information // that is - hangs in mpi
 
-        this->profile->group(i,j,k)->owner = ambient::rank();
-        add_segment_entry(ambient::rank(), i, j, k);
+        this->profile->group(i,j)->owner = ambient::rank();
+        add_segment_entry(ambient::rank(), i,j);
     }
-    void layout_table::request(int i, int j, int k){
+    void layout_table::request(int i, int j){
         if(this->init_marker.has_marked(i,j)){
-            return record(i,j,k);
+            return record(i,j);
         }
         for(int s=0; s < this->request_count; s++)
             if(this->requests[s].i == i &&
-               this->requests[s].j == j &&
-               this->requests[s].k == k) return; // avoiding redunant requests
-        add_request_entry(i, j, k);
+               this->requests[s].j == j) return; // avoiding redunant requests
+        add_request_entry(i, j);
     }
     void layout_table::clean(){
         this->segment_count = 0;
         this->request_count = 0;
+        this->segment.resize(0);
+        this->requests.resize(0);
     }
     void layout_table::print(){
         for(int i=0; i < this->segment_count; i++){
@@ -130,15 +129,15 @@ namespace ambient{ namespace core{
         }
     }
 
-    ambient::packets::packet* package(p_profile* profile, const char* state, int i, int j, int k, int dest)
+    ambient::packets::packet* package(p_profile* profile, const char* state, int i, int j, int dest)
     {
         if(*state == 'P'){
              if(profile->associated_proxy == NULL) throw race_condition_e();
              profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
         }
-        void* header = profile->group(i, j, k)->header; 
+        void* header = profile->group(i,j)->header; 
         if(header == NULL) throw race_condition_e(); // to extend for situation when outdated
-        return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, state, i, j, k, NULL);
+        return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, state, i, j, NULL);
     }
 
     void forward_block(packet_manager::typed_q& in_q){
@@ -148,7 +147,7 @@ namespace ambient{ namespace core{
         if(!profile->xinvolved()) return;
         try{
             in_q.manager->emit(package(profile, (const char*)pack->get(A_LAYOUT_P_STATE_FIELD), pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
-                                       pack->get<int>(A_LAYOUT_P_K_FIELD), pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
+                                       pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }catch(race_condition_e){
             assert(pack->get<int>(A_DEST_FIELD) >= 0);
             in_q.manager->emit(pack); // re-throwing the packet for future handling
@@ -162,8 +161,7 @@ namespace ambient{ namespace core{
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM X OWNER ACTION
         try{
             layout_table::entry* entry = profile->layout->get_entry(pack->get<int>(A_LAYOUT_P_I_FIELD), 
-                                                                   pack->get<int>(A_LAYOUT_P_J_FIELD), 
-                                                                   pack->get<int>(A_LAYOUT_P_K_FIELD));
+                                                                    pack->get<int>(A_LAYOUT_P_J_FIELD)); 
             pack->set(A_DEST_FIELD, entry->get_owner());
             pack->set(A_LAYOUT_P_ACTION, "REQUEST TRANSFER TO THE NEW OWNER");
             assert(pack->get<int>(A_DEST_FIELD) >= 0);
@@ -183,8 +181,7 @@ namespace ambient{ namespace core{
            pack->get<char>(A_LAYOUT_P_ACTION) != 'C' ) return;
         profile->layout->update_map_entry(pack->get<int>(A_LAYOUT_P_OWNER_FIELD),
                                           pack->get<int>(A_LAYOUT_P_I_FIELD)    ,
-                                          pack->get<int>(A_LAYOUT_P_J_FIELD)    ,
-                                          pack->get<int>(A_LAYOUT_P_K_FIELD)    );
+                                          pack->get<int>(A_LAYOUT_P_J_FIELD)    );
         if(pack->get<char>(A_LAYOUT_P_ACTION) == 'C') return; // COMPOSE ACTION
 
         if(profile->get_xmaster() == profile->get_master()){
@@ -221,21 +218,18 @@ namespace ambient{ namespace core{
                                                                   *profiles[k]->group_id, profiles[k]->id, "GENERIC",
                                                                    profiles[k]->layout->segment[i].owner, 
                                                                    profiles[k]->layout->segment[i].i, 
-                                                                   profiles[k]->layout->segment[i].j, 
-                                                                   profiles[k]->layout->segment[i].k));
+                                                                   profiles[k]->layout->segment[i].j));
             }
             for(int i=0; i < profiles[k]->layout->request_count; i++){
                 if(profiles[k]->group(profiles[k]->layout->requests[i].i, 
-                                      profiles[k]->layout->requests[i].j, 
-                                      profiles[k]->layout->requests[i].k)->available()) continue; // avoiding redunant requests
+                                      profiles[k]->layout->requests[i].j)->available()) continue; // avoiding redunant requests
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 
                                                                   "INFORM OWNER ABOUT REQUEST",
                                                                   *profiles[k]->group_id, profiles[k]->id, "GENERIC",
                                                                    ambient::rank(), // forward target
                                                                    profiles[k]->layout->requests[i].i, 
-                                                                   profiles[k]->layout->requests[i].j, 
-                                                                   profiles[k]->layout->requests[i].k));
+                                                                   profiles[k]->layout->requests[i].j));
             }
         }
     }

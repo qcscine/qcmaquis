@@ -114,7 +114,7 @@ void copy_l_kernel3(p_dense_matrix<double>& ac, pinned const p_dense_matrix<doub
 
 void resize_l_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
 {
-    breakdown(a).set_dim(ambient::dim3(cols,rows));
+    breakdown(a).set_dim(ambient::dim2(cols,rows));
 
     scope_select("2 from ambient as resize where master is 0");
     if(!scope.involved()) return; // out of scope quick exit
@@ -252,10 +252,10 @@ void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p
     block_2d_cycle_assign(c);
 }
 
-void validation_l_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala) 
+void validation_l_kernel(pinned const p_dense_matrix<double>& A_ambient, const p_dense_matrix<double>& B_scala) 
 { 
     int num = 2; //get_grid_dim(A_ambient).y; 
-    scope_select(num+" from ambient as validation"+num +" where master is 0 "+get_id(A_ambient)); // todo: correct the naming issue
+    scope_select(num+" from ambient as validation"+num +" where master is 0");// and breakdown contains "+get_id(A_ambient));
 
     if(!scope.involved()) return; // out of scope quick exit 
     zout << "2d-block-cyclic decomposition kernel in validation ("<< ambient::rank() <<"):\n"; info(A_ambient); info(B_scala); 

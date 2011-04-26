@@ -18,7 +18,6 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>&  A, const p_dense_mat
 #ifdef SCALAPACK
     int nmyidBLACS,nnumprocsBLACS,nContinue;
     int nContxt,nVal;  
-    int i, j, k;
     int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
     int nN = get_grid_dim(C).x*get_group_dim(C).x*get_item_dim(C).x; 
     int nM = get_grid_dim(C).y*get_group_dim(C).y*get_item_dim(C).y;
@@ -65,7 +64,6 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<d
     int descA[9],descV[9],descU[9];
     int nmyidBLACS,nnumprocsBLACS,nContinue;
     int nContxt,nVal;  
-    int i, j, k;
     int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
     int nN = get_grid_dim(M).x*get_group_t_dim(M).x; 
     int nM = get_grid_dim(M).y*get_group_t_dim(M).y;

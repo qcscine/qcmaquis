@@ -17,15 +17,13 @@
 #define A_LAYOUT_P_OWNER_FIELD 7
 #define A_LAYOUT_P_I_FIELD     8
 #define A_LAYOUT_P_J_FIELD     9
-#define A_LAYOUT_P_K_FIELD     10
 
 #define A_BLOCK_P_GID_FIELD    3
 #define A_BLOCK_P_ID_FIELD     4
 #define A_BLOCK_P_STATE_FIELD  5
 #define A_BLOCK_P_I_FIELD      6
 #define A_BLOCK_P_J_FIELD      7
-#define A_BLOCK_P_K_FIELD      8
-#define A_BLOCK_P_DATA_FIELD   9
+#define A_BLOCK_P_DATA_FIELD   8
 
 #define A_CONTROL_P_SRC_FIELD  3
 #define A_CONTROL_P_CODE_FIELD 4
@@ -66,7 +64,7 @@ namespace ambient{ namespace packets{
 
     struct layout_packet_t : public standard_packet_t
     {
-        __a_fields__ action, profile_gid, profile_id, state, owner, i, j, k;
+        __a_fields__ action, profile_gid, profile_id, state, owner, i, j;
         layout_packet_t()
         {
             __a_packet__
@@ -77,15 +75,14 @@ namespace ambient{ namespace packets{
             owner         = MPI_INT;
             i             = MPI_INT;
             j             = MPI_INT;
-            k             = MPI_INT;
-            __a_pack{ 1, 1, 1, 1, 1, 1, 1, 1 };
+            __a_pack{ 1, 1, 1, 1, 1, 1, 1 };
             __a_code('L');
         }
     };
 
     struct block_packet_t : public standard_packet_t
     {
-        __a_flex_fields__ profile_gid, profile_id, state, i, j, k, data;
+        __a_flex_fields__ profile_gid, profile_id, state, i, j, data;
         block_packet_t(size_t size) : standard_packet_t()
         {
             __a_packet__
@@ -94,9 +91,8 @@ namespace ambient{ namespace packets{
             state         = MPI_BYTE;
             i             = MPI_INT;
             j             = MPI_INT;
-            k             = MPI_INT;
             data          = MPI_DOUBLE;
-            __a_pack{ 1, 1, 1, 1, 1, 1, size };
+            __a_pack{ 1, 1, 1, 1, 1, size };
             __a_code('B'+size); // note: small size is dangerous (code overlap)
         }
     };

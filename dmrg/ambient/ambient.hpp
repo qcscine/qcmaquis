@@ -24,38 +24,38 @@ namespace ambient{
     void pin(L& proxy_object, const R& real_object);
 
     template<typename T>
-    void assign(T& ref, int i, int j = 0, int k = 0);
+    void assign(T& ref, int i, int j = 0);
 
     template<typename T>
-    void assign(const T& ref, int i, int j = 0, int k = 0);
+    void assign(const T& ref, int i, int j = 0);
 
 // breakdown information //
     template<typename T>
     inline std::pair<unsigned int*,size_t> get_id(T& ref);
 
     template<typename T>
-    inline dim3 get_dim(T& ref);
+    inline dim2 get_dim(T& ref);
 
     template<typename T>
-    inline dim3 get_distr_dim(T& ref);
+    inline dim2 get_distr_dim(T& ref);
 
     template<typename T>
-    inline dim3 get_gpu_dim(T& ref);
+    inline dim2 get_gpu_dim(T& ref);
 
     template<typename T>
-    inline dim3 get_grid_dim(T& ref);
+    inline dim2 get_grid_dim(T& ref);
 
     template<typename T>
-    inline dim3 get_group_dim(T& ref);
+    inline dim2 get_group_dim(T& ref);
 
     template<typename T>
-    inline dim3 get_group_t_dim(T& ref);
+    inline dim2 get_group_t_dim(T& ref);
 
     template<typename T>
-    inline dim3 get_item_dim(T& ref);
+    inline dim2 get_item_dim(T& ref);
 
     template<typename T>
-    inline dim3 get_group_id(T& ref);
+    inline dim2 get_group_id(T& ref);
 
     #include "ambient/interface/core.hpp"
     #include "ambient/interface/i_kernels.hpp"

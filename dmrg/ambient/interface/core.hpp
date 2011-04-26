@@ -109,7 +109,7 @@ boost::shared_ptr< p_dense_matrix<T> > get_handle(const p_dense_matrix<T,P>& a){
 
 template <typename T> 
 void_pt& breakdown(T& obj){
-    void_pt** profile_ptr = const_cast<void_pt**>(&obj.breakdown());
+    void_pt** profile_ptr = const_cast<void_pt**>(&(obj.self->breakdown()));
     *profile_ptr = (void_pt*)(*profile_ptr)->dereference();
     (*profile_ptr)->inconstant();
     return **profile_ptr;
@@ -117,7 +117,7 @@ void_pt& breakdown(T& obj){
 
 template <typename T> 
 void_pt& breakdown(const T& obj){
-    void_pt** profile_ptr = const_cast<void_pt**>(&obj.breakdown());
+    void_pt** profile_ptr = const_cast<void_pt**>(&(obj.self->breakdown()));
     *profile_ptr = (void_pt*)(*profile_ptr)->dereference();
     (*profile_ptr)->constant();
     return **profile_ptr;
@@ -130,7 +130,7 @@ void_pt& current(T& obj){
 }
 
 template <typename T>
-void plus_reduce(workgroup* grp, void* update){
+void plus_reduce(memblock* grp, void* update){
     assert(false); // only partially specialized
 }
 
