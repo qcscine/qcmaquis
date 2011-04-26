@@ -30,10 +30,9 @@ we need it to avoid dependency inside SVD kernels and other
       //  p_diagonal_matrix(Vector const & init)
       //  : data_(init.begin(), init.end()) { }
         p_diagonal_matrix(size_t rows = 0,  T const & init = T());
-        p_diagonal_matrix(size_t rows,  T* const &  array);
+      //  p_diagonal_matrix(size_t rows,  T* const &  array);
         size_t num_rows() const;
         size_t num_cols() const;
-        size_t num_columns() const;
         p_diagonal_matrix<T>& operator = (const p_diagonal_matrix<T>& rhs);
         T const & operator[](size_t i) const;
         T & operator[](size_t i); 
