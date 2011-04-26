@@ -18,7 +18,7 @@ using namespace blas;
 // List of types T for which the p_dense_matrix<T> is tested
 // (long long unsigned int causes problems in boost::iterator facade)
 typedef boost::mpl::list<double> test_types;
-typedef ambient::dim3 dim3;
+typedef ambient::dim2 dim;
 
 namespace type_pairs
 {
@@ -52,7 +52,7 @@ BOOST_GLOBAL_FIXTURE( AmbientConfig );
 
 /*BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {
-    ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1);
+    ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
 
     p_dense_matrix<T> a(M_SIZE,M_SIZE);
     p_dense_matrix<T> b(M_SIZE,M_SIZE);
@@ -78,7 +78,7 @@ BOOST_GLOBAL_FIXTURE( AmbientConfig );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sql_test, T, test_types )
 {
-    ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1);
+    ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
 
     p_dense_matrix<T> a(M_SIZE,M_SIZE);
     p_dense_matrix<T> b(M_SIZE,M_SIZE);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sql_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( print_test, T, test_types )
 {
-    ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1);
+    ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
 
     p_dense_matrix<T> a(8,8);
     ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,a); 
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( print_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types ) 
 { 
-    ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1); 
+    ambient::layout >> dim(1,1), dim(1,1), dim(10,1); 
  
     p_dense_matrix<T> A(M_SIZE,M_SIZE); 
     p_dense_matrix<T> U(M_SIZE,M_SIZE); 
@@ -123,11 +123,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
 
 /*BOOST_AUTO_TEST_CASE_TEMPLATE( heap_manual_test, T, test_types ) 
 { 
-    ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
     p_dense_matrix<T,ambient::MANUAL>* A = new p_dense_matrix<T, ambient::MANUAL>(M_SIZE,M_SIZE);
     p_dense_matrix<T,ambient::MANUAL>* U = new p_dense_matrix<T, ambient::MANUAL>(M_SIZE,M_SIZE); 
     p_dense_matrix<T,ambient::MANUAL>* V = new p_dense_matrix<T, ambient::MANUAL>(M_SIZE,M_SIZE); 
-
+ 
     ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*A); 
     ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*U); 
     ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*V); 
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( heap_auto_test, T, test_types ) 
 { 
-    ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
     p_dense_matrix<T,ambient::WEAK>* A = new p_dense_matrix<T,ambient::WEAK>(M_SIZE,M_SIZE);
     p_dense_matrix<T,ambient::WEAK>* U = new p_dense_matrix<T,ambient::WEAK>(M_SIZE,M_SIZE); 
     p_dense_matrix<T,ambient::WEAK>* V = new p_dense_matrix<T,ambient::WEAK>(M_SIZE,M_SIZE); 
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( heap_auto_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types ) 
 { 
-    ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
     p_dense_matrix<T> A(M_SIZE,M_SIZE);
     p_dense_matrix<T> U(M_SIZE,M_SIZE); 
     p_dense_matrix<T> V(M_SIZE,M_SIZE); 
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_test, T, test_types ) 
 { 
-    ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
 
     size_t task_size = M_SIZE;
 
