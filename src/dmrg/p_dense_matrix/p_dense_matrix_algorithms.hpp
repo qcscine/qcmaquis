@@ -79,22 +79,15 @@ namespace blas
     template<typename T>
     void svd(const p_dense_matrix<T> &  M,
              p_dense_matrix<T> & U,
-             p_dense_matrix<T>& V,
+             p_dense_matrix<T> & V,
              typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
     {
-        //BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
+        BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
         printf("Attempting to perform SVD\n");
 	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
         U.resize(num_rows(M), k);
         V.resize(k, num_cols(M));
-       // std::vector<typename detail::sv_type<T>::type> S_(k);
-	//const T * S_= new T[k];
-	T* const *  S_ = new T*((T*)malloc(sizeof(T)*k));
-	ambient::push(ambient::null_l_scalapack_svd_kernel, ambient::svd_c_scalapack_kernel, M, U, V, *S_);
-        ambient::playout();
-        p_diagonal_matrix<T> R(k,*S_) ; 
-        S.get_data() = R.get_data(); //typename associated_p_diagonal_matrix<p_dense_matrix<T> >::type (R); 
-        ambient::playout();
+	ambient::push(ambient::svd_l_scalapack_kernel, ambient::svd_c_scalapack_kernel, M, U, V, S.get_data());
     }
     
     template<typename T>
@@ -107,12 +100,43 @@ namespace blas
          Q: (m,n)
          R: (n,n) */
     }
-   
-   template<typename T>
-   void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala )
-   {
+
+    template<typename T>
+    void syev(p_dense_matrix<T> M,
+              p_dense_matrix<T> & evecs,
+              std::vector<double> & evals)
+    {
+        assert(false);
+        assert(num_rows(M) == num_cols(M));
+        assert(evals.size() == num_rows(M));
+    //    boost::numeric::bindings::lapack::syevd('V', M, evals);    // <- push kernel
+        // to be consistent with the SVD, I reorder in decreasing order
+        std::reverse(evals.begin(), evals.end());
+        // and the same with the matrix
+        evecs.resize(num_rows(M), num_cols(M));
+        for (std::size_t c = 0; c < num_cols(M); ++c)
+			std::copy(column(M, c).first, column(M, c).second,
+                      column(evecs, num_cols(M)-1-c).first);
+    }
+
+    template<typename T>
+    void syev(p_dense_matrix<T> M,
+              p_dense_matrix<T> & evecs,
+              typename associated_diagonal_matrix<p_dense_matrix<T> >::type & evals)
+    {
+        assert(false);
+
+        assert(num_rows(M) == num_cols(M));
+        std::vector<double> evals_(num_rows(M));
+        syev(M, evecs, evals_);  
+  //      evals = typename associated_diagonal_matrix<p_dense_matrix<T>::type(evals_); to modify
+    }
+ 
+    template<typename T>
+    void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala )
+    {
         ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
-   }
+    }
  
 } /* namespace blas */
 
