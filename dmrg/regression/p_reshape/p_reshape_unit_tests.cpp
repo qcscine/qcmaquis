@@ -18,7 +18,7 @@ using namespace blas;
 // List of types T for which the p_dense_matrix<T> is tested
 // (long long unsigned int causes problems in boost::iterator facade)
 typedef boost::mpl::list<double> test_types;
-typedef ambient::dim3 dim3;
+typedef ambient::dim2 dim;
 
 namespace type_pairs
 {
@@ -52,7 +52,7 @@ BOOST_GLOBAL_FIXTURE( AmbientConfig );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( reshape_test, T, test_types )
 {
-    ambient::layout >> dim3(10,5), dim3(1,1), dim3(10,1);
+    ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
 
     p_dense_matrix<T> a(M_SIZE,M_SIZE);
     p_dense_matrix<T> b(M_SIZE,M_SIZE);

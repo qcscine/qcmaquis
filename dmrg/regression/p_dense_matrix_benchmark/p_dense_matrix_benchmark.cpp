@@ -11,7 +11,7 @@ using namespace blas;
 using namespace ambient;
 
 typedef boost::mpl::list<double> test_types;
-typedef ambient::dim3 dim3;
+typedef ambient::dim2 dim;
 
 struct caveats {
     caveats(){ ambient::init();     }
@@ -23,7 +23,7 @@ BOOST_GLOBAL_FIXTURE( caveats );
 
 /*BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types ) 
 { 
-    ambient::layout >> dim3(10,5), dim3(8,8), dim3(10,1); 
+    ambient::layout >> dim(8,8), dim(8,8), dim(10,1); 
     int M = 1024*2;
 
     p_dense_matrix<T> V1(M,M); 
@@ -43,7 +43,7 @@ BOOST_GLOBAL_FIXTURE( caveats );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
-     ambient::layout >> dim3(10,5), dim3(2,2), dim3(10,1); 
+     ambient::layout >> dim(1,1), dim(1,1), dim(10,1); 
      int LENGTH = 16;
      int M = 2048;
 
@@ -61,7 +61,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types )
      Timer ta("Ambient series of GEMM"); ta.begin();
      ambient::playout();
      ta.end();
-
 
      for(int i = 0 ; i < LENGTH ; i++) blas::validation(*V[i*4+2],*V[i*4+3]);
      ambient::playout();
