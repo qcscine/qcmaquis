@@ -8,11 +8,6 @@ namespace blas {
     {
     }
 
-    template<typename T> 
-    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, T* const & array):data_(rows,1,array)
-    {
-    }
-
     template<typename T>
     size_t p_diagonal_matrix<T>::num_rows() const 
     {
@@ -25,12 +20,6 @@ namespace blas {
         return this->num_rows();
     }
    
-    template<typename T>
-    size_t p_diagonal_matrix<T>::num_columns() const
-    {
-        return this->num_cols();
-    }
-
     template<typename T>
     p_diagonal_matrix<T>& p_diagonal_matrix<T>::operator=(const p_diagonal_matrix<T>& rhs)
     {
@@ -66,15 +55,26 @@ namespace blas {
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator> p_diagonal_matrix<T>::elements()
     {
-        int n = this->data_.num_rows(); 
-        return std::make_pair(this->data_(0,0), this->data_(n,0));
+        int n = this->data_.num_rows();
+        /**
+          the p_diag is not still based on std::vector this is a solution for geting an iterator
+        */ 
+        element_iterator it_first,it_second;
+        *it_first = this->data_(0,0); 
+        *it_second = this->data_(n,0); 
+       // return std::make_pair(this->data_(0,0), this->data_(n,0));
+        return std::make_pair(it_first, it_second);
     }
 
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator> p_diagonal_matrix<T>::elements() const
     {
         int n = this->data_.num_rows(); 
-        return std::make_pair(this->data_(0,0), this->data_(n,0));
+        element_iterator it_first,it_second;
+        *it_first = this->data_(0,0); 
+        *it_second = this->data_(n,0); 
+      //  return std::make_pair(this->data_(0,0), this->data_(n,0));
+        return std::make_pair(it_first, it_second);
     }
         
 
@@ -176,7 +176,7 @@ namespace blas {
     {
         return m.elements();
     }
-
+//ok to be compliant with the p_diag_matrix
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator>
     elements(p_diagonal_matrix<T> const & m)
