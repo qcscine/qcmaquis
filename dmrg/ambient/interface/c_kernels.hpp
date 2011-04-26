@@ -356,8 +356,8 @@ Validation kernel came from :
 */ 
 void validation_c_kernel(pinned const p_dense_matrix<double>& A_ambient, const p_dense_matrix<double>& B_scala) 
 { 
-    double* Ad = breakdown(A_ambient)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
-    double* Bd = breakdown(B_scala)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
+    double* Ad = current(A_ambient)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
+    double* Bd = current(B_scala)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
 
     double res = 0; 
     double epsilon = 0.0000000000000001; 
