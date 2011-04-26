@@ -29,8 +29,9 @@ namespace blas
         resize(U, num_rows(M), k);
         resize(V, k, num_cols(M));
         
-        std::vector<typename detail::sv_type<T>::type> S_(k);
-//        int info = boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
+//      std::vector<typename detail::sv_type<T>::type> S_(k);
+        typename associated_vector<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type S_(k);
+//      int info = boost::numeric::bindings::lapack::gesdd('S', M, S_, U, V);
         int info = boost::numeric::bindings::lapack::gesvd('S', 'S', M, S_, U, V);
         if (info != 0)
             throw std::runtime_error("Error in SVD!");
@@ -44,7 +45,9 @@ namespace blas
             dense_matrix<T, MemoryBlock> & R)
     {
         typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
-        std::vector<double> tau(k);
+
+        //std::vector<double> tau(k);
+        typename associated_vector<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
         
         int info = 0; //boost::numeric::bindings::lapack::geqrf(M, tau);
         if (info != 0)
@@ -74,7 +77,7 @@ namespace blas
     template<typename T, class MemoryBlock>
     void syev(dense_matrix<T, MemoryBlock> M,
               dense_matrix<T, MemoryBlock> & evecs,
-              std::vector<double> & evals)
+              typename associated_vector<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type & evals) 
     {
         assert(num_rows(M) == num_cols(M));
         assert(evals.size() == num_rows(M));
