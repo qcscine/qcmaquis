@@ -7,12 +7,10 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
         profile->state  = PROXY;
         profile->dim.x  = 0;
         profile->dim.y  = 0;
-        profile->dim.z  = 0;
     }else{
         profile->t_size = sizeof(T);
         profile->dim.x  = ptr->num_cols();
         profile->dim.y  = ptr->num_rows();
-        profile->dim.z  = 1;
     }
     profile->set_init(matrix_i_kernel<T>);
     profile->regroup();
@@ -80,7 +78,7 @@ void breakdown_model(void_pt *profile, const double*const *ptr){  }
 
 
 template<>
-void plus_reduce< p_dense_matrix<double> >(workgroup* grp, void* update){
+void plus_reduce< p_dense_matrix<double> >(memblock* grp, void* update){
     double* a = (double*)grp->data;
     double* u = (double*)update;
 

@@ -24,10 +24,9 @@ namespace core {
         class entry {
         public:
             entry(); // default constructor
-            entry(int owner, int i, int j = 0, int k = 0);
+            entry(int owner, int i, int j = 0);
             int i;
             int j;
-            int k;
             int owner;
             int xowner;
             int get_xowner();
@@ -39,15 +38,15 @@ namespace core {
         void remap();
 
         std::vector<core::layout_table::entry>& get_list();
-        entry* get_entry(int i, int j = 0, int k = 0);
-        entry* operator()(int i, int j = 0, int k = 0);
+        entry* get_entry(int i, int j = 0);
+        entry* operator()(int i, int j = 0);
 
-        void add_segment_entry(int owner, int i, int j = 0, int k = 0);
-        void add_request_entry(int i, int j = 0, int k = 0);
-        void update_map_entry(int owner, int i, int j = 0, int k = 0);
+        void add_segment_entry(int owner, int i, int j = 0);
+        void add_request_entry(int i, int j = 0);
+        void update_map_entry(int owner, int i, int j = 0);
 
-        void record(int i, int j = 0, int k = 0); // general call invoking one above
-        void request(int i, int j = 0, int k = 0); // request for the block (read-only purpose)
+        void record(int i, int j = 0);  // general call invoking one above
+        void request(int i, int j = 0); // request for the block (read-only purpose)
 
         void clean();
         void print();

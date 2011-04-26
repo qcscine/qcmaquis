@@ -9,7 +9,7 @@ extern "C" {
 void check_gemm_c_kernel(pinned const p_dense_matrix<double>& c)
 {
     double* cd = current(c)(get_group_id(c).y, get_group_id(c).x);
-    if((int)cd[0] != get_dim(c).y) printf("The wrong value inside block (%d,%d): %d\n", get_group_id(c).y, get_group_id(c).x, (int)cd[0]);
+    //if((int)cd[0] != get_dim(c).y) printf("The wrong value inside block (%d,%d): %d\n", get_group_id(c).y, get_group_id(c).x, (int)cd[0]);
 }
 
 void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
@@ -354,21 +354,20 @@ Validation kernel came from :
  address = {New York, NY, USA}, 
 }  
 */ 
-void validation_c_kernel( pinned p_dense_matrix<double>& A_ambient,  p_dense_matrix<double>& B_scala) 
+void validation_c_kernel(pinned const p_dense_matrix<double>& A_ambient, const p_dense_matrix<double>& B_scala) 
 { 
-    double* Ad = current(A_ambient)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
-    double* Bd = current(B_scala)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
- 
+    double* Ad = breakdown(A_ambient)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
+    double* Bd = breakdown(B_scala)(get_group_id(A_ambient).y, get_group_id(A_ambient).x); 
+
     double res = 0; 
     double epsilon = 0.0000000000000001; 
  
     for(int i=0; i < get_group_t_dim(A_ambient).x*get_group_t_dim(A_ambient).y; i++) 
     { 
         res = (fabs(Ad[i]-Bd[i]))/fabs(epsilon*Bd[i]); 
-        if(res > 16) // 16 is recommended by dongara,  
-        { 
-             printf("validation test failed, res %.10f Ambient: %.10f Scala: %.10f \n",res, Ad[i], Bd[i]); 
-             exit(-1); 
+        if(res > 16){ // 16 is recommended by dongara,  
+             printf("validation test failed in group %d %d, res %.10f Ambient: %.10f Scala: %.10f \n", get_group_id(A_ambient).y, get_group_id(A_ambient).x, res, Ad[i], Bd[i]);
+             exit(-1);
         }                
     } 
 } 

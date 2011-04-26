@@ -34,14 +34,14 @@ namespace ambient
         static scheduler& instance();
 
     public:
-        scheduler & operator>>(dim3 distr_dim);
-        scheduler & operator,(dim3 dim);
+        scheduler & operator>>(dim2 distr_dim);
+        scheduler & operator,(dim2 dim);
         void init();
         void finalize();
-        dim3 get_group_dim();
-        dim3 get_item_dim();
-        dim3 get_distr_dim();
-        dim3 get_gpu_dim();
+        dim2 get_group_dim();
+        dim2 get_item_dim();
+        dim2 get_distr_dim();
+        dim2 get_gpu_dim();
 
         void push(core::operation* logistics, core::operation* computing);
         void playout();  // perform actual operations
@@ -52,16 +52,16 @@ namespace ambient
         block_packet_t* default_data_packet_t;
         groups::group* ambient;
     private:
-        dim3 distr_dim;   // work-item size of distribution blocks
-        dim3 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
-        dim3 item_dim;    // size of work-item (i.e. 128) 
-        dim3 gpu_dim;     // work-item size of gpgpu smp workload fractions
+        dim2 distr_dim;   // work-item size of distribution blocks
+        dim2 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
+        dim2 item_dim;    // size of work-item (i.e. 128) 
+        dim2 gpu_dim;     // work-item size of gpgpu smp workload fractions
 
         one_touch_stack< std::pair<core::operation*,core::operation*> > stack;
         one_touch_stack< groups::packet_manager* > router; // packet_manager router
     };
 
-    scheduler& operator>>(scheduler* instance, dim3 distr_dim);
+    scheduler& operator>>(scheduler* instance, dim2 distr_dim);
     void init();
     void finalize();
     void playout();

@@ -3,7 +3,6 @@
 
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/p_profile.h"
-#include "ambient/core/workgroup.h"
 #include "ambient/core/layout.h"
 
 namespace ambient {

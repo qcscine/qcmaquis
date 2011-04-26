@@ -73,7 +73,7 @@ namespace ambient{ namespace groups{
         typed_q* get_pipe(const packet_t& type, direction flow);
 
         void spin_loop();
-        void spin(int n = 4);
+        void spin(int n = 1);
         bool process_locking(size_t active_sends_number);
         groups::group* get_group();
     };
