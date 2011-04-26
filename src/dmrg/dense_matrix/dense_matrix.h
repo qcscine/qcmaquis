@@ -263,8 +263,23 @@ namespace blas {
     {
         typedef diagonal_matrix<T> type;
     };
-    
+   
 } // namespace blas
+
+//
+// std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
+//
+namespace blas {
+
+    template<class FullMatrixClass>
+    struct associated_vector { };
+
+    template<typename T, typename MemoryBlock>
+    struct associated_vector<dense_matrix<T, MemoryBlock> >
+    {
+        typedef std::vector<T> type;
+    };
+}
 
 //
 // Type promotion helper for mixed type matrix matrix and matrix vector operations
