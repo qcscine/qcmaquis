@@ -92,6 +92,11 @@ boost::shared_ptr<T> get_handle(T& a){
     return boost::shared_ptr<T>(new T(a));
 }
 
+template<typename T>
+boost::shared_ptr<T> get_handle(const T& a){
+    return boost::shared_ptr<T>(new T(a));
+}
+
 template<typename T, policy P>
 boost::shared_ptr< p_dense_matrix<T> > get_handle(p_dense_matrix<T,P>& a){
     return boost::static_pointer_cast< p_dense_matrix<T> >(boost::static_pointer_cast<void>(a.get_handle()));
