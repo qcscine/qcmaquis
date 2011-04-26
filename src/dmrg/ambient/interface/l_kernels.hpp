@@ -255,7 +255,7 @@ void gemm_rhs_diagonal_l_kernel(pinned const p_dense_matrix<double> & a, const p
 void validation_l_kernel(pinned const p_dense_matrix<double>& A_ambient, const p_dense_matrix<double>& B_scala) 
 { 
     int num = 2; //get_grid_dim(A_ambient).y; 
-    scope_select(num+" from ambient as validation"+num +" where master is 0");// and breakdown contains "+get_id(A_ambient));
+    scope_select(num+" from ambient as validation"+num +" where master is 0");
 
     if(!scope.involved()) return; // out of scope quick exit 
     zout << "2d-block-cyclic decomposition kernel in validation ("<< ambient::rank() <<"):\n"; info(A_ambient); info(B_scala); 
