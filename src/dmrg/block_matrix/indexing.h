@@ -22,6 +22,10 @@
 #include <mp_tensors/wrappers.h>
 #endif
 
+#ifdef HAVE_ALPS_HDF5
+#include <alps/hdf5.hpp>
+#endif
+
 namespace index_detail
 {
     template<class SymmGroup>
