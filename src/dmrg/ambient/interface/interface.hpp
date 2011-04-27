@@ -68,14 +68,14 @@ inline dim2 get_grid_dim(T& ref)
     return breakdown(ref).get_grid_dim();
 }
 template<typename T>
-inline dim2 get_group_dim(T& ref)
+inline dim2 get_mem_dim(T& ref)
 {
-    return breakdown(ref).get_group_dim();
+    return breakdown(ref).get_mem_dim();
 }
 template<typename T>
-inline dim2 get_group_t_dim(T& ref)
+inline dim2 get_mem_t_dim(T& ref)
 {
-    return breakdown(ref).get_group_t_dim();
+    return breakdown(ref).get_mem_t_dim();
 }
 template<typename T>
 inline dim2 get_item_dim(T& ref)
@@ -83,8 +83,8 @@ inline dim2 get_item_dim(T& ref)
     return breakdown(ref).get_item_dim();
 }
 template<typename T>
-inline dim2 get_group_id(T& ref)
+inline dim2 get_block_id(T& ref)
 {
-    return breakdown(ref).get_group_id();
+    return breakdown(ref).get_block_id();
 }
 

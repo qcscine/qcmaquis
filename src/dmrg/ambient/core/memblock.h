@@ -17,8 +17,8 @@ namespace ambient {
         void* item(int i, int j = 0);
         p_profile** profile;
         p_profile* get_profile();
-        dim2 get_group_dim();
-        dim2 get_group_t_dim();
+        dim2 get_mem_dim();
+        dim2 get_mem_t_dim();
         dim2 get_item_dim();
         void* header;
         void* data;

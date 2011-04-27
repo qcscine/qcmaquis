@@ -13,7 +13,7 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
         profile->dim.y  = ptr->num_rows();
     }
     profile->set_init(matrix_i_kernel<T>);
-    profile->regroup();
+    profile->reblock();
 }
 
 template <typename T, policy P>
@@ -82,8 +82,8 @@ void plus_reduce< p_dense_matrix<double> >(memblock* grp, void* update){
     double* a = (double*)grp->data;
     double* u = (double*)update;
 
-    int n = grp->get_group_t_dim().x;
-    int m = grp->get_group_t_dim().y;
+    int n = grp->get_mem_t_dim().x;
+    int m = grp->get_mem_t_dim().y;
     int ld = m;
 
     for(int i=0; i<m*n; i++) a[i] += u[i];

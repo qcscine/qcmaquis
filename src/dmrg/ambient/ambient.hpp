@@ -46,16 +46,16 @@ namespace ambient{
     inline dim2 get_grid_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_group_dim(T& ref);
+    inline dim2 get_mem_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_group_t_dim(T& ref);
+    inline dim2 get_mem_t_dim(T& ref);
 
     template<typename T>
     inline dim2 get_item_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_group_id(T& ref);
+    inline dim2 get_block_id(T& ref);
 
     #include "ambient/interface/core.hpp"
     #include "ambient/interface/i_kernels.hpp"

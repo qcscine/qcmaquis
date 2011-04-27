@@ -19,15 +19,15 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>&  A, const p_dense_mat
     int nmyidBLACS,nnumprocsBLACS,nContinue;
     int nContxt,nVal;  
     int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
-    int nN = get_grid_dim(C).x*get_group_dim(C).x*get_item_dim(C).x; 
-    int nM = get_grid_dim(C).y*get_group_dim(C).y*get_item_dim(C).y;
+    int nN = get_grid_dim(C).x*get_mem_dim(C).x*get_item_dim(C).x; 
+    int nM = get_grid_dim(C).y*get_mem_dim(C).y*get_item_dim(C).y;
 
     int info,itemp;
     int ZERO=0,ONE=1;
 
     nprow = scope.np;
     npcol = scope.nq; 
-    nb = get_group_dim(C).x*get_item_dim(C).x;
+    nb = get_mem_dim(C).x*get_item_dim(C).x;
 
     ictxt = Csys2blacs_handle(scope.get_group()->mpi_comm);
     Cblacs_gridinit( &ictxt, "Row", nprow, npcol );
@@ -65,15 +65,15 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>  &  M, p_dense_matrix<d
     int nmyidBLACS,nnumprocsBLACS,nContinue;
     int nContxt,nVal;  
     int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
-    int nN = get_grid_dim(M).x*get_group_t_dim(M).x; 
-    int nM = get_grid_dim(M).y*get_group_t_dim(M).y;
+    int nN = get_grid_dim(M).x*get_mem_t_dim(M).x; 
+    int nM = get_grid_dim(M).y*get_mem_t_dim(M).y;
 
     int info,itemp;
     int ZERO=0,ONE=1;
 
     nprow = scope.np;
     npcol = scope.nq; 
-    nb = get_group_dim(M).x*get_item_dim(M).x;
+    nb = get_mem_dim(M).x*get_item_dim(M).x;
     ictxt =Csys2blacs_handle(scope.get_group()->mpi_comm);
     Cblacs_gridinit( &ictxt, "Row", nprow, npcol );
     Cblacs_gridinfo( ictxt, &nprow, &npcol, &myrow, &mycol );
@@ -125,15 +125,15 @@ void syev_c_scalapack_kernel(const p_dense_matrix<double> & A, p_dense_matrix<do
     int nContxt,nVal;  
     int i, j, k;
     int bhandle, ictxt, nprow, npcol, myrow, mycol,nb;
-    int nM = get_grid_dim(A).y*get_group_t_dim(A).y;
-    int nN = get_grid_dim(A).x*get_group_t_dim(A).x;
+    int nM = get_grid_dim(A).y*get_mem_t_dim(A).y;
+    int nN = get_grid_dim(A).x*get_mem_t_dim(A).x;
 
     int info,itemp;
     int ZERO=0,ONE=1;
 
     nprow = scope.np;
     npcol = scope.nq; 
-    nb = get_group_dim(A).x*get_item_dim(A).x;
+    nb = get_mem_dim(A).x*get_item_dim(A).x;
     ictxt =Csys2blacs_handle(scope.get_group()->mpi_comm);
     Cblacs_gridinit( &ictxt, "Row", nprow, npcol );
     Cblacs_gridinfo( ictxt, &nprow, &npcol, &myrow, &mycol );

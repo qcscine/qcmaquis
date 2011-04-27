@@ -38,7 +38,7 @@ namespace ambient
         scheduler & operator,(dim2 dim);
         void init();
         void finalize();
-        dim2 get_group_dim();
+        dim2 get_mem_dim();
         dim2 get_item_dim();
         dim2 get_distr_dim();
         dim2 get_gpu_dim();
@@ -53,7 +53,7 @@ namespace ambient
         groups::group* ambient;
     private:
         dim2 distr_dim;   // work-item size of distribution blocks
-        dim2 group_dim;   // work-item size of cpu streaming multiprocessor workload fractions
+        dim2 mem_dim;     // work-item size of cpu streaming multiprocessor workload fractions
         dim2 item_dim;    // size of work-item (i.e. 128) 
         dim2 gpu_dim;     // work-item size of gpgpu smp workload fractions
 

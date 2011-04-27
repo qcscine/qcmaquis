@@ -3,8 +3,8 @@
 template<class T>
 void matrix_i_kernel(memblock* grp)
 {
-    int n = grp->get_group_t_dim().x;
-    int m = grp->get_group_t_dim().y;
+    int n = grp->get_mem_t_dim().x;
+    int m = grp->get_mem_t_dim().y;
     int ld = m;
 
     //memset(grp->data,0,m*n*sizeof(T));
@@ -17,8 +17,8 @@ void matrix_i_kernel(memblock* grp)
 template<class T>
 void nullify(memblock* grp)
 {
-    int n = grp->get_group_t_dim().x;
-    int m = grp->get_group_t_dim().y;
+    int n = grp->get_mem_t_dim().x;
+    int m = grp->get_mem_t_dim().y;
 
     memset(grp->data,0,m*n*sizeof(T));
 }
