@@ -117,12 +117,12 @@ namespace blas {
         assert(i < self->rows);
         assert(j < self->cols);
         ambient::playout();
-        int group_i = i / (self->breakdown()->get_group_t_dim().y);
-        int group_j = j / (self->breakdown()->get_group_t_dim().x);
-        int element_i = i % (self->breakdown()->get_group_t_dim().y);
-        int element_j = j % (self->breakdown()->get_group_t_dim().x);
-        if(self->breakdown()->group(group_i,group_j)->available())
-            return *(T*)(*self->breakdown())(group_i, group_j).element(element_i, element_j);
+        int block_i = i / (self->breakdown()->get_mem_t_dim().y);
+        int block_j = j / (self->breakdown()->get_mem_t_dim().x);
+        int element_i = i % (self->breakdown()->get_mem_t_dim().y);
+        int element_j = j % (self->breakdown()->get_mem_t_dim().x);
+        if(self->breakdown()->block(block_i,block_j)->available())
+            return *(T*)(*self->breakdown())(block_i, block_j).element(element_i, element_j);
         else //return *(new T()); //using default value of T
             throw ambient::core::remote_memory_e();
     }*/
@@ -133,11 +133,11 @@ namespace blas {
         assert(i < self->rows);
         assert(j < self->cols);
         ambient::playout();
-        int group_i = i / (self->breakdown()->get_group_t_dim().y);
-        int group_j = j / (self->breakdown()->get_group_t_dim().x);
-        int element_i = i % (self->breakdown()->get_group_t_dim().y);
-        int element_j = j % (self->breakdown()->get_group_t_dim().x);
-        T& value = *(T*)(*self->breakdown())(group_i, group_j).element(element_i, element_j);
+        int block_i = i / (self->breakdown()->get_mem_t_dim().y);
+        int block_j = j / (self->breakdown()->get_mem_t_dim().x);
+        int element_i = i % (self->breakdown()->get_mem_t_dim().y);
+        int element_j = j % (self->breakdown()->get_mem_t_dim().x);
+        T& value = *(T*)(*self->breakdown())(block_i, block_j).element(element_i, element_j);
         ambient::world_loop();
         return value;
     }
