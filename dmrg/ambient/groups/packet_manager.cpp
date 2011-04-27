@@ -65,7 +65,7 @@ namespace ambient{ namespace groups{
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "APPROVE")); 
                 this->state = LOOSE;
             }else{
-                if(ambient::rank() == 0) printf("R%d: Generated reject!\n", ambient::rank());
+                printf("R%d: Warning: generated reject in locking!\n", ambient::rank());
                 this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master(), 
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "REJECT")); 
                 this->state = OPEN;
