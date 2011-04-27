@@ -25,9 +25,9 @@ namespace ambient
     scope_context& scope    = scope_context::instance();
 // global objects accessible anywhere //
 
-    scheduler & scheduler::operator>>(dim2 distr_dim) 
+    scheduler & scheduler::operator>>(dim2 work_dim) 
     {
-        this->distr_dim = distr_dim;
+        this->work_dim = work_dim;
         this->mem_dim = NULL;
         this->gpu_dim = NULL;
         return *this;
@@ -48,9 +48,9 @@ namespace ambient
         }
         return *this;
     }
-    scheduler& operator>>(scheduler* instance, dim2 distr_dim) 
+    scheduler& operator>>(scheduler* instance, dim2 work_dim) 
     {
-        return *instance >> distr_dim;
+        return *instance >> work_dim;
     }
     scheduler& scheduler::instance()
     {
@@ -67,10 +67,10 @@ namespace ambient
     int  size()      { return engine.size;  }
 
     scheduler::scheduler(): item_dim(dim2(128,128)){ } // to revert to 128,128
-    dim2 scheduler::get_mem_dim(){ return this->mem_dim; }
-    dim2 scheduler::get_item_dim() { return this->item_dim;  }
-    dim2 scheduler::get_distr_dim(){ return this->distr_dim; }
-    dim2 scheduler::get_gpu_dim()  { return this->gpu_dim;   }
+    dim2 scheduler::get_mem_dim() { return this->mem_dim;  }
+    dim2 scheduler::get_item_dim(){ return this->item_dim; }
+    dim2 scheduler::get_work_dim(){ return this->work_dim; }
+    dim2 scheduler::get_gpu_dim() { return this->gpu_dim;  }
 
     void scheduler::init()
     {

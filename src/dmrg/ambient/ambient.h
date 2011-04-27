@@ -34,13 +34,13 @@ namespace ambient
         static scheduler& instance();
 
     public:
-        scheduler & operator>>(dim2 distr_dim);
+        scheduler & operator>>(dim2 work_dim);
         scheduler & operator,(dim2 dim);
         void init();
         void finalize();
         dim2 get_mem_dim();
         dim2 get_item_dim();
-        dim2 get_distr_dim();
+        dim2 get_work_dim();
         dim2 get_gpu_dim();
 
         void push(core::operation* logistics, core::operation* computing);
@@ -52,7 +52,7 @@ namespace ambient
         block_packet_t* default_data_packet_t;
         groups::group* ambient;
     private:
-        dim2 distr_dim;   // work-item size of distribution blocks
+        dim2 work_dim;   // work-item size of distribution blocks
         dim2 mem_dim;     // work-item size of cpu streaming multiprocessor workload fractions
         dim2 item_dim;    // size of work-item (i.e. 128) 
         dim2 gpu_dim;     // work-item size of gpgpu smp workload fractions
@@ -61,7 +61,7 @@ namespace ambient
         one_touch_stack< groups::packet_manager* > router; // packet_manager router
     };
 
-    scheduler& operator>>(scheduler* instance, dim2 distr_dim);
+    scheduler& operator>>(scheduler* instance, dim2 work_dim);
     void init();
     void finalize();
     void playout();
