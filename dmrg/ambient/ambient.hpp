@@ -37,7 +37,7 @@ namespace ambient{
     inline dim2 get_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_distr_dim(T& ref);
+    inline dim2 get_work_dim(T& ref);
 
     template<typename T>
     inline dim2 get_gpu_dim(T& ref);

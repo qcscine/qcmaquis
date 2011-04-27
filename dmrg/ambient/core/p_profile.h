@@ -45,13 +45,13 @@ namespace ambient {
         p_profile*          associated_proxy;
     private:
         bool                valid;
-        dim2                distr_dim;   // work-item size of distribution blocks
+        dim2                work_dim;   // work-item size of distribution blocks
         dim2                mem_dim;   // work-item size of cpu streaming multiprocessor workload fractions
         dim2                item_dim;    // size of work-item (i.e. 128) 
         dim2                gpu_dim;     // work-item size of gpgpu smp workload fractions
     public:
         void operator=(const p_profile& profile);
-        p_profile & operator>>(dim2 dim_distr);
+        p_profile & operator>>(dim2 work_dim);
         p_profile & operator,(dim2 dim);
 
         void constant();
@@ -88,7 +88,7 @@ namespace ambient {
 
 // parameters can be set specifically for the profile
         dim2 get_dim()         const;
-        dim2 get_distr_dim()   const;
+        dim2 get_work_dim()   const;
         dim2 get_gpu_dim()     const;
         dim2 get_grid_dim()    const;
         dim2 get_mem_dim()   const;
@@ -108,7 +108,7 @@ namespace ambient {
         size_t get_bound() const;
         void* get_data();
         void set_dim(dim2 dim);
-        void set_distr_dim(dim2 dim);
+        void set_work_dim(dim2 dim);
         void set_gpu_dim(dim2 dim);
         void set_mem_dim(dim2 dim);
         void set_item_dim(dim2 dim);
@@ -117,7 +117,7 @@ namespace ambient {
         bool is_valid();
     };
 
-    p_profile& operator>>(p_profile* instance, dim2 dim_distr);
+    p_profile& operator>>(p_profile* instance, dim2 work_dim);
     void accept_block(groups::packet_manager::typed_q& in_q);
 }
 #endif

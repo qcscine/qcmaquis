@@ -31,7 +31,7 @@ namespace ambient {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->mem_dim = engine.get_mem_dim();
         this->item_dim  = engine.get_item_dim();
-        this->distr_dim = engine.get_distr_dim();
+        this->work_dim = engine.get_work_dim();
         this->gpu_dim   = engine.get_gpu_dim();
     };
 
@@ -53,7 +53,7 @@ namespace ambient {
         this->dim          = profile.dim;
         this->t_size       = profile.t_size; 
         this->packet_type  = profile.packet_type;    // pointer
-        this->distr_dim    = profile.get_distr_dim();
+        this->work_dim    = profile.get_work_dim();
         this->mem_dim    = profile.get_mem_dim();
         this->item_dim     = profile.get_item_dim(); 
         this->gpu_dim      = profile.get_gpu_dim();  
@@ -110,9 +110,9 @@ namespace ambient {
     bool p_profile::xinvolved(){ return ((this->get_xscope() != NULL && this->get_xscope()->involved()) || this->involved()); } // modified
     bool p_profile::involved(){ return this->get_scope()->involved(); }
 
-    p_profile & p_profile::operator>>(dim2 distr_dim) 
+    p_profile & p_profile::operator>>(dim2 work_dim) 
     {
-        this->distr_dim = distr_dim;
+        this->work_dim = work_dim;
         this->mem_dim = NULL;
         this->gpu_dim = NULL;
         return *this;
@@ -131,8 +131,8 @@ namespace ambient {
         return *this;
     }
 
-    p_profile & operator>>(p_profile* instance, dim2 distr_dim) {
-        return *instance >> distr_dim;
+    p_profile & operator>>(p_profile* instance, dim2 work_dim) {
+        return *instance >> work_dim;
     }
 
     bool p_profile::is_proxy(){
@@ -316,8 +316,8 @@ namespace ambient {
     void p_profile::imitate(p_profile* profile){
         this->set_init     (profile->get_init     ());
         this->set_gpu_dim  (profile->get_gpu_dim  ());
-        this->set_distr_dim(profile->get_distr_dim());
-        this->set_mem_dim(profile->get_mem_dim());
+        this->set_work_dim (profile->get_work_dim ());
+        this->set_mem_dim  (profile->get_mem_dim  ());
         this->set_item_dim (profile->get_item_dim ());
         this->reblock();
     }
@@ -352,11 +352,11 @@ namespace ambient {
         if(this->layout != NULL)
             this->layout->remap();
     }
-    dim2 p_profile::get_distr_dim() const {
-        return this->distr_dim;
+    dim2 p_profile::get_work_dim() const {
+        return this->work_dim;
     }
-    void p_profile::set_distr_dim(dim2 dim){
-        this->distr_dim = dim;
+    void p_profile::set_work_dim(dim2 dim){
+        this->work_dim = dim;
     }
     dim2 p_profile::get_gpu_dim() const {
         return this->gpu_dim;
