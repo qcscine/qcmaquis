@@ -29,10 +29,10 @@ namespace ambient {
     : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), block_lda(0), default_block(NULL), finalized(false),
       profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
-        this->mem_dim = engine.get_mem_dim();
-        this->item_dim  = engine.get_item_dim();
+        this->mem_dim  = engine.get_mem_dim();
+        this->item_dim = engine.get_item_dim();
         this->work_dim = engine.get_work_dim();
-        this->gpu_dim   = engine.get_gpu_dim();
+        this->gpu_dim  = engine.get_gpu_dim();
     };
 
     p_profile* p_profile::dereference(){
@@ -53,8 +53,8 @@ namespace ambient {
         this->dim          = profile.dim;
         this->t_size       = profile.t_size; 
         this->packet_type  = profile.packet_type;    // pointer
-        this->work_dim    = profile.get_work_dim();
-        this->mem_dim    = profile.get_mem_dim();
+        this->work_dim     = profile.get_work_dim();
+        this->mem_dim      = profile.get_mem_dim();
         this->item_dim     = profile.get_item_dim(); 
         this->gpu_dim      = profile.get_gpu_dim();  
         //this->skeleton; 
@@ -110,29 +110,28 @@ namespace ambient {
     bool p_profile::xinvolved(){ return ((this->get_xscope() != NULL && this->get_xscope()->involved()) || this->involved()); } // modified
     bool p_profile::involved(){ return this->get_scope()->involved(); }
 
-    p_profile & p_profile::operator>>(dim2 work_dim) 
+    p_profile & p_profile::operator>>(dim2 mem_dim) 
     {
-        this->work_dim = work_dim;
-        this->mem_dim = NULL;
+        this->mem_dim = mem_dim;
+        this->xpacket_type = this->packet_type;
+        this->packet_type = new block_packet_t(this->mem_dim*this->item_dim);
+        this->packet_type->commit();
+        this->reblock();
+        this->work_dim = NULL;
         this->gpu_dim = NULL;
         return *this;
     }
     p_profile & p_profile::operator,(dim2 dim) 
     {
-        if(this->mem_dim == NULL){
-            this->mem_dim = dim;
-            this->xpacket_type = this->packet_type;
-            this->packet_type = new block_packet_t(this->mem_dim*this->item_dim);
-            this->packet_type->commit();
-            this->reblock();
-        }else if(this->gpu_dim == NULL){
+        if(this->work_dim == NULL)
+            this->work_dim = dim;
+        else if(this->gpu_dim == NULL)
             this->gpu_dim = dim;
-        }
         return *this;
     }
 
-    p_profile & operator>>(p_profile* instance, dim2 work_dim) {
-        return *instance >> work_dim;
+    p_profile & operator>>(p_profile* instance, dim2 mem_dim) {
+        return *instance >> mem_dim;
     }
 
     bool p_profile::is_proxy(){
