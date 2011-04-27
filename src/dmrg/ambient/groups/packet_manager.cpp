@@ -65,6 +65,7 @@ namespace ambient{ namespace groups{
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "APPROVE")); 
                 this->state = LOOSE;
             }else{
+                if(ambient::rank() == 0) printf("R%d: Generated reject!\n", ambient::rank());
                 this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master(), 
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "REJECT")); 
                 this->state = OPEN;
@@ -130,6 +131,7 @@ namespace ambient{ namespace groups{
             this->spin();
             for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it)
                 if((*it)->flow == OUT) active_sends_number += (*it)->get_active();
+            active_sends_number -= this->get_pipe(get_t<control_packet_t>(), OUT)->get_active(); // excluding control pipe messages
             if(this->process_locking(active_sends_number)){ return this->spin(); } // spinning last time
             //counter++;
             //if(counter == 1000) printf("R%d: inactive for %d iterations... (active sends: %d)\n", ambient::rank(), (int)counter, (int)active_sends_number);
@@ -208,6 +210,7 @@ namespace ambient{ namespace groups{
         std::list<request*>::iterator it;
         if(this->flow == IN)
         for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
+            assert((*it)->mpi_request != MPI_REQUEST_NULL);
             MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
             if(flag){
                 this->target_packet = unpack(this->type, (*it)->memory); 
@@ -218,10 +221,11 @@ namespace ambient{ namespace groups{
         }
         else 
         for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
+            assert((*it)->mpi_request != MPI_REQUEST_NULL);
             MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
             if(flag){
                 this->target_packet = (packet*)(*it)->memory;
-                this->packet_delivered();
+              //  this->packet_delivered();
                 this->return_request(*it);
                 it = this->reqs.erase(it);
             }
