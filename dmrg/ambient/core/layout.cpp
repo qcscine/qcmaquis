@@ -53,8 +53,8 @@ namespace ambient{ namespace core{
     }
 
     void layout_table::remap(){
-        int y_size = __a_ceil(this->profile->dim.y / this->profile->get_group_t_dim().y);
-        int x_size = __a_ceil(this->profile->dim.x / this->profile->get_group_t_dim().x);
+        int y_size = __a_ceil(this->profile->dim.y / this->profile->get_mem_t_dim().y);
+        int x_size = __a_ceil(this->profile->dim.x / this->profile->get_mem_t_dim().x);
         if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
         for(int i = 0; i < y_size; i++){
             if(i >= this->reserved_y) map.push_back(std::vector<entry*>());
@@ -105,7 +105,7 @@ namespace ambient{ namespace core{
             if(this->segment[s].i == i &&
                this->segment[s].j == j) return; // avoiding redunant information // that is - hangs in mpi
 
-        this->profile->group(i,j)->owner = ambient::rank();
+        this->profile->block(i,j)->owner = ambient::rank();
         add_segment_entry(ambient::rank(), i,j);
     }
     void layout_table::request(int i, int j){
@@ -135,7 +135,7 @@ namespace ambient{ namespace core{
              if(profile->associated_proxy == NULL) throw race_condition_e();
              profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
         }
-        void* header = profile->group(i,j)->header; 
+        void* header = profile->block(i,j)->header; 
         if(header == NULL) throw race_condition_e(); // to extend for situation when outdated
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, state, i, j, NULL);
     }
@@ -221,7 +221,7 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->segment[i].j));
             }
             for(int i=0; i < profiles[k]->layout->request_count; i++){
-                if(profiles[k]->group(profiles[k]->layout->requests[i].i, 
+                if(profiles[k]->block(profiles[k]->layout->requests[i].i, 
                                       profiles[k]->layout->requests[i].j)->available()) continue; // avoiding redunant requests
                 world()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                                    profiles[k]->get_master(), "P2P", 

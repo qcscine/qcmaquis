@@ -14,11 +14,11 @@ namespace ambient {
             p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
             if(pack->get<char>(A_BLOCK_P_STATE_FIELD) == 'P'){
                 if(profile->associated_proxy == NULL) throw core::race_condition_e();
-                memblock* grp = profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
+                memblock* grp = profile->block(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
                 if(grp->header == NULL) throw core::race_condition_e();
                 profile->associated_proxy->reduce( grp, (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
             }else{
-                profile->group(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
+                profile->block(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
             }
         }catch(core::race_condition_e){
             in_q.manager->emit(pack); // re-throwing the packet for future handling
@@ -26,10 +26,10 @@ namespace ambient {
     }
 
     p_profile::p_profile()
-    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), group_lda(0), default_group(NULL), finalized(false),
+    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), block_lda(0), default_block(NULL), finalized(false),
       profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
-        this->group_dim = engine.get_group_dim();
+        this->mem_dim = engine.get_mem_dim();
         this->item_dim  = engine.get_item_dim();
         this->distr_dim = engine.get_distr_dim();
         this->gpu_dim   = engine.get_gpu_dim();
@@ -54,7 +54,7 @@ namespace ambient {
         this->t_size       = profile.t_size; 
         this->packet_type  = profile.packet_type;    // pointer
         this->distr_dim    = profile.get_distr_dim();
-        this->group_dim    = profile.get_group_dim();
+        this->mem_dim    = profile.get_mem_dim();
         this->item_dim     = profile.get_item_dim(); 
         this->gpu_dim      = profile.get_gpu_dim();  
         //this->skeleton; 
@@ -65,7 +65,7 @@ namespace ambient {
         //this->timestamp    = profile.timestamp;    // not needed
         //this->lda          = profile.lda;          // not needed
         //this->solid_lda    = profile.solid_lda;    // not needed
-        //this->group_lda    = profile.group_lda;    // not needed
+        //this->block_lda    = profile.block_lda;    // not needed
         //this->state        = profile.state;        // not needed ?
         //this->reserved_x   = profile.reserved_x;   // not needed
         //this->reserved_y   = profile.reserved_y;   // not needed
@@ -113,18 +113,18 @@ namespace ambient {
     p_profile & p_profile::operator>>(dim2 distr_dim) 
     {
         this->distr_dim = distr_dim;
-        this->group_dim = NULL;
+        this->mem_dim = NULL;
         this->gpu_dim = NULL;
         return *this;
     }
     p_profile & p_profile::operator,(dim2 dim) 
     {
-        if(this->group_dim == NULL){
-            this->group_dim = dim;
+        if(this->mem_dim == NULL){
+            this->mem_dim = dim;
             this->xpacket_type = this->packet_type;
-            this->packet_type = new block_packet_t(this->group_dim*this->item_dim);
+            this->packet_type = new block_packet_t(this->mem_dim*this->item_dim);
             this->packet_type->commit();
-            this->regroup();
+            this->reblock();
         }else if(this->gpu_dim == NULL){
             this->gpu_dim = dim;
         }
@@ -139,10 +139,10 @@ namespace ambient {
         return (this->state == PROXY);
     }
 
-    void p_profile::regroup(){
+    void p_profile::reblock(){
         if(!this->is_proxy()){
-            int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
-            int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
+            int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
+            int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
             if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
             for(int i = 0; i < y_size; i++){
                 if(i >= this->reserved_y) skeleton.push_back(std::vector<memblock*>());
@@ -157,8 +157,8 @@ namespace ambient {
         }
     }
 
-    size_t p_profile::get_group_lda(){
-        return this->get_group_t_dim().y*this->t_size;
+    size_t p_profile::get_block_lda(){
+        return this->get_mem_t_dim().y*this->t_size;
     }
 
 
@@ -176,18 +176,18 @@ namespace ambient {
         this->solid_lda = 0;
         for(int k=0; k < entries.size(); k++) if(entries[k].j == entries[0].j) this->solid_lda++;
         this->data = malloc(__a_ceil(std::max(this->layout->segment_count, this->layout->request_count)/this->solid_lda) *
-                            this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size*this->solid_lda);
+                            this->get_mem_t_dim().x*this->get_mem_t_dim().y*this->t_size*this->solid_lda);
         assert(this->data != NULL);
         char* memory = (char*)this->data;
 // let's copy from separate memory blocks to the general one
         for(int k=0; k < entries.size(); k++){
-            for(int j=0; j < this->get_group_t_dim().x; j++){
-                memcpy(memory+j*this->solid_lda*this->get_group_t_dim().y*this->t_size, 
-                       &((char*)this->group(entries[k].i, entries[k].j)->data)[j*this->get_group_lda()], 
-                       this->get_group_t_dim().y*this->t_size);
+            for(int j=0; j < this->get_mem_t_dim().x; j++){
+                memcpy(memory+j*this->solid_lda*this->get_mem_t_dim().y*this->t_size, 
+                       &((char*)this->block(entries[k].i, entries[k].j)->data)[j*this->get_block_lda()], 
+                       this->get_mem_t_dim().y*this->t_size);
             }
-            memory += this->get_group_t_dim().y*this->t_size;
-            if(++jumper == this->solid_lda){ jumper = 0; memory += this->get_group_t_dim().y*this->solid_lda*this->t_size*(this->get_group_t_dim().x-1); }
+            memory += this->get_mem_t_dim().y*this->t_size;
+            if(++jumper == this->solid_lda){ jumper = 0; memory += this->get_mem_t_dim().y*this->solid_lda*this->t_size*(this->get_mem_t_dim().x-1); }
         }
     }
 
@@ -198,25 +198,25 @@ namespace ambient {
         std::sort(entries.begin(), entries.end(), matrix_order_predicate);
         char* memory = (char*)this->data;
         for(int k=0; k < entries.size(); k++){
-            for(int j=0; j < this->get_group_t_dim().x; j++){
-                 memcpy(&((char*)this->group(entries[k].i, entries[k].j)->data)[j*this->get_group_lda()], 
-                        memory+j*this->solid_lda*this->get_group_t_dim().y*this->t_size, 
-                        this->get_group_t_dim().y*this->t_size);
+            for(int j=0; j < this->get_mem_t_dim().x; j++){
+                 memcpy(&((char*)this->block(entries[k].i, entries[k].j)->data)[j*this->get_block_lda()], 
+                        memory+j*this->solid_lda*this->get_mem_t_dim().y*this->t_size, 
+                        this->get_mem_t_dim().y*this->t_size);
             }
-            memory += this->get_group_t_dim().y*this->t_size;
-            if(++jumper == this->solid_lda){ jumper = 0; memory += this->get_group_t_dim().y*this->solid_lda*this->t_size*(this->get_group_t_dim().x-1); }
+            memory += this->get_mem_t_dim().y*this->t_size;
+            if(++jumper == this->solid_lda){ jumper = 0; memory += this->get_mem_t_dim().y*this->solid_lda*this->t_size*(this->get_mem_t_dim().x-1); }
         }
     }
 
-    void p_profile::set_default_group(int i, int j)
+    void p_profile::set_default_block(int i, int j)
     {
-        if(i == -1) this->default_group = NULL;
-        else this->default_group = this->group(i, j);
+        if(i == -1) this->default_block = NULL;
+        else this->default_block = this->block(i, j);
     }
 
-    dim2 p_profile::get_group_id()
+    dim2 p_profile::get_block_id()
     {
-        return dim2(this->default_group->j, this->default_group->i);
+        return dim2(this->default_block->j, this->default_block->i);
     }
 
     void p_profile::touch()
@@ -261,9 +261,9 @@ namespace ambient {
         }
     }
     void p_profile::postprocess(int i, int j){
-        // can check if(this->group(i,j)->header != NULL) and reuse memory (reservation in regroup function) 
-        this->group(i,j)->set_memory(alloc_t(*this->packet_type));
-        this->init(this->group(i,j));
+        // can check if(this->block(i,j)->header != NULL) and reuse memory (reservation in reblock function) 
+        this->block(i,j)->set_memory(alloc_t(*this->packet_type));
+        this->init(this->block(i,j));
     }
 
     void p_profile::finalize(){
@@ -288,11 +288,11 @@ namespace ambient {
 
     memblock& p_profile::operator()(int i, int j){
         if(this->is_proxy()){ // on-touch init for proxy
-            if(!this->group(i,j)->available()){
-                this->group(i,j)->set_memory(alloc_t(*this->packet_type));
-                memset(this->group(i,j)->data,0,this->get_group_t_dim().x*this->get_group_t_dim().y*this->t_size);          
+            if(!this->block(i,j)->available()){
+                this->block(i,j)->set_memory(alloc_t(*this->packet_type));
+                memset(this->block(i,j)->data,0,this->get_mem_t_dim().x*this->get_mem_t_dim().y*this->t_size);          
             }
-        }else if(!this->group(i,j)->available()){
+        }else if(!this->block(i,j)->available()){
             groups::packet_manager* manager = world()->get_manager(); //this->consted ? world()->get_manager() : this->get_scope()->get_manager();
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
                                                 this->get_master(), "P2P", 
@@ -300,16 +300,16 @@ namespace ambient {
                                                *this->group_id, this->id, "GENERIC",
                                                 ambient::rank(),      // forward target
                                                 i, j));
-            while(!this->group(i,j)->available()) ambient::spin();  // spin-lock
+            while(!this->block(i,j)->available()) ambient::spin();  // spin-lock
         }
-        return *(this->group(i,j));
+        return *(this->block(i,j));
     }
 
-    memblock* p_profile::group(int i, int j) const {
-        int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
-        int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
+    memblock* p_profile::block(int i, int j) const {
+        int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
+        int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
         
-        if(i >= y_size || j >= x_size) printf("Warning: accessing group that is out of range (%d %d %d)\n", i, j);
+        if(i >= y_size || j >= x_size) printf("Warning: accessing block that is out of range (%d %d %d)\n", i, j);
         return this->skeleton[i][j];
     }
 
@@ -317,9 +317,9 @@ namespace ambient {
         this->set_init     (profile->get_init     ());
         this->set_gpu_dim  (profile->get_gpu_dim  ());
         this->set_distr_dim(profile->get_distr_dim());
-        this->set_group_dim(profile->get_group_dim());
+        this->set_mem_dim(profile->get_mem_dim());
         this->set_item_dim (profile->get_item_dim ());
-        this->regroup();
+        this->reblock();
     }
 
     size_t p_profile::get_bound() const {
@@ -328,8 +328,8 @@ namespace ambient {
     }
 
     void* p_profile::get_data(){
-        if(this->default_group == NULL) return NULL; // we asked to convert non structuring arg
-        return this->default_group->data;            // >_< need to write proper get for group's items
+        if(this->default_block == NULL) return NULL; // we asked to convert non structuring arg
+        return this->default_block->data;            // >_< need to write proper get for blcck's items
     }
     void p_profile::set_init(void(*f)(memblock*)){
         this->init = f;
@@ -342,13 +342,13 @@ namespace ambient {
     }
     void p_profile::set_dim(dim2 dim){
         if(this->layout != NULL){
-            if(this->get_grid_dim().y < __a_ceil(dim.x / this->get_group_t_dim().y) || 
-               this->get_grid_dim().x < __a_ceil(dim.y / this->get_group_t_dim().x)){
+            if(this->get_grid_dim().y < __a_ceil(dim.x / this->get_mem_t_dim().y) || 
+               this->get_grid_dim().x < __a_ceil(dim.y / this->get_mem_t_dim().x)){
                 this->layout->init_marker.mark(this->get_grid_dim().y, this->get_grid_dim().x);
             }
         }
         this->dim = dim;
-        this->regroup();
+        this->reblock();
         if(this->layout != NULL)
             this->layout->remap();
     }
@@ -366,19 +366,19 @@ namespace ambient {
     }
 
     dim2 p_profile::get_grid_dim() const {
-        int x_size = __a_ceil(this->dim.x / this->get_group_t_dim().x);
-        int y_size = __a_ceil(this->dim.y / this->get_group_t_dim().y);
+        int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
+        int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
         return dim2(x_size, y_size);
     }
 
-    dim2 p_profile::get_group_t_dim() const {
-        return this->get_group_dim() *= this->get_item_dim();
+    dim2 p_profile::get_mem_t_dim() const {
+        return this->get_mem_dim() *= this->get_item_dim();
     }
-    dim2 p_profile::get_group_dim() const {
-        return this->group_dim;
+    dim2 p_profile::get_mem_dim() const {
+        return this->mem_dim;
     }
-    void p_profile::set_group_dim(dim2 dim){
-        this->group_dim = dim;
+    void p_profile::set_mem_dim(dim2 dim){
+        this->mem_dim = dim;
     }
 
     dim2 p_profile::get_item_dim() const {

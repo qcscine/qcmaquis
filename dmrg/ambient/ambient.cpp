@@ -28,15 +28,15 @@ namespace ambient
     scheduler & scheduler::operator>>(dim2 distr_dim) 
     {
         this->distr_dim = distr_dim;
-        this->group_dim = NULL;
+        this->mem_dim = NULL;
         this->gpu_dim = NULL;
         return *this;
     }
     scheduler & scheduler::operator,(dim2 dim) 
     {
-        if(this->group_dim == NULL){
-            this->group_dim = dim;
-            this->default_data_packet_t = new block_packet_t(this->group_dim*this->item_dim); // to redo in future?
+        if(this->mem_dim == NULL){
+            this->mem_dim = dim;
+            this->default_data_packet_t = new block_packet_t(this->mem_dim*this->item_dim); // to redo in future?
             this->default_data_packet_t->commit();
             if(!world()->get_manager()->subscribed(*this->default_data_packet_t)){
                 world()->get_manager()->subscribe(*this->default_data_packet_t);
@@ -67,7 +67,7 @@ namespace ambient
     int  size()      { return engine.size;  }
 
     scheduler::scheduler(): item_dim(dim2(128,128)){ } // to revert to 128,128
-    dim2 scheduler::get_group_dim(){ return this->group_dim; }
+    dim2 scheduler::get_mem_dim(){ return this->mem_dim; }
     dim2 scheduler::get_item_dim() { return this->item_dim;  }
     dim2 scheduler::get_distr_dim(){ return this->distr_dim; }
     dim2 scheduler::get_gpu_dim()  { return this->gpu_dim;   }
@@ -176,7 +176,7 @@ namespace ambient
 // performing computation for every item inside every appointed memblock
                         std::vector<core::layout_table::entry>& workload = logistics->pin->layout->get_list();
                         for(int k=0; k < workload.size(); k++){
-                            logistics->pin->set_default_group(workload[k].i, workload[k].j);
+                            logistics->pin->set_default_block(workload[k].i, workload[k].j);
                             computing->invoke();
                             this->spin(); // processing any communications that did occur
                         }
