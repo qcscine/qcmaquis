@@ -51,7 +51,7 @@ namespace ambient {
         dim2                gpu_dim;     // work-item size of gpgpu smp workload fractions
     public:
         void operator=(const p_profile& profile);
-        p_profile & operator>>(dim2 work_dim);
+        p_profile & operator>>(dim2 mem_dim);
         p_profile & operator,(dim2 dim);
 
         void constant();
@@ -117,7 +117,7 @@ namespace ambient {
         bool is_valid();
     };
 
-    p_profile& operator>>(p_profile* instance, dim2 work_dim);
+    p_profile& operator>>(p_profile* instance, dim2 mem_dim);
     void accept_block(groups::packet_manager::typed_q& in_q);
 }
 #endif

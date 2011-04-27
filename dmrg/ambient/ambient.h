@@ -34,7 +34,7 @@ namespace ambient
         static scheduler& instance();
 
     public:
-        scheduler & operator>>(dim2 work_dim);
+        scheduler & operator>>(dim2 mem_dim);
         scheduler & operator,(dim2 dim);
         void init();
         void finalize();
@@ -61,7 +61,7 @@ namespace ambient
         one_touch_stack< groups::packet_manager* > router; // packet_manager router
     };
 
-    scheduler& operator>>(scheduler* instance, dim2 work_dim);
+    scheduler& operator>>(scheduler* instance, dim2 mem_dim);
     void init();
     void finalize();
     void playout();

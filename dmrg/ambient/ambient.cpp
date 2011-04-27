@@ -25,32 +25,31 @@ namespace ambient
     scope_context& scope    = scope_context::instance();
 // global objects accessible anywhere //
 
-    scheduler & scheduler::operator>>(dim2 work_dim) 
+    scheduler & scheduler::operator>>(dim2 mem_dim) 
     {
-        this->work_dim = work_dim;
-        this->mem_dim = NULL;
-        this->gpu_dim = NULL;
+        this->mem_dim  = mem_dim;
+        this->default_data_packet_t = new block_packet_t(this->mem_dim*this->item_dim); // to redo in future?
+        this->default_data_packet_t->commit();
+        if(!world()->get_manager()->subscribed(*this->default_data_packet_t)){
+            world()->get_manager()->subscribe(*this->default_data_packet_t);
+            world()->get_manager()->add_handler(*this->default_data_packet_t, new core::operation(accept_block, 
+                world()->get_manager()->get_pipe(*this->default_data_packet_t, packet_manager::IN)) );
+        }
+        this->work_dim = NULL;
+        this->gpu_dim  = NULL;
         return *this;
     }
     scheduler & scheduler::operator,(dim2 dim) 
     {
-        if(this->mem_dim == NULL){
-            this->mem_dim = dim;
-            this->default_data_packet_t = new block_packet_t(this->mem_dim*this->item_dim); // to redo in future?
-            this->default_data_packet_t->commit();
-            if(!world()->get_manager()->subscribed(*this->default_data_packet_t)){
-                world()->get_manager()->subscribe(*this->default_data_packet_t);
-                world()->get_manager()->add_handler(*this->default_data_packet_t, new core::operation(accept_block, 
-                    world()->get_manager()->get_pipe(*this->default_data_packet_t, packet_manager::IN)) );
-            }
-        }else if(this->gpu_dim == NULL){
+        if(this->work_dim == NULL)
+            this->work_dim = dim;
+        else if(this->gpu_dim == NULL)
             this->gpu_dim = dim;
-        }
         return *this;
     }
-    scheduler& operator>>(scheduler* instance, dim2 work_dim) 
+    scheduler& operator>>(scheduler* instance, dim2 mem_dim) 
     {
-        return *instance >> work_dim;
+        return *instance >> mem_dim;
     }
     scheduler& scheduler::instance()
     {
