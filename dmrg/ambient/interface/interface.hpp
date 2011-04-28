@@ -34,13 +34,29 @@ template<typename T>
 void assign(const T& ref, int i, int j)
 {
     void_pt& profile = breakdown(ref);
-    profile.layout->request(i, j);
+    dim2 work_blocks(profile.get_work_dim().x / profile.get_mem_dim().x,
+                     profile.get_work_dim().y / profile.get_mem_dim().y);
+    int ii = i*work_blocks.y;
+    int jj = j*work_blocks.x;
+
+// be careful not to overflow the borders!
+    for(int i = ii; i < ii+work_blocks.y; i++)
+        for(int j = jj; j < jj+work_blocks.x; j++)
+            profile.layout->request(i, j);
 }
 template<typename T>
 void assign(T& ref, int i, int j)
 {
     void_pt& profile = breakdown(ref);
-    profile.layout->record(i, j);
+    dim2 work_blocks(profile.get_work_dim().x / profile.get_mem_dim().x,
+                     profile.get_work_dim().y / profile.get_mem_dim().y);
+    int ii = i*work_blocks.y;
+    int jj = j*work_blocks.x;
+
+// be careful not to overflow the borders!
+    for(int i = ii; i < ii+work_blocks.y; i++)
+        for(int j = jj; j < jj+work_blocks.x; j++)
+            profile.layout->record(i, j);
 }
 template<typename T>
 inline std::pair<unsigned int*,size_t> get_id(T& ref)
