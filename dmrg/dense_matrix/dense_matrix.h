@@ -187,6 +187,7 @@ namespace blas {
         {
             return std::make_pair( row_element_iterator(&values_[row],reserved_size1_), row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
         }
+
         std::pair<const_row_element_iterator,const_row_element_iterator> row(size_type row = 0) const
         {
             return std::make_pair( const_row_element_iterator(&values_[row],reserved_size1_), const_row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
@@ -274,8 +275,8 @@ namespace blas {
     template<class FullMatrixClass>
     struct associated_vector { };
 
-    template<typename T, typename MemoryBlock>
-    struct associated_vector<dense_matrix<T, MemoryBlock> >
+    template<class T, class MemoryBlock>
+    struct associated_vector<dense_matrix<T,MemoryBlock> >
     {
         typedef std::vector<T> type;
     };
