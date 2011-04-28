@@ -94,7 +94,7 @@ namespace ambient
     }
     void scheduler::spin()
     {
-        world()->get_manager()->spin();
+        world()->spin();
         while(!this->router.alt_end_reached()){ // alt is for embedding
             (*this->router.alt_pick())->spin();
         }
@@ -108,7 +108,7 @@ namespace ambient
     }
     void scheduler::world_loop()
     {
-        world()->get_manager()->spin_loop();
+        world()->spin_loop();
     }
     void scheduler::playout()
     {
@@ -168,23 +168,15 @@ namespace ambient
                     computing->set_scope(logistics->get_scope());
                     scope.set_group(logistics->get_scope());
                     if(logistics->pin == NULL){ // nothing has been pinned
-                        logistics->get_scope()->get_manager()->spin_loop();
+                        logistics->get_scope()->spin_loop();
                         computing->invoke();    // scalapack style
-                        logistics->get_scope()->get_manager()->spin_loop();
+                        logistics->get_scope()->spin_loop();
                     }else{
-// performing computation for every item inside every appointed memblock
-                        std::vector<core::layout_table::entry>& workload = logistics->pin->layout->get_list();
-                        for(int k=0; k < workload.size(); k++){
-                            logistics->pin->set_default_block(workload[k].i, workload[k].j);
-                            computing->invoke();
-                            this->spin(); // processing any communications that did occur
-                        }
-                        logistics->get_scope()->get_manager()->spin_loop();
-                        logistics->finalize();
-                        logistics->get_scope()->get_manager()->spin_loop();
+                        this->context.bind(logistics);
+                        this->context.discharge(computing);
+                        this->context.finalize();
                     }
                 }
-                computing->executed = true;
                 computing->release();
                 logistics->release();
             }

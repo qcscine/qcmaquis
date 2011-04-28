@@ -32,6 +32,8 @@ namespace ambient {
 	int np,nq; //mask of the two cyclic distribution
         int get_master_g();
         groups::packet_manager* get_manager();
+        void spin();
+        void spin_loop();
         int get_rank();
         int get_size();
         const char* get_name();

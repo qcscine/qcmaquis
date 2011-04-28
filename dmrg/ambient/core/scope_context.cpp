@@ -35,6 +35,12 @@ namespace ambient {
     groups::packet_manager* scope_context::get_manager(){
         return this->grp->get_manager();
     }
+    void scope_context::spin(){
+        return this->grp->spin();
+    }
+    void scope_context::spin_loop(){
+        return this->grp->spin_loop();
+    }
     int scope_context::get_size(){
         return this->grp->get_size();
     }

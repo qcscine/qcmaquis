@@ -11,10 +11,12 @@ namespace ambient {
     class workgroup_context {
     public:
         workgroup_context();
-        void bind(p_profile* pin, int i, int j = 0); // binds workgroup to the pin profile
+        void bind(core::operation* op); // binds workgroup to the pin profile
         void discharge(core::operation* kernel);
+        void finalize();
     private:
         p_profile* pin;
+        core::operation* bind_op;
         int i,j;
     };
 }

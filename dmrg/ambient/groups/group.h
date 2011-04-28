@@ -40,6 +40,8 @@ namespace ambient{ namespace groups{
         int master;                // master process in this group
         packet_manager* manager;   // group packet manager
         packet_manager* get_manager();
+        void spin();
+        void spin_loop();
         group* parent;             // parent group of processes
         std::set<group*> children;
         MPI_Comm mpi_comm;
