@@ -22,9 +22,10 @@ we need it to avoid dependency inside SVD kernels and other
         typedef size_t                                       size_type;
         typedef size_t                                       difference_type;
         
-        typedef typename std::vector<T>::iterator element_iterator;
-        typedef typename std::vector<T>::const_iterator const_element_iterator;
+        typedef typename container::element_iterator element_iterator;
+        typedef typename container::const_element_iterator const_element_iterator;
 
+      
 	//to do, usefull ? check with SVD, yes due to the structure of pdgsvd 
        // template<class Vector>
       //  p_diagonal_matrix(Vector const & init)
@@ -46,8 +47,17 @@ we need it to avoid dependency inside SVD kernels and other
 	template< class T1 > 
         friend std::ostream & operator <<(std::ostream& os, p_diagonal_matrix<T1> const &m);
         const container & get_data() const; 
-        container & get_data(); 
-    private:
+        container & get_data();    
+        element_iterator begin();
+        const_element_iterator begin() const;
+        element_iterator end();
+        const_element_iterator end() const;
+        std::size_t size() const;
+/*
+        void push_back(element_iterator);
+        void push_back(element_iterator) const;
+ */
+   private:
         container data_;
     };
 }

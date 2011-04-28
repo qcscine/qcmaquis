@@ -51,6 +51,36 @@ namespace blas {
         assert(i == j);
         return this->data_(i,0);
     }
+ 
+    template<typename T>
+    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::begin()
+    {
+         return this->data_.begin();
+    }
+
+    template<typename T>
+    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::begin() const
+    {
+         return this->data_.begin();
+    }
+
+    template<typename T>
+    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::end()
+    {
+         return this->data_.end();
+    }
+
+    template<typename T>
+    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::end() const
+    {
+         return this->data_.end();
+    }
+
+    template<typename T>
+    std::size_t p_diagonal_matrix<T>::size() const
+    {
+        return this->data_.num_rows();
+    }
 
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator> p_diagonal_matrix<T>::elements()
@@ -59,12 +89,9 @@ namespace blas {
         /**
           the p_diag is not still based on std::vector this is a solution for geting an iterator
         */ 
-        element_iterator it_first,it_second;
-        *it_first = this->data_(0,0); 
-        *it_second = this->data_(n,0); 
-       // return std::make_pair(this->data_(0,0), this->data_(n,0));
-        return std::make_pair(it_first, it_second);
+          return this->data_.elements(); // to check !!!!!!!!!!!!! (0,n) or (n,0) 
     }
+
 
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator> p_diagonal_matrix<T>::elements() const
@@ -76,8 +103,6 @@ namespace blas {
       //  return std::make_pair(this->data_(0,0), this->data_(n,0));
         return std::make_pair(it_first, it_second);
     }
-        
-
 
     template<typename T>
     void p_diagonal_matrix<T>::remove_rows(size_t k, size_t n)
@@ -183,5 +208,21 @@ namespace blas {
     {
         return m.elements();
     }
+/*
+    template<typename T>
+    void p_diagonal_matrix<T>::push_back(typename p_diagonal_matrix<T>::element_iterator    )
+    {
+         return this->data_.push_back();
+    } 
+
+    template<typename T>
+    void p_diagonal_matrix<T>::push_back(typename p_diagonal_matrix<T>::element_iterator  const)
+    {
+         return this->data_.push_back();
+    } 
+*/
+ //   
+
+
 }
 
