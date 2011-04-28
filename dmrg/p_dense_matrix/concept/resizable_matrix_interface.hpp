@@ -34,12 +34,12 @@ void remove_rows( p_dense_matrix<T>& m,
 }
 
 template <typename T>
-void remove_columns( p_dense_matrix<T>& m,
+void remove_cols( p_dense_matrix<T>& m,
         typename p_dense_matrix<T>::size_type j,
         typename p_dense_matrix<T>::difference_type k = 1)
 {
     BOOST_CONCEPT_ASSERT((blas::ResizableMatrix<p_dense_matrix<T> >));
-    return m.remove_columns(j,k);
+    return m.remove_cols(j,k);
 }
 
 } // namespace blas
