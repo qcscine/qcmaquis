@@ -49,7 +49,7 @@ namespace ambient {
     
         int x_size = profile->get_mem_dim().x;
         int y_size = profile->get_mem_dim().y;
-        if(i >= y_size || j >= x_size) printf("Warning: accessing block item that is out of range (%d %d %d)\n", i, j);
+        if(i >= y_size || j >= x_size) printf("Warning: accessing block item that is out of range (%d %d)\n", i, j);
         return (void*)((size_t)this->data + j*y_size + i); // the model of accessing actual data can be changed in future - will need to try out!
     }
 }
