@@ -271,6 +271,14 @@ namespace ambient{ namespace groups {
         return this->rank;
     }
 
+    void group::spin_loop(){
+        assert(this->involved());
+        return this->manager->spin_loop();
+    }
+    void group::spin(){
+        assert(this->involved());
+        return this->manager->spin();
+    }
     packet_manager* group::get_manager(){
         assert(this->involved());
         return this->manager;

@@ -73,6 +73,7 @@ namespace ambient{ namespace core{
     }
     void operation::release()
     {
+        this->executed = true;
         delete[] this->arguments;
     }
     void operation::set_scope(groups::group* scope)

@@ -13,6 +13,7 @@
 #include "ambient/auxiliary.h"
 #include "ambient/core/scope_context.h"
 #include "ambient/core/operation/operation.h"
+#include "ambient/core/workgroup_context.h"
 #include "ambient/core/layout.h"
 #include "ambient/core/select.h"
 #include "ambient/core/auxiliary.h"
@@ -59,6 +60,7 @@ namespace ambient
 
         one_touch_stack< std::pair<core::operation*,core::operation*> > stack;
         one_touch_stack< groups::packet_manager* > router; // packet_manager router
+        workgroup_context context;
     };
 
     scheduler& operator>>(scheduler* instance, dim2 mem_dim);

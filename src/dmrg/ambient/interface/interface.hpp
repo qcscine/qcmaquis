@@ -2,7 +2,7 @@
 
 void memoryfence(){
     ambient::spin();
-    //scope.get_group()->get_manager()->spin_loop(); // just spin for now
+    //scope.get_group()->spin_loop(); // just spin for now
 }
 
 template <typename FL, typename FC, class T0, class T1, class T2>
