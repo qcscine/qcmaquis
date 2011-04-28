@@ -14,7 +14,6 @@
 #include "utils/timings.h"
 
 #include "block_matrix/block_matrix.h"
-
 // some example functions
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
@@ -115,47 +114,62 @@ void syev(block_matrix<Matrix, SymmGroup> const & M,
 
     timer.end();
 }
+//this function could return a void presently, check with Bela 
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                                            block_matrix<Matrix, SymmGroup> & U,
-                                            block_matrix<Matrix, SymmGroup> & V,
-                                            block_matrix<DiagMatrix, SymmGroup> & S,
-                                            double rel_tol, std::size_t Mmax,
-                                            bool verbose = true)
+void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                  block_matrix<Matrix, SymmGroup> & U,
+                  block_matrix<Matrix, SymmGroup> & V,
+                  block_matrix<DiagMatrix, SymmGroup> & S,
+                  double rel_tol, std::size_t Mmax,
+                  bool verbose = true)
 {   
-    svd(M, U, V, S);
+  assert(false); 
+  svd(M, U, V, S);
     
-    /* to be done:
-     Given the full SVD in each block (above), remove all singular values and corresponding rows/cols
-     where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
-     Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
-     (remove_rows/remove_columns methods for that)
-     */
+   //  Given the full SVD in each block (above), remove all singular values and corresponding rows/cols
+   //  where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
+   //  Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
+   //  (remove_rows/remove_columns methods for that)
     
     Index<SymmGroup> old_basis = S.left_basis();
     
-    std::vector<double> allS;
     
+    typename blas::associated_vector<Matrix>::type allS;
+#ifdef MPI_PARALLEL
+ assert(false);
+#else
+
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
         std::copy(S[k].elements().first, S[k].elements().second, std::back_inserter(allS));
+#endif
+
+
+#ifdef MPI_PARALLEL
+ assert(false);
+  double Scut;
+#else
     std::sort(allS.begin(), allS.end());
     std::reverse(allS.begin(), allS.end());
-    
     double Scut = rel_tol * allS[0];
     if (allS.size() > Mmax)
         Scut = std::max(Scut, allS[Mmax]);
     double truncated_weight = std::accumulate(std::find_if(allS.begin(), allS.end(), boost::lambda::_1 < Scut), allS.end(), 0.0);
     truncated_weight /= std::accumulate(allS.begin(), allS.end(), 0.0);
-    
+   #endif 
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
     {
+#ifdef MPI_PARALLEL
+   assert(false);
+   int keep = 0;
+#else
         std::size_t keep = std::find_if(S[k].elements().first, S[k].elements().second,
                                         boost::lambda::_1 < Scut)-S[k].elements().first;
-        if (keep >= num_rows(S[k]))
+#endif 
+       if (keep >= num_rows(S[k]))
             continue;
         
-        /* hack for now */
+    //  hack for now 
 //        keep = std::max(keep, std::size_t(1));
         
         if (keep == 0) {
@@ -182,7 +196,7 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
                            V.right_basis()[k].second);
         }
     }
-    
+   /* 
     if (verbose && ! (old_basis == S.left_basis()) ) {
         zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << std::endl;
         zout << old_basis << std::endl << S.left_basis() << std::endl;
@@ -190,9 +204,14 @@ std::pair<std::size_t, double> svd_truncate(block_matrix<Matrix, SymmGroup> cons
         zout << "Smallest SV kept: " << Scut / allS[0] << std::endl;
         zout << "Truncated weight: " << truncated_weight << std::endl;
     }
-    
-    return std::make_pair(S.left_basis().sum_of_sizes(), truncated_weight);
+    */
 }
+
+/*
+    for (std::size_t k = 0; k < S.n_blocks(); ++k)
+        blas::copy<Matrix>(S[k],allS);
+    blas::sort<Matrix>(allS);  
+   blas::reverse<Matrix>(allS); */
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
@@ -202,17 +221,23 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                              Logger & logger,
                                              bool verbose = true)
 {
+
+ // assert(false); 
     // very analogous to the above svd method
     syev(M, evecs, evals);
     
     Index<SymmGroup> old_basis = evals.left_basis();
     
-    std::vector<double> allevals;
-    
-    for (std::size_t k = 0; k < evals.n_blocks(); ++k)
+    //std::vector<double> allevals;
+    typename blas::associated_vector<Matrix>::type allevals;
+assert(false);
+/* to do
+     for (std::size_t k = 0; k < evals.n_blocks(); ++k)
         std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
+*/
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());
+
     
     double evalscut = cutoff * allevals[0];
     if (allevals.size() > Mmax)
@@ -221,13 +246,15 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
     
     for (std::size_t k = 0; k < evals.n_blocks(); ++k)
-    {
+  {
         int keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
                                         boost::lambda::_1 < evalscut)-evals[k].elements().first;
+
+
         if (keep >= num_rows(evals[k]))
             continue;
         
-        /* uncomment if you want to keep all blocks */
+        // uncomment if you want to keep all blocks 
 //        keep = std::max(keep, std::size_t(1));
         
         if (keep == 0) {
@@ -247,18 +274,20 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                keep);
         }
     }
-    
+   /* 
     if (verbose && ! (old_basis == evals.left_basis()) ) {
         zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << std::endl;
         zout << old_basis << std::endl << evals.left_basis() << std::endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
         zout << "Smallest EV kept: " << evalscut / allevals[0] << std::endl;
     }
-    
+    */
     logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());
     logger << make_log("TruncatedWeight", truncated_weight);
     logger << make_log("SmallestEV", evalscut / allevals[0]);
 }
+
+
 
 template<class Matrix, class SymmGroup>
 void qr(block_matrix<Matrix, SymmGroup> & M,
@@ -331,10 +360,17 @@ block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup> m)
+block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 {
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
+    {
+#ifdef MPI_PARALLEL
+        sqrt(m[k]);
+#else
         m[k] = sqrt(m[k]);
+#endif
+    }
+
     return m;
 }
 
