@@ -116,6 +116,39 @@ namespace blas {
             return std::make_pair( const_element_iterator(this->self,0,0), const_element_iterator(this->self,0,num_cols() ) );
         }
 
+        element_iterator begin()
+        {
+            return element_iterator(this->self,0,0);
+        }
+
+        const_element_iterator begin() const 
+        {
+            return const_element_iterator(this->self,0,0);
+        }
+
+        element_iterator end()
+        {
+            return element_iterator(this->self,num_rows(),num_cols());
+        } 
+
+        const_element_iterator end() const
+        {
+            return const_element_iterator(this->self,num_rows(),num_cols());
+        } 
+/*
+        element_iterator push_back()
+        {
+          assert(false);
+          return element_iterator;
+        }
+
+        const_element_iterator push_back() const
+        {
+          assert(false);
+          return element_iterator;
+        }
+*/
+
 #ifdef HAVE_ALPS_HDF5
         void serialize(alps::hdf5::iarchive & ar);
         void serialize(alps::hdf5::oarchive & ar) const;
@@ -135,6 +168,19 @@ namespace blas {
     };
     
 } // namespace blas
+
+namespace blas {
+
+    template<class FullMatrixClass>
+    struct associated_vector { };
+
+    template<typename T, ambient::policy P>
+    struct associated_vector<p_dense_matrix<T,P> >
+    {
+        typedef p_diagonal_matrix<T> type;
+    };
+} // namespace blas
+
 
 
 #include "p_dense_matrix/p_dense_matrix.hpp"
