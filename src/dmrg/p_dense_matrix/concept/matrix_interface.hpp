@@ -13,9 +13,12 @@ namespace blas
 template TEMPLATE_PARS \
 RET NAME ARGS \
 { \
-    BOOST_CONCEPT_ASSERT((blas::Matrix<TYPE>)); \
     return m.NAME VARS; \
 } 
+
+
+//    BOOST_CONCEPT_ASSERT((blas::Matrix<TYPE>)); this line was before return, but pb with boost 
+
 
 // num_rows(), num_cols()
 IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
