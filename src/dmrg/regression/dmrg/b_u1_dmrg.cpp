@@ -1,5 +1,6 @@
 #ifdef MPI_PARALLEL
 #include "ambient/ambient.h"
+typedef ambient::dim2 dim;
 #endif
 
 #include <cmath>
@@ -170,7 +171,8 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 int main(int argc, char ** argv)
 {
     #ifdef MPI_PARALLEL
-        ambient::init();
+    ambient::init();
+    ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
     #endif
 
     if (argc != 3)
@@ -239,6 +241,7 @@ int main(int argc, char ** argv)
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
+    printf("WELCOME!\n");
     int sweep = 0;
     if (restore) {
         alps::hdf5::iarchive h5ar_in(chkpfile);

@@ -73,6 +73,13 @@ namespace blas
         M.inplace_conjugate();
         return M;
     }
+
+    template<typename T, class MemoryBlock>
+    template<class Generator>
+    void generate(dense_matrix<T, MemoryBlock>& m, Generator g)
+    {
+        std::generate(elements(m).first, elements(m).second, g);
+    }
     
     template<typename T, class MemoryBlock>
     void syev(dense_matrix<T, MemoryBlock> M,

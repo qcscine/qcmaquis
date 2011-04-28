@@ -138,6 +138,11 @@ namespace blas
        ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
    }
 
+   template<typename T, class Generator>
+   void generate(p_dense_matrix<T>& A, Generator g)
+   { // empty - just for compatibility
+   }
+
    template<class Matrix>
    void copy(typename associated_diagonal_matrix<Matrix>::type & S,typename associated_vector<Matrix>::type & allS)
    {
