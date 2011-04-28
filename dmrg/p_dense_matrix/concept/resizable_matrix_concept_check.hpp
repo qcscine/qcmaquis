@@ -27,8 +27,8 @@ struct ResizableMatrix
         // Remove
         remove_rows(x,1);
         remove_rows(x,1,1);
-        remove_columns(x,1);
-        remove_columns(x,1,1);
+        remove_cols(x,1);
+        remove_cols(x,1,1);
     }
 };
 
