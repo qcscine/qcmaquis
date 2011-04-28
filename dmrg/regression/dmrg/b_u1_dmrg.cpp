@@ -1,3 +1,7 @@
+#ifdef MPI_PARALLEL
+#include "ambient/ambient.h"
+#endif
+
 #include <cmath>
 #include <iterator>
 #include <iostream>
@@ -12,10 +16,7 @@ using std::endl;
 
 #ifdef MPI_PARALLEL
 
-#include "ambient/ambient.h"
-
 #include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/p_matrix_interface.hpp"
 #include "p_dense_matrix/concept/matrix_interface.hpp"
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
 #include "p_dense_matrix/p_dense_matrix_algorithms.hpp"
