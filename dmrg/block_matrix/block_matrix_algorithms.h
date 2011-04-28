@@ -230,10 +230,12 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     //std::vector<double> allevals;
     typename blas::associated_vector<Matrix>::type allevals;
-assert(false);
-/* to do
+//assert(false);
+#ifndef MPI_PARALLEL
      for (std::size_t k = 0; k < evals.n_blocks(); ++k)
         std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
+#endif
+/* to do
 */
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());

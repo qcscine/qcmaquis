@@ -197,8 +197,7 @@ template<class Matrix, class SymmGroup>
 template<class Generator>
 void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 {
-    for (std::size_t k = 0; k < n_blocks(); ++k)
-        std::generate(elements(data_[k]).first, elements(data_[k]).second, g);
+    for(std::size_t k = 0; k < n_blocks(); ++k) blas::generate(data_[k], g);
 }
 
 template<class Matrix, class SymmGroup>
