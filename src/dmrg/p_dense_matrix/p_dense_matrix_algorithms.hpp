@@ -132,11 +132,29 @@ namespace blas
   //      evals = typename associated_diagonal_matrix<p_dense_matrix<T>::type(evals_); to modify
     }
  
-    template<typename T>
-    void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala )
-    {
-        ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
-    }
+   template<typename T>
+   void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala )
+   {
+       ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
+   }
+
+   template<class Matrix>
+   void copy(typename associated_diagonal_matrix<Matrix>::type & S,typename associated_vector<Matrix>::type & allS)
+   {
+       assert(false);
+   }
+   
+   template<class T>
+   void sort(typename associated_vector<T>::type & allS)
+   {
+       assert(false);
+   }
+
+   template<class T>
+   void reverse(typename associated_vector<T>::type & allS)
+   {
+       assert(false);
+   }
  
 } /* namespace blas */
 
