@@ -14,6 +14,7 @@ add_library (ambient
              core/memblock.cpp
              core/select.cpp
              core/scope_context.cpp
+             core/workgroup_context.cpp
              core/operation/operation.cpp
              core/layout.cpp
              ambient.cpp)
