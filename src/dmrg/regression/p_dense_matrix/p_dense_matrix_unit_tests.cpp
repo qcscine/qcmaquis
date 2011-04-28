@@ -180,8 +180,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_test, T, test_types )
     p_dense_matrix<T> C2(task_size,task_size); 
 
     C = A * B;
-    ambient::push(ambient::check_gemm_l_kernel,ambient::check_gemm_c_kernel,C); 
     C2 = A2 * B2;
-    ambient::push(ambient::check_gemm_l_kernel,ambient::check_gemm_c_kernel,C2); 
     ambient::playout();
 }

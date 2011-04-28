@@ -37,7 +37,6 @@ namespace blas
     template<typename T>
     p_dense_matrix<T> conjugate(p_dense_matrix<T> M)
     {
-        printf("Attempting to perform INPCONJ\n");
         M.inplace_conjugate();
         return M;
     }
@@ -83,7 +82,6 @@ namespace blas
              typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
-        printf("Attempting to perform SVD\n");
 	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
         U.resize(num_rows(M), k);
         V.resize(k, num_cols(M));

@@ -140,7 +140,7 @@ namespace blas {
     {
         assert(num_cols(m1) == num_rows(m2));
         m3.resize(num_rows(m1), num_cols(m2));
-	ambient::push(ambient::gemm_rhs_diagonal_l_kernel, ambient::gemm_rhs_diagonal_c_kernel, m1, m2.get_data() ,m3);
+	ambient::push(ambient::gemm_diagonal_rhs_l_kernel, ambient::gemm_diagonal_rhs_c_kernel, m1, m2.get_data() ,m3);
     }
     
     template<typename T>
@@ -148,7 +148,7 @@ namespace blas {
     {
         assert(m1.num_cols() == m2.num_rows());
         m3.resize(m1.num_rows(), m2.num_cols());
-	ambient::push(ambient::gemm_lhs_diagonal_l_kernel,ambient::gemm_lhs_diagonal_c_kernel, m1.get_data(), m2 ,m3);
+	ambient::push(ambient::gemm_diagonal_lhs_l_kernel,ambient::gemm_diagonal_lhs_c_kernel, m1.get_data(), m2 ,m3);
     }
 
     template<typename T>
