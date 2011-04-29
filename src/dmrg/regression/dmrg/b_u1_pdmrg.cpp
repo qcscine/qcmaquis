@@ -41,28 +41,6 @@ typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double>
 
 #include <alps/hdf5.hpp>
 
-template<class T, class A>
-alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> const & v)
-{
-    std::vector<T> foo(v.begin(), v.end());
-    ar << alps::make_pvp(p, foo);
-    return ar;
-}
-
-template<class T, class A>
-alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> & v)
-{
-    std::vector<T> foo;
-    ar >> alps::make_pvp(p, foo);
-    v.resize(foo.size());
-    std::copy(foo.begin(), foo.end(), v.begin());
-    return ar;
-}
-
 #include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
@@ -170,10 +148,8 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 
 int main(int argc, char ** argv)
 {
-    #ifdef MPI_PARALLEL
     ambient::init();
     ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
-    #endif
 
     if (argc != 3)
     {
@@ -199,19 +175,6 @@ int main(int argc, char ** argv)
     
     std::string chkpfile = parms.get<std::string>("chkpfile");
   
-   std::string rfile = parms.get<std::string>("resultfile");
-    bool dns = (parms.get<int>("donotsave") != 0);
-    
-    bool restore = false;
-    {
-        struct stat tmp;
-        if (stat(chkpfile.c_str(), &tmp) == 0 && S_ISREG(tmp.st_mode))
-        {
-            cout << "Restoring state." << endl;
-            restore = true;
-        }
-    }
-    
     srand48(parms.get<int>("seed"));
     
     b_adj::Adjacency * adj = adj_factory(model);
@@ -224,7 +187,7 @@ int main(int argc, char ** argv)
     
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     MPO<Matrix, grp> mpoc = mpo;
-    if (parms.get<int>("use_compressed") > 0)
+    if(parms.get<int>("use_compressed") > 0)
         mpoc.compress(1e-12);
     
 #ifdef UseTwoU1
@@ -241,31 +204,8 @@ int main(int argc, char ** argv)
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
-    printf("WELCOME!\n");
     int sweep = 0;
-    if (restore) {
-        alps::hdf5::iarchive h5ar_in(chkpfile);
-        h5ar_in >> alps::make_pvp("/state", mps);
-        h5ar_in >> alps::make_pvp("/status/sweep", sweep);
-        ++sweep;
-    } else if (parms.get<std::string>("initfile").size() > 0) {
-        alps::hdf5::iarchive h5ar_in(parms.get<std::string>("initfile"));
-        h5ar_in >> alps::make_pvp("/state", mps);
-    }
     
-    {
-        alps::hdf5::oarchive h5ar(rfile);
-        h5ar << alps::make_pvp("/parameters", parms);
-        h5ar << alps::make_pvp("/parameters", model);
-    }
-    
-    if (!dns) {
-        alps::hdf5::oarchive h5ar(chkpfile);
-        h5ar << alps::make_pvp("/parameters", parms);
-        h5ar << alps::make_pvp("/parameters", model);
-    }
-    
-//    BaseStorageMaster * bsm = bsm_factory(parms);
     StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
     
     timeval now, then, snow, sthen;
@@ -297,42 +237,6 @@ int main(int argc, char ** argv)
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
 
 
-#ifdef MPI_PARALLEL
-            if(ambient::is_master()) {
-#endif
-            
-            {
-                alps::hdf5::oarchive h5ar(rfile);
-                
-                std::ostringstream oss;
-                
-                oss.str("");
-                oss << "/simulation/results/sweep" << sweep;
-                h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
-                
-                oss.str("");
-                oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), entropies);
-                
-                cout << "Sweep done after " << elapsed << " seconds." << endl;
-                oss.str("");
-                oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
-            }
-                
-            if (parms.get<int>("donotsave") == 0)
-            {
-                alps::hdf5::oarchive h5ar(chkpfile);
-                
-                h5ar << alps::make_pvp("/state", mps);
-                h5ar << alps::make_pvp("/status/sweep", sweep);
-            }
-
-
-#ifdef MPI_PARALLEL
-           } 
-#endif
-
             gettimeofday(&then, NULL);
             elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
             int rs = parms.get<int>("run_seconds");
@@ -347,28 +251,14 @@ int main(int argc, char ** argv)
     ssm.sync();
     
 #ifdef MEASURE_ONLY
-    {
+    if(ambient::is_master()){
 
-#ifdef MPI_PARALLEL
-        if(ambient::is_master()){
-#endif
-
-        alps::hdf5::oarchive h5ar(rfile);
-        
-        cout << "Measurements." << endl;
-        measure(mps, *adj, *H, model, h5ar);
-        
         Timer tvn("vN entropy"), tr2("Renyi n=2");
         cout << "Calculating vN entropy." << endl;
         tvn.begin(); entropies = calculate_bond_entropies(mps); tvn.end();
         cout << "Calculating n=2 Renyi entropy." << endl;
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
-        if (entropies.size() > 0)
-            h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
-        if (renyi2.size() > 0)
-            h5ar << alps::make_pvp("/spectrum/results/Renyi2/mean/value", renyi2);
-
         double energy = expval(mps, mpoc);
         cout << "Energy before: " << expval(mps, mpo) << endl;
         cout << "Energy after: " << expval(mps, mpoc) << endl;
@@ -387,26 +277,14 @@ int main(int argc, char ** argv)
         
             cout << "Energy^2: " << energy2 << endl;
             cout << "Variance: " << energy2 - energy*energy << endl;
-        
-            h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
-            h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
-                                   std::vector<double>(1, energy2 - energy*energy));
         }
 
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
         cout << "Task took " << elapsed << " seconds." << endl;
-
-#ifdef MPI_PARALLEL
-        }
-#endif
-
     }
 #endif
 
-#ifdef MPI_PARALLEL
-        ambient::finalize();
-#endif
-
+    ambient::finalize();
 }
