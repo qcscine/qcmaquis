@@ -43,8 +43,8 @@ BOOST_GLOBAL_FIXTURE( caveats );
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
      ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
-     int LENGTH = 16;
-     int M = 1024;
+     int LENGTH = 8;
+     int M = 128;
 
      std::vector<ambient::p_dense_matrix<T> * > V;
      V.resize(LENGTH*4);

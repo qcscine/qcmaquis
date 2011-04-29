@@ -11,7 +11,7 @@
 #include <complex>
 #include <numeric>
 
-#define M_SIZE 512
+#define M_SIZE 128
 using namespace blas;
 
 //
