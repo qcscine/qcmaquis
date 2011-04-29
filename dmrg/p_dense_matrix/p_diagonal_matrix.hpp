@@ -144,7 +144,7 @@ namespace blas {
     }
     
     template<typename T>
-    void gemm( const p_diagonal_matrix<T> & m1, const p_dense_matrix<T> & m2, p_dense_matrix<T> & m3 )
+    void gemm(const p_diagonal_matrix<T>& m1, const p_dense_matrix<T>& m2, p_dense_matrix<T>& m3)
     {
         assert(m1.num_cols() == m2.num_rows());
         m3.resize(m1.num_rows(), m2.num_cols());

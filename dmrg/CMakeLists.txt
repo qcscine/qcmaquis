@@ -4,7 +4,7 @@ enable_testing()
 set (DMRG_VERSION_MAJOR 0)
 set (DMRG_VERSION_MINOR 1) 
 # use for make debugging
-# set(CMAKE_VERBOSE_MAKEFILE true)
+#set(CMAKE_VERBOSE_MAKEFILE true)
 macro(add arg) 
 if(NOT DEFINED ${arg})
 add_subdirectory (${arg}) 
@@ -43,10 +43,10 @@ if(ambient_dmrg)
 
     add(ambient) 
     #add(regression/p_dense_matrix)
-    #add(regression/p_diagonal_matrix)
+    add(regression/p_diagonal_matrix)
     #add(regression/p_reshape)
     #add(regression/p_dense_matrix_benchmark)
-    add(regression/pdmrg)
+    #add(regression/pdmrg)
 endif(ambient_dmrg)
 
 

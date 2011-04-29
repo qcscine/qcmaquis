@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /users/ewartt/DMRG
+CMAKE_SOURCE_DIR = /users/maquis/svn/hp2c/trunk/src/dmrg
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /users/ewartt/DMRG
+CMAKE_BINARY_DIR = /users/maquis/svn/hp2c/trunk/src/dmrg
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -79,14 +79,14 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	cd /users/ewartt/DMRG && $(CMAKE_COMMAND) -E cmake_progress_start /users/ewartt/DMRG/CMakeFiles /users/ewartt/DMRG/regression/dmrg/CMakeFiles/progress.marks
-	cd /users/ewartt/DMRG && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /users/ewartt/DMRG/CMakeFiles 0
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(CMAKE_COMMAND) -E cmake_progress_start /users/maquis/svn/hp2c/trunk/src/dmrg/CMakeFiles /users/maquis/svn/hp2c/trunk/src/dmrg/regression/dmrg/CMakeFiles/progress.marks
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /users/maquis/svn/hp2c/trunk/src/dmrg/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /users/ewartt/DMRG && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/clean
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/clean
 .PHONY : clean
 
 # The main clean target
@@ -95,39 +95,39 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /users/ewartt/DMRG && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/preinstall
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /users/ewartt/DMRG && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/preinstall
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /users/ewartt/DMRG && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
-regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/rule:
-	cd /users/ewartt/DMRG && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/rule
-.PHONY : regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/rule
+regression/dmrg/CMakeFiles/dmrg.exec.dir/rule:
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f CMakeFiles/Makefile2 regression/dmrg/CMakeFiles/dmrg.exec.dir/rule
+.PHONY : regression/dmrg/CMakeFiles/dmrg.exec.dir/rule
 
 # Convenience name for target.
-dmrg_mpi.exec: regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/rule
-.PHONY : dmrg_mpi.exec
+dmrg.exec: regression/dmrg/CMakeFiles/dmrg.exec.dir/rule
+.PHONY : dmrg.exec
 
 # fast build rule for target.
-dmrg_mpi.exec/fast:
-	cd /users/ewartt/DMRG && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build
-.PHONY : dmrg_mpi.exec/fast
+dmrg.exec/fast:
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg.exec.dir/build
+.PHONY : dmrg.exec/fast
 
 __/__/mpos/alps_adjacency.o: __/__/mpos/alps_adjacency.cpp.o
 .PHONY : __/__/mpos/alps_adjacency.o
 
 # target to build an object file
 __/__/mpos/alps_adjacency.cpp.o:
-	cd /users/ewartt/DMRG && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/__/__/mpos/alps_adjacency.cpp.o
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg.exec.dir/__/__/mpos/alps_adjacency.cpp.o
 .PHONY : __/__/mpos/alps_adjacency.cpp.o
 
 __/__/mpos/alps_adjacency.i: __/__/mpos/alps_adjacency.cpp.i
@@ -135,7 +135,7 @@ __/__/mpos/alps_adjacency.i: __/__/mpos/alps_adjacency.cpp.i
 
 # target to preprocess a source file
 __/__/mpos/alps_adjacency.cpp.i:
-	cd /users/ewartt/DMRG && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/__/__/mpos/alps_adjacency.cpp.i
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg.exec.dir/__/__/mpos/alps_adjacency.cpp.i
 .PHONY : __/__/mpos/alps_adjacency.cpp.i
 
 __/__/mpos/alps_adjacency.s: __/__/mpos/alps_adjacency.cpp.s
@@ -143,7 +143,7 @@ __/__/mpos/alps_adjacency.s: __/__/mpos/alps_adjacency.cpp.s
 
 # target to generate assembly for a file
 __/__/mpos/alps_adjacency.cpp.s:
-	cd /users/ewartt/DMRG && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/__/__/mpos/alps_adjacency.cpp.s
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg.exec.dir/__/__/mpos/alps_adjacency.cpp.s
 .PHONY : __/__/mpos/alps_adjacency.cpp.s
 
 b_u1_dmrg.o: b_u1_dmrg.cpp.o
@@ -151,7 +151,7 @@ b_u1_dmrg.o: b_u1_dmrg.cpp.o
 
 # target to build an object file
 b_u1_dmrg.cpp.o:
-	cd /users/ewartt/DMRG && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/b_u1_dmrg.cpp.o
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg.exec.dir/b_u1_dmrg.cpp.o
 .PHONY : b_u1_dmrg.cpp.o
 
 b_u1_dmrg.i: b_u1_dmrg.cpp.i
@@ -159,7 +159,7 @@ b_u1_dmrg.i: b_u1_dmrg.cpp.i
 
 # target to preprocess a source file
 b_u1_dmrg.cpp.i:
-	cd /users/ewartt/DMRG && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/b_u1_dmrg.cpp.i
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg.exec.dir/b_u1_dmrg.cpp.i
 .PHONY : b_u1_dmrg.cpp.i
 
 b_u1_dmrg.s: b_u1_dmrg.cpp.s
@@ -167,7 +167,7 @@ b_u1_dmrg.s: b_u1_dmrg.cpp.s
 
 # target to generate assembly for a file
 b_u1_dmrg.cpp.s:
-	cd /users/ewartt/DMRG && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg_mpi.exec.dir/b_u1_dmrg.cpp.s
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(MAKE) -f regression/dmrg/CMakeFiles/dmrg.exec.dir/build.make regression/dmrg/CMakeFiles/dmrg.exec.dir/b_u1_dmrg.cpp.s
 .PHONY : b_u1_dmrg.cpp.s
 
 # Help Target
@@ -176,7 +176,7 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... dmrg_mpi.exec"
+	@echo "... dmrg.exec"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
@@ -197,6 +197,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /users/ewartt/DMRG && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /users/maquis/svn/hp2c/trunk/src/dmrg && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

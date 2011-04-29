@@ -237,6 +237,12 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
     }
 }
 
+void reshape_r2l_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
+                          const size_t& left_offset, const size_t& right_offset, 
+                          const size_t& sdim, const size_t& ldim, const size_t& rdim)
+{
+}
+
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
 {
     double* ad = current(a)(get_block_id(c).y, get_block_id(c).x);
@@ -265,17 +271,17 @@ void scale_c_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 
 void gemm_diagonal_lhs_c_kernel(const p_dense_matrix<double>& a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
-    int j = get_block_id(b).x*get_mem_t_dim(b).x;
-    int SIZE = get_mem_t_dim(b).y;
-    int ONE = 1;
-    double* bd = current(b)(get_block_id(b).x, get_block_id(b).y);
-    double* cd = current(c)(get_block_id(b).x, get_block_id(b).y);
+    int j = get_block_id(b).y*get_mem_t_dim(b).y;
+    int size = get_mem_t_dim(b).x;
+    int lda  = get_mem_t_dim(b).y;
+    int ONE  = 1;
+    double* bd = current(b)(get_block_id(b).y, get_block_id(b).x);
+    double* cd = current(c)(get_block_id(b).y, get_block_id(b).x);
 
     memset(cd, 0, get_mem_t_dim(c).x*get_mem_t_dim(c).y*sizeof(double));
-
     for(int jj = 0 ; jj < get_mem_t_dim(b).y ; jj++){
-	 double* alpha = current(a_diag)((j+jj)/get_mem_t_dim(a_diag).y,0);
-	 daxpy(&SIZE, &alpha[(j+jj)%get_mem_t_dim(a_diag).y], &bd[jj+j*get_mem_t_dim(b).y], &ONE, &cd[jj+j*get_mem_t_dim(c).y], &SIZE);
+         double* alpha = current(a_diag)((j+jj)/get_mem_t_dim(a_diag).y,0);
+	 daxpy(&size, &alpha[(j+jj)%get_mem_t_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
     }
 }
 
@@ -300,7 +306,7 @@ void init_double_c_kernel(pinned p_dense_matrix<double> & a)
     double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
     for(int jj = 0 ; jj < get_mem_t_dim(a).x*get_mem_t_dim(a).y ; jj++)
     {
-	ad[jj] = 1;//  drand48();
+	ad[jj] = drand48();
     }
 }
 
