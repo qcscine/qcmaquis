@@ -39,14 +39,15 @@ namespace ambient {
         block_packet_t*     packet_type;
         block_packet_t*     xpacket_type;
         std::vector< std::vector<memblock*> > skeleton;
-        memblock*          default_block;
+        memblock*           default_block;
         void(*init)(memblock*);
         void(*reduce)(memblock*,void*);
         p_profile*          associated_proxy;
+        bool                loose;
     private:
         bool                valid;
-        dim2                work_dim;   // work-item size of distribution blocks
-        dim2                mem_dim;   // work-item size of cpu streaming multiprocessor workload fractions
+        dim2                work_dim;    // work-item size of distribution blocks
+        dim2                mem_dim;     // work-item size of cpu streaming multiprocessor workload fractions
         dim2                item_dim;    // size of work-item (i.e. 128) 
         dim2                gpu_dim;     // work-item size of gpgpu smp workload fractions
     public:
@@ -62,6 +63,7 @@ namespace ambient {
         void reblock();
         void set_id(std::pair<unsigned int*,size_t> group_id);
         std::pair<unsigned int*,size_t> get_id();
+        void is_abstract();
         void set_master(int master);
         int get_master();
         int get_xmaster();
@@ -82,6 +84,7 @@ namespace ambient {
         groups::group* get_xscope();
         bool involved();
         bool xinvolved();
+        bool is_loose();
 
         memblock* block(int i, int j = 0) const;
         memblock& operator()(int i, int j = 0);

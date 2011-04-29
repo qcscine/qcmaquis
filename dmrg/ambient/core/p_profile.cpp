@@ -26,7 +26,7 @@ namespace ambient {
     }
 
     p_profile::p_profile()
-    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), block_lda(0), default_block(NULL), finalized(false),
+    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), block_lda(0), default_block(NULL), finalized(false), loose(true),
       profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->mem_dim  = engine.get_mem_dim();
@@ -81,6 +81,10 @@ namespace ambient {
         this->layout = new core::layout_table(this);
         this->group_id = group_id.first;
         this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
+    }
+
+    bool p_profile::is_loose(){
+        return this->loose;
     }
 
     std::pair<unsigned int*,size_t> p_profile::get_id(){
@@ -318,6 +322,7 @@ namespace ambient {
         this->set_work_dim (profile->get_work_dim ());
         this->set_mem_dim  (profile->get_mem_dim  ());
         this->set_item_dim (profile->get_item_dim ());
+        this->loose       = profile->is_loose();
         this->reblock();
     }
 

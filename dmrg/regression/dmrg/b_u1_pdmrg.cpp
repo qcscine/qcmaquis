@@ -14,9 +14,6 @@ using std::cout;
 using std::endl;
 
 #include "utils/zout.hpp"
-
-#ifdef MPI_PARALLEL
-
 #include "p_dense_matrix/p_dense_matrix.h"
 #include "p_dense_matrix/concept/matrix_interface.hpp"
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
@@ -24,20 +21,6 @@ using std::endl;
 #include "p_dense_matrix/p_diagonal_matrix.h"
 
 typedef blas::p_dense_matrix<double> Matrix;
-#else
-
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/dense_matrix_blas.hpp"
-#include "dense_matrix/aligned_allocator.h"
-typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
-//typedef blas::dense_matrix<double> Matrix;
-//#include "dense_matrix/../../CopyOnWrite/cow_vector.h"
-//typedef blas::dense_matrix<double, copy_on_write_vector<double> > Matrix;
-#endif
 
 #include <alps/hdf5.hpp>
 

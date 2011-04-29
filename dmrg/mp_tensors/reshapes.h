@@ -66,15 +66,20 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                     size_t in_left_offset = in_left(physical_i[s].first, left_i[l].first);
                     size_t out_right_offset = out_right(physical_i[s].first, right_i[r].first);
                     
-                    if (!pretend) {
+                    if (!pretend){
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
                         
                         /* optimize me */
+                        #ifdef MPI_PARALLEL
+                        ambient::push(ambient::reshape_l2r_l_kernel, ambient::reshape_l2r_c_kernel, in_block, out_block, 
+                                      in_left_offset, out_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
+                        #else
                         for (size_t ss = 0; ss < physical_i[s].second; ++ss)
                             for (size_t rr = 0; rr < right_i[r].second; ++rr)
                                 for (size_t ll = 0; ll < left_i[l].second; ++ll)
                                     out_block(ll, out_right_offset + ss*right_i[r].second+rr) = in_block(in_left_offset + ss*left_i[l].second+ll, rr);
+                        #endif
                     }
 
                     if (pretend)
@@ -152,12 +157,8 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                 size_t l = left_i.position(m1.left_basis()[block].first);
                 size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
                                                             physical_i[s].first));
-                
-                if (l == left_i.size())
-                    continue;
-                if (r == right_i.size())
-                    continue;
-                
+                if(l == left_i.size()) continue;
+                if(r == right_i.size()) continue;
                 {
                     bool pretend = (run == 0);
                     

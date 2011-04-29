@@ -238,4 +238,17 @@ void validation_l_kernel(pinned const p_dense_matrix<double>& a_ambient, const p
 
     block_2d_cycle_assign(a_ambient); 
     block_2d_cycle_assign(b_scalapack); 
-} 
+}
+
+void reshape_l2r_l_kernel(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
+                          const size_t& left_offset, const size_t& right_offset, 
+                          const size_t& sdim, const size_t& ldim, const size_t& rdim)
+{
+    int num = 1; //get_grid_dim(a_ambient).y; 
+    scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(left));
+    if(!scope.involved()) return;
+    zout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; info(left); info(right);
+
+    block_2d_cycle_assign(left); 
+    block_2d_cycle_assign(right); 
+}

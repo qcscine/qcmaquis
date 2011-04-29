@@ -66,13 +66,15 @@ namespace blas {
     {
         self->rows=rows; 
         self->cols=cols;
-        ambient::push(ambient::resize_l_kernel, ambient::resize_c_kernel, *this, self->rows, self->cols);
+        if(self->breakdown()->is_loose()) self->breakdown()->set_dim(ambient::dim2(cols,rows));
+        else ambient::push(ambient::resize_l_kernel, ambient::resize_c_kernel, *this, self->rows, self->cols);
     }
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::remove_rows(size_type i, size_type k = 1)
     {
         assert( i+k <= self->rows );
+        if(self->breakdown()->is_loose()) return this->resize(self->rows-k, self->cols);
         ambient::push(ambient::remove_rows_l_kernel, ambient::remove_rows_c_kernel, *this, i, k);
         this->resize(self->rows - k, self->cols);
     }
@@ -81,6 +83,7 @@ namespace blas {
     void p_dense_matrix<T,P>::remove_cols(size_type j, size_type k = 1)
     {
         assert( j+k <= self->cols );
+        if(self->breakdown()->is_loose()) return this->resize(self->rows, self->cols-k);
         ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, j, k);
         this->resize(self->rows, self->cols - k);
     }

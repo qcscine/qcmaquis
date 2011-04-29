@@ -1,5 +1,5 @@
 #include <boost/preprocessor.hpp>
-#define ARGS_MAX_LEN 5
+#define ARGS_MAX_LEN 10
 
 #define extract_profile(z, n, unused)                                                       \
     this->profiles[n] = &breakdown(*static_cast<T ## n*>(this->arguments[n].get()));
