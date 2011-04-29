@@ -1,5 +1,5 @@
 #include <boost/preprocessor.hpp>
-#define ARGS_MAX_LEN 5
+#define ARGS_MAX_LEN 10
 
 #define type_list(z, n, pn)                                                                 \
     BOOST_PP_COMMA_IF(n)                                                                    \

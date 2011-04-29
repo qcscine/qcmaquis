@@ -1,5 +1,5 @@
 #include <boost/preprocessor.hpp>
-#define ARGS_MAX_LEN 5
+#define ARGS_MAX_LEN 10
 
 #ifndef BOOST_PP_IS_ITERATING
 #ifndef CONVERTOBJECTS_HPP

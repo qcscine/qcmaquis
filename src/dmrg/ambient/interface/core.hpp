@@ -65,6 +65,7 @@ public:
         thyself = self;
     }
     boost::shared_ptr<T> get_handle() const {
+        breakdown()->loose = false;
         if(this->p == ANY) return this->handle;
         else if(this->p == MANUAL) return this->handle;
         else if(this->p == WEAK){ ((livelong*)this)->use_count++; return boost::shared_ptr<T>(this->self, &poke_deleter<T>); } // for one-touch only

@@ -65,7 +65,7 @@ namespace ambient
     void world_loop(){ engine.world_loop(); }
     int  size()      { return engine.size;  }
 
-    scheduler::scheduler(): item_dim(dim2(128,128)){ } // to revert to 128,128
+    scheduler::scheduler(): item_dim(dim2(2,2)){ } // to revert to 128,128
     dim2 scheduler::get_mem_dim() { return this->mem_dim;  }
     dim2 scheduler::get_item_dim(){ return this->item_dim; }
     dim2 scheduler::get_work_dim(){ return this->work_dim; }
