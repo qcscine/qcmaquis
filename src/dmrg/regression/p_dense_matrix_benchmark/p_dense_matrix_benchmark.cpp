@@ -18,7 +18,6 @@ struct caveats {
    ~caveats(){ ambient::finalize(); }
 };
 
-
 BOOST_GLOBAL_FIXTURE( caveats );
 
 /*BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types ) 

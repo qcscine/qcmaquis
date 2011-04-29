@@ -74,8 +74,7 @@ namespace blas
         return M;
     }
 
-    template<typename T, class MemoryBlock>
-    template<class Generator>
+    template<typename T, class MemoryBlock, class Generator>
     void generate(dense_matrix<T, MemoryBlock>& m, Generator g)
     {
         std::generate(elements(m).first, elements(m).second, g);

@@ -15,41 +15,19 @@
 
 #define M_SIZE 16
 using namespace blas;
-
+using namespace ambient;
 //
 // List of types T for which the p_dense_matrix<T> is tested
 // (long long unsigned int causes problems in boost::iterator facade)
 typedef boost::mpl::list<double> test_types;
 typedef ambient::dim2 dim;
 
-namespace type_pairs
-{
-
-struct IntDouble
-{
-    typedef int first_type;
-    typedef double second_type;
+struct caveats {
+     caveats(){ ambient::init();     }
+    ~caveats(){ ambient::finalize(); }
 };
 
-struct DoubleInt
-{
-    typedef double first_type;
-    typedef int second_type;
-};
-};
-
-struct AmbientConfig {
-    AmbientConfig()   { ambient::init(); }
-    ~AmbientConfig()  { ambient::finalize(); }
-};
-
-
-//
-// List of type pairs <T,U> for which the mixed type matrix vector multiplication is tested.
-//
-typedef boost::mpl::list<type_pairs::IntDouble, type_pairs::DoubleInt> test_type_pairs;
-
-BOOST_GLOBAL_FIXTURE( AmbientConfig );
+BOOST_GLOBAL_FIXTURE( caveats );
 /*
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
 {
@@ -74,22 +52,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_diagonal_gemm, T, test_types )
 {
-    ambient::layout >> dim(2,2), dim(2,2), dim(10,1);
+    ambient::layout >> dim(2,2),dim(2,2),dim(2,2);
     p_diagonal_matrix<T> A(M_SIZE);
-    p_dense_matrix<T> B(M_SIZE,M_SIZE);
-    p_dense_matrix<T> C(M_SIZE,M_SIZE);
+    p_dense_matrix<T>    B(M_SIZE,M_SIZE);
+    p_dense_matrix<T>    C(M_SIZE,M_SIZE);
 
-
-    ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, A.get_data());
-    ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, B);
-    ambient::push(ambient::init_double_l_kernel, ambient::init_double_c_kernel, C);
+    ambient::push(init_double_l_kernel, init_double_c_kernel, A.get_data());
+    ambient::push(init_double_l_kernel, init_double_c_kernel, B);
+    ambient::push(init_double_l_kernel, init_double_c_kernel, C);
 
     blas::gemm(A,B,C);  
     ambient::playout();
 
     std::cout << A;
     std::cout << B;
-
+    zout << "----\n";
+    std::cout << C;
 }
 
 
