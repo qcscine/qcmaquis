@@ -71,6 +71,7 @@ namespace ambient {
                 grp->add(count);
         }
         grp->commit();
+        assert(master < grp->get_size());
         scope.set_group(grp);
         scope.get_op()->preprocess();
     }
