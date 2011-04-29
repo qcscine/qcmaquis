@@ -48,7 +48,7 @@ if(ambient_dmrg)
     add(regression/p_diagonal_matrix)
     add(regression/p_reshape)
     add(regression/p_dense_matrix_benchmark)
-    add(regression/pdmrg)
+    #add(regression/pdmrg)
 endif(ambient_dmrg)
 
 
