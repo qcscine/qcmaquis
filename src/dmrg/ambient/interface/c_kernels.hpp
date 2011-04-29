@@ -215,7 +215,7 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
     size_t j_stop  = std::min((j+get_mem_t_dim(right).x), (right_offset+sdim*rdim));
 
     for(size_t ji = j_start; ji < j_stop; ji++){
-        int li   = ((int)ji/rdim)*ldim + left_offset + i; int lj   = ji  % rdim;                   // global left  indices
+        int li   = ((int)ji/rdim)*ldim + left_offset + i; int lj   = ji  % rdim;               // global left  indices
         int lii  = li / get_mem_t_dim(left).y;          int ljj  = lj / get_mem_t_dim(left).x; // groups left  indices
         int liii = li % get_mem_t_dim(left).y;          int ljjj = lj % get_mem_t_dim(left).x; // groups local indices
 
@@ -225,7 +225,7 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
         int w_offset = std::min(to_write,(int)(get_mem_t_dim(left).y-liii));
         to_write    -= w_offset;
 
-        double* ld = current(left)(lii, ljj);
+        double* ld = current(left)(lii, ljj); // bugbug
         memcpy(&rd[ji*get_mem_t_dim(right).y], &ld[liii + lj_pos], w_offset*sizeof(double));
         for(int k = 1; k < n_writes; k++){
             double* ld = current(left)(lii + k, ljj);
@@ -294,7 +294,6 @@ void gemm_diagonal_rhs_c_kernel(pinned const p_dense_matrix<double>& a, const p_
     double* cd = current(c)(get_block_id(a).y, get_block_id(a).x);
 
     memset(cd, 0, get_mem_t_dim(c).x*get_mem_t_dim(c).y*sizeof(double));
-
     for(int jj = 0 ; jj < get_mem_t_dim(a).x ; jj++){
 	 double* alpha = current(b_diag)((j+jj)/get_mem_t_dim(b_diag).y,0);
 	 daxpy(&size, &alpha[(j+jj)%get_mem_t_dim(b_diag).y], &ad[jj*get_mem_t_dim(a).y], &ONE, &cd[jj*get_mem_t_dim(c).y], &ONE);

@@ -27,26 +27,26 @@ if(ambient_dmrg)
     add_definitions(-O0 -g -w)
     add_definitions(-c -DSCALAPACK -DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DCPU_FREQ=2.5e9)
     include_directories(${DMRG_SOURCE_DIR}
-                        /apps/eiger/Intel-MPI-4.0/intel64/include
                         /users/bauerb/ALPS-eiger/include
                         /users/bauerb/alps_svn/boost_1_45_0
-                        /apps/eiger/Intel-FOR-11.1/mkl/include)
+                        /apps/eiger/Intel-MPI-4.0/intel64/include
+                        /apps/eiger/Intel-Composer-XE-2011/mkl/include)
     link_directories   (${DMRG_BINARY_DIR}/ambient
                         /users/bauerb/ALPS-eiger/lib
                         /apps/eiger/Intel-MPI-4.0/intel64/lib
-                        /apps/eiger/Intel-FOR-11.1/mkl/lib/em64t)
+                        /apps/eiger/Intel-Composer-XE-2011/mkl/lib/intel64)
     set(CMAKE_CXX_COMPILER "g++") 
-    #add(regression/dmrg)
+    add(regression/dmrg)
 
     add_definitions(-DMPI_PARALLEL)
     set(CMAKE_CXX_COMPILER "mpiicpc") 
 
     add(ambient) 
-    #add(regression/p_dense_matrix)
+    add(regression/p_dense_matrix)
     add(regression/p_diagonal_matrix)
-    #add(regression/p_reshape)
-    #add(regression/p_dense_matrix_benchmark)
-    #add(regression/pdmrg)
+    add(regression/p_reshape)
+    add(regression/p_dense_matrix_benchmark)
+    add(regression/pdmrg)
 endif(ambient_dmrg)
 
 
