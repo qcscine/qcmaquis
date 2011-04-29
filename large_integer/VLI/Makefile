@@ -1,13 +1,11 @@
 
 # Makefile
 
-default:
-	@echo "Missing parameters :"
-	@echo "clean, cpu_gcc "
-
+all :
+	make clean gpu 
 
 clean:
-	rm $$(PWD)/OBJECT_gpu/*; rm -f exe_*  
+	rm $(PWD)/OBJECT_gpu/*; rm -f exe_*  
 
 include Make-config 
 
@@ -18,10 +16,8 @@ NOM=exe
 N=gpu
 PROGRAM=$D
 
-OBJ3    = $O/kernels.o $O/main.o
+OBJ3    = $O/kernels_gpu.o $O/main.o
 
-all :
-	make clean gpu 
 run :
 	$(PROGRAM)/$(NOM)_$(N)
 
@@ -41,6 +37,6 @@ $O/main.o :
 	$(MPICC) -c -D$(PREPROC) $(OPTIONS) $(PATH_INC) 	main.cpp
 	mv main.o $O
 
-$O/kernels.o : 
-	$(NVCC) -c $(OPTIONS_NVCC) $(PATH_INC) 	kernels.cu
-	mv kernels.o $O
+$O/kernels_gpu.o : 
+	$(NVCC) -c $(OPTIONS_NVCC) $(PATH_INC) 	detail/kernels_gpu.cu
+	mv kernels_gpu.o $O

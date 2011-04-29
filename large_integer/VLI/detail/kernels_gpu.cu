@@ -8,8 +8,17 @@ Just very basic C++ or C (template ok).
 	The link between the DMRG code (CPU) and the DMRG code (GPU) is done inside the file  list_functions.h
 	where the definition of function/wrapper are presented
 */
-#include <iostream>
-#include "definition.h"
+
+#ifdef VLI_GPU_DEBUG
+#include <cstdio>
+#endif //VLI_GPU_DEBUG
+
+#include "kernels_gpu.h"
+#include "detail/common_macros.h"
+
+
+namespace vli {
+namespace detail {
 
 /**
 the size of each block is 16X16
@@ -257,7 +266,6 @@ void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_i
 	dimgrid.z = 1;
 }
 
-template<>
 void addition_gpu(TYPE*  A,  const TYPE*  B, TYPE num_integer, TYPE ld)
 {
 
@@ -267,7 +275,7 @@ void addition_gpu(TYPE*  A,  const TYPE*  B, TYPE num_integer, TYPE ld)
 
 	DeterminationGrid(dimgrid, dimblock, dimthread,num_integer,ld );
 	
-#ifdef NDEBUG
+#ifdef VLI_GPU_DEBUG
 	printf("%i %i \n",dimgrid.x, dimgrid.y);
 	printf("%i %i \n",dimblock.x, dimblock.y);
 	printf("%i %i \n",dimthread.x, dimthread.y);
@@ -278,7 +286,6 @@ void addition_gpu(TYPE*  A,  const TYPE*  B, TYPE num_integer, TYPE ld)
 //	printf("%i", A);
 }
 
-template<>
 void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYPE ld)
 {
 
@@ -288,7 +295,7 @@ void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYP
 
 	DeterminationGrid(dimgrid, dimblock, dimthread,num_integer,ld );
 	
-#ifdef NDEBUG
+#ifdef VLI_GPU_DEBUG
 	printf("%i %i \n",dimgrid.x, dimgrid.y);
 	printf("%i %i \n",dimblock.x, dimblock.y);
 	printf("%i %i \n",dimthread.x, dimthread.y);
@@ -298,5 +305,6 @@ void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYP
 }
 
 
-
+} //namespace detail
+} //namespace vli
 

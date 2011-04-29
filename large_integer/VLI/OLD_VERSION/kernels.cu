@@ -10,6 +10,7 @@ Just very basic C++ or C (template ok).
 */
 #include <iostream>
 #include "definition.h"
+#include <cstdio>
 
 /**
 the size of each block is 16X16
@@ -120,8 +121,7 @@ __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, in
 /**
 classical addition, the operation " addition " is serial but we sum all number together 
 */
-template <typename T>
-__device__ void addition_kernel_gpu(T* x, T* y , T* z,int k)
+__device__ void addition_kernel_gpu(int const* x, int const* y , int* z,int k)
 {
 	int carry_bit; 
 	carry_bit = 0;
@@ -131,8 +131,7 @@ __device__ void addition_kernel_gpu(T* x, T* y , T* z,int k)
 	*(z+k+1)  += carry_bit; //MAYBE PB TO CHECK
 }
 
-template <typename T>
-__global__ void addition_classic_kernel_gpu(T x, T y , T z,int num_integer, int ld)
+__global__ void addition_classic_kernel_gpu(int const* x, int const* y , int* z,int num_integer, int ld)
 {
 	int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	int j = xIndex*ld; // index to be on the beginning of the vli (beginning of every columns)
@@ -215,8 +214,7 @@ __device__  void multiplication_block_gpu(T  const * x, T  const *  y, T * r)
 	//r[0] = 9999;
 }	
 
-template <typename T>
-__global__ void multiplication_classic_kernel_gpu(T x, T y , T z,int num_integer, int ld)
+__global__ void multiplication_classic_kernel_gpu(int const* x, int const* y , int* z,int num_integer, int ld)
 {
 	int r[2] = {0,0};	//for local block calculation
 	
@@ -259,8 +257,7 @@ void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_i
 	dimgrid.z = 1;
 }
 
-template<>
-void addition(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
+void addition(const int*  A, const int*  B, int* C, int num_integer, int ld)
 {
 
 	dim3 dimgrid;
@@ -279,8 +276,7 @@ void addition(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
 	addition_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B, C, num_integer, ld);
 }
 
-template<>
-void multiplication(TYPE*  A, TYPE*  B, TYPE * C, int num_integer, int ld)
+void multiplication(const int*  A, const int*  B, int* C, int num_integer, int ld)
 {
 
 	dim3 dimgrid;

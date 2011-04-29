@@ -1,14 +1,6 @@
-/*
- *  definition.h
- *  Untitled
- *
- *  Created by Tim Ewart on 21.02.11.
- *  Copyright 2011 University of Geneva. All rights reserved.
- *
- */
-
-#ifndef __DEFINITION__
-#define __DEFINITION__
+/**
+  Some common macros
+*/
 
 #define NUM 16;
 
@@ -35,28 +27,8 @@
 #define MASK_UP				 0xFFFF0000
 */
 
-typedef std::size_t size_int;
-typedef std::size_t size_type;
+namespace vli {
 
-//not use presently
-/*
-class bvli
-{
-public:
-	bvli(){};
-	virtual ~bvli(){};	
-	
-};
-*/
-
-template <class T>
-void addition_gpu(T A, const int*  B, int num_integer, int ld);  
-
-template <class T>
-void multiply_gpu(const int * A, const int*  B, T C, int num_integer, int ld);  
-
-
-
-
-
-#endif
+    typedef std::size_t size_int;
+    typedef std::size_t size_type;
+}

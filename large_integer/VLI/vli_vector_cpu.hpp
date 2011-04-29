@@ -1,5 +1,5 @@
 /*
- *  vli_vector_cpu.hpp
+ *  vli_vector_cpu.h
  *  Untitled
  *
  *  Created by Tim Ewart on 23/03/11.
@@ -7,124 +7,83 @@
  *
  */
 
-#include "vli_vector_cpu.h"
+#ifndef VLI_VECTOR_CPU_HPP
+#define VLI_VECTOR_CPU_HPP
+
+#include "detail/vli_vector_cpu_function_hooks.hpp"
 
 namespace vli
 {
-	template<class T>
-	vli_vector<T>::vli_vector(std::size_t size = 0):size_(size)
-	{
-		vector_vli_.resize(size);
-		typename std::vector< vli_cpu<T> * >::iterator it;
-		for(it = vector_vli_.begin() ; it != vector_vli_.end() ; it++)
-		{
-			*it = new vli_cpu<T>();
-		}
-	}
-	
-	template<class T>
-	vli_vector<T>::~vli_vector()
-	{
-		vector_vli_.clear(); //Useless I think
-	};
 
+template <class VliType>
+class vli_vector : public std::vector<VliType>
+{
+public:
 
-	template<class T>
-	void vli_vector<T>::clean()
-	{
-		vector_vli_.clear(); //should be enough
-	}
-	
-	template<class T>
-	const std::size_t vli_vector<T>::GetSize() const
-	{
-		return size_;
-	}
-	
+	vli_vector(std::size_t size)
+        : std::vector<VliType>(size)
+    {
+    }
+	~vli_vector()
+    {
+    }
+
 	/**
-	 access operator
-	 */
-	template<class T>
-	vli_cpu<T> const &  vli_vector<T>::operator[](std::size_t i ) const
-	{
-		return *(vector_vli_[i]);
-	}
-	
-	template<class T>
-	vli_cpu<T>  &  vli_vector<T>::operator[](std::size_t i )
-	{
-		return *(vector_vli_[i]);
-	}
-	
-	template<class T>
-	vli_vector<T>& vli_vector<T>::operator += (vli_vector<T> const &  vli)
-	{
-		plus_assign(*this, vli);
-		return *this;
-	}
+	 multiply and addition operators
+	 */															
+	vli_vector& operator += (vli_vector const& v)
+    {
+        using detail::plus_assign;
+        plus_assign(*this, v);
+        return *this;
+    }
 
-	template<class T>
-	vli_vector<T>& vli_vector<T>::operator *= (vli_vector<T> const &  vli)
-	{
-		multiply_assign(*this, vli);
-		return *this;
-	}	
-	
-	/**
-	 multiply and addition operators, suite ...
-	 */
-	template <class T>
-	const vli_vector<T> operator+(vli_vector<T> vli_a, vli_vector<T> const& vli_b)
-	{
-		vli_a += vli_b;
-		return vli_a;
-	}
-																				   																				   																		
-	template <class T>
-	void plus_assign(vli_vector<T> & vli_a, vli_vector<T> const& vli_b )
-	{
-		/**
-		  the vectors have the same size
-		*/
-		#pragma omp parallel for private(i)
-		for(std::size_t i = 0; i < vli_b.GetSize(); i++)
-		{
-			addition_classic_cpu( vli_a[i], vli_b[i]);
-		}
-	}
-	
-	template <class T>
-	const vli_vector<T> operator*(vli_vector<T> vli_a, vli_vector<T> const& vli_b)
-	{
-		vli_a *= vli_b;
-		return vli_a;
-	}
-	
-	template <class T>
-	void multiply_assign(vli_vector<T> & vli_a, vli_vector<T> const& vli_b )
-	{
-		/**
-		 the vectors have the same size
-		 */
-		#pragma omp parallel for private(i)
-		for(std::size_t i = 0; i < vli_b.GetSize(); i++)
-		{
-			multiplication_classic_cpu( vli_a[i], vli_b[i]);
-		}
-	}
-	
-	
-	template <class T>
-	const vli_vector<T> operator*(vli_vector<T> vli_a, vli_vector<T> const& vli_b);
-	
-	template <class T>
-	void multiply_assign(vli_vector<T> & vli_a, vli_vector<T> const& vli_b );
-	
-	/**
-	 stream 
-	 */
-	template<typename T>
-	std::ostream& operator<< (std::ostream& os,  vli_vector<T> & vli);
-	
+	vli_vector& operator *= (vli_vector const& v)
+    {
+        using detail::multiplies_assign;
+        multiplies_assign(*this, v);
+        return *this;
+    }
 
+    void print(std::ostream& o) const
+    {
+        o<<"(";
+        typename std::vector<VliType>::const_iterator it = std::vector<VliType>::begin();
+        for(; it != std::vector<VliType>::end()-1; ++it)
+            o<<*it<<", ";
+        o<<*it;
+        o<<")";
+    }
+};
+	
+/**
+ multiply and addition operators, suite ...
+ */
+template <class VliType>
+const vli_vector<VliType> operator+(vli_vector<VliType> v_a, vli_vector<VliType> const& v_b)
+{
+    v_a += v_b;
+    return v_a;
 }
+
+template <class VliType>
+const vli_vector<VliType> operator*(vli_vector<VliType> v_a, vli_vector<VliType> const& v_b)
+{
+    v_a *= v_b;
+    return v_a;
+}
+
+
+/**
+ stream 
+ */
+template<typename VliType>
+std::ostream& operator<< (std::ostream& os,  vli_vector<VliType> const& v)
+{
+    v.print(os);
+    return os;
+}
+
+} //namespace vli
+
+#endif //VLI_VECTOR_CPU_HPP
