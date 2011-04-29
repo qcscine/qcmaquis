@@ -19,11 +19,6 @@
 #include <functional>
 #include <cassert>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-//#include <alps/ngs/hdf5/deprecated.hpp>
-#endif
-
 namespace blas {
 
     template <typename T, ambient::policy P>
@@ -149,10 +144,6 @@ namespace blas {
         }
 */
 
-#ifdef HAVE_ALPS_HDF5
-        void serialize(alps::hdf5::iarchive & ar);
-        void serialize(alps::hdf5::oarchive & ar) const;
-#endif
     private:
         size_type rows;
         size_type cols;

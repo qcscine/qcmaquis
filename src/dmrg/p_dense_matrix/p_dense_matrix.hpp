@@ -37,25 +37,6 @@ namespace blas {
         std::swap(self->sda,         r.thyself->sda);
     }
 
-#ifdef HAVE_ALPS_HDF5
-    template <typename T, ambient::policy P>
-    inline void p_dense_matrix<T,P>::serialize(alps::hdf5::iarchive & ar)
-    {
-        ar >> alps::make_pvp("rows",   self->rows);
-        ar >> alps::make_pvp("cols",   self->cols);
-        ar >> alps::make_pvp("lda",    self->lda);
-        //ar >> alps::make_pvp("values", self->data); ???
-    }
-    template <typename T, ambient::policy P>
-    inline void p_dense_matrix<T,P>::serialize(alps::hdf5::oarchive & ar) const
-    {
-        ar << alps::make_pvp("rows", self->rows);
-        ar << alps::make_pvp("cols", self->cols);
-        ar << alps::make_pvp("lda",  self->lda);
-        //ar << alps::make_pvp("values", self->data); ???
-    }
-#endif	
-
     template <typename T, ambient::policy P>
     inline bool p_dense_matrix<T,P>::empty() const { return (self->rows == 0 || self->cols == 0); }
 
