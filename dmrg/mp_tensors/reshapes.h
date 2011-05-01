@@ -178,15 +178,20 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
                         
                         /* optimize me */
+                        #ifdef MPI_PARALLEL
+                        assert(false);
+                        ambient::push(ambient::reshape_r2l_l_kernel, ambient::reshape_r2l_c_kernel, in_block, out_block, 
+                                      out_left_offset, in_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
+                        #else
                         for (size_t ss = 0; ss < physical_i[s].second; ++ss)
                             for (size_t rr = 0; rr < right_i[r].second; ++rr)
                                 memcpy(&out_block(out_left_offset + ss*left_i[l].second, rr),
                                        &in_block(0, in_right_offset + ss*right_i[r].second+rr),
                                        sizeof(typename Matrix::value_type) * left_i[l].second);
-                                /*
-                                for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                                    out_block(out_left_offset + ss*left_i[l].second+ll, rr) 
-                                 = in_block(ll, in_right_offset + ss*right_i[r].second+rr);*/
+                                /*for(size_t ll = 0; ll < left_i[l].second; ++ll)
+                                      out_block(out_left_offset + ss*left_i[l].second+ll, rr) = 
+                                      in_block(ll, in_right_offset + ss*right_i[r].second+rr);*/
+                        #endif
                     }
 
                     if (pretend)

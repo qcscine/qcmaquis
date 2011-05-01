@@ -248,6 +248,19 @@ void reshape_l2r_l_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
     scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(left));
     if(!scope.involved()) return;
     zout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; info(left); info(right);
+
+    block_2d_cycle_assign(left); 
+    block_2d_cycle_assign(right); 
+}
+
+void reshape_r2l_l_kernel(pinned p_dense_matrix<double>& left, const p_dense_matrix<double>& right,
+                          const size_t& left_offset, const size_t& right_offset, 
+                          const size_t& sdim, const size_t& ldim, const size_t& rdim)
+{
+    int num = 1; //get_grid_dim(a_ambient).y; 
+    scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(right));
+    if(!scope.involved()) return;
+    zout << "2dbcd in reshape_r2l ("<< ambient::rank() <<"):\n"; info(left); info(right);
     zout << "left offset: " << left_offset << "; right offset: " << right_offset << "; sdim: " << sdim << "; rdim: " << rdim << "; ldim: " << ldim << "\n";
 
     block_2d_cycle_assign(left); 
