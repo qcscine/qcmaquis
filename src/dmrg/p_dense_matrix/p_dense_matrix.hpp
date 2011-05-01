@@ -7,21 +7,20 @@ namespace blas {
     #define self this->self
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::~p_dense_matrix(){ // #destructor
-    //    printf("Calling destructor! (%d) - R%d\n", self->breakdown()->id, ambient::rank());
     }
     template <typename T, ambient::policy P> // proxy object construction
     p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){ 
     }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::p_dense_matrix(size_type rows = 0, size_type cols = 0, T init_value = T() )
-    : livelong(rows, cols, init_value), rows(rows), cols(cols), lda(rows), sda(cols){
+    : livelong(rows, cols, init_value), rows(rows), cols(cols){
         self->set_breakdown();
     }
 
     template <typename T, ambient::policy P>
     template <typename TM, ambient::policy PM>
     p_dense_matrix<T,P>::p_dense_matrix(p_dense_matrix<TM,PM> const& m)
-    : livelong(m), rows(m.num_rows()), cols(m.num_cols()), lda(m.get_lda()), sda(m.get_sda()){
+    : livelong(m), rows(m.num_rows()), cols(m.num_cols()){
         self->set_breakdown();
         ambient::push(ambient::copy_l_kernel, ambient::copy_c_kernel, *this, m);
     }
@@ -33,8 +32,6 @@ namespace blas {
         std::swap(self->breakdown(), r.thyself->breakdown());
         std::swap(self->rows,        r.thyself->rows);
         std::swap(self->cols,        r.thyself->cols);
-        std::swap(self->lda,         r.thyself->lda);
-        std::swap(self->sda,         r.thyself->sda);
     }
 
     template <typename T, ambient::policy P>
@@ -47,19 +44,7 @@ namespace blas {
     inline size_t p_dense_matrix<T,P>::num_cols() const { return self->cols; }
 
     template <typename T, ambient::policy P>
-    inline ptrdiff_t p_dense_matrix<T,P>::stride1() const { return 1; }
-
-    template <typename T, ambient::policy P>
-    inline ptrdiff_t p_dense_matrix<T,P>::stride2() const { return self->lda; }
-
-    template <typename T, ambient::policy P>
-    inline ptrdiff_t p_dense_matrix<T,P>::get_lda() const { return self->lda; }
-
-    template <typename T, ambient::policy P>
-    inline ptrdiff_t p_dense_matrix<T,P>::get_sda() const { return self->sda; }
-
-    template <typename T, ambient::policy P>
-    void p_dense_matrix<T,P>::clear(){ self->rows = self->cols = 0; }
+    void p_dense_matrix<T,P>::clear(){ self->rows = self->cols = 0; } //to redo ?
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::resize(size_type rows, size_type cols)
@@ -92,10 +77,9 @@ namespace blas {
     void p_dense_matrix<T,P>::inplace_conjugate()
     {
         assert(false);
-        // todo
     }
 
-    /*template <typename T>
+    /*template <typename T> // alternative version // to use in future
     inline T& p_dense_matrix<T>::get(size_type i, size_type j) const
     {
         assert(i < self->rows);
@@ -127,9 +111,9 @@ namespace blas {
     }
 
     template <typename T, ambient::policy P>
-    inline T& p_dense_matrix<T,P>::operator()(size_type i, size_type j){ return self->get(i,j); }
+    inline T&            p_dense_matrix<T,P>::operator () (size_type i, size_type j){ return self->get(i,j); }
     template <typename T, ambient::policy P>
-    inline const T& p_dense_matrix<T,P>::operator()(size_type i, size_type j) const { return self->get(i,j); }
+    inline const T&      p_dense_matrix<T,P>::operator () (size_type i, size_type j) const { return self->get(i,j); }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator += (const p_dense_matrix& rhs){ return(*this = *this + rhs); }
     template <typename T, ambient::policy P>
@@ -140,9 +124,8 @@ namespace blas {
     template <typename T, ambient::policy P>
     template <typename T2>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator /= (const T2& t){ return (*this = *this * (1/t)); }
-
     template <typename T, ambient::policy P>
-    p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator = (const p_dense_matrix<T>& rhs){
+    p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator  = (const p_dense_matrix<T>& rhs){
         if(rhs.thyself->breakdown()->is_proxy()){
             ambient::pin(rhs, *this); // no copying - pinning profile
         }else{
@@ -157,13 +140,11 @@ namespace blas {
     p_dense_matrix<T,P>::operator p_dense_matrix<T,PR>(){
         return (*(p_dense_matrix<T,PR>*)this);
     }
-
     template <typename T, ambient::policy P>
     template <ambient::policy PR>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator = (p_dense_matrix<T,PR>& rhs){
         return (*this = *(const p_dense_matrix<T>*)&rhs);
     }
-
     template <typename T, ambient::policy P>
     const p_dense_matrix<T>& operator + (const p_dense_matrix<T,P>& a, const p_dense_matrix<T,P>& b){ 
         p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l_kernel, ambient::add_c_kernel, a, b); 

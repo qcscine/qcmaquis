@@ -9,7 +9,12 @@
 #ifndef SIZEOF_H
 #define SIZEOF_H
 
+
+#ifdef MPI_PARALLEL
+#include "p_dense_matrix/p_dense_matrix.h"
+#else
 #include "dense_matrix/dense_matrix.h"
+#endif
 #include "block_matrix/block_matrix.h"
 #include "mp_tensors/mpstensor.h"
 #include "mp_tensors/mpotensor.h"
@@ -17,7 +22,6 @@
 namespace utils
 {
     using std::size_t;
-    
 
 #ifdef MPI_PARALLEL
     template<class T>

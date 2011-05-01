@@ -4,225 +4,138 @@
 namespace blas {
 
     template<typename T>
-    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, T const & init):data_(rows,1)  
-    {
-    }
+    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, const T& init):data_(rows,1){ }
 
     template<typename T>
-    size_t p_diagonal_matrix<T>::num_rows() const 
-    {
+    size_t p_diagonal_matrix<T>::num_rows() const {
        return this->data_.num_rows();
     }
-
     template<typename T>
-    size_t p_diagonal_matrix<T>::num_cols() const
-    {
+    size_t p_diagonal_matrix<T>::num_cols() const {
         return this->num_rows();
     }
-   
     template<typename T>
-    p_diagonal_matrix<T>& p_diagonal_matrix<T>::operator=(const p_diagonal_matrix<T>& rhs)
-    {
+    p_diagonal_matrix<T>& p_diagonal_matrix<T>::operator=(const p_diagonal_matrix<T>& rhs){
         this->data_ = rhs.get_data();    
     }
- 
     template<typename T>
-    T const & p_diagonal_matrix<T>::operator[](size_t i) const 
-    {
+    const T& p_diagonal_matrix<T>::operator[](size_t i) const {
         return this->data_(i,0);
     }
-
     template<typename T>
-    T & p_diagonal_matrix<T>::operator[](size_t i)
-    {
+    T & p_diagonal_matrix<T>::operator[](size_t i){
         return this->data_(i,0);
     }
-    
     template<typename T>
-    T const & p_diagonal_matrix<T>::operator()(size_t i, size_t j) const
-    {
+    const T& p_diagonal_matrix<T>::operator()(size_t i, size_t j) const {
         assert(i == j);
         return this->data_(i,0);
     }
-
     template<typename T>
-    T & p_diagonal_matrix<T>:: operator()(size_t i, size_t j)
-    {
+    T & p_diagonal_matrix<T>:: operator()(size_t i, size_t j){
         assert(i == j);
         return this->data_(i,0);
     }
- 
     template<typename T>
-    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::begin()
-    {
-         return this->data_.begin();
+    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::begin(){
+         return this->data_.elements().first;
     }
-
     template<typename T>
-    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::begin() const
-    {
-         return this->data_.begin();
+    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::begin() const {
+         return this->data_.elements().first;
     }
-
     template<typename T>
-    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::end()
-    {
-         return this->data_.end();
+    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::end(){
+         return this->data_.elements().second;
     }
-
     template<typename T>
-    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::end() const
-    {
-         return this->data_.end();
+    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::end() const {
+         return this->data_.elements().second;
     }
-
     template<typename T>
-    std::size_t p_diagonal_matrix<T>::size() const
-    {
+    std::size_t p_diagonal_matrix<T>::size() const {
         return this->data_.num_rows();
     }
-
     template<typename T>
-    std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator> p_diagonal_matrix<T>::elements()
-    {
-        int n = this->data_.num_rows();
-        /**
-          the p_diag is not still based on std::vector this is a solution for geting an iterator
-        */ 
-          return this->data_.elements(); // to check !!!!!!!!!!!!! (0,n) or (n,0) 
+    std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator> p_diagonal_matrix<T>::elements(){
+        return this->data_.elements();
     }
-
-
     template<typename T>
-    std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator> p_diagonal_matrix<T>::elements() const
-    {
-        int n = this->data_.num_rows(); 
-        element_iterator it_first,it_second;
-        *it_first = this->data_(0,0); 
-        *it_second = this->data_(n,0); 
-      //  return std::make_pair(this->data_(0,0), this->data_(n,0));
-        return std::make_pair(it_first, it_second);
+    std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator> p_diagonal_matrix<T>::elements() const {
+        return this->data_.elements();
     }
-
     template<typename T>
-    void p_diagonal_matrix<T>::remove_rows(size_t k, size_t n)
-    {
+    void p_diagonal_matrix<T>::remove_rows(size_t k, size_t n){
        this->data_.remove_rows(k, n);
     }
-
     template<typename T>  
-    void p_diagonal_matrix<T>::remove_cols(size_t k, size_t n)
-    {
+    void p_diagonal_matrix<T>::remove_cols(size_t k, size_t n){
         this->data_.remove_rows(k, n);
     }
-
     template<typename T> 
-    void p_diagonal_matrix<T>::resize(size_t rows, size_t cols, T v)
-    {
+    void p_diagonal_matrix<T>::resize(size_t rows, size_t cols, T v){
         assert(rows == cols);
         this->data_.resize(rows, 1);
     }
-
     template<typename T>
-    typename p_diagonal_matrix<T>::container const  & p_diagonal_matrix<T>::get_data() const 
-    {
+    const typename p_diagonal_matrix<T>::container& p_diagonal_matrix<T>::get_data() const {
         return this->data_;                          
     }                                             
-
     template<typename T>
-    typename p_diagonal_matrix<T>::container& p_diagonal_matrix<T>::get_data() 
-    {
+    typename p_diagonal_matrix<T>::container& p_diagonal_matrix<T>::get_data(){
         return this->data_;                          
     }
 
-    template<typename T>
-    void gemm(const p_dense_matrix<T> & m1, p_diagonal_matrix<T> const & m2, p_dense_matrix<T> & m3)
-    {
-        assert(num_cols(m1) == num_rows(m2));
-        m3.resize(num_rows(m1), num_cols(m2));
-	ambient::push(ambient::gemm_diagonal_rhs_l_kernel, ambient::gemm_diagonal_rhs_c_kernel, m1, m2.get_data() ,m3);
-    }
-    
-    template<typename T>
-    void gemm(const p_diagonal_matrix<T>& m1, const p_dense_matrix<T>& m2, p_dense_matrix<T>& m3)
-    {
-        assert(m1.num_cols() == m2.num_rows());
-        m3.resize(m1.num_rows(), m2.num_cols());
-	ambient::push(ambient::gemm_diagonal_lhs_l_kernel,ambient::gemm_diagonal_lhs_c_kernel, m1.get_data(), m2 ,m3);
-    }
+
+// free-functions (possibly should return copies or proxy-objects) <- to check
 
     template<typename T>
-    typename p_diagonal_matrix<T>::size_type num_rows(p_diagonal_matrix<T> const & m)
+    typename p_diagonal_matrix<T>::size_type num_rows(const p_diagonal_matrix<T>& m)
     {
         return m.num_rows();
     }
-    
     template<typename T>
-    typename p_diagonal_matrix<T>::size_type num_cols(p_diagonal_matrix<T> const & m)
+    typename p_diagonal_matrix<T>::size_type num_cols(const p_diagonal_matrix<T>& m)
     {
         return m.num_cols();
     }
- 
     template<typename T>
     void sqrt(p_diagonal_matrix<T> & m)
     { 
         ambient::push(ambient::sqrt_diagonal_l_kernel, ambient::sqrt_diagonal_c_kernel, m.get_data());
     }
-   
     template<typename T>
-    std::ostream& operator<<(std::ostream& os, p_diagonal_matrix<T> const & m)
+    std::ostream& operator<<(std::ostream& os, const p_diagonal_matrix<T>& m)
     {
        os << m.data_ ; 
        return os;
     }
- 
     template<typename T>
     void remove_rows(p_diagonal_matrix<T> & m, size_t k, size_t n = 1)
     {
         m.remove_rows(k, n);
     }
-    
     template<typename T>
     void remove_cols(p_diagonal_matrix<T> & m, size_t k, size_t n = 1)
     {
         m.remove_cols(k, n);
     }
-   
-
     template<typename T>
     void resize(p_diagonal_matrix<T> & m, size_t rows, size_t cols, T v = T())
     {
         m.resize(rows, cols, v);
     }
-    
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator>
     elements(p_diagonal_matrix<T> & m)
     {
         return m.elements();
     }
-//ok to be compliant with the p_diag_matrix
     template<typename T>
     std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator>
-    elements(p_diagonal_matrix<T> const & m)
+    elements(const p_diagonal_matrix<T>& m)
     {
         return m.elements();
     }
-/*
-    template<typename T>
-    void p_diagonal_matrix<T>::push_back(typename p_diagonal_matrix<T>::element_iterator    )
-    {
-         return this->data_.push_back();
-    } 
-
-    template<typename T>
-    void p_diagonal_matrix<T>::push_back(typename p_diagonal_matrix<T>::element_iterator  const)
-    {
-         return this->data_.push_back();
-    } 
-*/
- //   
-
-
 }
 

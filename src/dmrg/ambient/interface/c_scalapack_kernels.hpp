@@ -14,7 +14,8 @@ extern "C" {
     void pdsyev_(char *jobz, char *uplo, int *n, double *a, int *ia, int *ja, int *desca, double *w, double *z, int *iz, int *jz, int *descz, double *work, int *lwork, int *info);
 }
 
-void gemm_c_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c){
+void gemm_c_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
+{
 #ifdef SCALAPACK
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descb[9], descc[9];
@@ -85,18 +86,16 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>& m, p_dense_matrix<doub
     current(v).solidify(current(v).layout->get_list());
     current(s).solidify(current(s).layout->get_list());
 
-    char JOBU[1] = {'V'};
-    char JOBV[1] = {'V'};
     int lwork = -1;
     double wkopt;
 
     //SCALAPACK, first, dry run to allocate buffer
-    pdgesvd_(JOBU,JOBV,&nm,&nn,(double*)breakdown(m).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,&wkopt,&lwork,&info);
+    pdgesvd_("V","V",&nm,&nn,(double*)breakdown(m).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,&wkopt,&lwork,&info);
 
     lwork = static_cast<int>(wkopt);
     double *work = new double[lwork];
 
-    pdgesvd_(JOBU,JOBV,&nm,&nn,(double*)breakdown(m).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,work,&lwork,&info);
+    pdgesvd_("V","V",&nm,&nn,(double*)breakdown(m).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,work,&lwork,&info);
 
     current(u).disperse(current(u).layout->get_list());
     current(v).disperse(current(v).layout->get_list());
@@ -139,18 +138,16 @@ void syev_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<dou
     current(w).solidify(current(w).layout->get_list());
     current(z).solidify(current(z).layout->get_list());
 
-    char JOBU[1] = {'V'};
-    char JOBV[1] = {'U'};
     int lwork = -1;
     double wkopt;
 
     //SCALAPACK, first, dry run to allocate buffer
-    pdsyev_(JOBU,JOBV,&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
+    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
 
     lwork = static_cast<int>(wkopt);
     double* work = new double[lwork];
 
-    pdsyev_(JOBU,JOBV,&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
+    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
     current(w).disperse(current(w).layout->get_list());
     current(z).disperse(current(z).layout->get_list());
 
