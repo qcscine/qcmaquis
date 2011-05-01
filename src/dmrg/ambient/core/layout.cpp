@@ -135,7 +135,7 @@ namespace ambient{ namespace core{
              if(profile->associated_proxy == NULL) throw race_condition_e();
              profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
         }
-        void* header = profile->block(i,j)->header; 
+        void* header = profile->block(i,j)->header;
         if(header == NULL) throw race_condition_e(); // to extend for situation when outdated
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, state, i, j, NULL);
     }

@@ -20,17 +20,21 @@ struct caveats {
 
 BOOST_GLOBAL_FIXTURE( caveats );
 
-/*BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types ) 
 { 
-    ambient::layout >> dim(8,8), dim(8,8), dim(10,1); 
-    int M = 1024*2;
+    ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
+    int M = 2;
+    int N = 2;
 
     p_dense_matrix<T> V1(M,M); 
-    p_dense_matrix<T> V2(M,M); 
-    p_dense_matrix<T> V3(M,M); 
+    p_dense_matrix<T> V2(M,N*2); 
+    p_dense_matrix<T> V3(M,N*2); 
+    p_dense_matrix<T> V4(M,N*2); 
     blas::gemm(V1,V2,V3);
+    blas::pblas_gemm(V1,V2,V4);
+    blas::validation(V3,V4);
 
-    Timer b("Ambient single GEMM");
+    Timer b("Single GEMM: Ambient; PDGEMM;");
     b.begin(); 
     ambient::playout();
     b.end();
@@ -38,7 +42,7 @@ BOOST_GLOBAL_FIXTURE( caveats );
     if(ambient::rank() == 0){
 	b.save(ambient::size(),M);
     }   
-}*/
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
