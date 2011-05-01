@@ -106,10 +106,10 @@ int main(int argc, char ** argv)
     DmrgParameters parms(param_file);
     
     std::string model_file(argv[2]);
-//    if (!model_file) {
-//        cerr << "Could not open model file." << endl;
-//        exit(1);
-//    }
+    //    if (!model_file) {
+    //        cerr << "Could not open model file." << endl;
+    //        exit(1);
+    //    }
     
     std::string chkpfile = parms.get<std::string>("chkpfile");
     std::string rfile = parms.get<std::string>("resultfile");
@@ -130,10 +130,13 @@ int main(int argc, char ** argv)
     Lattice * lat;
     Hamiltonian<Matrix, grp> * H;
     grp::charge initc;
-    model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc);
+    Measurements<Matrix, grp> measurements;
+    model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
     Index<grp> phys = H->get_phys();
     std::cout << "initc: " << initc << std::endl;
-
+    
+    std::cout << measurements << std::endl;
+    
     MPO<Matrix, grp> mpo = make_mpo(lat->size(), *H);
     MPO<Matrix, grp> mpoc = mpo;
     if (parms.get<int>("use_compressed") > 0)
@@ -243,7 +246,7 @@ int main(int argc, char ** argv)
         alps::hdf5::oarchive h5ar(rfile);
         
         cout << "Measurements." << endl;
-        measure(mps, *lat, *H, model, h5ar);
+        measure(mps, *lat, measurements, h5ar);
         
         Timer tvn("vN entropy"), tr2("Renyi n=2");
         cout << "Calculating vN entropy." << endl;

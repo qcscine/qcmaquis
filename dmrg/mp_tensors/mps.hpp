@@ -21,11 +21,11 @@ std::string MPS<Matrix, SymmGroup>::description() const
     std::ostringstream oss;
     for (int i = 0; i < length(); ++i)
     {
-        oss << "MPS site " << i << endl;
-        oss << (*this)[i].row_dim() << endl;
-        oss << "Sum: " << (*this)[i].row_dim().sum_of_sizes() << endl;
-        oss << (*this)[i].col_dim() << endl;
-        oss << "Sum: " << (*this)[i].col_dim().sum_of_sizes() << endl;
+        oss << "MPS site " << i << std::endl;
+        oss << (*this)[i].row_dim() << std::endl;
+        oss << "Sum: " << (*this)[i].row_dim().sum_of_sizes() << std::endl;
+        oss << (*this)[i].col_dim() << std::endl;
+        oss << "Sum: " << (*this)[i].col_dim().sum_of_sizes() << std::endl;
     }
     return oss.str();
 }
