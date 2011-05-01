@@ -206,14 +206,13 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
 // After rethinking: memcpy(right(0,j), left(ss*ldim + left_offset, rr), ldim*sizeof(double));
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("R%d: RESHAPING with block %d %d\n", ambient::rank(), get_block_id(right).y, get_block_id(right).x);
     double* rd = current(right)(get_block_id(right).y, get_block_id(right).x);
     size_t i = get_block_id(right).y * get_mem_t_dim(right).y;
     size_t j = get_block_id(right).x * get_mem_t_dim(right).x;
 
-    if(i >= ldim) goto ex; //return;                     // easy-out (need ldim rows only)
-    if(j >= (right_offset+sdim*rdim)) goto ex; //return; // need sdim*rdim-1 cols from right_offset
-    if(j < right_offset) goto ex; //return;              // don't need cols less than right_offset
+    if(i >= ldim) return;                     // easy-out (need ldim rows only)
+    if(j >= (right_offset+sdim*rdim)) return; // need sdim*rdim-1 cols from right_offset
+    if(j < right_offset) return;              // don't need cols less than right_offset
 
     size_t j_stop  = std::min((j+get_mem_t_dim(right).x), (right_offset+sdim*rdim));
 
@@ -241,13 +240,52 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
             w_offset += get_mem_t_dim(left).y;
         }
     }
-ex:    printf("R%d exited reshape!\n", ambient::rank());
 }
 
-void reshape_r2l_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
+void reshape_r2l_c_kernel(pinned p_dense_matrix<double>& left, const p_dense_matrix<double>& right,
                           const size_t& left_offset, const size_t& right_offset, 
                           const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
+// The idea of matrix modifications:
+// for(size_t ss = 0; ss < sdim; ++ss)
+//     for(size_t rr = 0; rr < rdim; ++rr)
+//         memcpy(left(ss*ldim + left_offset, rr), right(0, ss*rdim + right_offset + rr), ldim*sizeof(double));
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    double* ld = current(right)(get_block_id(right).y, get_block_id(right).x);
+    size_t i = get_block_id(right).y * get_mem_t_dim(right).y;
+    size_t j = get_block_id(right).x * get_mem_t_dim(right).x;
+
+    if(j >= rdim) return;
+    if(i >= (left_offset+sdim*ldim)) return;
+    if(i < left_offset) return;
+// to be continuned ...
+    size_t i_stop  = std::min((j+get_mem_t_dim(right).x), (right_offset+sdim*rdim));
+
+    for(size_t ii = i; ii < i_stop; ii++){
+        int ss = (int)((ii-left_offset)/ldim);
+        int rr = (ji-right_offset)%rdim;
+        int li   = ss*ldim + left_offset + i;  int lj   = rr;                         // global left  indices
+        int lii  = li / get_mem_t_dim(left).y; int ljj  = lj / get_mem_t_dim(left).x; // groups left  indices
+        int liii = li % get_mem_t_dim(left).y; int ljjj = lj % get_mem_t_dim(left).x; // groups local indices
+        int jiii = ji % get_mem_t_dim(right).x; // group's local right's j
+
+        int lj_pos   = ljjj*get_mem_t_dim(left).y;              // memory position of ljjj col
+        int to_write = std::min(ldim-i, (size_t)get_mem_t_dim(right).y); // for block of right
+        int w_offset = std::min(to_write,(int)(get_mem_t_dim(left).y-liii));
+        to_write    -= w_offset;
+        int n_writes = __a_ceil(to_write / get_mem_t_dim(left).y);
+
+        double* ld = current(left)(lii, ljj);
+        memcpy(&rd[jiii*get_mem_t_dim(right).y], &ld[liii + lj_pos], w_offset*sizeof(double));
+        for(int k = 0; k < n_writes; k++){
+            double* ld = current(left)(lii + k, ljj);
+            memcpy(&rd[jiii*get_mem_t_dim(right).y + w_offset], &ld[lj_pos], 
+                   std::min(to_write,(int)get_mem_t_dim(left).y)*sizeof(double));
+            to_write -= get_mem_t_dim(left).y;
+            w_offset += get_mem_t_dim(left).y;
+        }
+    }
 }
 
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
