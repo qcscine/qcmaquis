@@ -60,6 +60,13 @@ namespace blas
             ret(k,k) = 1;
         return ret;
     }
+    
+    template<typename T>
+    void pblas_gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
+    {
+        breakdown(C).set_init(ambient::nullify<T>);
+	ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A,B,C );
+    }
 
     template<typename T>
     void gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
@@ -67,12 +74,21 @@ namespace blas
         breakdown(C).set_init(ambient::nullify<T>);
 	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A,B,C );
     }
+
+    template<typename T>
+    void gemm(const p_dense_matrix<T>& m1, const p_diagonal_matrix<T>& m2, p_dense_matrix<T> & m3)
+    {
+        assert(num_cols(m1) == num_rows(m2));
+        m3.resize(num_rows(m1), num_cols(m2));
+	ambient::push(ambient::gemm_diagonal_rhs_l_kernel, ambient::gemm_diagonal_rhs_c_kernel, m1, m2.get_data() ,m3);
+    }
     
     template<typename T>
-    void pblas_gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
+    void gemm(const p_diagonal_matrix<T>& m1, const p_dense_matrix<T>& m2, p_dense_matrix<T>& m3)
     {
-        breakdown(C).set_init(ambient::nullify<T>);
-	ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A,B,C );
+        assert(m1.num_cols() == m2.num_rows());
+        m3.resize(m1.num_rows(), m2.num_cols());
+	ambient::push(ambient::gemm_diagonal_lhs_l_kernel,ambient::gemm_diagonal_lhs_c_kernel, m1.get_data(), m2 ,m3);
     }
     
     template<typename T>
