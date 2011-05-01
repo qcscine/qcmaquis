@@ -11,7 +11,7 @@
 #include "mp_tensors/reshapes.h"
 #include "block_matrix/block_matrix_algorithms.h"
 
-double myrand()
+inline double myrand()
 {
     return 0.1*(2*drand48()-1);
 }
@@ -235,9 +235,9 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, MPSTensor<Matrix, SymmGroup> const & mps)
 {
-    os << "Physical space: " << mps.phys_i << endl;
-    os << "Left space: " << mps.left_i << endl;
-    os << "Right space: " << mps.right_i << endl;
+    os << "Physical space: " << mps.phys_i << std::endl;
+    os << "Left space: " << mps.left_i << std::endl;
+    os << "Right space: " << mps.right_i << std::endl;
     os << mps.data_;
     return os;
 }
