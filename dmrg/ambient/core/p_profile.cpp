@@ -22,6 +22,7 @@ namespace ambient {
             }
         }catch(core::race_condition_e){
             in_q.manager->emit(pack); // re-throwing the packet for future handling
+            printf("throwed!\n");
         }
     }
 

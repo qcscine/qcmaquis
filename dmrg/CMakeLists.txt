@@ -37,7 +37,7 @@ if(ambient_dmrg)
                         /apps/eiger/Intel-MPI-4.0/intel64/lib
                         /apps/eiger/Intel-Composer-XE-2011/mkl/lib/intel64)
     set(CMAKE_CXX_COMPILER "g++") 
-#    add(regression/dmrg)
+    add(regression/dmrg)
 
     add_definitions(-DMPI_PARALLEL)
     set(CMAKE_CXX_COMPILER "mpiicpc") 

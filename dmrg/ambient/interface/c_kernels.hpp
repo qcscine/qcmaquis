@@ -31,12 +31,15 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
 // taking (j,i) of b:
-    double* bd = current(b)(j,i); // remote
+    if(get_grid_dim(b).y > j) while(i < get_grid_dim(b).x){
+        double* bd = current(b)(j,i); // remote
 // multiplying with column of a:
-    for(int z = 0; z < get_grid_dim(a).y; z++){
-        double* ad = current(a)(z,j);
-        double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
-        dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+        for(int z = 0; z < get_grid_dim(a).y; z++){
+            double* ad = current(a)(z,j);
+            double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
+            dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+        }
+        i += get_grid_dim(a).x;
     }
 }
 
@@ -203,38 +206,42 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
 // After rethinking: memcpy(right(0,j), left(ss*ldim + left_offset, rr), ldim*sizeof(double));
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("R%d: RESHAPING with block %d %d\n", ambient::rank(), get_block_id(right).y, get_block_id(right).x);
     double* rd = current(right)(get_block_id(right).y, get_block_id(right).x);
     size_t i = get_block_id(right).y * get_mem_t_dim(right).y;
     size_t j = get_block_id(right).x * get_mem_t_dim(right).x;
 
-    if(i >= ldim) return;                     // easy-out (need ldim rows only)
-    if(j >= (right_offset+sdim*rdim)) return; // need sdim*rdim-1 cols from right_offset
-    if(j < right_offset) return;              // don't need cols less than right_offset
+    if(i >= ldim) goto ex; //return;                     // easy-out (need ldim rows only)
+    if(j >= (right_offset+sdim*rdim)) goto ex; //return; // need sdim*rdim-1 cols from right_offset
+    if(j < right_offset) goto ex; //return;              // don't need cols less than right_offset
 
-    size_t j_start = std::max(j, right_offset);
     size_t j_stop  = std::min((j+get_mem_t_dim(right).x), (right_offset+sdim*rdim));
 
-    for(size_t ji = j_start; ji < j_stop; ji++){
-        int li   = ((int)ji/rdim)*ldim + left_offset + i; int lj   = ji  % rdim;               // global left  indices
-        int lii  = li / get_mem_t_dim(left).y;          int ljj  = lj / get_mem_t_dim(left).x; // groups left  indices
-        int liii = li % get_mem_t_dim(left).y;          int ljjj = lj % get_mem_t_dim(left).x; // groups local indices
+    for(size_t ji = j; ji < j_stop; ji++){
+        int ss = (int)((ji-right_offset)/rdim);
+        int rr = (ji-right_offset)%rdim;
+        int li   = ss*ldim + left_offset + i;  int lj   = rr;                         // global left  indices
+        int lii  = li / get_mem_t_dim(left).y; int ljj  = lj / get_mem_t_dim(left).x; // groups left  indices
+        int liii = li % get_mem_t_dim(left).y; int ljjj = lj % get_mem_t_dim(left).x; // groups local indices
+        int jiii = ji % get_mem_t_dim(right).x; // group's local right's j
 
-        int lj_pos   = ljjj*get_mem_t_dim(left).y;
-        int to_write = std::min(ldim-i, (size_t)get_mem_t_dim(right).y);
-        int n_writes = __a_ceil(to_write / get_mem_t_dim(left).y);
+        int lj_pos   = ljjj*get_mem_t_dim(left).y;              // memory position of ljjj col
+        int to_write = std::min(ldim-i, (size_t)get_mem_t_dim(right).y); // for block of right
         int w_offset = std::min(to_write,(int)(get_mem_t_dim(left).y-liii));
         to_write    -= w_offset;
+        int n_writes = __a_ceil(to_write / get_mem_t_dim(left).y);
 
-        double* ld = current(left)(lii, ljj); // bugbug
-        memcpy(&rd[ji*get_mem_t_dim(right).y], &ld[liii + lj_pos], w_offset*sizeof(double));
-        for(int k = 1; k < n_writes; k++){
+        double* ld = current(left)(lii, ljj);
+        memcpy(&rd[jiii*get_mem_t_dim(right).y], &ld[liii + lj_pos], w_offset*sizeof(double));
+        for(int k = 0; k < n_writes; k++){
             double* ld = current(left)(lii + k, ljj);
-            memcpy(&rd[ji*get_mem_t_dim(right).y + w_offset], &ld[lj_pos], 
+            memcpy(&rd[jiii*get_mem_t_dim(right).y + w_offset], &ld[lj_pos], 
                    std::min(to_write,(int)get_mem_t_dim(left).y)*sizeof(double));
             to_write -= get_mem_t_dim(left).y;
             w_offset += get_mem_t_dim(left).y;
         }
     }
+ex:    printf("R%d exited reshape!\n", ambient::rank());
 }
 
 void reshape_r2l_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,

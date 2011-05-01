@@ -248,6 +248,7 @@ void reshape_l2r_l_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
     scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(left));
     if(!scope.involved()) return;
     zout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; info(left); info(right);
+    zout << "left offset: " << left_offset << "; right offset: " << right_offset << "; sdim: " << sdim << "; rdim: " << rdim << "; ldim: " << ldim << "\n";
 
     block_2d_cycle_assign(left); 
     block_2d_cycle_assign(right); 
