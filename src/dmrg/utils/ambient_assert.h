@@ -9,10 +9,10 @@
 #ifndef AMBIENT_ASSERT_H
 #define AMBIENT_ASSERT_H
 
-void ambient_assert(int expression){
 #ifdef MPI_PARALLEL
-    assert(expression);
+#define ambient_assert(...) assert( __VA_ARGS__ );
+#else
+#define ambient_assert(...) assert(true);
 #endif
-}
 
 #endif
