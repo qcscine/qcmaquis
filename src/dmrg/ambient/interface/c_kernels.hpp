@@ -260,6 +260,7 @@ void reshape_r2l_c_kernel(pinned p_dense_matrix<double>& left, const p_dense_mat
     if(i >= (left_offset+sdim*ldim)) return;
     if(i < left_offset) return;
 // to be continuned ...
+/*
     size_t i_stop  = std::min((j+get_mem_t_dim(right).x), (right_offset+sdim*rdim));
 
     for(size_t ii = i; ii < i_stop; ii++){
@@ -285,7 +286,7 @@ void reshape_r2l_c_kernel(pinned p_dense_matrix<double>& left, const p_dense_mat
             to_write -= get_mem_t_dim(left).y;
             w_offset += get_mem_t_dim(left).y;
         }
-    }
+    }*/
 }
 
 void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)

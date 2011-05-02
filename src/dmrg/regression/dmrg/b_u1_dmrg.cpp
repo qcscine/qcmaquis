@@ -241,7 +241,6 @@ int main(int argc, char ** argv)
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
-    printf("WELCOME!\n");
     int sweep = 0;
     if (restore) {
         alps::hdf5::iarchive h5ar_in(chkpfile);
