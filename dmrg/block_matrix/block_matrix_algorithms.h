@@ -12,6 +12,7 @@
 #include "utils/zout.hpp"
 #include "utils/logger.h"
 #include "utils/timings.h"
+#include "utils/ambient_assert.h"
 
 #include "block_matrix/block_matrix.h"
 // some example functions
@@ -124,7 +125,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                   double rel_tol, std::size_t Mmax,
                   bool verbose = true)
 {   
-  assert(false); 
+  ambient_assert(false); 
   svd(M, U, V, S);
     
    //  Given the full SVD in each block (above), remove all singular values and corresponding rows/cols
@@ -137,16 +138,14 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     typename blas::associated_vector<Matrix>::type allS;
 #ifdef MPI_PARALLEL
- assert(false);
+    ambient_assert(false);
 #else
-
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
         std::copy(S[k].elements().first, S[k].elements().second, std::back_inserter(allS));
 #endif
 
-
 #ifdef MPI_PARALLEL
- assert(false);
+  ambient_assert(false);
   double Scut;
 #else
     std::sort(allS.begin(), allS.end());
@@ -160,7 +159,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
     {
 #ifdef MPI_PARALLEL
-   assert(false);
+   ambient_assert(false);
    int keep = 0;
 #else
         std::size_t keep = std::find_if(S[k].elements().first, S[k].elements().second,
@@ -222,7 +221,6 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                              bool verbose = true)
 {
 
- // assert(false); 
     // very analogous to the above svd method
     syev(M, evecs, evals);
     
@@ -230,7 +228,6 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     //std::vector<double> allevals;
     typename blas::associated_vector<Matrix>::type allevals;
-//assert(false);
 #ifndef MPI_PARALLEL
      for (std::size_t k = 0; k < evals.n_blocks(); ++k)
         std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
