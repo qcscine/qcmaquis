@@ -12,6 +12,7 @@
 #include <map>
 
 #include "block_matrix/indexing.h"
+#include "utils/ambient_assert.h"
 
 template<class Matrix, class SymmGroup>
 void reshape_left_to_right(Index<SymmGroup> physical_i,
@@ -179,7 +180,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                         
                         /* optimize me */
                         #ifdef MPI_PARALLEL
-                        assert(false);
+                        ambient_assert(false);
                         ambient::push(ambient::reshape_r2l_l_kernel, ambient::reshape_r2l_c_kernel, in_block, out_block, 
                                       out_left_offset, in_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
                         #else
