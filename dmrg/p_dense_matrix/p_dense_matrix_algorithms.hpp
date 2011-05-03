@@ -92,16 +92,17 @@ namespace blas
     }
     
     template<typename T>
-    void svd(const p_dense_matrix<T> &  M,
-             p_dense_matrix<T> & U,
-             p_dense_matrix<T> & V,
+    void svd(const p_dense_matrix<T>& A,
+                   p_dense_matrix<T>& U,
+                   p_dense_matrix<T>& V,
              typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
-	typename p_dense_matrix<T>::size_type k = std::min(num_rows(M), num_cols(M));
-        U.resize(num_rows(M), k);
-        V.resize(k, num_cols(M));
-	ambient::push(ambient::svd_l_scalapack_kernel, ambient::svd_c_scalapack_kernel, M, U, V, S.get_data());
+	typename p_dense_matrix<T>::size_type k = std::min(num_rows(A), num_cols(A));
+        U.resize(num_rows(A), k);
+        V.resize(k, num_cols(A));
+        S.resize(k, k);
+	ambient::push(ambient::svd_l_scalapack_kernel, ambient::svd_c_scalapack_kernel, A, U, V, S.get_data());
     }
     
     template<typename T>

@@ -55,6 +55,7 @@ namespace ambient {
         p_profile & operator>>(dim2 mem_dim);
         p_profile & operator,(dim2 dim);
 
+        void deallocate();
         void constant();
         void inconstant();
         p_profile* associate_proxy(p_profile* proxy, void(*R)(memblock*,void*));

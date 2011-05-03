@@ -182,15 +182,15 @@ void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
 /////////////////////
 // testing kernels // 
 
-void svd_l_scalapack_kernel(const p_dense_matrix<double>& m, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
+void svd_l_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
 {
     int num = 1;
-    scope_select(num+" from ambient as svd where master is 0 and breakdown contains "+ get_id(m));
+    scope_select(num+" from ambient as svd where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    zout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; info(m); info(u); info(v); info(s);
+    zout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; info(a); info(u); info(v); info(s);
 
     block_outright_assign(s);
-    block_2d_cycle_assign(m);
+    block_2d_cycle_assign(a);
     block_2d_cycle_assign(u);
     block_2d_cycle_assign(v);
 }

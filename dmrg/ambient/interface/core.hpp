@@ -10,8 +10,8 @@ class void_pt: public p_profile
 public: 
     template <typename T> void_pt(const T* ptr) : p_profile()
     { breakdown_model(this, ptr); }
+    ~void_pt(){ };  // use with caution
 private: 
-    ~void_pt(){ };  // making user unable to delete the profile
     friend class T; // the container can delete its profile
     template<class T> friend inline void boost::checked_delete(T * x); // so as boost >_<
 };
@@ -30,6 +30,12 @@ template<typename T, policy P>
 class livelong
 {
 public:
+   ~livelong(){
+        if(this->p != ANY){
+        //    this->breakdown()->deallocate(); // deallocate profile
+        }
+    }
+
     livelong():p(P),use_count(0){
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica()) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );

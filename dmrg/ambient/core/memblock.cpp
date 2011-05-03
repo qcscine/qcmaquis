@@ -3,6 +3,10 @@
 
 namespace ambient {
 
+    memblock::~memblock(){
+        free(this->header);
+    }
+
     memblock::memblock(p_profile** p, int i, int j)
     : profile(p), i(i), j(j), header(NULL), data(NULL), timestamp(0) {};
 
