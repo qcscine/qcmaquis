@@ -90,47 +90,50 @@ namespace app {
     	std::string basepath = "/spectrum/results/";
     	for (int i = 0; i < meas.n_terms(); ++i)
     	{
+    		std::cout << "Calculating " << meas[i].name << std::endl;
     		switch (meas[i].type)
     		{
                 case Measurement_Term<Matrix, SymmGroup>::Local:
-                    assert(meas[i].operators.size() == 1);
+                    assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
                     meas_detail::measure_local(mps, lat,
-                                               meas.get_identity(), meas[i].operators[0].first,
+                            				   meas.get_identity(), meas[i].fill_operator,
+                            				   meas[i].operators,
                                                ar, basepath + alps::hdf5_name_encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Average:
-                    assert(meas[i].operators.size() == 1);
+                assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
                     meas_detail::measure_average(mps, lat,
-                                                 meas.get_identity(), meas[i].operators[0].first,
+                                                 meas.get_identity(), meas[i].fill_operator,
+                                                 meas[i].operators,
                                                  ar, basepath + alps::hdf5_name_encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Correlation:
-                    meas_detail::measure_correlation<generate_mpo::CorrMaker<Matrix, SymmGroup> >(mps, lat, meas.get_identity(),
-                                                                                                  meas[i].fill_operator, meas[i].operators,
-                                                                                                  ar, basepath + alps::hdf5_name_encode(meas[i].name));
+                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+							  	  	  	  	  	  	 meas[i].fill_operator, meas[i].operators,
+												  	 ar, basepath + alps::hdf5_name_encode(meas[i].name), false, false);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
-                    meas_detail::measure_correlation<generate_mpo::CorrMaker<Matrix, SymmGroup> >(mps, lat, meas.get_identity(),
-                                                                                                  meas[i].fill_operator, meas[i].operators,
-                                                                                                  ar, basepath + alps::hdf5_name_encode(meas[i].name), true);
+                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+													  meas[i].fill_operator, meas[i].operators,
+													  ar, basepath + alps::hdf5_name_encode(meas[i].name), true, false);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
 #ifndef NDEBUG
                     if (meas[i].operators.size() % 2 != 0)
                         std::runtime_error("Next neighbors correlators have to have even number of operators");
 #endif
-                    meas_detail::measure_correlation<generate_mpo::CorrMakerNN<Matrix, SymmGroup> >(mps, lat, meas.get_identity(),
-                                                                                                    meas[i].fill_operator, meas[i].operators,
-                                                                                                    ar, basepath + alps::hdf5_name_encode(meas[i].name));
+                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+													meas[i].fill_operator, meas[i].operators,
+													ar, basepath + alps::hdf5_name_encode(meas[i].name), false, true);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
 #ifndef NDEBUG
                     if (meas[i].operators.size() % 2 != 0)
                         std::runtime_error("Next neighbors correlators have to have even number of operators");
 #endif
-                    meas_detail::measure_correlation<generate_mpo::CorrMakerNN<Matrix, SymmGroup> >(mps, lat, meas.get_identity(),
-                                                                                                    meas[i].fill_operator, meas[i].operators,
-                                                                                                    ar, basepath + alps::hdf5_name_encode(meas[i].name), true);
+                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+													meas[i].fill_operator, meas[i].operators,
+													ar, basepath + alps::hdf5_name_encode(meas[i].name), true, true);
                     break;
     		}
     	}
