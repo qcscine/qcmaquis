@@ -380,4 +380,6 @@ void validation_c_kernel(pinned const p_dense_matrix<double>& a_ambient, const p
              exit(-1);
         }                
     } 
-} 
+}
+
+void touch_c_kernel(p_dense_matrix<double>& target){ }

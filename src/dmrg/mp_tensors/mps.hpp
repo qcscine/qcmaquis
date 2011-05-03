@@ -138,9 +138,10 @@ MPS<Matrix, SymmGroup>::left_boundary() const
     Index<SymmGroup> i = (*this)[0].row_dim();
     Boundary<Matrix, SymmGroup> ret(i, i, 1);
     
-    for (typename Index<SymmGroup>::basis_iterator it = i.basis_begin();
-         !it.end(); ++it)
-        ret(0, *it, *it) = 1;
+    for(typename Index<SymmGroup>::basis_iterator it = i.basis_begin(); !it.end(); ++it){
+        double& val = ret(0, *it, *it);
+        val = 1;
+    }
     
     return ret;
 }

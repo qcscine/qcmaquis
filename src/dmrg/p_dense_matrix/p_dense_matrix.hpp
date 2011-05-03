@@ -51,6 +51,8 @@ namespace blas {
     {
         self->rows=rows; 
         self->cols=cols;
+        assert(rows > 0);
+        assert(cols > 0);
         if(self->breakdown()->is_loose()) self->breakdown()->set_dim(ambient::dim2(cols,rows));
         else ambient::push(ambient::resize_l_kernel, ambient::resize_c_kernel, *this, self->rows, self->cols);
     }
@@ -100,6 +102,10 @@ namespace blas {
     {
         assert(i < self->rows);
         assert(j < self->cols);
+        if(self->breakdown()->loose){
+            printf("Warning: accessing loose data...\n");
+            ambient::push(ambient::touch_l_kernel, ambient::touch_c_kernel, *this);
+        }
         ambient::playout();
         int block_i = i / (self->breakdown()->get_mem_t_dim().y);
         int block_j = j / (self->breakdown()->get_mem_t_dim().x);
@@ -111,9 +117,9 @@ namespace blas {
     }
 
     template <typename T, ambient::policy P>
-    inline T&            p_dense_matrix<T,P>::operator () (size_type i, size_type j){ return self->get(i,j); }
+    inline T&            p_dense_matrix<T,P>::operator () (size_type i, size_type j){ return this->get(i,j); }
     template <typename T, ambient::policy P>
-    inline const T&      p_dense_matrix<T,P>::operator () (size_type i, size_type j) const { return self->get(i,j); }
+    inline const T&      p_dense_matrix<T,P>::operator () (size_type i, size_type j) const { return this->get(i,j); }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator += (const p_dense_matrix& rhs){ return(*this = *this + rhs); }
     template <typename T, ambient::policy P>
