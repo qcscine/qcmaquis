@@ -74,12 +74,22 @@ namespace detail
     struct SerializationHelperBase {
         virtual void operator()(alps::hdf5::oarchive & ar,
                                 std::string const & path,
+                                boost::any const & a) const = 0;
+        virtual void operator()(alps::hdf5::oarchive & ar,
+                                std::string const & path,
                                 boost::program_options::variable_value const & a) const = 0;
     };
     
     template<class T>
     struct SerializationHelper : public SerializationHelperBase
     {
+        void operator()(alps::hdf5::oarchive & ar,
+                        std::string const & path,
+                        boost::any const & a) const
+        {
+            if (!a.empty())
+                ar << alps::make_pvp(path, boost::any_cast<T>(a));
+        }
         void operator()(alps::hdf5::oarchive & ar,
                         std::string const & path,
                         boost::program_options::variable_value const & a) const
@@ -112,6 +122,7 @@ public:
     template<class T> void set(std::string const & key, T const & value)
     {
         sv[key] = value;
+        shelpers[key] = boost::shared_ptr<detail::SerializationHelperBase>(new detail::SerializationHelper<T>());
     }
     
 #ifdef HAVE_ALPS_HDF5
@@ -119,16 +130,17 @@ public:
     {
         using boost::program_options::option_description;
         using boost::shared_ptr;
-        
-        std::vector<shared_ptr<option_description> > opts = config.options();
-        
-        for (std::vector<shared_ptr<option_description> >::iterator it = opts.begin();
-             it != opts.end(); ++it)
+
+        for (std::map<std::string, boost::shared_ptr<detail::SerializationHelperBase> >::const_iterator it = shelpers.begin();
+             it != shelpers.end(); ++it)
         {
-            std::string name = (*it)->long_name();
-            detail::SerializationHelperBase * helper = shelpers.find(name)->second.get();
+            std::string name = it->first;
+            detail::SerializationHelperBase * helper = it->second.get();
             try {
-                (*helper)(ar, name, vm[name]);
+                if (sv.count(name) > 0)
+                	(*helper)(ar, name, sv.find(name)->second);
+                else if (vm.count(name) > 0)
+                	(*helper)(ar, name, vm[name]);
             } catch (std::exception &e) {
                 std::cerr << "Error writing parameter " << name << std::endl;
                 throw e;
@@ -209,7 +221,8 @@ public:
 class ModelParameters : public BaseParameters
 {
 public:
-    ModelParameters(std::ifstream& param_file)
+    ModelParameters() {}
+	ModelParameters(std::ifstream& param_file)
     {
         using namespace boost::program_options;
         
@@ -225,24 +238,24 @@ public:
             add_option("Jz", value<double>(), "");
             
             add_option("U", value<double>(), "");
-            add_option("t", value<double>()->default_value(1.), "");
-            add_option("t1", value<double>()->default_value(1.), "");
-            add_option("t2", value<double>()->default_value(1.), "");
+            add_option("t", value<double>(), "");
+            add_option("t1", value<double>(), "");
+            add_option("t2", value<double>(), "");
             
             add_option("theta", value<double>(), "");
-            add_option("h0", value<double>()->default_value(0), "");
-            add_option("pin", value<int>()->default_value(3), "");
+            add_option("h0", value<double>(), "");
+            add_option("pin", value<int>(), "");
             
-            add_option("K0", value<double>()->default_value(1), "");
-            add_option("K1", value<double>()->default_value(0), "");
+            add_option("K0", value<double>(), "");
+            add_option("K1", value<double>(), "");
             
-            add_option("penalty", value<double>()->default_value(10), "");
-            add_option("twist", value<double>()->default_value(0), "");
-            add_option("move", value<double>()->default_value(0), "");
+            add_option("penalty", value<double>(), "");
+            add_option("twist", value<double>(), "");
+            add_option("move", value<double>(), "");
             
-            add_option("u1_total_charge", value<int>()->default_value(0), "");
-            add_option("u1_total_charge1", value<int>()->default_value(0), "");
-            add_option("u1_total_charge2", value<int>()->default_value(0), "");
+            add_option("u1_total_charge", value<int>(), "");
+            add_option("u1_total_charge1", value<int>(), "");
+            add_option("u1_total_charge2", value<int>(), "");
             
             store(parse_config_file(param_file, config, true), vm);
             notify(vm);
