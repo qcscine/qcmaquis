@@ -164,6 +164,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
     A = U + V;
     ambient::playout();
 }*/
+template<typename T>
+void remote_gemm(p_dense_matrix<T> A, p_dense_matrix<T> B, p_dense_matrix<T> C)
+{
+    C(0,0) = 1;
+    C = A * B;
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( functionally_remote_gemm_test, T, test_types ) 
+{ 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+    size_t task_size = 16;
+
+    p_dense_matrix<T> A(task_size,task_size);
+    p_dense_matrix<T> B(task_size,task_size); 
+    p_dense_matrix<T> C(task_size,task_size); 
+
+    remote_gemm(A, B, C);
+
+    ambient::playout();
+    std::cout << C;
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_test, T, test_types ) 
 { 

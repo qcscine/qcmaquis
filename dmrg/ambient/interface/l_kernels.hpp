@@ -261,8 +261,16 @@ void reshape_r2l_l_kernel(pinned p_dense_matrix<double>& left, const p_dense_mat
     scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(right));
     if(!scope.involved()) return;
     zout << "2dbcd in reshape_r2l ("<< ambient::rank() <<"):\n"; info(left); info(right);
-    zout << "left offset: " << left_offset << "; right offset: " << right_offset << "; sdim: " << sdim << "; rdim: " << rdim << "; ldim: " << ldim << "\n";
 
     block_2d_cycle_assign(left); 
     block_2d_cycle_assign(right); 
+}
+
+void touch_l_kernel(p_dense_matrix<double>& target){
+    int num = 1; //get_grid_dim(a_ambient).y; 
+    scope_select(num+" from ambient as touch_l where master is 0");
+    if(!scope.involved()) return;
+    zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(target);
+
+    block_2d_cycle_assign(target); 
 }

@@ -31,9 +31,9 @@ class livelong
 {
 public:
    ~livelong(){
-        if(this->p != ANY){
+        //if(this->p != ANY){
         //    this->breakdown()->deallocate(); // deallocate profile
-        }
+        //}
     }
 
     livelong():p(P),use_count(0){
