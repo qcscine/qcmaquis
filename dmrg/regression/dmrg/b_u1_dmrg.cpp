@@ -14,18 +14,6 @@ using std::cout;
 using std::endl;
 
 #include "utils/zout.hpp"
-
-#ifdef MPI_PARALLEL
-
-#include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/concept/matrix_interface.hpp"
-#include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
-#include "p_dense_matrix/p_dense_matrix_algorithms.hpp"
-#include "p_dense_matrix/p_diagonal_matrix.h"
-
-typedef blas::p_dense_matrix<double> Matrix;
-#else
-
 #include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/matrix_interface.hpp"
 #include "dense_matrix/resizable_matrix_interface.hpp"
@@ -34,10 +22,6 @@ typedef blas::p_dense_matrix<double> Matrix;
 #include "dense_matrix/dense_matrix_blas.hpp"
 #include "dense_matrix/aligned_allocator.h"
 typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
-//typedef blas::dense_matrix<double> Matrix;
-//#include "dense_matrix/../../CopyOnWrite/cow_vector.h"
-//typedef blas::dense_matrix<double, copy_on_write_vector<double> > Matrix;
-#endif
 
 #include <alps/hdf5.hpp>
 
@@ -170,10 +154,6 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 
 int main(int argc, char ** argv)
 {
-    #ifdef MPI_PARALLEL
-    ambient::init();
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
-    #endif
 
     if (argc != 3)
     {
@@ -224,7 +204,7 @@ int main(int argc, char ** argv)
     
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     MPO<Matrix, grp> mpoc = mpo;
-    if (parms.get<int>("use_compressed") > 0)
+    if(parms.get<int>("use_compressed") > 0)
         mpoc.compress(1e-12);
     
 #ifdef UseTwoU1
@@ -296,10 +276,6 @@ int main(int argc, char ** argv)
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
 
 
-#ifdef MPI_PARALLEL
-            if(ambient::is_master()) {
-#endif
-            
             {
                 alps::hdf5::oarchive h5ar(rfile);
                 
@@ -326,12 +302,6 @@ int main(int argc, char ** argv)
                 h5ar << alps::make_pvp("/state", mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
             }
-
-
-#ifdef MPI_PARALLEL
-           } 
-#endif
-
             gettimeofday(&then, NULL);
             elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
             int rs = parms.get<int>("run_seconds");
@@ -347,10 +317,6 @@ int main(int argc, char ** argv)
     
 #ifdef MEASURE_ONLY
     {
-
-#ifdef MPI_PARALLEL
-        if(ambient::is_master()){
-#endif
 
         alps::hdf5::oarchive h5ar(rfile);
         
@@ -396,16 +362,7 @@ int main(int argc, char ** argv)
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
         cout << "Task took " << elapsed << " seconds." << endl;
-
-#ifdef MPI_PARALLEL
-        }
-#endif
-
     }
-#endif
-
-#ifdef MPI_PARALLEL
-        ambient::finalize();
 #endif
 
 }
