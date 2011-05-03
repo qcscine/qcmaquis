@@ -358,20 +358,57 @@ namespace app {
             for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
                 std::string lhs = it->key();
                 if (boost::regex_match(lhs, what, expression)) {
-                    mterm_t term;
-                    term.type = mterm_t::Average;
-                    term.name = what.str(1);
-                    
-                    SiteOperator op = make_site_term(it->value(), parms);
-                    alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+					alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+
+                    if (model.has_bond_operator(it->value())) {
+                    	BondOperator bondop = model.get_bond_operator(it->value());
+
+                        typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator,alps::SiteOperator > > V;
+                        V  ops = bondop.template templated_split<double>(b,b);
+                        for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
+                            SiteOperator op1 = tit->get<1>();
+                            SiteOperator op2 = tit->get<2>();
+
+                            bool with_sign = fermionic(b, op1, b, op2);
+
+                            mterm_t term;
+                            term.type = mterm_t::Average;
+                            std::ostringstream ss;
+                            ss << what.str(1);
+                            if (ops.size() > 1) ss << " (" << int(tit-ops.begin())+1 << ")";
+                            term.name = ss.str();
+
+                            term.fill_operator = (with_sign) ? tfill[type] : tident[type];
+                            {
+                            	alps_matrix m = alps::get_matrix(double(), op1, b, parms, true);
+                            	op_t tmp;
+                            	if (with_sign)
+                            		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
+                                else
+                                    tmp = convert_matrix(m, type);
+                            	term.operators.push_back( std::make_pair(tit->get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
+                            }
+                            {
+                                alps_matrix m = alps::get_matrix(double(), op2, b, parms, true);
+                                term.operators.push_back( std::make_pair(convert_matrix(m, type), b.is_fermionic(simplify_name(op2))) );
+                            }
+    	                    meas.add_term(term);
+                        }
+                    } else {
+                        mterm_t term;
+                        term.type = mterm_t::Average;
+                        term.name = what.str(1);
+
+						SiteOperator op = make_site_term(it->value(), parms);
 #ifndef NDEBUG
-                    if (b.is_fermionic(simplify_name(op)))
-                        std::runtime_error("Cannot measure local fermionic operators.");
+						if (b.is_fermionic(simplify_name(op)))
+							std::runtime_error("Cannot measure local fermionic operators.");
 #endif
-                    alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
-                    
-                    term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
-                    meas.add_term(term);
+						alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
+
+						term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
+	                    meas.add_term(term);
+                    }
                 }
             }
         }
@@ -382,20 +419,57 @@ namespace app {
             for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
                 std::string lhs = it->key();
                 if (boost::regex_match(lhs, what, expression)) {
-                    mterm_t term;
-                    term.type = mterm_t::Local;
-                    term.name = what.str(1);
-                    
-                    SiteOperator op = make_site_term(it->value(), parms);
-                    alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+					alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+
+                    if (model.has_bond_operator(it->value())) {
+                    	BondOperator bondop = model.get_bond_operator(it->value());
+
+                        typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator,alps::SiteOperator > > V;
+                        V  ops = bondop.template templated_split<double>(b,b);
+                        for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
+                            SiteOperator op1 = tit->get<1>();
+                            SiteOperator op2 = tit->get<2>();
+
+                            bool with_sign = fermionic(b, op1, b, op2);
+
+                            mterm_t term;
+                            term.type = mterm_t::Average;
+                            std::ostringstream ss;
+                            ss << what.str(1);
+                            if (ops.size() > 1) ss << " (" << int(tit-ops.begin())+1 << ")";
+                            term.name = ss.str();
+
+                            term.fill_operator = (with_sign) ? tfill[type] : tident[type];
+                            {
+                            	alps_matrix m = alps::get_matrix(double(), op1, b, parms, true);
+                            	op_t tmp;
+                            	if (with_sign)
+                            		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
+                                else
+                                    tmp = convert_matrix(m, type);
+                            	term.operators.push_back( std::make_pair(tit->get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
+                            }
+                            {
+                                alps_matrix m = alps::get_matrix(double(), op2, b, parms, true);
+                                term.operators.push_back( std::make_pair(convert_matrix(m, type), b.is_fermionic(simplify_name(op2))) );
+                            }
+    	                    meas.add_term(term);
+                        }
+                    } else {
+                        mterm_t term;
+                        term.type = mterm_t::Average;
+                        term.name = what.str(1);
+
+						SiteOperator op = make_site_term(it->value(), parms);
 #ifndef NDEBUG
-                    if (b.is_fermionic(simplify_name(op)))
-                        std::runtime_error("Cannot measure local fermionic operators.");
+						if (b.is_fermionic(simplify_name(op)))
+							std::runtime_error("Cannot measure local fermionic operators.");
 #endif
-                    alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
-                    
-                    term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
-                    meas.add_term(term);
+						alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
+
+						term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
+	                    meas.add_term(term);
+                    }
                 }
             }
         }
