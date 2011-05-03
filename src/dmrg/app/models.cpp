@@ -23,16 +23,17 @@
 
 #include "utils/DmrgParameters.h"
 #include <alps/parameter.h>
+#include <alps/expression.h>
 
 
 namespace app {
 
-#define model_parser_for(MATRIX, SYMMGROUP) 								\
-	{																		\
-		Hamiltonian<MATRIX, SYMMGROUP>* H;									\
-		Measurements<MATRIX, SYMMGROUP> meas;								\
-		SYMMGROUP::charge initc;											\
-		model_parser(std::string(), std::string(), lat, H, initc, meas);	\
+#define model_parser_for(MATRIX, SYMMGROUP) 														\
+	{																								\
+		Hamiltonian<MATRIX, SYMMGROUP>* H;															\
+		Measurements<MATRIX, SYMMGROUP> meas;														\
+		SYMMGROUP::charge initc;																	\
+		ModelParameters model = model_parser(std::string(), std::string(), lat, H, initc, meas);	\
 	}
     void init_model_parser()
     {
@@ -67,9 +68,10 @@ namespace app {
     template <class SymmGroup>
     typename SymmGroup::charge init_qn (ModelParameters & model);
     
+    ModelParameters convert_parms (alps::Parameters const & parms);
     
     template <class Matrix, class SymmGroup>
-    void model_parser (std::string const & type, std::string const & fname,
+    ModelParameters model_parser (std::string const & type, std::string const & fname,
                        Lattice* & lattice, Hamiltonian<Matrix, SymmGroup>* & H,
                        typename SymmGroup::charge& initc, Measurements<Matrix, SymmGroup>& meas)
     {
@@ -83,15 +85,17 @@ namespace app {
             H = Htmp;
             initc = Htmp->init_qn(parms);
             meas = Htmp->parse_measurements(parms);
+            return convert_parms(parms);
         } else if (type == "coded") {
             std::ifstream model_file(fname.c_str());
             std::ifstream ifs(fname.c_str());
             alps::Parameters parms(ifs);
             lattice = new ALPSLattice(parms);
-            ModelParameters model(model_file);
+            ModelParameters model = convert_parms(parms);
             H = hamil_factory<Matrix, SymmGroup>::parse(model, *lattice);
             initc = init_qn<SymmGroup>(model);
             meas = CodedMeasurements<Matrix, SymmGroup>(*lattice, model);
+            return model;
         } else {
             throw std::runtime_error("Don't know this type of lattice / model!");
         }
@@ -145,4 +149,30 @@ namespace app {
     }
     
     
+    ModelParameters convert_parms (alps::Parameters const & parms)
+    {
+    	ModelParameters model;
+        alps::expression::ParameterEvaluator<double> eval(parms,false);
+        for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+            try {
+                alps::expression::Expression<double> expr(it->value());
+                if (expr.can_evaluate(eval)) {
+                    double value = expr.value(eval);
+                    if (alps::numeric::is_zero(value - static_cast<double>(static_cast<int>(value))))
+                    	model.set(it->key(), static_cast<int>(value+ (value > 0 ? 0.25 : -0.25)));
+                    else
+                    	model.set(it->key(), value);
+                } else {
+                    expr.partial_evaluate(eval);
+                    model.set(it->key(), boost::lexical_cast<std::string>(expr));
+                }
+            } catch(...) {
+              // we had a problem evaluating, use original full value
+            	model.set(it->key(), boost::lexical_cast<std::string>(it->value()));
+            }
+        }
+        return model;
+    }
+
+
 } // namespace

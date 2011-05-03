@@ -106,10 +106,6 @@ int main(int argc, char ** argv)
     DmrgParameters parms(param_file);
     
     std::string model_file(argv[2]);
-    //    if (!model_file) {
-    //        cerr << "Could not open model file." << endl;
-    //        exit(1);
-    //    }
     
     std::string chkpfile = parms.get<std::string>("chkpfile");
     std::string rfile = parms.get<std::string>("resultfile");
@@ -131,7 +127,7 @@ int main(int argc, char ** argv)
     Hamiltonian<Matrix, grp> * H;
     grp::charge initc;
     Measurements<Matrix, grp> measurements;
-    model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
+    ModelParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
     Index<grp> phys = H->get_phys();
     std::cout << "initc: " << initc << std::endl;
     
@@ -161,13 +157,13 @@ int main(int argc, char ** argv)
     {
         alps::hdf5::oarchive h5ar(rfile);
         h5ar << alps::make_pvp("/parameters", parms);
-        //h5ar << alps::make_pvp("/parameters", model);
+        h5ar << alps::make_pvp("/parameters", model);
     }
     
     if (!dns) {
         alps::hdf5::oarchive h5ar(chkpfile);
         h5ar << alps::make_pvp("/parameters", parms);
-        //h5ar << alps::make_pvp("/parameters", model);
+        h5ar << alps::make_pvp("/parameters", model);
     }
     
     //    BaseStorageMaster * bsm = bsm_factory(parms);
