@@ -150,6 +150,8 @@ namespace blas {
     template <typename T, typename MemoryBlock>
     void dense_matrix<T, MemoryBlock>::resize(size_type size1, size_type size2, T const& init_value)
     {
+        assert(size1 > 0);
+        assert(size2 > 0);
         // Do we need more space? Reserve more space if needed!
         //
         // If the memory is reallocated using reserve
