@@ -180,8 +180,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                         
                         /* optimize me */
                         #ifdef MPI_PARALLEL
-                        ambient_assert(false);
-                        ambient::push(ambient::reshape_r2l_l_kernel, ambient::reshape_r2l_c_kernel, in_block, out_block, 
+                        ambient::push(ambient::reshape_r2l_l_kernel, ambient::reshape_r2l_c_kernel, out_block, in_block, 
                                       out_left_offset, in_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
                         #else
                         for (size_t ss = 0; ss < physical_i[s].second; ++ss)

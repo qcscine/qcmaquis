@@ -233,6 +233,15 @@ namespace ambient {
         }
     }
 
+    void p_profile::deallocate(){
+        int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
+        int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
+        
+        for(int i=0; i < y_size; i++)
+            for(int j=0; j < x_size; j++)
+                delete this->skeleton[i][j];
+    }
+
     void p_profile::constant(){ this->consted = true; }
     void p_profile::inconstant(){ this->consted = false; }
 
@@ -313,7 +322,7 @@ namespace ambient {
         int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
         int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
         
-        if(i >= y_size || j >= x_size) printf("Warning: accessing block that is out of range (%d %d)\n", i, j);
+        if(i >= y_size || j >= x_size){ printf("Warning: accessing block that is out of range (%d %d)\n", i, j); assert(false); }
         return this->skeleton[i][j];
     }
 

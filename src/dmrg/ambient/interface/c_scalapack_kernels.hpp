@@ -53,35 +53,36 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matr
 #endif
 }
 
-void svd_c_scalapack_kernel(const p_dense_matrix<double>& m, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
+void svd_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
 {
 #ifdef SCALAPACK
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descv[9], descu[9];
     int ZERO=0, ONE=1;
-    int nn = get_grid_dim(m).x*get_mem_t_dim(m).x; 
-    int nm = get_grid_dim(m).y*get_mem_t_dim(m).y;
+    int n = get_grid_dim(a).x*get_mem_t_dim(a).x; 
+    int m = get_grid_dim(a).y*get_mem_t_dim(a).y;
+    int k = std::min(n,m);
 
     nprow = scope.np;
     npcol = scope.nq; 
-    bn = get_mem_dim(m).x*get_item_dim(m).x;
+    bn = get_mem_t_dim(a).x;
     ictxt = Csys2blacs_handle(scope.get_group()->mpi_comm);
     Cblacs_gridinit(&ictxt, "Row", nprow, npcol);
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
-    int ma = numroc_( &nm, &bn, &myrow, &ZERO, &nprow ); // to check
-    int na = numroc_( &nn, &bn, &mycol, &ZERO, &npcol );
-    int mu = numroc_( &nm, &bn, &myrow, &ZERO, &nprow );
-    int nu = numroc_( &nm, &bn, &mycol, &ZERO, &npcol );
-    int mv = numroc_( &nn, &bn, &myrow, &ZERO, &nprow );
-    int nv = numroc_( &nn, &bn, &mycol, &ZERO, &npcol );
+    int ma = numroc_( &m, &bn, &myrow, &ZERO, &nprow ); // to check
+    int na = numroc_( &n, &bn, &mycol, &ZERO, &npcol );
+    int mu = numroc_( &m, &bn, &myrow, &ZERO, &nprow );
+    int nu = numroc_( &k, &bn, &mycol, &ZERO, &npcol );
+    int mv = numroc_( &k, &bn, &myrow, &ZERO, &nprow );
+    int nv = numroc_( &n, &bn, &mycol, &ZERO, &npcol );
 
-    descinit_(desca, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &ma, &info);
-    descinit_(descu, &nm, &nm, &bn, &bn, &ZERO, &ZERO, &ictxt, &mu, &info);
-    descinit_(descv, &nn, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mv, &info);
+    descinit_(desca, &m, &n, &bn, &bn, &ZERO, &ZERO, &ictxt, &ma, &info);
+    descinit_(descu, &m, &k, &bn, &bn, &ZERO, &ZERO, &ictxt, &mu, &info);
+    descinit_(descv, &k, &n, &bn, &bn, &ZERO, &ZERO, &ictxt, &mv, &info);
    
-    assert(current(m).layout->get_list().size() != 0);
-    current(m).solidify(current(m).layout->get_list());
+    assert(current(a).layout->get_list().size() != 0);
+    current(a).solidify(current(a).layout->get_list());
     current(u).solidify(current(u).layout->get_list());
     current(v).solidify(current(v).layout->get_list());
     current(s).solidify(current(s).layout->get_list());
@@ -90,18 +91,46 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>& m, p_dense_matrix<doub
     double wkopt;
 
     //SCALAPACK, first, dry run to allocate buffer
-    pdgesvd_("V","V",&nm,&nn,(double*)breakdown(m).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,&wkopt,&lwork,&info);
+    pdgesvd_("V","V",&m,&n,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,&wkopt,&lwork,&info);
 
     lwork = static_cast<int>(wkopt);
-    double *work = new double[lwork];
+    double* work = (double*)malloc( lwork*sizeof(double) );
 
-    pdgesvd_("V","V",&nm,&nn,(double*)breakdown(m).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,work,&lwork,&info);
+    pdgesvd_("V","V",&m,&n,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(s).data,(double*)breakdown(u).data,&ONE,&ONE,descu,(double*)breakdown(v).data,&ONE,&ONE,descv,work,&lwork,&info);
 
     current(u).disperse(current(u).layout->get_list());
     current(v).disperse(current(v).layout->get_list());
     current(s).disperse(current(s).layout->get_list());
 
-    delete[] work; //clean the working buffer
+    free( (void*)work );
+#else
+/* Locals */
+    int m = get_grid_dim(a).y*get_mem_t_dim(a).y;
+    int n = get_grid_dim(a).x*get_mem_t_dim(a).x;
+    int lda = m, ldu = m, ldvt = std::min(m,n), info, lwork;
+    double wkopt;
+    double* work;
+    assert(current(a).layout->get_list().size() != 0);
+    current(a).solidify(current(a).layout->get_list());
+    current(u).solidify(current(u).layout->get_list());
+    current(v).solidify(current(v).layout->get_list());
+    current(s).solidify(current(s).layout->get_list());
+/* Query and allocate the optimal workspace */
+    lwork = -1;
+    dgesvd( "S", "S", &m, &n, (double*)breakdown(a).data, &lda, (double*)breakdown(s).data, (double*)breakdown(u).data, &ldu, (double*)breakdown(v).data, &ldvt, &wkopt, &lwork, &info );
+    lwork = (int)wkopt;
+    work = (double*)malloc( lwork*sizeof(double) );
+/* Compute SVD */
+    dgesvd( "S", "S", &m, &n, (double*)breakdown(a).data, &lda, (double*)breakdown(s).data, (double*)breakdown(u).data, &ldu, (double*)breakdown(v).data, &ldvt, work, &lwork, &info );
+/* Check for convergence */
+    if( info > 0 ) {
+        printf( "The algorithm computing SVD failed to converge.\n" );
+        exit( 1 );
+    }
+    current(u).disperse(current(u).layout->get_list());
+    current(v).disperse(current(v).layout->get_list());
+    current(s).disperse(current(s).layout->get_list());
+    free( (void*)work );
 #endif
 }
 

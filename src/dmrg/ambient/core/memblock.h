@@ -10,6 +10,7 @@ namespace ambient {
 
     class memblock {
     public:
+       ~memblock();
         memblock(p_profile** p, int i, int j = 0);
         void set_memory(void* memory);
         void* element(int i, int j = 0);
