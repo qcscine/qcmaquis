@@ -1,8 +1,3 @@
-#ifdef MPI_PARALLEL
-#include "ambient/ambient.h"
-typedef ambient::dim2 dim;
-#endif
-
 #include <cmath>
 #include <iterator>
 #include <iostream>

@@ -10,17 +10,6 @@ using std::endl;
 
 #include "utils/zout.hpp"
 
-#ifdef MPI_PARALLEL
-
-#include "ambient/ambient.h"
-
-#include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/concept/matrix_interface.hpp"
-#include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
-#include "p_dense_matrix/p_dense_matrix_algorithms.h"
-typedef blas::p_dense_matrix<double> Matrix;
-
-#else
 
 #include "dense_matrix/aligned_allocator.h"
 #include "dense_matrix/dense_matrix.h"
@@ -33,7 +22,6 @@ typedef blas::p_dense_matrix<double> Matrix;
 typedef blas::dense_matrix<double > Matrix;
 //typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
 
-#endif
 
 #include <alps/hdf5.hpp>
 
@@ -112,10 +100,6 @@ int main(int argc, char ** argv)
         cout << "Usage: <parms> <model_parms>" << endl;
         exit(1);
     }
-    
-#ifdef MPI_PARALLEL
-    ambient::instance().init();
-#endif
     
     zout.precision(10);
     
@@ -208,25 +192,22 @@ int main(int argc, char ** argv)
             gettimeofday(&sthen, NULL);
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
             
-#ifdef MPI_PARALLEL
-            if(ambient::scheduler::instance().is_ambient_master()) {
-#endif
-                {
-                    alps::hdf5::oarchive h5ar(rfile);
-                    
-                    std::ostringstream oss;
-                    oss << "/simulation/results/sweep" << sweep;
-                    h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
-                    
-                    oss.str("");
-                    oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
-                    h5ar << alps::make_pvp(oss.str().c_str(), entropies);
-                    
-                    cout << "Sweep done after " << elapsed << " seconds." << endl;
-                    oss.str("");
-                    oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
-                    h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
-                }
+            {
+                alps::hdf5::oarchive h5ar(rfile);
+                
+                std::ostringstream oss;
+                oss << "/simulation/results/sweep" << sweep;
+                h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
+                
+                oss.str("");
+                oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
+                h5ar << alps::make_pvp(oss.str().c_str(), entropies);
+                
+                cout << "Sweep done after " << elapsed << " seconds." << endl;
+                oss.str("");
+                oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
+                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
+            }
                 
                 if (parms.get<int>("donotsave") == 0)
                 {
@@ -235,10 +216,6 @@ int main(int argc, char ** argv)
                     h5ar << alps::make_pvp("/state", mps);
                     h5ar << alps::make_pvp("/status/sweep", sweep);
                 }
-                
-#ifdef MPI_PARALLEL
-            }
-#endif
             
             gettimeofday(&then, NULL);
             elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec); 
@@ -264,20 +241,10 @@ int main(int argc, char ** argv)
         
         zout << "Task took " << elapsed << " seconds." << endl;
         
-#ifdef MPI_PARALLEL
-        if(ambient::scheduler::instance().is_ambient_master()){
-#endif
-            h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
-            h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
-            
-            h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
-#ifdef MPI_PARALLEL
-        }
-#endif
+        h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
+        h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
         
-#ifdef MPI_PARALLEL
-        ambient::instance().finalize();
-#endif
+        h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
         
         everything.end();
     }

@@ -6,21 +6,12 @@ using std::endl;
 
 #include "utils/zout.hpp"
 
-#ifdef MPI_PARALLEL
-#include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/matrix_interface.hpp"
-#include "p_dense_matrix/resizable_matrix_interface.hpp"
-#include "p_dense_matrix/dense_matrix_algorithms.h"
-#include "p_dense_matrix/matrix_algorithms.hpp"
-typedef blas::p_dense_matrix<double> Matrix;
-#else
 #include "dense_matrix/dense_matrix.h"
 #include "dense_matrix/matrix_interface.hpp"
 #include "dense_matrix/resizable_matrix_interface.hpp"
 #include "dense_matrix/dense_matrix_algorithms.h"
 #include "dense_matrix/matrix_algorithms.hpp"
 typedef blas::dense_matrix<double> Matrix;
-#endif
 
 
 #include "block_matrix/indexing.h"
