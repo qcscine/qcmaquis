@@ -58,8 +58,8 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1
     assert( !has_block(c1, c2) );
     
     std::pair<charge, size_type>
-    p1 = std::make_pair(c1, mtx.num_rows()),
-    p2 = std::make_pair(c2, mtx.num_cols());
+    p1 = std::make_pair(c1, num_rows(mtx)),
+    p2 = std::make_pair(c2, num_cols(mtx));
     
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
