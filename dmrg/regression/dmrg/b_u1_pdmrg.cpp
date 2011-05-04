@@ -202,7 +202,8 @@ int main(int argc, char ** argv)
     {   
         ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
         
-        for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+        zout << "Starting sweeping...\n";
+        for ( ; sweep < parms.get<int>("nsweeps"); ++sweep){
             gettimeofday(&snow, NULL);
             
             Logger iteration_log;
@@ -211,6 +212,8 @@ int main(int argc, char ** argv)
                 optimizer.sweep(mpo, sweep, iteration_log);
             else
                 optimizer.sweep(mpoc, sweep, iteration_log);
+            zout << "First sweep is done\n";
+            assert(false);
             
             ssm.sync();
             
