@@ -56,7 +56,7 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matr
 void svd_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
 {
 #ifdef SCALAPACK
-    int info, ictxt, nprow, npcol, myrow, mycol, bn;
+/*    int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descv[9], descu[9];
     int ZERO=0, ONE=1;
     int n = get_grid_dim(a).x*get_mem_t_dim(a).x; 
@@ -104,6 +104,7 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<doub
 
     free( (void*)work );
 #else
+*/
 /* Locals */
     int m = get_grid_dim(a).y*get_mem_t_dim(a).y;
     int n = get_grid_dim(a).x*get_mem_t_dim(a).x;

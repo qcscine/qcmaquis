@@ -1,5 +1,5 @@
-#ifndef __ALPS_DENSE_MATRIX_HPP__
-#define __ALPS_DENSE_MATRIX_HPP__
+#ifndef __ALPS_P_DENSE_MATRIX_HPP__
+#define __ALPS_P_DENSE_MATRIX_HPP__
 
 #include "ambient/ambient.hpp"
 
@@ -10,13 +10,7 @@
 #include "p_dense_matrix/iterators.hpp"
 #include "p_dense_matrix/p_diagonal_matrix.h"
 
-#include <boost/lambda/lambda.hpp>
-#include <boost/typeof/typeof.hpp>
 #include <ostream>
-#include <vector>
-#include <algorithm>
-#include <functional>
-#include <cassert>
 
 namespace blas {
 
@@ -33,12 +27,12 @@ namespace blas {
         typedef ptrdiff_t difference_type;                // Signed integer type to represent the distance of two elements in the memory
 
         // typedefs for matrix specific iterators // don't use iterators!! they are really slow!! reprogram with kernels instead.
-        typedef matrix_element_iterator<p_dense_matrix,value_type>             row_element_iterator;          // Iterator to iterate through the elements of a row of the matrix
-        typedef matrix_element_iterator<const p_dense_matrix,const value_type> const_row_element_iterator;    // Const version of row_element_iterator
-        typedef matrix_element_iterator<p_dense_matrix,value_type>             column_element_iterator;       // Iterator to iterate through the elements of a cols of the matrix
-        typedef matrix_element_iterator<const p_dense_matrix,const value_type> const_column_element_iterator; // Const version of column_element_iterator       
-        typedef matrix_element_iterator<p_dense_matrix,value_type>             element_iterator;              // Iterator to iterate through all elements of the matrix
-        typedef matrix_element_iterator<const p_dense_matrix,const value_type> const_element_iterator;        // Const version of element_iterator
+        typedef p_matrix_element_iterator<p_dense_matrix,value_type>             row_element_iterator;          // Iterator to iterate through the elements of a row of the matrix
+        typedef p_matrix_element_iterator<const p_dense_matrix,const value_type> const_row_element_iterator;    // Const version of row_element_iterator
+        typedef p_matrix_element_iterator<p_dense_matrix,value_type>             column_element_iterator;       // Iterator to iterate through the elements of a cols of the matrix
+        typedef p_matrix_element_iterator<const p_dense_matrix,const value_type> const_column_element_iterator; // Const version of column_element_iterator       
+        typedef p_matrix_element_iterator<p_dense_matrix,value_type>             element_iterator;              // Iterator to iterate through all elements of the matrix
+        typedef p_matrix_element_iterator<const p_dense_matrix,const value_type> const_element_iterator;        // Const version of element_iterator
 
        ~p_dense_matrix();
         p_dense_matrix(ambient::void_pt* p);              // proxy object construction
@@ -55,6 +49,7 @@ namespace blas {
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, size_type k);
         void remove_cols(size_type j, size_type k);
+        void nullcut();
         void clear();
        
         void inplace_conjugate();

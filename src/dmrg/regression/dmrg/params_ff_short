@@ -18,5 +18,5 @@ resultfile = results.h5
 truncation_final = 1e-12
 truncation_initial = 0.0001
 
-storagedir = /scratch/eiger/ewartt/5000
+storagedir = /users/maquis/svn/hp2c/trunk/src/dmrg/regression/pdmrg/storage
 
