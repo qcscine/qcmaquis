@@ -6,6 +6,23 @@ extern "C" {
     double fabs(double);
 }
 
+template<typename T>
+void print_pinned_block(T& a)
+{
+    int i = get_block_id(a).y;
+    int j = get_block_id(a).x;
+
+    double* ad = current(a)(i, j);
+    std::cout << " --(i,j)-- " << i << "," << j << std::endl;
+    for(int ii = 0; ii < get_mem_t_dim(a).y; ii++){
+        for(int jj = 0; jj < get_mem_t_dim(a).x; jj++){
+            std::cout << ad[jj*get_mem_t_dim(a).y + ii]<< " ";
+        }     
+        std::cout << " " << std::endl;
+    }
+    std::cout << " --------------------------- " << std::endl;
+}
+
 void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
 //  --- --- ---       --- --- ---       --- --- ---
@@ -413,7 +430,20 @@ void copy_svd_c_kernel(pinned p_dense_matrix<double>& a, double*& s)
     int size = (get_mem_t_dim(a)*sizeof(double)); 
     memcpy(ad,s+j,size); 
 } 
-	 
+	
+void nullcut_c_kernel(pinned p_dense_matrix<double>&a, const size_t& num_rows, const size_t& num_cols)
+{
+    size_t i = get_block_id(a).y*get_mem_t_dim(a).y; 
+    size_t j = get_block_id(a).x*get_mem_t_dim(a).x; 
+    if((i+get_mem_t_dim(a).y <= num_rows) && (j+get_mem_t_dim(a).x <= num_cols)) return;
+
+    double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
+    for(size_t jj = 0; jj < get_mem_t_dim(a).x; jj++){
+        if(j+jj < num_cols && (i+get_mem_t_dim(a).y > num_rows)) memset(&ad[jj*get_mem_t_dim(a).y+num_rows%get_mem_t_dim(a).y], 0, (get_mem_t_dim(a).y-num_rows%get_mem_t_dim(a).y)*sizeof(double));
+        else if(j+jj >= num_cols) memset(&ad[jj*get_mem_t_dim(a).y], 0, get_mem_t_dim(a).y*sizeof(double));
+    }
+}
+ 
 void one_null_c_kernel(const p_dense_matrix<double>& a){ }
 void two_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b){ }
 void three_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c){ }

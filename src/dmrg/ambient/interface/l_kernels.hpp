@@ -316,3 +316,13 @@ void touch_l_kernel(p_dense_matrix<double>& target){
 
     block_2d_cycle_assign(target); 
 }
+
+void nullcut_l_kernel(pinned p_dense_matrix<double>& a, const size_t& num_rows, const size_t& num_cols)
+{
+    int num = 1; //get_grid_dim(a_ambient).y; 
+    scope_select(num+" from ambient as nullcut where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_2d_cycle_assign(a); 
+}
