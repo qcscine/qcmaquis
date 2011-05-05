@@ -39,9 +39,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types )
     ambient::playout();
     b.end();
  
-    if(ambient::rank() == 0){
-	b.save(ambient::size(),M);
-    }   
+    //if(ambient::rank() == 0) b.save(ambient::size(),M);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 

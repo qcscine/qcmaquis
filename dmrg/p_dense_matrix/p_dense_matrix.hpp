@@ -28,7 +28,6 @@ namespace blas {
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::swap(p_dense_matrix & r)
     {
-        assert(false);
         std::swap(self->breakdown(), r.thyself->breakdown());
         std::swap(self->rows,        r.thyself->rows);
         std::swap(self->cols,        r.thyself->cols);
@@ -44,7 +43,16 @@ namespace blas {
     inline size_t p_dense_matrix<T,P>::num_cols() const { return self->cols; }
 
     template <typename T, ambient::policy P>
-    void p_dense_matrix<T,P>::clear(){ self->rows = self->cols = 0; } //to redo ?
+    void p_dense_matrix<T,P>::nullcut(){
+        //if(!self->breakdown()->is_loose())
+        //    ambient::push(ambient::nullcut_l_kernel, ambient::nullcut_c_kernel, *this, self->rows, self->cols);
+    }
+
+    template <typename T, ambient::policy P>
+    void p_dense_matrix<T,P>::clear(){
+        self->rows = self->cols = 0;
+        this->nullcut();
+    }
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::resize(size_type rows, size_type cols)
@@ -55,6 +63,7 @@ namespace blas {
         assert(cols > 0);
         if(self->breakdown()->is_loose()) self->breakdown()->set_dim(ambient::dim2(cols,rows));
         else ambient::push(ambient::resize_l_kernel, ambient::resize_c_kernel, *this, self->rows, self->cols);
+        this->nullcut();
     }
 
     template <typename T, ambient::policy P>
@@ -170,9 +179,17 @@ namespace blas {
         return out; 
     }
     template<typename T, ambient::policy P, typename T2>
-    const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& m, const T2& t){ return ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); }
+    const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& m, const T2& t){ 
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); 
+        breakdown(out).set_init(ambient::nullify<T>);
+        return out; 
+    }
     template<typename T, ambient::policy P, typename T2>
-    const p_dense_matrix<T>& operator * (const T2& t, const p_dense_matrix<T,P>& m){ return ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); }
+    const p_dense_matrix<T>& operator * (const T2& t, const p_dense_matrix<T,P>& m){ 
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); 
+        breakdown(out).set_init(ambient::nullify<T>);
+        return out; 
+    }
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
 
     /*template <typename T>

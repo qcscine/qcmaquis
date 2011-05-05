@@ -189,7 +189,7 @@ int main(int argc, char ** argv)
     
     int sweep = 0;
     
-    StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
+    StreamStorageMaster ssm(ambient::operator+(parms.get<std::string>("storagedir"),ambient::rank()));
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
@@ -213,7 +213,7 @@ int main(int argc, char ** argv)
             else
                 optimizer.sweep(mpoc, sweep, iteration_log);
             zout << "First sweep is done\n";
-            assert(false);
+            //assert(false);
             
             ssm.sync();
             
@@ -237,7 +237,8 @@ int main(int argc, char ** argv)
     ssm.sync();
     
 #ifdef MEASURE_ONLY
-    if(ambient::is_master()){
+    if(ambient::is_master())
+    {
 
         Timer tvn("vN entropy"), tr2("Renyi n=2");
         cout << "Calculating vN entropy." << endl;
@@ -271,6 +272,7 @@ int main(int argc, char ** argv)
         cout << "Task took " << elapsed << " seconds." << endl;
     }
 #endif
-
+    printf("Exiting... Finalize!\n");
     ambient::finalize();
+    return 0;
 }
