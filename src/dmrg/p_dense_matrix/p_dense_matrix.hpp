@@ -44,8 +44,8 @@ namespace blas {
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::nullcut(){
-        //if(!self->breakdown()->is_loose())
-        //    ambient::push(ambient::nullcut_l_kernel, ambient::nullcut_c_kernel, *this, self->rows, self->cols);
+        if(!self->breakdown()->is_loose())
+            ambient::push(ambient::nullcut_l_kernel, ambient::nullcut_c_kernel, *this, self->rows, self->cols);
     }
 
     template <typename T, ambient::policy P>
