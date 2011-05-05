@@ -241,6 +241,9 @@ struct contraction {
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
+                        assert( physical_i.has(W.left_basis()[w_block].first) );
+                        assert( physical_i.has(W.right_basis()[w_block].first) );
+                        
                         size_t s1 = physical_i.position(W.left_basis()[w_block].first);
                         size_t s2 = physical_i.position(W.right_basis()[w_block].first);
                         
@@ -249,6 +252,12 @@ struct contraction {
                             size_t r = right_i.position(T.right_basis()[t_block].first);
                             size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
                                                                        -physical_i[s1].first));
+                            
+                            if (l >= left_i.size())
+                                continue;
+                            if (r >= right_i.size())
+                                continue;
+                            
                             {
                                 charge T_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
                                 charge T_r_charge = right_i[r].first;
