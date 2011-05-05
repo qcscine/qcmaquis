@@ -259,18 +259,12 @@ struct contraction {
                                 continue;
                             
                             {
-                                //assert(s1 < physical_i.size());
-                                //assert(l < left_i.size());
-                                //assert(s1 >= 0 && l >= 0);
                                 charge T_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
                                 charge T_r_charge = right_i[r].first;
                                 
                                 if (! T.has_block(T_l_charge, T_r_charge) )
                                     continue;
                                 
-                                //assert(s2 < physical_i.size());
-                                //assert(l < left_i.size());
-                                //assert(s2 >= 0 && l >= 0);
                                 charge out_l_charge = SymmGroup::fuse(physical_i[s2].first, left_i[l].first);
                                 charge out_r_charge = right_i[r].first;
                                 
