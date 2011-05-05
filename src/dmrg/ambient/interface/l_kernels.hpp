@@ -48,7 +48,7 @@ void block_2d_cycle_assign(T& target)
 template<typename T>
 void block_outright_assign(T& target)
 {
- // this no "distribution" is only need inside scalapack solver (SVD, ...) where we need a contiguous array (no split between proc) for the output (schmidt values ...), one row and one column 
+// this no "distribution" is only needed in side scalapack solver (SVD, ...) where we need a contiguous array (no splitting between proc) for the output (schmidt values ...)
 ///////////////////////////////////////////////////////////////////////////
     for(int i = 0; i < get_grid_dim(target).y; i++){
         for(int j = 0; j < get_grid_dim(target).x; j++){
@@ -202,9 +202,9 @@ void syev_l_scalapack_kernel(const p_dense_matrix<double>& m, p_dense_matrix<dou
     if(!scope.involved()) return;
     zout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; info(m); info(w); info(z);
 
-    block_outright_assign(m);
+    block_outright_assign(z);
+    block_2d_cycle_assign(m);
     block_2d_cycle_assign(w);
-    block_2d_cycle_assign(z);
 }
 
 void gemm_diagonal_lhs_l_kernel(const p_dense_matrix<double>& a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
@@ -264,6 +264,48 @@ void reshape_r2l_l_kernel(pinned p_dense_matrix<double>& left, const p_dense_mat
 
     block_2d_cycle_assign(left); 
     block_2d_cycle_assign(right); 
+}
+
+void associated_validation_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_validation where master is 0 and breakdown contains "+ get_id(a)); 
+    if(!scope.involved()) return;
+    zout << "2dbcd in associated_validation ("<< ambient::rank() <<"):\n"; info(a); info(b);
+
+    block_outright_assign(a);
+    block_outright_assign(b);
+}
+
+void associated_copy_l_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_copy where master is 0 and breakdown contains "+ get_id(a)); 
+    if(!scope.involved()) return;
+    zout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
+
+    block_outright_assign(ac);
+    block_outright_assign(a);
+}
+
+void associated_sort_l_kernel(pinned p_dense_matrix<double>& a) 
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_sort where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    zout << "2dbcd in assocaited_copy ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
+}
+
+void associated_reverse_l_kernel(p_dense_matrix<double>& a, const size_t& num_rows)
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_reverse where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    zout << "2dbcd in associated_reverse ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
 }
 
 void touch_l_kernel(p_dense_matrix<double>& target){

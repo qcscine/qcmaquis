@@ -170,17 +170,18 @@ void syev_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<dou
     int lwork = -1;
     double wkopt;
 
-    //SCALAPACK, first, dry run to allocate buffer
-    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
+    /* SCALAPACK, first, dry run to allocate buffer */
+    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(z).data,(double*)breakdown(w).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
 
     lwork = static_cast<int>(wkopt);
-    double* work = new double[lwork];
+    double* work = (double*)malloc(sizeof(double)*lwork);
 
-    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
+    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(z).data,(double*)breakdown(w).data,&ONE,&ONE,descz,work,&lwork,&info);
+
     current(w).disperse(current(w).layout->get_list());
     current(z).disperse(current(z).layout->get_list());
 
-    delete[] work; //clean the working buffer
+    free((void*)work); /* clean the working buffer */
 #endif
 }
 

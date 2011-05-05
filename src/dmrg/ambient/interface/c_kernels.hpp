@@ -52,6 +52,79 @@ void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<doubl
     memcpy(ac_elements, a_elements, sizeof(double)*(get_mem_dim(a)*get_item_dim(a)));
 }
 
+
+void associated_copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
+{
+    int i = get_block_id(a).y;
+    int j = get_block_id(a).x;
+    double* a_elements  = current(a)(i,j);
+    double* ac_elements = current(ac)(i,j);
+    memcpy(ac_elements, a_elements, sizeof(double)*(get_mem_t_dim(a).y));
+}
+
+void associated_sort_c_kernel(p_dense_matrix<double>& a)
+{    
+    int i = get_block_id(a).y;
+    int j = get_block_id(a).x;
+    
+    double* a_elements  = current(a)(i,j);
+    assert(false);
+
+ //todo
+}
+
+void associated_reverse_c_kernel(p_dense_matrix<double>& a, const size_t& num_rows)
+{   
+    double rs = 0; // intermediate for reverse inside one block of mem
+    size_t iir = 0;
+ 
+    size_t grid_dim_y = get_grid_dim(a).y;
+
+    size_t size = get_mem_t_dim(a).y;
+    size_t size_total = get_mem_t_dim(a).y*grid_dim_y; 
+    //first we reverse all elements of block dim
+    for(size_t jj = 0 ; jj < grid_dim_y  ; jj++ ) {
+        double* ad = current(a)(jj,0);
+
+        #if defined (INTEL_COMPILER)
+        #pragma ivdep // should be ok
+        #endif
+        for(size_t ii = 0; ii < size/2; ii++){  
+            iir = size - ii - 1; // for SIMD/Stream
+            rs  = ad[ii];
+            ad[ii]  =  ad[iir];
+            ad[iir] = rs;
+        }  
+    }
+    
+    double* pa = (double*)malloc(size*sizeof(double));
+    int jjr;
+    // second we reverse the blocks of mem 
+    for(size_t jj = 0; jj < grid_dim_y/2; jj++){
+        jjr = grid_dim_y - jj - 1;
+        memcpy((void*)pa, (void*)current(a)(jj,0), size*sizeof(double));   
+        memcpy((void*)current(a)(jj,0), (void*)(current(a)(jjr,0)), size*sizeof(double));
+        memcpy((void*)current(a)(jjr,0), (void*)pa, size*sizeof(double));
+    } 
+
+    // finalization due to a possible offset
+    size_t markmem = size_total - num_rows;
+    size_t offset  = size - markmem; 
+    if(markmem != 0){ // we have an offset   
+        for(size_t jj = 0; jj < grid_dim_y; jj++){ // first loop, offset intra block
+           double* ad = current(a)(jj,0);
+            memmove((void*)ad, (void*)&ad[markmem], offset*sizeof(double)); // intrablock shift
+            if(jj != grid_dim_y - 1){
+                memmove((void*)&ad[offset], (void*)current(a)(jj+1,0), markmem*sizeof(double)); // extrablock shift
+            }else{
+                memset((void*)&ad[markmem], 0, offset*sizeof(double)); // fill up with 0 until the end
+            }
+        } 
+    }
+    
+    free((void*)pa);
+}
+
 void copy_c_kernel3(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a, p_dense_matrix<double>& d)
 {    
     int i = get_block_id(a).y;
@@ -375,11 +448,32 @@ void validation_c_kernel(pinned const p_dense_matrix<double>& a_ambient, const p
     for(int i=0; i < get_mem_t_dim(a_ambient).x*get_mem_t_dim(a_ambient).y; i++) 
     { 
         res = (fabs(ad[i]-bd[i]))/fabs(epsilon*bd[i]); 
-        if(res > 16){ // 16 is recommended by dongara,  
+        if(res > 16){ // 16 is recommended by Dongara,  
              printf("validation test failed in block %d %d, res %.10f Ambient: %.10f Scala: %.10f \n", get_block_id(a_ambient).y, get_block_id(a_ambient).x, res, ad[i], bd[i]);
              exit(-1);
         }                
     } 
 }
+
+void associated_validation_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b) 
+{// two validations kernels is stupid, untill the implementation of the << >> operator inside the l_kernel 
+    int j = get_block_id(a).x;
+    int i = get_block_id(a).y;
+
+    double* ad = current(a)(i,j);
+    double* bd = current(b)(i,j);
+
+    double res = 0; 
+    double epsilon = 0.0000000000000001; 
+  
+    for(int jj=0; jj < get_mem_t_dim(a).y; jj++) 
+    { 
+        res = (fabs(ad[jj]-bd[jj]))/fabs(epsilon*bd[jj]); 
+        if(res > 16){ // 16 is recommended by dongara,  
+             printf("validation test failed in block %d %d, res %.10f Ambient: %.10f Scala: %.10f \n", get_block_id(a).y, get_block_id(a).x, res, ad[jj], bd[jj]);
+             exit(-1);
+        }                
+    } 
+} 
 
 void touch_c_kernel(p_dense_matrix<double>& target){ }
