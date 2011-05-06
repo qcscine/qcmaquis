@@ -2,7 +2,8 @@
   Some common macros
 */
 
-#define NUM 16;
+#define NUM 32;
+//#define NUM 1;
 
 // BASE 255
 

@@ -15,6 +15,7 @@ Just very basic C++ or C (template ok).
 
 #include "kernels_gpu.h"
 #include "detail/common_macros.h"
+#include <cassert>
 
 
 namespace vli {
@@ -129,10 +130,9 @@ __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, in
 classical addition, the operation " addition " is serial but we sum all number together 
 */
 template <typename T>
-__device__ void addition_kernel_gpu(T* x,   const T * y, T k)
+__device__ void addition_kernel_gpu(T* x,   T const* y, int k)
 {
-	T carry_bit; 
-	carry_bit = 0;
+	T carry_bit;
 	*(x+k)    += *(y+k);
 	carry_bit  = *(x+k) >> LOG_BASE;
 	*(x+k)    %= BASE;
@@ -140,20 +140,18 @@ __device__ void addition_kernel_gpu(T* x,   const T * y, T k)
 }
 
 template <typename T>
-__global__ void addition_classic_kernel_gpu(T* x, const T * y ,T num_integer, T ld)
+__global__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, int vli_size)
 {
-	T xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	T j = xIndex*ld; // index to be on the beginning of the vli (beginning of every columns)
-	T k = 0;
-	if(xIndex < num_integer) // the classical condition to avoid overflow
-	{	
-		for (size_type i = 0 ; i < ld; i++) 
-		{
-			k = i+j ;
-			addition_kernel_gpu(x,y,k);
-		}
-	}
+    assert(num_integer > 0);
+    assert(vli_size > 0);
 
+	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+	const int j = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
+	if(xIndex < num_integers) // the classical condition to avoid overflow
+	{
+		for (int i = 0; i < vli_size; ++i) 
+			addition_kernel_gpu(x,y,i+j);
+	}
 }
 
 /**
@@ -251,38 +249,47 @@ __global__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
 /*------------------------ MANAGEMENT ------------------------------------------------------------ */
 
 
-void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_integer, int ld)
+void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_integers, int vli_size)
 {
+    //
+    // TODO since an operation on a single vli_number is not parallelized yet,
+    // dimblock.y = 1 instead of vli_size
+    // setting it to vli_size will break the current addition_classic_kernel_gpu !!!
+    //
 	dimblock.x = NUM;
-	dimblock.y = ld;
+	dimblock.y = 1;
+//	dimblock.y = vli_size;
 	dimblock.z = 1;
 		
 	dimthread.x = NUM;
-	dimthread.y = ld;
+    dimthread.x = 1;
+//	dimthread.y = vli_size;
 	dimthread.z = 1;		
 	
-	dimgrid.x = (int(num_integer) + dimblock.x - 1)/ dimblock.x;
-	dimgrid.y = (int(ld) + dimblock.y - 1)/ dimblock.y;
+	dimgrid.x = (int(num_integers) + dimblock.x - 1)/ dimblock.x;
+//	dimgrid.y = (int(vli_size) + dimblock.y - 1)/ dimblock.y;
+    dimgrid.y = 1;
 	dimgrid.z = 1;
 }
 
-void addition_gpu(TYPE*  A,  const TYPE*  B, TYPE num_integer, TYPE ld)
+void addition_gpu(TYPE*  A,  const TYPE*  B, int num_integers, int vli_size)
 {
 
 	dim3 dimgrid;
 	dim3 dimblock;
+    //TODO can't we remove dimthread? what is it good for?
 	dim3 dimthread;
 
-	DeterminationGrid(dimgrid, dimblock, dimthread,num_integer,ld );
+	DeterminationGrid(dimgrid, dimblock, dimthread, num_integers, vli_size);
 	
 #ifdef VLI_GPU_DEBUG
-	printf("%i %i \n",dimgrid.x, dimgrid.y);
-	printf("%i %i \n",dimblock.x, dimblock.y);
-	printf("%i %i \n",dimthread.x, dimthread.y);
+	printf("dimgrid : %i %i \n",dimgrid.x, dimgrid.y);
+	printf("dimblock: %i %i \n",dimblock.x, dimblock.y);
+//	printf("%i %i \n",dimthread.x, dimthread.y);
 #endif
 
-//	addition_Avizienis_kernel_gpu <<< dimgrid, dimblock >>>(A, B, C, num_integer, ld);
-	addition_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B, num_integer, ld);
+//	addition_Avizienis_kernel_gpu <<< dimgrid, dimblock >>>(A, B, C, num_integers, vli_size);
+	addition_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B, num_integers, vli_size);
 //	printf("%i", A);
 }
 
@@ -291,19 +298,26 @@ void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYP
 
 	dim3 dimgrid;
 	dim3 dimblock;
+    //TODO can't we remove dimthread? what is it good for?
 	dim3 dimthread;
 
 	DeterminationGrid(dimgrid, dimblock, dimthread,num_integer,ld );
 	
 #ifdef VLI_GPU_DEBUG
-	printf("%i %i \n",dimgrid.x, dimgrid.y);
-	printf("%i %i \n",dimblock.x, dimblock.y);
-	printf("%i %i \n",dimthread.x, dimthread.y);
+	printf("dimgrid : %i %i \n",dimgrid.x, dimgrid.y);
+	printf("dimblock: %i %i \n",dimblock.x, dimblock.y);
+//	printf("%i %i \n",dimthread.x, dimthread.y);
 #endif
 
 	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B ,C, num_integer, ld);
 }
 
+
+void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size)
+{
+    // NOT IMPLEMENTED YET
+    assert(false);
+}
 
 } //namespace detail
 } //namespace vli

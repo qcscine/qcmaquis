@@ -13,13 +13,7 @@
 
 
 #include <iostream>
-#include <stdexcept>
-//#include <assert.h>
-
 #include <boost/static_assert.hpp>
-
-#include "boost/lexical_cast.hpp"
-
 
 #include "detail/vli_number_gpu_function_hooks.hpp"
 #include "GpuManager.h"
@@ -64,8 +58,6 @@ namespace vli
         {
             gpu::check_error( cublasAlloc(size, sizeof(BaseInt), (void**) &data_ ), __LINE__);
             gpu::check_error( cudaMemcpy( data_, vli.data_, size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
-            std::cout<<"TEST: "<<vli;
-            std::cout<<*this;
         }
 
 		vli_gpu(vli_cpu<BaseInt> const& vli)
@@ -85,28 +77,23 @@ namespace vli
             cublasFree(data_);
         }
 
-		//think on the copy swap, I think it is totaly useless for gpu
-	//	vli_gpu<T> & operator = (vli_gpu<T> const &  vli);
-		/**
-		due to gpu architecture the overload is weird
-		*/
-		void operator = (vli_gpu vli)
-        {
-            // TODO perhaps the copy-swap implementation is not optimal on the GPU
-            swap(vli);
-            return *this;
-        }
-
 		void swap(vli_gpu& vli)
         {
             using std::swap;
             swap(data_, vli.data_);
         }
 
+		vli_gpu& operator = (vli_gpu vli)
+        {
+            // TODO perhaps the copy-swap implementation is not optimal on the GPU
+            swap(vli);
+            return *this;
+        }
+
 		void copy_vli_to_cpu(vli::vli_cpu<BaseInt>& vli) const
         {
             BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(size) );
-            gpu::check_error(cublasGetVector(size, sizeof(BaseInt), data_  ,1, &vli[0], 1), __LINE__);			
+            gpu::check_error(cublasGetVector(size, sizeof(BaseInt), data_  ,1, &vli[0], 1), __LINE__);
         }
 
 		operator vli_cpu<BaseInt>() const
@@ -151,7 +138,7 @@ namespace vli
         }
 		
 	private:
-		base_int_type* data_;
+		BaseInt* data_;
 	};
 	
 	/**

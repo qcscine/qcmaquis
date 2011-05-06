@@ -16,7 +16,6 @@
 #include <cublas.h>
 
 #include "boost/lexical_cast.hpp"
-#include <shrUtils.h>
 #include <cuda_runtime_api.h>
 #include <stdexcept>
 
