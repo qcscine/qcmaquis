@@ -77,16 +77,16 @@ namespace vli
             cublasFree(data_);
         }
 
-		void swap(vli_gpu& vli)
+		friend void swap(vli_gpu& a, vli_gpu& b)
         {
             using std::swap;
-            swap(data_, vli.data_);
+            swap(a.data_, b.data_);
         }
 
 		vli_gpu& operator = (vli_gpu vli)
         {
             // TODO perhaps the copy-swap implementation is not optimal on the GPU
-            swap(vli);
+            swap(*this,vli);
             return *this;
         }
 
