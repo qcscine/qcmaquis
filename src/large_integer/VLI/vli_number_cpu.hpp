@@ -60,10 +60,9 @@ namespace vli
         /**
           swap
           */
-        void swap(vli_cpu& vli)
+        friend void swap(vli_cpu& a, vli_cpu& b)
         {
-            using std::swap;
-            swap(this->data_,vli.data_);
+            swap(a.data_,b.data_);
         }
 
         /**
@@ -71,7 +70,7 @@ namespace vli
           */
         vli_cpu& operator= (vli_cpu  r)
         {
-            swap(r);
+            swap(*this,r);
             return *this;
         }
         

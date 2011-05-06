@@ -101,11 +101,11 @@ class vli_vector_gpu
     /**
       swap
       */
-    void swap(vli_vector_gpu& v)
+    friend void swap(vli_vector_gpu& a, vli_vector_gpu& b)
     {
         using std::swap;
-        swap(data_,v.data_);
-        swap(size_,v.size_);
+        swap(a.data_, b.data_);
+        swap(a.size_, b.size_);
     }
 
     /**
@@ -113,7 +113,7 @@ class vli_vector_gpu
       */
     vli_vector_gpu& operator= (vli_vector_gpu v)
     {
-        swap(v);
+        swap(*this, v);
         return *this;
     }
 
