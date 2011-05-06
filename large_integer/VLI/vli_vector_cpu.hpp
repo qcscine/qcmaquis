@@ -11,6 +11,7 @@
 #define VLI_VECTOR_CPU_HPP
 
 #include "detail/vli_vector_cpu_function_hooks.hpp"
+#include <numeric>
 
 namespace vli
 {
@@ -38,7 +39,7 @@ public:
         return *this;
     }
 
-	vli_vector& operator *= (vli_vector const& v)
+	vli_vector& operator *= (VliType const& v)
     {
         using detail::multiplies_assign;
         multiplies_assign(*this, v);
@@ -57,7 +58,7 @@ public:
 };
 	
 /**
- multiply and addition operators, suite ...
+ vector addition
  */
 template <class VliType>
 const vli_vector<VliType> operator+(vli_vector<VliType> v_a, vli_vector<VliType> const& v_b)
@@ -66,13 +67,32 @@ const vli_vector<VliType> operator+(vli_vector<VliType> v_a, vli_vector<VliType>
     return v_a;
 }
 
+/**
+  scaling of the vector by an very long integer
+  */
 template <class VliType>
-const vli_vector<VliType> operator*(vli_vector<VliType> v_a, vli_vector<VliType> const& v_b)
+const vli_vector<VliType> operator * (vli_vector<VliType> v_a, VliType const& vli)
 {
-    v_a *= v_b;
+    v_a *= vli;
     return v_a;
 }
 
+template <class VliType>
+const vli_vector<VliType> operator * (VliType const& vli, vli_vector<VliType> const& v_a)
+{
+    return v_a * vli;
+}
+
+/**
+ inner product
+ */
+template <class VliType>
+const VliType inner_prod(vli_vector<VliType> const& v_a, vli_vector<VliType> const& v_b)
+{
+    // TODO implement
+    assert(v_a.size() == v_b.size());
+    return std::inner_product(v_a.begin(), v_a.end(), v_b.begin(), VliType(0));
+}
 
 /**
  stream 

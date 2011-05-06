@@ -10,6 +10,7 @@
 
 #ifndef VLI_NUMBER_CPU_HPP
 #define VLI_NUMBER_CPU_HPP
+#include <ostream>
 #include <vector>
 #include "detail/vli_number_cpu_function_hooks.hpp"
 
@@ -103,11 +104,16 @@ namespace vli
             multiplies_assign(*this,vli);
             return *this;
         }
-    
+
+        bool operator == (vli_cpu const& vli) const
+        {
+            return (data_ == vli.data_);
+        }
+        
         void print(std::ostream& os) const
         {
             for(typename std::vector<BaseInt>::const_iterator it=data_.begin(); it != data_.end(); ++it)
-                std::cout << *it << " " ;
+                os << *it << " " ;
         }
 
     private:

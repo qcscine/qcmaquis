@@ -29,10 +29,7 @@ namespace vli
 	void addition_classic_cpu(vli::vli_cpu<T>  & x, vli::vli_cpu<T>  const &  y)
 	{
 		for(typename vli_cpu<T>::size_type i = 0; i < vli_cpu<T>::size; ++i)
-		{
 			addition_kernel_cpu(&x[i], &y[i]);
-		}
-		
 	}
 	
 	
