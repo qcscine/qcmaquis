@@ -572,7 +572,7 @@ struct contraction {
         assert(dm.left_basis() == mps.data_.left_basis());
         
         block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
+        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         syev_truncate(dm, U, S, cutoff, Mmax, logger);
         
@@ -642,7 +642,7 @@ struct contraction {
         assert(dm.right_basis() == mps.data_.right_basis());
         
         block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, sqrtS;
+        block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         syev_truncate(dm, U, S, cutoff, Mmax, logger);
         V = transpose(U);

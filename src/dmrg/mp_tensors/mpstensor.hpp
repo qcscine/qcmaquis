@@ -11,11 +11,6 @@
 #include "mp_tensors/reshapes.h"
 #include "block_matrix/block_matrix_algorithms.h"
 
-inline double myrand()
-{
-    return 0.1*(2*drand48()-1);
-}
-
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
                                         Index<SymmGroup> const & ld,

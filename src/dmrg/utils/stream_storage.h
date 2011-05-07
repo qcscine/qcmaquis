@@ -211,6 +211,7 @@ public:
     
     void operator()()
     {
+    #ifndef MPI_PARALLEL
         static Timer timer("read_timer");
         timer.begin();
         
@@ -239,6 +240,7 @@ public:
         ifs.close();
         
         timer.end();
+    #endif
     }
     
 private:
@@ -266,6 +268,7 @@ public:
     
     void operator()()
     {
+    #ifndef MPI_PARALLEL
         static Timer timer("read_timer");
         timer.begin();
         
@@ -293,6 +296,7 @@ public:
         ifs.close();
         
         timer.end();
+    #endif
     }
     
 private:
@@ -327,6 +331,7 @@ public:
     
     void operator()()
     {
+    #ifndef MPI_PARALLEL
         static Timer timer("write_timer");
         timer.begin();
         
@@ -350,6 +355,7 @@ public:
         
         of.close();
         timer.end();
+    #endif
     }
     
 private:
@@ -371,6 +377,7 @@ public:
     
     void operator()()
     {
+    #ifndef MPI_PARALLEL
         static Timer timer("write_timer");
         timer.begin();
         
@@ -393,6 +400,7 @@ public:
         
         of.close();
         timer.end();
+    #endif
     }
     
 private:
@@ -455,6 +463,7 @@ struct storage {
     static void prefetch(T & o,
                          StreamStorage & ss)
     {
+    #ifndef MPI_PARALLEL
         if (ss.status() == StreamStorage::Prefetching)
             return;
         if (ss.status() == StreamStorage::Complete)
@@ -474,12 +483,14 @@ struct storage {
         // modified by the calling thread
         ss.mutexes.push_back(new_mutex);
         ss.master->notify();
+    #endif
     }
     
     template<class T>
     static void load(T & o,
                      StreamStorage & ss)
     {
+    #ifndef MPI_PARALLEL
         if (ss.status() == StreamStorage::Complete)
             return;
         else if (ss.status() == StreamStorage::Prefetching)
@@ -490,12 +501,14 @@ struct storage {
         } else
             throw std::runtime_error("WTF?");
         assert(ss.status() == StreamStorage::Complete);
+    #endif
     }
     
     template<class T>
     static void store(T & o,
                       StreamStorage & ss)
     {
+    #ifndef MPI_PARALLEL
         if (ss.status() == StreamStorage::Stored)
             return;
         
@@ -508,6 +521,7 @@ struct storage {
         ss.master->notify();
         
         ss.status_ = StreamStorage::Stored;
+    #endif
     }
     
     static void reset(StreamStorage & ss)
