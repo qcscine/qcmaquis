@@ -11,12 +11,6 @@
 
 namespace blas
 {
-    namespace detail {
-        template<typename T> struct sv_type { typedef T type; };
-        template<typename T>
-        struct sv_type<std::complex<T> > { typedef T type; };
-    }
-
     template <typename Matrix>
     Matrix transpose(Matrix const& m) 
     {
@@ -37,6 +31,7 @@ namespace blas
     template<typename T>
     p_dense_matrix<T> conjugate(p_dense_matrix<T> M)
     {
+        assert(false);
         M.inplace_conjugate();
         return M;
     }
@@ -55,6 +50,7 @@ namespace blas
     template<class Matrix>
     Matrix identity_matrix(typename Matrix::size_type size)
     {
+        assert(false);
         Matrix ret(size, size);
         for (typename Matrix::size_type k = 0; k < size; ++k)
             ret(k,k) = 1;
@@ -62,40 +58,43 @@ namespace blas
     }
     
     template<typename T>
-    void pblas_gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
+    void pblas_gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
         breakdown(C).set_init(ambient::nullify<T>);
-	ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A,B,C );
+	ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A, B, C);
     }
 
     template<typename T>
-    void gemm( const p_dense_matrix<T> & A, const p_dense_matrix<T> & B, p_dense_matrix<T> & C)
+    void gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T> &C)
     {
+        assert(C.self->breakdown()->loose);
         breakdown(C).set_init(ambient::nullify<T>);
-	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A,B,C );
+	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A, B, C);
     }
 
     template<typename T>
-    void gemm(const p_dense_matrix<T>& m1, const p_diagonal_matrix<T>& m2, p_dense_matrix<T> & m3)
+    void gemm(const p_dense_matrix<T>& A, const p_diagonal_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        assert(num_cols(m1) == num_rows(m2));
-        m3.resize(num_rows(m1), num_cols(m2));
-	ambient::push(ambient::gemm_diagonal_rhs_l_kernel, ambient::gemm_diagonal_rhs_c_kernel, m1, m2.get_data() ,m3);
+        assert(C.self->breakdown()->loose);
+        assert(num_cols(A) == num_rows(B));
+        C.resize(num_rows(A), num_cols(B));
+	ambient::push(ambient::gemm_diagonal_rhs_l_kernel, ambient::gemm_diagonal_rhs_c_kernel, A, B.get_data(), C);
     }
     
     template<typename T>
-    void gemm(const p_diagonal_matrix<T>& m1, const p_dense_matrix<T>& m2, p_dense_matrix<T>& m3)
+    void gemm(const p_diagonal_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        assert(m1.num_cols() == m2.num_rows());
-        m3.resize(m1.num_rows(), m2.num_cols());
-	ambient::push(ambient::gemm_diagonal_lhs_l_kernel,ambient::gemm_diagonal_lhs_c_kernel, m1.get_data(), m2 ,m3);
+        assert(C.self->breakdown()->loose);
+        assert(num_cols(A) == num_rows(B));
+        C.resize(num_rows(A), num_cols(B));
+	ambient::push(ambient::gemm_diagonal_lhs_l_kernel,ambient::gemm_diagonal_lhs_c_kernel, A.get_data(), B, C);
     }
     
     template<typename T>
     void svd(const p_dense_matrix<T>& A,
                    p_dense_matrix<T>& U,
                    p_dense_matrix<T>& V,
-             typename associated_diagonal_matrix<p_dense_matrix<T> >::type & S)
+             typename associated_diagonal_matrix<p_dense_matrix<T> >::type& S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
 	typename p_dense_matrix<T>::size_type k = std::min(num_rows(A), num_cols(A));
@@ -148,7 +147,7 @@ namespace blas
     }
  
    template<typename T>
-   void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala )
+   void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala)
    {
        ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
    }

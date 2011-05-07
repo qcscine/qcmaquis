@@ -57,15 +57,16 @@ namespace ambient
         if(!singleton) singleton = new scheduler();
         return *singleton;
     }
-    void init()      { engine.init();       }
-    void finalize()  { engine.finalize();   }
-    void playout()   { engine.playout();    }
-    void spin()      { engine.spin();       }
-    void spin_loop() { engine.spin_loop();  }
-    void world_loop(){ engine.world_loop(); }
-    int  size()      { return engine.size;  }
+    void init()      { engine.init();            }
+    void finalize()  { engine.finalize();        }
+    void playout()   { engine.playout();         }
+    void spin()      { engine.spin();            }
+    void spin_loop() { engine.spin_loop();       }
+    void world_loop(){ engine.world_loop();      }
+    int  size()      { return engine.size;       }
+    bool occupied()  { return engine.occupied(); }
 
-    scheduler::scheduler(): item_dim(dim2(2,2)){ } // to revert to 128,128
+    scheduler::scheduler(): item_dim(dim2(20,20)), stirring(false){ } // to revert to 128,128
     dim2 scheduler::get_mem_dim() { return this->mem_dim;  }
     dim2 scheduler::get_item_dim(){ return this->item_dim; }
     dim2 scheduler::get_work_dim(){ return this->work_dim; }
@@ -79,6 +80,7 @@ namespace ambient
 
         this->ambient = new group("ambient", AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->default_data_packet_t = NULL;
+        srand48((unsigned int) rank()); // seeding (to redo)
 // AUTO TUNING SHOULD START BELOW...
 
 ////////////////////////////////////
@@ -110,9 +112,16 @@ namespace ambient
     {
         world()->spin_loop();
     }
+    bool scheduler::occupied()
+    {
+        return this->stirring;
+    }
     void scheduler::playout()
     {
         if(this->stack.empty()) return; // easy out
+        assert(this->occupied() == false);
+        this->stirring = true;
+        MPI_Barrier(this->ambient->mpi_comm);
         one_touch_stack<core::operation*> cleanup_stack;
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;
@@ -193,6 +202,7 @@ namespace ambient
         }
         this->stack.clean();
         scope.reset_group();
+        this->stirring = false;
     }
 
     bool is_master(){

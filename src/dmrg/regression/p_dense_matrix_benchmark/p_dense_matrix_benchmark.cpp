@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types )
  
     //if(ambient::rank() == 0) b.save(ambient::size(),M);
 }
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
      ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
@@ -65,4 +65,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types )
 
      for(int i = 0 ; i < LENGTH ; i++) blas::validation(*V[i*4+2],*V[i*4+3]);
      ambient::playout();
-}
+}*/

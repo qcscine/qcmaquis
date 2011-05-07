@@ -81,8 +81,9 @@ public:
     void_pt*& breakdown() const {
         return self->profile;
     }
-    void_pt*& set_breakdown() {
-        return (self->profile = new void_pt(self));
+    void set_breakdown() {
+        if(this->p == ANY) return;
+        self->profile = new void_pt(self);
     }
 public:
     T* self;

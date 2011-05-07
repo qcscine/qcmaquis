@@ -57,23 +57,12 @@ void block_outright_assign(T& target)
     }
 }
 
-
-void init_double_l_kernel(pinned p_dense_matrix<double> & a)
-{
-    int num = 1;//get_grid_dim(a).y;
-    scope_select(num+" from ambient as init_double where master is 0"); // todo: correct the naming issue
-    if(!scope.involved()) return;
-//    zout << "2dbcd for "<< num <<" procs in init_double ("<< ambient::rank() <<"):\n"; info(a);
-
-    block_2d_cycle_assign(a);
-}
-
 void gemm_l_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
     int num = 1;//get_grid_dim(a).y;
     scope_select(num+" from ambient as gemm where master is 0 and breakdown contains "+get_id(a));
     if(!scope.involved()) return;
-//    zout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    //zout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
@@ -84,7 +73,7 @@ void copy_l_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<doubl
 {
     scope_select("1 from ambient as copy where master is 0");
     if(!scope.involved()) return;
-//    zout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
+    //zout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
 
     block_2d_cycle_assign(ac);
     block_2d_cycle_assign(a);
@@ -95,7 +84,7 @@ void resize_l_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
     breakdown(a).set_dim(ambient::dim2(cols,rows));
     scope_select("1 from ambient as resize where master is 0");
     if(!scope.involved()) return;
-//    zout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a);
 }
@@ -104,7 +93,7 @@ void remove_rows_l_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
 {
     scope_select("1 from ambient as remove_rows where master is 0");
     if(!scope.involved()) return;
-//    zout << "2dbcd in remove_rows ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in remove_rows ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a);
 }
@@ -113,7 +102,7 @@ void remove_cols_l_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
 {
     scope_select("1 from ambient as remove_cols where master is 0");
     if(!scope.involved()) return;
-//    zout << "2dbcd in remove_cols ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in remove_cols ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a);
 }
@@ -122,29 +111,9 @@ void sqrt_diagonal_l_kernel(pinned p_dense_matrix<double>& a)
 {
     scope_select("1 from ambient as sqrt_diagonal where master is 0");
     if(!scope.involved()) return;
-//    zout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a);
-}
-
-
-void one_l_scalapack_kernel(const p_dense_matrix<double>& a)
-{
-    scope_select("1 from ambient as one_scalapack where master is 0");
-    if(!scope.involved()) return;
-//    zout << "SCALAPACK: 2dbcd in one_scalapack ("<< ambient::rank() <<"):\n"; info(a);
-
-    block_2d_cycle_assign(a);
-}
-
-void two_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
-{
-    scope_select("1 from ambient as two_scalapack where master is 0");
-    if(!scope.involved()) return;
-//    zout << "SCALAPACK: 2dbcd in two_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b);
-
-    block_2d_cycle_assign(a);
-    block_2d_cycle_assign(b);
 }
 
 void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
@@ -152,7 +121,7 @@ void gemm_l_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matr
     int num = 1;//get_grid_dim(a).y; 
     scope_select(num+" from ambient as gemm_scalapack where master is 0 and breakdown contains "+get_id(a));
     if(!scope.involved()) return;
-//    zout << "2dbcd in gemm_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    //zout << "2dbcd in gemm_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
@@ -163,7 +132,7 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
 {
     scope_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ get_id(c));
     if(!scope.involved()) return;
-//    zout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    //zout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
@@ -172,9 +141,9 @@ void mem_bound_l_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<do
 
 void scale_l_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
 {
-    scope_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ get_id(m));
+    scope_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ get_id(out));
     if(!scope.involved()) return;
-//    zout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; info(m); info(out);
+    //zout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; info(m); info(out);
 
     block_2d_cycle_assign(m);
     block_2d_cycle_assign(out);
@@ -187,7 +156,7 @@ void svd_l_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<doub
     int num = 1;
     scope_select(num+" from ambient as svd where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-//    zout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; info(a); info(u); info(v); info(s);
+    //zout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; info(a); info(u); info(v); info(s);
 
     block_outright_assign(s);
     block_2d_cycle_assign(a);
@@ -200,7 +169,7 @@ void syev_l_scalapack_kernel(const p_dense_matrix<double>& m, p_dense_matrix<dou
     int num = 1;
     scope_select(num+" from ambient as syev where master is 0 and breakdown contains "+ get_id(m)); // todo: correct the naming issue
     if(!scope.involved()) return;
-//    zout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; info(m); info(w); info(z);
+    //zout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; info(m); info(w); info(z);
 
     block_outright_assign(z);
     block_2d_cycle_assign(m);
@@ -211,7 +180,7 @@ void gemm_diagonal_lhs_l_kernel(const p_dense_matrix<double>& a_diag, pinned con
 {
     scope_select("1 from ambient as gemm_lhs_diagonal where master is 0");
     if(!scope.involved()) return;
-//    zout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; info(a_diag); info(b); info(c);
+    //zout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; info(a_diag); info(b); info(c);
 
     block_2d_cycle_assign(a_diag);
     block_2d_cycle_assign(b);
@@ -222,7 +191,7 @@ void gemm_diagonal_rhs_l_kernel(pinned const p_dense_matrix<double>& a, const p_
 {
     scope_select("1 from ambient as gemm_rhs_diagonal where master is 0");
     if(!scope.involved()) return;
-//    zout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; info(a); info(b_diag); info(c);
+    //zout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; info(a); info(b_diag); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b_diag);
@@ -232,9 +201,9 @@ void gemm_diagonal_rhs_l_kernel(pinned const p_dense_matrix<double>& a, const p_
 void validation_l_kernel(pinned const p_dense_matrix<double>& a_ambient, const p_dense_matrix<double>& b_scalapack) 
 { 
     int num = 1; //get_grid_dim(a_ambient).y; 
-    scope_select(num+" from ambient as validation where master is 0");
+    scope_select(num+" from ambient as validation where master is 0 and breakdown contains "+ get_id(a_ambient));
     if(!scope.involved()) return;
-//    zout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(a_ambient); info(b_scalapack);
+    //zout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(a_ambient); info(b_scalapack);
 
     block_2d_cycle_assign(a_ambient); 
     block_2d_cycle_assign(b_scalapack); 
@@ -245,9 +214,9 @@ void reshape_l2r_l_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
                           const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 
-    scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(left));
+    scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(right));
     if(!scope.involved()) return;
-//    zout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; info(left); info(right);
+    //zout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; info(left); info(right);
 
     block_2d_cycle_assign(left); 
     block_2d_cycle_assign(right); 
@@ -258,9 +227,9 @@ void reshape_r2l_l_kernel(pinned p_dense_matrix<double>& left, const p_dense_mat
                           const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 
-    scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(right));
+    scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(left));
     if(!scope.involved()) return;
-//    zout << "2dbcd in reshape_r2l ("<< ambient::rank() <<"):\n"; info(left); info(right);
+    //zout << "2dbcd in reshape_r2l ("<< ambient::rank() <<"):\n"; info(left); info(right);
 
     block_2d_cycle_assign(left); 
     block_2d_cycle_assign(right); 
@@ -271,7 +240,7 @@ void associated_validation_l_kernel(pinned const p_dense_matrix<double>& a, cons
     int num = 1;
     scope_select(num+" from ambient as associated_validation where master is 0 and breakdown contains "+ get_id(a)); 
     if(!scope.involved()) return;
-    zout << "2dbcd in associated_validation ("<< ambient::rank() <<"):\n"; info(a); info(b);
+    //zout << "2dbcd in associated_validation ("<< ambient::rank() <<"):\n"; info(a); info(b);
 
     block_outright_assign(a);
     block_outright_assign(b);
@@ -282,7 +251,7 @@ void associated_copy_l_kernel(p_dense_matrix<double>& ac, pinned const p_dense_m
     int num = 1;
     scope_select(num+" from ambient as associated_copy where master is 0 and breakdown contains "+ get_id(a)); 
     if(!scope.involved()) return;
-    zout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
+    //zout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
 
     block_outright_assign(ac);
     block_outright_assign(a);
@@ -293,7 +262,7 @@ void associated_sort_l_kernel(pinned p_dense_matrix<double>& a)
     int num = 1;
     scope_select(num+" from ambient as associated_sort where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    zout << "2dbcd in assocaited_copy ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in assocaited_copy ("<< ambient::rank() <<"):\n"; info(a);
 
     block_outright_assign(a);
 }
@@ -303,18 +272,9 @@ void associated_reverse_l_kernel(p_dense_matrix<double>& a, const size_t& num_ro
     int num = 1;
     scope_select(num+" from ambient as associated_reverse where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    zout << "2dbcd in associated_reverse ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in associated_reverse ("<< ambient::rank() <<"):\n"; info(a);
 
     block_outright_assign(a);
-}
-
-void touch_l_kernel(p_dense_matrix<double>& target){
-    int num = 1; //get_grid_dim(a_ambient).y; 
-    scope_select(num+" from ambient as touch_l where master is 0");
-    if(!scope.involved()) return;
-//    zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(target);
-
-    block_2d_cycle_assign(target); 
 }
 
 void nullcut_l_kernel(pinned p_dense_matrix<double>& a, const size_t& num_rows, const size_t& num_cols)
@@ -322,7 +282,7 @@ void nullcut_l_kernel(pinned p_dense_matrix<double>& a, const size_t& num_rows, 
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as nullcut where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a); 
 }

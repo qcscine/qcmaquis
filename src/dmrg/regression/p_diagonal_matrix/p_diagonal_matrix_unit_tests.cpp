@@ -57,10 +57,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diagonal_gemm, T, test_types )
     p_dense_matrix<T>    B(M_SIZE,M_SIZE);
     p_dense_matrix<T>    C(M_SIZE,M_SIZE);
 
-    ambient::push(init_double_l_kernel, init_double_c_kernel, A.get_data());
-    ambient::push(init_double_l_kernel, init_double_c_kernel, B);
-    ambient::push(init_double_l_kernel, init_double_c_kernel, C);
-
     blas::gemm(A,B,C);  
     ambient::playout();
 
