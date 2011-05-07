@@ -65,12 +65,12 @@ namespace blas {
         return this->data_.elements();
     }
     template<typename T>
-    void p_diagonal_matrix<T>::remove_rows(size_t k, size_t n){
-       this->data_.remove_rows(k, n);
+    void p_diagonal_matrix<T>::remove_rows(size_t i, size_t k){
+       this->data_.remove_rows(i, k);
     }
     template<typename T>  
-    void p_diagonal_matrix<T>::remove_cols(size_t k, size_t n){
-        this->data_.remove_rows(k, n);
+    void p_diagonal_matrix<T>::remove_cols(size_t j, size_t k){
+        this->data_.remove_rows(j, k);
     }
     template<typename T> 
     void p_diagonal_matrix<T>::resize(size_t rows, size_t cols, T v){

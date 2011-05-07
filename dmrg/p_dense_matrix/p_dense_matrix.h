@@ -44,8 +44,8 @@ namespace blas {
         friend void swap(p_dense_matrix & x, p_dense_matrix & y){ x.swap(y); }
 
         inline bool empty() const;
-        inline size_type num_rows() const;
-        inline size_type num_cols() const;
+        inline size_type& num_rows() const;
+        inline size_type& num_cols() const;
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, size_type k);
         void remove_cols(size_type j, size_type k);

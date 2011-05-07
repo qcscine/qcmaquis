@@ -49,6 +49,7 @@ namespace ambient
         void spin();
         void spin_loop();
         void world_loop();
+        bool occupied();
         int size;
         block_packet_t* default_data_packet_t;
         groups::group* ambient;
@@ -57,6 +58,7 @@ namespace ambient
         dim2 mem_dim;     // work-item size of cpu streaming multiprocessor workload fractions
         dim2 item_dim;    // size of work-item (i.e. 128) 
         dim2 gpu_dim;     // work-item size of gpgpu smp workload fractions
+        bool stirring;    // playout is active
 
         one_touch_stack< std::pair<core::operation*,core::operation*> > stack;
         one_touch_stack< groups::packet_manager* > router; // packet_manager router
@@ -72,6 +74,7 @@ namespace ambient
     void world_loop();
     int size();
     bool is_master();
+    bool occupied();
     groups::group* world();
 
     extern scope_context& scope;

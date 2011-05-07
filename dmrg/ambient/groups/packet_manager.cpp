@@ -65,7 +65,7 @@ namespace ambient{ namespace groups{
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "APPROVE")); 
                 this->state = LOOSE;
             }else{
-                printf("R%d: Warning: generated reject in locking!\n", ambient::rank());
+                //printf("R%d: Warning: generated reject in locking!\n", ambient::rank());
                 this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master(), 
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "REJECT")); 
                 this->state = OPEN;
@@ -133,8 +133,6 @@ namespace ambient{ namespace groups{
                 if((*it)->flow == OUT) active_sends_number += (*it)->get_active();
             active_sends_number -= this->get_pipe(get_t<control_packet_t>(), OUT)->get_active(); // excluding control pipe messages
             if(this->process_locking(active_sends_number)){ return this->spin(); } // spinning last time
-            //counter++;
-            //if(counter == 1000) printf("R%d: inactive for %d iterations... (active sends: %d)\n", ambient::rank(), (int)counter, (int)active_sends_number);
         }
     }
     void packet_manager::spin(int n){

@@ -33,8 +33,8 @@ namespace blas {
         T & operator()(size_t i, size_t j);
         std::pair<element_iterator, element_iterator> elements();
         std::pair<const_element_iterator, const_element_iterator> elements() const;
-        void remove_rows(size_t k, size_t n = 1);
-        void remove_cols(size_t k, size_t n = 1);
+        void remove_rows(size_t i, size_t k = 1);
+        void remove_cols(size_t j, size_t k = 1);
         void resize(size_t rows, size_t cols, T v = T());
 	template< class T1 > 
         friend std::ostream & operator <<(std::ostream& os, const p_diagonal_matrix<T1>& m);
