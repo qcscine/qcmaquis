@@ -37,41 +37,26 @@ public:
             block_matrix<Matrix, SymmGroup> right = make_right_matrix(p+1);
             
             block_matrix<Matrix, SymmGroup> M, U, V;
-            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;;
-            
+
+#ifdef MPI_PARALLEL
+            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
             gemm(left, right, M);
             svd_truncate(M, U, V, S, cutoff, 100000, false);
-            
+            sqrt(S);
+            gemm(U, S, left);
+            gemm(S, V, right);
+#else
+            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;
+            gemm(left, right, M);
+            svd_truncate(M, U, V, S, cutoff, 100000, false);
             Sqrt = sqrt(S);
-            
-//            U = left;
-//            V = right;
             gemm(U, Sqrt, left);
             gemm(Sqrt, V, right);
+#endif
             
             std::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
             replace_pair(left, right, p);
             std::cout << bond_indices[p+1].sum_of_sizes() << std::endl;
-            
-//            left = make_left_matrix(p);
-//            right = make_right_matrix(p+1);
-//            gemm(left, right, M);
-//            std::cout << M << std::endl;
-            
-//            assert( (*this)[p].col_dim() == b1.col_dim() );
-//            assert( (*this)[p+1].row_dim() == b2.row_dim() );
-            
-//            for (std::size_t r = 0; r < b1.row_dim(); ++r)
-//                for (std::size_t c = 0; c < b1.col_dim(); ++c)
-//                    std::cout << r << " " << c << std::endl << b1(r,c) << endl << (*this)[p](r,c) << std::endl << "###" << std::endl;
-//            
-//            cout << "-----------------------------" << endl;
-//            
-//            for (std::size_t r = 0; r < b2.row_dim(); ++r)
-//                for (std::size_t c = 0; c < b2.col_dim(); ++c)
-//                    std::cout << r << " " << c << std::endl << b2(r,c) << std::endl << (*this)[p+1](r,c) << std::endl << "###" << std::endl;
-            
-//            return;
         }
     }
     
