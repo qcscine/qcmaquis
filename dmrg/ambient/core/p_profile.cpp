@@ -26,7 +26,7 @@ namespace ambient {
     }
 
     p_profile::p_profile()
-    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), block_lda(0), default_block(NULL), finalized(false), loose(true),
+    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), default_block(NULL), 
       profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->mem_dim  = engine.get_mem_dim();
@@ -63,9 +63,7 @@ namespace ambient {
         //this->data         = profile.data;         // not needed
         //this->master_relay = profile.master_relay; // not needed ?
         //this->timestamp    = profile.timestamp;    // not needed
-        //this->lda          = profile.lda;          // not needed
         //this->solid_lda    = profile.solid_lda;    // not needed
-        //this->block_lda    = profile.block_lda;    // not needed
         //this->state        = profile.state;        // not needed ?
         //this->reserved_x   = profile.reserved_x;   // not needed
         //this->reserved_y   = profile.reserved_y;   // not needed
@@ -78,13 +76,11 @@ namespace ambient {
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
+        //if(ambient::rank() == 0) printf("The id was %d\n", (int)this->id);
         this->layout = new core::layout_table(this);
         this->group_id = group_id.first;
         this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
-    }
-
-    bool p_profile::is_loose(){
-        return this->loose;
+        //if(ambient::rank() == 0) printf("Setting id to %d- %d!\n", (int)*group_id.first, (int)this->id);
     }
 
     std::pair<unsigned int*,size_t> p_profile::get_id(){
@@ -275,12 +271,12 @@ namespace ambient {
     void p_profile::postprocess(int i, int j){
         // can check if(this->block(i,j)->header != NULL) and reuse memory (reservation in reblock function) 
         this->block(i,j)->set_memory(alloc_t(*this->packet_type));
-        this->init(this->block(i,j));
+        this->set_default_block(i, j);
+        this->init->invoke();
     }
 
     void p_profile::finalize(){
         if(this->associated_proxy != NULL){
-            profile->associated_proxy->finalized = true;
             for(int i=0; i < this->layout->segment_count; i++){ // watch out of constness
                 this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // was scope-manager
                                                                              NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
@@ -331,7 +327,6 @@ namespace ambient {
         this->set_work_dim (profile->get_work_dim ());
         this->set_mem_dim  (profile->get_mem_dim  ());
         this->set_item_dim (profile->get_item_dim ());
-        this->loose       = profile->is_loose();
         this->reblock();
     }
 
@@ -344,10 +339,10 @@ namespace ambient {
         if(this->default_block == NULL) return NULL; // we asked to convert non structuring arg
         return this->default_block->data;            // >_< need to write proper get for blcck's items
     }
-    void p_profile::set_init(void(*f)(memblock*)){
-        this->init = f;
+    void p_profile::set_init(core::operation* op){
+        this->init = op;
     }
-    void(*p_profile::get_init() const)(memblock*){
+    core::operation* p_profile::get_init() const {
         return this->init;
     }
     dim2 p_profile::get_dim() const {

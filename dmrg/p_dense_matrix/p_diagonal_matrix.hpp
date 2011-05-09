@@ -102,7 +102,7 @@ namespace blas {
     template<typename T>
     void sqrt(p_diagonal_matrix<T> & m)
     { 
-        ambient::push(ambient::sqrt_diagonal_l_kernel, ambient::sqrt_diagonal_c_kernel, m.get_data());
+        ambient::push(ambient::sqrt_diagonal_l, ambient::sqrt_diagonal_c, m.get_data());
     }
     template<typename T>
     std::ostream& operator<<(std::ostream& os, const p_diagonal_matrix<T>& m)

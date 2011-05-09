@@ -30,6 +30,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types )
     p_dense_matrix<T> V2(M,N*2); 
     p_dense_matrix<T> V3(M,N*2); 
     p_dense_matrix<T> V4(M,N*2); 
+
     blas::gemm(V1,V2,V3);
     blas::pblas_gemm(V1,V2,V4);
     blas::validation(V3,V4);
@@ -38,10 +39,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types )
     b.begin(); 
     ambient::playout();
     b.end();
- 
+
     //if(ambient::rank() == 0) b.save(ambient::size(),M);
 }
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
      ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
@@ -65,4 +66,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types )
 
      for(int i = 0 ; i < LENGTH ; i++) blas::validation(*V[i*4+2],*V[i*4+3]);
      ambient::playout();
-}*/
+}

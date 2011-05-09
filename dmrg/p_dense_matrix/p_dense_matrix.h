@@ -18,6 +18,7 @@ namespace blas {
     class p_dense_matrix : public ambient::livelong<p_dense_matrix<T,P>, P>
     {
     public:
+        typedef void(p_dense_matrix::*binding_type)();
         typedef p_dense_matrix<T, ambient::REPLICA> replica;
         typedef ambient::livelong<p_dense_matrix<T,P>, P> livelong;
         friend class p_dense_matrix<T, ambient::ANY>;
@@ -51,6 +52,7 @@ namespace blas {
         void remove_cols(size_type j, size_type k);
         void nullcut();
         void clear();
+        void touch() const;
        
         void inplace_conjugate();
 
@@ -84,7 +86,6 @@ namespace blas {
         std::pair<element_iterator,element_iterator> elements() const {
             return std::make_pair( const_element_iterator(this->self,0,0), const_element_iterator(this->self,0,num_cols() ) );
         }
-
     private:
         size_type rows;
         size_type cols;
