@@ -76,11 +76,9 @@ namespace ambient {
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
-        //if(ambient::rank() == 0) printf("The id was %d\n", (int)this->id);
         this->layout = new core::layout_table(this);
         this->group_id = group_id.first;
         this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
-        //if(ambient::rank() == 0) printf("Setting id to %d- %d!\n", (int)*group_id.first, (int)this->id);
     }
 
     std::pair<unsigned int*,size_t> p_profile::get_id(){

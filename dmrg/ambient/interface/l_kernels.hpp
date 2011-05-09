@@ -62,7 +62,7 @@ void gemm_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
     int num = 1;//get_grid_dim(a).y;
     scope_select(num+" from ambient as gemm where master is 0 and breakdown contains "+get_id(a));
     if(!scope.involved()) return;
-    zout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    //zout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
@@ -83,7 +83,7 @@ void touch_l(p_dense_matrix<double>& a)
 {
     scope_select("1 from ambient as touch where master is 0");
     if(!scope.involved()) return;
-    zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a);
 }
@@ -93,7 +93,7 @@ void resize_l(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
     breakdown(a).set_dim(ambient::dim2(cols,rows));
     scope_select("1 from ambient as resize where master is 0");
     if(!scope.involved()) return;
-    zout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a);
 }
@@ -130,7 +130,7 @@ void gemm_l_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
     int num = 1;//get_grid_dim(a).y; 
     scope_select(num+" from ambient as gemm_scalapack where master is 0");// and breakdown contains "+get_id(a));
     if(!scope.involved()) return;
-    zout << "2dbcd in gemm_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    //zout << "2dbcd in gemm_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
@@ -212,7 +212,7 @@ void validation_l(pinned const p_dense_matrix<double>& a_ambient, const p_dense_
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as validation where master is 0 and breakdown contains "+ get_id(a_ambient));
     if(!scope.involved()) return;
-    zout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(a_ambient); info(b_scalapack);
+    //zout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(a_ambient); info(b_scalapack);
 
     block_2d_cycle_assign(a_ambient); 
     block_2d_cycle_assign(b_scalapack); 

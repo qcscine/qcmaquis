@@ -18,7 +18,6 @@ namespace blas {
     class p_dense_matrix : public ambient::livelong<p_dense_matrix<T,P>, P>
     {
     public:
-        typedef void(p_dense_matrix::*binding_type)();
         typedef p_dense_matrix<T, ambient::REPLICA> replica;
         typedef ambient::livelong<p_dense_matrix<T,P>, P> livelong;
         friend class p_dense_matrix<T, ambient::ANY>;
