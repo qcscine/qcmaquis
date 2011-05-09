@@ -26,7 +26,7 @@ void poke_deleter(T* object){
     delete object;
 }
 
-template<typename T, policy P>
+template<class T, policy P>
 class livelong
 {
 public:
@@ -36,42 +36,47 @@ public:
         //}
     }
 
-    livelong():p(P),use_count(0){
+/*    void init(){
+        this->p = P;
+        this->use_count = 0;
+        this->loose = true;
+    }*/
+
+    livelong():p(P),use_count(0),loose(true){
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica()) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
-    livelong(void_pt* p): p(P),use_count(0),profile(p)
-    {
+    livelong(void_pt* p):profile(p),p(P),use_count(0),loose(true){
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(p)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
     template<typename A1>
-    livelong(A1 a1):p(P),use_count(0){
+    livelong(A1 a1):p(P),use_count(0),loose(true){
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(a1)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
     template<typename A1, typename A2>
-    livelong(A1 a1, A2 a2):p(P),use_count(0){
+    livelong(A1 a1, A2 a2):p(P),use_count(0),loose(true){
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(a1, a2)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
     template<typename A1, typename A2, typename A3>
-    livelong(A1 a1, A2 a2, A3 a3):p(P),use_count(0){
+    livelong(A1 a1, A2 a2, A3 a3):p(P),use_count(0),loose(true){
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(a1, a2, a3)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
     boost::shared_ptr<T> get_handle() const {
-        breakdown()->loose = false;
+        if(this->is_loose()) this->bind();
         if(this->p == ANY) return this->handle;
         else if(this->p == MANUAL) return this->handle;
         else if(this->p == WEAK){ ((livelong*)this)->use_count++; return boost::shared_ptr<T>(this->self, &poke_deleter<T>); } // for one-touch only
@@ -85,14 +90,28 @@ public:
         if(this->p == ANY) return;
         self->profile = new void_pt(self);
     }
+    template<typename O>
+    void set_init(void(*fp)(O&)) const { // incomplete typename is not allowed
+        self->profile->set_init(new core::operation(fp, self));
+    }
+    bool is_loose() const {
+        return self->loose;
+    }
+    void bind() const {
+        if(!this->is_loose()) return;
+        self->loose = false;
+        bind_model((T*)this);
+    }
 public:
     T* self;
     T* thyself;
     size_t use_count;
+
+    void_pt* profile;
 private:
     policy p; // the same as P (avoiding casting collisions)
-    void_pt* profile;
     boost::shared_ptr<T> handle;
+    bool loose;
 };
 
 template<typename T>

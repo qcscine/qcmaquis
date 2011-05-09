@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( print_test, T, test_types )
     ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
 
     p_dense_matrix<T> a(8,8);
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,a); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,a); 
     a.remove_rows(0,1);
 
     std::cout << a;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
     p_dense_matrix<T> U(M_SIZE,M_SIZE); 
     p_dense_matrix<T> V(M_SIZE,M_SIZE); 
  
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,A); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,A); 
  
     typename::associated_diagonal_matrix<p_dense_matrix<T> >::type S; 
  
@@ -128,9 +128,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
     p_dense_matrix<T,ambient::MANUAL>* U = new p_dense_matrix<T, ambient::MANUAL>(M_SIZE,M_SIZE); 
     p_dense_matrix<T,ambient::MANUAL>* V = new p_dense_matrix<T, ambient::MANUAL>(M_SIZE,M_SIZE); 
  
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*A); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*U); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*V); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,*A); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,*U); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,*V); 
     *A = *U + *V;
     ambient::playout();
     delete A; delete U; delete V;
@@ -143,9 +143,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( heap_auto_test, T, test_types )
     p_dense_matrix<T,ambient::WEAK>* U = new p_dense_matrix<T,ambient::WEAK>(M_SIZE,M_SIZE); 
     p_dense_matrix<T,ambient::WEAK>* V = new p_dense_matrix<T,ambient::WEAK>(M_SIZE,M_SIZE); 
 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*A); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*U); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,*V); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,*A); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,*U); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,*V); 
     *A = *U + *V;
     ambient::playout();
     delete A;
@@ -158,9 +158,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
     p_dense_matrix<T> U(M_SIZE,M_SIZE); 
     p_dense_matrix<T> V(M_SIZE,M_SIZE); 
 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,A); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,U); 
-    ambient::push(ambient::init_double_l_kernel,ambient::init_double_c_kernel,V); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,A); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,U); 
+    ambient::push(ambient::init_double_l,ambient::init_double_c,V); 
     A = U + V;
     ambient::playout();
 }*/

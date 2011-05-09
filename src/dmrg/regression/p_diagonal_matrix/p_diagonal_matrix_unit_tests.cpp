@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_diag, T, test_types )
     ambient::layout >> dim(2,2), dim(2,2), dim(10,1);
     p_diagonal_matrix<T> A(M_SIZE,1);
 
-    ambient::push(ambient::one_l_scalapack_kernel, ambient::one_null_c_kernel, A.get_data() );
+    ambient::push(ambient::one_l_scalapack, ambient::one_null_c, A.get_data() );
     ambient::playout();
     zout << A ;
 

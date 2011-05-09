@@ -51,7 +51,7 @@ namespace blas
     Matrix identity_matrix(typename Matrix::size_type size)
     {
         assert(false);
-        Matrix ret(size, size);
+        Matrix ret(size, size); // don't forget null-init here
         for (typename Matrix::size_type k = 0; k < size; ++k)
             ret(k,k) = 1;
         return ret;
@@ -60,34 +60,37 @@ namespace blas
     template<typename T>
     void pblas_gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        breakdown(C).set_init(ambient::nullify<T>);
-	ambient::push(ambient::gemm_l_scalapack_kernel, ambient::gemm_c_scalapack_kernel, A, B, C);
+        assert(C.is_loose());
+        C.resize(A.num_rows(), B.num_cols());
+        C.set_init(ambient::null_i<T>);
+	ambient::push(ambient::gemm_l_scalapack, ambient::gemm_c_scalapack, A, B, C);
     }
 
     template<typename T>
     void gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T> &C)
     {
-        assert(C.self->breakdown()->loose);
-        breakdown(C).set_init(ambient::nullify<T>);
-	ambient::push(ambient::gemm_l_kernel, ambient::gemm_c_kernel, A, B, C);
+        assert(C.is_loose());
+        C.resize(A.num_rows(), B.num_cols());
+        C.set_init(ambient::null_i<T>);
+	ambient::push(ambient::gemm_l, ambient::gemm_c, A, B, C);
     }
 
     template<typename T>
     void gemm(const p_dense_matrix<T>& A, const p_diagonal_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        assert(C.self->breakdown()->loose);
+        assert(C.is_loose());
         assert(num_cols(A) == num_rows(B));
-        C.resize(num_rows(A), num_cols(B));
-	ambient::push(ambient::gemm_diagonal_rhs_l_kernel, ambient::gemm_diagonal_rhs_c_kernel, A, B.get_data(), C);
+        C.resize(A.num_rows(), B.num_cols());
+	ambient::push(ambient::gemm_diagonal_rhs_l, ambient::gemm_diagonal_rhs_c, A, B.get_data(), C);
     }
     
     template<typename T>
     void gemm(const p_diagonal_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        assert(C.self->breakdown()->loose);
+        assert(C.is_loose());
         assert(num_cols(A) == num_rows(B));
-        C.resize(num_rows(A), num_cols(B));
-	ambient::push(ambient::gemm_diagonal_lhs_l_kernel,ambient::gemm_diagonal_lhs_c_kernel, A.get_data(), B, C);
+        C.resize(A.num_rows(), B.num_cols());
+	ambient::push(ambient::gemm_diagonal_lhs_l,ambient::gemm_diagonal_lhs_c, A.get_data(), B, C);
     }
     
     template<typename T>
@@ -101,7 +104,7 @@ namespace blas
         U.resize(num_rows(A), k);
         V.resize(k, num_cols(A));
         S.resize(k, k);
-	ambient::push(ambient::svd_l_scalapack_kernel, ambient::svd_c_scalapack_kernel, A, U, V, S.get_data());
+	ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, A, U, V, S.get_data());
     }
     
     template<typename T>
@@ -149,7 +152,7 @@ namespace blas
    template<typename T>
    void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala)
    {
-       ambient::push(ambient::validation_l_kernel, ambient::validation_c_kernel, A_ambient, B_scala);
+       ambient::push(ambient::validation_l, ambient::validation_c, A_ambient, B_scala);
    }
 
    template<typename T, class Generator>

@@ -26,7 +26,7 @@ namespace blas {
         self->rows = m.num_rows();
         self->cols = m.num_cols();
         this->set_breakdown();
-        ambient::push(ambient::copy_l_kernel, ambient::copy_c_kernel, *this, m);
+        ambient::push(ambient::copy_l, ambient::copy_c, *this, m);
     }
 
     template <typename T, ambient::policy P>
@@ -49,14 +49,18 @@ namespace blas {
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::nullcut(){
-        if(!self->breakdown()->is_loose())
-            ambient::push(ambient::nullcut_l_kernel, ambient::nullcut_c_kernel, *this, self->rows, self->cols);
+        ambient::push(ambient::nullcut_l, ambient::nullcut_c, *this, self->rows, self->cols);
     }
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::clear(){
         self->rows = self->cols = 0;
-        this->nullcut();
+        if(!self->is_loose()) this->nullcut();
+    }
+
+    template <typename T, ambient::policy P>
+    void p_dense_matrix<T,P>::touch() const {
+        ambient::push(ambient::touch_l, ambient::touch_c, *this);
     }
 
     template <typename T, ambient::policy P>
@@ -66,17 +70,18 @@ namespace blas {
         self->cols = cols;
         if(rows <= 0){ printf("%d %d\n", rows, cols); void* a = malloc(1); free(a); free(a); assert(rows > 0); }
         assert(cols > 0);
-        if(self->breakdown()->is_loose()) self->breakdown()->set_dim(ambient::dim2(cols,rows));
-        else ambient::push(ambient::resize_l_kernel, ambient::resize_c_kernel, *this, self->rows, self->cols);
-        this->nullcut();
+        if(!self->is_loose()){ 
+            ambient::push(ambient::resize_l, ambient::resize_c, 
+                          *this, self->rows, self->cols);
+        }
     }
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::remove_rows(size_type i, size_type k = 1)
     {
         assert( i+k <= self->rows );
-        if(self->breakdown()->is_loose()) return this->resize(self->rows-k, self->cols);
-        ambient::push(ambient::remove_rows_l_kernel, ambient::remove_rows_c_kernel, *this, i, k);
+        if(self->is_loose()) return this->resize(self->rows-k, self->cols);
+        ambient::push(ambient::remove_rows_l, ambient::remove_rows_c, *this, i, k);
         this->resize(self->rows - k, self->cols);
     }
 
@@ -84,8 +89,8 @@ namespace blas {
     void p_dense_matrix<T,P>::remove_cols(size_type j, size_type k = 1)
     {
         assert( j+k <= self->cols );
-        if(self->breakdown()->is_loose()) return this->resize(self->rows, self->cols-k);
-        ambient::push(ambient::remove_cols_l_kernel, ambient::remove_cols_c_kernel, *this, j, k);
+        if(self->is_loose()) return this->resize(self->rows, self->cols-k);
+        ambient::push(ambient::remove_cols_l, ambient::remove_cols_c, *this, j, k);
         this->resize(self->rows, self->cols - k);
     }
 
@@ -117,11 +122,8 @@ namespace blas {
         static double zero = 13;
         if(i >= self->rows){ printf("Accesing %d %d (of %d %d)\n", (int)i, (int)j, (int)self->rows, (int)self->cols); void* a = malloc(1); free(a); free(a); assert(i < self->rows); }
         assert(j < self->cols);
-        if(ambient::occupied()) return zero; // for stream reader
-        if(self->breakdown()->loose){
-//            printf("Warning: accessing loose data...\n");
-            ambient::push(ambient::nullcut_l_kernel, ambient::nullcut_c_kernel, *this, self->rows, self->cols);
-        }
+        if(ambient::occupied()) assert(false); //return zero; // for stream reader
+        if(self->is_loose()) this->touch();
         ambient::playout();
         int block_i = i / (self->breakdown()->get_mem_t_dim().y);
         int block_j = j / (self->breakdown()->get_mem_t_dim().x);
@@ -151,8 +153,9 @@ namespace blas {
         if(rhs.thyself->breakdown()->is_proxy()){
             ambient::pin(rhs, *this); // no copying - pinning profile
         }else{
-            if(this->num_rows() != rhs.num_rows() || this->num_cols() != rhs.num_cols()) this->resize(rhs.num_rows(), rhs.num_cols());
-            ambient::push(ambient::copy_l_kernel, ambient::copy_c_kernel, *this, rhs);
+            if(this->num_rows() != rhs.num_rows() || this->num_cols() != rhs.num_cols()) 
+                this->resize(rhs.num_rows(), rhs.num_cols());
+            ambient::push(ambient::copy_l, ambient::copy_c, *this, rhs);
         }
         return *this;
     }
@@ -169,32 +172,32 @@ namespace blas {
     }
     template <typename T, ambient::policy P>
     const p_dense_matrix<T>& operator + (const p_dense_matrix<T,P>& a, const p_dense_matrix<T,P>& b){ 
-        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l_kernel, ambient::add_c_kernel, a, b); 
-        breakdown(out).set_init(ambient::nullify<T>);
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l, ambient::add_c, a, b); 
+        out.set_init(ambient::null_i<T>);
         return out; 
     }
     template <typename T, ambient::policy P>
     const p_dense_matrix<T>& operator - (const p_dense_matrix<T,P>& a, const p_dense_matrix<T,P>& b){ 
-        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l_kernel, ambient::sub_c_kernel, a, b); 
-        breakdown(out).set_init(ambient::nullify<T>);
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l, ambient::sub_c, a, b); 
+        out.set_init(ambient::null_i<T>);
         return out; 
     }
     template<typename T, ambient::policy P>
-    const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& lhs, const p_dense_matrix<T,P>& rhs){ 
-        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::gemm_l_kernel, ambient::gemm_c_kernel, lhs, rhs);
-        breakdown(out).set_init(ambient::nullify<T>);
+    const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& lhs, const p_dense_matrix<T,P>& rhs){
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::gemm_l, ambient::gemm_c, lhs, rhs);
+        out.set_init(ambient::null_i<T>);
         return out; 
     }
     template<typename T, ambient::policy P, typename T2>
     const p_dense_matrix<T>& operator * (const p_dense_matrix<T,P>& m, const T2& t){ 
-        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); 
-        breakdown(out).set_init(ambient::nullify<T>);
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::scale_l, ambient::scale_c, m, t); 
+        out.set_init(ambient::null_i<T>);
         return out; 
     }
     template<typename T, ambient::policy P, typename T2>
     const p_dense_matrix<T>& operator * (const T2& t, const p_dense_matrix<T,P>& m){ 
-        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::scale_l_kernel, ambient::scale_c_kernel, m, t); 
-        breakdown(out).set_init(ambient::nullify<T>);
+        p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::scale_l, ambient::scale_c, m, t); 
+        out.set_init(ambient::null_i<T>);
         return out; 
     }
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////

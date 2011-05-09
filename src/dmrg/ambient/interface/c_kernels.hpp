@@ -23,7 +23,7 @@ void print_pinned_block(T& a)
     std::cout << " --------------------------- " << std::endl;
 }
 
-void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
+void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
 //  --- --- ---       --- --- ---       --- --- ---
 // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
@@ -60,7 +60,7 @@ void gemm_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<
     }
 }
 
-void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
+void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {    
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
@@ -70,7 +70,7 @@ void copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<doubl
 }
 
 
-void associated_copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
+void associated_copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
@@ -79,7 +79,7 @@ void associated_copy_c_kernel(p_dense_matrix<double>& ac, pinned const p_dense_m
     memcpy(ac_elements, a_elements, sizeof(double)*get_mem_t_dim(a).y);
 }
 
-void associated_sort_c_kernel(p_dense_matrix<double>& a)
+void associated_sort_c(p_dense_matrix<double>& a)
 {    
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
@@ -89,7 +89,7 @@ void associated_sort_c_kernel(p_dense_matrix<double>& a)
  //todo
 }
 
-void associated_reverse_c_kernel(p_dense_matrix<double>& a, const size_t& num_rows)
+void associated_reverse_c(p_dense_matrix<double>& a, const size_t& num_rows)
 {   
     double rs = 0; // intermediate for reverse inside one block of mem
     size_t iir = 0;
@@ -141,7 +141,7 @@ void associated_reverse_c_kernel(p_dense_matrix<double>& a, const size_t& num_ro
     free((void*)pa);
 }
 
-void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
+void remove_rows_c(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
 {
     typedef double T;
     
@@ -197,7 +197,7 @@ void remove_rows_c_kernel(pinned p_dense_matrix<double>& a, const size_t& i_mark
     }
 }
 
-void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
+void remove_cols_c(pinned p_dense_matrix<double>& a, const size_t& j_mark, const size_t& k)
 {
     typedef double T;
 
@@ -247,7 +247,9 @@ void remove_cols_c_kernel(pinned p_dense_matrix<double>& a, const size_t& j_mark
     }
 }
 
-void resize_c_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
+void touch_c(p_dense_matrix<double>& a){ }
+
+void resize_c(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
 {
     for(int i = 0; i < get_grid_dim(a).y; i++)
     if(current(a).block(i, get_grid_dim(a).x-1)->available()){
@@ -267,7 +269,7 @@ void resize_c_kernel(p_dense_matrix<double>& a, const size_t& rows, const size_t
     }
 }
 
-void sqrt_diagonal_c_kernel(pinned p_dense_matrix<double>& a)
+void sqrt_diagonal_c(pinned p_dense_matrix<double>& a)
 {
     double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
     for(int i=0; i < get_mem_t_dim(a).y; i++)
@@ -327,7 +329,7 @@ void __a_memcpy(T& dest, dim2 dest_p, const T& src, dim2 src_p, dim2 size)
     }
 }
 
-void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
+void reshape_l2r_c(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
                           const size_t& left_offset, const size_t& right_offset, 
                           const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
@@ -337,7 +339,7 @@ void reshape_l2r_c_kernel(const p_dense_matrix<double>& left, pinned p_dense_mat
                    dim2( rdim, ldim ));
 }
 
-void reshape_r2l_c_kernel(pinned p_dense_matrix<double>& left, const p_dense_matrix<double>& right,
+void reshape_r2l_c(pinned p_dense_matrix<double>& left, const p_dense_matrix<double>& right,
                           const size_t& left_offset, const size_t& right_offset, 
                           const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
@@ -347,7 +349,7 @@ void reshape_r2l_c_kernel(pinned p_dense_matrix<double>& left, const p_dense_mat
                    dim2( rdim, ldim ));
 }
 
-void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
+void add_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
 {
     double* ad = current(a)(get_block_id(c).y, get_block_id(c).x);
     double* bd = current(b)(get_block_id(c).y, get_block_id(c).x);
@@ -356,7 +358,7 @@ void add_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>&
     cd[i] = ad[i] + bd[i];
 }
 
-void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
+void sub_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
 {
     double* ad = current(a)(get_block_id(c).y, get_block_id(c).x);
     double* bd = current(b)(get_block_id(c).y, get_block_id(c).x);
@@ -365,7 +367,7 @@ void sub_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>&
     cd[i] = ad[i] - bd[i];
 }
 
-void scale_c_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
+void scale_c(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
 {
     double* md   = current(m)(get_block_id(out).y, get_block_id(out).x);
     double* outd = current(out)(get_block_id(out).y, get_block_id(out).x);
@@ -373,7 +375,7 @@ void scale_c_kernel(const p_dense_matrix<double>& m, const double& t, pinned p_d
     outd[i] = md[i]*t;
 }
 
-void gemm_diagonal_lhs_c_kernel(const p_dense_matrix<double>& a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
+void gemm_diagonal_lhs_c(const p_dense_matrix<double>& a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
     int j = get_block_id(b).y*get_mem_t_dim(b).y;
     int size = get_mem_t_dim(b).x;
@@ -389,7 +391,7 @@ void gemm_diagonal_lhs_c_kernel(const p_dense_matrix<double>& a_diag, pinned con
     }
 }
 
-void gemm_diagonal_rhs_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
+void gemm_diagonal_rhs_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
 {
     int j = get_block_id(a).x*get_mem_t_dim(a).x;
     int size = get_mem_t_dim(a).y;
@@ -404,7 +406,7 @@ void gemm_diagonal_rhs_c_kernel(pinned const p_dense_matrix<double>& a, const p_
     }
 }
 
-void nullcut_c_kernel(pinned p_dense_matrix<double>&a, const size_t& num_rows, const size_t& num_cols)
+void nullcut_c(pinned p_dense_matrix<double>&a, const size_t& num_rows, const size_t& num_cols)
 {
     size_t i = get_block_id(a).y*get_mem_t_dim(a).y; 
     size_t j = get_block_id(a).x*get_mem_t_dim(a).x; 
@@ -417,9 +419,9 @@ void nullcut_c_kernel(pinned p_dense_matrix<double>&a, const size_t& num_rows, c
     }
 }
  
-void one_null_c_kernel(const p_dense_matrix<double>& a){ }
-void two_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b){ }
-void three_null_c_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c){ }
+void one_null_c(const p_dense_matrix<double>& a){ }
+void two_null_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b){ }
+void three_null_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, const p_dense_matrix<double>& c){ }
 
 /** 
 Validation kernel source:  
@@ -441,7 +443,7 @@ Validation kernel source:
  address = {New York, NY, USA}, 
 }  
 */ 
-void validation_c_kernel(pinned const p_dense_matrix<double>& a_ambient, const p_dense_matrix<double>& b_scalapack) 
+void validation_c(pinned const p_dense_matrix<double>& a_ambient, const p_dense_matrix<double>& b_scalapack) 
 { 
     double* ad = current(a_ambient)(get_block_id(a_ambient).y, get_block_id(a_ambient).x); 
     double* bd = current(b_scalapack)(get_block_id(a_ambient).y, get_block_id(a_ambient).x); 
@@ -458,7 +460,7 @@ void validation_c_kernel(pinned const p_dense_matrix<double>& a_ambient, const p
     } 
 }
 
-void associated_validation_c_kernel(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b) 
+void associated_validation_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b) 
 {// two validations kernels is stupid, untill the implementation of the << >> operator inside the l_kernel 
     int j = get_block_id(a).x;
     int i = get_block_id(a).y;

@@ -14,7 +14,7 @@ extern "C" {
     void pdsyev_(char *jobz, char *uplo, int *n, double *a, int *ia, int *ja, int *desca, double *w, double *z, int *iz, int *jz, int *descz, double *work, int *lwork, int *info);
 }
 
-void gemm_c_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
+void gemm_c_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
 #ifdef SCALAPACK
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
@@ -53,7 +53,7 @@ void gemm_c_scalapack_kernel(const p_dense_matrix<double>& a, const p_dense_matr
 #endif
 }
 
-void svd_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
+void svd_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
 {
 #ifndef SCALAPACK
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
@@ -135,7 +135,7 @@ void svd_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<doub
 }
 
 
-void syev_c_scalapack_kernel(const p_dense_matrix<double>& a, p_dense_matrix<double>& w, p_dense_matrix<double>& z)
+void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w, p_dense_matrix<double>& z)
 {
 #ifdef SCALAPACK
     int info, ictxt, nprow, npcol, myrow, mycol, bn;

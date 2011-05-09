@@ -53,8 +53,8 @@ namespace ambient{ namespace core{
     }
 
     void layout_table::remap(){
-        int y_size = __a_ceil(this->profile->dim.y / this->profile->get_mem_t_dim().y);
-        int x_size = __a_ceil(this->profile->dim.x / this->profile->get_mem_t_dim().x);
+        int y_size = __a_ceil(this->profile->get_dim().y / this->profile->get_mem_t_dim().y);
+        int x_size = __a_ceil(this->profile->get_dim().x / this->profile->get_mem_t_dim().x);
         if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
         for(int i = 0; i < y_size; i++){
             if(i >= this->reserved_y) map.push_back(std::vector<entry*>());
