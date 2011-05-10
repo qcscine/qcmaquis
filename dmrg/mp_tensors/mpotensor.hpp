@@ -48,7 +48,9 @@ block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()
     timer.begin();
     // we need a better solution for this!
     block_matrix<Matrix, SymmGroup> * ret;
+#ifndef MPI_PARALLEL
 #pragma omp critical
+#endif
     ret = &data_[std::make_pair(left_index, right_index)];
     timer.end();
     return *ret;
@@ -64,7 +66,9 @@ block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::
     static Timer timer("MPOTensor non-const lookup");
     timer.begin();
     block_matrix<Matrix, SymmGroup> * ret;
+#ifndef MPI_PARALLEL
 #pragma omp critical
+#endif
 //    ret = &data_[left_index][right_index];
     ret = &data_[std::make_pair(left_index, right_index)];
     timer.end();

@@ -194,7 +194,9 @@ struct contraction {
         
         loop1_timer.begin();
         size_t loop_max = left.aux_dim();
+#ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
+#endif
         for (std::size_t b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left.data_[b]), mps.data_, tmp);
@@ -218,7 +220,9 @@ struct contraction {
         mps.make_left_paired();
         
         loop_max = mpo.col_dim();
+#ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
+#endif
         for (size_t b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
@@ -326,7 +330,9 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         
         size_t loop_max = right.aux_dim();
+#ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
+#endif
         for (std::size_t b = 0; b < loop_max; ++b) {
             gemm(mps.data_, right.data_[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
@@ -346,7 +352,9 @@ struct contraction {
         mps.make_right_paired();
         
         loop_max = mpo.row_dim();
+#ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
+#endif
         for (size_t b1 = 0; b1 < loop_max; ++b1) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
@@ -457,7 +465,9 @@ struct contraction {
         ret.data_.resize(mpo.col_dim());
         
         std::size_t loop_max = mpo.col_dim();
+#ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
+#endif
         for (std::size_t b = 0; b < loop_max; ++b)
             gemm(transpose(lbtm.data_[b]), bra_tensor.data(), ret.data_[b]);
         
@@ -484,7 +494,9 @@ struct contraction {
         
         std::size_t loop_max = mpo.row_dim();
         block_matrix<Matrix, SymmGroup> tmp = transpose(bra_tensor.data());
+#ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
+#endif
         for (std::size_t b = 0; b < loop_max; ++b)
             gemm(rbtm.data_[b], tmp, ret.data_[b]);
         
@@ -516,13 +528,17 @@ struct contraction {
         size_t loop_max = mpo.col_dim();
         
         loop.begin();
+#ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
+#endif
         for (size_t b = 0; b < loop_max; ++b)
         {
             block_matrix<Matrix, SymmGroup> oblock;
             gemm(left_mpo_mps.data_[b], right.data_[b], oblock);
             for (size_t k = 0; k < oblock.n_blocks(); ++k)
+#ifndef MPI_PARALLEL
 #pragma omp critical
+#endif
                 ret.data_.match_and_add_block(oblock[k],
                                               oblock.left_basis()[k].first,
                                               oblock.right_basis()[k].first);

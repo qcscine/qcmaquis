@@ -9,8 +9,8 @@ namespace blas {
     p_dense_matrix<T,P>::~p_dense_matrix(){ // #destructor
     }
     template <typename T, ambient::policy P> // proxy object construction
-    p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){ 
-    }
+    p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){}
+
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::p_dense_matrix(size_type rows = 0, size_type cols = 0, T init_value = T() )
     : livelong(rows, cols, init_value){
@@ -20,13 +20,10 @@ namespace blas {
     }
 
     template <typename T, ambient::policy P>
-    template <typename TM, ambient::policy PM>
-    p_dense_matrix<T,P>::p_dense_matrix(p_dense_matrix<TM,PM> const& m)
-    : livelong(m){
-        self->rows = m.num_rows();
-        self->cols = m.num_cols();
-        this->set_breakdown();
+    p_dense_matrix<T,P>::p_dense_matrix(p_dense_matrix const& m) // copy constructor (to be optimized)
+    : livelong(m.num_rows(), m.num_cols()){
         ambient::push(ambient::copy_l, ambient::copy_c, *this, m);
+        ambient::playout();
     }
 
     template <typename T, ambient::policy P>
@@ -42,14 +39,15 @@ namespace blas {
     inline bool p_dense_matrix<T,P>::empty() const { return (self->rows == 0 || self->cols == 0); }
 
     template <typename T, ambient::policy P>
-    inline size_t& p_dense_matrix<T,P>::num_rows() const { return self->rows; }
+    inline size_t p_dense_matrix<T,P>::num_rows() const { return self->rows; }
 
     template <typename T, ambient::policy P>
-    inline size_t& p_dense_matrix<T,P>::num_cols() const { return self->cols; }
+    inline size_t p_dense_matrix<T,P>::num_cols() const { return self->cols; }
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::nullcut(){
         ambient::push(ambient::nullcut_l, ambient::nullcut_c, *this, self->rows, self->cols);
+        ambient::playout();
     }
 
     template <typename T, ambient::policy P>
@@ -61,6 +59,7 @@ namespace blas {
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::touch() const {
         ambient::push(ambient::touch_l, ambient::touch_c, *this);
+        ambient::playout();
     }
 
     template <typename T, ambient::policy P>
@@ -74,6 +73,7 @@ namespace blas {
             ambient::push(ambient::resize_l, ambient::resize_c, 
                           *this, self->rows, self->cols);
         }
+        ambient::playout();
     }
 
     template <typename T, ambient::policy P>
@@ -156,6 +156,7 @@ namespace blas {
             if(this->num_rows() != rhs.num_rows() || this->num_cols() != rhs.num_cols()) 
                 this->resize(rhs.num_rows(), rhs.num_cols());
             ambient::push(ambient::copy_l, ambient::copy_c, *this, rhs);
+        ambient::playout();
         }
         return *this;
     }
@@ -163,6 +164,7 @@ namespace blas {
     template <typename T, ambient::policy P>
     template <ambient::policy PR>
     p_dense_matrix<T,P>::operator p_dense_matrix<T,PR>(){
+        assert(false);
         return (*(p_dense_matrix<T,PR>*)this);
     }
     template <typename T, ambient::policy P>
@@ -175,7 +177,7 @@ namespace blas {
         p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l, ambient::add_c, a, b); 
         out.set_init(ambient::null_i<T>);
         return out; 
-    }
+    } // returns non-ref in orig
     template <typename T, ambient::policy P>
     const p_dense_matrix<T>& operator - (const p_dense_matrix<T,P>& a, const p_dense_matrix<T,P>& b){ 
         p_dense_matrix<T>& out = ambient::push< p_dense_matrix<T> >(ambient::mem_bound_l, ambient::sub_c, a, b); 
