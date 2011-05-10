@@ -37,11 +37,13 @@ namespace utils
     }
 #endif
     
+#ifdef MT_MATRIX_H
     template<class T>
     size_t size_of(mt_matrix<T> const & m)
     {
         return num_rows(m)*num_cols(m)*sizeof(T);
     }
+#endif
     
     template<class M, class SG>
     size_t size_of(block_matrix<M, SG> const & m)
