@@ -21,7 +21,7 @@ void resize( p_dense_matrix<T>& m,
         typename p_dense_matrix<T>::value_type const& t )
 {
     BOOST_CONCEPT_ASSERT((blas::ResizableMatrix<p_dense_matrix<T> >));
-    return m.resize(i,j,t);
+    return m.resize(i,j); // maybe will add t back
 }
 
 template <typename T>
