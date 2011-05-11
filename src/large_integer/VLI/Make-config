@@ -1,5 +1,6 @@
 # Make-config
-
+# Note : link with the static library of libboost_unit_test_framework  
+# get a pb with the dynamic lib
 
 
 gpu:
@@ -7,13 +8,14 @@ gpu:
 	"N = gpu" \
 	"MPICC = g++ " \
 	"NVCC = /usr/local/cuda/bin/nvcc " \
-	"OPTIONS =  -m64  " \
+	"OPTIONS =  -m64 -D__CUBLAS__ " \
 	"OPTIONS_NVCC =  -m64 -DNDEBUG  " \
-	"PREPROC = CPU_FREQ=2.2 " \
+	"PREPROC = CPU_FREQ=2.66 " \
 	"LINK = -o  " \
-	"PATH_INC = -I/Developer/GPU\ Computing/shared/inc -I/opt/boost/include -I/usr/local/cuda/include  -I/Users/Tim/Documents/LONGINT_GPU/Untitled " \
-	"LIB = -lcudart -lcublas -lcuda " \
+	"PATH_INC = -I/Developer/GPU\ Computing/shared/inc -I/opt/boost/include -I/usr/local/cuda/include  -I/Users/Tim/Documents/VLI/VLI " \
+	"LIB = /opt/boost/lib/libboost_unit_test_framework.a -lcudart -lcublas -lcuda " \
 	"PATH_LIB_CUBLAS=/usr/local/cuda/lib " \
+	"PATH_LIB_BOOST=/opt/boost/lib " \
 	"P = " \
 	"M = "
 
