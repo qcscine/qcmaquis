@@ -319,6 +319,25 @@ void entrywise_multiplies_assign_gpu(TYPE* a, TYPE const* b, int num_integers, i
     mutliplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b, c, num_integers, vli_size)
     */
 }
+
+void entywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_integers, int vli_size)
+{
+	dim3 dimgrid;
+	dim3 dimblock;
+    //TODO can't we remove dimthread? what is it good for?
+	dim3 dimthread;
+
+	DeterminationGrid(dimgrid, dimblock, dimthread,num_integers, vli_size);
+	
+#ifdef VLI_GPU_DEBUG
+	printf("dimgrid : %i %i \n",dimgrid.x, dimgrid.y);
+	printf("dimblock: %i %i \n",dimblock.x, dimblock.y);
+//	printf("%i %i \n",dimthread.x, dimthread.y);
+#endif
+
+	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b ,c, num_integers, vli_size);
+}
+
 void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size)
 {
     // NOT IMPLEMENTED YET
