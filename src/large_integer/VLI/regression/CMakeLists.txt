@@ -4,6 +4,10 @@
 #
 find_package (Boost COMPONENTS unit_test_framework)
 
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
 add_definitions (-DBOOST_TEST_DYN_LINK)
 
 add_executable (vli_cpu_tests vli_cpu_tests.cpp)
