@@ -54,8 +54,9 @@ namespace conversion
     
     template<class T> struct get_<std::vector<T> >
     {
-        std::vector<T> operator()(boost::program_options::variables_map& vm_, std::string& key)
+        std::vector<T> operator()(boost::program_options::variables_map& vm_, std::string const & key)
         {
+//            cerr << "reading " << key << endl;
             std::string raw = vm_[key].as<std::string>();
             std::vector<T> ret;
             
