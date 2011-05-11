@@ -92,23 +92,20 @@ BOOST_AUTO_TEST_CASE(serial_multiplication)
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	
-	vli::vli_cpu<TYPE> A(255);
-	vli::vli_cpu<TYPE> B(255);
+	vli::vli_cpu<TYPE> A(254);
+	vli::vli_cpu<TYPE> B(254);
 	vli::vli_cpu<TYPE> C(0);
 	
 	A[1] = 255;
 	A[2] = 255;
-	A[3] = 255;
+//	A[3] = 255;
 	/** this number is the result by hand */
 	vli::vli_cpu<TYPE> Res;
 	
-	Res[0] = 254;
-	Res[1] = 0;
-	Res[2] = 0;
-	Res[3] = 0;
-	Res[4] = 1;
-	
-	
+	Res[0] = 4;
+	Res[1] = 254;
+	Res[2] = 255;
+	Res[3] = 253;
 	
     vli::vli_gpu<TYPE> D(A);
 	vli::vli_gpu<TYPE> E(B);
@@ -118,9 +115,52 @@ BOOST_AUTO_TEST_CASE(serial_multiplication)
 	F = D*E;
 	
 	BOOST_CHECK_EQUAL(C,F);
-//	BOOST_CHECK_EQUAL(C,Res);
-//	BOOST_CHECK_EQUAL(Res,F);
+	BOOST_CHECK_EQUAL(C,Res);
+	BOOST_CHECK_EQUAL(Res,F);
 	
 	GPU->instance().destructor();
 
+}
+
+BOOST_AUTO_TEST_CASE(baseten_addition)
+{
+	vli::vli_cpu<TYPE> A(254);
+	vli::vli_cpu<TYPE> B(254);
+	vli::vli_cpu<TYPE> C(0);
+	
+	A[1] = 255;
+	B[1] = 255;
+	
+	C=A+B;
+	
+	
+	std::size_t ATen = A.BaseTen();
+	std::size_t BTen = B.BaseTen();
+	std::size_t CTen = C.BaseTen();
+	std::size_t CTenRes = 0;
+
+	CTenRes = ATen + BTen;
+
+	BOOST_CHECK_EQUAL(CTen,CTenRes);	
+}
+
+BOOST_AUTO_TEST_CASE(baseten_multiplication)
+{
+	vli::vli_cpu<TYPE> A(254);
+	vli::vli_cpu<TYPE> B(254);
+	vli::vli_cpu<TYPE> C(0);
+	
+	A[1] = 255;
+	B[1] = 255;
+	
+	C=A*B;
+	
+	std::size_t ATen = A.BaseTen();
+	std::size_t BTen = B.BaseTen();
+	std::size_t CTen = C.BaseTen();
+	std::size_t CTenRes = 0;
+	
+	CTenRes = ATen * BTen;
+
+	BOOST_CHECK_EQUAL(CTen,CTenRes);
 }
