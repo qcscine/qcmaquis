@@ -23,7 +23,12 @@ void plus_assign(vli_gpu<BaseInt> & vli_a, vli_gpu<BaseInt> const& vli_b )
 template <class BaseInt>
 void multiplies_assign(vli_gpu<BaseInt> & vli_a, vli_gpu<BaseInt> const& vli_b )
 {
-    entrywise_multiplies_assign_gpu( vli_a.p(), vli_b.p(), 1, vli_gpu<BaseInt>::size);
+    // TODO this seems to be quite inefficient
+    // (We implement the a *= b as a regular c = a * b and do a swap(a,c)...)
+    // (I guess it's better to try implement a *= b directly.)
+    vli_gpu<BaseInt> vli_c;
+    entrywise_multiplies_gpu( vli_a.p(), vli_b.p(), vli_c.p(), 1, vli_gpu<BaseInt>::size);
+    swap(vli_a,vli_c);
 }
 
 } //namespace detail

@@ -288,6 +288,7 @@ void plus_assign_gpu(TYPE*  A,  const TYPE*  B, int num_integers, int vli_size)
 //	printf("%i", A);
 }
 
+/*
 void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYPE ld)
 {
 
@@ -306,21 +307,20 @@ void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYP
 
 	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B ,C, num_integer, ld);
 }
+*/
 
 void entrywise_multiplies_assign_gpu(TYPE* a, TYPE const* b, int num_integers, int vli_size)
 {
-    // NOT IMPLEMENTED YET
+    // TODO NOT IMPLEMENTED YET
     assert(false);
-/*
     dim3 dimgrid;
     dim3 dimblock;
     dim3 dimthread;
     DeterminationGrid(dimgrid, dimblock, dimthread, num_integers, vli_size);
-    mutliplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b, c, num_integers, vli_size)
-    */
+    //multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b,  num_integers, vli_size);
 }
 
-void entywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_integers, int vli_size)
+void entrywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_integers, int vli_size)
 {
 	dim3 dimgrid;
 	dim3 dimblock;
@@ -335,7 +335,7 @@ void entywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_inte
 //	printf("%i %i \n",dimthread.x, dimthread.y);
 #endif
 
-	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b ,c, num_integers, vli_size);
+	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b , c, num_integers, vli_size);
 }
 
 void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size)
