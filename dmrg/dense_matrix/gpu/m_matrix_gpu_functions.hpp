@@ -101,7 +101,7 @@ namespace gpu {
         if (n_cpu > 0)
             dgemm_("n", "n", &m, &n_cpu, &k, &alpha, &lhs(0,0), &lda, &rhs(0,0)+ldb*n_gpu, &ldb, &beta, &res(0,0)+ldc*n_gpu, &ldc); 
         
-        status = cublasGetMatrix (m, n_gpu, sizeof(double), pDataC, m, &res(0,0), m); 
+        status = cublasGetMatrix (m, n_gpu, sizeof(double), pDataC, m, &res(0,0), ldc); 
         Check(status , "Get data failed");
         
         cublasFree(pDataA);
