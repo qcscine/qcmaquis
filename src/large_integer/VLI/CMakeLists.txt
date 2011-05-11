@@ -19,9 +19,10 @@ set (VLI_VERSION_MINOR 1)
 #
 ########################################################################
 
+set (BOOST_ROOT "/opt/boost" CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
-set (BOOST_ROOT "/opt/boost" CACHE PATH "Path to the Boost installation (or to the Boost source)")
+set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 
 
 
