@@ -6,8 +6,10 @@
 #include "dense_matrix/dense_matrix.h"
 
 #include "cuda.h"
-//#include "cuda_runtime_api.h" // need for cudaMemcpy, I do not know why !!!!
+//#include "cuda_runtime_api.h" // needed for streams
 #include "cublas.h"
+
+#include <utils/timings.h>
 
 namespace gpu {
     
@@ -27,6 +29,11 @@ namespace gpu {
         if (status == CUBLAS_STATUS_ALLOC_FAILED) 
         {
             printf ("cublas  alloc failed \n ");
+        }	
+
+        if (status == CUBLAS_STATUS_MAPPING_ERROR) 
+        {
+            printf ("cublas  mapping error \n ");
         }	
         
         if (status == CUBLAS_STATUS_INVALID_VALUE) 
@@ -57,7 +64,13 @@ namespace gpu {
         
         assert( lhs.num_cols() == rhs.num_rows() );
         
+        static Timer timer("gpu gemm");
+        timer.begin();
+        
         cublasStatus status;
+//        cudaStream_t stream[3];
+//        for (int i = 0; i < 3; ++i)
+//            cudaStreamCreate(&stream[i]);
         
         double * pDataA = 0;
         double * pDataB = 0;
@@ -75,25 +88,51 @@ namespace gpu {
         int lda = lhs.stride2();
         int ldb = rhs.stride2();
         int ldc = res.stride2();
-        
+
+#ifdef TIME_GEMM_GPU_INTERNAL
+        static Timer tA("gpu gemm: A transfer");
+        tA.begin();
+#endif
         int size_matrixA = m*k;
         status = cublasAlloc(size_matrixA, sizeof(double), (void**)&pDataA );
         Check(status , "Set Alloc failed A");
-        cublasSetMatrix(m, k, sizeof(double), &lhs(0,0), lda, pDataA, m);	
+        status = cublasSetMatrix(m, k, sizeof(double), &lhs(0,0), lda, pDataA, m);	
+//        status = cublasSetMatrixAsync(m, k, sizeof(double), &lhs(0,0), lda, pDataA, m, stream[0]);	
         Check(status , "Set Matrix failed A");
         
-        
+#ifdef TIME_GEMM_GPU_INTERNAL
+        tA.end();
+        static Timer tB("gpu gemm: B transfer");
+        tB.begin();
+#endif
         int size_matrixB = k*n_gpu;
-        cublasAlloc(size_matrixB, sizeof(double), (void**)&pDataB );
+        status = cublasAlloc(size_matrixB, sizeof(double), (void**)&pDataB );
         Check(status , "Set Alloc failed B");
-        cublasSetMatrix(k, n_gpu, sizeof(double), &rhs(0,0), ldb, pDataB, k);
+//        status = cublasSetMatrixAsync(k, n_gpu, sizeof(double), &rhs(0,0), ldb, pDataB, k, stream[1]);
+        status = cublasSetMatrix(k, n_gpu, sizeof(double), &rhs(0,0), ldb, pDataB, k);
         Check(status , "Set Matrix failed B");
         
+#ifdef TIME_GEMM_GPU_INTERNAL
+        tB.end();
+        static Timer tC("gpu gemm: C allocation");
+        tC.begin();
+#endif
         int size_matrixC = m*n_gpu;
-        cublasAlloc(size_matrixC, sizeof(double), (void**)&pDataC);
+        status = cublasAlloc(size_matrixC, sizeof(double), (void**)&pDataC);
         Check(status , "Set Alloc failed C");
-        cublasSetMatrix(m, n_gpu, sizeof(double), &res(0,0), ldc, pDataC, m);	
-        Check(status , "Set Matrix failed C");
+//        status = cublasSetMatrix(m, n_gpu, sizeof(double), &res(0,0), ldc, pDataC, m);	
+//        status = cublasSetMatrixAsync(m, n_gpu, sizeof(double), &res(0,0), ldc, pDataC, m, stream[2]);	
+//        Check(status , "Set Matrix failed C");
+        
+#ifdef TIME_GEMM_GPU_INTERNAL
+        tC.end();
+        static Timer t1("gpu gemm: gemm call");
+        t1.begin();
+#endif
+        
+//        for (int i = 0; i < 3; ++i) {
+//            cudaStreamDestroy(stream[i]);
+//        }
         
         cublasDgemm('n', 'n', m, n_gpu, k, alpha, pDataA, m, pDataB, k, beta, pDataC, m); 
         status = cublasGetError();
@@ -104,9 +143,16 @@ namespace gpu {
         status = cublasGetMatrix (m, n_gpu, sizeof(double), pDataC, m, &res(0,0), ldc); 
         Check(status , "Get data failed");
         
+#ifdef TIME_GEMM_GPU_INTERNAL
+        t1.end();
+#endif
+        
+        
         cublasFree(pDataA);
         cublasFree(pDataB);
         cublasFree(pDataC);
+        
+        timer.end();
         
     }
     
