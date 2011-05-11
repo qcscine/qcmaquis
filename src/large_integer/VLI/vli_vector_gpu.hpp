@@ -158,6 +158,16 @@ class vli_vector_gpu
         return *this;
     }
 
+    /**
+      entrywise multiply assign
+      */
+    vli_vector_gpu& operator *= (utils::entrywise<vli_vector_gpu> const& v)
+    {
+        using detail::entrywise_multiplies_assign;
+        entrywise_multiplies_assign(*this,v.vector);
+        return *this;
+    }
+
     inline BaseInt* p()
     {
         return data_;
@@ -206,13 +216,25 @@ const vli_vector_gpu<BaseInt> operator + (vli_vector_gpu<BaseInt> v_a, vli_vecto
   inner product
   */
 template <class BaseInt>
-vli_gpu<BaseInt> inner_prod(vli_vector_gpu<BaseInt> const& v_a, vli_vector_gpu<BaseInt> const& v_b)
+vli_gpu<BaseInt> inner_product(vli_vector_gpu<BaseInt> const& v_a, vli_vector_gpu<BaseInt> const& v_b)
 {
     assert( v_a.size() == v_b.size() );
-    using detail::inner_prod_gpu;
+    using detail::inner_product_gpu;
     vli_gpu<BaseInt> vli;
     inner_prod_gpu(v_a.p(), v_b.p(), vli.p(),v_a.size(),vli_vector_gpu<BaseInt>::vli_size);
     return vli;
+}
+
+/**
+  entrywise multiplication
+  */
+template <class BaseInt>
+const vli_vector_gpu<BaseInt> entrywise_product(vli_vector_gpu<BaseInt> v_a, vli_vector_gpu<BaseInt> const& v_b)
+{
+    // TODO implement
+    assert(v_a.size() == v_b.size());
+    v_a *= entrywise(v_b);
+    return v_a;
 }
 
 /**

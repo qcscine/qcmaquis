@@ -14,12 +14,21 @@ template <class BaseInt>
 void plus_assign(vli_vector_gpu<BaseInt>& v_a, vli_vector_gpu<BaseInt> const& v_b)
 {
     assert( v_a.size() == v_b.size() );
-    addition_gpu(v_a.p(), v_b.p(), v_a.size(), vli_vector_gpu<BaseInt>::vli_size);
+    plus_assign_gpu(v_a.p(), v_b.p(), v_a.size(), vli_vector_gpu<BaseInt>::vli_size);
 }
 
 template <class BaseInt>
 void multiplies_assign(vli_vector_gpu<BaseInt>& v_a, vli_gpu<BaseInt> const& v)
 {
+    // NOT IMPLEMENTED YET
+    assert(false);
+}
+
+template <class BaseInt>
+void entrywise_multiplies_assign(vli_vector_gpu<BaseInt>& v_a, vli_vector_gpu<BaseInt> const& v_b)
+{
+    assert( v_a.size() == v_b.size() );
+    entrywise_multiplies_assign_gpu(v_a.p(), v_b.p(), v_a.size(), vli_vector_gpu<BaseInt>::vli_size);
 }
 
 } //namespace detail

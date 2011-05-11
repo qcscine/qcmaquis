@@ -24,7 +24,15 @@ void plus_assign(vli_vector<VliType> & v_a, vli_vector<VliType> const& v_b )
 }
 
 template <class VliType>
-void multiplies_assign(vli_vector<VliType> & v_a, vli_vector<VliType> const& v_b )
+void multiplies_assign(vli_vector<VliType> & v_a, VliType const& vli )
+{
+    #pragma omp parallel for private(i)
+    for(std::size_t i = 0; i < v_a.size(); ++i)
+        multiplication_classic_cpu( v_a[i], vli);
+}
+
+template <class VliType>
+void entrywise_multiplies_assign(vli_vector<VliType> & v_a, vli_vector<VliType> const& v_b )
 {
     assert( v_a.size() == v_b.size() );
 

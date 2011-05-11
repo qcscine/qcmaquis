@@ -142,9 +142,6 @@ __device__ void addition_kernel_gpu(T* x,   T const* y, int k)
 template <typename T>
 __global__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, int vli_size)
 {
-    assert(num_integer > 0);
-    assert(vli_size > 0);
-
 	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	const int j = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
 	if(xIndex < num_integers) // the classical condition to avoid overflow
@@ -162,7 +159,6 @@ template <typename T>
 __device__ void addition_kernel_gpu_noiter(T* x, const T* y )
 {
 	int carry_bit; 
-	carry_bit = 0;
 	*(x)    +=  *(y);
 	carry_bit  = *(x) >> LOG_BASE;
 	*(x)    %= BASE;
@@ -220,22 +216,21 @@ __device__  void multiplication_block_gpu( const T*   x,   const  T*   y, T *r)
 }	
 
 template <typename T>
-__global__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z , int num_integer, int ld)
+__global__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z , int num_integers, int vli_size)
 {
 	T r[2] = {0,0};	//for local block calculation
 	
-	T xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	T i_ld = xIndex*ld; // index to be on the beginning of the vli (beginning of every columns)
-	T m=0;
+	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+	const int i_ld = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
 	
-	if(xIndex < num_integer) // the classical condition to avoid overflow
+	if(xIndex < num_integers) // the classical condition to avoid overflow
 	{
 		//One of this two loops could be remove to do
-		for (T i = 0 ; i < 1; i++) 
+		for (int i = 0 ; i < 1; ++i) 
 		{
-			for(T j = 0 ; j < 1 ; j++)  			
+			for(int j = 0 ; j < 1 ; ++j)  			
 			{	
-				m = j + i;
+				int m = j + i;
 				multiplication_block_gpu((x+i_ld+i), (y+i_ld+j), r);
 				addition_kernel_gpu_noiter((z+i_ld+m),r);//,i_ld+m);	
 				addition_kernel_gpu_noiter((z+i_ld+m+1),r+1);//,i_ld+m+1);					
@@ -272,7 +267,7 @@ void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_i
 	dimgrid.z = 1;
 }
 
-void addition_gpu(TYPE*  A,  const TYPE*  B, int num_integers, int vli_size)
+void plus_assign_gpu(TYPE*  A,  const TYPE*  B, int num_integers, int vli_size)
 {
 
 	dim3 dimgrid;
@@ -312,7 +307,18 @@ void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYP
 	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B ,C, num_integer, ld);
 }
 
-
+void entrywise_multiplies_assign_gpu(TYPE* a, TYPE const* b, int num_integers, int vli_size)
+{
+    // NOT IMPLEMENTED YET
+    assert(false);
+/*
+    dim3 dimgrid;
+    dim3 dimblock;
+    dim3 dimthread;
+    DeterminationGrid(dimgrid, dimblock, dimthread, num_integers, vli_size);
+    mutliplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b, c, num_integers, vli_size)
+    */
+}
 void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size)
 {
     // NOT IMPLEMENTED YET

@@ -3,8 +3,10 @@
 
 
 #ifdef __CUBLAS__
-#include "cuda_runtime_api.h" 
+#include "cuda_runtime_api.h"
 #endif
+
+#include "vli_config.h"
 
 
 /*

@@ -11,6 +11,7 @@
 #define VLI_VECTOR_CPU_HPP
 
 #include "detail/vli_vector_cpu_function_hooks.hpp"
+#include "utils.hpp"
 #include <numeric>
 
 namespace vli
@@ -30,7 +31,7 @@ public:
     }
 
 	/**
-	 multiply and addition operators
+	 plus assign (vector addition)
 	 */															
 	vli_vector& operator += (vli_vector const& v)
     {
@@ -39,13 +40,29 @@ public:
         return *this;
     }
 
+    /**
+      multiply by a scalar
+      */
 	vli_vector& operator *= (VliType const& v)
     {
         using detail::multiplies_assign;
         multiplies_assign(*this, v);
         return *this;
     }
+    
+    /**
+      entrywise multiplication
+      */
+    vli_vector& operator *= (utils::entrywise<vli_vector> const& v)
+    {
+        using detail::entrywise_multiplies_assign;
+        entrywise_multiplies_assign(*this, v.vector);
+        return *this;
+    }
 
+    /**
+      print to ostream
+      */
     void print(std::ostream& o) const
     {
         o<<"(";
@@ -87,11 +104,24 @@ const vli_vector<VliType> operator * (VliType const& vli, vli_vector<VliType> co
  inner product
  */
 template <class VliType>
-const VliType inner_prod(vli_vector<VliType> const& v_a, vli_vector<VliType> const& v_b)
+const VliType inner_product(vli_vector<VliType> const& v_a, vli_vector<VliType> const& v_b)
 {
     // TODO implement
     assert(v_a.size() == v_b.size());
     return std::inner_product(v_a.begin(), v_a.end(), v_b.begin(), VliType(0));
+}
+
+
+/**
+  entrywise multiplication
+  */
+template <class VliType>
+const vli_vector<VliType> entrywise_product(vli_vector<VliType> v_a, vli_vector<VliType> const& v_b)
+{
+    // TODO implement
+    assert(v_a.size() == v_b.size());
+    v_a *= entrywise(v_b);
+    return v_a;
 }
 
 /**

@@ -16,7 +16,7 @@ namespace detail {
 template <class BaseInt>
 void plus_assign(vli_gpu<BaseInt> & vli_a, vli_gpu<BaseInt> const& vli_b )
 {
-    addition_gpu( vli_a.p(), vli_b.p(), 1, vli_gpu<BaseInt>::size);
+    plus_assign_gpu( vli_a.p(), vli_b.p(), 1, vli_gpu<BaseInt>::size);
 }
 
 
