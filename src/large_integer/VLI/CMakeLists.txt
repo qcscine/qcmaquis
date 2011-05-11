@@ -32,9 +32,6 @@ set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timer
 #
 ########################################################################
 
-# include our cmake modules if they are not present in cmake installation
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-files)
-
 if (VLI_USE_GPU)
     find_package (CUDA)
     include_directories(${CUDA_INCLUDE_DIRS})
