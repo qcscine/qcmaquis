@@ -1,0 +1,7 @@
+#
+# Created by A.Hehn @ 20110511
+#
+#
+
+This directory is for cmake installation which don't offer the FindCUDA.cmake file.
+It is not needed in most installations
