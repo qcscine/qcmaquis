@@ -200,16 +200,14 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                            keep,
                            V.right_basis()[k].second);
         }
-    }
-   /* 
-    if (verbose && ! (old_basis == S.left_basis()) ) {
-        zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << std::endl;
-        zout << old_basis << std::endl << S.left_basis() << std::endl;
+    } 
+    if (verbose /* && ! (old_basis == S.left_basis()) */) {
+//        zout << "SVD performed a truncation: (cutoff = " << rel_tol << ")" << std::endl;
+//        zout << old_basis << std::endl << S.left_basis() << std::endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
-        zout << "Smallest SV kept: " << Scut / allS[0] << std::endl;
-        zout << "Truncated weight: " << truncated_weight << std::endl;
+//        zout << "Smallest SV kept: " << Scut / allS[0] << std::endl;
+//        zout << "Truncated weight: " << truncated_weight << std::endl;
     }
-    */
 }
 
 /*
@@ -281,14 +279,14 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                keep);
         }
     }
-   /* 
-    if (verbose && ! (old_basis == evals.left_basis()) ) {
-        zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << std::endl;
-        zout << old_basis << std::endl << evals.left_basis() << std::endl;
+   
+    if (verbose /* && ! (old_basis == evals.left_basis())*/ ) {
+//        zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << std::endl;
+//        zout << old_basis << std::endl << evals.left_basis() << std::endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
-        zout << "Smallest EV kept: " << evalscut / allevals[0] << std::endl;
+//        zout << "Smallest EV kept: " << evalscut / allevals[0] << std::endl;
     }
-    */
+    
     logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());
     logger << make_log("TruncatedWeight", truncated_weight);
     logger << make_log("SmallestEV", evalscut / allevals[0]);
