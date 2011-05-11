@@ -132,6 +132,12 @@ namespace vli
             return *this;
         }
 
+        bool operator == (vli_gpu const& vli) const
+        {
+            // TODO this should also work directly on the gpu
+            return vli_cpu<BaseInt>(*this) == vli_cpu<BaseInt>(vli);
+        }
+
         void print(std::ostream& os) const
         {
             os<<vli_cpu<BaseInt>(*this);

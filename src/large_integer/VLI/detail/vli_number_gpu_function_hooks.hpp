@@ -23,7 +23,7 @@ void plus_assign(vli_gpu<BaseInt> & vli_a, vli_gpu<BaseInt> const& vli_b )
 template <class BaseInt>
 void multiplies_assign(vli_gpu<BaseInt> & vli_a, vli_gpu<BaseInt> const& vli_b )
 {
-    multiply_gpu( vli_a.p(), vli_b.p(), 1, vli_gpu<BaseInt>::size);
+    entrywise_multiplies_assign_gpu( vli_a.p(), vli_b.p(), 1, vli_gpu<BaseInt>::size);
 }
 
 } //namespace detail

@@ -9,6 +9,7 @@
 #include "vli_number_gpu.hpp"
 
 
+#define TYPE int
 using vli::vli_cpu;
 using vli::vli_gpu;
 
@@ -18,7 +19,7 @@ BOOST_AUTO_TEST_CASE(gpu_manager)
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	TYPE FreqGPU = GPU->instance().GetDeviceProperties().clockRate;
-    printf(" FreqGPU %d, Hz", FreqGPU);
+    std::cout<<" FreqGPU "<<FreqGPU<<" Hz"<<std::endl;
     GPU->instance().destructor();
 }
 
