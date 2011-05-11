@@ -13,10 +13,10 @@
 #include <ostream>
 #include <vector>
 #include "detail/vli_number_cpu_function_hooks.hpp"
+#include <cmath>
 
 namespace vli
 {
-    
     /**
     template forward declaration 
     */
@@ -111,15 +111,30 @@ namespace vli
         
         void print(std::ostream& os) const
         {
-            for(typename std::vector<BaseInt>::const_iterator it=data_.begin(); it != data_.end(); ++it)
-                os << *it << " " ;
-        }
-
+			typename std::vector<BaseInt>::const_iterator it = data_.end();	
+            /** I reversed the print easier to read **/
+			while (it != data_.begin())
+			{
+				it--;
+				os << *it << " " ;
+			}
+		}
+		
+		std::size_t BaseTen()
+		{
+			std::size_t Res = 0;
+			for(int i=0;i < size;i++)
+               Res+=data_[i]*(pow (BASE,i));
+			
+			return Res;
+		}
+						  
     private:
         std::vector<BaseInt> data_;
 
     };
 
+	
     /**
      multiply and addition operators, suite ...
      */

@@ -226,9 +226,9 @@ __global__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
 	if(xIndex < num_integers) // the classical condition to avoid overflow
 	{
 		//One of this two loops could be remove to do
-		for (int i = 0 ; i < 1; ++i) 
+		for (int i = 0 ; i < vli_size; ++i) 
 		{
-			for(int j = 0 ; j < 1 ; ++j)  			
+			for(int j = 0 ; j < vli_size ; ++j)  			
 			{	
 				int m = j + i;
 				multiplication_block_gpu((x+i_ld+i), (y+i_ld+j), r);
