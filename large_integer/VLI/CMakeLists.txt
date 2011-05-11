@@ -11,9 +11,10 @@ set (VLI_VERSION_MINOR 1)
 #
 # Options
 #
-
+#option (BOOST_ROOT "Path of your boost installation (or just the boost-source)")
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-files)
 
 #
 # Find dependencies
