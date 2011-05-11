@@ -163,7 +163,7 @@ namespace vli
     {
         // TODO check whether direct implementation (without *= ) is faster
         vli_a *= vli_b;
-        return vli_b;
+        return vli_a;
     }
 	
 	template <class BaseInt>
