@@ -15,6 +15,7 @@
 #include "detail/vli_number_cpu_function_hooks.hpp"
 #include <cmath>
 
+
 namespace vli
 {
     /**
@@ -22,8 +23,8 @@ namespace vli
     */
     template<class BaseInt>
     class vli_gpu;
-
-    template<class BaseInt>
+	
+	template<class BaseInt>
     class vli_cpu 
     {
     public:
@@ -31,92 +32,85 @@ namespace vli
         typedef std::size_t size_type;
         enum { size = SIZE_BITS/(8*sizeof(BaseInt)) };
         
-        /**
-        constructors 
-        */
         vli_cpu()
-            : data_(size)
         {
+			data_ = (BaseInt*)malloc(size*sizeof(BaseInt));
+			memset((void*)data_,0,size*sizeof(BaseInt));
         }
         
         explicit vli_cpu(BaseInt num)
-            : data_(size)
         {
-            data_[0] = num;
+			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
+			memset((void*)data_,0,size*sizeof(BaseInt));			
+            *data_ = num;
         }
-
+		
         vli_cpu(vli_cpu const& r)
-            :data_(r.data_)
         {
+			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
+            memcpy((void*)data_,(void*)r.data_,size*sizeof(BaseInt));
         }
-
-        /**
-        destructor 
-        */
+		
         ~vli_cpu()
         {
+			free(data_);
         }
         
-        /**
-          swap
-          */
         friend void swap(vli_cpu& a, vli_cpu& b)
         {
-            swap(a.data_,b.data_);
+			std::swap(a.data_,b.data_);
+			/*
+			*a.data_ ^= *b.data_;
+			*b.data_ ^= *a.data_;
+			*a.data_ ^= *b.data_;*/			
         }
-
-        /**
-          assignment operator
-          */
+		
         vli_cpu& operator= (vli_cpu  r)
         {
             swap(*this,r);
             return *this;
         }
         
-        /**
-        logistics operators 
-        */
         BaseInt& operator[](size_type i)
         {
-            return data_[i];
+            return *(data_+i);
         }
-
+		
         BaseInt const& operator[](size_type i) const
         {
-            return data_[i];
+            return *(data_+i);
         }
-
+		
         /**
-        multiply and addition operators
-        */
+		 multiply and addition operators
+		 */
         vli_cpu& operator += (vli_cpu const& vli)
         {
             using vli::detail::plus_assign;
             detail::plus_assign(*this,vli);
             return *this;
         }
-
+		
         vli_cpu& operator *= (vli_cpu const& vli)
         {
             using vli::detail::multiplies_assign;
             multiplies_assign(*this,vli);
             return *this;
         }
-
+		
         bool operator == (vli_cpu const& vli) const
         {
-            return (data_ == vli.data_);
+			int n = memcmp((void*)data_,(void*)vli.data_,size*sizeof(BaseInt));
+			return (0 == n);
         }
         
         void print(std::ostream& os) const
         {
-			typename std::vector<BaseInt>::const_iterator it = data_.end();	
-            /** I reversed the print easier to read **/
-			while (it != data_.begin())
+            int i = size - 1 ;
+			while( i != 0)
 			{
-				it--;
-				os << *it << " " ;
+			   	i--;
+				os << *(data_+i);
 			}
 		}
 		
@@ -124,16 +118,14 @@ namespace vli
 		{
 			std::size_t Res = 0;
 			for(int i=0;i < size;i++)
-               Res+=data_[i]*(pow (BASE,i));
+				Res+=*(data_+i)*(pow (BASE,i));
 			
 			return Res;
 		}
-						  
+		
     private:
-        std::vector<BaseInt> data_;
-
+		BaseInt* data_;
     };
-
 	
     /**
      multiply and addition operators, suite ...
