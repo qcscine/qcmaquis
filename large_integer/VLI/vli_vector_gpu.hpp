@@ -243,6 +243,23 @@ const vli_vector_gpu<BaseInt> entrywise_product(vli_vector_gpu<BaseInt> v_a, vli
 }
 
 /**
+  Comparison between vli_vector on gpu and on cpu
+  (might be removed in the future)
+  */
+template <class BaseInt>
+bool operator == (vli_vector_gpu<BaseInt> const& v_gpu, vli_vector<vli_cpu<int> > const& v_cpu)
+{
+    // TODO think about removing this function or implementation through implicit conversion (if possible)
+    return static_cast<vli_vector<vli_cpu<int> > >(v_gpu) == v_cpu;
+}
+
+template <class BaseInt>
+bool operator == (vli_vector<vli_cpu<int> > const& v_cpu, vli_vector_gpu<BaseInt> const& v_gpu)
+{
+    return v_gpu == v_cpu;
+}
+
+/**
   stream
   */
 template <class BaseInt>
