@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 	
 	c=a+b;
 	
-//	BOOST_CHECK_EQUAL(a,b);
+	BOOST_CHECK_EQUAL(a,b);
 
 	GPU->instance().destructor();
 }
@@ -64,6 +64,6 @@ BOOST_AUTO_TEST_CASE( addition_vector )
 	std::cout << c << std::endl;	
 	std::cout << c_gpu << std::endl;	
 
-	//    BOOST_CHECK_EQUAL(a,b);
+	BOOST_CHECK_EQUAL(a,b);
 	GPU->instance().destructor();
 }

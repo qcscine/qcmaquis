@@ -186,6 +186,11 @@ class vli_vector_gpu
         return proxy(*this, i);
     }
 
+    bool operator == (vli_vector_gpu const& v) const
+    {
+        // TODO this may also be done on the GPU
+        return static_cast< vli_vector<vli_cpu<BaseInt> > >(*this) == static_cast< vli_vector< vli_cpu<BaseInt> > >(v);
+    }
     /**
       print to ostream
       */
