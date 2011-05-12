@@ -35,39 +35,29 @@ namespace vli
 		*/
 		vli_gpu()
         {
-            //TODO isn't there a better way to initalize the memory on the GPU?
-            BaseInt dummy[size];
-            for(std::size_t i = 0; i < size; ++i)
-                dummy[i] = 0;
-		    gpu::check_error( cublasAlloc( size, sizeof(BaseInt), (void**)&data_ ), __LINE__);
-            gpu::check_error( cublasSetVector( size, sizeof(BaseInt),&dummy, 1, p(), 1), __LINE__);
+     		gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
+			gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__);			
         }
 
 		explicit vli_gpu(BaseInt num)
         {
-            //TODO isn't there a better way to initalize the memory on the GPU?
-            BaseInt dummy[size];
-            for(std::size_t i = 0; i < size; ++i)
-                dummy[i] = 0;
-            gpu::check_error( cublasAlloc( size, sizeof(BaseInt), (void**)&data_ ), __LINE__);
-            gpu::check_error( cublasSetVector( size, sizeof(BaseInt), &dummy, 1, p(), 1), __LINE__);
-            gpu::check_error( cublasSetVector(1, sizeof(BaseInt), &num, 1, p(), 1), __LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
+			gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__); //Everything is set to 0	
+			gpu::cu_check_error(cudaMemset((void*)data_, num, sizeof(BaseInt)), __LINE__); //The first number is set to the num value			
         }
 
 		vli_gpu(vli_gpu const& vli)
         {
-            gpu::check_error( cublasAlloc(size, sizeof(BaseInt), (void**) &data_ ), __LINE__);
-            gpu::check_error( cudaMemcpy( data_, vli.data_, size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+			gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMemcpy((void*)data_, vli.data_, size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
         }
 
 		vli_gpu(vli_cpu<BaseInt> const& vli)
         {
-            // TODO check this!
-            BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(size) );
-		    gpu::check_error(cublasAlloc(size, sizeof(BaseInt), (void**) &data_ ), __LINE__);
-		    gpu::check_error(cublasSetVector(vli_cpu<BaseInt>::size, sizeof(BaseInt), &vli[0], 1, p(), 1), __LINE__);
+            BOOST_STATIC_ASSERT(vli_cpu<BaseInt>::size == static_cast<std::size_t>(size) );
+			gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)  ), __LINE__);
+			gpu::cu_check_error(cudaMemcpy((void*)data_, (void*)&vli[0], vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 		
         }
-
 		
 		/**
 		destructors 
@@ -93,7 +83,7 @@ namespace vli
 		void copy_vli_to_cpu(vli::vli_cpu<BaseInt>& vli) const
         {
             BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(size) );
-            gpu::check_error(cublasGetVector(size, sizeof(BaseInt), data_  ,1, &vli[0], 1), __LINE__);
+ 			gpu::cu_check_error(cudaMemcpy( (void*)&vli[0], (void*)data_, vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyDeviceToHost ), __LINE__); 					
         }
 
 		operator vli_cpu<BaseInt>() const
