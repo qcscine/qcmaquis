@@ -28,7 +28,7 @@ add_executable ( vli_cpu_vector_tests vli_cpu_vector_tests.cpp)
 target_link_libraries (vli_cpu_vector_tests ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
 
 add_executable ( vli_gpu_vector_tests vli_gpu_vector_tests.cpp)
-target_link_libraries (vli_gpu_vector_tests ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
+target_link_libraries (vli_gpu_vector_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
 
 
 add_test (vli_cpu_vector_tests vli_cpu_vector_tests)
