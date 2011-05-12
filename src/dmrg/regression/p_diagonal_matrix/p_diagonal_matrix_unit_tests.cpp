@@ -16,9 +16,7 @@
 #define M_SIZE 16
 using namespace blas;
 using namespace ambient;
-//
-// List of types T for which the p_dense_matrix<T> is tested
-// (long long unsigned int causes problems in boost::iterator facade)
+
 typedef boost::mpl::list<double> test_types;
 typedef ambient::dim2 dim;
 

@@ -44,6 +44,7 @@ if(ambient_dmrg)
 
     add(ambient) 
     add(regression/p_dense_matrix)
+    add(regression/p_memory_management)
     add(regression/p_diagonal_matrix)
     add(regression/p_block_matrix)
     add(regression/p_dense_matrix_benchmark)

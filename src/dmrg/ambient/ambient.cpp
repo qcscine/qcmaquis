@@ -145,7 +145,7 @@ namespace ambient
                 for(int i=0; i < needle_op->count; i++)
                 for(int j=0; j < haystack_op->count; j++)
                 if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
-                    if(needle_op->constness[i] && haystack_op->constness[i]) continue;
+                    if(needle_op->constness[i] && haystack_op->constness[j]) continue;
                     needle_op->add_dependant(haystack_op);
                     goto double_break;
                 }

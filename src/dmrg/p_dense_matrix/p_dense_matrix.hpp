@@ -20,10 +20,11 @@ namespace blas {
     }
 
     template <typename T, ambient::policy P>
-    p_dense_matrix<T,P>::p_dense_matrix(p_dense_matrix const& m) // copy constructor (to be optimized)
-    : livelong(m.num_rows(), m.num_cols()){
-        ambient::push(ambient::copy_l, ambient::copy_c, *this, m);
-        ambient::playout();
+    p_dense_matrix<T,P>::p_dense_matrix(const p_dense_matrix& m) // copy constructor (to be optimized)
+    : livelong(m){
+        self->rows = m.num_rows();
+        self->cols = m.num_cols();
+        this->set_breakdown();
     }
 
     template <typename T, ambient::policy P>
@@ -123,7 +124,7 @@ namespace blas {
         if(i >= self->rows){ printf("Accesing %d %d (of %d %d)\n", (int)i, (int)j, (int)self->rows, (int)self->cols); void* a = malloc(1); free(a); free(a); assert(i < self->rows); }
         assert(j < self->cols);
         if(ambient::occupied()) assert(false); //return zero; // for stream reader
-        if(self->is_loose()) this->touch();
+        if(self->is_abstract()) this->touch();
         ambient::playout();
         int block_i = i / (self->breakdown()->get_mem_t_dim().y);
         int block_j = j / (self->breakdown()->get_mem_t_dim().x);
@@ -164,7 +165,6 @@ namespace blas {
     template <typename T, ambient::policy P>
     template <ambient::policy PR>
     p_dense_matrix<T,P>::operator p_dense_matrix<T,PR>(){
-        assert(false);
         return (*(p_dense_matrix<T,PR>*)this);
     }
     template <typename T, ambient::policy P>
