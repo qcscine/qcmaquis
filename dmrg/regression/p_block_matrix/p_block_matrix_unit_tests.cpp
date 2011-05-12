@@ -20,37 +20,15 @@ using namespace blas;
 #include "block_matrix/block_matrix.h"
 #include "block_matrix/block_matrix_algorithms.h"
 
-//
-// List of types T for which the p_dense_matrix<T> is tested
-// (long long unsigned int causes problems in boost::iterator facade)
 typedef boost::mpl::list<double> test_types;
 typedef ambient::dim2 dim;
 
-namespace type_pairs
-{
-
-struct IntDouble
-{
-    typedef int first_type;
-    typedef double second_type;
+struct caveats {
+    caveats(){ ambient::init();     }
+   ~caveats(){ ambient::finalize(); }
 };
 
-struct DoubleInt
-{
-    typedef double first_type;
-    typedef int second_type;
-};
-};
-
-struct AmbientConfig {
-    AmbientConfig()   { ambient::init();     }
-    ~AmbientConfig()  { ambient::finalize(); }
-};
-
-typedef boost::mpl::list<type_pairs::IntDouble, type_pairs::DoubleInt> test_type_pairs;
-
-BOOST_GLOBAL_FIXTURE( AmbientConfig );
-
+BOOST_GLOBAL_FIXTURE( caveats );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
 {
@@ -69,21 +47,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
     std::cout << e;
     resize(f, 4, 4);
     std::cout << f;
-        
     block_matrix<Matrix, grp> m1, m2, m3;
     
-    m1.insert_block(d, -1, 1);
-    m1.insert_block(e, 0, 1);
-    m2.insert_block(d, 1, 1);
+//    m1.insert_block(d, -1, 1);
+//    m1.insert_block(d, 0, 1);
+//    m2.insert_block(e, 1, 1);
 
-    m2.reserve(2,2,6, 6);
+    m2.reserve(0,0,6, 6);
     m2.allocate_blocks();
+        /*
 
     resize(d, 2, 2);
     std::cout << d;
     std::cout << e;
     std::cout << f;
     std::cout << m1;
-    std::cout << m2;
+    std::cout << m2;*/
 }
 

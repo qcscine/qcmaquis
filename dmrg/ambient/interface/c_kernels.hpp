@@ -61,22 +61,13 @@ void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
 }
 
 void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
-{    
-    int i = get_block_id(a).y;
-    int j = get_block_id(a).x;
-    double* a_elements  = current(a)(i,j);
-    double* ac_elements = current(ac)(i,j);
-    memcpy(ac_elements, a_elements, sizeof(double)*get_mem_t_dim(a).x*get_mem_t_dim(a).y);
-}
-
-
-void associated_copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
+    if(i >= get_grid_dim(ac).y || j >= get_grid_dim(ac).x) return;
     double* a_elements  = current(a)(i,j);
     double* ac_elements = current(ac)(i,j);
-    memcpy(ac_elements, a_elements, sizeof(double)*get_mem_t_dim(a).y);
+    memcpy(ac_elements, a_elements, sizeof(double)*get_mem_t_dim(a).y*get_mem_t_dim(a).x);
 }
 
 void associated_sort_c(p_dense_matrix<double>& a)

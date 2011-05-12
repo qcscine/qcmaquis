@@ -5,6 +5,9 @@ using namespace blas;
 #define MAX_NUM_CHAR_LEN 10
 #define scope_select(...) scope_select(std::string(std::string() + __VA_ARGS__).c_str());
 
+void copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a);
+void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a);
+
 class void_pt: public p_profile 
 { 
 public: 
@@ -36,51 +39,85 @@ public:
         //}
     }
 
-/*    void init(){
+    void init(){
         this->p = P;
         this->use_count = 0;
         this->loose = true;
-    }*/
+        this->loose_copy = false;
+        this->loose_copied = false;
+        this->self = NULL;
+    }
 
-    livelong():p(P),use_count(0),loose(true){
+    T* snapshot(T* holder) const {
+        if(this->is_loose_copied()){ // somebody loose copied me
+            return this->duplicant->snapshot(holder);
+        }
+        this->duplicant = holder; 
+        self->loose_copied = true;
+        T* snapshot = (T*)(new typename T::replica(*self));
+        snapshot->original = (T*)this;
+        return snapshot;
+    }
+
+    livelong(const livelong& o){ // copy constructor
+        this->init();
+        if(P != REPLICA){ 
+            if(P == ANY) handle.reset( self = o.snapshot((T*)this) );
+            else if(P == MANUAL) handle.reset( self = o.snapshot((T*)this), null_deleter<T> );
+            else if(P == WEAK) self = o.snapshot((T*)this);
+            self->loose = false;         // avoiding binding
+            copy_bind_model((T*)this);
+            self->loose_copy = true;     // avoiding binding
+        }else if(P == REPLICA){
+            self = (T*)this;
+        }
+    }
+
+    livelong(){
+        this->init();
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica()) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
-    livelong(void_pt* p):profile(p),p(P),use_count(0),loose(true){
+    livelong(void_pt* p):profile(p){
+        this->init();
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(p)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
-    template<typename A1>
-    livelong(A1 a1):p(P),use_count(0),loose(true){
+    /*template<typename A1>
+    livelong(A1 a1){
+        printf("Args const of livelong!\n");
+        this->init();
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(a1)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
-    }
+    }*/
     template<typename A1, typename A2>
-    livelong(A1 a1, A2 a2):p(P),use_count(0),loose(true){
+    livelong(A1 a1, A2 a2){
+        this->init();
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(a1, a2)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
     template<typename A1, typename A2, typename A3>
-    livelong(A1 a1, A2 a2, A3 a3):p(P),use_count(0),loose(true){
+    livelong(A1 a1, A2 a2, A3 a3){
+        this->init();
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(a1, a2, a3)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
     boost::shared_ptr<T> get_handle() const {
-        if(this->is_loose()) this->bind();
+        this->bind();
         if(this->p == ANY) return this->handle;
         else if(this->p == MANUAL) return this->handle;
         else if(this->p == WEAK){ ((livelong*)this)->use_count++; return boost::shared_ptr<T>(this->self, &poke_deleter<T>); } // for one-touch only
-        else if(this->p == REPLICA) return boost::shared_ptr<T>(this->self);
+        else if(this->p == REPLICA) return boost::shared_ptr<T>(this->self, null_deleter<T>); // should never occur except copyed objects (not deleting in init :)) <- can lead to errors
         return boost::shared_ptr<T>();
     }
     void_pt*& breakdown() const {
@@ -92,26 +129,45 @@ public:
     }
     template<typename O>
     void set_init(void(*fp)(O&)) const { // incomplete typename is not allowed
-        self->profile->set_init(new core::operation(fp, self));
+        self->profile->set_init(new core::operation(fp, (T*)this)); // T casting in order to avoid copy-construction!
     }
-    bool is_loose() const {
-        return self->loose;
-    }
+    bool is_loose()        const { return  self->loose;           } 
+    bool is_loose_copied() const { return  self->loose_copied;    }
+    bool is_loose_copy()   const { return  self->loose_copy;      }
+    bool is_abstract()     const { return (this->is_loose() || 
+                                           this->is_loose_copy()); }
+    
     void bind() const {
-        if(!this->is_loose()) return;
-        self->loose = false;
-        bind_model((T*)this);
+        assert(self != NULL);
+        if(this->is_loose_copy()){
+            self->original->bind();
+        }else if(this->is_loose_copied()){
+            self->loose_copied = false;
+            duplicant->self->loose_copy = false; // replica
+            bool loose_copied = duplicant->self->loose_copied;
+            duplicant->self->loose_copied = false; // preventing false stacking
+            ambient::push(ambient::copy_l, ambient::copy_c, 
+                         *this->duplicant, *(const T*)this);
+            duplicant->self->loose_copied = loose_copied;
+        }else if(this->is_loose()){
+            self->loose = false;
+            bind_model((T*)this);
+        }
     }
+
 public:
     T* self;
     T* thyself;
     size_t use_count;
-
     void_pt* profile;
-private:
     policy p; // the same as P (avoiding casting collisions)
+private:
     boost::shared_ptr<T> handle;
+    mutable T* duplicant;
+    T* original;
     bool loose;
+    bool loose_copied;
+    bool loose_copy;
 };
 
 template<typename T>

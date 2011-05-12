@@ -14,41 +14,15 @@
 #define M_SIZE 128
 using namespace blas;
 
-//
-// List of types T for which the p_dense_matrix<T> is tested
-// (long long unsigned int causes problems in boost::iterator facade)
 typedef boost::mpl::list<double> test_types;
 typedef ambient::dim2 dim;
 
-namespace type_pairs
-{
-
-struct IntDouble
-{
-    typedef int first_type;
-    typedef double second_type;
+struct caveats {
+    caveats(){ ambient::init();     }
+   ~caveats(){ ambient::finalize(); }
 };
 
-struct DoubleInt
-{
-    typedef double first_type;
-    typedef int second_type;
-};
-};
-
-struct AmbientConfig {
-    AmbientConfig()   { ambient::init();     }
-    ~AmbientConfig()  { ambient::finalize(); }
-};
-
-
-//
-// List of type pairs <T,U> for which the mixed type matrix vector multiplication is tested.
-//
-typedef boost::mpl::list<type_pairs::IntDouble, type_pairs::DoubleInt> test_type_pairs;
-
-BOOST_GLOBAL_FIXTURE( AmbientConfig );
-
+BOOST_GLOBAL_FIXTURE( caveats );
 
 /*BOOST_AUTO_TEST_CASE_TEMPLATE( summ_operation_test, T, test_types )
 {

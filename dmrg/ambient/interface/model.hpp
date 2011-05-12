@@ -18,6 +18,13 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
 template <typename T, policy P>
 void bind_model(const p_dense_matrix<T,P>* ptr)
 {
+    if(!ptr->is_loose_copy()) ptr->set_init(random_i<T>); // ptr is self here (shouldn't be a problem)
+    ptr->breakdown()->set_dim(dim2((unsigned int)ptr->num_cols(), (unsigned int)ptr->num_rows()));
+} 
+
+template <typename T, policy P>
+void copy_bind_model(const p_dense_matrix<T,P>* ptr)
+{
     ptr->set_init(random_i<T>); // ptr is self here (shouldn't be a problem)
     ptr->breakdown()->set_dim(dim2((unsigned int)ptr->num_cols(), (unsigned int)ptr->num_rows()));
 } 

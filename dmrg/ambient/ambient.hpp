@@ -20,6 +20,9 @@ namespace ambient{
     template <typename ST, typename FL, typename FC, class T0, class T1>
     ST& push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1);
 
+    template <typename FL, typename FC, class T0, class T1> // from push.pp.hpp
+    void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1);
+
     template <typename L, typename R>
     void pin(L& proxy_object, const R& real_object);
 
