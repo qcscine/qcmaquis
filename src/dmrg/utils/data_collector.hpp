@@ -4,6 +4,7 @@
 
 #include <string>
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <vector>
 #include <map>
 
@@ -44,24 +45,18 @@ public:
 
 	std::string name() const {return name_;}
 
-	template <class U>
-	void set_key (U const & key)
+	void set_key (std::string const & key)
 	{
-		std::ostringstream ss;
-		ss << key;
-		active_key = ss.str();
+		active_key = key;
 	}
 
 	void add_data (const T& val)
 	{
 		data[active_key].push_back(val);
 	}
-	template <class U>
-	void add_data (U const & key, const T& val)
+	void add_data (std::string const & key, const T& val)
 	{
-		std::ostringstream ss;
-		ss << key;
-		data[ss.str()].push_back(val);
+		data[key].push_back(val);
 	}
 
 #ifdef HAVE_ALPS_HDF5
@@ -76,7 +71,7 @@ public:
 				it != data.end();
 				it++)
 			{
-				keys.push_back(it->first);
+                keys.push_back(it->first);
                 values.push_back(it->second);
 			}
 			ar << alps::make_pvp("mean/value", values);
