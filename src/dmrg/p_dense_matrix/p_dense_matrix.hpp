@@ -31,7 +31,7 @@ namespace blas {
     void p_dense_matrix<T,P>::swap(p_dense_matrix & r)
     {
         assert(false);
-        std::swap(self->breakdown(), r.thyself->breakdown());
+        std::swap(this->breakdown(), r.breakdown());
         std::swap(self->rows,        r.thyself->rows);
         std::swap(self->cols,        r.thyself->cols);
     }
@@ -123,11 +123,11 @@ namespace blas {
         if(ambient::occupied()) assert(false); //return zero; // for stream reader
         if(self->is_abstract()) this->touch();
         ambient::playout();
-        int block_i = i / (self->breakdown()->get_mem_t_dim().y);
-        int block_j = j / (self->breakdown()->get_mem_t_dim().x);
-        int element_i = i % (self->breakdown()->get_mem_t_dim().y);
-        int element_j = j % (self->breakdown()->get_mem_t_dim().x);
-        T& value = *(T*)(*self->breakdown())(block_i, block_j).element(element_i, element_j);
+        int block_i = i / (this->breakdown()->get_mem_t_dim().y);
+        int block_j = j / (this->breakdown()->get_mem_t_dim().x);
+        int element_i = i % (this->breakdown()->get_mem_t_dim().y);
+        int element_j = j % (this->breakdown()->get_mem_t_dim().x);
+        T& value = *(T*)(*this->breakdown())(block_i, block_j).element(element_i, element_j);
         ambient::world_loop();
         return value;
     }
@@ -148,7 +148,7 @@ namespace blas {
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator /= (const T2& t){ return (*this = *this * (1/t)); }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator  = (const p_dense_matrix<T>& rhs){
-        if(rhs.thyself->breakdown()->is_proxy()){
+        if(rhs.breakdown()->is_proxy()){
             ambient::pin(rhs, *this); // no copying - pinning profile
         }else{
             if(this->num_rows() != rhs.num_rows() || this->num_cols() != rhs.num_cols()) 

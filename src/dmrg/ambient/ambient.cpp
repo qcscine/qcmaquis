@@ -7,6 +7,7 @@
 #include "ambient/core/layout.h"
 #include "ambient/auxiliary.hpp"
 
+#include "utils/timings.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
 

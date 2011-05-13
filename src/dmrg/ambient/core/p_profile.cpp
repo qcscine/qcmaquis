@@ -6,8 +6,10 @@
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
 #include "ambient/core/auxiliary.h"
+    
 
 namespace ambient {
+
     void accept_block(groups::packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
         try{
@@ -275,6 +277,7 @@ namespace ambient {
 
     void p_profile::finalize(){
         if(this->associated_proxy != NULL){
+            ambient::scope.spin_loop();
             for(int i=0; i < this->layout->segment_count; i++){ // watch out of constness
                 this->get_scope()->get_manager()->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // was scope-manager
                                                                              NULL, "BCAST", "REQUEST FOR REDUCTION DATA",
@@ -283,6 +286,7 @@ namespace ambient {
                                                                              this->layout->segment[i].i, 
                                                                              this->layout->segment[i].j));
             }
+            ambient::scope.spin_loop();
         }
     }
 
