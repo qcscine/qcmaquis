@@ -48,7 +48,6 @@ namespace blas {
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::nullcut(){
         ambient::push(ambient::nullcut_l, ambient::nullcut_c, *this, self->rows, self->cols);
-        ambient::playout();
     }
 
     template <typename T, ambient::policy P>
@@ -60,7 +59,6 @@ namespace blas {
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::touch() const {
         ambient::push(ambient::touch_l, ambient::touch_c, *this);
-        ambient::playout();
     }
 
     template <typename T, ambient::policy P>
@@ -74,7 +72,6 @@ namespace blas {
             ambient::push(ambient::resize_l, ambient::resize_c, 
                           *this, self->rows, self->cols);
         }
-        ambient::playout();
     }
 
     template <typename T, ambient::policy P>
@@ -157,7 +154,6 @@ namespace blas {
             if(this->num_rows() != rhs.num_rows() || this->num_cols() != rhs.num_cols()) 
                 this->resize(rhs.num_rows(), rhs.num_cols());
             ambient::push(ambient::copy_l, ambient::copy_c, *this, rhs);
-        ambient::playout();
         }
         return *this;
     }

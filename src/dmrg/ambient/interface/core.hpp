@@ -34,25 +34,43 @@ class livelong
 {
 public:
    ~livelong(){
+        if(this->is_loose_copied()){     // I have a copy
+            if(this->is_loose_copy()){   // I am a copy
+                self->duplicant->self->original = self->original;
+                self->original->self->duplicant = self->duplicant;
+            }else this->bind();          // I am original
+        }else if(this->is_loose_copy()){ // I am a copy
+            self->original->self->loose_copied = false;
+        }
+
         //if(this->p != ANY){
         //    this->breakdown()->deallocate(); // deallocate profile
         //}
     }
-
-    void init(){
-        this->p = P;
-        this->use_count = 0;
-        this->loose = true;
-        this->loose_copy = false;
-        this->loose_copied = false;
-        this->self = NULL;
+    
+    void bind() const {
+        assert(self != NULL);
+        if(this->is_loose_copy()){
+            self->original->bind();
+        }else if(this->is_loose_copied()){
+            self->loose_copied = false;
+            self->duplicant->self->loose_copy = false; // replica
+            bool loose_copied = self->duplicant->self->loose_copied;
+            self->duplicant->self->loose_copied = false; // preventing false stacking
+            ambient::push(ambient::copy_l, ambient::copy_c, 
+                         *self->duplicant, *(const T*)this);
+            self->duplicant->self->loose_copied = loose_copied;
+        }else if(this->is_loose()){
+            self->loose = false;
+            bind_model((T*)this);
+        }
     }
 
     T* snapshot(T* holder) const {
         if(this->is_loose_copied()){ // somebody loose copied me
-            return this->duplicant->snapshot(holder);
+            return self->duplicant->snapshot(holder);
         }
-        this->duplicant = holder; 
+        self->duplicant = holder; 
         self->loose_copied = true;
         T* snapshot = (T*)(new typename T::replica(*self));
         snapshot->original = (T*)this;
@@ -71,6 +89,15 @@ public:
         }else if(P == REPLICA){
             self = (T*)this;
         }
+    }
+
+    void init(){
+        this->p = P;
+        this->use_count = 0;
+        this->loose = true;
+        this->loose_copy = false;
+        this->loose_copied = false;
+        this->self = NULL;
     }
 
     livelong(){
@@ -136,24 +163,6 @@ public:
     bool is_loose_copy()   const { return  self->loose_copy;      }
     bool is_abstract()     const { return (this->is_loose() || 
                                            this->is_loose_copy()); }
-    
-    void bind() const {
-        assert(self != NULL);
-        if(this->is_loose_copy()){
-            self->original->bind();
-        }else if(this->is_loose_copied()){
-            self->loose_copied = false;
-            duplicant->self->loose_copy = false; // replica
-            bool loose_copied = duplicant->self->loose_copied;
-            duplicant->self->loose_copied = false; // preventing false stacking
-            ambient::push(ambient::copy_l, ambient::copy_c, 
-                         *this->duplicant, *(const T*)this);
-            duplicant->self->loose_copied = loose_copied;
-        }else if(this->is_loose()){
-            self->loose = false;
-            bind_model((T*)this);
-        }
-    }
 
 public:
     T* self;

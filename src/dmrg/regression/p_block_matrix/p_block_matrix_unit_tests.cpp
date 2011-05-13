@@ -49,19 +49,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
     std::cout << f;
     block_matrix<Matrix, grp> m1, m2, m3;
     
-//    m1.insert_block(d, -1, 1);
-//    m1.insert_block(d, 0, 1);
-//    m2.insert_block(e, 1, 1);
+    m1.insert_block(d, -1, 1);
+    m1.insert_block(e, 0, 1);
+    m2.insert_block(d, 1, 1);
 
-    m2.reserve(0,0,6, 6);
+    m2.reserve(2,2,6,6);
     m2.allocate_blocks();
-        /*
 
     resize(d, 2, 2);
-    std::cout << d;
-    std::cout << e;
-    std::cout << f;
     std::cout << m1;
-    std::cout << m2;*/
+    std::cout << m2;
+    resize(d, 4, 4);
+    std::cout << d;
 }
 
