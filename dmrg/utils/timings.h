@@ -5,8 +5,6 @@
 #include <fstream>
 
 
-#include "utils/zout.hpp"
-
 #ifdef _OPENMP
 #include "omp.h"
 #endif
@@ -56,7 +54,7 @@ public:
     : val(0), name(name_), freq(CPU_FREQ),nCounter(0)
     { }
     
-    ~Timer() { zout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
+    ~Timer() { std::cout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
     
     Timer & operator+=(double t)
     {

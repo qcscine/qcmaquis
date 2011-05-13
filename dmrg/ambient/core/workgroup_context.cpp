@@ -19,8 +19,6 @@ namespace ambient {
         }
     }
     void workgroup_context::finalize(){
-        scope.spin_loop();
         this->bind_op->finalize();
-        scope.spin_loop();
     }
 }

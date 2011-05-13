@@ -60,7 +60,6 @@ namespace blas
     template<typename T>
     void pblas_gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        assert(C.is_loose());
         C.resize(A.num_rows(), B.num_cols());
         C.set_init(ambient::null_i<T>);
 	ambient::push(ambient::gemm_l_scalapack, ambient::gemm_c_scalapack, A, B, C);
@@ -69,7 +68,6 @@ namespace blas
     template<typename T>
     void gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T> &C)
     {
-        assert(C.is_loose());
         C.resize(A.num_rows(), B.num_cols());
         C.set_init(ambient::null_i<T>);
 	ambient::push(ambient::gemm_l, ambient::gemm_c, A, B, C);
@@ -79,7 +77,6 @@ namespace blas
     template<typename T>
     void gemm(const p_dense_matrix<T>& A, const p_diagonal_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        assert(C.is_loose());
         assert(num_cols(A) == num_rows(B));
         C.resize(A.num_rows(), B.num_cols());
 	ambient::push(ambient::gemm_diagonal_rhs_l, ambient::gemm_diagonal_rhs_c, A, B.get_data(), C);
@@ -89,7 +86,6 @@ namespace blas
     template<typename T>
     void gemm(const p_diagonal_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        assert(C.is_loose());
         assert(num_cols(A) == num_rows(B));
         C.resize(A.num_rows(), B.num_cols());
 	ambient::push(ambient::gemm_diagonal_lhs_l,ambient::gemm_diagonal_lhs_c, A.get_data(), B, C);
