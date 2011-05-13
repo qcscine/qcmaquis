@@ -25,20 +25,29 @@ struct caveats {
 
 BOOST_GLOBAL_FIXTURE( caveats );
 
+p_dense_matrix<double> foo(p_dense_matrix<double> a){
+
+    a.resize(2,2);
+    printf("Called foo!\n");
+    p_dense_matrix<double> b = a;
+    return a;
+}
+
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( p_memory_management_test, T, test_types )
 {
     ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
 
     p_dense_matrix<double> d(4,4);
-    p_dense_matrix<double> e(0,0);
-    p_dense_matrix<double> f(0,0);
-    p_dense_matrix<double> dc(d);
-    p_dense_matrix<double> dcc(d);
+    p_dense_matrix<double> dc = foo(d);
+    std::cout << d;
+    //p_dense_matrix<double> e(0,0);
+    //p_dense_matrix<double> f(0,0);
+    //p_dense_matrix<double> dcc(d);
 //    p_dense_matrix<double> dccc(dcc);
 
     //d.touch();
-    dc.touch();
-    dcc.touch();
+//    dcc.touch();
 
     //std::cout << d;
     //std::cout << dc;
