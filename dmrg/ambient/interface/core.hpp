@@ -34,12 +34,18 @@ class livelong
 {
 public:
    ~livelong(){
-        if(this->is_loose_copied()){     // I have a copy
-            if(this->is_loose_copy()){   // I am a copy
+        if(this->is_loose_copied()){                  // I have a copy
+            if(this->is_loose_copy()){                // I am a copy
                 self->duplicant->self->original = self->original;
                 self->original->self->duplicant = self->duplicant;
-            }else this->bind();          // I am original
-        }else if(this->is_loose_copy()){ // I am a copy
+            }else{ 
+                if(!this->is_loose()) this->bind();
+                else{ 
+                    self->duplicant->self->loose_copy = false;
+                    self->duplicant->self->loose = true;
+                }
+            }              // I am original
+        }else if(this->is_loose_copy()){              // I am a copy
             self->original->self->loose_copied = false;
         }
 

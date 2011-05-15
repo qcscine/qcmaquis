@@ -12,18 +12,20 @@ namespace blas {
     p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){}
 
     template <typename T, ambient::policy P>
-    p_dense_matrix<T,P>::p_dense_matrix(size_type rows = 0, size_type cols = 0, T init_value = T() )
-    : livelong(rows, cols, init_value){
-        self->rows = rows;
-        self->cols = cols;
+    p_dense_matrix<T,P>::p_dense_matrix(size_type rows = 0, size_type cols = 0, T init_v = T() )
+    : livelong(rows, cols, init_v){
+        self->rows   = rows;
+        self->cols   = cols;
+        self->init_v = init_v;
         this->set_breakdown();
     }
 
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::p_dense_matrix(const p_dense_matrix& m) // copy constructor (to be optimized)
     : livelong(m){
-        self->rows = m.num_rows();
-        self->cols = m.num_cols();
+        self->rows   = m.num_rows();
+        self->cols   = m.num_cols();
+        self->init_v = m.init_v;
         this->set_breakdown();
     }
 
@@ -34,6 +36,7 @@ namespace blas {
         std::swap(this->breakdown(), r.breakdown());
         std::swap(self->rows,        r.thyself->rows);
         std::swap(self->cols,        r.thyself->cols);
+        std::swap(self->init_v,      r.thyself->init_v);
     }
 
     template <typename T, ambient::policy P>
@@ -66,8 +69,8 @@ namespace blas {
     {
         self->rows = rows; 
         self->cols = cols;
-        if(rows <= 0){ printf("%d %d\n", rows, cols); void* a = malloc(1); free(a); free(a); assert(rows > 0); }
         assert(cols > 0);
+        assert(rows > 0);
         if(!self->is_loose()){ 
             ambient::push(ambient::resize_l, ambient::resize_c, 
                           *this, self->rows, self->cols);
@@ -118,7 +121,7 @@ namespace blas {
     inline T& p_dense_matrix<T,P>::get(size_type i, size_type j) const
     {
         static double zero = 13;
-        if(i >= self->rows){ printf("Accesing %d %d (of %d %d)\n", (int)i, (int)j, (int)self->rows, (int)self->cols); void* a = malloc(1); free(a); free(a); assert(i < self->rows); }
+        assert(i < self->rows);
         assert(j < self->cols);
         if(ambient::occupied()) assert(false); //return zero; // for stream reader
         if(self->is_abstract()) this->touch();
