@@ -84,6 +84,8 @@ namespace blas {
         std::pair<element_iterator,element_iterator> elements() const {
             return std::make_pair( const_element_iterator(this->self,0,0), const_element_iterator(this->self,0,num_cols() ) );
         }
+
+        value_type init_v; // value used for initialization
     private:
         size_type rows;
         size_type cols;

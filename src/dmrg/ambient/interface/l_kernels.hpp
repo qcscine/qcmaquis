@@ -61,7 +61,7 @@ void copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {
     scope_select("1 from ambient as copy where master is 0 and breakdown contains "+get_id(a));
     if(!scope.involved()) return;
-    //zout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
+    zout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
 
     block_2d_cycle_assign(ac);
     block_2d_cycle_assign(a);
