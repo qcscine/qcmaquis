@@ -278,11 +278,12 @@ int main(int argc, char ** argv)
             h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
                                    std::vector<double>(1, energy2 - energy*energy));
         }
-        
-        gettimeofday(&then, NULL);
-        double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-        
-        cout << "Task took " << elapsed << " seconds." << endl;
     }
 #endif
+    
+    gettimeofday(&then, NULL);
+    double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+    
+    cout << "Task took " << elapsed << " seconds." << endl;
+
 }
