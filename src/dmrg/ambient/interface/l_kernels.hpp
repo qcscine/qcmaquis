@@ -187,7 +187,7 @@ void syev_l_scalapack(const p_dense_matrix<double>& m, p_dense_matrix<double>& w
 
 void gemm_diagonal_lhs_l(const p_dense_matrix<double>& a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
-    scope_select("1 from ambient as gemm_lhs_diagonal where master is 0 and breakdown contains "+ get_id(b));
+    scope_select("1 from ambient as gemm_diagonal_lhs where master is 0 and breakdown contains "+ get_id(b));
     if(!scope.involved()) return;
     //zout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; info(a_diag); info(b); info(c);
 
@@ -198,7 +198,7 @@ void gemm_diagonal_lhs_l(const p_dense_matrix<double>& a_diag, pinned const p_de
 
 void gemm_diagonal_rhs_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
 {
-    scope_select("1 from ambient as gemm_rhs_diagonal where master is 0 and breakdown contains "+ get_id(a));
+    scope_select("1 from ambient as gemm_diagonal_rhs where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
     //zout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; info(a); info(b_diag); info(c);
 

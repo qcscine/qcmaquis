@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 namespace ambient{
-
+    
     hash_map::hash_map& hash_map::instance()
     {
         static hash_map* singleton = NULL;

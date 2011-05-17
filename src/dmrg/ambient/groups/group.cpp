@@ -4,6 +4,32 @@
 
 namespace ambient{ namespace groups {
 
+    comm_map::comm_map& comm_map::instance()
+    {
+        static comm_map* singleton = NULL;
+        if(!singleton) singleton = new comm_map();
+        return *singleton;
+    }
+    comm_map::comm_map():content(HASH_MAP_PARTITION_SIZE){ }
+    
+    group** comm_map::get(unsigned int* hash, unsigned int hash_len, int shift) const
+    {
+        unsigned int hash_w = hash[0] >> shift;
+        if(hash_w >= HASH_MAP_PARTITION_SIZE){
+            unsigned int hash_cut = (unsigned int)(unsigned char)hash_w; // first log2 of HASH_MAP_PARTITION_SIZE bits
+            if(this->content[hash_cut].first == NULL){
+                this->content[hash_cut].first = new comm_map();
+            }
+            return this->content[hash_cut].first->get(hash, hash_len, shift+HASH_MAP_PARTITION_BIT_SIZE); 
+        }else if(hash_len > 1){
+            if(this->content[hash_w].first == NULL){
+                this->content[hash_w].first = new comm_map();
+            }
+            return this->content[hash_w].first->get(&hash[1], hash_len-1); 
+        }
+        return &this->content[hash_w].second;
+    }
+
     group::group(const char* name, int master, MPI_Comm parent): members(NULL), object_count(0), vacant_level(0)
     {
         this->parent = NULL;
@@ -19,6 +45,8 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->manager = new packet_manager(this);
         this->id = hash_group_id();
+        group** original = mpi_comm_map.get(this->id.first, this->id.second);
+       *original = this;
         group_map(this->name, this);
     }
 
@@ -56,8 +84,6 @@ namespace ambient{ namespace groups {
     group::group(const char* name, int master, group* parent): count(0), members(NULL), members_g(NULL), object_count(0), vacations(NULL), vacant_level(0)
     {
         this->parent = parent;
-        this->mpi_group = this->parent->mpi_group;
-        this->mpi_comm = this->parent->mpi_comm;
         this->name = name;
         this->master = master;
         this->parent->children.insert(this);
@@ -250,10 +276,12 @@ namespace ambient{ namespace groups {
             printf("Warning: attempting to commit ambient group.\n");
             return;
         }
+        this->id = hash_group_id();
+        group** original = mpi_comm_map.get(this->id.first, this->id.second);
+       *original == NULL ? *original = this : throw *original;
         MPI_Group_incl(this->parent->mpi_group, this->count, this->members, &this->mpi_group);
         MPI_Comm_create(this->parent->mpi_comm, this->mpi_group, &this->mpi_comm);
         MPI_Group_rank(this->mpi_group, &this->rank);
-        this->id = hash_group_id();
         if(this->involved()) this->manager = new packet_manager(this);
         this->vacations = (int*)malloc(sizeof(int)*this->count);
         memset(this->vacations, 0, sizeof(int)*this->count);
@@ -298,7 +326,7 @@ namespace ambient{ namespace groups {
     group* group_map(const char* name, group* instance){
         static std::map<std::string,group*> map;
         if(instance != NULL){
-            if(map.find(name) != map.end()) map.find(name)->second = instance;
+            if(map.find(name) != map.end()) map.find(name)->second = instance; // can delete the group here
             else map.insert(std::pair<std::string,group*>(name,instance));
             return instance;
         }

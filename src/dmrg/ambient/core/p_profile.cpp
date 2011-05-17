@@ -7,7 +7,6 @@
 #include "ambient/core/operation/operation.pp.sa.hpp"
 #include "ambient/core/auxiliary.h"
     
-
 namespace ambient {
 
     void accept_block(groups::packet_manager::typed_q& in_q){

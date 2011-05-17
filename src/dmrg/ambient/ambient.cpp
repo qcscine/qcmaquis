@@ -23,6 +23,7 @@ namespace ambient
     scheduler& engine       = scheduler::instance();
     multirank& rank         = multirank::instance();
     hash_map& p_profile_map = hash_map::instance();
+    comm_map& mpi_comm_map  = comm_map::instance();
     scope_context& scope    = scope_context::instance();
 // global objects accessible anywhere //
 
@@ -64,6 +65,7 @@ namespace ambient
     void spin()      { engine.spin();            }
     void spin_loop() { engine.spin_loop();       }
     void world_loop(){ engine.world_loop();      }
+    void world_spin(){ engine.world_spin();      }
     int  size()      { return engine.size;       }
     bool occupied()  { return engine.occupied(); }
 
@@ -97,7 +99,7 @@ namespace ambient
     }
     void scheduler::spin()
     {
-        world()->spin();
+        this->world_spin();
         while(!this->router.alt_end_reached()){ // alt is for embedding
             (*this->router.alt_pick())->spin();
         }
@@ -106,8 +108,13 @@ namespace ambient
     {
         this->world_loop();
         while(!this->router.end_reached()){
-            (*this->router.pick())->spin_loop();
+            packet_manager* mgr = (*this->router.pick());
+            mgr->spin_loop();
         }
+    }
+    void scheduler::world_spin()
+    {
+        world()->spin();
     }
     void scheduler::world_loop()
     {
@@ -122,6 +129,7 @@ namespace ambient
         if(this->stack.empty()) return; // easy out
         assert(this->occupied() == false);
         this->stirring = true;
+        printf("R%d: playout...\n", ambient::rank());
         MPI_Barrier(this->ambient->mpi_comm);
         one_touch_stack<core::operation*> cleanup_stack;
         std::pair<core::operation*, core::operation*>* pair;
@@ -130,7 +138,8 @@ namespace ambient
         core::operation* needle_op;
         core::operation* haystack_op;
         bool repeat = true;
-
+        Timer ct("computing"); Timer dt("distribution"); Timer rt("relation scanning");
+        rt.begin();
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
             pair->first->extract_profiles();
@@ -153,6 +162,7 @@ namespace ambient
                 double_break: continue;
             }
         }
+        rt.end();
 // now we all set with dependencies!
         while(repeat)
         {   repeat = false;
@@ -161,13 +171,17 @@ namespace ambient
                 if(logistics->executed) continue;
                 if(logistics->dependency_count){ repeat = true; continue; }
                 logistics->perform();
+                dt.begin();
                 core::apply_changes(logistics->profiles, logistics->count);
+                dt.end();
                 logistics->postprocess();
                 if(logistics->get_scope()->involved()){
                     this->router.push_back(logistics->get_scope()->get_manager());
                 }
             }
-            this->spin_loop();
+            this->world_loop();
+            //printf("Computing!\n");
+            ct.begin();
             while(!this->stack.end_reached()){
                 pair = this->stack.pick();
                 logistics = pair->first;
@@ -190,7 +204,7 @@ namespace ambient
                 computing->release();
                 logistics->release();
             }
-            this->spin_loop();
+            ct.end();
 // cleaning the layout
             while(!cleanup_stack.end_reached()){
                 logistics = *cleanup_stack.pick();

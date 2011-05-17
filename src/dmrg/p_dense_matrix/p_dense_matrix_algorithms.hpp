@@ -71,7 +71,6 @@ namespace blas
         C.resize(A.num_rows(), B.num_cols());
         C.set_init(ambient::null_i<T>);
 	ambient::push(ambient::gemm_l, ambient::gemm_c, A, B, C);
-        ambient::playout();
     }
 
     template<typename T>
@@ -80,7 +79,6 @@ namespace blas
         assert(num_cols(A) == num_rows(B));
         C.resize(A.num_rows(), B.num_cols());
 	ambient::push(ambient::gemm_diagonal_rhs_l, ambient::gemm_diagonal_rhs_c, A, B.get_data(), C);
-        ambient::playout();
     }
     
     template<typename T>
@@ -89,7 +87,6 @@ namespace blas
         assert(num_cols(A) == num_rows(B));
         C.resize(A.num_rows(), B.num_cols());
 	ambient::push(ambient::gemm_diagonal_lhs_l,ambient::gemm_diagonal_lhs_c, A.get_data(), B, C);
-        ambient::playout();
     }
     
     template<typename T>
@@ -104,7 +101,6 @@ namespace blas
         V.resize(k, num_cols(A));
         S.resize(k, k);
 	ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, A, U, V, S.get_data());
-        ambient::playout();
     }
     
     template<typename T>
@@ -134,7 +130,6 @@ namespace blas
         for (std::size_t c = 0; c < num_cols(M); ++c)
 			std::copy(column(M, c).first, column(M, c).second,
                       column(evecs, num_cols(M)-1-c).first);
-        ambient::playout();
     }
 
     template<typename T>
@@ -148,14 +143,12 @@ namespace blas
         std::vector<double> evals_(num_rows(M));
         syev(M, evecs, evals_);  
   //      evals = typename associated_diagonal_matrix<p_dense_matrix<T>::type(evals_); to modify
-        ambient::playout();
     }
  
    template<typename T>
    void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala)
    {
        ambient::push(ambient::validation_l, ambient::validation_c, A_ambient, B_scala);
-        ambient::playout();
    }
 
    template<typename T, class Generator>
