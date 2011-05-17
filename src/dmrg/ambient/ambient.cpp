@@ -101,7 +101,7 @@ namespace ambient
     {
         this->world_spin();
         while(!this->router.alt_end_reached()){ // alt is for embedding
-            (*this->router.alt_pick())->spin();
+            (*this->router.alt_pick())->spin(); // router is slow as it contains hundreds of the same groups
         }
     }
     void scheduler::spin_loop()
@@ -139,6 +139,7 @@ namespace ambient
         core::operation* haystack_op;
         bool repeat = true;
         Timer ct("computing"); Timer dt("distribution"); Timer rt("relation scanning");
+        Timer ambop("ambient pure computing");
         rt.begin();
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
@@ -197,7 +198,9 @@ namespace ambient
                         logistics->get_scope()->spin_loop();
                     }else{
                         this->context.bind(logistics);
+                        ambop.begin();
                         this->context.discharge(computing);
+                        ambop.end();
                         this->context.finalize();
                     }
                 }
