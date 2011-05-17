@@ -60,6 +60,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types )
      tp.end();
      //if(ambient::rank() == 0) ta.save(ambient::size(),M);
      for(int i = 0 ; i < LENGTH ; i++) blas::gemm(*V[i*4],*V[i*4+1],*V[i*4+2]);
+     printf("Ambient...\n");
+
      Timer ta("Ambient series of GEMM"); ta.begin();
      ambient::playout();
      ta.end();

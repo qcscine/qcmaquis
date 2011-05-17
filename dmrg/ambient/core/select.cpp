@@ -70,7 +70,10 @@ namespace ambient {
             }else 
                 grp->add(count);
         }
-        grp->commit();
+
+        try{ grp->commit(); }
+        catch(groups::group* original){ grp = original; }
+
         assert(master < grp->get_size());
         scope.set_group(grp);
         scope.get_op()->preprocess();

@@ -5,6 +5,8 @@
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
 
+#include "utils/timings.h"
+
 namespace ambient{ namespace core{
 using namespace ambient::groups;
 
@@ -65,7 +67,7 @@ namespace ambient{ namespace groups{
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "APPROVE")); 
                 this->state = LOOSE;
             }else{
-                //printf("R%d: Warning: generated reject in locking!\n", ambient::rank());
+                printf("R%d: Warning: generated reject in locking!\n", ambient::rank());
                 this->emit(pack<control_packet_t>(alloc_t<control_packet_t>(), this->grp->get_master(), 
                                                   "P2P", ambient::rank(this->grp), "LOCKING", "REJECT")); 
                 this->state = OPEN;
@@ -95,8 +97,9 @@ namespace ambient{ namespace groups{
     }
 
     void packet_manager::emit(packet* pack){
+        const packet_t& type = pack->get_t();
         for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
-            if(&((*it)->type) == &(pack->get_t()) && (*it)->flow == OUT){ (*it)->push(pack); return; }
+            if((*it)->flow == OUT && &((*it)->type) == &type){ (*it)->push(pack); return; }
         }
         this->add_typed_q(pack->get_t(), packet_manager::OUT)->push(pack);
     }
@@ -125,8 +128,9 @@ namespace ambient{ namespace groups{
     void packet_manager::spin_loop(){
         size_t active_sends_number;
         size_t counter = 0;
+        //printf("Spin looping!\n");
         for(;;){
-            ambient::spin();
+            ambient::world_spin();
             active_sends_number = 0;
             this->spin();
             for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it)
@@ -175,7 +179,6 @@ namespace ambient{ namespace groups{
         }
     }
     void packet_manager::typed_q::push(packet* pack){
-        assert(this->flow == OUT);
         this->reqs.push_back(this->get_request());
         request* target = this->reqs.back();
         target->memory = (void*)pack; // don't forget to free memory (if not needed)
@@ -187,7 +190,6 @@ namespace ambient{ namespace groups{
     void packet_manager::typed_q::send(request* r){
         packet* pack = (packet*)r->memory;
         if(pack->get<char>(A_OP_T_FIELD) == 'P'){
-            assert(pack->get<int>(A_DEST_FIELD) >= 0);
             MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(r->mpi_request));
         }else if(pack->get<char>(A_OP_T_FIELD) == 'B'){
             pack->set(A_OP_T_FIELD, "P2P");
@@ -208,7 +210,6 @@ namespace ambient{ namespace groups{
         std::list<request*>::iterator it;
         if(this->flow == IN)
         for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
-            assert((*it)->mpi_request != MPI_REQUEST_NULL);
             MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
             if(flag){
                 this->target_packet = unpack(this->type, (*it)->memory); 
@@ -219,7 +220,6 @@ namespace ambient{ namespace groups{
         }
         else 
         for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
-            assert((*it)->mpi_request != MPI_REQUEST_NULL);
             MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
             if(flag){
                 this->target_packet = (packet*)(*it)->memory;

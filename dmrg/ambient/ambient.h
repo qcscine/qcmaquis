@@ -49,6 +49,7 @@ namespace ambient
         void spin();
         void spin_loop();
         void world_loop();
+        void world_spin();
         bool occupied();
         int size;
         block_packet_t* default_data_packet_t;
@@ -72,6 +73,7 @@ namespace ambient
     void spin();
     void spin_loop();
     void world_loop();
+    void world_spin();
     int size();
     bool is_master();
     bool occupied();
@@ -82,6 +84,7 @@ namespace ambient
     extern scheduler& engine;
     extern groups::multirank& rank;
     extern hash_map& p_profile_map;
+    extern groups::comm_map& mpi_comm_map;
 }
 
 #endif

@@ -7,6 +7,21 @@
 
 namespace ambient{ namespace groups{
 
+    class group;
+
+    class comm_map {
+    private: 
+        comm_map();                             // constructor is private
+        comm_map(comm_map const&);              // copy constructor is private
+        comm_map& operator=(comm_map const&);   // assignment operator is private
+    public:
+        static comm_map& instance();
+    public:
+        group** get(unsigned int* hash, unsigned int hash_len, int shift = 0) const;
+    private:
+        mutable std::vector< std::pair<comm_map*, group*> > content;
+    };
+
     class group
     {
     public:
