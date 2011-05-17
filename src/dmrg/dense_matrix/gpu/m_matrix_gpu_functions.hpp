@@ -5,7 +5,6 @@
 #include <vector>
 #include "dense_matrix/dense_matrix.h"
 
-#include "cuda.h"
 //#include "cuda_runtime_api.h" // needed for streams
 #include "cublas.h"
 
