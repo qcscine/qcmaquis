@@ -45,7 +45,7 @@ namespace ambient{ namespace groups {
         this->master = master;
         this->manager = new packet_manager(this);
         this->id = hash_group_id();
-        group** original = mpi_comm_map.get(this->id.first, this->id.second);
+        group** original = scope_map.get(this->id.first, this->id.second);
        *original = this;
         group_map(this->name, this);
     }
@@ -277,7 +277,7 @@ namespace ambient{ namespace groups {
             return;
         }
         this->id = hash_group_id();
-        group** original = mpi_comm_map.get(this->id.first, this->id.second);
+        group** original = scope_map.get(this->id.first, this->id.second);
        *original == NULL ? *original = this : throw *original;
         MPI_Group_incl(this->parent->mpi_group, this->count, this->members, &this->mpi_group);
         MPI_Comm_create(this->parent->mpi_comm, this->mpi_group, &this->mpi_comm);

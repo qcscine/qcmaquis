@@ -19,12 +19,12 @@ using namespace ambient::groups;
 namespace ambient
 {
 // global objects accessible anywhere //
-    scheduler& layout       = scheduler::instance();
-    scheduler& engine       = scheduler::instance();
-    multirank& rank         = multirank::instance();
-    hash_map& p_profile_map = hash_map::instance();
-    comm_map& mpi_comm_map  = comm_map::instance();
-    scope_context& scope    = scope_context::instance();
+    scheduler& layout        = scheduler::instance();
+    scheduler& engine        = scheduler::instance();
+    multirank& rank          = multirank::instance();
+    hash_map&  p_profile_map = hash_map::instance();
+    comm_map&  scope_map     = comm_map::instance();
+    scope_context& scope     = scope_context::instance();
 // global objects accessible anywhere //
 
     scheduler & scheduler::operator>>(dim2 mem_dim) 

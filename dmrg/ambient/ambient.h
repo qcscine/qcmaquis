@@ -84,7 +84,7 @@ namespace ambient
     extern scheduler& engine;
     extern groups::multirank& rank;
     extern hash_map& p_profile_map;
-    extern groups::comm_map& mpi_comm_map;
+    extern groups::comm_map& scope_map;
 }
 
 #endif
