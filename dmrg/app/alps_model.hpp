@@ -433,7 +433,7 @@ namespace app {
                             bool with_sign = fermionic(b, op1, b, op2);
 
                             mterm_t term;
-                            term.type = mterm_t::Average;
+                            term.type = mterm_t::Local;
                             std::ostringstream ss;
                             ss << what.str(1);
                             if (ops.size() > 1) ss << " (" << int(tit-ops.begin())+1 << ")";
@@ -457,7 +457,7 @@ namespace app {
                         }
                     } else {
                         mterm_t term;
-                        term.type = mterm_t::Average;
+                        term.type = mterm_t::Local;
                         term.name = what.str(1);
 
 						SiteOperator op = make_site_term(it->value(), parms);
