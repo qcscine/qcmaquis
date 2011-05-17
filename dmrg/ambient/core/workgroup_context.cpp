@@ -15,7 +15,7 @@ namespace ambient {
         for(int k=0; k < workload.size(); k++){
             this->pin->set_default_block(workload[k].i, workload[k].j);
             kernel->invoke();
-            ambient::spin();
+            //ambient::spin();
         }
     }
     void workgroup_context::finalize(){
