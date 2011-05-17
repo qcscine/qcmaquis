@@ -7,8 +7,6 @@
 #include "ambient/core/operation/operation.pp.sa.hpp"
 #include "ambient/core/auxiliary.h"
 
-#include "utils/timings.h"
-
 namespace ambient{ namespace core{
 
     using namespace ambient::groups;
@@ -201,7 +199,6 @@ namespace ambient{ namespace core{
 
     void apply_changes(p_profile** profiles, size_t count)
     {
-        //Timer pp("apply changes"); pp.begin();
         for(int k = 0; k < count; k++){
             for(int i=0; i < profiles[k]->layout->segment_count; i++){
                 const char* action = "UPDATE";
@@ -235,7 +232,6 @@ namespace ambient{ namespace core{
                                                                    profiles[k]->layout->requests[i].j));
             }
         }
-        //pp.end();
     }
 
 } }
