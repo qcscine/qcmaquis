@@ -38,15 +38,11 @@ namespace blas
         return tr;
     }
         
-    template<class Matrix>
-    Matrix identity_matrix(typename Matrix::size_type size)
+    template<typename T>
+    p_dense_matrix<T> identity_matrix(typename p_dense_matrix<T>::size_type size)
     {
-        assert(false);
-        Matrix ret(size, size); // don't forget null-init here
-        // ambient_write_only //
-        for (typename Matrix::size_type k = 0; k < size; ++k)
-            ret(k,k) = 1;
-        // ambient_write_only //
+        p_dense_matrix<T> ret(size, size);
+        ret.set_init(ambient::identity_i<T>);
         return ret;
     }
     

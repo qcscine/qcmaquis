@@ -191,3 +191,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_test, T, test_types )
     std::cout << A;
     std::cout << AT;
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types ) 
+{ 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+
+    p_dense_matrix<T> A = blas::identity_matrix<double>(5);
+    A.touch(); // bugbug
+    std::cout << A;
+}
