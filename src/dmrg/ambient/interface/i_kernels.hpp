@@ -38,6 +38,25 @@ void null_i(p_dense_matrix<T>& a)
 }
 
 template<typename T>
+void identity_i(p_dense_matrix<T>& a)
+{
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    size_t m = get_mem_t_dim(a).y;
+    size_t n = get_mem_t_dim(a).x;
+    T* ad = current(a)(i,j);
+    memset(ad, 0, m*n*sizeof(T));
+
+    if((i+1)*m <= j*n) return;
+    if(i*m >= (j+1)*n) return;
+    for(size_t jj = j*n; jj < (j+1)*n; jj++){
+        if(i*m > jj) continue;
+        if((i+1)*m <= jj) continue;
+        ad[jj % m + (jj%n)*m] = 1;
+    }
+}
+
+template<typename T>
 void value_i(p_dense_matrix<T>& a)
 {
     size_t i = get_block_id(a).y;
