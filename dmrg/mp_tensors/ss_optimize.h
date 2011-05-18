@@ -243,7 +243,6 @@ private:
         
 //        mps.normalize_right();
         mps.canonize(0);
-        
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);
@@ -252,35 +251,32 @@ private:
         right_stores_.resize(L+1, storage_master.child());
         left_stores_.resize(L+1, storage_master.child());
         
-        {
-            Boundary<Matrix, SymmGroup> left = mps.left_boundary();
-            left_[0] = left;
-            storage::reset(left_stores_[0]);
-            storage::store(left_[0], left_stores_[0]);
-            
-            // this is not actually necessary
-//            for (int i = 0; i < L; ++i) {
-//                MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-//                left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
-//                left_[i+1] = left;
-//                storage::reset(left_stores_[i+1]);
-//                storage::store(left_[i+1], left_stores_[i+1]);
-//            }
-        }
+        Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+        printf("OK!\n");
+        left_[0] = left;
+        storage::reset(left_stores_[0]);
+        storage::store(left_[0], left_stores_[0]);
         
-        {
-            Boundary<Matrix, SymmGroup> right = mps.right_boundary();
-            right_[L] = right;
-            storage::reset(right_stores_[L]);
-            storage::store(right_[L], right_stores_[L]);
-            
-            for (int i = L-1; i >= 0; --i) {
-                MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-                right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
-                right_[i] = right;
-                storage::reset(right_stores_[i]);
-                storage::store(right_[i], right_stores_[i]);
-            }
+        // this is not actually necessary
+//        for (int i = 0; i < L; ++i) {
+//            MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+//            left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+//            left_[i+1] = left;
+//            storage::reset(left_stores_[i+1]);
+//            storage::store(left_[i+1], left_stores_[i+1]);
+//        }
+        
+        Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+        right_[L] = right;
+        storage::reset(right_stores_[L]);
+        storage::store(right_[L], right_stores_[L]);
+        
+        for (int i = L-1; i >= 0; --i) {
+            MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+            right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
+            right_[i] = right;
+            storage::reset(right_stores_[i]);
+            storage::store(right_[i], right_stores_[i]);
         }
         
         timer2.end();

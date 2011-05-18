@@ -289,12 +289,13 @@ struct contraction {
                                     
                                     /* optimize me */
                                     /* make me a kernel */
+                                    assert(false);
                                     for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                         for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                             typename Matrix::value_type wblock_t = wblock(ss1, ss2);
                                             for (size_t rr = 0; rr < right_i[r].second; ++rr) {
                                                 iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
-                                                              &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second,
+                                                              &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second, // bugbug
                                                               &oblock(out_left_offset + ss2*left_i[l].second, rr),
                                                               wblock_t);
                                             }

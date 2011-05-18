@@ -25,6 +25,7 @@ namespace ambient
     hash_map&  p_profile_map = hash_map::instance();
     comm_map&  scope_map     = comm_map::instance();
     scope_context& scope     = scope_context::instance();
+    access_marker& access    = access_marker::instance();
 // global objects accessible anywhere //
 
     scheduler & scheduler::operator>>(dim2 mem_dim) 
@@ -138,9 +139,9 @@ namespace ambient
         core::operation* needle_op;
         core::operation* haystack_op;
         bool repeat = true;
-        Timer ct("computing"); Timer dt("distribution"); Timer rt("relation scanning");
-        Timer ambop("ambient pure computing");
-        rt.begin();
+        //Timer ct("computing"); Timer dt("distribution"); Timer rt("relation scanning");
+        //Timer ambop("ambient pure computing");
+        //rt.begin();
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
             pair->first->extract_profiles();
@@ -163,26 +164,26 @@ namespace ambient
                 double_break: continue;
             }
         }
-        rt.end();
+        //rt.end();
 // now we all set with dependencies!
         while(repeat)
         {   repeat = false;
+            //dt.begin();
             while(!this->stack.end_reached()){
                 logistics = this->stack.pick()->first;
                 if(logistics->executed) continue;
                 if(logistics->dependency_count){ repeat = true; continue; }
                 logistics->perform();
-                dt.begin();
                 core::apply_changes(logistics->profiles, logistics->count);
-                dt.end();
                 logistics->postprocess();
                 if(logistics->get_scope()->involved()){
                     this->router.push_back(logistics->get_scope()->get_manager());
                 }
             }
             this->world_loop();
+            //dt.end();
             //printf("Computing!\n");
-            ct.begin();
+            //ct.begin();
             while(!this->stack.end_reached()){
                 pair = this->stack.pick();
                 logistics = pair->first;
@@ -198,16 +199,16 @@ namespace ambient
                         logistics->get_scope()->spin_loop();
                     }else{
                         this->context.bind(logistics);
-                        ambop.begin();
+                        //ambop.begin();
                         this->context.discharge(computing);
-                        ambop.end();
+                        //ambop.end();
                         this->context.finalize();
                     }
                 }
                 computing->release();
                 logistics->release();
             }
-            ct.end();
+            //ct.end();
 // cleaning the layout
             while(!cleanup_stack.end_reached()){
                 logistics = *cleanup_stack.pick();

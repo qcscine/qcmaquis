@@ -23,6 +23,8 @@
 #define UNDEFINED_RANK MPI_UNDEFINED
 #define ID_TYPE unsigned long long int
 
+#define __ambient_write_only__ ambient::access.write_only_mark();
+
 namespace ambient
 {
     class scheduler
@@ -85,6 +87,7 @@ namespace ambient
     extern groups::multirank& rank;
     extern hash_map& p_profile_map;
     extern groups::comm_map& scope_map;
+    extern access_marker& access;
 }
 
 #endif

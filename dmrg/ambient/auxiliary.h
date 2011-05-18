@@ -16,6 +16,20 @@
 namespace ambient{
 namespace core{ class operation; }
 
+    class access_marker
+    {
+    private:
+        access_marker();                                  // constructor is private
+        access_marker(access_marker const&);              // copy constructor is private
+        access_marker& operator=(access_marker const&);   // assignment operator is private
+    public:
+        static access_marker& instance();
+        void write_only_mark();
+        bool write_only_marked();
+    private:
+        bool write_only;
+    };
+
     enum policy 
     {
       ANY     ,  // used for stack allocs, makes replicas in heap
