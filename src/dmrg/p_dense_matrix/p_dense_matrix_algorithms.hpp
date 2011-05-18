@@ -11,24 +11,12 @@
 
 namespace blas
 {
-    template <typename Matrix>
-    Matrix transpose(Matrix const& m) 
-    {
-        assert(false);
-        static Timer timer("transpose");
-        timer.begin();
-        BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
-        // TODO: perhaps this could return a proxy object
-        Matrix tmp(num_cols(m), num_rows(m));
-        // ambient_write_only //
-        for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
-            for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
-                tmp(j,i) = m(i,j);
-            }
-        }
-        // ambient_write_only //
-        timer.end();
-        return tmp;
+    template<typename T>
+    p_dense_matrix<T> transpose(const p_dense_matrix<T>& m)
+    {   // TODO: perhaps this could return a proxy object
+        p_dense_matrix<T> mt(num_cols(m), num_rows(m));
+	ambient::push(ambient::transpose_l,ambient::transpose_c, mt, m);
+        return mt;
     }
         
     template<typename T>

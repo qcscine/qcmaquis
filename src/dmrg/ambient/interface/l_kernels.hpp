@@ -46,6 +46,22 @@ void block_2d_cycle_assign(T& target)
 }
 
 template<typename T>
+void block_2d_cycle_transposed_assign(T& target)
+{
+///////////////////////////////////////////// 2D-block-cyclic decomposition
+    int np = scope.np = 1; // can be a function arg   // process grid's num of rows 
+    int nq = scope.nq = (int)(scope.get_size() / np); // process grid's num of cols 
+    int rank_i = (int)(scope.get_rank() / nq); // process row
+    int rank_j = (int)(scope.get_rank() % nq); // process col
+///////////////////////////////////////////////////////////////////////////
+    for(int i = rank_i; i < get_grid_dim(target).x; i += np){
+        for(int j = rank_j; j < get_grid_dim(target).y; j += nq){
+            assign(target, j, i);
+        }
+    }
+}
+
+template<typename T>
 void block_outright_assign(T& target)
 {
 // this no "distribution" is only needed in side scalapack solver (SVD, ...) where we need a contiguous array (no splitting between proc) for the output (schmidt values ...)
@@ -205,6 +221,17 @@ void gemm_diagonal_rhs_l(pinned const p_dense_matrix<double>& a, const p_dense_m
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b_diag);
     block_2d_cycle_assign(c);
+}
+
+void transpose_l(pinned p_dense_matrix<double>& transposed, const p_dense_matrix<double>& original)
+{
+    int num = 1; //get_grid_dim(a_ambient).y; 
+    scope_select(num+" from ambient as transpose_l where master is 0 and breakdown contains "+ get_id(original));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(a_ambient); info(b_scalapack);
+
+    block_2d_cycle_assign(transposed); 
+    block_2d_cycle_transposed_assign(original);
 }
 
 void validation_l(pinned const p_dense_matrix<double>& a_ambient, const p_dense_matrix<double>& b_scalapack) 
