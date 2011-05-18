@@ -53,6 +53,7 @@ namespace blas {
         void touch() const;
        
         void inplace_conjugate();
+        static p_dense_matrix<T,P> identity_matrix(size_type size);
 
         inline value_type& get(size_type i, size_type j) const;
 
