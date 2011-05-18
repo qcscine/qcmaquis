@@ -180,3 +180,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_test, T, test_types )
     C2 = A2 * B2;
     ambient::playout();
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_test, T, test_types ) 
+{ 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+
+    p_dense_matrix<T> A(5,6);
+    p_dense_matrix<T> AT = blas::transpose(A);
+
+    std::cout << A;
+    std::cout << AT;
+}

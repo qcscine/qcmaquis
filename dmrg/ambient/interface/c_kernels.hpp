@@ -397,6 +397,20 @@ void gemm_diagonal_rhs_c(pinned const p_dense_matrix<double>& a, const p_dense_m
     }
 }
 
+void transpose_c(pinned p_dense_matrix<double>& transposed, const p_dense_matrix<double>& original)
+{
+    int i = get_block_id(transposed).y;
+    int j = get_block_id(transposed).x;
+    double* td = current(transposed)(i,j);
+    double* od = current(original)(j,i);
+
+    for(size_t i = 0; i < get_mem_t_dim(original).y; ++i){
+        for(size_t j=0; j < get_mem_t_dim(original).x; ++j){
+            td[j+i*get_mem_t_dim(transposed).y] = od[i+j*get_mem_t_dim(original).y];
+        }
+    }
+}
+
 void nullcut_c(pinned p_dense_matrix<double>&a, const size_t& num_rows, const size_t& num_cols)
 {
     size_t i = get_block_id(a).y*get_mem_t_dim(a).y; 
