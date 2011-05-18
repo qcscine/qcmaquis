@@ -61,6 +61,7 @@ namespace blas {
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::touch() const {
+        self->abstract = false;
         ambient::push(ambient::touch_l, ambient::touch_c, *this);
     }
 
@@ -99,6 +100,14 @@ namespace blas {
     void p_dense_matrix<T,P>::inplace_conjugate()
     {
         assert(false);
+    }
+
+    template<typename T, ambient::policy P>
+    p_dense_matrix<T,P> p_dense_matrix<T,P>::identity_matrix(size_type size)
+    {
+        p_dense_matrix<T,P> ret(size, size);
+        ret.set_init(ambient::identity_i<T>);
+        return ret;
     }
 
     /*template <typename T> // alternative version // to use in future
@@ -151,6 +160,7 @@ namespace blas {
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator /= (const T2& t){ return (*this = *this * (1/t)); }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator  = (const p_dense_matrix<T>& rhs){
+            printf("Using equal!\n");
         if(rhs.breakdown()->is_proxy()){
             ambient::pin(rhs, *this); // no copying - pinning profile
         }else{
@@ -169,6 +179,7 @@ namespace blas {
     template <typename T, ambient::policy P>
     template <ambient::policy PR>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator = (p_dense_matrix<T,PR>& rhs){
+            printf("Using equal!\n");
         return (*this = *(const p_dense_matrix<T>*)&rhs);
     }
     template <typename T, ambient::policy P>
@@ -201,6 +212,7 @@ namespace blas {
         out.set_init(ambient::null_i<T>);
         return out; 
     }
+
 //////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
 
     /*template <typename T>

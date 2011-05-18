@@ -39,14 +39,6 @@ namespace blas
     }
         
     template<typename T>
-    p_dense_matrix<T> identity_matrix(typename p_dense_matrix<T>::size_type size)
-    {
-        p_dense_matrix<T> ret(size, size);
-        ret.set_init(ambient::identity_i<T>);
-        return ret;
-    }
-    
-    template<typename T>
     void pblas_gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
         C.resize(A.num_rows(), B.num_cols());

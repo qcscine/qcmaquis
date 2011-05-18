@@ -101,6 +101,7 @@ public:
         this->p = P;
         this->use_count = 0;
         this->loose = true;
+        this->abstract = false; // used for resetting
         this->loose_copy = false;
         this->loose_copied = false;
         this->self = NULL;
@@ -162,13 +163,15 @@ public:
     }
     template<typename O>
     void set_init(void(*fp)(O&)) const { // incomplete typename is not allowed
+        if(this->is_abstract()) self->abstract = true;
         self->profile->set_init(new core::operation(fp, (T*)this)); // T casting in order to avoid copy-construction!
     }
     bool is_loose()        const { return  self->loose;           } 
     bool is_loose_copied() const { return  self->loose_copied;    }
     bool is_loose_copy()   const { return  self->loose_copy;      }
-    bool is_abstract()     const { return (this->is_loose() || 
-                                           this->is_loose_copy()); }
+    bool is_abstract()     const { return (this->is_loose()      || 
+                                           this->is_loose_copy() ||
+                                           self->abstract );      }
 
 public:
     T* self;
@@ -176,6 +179,7 @@ public:
     size_t use_count;
     void_pt* profile;
     policy p; // the same as P (avoiding casting collisions)
+    bool abstract;
 private:
     boost::shared_ptr<T> handle;
     mutable T* duplicant;
