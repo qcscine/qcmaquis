@@ -141,7 +141,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
 template<typename T>
 void remote_gemm(p_dense_matrix<T> A, p_dense_matrix<T> B, p_dense_matrix<T> C)
 {
+// ambient_write_only //
     C(0,0) = 1;
+// ambient_write_only //
     C = A * B;
 }
 

@@ -21,6 +21,7 @@ namespace b_mpos
         {
             Matrix m(2, 2);
             
+// ambient_write_only_
             m(1, 0) = 1;
             m(0, 1) = 1;
             jump.insert_block(m, 1, 1);
@@ -57,6 +58,8 @@ namespace b_mpos
             
             m(0, 0) = 1;
             ident.insert_block(m, 1, 1);
+// ambient_write_only_
+
             ident.insert_block(Matrix(1, 1, 1), 0, 0);
             
             omcount.insert_block(Matrix(1, 1, 1), 0, 0);

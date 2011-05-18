@@ -14,16 +14,19 @@ namespace blas
     template <typename Matrix>
     Matrix transpose(Matrix const& m) 
     {
+        assert(false);
         static Timer timer("transpose");
         timer.begin();
         BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
         // TODO: perhaps this could return a proxy object
         Matrix tmp(num_cols(m), num_rows(m));
+        // ambient_write_only //
         for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
             for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
                 tmp(j,i) = m(i,j);
             }
         }
+        // ambient_write_only //
         timer.end();
         return tmp;
     }
@@ -52,8 +55,10 @@ namespace blas
     {
         assert(false);
         Matrix ret(size, size); // don't forget null-init here
+        // ambient_write_only //
         for (typename Matrix::size_type k = 0; k < size; ++k)
             ret(k,k) = 1;
+        // ambient_write_only //
         return ret;
     }
     
