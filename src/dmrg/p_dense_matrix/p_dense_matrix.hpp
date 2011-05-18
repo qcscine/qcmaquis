@@ -160,7 +160,6 @@ namespace blas {
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator /= (const T2& t){ return (*this = *this * (1/t)); }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator  = (const p_dense_matrix<T>& rhs){
-            printf("Using equal!\n");
         if(rhs.breakdown()->is_proxy()){
             ambient::pin(rhs, *this); // no copying - pinning profile
         }else{
@@ -179,7 +178,6 @@ namespace blas {
     template <typename T, ambient::policy P>
     template <ambient::policy PR>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator = (p_dense_matrix<T,PR>& rhs){
-            printf("Using equal!\n");
         return (*this = *(const p_dense_matrix<T>*)&rhs);
     }
     template <typename T, ambient::policy P>
