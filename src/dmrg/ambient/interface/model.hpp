@@ -45,50 +45,10 @@ void breakdown_proxy_model(void_pt* proxy, void_pt* profile, const p_dense_matri
     proxy->state        = PROXY;
 }
 
-
-// size_t //
-template<> // constant size_t //
-void_pt& breakdown(const size_t& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, const size_t *ptr){  }
-template<> // non-constant size_t //
-void_pt& breakdown(size_t& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, size_t *ptr){  }
-template<> // constant pointer to size_t //
-void_pt& breakdown(size_t*& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, size_t*const *ptr){  }
-template<> // constant pointer to constant size_t //
-void_pt& breakdown(const size_t*& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, const size_t*const *ptr){  }
-
-// int //
-template<> // constant int //
-void_pt& breakdown(const int& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, const int *ptr){  }
-template<> // non-constant int //
-void_pt& breakdown(int& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, int *ptr){  }
-template<> // constant pointer to int //
-void_pt& breakdown(int*& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, int*const *ptr){  }
-template<> // constant pointer to constant int //
-void_pt& breakdown(const int*& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, const int*const *ptr){  }
-
-// double //
-template<> // constant double //
-void_pt& breakdown(const double& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, const double *ptr){  }
-template<> // non-constant double //
-void_pt& breakdown(double& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, double *ptr){  }
-template<> // constant pointer to double //
-void_pt& breakdown(double*& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, double*const *ptr){  }
-template<> // constant pointer to constant double //
-void_pt& breakdown(const double*& obj){ return *(new void_pt(&obj)); }
-void breakdown_model(void_pt *profile, const double*const *ptr){  }
-
-
+template <typename T>
+void_pt& breakdown(T& obj){ return *(new void_pt(&obj)); }
+template <typename T>
+void breakdown_model(void_pt *profile, T *ptr){ }
 
 template<>
 void plus_reduce< p_dense_matrix<double> >(memblock* grp, void* update){
