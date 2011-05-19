@@ -10,9 +10,14 @@ namespace ambient{
         if(!singleton) singleton = new access_marker();
         return *singleton;
     }
-    access_marker::access_marker():write_only(false){ }
+    access_marker::access_marker():write_only(false),nesting(0){ }
     
-    void access_marker::write_only_mark(){ this->write_only ^= 1; }
+    void access_marker::write_only_start_mark(){
+        if(this->nesting++ == 0) this->write_only = true;
+    }
+    void access_marker::write_only_stop_mark(){
+        if(--this->nesting == 0) this->write_only = false;
+    }
     bool access_marker::write_only_marked(){ return this->write_only; }
     
     hash_map::hash_map& hash_map::instance()

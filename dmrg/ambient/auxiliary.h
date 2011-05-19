@@ -16,6 +16,14 @@
 namespace ambient{
 namespace core{ class operation; }
 
+    enum policy 
+    {
+      ANY     ,  // used for stack allocs, makes replicas in heap
+      REPLICA ,  // replica created from any (usual for stack vars)
+      MANUAL  ,  // manual deallocation, handling (heap variables)
+      WEAK       // weak userspace deallocs (Ambient will free asap)
+    };
+
     class access_marker
     {
     private:
@@ -24,18 +32,12 @@ namespace core{ class operation; }
         access_marker& operator=(access_marker const&);   // assignment operator is private
     public:
         static access_marker& instance();
-        void write_only_mark();
+        void write_only_start_mark();
+        void write_only_stop_mark();
         bool write_only_marked();
     private:
         bool write_only;
-    };
-
-    enum policy 
-    {
-      ANY     ,  // used for stack allocs, makes replicas in heap
-      REPLICA ,  // replica created from any (usual for stack vars)
-      MANUAL  ,  // manual deallocation, handling (heap variables)
-      WEAK       // weak userspace deallocs (Ambient will free asap)
+        size_t nesting;
     };
 
     class dim2
