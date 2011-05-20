@@ -1,5 +1,5 @@
 #include "p_dense_matrix/p_dense_matrix.h"
-#define STRONG_BARRIER MPI_Barrier(MPI_COMM_WORLD);fflush(stdout);
+#define STRONG_BARRIER MPI_Barrier(MPI_COMM_WORLD);//fflush(stdout);
 
 
 namespace blas {
@@ -252,6 +252,7 @@ namespace blas {
     template <typename T, ambient::policy P>
     std::ostream& operator << (std::ostream& o, p_dense_matrix<T,P> const& m)
     {
+        ambient::playout(); // race condition bug?
         STRONG_BARRIER
         for(typename p_dense_matrix<T,P>::size_type i=0; i< m.num_rows(); ++i)
         {
