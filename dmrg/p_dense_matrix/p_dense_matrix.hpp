@@ -129,10 +129,22 @@ namespace blas {
     template <typename T, ambient::policy P>
     inline T& p_dense_matrix<T,P>::get(size_type i, size_type j) const
     {
-        static double zero = 13;
         assert(i < self->rows);
         assert(j < self->cols);
-        if(ambient::occupied()) assert(false); //return zero; // for stream reader
+
+        if(ambient::access.write_only_marked()){
+        // can write into some buffer
+            if(self->modifier == NULL){
+                self->modifiers.push(std::vector< std::pair<std::pair<size_t,size_t>,void*> >());
+                ambient::push(ambient::apply_writes_l<T>, ambient::apply_writes_c<T>, *this);
+                self->modifier = &self->modifiers.back();
+            }
+            void* value = malloc(sizeof(T));
+            self->modifier->push_back(std::pair<std::pair<size_t,size_t>,void*>(std::pair<size_t,size_t>(i,j), value));
+            return *(T*)value;
+        }
+
+        if(ambient::occupied()) assert(false);
         if(self->is_abstract()) this->touch();
         ambient::playout();
         int block_i = i / (this->breakdown()->get_mem_t_dim().y);

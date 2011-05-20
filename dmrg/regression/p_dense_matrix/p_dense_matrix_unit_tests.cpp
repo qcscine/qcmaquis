@@ -138,12 +138,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
     A = U + V;
     ambient::playout();
 }*/
+
 template<typename T>
 void remote_gemm(p_dense_matrix<T> A, p_dense_matrix<T> B, p_dense_matrix<T> C)
 {
-// ambient_write_only //
     C(0,0) = 1;
-// ambient_write_only //
     C = A * B;
 }
 
@@ -197,5 +196,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types )
     ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
 
     p_dense_matrix<T> A = p_dense_matrix<T>::identity_matrix(5);
+    __ambient_wo_begin__
+    A(0,0) = 2;
+    A(4,0) = 13;
+    __ambient_wo_end__
+    A.resize(4,4);
+    __ambient_wo_begin__
+    A(0,0) = 2;
+    A(2,0) = 26;
+    __ambient_wo_end__
     std::cout << A;
 }

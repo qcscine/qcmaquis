@@ -313,6 +313,17 @@ void associated_reverse_l(p_dense_matrix<double>& a, const size_t& num_rows)
     block_outright_assign(a);
 }
 
+template <typename T>
+void apply_writes_l(p_dense_matrix<T>& a)
+{
+    int num = 1; //get_grid_dim(a_ambient).y; 
+    scope_select(num+" from ambient as nullcut where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_2d_cycle_assign(a); 
+}
+
 void nullcut_l(pinned p_dense_matrix<double>& a, const size_t& num_rows, const size_t& num_cols)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 

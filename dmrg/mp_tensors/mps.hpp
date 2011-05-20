@@ -139,12 +139,12 @@ MPS<Matrix, SymmGroup>::left_boundary() const
     Boundary<Matrix, SymmGroup> ret(i, i, 1);
     
     #ifdef MPI_PARALLEL
-    __ambient_write_only_start__
+    __ambient_wo_begin__
     #endif
     for(typename Index<SymmGroup>::basis_iterator it = i.basis_begin(); !it.end(); ++it)
         ret(0,*it,*it) = 1;
     #ifdef MPI_PARALLEL
-    __ambient_write_only_stop__
+    __ambient_wo_end__
     #endif
 
     return ret;

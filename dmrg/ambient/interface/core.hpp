@@ -39,8 +39,12 @@ public:
                 self->duplicant->self->original = self->original;
                 self->original->self->duplicant = self->duplicant;
             }else{ 
-                if(!this->is_loose()) this->bind();
-                else{ 
+                if(!this->is_loose()){
+                //    this->bind(); // works
+                    self->loose_copied = false;
+                    std::swap(this->handle, self->duplicant->handle);
+                    std::swap(this->self, self->duplicant->self);
+                }else{ 
                     self->duplicant->self->loose_copy = false;
                     self->duplicant->self->loose = true;
                 }
@@ -56,6 +60,7 @@ public:
     
     void bind() const {
         assert(self != NULL);
+        self->modifier = NULL;
         if(this->is_loose_copy()){
             self->original->bind();
         }else if(this->is_loose_copied()){
@@ -174,7 +179,8 @@ public:
                                            self->abstract );      }
 
 public:
-    std::queue< std::vector< std::pair<size_t,void*> > > modifiers;
+    mutable std::queue< std::vector< std::pair<std::pair<size_t,size_t>,void*> > > modifiers;
+    mutable std::vector< std::pair<std::pair<size_t,size_t>,void*> >* modifier; // currently used modifier
 
     T* self;
     T* thyself;
@@ -182,8 +188,8 @@ public:
     void_pt* profile;
     policy p; // the same as P (avoiding casting collisions)
     bool abstract;
-private:
     boost::shared_ptr<T> handle;
+private:
     mutable T* duplicant;
     T* original;
     bool loose;
