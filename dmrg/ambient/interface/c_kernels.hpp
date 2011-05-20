@@ -494,7 +494,8 @@ void apply_writes_c(p_dense_matrix<T>& a)
         T* ad = current(a)(i,j);
         size_t iii = ii % get_mem_t_dim(a).y;
         size_t jjj = jj % get_mem_t_dim(a).x;
-        ad[iii + get_mem_t_dim(a).y * jjj] = *(T*)((*a.modifier)[k].second);
+        T value = *(T*)((*a.modifier)[k].second); 
+        ad[iii + get_mem_t_dim(a).y * jjj] = value;
     }
     a.modifiers.pop();
     a.modifier = NULL;
