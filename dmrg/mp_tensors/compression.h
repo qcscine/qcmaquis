@@ -27,7 +27,8 @@ struct compression {
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
-        typedef blas::diagonal_matrix<double> dmt;
+        typedef typename blas::associated_diagonal_matrix<Matrix>::type dmt;
+
         block_matrix<dmt, SymmGroup> s;
         
         svd_truncate(t, u, v, s,
