@@ -81,8 +81,10 @@ public:
         
         init_left_right(mpo);
         cout << "Done init_left_right" << endl;
+        #ifdef MPI_PARALLEL
         ambient::playout();
         printf("Check point 3\n");
+        #endif
         
         std::size_t L = mps.length();
 

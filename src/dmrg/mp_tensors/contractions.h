@@ -417,15 +417,15 @@ struct contraction {
                                 size_t out_right_offset = out_right_pb(physical_i[s2].first, right_i[r].first);
                                 
                                 if (!pretend) {
-                                    Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
-                                    Matrix const & iblock = T(T_l_charge, T_r_charge);
+                                    const Matrix & wblock = W(physical_i[s1].first, physical_i[s2].first);
+                                    const Matrix & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret.data_[b1](out_l_charge, out_r_charge);
 
+                                    //printf("contraction: %d %d , %d %d\n", oblock.num_rows(), oblock.num_cols(), iblock.num_rows(), iblock.num_cols());
                                     #ifdef MPI_PARALLEL
                                     ambient::push(ambient::rb_tensor_mpo_l<Matrix::value_type>, ambient::rb_tensor_mpo_c<Matrix::value_type>,
                                                   oblock, iblock, wblock, out_right_offset, in_right_offset, 
                                                   physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
-
                                     #else
                                     for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                         for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
