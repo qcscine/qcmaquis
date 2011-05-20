@@ -195,15 +195,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types )
 { 
     ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
 
-    p_dense_matrix<T> A = p_dense_matrix<T>::identity_matrix(5);
+    p_dense_matrix<T> A(2,2);// = p_dense_matrix<T>::identity_matrix(1);
+    //__ambient_wo_begin__
+    //A(0,0) = 2;
+    //__ambient_wo_end__
+    //A.resize(6,6);
     __ambient_wo_begin__
     A(0,0) = 2;
-    A(4,0) = 13;
+    A(1,0) = 26;
     __ambient_wo_end__
-    A.resize(4,4);
-    __ambient_wo_begin__
-    A(0,0) = 2;
-    A(2,0) = 26;
-    __ambient_wo_end__
+    printf("Is loose? : %d\n", A.is_loose());
     std::cout << A;
 }

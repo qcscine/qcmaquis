@@ -55,7 +55,7 @@ void gemm_c_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
 
 void svd_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
 {
-#ifndef SCALAPACK
+#ifdef SCALAPACK
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descv[9], descu[9];
     int ZERO=0, ONE=1;
@@ -138,6 +138,7 @@ void svd_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& u,
 void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w, p_dense_matrix<double>& z)
 {
 #ifdef SCALAPACK
+    assert(false);
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descw[9], descz[9];
     int ZERO=0, ONE=1;

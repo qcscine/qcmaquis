@@ -228,7 +228,7 @@ void transpose_l(pinned p_dense_matrix<double>& transposed, const p_dense_matrix
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as transpose_l where master is 0 and breakdown contains "+ get_id(original));
     if(!scope.involved()) return;
-    //zout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(a_ambient); info(b_scalapack);
+    //zout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(transposed); info(original);
 
     block_2d_cycle_assign(transposed); 
     block_2d_cycle_transposed_assign(original);
@@ -269,6 +269,21 @@ void reshape_r2l_l(pinned p_dense_matrix<double>& left, const p_dense_matrix<dou
 
     block_2d_cycle_assign(left); 
     block_2d_cycle_assign(right); 
+}
+
+template <typename T>
+void rb_tensor_mpo_l(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
+                          const size_t& out_offset, const size_t& in_offset, 
+                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+{
+    int num = 1; //get_grid_dim(a_ambient).y; 
+    scope_select(num+" from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ get_id(out));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; info(out); info(in); info(alfa);
+
+    block_2d_cycle_assign(out); 
+    block_2d_cycle_assign(in); 
+    block_2d_cycle_assign(alfa); 
 }
 
 void associated_validation_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
@@ -317,9 +332,9 @@ template <typename T>
 void apply_writes_l(p_dense_matrix<T>& a)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 
-    scope_select(num+" from ambient as nullcut where master is 0 and breakdown contains "+ get_id(a));
+    scope_select(num+" from ambient as apply_writes where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    //zout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; info(a);
+    //zout << "2dbcd in apply_writes ("<< ambient::rank() <<"):\n"; info(a);
 
     block_2d_cycle_assign(a); 
 }
