@@ -27,7 +27,7 @@ namespace ambient {
     }
 
     p_profile::p_profile()
-    : reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), default_block(NULL), 
+    : dim(NULL), reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), default_block(NULL), 
       profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->mem_dim  = engine.get_mem_dim();

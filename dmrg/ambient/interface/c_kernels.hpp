@@ -403,8 +403,8 @@ void rb_tensor_mpo_c(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in,
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
             T* alfad = current(alfa)(ss1/get_mem_t_dim(alfa).y, ss2/get_mem_t_dim(alfa).x);
             T  alfa_t = alfad[ss1%get_mem_t_dim(alfa).y + get_mem_t_dim(alfa).y*(ss2%get_mem_t_dim(alfa).x)];
-            __a_add_scaled(out, dim2(0, out_offset + ss2*rdim),
-                           in,  dim2(0, in_offset + ss1*rdim),
+            __a_add_scaled(out, dim2(out_offset + ss2*rdim, 0),
+                           in,  dim2(in_offset + ss1*rdim, 0),
                            alfa_t, dim2(rdim, ldim));
         }
 }

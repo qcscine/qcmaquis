@@ -14,6 +14,7 @@ namespace blas
     template<typename T>
     p_dense_matrix<T> transpose(const p_dense_matrix<T>& m)
     {   // TODO: perhaps this could return a proxy object
+        //printf("transpose: %d %d\n", m.num_rows(), m.num_cols());
         p_dense_matrix<T> mt(num_cols(m), num_rows(m));
 	ambient::push(ambient::transpose_l,ambient::transpose_c, mt, m);
         return mt;
@@ -31,6 +32,7 @@ namespace blas
     const typename Matrix::value_type trace(Matrix const& m)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
+        //printf("trace: %d %d\n", m.num_rows(), m.num_cols());
         assert(num_rows(m) == num_cols(m));
         typename Matrix::value_type tr(m(0,0));
         for(typename Matrix::size_type i = 1; i<num_rows(m); ++i)
@@ -47,10 +49,11 @@ namespace blas
     }
 
     template<typename T>
-    void gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T> &C)
+    void gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
         C.resize(A.num_rows(), B.num_cols());
         C.set_init(ambient::null_i<T>);
+        //printf("gemm: %d %d\n", C.num_rows(), C.num_cols());
 	ambient::push(ambient::gemm_l, ambient::gemm_c, A, B, C);
     }
 
@@ -59,6 +62,7 @@ namespace blas
     {
         assert(num_cols(A) == num_rows(B));
         C.resize(A.num_rows(), B.num_cols());
+        //printf("gemm: %d %d\n", C.num_rows(), C.num_cols());
 	ambient::push(ambient::gemm_diagonal_rhs_l, ambient::gemm_diagonal_rhs_c, A, B.get_data(), C);
     }
     
@@ -67,6 +71,7 @@ namespace blas
     {
         assert(num_cols(A) == num_rows(B));
         C.resize(A.num_rows(), B.num_cols());
+        //printf("gemm: %d %d\n", C.num_rows(), C.num_cols());
 	ambient::push(ambient::gemm_diagonal_lhs_l,ambient::gemm_diagonal_lhs_c, A.get_data(), B, C);
     }
     
@@ -81,6 +86,7 @@ namespace blas
         U.resize(num_rows(A), k);
         V.resize(k, num_cols(A));
         S.resize(k, k);
+        printf("svd: %d %d; %d %d; %d %d\n", A.num_rows(), A.num_cols(), U.num_rows(), U.num_cols(), V.num_rows(), V.num_cols());
 	ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, A, U, V, S.get_data());
     }
     
