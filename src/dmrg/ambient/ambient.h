@@ -23,8 +23,9 @@
 #define UNDEFINED_RANK MPI_UNDEFINED
 #define ID_TYPE unsigned long long int
 
-#define __ambient_write_only_start__ ambient::access.write_only_start_mark();
-#define __ambient_write_only_stop__   ambient::access.write_only_stop_mark();
+#define __ambient_wo_begin__ ambient::access.write_only_start_mark();
+#define __ambient_wo_end__   ambient::access.write_only_stop_mark();
+
 
 namespace ambient
 {

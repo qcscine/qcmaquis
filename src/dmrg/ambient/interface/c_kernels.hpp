@@ -411,7 +411,27 @@ void transpose_c(pinned p_dense_matrix<double>& transposed, const p_dense_matrix
     }
 }
 
-void nullcut_c(pinned p_dense_matrix<double>&a, const size_t& num_rows, const size_t& num_cols)
+template <typename T>
+void apply_writes_c(p_dense_matrix<T>& a)
+{
+    a.modifier = &a.modifiers.front();
+    for(size_t k=0; k < a.modifier->size(); k++){
+        size_t ii = ((*a.modifier)[k]).first.first;
+        size_t jj = ((*a.modifier)[k]).first.second;
+        size_t i = ii / get_mem_t_dim(a).y;
+        size_t j = jj / get_mem_t_dim(a).x;
+        if(!current(a).block(i,j)->available()) continue;
+    
+        T* ad = current(a)(i,j);
+        size_t iii = ii % get_mem_t_dim(a).y;
+        size_t jjj = jj % get_mem_t_dim(a).x;
+        ad[iii + get_mem_t_dim(a).y * jjj] = *(T*)((*a.modifier)[k].second);
+    }
+    a.modifiers.pop();
+    a.modifier = NULL;
+}
+
+void nullcut_c(pinned p_dense_matrix<double>& a, const size_t& num_rows, const size_t& num_cols)
 {
     size_t i = get_block_id(a).y*get_mem_t_dim(a).y; 
     size_t j = get_block_id(a).x*get_mem_t_dim(a).x; 
