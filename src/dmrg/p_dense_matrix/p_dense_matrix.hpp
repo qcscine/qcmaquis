@@ -7,6 +7,8 @@ namespace blas {
     #define self this->self
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::~p_dense_matrix(){ // #destructor
+//        if(this->is_loose_copied() && !this->is_loose_copy() && !this->is_loose())
+//            this->resize(self->duplicant->num_rows(), self->duplicant->num_cols());
     }
     template <typename T, ambient::policy P> // proxy object construction
     p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){}
@@ -75,7 +77,8 @@ namespace blas {
         if(!self->is_loose()){ 
             ambient::push(ambient::resize_l, ambient::resize_c, 
                           *this, self->rows, self->cols);
-        }
+        }else
+            self->breakdown()->set_dim(ambient::dim2((unsigned int)rows, (unsigned int)cols));
     }
 
     template <typename T, ambient::policy P>
@@ -139,7 +142,7 @@ namespace blas {
                 ambient::push(ambient::apply_writes_l<T>, ambient::apply_writes_c<T>, *this);
                 self->modifier = &self->modifiers.back();
             }
-            void* value = malloc(sizeof(T));
+            void* value = calloc(1, sizeof(T));
             self->modifier->push_back(std::pair<std::pair<size_t,size_t>,void*>(std::pair<size_t,size_t>(i,j), value));
             return *(T*)value;
         }

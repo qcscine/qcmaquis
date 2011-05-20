@@ -156,11 +156,14 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 {
     Index<SymmGroup> i = (*this)[length()-1].col_dim();
     Boundary<Matrix, SymmGroup> ret(i, i, 1);
-    // ambient_write_only //
-    for (typename Index<SymmGroup>::basis_iterator it = i.basis_begin();
-         !it.end(); ++it)
+    #ifdef MPI_PARALLEL
+    __ambient_wo_begin__
+    #endif
+    for(typename Index<SymmGroup>::basis_iterator it = i.basis_begin(); !it.end(); ++it)
         ret(0,*it,*it) = 1;
-    // ambient_write_only //
+    #ifdef MPI_PARALLEL
+    __ambient_wo_end__
+    #endif
     
     return ret;
 }

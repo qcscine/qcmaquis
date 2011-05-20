@@ -334,7 +334,7 @@ struct contraction {
 #ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
 #endif
-        for (std::size_t b = 0; b < loop_max; ++b) {
+        for(std::size_t b = 0; b < loop_max; ++b){
             gemm(mps.data_, right.data_[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
             reshape_left_to_right<Matrix>(mps.site_dim(), mps.row_dim(), right.data_[b].right_basis(),
@@ -356,14 +356,14 @@ struct contraction {
 #ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
 #endif
-        for (size_t b1 = 0; b1 < loop_max; ++b1) {
-            for (int run = 0; run < 2; ++run) {
-                if (run == 1)
+        for(size_t b1 = 0; b1 < loop_max; ++b1) {
+            for(int run = 0; run < 2; ++run) {
+                if(run == 1)
                     ret.data_[b1].allocate_blocks();
                 bool pretend = (run == 0);
-                for (size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
+                for(size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
                 {
-                    if (!mpo.has(b1, b2))
+                    if(!mpo.has(b1, b2))
                         continue;
                     
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
@@ -420,7 +420,13 @@ struct contraction {
                                     Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret.data_[b1](out_l_charge, out_r_charge);
-                                    
+
+                                    #ifdef MPI_PARALLEL
+                                    ambient::push(ambient::rb_tensor_mpo_l<Matrix::value_type>, ambient::rb_tensor_mpo_c<Matrix::value_type>,
+                                                  oblock, iblock, wblock, out_right_offset, in_right_offset, 
+                                                  physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+
+                                    #else
                                     for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                         for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                             typename Matrix::value_type wblock_t = wblock(ss1, ss2);
@@ -430,6 +436,7 @@ struct contraction {
                                                     iblock(ll, in_right_offset + ss1*right_i[r].second+rr) * wblock_t;
                                                 }
                                         }
+                                    #endif
                                 }
                                 
                                 if (pretend)

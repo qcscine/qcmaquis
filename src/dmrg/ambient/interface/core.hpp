@@ -40,10 +40,10 @@ public:
                 self->original->self->duplicant = self->duplicant;
             }else{ 
                 if(!this->is_loose()){
-                //    this->bind(); // works
-                    self->loose_copied = false;
-                    std::swap(this->handle, self->duplicant->handle);
-                    std::swap(this->self, self->duplicant->self);
+                    this->bind(); // works
+                //    self->loose_copied = false;
+                //    std::swap(this->handle, self->duplicant->handle);
+                //    std::swap(this->self, self->duplicant->self);
                 }else{ 
                     self->duplicant->self->loose_copy = false;
                     self->duplicant->self->loose = true;
@@ -110,6 +110,7 @@ public:
         this->loose_copy = false;
         this->loose_copied = false;
         this->self = NULL;
+        this->modifier = NULL;
     }
 
     livelong(){
@@ -189,8 +190,8 @@ public:
     policy p; // the same as P (avoiding casting collisions)
     bool abstract;
     boost::shared_ptr<T> handle;
-private:
     mutable T* duplicant;
+private:
     T* original;
     bool loose;
     bool loose_copied;

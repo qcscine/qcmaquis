@@ -340,6 +340,75 @@ void reshape_r2l_c(pinned p_dense_matrix<double>& left, const p_dense_matrix<dou
                    dim2( rdim, ldim ));
 }
 
+template<typename T>
+void __a_add_scaled(T& dest, dim2 dest_p, const T& src, dim2 src_p, typename T::value_type alfa, dim2 size)
+{
+    size_t starti, startj, limi, limj;
+    size_t di = get_block_id(dest).y * get_mem_t_dim(dest).y;
+    size_t dj = get_block_id(dest).x * get_mem_t_dim(dest).x;
+
+    assert(get_grid_dim(dest).x*get_mem_t_dim(dest).x - dest_p.x >= size.x);
+    if(get_grid_dim(dest).y*get_mem_t_dim(dest).y - dest_p.y < size.y) printf("%d .. %d; %d vs %d\n", (int)(get_grid_dim(dest).y*get_mem_t_dim(dest).y - dest_p.y), (int)size.y, (int)dest.num_rows(), (int)get_grid_dim(dest).y*get_mem_t_dim(dest).y );
+    assert(get_grid_dim(dest).y*get_mem_t_dim(dest).y - dest_p.y >= size.y);
+    assert(get_grid_dim(src).x*get_mem_t_dim(src).x - src_p.x >= size.x);
+    if(get_grid_dim(src).y*get_mem_t_dim(src).y - src_p.y < size.y) printf("%d .. %d\n", (int)(get_grid_dim(src).y*get_mem_t_dim(src).y - src_p.y), (int)size.y );
+    assert(get_grid_dim(src).y*get_mem_t_dim(src).y - src_p.y >= size.y);
+
+    if(size.x == 0 || size.y == 0) return;
+    if((di + get_mem_t_dim(dest).y <= dest_p.y) || (dj + get_mem_t_dim(src).x  <= dest_p.x)) return;
+    if((di >= dest_p.y + size.y) || (dj >= dest_p.x + size.x)) return;
+// lets find dest-block copy limits
+    if(di + get_mem_t_dim(dest).y > dest_p.y + size.y) limi = (dest_p.y + size.y) % get_mem_t_dim(dest).y;
+    else limi = get_mem_t_dim(dest).y;
+    if(dj + get_mem_t_dim(dest).x > dest_p.x + size.x) limj = (dest_p.x + size.x) % get_mem_t_dim(dest).x;
+    else limj = get_mem_t_dim(dest).x;
+// lets find dest-block starting point
+    if(di < dest_p.y) starti = dest_p.y % get_mem_t_dim(dest).y;
+    else starti = 0;
+    if(dj < dest_p.x) startj = dest_p.x % get_mem_t_dim(dest).x;
+    else startj = 0;
+
+    size_t si = di + starti - dest_p.y + src_p.y;
+    size_t sii = si % get_mem_t_dim(src).y;
+// let's find how many blocks do we need for this one
+    size_t src_blocks_i = 0;
+    int num_src_blocks = limi-starti-get_mem_t_dim(src).y+sii;
+    if(num_src_blocks > 0) src_blocks_i = __a_ceil( num_src_blocks / get_mem_t_dim(src).y ) + 1;
+// let's exhaust first src block
+    typename T::value_type* dd = current(dest)(get_block_id(dest).y, get_block_id(dest).x);
+
+    for(size_t j = startj; j < limj; j++){
+        size_t sj = dj + j - dest_p.x + src_p.x;
+        size_t sii = si % get_mem_t_dim(src).y;
+        size_t sjj = sj % get_mem_t_dim(src).x;
+        size_t w = limi - starti;
+        size_t i = starti;
+        for(int k = 0; k < src_blocks_i; k++){
+            typename T::value_type* sd = current(src)(si / get_mem_t_dim(src).y + k, sj / get_mem_t_dim(src).x);
+            for(int z = 0; z < std::min(get_mem_t_dim(src).y-sii, w); z++)
+                dd[j*get_mem_t_dim(dest).y+i + z] += sd[sjj*get_mem_t_dim(src).y+sii + z]*alfa;
+            w -= get_mem_t_dim(src).y-sii;
+            i += get_mem_t_dim(src).y-sii;
+            sii = 0;
+        }
+    }
+}
+
+template <typename T>
+void rb_tensor_mpo_c(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
+                          const size_t& out_offset, const size_t& in_offset, 
+                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+{
+    for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
+            T* alfad = current(alfa)(ss1/get_mem_t_dim(alfa).y, ss2/get_mem_t_dim(alfa).x);
+            T  alfa_t = alfad[ss1%get_mem_t_dim(alfa).y + get_mem_t_dim(alfa).y*(ss2%get_mem_t_dim(alfa).x)];
+            __a_add_scaled(out, dim2(0, out_offset + ss2*rdim),
+                           in,  dim2(0, in_offset + ss1*rdim),
+                           alfa_t, dim2(rdim, ldim));
+        }
+}
+
 void add_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
 {
     double* ad = current(a)(get_block_id(c).y, get_block_id(c).x);
