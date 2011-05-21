@@ -20,8 +20,12 @@ void gemm_c_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descb[9], descc[9];
     int ZERO=0, ONE=1;
-    int nn = get_grid_dim(c).x*get_mem_dim(c).x*get_item_dim(c).x; 
-    int nm = get_grid_dim(c).y*get_mem_dim(c).y*get_item_dim(c).y;
+    int anm = get_grid_dim(a).y*get_mem_t_dim(a).y;
+    int ann = get_grid_dim(a).x*get_mem_t_dim(a).x; 
+    int bnm = get_grid_dim(b).y*get_mem_t_dim(b).y;
+    int bnn = get_grid_dim(b).x*get_mem_t_dim(b).x; 
+    int cnm = get_grid_dim(c).y*get_mem_t_dim(c).y;
+    int cnn = get_grid_dim(c).x*get_mem_t_dim(c).x; 
 
     nprow = scope.np;
     npcol = scope.nq; 
@@ -31,16 +35,16 @@ void gemm_c_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
     Cblacs_gridinit(&ictxt, "Row", nprow, npcol);
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
-    int ma = numroc_(&nm, &bn, &myrow, &ZERO, &nprow);
-    int na = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
-    int mb = numroc_(&nm, &bn, &myrow, &ZERO, &nprow);
-    int nb = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
-    int mc = numroc_(&nm, &bn, &myrow, &ZERO, &nprow);
-    int nc = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
+    int ma = numroc_(&anm, &bn, &myrow, &ZERO, &nprow);
+    int na = numroc_(&ann, &bn, &mycol, &ZERO, &npcol);
+    int mb = numroc_(&bnm, &bn, &myrow, &ZERO, &nprow);
+    int nb = numroc_(&bnn, &bn, &mycol, &ZERO, &npcol);
+    int mc = numroc_(&cnm, &bn, &myrow, &ZERO, &nprow);
+    int nc = numroc_(&cnn, &bn, &mycol, &ZERO, &npcol);
 
-    descinit_(desca, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &ma, &info);
-    descinit_(descb, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mb, &info);
-    descinit_(descc, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mc, &info);
+    descinit_(desca, &anm, &ann, &bn, &bn, &ZERO, &ZERO, &ictxt, &ma, &info);
+    descinit_(descb, &bnm, &bnn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mb, &info);
+    descinit_(descc, &cnm, &cnn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mc, &info);
 
     assert(current(a).layout->get_list().size() != 0);
     current(a).solidify(current(a).layout->get_list());
@@ -48,7 +52,7 @@ void gemm_c_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
     current(c).solidify(current(c).layout->get_list());
 
     double alpha = 1.0; double beta = 0.0;
-    pdgemm_("N","N",&nm,&nn,&nm,&alpha,(double*)current(a).data,&ONE,&ONE,desca,(double*)current(b).data,&ONE,&ONE,descb,&beta,(double*)current(c).data,&ONE,&ONE,descc);
+    pdgemm_("N","N",&anm,&bnn,&bnm,&alpha,(double*)current(a).data,&ONE,&ONE,desca,(double*)current(b).data,&ONE,&ONE,descb,&beta,(double*)current(c).data,&ONE,&ONE,descc);
     current(c).disperse(current(c).layout->get_list());
 #endif
 }
@@ -56,6 +60,7 @@ void gemm_c_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
 void svd_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
 {
 #ifdef SCALAPACK
+    printf("svd\n");
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descv[9], descu[9];
     int ZERO=0, ONE=1;

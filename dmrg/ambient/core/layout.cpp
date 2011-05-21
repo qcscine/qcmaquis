@@ -136,7 +136,7 @@ namespace ambient{ namespace core{
              profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
         }
         void* header = profile->block(i,j)->header;
-        if(header == NULL) throw race_condition_e(); // to extend for situation when outdated
+        if(header == NULL){ printf("Warning: no header available\n"); throw race_condition_e(); }// to extend for situation when outdated
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, state, i, j, NULL);
     }
 
@@ -146,9 +146,11 @@ namespace ambient{ namespace core{
         if(pack->get<char>(A_LAYOUT_P_ACTION) != 'R') return; // REQUEST TRANSFER TO THE NEW OWNER ACTION
         if(!profile->xinvolved()) return;
         try{
-            in_q.manager->emit(package(profile, (const char*)pack->get(A_LAYOUT_P_STATE_FIELD), pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
+            in_q.manager->emit(package(profile, (const char*)pack->get(A_LAYOUT_P_STATE_FIELD), 
+                                       pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                        pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }catch(race_condition_e){
+            printf("Caught!\n");
             assert(pack->get<int>(A_DEST_FIELD) >= 0);
             in_q.manager->emit(pack); // re-throwing the packet for future handling
         }

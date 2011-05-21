@@ -26,11 +26,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types )
     int M = 2;
     int N = 2;
 
-    p_dense_matrix<T> V1(M,M); 
-    p_dense_matrix<T> V2(M,N*2); 
+    p_dense_matrix<T> V1(M,N*2); 
+    p_dense_matrix<T> V2(N*2,N*2); 
     p_dense_matrix<T> V3(M,N*2); 
     p_dense_matrix<T> V4(M,N*2); 
-
     blas::gemm(V1,V2,V3);
     blas::pblas_gemm(V1,V2,V4);
     blas::validation(V3,V4);
