@@ -351,8 +351,8 @@ namespace ambient {
     }
     void p_profile::set_dim(dim2 dim){
         if(this->layout != NULL){
-            if(this->get_grid_dim().y < __a_ceil(dim.x / this->get_mem_t_dim().y) || 
-               this->get_grid_dim().x < __a_ceil(dim.y / this->get_mem_t_dim().x)){
+            if(this->get_grid_dim().y < __a_ceil(dim.y / this->get_mem_t_dim().y) || 
+               this->get_grid_dim().x < __a_ceil(dim.x / this->get_mem_t_dim().x)){
                 this->layout->init_marker.mark(this->get_grid_dim().y, this->get_grid_dim().x);
             }
         }
