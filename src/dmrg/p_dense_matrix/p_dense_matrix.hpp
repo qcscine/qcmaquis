@@ -78,7 +78,7 @@ namespace blas {
             ambient::push(ambient::resize_l, ambient::resize_c, 
                           *this, self->rows, self->cols);
         }else
-            self->breakdown()->set_dim(ambient::dim2((unsigned int)rows, (unsigned int)cols));
+            self->breakdown()->set_dim(ambient::dim2((unsigned int)cols, (unsigned int)rows));
     }
 
     template <typename T, ambient::policy P>

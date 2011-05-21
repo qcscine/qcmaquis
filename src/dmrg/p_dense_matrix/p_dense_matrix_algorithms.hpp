@@ -43,7 +43,7 @@ namespace blas
     template<typename T>
     void pblas_gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        C.resize(A.num_rows(), B.num_cols());
+        //C.resize(A.num_rows(), B.num_cols());
         C.set_init(ambient::null_i<T>);
 	ambient::push(ambient::gemm_l_scalapack, ambient::gemm_c_scalapack, A, B, C);
     }
@@ -51,7 +51,7 @@ namespace blas
     template<typename T>
     void gemm(const p_dense_matrix<T>& A, const p_dense_matrix<T>& B, p_dense_matrix<T>& C)
     {
-        C.resize(A.num_rows(), B.num_cols());
+        //C.resize(A.num_rows(), B.num_cols());
         C.set_init(ambient::null_i<T>);
         //printf("gemm: %d %d\n", C.num_rows(), C.num_cols());
 	ambient::push(ambient::gemm_l, ambient::gemm_c, A, B, C);
@@ -86,7 +86,7 @@ namespace blas
         U.resize(num_rows(A), k);
         V.resize(k, num_cols(A));
         S.resize(k, k);
-        printf("svd: %d %d; %d %d; %d %d\n", A.num_rows(), A.num_cols(), U.num_rows(), U.num_cols(), V.num_rows(), V.num_cols());
+        //printf("svd: %d %d; %d %d; %d %d\n", A.num_rows(), A.num_cols(), U.num_rows(), U.num_cols(), V.num_rows(), V.num_cols());
 	ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, A, U, V, S.get_data());
     }
     

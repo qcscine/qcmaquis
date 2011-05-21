@@ -43,7 +43,7 @@ void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
     int ldc = m;
     double alpha = 1.0; 
     double beta  = 1.0;
-// a(i,j) => b(j,i) x a(z,j) where z : [0,m)
+// a(i,j) => a(z,j) x b(j,i)  where z : [0,m)
 // current block of matrix a:
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
@@ -56,12 +56,13 @@ void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
             double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
             dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
         }
-        i += get_grid_dim(a).x;
+        i += get_grid_dim(a).y; //scope.nq;
     }
 }
 
 void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {
+    printf("copy_c\n");
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
     if(i >= get_grid_dim(ac).y || j >= get_grid_dim(ac).x) return;
@@ -324,6 +325,7 @@ void reshape_l2r_c(const p_dense_matrix<double>& left, pinned p_dense_matrix<dou
                           const size_t& left_offset, const size_t& right_offset, 
                           const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
+    printf("reshape_l2r_c\n");
     for(size_t ss = 0; ss < sdim; ++ss)
         __a_memcpy(right, dim2(ss*rdim + right_offset,0), 
                    left,  dim2(0, ss*ldim + left_offset), 
@@ -399,6 +401,7 @@ void rb_tensor_mpo_c(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in,
                           const size_t& out_offset, const size_t& in_offset, 
                           const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
 {
+    printf("rb_tensor_mpo\n");
     for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
             T* alfad = current(alfa)(ss1/get_mem_t_dim(alfa).y, ss2/get_mem_t_dim(alfa).x);
@@ -453,6 +456,7 @@ void gemm_diagonal_lhs_c(const p_dense_matrix<double>& a_diag, pinned const p_de
 
 void gemm_diagonal_rhs_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b_diag, p_dense_matrix<double>& c)
 {
+    printf("gemm_diagonal_rhs_c\n");
     int j = get_block_id(a).x*get_mem_t_dim(a).x;
     int size = get_mem_t_dim(a).y;
     int ONE = 1;

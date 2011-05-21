@@ -279,7 +279,7 @@ void rb_tensor_mpo_l(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in,
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ get_id(out));
     if(!scope.involved()) return;
-    zout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; info(out); info(in); info(alfa);
+    //zout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; info(out); info(in); info(alfa);
 
     block_2d_cycle_assign(out); 
     block_2d_cycle_assign(in); 
