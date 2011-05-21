@@ -136,7 +136,7 @@ namespace ambient{ namespace core{
              profile = profile->associated_proxy; // GLOBAL REDUCTION HANDLING
         }
         void* header = profile->block(i,j)->header;
-        if(header == NULL){ printf("Warning: no header available\n"); throw race_condition_e(); }// to extend for situation when outdated
+        if(header == NULL){ printf("Failing on id %d, getting %d %d (dim: %d x %d)\n", (int)profile->id, i, j, profile->dim.y, profile->dim.x); assert(false); printf("Warning: no header available\n"); throw race_condition_e(); }// to extend for situation when outdated
         return pack(*profile->packet_type, header, dest, "P2P", *profile->group_id, profile->id, state, i, j, NULL);
     }
 

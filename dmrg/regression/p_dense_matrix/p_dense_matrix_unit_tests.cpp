@@ -200,10 +200,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types )
     A(1,0) = 3;
     __ambient_wo_end__
     std::cout << A;
-    A.resize(6,6);
+    p_dense_matrix<T> B(A);
+    B.resize(10,6);
     __ambient_wo_begin__
-    A(0,1) = 2;
-    A(5,0) = 26;
+    B(0,1) = 2;
+    B(5,0) = 26;
     __ambient_wo_end__
-    std::cout << A;
+    std::cout << B;
 }
