@@ -56,7 +56,7 @@ void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
             double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
             dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
         }
-        i += get_grid_dim(a).y; //scope.nq;
+        i += get_grid_dim(a).y;
     }
 }
 
