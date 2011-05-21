@@ -150,7 +150,6 @@ namespace ambient{ namespace core{
                                        pack->get<int>(A_LAYOUT_P_I_FIELD), pack->get<int>(A_LAYOUT_P_J_FIELD), 
                                        pack->get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }catch(race_condition_e){
-            printf("Caught!\n");
             assert(pack->get<int>(A_DEST_FIELD) >= 0);
             in_q.manager->emit(pack); // re-throwing the packet for future handling
         }
