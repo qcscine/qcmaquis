@@ -139,20 +139,19 @@ void svd_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& u,
 #endif
 }
 
-
 void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w, p_dense_matrix<double>& z)
 {
 #ifdef SCALAPACK
     assert(false);
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
-    int desca[9], descw[9], descz[9];
+    int desca[9], descz[9];
     int ZERO=0, ONE=1;
     int nm = get_grid_dim(a).y*get_mem_t_dim(a).y;
     int nn = get_grid_dim(a).x*get_mem_t_dim(a).x;
 
     nprow = scope.np;
     npcol = scope.nq; 
-    bn = get_mem_dim(a).x*get_item_dim(a).x;
+    bn = get_mem_t_dim(a).x;
     ictxt = Csys2blacs_handle(scope.get_group()->mpi_comm);
     Cblacs_gridinit(&ictxt, "Row", nprow, npcol);
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
@@ -161,12 +160,9 @@ void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w
     int na = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
     int mz = numroc_(&nm, &bn, &myrow, &ZERO, &nprow);
     int nz = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
-    int mw = numroc_(&nm, &bn, &myrow, &ZERO, &nprow);
-    int nw = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
 
     descinit_(desca, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &ma, &info);
     descinit_(descz, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mz, &info);
-    descinit_(descw, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mw, &info);
    
     assert(current(a).layout->get_list().size() != 0);
     current(a).solidify(current(a).layout->get_list());
@@ -177,12 +173,12 @@ void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w
     double wkopt;
 
     /* SCALAPACK, first, dry run to allocate buffer */
-    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(z).data,(double*)breakdown(w).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
+    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
 
     lwork = static_cast<int>(wkopt);
     double* work = (double*)malloc(sizeof(double)*lwork);
 
-    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(z).data,(double*)breakdown(w).data,&ONE,&ONE,descz,work,&lwork,&info);
+    pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,work,&lwork,&info);
 
     current(w).disperse(current(w).layout->get_list());
     current(z).disperse(current(z).layout->get_list());

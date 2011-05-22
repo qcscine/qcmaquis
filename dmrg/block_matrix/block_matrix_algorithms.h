@@ -116,7 +116,7 @@ void syev(block_matrix<Matrix, SymmGroup> const & M,
 #ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (std::size_t k = 0; k < loop_max; ++k)
+    for(std::size_t k = 0; k < loop_max; ++k)
         syev(M[k], evecs[k], evals[k]);
 
     timer.end();

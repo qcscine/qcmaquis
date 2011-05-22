@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types )
     std::cout << B;
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( std_stuffs_test, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( std_replacement_test, T, test_types ) 
 {
     ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
 
