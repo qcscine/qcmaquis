@@ -71,14 +71,130 @@ void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
     memcpy(ac_elements, a_elements, sizeof(double)*get_mem_t_dim(a).y*get_mem_t_dim(a).x);
 }
 
-void associated_sort_c(p_dense_matrix<double>& a)
+/** Merge Sort algo from John von Neumann, divide and conquer.
+http://en.literateprograms.org/Merge_sort_(C_Plus_Plus) **/
+template<class T>
+void merge_sort(T begin, T end)
+{
+    size_t size(end-begin);
+    if(size < 2) return; // end recurrence 
+   
+    T begin_right = begin+size/2; 
+    merge_sort(begin, begin_right);
+    merge_sort(begin_right, end);
+    merge(begin, begin_right, end); 
+}
+
+void associated_sort_c(pinned p_dense_matrix<double>& a)
 {    
-    int i = get_block_id(a).y;
-    int j = get_block_id(a).x;
-    
-    assert(false);
-    double* a_elements = current(a)(i,j);
- //todo
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    size_t mem_t_dim_y = get_mem_t_dim(a).y;
+    size_t grid_dim_y = get_grid_dim(a).y;
+    size_t offset = 0;
+
+    // pointers for the first merge sort
+    double* ad_begin = current(a)(i,j);
+    double* ad_end   = ad_begin + mem_t_dim_y;
+    // pointers for the odd/even sort
+    double* ad;
+    double* ad_oe;
+    /** von Neumann sort on every workblock **/
+    merge_sort(ad_begin, ad_end);
+    /** Final sort between work group, A new Parallel Sorting Algo based on odd-even Mergesort,
+    15th euromicro Int. Conf. on Parallel, Distributed-Based Processing **/    
+
+    /*for(size_t ii = 0; ii < (grid_dim_y/2);ii++){
+        if((i%2) == 0){ // even
+            if(i<(grid_dim_y-1)){ // to avoid to request a none exsiting block
+                 ad = current(a)(i,j);
+                 //ad_oe = modified(a)(i,j);
+                 ad_oe = current(a)(i+1,j);
+                 //ad_oe = modified(a)(i+1,j);
+                 mpi_merge(ad,ad_oe,mem_t_dim_y);
+             } 
+        }else{ // odd
+             if(i<(grid_dim_y-1)){ // to avoid to request a none exsiting block
+                 ad = current(a)(i,j);
+                 //ad_oe = modified(a)(i,j);
+                 ad_oe = current(a)(i+1,j);
+                 //ad_oe = modified(a)(i+1,j);
+                 mpi_merge(ad,ad_oe,mem_t_dim_y);
+             }
+        }
+    }*/
+}
+//////////////////////////////////////////////////////
+template<class T, class VT>
+void insert(T begin, T end, VT &v)
+{
+    using ::std::swap;
+    while(begin+1!=end && *(begin+1)<v){
+        swap(*begin, *(begin+1));
+        begin++;
+    }
+    swap(*begin,v);
+}
+
+template<class T>
+void merge(T begin, T begin_right, T end)
+{
+    for(;begin<begin_right;begin++){// need contiguous mem
+        if(*begin_right < *begin){
+            typename std::iterator_traits<T>::value_type v(0.0);
+            using ::std::swap;
+            swap(v, *begin);
+            swap(*begin, *begin_right);
+            insert(begin_right, end, v);
+        }
+    }
+}
+
+/** we need the mpi_merge when the data is not contiguous **/
+template<class T>
+void mpi_merge(T left, T right, size_t size)
+{
+   for(size_t jj=0; jj<size; jj++){// we can not used directly merge, because, we have not contiguous mem  
+       if(*right < *(left+jj)){
+           typename std::iterator_traits<T>::value_type v(0.0);
+           using ::std::swap;
+           swap(v,*(left+jj));
+           swap(*(left+jj),*(right));
+           insert(right,(right+size),v); // pointer sum
+       }
+   }
+}
+
+void associated_sort_e_c(pinned p_dense_matrix<double>& a)
+{
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    size_t mem_t_dim_y = get_mem_t_dim(a).y;
+    size_t grid_dim_y = get_grid_dim(a).y;
+
+    if((i%2) == 0){
+        if(i<(grid_dim_y-1)){ // to avoid to request a none exsiting block
+             double* ad = current(a)(i,j);
+             double* ad_oe = current(a)(i+1,j);
+             mpi_merge(ad,ad_oe,mem_t_dim_y);
+        }
+    }
+}
+
+void associated_sort_o_c(pinned p_dense_matrix<double>& a)
+{
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    size_t mem_t_dim_y = get_mem_t_dim(a).y;
+    size_t grid_dim_y = get_grid_dim(a).y;
+
+    if((i%2) != 0){
+        if(i<(grid_dim_y-1)){ // to avoid to request a none exsiting block
+             double* ad = current(a)(i,j);
+             double* ad_oe = current(a)(i+1,j);
+             mpi_merge(ad,ad_oe,mem_t_dim_y);
+        }
+    }
 }
 
 void associated_reverse_c(p_dense_matrix<double>& a, const size_t& num_rows)
@@ -100,7 +216,7 @@ void associated_reverse_c(p_dense_matrix<double>& a, const size_t& num_rows)
         for(size_t ii = 0; ii < size/2; ii++){  
             iir = size - ii - 1; // for SIMD/Stream
             rs  = ad[ii];
-            ad[ii]  =  ad[iir];
+            ad[ii]  = ad[iir];
             ad[iir] = rs;
         }  
     }
@@ -132,6 +248,73 @@ void associated_reverse_c(p_dense_matrix<double>& a, const size_t& num_rows)
     
     free((void*)pa);
 }
+
+void move_offset_c(pinned p_dense_matrix<double>& a)
+{
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    size_t offset = get_grid_dim(a).y*get_mem_t_dim(a).y - get_dim(a).y; 
+    if(offset == 0) return; // no offset 
+    size_t mem_y = get_mem_t_dim(a).y - offset;
+    size_t mem_t_dim_y = get_mem_t_dim(a).y;
+    double* adp;
+    double* ad = current(a)(i,j);
+
+    if(i < (get_grid_dim(a).y-1)){
+        adp = current(a)((i+1),j);
+        memmove((void*)ad,(void*)(ad+offset),mem_y*sizeof(double));
+        memcpy((void*)(ad+mem_y),(void*)(adp),offset*sizeof(double));
+    }
+    if(i == get_grid_dim(a).y-1){ //final offset
+        memmove((void*)ad,(void*)(ad+offset),mem_y*sizeof(double));
+    }
+}
+
+void associated_find_if_c(pinned p_dense_matrix<double>& a, const double& value, size_t*& out_value)
+{ // only single process is supported (outmost assign)
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    double* ad = current(a)(i,j);
+   
+    size_t ii=0;
+    while(ad[ii]>value && ii < get_mem_t_dim(a).y) {
+        *out_value = ii+i*get_mem_t_dim(a).y;
+        ii++;
+    }
+}
+ 
+void associated_accumulate_c(pinned p_dense_matrix<double>& a, const size_t*& begin, double*& out_value)
+{
+    /** to check **/
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    size_t mem_t_dim_y = get_mem_t_dim(a).y;
+    double* ad = current(a)(i,j);
+    double sum(0.0);    
+
+    for(size_t ii=0; ii<mem_t_dim_y;ii++){
+        if(i*mem_t_dim_y+ii > *begin){
+            sum += ad[ii];
+        } 
+    }
+    *out_value = sum;
+}
+
+void associated_max_c(pinned p_dense_matrix<double>&a, const double& evalscut, const size_t& Mmax, double* & out_value)
+{
+    size_t i = Mmax/get_mem_t_dim(a).y; // we are looking where is the corresponding element to S[Mmax]
+    size_t j = 0;
+    size_t ii = Mmax%get_mem_t_dim(a).y;   
+    double* ad = current(a)(i,j);
+
+    if(ad[ii]>evalscut){
+        *out_value=ad[ii];
+    }else{
+        *out_value=evalscut;
+    }
+}
+
+void variable_free_c(void*& a){ free(a); }
 
 void remove_rows_c(pinned p_dense_matrix<double>& a, const size_t& i_mark, const size_t& k)
 {

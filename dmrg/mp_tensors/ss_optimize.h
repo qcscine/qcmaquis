@@ -155,10 +155,6 @@ public:
             }else{
                 throw std::runtime_error("I don't know this eigensolver.");
             }
-            #ifdef MPI_PARALLEL
-            ambient::playout();
-            printf("Check point 5\n");
-            #endif
             mps[site] = res.second;
             
             t_solver.end();
@@ -194,6 +190,10 @@ public:
             
             t_grow.begin();
             
+            #ifdef MPI_PARALLEL
+            ambient::playout();
+            printf("Check point 5\n");
+            #endif
             if (lr == +1) {
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;

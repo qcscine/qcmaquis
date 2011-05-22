@@ -119,23 +119,40 @@ namespace blas
                       column(evecs, num_cols(M)-1-c).first);
     }
 
+    template<class T>
+    void reverse(typename associated_diagonal_matrix<T>::type & S)
+    { // reverse only the first col
+        size_t num_rows = S.num_rows();
+        ambient::push(ambient::associated_reverse_l, ambient::associated_reverse_c, S.get_data(), num_rows);
+    }
+
     template<typename T>
     void syev(p_dense_matrix<T> M,
-              p_dense_matrix<T> & evecs,
+              p_dense_matrix<T>& evecs,
               typename associated_diagonal_matrix<p_dense_matrix<T> >::type & evals)
     {
-        assert(false);
-
         assert(num_rows(M) == num_cols(M));
+	ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, M, evecs, evals.get_data());
+        reverse<p_dense_matrix<T> >(evals);          
+        evecs.resize(num_rows(M), num_cols(M));
+//      for (std::size_t c = 0; c < num_cols(M); ++c)
+//          std::copy(column(M, c).first, column(M, c).second,
+//                    column(evecs, num_cols(M)-1-c).first);
         std::vector<double> evals_(num_rows(M));
         syev(M, evecs, evals_);  
   //      evals = typename associated_diagonal_matrix<p_dense_matrix<T>::type(evals_); to modify
     }
  
    template<typename T>
-   void validation(const p_dense_matrix<T> & A_ambient, const p_dense_matrix<T> & B_scala)
+   void validation(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b)
    {
-       ambient::push(ambient::validation_l, ambient::validation_c, A_ambient, B_scala);
+       ambient::push(ambient::validation_l, ambient::validation_c, a, b);
+   }
+ 
+   template<typename T>
+   void associated_validation(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b )
+   {
+       ambient::push(ambient::associated_validation_l, ambient::associated_validation_c, a, b);
    }
 
    template<typename T, class Generator>
@@ -145,21 +162,47 @@ namespace blas
    }
 
    template<class Matrix>
-   void copy(typename associated_diagonal_matrix<Matrix>::type & S,typename associated_vector<Matrix>::type & allS)
-   {
-       assert(false);
+   void copy(typename associated_diagonal_matrix<Matrix>::type& S, typename associated_vector<Matrix>::type& allS)
+   { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
+       ambient::push(ambient::associated_copy_l, ambient::copy_c, S.get_data(), allS.get_data());
    }
    
    template<class T>
-   void sort(typename associated_vector<T>::type & allS)
+   void sort(typename associated_vector<T>::type& S)
    {
-       assert(false);
+       ambient::playout(); // because of bugbug place...
+       ambient::push(ambient::associated_sort_l, ambient::associated_sort_c, S.get_data());
+       size_t grid_dim_y = get_grid_dim(S.get_data()).y; // bugbug
+       size_t num = __a_ceil(grid_dim_y/2);
+       for(size_t i=0; i < num ; i++){
+           ambient::push(ambient::associated_oe_sort_l, ambient::associated_sort_o_c,S.get_data());
+           ambient::push(ambient::associated_oe_sort_l, ambient::associated_sort_e_c,S.get_data());
+       }
+       ambient::push(ambient::associated_oe_sort_l, ambient::move_offset_c,S.get_data());
    }
 
    template<class T>
-   void reverse(typename associated_vector<T>::type & allS)
+   void find_if(typename associated_vector<T>::type& S, const double& value, size_t* out_value)
+    {
+       ambient::push(ambient::associated_find_if_l, ambient::associated_find_if_c, S.get_data(), value, out_value);
+    }
+
+   template<class T>
+   void accumulate(typename associated_vector<T>::type& S, const size_t* begin, double* out_value)
    {
-       assert(false);
+       ambient::push(ambient::associated_accumulate_l, ambient::associated_accumulate_c, S.get_data(), begin, out_value);
+   }
+
+   template<class T>
+   void max(typename associated_vector<T>::type& S, const double& evalscut, const size_t& Mmax, double* out_value) 
+   {
+       ambient::push(ambient::associated_max_l, ambient::associated_max_c, S.get_data(), evalscut, Mmax, out_value); 
+   }
+
+   /** free the mem if a local variable has been allocated in the program e.g. into block_matrix_algorithms.hpp **/
+   void variable_free(void* a)
+   { 
+       ambient::push(ambient::variable_free_l, ambient::variable_free_c, a);
    }
  
 } /* namespace blas */
