@@ -333,6 +333,16 @@ void associated_sort_l(pinned p_dense_matrix<double>& a)
     block_outright_assign(a);
 }
 
+void associated_oe_sort_l(pinned p_dense_matrix<double>& a)
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_oe_sort where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in assocaited_oe_sort ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
+}
+
 void associated_reverse_l(p_dense_matrix<double>& a, const size_t& num_rows)
 {
     int num = 1;
@@ -341,6 +351,44 @@ void associated_reverse_l(p_dense_matrix<double>& a, const size_t& num_rows)
     //zout << "2dbcd in associated_reverse ("<< ambient::rank() <<"):\n"; info(a);
 
     block_outright_assign(a);
+}
+
+void associated_find_if_l(pinned p_dense_matrix<double>& a, const double& value, size_t*& out_value)
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_find_if where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in associated_find_if ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
+}
+
+void associated_accumulate_l(pinned p_dense_matrix<double>& a, const size_t& begin, double*& out_value)
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_accumulate where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in associated_accumulate ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
+}
+
+void associated_max_l(pinned p_dense_matrix<double>& a, const double& evalscut, const size_t& Mmax, double*& out_value)
+{
+    int num = 1;
+    scope_select(num+" from ambient as associated_max where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in associated_max ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
+}
+
+void variable_free_l(void*& a) // to modify
+{
+    int num = 1;
+    scope_select(num+" from ambient as variable_free where master is 0");
+    //zout << "null assign in variable_free ("<< ambient::rank() <<"):\n";
+    if(!scope.involved()) return;
 }
 
 template <typename T>

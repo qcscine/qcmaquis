@@ -208,3 +208,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types )
     __ambient_wo_end__
     std::cout << B;
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( std_stuffs_test, T, test_types ) 
+{
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+
+    double scut = 0.8;
+    size_t nmax = 4;
+    size_t* out_value_findif     = (size_t*)malloc(sizeof(size_t));
+    double* out_value_accumulate = (double*)malloc(sizeof(double));
+    double* out_value_max        = (double*)malloc(sizeof(double));
+
+    typename blas::associated_vector< p_dense_matrix<T> >::type S(28,-1);
+    S.get_data().set_init(ambient::random_i<T>);
+
+    blas::sort<p_dense_matrix<T> >(S);
+    blas::reverse<p_dense_matrix<T> >(S);
+    blas::find_if<p_dense_matrix<T> >(S,scut,out_value_findif);
+    blas::accumulate<p_dense_matrix<T> >(S,out_value_findif,out_value_accumulate);
+    blas::max<p_dense_matrix<T> >(S,scut,nmax,out_value_max); 
+
+    std::cout << S << std::endl;
+    printf("out_find_if, out_accumulate, out_max %x %.2f %.2f \n ", *out_value_findif, *out_value_accumulate, *out_value_max); 
+    // TODO: CHECK ACCUMULATE
+}
