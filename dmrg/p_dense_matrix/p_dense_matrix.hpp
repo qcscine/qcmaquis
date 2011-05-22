@@ -147,7 +147,6 @@ namespace blas {
             return *(T*)value;
         }
 
-        if(ambient::occupied()) assert(false);
         if(self->is_abstract()) this->touch();
         ambient::playout();
         int block_i = i / (this->breakdown()->get_mem_t_dim().y);

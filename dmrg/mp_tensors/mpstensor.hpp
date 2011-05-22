@@ -194,13 +194,14 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 //    real_type r = sqrt(trace(t));
 
     using utils::conj;
-    
+    printf("<<< Scalar norm playouts\n");
     scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
         for (std::size_t c = 0; c < num_cols(data_[b]); ++c)
             for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
                 ret += conj(data_[b](r,c)) * data_[b](r,c);
     
+    printf("Scalar norm playouts >>>\n");
     timer.end();
     return sqrt(ret);
 }
