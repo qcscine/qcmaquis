@@ -28,6 +28,7 @@ namespace blas
         typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
         resize(U, num_rows(M), k);
         resize(V, k, num_cols(M));
+        //printf("svd: %d %d; %d %d; %d %d\n", M.num_rows(), M.num_cols(), U.num_rows(), U.num_cols(), V.num_rows(), V.num_cols());
         
 //      std::vector<typename detail::sv_type<T>::type> S_(k);
         typename associated_vector<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type S_(k);

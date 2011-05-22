@@ -50,6 +50,7 @@ namespace ambient
 
         void push(core::operation* logistics, core::operation* computing);
         void playout();  // perform actual operations
+        void bailout();  // perform actual operations
         void spin();
         void spin_loop();
         void world_loop();
@@ -74,6 +75,7 @@ namespace ambient
     void init();
     void finalize();
     void playout();
+    void bailout();
     void spin();
     void spin_loop();
     void world_loop();

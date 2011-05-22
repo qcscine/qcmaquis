@@ -287,19 +287,22 @@ struct contraction {
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
                                     
-                                    /* optimize me */
-                                    /* make me a kernel */
-                                    assert(false);
-                                    for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
-                                        for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
+                                    #ifdef MPI_PARALLEL
+                                    ambient::push(ambient::lb_tensor_mpo_l<Matrix::value_type>, ambient::lb_tensor_mpo_c<Matrix::value_type>,
+                                                  oblock, iblock, wblock, out_left_offset, in_left_offset, 
+                                                  physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                    #else
+                                    for(size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
+                                        for(size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                             typename Matrix::value_type wblock_t = wblock(ss1, ss2);
-                                            for (size_t rr = 0; rr < right_i[r].second; ++rr) {
+                                            for(size_t rr = 0; rr < right_i[r].second; ++rr) {
                                                 iterator_axpy(&iblock(in_left_offset + ss1*left_i[l].second, rr),
                                                               &iblock(in_left_offset + ss1*left_i[l].second, rr) + left_i[l].second, // bugbug
                                                               &oblock(out_left_offset + ss2*left_i[l].second, rr),
                                                               wblock_t);
                                             }
                                         }
+                                    #endif
                                 }
                                 
                                 if (pretend)

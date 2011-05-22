@@ -140,28 +140,25 @@ public:
             t_solver.begin();
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
-            printf("HEY!\n");
             timeval now, then;
             
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
-            if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+            if(parms.get<std::string>("eigensolver") == std::string("IETL")){
                 BEGIN_TIMING("IETL")
                 res = solve_ietl_lanczos(sp, mps[site], parms);
                 END_TIMING("IETL")
-#ifdef HAVE_ARPACK
-            } else if (parms.get<std::string>("eigensolver") == std::string("ARPACK")) {
-                BEGIN_TIMING("ARPACK")
-                res = solve_arpackpp(sp, mps[site], parms);
-                END_TIMING("ARPACK")
-#endif
-            } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+            }else if(parms.get<std::string>("eigensolver") == std::string("IETL_JCD")){
                 BEGIN_TIMING("JCD")
                 res = solve_ietl_jcd(sp, mps[site], parms);
                 END_TIMING("JCD")
-            } else {
+            }else{
                 throw std::runtime_error("I don't know this eigensolver.");
             }
+            #ifdef MPI_PARALLEL
+            ambient::playout();
+            printf("Check point 5\n");
+            #endif
             mps[site] = res.second;
             
             t_solver.end();
@@ -280,7 +277,7 @@ private:
         storage::reset(right_stores_[L]);
         storage::store(right_[L], right_stores_[L]);
         
-        for (int i = L-1; i >= 0; --i) {
+        for(int i = L-1; i >= 0; --i) {
             MPSTensor<Matrix, SymmGroup> bkp = mps[i];
             right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
             right_[i] = right;

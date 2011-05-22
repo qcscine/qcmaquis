@@ -30,6 +30,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     typedef boost::lagged_fibonacci607 Gen;
     
     // define this variable if your ALPS is too old
+
 #ifdef USE_OLD_CRAP
     ietl::jcd_simple_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
     jcd_gmres(sp, vs);
@@ -46,7 +47,11 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     
     std::pair<double, Vector> r0;
     r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
-    
+    #ifdef MPI_PARALLEL
+    ambient::playout();
+    printf("Check point 4\n");
+    #endif
+
     zout << "JCD used " << iter.iterations() << " iterations." << endl;
     
     return r0;
