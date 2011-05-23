@@ -54,6 +54,15 @@ namespace app {
         {
         	return terms[i];
         }
+        const Measurement_Term<Matrix, SymmGroup>& get(std::string const & name) const
+        {
+        	for (int i=0; i<terms.size(); ++i) {
+                if (terms[i].name == name)
+                    return terms[i];
+            }
+            std::runtime_error("Measurement "+name+" not found!");
+            return *(terms.end());
+        }
         
         const typename Measurement_Term<Matrix, SymmGroup>::op_t& get_identity() const
         {
@@ -85,9 +94,9 @@ namespace app {
     
     template<class Matrix, class SymmGroup>
     void measure(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
-    			 Measurements<Matrix, SymmGroup> const & meas, alps::hdf5::oarchive & ar)
+    			 Measurements<Matrix, SymmGroup> const & meas,
+                 alps::hdf5::oarchive & ar, std::string basepath = std::string("/spectrum/results/"))
     {
-    	std::string basepath = "/spectrum/results/";
     	for (int i = 0; i < meas.n_terms(); ++i)
     	{
     		std::cout << "Calculating " << meas[i].name << std::endl;
