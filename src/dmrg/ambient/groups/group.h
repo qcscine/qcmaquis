@@ -29,8 +29,6 @@ namespace ambient{ namespace groups{
         group(const char* name, int master, MPI_Comm parent); // special constructor for nest group
         void commit();
 
-        int vacant_level;
-        int* vacations;
         int get_vacant();   // get the vacant rank for the child creation
         int get_master();   // get rank of the group master
         int get_master_g(); // get translated rank of the group master
@@ -52,11 +50,18 @@ namespace ambient{ namespace groups{
         int translate_up_rank(int rank, group* parent = NULL) const;
         int translate_down_rank(int rank, group* child) const;
 
-        int master;                // master process in this group
-        packet_manager* manager;   // group packet manager
+        std::pair<unsigned int*,size_t> hash_group_id();
+        int get_rank();
+        size_t get_size();
+        const char* get_name();
         packet_manager* get_manager();
         void spin();
         void spin_loop();
+
+        int master;                // master process in this group
+        packet_manager* manager;   // group packet manager
+        int vacant_level;
+        int* vacations;
         group* parent;             // parent group of processes
         std::set<group*> children;
         MPI_Comm mpi_comm;
@@ -64,13 +69,7 @@ namespace ambient{ namespace groups{
         int count;                 // number of processes inside group
         int rank;
         std::pair<unsigned int*,size_t> id;
-
-        std::pair<unsigned int*,size_t> hash_group_id();
-        int get_rank();
-        size_t get_size();
-        const char* get_name();
     private:
-        unsigned int object_count;
         const char* name;
         int* members;              // list of member ranks according to the parent group
         int* members_g;            // list of member ranks according to the world group

@@ -30,7 +30,7 @@ namespace ambient{ namespace groups {
         return &this->content[hash_w].second;
     }
 
-    group::group(const char* name, int master, MPI_Comm parent): members(NULL), object_count(0), vacant_level(0)
+    group::group(const char* name, int master, MPI_Comm parent): members(NULL), vacant_level(0)
     {
         this->parent = NULL;
         this->mpi_comm = parent;
@@ -81,7 +81,7 @@ namespace ambient{ namespace groups {
         return std::pair<unsigned int*,size_t>(hash_id,1);
     }
 
-    group::group(const char* name, int master, group* parent): count(0), members(NULL), members_g(NULL), object_count(0), vacations(NULL), vacant_level(0)
+    group::group(const char* name, int master, group* parent): count(0), members(NULL), members_g(NULL), vacations(NULL), vacant_level(0)
     {
         this->parent = parent;
         this->name = name;

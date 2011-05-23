@@ -17,7 +17,6 @@ namespace ambient {
     private:
         p_profile* pin;
         core::operation* bind_op;
-        int i,j;
     };
 }
 #endif
