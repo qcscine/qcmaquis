@@ -73,6 +73,20 @@ void block_outright_assign(T& target)
     }
 }
 
+template<typename T>
+void block_diagonal_assign(T& target)
+{
+    size_t m = get_mem_t_dim(target).y;
+    size_t n = get_mem_t_dim(target).x;
+    for(int i = 0; i < get_grid_dim(target).y; i++){
+        for(int j = 0; j < get_grid_dim(target).x; j++){
+            if((i+1)*m <= j*n) continue;
+            if(i*m >= (j+1)*n) continue;
+            assign(target, i, j);
+        }
+    }
+}
+
 void copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {
     scope_select("1 from ambient as copy where master is 0 and breakdown contains "+get_id(a));
@@ -231,6 +245,16 @@ void gemm_diagonal_rhs_l(pinned const p_dense_matrix<double>& a, const p_dense_m
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b_diag);
     block_2d_cycle_assign(c);
+}
+
+void trace_l(pinned const p_dense_matrix<double>& a, double*& trace)
+{
+    int num = 1;
+    scope_select(num+" from ambient as trace where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in trace ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_diagonal_assign(a);
 }
 
 void transpose_l(pinned p_dense_matrix<double>& transposed, const p_dense_matrix<double>& original)

@@ -2,10 +2,7 @@
 #define __ALPS_P_DENSE_MATRIX_HPP__
 
 #include "ambient/ambient.hpp"
-
-
 #include "utils/zout.hpp"
-#include "utils/function_objects.h"
 
 #include "p_dense_matrix/iterators.hpp"
 #include "p_dense_matrix/p_diagonal_matrix.h"

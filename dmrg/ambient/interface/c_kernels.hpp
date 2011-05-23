@@ -674,6 +674,23 @@ void gemm_diagonal_rhs_c(pinned const p_dense_matrix<double>& a, const p_dense_m
     }
 }
 
+void trace_c(pinned const p_dense_matrix<double>& a, double*& trace)
+{ // originated from identity_i
+    size_t i = get_block_id(a).y;
+    size_t j = get_block_id(a).x;
+    size_t m = get_mem_t_dim(a).y;
+    size_t n = get_mem_t_dim(a).x;
+    double* ad = current(a)(i,j);
+
+    if((i+1)*m <= j*n) return;
+    if(i*m >= (j+1)*n) return;
+    for(size_t jj = j*n; jj < std::min((j+1)*n,(size_t)get_dim(a).x); jj++){
+        if(i*m > jj) continue;
+        if((i+1)*m <= jj) continue;
+       *trace += ad[jj % m + (jj%n)*m];
+    }
+}
+
 void transpose_c(pinned p_dense_matrix<double>& transposed, const p_dense_matrix<double>& original)
 {
     int i = get_block_id(transposed).y;

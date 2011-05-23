@@ -232,3 +232,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( std_replacement_test, T, test_types )
     printf("out_find_if, out_accumulate, out_max %x %.2f %.2f \n ", *out_value_findif, *out_value_accumulate, *out_value_max); 
     // TODO: CHECK ACCUMULATE
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( trace_test, T, test_types ) 
+{ 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+
+    p_dense_matrix<T> A = p_dense_matrix<T>::identity_matrix(5);
+    zout << "Trace: " << blas::trace(A) << "\n";
+    std::cout << A;
+}
