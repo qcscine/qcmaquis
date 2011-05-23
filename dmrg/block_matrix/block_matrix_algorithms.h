@@ -232,16 +232,26 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     //std::vector<double> allevals;
     typename blas::associated_vector<Matrix>::type allevals;
-#ifndef MPI_PARALLEL
+#ifdef MPI_PARALLEL
+    size_t length = 0;
+    size_t position = 0;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k) 
+        length += evals[k].size();
+    allevals.resize(length,length);
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        blas::copy_after<Matrix>(allevals, position, evals[k]);
+        position += evals[k].size();
+    }
+    blas::sort<Matrix>(allevals);
+    blas::reverse<Matrix>(allevals);
+#else
     for(std::size_t k = 0; k < evals.n_blocks(); ++k)
         std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
-#else
-    assert(false);
+    std::sort(allevals.begin(), allevals.end());
+    std::reverse(allevals.begin(), allevals.end());
 #endif
 /* to do
 */
-    std::sort(allevals.begin(), allevals.end());
-    std::reverse(allevals.begin(), allevals.end());
 
     
     double evalscut = cutoff * allevals[0];

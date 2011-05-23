@@ -82,7 +82,7 @@ void merge_sort(T begin, T end)
     T begin_right = begin+size/2; 
     merge_sort(begin, begin_right);
     merge_sort(begin_right, end);
-    merge(begin, begin_right, end); 
+    merge(begin, begin_right, end);
 }
 
 void associated_sort_c(pinned p_dense_matrix<double>& a)
@@ -502,6 +502,11 @@ void __a_memcpy(T& dest, dim2 dest_p, const T& src, dim2 src_p, dim2 size)
             sii = 0;
         }
     }
+}
+
+void copy_after_c(pinned p_dense_matrix<double>& ac, const size_t& pos, const p_dense_matrix<double>& a)
+{
+    __a_memcpy(ac, dim2(0,pos), a, dim2(0,0), dim2(1,get_dim(a).y));
 }
 
 void reshape_l2r_c(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,

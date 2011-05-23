@@ -117,8 +117,8 @@ namespace blas
         assert(num_rows(evals) == num_rows(M));
 
         evecs.resize(num_rows(M), num_cols(M));
-        ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, M, evals.get_data(), evecs); // destoys U triangle of A
-        reverse<p_dense_matrix<T> >(evals);          
+        ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, M, evals.get_data(), evecs); // destoys U triangle of M
+        reverse< p_dense_matrix<T> >(evals);          
     }
  
     template<typename T>
@@ -140,9 +140,15 @@ namespace blas
     }
  
     template<typename T>
-    void copy(typename associated_diagonal_matrix<T>::type& S, typename associated_vector<T>::type& allS)
+    void copy(typename associated_vector<T>::type& SC, typename associated_diagonal_matrix<T>::type& S)
     { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
-        ambient::push(ambient::associated_copy_l, ambient::copy_c, S.get_data(), allS.get_data());
+        ambient::push(ambient::associated_copy_l, ambient::copy_c, SC.get_data(), S.get_data());
+    }
+ 
+    template<typename T>
+    void copy_after(typename associated_vector<T>::type& SC, const size_t pos, typename associated_diagonal_matrix<T>::type& S)
+    { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
+        ambient::push(ambient::copy_after_l, ambient::copy_after_c, SC.get_data(), pos, S.get_data());
     }
     
     template<class T>
