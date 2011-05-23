@@ -138,20 +138,20 @@ int main(int argc, char ** argv)
     if (parms.get<int>("use_compressed") > 0)
         mpoc.compress(1e-12);
     
-    MPS<Matrix, grp> mps(lat->size(),
-                         parms.get<std::size_t>("init_bond_dimension"),
-                         phys, initc,
-                         *initializer_factory<Matrix>(parms));
+    MPS<Matrix, grp> initial_mps(lat->size(),
+                                 parms.get<std::size_t>("init_bond_dimension"),
+                                 phys, initc,
+                                 *initializer_factory<Matrix>(parms));
     
     int sweep = 0;
     if (restore) {
         alps::hdf5::iarchive h5ar_in(chkpfile);
-        h5ar_in >> alps::make_pvp("/state", mps);
+        h5ar_in >> alps::make_pvp("/state", initial_mps);
         h5ar_in >> alps::make_pvp("/status/sweep", sweep);
         ++sweep;
     } else if (parms.get<std::string>("initfile").size() > 0) {
         alps::hdf5::iarchive h5ar_in(parms.get<std::string>("initfile"));
-        h5ar_in >> alps::make_pvp("/state", mps);
+        h5ar_in >> alps::make_pvp("/state", initial_mps);
     }
     
     {
@@ -178,7 +178,7 @@ int main(int argc, char ** argv)
     
     bool early_exit = false;
     {   
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps,
+        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(initial_mps,
                                                                 parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
                                                                 parms, ssm);
         
@@ -188,10 +188,11 @@ int main(int argc, char ** argv)
             Logger iteration_log;
             
             optimizer.sweep(sweep, iteration_log);
-            
             ssm.sync();
             
-            entropies = calculate_bond_entropies(mps);
+            MPS<Matrix, grp> cur_mps = optimizer.get_current_mps();
+            
+            entropies = calculate_bond_entropies(cur_mps);
             
             gettimeofday(&sthen, NULL);
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
@@ -219,7 +220,7 @@ int main(int argc, char ** argv)
             {
                 alps::hdf5::oarchive h5ar(chkpfile);
                 
-                h5ar << alps::make_pvp("/state", mps);
+                h5ar << alps::make_pvp("/state", cur_mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
             }
             
@@ -238,6 +239,8 @@ int main(int argc, char ** argv)
     
 #ifdef MEASURE_ONLY
     {
+        MPS<Matrix, grp> mps = initial_mps;
+        
         alps::hdf5::oarchive h5ar(rfile);
         
         cout << "Measurements." << endl;
