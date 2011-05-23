@@ -83,6 +83,16 @@ void copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
     block_2d_cycle_assign(a);
 }
 
+void copy_after_l(pinned p_dense_matrix<double>& ac, const size_t& pos, const p_dense_matrix<double>& a)
+{
+    scope_select("1 from ambient as copy where master is 0 and breakdown contains "+get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
+
+    block_2d_cycle_assign(ac);
+    block_2d_cycle_assign(a);
+}
+
 void touch_l(p_dense_matrix<double>& a)
 {
     scope_select("1 from ambient as touch where master is 0 and breakdown contains "+get_id(a));
