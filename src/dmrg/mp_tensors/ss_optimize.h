@@ -79,7 +79,7 @@ public:
     }
     
     void sweep(int sweep, Logger & iteration_log,
-               OptimizeDirection d = LeftOnly)
+               OptimizeDirection d = Both)
     {
         static Timer
         t_io("sweep_io"),
