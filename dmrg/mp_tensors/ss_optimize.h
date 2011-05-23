@@ -65,7 +65,7 @@ template<class Matrix, class SymmGroup, class StorageMaster>
 class ss_optimize
 {
 public:
-    ss_optimize(MPS<Matrix, SymmGroup> & mps_,
+    ss_optimize(MPS<Matrix, SymmGroup> const & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 StorageMaster & sm)
@@ -264,6 +264,8 @@ public:
         }
     }
     
+    MPS<Matrix, SymmGroup> get_current_mps() const { return mps; }
+    
 private:
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo)
     {
@@ -312,8 +314,8 @@ private:
         timer2.end();
     }
     
-    MPS<Matrix, SymmGroup> & mps;
-    MPO<Matrix, SymmGroup> const & mpo;
+    MPS<Matrix, SymmGroup> mps;
+    MPO<Matrix, SymmGroup> mpo;
     
     BaseParameters & parms;
     std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
