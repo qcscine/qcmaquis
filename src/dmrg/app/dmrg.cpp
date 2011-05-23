@@ -203,16 +203,16 @@ int main(int argc, char ** argv)
                 std::ostringstream oss;
                 
                 oss.str("");
-                oss << "/simulation/results/sweep" << sweep;
+                oss << "/simulation/sweep" << sweep << "/results";
                 h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
                 
                 oss.str("");
-                oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
+                oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), entropies);
                 
                 cout << "Sweep done after " << elapsed << " seconds." << endl;
                 oss.str("");
-                oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
+                oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
             }
             
