@@ -16,8 +16,19 @@ namespace blas
     {   // TODO: perhaps this could return a proxy object
         //printf("transpose: %d %d\n", m.num_rows(), m.num_cols());
         p_dense_matrix<T> mt(num_cols(m), num_rows(m));
-        ambient::push(ambient::transpose_l,ambient::transpose_c, mt, m);
+        ambient::push(ambient::transpose_l, ambient::transpose_c, mt, m);
         return mt;
+    }
+
+    template<typename T>
+    const T trace(const p_dense_matrix<T>& m)
+    {
+        assert(num_rows(m) == num_cols(m));
+        T* tr = (T*)calloc(1,sizeof(T));
+        if(m.is_abstract()) m.touch();
+        ambient::push(ambient::trace_l, ambient::trace_c, m, tr);
+        ambient::playout(); // to remove in future
+        return *tr;
     }
         
     template<typename T>
@@ -26,18 +37,6 @@ namespace blas
         assert(false);
         M.inplace_conjugate();
         return M;
-    }
-
-    template <typename Matrix>
-    const typename Matrix::value_type trace(Matrix const& m)
-    {
-        BOOST_CONCEPT_ASSERT((blas::Matrix<Matrix>)); 
-        //printf("trace: %d %d\n", m.num_rows(), m.num_cols());
-        assert(num_rows(m) == num_cols(m));
-        typename Matrix::value_type tr(m(0,0));
-        for(typename Matrix::size_type i = 1; i<num_rows(m); ++i)
-            tr += m(i,i);
-        return tr;
     }
         
     template<typename T>
