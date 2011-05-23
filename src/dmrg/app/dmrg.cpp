@@ -178,17 +178,16 @@ int main(int argc, char ** argv)
     
     bool early_exit = false;
     {   
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
+        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps,
+                                                                parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                                                parms, ssm);
         
         for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
             gettimeofday(&snow, NULL);
             
             Logger iteration_log;
             
-            if (parms.get<int>("use_compressed") == 0)
-                optimizer.sweep(mpo, sweep, iteration_log);
-            else
-                optimizer.sweep(mpoc, sweep, iteration_log);
+            optimizer.sweep(sweep, iteration_log);
             
             ssm.sync();
             

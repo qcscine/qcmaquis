@@ -59,31 +59,35 @@ double log_interpolate(double y0, double y1, int N, int i)
     return y0*exp(x*i);
 }
 
+enum OptimizeDirection { Both, LeftOnly, RightOnly };
+
 template<class Matrix, class SymmGroup, class StorageMaster>
 class ss_optimize
 {
 public:
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
+                MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 StorageMaster & sm)
     : mps(mps_)
+    , mpo(mpo_)
     , parms(parms_)
     , storage_master(sm)
-    { }
+    {
+        init_left_right(mpo);
+        cout << "Done init_left_right" << endl;
+    }
     
-    void sweep(MPO<Matrix, SymmGroup> const & mpo,
-                                     int sweep, Logger & iteration_log)
+    void sweep(int sweep, Logger & iteration_log,
+               OptimizeDirection d = LeftOnly)
     {
         static Timer
         t_io("sweep_io"),
         t_solver("sweep_solver"),
         t_grow("sweep_grow");
         
-        init_left_right(mpo);
-        cout << "Done init_left_right" << endl;
         #ifdef MPI_PARALLEL
         ambient::playout();
-        printf("Check point 3\n");
         #endif
         
         std::size_t L = mps.length();
@@ -108,7 +112,7 @@ public:
             }
             
             zout << "Sweep " << sweep << ", optimizing site " << site << endl;
-            storage_master.print_size();
+//            storage_master.print_size();
             
 //            mps[site].make_left_paired();
             
@@ -129,11 +133,11 @@ public:
             }
             #endif
             
-            cout << "My size: " << endl;
-            cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << endl;
-            cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << endl;
-            cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << endl;
-            cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << endl;
+//            cout << "My size: " << endl;
+//            cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << endl;
+//            cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << endl;
+//            cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << endl;
+//            cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << endl;
             
             t_io.end();
             
@@ -144,18 +148,23 @@ public:
             
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
-            if(parms.get<std::string>("eigensolver") == std::string("IETL")){
-                BEGIN_TIMING("IETL")
-                res = solve_ietl_lanczos(sp, mps[site], parms);
-                END_TIMING("IETL")
-            }else if(parms.get<std::string>("eigensolver") == std::string("IETL_JCD")){
-                BEGIN_TIMING("JCD")
-                res = solve_ietl_jcd(sp, mps[site], parms);
-                END_TIMING("JCD")
-            }else{
-                throw std::runtime_error("I don't know this eigensolver.");
+            if (d == Both ||
+                (d == LeftOnly && lr == -1) ||
+                (d == RightOnly && lr == +1))
+            {
+                if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+                    BEGIN_TIMING("IETL")
+                    res = solve_ietl_lanczos(sp, mps[site], parms);
+                    END_TIMING("IETL")
+                } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                    BEGIN_TIMING("JCD")
+                    res = solve_ietl_jcd(sp, mps[site], parms);
+                    END_TIMING("JCD")
+                } else {
+                    throw std::runtime_error("I don't know this eigensolver.");
+                }
+                mps[site] = res.second;
             }
-            mps[site] = res.second;
             
             t_solver.end();
             
@@ -184,16 +193,31 @@ public:
                 cutoff = parms.get<double>("truncation_final");
             else
                 cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
-            std::size_t Mmax = parms.get<std::size_t>("max_bond_dimension");
+            
+            std::size_t Mmax;
+            if (parms.is_set("sweep_bond_dimensions")) {
+                std::vector<std::size_t> ssizes = parms.get<std::vector<std::size_t> >("sweep_bond_dimensions");
+                if (sweep >= ssizes.size())
+                    Mmax = *ssizes.rbegin();
+                else
+                    Mmax = ssizes[sweep];
+            } else
+                Mmax = parms.get<std::size_t>("max_bond_dimension");
             
             std::pair<std::size_t, double> trunc;
             
             t_grow.begin();
             
+//            if (sweep == 0 && lr == +1) {
+//                cout << "Simpliyfing..." << endl;
+//                right_[site+1] = simplify(right_[site+1]);
+//            }
+                
             #ifdef MPI_PARALLEL
             ambient::playout();
             printf("Check point 5\n");
             #endif
+                
             if (lr == +1) {
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
@@ -289,6 +313,8 @@ private:
     }
     
     MPS<Matrix, SymmGroup> & mps;
+    MPO<Matrix, SymmGroup> const & mpo;
+    
     BaseParameters & parms;
     std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
     std::vector<typename StorageMaster::Storage> left_stores_, right_stores_;

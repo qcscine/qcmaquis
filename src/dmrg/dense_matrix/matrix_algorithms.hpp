@@ -49,6 +49,23 @@ namespace blas
     {
         return Matrix::identity_matrix(size);
     }
+    
+    template<class Matrix> Matrix join(Matrix const & a, Matrix const & b)
+    {
+        Matrix ret(num_rows(a)+num_rows(b), num_cols(a)+num_cols(b));
+        
+        typedef typename Matrix::size_type st;
+        
+        for (st r = 0; r < num_rows(a); ++r)
+            for (st c = 0; c < num_cols(a); ++c)
+                ret(r, c) = a(r, c);
+        
+        for (st r = 0; r < num_rows(b); ++r)
+            for (st c = 0; c < num_cols(b); ++c)
+                ret(r+num_rows(a), c+num_cols(a)) = b(r, c);
+        
+        return ret;
+    }
 }
 
 #endif //__ALPS_MATRIX_ALGORITHMS_HPP__

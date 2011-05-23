@@ -77,6 +77,18 @@ struct mps_initializer
                             typename SymmGroup::charge right_end) = 0;
 };
 
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
+                            MPS<Matrix, SymmGroup> const & b)
+{
+    assert( a.length() == b.length() );
+    
+    MPS<Matrix, SymmGroup> ret = a;
+    for (std::size_t p = 0; p < a.length(); ++p)
+        ret[p] = join(a[p], b[p]);
+    return ret;
+}
+
 #include "mp_tensors/mps.hpp"
 
 #endif

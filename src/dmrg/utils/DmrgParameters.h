@@ -179,6 +179,7 @@ public:
             
             add_option("init_bond_dimension",value<std::size_t>()->default_value(5),"");
             add_option("max_bond_dimension",value<std::size_t>(),"");
+            add_option("sweep_bond_dimensions",value<std::string>(),"");
             
             add_option("alpha_initial",value<double>()->default_value(1e-2),"");
             add_option("alpha_main",value<double>()->default_value(1e-6),"");

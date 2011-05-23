@@ -130,4 +130,26 @@ private:
 
 #include "mp_tensors/mpotensor.hpp"
 
+template<class Matrix, class SymmGroup>
+Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
+{
+    typedef typename blas::associated_diagonal_matrix<Matrix>::type dmt;
+    
+    for (std::size_t k = 0; k < b.aux_dim(); ++k)
+    {
+        block_matrix<Matrix, SymmGroup> U, V, t;
+        block_matrix<dmt, SymmGroup> S;
+        
+        if (b[k].left_basis().sum_of_sizes() == 0)
+            continue;
+        
+        svd_truncate(b[k], U, V, S, 1e-4, 1, false);
+        
+        gemm(U, S, t);
+        gemm(t, V, b[k]);
+    }
+    
+    return b;
+}
+
 #endif
