@@ -133,6 +133,14 @@ int main(int argc, char ** argv)
     
     std::cout << measurements << std::endl;
     
+    Measurements<Matrix, grp> meas_always;
+    if (!parms.get<std::string>("always_measure").empty()) {
+        meas_always.set_identity(measurements.get_identity());
+        std::vector<std::string> meas_list = parms.get<std::vector<std::string> >("always_measure");
+        for (int i=0; i<meas_list.size(); ++i)
+            meas_always.add_term(measurements.get(meas_list[i]));
+    }
+    
     MPO<Matrix, grp> mpo = make_mpo(lat->size(), *H);
     MPO<Matrix, grp> mpoc = mpo;
     if (parms.get<int>("use_compressed") > 0)
@@ -214,6 +222,11 @@ int main(int argc, char ** argv)
                 oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
+                
+                oss.str("");
+                oss << "/simulation/sweep" << sweep << "/results/";
+                if (meas_always.n_terms() > 0)
+                    measure(cur_mps, *lat, meas_always, h5ar, oss.str());
             }
             
             if (parms.get<int>("donotsave") == 0)

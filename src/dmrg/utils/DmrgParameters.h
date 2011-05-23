@@ -183,7 +183,7 @@ public:
             
             add_option("alpha_initial",value<double>()->default_value(1e-2),"");
             add_option("alpha_main",value<double>()->default_value(1e-6),"");
-            add_option("alpha_final",value<double>()->default_value(1e-6),"");
+            add_option("alpha_final",value<double>()->default_value(0),"");
             
             add_option("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"");
             add_option("arpack_tol",value<double>()->default_value(1e-8),"");
@@ -206,6 +206,7 @@ public:
             add_option("use_compressed",value<int>()->default_value(0),"");
             add_option("calc_h2",value<int>()->default_value(0),"");
             add_option("seed",value<int>()->default_value(42),"");
+            add_option("always_measure",value<std::string>()->default_value(""), "comma separated list of measurements");
             
             add_option("init_state", value<std::string>()->default_value("default"),"");
 
@@ -238,6 +239,8 @@ public:
             
             add_option("Jxy", value<double>(), "");
             add_option("Jz", value<double>(), "");
+            add_option("Jxy1", value<double>(), "");
+            add_option("Jz1", value<double>(), "");
             
             add_option("U", value<double>(), "");
             add_option("t", value<double>(), "");
