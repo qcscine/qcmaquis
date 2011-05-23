@@ -21,12 +21,7 @@ namespace ambient{ namespace groups{
     private: 
         packet_manager(packet_manager const&);             // copy constructor is private
         packet_manager& operator=(packet_manager const&);  // assignment operator is private
-        groups::group* grp;
-        MPI_Comm* comm;
     public:
-        int closure_mutex;
-        int approve_closure_mutex;
-
         packet_manager(groups::group* grp);
         class request
         {
@@ -41,14 +36,9 @@ namespace ambient{ namespace groups{
         public:
             typed_q(packet_manager* manager, const packet_t& type, direction flow, int reservation, int priority);
            ~typed_q();
-            delegate packet_delivered;
             void push(packet* pack);
             void spin();
             packet* get_target_packet();
-            int priority;
-            direction flow;
-            packet_manager* manager;
-            const packet_t& type;
             size_t get_active();
         private:
             request* get_request();
@@ -60,10 +50,13 @@ namespace ambient{ namespace groups{
             int reservation;
             std::list<request*> reqs;
             std::list<request*> free_reqs;
+        public:
+            delegate packet_delivered;
+            int priority;
+            direction flow;
+            packet_manager* manager;
+            const packet_t& type;
         };
-
-        locking_fsm state;
-        std::list<typed_q*> qs;
         typed_q* add_typed_q(const packet_t& type, direction flow, int reservation = 1, int priority = 1);
 
         bool     subscribed(const packet_t& type);
@@ -76,6 +69,14 @@ namespace ambient{ namespace groups{
         void spin(int n = 1);
         bool process_locking(size_t active_sends_number);
         groups::group* get_group();
+
+        locking_fsm state;
+        int closure_mutex;
+        int approve_closure_mutex;
+        std::list<typed_q*> qs;
+    private:
+        groups::group* grp;
+        MPI_Comm* comm;
     };
 
 } }
