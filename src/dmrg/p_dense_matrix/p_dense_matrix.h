@@ -33,7 +33,7 @@ namespace blas {
 
        ~p_dense_matrix();
         p_dense_matrix(ambient::void_pt* p);              // proxy object construction
-        p_dense_matrix(size_type rows, size_type cols, T init_value);
+        p_dense_matrix(size_type rows, size_type cols, T init_v);
         p_dense_matrix(p_dense_matrix const& m);
   
         void swap(p_dense_matrix & r);
