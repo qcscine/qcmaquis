@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <string>
 
 #ifdef _OPENMP
 #include "omp.h"
@@ -82,10 +82,10 @@ public:
 	return  val;
     }    
 
-    friend void save(int idproc, int num, Timer const & a, Timer const & b )
+    friend void save(std::string name,int idproc, int num, Timer const & a, Timer const & b )
     {
        std::ofstream o; 
-       o.open("time.txt",std::ios::app);
+       o.open(name.c_str(),std::ios::app);
            o << a.val << " "<< b.val << " "  << idproc << " " << num <<  std::endl;
        o.close();
     }
