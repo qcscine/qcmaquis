@@ -80,11 +80,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_bench_gemm, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
      ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
-
      char** argv = boost::unit_test::framework::master_test_suite().argv; 
-     int M=std::atoi(argv[1]);
-     int LENGTH = std::atoi(argv[2]); 
+     int argc = boost::unit_test::framework::master_test_suite().argc;
+     int M, LENGTH;
+     bool save_output;
 
+     if(argc > 1){
+         M = std::atoi(argv[1]);
+         LENGTH = std::atoi(argv[2]); 
+         save_output = true;
+     }else{
+         M = 32;
+         LENGTH = 8;
+         save_output = false;
+     }
      std::vector<ambient::p_dense_matrix<T> * > V;
      V.resize(LENGTH*4);
 
@@ -108,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types )
      for(int i = 0 ; i < LENGTH ; i++) blas::validation(*V[i*4+2],*V[i*4+3]);
      ambient::playout();
 
-     if(ambient::rank() == 0){
+     if(save_output && ambient::rank() == 0){
         save("vector.txt",ambient::size(),M, ta, tb );
      } 
 }

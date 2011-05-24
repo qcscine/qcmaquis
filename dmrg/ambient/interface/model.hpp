@@ -18,16 +18,27 @@ void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
 template <typename T, policy P>
 void bind_model(const p_dense_matrix<T,P>* ptr)
 {
-    ptr->set_init(value_i<T>); // ptr is self here (shouldn't be a problem)
-    ptr->breakdown()->set_dim(dim2((unsigned int)ptr->num_cols(), (unsigned int)ptr->num_rows()));
+    resize_bind_model(ptr);
 } 
 
 template <typename T, policy P>
 void copy_bind_model(const p_dense_matrix<T,P>* ptr)
 {
-    ptr->set_init(value_i<T>); // ptr is self here (shouldn't be a problem)
-    ptr->breakdown()->set_dim(dim2((unsigned int)ptr->num_cols(), (unsigned int)ptr->num_rows()));
+    resize_bind_model(ptr);
 } 
+
+template <typename T, policy P>
+void resize_bind_model(const p_dense_matrix<T,P>* ptr)
+{
+    ptr->breakdown()->set_dim(dim2((unsigned int)ptr->num_cols(), (unsigned int)ptr->num_rows()));
+}
+
+template <typename T, policy P>
+void resize_bind_model(p_dense_matrix<T,P>* ptr, size_t rows, size_t cols)
+{
+    ptr->latch_meta(); // for unloose objects only!
+    ptr->resize(rows, cols);
+}
 
 template <typename T, policy P>
 void breakdown_proxy_model(void_pt* proxy, void_pt* profile, const p_dense_matrix<T,P>* ptr)

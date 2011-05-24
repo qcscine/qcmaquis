@@ -40,17 +40,19 @@ public:
                 self->original->self->duplicant = self->duplicant;
             }else{ 
                 if(!this->is_loose()){
-                    this->bind(); // works
-                //    self->loose_copied = false;
-                //    std::swap(this->handle, self->duplicant->handle);
-                //    std::swap(this->self, self->duplicant->self);
+                    //this->bind(); // works
+                    resize_bind_model((T*)this, self->duplicant->num_rows(), 
+                                                self->duplicant->num_cols());
+                    self->meta.loose_copied = self->duplicant->self->meta.loose_copied;
+                    std::swap(this->handle, self->duplicant->handle);
+                    self->duplicant->self = this->self;
                 }else{ 
-                    self->duplicant->self->loose_copy = false;
-                    self->duplicant->self->loose = true;
+                    self->duplicant->self->meta.loose_copy = false;
+                    self->duplicant->self->meta.loose      = true;
                 }
             }              // I am original
         }else if(this->is_loose_copy()){              // I am a copy
-            self->original->self->loose_copied = false;
+            self->original->self->meta.loose_copied = false;
         }
 
         //if(this->p != ANY){
@@ -64,15 +66,16 @@ public:
         if(this->is_loose_copy()){
             self->original->bind();
         }else if(this->is_loose_copied()){
-            self->loose_copied = false;
-            self->duplicant->self->loose_copy = false; // replica
-            bool loose_copied = self->duplicant->self->loose_copied;
-            self->duplicant->self->loose_copied = false; // preventing false stacking
+            self->meta.loose_copied = false;
+            self->duplicant->self->meta.loose_copy = false; // replica
+            bool loose_copied = self->duplicant->self->meta.loose_copied;
+            self->duplicant->self->meta.loose_copied = false; // preventing false stacking
+            resize_bind_model(self->duplicant);
             ambient::push(ambient::copy_l, ambient::copy_c, 
                          *self->duplicant, *(const T*)this);
-            self->duplicant->self->loose_copied = loose_copied;
+            self->duplicant->self->meta.loose_copied = loose_copied;
         }else if(this->is_loose()){
-            self->loose = false;
+            self->meta.loose = false;
             bind_model((T*)this);
         }
     }
@@ -82,7 +85,7 @@ public:
             return self->duplicant->snapshot(holder);
         }
         self->duplicant = holder; 
-        self->loose_copied = true;
+        self->meta.loose_copied = true;
         T* snapshot = (T*)(new typename T::replica(*self));
         snapshot->original = (T*)this;
         return snapshot;
@@ -94,23 +97,22 @@ public:
             if(P == ANY) handle.reset( self = o.snapshot((T*)this) );
             else if(P == MANUAL) handle.reset( self = o.snapshot((T*)this), null_deleter<T> );
             else if(P == WEAK) self = o.snapshot((T*)this);
-            self->loose = false;         // avoiding binding
+            self->meta.loose = false;         // avoiding binding
             copy_bind_model((T*)this);
-            self->loose_copy = true;     // avoiding binding
+            self->meta.loose_copy = true;     // avoiding binding
         }else if(P == REPLICA){
             self = (T*)this;
         }
     }
 
     void init(){
-        this->p = P;
-        this->use_count = 0;
-        this->loose = true;
-        this->abstract = false; // used for resetting
-        this->loose_copy = false;
-        this->loose_copied = false;
-        this->self = NULL;
-        this->modifier = NULL;
+        this->p                 = P;
+        this->use_count         = 0;
+        this->meta.loose        = true;
+        this->meta.loose_copy   = false;
+        this->meta.loose_copied = false;
+        this->self              = NULL;
+        this->modifier          = NULL;
     }
 
     livelong(){
@@ -168,16 +170,31 @@ public:
         self->profile = new void_pt(self);
     }
     template<typename O>
-    void set_init(void(*fp)(O&)) const { // incomplete typename is not allowed
-        if(this->is_abstract()) self->abstract = true;
+    void set_init(void(*fp)(O&)){ // incomplete typename is not allowed
+        this->latch_meta();
         self->profile->set_init(new core::operation(fp, (T*)this)); // T casting in order to avoid copy-construction!
+        this->unlatch_meta();
     }
-    bool is_loose()        const { return  self->loose;           } 
-    bool is_loose_copied() const { return  self->loose_copied;    }
-    bool is_loose_copy()   const { return  self->loose_copy;      }
-    bool is_abstract()     const { return (this->is_loose()      || 
-                                           this->is_loose_copy() ||
-                                           self->abstract );      }
+    bool is_loose()        const { return  self->meta.loose;            } 
+    bool is_loose_copied() const { return  self->meta.loose_copied;     }
+    bool is_loose_copy()   const { return  self->meta.loose_copy;       }
+    bool is_abstract()     const { return (this->is_loose()            || 
+                                           this->is_loose_copy());      }
+    void latch_meta(){ 
+        self->meta_latch        = self->meta;
+        self->meta.loose        = false;
+        self->meta.loose_copy   = false;
+        self->meta.loose_copied = false;
+    }
+    void unlatch_meta(){
+        self->meta = self->meta_latch;
+    }
+
+    struct loose_state{
+        bool loose;
+        bool loose_copy;
+        bool loose_copied;
+    } meta, meta_latch;
 
 public:
     mutable std::queue< std::vector< std::pair<std::pair<size_t,size_t>,void*> > > modifiers;
@@ -188,14 +205,10 @@ public:
     size_t use_count;
     void_pt* profile;
     policy p; // the same as P (avoiding casting collisions)
-    bool abstract;
     boost::shared_ptr<T> handle;
     mutable T* duplicant;
 private:
     T* original;
-    bool loose;
-    bool loose_copied;
-    bool loose_copy;
 };
 
 template<typename T>

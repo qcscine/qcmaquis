@@ -40,6 +40,7 @@ namespace blas {
         friend void swap(p_dense_matrix & x, p_dense_matrix & y){ x.swap(y); }
 
         inline bool empty() const;
+        inline value_type get_init_v() const;
         inline size_type num_rows() const;
         inline size_type num_cols() const;
         void resize(size_type rows, size_type cols);
@@ -52,12 +53,12 @@ namespace blas {
         void inplace_conjugate();
         static p_dense_matrix<T,P> identity_matrix(size_type size);
 
-        inline value_type& get(size_type i, size_type j) const;
+        value_type& get(size_type i, size_type j) const;
 
         template<ambient::policy PR>                      operator p_dense_matrix<T,PR> ();
         template<ambient::policy PR> p_dense_matrix<T,P>& operator = (p_dense_matrix<T,PR>& rhs); // not ref. in orig
         p_dense_matrix<T,P>&                              operator = (const p_dense_matrix<T>& rhs);
-        inline value_type&                                operator ()(size_type i, size_type j);
+        inline value_type&                                operator()(size_type i, size_type j);
         inline const value_type&                          operator()(size_type i, size_type j) const;
         p_dense_matrix<T,P>&                              operator += (const p_dense_matrix& rhs); 
         p_dense_matrix<T,P>&                              operator -= (const p_dense_matrix& rhs);
