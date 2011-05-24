@@ -7,8 +7,6 @@ namespace blas {
     #define self this->self
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::~p_dense_matrix(){ // #destructor
-//        if(this->is_loose_copied() && !this->is_loose_copy() && !this->is_loose())
-//            this->resize(self->duplicant->num_rows(), self->duplicant->num_cols());
     }
     template <typename T, ambient::policy P> // proxy object construction
     p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){}
@@ -20,6 +18,7 @@ namespace blas {
         self->cols   = cols;
         self->init_v = init_v;
         this->set_breakdown();
+        this->set_init(ambient::value_i<T>);
     }
 
     template <typename T, ambient::policy P>
@@ -27,8 +26,9 @@ namespace blas {
     : livelong(m){
         self->rows   = m.num_rows();
         self->cols   = m.num_cols();
-        self->init_v = m.init_v;
+        self->init_v = m.get_init_v();
         this->set_breakdown();
+        this->set_init(ambient::value_i<T>);
     }
 
     template <typename T, ambient::policy P>
@@ -45,6 +45,9 @@ namespace blas {
     inline bool p_dense_matrix<T,P>::empty() const { return (self->rows == 0 || self->cols == 0); }
 
     template <typename T, ambient::policy P>
+    inline T p_dense_matrix<T,P>::get_init_v() const { return self->init_v; }
+
+    template <typename T, ambient::policy P>
     inline size_t p_dense_matrix<T,P>::num_rows() const { return self->rows; }
 
     template <typename T, ambient::policy P>
@@ -58,12 +61,11 @@ namespace blas {
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::clear(){
         self->rows = self->cols = 0;
-        if(!self->is_loose()) this->nullcut();
+        if(!this->is_abstract()) this->nullcut();
     }
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::touch() const {
-        self->abstract = false;
         ambient::push(ambient::touch_l, ambient::touch_c, *this);
     }
 
@@ -74,18 +76,15 @@ namespace blas {
         self->cols = cols;
         assert(cols > 0);
         assert(rows > 0);
-        if(!self->is_loose()){ 
-            ambient::push(ambient::resize_l, ambient::resize_c, 
-                          *this, self->rows, self->cols);
-        }else
-            self->breakdown()->set_dim(ambient::dim2((unsigned int)cols, (unsigned int)rows));
+        if(!this->is_abstract())
+            ambient::push(ambient::resize_l, ambient::resize_c, *this, self->rows, self->cols);
     }
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::remove_rows(size_type i, size_type k = 1)
     {
         assert( i+k <= self->rows );
-        if(self->is_loose()) return this->resize(self->rows-k, self->cols);
+        if(this->is_abstract()) return this->resize(self->rows-k, self->cols);
         ambient::push(ambient::remove_rows_l, ambient::remove_rows_c, *this, i, k);
         this->resize(self->rows - k, self->cols);
     }
@@ -94,7 +93,7 @@ namespace blas {
     void p_dense_matrix<T,P>::remove_cols(size_type j, size_type k = 1)
     {
         assert( j+k <= self->cols );
-        if(self->is_loose()) return this->resize(self->rows, self->cols-k);
+        if(this->is_abstract()) return this->resize(self->rows, self->cols-k);
         ambient::push(ambient::remove_cols_l, ambient::remove_cols_c, *this, j, k);
         this->resize(self->rows, self->cols - k);
     }
@@ -130,7 +129,7 @@ namespace blas {
     }*/
 
     template <typename T, ambient::policy P>
-    inline T& p_dense_matrix<T,P>::get(size_type i, size_type j) const
+    T& p_dense_matrix<T,P>::get(size_type i, size_type j) const
     {
         assert(i < self->rows);
         assert(j < self->cols);
@@ -147,7 +146,7 @@ namespace blas {
             return *(T*)value;
         }
 
-        if(self->is_abstract()) this->touch();
+        if(this->is_abstract()) this->touch();
         ambient::playout();
         int block_i = i / (this->breakdown()->get_mem_t_dim().y);
         int block_j = j / (this->breakdown()->get_mem_t_dim().x);

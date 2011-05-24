@@ -46,7 +46,6 @@ void identity_i(p_dense_matrix<T>& a)
     size_t n = get_mem_t_dim(a).x;
     T* ad = current(a)(i,j);
     memset(ad, 0, m*n*sizeof(T));
-
     if((i+1)*m <= j*n) return;
     if(i*m >= (j+1)*n) return;
     for(size_t jj = j*n; jj < (j+1)*n; jj++){
@@ -64,5 +63,5 @@ void value_i(p_dense_matrix<T>& a)
     size_t m = get_mem_t_dim(a).y;
     size_t n = get_mem_t_dim(a).x;
     T* ad = current(a)(i,j);
-    for(size_t ii=0; ii<n*m; ii++) ad[ii] = a.init_v;
+    for(size_t ii=0; ii<n*m; ii++) ad[ii] = a.get_init_v(); // IT DOESN'T EXIST!
 }

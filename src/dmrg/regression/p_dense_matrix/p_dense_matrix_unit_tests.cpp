@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
 }
 
 /*
-/*BOOST_AUTO_TEST_CASE_TEMPLATE( heap_manual_test, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( heap_manual_test, T, test_types ) 
 { 
     ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
     p_dense_matrix<T,ambient::MANUAL>* A = new p_dense_matrix<T, ambient::MANUAL>(M_SIZE,M_SIZE);
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types )
     __ambient_wo_end__
     std::cout << A;
     p_dense_matrix<T> B(A);
-    B.resize(10,6);
+    B.resize(10,10);
     __ambient_wo_begin__
     B(0,1) = 2;
     B(5,0) = 26;
