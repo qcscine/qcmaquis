@@ -82,11 +82,11 @@ public:
 	return  val;
     }    
 
-    void save(int idproc, int num)
+    friend void save(int idproc, int num, Timer const & a, Timer const & b )
     {
        std::ofstream o; 
-       o.open(name.c_str(),std::ios::app);
-        o << val <<" " << idproc << " " << num <<  std::endl;
+       o.open("time.txt",std::ios::app);
+           o << a.val << " "<< b.val << " "  << idproc << " " << num <<  std::endl;
        o.close();
     }
 

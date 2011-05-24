@@ -8,10 +8,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <complex>
-#include <numeric>
+
+#include <boost/numeric/bindings/ublas.hpp>
+#include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
+#include <boost/numeric/bindings/lapack/driver/syev.hpp>
+#include <boost/numeric/bindings/lapack/driver/syevd.hpp>
 
 #define M_SIZE 128
+#define N_SIZE 256
 using namespace blas;
 
 typedef boost::mpl::list<double> test_types;
@@ -73,28 +77,126 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( print_test, T, test_types )
 
     std::cout << a;
 }
+*/
+/** small matrix class to avoid conflict between p_dense_matrix and dense_matrix **/
+template<class T>
+class Matrix_serial
+{
+public:
+   Matrix_serial<T>(p_dense_matrix<T> &a){
+       mx.resize(a.num_rows(), a.num_cols());
+       for(int i=0; i<a.num_rows(); i++){
+           for(int j=0; j<a.num_cols(); j++){
+               mx(i,j) = a(i,j); //very slow .... 
+           }
+       } 
+   } 
+  
+   Matrix_serial<T>i(Matrix_serial<T> &a){
+       mx(a.mx);  
+   }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types ) 
-{ 
-    ambient::layout >> dim(1,1), dim(1,1), dim(10,1); 
+   T& operator()(size_t i, size_t j){ return mx(i,j); }
+   boost::numeric::ublas::matrix<T,boost::numeric::ublas::column_major> mx;
+   friend std::ostream& operator<<(std::ostream& os, const Matrix_serial& a){
+       for(int i=0; i<a.mx.num_rows(); i++){
+           for(int j=0; j<a.mx.num_cols(); j++){
+               os<< a(i,j);
+               return os; 
+           }
+       } 
+   }    
+};
+
+
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( SYEV_test, T, test_types ) 
+{
+    int info; 
+    double res = 0; 
+    double epsilon = 0.0000000000000001;
  
+//first pure ambient run
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+    
     p_dense_matrix<T> A(M_SIZE,M_SIZE); 
     p_dense_matrix<T> U(M_SIZE,M_SIZE); 
     p_dense_matrix<T> V(M_SIZE,M_SIZE); 
  
-    ambient::push(ambient::init_double_l,ambient::init_double_c,A); 
+    typename::associated_diagonal_matrix<p_dense_matrix<T> >::type S(M_SIZE,-1); 
  
-    typename::associated_diagonal_matrix<p_dense_matrix<T> >::type S; 
+    A.set_init(ambient::random_i<T>);
+    ambient::syev(A,U,S);
+    ambient::playout();
  
- 
-    blas::svd(A,U,V,S); 
- 
-    ambient::playout(); 
-//    std::cout << S ; 
- 
-}*/
+//second matrix run without ambient
 
+    /**  I hope your matrixes are not huges because copy from ambient to serial element by element **/ 
+    Matrix_serial<T> A_serial(A);
+    Matrix_serial<T> A_serial_bis(A_serial);
 
+    boost::numeric::ublas::vector<T> S_serial_syev(M_SIZE); 
+    boost::numeric::ublas::vector<T> S_serial_syevd(M_SIZE); 
+
+    info = boost::numeric::bindings::lapack::syevd('V', A_serial.mx, S_serial_syevd);
+    if (info != 0){ throw std::runtime_error("Error in SYEV!");}
+    info = boost::numeric::bindings::lapack::syev('V', A_serial_bis.mx, S_serial_syev);
+    if (info != 0){ throw std::runtime_error("Error in SYEVD!");}
+
+    for(int i=0 ; i<S_serial_syev.size();i++)
+         BOOST_CHECK_CLOSE(S_serial_syev[i],S_serial_syevd[i],epsilon);
+
+    std::reverse(S_serial_syev.begin(), S_serial_syev.end());
+
+    for(int i=0 ; i<S_serial_syev.size();i++){
+        res = (fabs(S[i]-S_serial_syev[i]))/fabs(epsilon*S_serial_syev[i]); 
+        if(res > 16){ // 16 = Dongarra = number of digit
+             printf("validation syev failed, res %.16f Ambient: %.16f Lapack: %.16f \n", res, S_serial_syev[i], S[i]);
+        }
+     }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types ) 
+{ 
+    double res = 0; 
+    double epsilon = 0.0000000000000001;
+ 
+//first pure ambient run
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+    
+    p_dense_matrix<T> A(M_SIZE,N_SIZE); 
+    p_dense_matrix<T> U(M_SIZE,M_SIZE); 
+    p_dense_matrix<T> V(N_SIZE,N_SIZE); 
+ 
+    typename::associated_diagonal_matrix<p_dense_matrix<T> >::type S(N_SIZE,-1); 
+ 
+    A.set_init(ambient::random_i<T>);
+    ambient::svd(A,U,V,S);
+    ambient::playout();
+ 
+//second matrix run without ambient
+
+    /**  I hope your matrixes are not huges because copy from ambient to serial element by element **/ 
+
+    Matrix_serial<T> A_serial(A);
+    Matrix_serial<T> U_serial(U);
+    Matrix_serial<T> V_serial(V);
+
+    boost::numeric::ublas::vector<T> S_serial(std::min(M_SIZE,N_SIZE)); 
+ 
+    int info = boost::numeric::bindings::lapack::gesvd('S', 'S', A_serial.mx, S_serial, U_serial.mx, V_serial.mx);
+    if (info != 0){ throw std::runtime_error("Error in SVD!");}
+ 
+    for(int i=0 ; i<S_serial.size();i++){
+        res = (fabs(S[i]-S_serial[i]))/fabs(epsilon*S_serial[i]); 
+        if(res > 16){ // 16 = Dongarra = number of digit
+             printf("validation svd failed, res %.16f Ambient: %.16f Lapack: %.16f \n", res, S[i], S_serial[i]);
+        }
+     }
+}
+
+/*
 /*BOOST_AUTO_TEST_CASE_TEMPLATE( heap_manual_test, T, test_types ) 
 { 
     ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
@@ -219,7 +321,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( std_replacement_test, T, test_types )
     double* out_value_accumulate = (double*)malloc(sizeof(double));
     double* out_value_max        = (double*)malloc(sizeof(double));
 
-    typename blas::associated_vector< p_dense_matrix<T> >::type S(28,-1);
+    typename blas::associated_vector< p_dense_matrix<T> >::type S(M_SIZE,-1);
+
     S.get_data().set_init(ambient::random_i<T>);
 
     blas::sort<p_dense_matrix<T> >(S);
