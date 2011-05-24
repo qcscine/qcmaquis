@@ -182,12 +182,16 @@ int main(int argc, char ** argv)
 #else
     int initc = model.get<int>("u1_total_charge");
 #endif
+    ambient::playout();
+    printf("Check point 1\n");
     MPS<Matrix, grp> mps(adj->size(),
                          parms.get<std::size_t>("init_bond_dimension"),
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
     int sweep = 0;
+    ambient::playout();
+    printf("Check point 2\n");
     
     StreamStorageMaster ssm(ambient::operator+(parms.get<std::string>("storagedir"),ambient::rank()));
     
@@ -196,26 +200,27 @@ int main(int argc, char ** argv)
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
+
 #ifndef MEASURE_ONLY
     
     bool early_exit = false;
     {   
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
+        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps,
+                                                                parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                                                parms, ssm);
         
-        zout << "Starting sweeping...\n";
-        for ( ; sweep < parms.get<int>("nsweeps"); ++sweep){
+        for(; sweep < parms.get<int>("nsweeps"); ++sweep)
+        {
             gettimeofday(&snow, NULL);
-            
             Logger iteration_log;
             
-            if (parms.get<int>("use_compressed") == 0)
-                optimizer.sweep(mpo, sweep, iteration_log);
-            else
-                optimizer.sweep(mpoc, sweep, iteration_log);
+            zout << "Starting...\n";
+            optimizer.sweep(sweep, iteration_log);
             zout << "First sweep is done\n";
+            goto ex;
             //assert(false);
             
-            ssm.sync();
+            //ssm.sync();
             
             entropies = calculate_bond_entropies(mps);
             
@@ -234,8 +239,8 @@ int main(int argc, char ** argv)
     }
 #endif
     
-    ssm.sync();
-    
+    //ssm.sync();
+ex:    
 #ifdef MEASURE_ONLY
     if(ambient::is_master())
     {
