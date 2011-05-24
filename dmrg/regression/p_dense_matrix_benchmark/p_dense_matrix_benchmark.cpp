@@ -19,7 +19,7 @@ struct caveats {
 };
 
 BOOST_GLOBAL_FIXTURE( caveats );
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types ) 
 { 
     ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
@@ -41,14 +41,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_gemm_test, T, test_types )
 
     //if(ambient::rank() == 0) b.save(ambient::size(),M);
 }
-
+*/
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( single_bench_gemm, T, test_types ) 
 {
      ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
 
      int argc = boost::unit_test::framework::master_test_suite().argc;
      char** argv = boost::unit_test::framework::master_test_suite().argv; 
-     
      int NUM=std::atoi(argv[1]);
     
      ambient::p_dense_matrix<T> A(NUM,NUM);
@@ -61,41 +61,55 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( single_bench_gemm, T, test_types )
  
      Timer ta("Ambient_gemm.txt"); ta.begin();
      blas::gemm(A,B,C_Ambient);
+     ambient::playout();
      ta.end();
 
      Timer tb("Pblas_gemm.txt"); tb.begin();
      blas::pblas_gemm(A,B,C_pBlas);
+     ambient::playout();
      tb.end();     
 
+     blas::validation(C_Ambient,C_pBlas);
      ambient::playout();
-
      if(ambient::rank() == 0){
-        save(ambient::size(),NUM, ta, tb );
+        save("single",ambient::size(),NUM, ta, tb );
      } 
 }
-
-
+*/
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemm_vector, T, test_types ) 
 {
      ambient::layout >> dim(1,1), dim(1,1), dim(1,1); 
-     int LENGTH = 8;
-     int M = 1024;
+
+     char** argv = boost::unit_test::framework::master_test_suite().argv; 
+     int M=std::atoi(argv[1]);
+     int LENGTH = std::atoi(argv[2]); 
 
      std::vector<ambient::p_dense_matrix<T> * > V;
      V.resize(LENGTH*4);
 
-     for(int i = 0 ; i < LENGTH*4 ; i++) V[i] = (p_dense_matrix<T>*) new p_dense_matrix<T,MANUAL>(M,M);
+     for(int i = 0 ; i < LENGTH*4 ; i++){
+         V[i] = (p_dense_matrix<T>*) new p_dense_matrix<T,MANUAL>(M,M);
+         V[i]->set_init(ambient::random_i<T>);
+     }
 
      for(int i = 0 ; i < LENGTH ; i++) blas::pblas_gemm(*V[i*4],*V[i*4+1],*V[i*4+3]);
-     Timer tp("PBLAS series of GEMM"); tp.begin();
-     ambient::playout();
-     tp.end();
-     for(int i = 0 ; i < LENGTH ; i++) blas::gemm(*V[i*4],*V[i*4+1],*V[i*4+2]);
-     Timer ta("Ambient series of GEMM"); ta.begin();
+
+     Timer ta("PBLAS series of GEMM"); ta.begin();
      ambient::playout();
      ta.end();
 
+     for(int i = 0 ; i < LENGTH ; i++) blas::gemm(*V[i*4],*V[i*4+1],*V[i*4+2]);
+
+     Timer tb("Ambient series of GEMM"); tb.begin();
+     ambient::playout();
+     tb.end();
+
      for(int i = 0 ; i < LENGTH ; i++) blas::validation(*V[i*4+2],*V[i*4+3]);
      ambient::playout();
+
+     if(ambient::rank() == 0){
+        save("vector.txt",ambient::size(),M, ta, tb );
+     } 
 }
+
