@@ -180,17 +180,17 @@ namespace app {
                     hamterm_t term;
                     if (with_sign)
                         term.fill_operator = tfill[type_s];
-                        else
-                            term.fill_operator = tident[type_s];
-                        {
-                            alps_matrix m = alps::get_matrix(double(), op1, b1, parms, true);
-                            op_t tmp;
-                            if (with_sign)
-                                gemm(tfill[type_s], convert_matrix(m, type_s), tmp); // Note inverse notation because of notation in operator.
-                                else
-                                    tmp = convert_matrix(m, type_s);
-                                    term.operators.push_back( std::make_pair(p_s, tit->get<0>().value()*tmp) );
-                                    }
+                    else
+                        term.fill_operator = tident[type_s];
+                    {
+                        alps_matrix m = alps::get_matrix(double(), op1, b1, parms, true);
+                           op_t tmp;
+                           if (with_sign)
+                               gemm(tfill[type_s], convert_matrix(m, type_s), tmp); // Note inverse notation because of notation in operator.
+                           else
+                               tmp = convert_matrix(m, type_s);
+                        term.operators.push_back( std::make_pair(p_s, tit->get<0>().value()*tmp) );
+                    }
                     {
                         alps_matrix m = alps::get_matrix(double(), op2, b2, parms, true);
                         term.operators.push_back( std::make_pair(p_t, convert_matrix(m, type_t)) );
