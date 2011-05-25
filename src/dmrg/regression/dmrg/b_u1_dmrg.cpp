@@ -247,21 +247,21 @@ int main(int argc, char ** argv)
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
+
 #ifndef MEASURE_ONLY
     
     bool early_exit = false;
     {   
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
+        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps,
+                                                                parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                                                parms, ssm);
         
-        for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+        for(; sweep < parms.get<int>("nsweeps"); ++sweep)
+        {
             gettimeofday(&snow, NULL);
-            
             Logger iteration_log;
             
-            if (parms.get<int>("use_compressed") == 0)
-                optimizer.sweep(mpo, sweep, iteration_log);
-            else
-                optimizer.sweep(mpoc, sweep, iteration_log);
+            optimizer.sweep(sweep, iteration_log);
             
             ssm.sync();
             
@@ -308,7 +308,7 @@ int main(int argc, char ** argv)
     }
 #endif
     
-    ssm.sync();
+ex:     ssm.sync();
     
 #ifdef MEASURE_ONLY
     {
