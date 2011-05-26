@@ -182,16 +182,16 @@ int main(int argc, char ** argv)
 #else
     int initc = model.get<int>("u1_total_charge");
 #endif
-    ambient::playout();
-    printf("Check point 1\n");
+//    ambient::playout();
+//    printf("Check point 1\n");
     MPS<Matrix, grp> mps(adj->size(),
                          parms.get<std::size_t>("init_bond_dimension"),
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
     int sweep = 0;
-    ambient::playout();
-    printf("Check point 2\n");
+//    ambient::playout();
+//    printf("Check point 2\n");
     
     StreamStorageMaster ssm(ambient::operator+(parms.get<std::string>("storagedir"),ambient::rank()));
     

@@ -35,7 +35,7 @@ namespace blas {
         self->cols   = m.num_cols();
         self->init_v = m.get_init_v();
         this->set_breakdown();
-        this->set_init(ambient::value_i<T>);
+        this->set_init(m.get_init_fp());
     }
 
     template <typename T, ambient::policy P>

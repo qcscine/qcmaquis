@@ -209,6 +209,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     timer.end();
     scalar_type val = ret[0](0,0);
     ambient::bailout();
+    printf("Norm is %.2f\n", val);
     if(val == 0) val = 1.0;
     return sqrt(val);
     #else
@@ -249,6 +250,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     timer.end();
     scalar_type val = ret[0](0,0);
     ambient::bailout();
+    printf("Norm is %.2f\n", val);
     if(val == 0) val = 1.0;
     return sqrt(val);
     #else    

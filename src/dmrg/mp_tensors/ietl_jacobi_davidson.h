@@ -48,10 +48,10 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     std::pair<double, Vector> r0;
     r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
     #ifdef MPI_PARALLEL
-    ambient::bailin();
-    ambient::playout();
-    ambient::bailout();
-    printf("Check point 4\n");
+    //ambient::bailin();
+    //ambient::playout();
+    //ambient::bailout();
+    //printf("Check point 4\n");
     #endif
 
     zout << "JCD used " << iter.iterations() << " iterations." << endl;

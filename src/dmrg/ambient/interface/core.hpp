@@ -169,9 +169,16 @@ public:
         if(this->p == ANY) return;
         self->profile = new void_pt(self);
     }
+
+    void(*init_fp)(T&);
+    void(*get_init_fp() const)(T&){
+        return (void(*)(T&))self->init_fp;
+    }
+
     template<typename O>
     void set_init(void(*fp)(O&)){ // incomplete typename is not allowed
         this->latch_meta();
+        self->init_fp = (void(*)(T&))fp;
         self->profile->set_init(new core::operation(fp, (T*)this)); // T casting in order to avoid copy-construction!
         this->unlatch_meta();
     }
