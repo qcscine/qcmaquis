@@ -112,6 +112,7 @@ public:
             }
             
             zout << "Sweep " << sweep << ", optimizing site " << site << endl;
+            if(site == 7) exit(-1);
 //            storage_master.print_size();
             
 //            mps[site].make_left_paired();
@@ -213,10 +214,10 @@ public:
 //            }
                 
             #ifdef MPI_PARALLEL
-            ambient::bailin();
-            ambient::playout();
-            ambient::bailout();
-            printf("Check point 5\n");
+            //ambient::bailin();
+            //ambient::playout();
+            //ambient::bailout();
+            //printf("Check point 5\n");
             #endif
                 
             if (lr == +1) {

@@ -239,6 +239,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
     A = U + V;
     ambient::playout();
 }*/
+
 template<typename T>
 void remote_gemm(p_dense_matrix<T> A, p_dense_matrix<T> B, p_dense_matrix<T> C)
 {
@@ -347,7 +348,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scalar_norm_test, T, test_types )
 { 
     ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
 
-    size_t length = 2;
+    size_t length = 4;
     std::vector< p_dense_matrix<double> > data_;
     std::vector< p_dense_matrix<double> > ret;
 
