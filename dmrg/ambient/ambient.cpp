@@ -64,6 +64,7 @@ namespace ambient
     void finalize()  { engine.finalize();        }
     void playout()   { engine.playout();         }
     void bailout()   { engine.bailout();         }
+    void bailin()    { engine.bailin();         }
     void spin()      { engine.spin();            }
     void spin_loop() { engine.spin_loop();       }
     void world_loop(){ engine.world_loop();      }
@@ -130,12 +131,16 @@ namespace ambient
     {
         this->stirring = true;
     }
+    void scheduler::bailin()
+    {
+        this->stirring = false;
+    }
     void scheduler::playout()
     {
         if(this->stack.empty()) return; // easy out
         if(this->occupied() != false){ free((void*) -1); assert(false); }
         this->stirring = true;
-        printf("R%d: playout...\n", ambient::rank());
+        //printf("R%d: playout...\n", ambient::rank());
         MPI_Barrier(this->ambient->mpi_comm);
         one_touch_stack<core::operation*> cleanup_stack;
         std::pair<core::operation*, core::operation*>* pair;

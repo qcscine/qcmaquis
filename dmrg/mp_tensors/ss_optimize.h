@@ -140,7 +140,6 @@ public:
 //            cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << endl;
             
             t_io.end();
-            
             t_solver.begin();
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
@@ -214,7 +213,9 @@ public:
 //            }
                 
             #ifdef MPI_PARALLEL
+            ambient::bailin();
             ambient::playout();
+            ambient::bailout();
             printf("Check point 5\n");
             #endif
                 
@@ -240,6 +241,7 @@ public:
             } else if (lr == -1) {
                 if (site > 0) {
                     zout << "Growing, alpha = " << alpha << endl;
+                    // Invalid read occurs after this!\n
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
                 } else {

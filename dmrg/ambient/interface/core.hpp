@@ -93,7 +93,7 @@ public:
 
     livelong(const livelong& o){ // copy constructor
         this->init();
-        if(P != REPLICA){ 
+        if(P != REPLICA){
             if(P == ANY) handle.reset( self = o.snapshot((T*)this) );
             else if(P == MANUAL) handle.reset( self = o.snapshot((T*)this), null_deleter<T> );
             else if(P == WEAK) self = o.snapshot((T*)this);

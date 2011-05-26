@@ -193,17 +193,34 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 //    pgemm(conjugate_transpose(data_), data_, t);
 //    real_type r = sqrt(trace(t));
 
+    #ifdef MPI_PARALLEL
+    ambient::bailin();
+    std::vector<Matrix> ret;
+    ret.reserve(data_.n_blocks());
+
+    for(size_t i = 0 ; i < data_.n_blocks(); i++){
+        ret.push_back(Matrix(1,1));
+        ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], ret[i]);
+    }
+    for(size_t i = 1 ; i < data_.n_blocks(); i++){
+        ambient::push(ambient::atomic_add_l, ambient::atomic_add_c, ret[0], ret[i]);
+    }
+    
+    timer.end();
+    scalar_type val = ret[0](0,0);
+    ambient::bailout();
+    if(val == 0) val = 1.0;
+    return sqrt(val);
+    #else
     using utils::conj;
-//    printf("<<< Scalar norm playouts\n");
     scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
         for (std::size_t c = 0; c < num_cols(data_[b]); ++c)
             for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
                 ret += conj(data_[b](r,c)) * data_[b](r,c);
-    
-//    printf("Scalar norm playouts >>>\n");
     timer.end();
     return sqrt(ret);
+    #endif
 }
 
 template<class Matrix, class SymmGroup>
@@ -215,7 +232,26 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 
     make_left_paired();
     rhs.make_left_paired();
+
+    #ifdef MPI_PARALLEL
+    ambient::bailin();
+    std::vector<Matrix> ret;
+    ret.reserve(data_.n_blocks());
+
+    for(size_t i = 0 ; i < data_.n_blocks(); i++){
+        ret.push_back(Matrix(1,1));
+        ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], ret[i]);
+    }
+    for(size_t i = 1 ; i < data_.n_blocks(); i++){
+        ambient::push(ambient::atomic_add_l, ambient::atomic_add_c, ret[0], ret[i]);
+    }
     
+    timer.end();
+    scalar_type val = ret[0](0,0);
+    ambient::bailout();
+    if(val == 0) val = 1.0;
+    return sqrt(val);
+    #else    
     using utils::conj;
     
     scalar_type ret = 0;
@@ -226,6 +262,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 
     timer.end();
     return ret;
+    #endif
 }
 
 template<class Matrix, class SymmGroup>
