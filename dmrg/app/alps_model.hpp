@@ -163,6 +163,10 @@ namespace app {
                 int type_s = lattice.site_type(lattice.source(*it));
                 int type_t = lattice.site_type(lattice.target(*it));
                 
+                bool wrap_pbc = boost::get(alps::boundary_crossing_t(),
+                                           lattice.graph(),
+                                           *it);
+                
                 BondOperator bondop = model.bond_term(type);
                 
                 typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator,alps::SiteOperator > > V;
@@ -184,16 +188,24 @@ namespace app {
                         term.fill_operator = tident[type_s];
                     {
                         alps_matrix m = alps::get_matrix(double(), op1, b1, parms, true);
-                           op_t tmp;
-                           if (with_sign)
-                               gemm(tfill[type_s], convert_matrix(m, type_s), tmp); // Note inverse notation because of notation in operator.
-                           else
-                               tmp = convert_matrix(m, type_s);
-                        term.operators.push_back( std::make_pair(p_s, tit->get<0>().value()*tmp) );
+                        double coeff = tit->get<0>().value();
+                        op_t tmp;
+                        if (with_sign && !wrap_pbc) {                            
+                            gemm(tfill[type_s], convert_matrix(m, type_s), tmp); // Note inverse notation because of notation in operator.
+                        } else
+                            tmp = convert_matrix(m, type_s);
+                        if (with_sign && wrap_pbc)
+                            coeff *= -1.;
+                        term.operators.push_back( std::make_pair(p_s, coeff*tmp) );
                     }
                     {
                         alps_matrix m = alps::get_matrix(double(), op2, b2, parms, true);
-                        term.operators.push_back( std::make_pair(p_t, convert_matrix(m, type_t)) );
+                        op_t tmp;
+                        if (with_sign && wrap_pbc)
+                            gemm(tfill[type_t], convert_matrix(m, type_t), tmp); // Note inverse notation because of notation in operator.
+                        else
+                            tmp = convert_matrix(m, type_t);
+                        term.operators.push_back( std::make_pair(p_t, tmp) );
                     }
                     
                     terms.push_back(term);
