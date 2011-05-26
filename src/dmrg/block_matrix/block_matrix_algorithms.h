@@ -253,11 +253,15 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 */
 
     
+    #ifdef MPI_PARALLEL
     ambient::bailin();
+    #endif
     double evalscut = cutoff * allevals[0];
     if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
+    #ifdef MPI_PARALLEL
     ambient::bailout();
+    #endif
 
     #ifndef MPI_PARALLEL
     double truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
