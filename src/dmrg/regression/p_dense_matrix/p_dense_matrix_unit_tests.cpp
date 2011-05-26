@@ -77,8 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( print_test, T, test_types )
 
     std::cout << a;
 }
-*/
-/** small matrix class to avoid conflict between p_dense_matrix and dense_matrix **/
+// small matrix class to avoid conflict between p_dense_matrix and dense_matrix //
 template<class T>
 class Matrix_serial
 {
@@ -132,7 +131,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SYEV_test, T, test_types )
  
 //second matrix run without ambient
 
-    /**  I hope your matrixes are not huges because copy from ambient to serial element by element **/ 
+    //  I hope your matrixes are not huges because copy from ambient to serial element by element //
     Matrix_serial<T> A_serial(A);
     Matrix_serial<T> A_serial_bis(A_serial);
 
@@ -177,7 +176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
  
 //second matrix run without ambient
 
-    /**  I hope your matrixes are not huges because copy from ambient to serial element by element **/ 
+    //  I hope your matrixes are not huges because copy from ambient to serial element by element // 
 
     Matrix_serial<T> A_serial(A);
     Matrix_serial<T> U_serial(U);
@@ -195,7 +194,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_test, T, test_types )
         }
      }
 }
-
+*/
 /*
 BOOST_AUTO_TEST_CASE_TEMPLATE( heap_manual_test, T, test_types ) 
 { 
@@ -240,7 +239,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
     A = U + V;
     ambient::playout();
 }*/
-
 template<typename T>
 void remote_gemm(p_dense_matrix<T> A, p_dense_matrix<T> B, p_dense_matrix<T> C)
 {
@@ -343,4 +341,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trace_test, T, test_types )
     p_dense_matrix<T> A = p_dense_matrix<T>::identity_matrix(5);
     zout << "Trace: " << blas::trace(A) << "\n";
     std::cout << A;
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scalar_norm_test, T, test_types ) 
+{ 
+    ambient::layout >> dim(2,2), dim(2,2), dim(10,1); 
+
+    size_t length = 2;
+    std::vector< p_dense_matrix<double> > data_;
+    std::vector< p_dense_matrix<double> > ret;
+
+    data_.reserve(length); // avoid calling copy constructors on PUSH_BACK (init will reset)
+    ret.reserve(length); // avoid calling copy constructors on PUSH_BACK (init will reset)
+    for(size_t i = 0 ; i < length; i++){
+        p_dense_matrix<double> A(6,6);
+        data_.push_back(A);
+        generate(data_[i], double());
+    }
+    for(size_t i = 0 ; i < length; i++){
+        ret.push_back(p_dense_matrix<double>(1,1));
+        ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], ret[i]);
+        printf("PARTIAL NORM: %.6f\n", ret[i](0,0));
+    }
+    for(size_t i = 1 ; i < length; i++){
+        ambient::push(ambient::atomic_add_l, ambient::atomic_add_c, ret[0], ret[i]);
+    }
+    printf("TOTAL NORM: %.6f\n", ret[0](0,0));
+
 }

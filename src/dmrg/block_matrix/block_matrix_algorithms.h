@@ -31,10 +31,8 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         // avoid copying, use resize
-        C.insert_block(Matrix3(),
+        C.insert_block(Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
                        A.left_basis()[k].first, B.right_basis()[matched_block].first);
-        C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
-                       num_rows(A[k]), num_cols(B[matched_block]));
         gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
     }
 }
@@ -232,6 +230,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     //std::vector<double> allevals;
     typename blas::associated_vector<Matrix>::type allevals;
 #ifdef MPI_PARALLEL
+    ambient::bailin();
     size_t length = 0;
     size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k) 
@@ -243,6 +242,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
     blas::sort<Matrix>(allevals);
     blas::reverse<Matrix>(allevals);
+    ambient::bailout();
 #else
     for(std::size_t k = 0; k < evals.n_blocks(); ++k)
         std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
@@ -253,17 +253,38 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 */
 
     
+    ambient::bailin();
     double evalscut = cutoff * allevals[0];
     if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
+    ambient::bailout();
+
+    #ifndef MPI_PARALLEL
     double truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
-    
-    for (std::size_t k = 0; k < evals.n_blocks(); ++k)
-  {
-        int keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
-                                        boost::lambda::_1 < evalscut)-evals[k].elements().first;
+    #endif
 
+    #ifdef MPI_PARALLEL
+    ambient::bailin();
+    size_t* keeps = (size_t*)malloc(evals.n_blocks()*sizeof(size_t));
+    for(size_t k = 0; k < evals.n_blocks(); ++k)
+    {
+        keeps[k] = num_rows(evals[k]);
+        size_t* keep_ptr = keeps + k;
+        ambient::push(ambient::associated_find_if_l, ambient::associated_find_if_c, evals[k].get_data(), evalscut, keep_ptr);
+    }
+    ambient::playout();
+    ambient::bailout();
+    #endif
+
+    for (std::size_t k = 0; k < evals.n_blocks(); ++k)
+    {
+        #ifdef MPI_PARALLEL
+        size_t keep = keeps[k];
+        #else
+        size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
+                                        boost::lambda::_1 < evalscut)-evals[k].elements().first;
+        #endif
 
         if (keep >= num_rows(evals[k]))
             continue;
@@ -297,7 +318,9 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
     
     logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());
+    #ifndef MPI_PARALLEL
     logger << make_log("TruncatedWeight", truncated_weight);
+    #endif
     logger << make_log("SmallestEV", evalscut / allevals[0]);
 }
 

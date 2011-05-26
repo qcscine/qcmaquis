@@ -177,6 +177,25 @@ void gemm_l_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
     block_2d_cycle_assign(c);
 }
 
+void scalar_norm_l(pinned const p_dense_matrix<double>& a, p_dense_matrix<double>& norm)
+{
+    scope_select(1 +" from ambient as scalar_norm where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in scalar_norm ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(norm);
+}
+
+void atomic_add_l(p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+{
+    scope_select("1 from ambient as atomic_add where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //zout << "2dbcd in atomic_add ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+
+    block_2d_cycle_assign(a);
+}
+
 void mem_bound_l(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
 {
     scope_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ get_id(c));

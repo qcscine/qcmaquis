@@ -12,7 +12,14 @@ namespace blas {
     p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){}
 
     template <typename T, ambient::policy P>
-    p_dense_matrix<T,P>::p_dense_matrix(size_type rows = 0, size_type cols = 0, T init_v = T() )
+    p_dense_matrix<T,P>::p_dense_matrix()
+    : livelong(){
+        free((void*)-1);
+        assert(false);
+    }
+
+    template <typename T, ambient::policy P>
+    p_dense_matrix<T,P>::p_dense_matrix(size_type rows, size_type cols = 0, T init_v = T() )
     : livelong(rows, cols, init_v){
         self->rows   = rows;
         self->cols   = cols;
@@ -144,7 +151,7 @@ namespace blas {
             void* value = calloc(1, sizeof(T));
             self->modifier->push_back(std::pair<std::pair<size_t,size_t>,void*>(std::pair<size_t,size_t>(i,j), value));
             return *(T*)value;
-        }
+        }//else printf("Getting element!\n");
 
         if(this->is_abstract()) this->touch();
         ambient::playout();

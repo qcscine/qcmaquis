@@ -317,7 +317,7 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         
         size_type i1 = rows_.insert(p1);
         cols_.insert(i1, p2);
-        data_.insert(data_.begin() + i1, Matrix()); 
+        data_.insert(data_.begin() + i1, Matrix(1,1)); 
         /*rows_.push_back(p1);
         cols_.push_back(p2);
         data_.push_back(Matrix());*/
