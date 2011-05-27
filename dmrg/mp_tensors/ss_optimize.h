@@ -112,7 +112,6 @@ public:
             }
             
             zout << "Sweep " << sweep << ", optimizing site " << site << endl;
-            if(site == 7) exit(-1);
 //            storage_master.print_size();
             
 //            mps[site].make_left_paired();
