@@ -230,7 +230,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     //std::vector<double> allevals;
     typename blas::associated_vector<Matrix>::type allevals;
 #ifdef MPI_PARALLEL
-    ambient::bailin();
+    //ambient::bailin();
     size_t length = 0;
     size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k) 
@@ -242,7 +242,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
     blas::sort<Matrix>(allevals);
     blas::reverse<Matrix>(allevals);
-    ambient::bailout();
+    //ambient::bailout();
 #else
     for(std::size_t k = 0; k < evals.n_blocks(); ++k)
         std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
@@ -254,13 +254,13 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
     
     #ifdef MPI_PARALLEL
-    ambient::bailin();
+    //ambient::bailin();
     #endif
     double evalscut = cutoff * allevals[0];
     if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
     #ifdef MPI_PARALLEL
-    ambient::bailout();
+    //ambient::bailout();
     #endif
 
     #ifndef MPI_PARALLEL
@@ -269,7 +269,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     #endif
 
     #ifdef MPI_PARALLEL
-    ambient::bailin();
+    //ambient::bailin();
     size_t* keeps = (size_t*)malloc(evals.n_blocks()*sizeof(size_t));
     for(size_t k = 0; k < evals.n_blocks(); ++k)
     {
@@ -278,7 +278,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         ambient::push(ambient::associated_find_if_l, ambient::associated_find_if_c, evals[k].get_data(), evalscut, keep_ptr);
     }
     ambient::playout();
-    ambient::bailout();
+    //ambient::bailout();
     #endif
 
     for (std::size_t k = 0; k < evals.n_blocks(); ++k)

@@ -146,7 +146,6 @@ template<class Object>
 void Hdf5Storage<Object>::load(boost::weak_ptr<storage<Object> > ptr)
 {   
 //    cerr << "Accessing " << object_path << endl;
-    
     static Timer timer("hdf5_load");
     timer.begin();
     
