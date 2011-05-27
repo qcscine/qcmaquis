@@ -11,6 +11,8 @@
 #include "dense_matrix/dense_matrix_blas.hpp"
 #include "dense_matrix/aligned_allocator.h"
 
+#include "dense_matrix/mt_matrix.h"
+
 #include "models.h"
 
 #include <fstream>
@@ -39,11 +41,25 @@ namespace app {
     {
         Lattice * lat;
         
+        // BLAS Matrix
         typedef blas::dense_matrix<double> matrix1;
-        typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > matrix2;
         typedef blas::dense_matrix<std::complex<double> > cmatrix1;
+
+        // BLAS Matrix with aligned allocator
+        typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > matrix2;
         typedef blas::dense_matrix<std::complex<double>, std::vector<std::complex<double>, aligned_allocator<std::complex<double> > > > cmatrix2;
         
+        // MT Matrix
+        typedef mt_matrix<double> mtmatrix1;
+        typedef mt_matrix<std::complex<double> > cmtmatrix1;
+        
+        
+#ifdef USE_MTM
+        model_parser_for(mtmatrix1, U1)
+        model_parser_for(mtmatrix1, TwoU1)        
+        //        model_parser_for(cmtmatrix1, U1)
+        //        model_parser_for(cmtmatrix1, TwoU1)
+#else
         model_parser_for(matrix1, U1)
         model_parser_for(matrix1, TwoU1)
         model_parser_for(matrix2, U1)
@@ -52,6 +68,7 @@ namespace app {
         model_parser_for(cmatrix1, TwoU1)
         model_parser_for(cmatrix2, U1)
         model_parser_for(cmatrix2, TwoU1)
+#endif
         
     }
 #undef model_parser_for

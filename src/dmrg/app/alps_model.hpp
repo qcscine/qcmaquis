@@ -117,7 +117,7 @@ namespace app {
                 
                 if (site_terms.find(type) == site_terms.end()) {
                     typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator> > V;
-                    V  ops = model.site_term(type).templated_split<double>();
+                    V  ops = model.site_term(type).template templated_split<double>();
 #ifndef NDEBUG
                     if (ops.size() != 1) {
                         std::runtime_error("SiteOperator not of length one.");
