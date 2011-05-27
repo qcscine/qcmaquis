@@ -72,7 +72,7 @@ namespace ambient
     int  size()      { return engine.size;       }
     bool occupied()  { return engine.occupied(); }
 
-    scheduler::scheduler(): item_dim(dim2(2,2)), stirring(false){ } // to revert to 128,128
+    scheduler::scheduler(): item_dim(dim2(16,16)), stirring(false){ } // to revert to 128,128
     dim2 scheduler::get_mem_dim() { return this->mem_dim;  }
     dim2 scheduler::get_item_dim(){ return this->item_dim; }
     dim2 scheduler::get_work_dim(){ return this->work_dim; }
@@ -86,7 +86,7 @@ namespace ambient
 
         this->ambient = new group("ambient", AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->default_data_packet_t = NULL;
-        srand48((unsigned int) rank()); // seeding (to redo)
+        //srand48((unsigned int) rank()); // seeding (to redo)
 // AUTO TUNING SHOULD START BELOW...
 
 ////////////////////////////////////

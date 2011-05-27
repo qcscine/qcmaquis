@@ -40,6 +40,7 @@ void null_i(p_dense_matrix<T>& a)
 template<typename T>
 void identity_i(p_dense_matrix<T>& a)
 {
+    assert(false);
     size_t i = get_block_id(a).y;
     size_t j = get_block_id(a).x;
     size_t m = get_mem_t_dim(a).y;
@@ -51,7 +52,8 @@ void identity_i(p_dense_matrix<T>& a)
     for(size_t jj = j*n; jj < (j+1)*n; jj++){
         if(i*m > jj) continue;
         if((i+1)*m <= jj) continue;
-        ad[jj % m + (jj%n)*m] = 1;
+        if(jj < a.num_cols() && jj < a.num_rows()) 
+            ad[jj % m + (jj%n)*m] = 1;
     }
 }
 

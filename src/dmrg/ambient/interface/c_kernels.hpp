@@ -480,7 +480,7 @@ void __a_memcpy(T& dest, dim2 dest_p, const T& src, dim2 src_p, dim2 size)
     size_t si = di + starti - dest_p.y + src_p.y;
     size_t sii = si % get_mem_t_dim(src).y;
 // let's find how many blocks do we need for this one
-    size_t src_blocks_i = 0;
+    size_t src_blocks_i = 1;
     int num_src_blocks = limi-starti-get_mem_t_dim(src).y+sii;
     if(num_src_blocks > 0) src_blocks_i = __a_ceil( num_src_blocks / get_mem_t_dim(src).y ) + 1;
 // let's exhaust first src block

@@ -79,12 +79,16 @@ namespace blas {
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::resize(size_type rows, size_type cols)
     {
-        self->rows = rows; 
-        self->cols = cols;
         assert(cols > 0);
         assert(rows > 0);
-        if(!this->is_abstract())
+        self->rows = rows; 
+        self->cols = cols;
+        if(!this->is_abstract()){
+            self->rows = rows; 
+            self->cols = cols;
             ambient::push(ambient::resize_l, ambient::resize_c, *this, self->rows, self->cols);
+            this->nullcut(); // maybe will remove
+        }
     }
 
     template <typename T, ambient::policy P>

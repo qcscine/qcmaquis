@@ -575,6 +575,7 @@ namespace blas {
     template <typename T, typename MemoryBlock>
     std::ostream& operator << (std::ostream& o, dense_matrix<T,MemoryBlock> const& m)
     {
+        o.precision(2);
         for(typename dense_matrix<T,MemoryBlock>::size_type i=0; i< m.num_rows(); ++i)
         {
             for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < m.num_cols(); ++j)

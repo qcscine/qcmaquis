@@ -136,6 +136,7 @@ namespace blas
     void generate(p_dense_matrix<T>& a, G g)
     {
         a.set_init(ambient::random_i<T>);
+        a.touch(); // to purge (redunant)
     }
  
     template<typename T>

@@ -192,7 +192,7 @@ int main(int argc, char ** argv)
     int sweep = 0;
 //    ambient::playout();
 //    printf("Check point 2\n");
-    
+
     StreamStorageMaster ssm(ambient::operator+(parms.get<std::string>("storagedir"),ambient::rank()));
     
     timeval now, then, snow, sthen;
@@ -208,6 +208,9 @@ int main(int argc, char ** argv)
         ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps,
                                                                 parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
                                                                 parms, ssm);
+        //for(int i=0 ; i < mps.length(); i ++)
+        //    std::cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
+        assert(false);
         
         for(; sweep < parms.get<int>("nsweeps"); ++sweep)
         {
