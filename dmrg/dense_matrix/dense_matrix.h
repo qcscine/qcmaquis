@@ -70,7 +70,7 @@ namespace blas {
           * @param columns the number of columns
           * @param init_value all matrix elements will be initialized to this value.
           */
-        dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T());
+        explicit dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T());
 
         /**
           * The copy constructor

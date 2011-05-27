@@ -12,7 +12,7 @@
 
 namespace gpu {
     
-    void Check(cublasStatus const  status, char const * Message)
+    inline void Check(cublasStatus const  status, char const * Message)
     {
         if (status != CUBLAS_STATUS_SUCCESS) 
         {
@@ -49,7 +49,7 @@ namespace gpu {
     }
     
     
-    void matrix_matrix_multiply(blas::dense_matrix<double,std::vector<double, std::allocator<double> > > const & lhs,
+    inline void matrix_matrix_multiply(blas::dense_matrix<double,std::vector<double, std::allocator<double> > > const & lhs,
                                 blas::dense_matrix<double,std::vector<double, std::allocator<double> > > const & rhs,
                                 blas::dense_matrix<double,std::vector<double, std::allocator<double> > >  & res,
                                 double ratio=0.)

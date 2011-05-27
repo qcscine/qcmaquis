@@ -15,11 +15,18 @@ using std::endl;
 #include "dense_matrix/matrix_algorithms.hpp"
 #include "dense_matrix/dense_matrix_blas.hpp"
 #include "dense_matrix/aligned_allocator.h"
-typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
-//typedef blas::dense_matrix<double> Matrix;
 
-//#include "dense_matrix/../../CopyOnWrite/cow_vector.h"
-//typedef blas::dense_matrix<double, copy_on_write_vector<double> > Matrix;
+#ifdef USE_GPU
+#include <cublas.h>
+#endif
+
+#ifdef USE_MTM
+#define USE_MTM_MAIN
+#include "dense_matrix/mt_matrix.h"
+typedef mt_matrix<double> Matrix;
+#else
+typedef blas::dense_matrix<double> Matrix;
+#endif
 
 #include <alps/hdf5.hpp>
 
@@ -98,6 +105,10 @@ int main(int argc, char ** argv)
     
     cout.precision(10);
     
+#ifdef USE_GPU
+	cublasInit();
+#endif
+
     std::ifstream param_file(argv[1]);
     if (!param_file) {
         cerr << "Could not open parameter file." << endl;
@@ -301,4 +312,7 @@ int main(int argc, char ** argv)
     
     cout << "Task took " << elapsed << " seconds." << endl;
 
+#ifdef USE_GPU
+	cublasShutdown();
+#endif
 }

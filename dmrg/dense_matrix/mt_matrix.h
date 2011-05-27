@@ -76,8 +76,8 @@ class MtmWorker
 public:
     MtmWorker(MtmMaster * m = NULL) : master(m) { };
     
-    void operator()();
-    void execute();
+    inline void operator()();
+    inline void execute();
     
 private:
     MtmMaster * master;
@@ -176,8 +176,8 @@ public:
     
     typedef typename slave_t::element_iterator element_iterator;
     
-    mt_matrix(size_type rows = 0, size_type cols = 0,
-              value_type val = value_type())
+    explicit mt_matrix(size_type rows = 0, size_type cols = 0,
+                       value_type val = value_type())
     : data_(rows, cols, val)
     , consistent(true)
     { }
@@ -278,6 +278,7 @@ public:
         data_.resize(r, c);
     }
     
+#ifdef HAVE_ALPS_HDF5
     void serialize(alps::hdf5::iarchive & ar)
     {
         wait();
@@ -288,6 +289,7 @@ public:
         wait();
         data_.serialize(ar);
     }
+#endif
     
     size_type num_rows() const { wait(); return data_.num_rows(); }
     size_type num_cols() const { wait(); return data_.num_cols(); }
@@ -467,7 +469,7 @@ std::ostream& operator<<(std::ostream & os, mt_matrix<T> const & m)
     for (std::size_t r = 0; r < num_rows(m); ++r) {
         for (std::size_t c = 0; c < num_cols(m); ++c)
             os << m(r, c);
-        os << endl;
+        os << std::endl;
     }
     return os;
 }
