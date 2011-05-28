@@ -82,13 +82,17 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
         return;
     
     block_matrix<Matrix, SymmGroup> tmp;
+    #ifdef MPI_DEBUG
     printf("Before reshape: \n");
     std::cout << *this << "\n";
+    #endif
     reshape_left_to_right<Matrix>(phys_i, left_i, right_i,
                                   data_, tmp);
     swap(data_, tmp);
+    #ifdef MPI_DEBUG
     printf("After reshape: \n");
     std::cout << *this << "\n";
+    #endif
     cur_storage = RightPaired;
 }
 
@@ -121,10 +125,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
         assert(data_.left_basis() == U.left_basis());
 
 
-        swap(data_, U); // ?
+        swap(data_, U);
         
-        gemm(S, V, U); // ?
-        return U;      // ?
+        gemm(S, V, U);
+        return U;
     }
 }
 
@@ -200,7 +204,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 //    real_type r = sqrt(trace(t));
 
     #ifdef MPI_PARALLEL
-    //ambient::bailin();
     std::vector<Matrix> ret;
     ret.reserve(data_.n_blocks());
 
@@ -208,7 +211,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
         ret.push_back(Matrix(1,1));
         data_[i].nullcut(); // not counting redunant elements of workgroup
         ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], ret[i]);
-        //std::cout << data_[i];
     }
     for(size_t i = 1 ; i < data_.n_blocks(); i++){
         ambient::push(ambient::atomic_add_l, ambient::atomic_add_c, ret[0], ret[i]);
@@ -216,7 +218,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     
     timer.end();
     scalar_type val = ret[0](0,0);
-    //ambient::bailout();
     //if(val == 0) val = 1.0;
     assert(val > 0);
     return sqrt(val);
@@ -227,7 +228,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
         for (std::size_t c = 0; c < num_cols(data_[b]); ++c)
             for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
                 ret += conj(data_[b](r,c)) * data_[b](r,c);
-        //std::cout << data_[b];
     }
     timer.end();
     return sqrt(ret);
@@ -245,7 +245,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     rhs.make_left_paired();
 
     #ifdef MPI_PARALLEL
-    //ambient::bailin();
     std::vector<Matrix> ret;
     ret.reserve(data_.n_blocks());
 
@@ -260,7 +259,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     
     timer.end();
     scalar_type val = ret[0](0,0);
-    //ambient::bailout();
     printf("Norm is %.2f\n", val);
     if(val == 0) val = 1.0;
     return sqrt(val);

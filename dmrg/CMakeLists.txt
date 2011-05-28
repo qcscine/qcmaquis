@@ -25,7 +25,7 @@ if(ambient_dmrg)
 # g++ ambient/core/operation/operation.pp.h.template.h   -P -E -Iboost -I. > operation.pp.h
 # g++ ambient/core/operation/operation.pp.hpp.template.h -P -E -Iboost -I. > operation.pp.hpp
 # g++ ambient/interface/push.pp.hpp.template.h           -P -E -Iboost -I. > push.pp.hpp
-    add_definitions(-O0 -g -w)
+    add_definitions(-O0 -g -DMPI_DEBUG -w)
     add_definitions(-c -DSCALAPACK -DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DCPU_FREQ=2.5e9)
     include_directories(${DMRG_SOURCE_DIR}
                         /users/bauerb/ALPS-eiger/include
@@ -43,11 +43,11 @@ if(ambient_dmrg)
     set(CMAKE_CXX_COMPILER "mpiicpc") 
 
     add(ambient) 
-    add(regression/p_dense_matrix)
-    add(regression/p_memory_management)
-    add(regression/p_diagonal_matrix)
-    add(regression/p_block_matrix)
-    add(regression/p_dense_matrix_benchmark)
+    #add(regression/p_dense_matrix)
+    #add(regression/p_memory_management)
+    #add(regression/p_diagonal_matrix)
+    #add(regression/p_block_matrix)
+    #add(regression/p_dense_matrix_benchmark)
     add(regression/pdmrg)
 endif(ambient_dmrg)
 

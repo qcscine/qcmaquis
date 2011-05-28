@@ -43,21 +43,23 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
     for (int i = 0; i < L; ++i)
         (*this)[i].normalize_left(SVD);
 
+    #ifdef MPI_DEBUG
     for(int i = 0; i < this->length(); i++){
         std::cout << "NORMALIZE LEFT AFTER SWAP: " << (*this)[i].scalar_norm() << "\n";
         std::cout << (*this)[i] << "\n";
     }
     printf("NORMALIZE IS DONE_____________________________\n\n\n\n");
+    #endif
 
     this->canonize_left();
 
-
+    #ifdef MPI_DEBUG
     printf("_______________________________________________________________ CANONIZZE AND NORMALIZE IS DONE\n");
-
     for(int i = 0; i < this->length(); i++){
         std::cout << (*this)[i] << "\n";
         std::cout << "NORMALIZE LEFT AFTER SWAP: " << (*this)[i].scalar_norm() << "\n";
     }
+    #endif
 }
 
 template<class Matrix, class SymmGroup>
@@ -65,11 +67,9 @@ typename Matrix::value_type
 MPS<Matrix, SymmGroup>::canonize_left()
 {
     block_matrix<Matrix, SymmGroup> t;
-    for (int i = 0; i < length(); ++i) {
+    for(int i = 0; i < length(); ++i){
         t = (*this)[i].normalize_left(SVD);
-        if (i < length()-1){
-            (*this)[i+1].multiply_from_left(t);
-        }
+        if(i < length()-1) (*this)[i+1].multiply_from_left(t);
     }
     return trace(t);
 }

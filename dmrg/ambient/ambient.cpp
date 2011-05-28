@@ -86,7 +86,6 @@ namespace ambient
 
         this->ambient = new group("ambient", AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->default_data_packet_t = NULL;
-        //srand48((unsigned int) rank()); // seeding (to redo)
 // AUTO TUNING SHOULD START BELOW...
 
 ////////////////////////////////////
