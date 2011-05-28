@@ -40,7 +40,6 @@ void null_i(p_dense_matrix<T>& a)
 template<typename T>
 void identity_i(p_dense_matrix<T>& a)
 {
-    assert(false);
     size_t i = get_block_id(a).y;
     size_t j = get_block_id(a).x;
     size_t m = get_mem_t_dim(a).y;
