@@ -58,6 +58,7 @@ namespace conversion
         {
 //            cerr << "reading " << key << endl;
             std::string raw = vm_[key].as<std::string>();
+			boost::trim_if(raw, boost::is_any_of("\"'"));
             std::vector<T> ret;
             
             typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
