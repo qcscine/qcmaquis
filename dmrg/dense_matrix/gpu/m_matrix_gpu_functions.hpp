@@ -147,9 +147,12 @@ namespace gpu {
 #endif
         
         
-        cublasFree(pDataA);
-        cublasFree(pDataB);
-        cublasFree(pDataC);
+        status = cublasFree(pDataA);
+        Check(status , "Free A failed");
+        status = cublasFree(pDataB);
+        Check(status , "Free B failed");
+        status = cublasFree(pDataC);
+        Check(status , "Free C failed");
         
         timer.end();
         
