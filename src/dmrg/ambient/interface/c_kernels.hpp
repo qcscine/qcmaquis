@@ -1,5 +1,10 @@
 #define NODE_COUNT 1
+#if defined( (__i386__) || (__x86_64) || (__amd_64) )
 #include "mkl.h"
+#elif (defined(__ppc__) || (__poserpc__))
+#include "blas.h"
+#endif
+
 
 extern "C" {
     double sqrt(double);
