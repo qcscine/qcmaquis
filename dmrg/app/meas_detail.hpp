@@ -70,7 +70,7 @@ namespace meas_detail {
                        block_matrix<Matrix, SymmGroup> const & identity,
                        block_matrix<Matrix, SymmGroup> const & fill,
 						  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-                       alps::hdf5::oarchive & ar,
+                       std::string const & h5name,
                        std::string base_path)
 	{
 		std::vector<double> vals;
@@ -108,8 +108,11 @@ namespace meas_detail {
             }
         }
         
-	    ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
-	    ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+        {
+            alps::hdf5::oarchive ar(h5name);
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
+            ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+        }
 	}
     
 	template<class Matrix, class SymmGroup>
@@ -118,7 +121,7 @@ namespace meas_detail {
                          block_matrix<Matrix, SymmGroup> const & identity,
                          block_matrix<Matrix, SymmGroup> const & fill,
 						 std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-                         alps::hdf5::oarchive & ar,
+                         std::string const & h5name,
                          std::string base_path)
 	{
         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
@@ -144,7 +147,10 @@ namespace meas_detail {
         MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
         double val = expval(mps, mpo, 0);
         
-	    ar << alps::make_pvp(base_path + std::string("/mean/value"), val);
+        {
+            alps::hdf5::oarchive ar(h5name);
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), val);
+        }
 	}
 
 	template <class Matrix, class SymmGroup>
@@ -249,7 +255,7 @@ namespace meas_detail {
 							 block_matrix<Matrix, SymmGroup> const & identity,
 							 block_matrix<Matrix, SymmGroup> const & fill,
 							 std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-							 alps::hdf5::oarchive & ar,
+							 std::string const & h5name,
 							 std::string base_path,
 							 bool half=false,
 							 bool is_nn=false)
@@ -264,8 +270,11 @@ namespace meas_detail {
 		    	measure_correlation_(mps, lat, identity, fill, perm[i], perm.order(i), is_nn, dc, labels);
 	    	}
 	    }
-	    ar << alps::make_pvp(base_path + std::string("/mean/value"), dc);
-	    ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+        {
+            alps::hdf5::oarchive ar(h5name);
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), dc);
+            ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+        }
 	}
     
     
