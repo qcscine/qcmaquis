@@ -246,23 +246,31 @@ inline T scalar_product(const std::vector<T,MemoryBlock> v1, const std::vector<T
 #ifdef HAVE_ALPS_HDF5
 namespace alps {
 	namespace hdf5 {
+        
 		template <typename T, typename MemoryBlock>
-		iarchive & serialize(iarchive & ar,
-							 std::string const & p,
-							 blas::vector<T, MemoryBlock> & v)
-		{
+        void save(
+                  alps::hdf5::oarchive & ar
+                  , std::string const & path
+                  , blas::vector<T, MemoryBlock> const & value
+                  , std::vector<std::size_t> size = std::vector<std::size_t>()
+                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                  ) {
+			ar << make_pvp(path, MemoryBlock(value.begin(), value.end()));
+        }
+		template <typename T, typename MemoryBlock>
+        void load(
+                  alps::hdf5::iarchive & ar
+                  , std::string const & path
+                  , blas::vector<T, MemoryBlock> & value
+                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                  ) {
 			MemoryBlock tmp;
-			ar >> make_pvp(p, tmp);
-			v = blas::vector<T, MemoryBlock>(tmp.begin(), tmp.end());
-			return ar;
-		}
-		template <typename T, typename MemoryBlock>
-		oarchive & serialize(oarchive & ar,
-							 std::string const & p,
-							 blas::vector<T, MemoryBlock> const & v)		{
-			ar << make_pvp(p, MemoryBlock(v.begin(), v.end()));
-			return ar;
-		}
+			ar >> make_pvp(path, tmp);
+			value = blas::vector<T, MemoryBlock>(tmp.begin(), tmp.end());
+        }
+
 	}
 }
 #endif							 
