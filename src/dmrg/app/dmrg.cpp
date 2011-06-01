@@ -232,12 +232,13 @@ int main(int argc, char ** argv)
                 cout << "Sweep done after " << elapsed << " seconds." << endl;
                 oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
-                
-                oss.str("");
+                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));                
+            }
+            {
+                std::ostringstream oss;
                 oss << "/simulation/sweep" << sweep << "/results/";
                 if (meas_always.n_terms() > 0)
-                    measure(cur_mps, *lat, meas_always, h5ar, oss.str());
+                    measure(cur_mps, *lat, meas_always, rfile, oss.str());
             }
             
             if (parms.get<int>("donotsave") == 0)
@@ -265,26 +266,31 @@ int main(int argc, char ** argv)
     {
         MPS<Matrix, grp> mps = initial_mps;
         
-        alps::hdf5::oarchive h5ar(rfile);
         
         cout << "Measurements." << endl;
-        measure(mps, *lat, measurements, h5ar);
+        measure(mps, *lat, measurements, rfile);
         
         Timer tvn("vN entropy"), tr2("Renyi n=2");
         cout << "Calculating vN entropy." << endl;
         tvn.begin(); entropies = calculate_bond_entropies(mps); tvn.end();
         cout << "Calculating n=2 Renyi entropy." << endl;
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
-        
-        if (entropies.size() > 0)
-            h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
-        if (renyi2.size() > 0)
-            h5ar << alps::make_pvp("/spectrum/results/Renyi2/mean/value", renyi2);
+
+        {
+            alps::hdf5::oarchive h5ar(rfile);
+            if (entropies.size() > 0)
+                h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
+            if (renyi2.size() > 0)
+                h5ar << alps::make_pvp("/spectrum/results/Renyi2/mean/value", renyi2);
+        }
         
         double energy = expval(mps, mpoc);
         cout << "Energy before: " << expval(mps, mpo) << endl;
         cout << "Energy after: " << expval(mps, mpoc) << endl;
-        h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
+        {
+            alps::hdf5::oarchive h5ar(rfile);
+            h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
+        }
         
         if (parms.get<int>("calc_h2") > 0) {
             Timer tt1("square"), tt2("compress");
@@ -300,9 +306,12 @@ int main(int argc, char ** argv)
             cout << "Energy^2: " << energy2 << endl;
             cout << "Variance: " << energy2 - energy*energy << endl;
             
-            h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
-            h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
-                                   std::vector<double>(1, energy2 - energy*energy));
+            {
+                alps::hdf5::oarchive h5ar(rfile);
+                h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
+                h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
+                                       std::vector<double>(1, energy2 - energy*energy));
+            }
         }
     }
 #endif

@@ -95,7 +95,7 @@ namespace app {
     template<class Matrix, class SymmGroup>
     void measure(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
     			 Measurements<Matrix, SymmGroup> const & meas,
-                 alps::hdf5::oarchive & ar, std::string basepath = std::string("/spectrum/results/"))
+                 std::string const & h5name, std::string basepath = std::string("/spectrum/results/"))
     {
     	for (int i = 0; i < meas.n_terms(); ++i)
     	{
@@ -107,24 +107,24 @@ namespace app {
                     meas_detail::measure_local(mps, lat,
                             				   meas.get_identity(), meas[i].fill_operator,
                             				   meas[i].operators,
-                                               ar, basepath + alps::hdf5_name_encode(meas[i].name));
+                                               h5name, basepath + alps::hdf5_name_encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Average:
                 assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
                     meas_detail::measure_average(mps, lat,
                                                  meas.get_identity(), meas[i].fill_operator,
                                                  meas[i].operators,
-                                                 ar, basepath + alps::hdf5_name_encode(meas[i].name));
+                                                 h5name, basepath + alps::hdf5_name_encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Correlation:
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
 							  	  	  	  	  	  	 meas[i].fill_operator, meas[i].operators,
-												  	 ar, basepath + alps::hdf5_name_encode(meas[i].name), false, false);
+												  	 h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, false);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
 													  meas[i].fill_operator, meas[i].operators,
-													  ar, basepath + alps::hdf5_name_encode(meas[i].name), true, false);
+													  h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, false);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
 #ifndef NDEBUG
@@ -133,7 +133,7 @@ namespace app {
 #endif
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
 													meas[i].fill_operator, meas[i].operators,
-													ar, basepath + alps::hdf5_name_encode(meas[i].name), false, true);
+													h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, true);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
 #ifndef NDEBUG
@@ -142,7 +142,7 @@ namespace app {
 #endif
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
 													meas[i].fill_operator, meas[i].operators,
-													ar, basepath + alps::hdf5_name_encode(meas[i].name), true, true);
+													h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, true);
                     break;
     		}
     	}
