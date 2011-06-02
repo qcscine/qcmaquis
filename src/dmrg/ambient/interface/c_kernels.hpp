@@ -1,6 +1,6 @@
 #define NODE_COUNT 1
 
-#include "mkl.h"
+//#include "mkl.h"
 
 extern "C" {
     double sqrt(double);
@@ -55,7 +55,7 @@ void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
         for(int z = 0; z < get_grid_dim(a).y; z++){
             double* ad = current(a)(z,j);
             double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
-            dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            dgemm_("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
         }
         i += get_grid_dim(a).y;
     }
@@ -497,7 +497,7 @@ void __a_memcpy(T& dest, dim2 dest_p, const T& src, dim2 src_p, dim2 size)
             typename T::value_type* sd = current(src)(si / get_mem_t_dim(src).y + k, sj / get_mem_t_dim(src).x);
             memcpy(&dd[j*get_mem_t_dim(dest).y + i],
                    &sd[sjj*get_mem_t_dim(src).y+sii],
-                   std::min(get_mem_t_dim(src).y-sii, w)*sizeof(T::value_type));
+                   std::min(get_mem_t_dim(src).y-sii, w)*sizeof(typename T::value_type));
             w -= get_mem_t_dim(src).y-sii;
             i += get_mem_t_dim(src).y-sii;
             sii = 0;
@@ -675,7 +675,7 @@ void gemm_diagonal_lhs_c(const p_dense_matrix<double>& a_diag, pinned const p_de
     memset(cd, 0, get_mem_t_dim(c).x*get_mem_t_dim(c).y*sizeof(double));
     for(int jj = 0 ; jj < get_mem_t_dim(b).y ; jj++){
          double* alpha = current(a_diag)((j+jj)/get_mem_t_dim(a_diag).y,0);
-	 daxpy(&size, &alpha[(j+jj)%get_mem_t_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
+	 daxpy_(&size, &alpha[(j+jj)%get_mem_t_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
     }
 }
 
@@ -691,7 +691,7 @@ void gemm_diagonal_rhs_c(pinned const p_dense_matrix<double>& a, const p_dense_m
     memset(cd, 0, get_mem_t_dim(c).x*get_mem_t_dim(c).y*sizeof(double));
     for(int jj = 0 ; jj < get_mem_t_dim(a).x ; jj++){
 	 double* alpha = current(b_diag)((j+jj)/get_mem_t_dim(b_diag).y,0);
-	 daxpy(&size, &alpha[(j+jj)%get_mem_t_dim(b_diag).y], &ad[jj*get_mem_t_dim(a).y], &ONE, &cd[jj*get_mem_t_dim(c).y], &ONE);
+	 daxpy_(&size, &alpha[(j+jj)%get_mem_t_dim(b_diag).y], &ad[jj*get_mem_t_dim(a).y], &ONE, &cd[jj*get_mem_t_dim(c).y], &ONE);
     }
 }
 
