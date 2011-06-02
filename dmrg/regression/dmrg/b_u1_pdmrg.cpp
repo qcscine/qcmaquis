@@ -239,10 +239,10 @@ int main(int argc, char ** argv)
                 break;
             }
         }
+        ssm.sync();
     }
 #endif
     
-    //ssm.sync();
 ex:    
 #ifdef MEASURE_ONLY
     if(ambient::is_master())
