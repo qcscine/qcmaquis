@@ -308,11 +308,11 @@ int main(int argc, char ** argv)
                 break;
             }
         }
+        ssm.sync();
     }
 #endif
     
-ex:     ssm.sync();
-    
+ex:
 #ifdef MEASURE_ONLY
     {
 
