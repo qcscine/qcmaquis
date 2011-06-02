@@ -1,5 +1,5 @@
-#ifndef __ALPS_MATRIX_INTERFACE_HPP__
-#define __ALPS_MATRIX_INTERFACE_HPP__
+#ifndef __ALPS_P_MATRIX_INTERFACE_HPP__
+#define __ALPS_P_MATRIX_INTERFACE_HPP__
 
 #include "p_dense_matrix/concept/matrix_concept_check.hpp"
 #include "p_dense_matrix/p_dense_matrix.h"

@@ -1,5 +1,5 @@
-#ifndef __ALPS_DENSE_MATRIX_ALGORITHMS_HPP__
-#define __ALPS_DENSE_MATRIX_ALGORITHMS_HPP__
+#ifndef __ALPS_P_DENSE_MATRIX_ALGORITHMS_HPP__
+#define __ALPS_P_DENSE_MATRIX_ALGORITHMS_HPP__
 
 #include "p_dense_matrix/concept/matrix_concept_check.hpp"
 

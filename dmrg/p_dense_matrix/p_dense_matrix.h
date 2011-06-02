@@ -86,6 +86,10 @@ namespace blas {
         }
 
         value_type init_v; // value used for initialization
+        
+        void serialize(alps::hdf5::iarchive & ar) { std::cerr << "I don't do much." << std::endl; }
+		void serialize(alps::hdf5::oarchive & ar) const { std::cerr << "I don't do much either." << std::endl; }
+        
     private:
         size_type rows;
         size_type cols;
