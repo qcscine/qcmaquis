@@ -118,7 +118,6 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
 
         swap(data_, U);
         gemm(S, V, U);
-
         return U;
     }
 }
@@ -172,8 +171,6 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup>
     make_right_paired();
     gemm(N, data_, tmp);
     swap(data_, tmp);
-    //printf("After GEMM : \n");
-    //std::cout << *this;
     left_i = N.left_basis();
 }
 
