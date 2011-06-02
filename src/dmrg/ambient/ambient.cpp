@@ -72,7 +72,7 @@ namespace ambient
     int  size()      { return engine.size;       }
     bool occupied()  { return engine.occupied(); }
 
-    scheduler::scheduler(): item_dim(dim2(16,16)), stirring(false){ } // to revert to 128,128
+    scheduler::scheduler(): item_dim(dim2(128,128)), stirring(false){ } // to revert to 128,128
     dim2 scheduler::get_mem_dim() { return this->mem_dim;  }
     dim2 scheduler::get_item_dim(){ return this->item_dim; }
     dim2 scheduler::get_work_dim(){ return this->work_dim; }

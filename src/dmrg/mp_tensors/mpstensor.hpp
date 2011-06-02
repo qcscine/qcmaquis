@@ -82,17 +82,9 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
         return;
     
     block_matrix<Matrix, SymmGroup> tmp;
-    #ifdef MPI_DEBUG
-    printf("Before reshape: \n");
-    std::cout << *this << "\n";
-    #endif
     reshape_left_to_right<Matrix>(phys_i, left_i, right_i,
                                   data_, tmp);
     swap(data_, tmp);
-    #ifdef MPI_DEBUG
-    printf("After reshape: \n");
-    std::cout << *this << "\n";
-    #endif
     cur_storage = RightPaired;
 }
 
@@ -120,14 +112,13 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         svd(data_, U, V, S);
-        
+
         right_i = U.right_basis();
         assert(data_.left_basis() == U.left_basis());
 
-
         swap(data_, U);
-        
         gemm(S, V, U);
+
         return U;
     }
 }
@@ -181,6 +172,8 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup>
     make_right_paired();
     gemm(N, data_, tmp);
     swap(data_, tmp);
+    //printf("After GEMM : \n");
+    //std::cout << *this;
     left_i = N.left_basis();
 }
 
