@@ -94,8 +94,9 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 #ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (std::size_t k = 0; k < loop_max; ++k)
+    for (std::size_t k = 0; k < loop_max; ++k){
         svd(M[k], U[k], V[k], S[k]);
+    }
     
     timer.end();
 }

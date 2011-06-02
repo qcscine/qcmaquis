@@ -92,7 +92,6 @@ namespace blas
         u.resize(num_rows(a), k);
         v.resize(k, num_cols(a));
         s.resize(k, k);
-        //printf("svd: %d %d; %d %d; %d %d\n", a.num_rows(), a.num_cols(), u.num_rows(), u.num_cols(), v.num_rows(), v.num_cols());
         ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, a, u, v, s.get_data());
     }
 

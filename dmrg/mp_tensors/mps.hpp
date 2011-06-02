@@ -43,14 +43,6 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
     for (int i = 0; i < L; ++i)
         (*this)[i].normalize_left(SVD);
 
-    #ifdef MPI_DEBUG
-    for(int i = 0; i < this->length(); i++){
-        std::cout << "NORMALIZE LEFT AFTER SWAP: " << (*this)[i].scalar_norm() << "\n";
-        std::cout << (*this)[i] << "\n";
-    }
-    printf("NORMALIZE IS DONE_____________________________\n\n\n\n");
-    #endif
-
     this->canonize_left();
 
     #ifdef MPI_DEBUG
