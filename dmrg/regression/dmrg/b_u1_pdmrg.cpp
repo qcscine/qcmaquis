@@ -220,8 +220,7 @@ int main(int argc, char ** argv)
             zout << "Starting...\n";
             optimizer.sweep(sweep, iteration_log);
             zout << "First sweep is done\n";
-            goto ex;
-            //assert(false);
+            assert(false);
             
             //ssm.sync();
             
@@ -239,11 +238,10 @@ int main(int argc, char ** argv)
                 break;
             }
         }
-        ssm.sync();
+        //ssm.sync();
     }
 #endif
     
-ex:    
 #ifdef MEASURE_ONLY
     if(ambient::is_master())
     {
