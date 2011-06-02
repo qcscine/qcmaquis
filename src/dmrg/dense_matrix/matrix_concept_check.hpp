@@ -49,8 +49,8 @@ struct Matrix
         x(0,0)+=value_type();
 
         // Swap rows/columns
-        swap_rows(x,0,1);
-        swap_columns(x,0,1);
+//        swap_rows(x,0,1);
+//        swap_columns(x,0,1);
         
         // Iterator functions
         std::pair<row_element_iterator,row_element_iterator>                    row_range = row(x,0);
