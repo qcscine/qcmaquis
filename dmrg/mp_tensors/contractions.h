@@ -288,7 +288,7 @@ struct contraction {
                                     Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
                                     
                                     #ifdef MPI_PARALLEL
-                                    ambient::push(ambient::lb_tensor_mpo_l<Matrix::value_type>, ambient::lb_tensor_mpo_c<Matrix::value_type>,
+                                    ambient::push(ambient::lb_tensor_mpo_l<typename Matrix::value_type>, ambient::lb_tensor_mpo_c<typename Matrix::value_type>,
                                                   oblock, iblock, wblock, out_left_offset, in_left_offset, 
                                                   physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                     #else
@@ -426,7 +426,7 @@ struct contraction {
 
                                     //printf("contraction: %d %d , %d %d\n", oblock.num_rows(), oblock.num_cols(), iblock.num_rows(), iblock.num_cols());
                                     #ifdef MPI_PARALLEL
-                                    ambient::push(ambient::rb_tensor_mpo_l<Matrix::value_type>, ambient::rb_tensor_mpo_c<Matrix::value_type>,
+                                    ambient::push(ambient::rb_tensor_mpo_l<typename Matrix::value_type>, ambient::rb_tensor_mpo_c<typename Matrix::value_type>,
                                                   oblock, iblock, wblock, out_right_offset, in_right_offset, 
                                                   physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                     #else
