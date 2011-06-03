@@ -3,11 +3,11 @@
 
 namespace blas {
 
-//    template<class FullMatrixClass>
-//    struct associated_diagonal_matrix { };
-//
-//    template<class FullMatrixClass>
-//    struct associated_vector { };
+    template<class FullMatrixClass>
+    struct associated_diagonal_matrix { };
+
+    template<class FullMatrixClass>
+    struct associated_vector { };
     
     template<typename T>
     class p_diagonal_matrix
