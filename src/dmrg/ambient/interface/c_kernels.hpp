@@ -1,6 +1,6 @@
 #define NODE_COUNT 1
 
-//#include "mkl.h"
+#include "mkl.h"
 
 extern "C" {
     double sqrt(double);
@@ -55,7 +55,7 @@ void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
         for(int z = 0; z < get_grid_dim(a).y; z++){
             double* ad = current(a)(z,j);
             double* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
-            dgemm_("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
         }
         i += get_grid_dim(a).y;
     }
@@ -675,7 +675,7 @@ void gemm_diagonal_lhs_c(const p_dense_matrix<double>& a_diag, pinned const p_de
     memset(cd, 0, get_mem_t_dim(c).x*get_mem_t_dim(c).y*sizeof(double));
     for(int jj = 0 ; jj < get_mem_t_dim(b).y ; jj++){
          double* alpha = current(a_diag)((j+jj)/get_mem_t_dim(a_diag).y,0);
-	 daxpy_(&size, &alpha[(j+jj)%get_mem_t_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
+	 daxpy(&size, &alpha[(j+jj)%get_mem_t_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
     }
 }
 
@@ -691,7 +691,7 @@ void gemm_diagonal_rhs_c(pinned const p_dense_matrix<double>& a, const p_dense_m
     memset(cd, 0, get_mem_t_dim(c).x*get_mem_t_dim(c).y*sizeof(double));
     for(int jj = 0 ; jj < get_mem_t_dim(a).x ; jj++){
 	 double* alpha = current(b_diag)((j+jj)/get_mem_t_dim(b_diag).y,0);
-	 daxpy_(&size, &alpha[(j+jj)%get_mem_t_dim(b_diag).y], &ad[jj*get_mem_t_dim(a).y], &ONE, &cd[jj*get_mem_t_dim(c).y], &ONE);
+	 daxpy(&size, &alpha[(j+jj)%get_mem_t_dim(b_diag).y], &ad[jj*get_mem_t_dim(a).y], &ONE, &cd[jj*get_mem_t_dim(c).y], &ONE);
     }
 }
 
