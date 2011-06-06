@@ -62,7 +62,7 @@ namespace conversion
             std::vector<T> ret;
             
             typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-            boost::char_separator<char> sep(",-");
+            boost::char_separator<char> sep(",");
             tokenizer tokens(raw, sep);
             std::transform(tokens.begin(), tokens.end(), std::back_inserter(ret),
                            boost::lexical_cast<T, std::string>);
