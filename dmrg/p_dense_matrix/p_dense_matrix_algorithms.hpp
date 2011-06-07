@@ -134,8 +134,10 @@ namespace blas
     template<typename T, class G>
     void generate(p_dense_matrix<T>& a, G g)
     {
+        assert(a.is_abstract());
         a.set_init(ambient::random_i<T>);
-        a.touch(); // to purge (redunant)
+        a.decouple_copy();
+        //a.touch(); // to purge (redunant)
     }
  
     template<typename T>
