@@ -37,32 +37,8 @@ namespace blas {
         return this->data_(i,0);
     }
     template<typename T>
-    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::begin(){
-         return this->data_.elements().first;
-    }
-    template<typename T>
-    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::begin() const {
-         return this->data_.elements().first;
-    }
-    template<typename T>
-    typename p_diagonal_matrix<T>::element_iterator p_diagonal_matrix<T>::end(){
-         return this->data_.elements().second;
-    }
-    template<typename T>
-    typename p_diagonal_matrix<T>::const_element_iterator p_diagonal_matrix<T>::end() const {
-         return this->data_.elements().second;
-    }
-    template<typename T>
     std::size_t p_diagonal_matrix<T>::size() const {
         return this->data_.num_rows();
-    }
-    template<typename T>
-    std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator> p_diagonal_matrix<T>::elements(){
-        return this->data_.elements();
-    }
-    template<typename T>
-    std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator> p_diagonal_matrix<T>::elements() const {
-        return this->data_.elements();
     }
     template<typename T>
     void p_diagonal_matrix<T>::remove_rows(size_t i, size_t k){
@@ -124,18 +100,6 @@ namespace blas {
     void resize(p_diagonal_matrix<T> & m, size_t rows, size_t cols, T v = T())
     {
         m.resize(rows, cols, v);
-    }
-    template<typename T>
-    std::pair<typename p_diagonal_matrix<T>::element_iterator, typename p_diagonal_matrix<T>::element_iterator>
-    elements(p_diagonal_matrix<T> & m)
-    {
-        return m.elements();
-    }
-    template<typename T>
-    std::pair<typename p_diagonal_matrix<T>::const_element_iterator, typename p_diagonal_matrix<T>::const_element_iterator>
-    elements(const p_diagonal_matrix<T>& m)
-    {
-        return m.elements();
     }
 }
 

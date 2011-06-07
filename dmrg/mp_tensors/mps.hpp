@@ -44,14 +44,6 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
         (*this)[i].normalize_left(SVD);
 
     this->canonize_left();
-
-    #ifdef MPI_DEBUG
-    printf("_______________________________________________________________ CANONIZZE AND NORMALIZE IS DONE\n");
-    for(int i = 0; i < this->length(); i++){
-        std::cout << (*this)[i] << "\n";
-        std::cout << "NORMALIZE LEFT AFTER SWAP: " << (*this)[i].scalar_norm() << "\n";
-    }
-    #endif
 }
 
 template<class Matrix, class SymmGroup>
