@@ -196,7 +196,13 @@ public:
     void unlatch_meta(){
         self->meta = self->meta_latch;
     }
-
+    void decouple_copy(){
+        if(this->is_loose_copy()){
+            self->meta.loose_copy = false;
+            self->original->self->meta.loose_copied = false;
+            self->meta.loose = true;
+        }
+    }
     struct loose_state{
         bool loose;
         bool loose_copy;
