@@ -168,7 +168,9 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
         
         std::vector<double> sv;
         
-        double r = 0;
+        #ifdef MPI_PARALLEL
+            assert(false); // eliminate iterators
+        #else
         for (std::size_t k = 0; k < s.n_blocks(); ++k)
             for (typename blas::associated_diagonal_matrix<Matrix>::type::element_iterator it = elements(s[k]).first;
                  it != elements(s[k]).second; ++it)
@@ -177,10 +179,11 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
                 if (a > 1e-10)
                     sv.push_back(a*a);
             }
+        #endif
         
 //        cout << p << " " << sv[0] << " " << sv[1] << endl;
         
-        r = std::accumulate(sv.begin(), sv.end(), double(0));
+        double r = std::accumulate(sv.begin(), sv.end(), double(0));
 //        std::transform(sv.begin(), sv.end(), sv.begin(),
 //                       boost::lambda::_1 / r);
         

@@ -25,43 +25,7 @@ IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
                      typename p_dense_matrix<T>::size_type, num_rows, (p_dense_matrix<T> const& m), () )
 IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
                      typename p_dense_matrix<T>::size_type, num_cols, (p_dense_matrix<T> const& m), () )
-//
-// Matrix Iterator Interface
-//
 
-#define ITERATOR_PAIR(TYPE, ITERATOR) \
-std::pair<typename TYPE::ITERATOR, typename TYPE::ITERATOR>
-
-IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
-                     ITERATOR_PAIR(p_dense_matrix<T>, row_element_iterator), row,
-                     (p_dense_matrix<T> & m,
-                      typename p_dense_matrix<T>::size_type i),
-                     (i) )
-IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
-                     ITERATOR_PAIR(p_dense_matrix<T>, const_row_element_iterator), row,
-                     (p_dense_matrix<T> const& m,
-                      typename p_dense_matrix<T>::size_type i),
-                     (i) )    
-
-IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
-                     ITERATOR_PAIR(p_dense_matrix<T>, column_element_iterator), column,
-                     (p_dense_matrix<T> & m,
-                      typename p_dense_matrix<T>::size_type i),
-                     (i) )
-IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
-                     ITERATOR_PAIR(p_dense_matrix<T>, const_column_element_iterator), column,
-                     (p_dense_matrix<T> const& m,
-                      typename p_dense_matrix<T>::size_type i),
-                     (i) )  
-
-IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
-                     ITERATOR_PAIR(p_dense_matrix<T>, element_iterator), elements,
-                     (p_dense_matrix<T>& m), () )
-
-IMPLEMENT_FORWARDING(<typename T>, p_dense_matrix<T>,
-                     ITERATOR_PAIR(p_dense_matrix<T>, const_element_iterator), elements,
-                     (p_dense_matrix<T> const& m), () )
-#undef ITERATOR_PAIR
 #undef IMPLEMENT_FORWARDING
 #undef COMMA
 } //namespace blas

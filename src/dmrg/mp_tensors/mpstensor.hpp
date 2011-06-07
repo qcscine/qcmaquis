@@ -208,7 +208,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     
     timer.end();
     scalar_type val = ret[0](0,0);
-    assert(val > 0);
+    if(val <= 0){ free((void*)-1); assert(val > 0); }
     return sqrt(val);
     #else
     using utils::conj;
@@ -219,6 +219,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
                 ret += conj(data_[b](r,c)) * data_[b](r,c);
     }
     timer.end();
+    assert(ret > 0);
     return sqrt(ret);
     #endif
 }
@@ -248,7 +249,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     
     timer.end();
     scalar_type val = ret[0](0,0);
-    assert(val > 0);
     return val;
     #else    
     using utils::conj;
