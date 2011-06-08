@@ -2,9 +2,6 @@
 #define DIAGONAL_MATRIX_H
 
 namespace blas {
-
-    template<class FullMatrixClass>
-    struct associated_diagonal_matrix { };
     
     template<typename T>
     class diagonal_matrix

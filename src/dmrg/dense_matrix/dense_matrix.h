@@ -5,6 +5,7 @@
 #include "dense_matrix/matrix_element_iterator.hpp"
 #include "dense_matrix/vector.hpp"
 #include "dense_matrix/detail/dense_matrix_adaptor.hpp"
+#include "dense_matrix/matrix_vector_traits.h"
 
 #include "utils/function_objects.h"
 
@@ -259,28 +260,27 @@ namespace blas {
         MemoryBlock values_;
     };
     
+   
+} // namespace blas
+
+namespace blas {
     template<typename T, typename MemoryBlock>
     struct associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >
     {
         typedef diagonal_matrix<T> type;
     };
-   
-} // namespace blas
-
-//
-// std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
-//
-namespace blas {
-
-    template<class FullMatrixClass>
-    struct associated_vector { };
-
+    
+    
+    //
+    // std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
+    //
     template<class T, class MemoryBlock>
     struct associated_vector<dense_matrix<T,MemoryBlock> >
     {
         typedef std::vector<T> type;
     };
 }
+
 
 //
 // Type promotion helper for mixed type matrix matrix and matrix vector operations
