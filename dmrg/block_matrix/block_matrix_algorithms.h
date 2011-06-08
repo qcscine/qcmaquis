@@ -15,6 +15,8 @@
 #include "utils/ambient_assert.h"
 
 #include "block_matrix/block_matrix.h"
+#include "block_matrix/indexing.h"
+
 // some example functions
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
@@ -402,6 +404,45 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
     }
 
     return m;
+}
+
+template<class Matrix, class SymmGroup>
+void op_kron(Index<SymmGroup> const & phys,
+             block_matrix<Matrix, SymmGroup> const & A,
+          block_matrix<Matrix, SymmGroup> const & B,
+          block_matrix<Matrix, SymmGroup> & C)
+{
+    C = block_matrix<Matrix, SymmGroup>();
+    
+    Index<SymmGroup> const & left_basis = phys;
+    Index<SymmGroup> const & right_basis = phys;
+    
+    ProductBasis<SymmGroup> pb_left(left_basis, left_basis);
+    ProductBasis<SymmGroup> pb_right(right_basis, right_basis);
+    
+    for (int i=0; i<A.n_blocks(); ++i) {
+        for (int j=0; j<B.n_blocks(); ++j) {
+            typename SymmGroup::charge new_right = SymmGroup::fuse(A.right_basis()[i].first, B.right_basis()[j].first);
+            typename SymmGroup::charge new_left = SymmGroup::fuse(A.left_basis()[i].first, B.left_basis()[j].first);
+            
+            
+            Matrix tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
+                       pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
+                       0);
+
+            for (int l1 = 0; l1 < A.left_basis()[i].second; ++l1)
+                for (int l2 = 0; l2 < B.left_basis()[j].second; ++l2)
+                    for (int r1 = 0; r1 < A.right_basis()[i].second; ++r1)
+                        for (int r2 = 0; r2 < B.right_basis()[j].second; ++r2)
+                            tmp(pb_left(A.left_basis()[i].first,
+                                        B.left_basis()[j].first)+l1*B.left_basis()[j].second+l2,
+                                pb_right(A.right_basis()[i].first,
+                                         B.right_basis()[j].first)+r1*B.right_basis()[j].second+r2) = A[i](l1, r1) * B[j](l2, r2);
+            
+            C.match_and_add_block(tmp, new_left, new_right);
+        }
+    }
+    
 }
 
 #endif

@@ -217,6 +217,7 @@ public:
                 
                 keys_.push_back(std::make_pair(it1->first, it2->first));
                 vals_.push_back(block_begins[pc]);
+                size_[pc] += it1->second * it2->second;
                 block_begins[pc] += it1->second * it2->second;
             }
     }
@@ -228,7 +229,22 @@ public:
         return vals_[pos];
     }
     
+    size_t size(charge a, charge b) const
+    {
+        return size(a, b, static_cast<charge(*)(charge, charge)>(SymmGroup::fuse));
+    }
+    template<class Fusion>
+    size_t size(charge a, charge b, Fusion f) const
+    {
+        charge pc = f(a, b);
+        assert(size_.count(pc) > 0);
+        return size_.find(pc)->second;
+    }
+
+    
+    
 private:
+    std::map<charge, size_t> size_;
     std::vector<std::pair<charge, charge> > keys_;
     std::vector<size_t> vals_;
 };
