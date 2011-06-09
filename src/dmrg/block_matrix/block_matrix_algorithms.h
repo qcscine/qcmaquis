@@ -406,11 +406,26 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
     return m;
 }
 
+template <class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> exp (block_matrix<Matrix, SymmGroup> const & M, typename Matrix::value_type const & alpha = 1)
+{
+    block_matrix<Matrix, SymmGroup> N, tmp, res;
+    block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+    
+    syev(M, N, S);
+    for (std::size_t k = 0; k < S.n_blocks(); ++k)
+        S[k] = exp(alpha*S[k]);
+    gemm(N, S, tmp);
+    gemm(tmp, conjugate_transpose(N), res);
+    
+    return res;
+}
+
 template<class Matrix, class SymmGroup>
 void op_kron(Index<SymmGroup> const & phys,
              block_matrix<Matrix, SymmGroup> const & A,
-          block_matrix<Matrix, SymmGroup> const & B,
-          block_matrix<Matrix, SymmGroup> & C)
+             block_matrix<Matrix, SymmGroup> const & B,
+             block_matrix<Matrix, SymmGroup> & C)
 {
     C = block_matrix<Matrix, SymmGroup>();
     
