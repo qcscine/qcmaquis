@@ -1,6 +1,16 @@
 #ifndef DIAGONAL_MATRIX_H
 #define DIAGONAL_MATRIX_H
 
+#include <vector>
+#include <algorithm>
+#include <functional>
+#include <cassert>
+#include <ostream>
+#include <boost/lambda/lambda.hpp>
+
+#include "utils/function_objects.h"
+
+
 namespace blas {
     
     template<typename T>
@@ -38,6 +48,34 @@ namespace blas {
         {
             assert(i == j);
             return data_[i];
+        }
+        
+        diagonal_matrix<T>& operator += (diagonal_matrix const& rhs)
+        {
+            assert(rhs.data_.size() == data_.size());
+            std::transform(data_.begin(),data_.end(),rhs.data_.begin(),data_.begin(), std::plus<T>());
+            return *this;
+        }
+        
+        diagonal_matrix<T>& operator -= (diagonal_matrix const& rhs)
+        {
+            assert(rhs.data_.size() == data_.size());
+            std::transform(data_.begin(),data_.end(),rhs.data_.begin(),data_.begin(), std::minus<T>());
+            return *this;
+        }
+        
+        template <typename T2>
+        diagonal_matrix<T>& operator *= (T2 const& t)
+        {
+            std::for_each(data_.begin(), data_.end(), boost::lambda::_1 *= t);
+            return *this;
+        }
+        
+        template <typename T2>
+        diagonal_matrix<T>& operator /= (T2 const& t)
+        {
+            std::for_each(data_.begin(), data_.end(), boost::lambda::_1 *= t);
+            return *this;
         }
         
         std::pair<element_iterator, element_iterator> elements()
@@ -90,6 +128,42 @@ namespace blas {
                 m3(i,j) = m1(i,i) * m2(i,j);
     }
 
+    template <typename T>
+    const diagonal_matrix<T> operator + (diagonal_matrix<T> a, diagonal_matrix<T> const& b)
+    {
+        a += b;
+        return a;
+    }
+    
+    template <typename T>
+    const diagonal_matrix<T> operator - (diagonal_matrix<T> a, diagonal_matrix<T> const& b)
+    {
+        a -= b;
+        return a;
+    }
+    
+    template <typename T>
+    const diagonal_matrix<T> operator - (diagonal_matrix<T> a)
+    {
+        std::pair<typename diagonal_matrix<T>::element_iterator,
+        typename diagonal_matrix<T>::element_iterator> range(a.elements());
+        std::transform(range.first, range.second,
+						   range.first, std::negate<T>());
+		return a;
+    }
+        
+    template<typename T, typename T2>
+    const diagonal_matrix<T> operator * (diagonal_matrix<T> m, T2 const& t)
+    {
+        return m*=t;
+    }
+    
+    template<typename T, typename T2>
+    const diagonal_matrix<T> operator * (T2 const& t, diagonal_matrix<T> m)
+    {
+        return m*=t;
+    }
+        
     template<typename T>
     typename diagonal_matrix<T>::size_type num_rows(diagonal_matrix<T> const & m)
     {
@@ -108,7 +182,14 @@ namespace blas {
         std::transform(m.elements().first, m.elements().second, m.elements().first, utils::functor_sqrt());
         return m;
     }
-    
+
+    template<typename T>
+    diagonal_matrix<T> exp(diagonal_matrix<T> m)
+    {
+        std::transform(m.elements().first, m.elements().second, m.elements().first, utils::functor_exp());
+        return m;
+    }
+
     template<typename T>
     std::ostream& operator<<(std::ostream& os, diagonal_matrix<T> const & m)
     {
