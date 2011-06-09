@@ -69,6 +69,20 @@ namespace blas
     }
     
     template<typename T, class MemoryBlock>
+    dense_matrix<T, MemoryBlock> exp (dense_matrix<T, MemoryBlock> M, T const & alpha=1)
+    {
+        dense_matrix<T, MemoryBlock> N, tmp;
+        typename blas::associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type S;
+        
+        syev(M, N, S);
+        S = exp(alpha*S);
+        gemm(N, S, tmp);
+        gemm(tmp, conjugate(transpose(N)), M);
+        
+        return M;
+    }
+    
+    template<typename T, class MemoryBlock>
     dense_matrix<T, MemoryBlock> conjugate(dense_matrix<T, MemoryBlock> M)
     {
         M.inplace_conjugate();

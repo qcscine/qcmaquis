@@ -267,6 +267,11 @@ public:
         return std::make_pair(cur_block->first, cur_i);
     }
     
+    boost::shared_ptr<std::pair<charge, std::size_t> > operator->() const
+    {
+        return boost::shared_ptr<std::pair<charge, std::size_t> >(new std::pair<charge, std::size_t>(cur_block->first, cur_i));
+    }
+    
     basis_iterator_ & operator++()
     {
         ++cur_i;
