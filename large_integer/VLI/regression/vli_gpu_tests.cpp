@@ -3,10 +3,10 @@
 
 
 #define SIZE_BITS 256
-#include "GpuManager.h"
-#include "GpuManager.hpp"
-#include "vli_number_cpu.hpp"
-#include "vli_number_gpu.hpp"
+#include "gpu/GpuManager.h"
+#include "gpu/GpuManager.hpp"
+#include "vli_cpu/vli_number_cpu.hpp"
+#include "vli_gpu/vli_number_gpu.hpp"
 
 
 #define TYPE int

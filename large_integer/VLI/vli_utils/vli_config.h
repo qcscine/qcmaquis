@@ -1,0 +1,5 @@
+
+#define VLI__VERSION_MAJOR 0
+#define VLI__VERSION_MINOR 1
+
+#define CPU_FREQ 2.66 

@@ -4,8 +4,8 @@
 
 
 #define SIZE_BITS 256
-#include "vli_number_cpu.hpp"
-#include "vli_vector_cpu.hpp"
+#include "vli_cpu/vli_number_cpu.hpp"
+#include "vli_cpu/vli_vector_cpu.hpp"
 
 
 using vli::vli_cpu;

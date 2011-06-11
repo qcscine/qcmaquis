@@ -5,14 +5,14 @@
 #define SIZE_BITS 256
 
 
-#include "GpuManager.h"
-#include "GpuManager.hpp"
-#include "vli_number_cpu.hpp"
-#include "vli_number_gpu.hpp"
-#include "vli_vector_cpu.hpp"
-#include "vli_vector_gpu.hpp"
+#include "gpu/GpuManager.h"
+#include "gpu/GpuManager.hpp"
+#include "vli_cpu/vli_number_cpu.hpp"
+#include "vli_gpu/vli_number_gpu.hpp"
+#include "vli_cpu/vli_vector_cpu.hpp"
+#include "vli_gpu/vli_vector_gpu.hpp"
 
-#include "timings.h"
+#include "utils/timings.h"
 
 typedef int TYPE; 
 
@@ -63,7 +63,7 @@ int main (int argc, char * const argv[])
 	std::cout << A << std::endl;	
 
 //	std::cout << B << std::endl;
-
+/*
 	vli::vli_vector<vli::vli_cpu<TYPE> > U(1000);
 	vli::vli_vector<vli::vli_cpu<TYPE> > V(1000);
 	vli::vli_vector<vli::vli_cpu<TYPE> > W(1000);
@@ -98,7 +98,7 @@ int main (int argc, char * const argv[])
         W = U + W;
     cpu_timer.end();
 
-
+*/
 	GPU->instance().destructor();
 	
     return 0;
