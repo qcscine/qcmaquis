@@ -50,8 +50,8 @@ endif()
 #
 ########################################################################
 configure_file (
-        "${PROJECT_SOURCE_DIR}/vli_config.h.in"
-        "${PROJECT_BINARY_DIR}/vli_config.h"
+        "${PROJECT_SOURCE_DIR}/vli_utils/vli_config.h.in"
+        "${PROJECT_BINARY_DIR}/vli_utils/vli_config.h"
         )
 include_directories ("${PROJECT_BINARY_DIR}")
 include_directories ("${PROJECT_SOURCE_DIR}")

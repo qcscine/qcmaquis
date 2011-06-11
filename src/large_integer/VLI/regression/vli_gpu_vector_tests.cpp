@@ -4,12 +4,12 @@
 
 
 #define SIZE_BITS 256
-#include "GpuManager.h"
-#include "GpuManager.hpp"
+#include "gpu/GpuManager.h"
+#include "gpu/GpuManager.hpp"
 
-#include "vli_number_cpu.hpp"
-#include "vli_vector_cpu.hpp"
-#include "vli_vector_gpu.hpp"
+#include "vli_cpu/vli_number_cpu.hpp"
+#include "vli_cpu/vli_vector_cpu.hpp"
+#include "vli_gpu/vli_vector_gpu.hpp"
 
 using vli::vli_cpu;
 using vli::vli_vector;

@@ -6,7 +6,7 @@
 #include "cuda_runtime_api.h"
 #endif
 
-#include "vli_config.h"
+#include "vli_utils/vli_config.h"
 
 
 /*

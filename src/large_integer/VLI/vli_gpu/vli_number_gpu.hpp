@@ -15,7 +15,7 @@
 #include <iostream>
 #include <boost/static_assert.hpp>
 #include "detail/vli_number_gpu_function_hooks.hpp"
-#include "GpuManager.h"
+#include "gpu/GpuManager.h"
 
 namespace vli
 {

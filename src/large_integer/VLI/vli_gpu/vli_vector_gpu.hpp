@@ -4,8 +4,8 @@
 
 #include <ostream>
 #include <cassert>
-#include "vli_vector_cpu.hpp"
-#include "vli_number_gpu.hpp"
+#include "vli_cpu/vli_vector_cpu.hpp"
+#include "vli_gpu/vli_number_gpu.hpp"
 #include "detail/vli_vector_gpu_function_hooks.hpp"
 
 namespace vli {
