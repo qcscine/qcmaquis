@@ -33,16 +33,15 @@ class vli_vector_gpu
             operator vli_gpu<BaseInt>() const
             {
                 vli_gpu<BaseInt> vli;
-                gpu::check_error( cudaMemcpy( vli.p(), data_, vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+                gpu::cu_check_error( cudaMemcpy( vli.p(), data_, vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
                 return vli;
             }
 
             proxy& operator = (vli_gpu<BaseInt> const& vli)
             {
-                gpu::check_error( cudaMemcpy( data_, vli.p(), vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+                gpu::cu_check_error( cudaMemcpy( data_, vli.p(), vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
                 return *this;
             }
-
 
         private:
             BaseInt* data_;    
@@ -55,14 +54,8 @@ class vli_vector_gpu
     vli_vector_gpu(size_type size = 0)
         :size_(size)
     {
-        gpu::check_error( cublasAlloc( size_*vli_size, sizeof(BaseInt), (void**)&data_ ), __LINE__);
-        
-        //TODO isn't there a better way to initalize the memory on the GPU?
-        BaseInt dummy[vli_size];
-        for(std::size_t i = 0; i < vli_size; ++i)
-            dummy[i] = 0;
-        for(std::size_t i = 0; i < size; ++i)
-            gpu::check_error( cublasSetVector( vli_size, sizeof(BaseInt),&dummy, 1, p()+i*vli_size, 1), __LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&data_, size_*vli_size*sizeof(BaseInt)  ), __LINE__);
+		gpu::cu_check_error(cudaMemset((void*)data_, 0, size*vli_size*sizeof(BaseInt)), __LINE__);       
     }
 
     /**
@@ -71,8 +64,8 @@ class vli_vector_gpu
     vli_vector_gpu(vli_vector_gpu const& v)
         :size_(v.size_)
     {
-        gpu::check_error( cublasAlloc( size_*vli_size, sizeof(BaseInt), (void**)&data_ ), __LINE__);
-        gpu::check_error( cudaMemcpy( data_, v.data_, size_*vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&data_, size_*vli_size*sizeof(BaseInt)  ), __LINE__);
+        gpu::cu_check_error(cudaMemcpy( data_, v.data_, size_*vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
     }
 
     /**
@@ -83,11 +76,13 @@ class vli_vector_gpu
     {
         BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(vli_size) );
 
-        gpu::check_error( cublasAlloc( size_*vli_size, sizeof(BaseInt), (void**)&data_ ), __LINE__);
-        
+        gpu::cu_check_error(cudaMalloc((void**)&data_,size_*vli_size*sizeof(BaseInt)  ), __LINE__);
+
         //TODO there's probably a better implementation
         for(typename vli_vector<BaseInt>::size_type i = 0; i < v_cpu.size(); ++i)
-		    gpu::check_error(cublasSetVector(vli_cpu<BaseInt>::size, sizeof(BaseInt), &(v_cpu[i][0]), 1, data_+static_cast<std::ptrdiff_t>(i*vli_size), 1), __LINE__);
+			gpu::cu_check_error(cudaMemcpy((void*)(data_+static_cast<std::ptrdiff_t>(i*vli_size)), (void*)&v_cpu[i], vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 				
+//		    gpu::cu_check_error(cublasSetVector(vli_cpu<BaseInt>::size, sizeof(BaseInt), &(v_cpu[i][0]), 1, data_+static_cast<std::ptrdiff_t>(i*vli_size), 1), __LINE__);
+
     }
 
     /**
@@ -125,8 +120,8 @@ class vli_vector_gpu
         BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(vli_size) );
 
         vli_vector<vli_cpu<BaseInt> > v_cpu(size_);
-        for(typename vli_vector<BaseInt>::size_type i = 0; i < size_; ++i)
-            gpu::check_error(cublasGetVector(vli_size, sizeof(BaseInt), data_+static_cast<std::ptrdiff_t>(i*vli_size)  ,1, &(v_cpu[i][0]), 1), __LINE__);
+		for(typename vli_vector<BaseInt>::size_type i = 0; i < v_cpu.size(); ++i)
+			gpu::cu_check_error(cudaMemcpy((void*)(data_+static_cast<std::ptrdiff_t>(i*vli_size)), (void*)&v_cpu[i], vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 				
         return v_cpu;
     }
 

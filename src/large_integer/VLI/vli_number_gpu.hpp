@@ -14,7 +14,6 @@
 
 #include <iostream>
 #include <boost/static_assert.hpp>
-
 #include "detail/vli_number_gpu_function_hooks.hpp"
 #include "GpuManager.h"
 
@@ -35,8 +34,8 @@ namespace vli
 		*/
 		vli_gpu()
         {
-     		gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
-			gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__);			
+		    gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
+	    	gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__);			
         }
 
 		explicit vli_gpu(BaseInt num)
