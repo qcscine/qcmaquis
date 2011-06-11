@@ -1,6 +1,23 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+######################################################################
+# Machine Config
+######################################################################
+set(DEFAULT_BLAS_LAPACK alps)
+
+if(MACHINE_CONFIG)
+  if(EXISTS ${MACHINE_CONFIG})
+    message(STATUS "Loading config in " ${MACHINE_CONFIG})
+    include(${MACHINE_CONFIG})
+  else(EXISTS ${MACHINE_CONFIG})
+    message(ERROR " Machine config not found!")
+  endif(EXISTS ${MACHINE_CONFIG})
+endif(MACHINE_CONFIG)
+
+######################################################################
+# Project START
+######################################################################
 project (DMRG) 
 
 # note: you can regenerate operation.pp.h/hpp by invoking smth like the following:
@@ -15,7 +32,9 @@ project (DMRG)
 find_package(OpenMP)
 
 # MPI
-find_package(MPI)
+if(NOT MPI_FOUND)
+  find_package(MPI)
+endif(NOT MPI_FOUND)
 
 # ALPS
 if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
@@ -104,11 +123,11 @@ option(BUILD_BELA_BRANCH "Build Bela's branch DMRG Apps" OFF)
 set(BELA_BRANCH ${PROJECT_SOURCE_DIR}/../../branches/bela/src CACHE FILEPATH "Path to Bela's branch")
 option(BUILD_REGRESSION "Build regression tests" OFF)
 
-set(BLAS_LAPACK_SELECTOR "alps" CACHE STRING "Choose the Blas/Lapack version to use, possible values 'alps' (default), 'veclib', 'manual'")
-set(BLAS_LAPACK_MANUAL_LIBS "" CACHE STRINGS "")
-set(BLAS_LAPACK_MANUAL_LIBS_DIR "" CACHE STRINGS "")
-set(BLAS_LAPACK_MANUAL_DEFINITIONS "" CACHE STRINGS "")
-set(BLAS_LAPACK_MANUAL_INCLUDES "" CACHE STRINGS "")
+set(BLAS_LAPACK_SELECTOR ${DEFAULT_BLAS_LAPACK} CACHE STRING "Choose the Blas/Lapack version to use, possible values 'alps', 'veclib', 'manual'")
+set(BLAS_LAPACK_MANUAL_LIBS ${BLAS_LAPACK_MANUAL_LIBS} CACHE STRINGS "")
+set(BLAS_LAPACK_MANUAL_LIBS_DIR ${BLAS_LAPACK_MANUAL_LIBS_DIR} CACHE STRINGS "")
+set(BLAS_LAPACK_MANUAL_DEFINITIONS ${BLAS_LAPACK_MANUAL_DEFINITIONS} CACHE STRINGS "")
+set(BLAS_LAPACK_MANUAL_INCLUDES ${BLAS_LAPACK_MANUAL_INCLUDES} CACHE STRINGS "")
 
 ######################################################################
 # Parsing user options
