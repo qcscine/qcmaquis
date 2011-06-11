@@ -43,23 +43,30 @@ namespace gpu
 		return deviceProp_;
 	}
 	
-	
-	
-	void check_error(cublasStatus const& stat, std::size_t line)
+	void cu_check_error(cudaError_t  const& err, std::size_t line)
 	{
-		switch (stat) 
+		switch (err) 
 		{
-			case CUBLAS_STATUS_NOT_INITIALIZED:
-				throw(std::runtime_error("CUBLAS_STATUS_NOT_INITIALIZED in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
+			case cudaErrorInvalidDevicePointer:
+				throw(std::runtime_error("cudaErrorInvalidDevicePointer, in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
 				
-			case CUBLAS_STATUS_MAPPING_ERROR:
-				throw(std::runtime_error("CUBLAS_STATUS_MAPPING_ERROR in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
+			case cudaErrorMemoryAllocation:
+				throw(std::runtime_error("cudaErrorMemoryAllocation in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
 				
-			case CUBLAS_STATUS_INVALID_VALUE:
-				throw(std::runtime_error("CUBLAS_STATUS_INVALID_VALUE in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
+			case cudaErrorInitializationError:
+				throw(std::runtime_error("cudaErrorInitializationError in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;	
+				
+			case cudaErrorInvalidMemcpyDirection:	
+				throw(std::runtime_error("cudaErrorInvalidMemcpyDirection in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
+				break;	
+			
+			case  cudaErrorInvalidValue:
+				throw(std::runtime_error("cudaErrorInvalidValue in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
+				break;	
+				
 				
 			default:
 				//std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
