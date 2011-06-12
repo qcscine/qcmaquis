@@ -186,6 +186,19 @@ vli_gpu_vector_tests/fast:
 	$(MAKE) -f regression/CMakeFiles/vli_gpu_vector_tests.dir/build.make regression/CMakeFiles/vli_gpu_vector_tests.dir/build
 .PHONY : vli_gpu_vector_tests/fast
 
+#=============================================================================
+# Target rules for targets named vli_monome_tests
+
+# Build rule for target.
+vli_monome_tests: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vli_monome_tests
+.PHONY : vli_monome_tests
+
+# fast build rule for target.
+vli_monome_tests/fast:
+	$(MAKE) -f regression/CMakeFiles/vli_monome_tests.dir/build.make regression/CMakeFiles/vli_monome_tests.dir/build
+.PHONY : vli_monome_tests/fast
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -225,6 +238,7 @@ help:
 	@echo "... vli_cpu_vector_tests"
 	@echo "... vli_gpu_tests"
 	@echo "... vli_gpu_vector_tests"
+	@echo "... vli_monome_tests"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

@@ -28,17 +28,22 @@ namespace vli
     class vli_cpu 
     {
     public:
+		typedef BaseInt                       value_type;       // The type T of the elements of the matrix
+        typedef BaseInt&                      reference;        // Reference to value_type
+        typedef BaseInt const&                const_reference;  // Const reference to value_type
+        typedef std::size_t                   size_type;        // Unsigned integer type that represents the dimensions of the matrix
+        typedef std::ptrdiff_t                difference_type;  // Signed integer type to represent the distance of two elements in the memory
+		
         typedef BaseInt base_int;
-        typedef std::size_t size_type;
         enum { size = SIZE_BITS/(8*sizeof(BaseInt)) };
         
-        vli_cpu()
+        explicit vli_cpu()
         {
 			data_ = (BaseInt*)malloc(size*sizeof(BaseInt));
 			memset((void*)data_,0,size*sizeof(BaseInt));
         }
         
-        explicit vli_cpu(BaseInt num)
+		vli_cpu(BaseInt num)
         {
 			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
 			memset((void*)data_,0,size*sizeof(BaseInt));			
