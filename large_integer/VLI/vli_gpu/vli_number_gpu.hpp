@@ -25,20 +25,25 @@ namespace vli
 	class vli_gpu 
 	{
 	public:
+		typedef BaseInt                       value_type;       // The type T of the elements of the matrix
+        typedef BaseInt&                      reference;        // Reference to value_type
+        typedef BaseInt const&                const_reference;  // Const reference to value_type
+        typedef std::size_t                   size_type;        // Unsigned integer type that represents the dimensions of the matrix
+        typedef std::ptrdiff_t                difference_type;  // Signed integer type to represent the distance of two elements in the memory
+		
         typedef BaseInt base_int_type;
-        typedef std::size_t size_type;
         enum { size = SIZE_BITS/(8*sizeof(BaseInt)) };
 
 		/**
 		constructors 
 		*/
-		vli_gpu()
+		explicit vli_gpu()
         {
 		    gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
 	    	gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__);			
         }
 
-		explicit vli_gpu(BaseInt num)
+		vli_gpu(BaseInt num)
         {
             gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
 			gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__); //Everything is set to 0	
@@ -74,7 +79,7 @@ namespace vli
 
 		vli_gpu& operator = (vli_gpu vli)
         {
-            // TODO perhaps the copy-swap implementation is not optimal on the GPU
+            // TODO perhaps the copy-swap implementation is not optimal on the GPU, it is more because we juste copy the pointer of the data \o/
             swap(*this,vli);
             return *this;
         }
