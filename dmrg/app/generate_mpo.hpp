@@ -31,10 +31,26 @@ namespace generate_mpo
 		std::vector<std::pair<typename Lattice::pos_t, op_t> > operators;
 		op_t fill_operator;
         
-        bool operator< (Operator_Term const & rhs)
+        bool operator< (Operator_Term const & rhs) const
         {
             return operators[0].first < rhs.operators[0].first;
         }
+
+        bool site_match (Operator_Term const & rhs) const
+        {
+        	bool ret = true;
+        	for (std::size_t p=0;
+        		 p<std::min(operators.size(), rhs.operators.size()) && ret;
+        		 ++p)
+        		ret = (operators[p].first == rhs.operators[p].first);
+        	return ret;
+        }
+
+        bool overlap (Operator_Term const & rhs) const
+        {
+        	return !( (operators.rbegin()->first < rhs.operators.begin()->first) || (rhs.operators.rbegin()->first < operators.begin()->first) );
+        }
+
 	};
     
 	using namespace std;
