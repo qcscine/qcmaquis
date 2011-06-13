@@ -30,6 +30,11 @@ namespace generate_mpo
         
 		std::vector<std::pair<typename Lattice::pos_t, op_t> > operators;
 		op_t fill_operator;
+        
+        bool operator< (Operator_Term const & rhs)
+        {
+            return operators[0].first < rhs.operators[0].first;
+        }
 	};
     
 	using namespace std;

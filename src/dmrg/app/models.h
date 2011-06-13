@@ -10,7 +10,7 @@ namespace app {
     
     template <class Matrix, class SymmGroup>
     ModelParameters model_parser (std::string const & type, std::string const & fname,
-                       Lattice* & lattice, Hamiltonian<Matrix, SymmGroup>* & H,
+                       Lattice* & lattice, Hamiltonian<Matrix, SymmGroup> & H,
                        typename SymmGroup::charge& initc, Measurements<Matrix, SymmGroup>& meas);
 }
 

@@ -135,11 +135,11 @@ int main(int argc, char ** argv)
     srand48(parms.get<int>("seed"));
     
     Lattice * lat;
-    Hamiltonian<Matrix, grp> * H;
+    Hamiltonian<Matrix, grp> H;
     grp::charge initc;
     Measurements<Matrix, grp> measurements;
     ModelParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
-    Index<grp> phys = H->get_phys();
+    Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
     
     std::cout << measurements << std::endl;
@@ -152,7 +152,7 @@ int main(int argc, char ** argv)
             meas_always.add_term(measurements.get(meas_list[i]));
     }
     
-    MPO<Matrix, grp> mpo = make_mpo(lat->size(), *H);
+    MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
     MPO<Matrix, grp> mpoc = mpo;
     if (parms.get<int>("use_compressed") > 0)
         mpoc.compress(1e-12);

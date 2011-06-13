@@ -31,39 +31,43 @@ namespace app {
     	typedef typename generate_mpo::Operator_Term<Matrix, SymmGroup>::op_t op_t;
     };
     
-    // implement me for your purpose!
     template<class Matrix, class SymmGroup>
     class Hamiltonian
     {
     public:
-        virtual int n_terms(TermsType what=All_terms) const = 0;
-        virtual Hamiltonian_Term<Matrix, SymmGroup> operator[](int) const = 0;
+        typedef Hamiltonian_Term<Matrix, SymmGroup> hamterm_t;
+        typedef typename hamterm_t::op_t op_t;
+        typedef typename std::vector<hamterm_t>::const_iterator const_iterator;
+        typedef typename std::vector<hamterm_t>::iterator iterator;
         
-        /*
-         virtual int n_site_terms() const = 0;
-         virtual Hamiltonian_Term<Matrix, SymmGroup> site_term(int) const = 0;
-         virtual int n_odd_bonds() const = 0; // 1->2, 3->4, ...
-         virtual Hamiltonian_Term<Matrix, SymmGroup> odd_bond(int) const = 0;
-         virtual int n_even_bonds() const = 0; // 2->3, 4->5, ...
-         virtual Hamiltonian_Term<Matrix, SymmGroup> even_bond(int) const = 0;
-         
-         // TODO: implement default behaviour = exp+svd to decompose
-         virtual Hamiltonian_Term<Matrix, SymmGroup> exp_site_term(int i) const
-         {
-         return Hamitonian_Term<Matrix>();
-         }
-         virtual Hamiltonian_Term<Matrix, SymmGroup> exp_odd_bond(int i) const
-         {
-         return Hamitonian_Term<Matrix>();
-         }
-         virtual Hamiltonian_Term<Matrix, SymmGroup> exp_even_bond(int i) const
-         {
-         return Hamitonian_Term<Matrix>();
-         }
-         */
+        Hamiltonian () {}
+        Hamiltonian (Index<SymmGroup> const & phys_,
+                     op_t const & ident_,
+                     std::vector<hamterm_t> const & terms_)
+        : phys(phys_)
+        , ident(ident_)
+        , terms(terms_)
+        {}
         
-        virtual Index<SymmGroup> get_phys() const = 0;
-        virtual typename Hamiltonian_Term<Matrix, SymmGroup>::op_t get_identity() const = 0;
+        virtual int n_terms (TermsType what=All_terms) const { return terms.size(); }
+        virtual hamterm_t const & operator[] (int i) const { return terms[i]; }
+        virtual void add_term (hamterm_t const & term) { terms.push_back(term); }
+        
+        virtual Index<SymmGroup> get_phys () const { return phys; }
+        virtual void set_phys (Index<SymmGroup> const & phys_) { phys = phys_; }
+        virtual op_t const & get_identity () const { return ident; }
+        virtual void set_identity (op_t const & ident_) { ident = ident_; }
+        
+        const_iterator begin () const { return terms.begin(); }
+        const_iterator end () const { return terms.end(); }
+        
+        iterator begin () { return terms.begin(); }
+        iterator end () { return terms.end(); }
+
+    protected:
+        std::vector<hamterm_t> terms;
+        Index<SymmGroup> phys;
+        op_t ident;
     };
 }
 

@@ -32,7 +32,7 @@ namespace app {
 
 #define model_parser_for(MATRIX, SYMMGROUP) 														\
 	{																								\
-		Hamiltonian<MATRIX, SYMMGROUP>* H;															\
+		Hamiltonian<MATRIX, SYMMGROUP> H;															\
 		Measurements<MATRIX, SYMMGROUP> meas;														\
 		SYMMGROUP::charge initc;																	\
 		ModelParameters model = model_parser(std::string(), std::string(), lat, H, initc, meas);	\
@@ -79,7 +79,7 @@ namespace app {
     
     template<class Matrix, class SymmGroup>
     struct hamil_factory {
-        static Hamiltonian<Matrix, SymmGroup> * parse (BaseParameters & model, Lattice const & lattice);
+        static Hamiltonian<Matrix, SymmGroup> parse (BaseParameters & model, Lattice const & lattice);
     };
     
     template <class SymmGroup>
@@ -89,7 +89,7 @@ namespace app {
     
     template <class Matrix, class SymmGroup>
     ModelParameters model_parser (std::string const & type, std::string const & fname,
-                       Lattice* & lattice, Hamiltonian<Matrix, SymmGroup>* & H,
+                       Lattice* & lattice, Hamiltonian<Matrix, SymmGroup>& H,
                        typename SymmGroup::charge& initc, Measurements<Matrix, SymmGroup>& meas)
     {
         
@@ -97,11 +97,11 @@ namespace app {
             std::ifstream ifs(fname.c_str());
             alps::Parameters parms(ifs);
             ALPSLattice * lat_tmp = new ALPSLattice(parms);
-            ALPSModel<Matrix, SymmGroup> * Htmp = new ALPSModel<Matrix, SymmGroup>(lat_tmp->alps_graph(), parms);
+            ALPSModel<Matrix, SymmGroup> HALPS = ALPSModel<Matrix, SymmGroup>(lat_tmp->alps_graph(), parms);
             lattice = lat_tmp;
-            H = Htmp;
-            initc = Htmp->init_qn(parms);
-            meas = Htmp->parse_measurements(parms);
+            H = HALPS.get_hamiltonian();
+            initc = HALPS.init_qn(parms);
+            meas = HALPS.parse_measurements(parms);
             return convert_parms(parms);
         } else if (type == "coded") {
             std::ifstream model_file(fname.c_str());
@@ -122,30 +122,30 @@ namespace app {
     
     template<class Matrix>
     struct hamil_factory<Matrix, TwoU1> {
-        static Hamiltonian<Matrix, TwoU1> * parse (BaseParameters & model, Lattice const & lattice)
+        static Hamiltonian<Matrix, TwoU1> parse (BaseParameters & model, Lattice const & lattice)
         {
             if (model.get<std::string>("model") == std::string("fermi_hubbard"))
-                return new TwoU1_FermiHubbard<Matrix>(lattice, model);
+                return TwoU1_FermiHubbard<Matrix>(lattice, model)();
             else {
                 throw std::runtime_error("Don't know this model!");
-                return NULL;
+                return Hamiltonian<Matrix, TwoU1>();
             }
         }
     };
     
     template<class Matrix>
     struct hamil_factory<Matrix, U1> {
-        static Hamiltonian<Matrix, U1> * parse (BaseParameters & model, Lattice const & lattice)
+        static Hamiltonian<Matrix, U1> parse (BaseParameters & model, Lattice const & lattice)
         {
             if (model.get<std::string>("model") == std::string("heisenberg"))
-                return new Heisenberg<Matrix>(lattice, model.get<double>("Jxy"), model.get<double>("Jz"));
+                return Heisenberg<Matrix>(lattice, model.get<double>("Jxy"), model.get<double>("Jz"));
             else if (model.get<std::string>("model") == std::string("HCB"))
-                return new HCB<Matrix>(lattice);
+                return HCB<Matrix>(lattice);
             else if (model.get<std::string>("model") == std::string("FreeFermions"))
-                return new FreeFermions<Matrix>(lattice, model.get<double>("t"));
+                return FreeFermions<Matrix>(lattice, model.get<double>("t"));
             else {
                 throw std::runtime_error("Don't know this model!");
-                return NULL;
+                return Hamiltonian<Matrix, U1>();
             }
         }
     };
