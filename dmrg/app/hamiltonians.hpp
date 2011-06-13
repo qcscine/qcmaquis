@@ -18,227 +18,166 @@
 namespace app {
     /* ****************** HEISENBERG */
     template<class Matrix>
-    class Heisenberg : public Hamiltonian<Matrix, U1>
+    Hamiltonian<Matrix, U1> Heisenberg (const Lattice& lat, double Jxy, double Jz)
     {
-    public:
-        typedef Hamiltonian_Term<Matrix, U1> hamterm_t;
-        typedef typename hamterm_t::op_t op_t;
+        typedef Hamiltonian<Matrix, U1> ham;        
+        typedef typename ham::hamterm_t hamterm_t;        
+        typedef typename ham::op_t op_t;
         
-        Heisenberg(const Lattice& lat, double Jxy_, double Jz_) : Jxy(Jxy_), Jz(Jz_)
-        {
-            op_t splus, sminus, sz;
-            
-            ident.insert_block(Matrix(1, 1, 1), -1, -1);
-            ident.insert_block(Matrix(1, 1, 1), 1, 1);
-            
-            splus.insert_block(Matrix(1, 1, 1), -1, 1);
-            
-            sminus.insert_block(Matrix(1, 1, 1), 1, -1);
-            
-            sz.insert_block(Matrix(1, 1, 0.5), 1, 1);
-            sz.insert_block(Matrix(1, 1, -0.5), -1, -1);
-            
-            for (int p=0; p<lat.size(); ++p) {
-                std::vector<int> neighs = lat.forward(p);
-                for (int n=0; n<neighs.size(); ++n) {
-                    {
-                        hamterm_t term;
-                        term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p, Jz*sz) );
-                        term.operators.push_back( std::make_pair(neighs[n], sz) );
-                        terms.push_back(term);
-                    }
-                    {
-                        hamterm_t term;
-                        term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p, Jxy/2*splus) );
-                        term.operators.push_back( std::make_pair(neighs[n], sminus) );
-                        terms.push_back(term);
-                    }
-                    {
-                        hamterm_t term;
-                        term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p, Jxy/2*sminus) );
-                        term.operators.push_back( std::make_pair(neighs[n], splus) );
-                        terms.push_back(term);
-                    }
+        op_t ident;    
+        op_t splus, sminus, sz;
+        
+        ident.insert_block(Matrix(1, 1, 1), -1, -1);
+        ident.insert_block(Matrix(1, 1, 1), 1, 1);
+        
+        splus.insert_block(Matrix(1, 1, 1), -1, 1);
+        
+        sminus.insert_block(Matrix(1, 1, 1), 1, -1);
+        
+        sz.insert_block(Matrix(1, 1, 0.5), 1, 1);
+        sz.insert_block(Matrix(1, 1, -0.5), -1, -1);
+        
+        Index<U1> phys;
+        phys.insert(std::make_pair(1, 1));
+        phys.insert(std::make_pair(-1, 1));
+        
+        std::vector<hamterm_t> terms;
+        for (int p=0; p<lat.size(); ++p) {
+            std::vector<int> neighs = lat.forward(p);
+            for (int n=0; n<neighs.size(); ++n) {
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, Jz*sz) );
+                    term.operators.push_back( std::make_pair(neighs[n], sz) );
+                    terms.push_back(term);
+                }
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, Jxy/2*splus) );
+                    term.operators.push_back( std::make_pair(neighs[n], sminus) );
+                    terms.push_back(term);
+                }
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, Jxy/2*sminus) );
+                    term.operators.push_back( std::make_pair(neighs[n], splus) );
+                    terms.push_back(term);
                 }
             }
         }
         
-        int n_terms(TermsType what) const
-        {
-            return terms.size();
-        }
-        hamterm_t operator[](int i) const
-        {
-            return terms[i];
-        }
-        
-        op_t get_identity() const
-        {
-            return ident;
-        }
-        
-        Index<U1> get_phys() const
-        {
-            Index<U1> phys;
-            phys.insert(std::make_pair(1, 1));
-            phys.insert(std::make_pair(-1, 1));
-            return phys;
-        }
-        
-    private:
-        double Jxy, Jz;
-        std::vector<hamterm_t> terms;
-        op_t ident;
-    };
+        return ham(phys, ident, terms);
+    }
     
     
     /* ****************** HARD CORE BOSONS */
     template<class Matrix>
-    class HCB : public Hamiltonian<Matrix, U1>
+    Hamiltonian<Matrix, U1> HCB (const Lattice& lat, double t=1.)
+    
     {
-    public:
-        typedef Hamiltonian_Term<Matrix, U1> hamterm_t;
-        typedef typename hamterm_t::op_t op_t;
+        typedef Hamiltonian<Matrix, U1> ham;        
+        typedef typename ham::hamterm_t hamterm_t;        
+        typedef typename ham::op_t op_t;
         
-        HCB (const Lattice& lat, double t=1.)
-        {
-            op_t create, destroy, count;
-            
-            ident.insert_block(Matrix(1, 1, 1), 0, 0);
-            ident.insert_block(Matrix(1, 1, 1), 1, 1);
-            
-            create.insert_block(Matrix(1, 1, 1), 0, 1);
-            destroy.insert_block(Matrix(1, 1, 1), 1, 0);
-            
-            count.insert_block(Matrix(1, 1, 1), 1, 1);
-            
-            for (int p=0; p<lat.size(); ++p) {
-                std::vector<int> neighs = lat.forward(p);
-                for (int n=0; n<neighs.size(); ++n) {
-                    {
-                        hamterm_t term;
-                        term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p, -t*create) );
-                        term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                        terms.push_back(term);
-                    }
-                    {
-                        hamterm_t term;
-                        term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p, -t*destroy) );
-                        term.operators.push_back( std::make_pair(neighs[n], create) );
-                        terms.push_back(term);
-                    }
+        op_t ident;
+        op_t create, destroy, count;
+        
+        ident.insert_block(Matrix(1, 1, 1), 0, 0);
+        ident.insert_block(Matrix(1, 1, 1), 1, 1);
+        
+        create.insert_block(Matrix(1, 1, 1), 0, 1);
+        destroy.insert_block(Matrix(1, 1, 1), 1, 0);
+        
+        count.insert_block(Matrix(1, 1, 1), 1, 1);
+        
+        Index<U1> phys;
+        phys.insert(std::make_pair(0, 1));
+        phys.insert(std::make_pair(1, 1));
+        
+        std::vector<hamterm_t> terms;
+        for (int p=0; p<lat.size(); ++p) {
+            std::vector<int> neighs = lat.forward(p);
+            for (int n=0; n<neighs.size(); ++n) {
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, -t*create) );
+                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
+                    terms.push_back(term);
+                }
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, -t*destroy) );
+                    term.operators.push_back( std::make_pair(neighs[n], create) );
+                    terms.push_back(term);
                 }
             }
         }
         
-        int n_terms(TermsType what) const
-        {
-            return terms.size();
-        }
-        hamterm_t operator[](int i) const
-        {
-            return terms[i];
-        }
-        
-        op_t get_identity() const
-        {
-            return ident;
-        }
-        
-        Index<U1> get_phys() const
-        {
-            Index<U1> phys;
-            phys.insert(std::make_pair(0, 1));
-            phys.insert(std::make_pair(1, 1));
-            return phys;
-        }
-        
-    private:
-        std::vector<hamterm_t> terms;
-        op_t ident;
-    };
+        return ham(phys, ident, terms);
+    }
     
     
     /* ****************** FREE FERMIONS */
     template<class Matrix>
-    class FreeFermions : public Hamiltonian<Matrix, U1>
+    Hamiltonian<Matrix, U1> FreeFermions (const Lattice& lat, double t=1.)
     {
-        typedef Hamiltonian_Term<Matrix, U1> hamterm_t;
-        typedef typename hamterm_t::op_t op_t;
-
-    public:
-        FreeFermions(const Lattice& lat, double t=1.)
-        {
-            op_t create, destroy, sign;
-            create.insert_block(Matrix(1, 1, 1), 0, 1);
-            destroy.insert_block(Matrix(1, 1, 1), 1, 0);
-
-            ident.insert_block(Matrix(1, 1, 1), 0, 0);
-            ident.insert_block(Matrix(1, 1, 1), 1, 1);
-            sign.insert_block(Matrix(1, 1, 1), 0, 0);
-            sign.insert_block(Matrix(1, 1, -1), 1, 1);
-
-            for (int p=0; p<lat.size(); ++p) {
-                std::vector<int> neighs = lat.forward(p);
-                for (int n=0; n<neighs.size(); ++n) {
-                    {
-                        hamterm_t term;
-                        term.fill_operator = sign;
-                        term.operators.push_back( std::make_pair(p, -t*create) );
-                        term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                        terms.push_back(term);
-                    }
-                    {
-                        hamterm_t term;
-                        term.fill_operator = sign;
-                        term.operators.push_back( std::make_pair(p, -t*destroy) );
-                        term.operators.push_back( std::make_pair(neighs[n], create) );
-                        terms.push_back(term);
-                    }
+        typedef Hamiltonian<Matrix, U1> ham;        
+        typedef typename ham::hamterm_t hamterm_t;        
+        typedef typename ham::op_t op_t;
+        
+        op_t ident;
+        op_t create, destroy, sign;
+        create.insert_block(Matrix(1, 1, 1), 0, 1);
+        destroy.insert_block(Matrix(1, 1, 1), 1, 0);
+        
+        ident.insert_block(Matrix(1, 1, 1), 0, 0);
+        ident.insert_block(Matrix(1, 1, 1), 1, 1);
+        sign.insert_block(Matrix(1, 1, 1), 0, 0);
+        sign.insert_block(Matrix(1, 1, -1), 1, 1);
+        
+        Index<U1> phys;
+        phys.insert(std::make_pair(0, 1));
+        phys.insert(std::make_pair(1, 1));
+        
+        std::vector<hamterm_t> terms;
+        for (int p=0; p<lat.size(); ++p) {
+            std::vector<int> neighs = lat.forward(p);
+            for (int n=0; n<neighs.size(); ++n) {
+                {
+                    hamterm_t term;
+                    term.fill_operator = sign;
+                    term.operators.push_back( std::make_pair(p, -t*create) );
+                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
+                    terms.push_back(term);
+                }
+                {
+                    hamterm_t term;
+                    term.fill_operator = sign;
+                    term.operators.push_back( std::make_pair(p, -t*destroy) );
+                    term.operators.push_back( std::make_pair(neighs[n], create) );
+                    terms.push_back(term);
                 }
             }
         }
-
-        int n_terms(TermsType what) const
-         {
-             return terms.size();
-         }
-         hamterm_t operator[](int i) const
-         {
-             return terms[i];
-         }
-
-         op_t get_identity() const
-         {
-             return ident;
-         }
-
-         Index<U1> get_phys() const
-         {
-             Index<U1> phys;
-             phys.insert(std::make_pair(0, 1));
-             phys.insert(std::make_pair(1, 1));
-             return phys;
-         }
-
-     private:
-         std::vector<hamterm_t> terms;
-         op_t ident;
-    };
-
-
+        
+        return ham(phys, ident, terms);
+    }
+    
+    
+    
     /* ****************** FERMI HUBBARD */
     template<class Matrix>
-    class TwoU1_FermiHubbard : public Hamiltonian<Matrix, TwoU1>
+    class TwoU1_FermiHubbard
     {
     public:
-        typedef Hamiltonian_Term<Matrix, TwoU1> hamterm_t;
-        typedef typename hamterm_t::op_t op_t;
+        typedef Hamiltonian<Matrix, TwoU1> ham;        
+        typedef typename ham::hamterm_t hamterm_t;        
+        typedef typename ham::op_t op_t;
         
         TwoU1_FermiHubbard(const Lattice& lat, BaseParameters & parms)
         {
@@ -248,6 +187,10 @@ namespace app {
             
             TwoU1::charge A(0), B(0), C(0), D(1);
             B[0]=1; C[1]=1;
+            phys.insert(std::make_pair(A, 1));
+            phys.insert(std::make_pair(B, 1));
+            phys.insert(std::make_pair(C, 1));
+            phys.insert(std::make_pair(D, 1));
             
             ident.insert_block(Matrix(1, 1, 1), A, A);
             ident.insert_block(Matrix(1, 1, 1), B, B);
@@ -332,38 +275,16 @@ namespace app {
             }
         }
         
-        int n_terms(TermsType what) const
-        {
-            return terms.size();
-        }
-        hamterm_t operator[](int i) const
-        {
-            return terms[i];
-        }
         
-        op_t get_identity() const
+        Hamiltonian<Matrix, TwoU1> operator() () const
         {
-            return ident;
-        }
-        
-        Index<TwoU1> get_phys() const
-        {
-            Index<TwoU1> phys;
-            
-            TwoU1::charge A(0), B(0), C(0), D(1);
-            B[0]=1; C[1]=1;
-            
-            phys.insert(std::make_pair(A, 1));
-            phys.insert(std::make_pair(B, 1));
-            phys.insert(std::make_pair(C, 1));
-            phys.insert(std::make_pair(D, 1));
-            
-            return phys;
+            return ham(phys, ident, terms);
         }
         
     private:
-        std::vector<hamterm_t> terms;
+        Index<TwoU1> phys;
         op_t ident;
+        std::vector<hamterm_t> terms;
         
         double get_t (BaseParameters & parms, int i)
         {

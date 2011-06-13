@@ -22,7 +22,7 @@ namespace app {
     typename SymmGroup::charge init_charge (const alps::Parameters& parms, std::vector<std::pair<int, std::string> > const& qn);
     
     template <class Matrix, class SymmGroup>
-    class ALPSModel : public Hamiltonian<Matrix, SymmGroup>
+    class ALPSModel
     {
         typedef alps::SiteOperator SiteOperator;
         typedef alps::BondOperator BondOperator;
@@ -33,8 +33,9 @@ namespace app {
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
         
     public:
-        typedef Hamiltonian_Term<Matrix, SymmGroup> hamterm_t;
-        typedef typename hamterm_t::op_t op_t;
+        typedef Hamiltonian<Matrix, SymmGroup> ham;        
+        typedef typename ham::hamterm_t hamterm_t;        
+        typedef typename ham::op_t op_t;
         
         typedef typename SymmGroup::charge charge;
         
@@ -213,17 +214,8 @@ namespace app {
                 
             }
         }
-        
-        int n_terms(TermsType what) const
-        {
-            return terms.size();
-        }
-        hamterm_t operator[](int i) const
-        {
-            return terms[i];
-        }
-        
-        op_t get_identity() const
+                
+        op_t const & get_identity() const
         {
             return tident[0];
         }
@@ -236,6 +228,11 @@ namespace app {
                 phys.insert( std::make_pair(tphys[0][i], 1) );
             }
             return phys;
+        }
+        
+        Hamiltonian<Matrix, SymmGroup> get_hamiltonian () const
+        {
+            return ham(get_phys(), get_identity(), terms);
         }
         
         typename SymmGroup::charge init_qn (const alps::Parameters& parms) const
@@ -295,11 +292,11 @@ namespace app {
         const graph_type& lattice;
         alps::model_helper<I> model;
         
-        std::vector<hamterm_t> terms;
         std::map<int, std::pair<bool, op_t> > site_terms;
         mutable std::map<int, op_t> tident;
         mutable std::map<int, op_t> tfill;
         mutable std::map<int, std::vector<typename SymmGroup::charge> > tphys;
+        std::vector<hamterm_t> terms;
         std::vector<std::pair<int, std::string> > conserved_qn;
         
     };
