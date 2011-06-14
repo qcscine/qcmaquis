@@ -23,7 +23,7 @@
 
 namespace app {
     
-    enum TermsType {All_terms, Site_terms, Odd_terms, Even_terms, ExpSite_terms, ExpOdd_terms, ExpEven_terms};
+    enum TermType {all_term, site_term, bond_term};
     
     template<class Matrix, class SymmGroup>
     struct Hamiltonian_Term : public generate_mpo::Operator_Term<Matrix, SymmGroup>
@@ -49,7 +49,7 @@ namespace app {
         , terms(terms_)
         {}
         
-        virtual int n_terms (TermsType what=All_terms) const { return terms.size(); }
+        virtual int n_terms (TermType what=all_term) const { return terms.size(); }
         virtual hamterm_t const & operator[] (int i) const { return terms[i]; }
         virtual void add_term (hamterm_t const & term) { terms.push_back(term); }
         
@@ -77,7 +77,7 @@ namespace app {
     
     
     template<class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_mpo(std::size_t L, Hamiltonian<Matrix, SymmGroup> const & H, TermsType what=All_terms)
+    MPO<Matrix, SymmGroup> make_mpo(std::size_t L, Hamiltonian<Matrix, SymmGroup> const & H, TermType what=all_term)
     {
         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity());
         
