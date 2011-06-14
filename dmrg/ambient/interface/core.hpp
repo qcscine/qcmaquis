@@ -64,6 +64,7 @@ public:
         assert(self != NULL);
         self->modifier = NULL;
         if(this->is_loose_copy()){
+            while(this->is_loose_copy()) // due to else if
             self->original->bind();
         }else if(this->is_loose_copied()){
             self->meta.loose_copied = false;
