@@ -4,6 +4,9 @@
 
 #include "hamiltonian.h"
 
+#include "dense_matrix/matrix_vector_traits.h"
+#include "mp_tensors/reshapes.h"
+
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -21,7 +24,7 @@ namespace app {
         std::vector<Hamiltonian<Matrix, SymmGroup> > ret;
         pos_where_t pos_where;
         pos_terms_t pos_terms;
-
+        
         for (int i=0; i<H.n_terms(); ++i)
         {            
             if (H[i].operators.size() == 1) {
@@ -87,10 +90,63 @@ namespace app {
             std::cout << "Hamiltonian #" << n << std::endl;
             std::cout << ret[n];
         }
-
+        
         return ret;
     }
     
-}
+    // Precondition: Hamiltonian has to be sorted with bond terms coming before site terms (default behaviour of Operator_Term::operator<())
+    template <class Matrix, class SymmGroup>
+    Hamiltonian<Matrix, SymmGroup> exp (Hamiltonian<Matrix, SymmGroup> const & H, typename Matrix::value_type const & alpha = 1)
+    {
+        typedef Hamiltonian<Matrix, SymmGroup> ham;
+        
+        
+        for (int n=0; n<H.n_terms(); )
+        {
+            std::cout << "new group starting at n=" << n << std::endl;
+            assert(H[n].operators.size() == 2);
+            int pos1 = H[n].operators[0].first;
+            int pos2 = H[n].operators[1].first;
+            typename ham::op_t bond_op;
+            op_kron(H.get_phys(), H[n].operators[0].second, H[n].operators[1].second, bond_op);
+            
+            int k = n+1;
+            for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
+            {
+                std::cout << "using k=" << k << std::endl;
+                typename ham::op_t tmp;
+                if (H[k].operators.size() == 2)
+                    op_kron(H.get_phys(), H[k].operators[0].second, H[k].operators[1].second, tmp);
+                else if (H[k].operators[0].first == pos1)
+                    op_kron(H.get_phys(), H[k].operators[0].second, H.get_identity(), tmp);
+                else if (H[k].operators[0].first == pos2)
+                    op_kron(H.get_phys(), H.get_identity(), H[k].operators[0].second, tmp);
+                else
+                    std::runtime_error("Operator k not matching any valid position.");
+                bond_op += tmp;
+            }
+            std::cout << "group finishing with k=" << k << std::endl;
+            
+            bond_op = op_exp(H.get_phys()*H.get_phys(), bond_op, alpha);
+            bond_op = reshape_2site_op(H.get_phys(), bond_op);
+            block_matrix<Matrix, SymmGroup> U, V, left, right;
+            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
+            svd(bond_op, U, V, S);
+            Ssqrt = sqrt(S);
+            gemm(U, Ssqrt, left);
+            gemm(Ssqrt, V, right);
+            
+            // reshape and write back
+            std::vector<block_matrix<Matrix, SymmGroup> > U_list = reshape_right_to_list(H.get_phys(), left);
+            std::vector<block_matrix<Matrix, SymmGroup> > V_list = reshape_left_to_list(H.get_phys(), right);
+            
+            
+            n = k;
+        }
+        
+        return H;
+    }
+    
+} // namespace
 
 #endif
