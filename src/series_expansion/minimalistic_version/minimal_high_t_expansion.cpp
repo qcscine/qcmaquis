@@ -40,18 +40,30 @@
 #include <cassert>
 #include "minimal_polynomial.hpp"
 
+// A large integer of 128-256 bits (fixed size)
+// this will define type >  large_int  <
+#ifdef USE_GMP_INTEGERS
+#include "integer_classes/use_gmp_integers.hpp"
+#endif //USE_GMP_INTEGERS
 
+#ifdef USE_INT64_INTEGERS
+namespace hp2c
+{
+    typedef int64_t large_int;
+}
+#endif //USE_INT64_INTEGERS
+
+
+
+
+using namespace hp2c;
 
 //
 // Typedefs
 //
 
-// A large integer of 128-256 bits (fixed size)
-typedef int64_t large_int;
 
 // A polynomial with large_int coefficients
-using hp2c::polynomial;
-using hp2c::monomial;
 typedef polynomial<large_int> polynomial_type;
 
 // A sparse vector of polynomials (filling about 10%-15%)

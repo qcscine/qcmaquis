@@ -47,6 +47,11 @@ struct monomial
     }
 };
 
+/**
+  * Multiplication with some factor of arbitrary type T
+  * (for which the monomial class has to provide a *= operator)
+  * e.g. T = int
+  */
 template <typename CoeffType, typename T>
 monomial<CoeffType> operator * (monomial<CoeffType> m, T const& t)
 {
@@ -71,6 +76,9 @@ monomial<CoeffType> operator * (T const& t, monomial<CoeffType> const& m)
 template <typename CoeffType>
 class polynomial;
 
+/**
+  * Multiplication of two polynomials
+  */
 template <typename CoeffType>
 polynomial<CoeffType> operator * (polynomial<CoeffType> const& p1, polynomial<CoeffType> const& p2)
 {
@@ -96,6 +104,9 @@ polynomial<CoeffType> operator * (polynomial<CoeffType> const& p1, polynomial<Co
     return result;
 }
 
+/**
+  * Multiplication of a polynomial with a monomial
+  */
 template <typename CoeffType>
 polynomial<CoeffType> operator * (polynomial<CoeffType> const& p, monomial<CoeffType> const& m)
 {
@@ -128,22 +139,34 @@ class polynomial
         {
         }
 
+        /**
+          * Copy constructor
+          */
         polynomial(polynomial const& p)
             :coeffs(p.coeffs)
         {
         }
 
+        /**
+          * Assignment operator
+          */
         polynomial& operator = (polynomial p)
         {
-            swap(p);
+            swap(*this,p);
             return *this;
         }
 
-        void swap(polynomial& p)
+        /**
+          * Swap function
+          */
+        friend void swap(polynomial& p1, polynomial& p2)
         {
-            coeffs.swap(p.coeffs);
+            swap(p1.coeffs,p2.coeffs);
         }
 
+        /**
+          * Prints polynomial to ostream o
+          */
         void print(std::ostream& o) const
         {
             for(std::size_t je = 0; je < max_order; ++je)
@@ -152,6 +175,9 @@ class polynomial
                         o<<"+"<<coeffs[je*max_order+he]<<"*J^"<<je<<"*h^"<<he;
         }
 
+        /**
+          * Plus assign with a polynomial
+          */
         polynomial& operator += (polynomial const& p)
         {
             typename std::vector<CoeffType>::iterator it    = coeffs.begin();
@@ -167,12 +193,19 @@ class polynomial
             return *this;
         }
 
+        /**
+          * Plus assign with a coefficient
+          * Adds the coefficient to the 0th order element of the polynomial
+          */
         polynomial& operator += (CoeffType const& c)
         {
             coeffs[0] += c;
             return *this;
         }
 
+        /**
+          * Plus assign with a monomial
+          */
         polynomial& operator += (monomial<CoeffType> const& m)
         {
             assert(m.j_exp < max_order);
@@ -192,6 +225,10 @@ class polynomial
 //            return *this;
 //        }
 
+        /**
+          * Multiplies assign with coefficient
+          * Mutliplies all elements the argument
+          */
         polynomial& operator *= (CoeffType const& c)
         {
             for(typename std::vector<CoeffType>::iterator it = coeffs.begin(); it != coeffs.end(); ++it)
@@ -202,7 +239,6 @@ class polynomial
         /**
          * Access coefficient of monomial J^j_exp*h^h_exp
          */
-
         inline CoeffType operator ()(unsigned int j_exp, unsigned int h_exp) const
         {
             assert(j_exp < max_order);
@@ -213,7 +249,6 @@ class polynomial
         /**
          * Access coefficient of monomial J^j_exp*h^h_exp
          */
-
         inline CoeffType& operator ()(unsigned int j_exp, unsigned int h_exp)
         {
             assert(j_exp < max_order);
@@ -222,6 +257,10 @@ class polynomial
         }
 };
 
+
+/**
+  * Stream operator
+  */
 template <typename CoeffType>
 std::ostream& operator <<(std::ostream& o, polynomial<CoeffType> const& p)
 {
@@ -229,12 +268,18 @@ std::ostream& operator <<(std::ostream& o, polynomial<CoeffType> const& p)
     return o;
 }
 
+/**
+  * Multiplication of a monomial with a polynomial
+  */
 template <typename CoeffType>
 polynomial<CoeffType> operator * (monomial<CoeffType> const& m,polynomial<CoeffType> const& p)
 {
     return p * m;
 }
 
+/**
+  * Multiplication of a polynomial with a factor
+  */
 template <typename CoeffType>
 polynomial<CoeffType> operator * (polynomial<CoeffType> p, CoeffType const& c)
 {
