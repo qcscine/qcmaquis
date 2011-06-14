@@ -1,4 +1,7 @@
 
+#ifndef __ALPS_MATRIX_VECTOR_TRAITS_HPP__
+#define __ALPS_MATRIX_VECTOR_TRAITS_HPP__
+
 namespace blas {
     
     template<class FullMatrixClass>
@@ -8,3 +11,5 @@ namespace blas {
     struct associated_vector { };
     
 }
+
+#endif
