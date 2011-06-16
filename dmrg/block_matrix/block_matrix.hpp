@@ -276,6 +276,16 @@ void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
     cols_.erase(cols_.begin() + which);
     data_.erase(data_.begin() + which);
 }
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::remove_block(std::size_t which)
+{
+    assert( which < data_.size() );
+
+    rows_.erase(rows_.begin() + which);
+    cols_.erase(cols_.begin() + which);
+    data_.erase(data_.begin() + which);
+}
+
 #ifdef HAVE_ALPS_HDF5
 
 template<class Matrix, class SymmGroup>

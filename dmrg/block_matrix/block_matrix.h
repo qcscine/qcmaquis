@@ -60,7 +60,8 @@ public:
     
     void insert_block(Matrix const &, charge, charge);
     void remove_block(charge r, charge c);
-    
+    void remove_block(std::size_t which);
+
     void remove_rows_from_block(size_type block, size_type r, size_type k = 1);
     void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
     
