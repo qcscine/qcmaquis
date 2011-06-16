@@ -291,13 +291,11 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
     
     Index<SymmGroup> aux_i = A.right_basis();
     ProductBasis<SymmGroup> pb(phys, adjoin(phys));
-    
-    std::cout << "right basis:" << aux_i <<std::endl;
-    
+
     typedef typename Index<SymmGroup>::basis_iterator bi_t;
     for (bi_t b = aux_i.basis_begin(); !b.end(); ++b)
     {
-        block_matrix<Matrix, SymmGroup> Ai;
+    	block_matrix<Matrix, SymmGroup> Ai;
         for (bi_t s1 = phys.basis_begin(); !s1.end(); ++s1)
             for (bi_t s2 = phys.basis_begin(); !s2.end(); ++s2)
             {                    
@@ -322,42 +320,29 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
                 std::size_t out_left_offset = 0;
                 std::size_t out_right_offset = 0;
                 
-                Ai(std::make_pair(out_left_c, out_left_offset + s1->second),
-                   std::make_pair(out_right_c, out_right_offset + s2->second))
+                Ai(*s1, *s2)
                 = A(std::make_pair(in_left_c, in_left_offset + s1->second*phys.size_of_block(s2->first) + s2->second),
-                    std::make_pair(in_right_c, in_right_offset + b->second));
+                    *b);
                 
             }
+
+        // Removing empty blocks
+        for (int n=0; n<Ai.n_blocks(); ++n)
+        {
+        	bool empty = true;
+        	for (int i=0; i<blas::num_rows(Ai[n]) && empty; ++i)
+        		for (int j=0; j<blas::num_cols(Ai[n]) && empty; ++j)
+        			if (Ai[n](i,j) != 0)
+        				empty=false;
+
+        	if (empty)
+        		Ai.remove_block(n);
+        }
+
         ret.push_back(Ai);
     }
-    
-    // Removing empty blocks
-//    Index<U1> out_left = phys*adjoin(phys);
-//    Index<U1> out_right = phys*adjoin(phys);
-//    for (typename Index<U1>::const_iterator it1 = out_left.begin(); it1 != out_left.end(); it1++)
-//    {
-//        for (typename Index<U1>::const_iterator it2 = out_right.begin(); it2 != out_right.end(); it2++)
-//        {
-//            bool empty = true;
-//            
-//            if (!ret.has_block(it1->first, it2->first)) continue;
-//            
-//            Matrix tmp = ret(it1->first, it2->first);
-//            for (int i=0; i<blas::num_rows(tmp); ++i)
-//            {
-//                for (int j=0; j<blas::num_cols(tmp); ++j)
-//                    if (tmp(i,j) != 0) {
-//                        empty=false;
-//                        break;
-//                    }
-//                if (!empty) break;
-//            }
-//            
-//            if (empty)
-//                ret.remove_block(it1->first, it2->first);
-//        }
-//    }
-    
+    assert( ret.size() == aux_i.sum_of_sizes() );
+
     return ret;
 }
 
@@ -365,7 +350,65 @@ template<class Matrix, class SymmGroup>
 std::vector<block_matrix<Matrix, SymmGroup> > reshape_left_to_list (Index<SymmGroup> const & phys,
                                                                     block_matrix<Matrix, SymmGroup> const & A)
 {
-    return std::vector<block_matrix<Matrix, SymmGroup> >();
+	typedef typename SymmGroup::charge charge;
+	std::vector<block_matrix<Matrix, SymmGroup> > ret;
+
+	Index<SymmGroup> aux_i = A.left_basis();
+	ProductBasis<SymmGroup> pb(phys, adjoin(phys));
+
+	typedef typename Index<SymmGroup>::basis_iterator bi_t;
+	for (bi_t b = aux_i.basis_begin(); !b.end(); ++b)
+	{
+		block_matrix<Matrix, SymmGroup> Ai;
+		for (bi_t s1 = phys.basis_begin(); !s1.end(); ++s1)
+			for (bi_t s2 = phys.basis_begin(); !s2.end(); ++s2)
+			{
+				charge in_right_c = SymmGroup::fuse(s2->first, -s1->first);
+				charge in_left_c = b->first;
+
+				if (!A.has_block(in_left_c, in_right_c))
+					continue;
+
+				charge out_left_c = s1->first;
+				charge out_right_c = s2->first;
+
+				if (!Ai.has_block(out_left_c, out_right_c))
+					Ai.insert_block(Matrix(phys.size_of_block(s1->first),
+							phys.size_of_block(s2->first),
+							0),
+							out_left_c, out_right_c);
+
+				std::size_t in_left_offset = 0;
+				std::size_t in_right_offset = pb(s2->first, -s1->first);
+
+				std::size_t out_left_offset = 0;
+				std::size_t out_right_offset = 0;
+
+				Ai(std::make_pair(out_left_c, out_left_offset + s1->second),
+						std::make_pair(out_right_c, out_right_offset + s2->second))
+				= A(std::make_pair(in_left_c, in_left_offset + b->second),
+						std::make_pair(in_right_c, in_right_offset + s1->second*phys.size_of_block(s2->first) + s2->second));
+
+			}
+
+		// Removing empty blocks
+		for (int n=0; n<Ai.n_blocks(); ++n)
+		{
+			bool empty = true;
+			for (int i=0; i<blas::num_rows(Ai[n]) && empty; ++i)
+				for (int j=0; j<blas::num_cols(Ai[n]) && empty; ++j)
+					if (Ai[n](i,j) != 0)
+						empty=false;
+
+			if (empty)
+				Ai.remove_block(n);
+		}
+
+		ret.push_back(Ai);
+	}
+	assert( ret.size() == aux_i.sum_of_sizes() );
+
+	return ret;
 }
 
 
