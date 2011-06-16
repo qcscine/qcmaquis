@@ -99,24 +99,23 @@ add_definitions(-DCPU_FREQ=${CPU_FREQ})
 # What to build
 ######################################################################
 
-set(CMAKE_C_FLAGS "")
-set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
-set(CMAKE_C_FLAGS_DEBUG "-g")
+#set(CMAKE_C_FLAGS "")
+#set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+#set(CMAKE_C_FLAGS_DEBUG "-g")
 
-set(CMAKE_CXX_FLAGS "")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+#set(CMAKE_CXX_FLAGS "")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 ######################################################################
 # User options
 ######################################################################
 
 option(ENABLE_OMP "Enable OpenMP" OFF)
-#option(ENABLE_MPI "Enable MPI" OFF) # Enable ambient is enough!
 option(ENABLE_AMBIENT "Enable ambient" OFF)
 option(USE_MTM "Use multi threads matrix class" OFF)
 option(USE_GPU "Use GPU for large matrix gemm (to be used together with USE_MTM)" OFF)
-set(EXTRA_DEFINITIONS "" CACHE STRING "Advanced definitions")
+set(EXTRA_DEFINITIONS "-g -O3 -DNDEBUG" CACHE STRING "Advanced definitions")
 
 option(BUILD_APP "Build DMRG Apps" ON)
 option(BUILD_BELA_BRANCH "Build Bela's branch DMRG Apps" OFF)
