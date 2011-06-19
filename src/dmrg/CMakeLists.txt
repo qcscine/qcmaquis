@@ -28,14 +28,6 @@ project (DMRG)
 ######################################################################
 # Libraries
 ######################################################################
-# OpenMP
-find_package(OpenMP)
-
-# MPI
-if(NOT MPI_FOUND)
-  find_package(MPI)
-endif(NOT MPI_FOUND)
-
 # ALPS
 if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
   set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
@@ -50,7 +42,7 @@ set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} CACHE STRINGS "ALPS include dirs")
 set(HDF5_INCLUDE_DIR ${HDF5_INCLUDE_DIR} CACHE STRINGS "")
 set(HDF5_LIBRARIES ${HDF5_LIBRARIES} CACHE STRINGS "")
 set(ALPS_LAPACK_DEFINITIONS ${LAPACK_DEFINITIONS} CACHE STRINGS "")
-set(ALPS_LAPACK_LINKER_FLAGS ${LAPACK_LINKER_FLAGS} CACHE STRINGS "")
+set(ALPS_LAPACK_LINKER_FLAGS " ${LAPACK_LINKER_FLAGS}" CACHE STRINGS "")
 set(ALPS_LAPACK_LIBRARIES ${LAPACK_LIBRARIES} CACHE STRINGS "")
 set(ALPS_LAPACK_LIBRARY ${LAPACK_LIBRARY} CACHE STRINGS "")
 set(ALPS_BLAS_LIBRARIES ${BLAS_LIBRARIES} CACHE STRINGS "")
@@ -59,6 +51,14 @@ set(ALPS_BLAS_LIBRARY ${BLAS_LIBRARY} CACHE STRINGS "")
 mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRARIES
                 ALPS_LAPACK_DEFINITIONS ALPS_LAPACK_LINKER_FLAGS ALPS_LAPACK_LIBRARIES ALPS_LAPACK_LIBRARY
                 ALPS_BLAS_LIBRARIES ALPS_BLAS_LIBRARY)
+
+# OpenMP
+find_package(OpenMP)
+
+# MPI
+if(NOT MPI_FOUND)
+  find_package(MPI)
+endif(NOT MPI_FOUND)
 
 ######################################################################
 # Version information
@@ -173,6 +173,7 @@ link_directories(${ALPS_LIBRARY_DIRS})
 if(ENABLE_OMP)
   if(OPENMP_FOUND)
     macro(enable_omp_if_found)
+      #add_definitions(${OpenMP_C_FLAGS} ${OpenMP_CXX_FLAGS})
       set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS})
       set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS})
     endmacro(enable_omp_if_found)
@@ -187,8 +188,9 @@ endif(ENABLE_OMP)
 # Ambient & MPI
 if(MPI_FOUND)
   macro(enable_mpi)
-    set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${MPI_COMPILE_FLAGS})
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${MPI_COMPILE_FLAGS})
+    add_definitions(${MPI_COMPILE_FLAGS})
+    #set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${MPI_COMPILE_FLAGS})
+    #set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${MPI_COMPILE_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_LINK_FLAGS})
     include_directories(${MPI_INCLUDE_PATH})
   endmacro(enable_mpi)
