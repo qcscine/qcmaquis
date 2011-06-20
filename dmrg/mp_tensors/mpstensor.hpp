@@ -28,13 +28,9 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     
     data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
     
-    if (fillrand) {
+    if (fillrand)
         data_.generate(drand48);
-//        for (int i = 0; i < data_.n_blocks(); ++i)
-//            data_[i](0,0) = 1;
-//            for (int k = 0; k < std::min(num_rows(data_[i]), num_cols(data_[i])); ++k)
-//                data_[i](k,k) = 1;
-    } else
+    else
         data_.generate(utils::constant<typename Matrix::value_type>(0));
 }
 
@@ -378,6 +374,8 @@ void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
 {
+    data_.clear();
+    
     make_left_paired();
     ar >> alps::make_pvp("phys_i", phys_i);
     ar >> alps::make_pvp("left_i", left_i);

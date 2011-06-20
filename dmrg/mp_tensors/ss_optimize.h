@@ -74,31 +74,48 @@ public:
     , parms(parms_)
     , storage_master(sm)
     {
+//        mps.normalize_right();
+        mps.canonize(0);
         init_left_right(mpo);
         cout << "Done init_left_right" << endl;
     }
     
-    void sweep(int sweep, Logger & iteration_log,
-               OptimizeDirection d = Both)
+    int sweep(int sweep, Logger & iteration_log,
+               OptimizeDirection d = Both,
+               int resume_at = -1,
+               int max_secs = -1)
     {
+        timeval sweep_now, sweep_then;
+        gettimeofday(&sweep_now, NULL);
+        
         static Timer
         t_io("sweep_io"),
         t_solver("sweep_solver"),
         t_grow("sweep_grow");
         
-        #ifdef MPI_PARALLEL
+#ifdef MPI_PARALLEL
         ambient::playout();
-        #endif
+#endif
         
         std::size_t L = mps.length();
+        
+        if (resume_at != -1)
+        {
+            int site;
+            if (resume_at < L)
+                site = resume_at;
+            else
+                site = 2*L-resume_at-1;
+            mps.canonize(site);
+            init_left_right(mpo);
+        }
 
-        #ifndef MPI_PARALLEL
         storage::prefetch(left_[0], left_stores_[0]);
         storage::prefetch(right_[1], right_stores_[1]);
-        #endif
         
         zout << mps.description() << endl;
-        for (int _site = 0; _site < 2*L; ++_site) {
+        for (int _site = (resume_at == -1 ? 0 : resume_at);
+             _site < 2*L; ++_site) {
             Timer iteration_t("Iteration took");
             iteration_t.begin();
             
@@ -121,7 +138,6 @@ public:
             storage::load(left_[site], left_stores_[site]);
             storage::load(right_[site+1], right_stores_[site+1]);
             
-            #ifndef MPI_PARALLEL
             if (lr == +1) {
                 storage::prefetch(left_[site+1], left_stores_[site+1]);
                 if (site+2 < right_.size())
@@ -131,7 +147,6 @@ public:
                 if (site > 1)
                     storage::prefetch(left_[site-1], left_stores_[site-1]);
             }
-            #endif
             
 //            cout << "My size: " << endl;
 //            cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << endl;
@@ -162,6 +177,13 @@ public:
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
+ 
+//                {
+//                    ietl::mult(sp, mps[site], res.second);
+//                    res.first = ietl::dot(res.second, mps[site]);
+//                    res.second = mps[site];
+//                }
+                
                 mps[site] = res.second;
             }
             
@@ -206,18 +228,6 @@ public:
             std::pair<std::size_t, double> trunc;
             
             t_grow.begin();
-            
-//            if (sweep == 0 && lr == +1) {
-//                cout << "Simpliyfing..." << endl;
-//                right_[site+1] = simplify(right_[site+1]);
-//            }
-                
-            #ifdef MPI_PARALLEL
-            //ambient::bailin();
-            //ambient::playout();
-            //ambient::bailout();
-            //printf("Check point 5\n");
-            #endif
                 
             if (lr == +1) {
                 if (site < L-1) {
@@ -263,7 +273,18 @@ public:
             t_grow.end();
             
             iteration_t.end();
+            
+            gettimeofday(&sweep_then, NULL);
+            double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
+            cout << "Sweep has been running for " << elapsed << " seconds." << endl;
+            if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
+                return _site+1;
+            }
+            else
+                cout << max_secs - elapsed << " seconds left." << endl;
         }
+        
+        return -1;
     }
     
     MPS<Matrix, SymmGroup> get_current_mps() const { return mps; }
@@ -271,11 +292,8 @@ public:
 private:
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo)
     {
-        static Timer timer("init_left_right wait"), timer2("init_left_right");
+        static Timer timer2("init_left_right");
         timer2.begin();
-        
-//        mps.normalize_right();
-        mps.canonize(0);
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);
@@ -290,14 +308,13 @@ private:
         storage::reset(left_stores_[0]);
         storage::store(left_[0], left_stores_[0]);
         
-        // this is not actually necessary
-//        for (int i = 0; i < L; ++i) {
-//            MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-//            left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
-//            left_[i+1] = left;
-//            storage::reset(left_stores_[i+1]);
-//            storage::store(left_[i+1], left_stores_[i+1]);
-//        }
+        for (int i = 0; i < L; ++i) {
+            MPSTensor<Matrix, SymmGroup> bkp = mps[i];
+            left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+            left_[i+1] = left;
+            storage::reset(left_stores_[i+1]);
+            storage::store(left_[i+1], left_stores_[i+1]);
+        }
         
         Boundary<Matrix, SymmGroup> right = mps.right_boundary();
         right_[L] = right;
