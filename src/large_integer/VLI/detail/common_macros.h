@@ -28,8 +28,12 @@
 #define MASK_UP				 0xFFFF0000
 */
 
+
+
 namespace vli {
 
     typedef std::size_t size_int;
     typedef std::size_t size_type;
+    enum {  SIZE_SINGLE_VLI = 256/(8*sizeof(int)) };
+
 }

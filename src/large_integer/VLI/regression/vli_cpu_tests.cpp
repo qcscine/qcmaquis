@@ -1,4 +1,7 @@
+
 #define BOOST_TEST_MODULE vli_cpu
+
+
 #include <boost/test/unit_test.hpp>
 
 
@@ -7,6 +10,7 @@
 
 
 using vli::vli_cpu;
+
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {

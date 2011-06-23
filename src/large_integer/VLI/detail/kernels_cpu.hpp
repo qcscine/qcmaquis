@@ -22,23 +22,12 @@ namespace vli
     template <typename BaseInt>
     class vli_cpu;    
 	
-	/**
+    
+    /**
 	 addition classic version on array 
-	 */
-	template <typename T>
-	void addition_classic_cpu(vli::vli_cpu<T>  & x, vli::vli_cpu<T>  const &  y)
-	{
-		for(typename vli_cpu<T>::size_type i = 0; i < vli_cpu<T>::size; ++i)
-			addition_kernel_cpu(&x[i], &y[i]);
-	}
-	
-	
-	/**
-	 addition classic version on array 
-	 
 	 */	
 	template <typename T>
-	void addition_kernel_cpu(T   * x, T  const *  y)
+	void addition_kernel_cpu(T* x, const T*  y)
 	{
 		T carry_bit = 0;
 		*x += *y; 
@@ -51,7 +40,7 @@ namespace vli
 	 addition for the multiplication, just for a plus
 	 */
 	template <typename T>
-	void addition_kernel2_cpu(T  const * x, T  const *  y , T * z)
+	void addition_kernel2_cpu(const T* x, const T*  y , T* z)
 	{
 		T carry_bit = 0;
 		*z = *x + *y; // <- no plus ><
@@ -59,6 +48,20 @@ namespace vli
 		*z    %= BASE;
 		*(z+1)+= carry_bit; //MAYBE PB TO CHECK
 	}
+    
+	/**
+	 addition classic version on array 
+	 */
+	template <class T>
+	void addition_classic_cpu(T* x, const T*  y)
+	{
+        std::size_t size = SIZE_SINGLE_VLI;
+		for(size_type i = 0; i < size ; ++i)
+			addition_kernel_cpu((x+i), (y+i));
+	}
+	
+	
+
 	
 	/**
 	 addition second version
@@ -161,11 +164,9 @@ namespace vli
 	 multiplication classic version, efficiency O(n**2)
 	 */
 	template <typename BaseInt>
-	void multiplication_classic_cpu(vli::vli_cpu<BaseInt> & x, vli::vli_cpu<BaseInt>  const &  y)	
+	void multiplication_classic_cpu(BaseInt* x, const BaseInt* y)	
 	{
-        typedef typename vli_cpu<BaseInt>::size_type size_type;
-
-		size_type size = static_cast<size_type>( vli_cpu<BaseInt>::size )/2; 
+        std::size_t size = SIZE_SINGLE_VLI/2;
 
 		BaseInt r[2] = {0,0};	//for local block calculation
 		BaseInt m =0;

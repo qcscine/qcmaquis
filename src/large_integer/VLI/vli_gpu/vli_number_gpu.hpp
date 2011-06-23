@@ -1,3 +1,6 @@
+
+
+
 /*
  *  vli.h
  *  vli_cpu_gpu
@@ -19,7 +22,6 @@
 
 namespace vli
 {
-
 		
 	template<class BaseInt>
 	class vli_gpu 
@@ -37,13 +39,13 @@ namespace vli
 		/**
 		constructors 
 		*/
-		explicit vli_gpu()
+        vli_gpu()
         {
 		    gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
 	    	gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__);			
         }
 
-		vli_gpu(BaseInt num)
+		explicit vli_gpu(int num)
         {
             gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
 			gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__); //Everything is set to 0	
@@ -68,7 +70,7 @@ namespace vli
 		*/
 		~vli_gpu()
         {
-            cublasFree(data_);
+            cudaFree(data_);
         }
 
 		friend void swap(vli_gpu& a, vli_gpu& b)
@@ -79,7 +81,7 @@ namespace vli
 
 		vli_gpu& operator = (vli_gpu vli)
         {
-            // TODO perhaps the copy-swap implementation is not optimal on the GPU, it is more because we juste copy the pointer of the data \o/
+            // TODO perhaps the copy-swap implementation is not optimal on the GPU, to check
             swap(*this,vli);
             return *this;
         }

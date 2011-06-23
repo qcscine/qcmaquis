@@ -16,8 +16,8 @@
 
 typedef int TYPE; 
 
+
+
 int main (int argc, char * const argv[]) 
 {
-    //TO DO !	
-    return 0;
 }
