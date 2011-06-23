@@ -9,91 +9,61 @@
 
 
 #ifndef VLI_MONOME_H
-#define VLI_MONOME_HP
+#define VLI_MONOME_H
 
 #include <ostream>
 #include <cmath>
 #include <vector>
 
+#define MAX_EXPONENT 0x2 //today ...
+
 namespace vli
 {	
-	template<class VLI>
-	class vli_site_monome{
-	public:
-        typedef typename VLI::size_type size_type;		
-
-		explicit vli_site_monome(size_type exponent = 0):exponent_(exponent){
-			mono_ = new VLI();
-	    }
-				
-		vli_site_monome(const vli_site_monome & monome_site){
-    		this->mono_ = new VLI(*monome_site.mono_);
-			this->exponent_ = monome_site.exponent_;
-		}
-				
-		~vli_site_monome(){
-			delete mono_;
-		}
-		
-		vli_site_monome & operator=(vli_site_monome site_monome){
-			this->swap(site_monome);
-			return *this;
-		}
-
-		void swap(vli_site_monome & site_monome){
-			std::swap(this->mono_, site_monome.mono_);
-			std::swap(this->exponent_, site_monome.exponent_);
-		} 
-		
-		size_type & exponent(){
-		   	return exponent_;
-		}
-		
-	private:
-		VLI* mono_;
-	    size_type exponent_;
-	};
+	template <class VLI>
+    struct monomial_gpu
+    {
+        typedef typename VLI::size_type size_type;	
+        size_type j_exp;
+        size_type h_exp;
+        VLI coeff;
+        
+        /**
+         * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
+         */
+        explicit monomial(size_type j_exp = 0, size_type h_exp = 0)
+        : j_exp(j_exp), h_exp(h_exp), coeff(1)
+        {
+        }
+        
+        monomial& operator *= (CoeffType const& c)
+        {
+            coeff *= c;
+            return *this;
+        }
+        
+        monomial& operator *= (int c)
+        {
+            coeff *= c;
+            return *this;
+        }
+    };
 	
 	template<class VLI>
-	class vli_monome{
+	class vli_polynomial_gpu{
 	public:
 		typedef typename VLI::size_type size_type;	
-	
-		explicit vli_monome(){
-		    vec_.push_back(new vli_site_monome<VLI>());
-		}
-				
-		vli_monome(vli_monome & monome){ // no const ...
-			for(size_type i(0);i<monome.size();i++){
-			    this->vec_.push_back(new vli_site_monome<VLI>(*monome(i)));
-			}
-		}
-		
-		vli_monome & operator=(vli_monome monome){
-            swap(monome);
-			return *this;
-		}
+       // enum {max_order = POLYNOMIAL_MAX_ORDER};
+        enum {max_order = 10};
 
-		void swap(vli_monome & monome){
-			std::swap(this->vec_, monome.vec_);	
-		}
-				
-		template<class T> // for iterator
-		vli_site_monome<VLI>* operator()(T t){
-			return vec_[t];
-		}
-		
-		size_type & operator[](size_type i){
-		    return vec_[0]->exponent();	
-		}
-		
-		const size_type size(){
-			return vec_.size();
-		}
-		
-	private:
-		std::vector<vli_site_monome<VLI>* > vec_;
-	};
+        
+        vli_polynomial(){
+            coeffs_.resize(max_order*max_order);
+
+        }
+        
+    private:
+        std::vector<vli_monome<VLI>* > coeffs_;
+    };
 }
 
 #endif //VLI_MONOME_H

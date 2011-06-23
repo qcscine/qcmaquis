@@ -13,6 +13,7 @@ namespace vli {
 
 namespace detail {
 
+
 template <class BaseInt>
 void plus_assign(vli_cpu<BaseInt> & vli_a, vli_cpu<BaseInt> const& vli_b )
 {

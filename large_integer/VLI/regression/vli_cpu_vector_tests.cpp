@@ -9,25 +9,25 @@
 
 
 using vli::vli_cpu;
-using vli::vli_vector;
+using vli::vli_vector_cpu;
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
-    vli_vector< vli_cpu<int> >  a(10);
-    vli_vector<vli_cpu< int > > b(a);
+    vli_vector_cpu< vli_cpu<int> > a(10);
+    vli_vector_cpu< vli_cpu<int> > b(a);
 	
-    BOOST_CHECK_EQUAL(a,b);
+    BOOST_CHECK_EQUAL(a[0],b[0]);
 }
 
 
 BOOST_AUTO_TEST_CASE( copy_constructor_and_assignment )
 {
-    vli_vector< vli_cpu<int> >  a(10);
-    vli_vector<vli_cpu< int > > b(a);
+    vli_vector_cpu<vli_cpu<int> > a(10);
+    vli_vector_cpu<vli_cpu<int> > b(a);
 
-    BOOST_CHECK_EQUAL(a,b);
+    BOOST_CHECK_EQUAL(a[0],b[0]);
 	
-	vli_vector<vli_cpu< int > > c(5);
+	vli_vector_cpu<vli_cpu<int> > c(5);
     c = b;
-    BOOST_CHECK_EQUAL(c,b);
+    BOOST_CHECK_EQUAL(c[0],b[0]);
 }

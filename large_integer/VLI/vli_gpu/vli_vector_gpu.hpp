@@ -10,11 +10,11 @@
 
 namespace vli {
 
-template <class BaseInt>
+template <class VLI>
 class vli_vector_gpu
 {
     public:
-    typedef BaseInt base_int_type;
+    typedef VLI BaseInt;
     typedef std::size_t size_type;
     enum { vli_size = SIZE_BITS/(8*sizeof(BaseInt)) };
 
@@ -32,12 +32,12 @@ class vli_vector_gpu
             // TODO extend features like += etc.
             operator vli_gpu<BaseInt>() const
             {
-                vli_gpu<BaseInt> vli;
+                vli_gpu<VLI> vli;
                 gpu::cu_check_error( cudaMemcpy( vli.p(), data_, vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
                 return vli;
             }
 
-            proxy& operator = (vli_gpu<BaseInt> const& vli)
+            proxy& operator = (vli_gpu<VLI> const& vli)
             {
                 gpu::cu_check_error( cudaMemcpy( data_, vli.p(), vli_size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
                 return *this;
@@ -53,9 +53,9 @@ class vli_vector_gpu
       */
     vli_vector_gpu(size_type size = 0)
         :size_(size)
-    {
-        gpu::cu_check_error(cudaMalloc((void**)&data_, size_*vli_size*sizeof(BaseInt)  ), __LINE__);
-		gpu::cu_check_error(cudaMemset((void*)data_, 0, size*vli_size*sizeof(BaseInt)), __LINE__);       
+    { 
+        gpu::cu_check_error(cudaMalloc((void**)&data_,  size_*vli_size*sizeof(BaseInt)), __LINE__);
+		gpu::cu_check_error(cudaMemset((void*)data_, 0, size_*vli_size*sizeof(BaseInt)), __LINE__);       
     }
 
     /**
@@ -71,18 +71,11 @@ class vli_vector_gpu
     /**
       copy-construct from CPU version
       */
-    vli_vector_gpu(vli_vector<vli_cpu<BaseInt> > const& v_cpu)
+    vli_vector_gpu(vli_vector_cpu<BaseInt> const& v_cpu)
         :size_(v_cpu.size())
     {
-        BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(vli_size) );
-
         gpu::cu_check_error(cudaMalloc((void**)&data_,size_*vli_size*sizeof(BaseInt)  ), __LINE__);
-
-        //TODO there's probably a better implementation
-        for(typename vli_vector<BaseInt>::size_type i = 0; i < v_cpu.size(); ++i)
-			gpu::cu_check_error(cudaMemcpy((void*)(data_+static_cast<std::ptrdiff_t>(i*vli_size)), (void*)&v_cpu[i], vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 				
-//		    gpu::cu_check_error(cublasSetVector(vli_cpu<BaseInt>::size, sizeof(BaseInt), &(v_cpu[i][0]), 1, data_+static_cast<std::ptrdiff_t>(i*vli_size), 1), __LINE__);
-
+        gpu::cu_check_error(cudaMemcpy((void*)(data_), (void*)v_cpu[0],size_*vli_size*sizeof(BaseInt),cudaMemcpyHostToDevice ), __LINE__); 				
     }
 
     /**
@@ -90,7 +83,7 @@ class vli_vector_gpu
       */
     ~vli_vector_gpu()
     {
-        cublasFree(data_);
+        cudaFree(data_);
     }
 
     /**
@@ -115,13 +108,10 @@ class vli_vector_gpu
     /**
       conversion to vli_vector on CPU
       */
-    operator vli_vector<vli_cpu<BaseInt> >() const
+    operator vli_vector_cpu<BaseInt>() const
     {
-        BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(vli_size) );
-
-        vli_vector<vli_cpu<BaseInt> > v_cpu(size_);
-		for(typename vli_vector<BaseInt>::size_type i = 0; i < v_cpu.size(); ++i)
-			gpu::cu_check_error(cudaMemcpy((void*)(data_+static_cast<std::ptrdiff_t>(i*vli_size)), (void*)&v_cpu[i], vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 				
+        vli_vector_cpu<BaseInt> v_cpu(size_);
+        gpu::cu_check_error(cudaMemcpy( (void*)v_cpu[0],(void*)(data_), vli_size*size_*sizeof(BaseInt), cudaMemcpyDeviceToHost), __LINE__); 				
         return v_cpu;
     }
 
@@ -184,14 +174,15 @@ class vli_vector_gpu
     bool operator == (vli_vector_gpu const& v) const
     {
         // TODO this may also be done on the GPU
-        return static_cast< vli_vector<vli_cpu<BaseInt> > >(*this) == static_cast< vli_vector< vli_cpu<BaseInt> > >(v);
+        return static_cast< vli_vector_cpu<vli_cpu<BaseInt> > >(*this) == static_cast< vli_vector_cpu< vli_cpu<BaseInt> > >(v);
     }
     /**
       print to ostream
       */
     void print(std::ostream& o) const
     {
-        o<<static_cast<vli_vector<vli_cpu<BaseInt> > >(*this);
+     //   o<<static_cast<vli_vector_cpu<vli_cpu<BaseInt> > >(*this);
+          o<< vli_vector_cpu<BaseInt>(*this);
     }
 
     private:
@@ -242,14 +233,14 @@ const vli_vector_gpu<BaseInt> entrywise_product(vli_vector_gpu<BaseInt> v_a, vli
   (might be removed in the future)
   */
 template <class BaseInt>
-bool operator == (vli_vector_gpu<BaseInt> const& v_gpu, vli_vector<vli_cpu<int> > const& v_cpu)
+bool operator == (vli_vector_gpu<BaseInt> const& v_gpu, vli_vector_cpu<vli_cpu<int> > const& v_cpu)
 {
     // TODO think about removing this function or implementation through implicit conversion (if possible)
-    return static_cast<vli_vector<vli_cpu<int> > >(v_gpu) == v_cpu;
+  //  return static_cast<vli_vector_cpu<vli_cpu<int> > >(v_gpu) == v_cpu;
 }
 
 template <class BaseInt>
-bool operator == (vli_vector<vli_cpu<int> > const& v_cpu, vli_vector_gpu<BaseInt> const& v_gpu)
+bool operator == (vli_vector_cpu<vli_cpu<int> > const& v_cpu, vli_vector_gpu<BaseInt> const& v_gpu)
 {
     return v_gpu == v_cpu;
 }

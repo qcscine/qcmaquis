@@ -45,12 +45,9 @@ namespace gpu
 		*/
 		int device_;
 	};
-	
-	/**
-	 checking error function
-	 */
-	void check_error(cublasStatus const& stat, std::size_t line);
 
+    
 }
+
 
 #endif
