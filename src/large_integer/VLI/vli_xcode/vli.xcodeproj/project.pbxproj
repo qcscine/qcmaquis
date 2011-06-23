@@ -1,0 +1,667 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		220D31AF13A93F440011A9EE /* libkernels_gpu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 220D31AE13A93F440011A9EE /* libkernels_gpu.a */; };
+		229AFC2113AFEC060080BBCD /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2248DE2313AFD89300D4A0B0 /* main.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		22A949FB13A93201008E08A2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		220D31AE13A93F440011A9EE /* libkernels_gpu.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkernels_gpu.a; path = ../libkernels_gpu.a; sourceTree = "<group>"; };
+		220D31E413A951780011A9EE /* engine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = engine.h; sourceTree = "<group>"; };
+		2248DDAA13AFD02400D4A0B0 /* cmake_install.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cmake_install.cmake; sourceTree = "<group>"; };
+		2248DDAB13AFD02400D4A0B0 /* CMakeCache.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeCache.txt; sourceTree = "<group>"; };
+		2248DDAD13AFD02400D4A0B0 /* cmake.check_cache */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cmake.check_cache; sourceTree = "<group>"; };
+		2248DDAE13AFD02400D4A0B0 /* CMakeCCompiler.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeCCompiler.cmake; sourceTree = "<group>"; };
+		2248DDAF13AFD02400D4A0B0 /* CMakeCXXCompiler.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeCXXCompiler.cmake; sourceTree = "<group>"; };
+		2248DDB013AFD02400D4A0B0 /* CMakeDetermineCompilerABI_C.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = CMakeDetermineCompilerABI_C.bin; sourceTree = "<group>"; };
+		2248DDB113AFD02400D4A0B0 /* CMakeDetermineCompilerABI_CXX.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = CMakeDetermineCompilerABI_CXX.bin; sourceTree = "<group>"; };
+		2248DDB213AFD02400D4A0B0 /* CMakeDirectoryInformation.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeDirectoryInformation.cmake; sourceTree = "<group>"; };
+		2248DDB313AFD02400D4A0B0 /* CMakeOutput.log */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeOutput.log; sourceTree = "<group>"; };
+		2248DDB413AFD02400D4A0B0 /* CMakeSystem.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeSystem.cmake; sourceTree = "<group>"; };
+		2248DDB913AFD02500D4A0B0 /* a.out */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = a.out; sourceTree = "<group>"; };
+		2248DDBA13AFD02500D4A0B0 /* CMakeCCompilerId.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = CMakeCCompilerId.c; sourceTree = "<group>"; };
+		2248DDBC13AFD02500D4A0B0 /* a.out */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = a.out; sourceTree = "<group>"; };
+		2248DDBD13AFD02500D4A0B0 /* CMakeCXXCompilerId.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CMakeCXXCompilerId.cpp; sourceTree = "<group>"; };
+		2248DDBE13AFD02500D4A0B0 /* Makefile.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.cmake; sourceTree = "<group>"; };
+		2248DDBF13AFD02500D4A0B0 /* Makefile2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile2; sourceTree = "<group>"; };
+		2248DDC113AFD02500D4A0B0 /* 1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 1; sourceTree = "<group>"; };
+		2248DDC213AFD02500D4A0B0 /* count.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = count.txt; sourceTree = "<group>"; };
+		2248DDC313AFD02500D4A0B0 /* progress.marks */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = progress.marks; sourceTree = "<group>"; };
+		2248DDC413AFD02500D4A0B0 /* TargetDirectories.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TargetDirectories.txt; sourceTree = "<group>"; };
+		2248DDC613AFD02500D4A0B0 /* build.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.make; sourceTree = "<group>"; };
+		2248DDC713AFD02500D4A0B0 /* cmake_clean.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cmake_clean.cmake; sourceTree = "<group>"; };
+		2248DDC813AFD02500D4A0B0 /* CXX.includecache */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CXX.includecache; sourceTree = "<group>"; };
+		2248DDC913AFD02500D4A0B0 /* depend.internal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.internal; sourceTree = "<group>"; };
+		2248DDCA13AFD02500D4A0B0 /* depend.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.make; sourceTree = "<group>"; };
+		2248DDCB13AFD02500D4A0B0 /* DependInfo.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DependInfo.cmake; sourceTree = "<group>"; };
+		2248DDCC13AFD02500D4A0B0 /* flags.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = flags.make; sourceTree = "<group>"; };
+		2248DDCD13AFD02500D4A0B0 /* link.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = link.txt; sourceTree = "<group>"; };
+		2248DDCE13AFD02500D4A0B0 /* progress.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = progress.make; sourceTree = "<group>"; };
+		2248DDCF13AFD02500D4A0B0 /* vli_cpu_tests.cpp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = vli_cpu_tests.cpp.o; sourceTree = "<group>"; };
+		2248DDD113AFD02500D4A0B0 /* build.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.make; sourceTree = "<group>"; };
+		2248DDD213AFD02500D4A0B0 /* cmake_clean.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cmake_clean.cmake; sourceTree = "<group>"; };
+		2248DDD313AFD02500D4A0B0 /* CXX.includecache */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CXX.includecache; sourceTree = "<group>"; };
+		2248DDD413AFD02500D4A0B0 /* depend.internal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.internal; sourceTree = "<group>"; };
+		2248DDD513AFD02500D4A0B0 /* depend.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.make; sourceTree = "<group>"; };
+		2248DDD613AFD02500D4A0B0 /* DependInfo.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DependInfo.cmake; sourceTree = "<group>"; };
+		2248DDD713AFD02500D4A0B0 /* flags.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = flags.make; sourceTree = "<group>"; };
+		2248DDD813AFD02500D4A0B0 /* link.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = link.txt; sourceTree = "<group>"; };
+		2248DDD913AFD02500D4A0B0 /* progress.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = progress.make; sourceTree = "<group>"; };
+		2248DDDA13AFD02500D4A0B0 /* vli_cpu_vector_tests.cpp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = vli_cpu_vector_tests.cpp.o; sourceTree = "<group>"; };
+		2248DDDC13AFD02500D4A0B0 /* build.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.make; sourceTree = "<group>"; };
+		2248DDDD13AFD02500D4A0B0 /* cmake_clean.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cmake_clean.cmake; sourceTree = "<group>"; };
+		2248DDDE13AFD02500D4A0B0 /* CXX.includecache */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CXX.includecache; sourceTree = "<group>"; };
+		2248DDDF13AFD02500D4A0B0 /* depend.internal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.internal; sourceTree = "<group>"; };
+		2248DDE013AFD02500D4A0B0 /* depend.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.make; sourceTree = "<group>"; };
+		2248DDE113AFD02500D4A0B0 /* DependInfo.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DependInfo.cmake; sourceTree = "<group>"; };
+		2248DDE213AFD02500D4A0B0 /* flags.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = flags.make; sourceTree = "<group>"; };
+		2248DDE313AFD02500D4A0B0 /* link.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = link.txt; sourceTree = "<group>"; };
+		2248DDE413AFD02500D4A0B0 /* progress.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = progress.make; sourceTree = "<group>"; };
+		2248DDE513AFD02500D4A0B0 /* vli_gpu_tests.cpp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = vli_gpu_tests.cpp.o; sourceTree = "<group>"; };
+		2248DDE713AFD02500D4A0B0 /* build.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.make; sourceTree = "<group>"; };
+		2248DDE813AFD02500D4A0B0 /* cmake_clean.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cmake_clean.cmake; sourceTree = "<group>"; };
+		2248DDE913AFD02500D4A0B0 /* CXX.includecache */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CXX.includecache; sourceTree = "<group>"; };
+		2248DDEA13AFD02500D4A0B0 /* depend.internal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.internal; sourceTree = "<group>"; };
+		2248DDEB13AFD02500D4A0B0 /* depend.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.make; sourceTree = "<group>"; };
+		2248DDEC13AFD02500D4A0B0 /* DependInfo.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DependInfo.cmake; sourceTree = "<group>"; };
+		2248DDED13AFD02500D4A0B0 /* flags.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = flags.make; sourceTree = "<group>"; };
+		2248DDEE13AFD02500D4A0B0 /* link.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = link.txt; sourceTree = "<group>"; };
+		2248DDEF13AFD02500D4A0B0 /* progress.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = progress.make; sourceTree = "<group>"; };
+		2248DDF013AFD02500D4A0B0 /* vli_gpu_vector_tests.cpp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = vli_gpu_vector_tests.cpp.o; sourceTree = "<group>"; };
+		2248DDF213AFD02500D4A0B0 /* build.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.make; sourceTree = "<group>"; };
+		2248DDF313AFD02500D4A0B0 /* cmake_clean.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cmake_clean.cmake; sourceTree = "<group>"; };
+		2248DDF413AFD02500D4A0B0 /* CXX.includecache */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CXX.includecache; sourceTree = "<group>"; };
+		2248DDF513AFD02500D4A0B0 /* depend.internal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.internal; sourceTree = "<group>"; };
+		2248DDF613AFD02500D4A0B0 /* depend.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = depend.make; sourceTree = "<group>"; };
+		2248DDF713AFD02500D4A0B0 /* DependInfo.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DependInfo.cmake; sourceTree = "<group>"; };
+		2248DDF813AFD02500D4A0B0 /* flags.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = flags.make; sourceTree = "<group>"; };
+		2248DDF913AFD02500D4A0B0 /* link.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = link.txt; sourceTree = "<group>"; };
+		2248DDFA13AFD02500D4A0B0 /* progress.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = progress.make; sourceTree = "<group>"; };
+		2248DDFB13AFD02500D4A0B0 /* vli_monome_tests.cpp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = vli_monome_tests.cpp.o; sourceTree = "<group>"; };
+		2248DDFC13AFD02500D4A0B0 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		2248DDFD13AFD02500D4A0B0 /* CTestTestfile.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CTestTestfile.cmake; sourceTree = "<group>"; };
+		2248DDFE13AFD02500D4A0B0 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		2248DE0113AFD02500D4A0B0 /* CTestCostData.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CTestCostData.txt; sourceTree = "<group>"; };
+		2248DE0213AFD02500D4A0B0 /* LastTest.log */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LastTest.log; sourceTree = "<group>"; };
+		2248DE0313AFD02500D4A0B0 /* LastTestsFailed.log */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LastTestsFailed.log; sourceTree = "<group>"; };
+		2248DE0413AFD02500D4A0B0 /* vli_cpu_tests */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = vli_cpu_tests; sourceTree = "<group>"; };
+		2248DE0513AFD02500D4A0B0 /* vli_cpu_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vli_cpu_tests.cpp; sourceTree = "<group>"; };
+		2248DE0613AFD02500D4A0B0 /* vli_cpu_vector_tests */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = vli_cpu_vector_tests; sourceTree = "<group>"; };
+		2248DE0713AFD02500D4A0B0 /* vli_cpu_vector_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vli_cpu_vector_tests.cpp; sourceTree = "<group>"; };
+		2248DE0813AFD02500D4A0B0 /* vli_gpu_tests */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = vli_gpu_tests; sourceTree = "<group>"; };
+		2248DE0913AFD02500D4A0B0 /* vli_gpu_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vli_gpu_tests.cpp; sourceTree = "<group>"; };
+		2248DE0A13AFD02500D4A0B0 /* vli_gpu_vector_tests */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = vli_gpu_vector_tests; sourceTree = "<group>"; };
+		2248DE0B13AFD02500D4A0B0 /* vli_gpu_vector_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vli_gpu_vector_tests.cpp; sourceTree = "<group>"; };
+		2248DE2313AFD89300D4A0B0 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		2248DE2513AFD89300D4A0B0 /* test.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = test.1; sourceTree = "<group>"; };
+		2248DE2913AFDBE400D4A0B0 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../main.cpp; sourceTree = "<group>"; };
+		229AFC2313B07FF30080BBCD /* vli_vector_cpu_std.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_vector_cpu_std.hpp; sourceTree = "<group>"; };
+		22A949FD13A93201008E08A2 /* vli */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vli; sourceTree = BUILT_PRODUCTS_DIR; };
+		22A94A0313A93201008E08A2 /* vli.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = vli.1; sourceTree = "<group>"; };
+		22A94A0A13A9329F008E08A2 /* utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
+		22A94A0B13A9329F008E08A2 /* vli_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vli_config.h; sourceTree = "<group>"; };
+		22A94A0C13A9329F008E08A2 /* vli_config.h.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vli_config.h.in; sourceTree = "<group>"; };
+		22A94A0E13A9329F008E08A2 /* vli_number_gpu.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_number_gpu.hpp; sourceTree = "<group>"; };
+		22A94A0F13A9329F008E08A2 /* vli_vector_gpu.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_vector_gpu.hpp; sourceTree = "<group>"; };
+		22A94A1113A9329F008E08A2 /* vli_number_cpu.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_number_cpu.hpp; sourceTree = "<group>"; };
+		22A94A1213A9329F008E08A2 /* vli_number_cpu.hpp_original */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vli_number_cpu.hpp_original; sourceTree = "<group>"; };
+		22A94A1313A9329F008E08A2 /* vli_vector_cpu.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_vector_cpu.hpp; sourceTree = "<group>"; };
+		22A94A1513A9329F008E08A2 /* timings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = timings.h; sourceTree = "<group>"; };
+		22A94A6713A9329F008E08A2 /* GpuManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GpuManager.h; sourceTree = "<group>"; };
+		22A94A6813A9329F008E08A2 /* GpuManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GpuManager.hpp; sourceTree = "<group>"; };
+		22A94A6A13A9329F008E08A2 /* align.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = align.h; sourceTree = "<group>"; };
+		22A94A7013A9329F008E08A2 /* membank.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = membank.h; sourceTree = "<group>"; };
+		22A94A7213A9329F008E08A2 /* common_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = common_macros.h; sourceTree = "<group>"; };
+		22A94A7313A9329F008E08A2 /* kernels_cpu.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = kernels_cpu.hpp; sourceTree = "<group>"; };
+		22A94A7413A9329F008E08A2 /* kernels_gpu.cu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = kernels_gpu.cu; sourceTree = "<group>"; };
+		22A94A7513A9329F008E08A2 /* kernels_gpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kernels_gpu.h; sourceTree = "<group>"; };
+		22A94A7613A9329F008E08A2 /* vli_number_cpu_function_hooks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_number_cpu_function_hooks.hpp; sourceTree = "<group>"; };
+		22A94A7713A9329F008E08A2 /* vli_number_gpu_function_hooks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_number_gpu_function_hooks.hpp; sourceTree = "<group>"; };
+		22A94A7813A9329F008E08A2 /* vli_vector_cpu_function_hooks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_vector_cpu_function_hooks.hpp; sourceTree = "<group>"; };
+		22A94A7913A9329F008E08A2 /* vli_vector_gpu_function_hooks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_vector_gpu_function_hooks.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		22A949FA13A93201008E08A2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				220D31AF13A93F440011A9EE /* libkernels_gpu.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2248DDA913AFD02400D4A0B0 /* regression */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDAA13AFD02400D4A0B0 /* cmake_install.cmake */,
+				2248DDAB13AFD02400D4A0B0 /* CMakeCache.txt */,
+				2248DDAC13AFD02400D4A0B0 /* CMakeFiles */,
+				2248DDFC13AFD02500D4A0B0 /* CMakeLists.txt */,
+				2248DDFD13AFD02500D4A0B0 /* CTestTestfile.cmake */,
+				2248DDFE13AFD02500D4A0B0 /* Makefile */,
+				2248DDFF13AFD02500D4A0B0 /* Testing */,
+				2248DE0413AFD02500D4A0B0 /* vli_cpu_tests */,
+				2248DE0513AFD02500D4A0B0 /* vli_cpu_tests.cpp */,
+				2248DE0613AFD02500D4A0B0 /* vli_cpu_vector_tests */,
+				2248DE0713AFD02500D4A0B0 /* vli_cpu_vector_tests.cpp */,
+				2248DE0813AFD02500D4A0B0 /* vli_gpu_tests */,
+				2248DE0913AFD02500D4A0B0 /* vli_gpu_tests.cpp */,
+				2248DE0A13AFD02500D4A0B0 /* vli_gpu_vector_tests */,
+				2248DE0B13AFD02500D4A0B0 /* vli_gpu_vector_tests.cpp */,
+			);
+			name = regression;
+			path = ../regression;
+			sourceTree = "<group>";
+		};
+		2248DDAC13AFD02400D4A0B0 /* CMakeFiles */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDAD13AFD02400D4A0B0 /* cmake.check_cache */,
+				2248DDAE13AFD02400D4A0B0 /* CMakeCCompiler.cmake */,
+				2248DDAF13AFD02400D4A0B0 /* CMakeCXXCompiler.cmake */,
+				2248DDB013AFD02400D4A0B0 /* CMakeDetermineCompilerABI_C.bin */,
+				2248DDB113AFD02400D4A0B0 /* CMakeDetermineCompilerABI_CXX.bin */,
+				2248DDB213AFD02400D4A0B0 /* CMakeDirectoryInformation.cmake */,
+				2248DDB313AFD02400D4A0B0 /* CMakeOutput.log */,
+				2248DDB413AFD02400D4A0B0 /* CMakeSystem.cmake */,
+				2248DDB513AFD02400D4A0B0 /* CMakeTmp */,
+				2248DDB813AFD02500D4A0B0 /* CompilerIdC */,
+				2248DDBB13AFD02500D4A0B0 /* CompilerIdCXX */,
+				2248DDBE13AFD02500D4A0B0 /* Makefile.cmake */,
+				2248DDBF13AFD02500D4A0B0 /* Makefile2 */,
+				2248DDC013AFD02500D4A0B0 /* Progress */,
+				2248DDC313AFD02500D4A0B0 /* progress.marks */,
+				2248DDC413AFD02500D4A0B0 /* TargetDirectories.txt */,
+				2248DDC513AFD02500D4A0B0 /* vli_cpu_tests.dir */,
+				2248DDD013AFD02500D4A0B0 /* vli_cpu_vector_tests.dir */,
+				2248DDDB13AFD02500D4A0B0 /* vli_gpu_tests.dir */,
+				2248DDE613AFD02500D4A0B0 /* vli_gpu_vector_tests.dir */,
+				2248DDF113AFD02500D4A0B0 /* vli_monome_tests.dir */,
+			);
+			path = CMakeFiles;
+			sourceTree = "<group>";
+		};
+		2248DDB513AFD02400D4A0B0 /* CMakeTmp */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDB613AFD02500D4A0B0 /* CMakeFiles */,
+			);
+			path = CMakeTmp;
+			sourceTree = "<group>";
+		};
+		2248DDB613AFD02500D4A0B0 /* CMakeFiles */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDB713AFD02500D4A0B0 /* cmTryCompileExec.dir */,
+			);
+			path = CMakeFiles;
+			sourceTree = "<group>";
+		};
+		2248DDB713AFD02500D4A0B0 /* cmTryCompileExec.dir */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = cmTryCompileExec.dir;
+			sourceTree = "<group>";
+		};
+		2248DDB813AFD02500D4A0B0 /* CompilerIdC */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDB913AFD02500D4A0B0 /* a.out */,
+				2248DDBA13AFD02500D4A0B0 /* CMakeCCompilerId.c */,
+			);
+			path = CompilerIdC;
+			sourceTree = "<group>";
+		};
+		2248DDBB13AFD02500D4A0B0 /* CompilerIdCXX */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDBC13AFD02500D4A0B0 /* a.out */,
+				2248DDBD13AFD02500D4A0B0 /* CMakeCXXCompilerId.cpp */,
+			);
+			path = CompilerIdCXX;
+			sourceTree = "<group>";
+		};
+		2248DDC013AFD02500D4A0B0 /* Progress */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDC113AFD02500D4A0B0 /* 1 */,
+				2248DDC213AFD02500D4A0B0 /* count.txt */,
+			);
+			path = Progress;
+			sourceTree = "<group>";
+		};
+		2248DDC513AFD02500D4A0B0 /* vli_cpu_tests.dir */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDC613AFD02500D4A0B0 /* build.make */,
+				2248DDC713AFD02500D4A0B0 /* cmake_clean.cmake */,
+				2248DDC813AFD02500D4A0B0 /* CXX.includecache */,
+				2248DDC913AFD02500D4A0B0 /* depend.internal */,
+				2248DDCA13AFD02500D4A0B0 /* depend.make */,
+				2248DDCB13AFD02500D4A0B0 /* DependInfo.cmake */,
+				2248DDCC13AFD02500D4A0B0 /* flags.make */,
+				2248DDCD13AFD02500D4A0B0 /* link.txt */,
+				2248DDCE13AFD02500D4A0B0 /* progress.make */,
+				2248DDCF13AFD02500D4A0B0 /* vli_cpu_tests.cpp.o */,
+			);
+			path = vli_cpu_tests.dir;
+			sourceTree = "<group>";
+		};
+		2248DDD013AFD02500D4A0B0 /* vli_cpu_vector_tests.dir */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDD113AFD02500D4A0B0 /* build.make */,
+				2248DDD213AFD02500D4A0B0 /* cmake_clean.cmake */,
+				2248DDD313AFD02500D4A0B0 /* CXX.includecache */,
+				2248DDD413AFD02500D4A0B0 /* depend.internal */,
+				2248DDD513AFD02500D4A0B0 /* depend.make */,
+				2248DDD613AFD02500D4A0B0 /* DependInfo.cmake */,
+				2248DDD713AFD02500D4A0B0 /* flags.make */,
+				2248DDD813AFD02500D4A0B0 /* link.txt */,
+				2248DDD913AFD02500D4A0B0 /* progress.make */,
+				2248DDDA13AFD02500D4A0B0 /* vli_cpu_vector_tests.cpp.o */,
+			);
+			path = vli_cpu_vector_tests.dir;
+			sourceTree = "<group>";
+		};
+		2248DDDB13AFD02500D4A0B0 /* vli_gpu_tests.dir */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDDC13AFD02500D4A0B0 /* build.make */,
+				2248DDDD13AFD02500D4A0B0 /* cmake_clean.cmake */,
+				2248DDDE13AFD02500D4A0B0 /* CXX.includecache */,
+				2248DDDF13AFD02500D4A0B0 /* depend.internal */,
+				2248DDE013AFD02500D4A0B0 /* depend.make */,
+				2248DDE113AFD02500D4A0B0 /* DependInfo.cmake */,
+				2248DDE213AFD02500D4A0B0 /* flags.make */,
+				2248DDE313AFD02500D4A0B0 /* link.txt */,
+				2248DDE413AFD02500D4A0B0 /* progress.make */,
+				2248DDE513AFD02500D4A0B0 /* vli_gpu_tests.cpp.o */,
+			);
+			path = vli_gpu_tests.dir;
+			sourceTree = "<group>";
+		};
+		2248DDE613AFD02500D4A0B0 /* vli_gpu_vector_tests.dir */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDE713AFD02500D4A0B0 /* build.make */,
+				2248DDE813AFD02500D4A0B0 /* cmake_clean.cmake */,
+				2248DDE913AFD02500D4A0B0 /* CXX.includecache */,
+				2248DDEA13AFD02500D4A0B0 /* depend.internal */,
+				2248DDEB13AFD02500D4A0B0 /* depend.make */,
+				2248DDEC13AFD02500D4A0B0 /* DependInfo.cmake */,
+				2248DDED13AFD02500D4A0B0 /* flags.make */,
+				2248DDEE13AFD02500D4A0B0 /* link.txt */,
+				2248DDEF13AFD02500D4A0B0 /* progress.make */,
+				2248DDF013AFD02500D4A0B0 /* vli_gpu_vector_tests.cpp.o */,
+			);
+			path = vli_gpu_vector_tests.dir;
+			sourceTree = "<group>";
+		};
+		2248DDF113AFD02500D4A0B0 /* vli_monome_tests.dir */ = {
+			isa = PBXGroup;
+			children = (
+				2248DDF213AFD02500D4A0B0 /* build.make */,
+				2248DDF313AFD02500D4A0B0 /* cmake_clean.cmake */,
+				2248DDF413AFD02500D4A0B0 /* CXX.includecache */,
+				2248DDF513AFD02500D4A0B0 /* depend.internal */,
+				2248DDF613AFD02500D4A0B0 /* depend.make */,
+				2248DDF713AFD02500D4A0B0 /* DependInfo.cmake */,
+				2248DDF813AFD02500D4A0B0 /* flags.make */,
+				2248DDF913AFD02500D4A0B0 /* link.txt */,
+				2248DDFA13AFD02500D4A0B0 /* progress.make */,
+				2248DDFB13AFD02500D4A0B0 /* vli_monome_tests.cpp.o */,
+			);
+			path = vli_monome_tests.dir;
+			sourceTree = "<group>";
+		};
+		2248DDFF13AFD02500D4A0B0 /* Testing */ = {
+			isa = PBXGroup;
+			children = (
+				2248DE0013AFD02500D4A0B0 /* Temporary */,
+			);
+			path = Testing;
+			sourceTree = "<group>";
+		};
+		2248DE0013AFD02500D4A0B0 /* Temporary */ = {
+			isa = PBXGroup;
+			children = (
+				2248DE0113AFD02500D4A0B0 /* CTestCostData.txt */,
+				2248DE0213AFD02500D4A0B0 /* LastTest.log */,
+				2248DE0313AFD02500D4A0B0 /* LastTestsFailed.log */,
+			);
+			path = Temporary;
+			sourceTree = "<group>";
+		};
+		2248DE2213AFD89300D4A0B0 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				2248DE2313AFD89300D4A0B0 /* main.cpp */,
+				2248DE2513AFD89300D4A0B0 /* test.1 */,
+			);
+			path = test;
+			sourceTree = "<group>";
+		};
+		22A949F213A93201008E08A2 = {
+			isa = PBXGroup;
+			children = (
+				2248DDA913AFD02400D4A0B0 /* regression */,
+				220D31AE13A93F440011A9EE /* libkernels_gpu.a */,
+				22A94A0013A93201008E08A2 /* vli */,
+				2248DE2213AFD89300D4A0B0 /* test */,
+				22A949FE13A93201008E08A2 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		22A949FE13A93201008E08A2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				22A949FD13A93201008E08A2 /* vli */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		22A94A0013A93201008E08A2 /* vli */ = {
+			isa = PBXGroup;
+			children = (
+				2248DE2913AFDBE400D4A0B0 /* main.cpp */,
+				22A94A0913A9329F008E08A2 /* vli_utils */,
+				22A94A0D13A9329F008E08A2 /* vli_gpu */,
+				22A94A1013A9329F008E08A2 /* vli_cpu */,
+				22A94A1413A9329F008E08A2 /* utils */,
+				22A94A6613A9329F008E08A2 /* gpu */,
+				22A94A6913A9329F008E08A2 /* engine */,
+				22A94A7113A9329F008E08A2 /* detail */,
+				22A94A0313A93201008E08A2 /* vli.1 */,
+			);
+			path = vli;
+			sourceTree = "<group>";
+		};
+		22A94A0913A9329F008E08A2 /* vli_utils */ = {
+			isa = PBXGroup;
+			children = (
+				22A94A0A13A9329F008E08A2 /* utils.hpp */,
+				22A94A0B13A9329F008E08A2 /* vli_config.h */,
+				22A94A0C13A9329F008E08A2 /* vli_config.h.in */,
+			);
+			name = vli_utils;
+			path = ../../vli_utils;
+			sourceTree = "<group>";
+		};
+		22A94A0D13A9329F008E08A2 /* vli_gpu */ = {
+			isa = PBXGroup;
+			children = (
+				22A94A0E13A9329F008E08A2 /* vli_number_gpu.hpp */,
+				22A94A0F13A9329F008E08A2 /* vli_vector_gpu.hpp */,
+			);
+			name = vli_gpu;
+			path = ../../vli_gpu;
+			sourceTree = "<group>";
+		};
+		22A94A1013A9329F008E08A2 /* vli_cpu */ = {
+			isa = PBXGroup;
+			children = (
+				229AFC2313B07FF30080BBCD /* vli_vector_cpu_std.hpp */,
+				22A94A1113A9329F008E08A2 /* vli_number_cpu.hpp */,
+				22A94A1213A9329F008E08A2 /* vli_number_cpu.hpp_original */,
+				22A94A1313A9329F008E08A2 /* vli_vector_cpu.hpp */,
+			);
+			name = vli_cpu;
+			path = ../../vli_cpu;
+			sourceTree = "<group>";
+		};
+		22A94A1413A9329F008E08A2 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				22A94A1513A9329F008E08A2 /* timings.h */,
+			);
+			name = utils;
+			path = ../../utils;
+			sourceTree = "<group>";
+		};
+		22A94A6613A9329F008E08A2 /* gpu */ = {
+			isa = PBXGroup;
+			children = (
+				22A94A6713A9329F008E08A2 /* GpuManager.h */,
+				22A94A6813A9329F008E08A2 /* GpuManager.hpp */,
+			);
+			name = gpu;
+			path = ../../gpu;
+			sourceTree = "<group>";
+		};
+		22A94A6913A9329F008E08A2 /* engine */ = {
+			isa = PBXGroup;
+			children = (
+				22A94A6A13A9329F008E08A2 /* align.h */,
+				22A94A7013A9329F008E08A2 /* membank.h */,
+				220D31E413A951780011A9EE /* engine.h */,
+			);
+			name = engine;
+			path = ../../engine;
+			sourceTree = "<group>";
+		};
+		22A94A7113A9329F008E08A2 /* detail */ = {
+			isa = PBXGroup;
+			children = (
+				22A94A7213A9329F008E08A2 /* common_macros.h */,
+				22A94A7313A9329F008E08A2 /* kernels_cpu.hpp */,
+				22A94A7413A9329F008E08A2 /* kernels_gpu.cu */,
+				22A94A7513A9329F008E08A2 /* kernels_gpu.h */,
+				22A94A7613A9329F008E08A2 /* vli_number_cpu_function_hooks.hpp */,
+				22A94A7713A9329F008E08A2 /* vli_number_gpu_function_hooks.hpp */,
+				22A94A7813A9329F008E08A2 /* vli_vector_cpu_function_hooks.hpp */,
+				22A94A7913A9329F008E08A2 /* vli_vector_gpu_function_hooks.hpp */,
+			);
+			name = detail;
+			path = ../../detail;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		22A949FC13A93201008E08A2 /* vli */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 22A94A0613A93201008E08A2 /* Build configuration list for PBXNativeTarget "vli" */;
+			buildPhases = (
+				22A949F913A93201008E08A2 /* Sources */,
+				22A949FA13A93201008E08A2 /* Frameworks */,
+				22A949FB13A93201008E08A2 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = vli;
+			productName = vli;
+			productReference = 22A949FD13A93201008E08A2 /* vli */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		22A949F413A93201008E08A2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = IBM;
+			};
+			buildConfigurationList = 22A949F713A93201008E08A2 /* Build configuration list for PBXProject "vli" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 22A949F213A93201008E08A2;
+			productRefGroup = 22A949FE13A93201008E08A2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				22A949FC13A93201008E08A2 /* vli */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		22A949F913A93201008E08A2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				229AFC2113AFEC060080BBCD /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		22A94A0413A93201008E08A2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DEBUG,
+					BOOST_TEST_DYN_LINK,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = 4.2;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/opt/boost/include,
+					/Users/Tim/Documents/DMRG/trunk/src/large_integer/VLI,
+					/usr/local/cuda/include,
+				);
+				LD_RUNPATH_SEARCH_PATHS = "/opt/boost/lib /usr/local/cuda/lib ";
+				LIBRARY_SEARCH_PATHS = (
+					/Users/Tim/Documents/DMRG/trunk/src/large_integer/VLI,
+					/usr/local/cuda/lib/,
+					/opt/boost/lib,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-lcuda",
+					"-lcudart",
+					"-lcublas",
+				);
+				SDKROOT = "";
+				VALID_ARCHS = x86_64;
+			};
+			name = Debug;
+		};
+		22A94A0513A93201008E08A2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = 4.2;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/opt/boost/include,
+					/Users/Tim/Documents/DMRG/trunk/src/large_integer/VLI,
+					/usr/local/cuda/include,
+				);
+				LD_RUNPATH_SEARCH_PATHS = "/opt/boost/lib /usr/local/cuda/lib ";
+				LIBRARY_SEARCH_PATHS = (
+					/Users/Tim/Documents/DMRG/trunk/src/large_integer/VLI,
+					/usr/local/cuda/lib,
+					/opt/boost/lib,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OTHER_LDFLAGS = (
+					"-lcuda",
+					"-lcudart",
+					"-lcublas",
+				);
+				SDKROOT = "";
+				VALID_ARCHS = x86_64;
+			};
+			name = Release;
+		};
+		22A94A0713A93201008E08A2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = BOOST_TEST_DYN_LINK;
+				GCC_VERSION = 4.2;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/..\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = dynamic;
+			};
+			name = Debug;
+		};
+		22A94A0813A93201008E08A2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = BOOST_TEST_DYN_LINK;
+				GCC_VERSION = 4.2;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/..\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = dynamic;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		22A949F713A93201008E08A2 /* Build configuration list for PBXProject "vli" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				22A94A0413A93201008E08A2 /* Debug */,
+				22A94A0513A93201008E08A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		22A94A0613A93201008E08A2 /* Build configuration list for PBXNativeTarget "vli" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				22A94A0713A93201008E08A2 /* Debug */,
+				22A94A0813A93201008E08A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 22A949F413A93201008E08A2 /* Project object */;
+}
