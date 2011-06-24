@@ -291,6 +291,10 @@ struct contraction {
                                     ambient::push(ambient::lb_tensor_mpo_l<typename Matrix::value_type>, ambient::lb_tensor_mpo_c<typename Matrix::value_type>,
                                                   oblock, iblock, wblock, out_left_offset, in_left_offset, 
                                                   physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                    //printf("I: "); std::cout << iblock << "\n";
+                                    //printf("O: "); std::cout << oblock << "\n";
+                                    //printf("W: "); std::cout << wblock;
+                                    
                                     #else
                                     for(size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                         for(size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
@@ -302,6 +306,9 @@ struct contraction {
                                                               wblock_t);
                                             }
                                         }
+                                    //printf("I: "); std::cout << iblock << "\n";
+                                    //printf("O: "); std::cout << oblock << "\n";
+                                    //printf("W: "); std::cout << wblock;
                                     #endif
                                 }
                                 
@@ -601,13 +608,16 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
+        cout << "DM: " << dm << endl;
         syev_truncate(dm, U, S, cutoff, Mmax, logger);
+        cout << "U: " << U << endl;
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = U;
         ret.right_i = U.right_basis();
         
         timer.end();
+        cout << ret << endl;
         return ret;
     }
     
