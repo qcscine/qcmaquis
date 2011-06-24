@@ -159,6 +159,16 @@ public:
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
             timeval now, then;
+
+            {
+                MPSTensor<Matrix, SymmGroup> vec1 = mps[site], vec2;
+                vec1.make_left_paired(); vec2.make_left_paired();
+                cout << vec1 << " " << vec2 << endl;
+                ietl::mult(sp, vec1, vec2);
+                vec1.make_left_paired(); vec2.make_left_paired();
+                cout << vec1 << " " << vec2 << endl;
+                cout << "Initial energy guess " << ietl::dot(vec1, vec2) << endl;;
+            }
             
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
@@ -232,13 +242,16 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
+                    cout << mps[site+1] << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
+                    cout << mps[site+1] << endl;
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
                     if (site < L-1)
                         mps[site+1].multiply_from_left(t);
                 }
+                exit(0);
                 
                 storage::load(left_[site+1], left_stores_[site+1]);
                 
