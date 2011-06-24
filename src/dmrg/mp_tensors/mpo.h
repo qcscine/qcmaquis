@@ -38,21 +38,12 @@ public:
             
             block_matrix<Matrix, SymmGroup> M, U, V;
 
-#ifdef MPI_PARALLEL
-            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
-            gemm(left, right, M);
-            svd_truncate(M, U, V, S, cutoff, 100000, false);
-            sqrt(S);
-            gemm(U, S, left);
-            gemm(S, V, right);
-#else
             block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;
             gemm(left, right, M);
             svd_truncate(M, U, V, S, cutoff, 100000, false);
             Sqrt = sqrt(S);
             gemm(U, Sqrt, left);
             gemm(Sqrt, V, right);
-#endif
             
             std::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
             replace_pair(left, right, p);

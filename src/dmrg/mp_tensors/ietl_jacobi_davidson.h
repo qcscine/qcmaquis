@@ -14,7 +14,7 @@
 
 #include "ietl_lanczos_solver.h"
 
-#include <ietl/jacobi.h>
+#include "ietl/jacobi.h"
 
 template<class Matrix, class SymmGroup>
 std::pair<double, MPSTensor<Matrix, SymmGroup> >
@@ -23,15 +23,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         BaseParameters & params)
 {
     typedef MPSTensor<Matrix, SymmGroup> Vector;
-    
     SingleSiteVS<Matrix, SymmGroup> vs(initial);
     
-    typedef ietl::vectorspace<Vector> Vecspace;
-    typedef boost::lagged_fibonacci607 Gen;
-    
-    // define this variable if your ALPS is too old
-
-#ifdef USE_OLD_CRAP
+#ifdef USE_OLD_CRAP // define this variable if your ALPS is too old
     ietl::jcd_simple_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
     jcd_gmres(sp, vs);
 #else
@@ -45,14 +39,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     double tol = params.get<double>("ietl_jcd_tol");
     ietl::basic_iteration<double> iter(params.get<int>("ietl_jcd_maxiter"), tol, tol);
     
-    std::pair<double, Vector> r0;
-    r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
-    #ifdef MPI_PARALLEL
-    //ambient::bailin();
-    //ambient::playout();
-    //ambient::bailout();
-    //printf("Check point 4\n");
-    #endif
+    printf("IETL stuff: \n");
+    std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
+    printf("end of IETL stuff\n");
 
     zout << "JCD used " << iter.iterations() << " iterations." << endl;
     
