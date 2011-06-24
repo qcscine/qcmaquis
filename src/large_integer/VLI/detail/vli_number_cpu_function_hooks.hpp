@@ -17,14 +17,14 @@ namespace detail {
 template <class BaseInt>
 void plus_assign(vli_cpu<BaseInt> & vli_a, vli_cpu<BaseInt> const& vli_b )
 {
-    addition_classic_cpu(vli_a,vli_b);
+    addition_classic_cpu(&vli_a[0],&vli_b[0]);
 }
 
 
 template <class BaseInt>
 void multiplies_assign(vli_cpu<BaseInt> & vli_a, vli_cpu<BaseInt> const& vli_b )
 {
-    multiplication_classic_cpu(vli_a, vli_b);
+    multiplication_classic_cpu(&vli_a[0], &vli_b[0]);
 }
 
 } //namespace detail

@@ -55,6 +55,13 @@ namespace vli
 			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
             memcpy((void*)data_,(void*)r.data_,size*sizeof(BaseInt));
         }
+        
+        vli_cpu(BaseInt* p)
+        {
+			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
+            memcpy((void*)data_,(void*)p,size*sizeof(BaseInt));            
+        
+        }
 		
         ~vli_cpu()
         {
@@ -66,9 +73,6 @@ namespace vli
 			std::swap(a.data_,b.data_);		
         }
 		
-
-        
-        
         vli_cpu& operator= (vli_cpu  r)
         {
             swap(*this,r);
@@ -80,7 +84,7 @@ namespace vli
             return *(data_+i);
         }
 		
-        BaseInt const& operator[](size_type i) const
+        const BaseInt& operator[](size_type i) const
         {
             return *(data_+i);
         }
@@ -111,10 +115,11 @@ namespace vli
         void print(std::ostream& os) const
         {
             int i = size - 1 ;
-			while( i != 0)
-			{
+            os << "(" ;
+			while( i != 0){
 			   	i--;
 				os << *(data_+i);
+                (i == 0) ? (os << ")"):(os << " ");
 			}
 		}
 		

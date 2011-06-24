@@ -10,15 +10,16 @@
 #ifndef VLI_KERNELS_CPU_HPP 
 #define VLI_KERNELS_CPU_HPP
 
-//#include "vli_matrix.h"
-//#include "vli_number_cpu.h"
 #include "common_macros.h"
 #include <cassert>
 #include <boost/static_assert.hpp>
 
 namespace vli
 {
-
+    /*
+     * Wellcome in pointer jungle
+     */
+    
     template <typename BaseInt>
     class vli_cpu;    
 	
@@ -55,7 +56,7 @@ namespace vli
 	template <class T>
 	void addition_classic_cpu(T* x, const T*  y)
 	{
-        std::size_t size = SIZE_SINGLE_VLI;
+        std::size_t size = size_single_vli;
 		for(size_type i = 0; i < size ; ++i)
 			addition_kernel_cpu((x+i), (y+i));
 	}
@@ -109,18 +110,18 @@ namespace vli
 	
 	
 	template <typename T>
-	void multiplication_kernel_up_cpu(T const& x, T const&  y, T * r)	
+	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
 	{
         // TODO unify notation in all function calls: T const& x or T const* x?
-		*r	    = ((x & MASK_UP) >> LOG_BASE_HALF ) * (y & MASK_DOWN);	
-		*(r+1)	= ((x & MASK_UP) >> LOG_BASE_HALF ) * ((y & MASK_UP) >> LOG_BASE_HALF);
+		*r	    = ((*x & MASK_UP) >> LOG_BASE_HALF ) * (*y & MASK_DOWN);	
+		*(r+1)	= ((*x & MASK_UP) >> LOG_BASE_HALF ) * ((*y & MASK_UP) >> LOG_BASE_HALF);
 	}		
 	
 	template <typename T>
-	void multiplication_kernel_down_cpu(T const& x, T const&  y, T * r)	
+	void multiplication_kernel_down_cpu(T const* x, T const*  y, T * r)	
 	{	
-		*r     = (x & MASK_DOWN) * (y & MASK_DOWN);
-		*(r+1) = (x & MASK_DOWN) * ((y & MASK_UP) >> LOG_BASE_HALF);
+		*r     = (*x & MASK_DOWN) * (*y & MASK_DOWN);
+		*(r+1) = (*x & MASK_DOWN) * ((*y & MASK_UP) >> LOG_BASE_HALF);
 	}
 	
 	template <typename T>
@@ -142,7 +143,7 @@ namespace vli
 	
 	
 	template <typename T>
-	void multiplication_block_cpu(T& x, T  const&  y, T * r )	
+	void multiplication_block_cpu(T* x, T  const*  y, T * r )	
 	{
 		T a[2] = {0,0};
 		T b[2] = {0,0};
@@ -166,25 +167,25 @@ namespace vli
 	template <typename BaseInt>
 	void multiplication_classic_cpu(BaseInt* x, const BaseInt* y)	
 	{
-        std::size_t size = SIZE_SINGLE_VLI/2;
+        std::size_t size = size_single_vli/2;
 
 		BaseInt r[2] = {0,0};	//for local block calculation
 		BaseInt m =0;
 		
-		vli::vli_cpu<BaseInt> inter;
+		static vli::vli_cpu<BaseInt> inter; 
 		
 		for (size_type i = 0 ; i < size; i++)
 		{
 			for(size_type k = 0 ; k < size ; k++) // loop on numbers for multiplication the classical multiplication
 			{	
-				m = k + i;
-				multiplication_block_cpu( x[i], y[k], &(r[0]));
+				m = static_cast<BaseInt>(k + i);
+				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
 				addition_kernel_cpu(&inter[m],&r[0]);
 				addition_kernel_cpu(&inter[m+1],&r[1]);
 			}
 		}
 		
-		x = inter;
+        memcpy((void*)x,(void*)&inter[0],full_size_single_vli);
 	}
 	
 	

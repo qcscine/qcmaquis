@@ -1,10 +1,14 @@
 /*
  *  monome.h
- *  monome
+ *  vli
  *
- *  Created by Tim Ewart on 18.03.11.
- *  Copyright 2011 University of Geneva. All rights reserved.
+ *  Created by Tim Ewart (timothee.ewart@unige.ch) and  Andreas Hehn (hehn@phys.ethz.ch) on 18.03.11.
+ *  Copyright 2011 University of Geneva and Eidgenössische Technische Hochschule Züric. All rights reserved.
  *
+ */
+
+/*
+ * due to the structure of VLI and VECTOR_VLI, be carreful on the operator = 
  */
 
 
@@ -13,57 +17,82 @@
 
 #include <ostream>
 #include <cmath>
-#include <vector>
 
-#define MAX_EXPONENT 0x2 //today ...
+
+#define POLYNOMIAL_MAX_ORDER 4 // for testing
 
 namespace vli
 {	
 	template <class VLI>
-    struct monomial_gpu
+    struct monomial
     {
-        typedef typename VLI::size_type size_type;	
+        typedef typename VLI::size_type size_type;	        
+        typedef typename VLI::value_type value_type;	
         size_type j_exp;
         size_type h_exp;
-        VLI coeff;
+        VLI* coeff;
         
         /**
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
          */
-        explicit monomial(size_type j_exp = 0, size_type h_exp = 0)
-        : j_exp(j_exp), h_exp(h_exp), coeff(1)
-        {
+        explicit monomial(size_type j_exp = 0, size_type h_exp = 0):j_exp(j_exp), h_exp(h_exp){
+            coeff = new VLI();
         }
         
-        monomial& operator *= (CoeffType const& c)
-        {
-            coeff *= c;
-            return *this;
+        ~monomial(){
+            delete coeff;
         }
         
-        monomial& operator *= (int c)
-        {
-            coeff *= c;
-            return *this;
+        void destroy(){
+            this->~monomial(); //in case of
         }
+
+        monomial& operator *= (VLI const& c);
+        monomial& operator *= (value_type c);
+        
+        
     };
 	
-	template<class VLI>
-	class vli_polynomial_gpu{
+	template<class VLI_VECTOR>
+	class polynomial{
 	public:
-		typedef typename VLI::size_type size_type;	
-       // enum {max_order = POLYNOMIAL_MAX_ORDER};
-        enum {max_order = 10};
-
+		typedef typename VLI_VECTOR::size_type size_type;	
+		typedef typename VLI_VECTOR::BaseInt BaseInt;	
+        enum {max_order = POLYNOMIAL_MAX_ORDER};
         
-        vli_polynomial(){
-            coeffs_.resize(max_order*max_order);
+        polynomial(){
+            coeffs = new VLI_VECTOR(max_order*max_order); // by default everything is set to 0
+        }
 
+        polynomial(const polynomial& p){
+            coeffs = new VLI_VECTOR(p.coeffs);
+        }
+
+        ~polynomial(){
+            delete coeffs;
+        }
+ 
+        void destroy(){
+            this->~polynomial();  //in case of
         }
         
+        template<class VLI>
+        friend polynomial operator * (const polynomial & p, const monomial<VLI> & m);
+  
+        polynomial& operator = (polynomial p);
+
+        
+        void copy_from_monome(BaseInt* p,const monomial<BaseInt>& m);
+        
+        friend void swap(polynomial& p1, polynomial& p2);
+        inline BaseInt* operator ()(size_type j_exp, size_type h_exp);
+        inline const BaseInt* operator ()(size_type j_exp, size_type h_exp) const ; //need ?
+        
     private:
-        std::vector<vli_monome<VLI>* > coeffs_;
+        VLI_VECTOR* coeffs;
     };
 }
+
+#include "monome/monome.hpp"
 
 #endif //VLI_MONOME_H
