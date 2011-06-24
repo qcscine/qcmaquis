@@ -22,6 +22,7 @@ namespace b_mpos
             Matrix m(2, 2);
             
 // ambient_write_only_
+            assert(false);
             m(1, 0) = 1;
             m(0, 1) = 1;
             jump.insert_block(m, 1, 1);
