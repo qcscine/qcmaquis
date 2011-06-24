@@ -109,7 +109,6 @@ void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const &
 {
     MPSTensor<Matrix, SymmGroup> new_mps =
     contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, logger);
-    
     (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
