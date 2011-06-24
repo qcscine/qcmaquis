@@ -226,6 +226,8 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
     // very analogous to the above svd method
     syev(M, evecs, evals);
+    cout << "syev_t evals: " << evals << endl;
+    cout << "syev_t evecs: " << evecs << endl;
     
     Index<SymmGroup> old_basis = evals.left_basis();
     
@@ -248,6 +250,11 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());
 #endif
+
+    /*for (std::size_t k = 0; k < allevals.size(); ++k)
+        cout << allevals[k] << " ";
+    cout << endl;*/
+
 /* to do
 */
 
@@ -280,6 +287,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
                                         boost::lambda::_1 < evalscut)-evals[k].elements().first;
         #endif
+        cout << "Keeping " << keep << " in block " << k << endl;
 
         if (keep >= num_rows(evals[k]))
             continue;
@@ -395,13 +403,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 {
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
-    {
-#ifdef MPI_PARALLEL
-        sqrt(m[k]);
-#else
         m[k] = sqrt(m[k]);
-#endif
-    }
 
     return m;
 }
