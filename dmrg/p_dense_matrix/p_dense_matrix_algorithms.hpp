@@ -103,9 +103,13 @@ namespace blas
         assert(num_rows(m) == num_cols(m));
         assert(num_rows(evals) == num_rows(m));
 
+        cout << "Input: " << m << endl;
         evecs.resize(num_rows(m), num_cols(m));
-        ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, m, evals.get_data(), evecs); // destoys U triangle of M
-        reverse< p_dense_matrix<T> >(evals);          
+        ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, m, evals.get_data()); // destoys U triangle of M
+        //reverse< p_dense_matrix<T> >(evals);
+        evecs = m;
+        ambient::playout();
+        cout << "Scalacrap evecs: " << evecs << endl;
     }
     
     template<typename T>

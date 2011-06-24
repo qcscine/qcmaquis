@@ -14,6 +14,15 @@
 
 #include <fstream>
 
+class NoopStorage { };
+  
+class NoopStorageMaster {
+ public:
+     typedef NoopStorage Storage;
+     NoopStorage child() { return NoopStorage(); }
+  
+ };
+
 class StreamStorageMaster;
 
 class StreamStorage
@@ -528,6 +537,12 @@ struct storage {
     {
         ss.status_ = StreamStorage::Complete;
     }
+
+/* clean me up! */
+ template<class T> static void store(T &, NoopStorage &) { }
+ template<class T> static void prefetch(T &, NoopStorage &) { }
+ template<class T> static void load(T &, NoopStorage &) { }
+ static void reset(NoopStorage &) { }
 };
 
 

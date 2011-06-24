@@ -155,7 +155,7 @@ namespace blas {
             void* value = calloc(1, sizeof(T));
             self->modifier->push_back(std::pair<std::pair<size_t,size_t>,void*>(std::pair<size_t,size_t>(i,j), value));
             return *(T*)value;
-        }//else printf("Getting element!\n");
+        }
 
         if(this->is_abstract()) this->touch();
         ambient::playout();
@@ -268,7 +268,7 @@ namespace blas {
             STRONG_BARRIER
             for(typename p_dense_matrix<T,P>::size_type j=0; j < m.num_cols(); ++j){
                 STRONG_BARRIER
-                if(ambient::is_master()) printf("%.2f	", m(i,j));
+                if(ambient::is_master()) printf("%.4f	", m(i,j));
                 else m(i,j); // just touch
                 STRONG_BARRIER
             }

@@ -76,9 +76,15 @@ namespace blas {
         return m.num_cols();
     }
     template<typename T>
-    void sqrt(p_diagonal_matrix<T> & m)
+    void p_diagonal_matrix<T>::sqrt()
     { 
-        ambient::push(ambient::sqrt_diagonal_l, ambient::sqrt_diagonal_c, m.get_data());
+        ambient::push(ambient::sqrt_diagonal_l, ambient::sqrt_diagonal_c, this->get_data());
+    }
+    template<typename T>
+    p_diagonal_matrix<T> sqrt(p_diagonal_matrix<T> m)
+    {
+        m.sqrt();
+        return m;
     }
     template<typename T>
     std::ostream& operator<<(std::ostream& os, const p_diagonal_matrix<T>& m)
