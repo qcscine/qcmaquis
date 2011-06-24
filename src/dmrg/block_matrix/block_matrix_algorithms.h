@@ -226,8 +226,8 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
     // very analogous to the above svd method
     syev(M, evecs, evals);
-    cout << "syev_t evals: " << evals << endl;
-    cout << "syev_t evecs: " << evecs << endl;
+    cout << "syev_t evals: " << evals << endl; // LAUSANNE
+    cout << "syev_t evecs: " << evecs << endl; // LAUSANNE
     
     Index<SymmGroup> old_basis = evals.left_basis();
     
@@ -251,7 +251,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     std::reverse(allevals.begin(), allevals.end());
 #endif
 
-    /*for (std::size_t k = 0; k < allevals.size(); ++k)
+    /*for (std::size_t k = 0; k < allevals.size(); ++k) // LAUSANNE
         cout << allevals[k] << " ";
     cout << endl;*/
 
@@ -287,7 +287,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
                                         boost::lambda::_1 < evalscut)-evals[k].elements().first;
         #endif
-        cout << "Keeping " << keep << " in block " << k << endl;
+        cout << "Keeping " << keep << " in block " << k << endl; // LAUSANNE
 
         if (keep >= num_rows(evals[k]))
             continue;
