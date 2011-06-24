@@ -8,7 +8,7 @@ ietl_jcd_tol = 1e-8
 ietl_jcd_maxiter = 10
 
 chkpfile = results.h5
-max_bond_dimension = 500
+max_bond_dimension = 50
 
 nsweeps = 3
 nmainsweeps = 1

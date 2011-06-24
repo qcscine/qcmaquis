@@ -36,6 +36,7 @@ namespace blas {
         const container& get_data() const; 
         container & get_data();    
         std::size_t size() const;
+        void sqrt();
    private:
         container data_;
     };

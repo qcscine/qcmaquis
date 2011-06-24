@@ -57,5 +57,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
 
     std::cout << m2;
     resize(d, 4, 4);
+
+    block_matrix<Matrix, grp> m3;
+    m3 = m2;
+    std::cout << m3;
+
 }
 
