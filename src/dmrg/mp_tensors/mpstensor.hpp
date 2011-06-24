@@ -204,7 +204,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     
     timer.end();
     scalar_type val = ret[0](0,0);
-    if(val <= 0){ free((void*)-1); assert(val > 0); }
+    if(val <= 0){ assert(val > 0); }
     return sqrt(val);
     #else
     using utils::conj;
@@ -230,14 +230,14 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     make_left_paired();
     rhs.make_left_paired();
 
-    #ifdef MPI_PARALLEL
+#ifdef MPI_PARALLEL
     std::vector<Matrix> ret;
     ret.reserve(data_.n_blocks());
 
     for(size_t i = 0 ; i < data_.n_blocks(); i++){
         ret.push_back(Matrix(1,1));
-        data_[i].nullcut(); // not counting redunant elements of workgroup
-        ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], ret[i]);
+        data_[i].nullcut(); // not counting redundant elements of workgroup
+        ambient::push(ambient::scalar_overlap_l, ambient::scalar_overlap_c, data_[i], rhs.data_[i], ret[i]);
     }
     for(size_t i = 1 ; i < data_.n_blocks(); i++){
         ambient::push(ambient::atomic_add_l, ambient::atomic_add_c, ret[0], ret[i]);
@@ -246,7 +246,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     timer.end();
     scalar_type val = ret[0](0,0);
     return val;
-    #else    
+#else
     using utils::conj;
     scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
@@ -256,7 +256,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 
     timer.end();
     return ret;
-    #endif
+#endif
 }
 
 template<class Matrix, class SymmGroup>
