@@ -113,6 +113,9 @@
 		2248DE2313AFD89300D4A0B0 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		2248DE2513AFD89300D4A0B0 /* test.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = test.1; sourceTree = "<group>"; };
 		2248DE2913AFDBE400D4A0B0 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../main.cpp; sourceTree = "<group>"; };
+		224D2B9313B4A0EE00D51532 /* monome.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = monome.h; sourceTree = "<group>"; };
+		224D2B9513B4B5E700D51532 /* monome.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = monome.hpp; sourceTree = "<group>"; };
+		224D2B9613B4D91000D51532 /* vli_monomial_polynomial_cpu_function_hooks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_monomial_polynomial_cpu_function_hooks.hpp; sourceTree = "<group>"; };
 		229AFC2313B07FF30080BBCD /* vli_vector_cpu_std.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vli_vector_cpu_std.hpp; sourceTree = "<group>"; };
 		22A949FD13A93201008E08A2 /* vli */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vli; sourceTree = BUILT_PRODUCTS_DIR; };
 		22A94A0313A93201008E08A2 /* vli.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = vli.1; sourceTree = "<group>"; };
@@ -364,9 +367,20 @@
 			path = test;
 			sourceTree = "<group>";
 		};
+		224D2B9213B4A0EE00D51532 /* monome */ = {
+			isa = PBXGroup;
+			children = (
+				224D2B9313B4A0EE00D51532 /* monome.h */,
+				224D2B9513B4B5E700D51532 /* monome.hpp */,
+			);
+			name = monome;
+			path = ../monome;
+			sourceTree = "<group>";
+		};
 		22A949F213A93201008E08A2 = {
 			isa = PBXGroup;
 			children = (
+				224D2B9213B4A0EE00D51532 /* monome */,
 				2248DDA913AFD02400D4A0B0 /* regression */,
 				220D31AE13A93F440011A9EE /* libkernels_gpu.a */,
 				22A94A0013A93201008E08A2 /* vli */,
@@ -465,6 +479,7 @@
 		22A94A7113A9329F008E08A2 /* detail */ = {
 			isa = PBXGroup;
 			children = (
+				224D2B9613B4D91000D51532 /* vli_monomial_polynomial_cpu_function_hooks.hpp */,
 				22A94A7213A9329F008E08A2 /* common_macros.h */,
 				22A94A7313A9329F008E08A2 /* kernels_cpu.hpp */,
 				22A94A7413A9329F008E08A2 /* kernels_gpu.cu */,

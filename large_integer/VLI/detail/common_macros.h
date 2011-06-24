@@ -2,6 +2,7 @@
   Some common macros
 */
 
+#define TYPE_VLI int
 #define NUM 32;
 //#define NUM 1;
 
@@ -34,6 +35,7 @@ namespace vli {
 
     typedef std::size_t size_int;
     typedef std::size_t size_type;
-    enum {  SIZE_SINGLE_VLI = 256/(8*sizeof(int)) };
+    enum {  size_single_vli = 256/(8*sizeof(TYPE_VLI)) };
+    enum {  full_size_single_vli = 8*sizeof(TYPE_VLI) };    
 
 }

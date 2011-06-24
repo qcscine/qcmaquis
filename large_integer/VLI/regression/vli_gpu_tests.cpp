@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(baseten_addition)
 	A[1] = 255;
 	B[1] = 255;
 	
-//	C=A+B;
+	C=A+B;
 	
 	
 	std::size_t ATen = A.BaseTen();
