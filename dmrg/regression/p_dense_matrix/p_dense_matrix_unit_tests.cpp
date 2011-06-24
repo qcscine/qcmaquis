@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stack_test, T, test_types )
     A = U + V;
     ambient::playout();
 }*/
-
+/*
 template<typename T>
 void remote_gemm(p_dense_matrix<T> A, p_dense_matrix<T> B, p_dense_matrix<T> C)
 {
@@ -370,3 +370,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scalar_norm_test, T, test_types )
     printf("TOTAL NORM: %.6f\n", ret[0](0,0));
 
 }
+*/
+BOOST_AUTO_TEST_CASE_TEMPLATE( bela_test, T, test_types ) 
+{ 
+   typedef p_dense_matrix<T, ambient::MANUAL> MatrixT;
+   ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
+
+   MatrixT a(2,2);
+   a(0,0) = 1;
+
+   std::vector<MatrixT> foo(3, a);
+   for (int i = 0; i < 3; ++i)
+       std::cout << foo[i](0,0) << std::endl;
+
+   foo[1](0,0) = 2;
+   for (int i = 0; i < 3; ++i)
+       std::cout << foo[i](0,0) << std::endl;
+
+   foo.push_back(MatrixT(3,3));
+   foo[3](0,0) = 3;
+   foo[0](0,0) = -1;
+   for (int i = 0; i < 4; ++i)
+       std::cout << foo[i](0,0) << std::endl;
+
+}
+
+
