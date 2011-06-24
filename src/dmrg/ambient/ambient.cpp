@@ -140,7 +140,6 @@ namespace ambient
         if(this->occupied() != false){ free((void*) -1); assert(false); }
         this->stirring = true;
         //printf("R%d: playout...\n", ambient::rank());
-        MPI_Barrier(this->ambient->mpi_comm);
         one_touch_stack<core::operation*> cleanup_stack;
         std::pair<core::operation*, core::operation*>* pair;
         core::operation* logistics;

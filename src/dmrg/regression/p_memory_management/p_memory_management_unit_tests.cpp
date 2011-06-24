@@ -38,9 +38,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_memory_management_test, T, test_types )
 {
     ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
 
-    p_dense_matrix<double> d(4,4);
-    p_dense_matrix<double> dc = foo(d);
+    p_dense_matrix<double> d = p_dense_matrix<double>::identity_matrix(4);
     std::cout << d;
+    p_dense_matrix<double> ds(d);
+    p_dense_matrix<double> d0(ds);
+    p_dense_matrix<double> t(ds);
+    std::cout << t;
     //p_dense_matrix<double> e(0,0);
     //p_dense_matrix<double> f(0,0);
     //p_dense_matrix<double> dcc(d);

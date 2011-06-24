@@ -138,9 +138,40 @@ void svd_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& u,
 #endif
 }
 
-void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w, p_dense_matrix<double>& z)
+void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w)
 {
-#ifdef SCALAPACK
+   /* Locals */
+     int m = 1; //get_grid_dim(a).y*get_mem_t_dim(a).y;
+     int n = get_grid_dim(a).x*get_mem_t_dim(a).x;
+     int lda = m, ldz = m, info, lwork;
+
+     double wkopt;
+     double* work;
+     assert(current(a).layout->get_list().size() != 0);
+     current(a).solidify(current(a).layout->get_list());
+     current(w).solidify(current(w).layout->get_list());
+//     current(z).solidify(current(z).layout->get_list());
+
+     lwork = -1;
+     
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,&wkopt,&lwork,&info);
+
+     lwork = (int)wkopt;
+     work = (double*)malloc( lwork*sizeof(double) );
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,work,&lwork,&info);
+
+     if( info > 0 ) {
+         printf( "The algorithm computing SVD failed to converge.\n" );
+         exit( 1 );
+     }
+
+     //*(double*)breakdown(z).data = *(double*)breakdown(a).data;
+
+     current(a).disperse(current(a).layout->get_list());
+     current(w).disperse(current(w).layout->get_list());
+     //current(z).disperse(current(z).layout->get_list());
+     free( (void*)work ); 
+/*#ifdef SCALAPACK
     int info, ictxt, nprow, npcol, myrow, mycol, bn;
     int desca[9], descz[9];
     int ZERO=0, ONE=1;
@@ -158,6 +189,7 @@ void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w
     int na = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
     int mz = numroc_(&nm, &bn, &myrow, &ZERO, &nprow);
     int nz = numroc_(&nn, &bn, &mycol, &ZERO, &npcol);
+      cout << ma << " " << na << " " << mz << " " << nz << endl;
 
     descinit_(desca, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &ma, &info);
     descinit_(descz, &nm, &nn, &bn, &bn, &ZERO, &ZERO, &ictxt, &mz, &info);
@@ -169,19 +201,24 @@ void syev_c_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& w
 
     int lwork = -1;
     double wkopt;
+      cout << "breakdown " << *(double*)breakdown(a).data << endl;
 
-    /* SCALAPACK, first, dry run to allocate buffer */
     pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,&wkopt,&lwork,&info);
 
     lwork = static_cast<int>(wkopt);
-    double* work = (double*)malloc(sizeof(double)*lwork);
+    double * work = new double[lwork];
 
+      cout << lwork << endl;
     pdsyev_("V","U",&nm,(double*)breakdown(a).data,&ONE,&ONE,desca,(double*)breakdown(w).data,(double*)breakdown(z).data,&ONE,&ONE,descz,work,&lwork,&info);
+    cout << "w " << *(double*)breakdown(w).data << endl;
+    cout << "z " << *(double*)breakdown(z).data << endl;
+    cout << info << endl;
 
     current(w).disperse(current(w).layout->get_list());
     current(z).disperse(current(z).layout->get_list());
 
-    free((void*)work); /* clean the working buffer */
+    delete[] work;
 #endif
+*/
 }
 

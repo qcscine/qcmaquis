@@ -629,6 +629,20 @@ void scalar_norm_c(pinned const p_dense_matrix<double>& a, p_dense_matrix<double
     *ret = summ;
 }
 
+void scalar_overlap_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& norm)
+{
+    double summ = 0;
+    int i = get_block_id(a).y;
+    int j = get_block_id(a).x;
+    double* ad = current(a)(i,j);
+    double* bd = current(b)(i,j);
+    for(size_t ii=0; ii < get_mem_t_dim(a).x*get_mem_t_dim(a).y; ii++)
+        summ += ad[ii]*bd[ii];
+
+    double* ret = reduced<'+'>(norm)(0,0);
+    *ret = summ;
+}
+
 void atomic_add_c(p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
 {
     double* ad = current(a)(0,0);
