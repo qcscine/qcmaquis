@@ -84,30 +84,32 @@ namespace blas
     template<typename T>
     void svd(const p_dense_matrix<T>& a,
                    p_dense_matrix<T>& u,
-                   p_dense_matrix<T>& v,
+                   p_dense_matrix<T>& vt,
              typename associated_diagonal_matrix<p_dense_matrix<T> >::type& s)
     {
-        BOOST_CONCEPT_ASSERT((blas::Matrix<p_dense_matrix<T> >));
-        typename p_dense_matrix<T>::size_type k = std::min(num_rows(a), num_cols(a));
-        u.resize(num_rows(a), k);
-        v.resize(k, num_cols(a));
+        int m = num_rows(a);
+        int n = num_cols(a);
+        int k = std::min(m,n);
+        u.resize(m, k);
+        vt.resize(k, n);
         s.resize(k, k);
-        ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, a, u, v, s.get_data());
+        ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, a, m, n, u, vt, s.get_data());
     }
 
     template<typename T>
-    void syev(p_dense_matrix<T> m,
+    void syev(p_dense_matrix<T> a,
               p_dense_matrix<T>& evecs,
               typename associated_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     {
-        assert(num_rows(m) == num_cols(m));
-        assert(num_rows(evals) == num_rows(m));
+        assert(num_rows(a) == num_cols(a));
+        assert(num_rows(evals) == num_rows(a));
+        int m = num_rows(a);
 
-        cout << "Input: " << m << endl;
-        evecs.resize(num_rows(m), num_cols(m));
-        ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, m, evals.get_data()); // destoys U triangle of M
+        cout << "Input: " << a << endl;
+        evecs.resize(m, m);
+        ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, a, m, evals.get_data()); // destoys U triangle of M
         //reverse< p_dense_matrix<T> >(evals);
-        evecs = m;
+        evecs = a;
         ambient::playout();
         cout << "Scalacrap evecs: " << evecs << endl;
     }
