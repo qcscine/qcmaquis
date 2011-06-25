@@ -230,27 +230,27 @@ void scale_l(const p_dense_matrix<double>& m, const double& t, pinned p_dense_ma
 /////////////////////
 // testing kernels // 
 
-void svd_l_scalapack(const p_dense_matrix<double>& a, p_dense_matrix<double>& u, p_dense_matrix<double>& v, p_dense_matrix<double>& s)
+void svd_l_scalapack(const p_dense_matrix<double>& a, int& m, int& n, p_dense_matrix<double>& u, p_dense_matrix<double>& vt, p_dense_matrix<double>& s)
 {
     int num = 1;
     scope_select(num+" from ambient as svd where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    //zout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; info(a); info(u); info(v); info(s);
+    //zout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; info(a); info(u); info(vt); info(s);
 
     block_outright_assign(s);
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(u);
-    block_2d_cycle_assign(v);
+    block_2d_cycle_assign(vt);
 }
 
-void syev_l_scalapack(const p_dense_matrix<double>& m, p_dense_matrix<double>& w)
+void syev_l_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
 {
     int num = 1;
-    scope_select(num+" from ambient as syev where master is 0 and breakdown contains "+ get_id(m)); // todo: correct the naming issue
+    scope_select(num+" from ambient as syev where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    //zout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; info(m); info(w); info(z);
+    //zout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; info(a); info(w);
 
-    block_2d_cycle_assign(m);
+    block_2d_cycle_assign(a);
     block_2d_cycle_assign(w);
 }
 
