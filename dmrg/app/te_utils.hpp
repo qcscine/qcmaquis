@@ -96,10 +96,12 @@ namespace app {
     
     // Precondition: Hamiltonian has to be sorted with bond terms coming before site terms (default behaviour of Operator_Term::operator<())
     template <class Matrix, class SymmGroup>
-    Hamiltonian<Matrix, SymmGroup> exp (Hamiltonian<Matrix, SymmGroup> const & H, typename Matrix::value_type const & alpha = 1)
+    MPO<Matrix, SymmGroup> make_exp_mpo (std::size_t length, Hamiltonian<Matrix, SymmGroup> const & H, typename Matrix::value_type const & alpha = 1)
     {
         typedef Hamiltonian<Matrix, SymmGroup> ham;
         
+        MPO<Matrix, SymmGroup> mpo(length);
+        std::vector<bool> used_p(false);
         
         for (int n=0; n<H.n_terms(); )
         {
@@ -139,12 +141,41 @@ namespace app {
             // reshape and write back
             std::vector<block_matrix<Matrix, SymmGroup> > U_list = reshape_right_to_list(H.get_phys(), left);
             std::vector<block_matrix<Matrix, SymmGroup> > V_list = reshape_left_to_list(H.get_phys(), right);
+            assert(U_list.size() == V_list.size());
             
+            MPOTensor<Matrix, SymmGroup> left_tensor(1, U_list.size());
+            MPOTensor<Matrix, SymmGroup> middle_tensor(U_list.size(), U_list.size());
+            MPOTensor<Matrix, SymmGroup> right_tensor(U_list.size(), 1);
+            
+            for (std::size_t use_b=0; use_b<U_list.size(); ++use_b)
+            {
+                left_tensor(0, use_b) = U_list[use_b];
+                middle_tensor(use_b, use_b) = H.get_identity();
+                right_tensor(use_b, 0) = V_list[use_b];
+            }
+            mpo[pos1] = left_tensor;
+            used_p[pos1] = true;
+            mpo[pos2] = right_tensor;
+            used_p[pos2] = true;
+            for (std::size_t p=pos1+1; p<pos2; ++p)
+            {
+                mpo[p] = middle_tensor;
+                used_p[p] = true;
+            }
             
             n = k;
         }
         
-        return H;
+        // Filling missing identities
+        for (std::size_t p=0; p<length; ++p)
+            if (!used_p[p]) {
+                MPOTensor<Matrix, SymmGroup> r(1, 1);
+                r(0, 0) = H.get_identity();
+                mpo[p] = r;
+                used_p[p] = true;
+            }
+        
+        return mpo;
     }
     
 } // namespace
