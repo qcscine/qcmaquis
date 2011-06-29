@@ -107,6 +107,24 @@ void copy_after_l(pinned p_dense_matrix<double>& ac, const size_t& pos, const p_
     block_2d_cycle_assign(a);
 }
 
+void copy_after_std_l(std::vector<double>*& ac, const size_t& pos, pinned const p_dense_matrix<double>& a)
+{
+    scope_select("* from ambient as copy_std where master is 0");
+    if(!scope.involved()) return;
+    //zout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
+}
+
+void push_back_sqr_gt_l(std::vector<double>*& ac, pinned const p_dense_matrix<double>& a, const double& prec)
+{
+    scope_select("* from ambient as copy_std where master is 0");
+    if(!scope.involved()) return;
+    //zout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; info(a);
+
+    block_outright_assign(a);
+}
+
 void touch_l(p_dense_matrix<double>& a)
 {
     scope_select("1 from ambient as touch where master is 0 and breakdown contains "+get_id(a));
@@ -386,62 +404,12 @@ void associated_copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<d
     block_outright_assign(a);
 }
 
-void associated_sort_l(pinned p_dense_matrix<double>& a) 
-{
-    int num = 1;
-    scope_select(num+" from ambient as associated_sort where master is 0 and breakdown contains "+ get_id(a));
-    if(!scope.involved()) return;
-    //zout << "2dbcd in assocaited_copy ("<< ambient::rank() <<"):\n"; info(a);
-
-    block_outright_assign(a);
-}
-
-void associated_oe_sort_l(pinned p_dense_matrix<double>& a)
-{
-    int num = 1;
-    scope_select(num+" from ambient as associated_oe_sort where master is 0 and breakdown contains "+ get_id(a));
-    if(!scope.involved()) return;
-    //zout << "2dbcd in assocaited_oe_sort ("<< ambient::rank() <<"):\n"; info(a);
-
-    block_outright_assign(a);
-}
-
-void associated_reverse_l(p_dense_matrix<double>& a, const size_t& num_rows)
-{
-    int num = 1;
-    scope_select(num+" from ambient as associated_reverse where master is 0 and breakdown contains "+ get_id(a));
-    if(!scope.involved()) return;
-    //zout << "2dbcd in associated_reverse ("<< ambient::rank() <<"):\n"; info(a);
-
-    block_outright_assign(a);
-}
-
 void associated_find_if_l(pinned p_dense_matrix<double>& a, const double& value, size_t*& out_value)
 {
     int num = 1;
     scope_select(num+" from ambient as associated_find_if where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
     //zout << "2dbcd in associated_find_if ("<< ambient::rank() <<"):\n"; info(a);
-
-    block_outright_assign(a);
-}
-
-void associated_accumulate_l(pinned p_dense_matrix<double>& a, const size_t& begin, double*& out_value)
-{
-    int num = 1;
-    scope_select(num+" from ambient as associated_accumulate where master is 0 and breakdown contains "+ get_id(a));
-    if(!scope.involved()) return;
-    //zout << "2dbcd in associated_accumulate ("<< ambient::rank() <<"):\n"; info(a);
-
-    block_outright_assign(a);
-}
-
-void associated_max_l(pinned p_dense_matrix<double>& a, const double& evalscut, const size_t& Mmax, double*& out_value)
-{
-    int num = 1;
-    scope_select(num+" from ambient as associated_max where master is 0 and breakdown contains "+ get_id(a));
-    if(!scope.involved()) return;
-    //zout << "2dbcd in associated_max ("<< ambient::rank() <<"):\n"; info(a);
 
     block_outright_assign(a);
 }

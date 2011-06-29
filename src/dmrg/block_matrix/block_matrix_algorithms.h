@@ -231,37 +231,38 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     Index<SymmGroup> old_basis = evals.left_basis();
     
-    typename blas::associated_vector<Matrix>::type allevals;
 #ifdef MPI_PARALLEL
     size_t length = 0;
     size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k) 
         length += evals[k].size();
-    allevals.resize(length,length);
+    std::vector<typename Matrix::value_type> allevals(length);
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         blas::copy_after<Matrix>(allevals, position, evals[k]);
         position += evals[k].size();
     }
-    blas::sort<Matrix>(allevals);
-    blas::reverse<Matrix>(allevals);
+    ambient::playout();
 #else
+    std::vector<typename Matrix::value_type> allevals;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k)
         std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
+#endif
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());
-#endif
+    /*std::cout << "All evals: ";
 
-    /*for (std::size_t k = 0; k < allevals.size(); ++k) // LAUSANNE
+    for (std::size_t k = 0; k < allevals.size(); ++k) // LAUSANNE
         cout << allevals[k] << " ";
     cout << endl;*/
 
 /* to do
 */
-
     
     double evalscut = cutoff * allevals[0];
     if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
+
+    std::cout << "Evalscut: " << evalscut << "\n";
 
     #ifndef MPI_PARALLEL
     double truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);

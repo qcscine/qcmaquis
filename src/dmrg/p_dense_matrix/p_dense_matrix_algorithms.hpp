@@ -73,13 +73,6 @@ namespace blas
         //printf("gemm: %d %d\n", c.num_rows(), c.num_cols());
         ambient::push(ambient::gemm_diagonal_lhs_l,ambient::gemm_diagonal_lhs_c, a.get_data(), b, c);
     }
-
-    template<class T>
-    void reverse(typename associated_diagonal_matrix<T>::type & s)
-    { // reverse only the first col
-        size_t num_rows = s.num_rows();
-        ambient::push(ambient::associated_reverse_l, ambient::associated_reverse_c, s.get_data(), num_rows);
-    }
     
     template<typename T>
     void svd(const p_dense_matrix<T>& a,
@@ -105,13 +98,10 @@ namespace blas
         assert(num_rows(evals) == num_rows(a));
         int m = num_rows(a);
 
-        cout << "Input: " << a << endl;
         evecs.resize(m, m);
         ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, a, m, evals.get_data()); // destoys U triangle of M
         //reverse< p_dense_matrix<T> >(evals);
         evecs = a;
-        ambient::playout();
-        cout << "Scalacrap evecs: " << evecs << endl;
     }
     
     template<typename T>
@@ -151,43 +141,31 @@ namespace blas
     { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
         ambient::push(ambient::associated_copy_l, ambient::copy_c, sc.get_data(), s.get_data());
     }
+
+    template<typename T>
+    void copy_sqr_gt(std::vector<typename T::value_type>& sc, typename associated_diagonal_matrix<T>::type& s, const double& prec)
+    { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector
+        std::vector<typename T::value_type>* sc_ptr = &sc;
+        ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, s.get_data(), prec);
+    }
+
+    template<typename T>
+    void copy_after(std::vector<typename T::value_type>& sc, const size_t pos, typename associated_diagonal_matrix<T>::type& s)
+    { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector
+        std::vector<typename T::value_type>* sc_ptr = &sc;  
+        ambient::push(ambient::copy_after_std_l, ambient::copy_after_std_c, sc_ptr, pos, s.get_data());
+    }
  
     template<typename T>
     void copy_after(typename associated_vector<T>::type& sc, const size_t pos, typename associated_diagonal_matrix<T>::type& s)
     { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
         ambient::push(ambient::copy_after_l, ambient::copy_after_c, sc.get_data(), pos, s.get_data());
     }
-    
-    template<class T>
-    void sort(typename associated_vector<T>::type& s)
-    {
-        ambient::playout(); // because of bugbug place...
-        ambient::push(ambient::associated_sort_l, ambient::associated_sort_c, s.get_data());
-        size_t grid_dim_y = get_grid_dim(s.get_data()).y; // bugbug
-        size_t num = __a_ceil(grid_dim_y/2);
-        for(size_t i=0; i < num ; i++){
-            ambient::push(ambient::associated_oe_sort_l, ambient::associated_sort_o_c, s.get_data());
-            ambient::push(ambient::associated_oe_sort_l, ambient::associated_sort_e_c, s.get_data());
-        }
-        ambient::push(ambient::associated_oe_sort_l, ambient::move_offset_c, s.get_data());
-    }
 
     template<class T>
     void find_if(typename associated_vector<T>::type& s, const double& value, size_t* out_value)
     {
         ambient::push(ambient::associated_find_if_l, ambient::associated_find_if_c, s.get_data(), value, out_value);
-    }
-
-    template<class T>
-    void accumulate(typename associated_vector<T>::type& s, const size_t* begin, double* out_value)
-    {
-        ambient::push(ambient::associated_accumulate_l, ambient::associated_accumulate_c, s.get_data(), begin, out_value);
-    }
-
-    template<class T>
-    void max(typename associated_vector<T>::type& s, const double& evalscut, const size_t& mmax, double* out_value) 
-    {
-        ambient::push(ambient::associated_max_l, ambient::associated_max_c, s.get_data(), evalscut, mmax, out_value); 
     }
  
     void variable_free(void* a)
