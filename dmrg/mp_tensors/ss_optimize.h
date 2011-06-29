@@ -251,7 +251,6 @@ public:
                     if (site < L-1)
                         mps[site+1].multiply_from_left(t);
                 }
-                exit(0); // LAUSANNE
                 
                 storage::load(left_[site+1], left_stores_[site+1]);
                 

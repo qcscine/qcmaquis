@@ -193,34 +193,40 @@ int main(int argc, char ** argv)
 //    ambient::playout();
 //    printf("Check point 2\n");
 
-    StreamStorageMaster ssm(ambient::operator+(parms.get<std::string>("storagedir"),ambient::rank()));
+/*
+    std::string p = parms.get<std::string>("storagedir") + boost::lexical_cast<std::string>(ambient::rank());
+*/
+    //StreamStorageMaster ssm(ambient::operator+(parms.get<std::string>("storagedir"),ambient::rank()));
+    NoopStorageMaster ssm;
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
+    std::cout << "eval1 " << expval(mps,mpo,0) << std::endl;
+    //std::cout << "eval2 " << expval(mps,mpo,1) << std::endl;
+    //std::cout << "eval3 " << expval(mps,mpo) << std::endl;
 
 #ifndef MEASURE_ONLY
     
     bool early_exit = false;
     {   
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps,
-                                                                parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
-                                                                parms, ssm);
-        //for(int i=0 ; i < mps.length(); i ++)
-        //    std::cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
-        assert(false);
+        ss_optimize<Matrix, grp, NoopStorageMaster> optimizer(mps,
+                                                              parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                                              parms, ssm);
         
         for(; sweep < parms.get<int>("nsweeps"); ++sweep)
         {
             gettimeofday(&snow, NULL);
             Logger iteration_log;
-            
-            zout << "Starting...\n";
+            //assert(false);
+        for(int i=0 ; i < mps.length(); i ++){
+	    std::cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
+        }
             optimizer.sweep(sweep, iteration_log);
-            zout << "First sweep is done\n";
-            assert(false);
+
+            zout << "\nSweep is done\n";
             
             //ssm.sync();
             
