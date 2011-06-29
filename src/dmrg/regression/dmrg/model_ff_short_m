@@ -1,0 +1,5 @@
+lattice = square_lattice
+model = FreeFermions
+u1_total_charge = 8
+L = 4
+W = 4
