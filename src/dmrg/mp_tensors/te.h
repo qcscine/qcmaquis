@@ -64,8 +64,6 @@ public:
     {
         //        mps.normalize_right();
         mps.canonize(0);
-        for (int i=0; i<mpos.size(); ++i)
-            init_left_right(mpos[i]);
         cout << "Done init_left_right" << endl;
     }
     
@@ -96,8 +94,6 @@ public:
             else
                 site = 2*L-resume_at-1;
             mps.canonize(site);
-            for (int i=0; i<mpos.size(); ++i)
-                init_left_right(mpos[i]);
         }
         
         for (; which<mpos.size(); ++which)
@@ -109,6 +105,9 @@ public:
             zout << mps.description() << endl;
             for (int _site = (resume_at == -1 ? 0 : resume_at);
                  _site < 2*L; ++_site) {
+                
+                init_left_right(mpos[which]);
+
                 Timer iteration_t("Iteration took");
                 iteration_t.begin();
                 
@@ -149,50 +148,26 @@ public:
                 
                 t_io.end();
                 t_solver.begin();
-                SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
+                SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpos[which][site]);
                 
                 timeval now, then;
                 
                 std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
                 
                 
-                // write something here!
-                
+                MPSTensor<Matrix, SymmGroup> t;
+                ietl::mult(sp, mps[site], t);
+                mps[site] = t;
                 
                 t_solver.end();
                 
-                double cutoff;
-                if (sweep >= parms.get<int>("ngrowsweeps"))
-                    cutoff = parms.get<double>("truncation_final");
-                else
-                    cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
-                
-                std::size_t Mmax;
-                if (parms.is_set("sweep_bond_dimensions")) {
-                    std::vector<std::size_t> ssizes = parms.get<std::vector<std::size_t> >("sweep_bond_dimensions");
-                    if (sweep >= ssizes.size())
-                        Mmax = *ssizes.rbegin();
-                    else
-                        Mmax = ssizes[sweep];
-                } else
-                    Mmax = parms.get<std::size_t>("max_bond_dimension");
-                
-                std::pair<std::size_t, double> trunc;
-                
+                                
                 iteration_t.end();
                 
-                gettimeofday(&sweep_then, NULL);
-                double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
-                cout << "Sweep has been running for " << elapsed << " seconds." << endl;
-                if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
-                    return _site+1;
-                }
-                else
-                    cout << max_secs - elapsed << " seconds left." << endl;
             }
             
-            // normalization here!
-            
+            mps.canonize(0);
+
         }
         return -1;
     }

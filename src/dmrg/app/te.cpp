@@ -145,8 +145,8 @@ int main(int argc, char ** argv)
     
     std::cout << measurements << std::endl;
     
-    std::vector<Hamiltonian<Matrix, Symm> > splitted_H = separate_overlaps(H);
-    std::vector<MPO<Matrix, grp> > expMPO(splitted_H.size());
+    std::vector<Hamiltonian<Matrix, grp> > splitted_H = separate_overlaps(H);
+    std::vector<MPO<Matrix, grp> > expMPO(splitted_H.size(), MPO<Matrix, grp>(lat->size()));
     for (int i=0; i<splitted_H.size(); ++i)
         expMPO[i] = make_exp_mpo(lat->size(), splitted_H[i]);
     
@@ -219,7 +219,7 @@ int main(int argc, char ** argv)
             
             entropies = calculate_bond_entropies(cur_mps);
             
-            double energy = expval(mps, mpoc);
+            double energy = expval(cur_mps, mpoc);
 
             gettimeofday(&sthen, NULL);
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
