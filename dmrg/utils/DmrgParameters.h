@@ -209,6 +209,8 @@ public:
             add_option("seed",value<int>()->default_value(42),"");
             add_option("always_measure",value<std::string>()->default_value(""), "comma separated list of measurements");
             
+            add_option("dt", value<double>()->default_value(1e-3),"");
+
             add_option("init_state", value<std::string>()->default_value("default"),"");
 
             add_option("model_library", value<std::string>()->default_value("alps"),"");
