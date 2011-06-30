@@ -22,10 +22,9 @@ class vli_vector_cpu
 {
 public:
     
-    typedef VLI BaseInt;
+    typedef typename VLI::value_type value_type;
+    typedef typename VLI::vli_size vli_size;    
     typedef std::size_t size_type;
-    
-    enum { vli_size = SIZE_BITS/(8*sizeof(BaseInt)) };
     
     explicit vli_vector_cpu(size_type size = 1): size_(size){
         //to have a better compatibility with the gpu vector

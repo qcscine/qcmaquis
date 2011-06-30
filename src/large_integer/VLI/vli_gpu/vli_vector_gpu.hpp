@@ -10,7 +10,7 @@
 
 namespace vli {
 
-template <class VLI>
+template <class VLI, int Size>
 class vli_vector_gpu
 {
     public:

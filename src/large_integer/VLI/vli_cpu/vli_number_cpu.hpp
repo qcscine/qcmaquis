@@ -14,6 +14,7 @@
 #include <vector>
 #include "detail/vli_number_cpu_function_hooks.hpp"
 #include <cmath>
+#include "boost/swap.hpp"
 //#include "engine/engine.h"
 
 namespace vli
@@ -21,10 +22,10 @@ namespace vli
     /**
     template forward declaration 
     */    
-    template<class BaseInt>
+    template<class BaseInt, int Size>
     class vli_gpu;
 	
-	template<class BaseInt>
+	template<class BaseInt, int Size>
     class vli_cpu 
     {
     public:
@@ -33,44 +34,36 @@ namespace vli
         typedef BaseInt const&                const_reference;  // Const reference to value_type
         typedef std::size_t                   size_type;        // Unsigned integer type that represents the dimensions of the matrix
         typedef std::ptrdiff_t                difference_type;  // Signed integer type to represent the distance of two elements in the memory
-		
         typedef BaseInt base_int;
-        enum { size = SIZE_BITS/(8*sizeof(BaseInt)) };
         
         vli_cpu()
         {
- 			data_ = (BaseInt*)malloc(size*sizeof(BaseInt));
-			memset((void*)data_,0,size*sizeof(BaseInt));
+            for(int i=0; i<Size; ++i)
+                data_[i] = 0;
         }
         
 		explicit vli_cpu(BaseInt num)
         {
-			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
-			memset((void*)data_,0,size*sizeof(BaseInt));			
-            *data_ = num;
+            data_[0] = num;
+            for(int i=1; i<Size; ++i)
+                data_[i]=0;
         }
 		
         vli_cpu(vli_cpu const& r)
         {
-			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
-            memcpy((void*)data_,(void*)r.data_,size*sizeof(BaseInt));
+            for(int i=0; i<Size; ++i)
+                data_[i] = r.data_[i]; // because copy constructor
         }
         
         vli_cpu(BaseInt* p)
         {
-			data_  = (BaseInt*)malloc(size*sizeof(BaseInt));
-            memcpy((void*)data_,(void*)p,size*sizeof(BaseInt));            
-        
-        }
-		
-        ~vli_cpu()
-        {
-            free(data_);
+            for(int i=0; i<Size; ++i)
+                data_[i] = p->data_[i]; // because copy constructor
         }
         
         friend void swap(vli_cpu& a, vli_cpu& b)
         {
-			std::swap(a.data_,b.data_);		
+			boost::swap(a.data_,b.data_); // gcc 4.2, std::swap does not work with static array
         }
 		
         vli_cpu& operator= (vli_cpu  r)
@@ -102,19 +95,19 @@ namespace vli
         vli_cpu& operator *= (vli_cpu const& vli)
         {
             using vli::detail::multiplies_assign;
-            multiplies_assign(*this,vli);
+            detail:multiplies_assign(*this,vli);
             return *this;
         }
 		
         bool operator == (vli_cpu const& vli) const
         {
-			int n = memcmp((void*)data_,(void*)vli.data_,size*sizeof(BaseInt));
+			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
 			return (0 == n);
         }
         
         void print(std::ostream& os) const
         {
-            int i = size - 1 ;
+            int i = Size;
             os << "(" ;
 			while( i != 0){
 			   	i--;
@@ -126,39 +119,38 @@ namespace vli
 		std::size_t BaseTen()
 		{
 			std::size_t Res = 0;
-			for(int i=0;i < size;i++)
-				Res+=*(data_+i)*(pow (BASE,i));
+			for(int i=0;i < Size;i++)
+				Res+=data_[i]*(pow (BASE,i));
 			
 			return Res;
 		}
 		
     private:
-		BaseInt* data_;
+		BaseInt data_[Size];
     };
 	
     /**
      multiply and addition operators, suite ...
      */
-    template <class BaseInt>
-    const vli_cpu<BaseInt> operator + (vli_cpu<BaseInt> vli_a, vli_cpu<BaseInt> const& vli_b)
+    template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a += vli_b;
         return vli_a;
     }
     
-    template <class BaseInt>
-    const vli_cpu<BaseInt> operator * (vli_cpu<BaseInt> vli_a, vli_cpu<BaseInt> const& vli_b)
+    template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a *= vli_b;
         return vli_a;
     }
     
-    
     /**
     stream 
     */
-    template<typename BaseInt>
-    std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt> const& vli)
+    template<typename BaseInt, int Size>
+    std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
         vli.print(os);
         return os;
