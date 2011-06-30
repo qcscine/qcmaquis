@@ -20,7 +20,7 @@ namespace vli
      * Wellcome in pointer jungle
      */
     
-    template <typename BaseInt>
+    template <typename BaseInt, int Size>
     class vli_cpu;    
 	
     
@@ -53,10 +53,10 @@ namespace vli
 	/**
 	 addition classic version on array 
 	 */
-	template <class T>
+	template <class T, int Size>
 	void addition_classic_cpu(T* x, const T*  y)
 	{
-        std::size_t size = size_single_vli;
+        std::size_t size = Size;
 		for(size_type i = 0; i < size ; ++i)
 			addition_kernel_cpu((x+i), (y+i));
 	}
@@ -164,15 +164,15 @@ namespace vli
 	/**
 	 multiplication classic version, efficiency O(n**2)
 	 */
-	template <typename BaseInt>
+	template <typename BaseInt, int Size>
 	void multiplication_classic_cpu(BaseInt* x, const BaseInt* y)	
 	{
-        std::size_t size = size_single_vli/2;
+        std::size_t size = Size/2;
 
 		BaseInt r[2] = {0,0};	//for local block calculation
 		BaseInt m =0;
 		
-		static vli::vli_cpu<BaseInt> inter; 
+        vli::vli_cpu<BaseInt, Size> inter; 
 		
 		for (size_type i = 0 ; i < size; i++)
 		{
@@ -185,7 +185,7 @@ namespace vli
 			}
 		}
 		
-        memcpy((void*)x,(void*)&inter[0],full_size_single_vli);
+        memcpy((void*)x,(void*)&inter[0],Size*sizeof(BaseInt));
 	}
 	
 	

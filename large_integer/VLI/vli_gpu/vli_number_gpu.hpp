@@ -1,6 +1,3 @@
-
-
-
 /*
  *  vli.h
  *  vli_cpu_gpu
@@ -23,7 +20,7 @@
 namespace vli
 {
 		
-	template<class BaseInt>
+	template<class BaseInt, int Size>
 	class vli_gpu 
 	{
 	public:
@@ -34,35 +31,34 @@ namespace vli
         typedef std::ptrdiff_t                difference_type;  // Signed integer type to represent the distance of two elements in the memory
 		
         typedef BaseInt base_int_type;
-        enum { size = SIZE_BITS/(8*sizeof(BaseInt)) };
-
+      
 		/**
 		constructors 
 		*/
         vli_gpu()
         {
-		    gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
-	    	gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__);			
+		    gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);			
+	    	gpu::cu_check_error(cudaMemset((void*)data_, 0, Size*sizeof(BaseInt)), __LINE__);			
         }
 
 		explicit vli_gpu(int num)
         {
-            gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);			
-			gpu::cu_check_error(cudaMemset((void*)data_, 0, size*sizeof(BaseInt)), __LINE__); //Everything is set to 0	
+            gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);			
+			gpu::cu_check_error(cudaMemset((void*)data_, 0, Size*sizeof(BaseInt)), __LINE__); //Everything is set to 0	
 			gpu::cu_check_error(cudaMemset((void*)data_, num, sizeof(BaseInt)), __LINE__); //The first number is set to the num value			
         }
 
 		vli_gpu(vli_gpu const& vli)
         {
-			gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)), __LINE__);
-            gpu::cu_check_error(cudaMemcpy((void*)data_, vli.data_, size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+			gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMemcpy((void*)data_, vli.data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
         }
 
-		vli_gpu(vli_cpu<BaseInt> const& vli)
+		vli_gpu(vli_cpu<BaseInt, Size> const& vli)
         {
-            BOOST_STATIC_ASSERT(vli_cpu<BaseInt>::size == static_cast<std::size_t>(size) );
-			gpu::cu_check_error(cudaMalloc((void**)&data_, size*sizeof(BaseInt)  ), __LINE__);
-			gpu::cu_check_error(cudaMemcpy((void*)data_, (void*)&vli[0], vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 		
+        //    BOOST_STATIC_ASSERT(vli_cpu<BaseInt, Size>::size == static_cast<std::size_t>(Size) );
+			gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)  ), __LINE__);
+			gpu::cu_check_error(cudaMemcpy((void*)data_, (void*)&vli[0], Size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 		
         }
 		
 		/**
@@ -86,15 +82,15 @@ namespace vli
             return *this;
         }
 
-		void copy_vli_to_cpu(vli::vli_cpu<BaseInt>& vli) const
+		void copy_vli_to_cpu(vli::vli_cpu<BaseInt, Size>& vli) const
         {
-            BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(size) );
- 			gpu::cu_check_error(cudaMemcpy( (void*)&vli[0], (void*)data_, vli_cpu<BaseInt>::size*sizeof(BaseInt), cudaMemcpyDeviceToHost ), __LINE__); 					
+         //   BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(Size) );
+ 			gpu::cu_check_error(cudaMemcpy( (void*)&vli[0], (void*)data_, Size*sizeof(BaseInt), cudaMemcpyDeviceToHost ), __LINE__); 					
         }
 
-		operator vli_cpu<BaseInt>() const
+		operator vli_cpu<BaseInt, Size>() const
         {
-            vli_cpu<BaseInt> r;
+            vli_cpu<BaseInt, Size> r;
             copy_vli_to_cpu(r);
             return r;
         }
@@ -131,12 +127,12 @@ namespace vli
         bool operator == (vli_gpu const& vli) const
         {
             // TODO this should also work directly on the gpu
-            return vli_cpu<BaseInt>(*this) == vli_cpu<BaseInt>(vli);
+            return vli_cpu<BaseInt, Size>(*this) == vli_cpu<BaseInt, Size>(vli);
         }
 
         void print(std::ostream& os) const
         {
-            os<<vli_cpu<BaseInt>(*this);
+            os<<vli_cpu<BaseInt, Size>(*this);
         }
 		
 	private:
@@ -146,24 +142,24 @@ namespace vli
 	/**
 	 multiply and addition operators, suite ...
 	 */
-	template <class BaseInt>
-	const vli_gpu<BaseInt> operator + (vli_gpu<BaseInt> vli_a, vli_gpu<BaseInt> const& vli_b)
+	template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator + (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
         // TODO check whether direct implementation (without += ) is faster
         vli_a += vli_b;
         return vli_a;
     }
 	
-	template <class BaseInt>
-	const vli_gpu<BaseInt> operator * (vli_gpu<BaseInt> vli_a, vli_gpu<BaseInt> const& vli_b)
+	template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
         // TODO check whether direct implementation (without *= ) is faster
         vli_a *= vli_b;
         return vli_a;
     }
 	
-	template <class BaseInt>
-	std::ostream& operator<<(std::ostream& os, vli_gpu<BaseInt> const& vli)
+	template <class BaseInt, int Size>
+	std::ostream& operator<<(std::ostream& os, vli_gpu<BaseInt, Size> const& vli)
     {
         vli.print(os);
         return os;
