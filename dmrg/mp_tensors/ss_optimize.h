@@ -160,15 +160,15 @@ public:
             
             timeval now, then;
 
-            { // LAUSANNE
-                MPSTensor<Matrix, SymmGroup> vec1 = mps[site], vec2;
-                vec1.make_left_paired(); vec2.make_left_paired();
-                cout << vec1 << " " << vec2 << endl;
-                ietl::mult(sp, vec1, vec2);
-                vec1.make_left_paired(); vec2.make_left_paired();
-                cout << vec1 << " " << vec2 << endl;
-                cout << "Initial energy guess " << ietl::dot(vec1, vec2) << endl;;
-            } // LAUSANNE
+//            { // LAUSANNE
+//                MPSTensor<Matrix, SymmGroup> vec1 = mps[site], vec2;
+//                vec1.make_left_paired(); vec2.make_left_paired();
+//                cout << vec1 << " " << vec2 << endl;
+//                ietl::mult(sp, vec1, vec2);
+//                vec1.make_left_paired(); vec2.make_left_paired();
+//                cout << vec1 << " " << vec2 << endl;
+//                cout << "Initial energy guess " << ietl::dot(vec1, vec2) << endl;;
+//            } // LAUSANNE
             
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
@@ -242,10 +242,8 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
-                    cout << mps[site+1] << endl; // LAUSANNE
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
-                    cout << mps[site+1] << endl; // LAUSANNE
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
                     if (site < L-1)

@@ -602,16 +602,13 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
-        cout << "DM: " << dm << endl; // LAUSANNE
         syev_truncate(dm, U, S, cutoff, Mmax, logger);
-        cout << "U: " << U << endl; // LAUSANNE
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = U;
         ret.right_i = U.right_basis();
         
         timer.end();
-        cout << ret << endl; // LAUSANNE
         return ret;
     }
     
