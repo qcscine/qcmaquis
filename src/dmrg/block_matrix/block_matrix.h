@@ -18,6 +18,8 @@
 
 #include "utils/timings.h"
 
+#include <boost/ptr_container/ptr_vector.hpp>
+
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
@@ -108,7 +110,8 @@ public:
 #endif
     
 private:
-    std::vector<Matrix> data_;
+//    std::vector<Matrix> data_;
+    boost::ptr_vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
 };    
 
@@ -128,5 +131,6 @@ block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
     bm *= v;
     return bm;
 }
+
 
 #endif

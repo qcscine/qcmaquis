@@ -19,7 +19,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
 {
     assert(rows_.size() == cols_.size());
     for (size_type k = 0; k < rows_.size(); ++k)
-        data_.push_back(Matrix(rows_[k].second, cols_[k].second));
+        data_.push_back(new Matrix(rows_[k].second, cols_[k].second));
 }
 
 template<class Matrix, class SymmGroup>
@@ -63,7 +63,7 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1
     
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
-    data_.insert(data_.begin() + i1, mtx);
+    data_.insert(data_.begin() + i1, new Matrix(mtx));
     
     //rows_.push_back(p1);
     //cols_.push_back(p2);
@@ -293,7 +293,10 @@ void block_matrix<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
 {
     ar >> alps::make_pvp("rows_", rows_);
     ar >> alps::make_pvp("cols_", cols_);
-    ar >> alps::make_pvp("data_", data_);
+    std::vector<Matrix> tmp;
+    ar >> alps::make_pvp("data_", tmp);
+    for (typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+        data_.push_back(new Matrix(*it));
 }
 
 template<class Matrix, class SymmGroup>
@@ -301,7 +304,8 @@ void block_matrix<Matrix, SymmGroup>::serialize(alps::hdf5::oarchive & ar) const
 {
     ar << alps::make_pvp("rows_", rows_);
     ar << alps::make_pvp("cols_", cols_);
-    ar << alps::make_pvp("data_", data_);
+    std::vector<Matrix> tmp(data_.begin(), data_.end());
+    ar << alps::make_pvp("data_", tmp);
 }
 
 #endif
@@ -327,7 +331,7 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         
         size_type i1 = rows_.insert(p1);
         cols_.insert(i1, p2);
-        data_.insert(data_.begin() + i1, Matrix(1,1)); 
+        data_.insert(data_.begin() + i1, new Matrix(1,1)); 
         /*rows_.push_back(p1);
         cols_.push_back(p2);
         data_.push_back(Matrix());*/

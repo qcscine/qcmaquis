@@ -226,8 +226,6 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
     // very analogous to the above svd method
     syev(M, evecs, evals);
-    cout << "syev_t evals: " << evals << endl; // LAUSANNE
-    cout << "syev_t evecs: " << evecs << endl; // LAUSANNE
     
     Index<SymmGroup> old_basis = evals.left_basis();
     
@@ -262,8 +260,6 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
 
-    std::cout << "Evalscut: " << evalscut << "\n";
-
     #ifndef MPI_PARALLEL
     double truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
@@ -288,7 +284,6 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
                                         boost::lambda::_1 < evalscut)-evals[k].elements().first;
         #endif
-        cout << "Keeping " << keep << " in block " << k << endl; // LAUSANNE
 
         if (keep >= num_rows(evals[k]))
             continue;

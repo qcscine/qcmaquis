@@ -39,9 +39,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     double tol = params.get<double>("ietl_jcd_tol");
     ietl::basic_iteration<double> iter(params.get<int>("ietl_jcd_maxiter"), tol, tol);
     
-    printf("IETL stuff: \n");
     std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
-    printf("end of IETL stuff\n");
 
     zout << "JCD used " << iter.iterations() << " iterations." << endl;
     
