@@ -37,6 +37,9 @@ public:
               Index<SymmGroup> const & rd = Index<SymmGroup>(),
               bool fillrand = true);
     
+    MPSTensor(std::vector<block_matrix<Matrix, SymmGroup> > const &,
+              Index<SymmGroup> const &);
+    
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
     Index<SymmGroup> const & col_dim() const;
@@ -69,6 +72,8 @@ public:
     
     block_matrix<Matrix, SymmGroup> & data();
     block_matrix<Matrix, SymmGroup> const & data() const;
+    
+    std::vector<block_matrix<Matrix, SymmGroup> > to_list() const;
     
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
