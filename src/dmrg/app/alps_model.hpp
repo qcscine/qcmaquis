@@ -56,13 +56,9 @@ namespace app {
                 {
                     tmp_qn.push_back(*it);
                 }
-#ifdef NDEBUG
-            }
-#else
             } else {
                 std::runtime_error("No conserved quantum numbers defined!");
             }
-#endif
             
             // Load all possible basis
             for (int type=0; type<=alps::maximum_vertex_type(lattice.graph()); ++type) {
@@ -113,47 +109,40 @@ namespace app {
                 int p = lattice.vertex_index(*it);
                 int type = lattice.site_type(*it);
                 
-                op_t newm;
-                bool used;
                 
                 if (site_terms.find(type) == site_terms.end()) {
                     typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator> > V;
                     V  ops = model.site_term(type).template templated_split<double>();
-#ifndef NDEBUG
-                    if (ops.size() != 1) {
-                        std::runtime_error("SiteOperator not of length one.");
-                    }
-#endif
-                    if (ops[0].get<0>().value() != 0.) {
-                        SiteOperator op = ops[0].get<1>();
-                        alps_matrix m = alps::get_matrix(double(), op, model.site_basis(type), parms, true);
-                        
-                        for (int i=0; i<m.shape()[0]; ++i) {
-                            for (int j=0; j<m.shape()[1]; ++j) {
-                                if (m[i][j] != 0.)
-                                    // Notation: going from state i to state j
-                                    newm.insert_block(Matrix(1, 1, ops[0].get<0>().value()*m[i][j]),
-                                                      tphys[type][i],
-                                                      tphys[type][j]);
-                                    }
+                                                            
+                    for (int n=0; n<ops.size(); ++n) {
+                        if (ops[n].get<0>().value() != 0.) {
+                            SiteOperator op = ops[n].get<1>();
+                            alps_matrix m = alps::get_matrix(double(), op, model.site_basis(type), parms, true);
+                            
+                            op_t newm;
+                            for (int i=0; i<m.shape()[0]; ++i) {
+                                for (int j=0; j<m.shape()[1]; ++j) {
+                                    if (m[i][j] != 0.)
+                                        // Notation: going from state i to state j
+                                        newm.insert_block(Matrix(1, 1, ops[n].get<0>().value()*m[i][j]),
+                                                          tphys[type][i],
+                                                          tphys[type][j]);
+                                }
+                            }
+                            site_terms[type].push_back(newm);
                         }
-                        used = true;
-                    } else {
-                        used = false;
+                        
                     }
                     
-                    site_terms[type] = std::make_pair(used, newm);
-                } else {
-                    newm = site_terms[type].second;
-                    used = site_terms[type].first;
                 }
-                
-                if (used) {
+
+                for (int n=0; n<site_terms[type].size(); ++n) {
                     hamterm_t term;
                     term.fill_operator = tident[type];
-                    term.operators.push_back( std::make_pair(p, newm) );
+                    term.operators.push_back( std::make_pair(p, site_terms[type][n]) );
                     terms.push_back(term);
                 }
+                
             }
             
             // bond_term loop
@@ -292,7 +281,7 @@ namespace app {
         const graph_type& lattice;
         alps::model_helper<I> model;
         
-        std::map<int, std::pair<bool, op_t> > site_terms;
+        std::map<int, std::vector<op_t> > site_terms;
         mutable std::map<int, op_t> tident;
         mutable std::map<int, op_t> tfill;
         mutable std::map<int, std::vector<typename SymmGroup::charge> > tphys;
