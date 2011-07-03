@@ -261,6 +261,15 @@ public:
             add_option("twist", value<double>(), "");
             add_option("move", value<double>(), "");
             
+            add_option("Nmax", value<int>(), "");
+            add_option("mu", value<double>(), "");
+            add_option("h", value<double>(), "");
+            add_option("c", value<double>(), "");
+            add_option("V0", value<double>(), "");
+            add_option("k", value<double>(), "");
+            add_option("a", value<double>(), "");
+            add_option("Ndiscr", value<int>(), "");
+
             add_option("u1_total_charge", value<int>(), "");
             add_option("u1_total_charge1", value<int>(), "");
             add_option("u1_total_charge2", value<int>(), "");
