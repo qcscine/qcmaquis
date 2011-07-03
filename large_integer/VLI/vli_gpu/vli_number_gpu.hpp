@@ -18,20 +18,51 @@
 #include "gpu/GpuManager.h"
 
 namespace vli
-{
-		
+{    
+    template<class BaseInt, int Size>
+    class vli_cpu;
+    
 	template<class BaseInt, int Size>
 	class vli_gpu 
 	{
 	public:
-		typedef BaseInt                       value_type;       // The type T of the elements of the matrix
-        typedef BaseInt&                      reference;        // Reference to value_type
-        typedef BaseInt const&                const_reference;  // Const reference to value_type
-        typedef std::size_t                   size_type;        // Unsigned integer type that represents the dimensions of the matrix
-        typedef std::ptrdiff_t                difference_type;  // Signed integer type to represent the distance of two elements in the memory
-		
-        typedef BaseInt base_int_type;
+		typedef BaseInt             value_type;      
+        typedef std::size_t         size_type;       
+        enum {vli_size = Size};
       
+        
+        /**
+         proxy objects to access elements of the VLI
+         */ 
+        class proxy
+        {
+        public:
+            proxy(vli_gpu& v, size_type i)
+            :data_(v.p()), pos(i)
+            {
+            }
+            
+            operator vli_gpu() const
+            {
+                vli_gpu vli;
+                gpu::cu_check_error( cudaMemcpy( vli.p(), data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+                return vli;
+            }
+            
+            proxy& operator= (size_t i)
+            {
+                BaseInt num = static_cast<BaseInt>(i);
+                gpu::cu_check_error(cudaMemcpy( (void*)(data_+pos),(void*)&num, sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 					
+                return *this;
+            }
+            
+        private:
+            size_type pos;
+            BaseInt* data_;    
+        };
+
+
+        
 		/**
 		constructors 
 		*/
@@ -128,6 +159,13 @@ namespace vli
         {
             // TODO this should also work directly on the gpu
             return vli_cpu<BaseInt, Size>(*this) == vli_cpu<BaseInt, Size>(vli);
+        }
+                
+        /** It is extremely slow
+        To do write a kernel*/
+        proxy operator[](size_type i) 
+        {
+            return proxy(*this, i);
         }
 
         void print(std::ostream& os) const

@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef VLI_VECTOR_CPU_HPP
-#define VLI_VECTOR_CPU_HPP
+#ifndef Vli_VECTOR_CPU_HPP
+#define Vli_VECTOR_CPU_HPP
 
 #include "detail/vli_vector_cpu_function_hooks.hpp"
 #include "vli_utils/utils.hpp"
@@ -17,13 +17,13 @@
 namespace vli
 {
 
-template <class VLI>
+template <class Vli, int Size>
 class vli_vector_cpu 
 {
 public:
     
-    typedef typename VLI::value_type value_type;
-    typedef typename VLI::vli_size vli_size;    
+    typedef typename Vli::value_type value_type;
+    typedef typename Vli::vli_size vli_size;    
     typedef std::size_t size_type;
     
     explicit vli_vector_cpu(size_type size = 1): size_(size){
@@ -32,7 +32,7 @@ public:
         memset((void*)data_,0,vli_size*size_*sizeof(BaseInt));
     }
     
-    vli_vector_cpu(vli_vector_cpu<VLI> const & r):size_(r.size()){
+    vli_vector_cpu(vli_vector_cpu<Vli> const & r):size_(r.size()){
         assert( this->size() == r.size() );
         data_ = (BaseInt*)malloc(vli_size*size_*sizeof(BaseInt));
         memcpy((void*)data_, (void*)r[0], vli_size*size_*sizeof(BaseInt));
@@ -44,7 +44,7 @@ public:
         swap(a.size_,b.size_);
     }
     
-    BaseInt* operator[](size_type i){ //return the position of the VLI
+    BaseInt* operator[](size_type i){ //return the position of the Vli
         return (data_+i*vli_size);
     }
     
@@ -94,7 +94,7 @@ public:
     /**
       multiply by a scalar
       */
-	vli_vector_cpu& operator *= (VLI const& v)
+	vli_vector_cpu& operator *= (Vli const& v)
     {
         using detail::multiplies_assign;
         multiplies_assign(*this, v);
@@ -129,15 +129,15 @@ public:
     }
     
 private:
-    BaseInt* data_;
+    BaseInt data_[Size];
     size_type size_;
 };
 	
 /**
  vector addition
  */
-template <class VLI>
-const vli_vector_cpu<VLI> operator+(vli_vector_cpu<VLI> v_a, vli_vector_cpu<VLI> const& v_b)
+template <class Vli>
+const vli_vector_cpu<Vli> operator+(vli_vector_cpu<Vli> v_a, vli_vector_cpu<Vli> const& v_b)
 {
     v_a += v_b;
     return v_a;
@@ -146,15 +146,15 @@ const vli_vector_cpu<VLI> operator+(vli_vector_cpu<VLI> v_a, vli_vector_cpu<VLI>
 /**
   scaling of the vector by an very long integer
   */
-template <class VLI>
-const vli_vector_cpu<VLI> operator * (vli_vector_cpu<VLI> v_a, VLI const& vli)
+template <class Vli>
+const vli_vector_cpu<Vli> operator * (vli_vector_cpu<Vli> v_a, Vli const& vli)
 {
     v_a *= vli;
     return v_a;
 }
 
-template <class VLI>
-const vli_vector_cpu<VLI> operator * (VLI const& vli, vli_vector_cpu<VLI> const& v_a)
+template <class Vli>
+const vli_vector_cpu<Vli> operator * (Vli const& vli, vli_vector_cpu<Vli> const& v_a)
 {
     return v_a * vli;
 }
@@ -162,20 +162,20 @@ const vli_vector_cpu<VLI> operator * (VLI const& vli, vli_vector_cpu<VLI> const&
 /**
  inner product
  */
-template <class VLI>
-const VLI inner_product(vli_vector_cpu<VLI> const& v_a, vli_vector_cpu<VLI> const& v_b)
+template <class Vli>
+const Vli inner_product(vli_vector_cpu<Vli> const& v_a, vli_vector_cpu<Vli> const& v_b)
 {
     // TODO implement
     assert(v_a.size() == v_b.size());
-    return std::inner_product(v_a.begin(), v_a.end(), v_b.begin(), VLI(0));
+    return std::inner_product(v_a.begin(), v_a.end(), v_b.begin(), Vli(0));
 }
 
 
 /**
   entrywise multiplication
   */
-template <class VLI>
-const vli_vector_cpu<VLI> entrywise_product(vli_vector_cpu<VLI> v_a, vli_vector_cpu<VLI> const& v_b)
+template <class Vli>
+const vli_vector_cpu<Vli> entrywise_product(vli_vector_cpu<Vli> v_a, vli_vector_cpu<Vli> const& v_b)
 {
     // TODO implement
     assert(v_a.size() == v_b.size());
@@ -186,8 +186,8 @@ const vli_vector_cpu<VLI> entrywise_product(vli_vector_cpu<VLI> v_a, vli_vector_
 /**
  stream 
  */
-template<typename VLI>
-std::ostream& operator<< (std::ostream& os,  vli_vector_cpu<VLI> const& v)
+template<typename Vli>
+std::ostream& operator<< (std::ostream& os,  vli_vector_cpu<Vli> const& v)
 {
     v.print(os);
     return os;
@@ -195,4 +195,4 @@ std::ostream& operator<< (std::ostream& os,  vli_vector_cpu<VLI> const& v)
 
 } //namespace vli
 
-#endif //VLI_VECTOR_CPU_HPP
+#endif //Vli_VECTOR_CPU_HPP

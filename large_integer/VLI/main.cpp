@@ -9,25 +9,24 @@
 #include "gpu/GpuManager.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
-//#include "vli_cpu/vli_vector_cpu.hpp"
-//#include "vli_gpu/vli_vector_gpu.hpp"
 
 #include "utils/timings.h"
 
 typedef int TYPE; 
-//using vli::vli_vector_cpu;
+using vli::vli_vector_cpu;
 //using vli::vli_vector_gpu;
 using vli::vli_cpu;
 using vli::vli_gpu;
-#define SIZE 8
+#define SIZE_VLI 8
+#define SIZE_VECTOR 8
 
 int main (int argc, char * const argv[]) 
 {
  	gpu::gpu_manager* GPU;
 	GPU->instance();
-    vli_cpu<int, SIZE> a;
-    vli_cpu<int, SIZE> b;
-    vli_cpu<int, SIZE> c;
+    vli_cpu<int, SIZE_VLI> a;
+    vli_cpu<int, SIZE_VLI> b;
+    vli_cpu<int, SIZE_VLI> c;
     
     a[0] = 255;
     a[1] = 255;
@@ -43,12 +42,8 @@ int main (int argc, char * const argv[])
     aten*=bten;
     c =a*b;
     
-
-
-
     vli_gpu<int, SIZE> cgpu(c);
     
-   
     cgpu = agpu*bgpu;
     
     std::cout << c.BaseTen() << std::endl;
@@ -86,9 +81,6 @@ int main (int argc, char * const argv[])
     std::cout << b_gpu << std::endl;
     std::cout << c_gpu << std::endl;
     
-   
-
-
 	vli_vector_gpu<vli_cpu<int> > b_gpu(b);
     
     //	c = a+b;

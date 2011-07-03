@@ -15,26 +15,21 @@
 #include "detail/vli_number_cpu_function_hooks.hpp"
 #include <cmath>
 #include "boost/swap.hpp"
-//#include "engine/engine.h"
 
 namespace vli
 {
     /**
     template forward declaration 
     */    
-    template<class BaseInt, int Size>
-    class vli_gpu;
 	
 	template<class BaseInt, int Size>
     class vli_cpu 
     {
     public:
 	    typedef BaseInt                       value_type;       // The type T of the elements of the matrix
-        typedef BaseInt&                      reference;        // Reference to value_type
-        typedef BaseInt const&                const_reference;  // Const reference to value_type
         typedef std::size_t                   size_type;        // Unsigned integer type that represents the dimensions of the matrix
-        typedef std::ptrdiff_t                difference_type;  // Signed integer type to represent the distance of two elements in the memory
-        typedef BaseInt base_int;
+        
+        enum {vli_size = Size};
         
         vli_cpu()
         {
@@ -104,6 +99,7 @@ namespace vli
 			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
 			return (0 == n);
         }
+
         
         void print(std::ostream& os) const
         {
@@ -116,7 +112,7 @@ namespace vli
 			}
 		}
 		
-		std::size_t BaseTen()
+		size_type BaseTen()
 		{
 			std::size_t Res = 0;
 			for(int i=0;i < Size;i++)
@@ -126,7 +122,7 @@ namespace vli
 		}
 		
     private:
-		BaseInt data_[Size];
+		BaseInt data_[Size] __attribute__ ((aligned (16)));
     };
 	
     /**
