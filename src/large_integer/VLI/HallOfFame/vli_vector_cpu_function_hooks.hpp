@@ -8,13 +8,13 @@ namespace vli {
     /**
     template forward declaration 
     */
-    template <class VliType>
+    template <class Vli, int Size>
     class vli_vector_cpu;
 
 namespace detail {
 
-template <class VliType>
-void plus_assign(vli_vector_cpu<VliType> & v_a, vli_vector_cpu<VliType> const& v_b )
+template <class Vli, int Size>
+void plus_assign(vli_vector_cpu<Vli, Size> & v_a, vli_vector_cpu<Vli, Size> const& v_b )
 {
     assert( v_a.size() == v_b.size() );
 
@@ -24,8 +24,8 @@ void plus_assign(vli_vector_cpu<VliType> & v_a, vli_vector_cpu<VliType> const& v
         addition_classic_cpu(v_a[i], v_b[i]);
 }
 
-template <class VliType>
-void multiplies_assign(vli_vector_cpu<VliType> & v_a, VliType const& vli )
+template <class Vli, int Size>
+void multiplies_assign(vli_vector_cpu<Vli, Size> & v_a, Vli const& vli )
 {
     typedef typename VliType::size_type size_type;
 
@@ -45,7 +45,13 @@ void entrywise_multiplies_assign(vli_vector_cpu<VliType> & v_a, vli_vector_cpu<V
     for(size_type i = 0; i < v_b.size(); ++i)
         multiplication_classic_cpu( v_a[i], v_b[i]);
 }
+    
+template<class Vli, int Order>
 
+    
+    
+    
+    
 } //namespace detail
 } //namespace vli
 

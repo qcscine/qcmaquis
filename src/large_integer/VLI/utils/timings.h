@@ -6,9 +6,6 @@
 #include "cuda_runtime_api.h"
 #endif
 
-#include "vli_utils/vli_config.h"
-
-
 /*
 unsigned long long getcpuclocks() {
     unsigned long long clk;
@@ -81,7 +78,6 @@ protected:
     std::string name;
 };
 
-#ifdef __CUBLAS__
 
 class TimerCuda : public Timer
 {
@@ -100,6 +96,7 @@ public:
     
     void end()
     {
+        nCounter += 1;
 		cudaEventRecord(stop, 0);
 		cudaEventSynchronize(stop);
 		float elapsedTime;
@@ -109,13 +106,9 @@ public:
 		val = static_cast<double>(elapsedTime)/1000 ; // because time is in microsecond
     }
 	
-	
 private:
 	cudaEvent_t start, stop;
 	
 };
-
-#endif
-
 
 #endif

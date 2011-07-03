@@ -4,6 +4,7 @@
 
 #define TYPE_VLI int
 #define NUM 32;
+#define VLI_SIZE 4;
 //#define NUM 1;
 
 // BASE 255
@@ -35,7 +36,4 @@ namespace vli {
 
     typedef std::size_t size_int;
     typedef std::size_t size_type;
-    enum {  size_single_vli = 256/(8*sizeof(TYPE_VLI)) };
-    enum {  full_size_single_vli = 8*sizeof(TYPE_VLI) };    
-
 }

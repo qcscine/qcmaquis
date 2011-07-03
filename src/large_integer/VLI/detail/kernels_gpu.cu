@@ -40,6 +40,7 @@ typedef int TYPE;
 */
 
 extern const int NUM_SHARED = 128; // must be equal to the size of a block
+extern const int SIZE = 8; // must be equal to the size of a block
 
 template <typename T>
 __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, int ld)
@@ -140,7 +141,7 @@ __device__ void addition_kernel_gpu(T* x,   T const* y, int k)
 }
 
 template <typename T>
-__global__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, int vli_size)
+__device__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, int vli_size)
 {
 	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	const int j = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
@@ -150,7 +151,28 @@ __global__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, 
 			addition_kernel_gpu(x,y,i+j);
 	}
 }
+    
+template <typename T>
+__global__ void single_addition(T* x,   T const* y , int num_integers, int vli_size)     
+{
+    addition_classic_kernel_gpu(x, y, num_integers, vli_size);    
+}    
 
+template <typename T>    
+__global__ void polynome_polynome_addition(T* x, T const* y,  int vli_size, int max_order ) 
+{
+    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+	int offset(0);
+    
+	if(xIndex < 2) //useless, because we set the number of thread to one
+	{
+        for(int i=0; i< max_order*max_order;++i){
+            addition_classic_kernel_gpu((x+offset),(y+offset),1,vli_size);    //1 see line 148
+            offset += vli_size;
+        }
+    }
+}
+    
 /**
 classical multiplication, the operation " addition " is serial but we sum all number together 
 */
@@ -216,14 +238,14 @@ __device__  void multiplication_block_gpu( const T*   x,   const  T*   y, T *r)
 }	
 
 template <typename T>
-__global__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z , int num_integers, int vli_size)
+__device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z , int num_integers, int vli_size)// remove num_int maybe ?
 {
 	T r[2] = {0,0};	//for local block calculation
 	
 	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	const int i_ld = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
 	
-	if(xIndex < num_integers) // the classical condition to avoid overflow
+	if(xIndex < num_integers) // the classical condition to avoid overflow useless ?
 	{
 		//One of this two loops could be remove to do
 		for (int i = 0 ; i < vli_size; ++i) 
@@ -234,16 +256,114 @@ __global__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
 				multiplication_block_gpu((x+i_ld+i), (y+i_ld+j), r);
 				addition_kernel_gpu_noiter((z+i_ld+m),r);//,i_ld+m);	
 				addition_kernel_gpu_noiter((z+i_ld+m+1),r+1);//,i_ld+m+1);					
-				__syncthreads(); // Need, why (carry bit propagation) ?
+				__syncthreads(); // Need, why (carry bit propagation), useless ?
 			}
 		}
 	}
 }
+    
+    
+template <typename T>
+__global__ void single_multiplication(const T* x,  const T* y , T* z , int num_integers, int vli_size)     
+{
+    multiplication_classic_kernel_gpu(x, y, z, num_integers, vli_size);    
+}
+    
+    
+    
+template <typename T>
+__global__ void polynome_polynome_multication(const T* p1, const T* p2, T* res, int vli_size, int max_order)
+{
+    std::size_t offset0(0),offset1(0), offset2(0) ;
+ 
+    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+	
+	if(xIndex < 2) //useless, because we set the number of thread to one
+	{
+        
+        for(std::size_t je1 = 0; je1 < max_order; ++je1)
+        {
+            for(std::size_t he1 = 0; he1 < max_order; ++he1)
+            {
+                for(std::size_t je2 = 0; je2 < max_order - je1; ++je2)
+                {
+                    for(std::size_t he2 = 0; he2 < max_order - he1; ++he2)
+                    {
+                        T inter[8] = {0,0,0,0,0,0,0,0}; // to do find better
+                        offset0 = ((je1+je2)*max_order + he1+he2)*vli_size;
+                        offset1 = (je1*max_order+he1)*vli_size;                    
+                        offset2 = (je2*max_order+he2)*vli_size;
+                        multiplication_classic_kernel_gpu((p1+offset1),(p2+offset2),inter,1,vli_size);
+                        addition_classic_kernel_gpu((res+offset0),inter,1,vli_size);
+//                    res.coeffs[ offset0] += p1.coeffs[offset1]*p2.coeffs[offset2];
+                    }
+                }
+            }      
+        }
+    }
+} 
+ 
+template <typename T>
+__global__ void equality_gpu(const T* p1, const T* p2, int vli_size, int* t)
+{   
+    
+    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+	
+	if(xIndex < 32){
+        if( p1[xIndex] != p2[xIndex]){
+            t[0] = 1;            
+            __syncthreads(); 
+        }
+    }
+    
+    
+}   
+    
+void plus_assign_gpu(TYPE*  A,  const TYPE*  B, int num_integers, int vli_size)
+{
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+	single_addition <<< dimgrid, dimblock >>>(A, B, num_integers, vli_size);
+}
 
+void entrywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_integers, int vli_size)
+{
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+	single_multiplication <<< dimgrid, dimblock >>>(a, b , c, num_integers, vli_size);
+}
 
-/*------------------------ MANAGEMENT ------------------------------------------------------------ */
+void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size)
+{
+    assert(false);
+}
+    
+void poly_multiply_gpu(const TYPE* a, const TYPE* b, TYPE* c, int vli_size, int max_order)
+{
+   	dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+    polynome_polynome_multication  <<< dimgrid, dimblock >>>(a, b , c, vli_size, max_order);
+}
+    
+void poly_addition_gpu(TYPE* a, TYPE const* b, int vli_size, int max_order)
+{
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    polynome_polynome_addition  <<< dimgrid, dimblock >>>(a, b , vli_size, max_order);
+}
+    
+void equal_gpu(const TYPE* a, const TYPE* b, int vli_size, int* t)
+{
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+    equality_gpu  <<< dimgrid, dimblock >>>(a, b , vli_size, t);
+}
 
+    
+} //namespace detail
+} //namespace vli
 
+/** TO DO make something clean later
 void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_integers, int vli_size)
 {
     //
@@ -253,97 +373,16 @@ void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_i
     //
 	dimblock.x = NUM;
 	dimblock.y = 1;
-//	dimblock.y = vli_size;
+    //	dimblock.y = vli_size;
 	dimblock.z = 1;
-		
+    
 	dimthread.x = NUM;
     dimthread.x = 1;
-//	dimthread.y = vli_size;
+    //	dimthread.y = vli_size;
 	dimthread.z = 1;		
 	
 	dimgrid.x = (int(num_integers) + dimblock.x - 1)/ dimblock.x;
-//	dimgrid.y = (int(vli_size) + dimblock.y - 1)/ dimblock.y;
+    //	dimgrid.y = (int(vli_size) + dimblock.y - 1)/ dimblock.y;
     dimgrid.y = 1;
 	dimgrid.z = 1;
-}
-
-void plus_assign_gpu(TYPE*  A,  const TYPE*  B, int num_integers, int vli_size)
-{
-
-	dim3 dimgrid;
-	dim3 dimblock;
-    //TODO can't we remove dimthread? what is it good for?
-	dim3 dimthread;
-
-	DeterminationGrid(dimgrid, dimblock, dimthread, num_integers, vli_size);
-	
-#ifdef VLI_GPU_DEBUG
-	printf("dimgrid : %i %i \n",dimgrid.x, dimgrid.y);
-	printf("dimblock: %i %i \n",dimblock.x, dimblock.y);
-//	printf("%i %i \n",dimthread.x, dimthread.y);
-#endif
-
-//	addition_Avizienis_kernel_gpu <<< dimgrid, dimblock >>>(A, B, C, num_integers, vli_size);
-	addition_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B, num_integers, vli_size);
-//	printf("%i", A);
-}
-
-/*
-void multiply_gpu(const TYPE*  A, const TYPE*  B, TYPE* C ,TYPE num_integer, TYPE ld)
-{
-
-	dim3 dimgrid;
-	dim3 dimblock;
-    //TODO can't we remove dimthread? what is it good for?
-	dim3 dimthread;
-
-	DeterminationGrid(dimgrid, dimblock, dimthread,num_integer,ld );
-	
-#ifdef VLI_GPU_DEBUG
-	printf("dimgrid : %i %i \n",dimgrid.x, dimgrid.y);
-	printf("dimblock: %i %i \n",dimblock.x, dimblock.y);
-//	printf("%i %i \n",dimthread.x, dimthread.y);
-#endif
-
-	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(A, B ,C, num_integer, ld);
-}
-*/
-
-void entrywise_multiplies_assign_gpu(TYPE* a, TYPE const* b, int num_integers, int vli_size)
-{
-    // TODO NOT IMPLEMENTED YET
-    assert(false);
-    dim3 dimgrid;
-    dim3 dimblock;
-    dim3 dimthread;
-    DeterminationGrid(dimgrid, dimblock, dimthread, num_integers, vli_size);
-    //multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b,  num_integers, vli_size);
-}
-
-void entrywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_integers, int vli_size)
-{
-	dim3 dimgrid;
-	dim3 dimblock;
-    //TODO can't we remove dimthread? what is it good for?
-	dim3 dimthread;
-
-	DeterminationGrid(dimgrid, dimblock, dimthread,num_integers, vli_size);
-	
-#ifdef VLI_GPU_DEBUG
-	printf("dimgrid : %i %i \n",dimgrid.x, dimgrid.y);
-	printf("dimblock: %i %i \n",dimblock.x, dimblock.y);
-//	printf("%i %i \n",dimthread.x, dimthread.y);
-#endif
-
-	multiplication_classic_kernel_gpu <<< dimgrid, dimblock >>>(a, b , c, num_integers, vli_size);
-}
-
-void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size)
-{
-    // NOT IMPLEMENTED YET
-    assert(false);
-}
-
-} //namespace detail
-} //namespace vli
-
+}*/

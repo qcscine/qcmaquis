@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 {
 	gpu::gpu_manager* GPU;
 	GPU->instance();
-    vli_gpu<int> a;
-    vli_gpu<int> b(0);
+    vli_gpu<int,8> a;
+    vli_gpu<int,8> b(0);
     std::cout << a << std::endl;
     std::cout << b << std::endl;
 
@@ -41,13 +41,13 @@ BOOST_AUTO_TEST_CASE(copy_construction)
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	
-	vli::vli_cpu<TYPE> A(255);
+	vli::vli_cpu<TYPE,8> A(255);
 
 	A[1] = 255;
 	A[2] = 255;
 	A[3] = 255;
 	
-    vli::vli_gpu<TYPE> B(A);
+    vli::vli_gpu<TYPE,8> B(A);
 	    
 	BOOST_CHECK_EQUAL(A,B);
 	
@@ -59,15 +59,15 @@ BOOST_AUTO_TEST_CASE(serial_addition)
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	
-	vli::vli_cpu<TYPE> A(255);
-	vli::vli_cpu<TYPE> B(255);
-	vli::vli_cpu<TYPE> C(0);
+	vli::vli_cpu<TYPE,8> A(255);
+	vli::vli_cpu<TYPE,8> B(255);
+	vli::vli_cpu<TYPE,8> C(0);
 
 	A[1] = 255;
 	A[2] = 255;
 	A[3] = 255;
 	/** this number is the result by hand */
-	vli::vli_cpu<TYPE> Res;
+	vli::vli_cpu<TYPE,8> Res;
 
 	Res[0] = 254;
 	Res[1] = 0;
@@ -76,13 +76,13 @@ BOOST_AUTO_TEST_CASE(serial_addition)
 	Res[4] = 1;
 	/** end calculation by hand */
 	
-    vli::vli_gpu<TYPE> D(A);
-	vli::vli_gpu<TYPE> E(B);
-	vli::vli_gpu<TYPE> F(0);
-/*
+    vli::vli_gpu<TYPE,8> D(A);
+	vli::vli_gpu<TYPE,8> E(B);
+	vli::vli_gpu<TYPE,8> F(0);
+
 	C = A+B;
 	F = D+E;
-*/	
+	
 	BOOST_CHECK_EQUAL(C,F);
 	BOOST_CHECK_EQUAL(C,Res);
 	BOOST_CHECK_EQUAL(Res,F);
@@ -95,24 +95,24 @@ BOOST_AUTO_TEST_CASE(serial_multiplication)
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	
-	vli::vli_cpu<TYPE> A(254);
-	vli::vli_cpu<TYPE> B(254);
-	vli::vli_cpu<TYPE> C(0);
+	vli::vli_cpu<TYPE,8> A(254);
+	vli::vli_cpu<TYPE,8> B(254);
+	vli::vli_cpu<TYPE,8> C(0);
 	
 	A[1] = 255;
 	A[2] = 255;
 //	A[3] = 255;
 	/** this number is the result by hand */
-	vli::vli_cpu<TYPE> Res;
+	vli::vli_cpu<TYPE,8> Res;
 	
 	Res[0] = 4;
 	Res[1] = 254;
 	Res[2] = 255;
 	Res[3] = 253;
 	
-    vli::vli_gpu<TYPE> D(A);
-	vli::vli_gpu<TYPE> E(B);
-	vli::vli_gpu<TYPE> F(0);
+    vli::vli_gpu<TYPE,8> D(A);
+	vli::vli_gpu<TYPE,8> E(B);
+	vli::vli_gpu<TYPE,8> F(0);
 	
 	C = A*B;
 	F = D*E;
@@ -127,43 +127,53 @@ BOOST_AUTO_TEST_CASE(serial_multiplication)
 
 BOOST_AUTO_TEST_CASE(baseten_addition)
 {
-	vli::vli_cpu<TYPE> A(254);
-	vli::vli_cpu<TYPE> B(254);
-	vli::vli_cpu<TYPE> C(0);
+	vli::vli_cpu<TYPE,8> A(254);
+	vli::vli_cpu<TYPE,8> B(254);
+	vli::vli_cpu<TYPE,8> C(0);
 	
 	A[1] = 255;
 	B[1] = 255;
-	
-	C=A+B;
-	
-	
-	std::size_t ATen = A.BaseTen();
+
+    std::size_t ATen = A.BaseTen();
 	std::size_t BTen = B.BaseTen();
-	std::size_t CTen = C.BaseTen();
+
+    
+	C=A+B;
+    A+=C;
+    B+=A;
+    C+=A;
+    
 	std::size_t CTenRes = 0;
-
 	CTenRes = ATen + BTen;
-
+    ATen+=CTenRes;
+    BTen+=ATen;
+    CTenRes+=ATen;
+    
+	std::size_t CTen = C.BaseTen();
+    
 	BOOST_CHECK_EQUAL(CTen,CTenRes);	
 }
 
 BOOST_AUTO_TEST_CASE(baseten_multiplication)
 {
-	vli::vli_cpu<TYPE> A(254);
-	vli::vli_cpu<TYPE> B(254);
-	vli::vli_cpu<TYPE> C(0);
+	vli::vli_cpu<TYPE,8> A(254);
+	vli::vli_cpu<TYPE,8> B(254);
+	vli::vli_cpu<TYPE,8> C(0);
 	
 	A[1] = 255;
 	B[1] = 255;
+    
+    std::size_t ATen = A.BaseTen();
+	std::size_t BTen = B.BaseTen();
 	
 	C=A*B;
-	
-	std::size_t ATen = A.BaseTen();
-	std::size_t BTen = B.BaseTen();
-	std::size_t CTen = C.BaseTen();
-	std::size_t CTenRes = 0;
-	
+    C*=A;
+            
+	std::size_t CTenRes = 0;	
 	CTenRes = ATen * BTen;
+    CTenRes*=ATen;
 
+    std::size_t CTen = C.BaseTen();
+    
 	BOOST_CHECK_EQUAL(CTen,CTenRes);
 }

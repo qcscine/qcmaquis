@@ -5,11 +5,11 @@
 
 namespace vli {
 
-    /**
-    template forward declaration 
-    */
-    template <class BaseInt, int Size>
-    class vli_gpu;
+/**
+template forward declaration 
+*/
+template <class BaseInt, int Size>
+class vli_gpu;
 
 namespace detail {
 
