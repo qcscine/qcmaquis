@@ -14,14 +14,27 @@ target_link_libraries(dmrg_u1 ${DMRG_APP_LIBRARIES})
 add_executable(dmrg_2u1 ${DMRG_APP_SOURCES})
 target_link_libraries(dmrg_2u1 ${DMRG_APP_LIBRARIES})
 
+add_executable(multigrid_dmrg_u1 ${DMRG_APP_SOURCES})
+target_link_libraries(multigrid_dmrg_u1 ${DMRG_APP_LIBRARIES})
+
+add_executable(multigrid_dmrg_2u1 ${DMRG_APP_SOURCES})
+target_link_libraries(multigrid_dmrg_2u1 ${DMRG_APP_LIBRARIES})
+
 add_executable(measure_u1 ${DMRG_APP_SOURCES})
 target_link_libraries(measure_u1 ${DMRG_APP_LIBRARIES})
 
 add_executable(measure_2u1 ${DMRG_APP_SOURCES})
 target_link_libraries(measure_2u1 ${DMRG_APP_LIBRARIES})
 
-set_target_properties(measure_u1 measure_2u1 PROPERTIES COMPILE_DEFINITIONS MEASURE_ONLY)
-set_target_properties(dmrg_2u1 measure_2u1 PROPERTIES COMPILE_DEFINITIONS UseTwoU1)
+add_executable(multigrid_measure_u1 ${DMRG_APP_SOURCES})
+target_link_libraries(multigrid_measure_u1 ${DMRG_APP_LIBRARIES})
+
+add_executable(multigrid_measure_2u1 ${DMRG_APP_SOURCES})
+target_link_libraries(multigrid_measure_2u1 ${DMRG_APP_LIBRARIES})
+
+set_target_properties(measure_u1 measure_2u1 multigrid_measure_u1 multigrid_measure_2u1 PROPERTIES COMPILE_DEFINITIONS MEASURE_ONLY)
+set_target_properties(dmrg_2u1 measure_2u1 multigrid_dmrg_2u1 multigrid_measure_2u1 PROPERTIES COMPILE_DEFINITIONS UseTwoU1)
 
 install(TARGETS dmrg_u1 dmrg_2u1 measure_u1 measure_2u1 RUNTIME DESTINATION bin COMPONENT applications)
+install(TARGETS multigrid_dmrg_u1 multigrid_dmrg_2u1 multigrid_measure_u1 multigrid_measure_2u1 RUNTIME DESTINATION bin COMPONENT applications)
 
