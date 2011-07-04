@@ -195,34 +195,23 @@ void gemm_l_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<doub
     block_2d_cycle_assign(c);
 }
 
-void scalar_norm_l(pinned const p_dense_matrix<double>& a, p_dense_matrix<double>& norm)
+void scalar_norm_l(pinned const p_dense_matrix<double>& a, double*& norm)
 {
-    scope_select(1 +" from ambient as scalar_norm where master is 0 and breakdown contains "+ get_id(a));
+    scope_select("* from ambient as scalar_norm where master is 0");
     if(!scope.involved()) return;
-    //zout << "2dbcd in scalar_norm ("<< ambient::rank() <<"):\n"; info(a); info(norm);
+    //zout << "2dbcd in scalar_norm ("<< ambient::rank() <<"):\n"; info(a);
 
-    block_2d_cycle_assign(a);
-    block_2d_cycle_assign(norm);
+    block_outright_assign(a);
 }
 
-void scalar_overlap_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& norm)
+void scalar_overlap_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, double*& overlap)
 {
-    scope_select(1 +" from ambient as scalar_overlap where master is 0 and breakdown contains "+ get_id(a));
+    scope_select("* from ambient as scalar_overlap where master is 0");
     if(!scope.involved()) return;
-    //zout << "2dbcd in scalar_overlap ("<< ambient::rank() <<"):\n"; info(a); info(b); info(norm);
+    //zout << "2dbcd in scalar_overlap ("<< ambient::rank() <<"):\n"; info(a); info(b);
 
-    block_2d_cycle_assign(a);
-    block_2d_cycle_assign(b);
-    block_2d_cycle_assign(norm);
-}
-
-void atomic_add_l(p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
-{
-    scope_select("1 from ambient as atomic_add where master is 0 and breakdown contains "+ get_id(a));
-    if(!scope.involved()) return;
-    //zout << "2dbcd in atomic_add ("<< ambient::rank() <<"):\n"; info(a); info(b);
-
-    block_2d_cycle_assign(a);
+    block_outright_assign(a);
+    block_outright_assign(b);
 }
 
 void mem_bound_l(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
@@ -297,7 +286,7 @@ void gemm_diagonal_rhs_l(pinned const p_dense_matrix<double>& a, const p_dense_m
 void trace_l(pinned const p_dense_matrix<double>& a, double*& trace)
 {
     int num = 1;
-    scope_select(num+" from ambient as trace where master is 0 and breakdown contains "+ get_id(a));
+    scope_select("* from ambient as trace where master is 0");
     if(!scope.involved()) return;
     //zout << "2dbcd in trace ("<< ambient::rank() <<"):\n"; info(a);
 
@@ -327,8 +316,8 @@ void validation_l(pinned const p_dense_matrix<double>& a_ambient, const p_dense_
 }
 
 void reshape_l2r_l(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
-                          const size_t& left_offset, const size_t& right_offset, 
-                          const size_t& sdim, const size_t& ldim, const size_t& rdim)
+                   const size_t& left_offset, const size_t& right_offset, 
+                   const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(right));
@@ -340,8 +329,8 @@ void reshape_l2r_l(const p_dense_matrix<double>& left, pinned p_dense_matrix<dou
 }
 
 void reshape_r2l_l(pinned p_dense_matrix<double>& left, const p_dense_matrix<double>& right,
-                          const size_t& left_offset, const size_t& right_offset, 
-                          const size_t& sdim, const size_t& ldim, const size_t& rdim)
+                   const size_t& left_offset, const size_t& right_offset, 
+                   const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ get_id(left));
@@ -354,8 +343,8 @@ void reshape_r2l_l(pinned p_dense_matrix<double>& left, const p_dense_matrix<dou
 
 template <typename T>
 void rb_tensor_mpo_l(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
-                          const size_t& out_offset, const size_t& in_offset, 
-                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+                     const size_t& out_offset, const size_t& in_offset, 
+                     const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ get_id(out));
@@ -369,8 +358,8 @@ void rb_tensor_mpo_l(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in,
 
 template <typename T>
 void lb_tensor_mpo_l(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
-                          const size_t& out_offset, const size_t& in_offset, 
-                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+                     const size_t& out_offset, const size_t& in_offset, 
+                     const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
 {
     int num = 1; //get_grid_dim(a_ambient).y; 
     scope_select(num+" from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ get_id(out));
@@ -404,10 +393,9 @@ void associated_copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<d
     block_outright_assign(a);
 }
 
-void associated_find_if_l(pinned p_dense_matrix<double>& a, const double& value, size_t*& out_value)
+void associated_find_if_l(pinned const p_dense_matrix<double>& a, const double& value, size_t*& out_value)
 {
-    int num = 1;
-    scope_select(num+" from ambient as associated_find_if where master is 0 and breakdown contains "+ get_id(a));
+    scope_select("* from ambient as associated_find_if where master is 0");
     if(!scope.involved()) return;
     //zout << "2dbcd in associated_find_if ("<< ambient::rank() <<"):\n"; info(a);
 

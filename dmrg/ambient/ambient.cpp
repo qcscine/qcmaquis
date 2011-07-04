@@ -233,8 +233,11 @@ namespace ambient
     }
 
     bool is_master(){
-        if(scope.get_group() != NULL) return ambient::rank.is_master(scope.get_group());
-        return ambient::rank.is_master("ambient");
+        if(ambient::rank() == 0) return true;
+        else return false;
+//
+//        if(scope.get_group() != NULL) return ambient::rank.is_master(scope.get_group());
+//        return ambient::rank.is_master("ambient");
     }
     group* world(){
         return engine.ambient;

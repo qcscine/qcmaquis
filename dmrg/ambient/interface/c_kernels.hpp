@@ -71,7 +71,8 @@ void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
     memcpy(ac_elements, a_elements, sizeof(double)*get_mem_t_dim(a).y*get_mem_t_dim(a).x);
 }
 
-void associated_find_if_c(pinned p_dense_matrix<double>& a, const double& value, size_t*& out_value)
+// propagation
+void associated_find_if_c(pinned const p_dense_matrix<double>& a, const double& value, size_t*& out_value)
 { // only single process is supported (outmost assign)
     size_t i = get_block_id(a).y;
     size_t j = get_block_id(a).x;
@@ -293,8 +294,8 @@ void push_back_sqr_gt_c(std::vector<double>*& ac, pinned const p_dense_matrix<do
 }
 
 void reshape_l2r_c(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
-                          const size_t& left_offset, const size_t& right_offset, 
-                          const size_t& sdim, const size_t& ldim, const size_t& rdim)
+                   const size_t& left_offset, const size_t& right_offset, 
+                   const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
     //printf("reshape_l2r_c\n");
     for(size_t ss = 0; ss < sdim; ++ss)
@@ -304,8 +305,8 @@ void reshape_l2r_c(const p_dense_matrix<double>& left, pinned p_dense_matrix<dou
 }
 
 void reshape_r2l_c(pinned p_dense_matrix<double>& left, const p_dense_matrix<double>& right,
-                          const size_t& left_offset, const size_t& right_offset, 
-                          const size_t& sdim, const size_t& ldim, const size_t& rdim)
+                   const size_t& left_offset, const size_t& right_offset, 
+                   const size_t& sdim, const size_t& ldim, const size_t& rdim)
 {
     for(size_t ss = 0; ss < sdim; ++ss)
         __a_memcpy(left,  dim2(0, ss*ldim + left_offset), 
@@ -369,10 +370,9 @@ void __a_add_scaled(T& dest, dim2 dest_p, const T& src, dim2 src_p, typename T::
 
 template <typename T>
 void rb_tensor_mpo_c(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
-                          const size_t& out_offset, const size_t& in_offset, 
-                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+                     const size_t& out_offset, const size_t& in_offset, 
+                     const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
 {
-    //printf("rb_tensor_mpo\n");
     for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
             T* alfad = current(alfa)(ss1/get_mem_t_dim(alfa).y, ss2/get_mem_t_dim(alfa).x);
@@ -385,10 +385,9 @@ void rb_tensor_mpo_c(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in,
 
 template <typename T>
 void lb_tensor_mpo_c(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
-                          const size_t& out_offset, const size_t& in_offset, 
-                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+                     const size_t& out_offset, const size_t& in_offset, 
+                     const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
 {
-    //printf("rb_tensor_mpo\n");
     for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
             T* alfad = current(alfa)(ss1/get_mem_t_dim(alfa).y, ss2/get_mem_t_dim(alfa).x);
@@ -399,7 +398,7 @@ void lb_tensor_mpo_c(pinned p_dense_matrix<T>& out, const p_dense_matrix<T>& in,
         }
 }
 
-void scalar_norm_c(pinned const p_dense_matrix<double>& a, p_dense_matrix<double>& norm)
+void scalar_norm_c(pinned const p_dense_matrix<double>& a, double*& norm)
 {
     double summ = 0;
     int i = get_block_id(a).y;
@@ -408,11 +407,10 @@ void scalar_norm_c(pinned const p_dense_matrix<double>& a, p_dense_matrix<double
     for(size_t ii=0; ii < get_mem_t_dim(a).x*get_mem_t_dim(a).y; ii++)
         summ += ad[ii]*ad[ii];
 
-    double* ret = reduced<'+'>(norm)(0,0);
-    *ret = summ;
+    *norm += summ;
 }
 
-void scalar_overlap_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& norm)
+void scalar_overlap_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, double*& overlap)
 {
     double summ = 0;
     int i = get_block_id(a).y;
@@ -422,15 +420,7 @@ void scalar_overlap_c(pinned const p_dense_matrix<double>& a, const p_dense_matr
     for(size_t ii=0; ii < get_mem_t_dim(a).x*get_mem_t_dim(a).y; ii++)
         summ += ad[ii]*bd[ii];
 
-    double* ret = reduced<'+'>(norm)(0,0);
-    *ret = summ;
-}
-
-void atomic_add_c(p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
-{
-    double* ad = current(a)(0,0);
-    double* bd = current(b)(0,0);
-    *ad += *bd;
+    *overlap += summ;
 }
 
 void add_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
