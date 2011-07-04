@@ -42,9 +42,9 @@ namespace vli
         }
         
         monomial& operator *= (Vli const& c);
-        monomial& operator *= (value_type c);
+        monomial& operator *= (Vli c);
 
-        value_type& operator[](size_type i){
+        Vli& operator[](size_type i){
             return coeff[i];
         }
         
@@ -117,10 +117,14 @@ namespace vli
 			return (0 == n);
         }
         
+//<<<<<<< .mine
+    //    void copy_from_monome(BaseInt* p,const monomial<BaseInt>& m);
+//=======
         friend void swap(polynomial& p1, polynomial& p2)
         {
             boost::swap(p1.coeffs,p2.coeffs);
         }
+
         
         /**
          * Access coefficient of monomial J^j_exp*h^h_exp

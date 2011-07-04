@@ -1,6 +1,6 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
-
+#include "vli_utils/vli_config.h"
 
 #ifdef __CUBLAS__
 #include "cuda_runtime_api.h"
