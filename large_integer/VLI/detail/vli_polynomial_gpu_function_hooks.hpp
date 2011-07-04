@@ -24,20 +24,20 @@ namespace vli{
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1, 
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p2)
     {
-        typedef typename polynomial_gpu<vli_gpu<BaseInt, Size>, Order>::size_type size_type;	
-        enum {vli_size  = polynomial_gpu<vli_gpu<BaseInt, Size>, Order>::vli_size}; 
-        enum {max_order = polynomial_gpu<vli_gpu<BaseInt, Size>, Order>::max_order}; 
-        detail::poly_multiply_gpu(p1.p(),p2.p(),result.p(),vli_size,max_order);
+        //C
+        //C In principle enums were correct, but why don't we just use the template parameters directly?
+        //C
+        detail::poly_multiply_gpu(p1.p(),p2.p(),result.p(),Size,Order);
     }
     
     template <class BaseInt, int Size, int Order>
     void poly_addition(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p)
     {
-        typedef typename polynomial_gpu<vli_gpu<BaseInt, Size>, Order>::size_type size_type;	
-        enum {vli_size  = polynomial_gpu<vli_gpu<BaseInt, Size>, Order>::vli_size}; 
-        enum {max_order = polynomial_gpu<vli_gpu<BaseInt, Size>, Order>::max_order}; 
-        detail::poly_addition_gpu(result.p(),p.p(),vli_size,max_order);
+        //C
+        //C In principle enums were correct, but why don't we just use the template parameters directly?
+        //C
+        detail::poly_addition_gpu(result.p(),p.p(),Size,Order);
     }
         
     

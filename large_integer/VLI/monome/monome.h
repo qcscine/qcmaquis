@@ -24,9 +24,16 @@ namespace vli
 	template <class Vli>
     struct monomial
     {
-        enum { vli_size = Vli::vli_size };
-        typedef typename Vli::size_type size_type;	
-        typedef typename Vli::value_type value_type;
+        typedef typename Vli::size_type size_type;      // Type of the exponents (has to be the same type as Vli::size_type)
+
+        //C
+        //C I removed the value_type, since it would suggest that it is the type of
+        //C the coefficients, which is of course Vli, not Vli::value_type.
+        //C
+        //C I also removed vli_size, since it's easily accessible by Vli::size anyway,
+        //C and is not really a property of the monomial.
+        //C
+
         /**
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
          */
@@ -45,7 +52,12 @@ namespace vli
         size_type h_exp;
         Vli coeff;                
     };
-    
+   
+
+
+
+
+
     template<class Vli, int Order>
 	class polynomial;
     
@@ -63,16 +75,15 @@ namespace vli
 	template<class Vli, int Order>
 	class polynomial{
 	public:
-     //   friend polynomial operator * <>(const polynomial& p, const monomial<Vli> & m);
+        typedef typename Vli::size_type size_type;      // Type of the exponents (has to be the same type as Vli::size_type)
+        enum { max_order = Order};
+        //C
+        //C See comments in monomial
+        //C
         
-        friend polynomial operator * <>(const polynomial& p, const polynomial& m);
+     //   friend polynomial operator * <>(const polynomial& p, const monomial<Vli> & m);
         friend void poly_multiply <>(polynomial& result ,const polynomial& p1, const polynomial& p2);
 		
-        typedef typename Vli::size_type size_type;	
-        typedef typename Vli::value_type value_type;
-        enum { vli_size  = Vli::vli_size };
-        enum { max_order = Order};
-        
         polynomial(){
             for(int i=0; i<Order*Order;++i)
                 coeffs[i]=Vli();
@@ -102,7 +113,7 @@ namespace vli
         
         bool operator==(polynomial const& p) const
         {
-            int n = memcmp((void*)&coeffs[0],(void*)&p.coeffs[0],Order*Order*vli_size*sizeof(value_type));
+            int n = memcmp((void*)&coeffs[0],(void*)&p.coeffs[0],Order*Order*Vli::size*sizeof(typename Vli::value_type));
 			return (0 == n);
         }
         
@@ -114,7 +125,7 @@ namespace vli
         /**
          * Access coefficient of monomial J^j_exp*h^h_exp
          */
-        inline Vli operator ()(unsigned int j_exp, unsigned int h_exp) const
+        inline Vli operator ()(size_type j_exp, size_type h_exp) const
         {
             assert(j_exp < max_order);
             assert(h_exp < max_order);
@@ -124,7 +135,7 @@ namespace vli
         /**
          * Access coefficient of monomial J^j_exp*h^h_exp
          */
-        inline Vli& operator ()(unsigned int j_exp, unsigned int h_exp)
+        inline Vli& operator ()(size_type j_exp, size_type h_exp)
         {
             assert(j_exp < max_order);
             assert(h_exp < max_order);
@@ -133,6 +144,7 @@ namespace vli
         
         void print(std::ostream& os) const
         {
+            // TODO nice output
             for(int i=0; i<Order*Order;++i)
                 std::cout<<coeffs[i] << " ";
 		}
@@ -168,7 +180,7 @@ namespace vli
         return p * c;
     }
     
-    template<class Vli, int Order>//PUTAIN DE & !!!!!!!
+    template<class Vli, int Order>//PUTAIN DE & !!!!!!! -> lol
     std::ostream& operator<<(std::ostream& os, polynomial<Vli, Order> const& p){
         p.print(os);
         return os;

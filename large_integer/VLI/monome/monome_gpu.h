@@ -39,32 +39,42 @@ namespace vli
     }
     
 	template<class Vli, int Order>
-	class polynomial_gpu : public vli_gpu<typename Vli::value_type, Order*Order*Vli::vli_size> {
+	class polynomial_gpu : public vli_gpu<typename Vli::value_type, Order*Order*Vli::size> {
+        private:
+            typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
         public:
-        typedef typename Vli::value_type value_type;
-        typedef typename Vli::size_type size_type;	
-        enum { vli_size  = Vli::vli_size, max_order = Order };
-        
+        typedef typename Vli::size_type size_type;      // Type of the exponents (has to be the same type as Vli::size_type)
+
+        //C
+        //C enum { vli_size  = Vli::vli_size, max_order = Order };
+        //C Please use seperate enums when defining "compile-time variables".    
+        //C
+        enum { max_order = Order };
+
+        //C
+        //C see comments in monome.h
+        //C
+
         class proxy
         {
         public:
             proxy(polynomial_gpu& poly, size_type j, size_type h)
             :data_(poly.p()),j_(j),h_(h),i_(-1){}
             
-            proxy& operator= (vli_gpu<value_type, vli_size> & vli ){
-                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*vli_size+h_*vli_size)), (void*)vli.p(), vli_size*sizeof(value_type), cudaMemcpyDeviceToDevice), __LINE__);
+            proxy& operator= (Vli const& vli ){
+                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)vli.p(), Vli::size*sizeof(vli_value_type), cudaMemcpyDeviceToDevice), __LINE__);
                 return *this;
             }
         
-            proxy& operator= (vli_cpu<value_type, vli_size> & vli ){
-                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*vli_size+h_*vli_size)), (void*)&vli[0], vli_size*sizeof(value_type), cudaMemcpyHostToDevice), __LINE__);
+            proxy& operator= (vli_cpu<vli_value_type, Vli::size> & vli ){
+                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)&vli[0], Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
                 return *this;
             }
             
-            proxy& operator= (value_type i){
+            proxy& operator= (vli_value_type i){
                 if(i_ != -1){
-                    value_type num(i);
-                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*vli_size+h_*vli_size+i_)), (void*)&num, sizeof(value_type), cudaMemcpyHostToDevice), __LINE__);
+                    vli_value_type num(i);
+                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size+i_)), (void*)&num, sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
                 }else{
                     assert(false); //dummy case, e.g. pa(0,0) = 255; or set everything to the corresponding value
                 }
@@ -72,6 +82,9 @@ namespace vli
             }
             
             proxy& operator[] (size_type i ){
+                //C
+                //C what is this operator used for?
+                //C
                 i_=i;
                 return *this;
             }
@@ -82,13 +95,13 @@ namespace vli
             }
             
             void print(std::ostream& os) const{
-                vli_cpu<value_type,vli_size> vli;
-                gpu::cu_check_error(cudaMemcpy((void*)&vli[0],(void*)(data_+(j_*max_order*vli_size+h_*vli_size)),vli_size*sizeof(value_type), cudaMemcpyDeviceToHost), __LINE__);
+                vli_cpu<vli_value_type,Vli::size> vli;
+                gpu::cu_check_error(cudaMemcpy((void*)&vli[0],(void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)),Vli::size*sizeof(vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
                 os << vli;
             }
             
         private:
-            value_type* data_;   
+            vli_value_type* data_;   
             size_type i_; // for operator [i]
             size_type j_; // for operator (j,h) 
             size_type h_; // for operator (j,h)
@@ -97,23 +110,24 @@ namespace vli
         friend polynomial_gpu operator * <> (polynomial_gpu const& p, polynomial_gpu const& m);
         friend void poly_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, polynomial_gpu const& p2);
        
-        polynomial_gpu(){}
-        
-        /** GPU poly to GPU poly */
-        polynomial_gpu(polynomial<vli_cpu<value_type, vli_size>, Order>& poly){ 
-            gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&poly(0,0), Order*Order*vli_size*sizeof(value_type), cudaMemcpyHostToDevice), __LINE__); 
+        polynomial_gpu(){
         }
         
-        operator polynomial<vli_cpu<value_type, vli_size>, Order>() const
+        /** GPU poly to GPU poly */
+        polynomial_gpu(polynomial<vli_cpu<vli_value_type, Vli::size>, Order>& poly){ 
+            gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&poly(0,0), Order*Order*Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__); 
+        }
+        
+        operator polynomial<vli_cpu<vli_value_type, Vli::size>, Order>() const
         {
-            polynomial<vli_cpu<value_type, vli_size>, Order> r;
+            polynomial<vli_cpu<vli_value_type, Vli::size>, Order> r;
             copy_poly_vli_to_cpu(r);
             return r;
         }
         
-        void copy_poly_vli_to_cpu(polynomial<vli_cpu<value_type, vli_size>, Order> & p) const
+        void copy_poly_vli_to_cpu(polynomial<vli_cpu<vli_value_type, Vli::size>, Order> & p) const
         {
-            gpu::cu_check_error(cudaMemcpy( (void*)&p(0,0)[0], (void*)this->p(), Order*Order*vli_size*sizeof(value_type),cudaMemcpyDeviceToHost ), __LINE__);					
+            gpu::cu_check_error(cudaMemcpy( (void*)&p(0,0)[0], (void*)this->p(), Order*Order*Vli::size*sizeof(vli_value_type),cudaMemcpyDeviceToHost ), __LINE__);					
         }
         
         inline Vli operator ()(unsigned int j_exp, unsigned int h_exp) const
@@ -137,17 +151,18 @@ namespace vli
         /** GPU/GPU**/
         bool operator==(polynomial_gpu const & p) const 
         {
+            //TODO
             //BUGY , presently the kernel destroy the data, I do not know why !
             assert(false);
             int test(0); // shoud be a bool
-            detail::equal_gpu((*this).p(), p.p(), max_order*max_order*vli_size, &test);    
+            detail::equal_gpu((*this).p(), p.p(), max_order*max_order*Vli::size, &test);    
             return (test == 0) ? true : false;
         }
 
          /** GPU/CPU, order cares !**/
-        bool operator==(polynomial<vli_cpu<value_type, vli_size>, Order>  & p) const
+        bool operator==(polynomial<vli_cpu<vli_value_type, Vli::size>, Order>  & p) const
         {
-            return polynomial<vli_cpu<value_type, vli_size>, Order > (*this) == p;
+            return polynomial<vli_cpu<vli_value_type, Vli::size>, Order > (*this) == p;
          //   return (*this) == polynomial_gpu(p);
         }
      
