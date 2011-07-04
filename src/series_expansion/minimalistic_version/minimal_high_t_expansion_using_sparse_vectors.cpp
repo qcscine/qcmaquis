@@ -211,7 +211,7 @@ class sparse_matrix
                 }
 
                 // h term (external field)
-                for(unsigned int vtx=0; vtx <= num_vertices; ++vtx)
+                for(unsigned int vtx=0; vtx < num_vertices; ++vtx)
                 {
                     // it->second == v[index]
                     unsigned int vtx_state = get_vertex_state_from_index(index,vtx);

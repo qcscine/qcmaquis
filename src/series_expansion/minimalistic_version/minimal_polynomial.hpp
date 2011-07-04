@@ -184,7 +184,7 @@ class polynomial
             typename std::vector<CoeffType>::iterator end   = coeffs.end();
             typename std::vector<CoeffType>::const_iterator p_it  = p.coeffs.begin();
             typename std::vector<CoeffType>::const_iterator p_end = p.coeffs.end();
-            while( it != end, p_it != p_end)
+            while( it != end && p_it != p_end)
             {
                 *it += *p_it;
                 ++it;
@@ -234,6 +234,22 @@ class polynomial
             for(typename std::vector<CoeffType>::iterator it = coeffs.begin(); it != coeffs.end(); ++it)
                 *it *= c;
             return *this;
+        }
+
+        /**
+         * Comparison with an CoeffType (0th order)
+         */
+
+        bool operator == (CoeffType const& c) const
+        {
+            if(coeffs[0] == c)
+            {
+                bool all_zero = true;
+                for(typename std::vector<CoeffType>::const_iterator it = coeffs.begin(); it != coeffs.end(); ++it)
+                    all_zero = all_zero && (*it == 0);
+                return all_zero;
+            }
+            return false;
         }
 
         /**
