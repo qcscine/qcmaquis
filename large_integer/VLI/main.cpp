@@ -9,88 +9,65 @@
 #include "gpu/GpuManager.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
+#include "monome/monome.h"
+#include "monome/monome_gpu.h"
 
 #include "utils/timings.h"
 
 typedef int TYPE; 
-using vli::vli_vector_cpu;
-//using vli::vli_vector_gpu;
 using vli::vli_cpu;
 using vli::vli_gpu;
-#define SIZE_VLI 8
-#define SIZE_VECTOR 8
+using vli::monomial;
+using vli::polynomial;
+using vli::polynomial_gpu;
+
 
 int main (int argc, char * const argv[]) 
 {
  	gpu::gpu_manager* GPU;
 	GPU->instance();
-    vli_cpu<int, SIZE_VLI> a;
-    vli_cpu<int, SIZE_VLI> b;
-    vli_cpu<int, SIZE_VLI> c;
     
-    a[0] = 255;
-    a[1] = 255;
-    
-    b[0] = 255;
-    b[1] = 255;
-    
-    vli_gpu<int, SIZE> agpu(a);
-    vli_gpu<int, SIZE> bgpu(b);
-    
-    size_t aten = a.BaseTen();
-    size_t bten = b.BaseTen();
-    aten*=bten;
-    c =a*b;
-    
-    vli_gpu<int, SIZE> cgpu(c);
-    
-    cgpu = agpu*bgpu;
-    
-    std::cout << c.BaseTen() << std::endl;
-    std::cout << aten << std::endl;
-    
-    std::cout << c << std::endl;
-    std::cout << cgpu << std::endl;
-
-    
-/*	
-    vli_vector_cpu<int> a(SIZE);
-    vli_vector_cpu<int> b(a);
-    vli_vector_cpu<int> c(SIZE);
+    vli_cpu<int,8> a;
+    vli_cpu<int,8> b(a);
+    vli_cpu<int,8> c;
 	
+    polynomial<vli_cpu<int,8>, 2> pa;
+    polynomial<vli_cpu<int,8>, 2> pb;
+    polynomial<vli_cpu<int,8>, 2> pc;
     
-	for (int i =0; i < SIZE; i++)
-	{
-        a.init(i,3,255,255,255);
-        b.init(i,3,255,255,255);
-	}
+    for(int i=0; i<2; i++){
+        pa(0,0)[i] = 255;
+        pa(0,1)[i] = 255;
+        pa(1,0)[i] = 255;
+        pa(1,1)[i] = 255;        
+        
+        pb(0,0)[i] = 255;
+        pb(0,1)[i] = 255;
+        pb(1,0)[i] = 255;
+        pb(1,1)[i] = 255;                
+    }
     
-    c = a+b;
+    polynomial_gpu<vli_gpu<int,8>, 2> pgpua(pa);
+    polynomial_gpu<vli_gpu<int,8>, 2> pgpub(pb);
+    polynomial_gpu<vli_gpu<int,8>, 2> pgpuc(pc);
     
-    std::cout << a << std::endl;
-    std::cout << b << std::endl;
-    std::cout << c << std::endl;
-
-	vli_vector_gpu<int> a_gpu(a);
-	vli_vector_gpu<int> b_gpu(b);
-	vli_vector_gpu<int> c_gpu(SIZE);
-
-    c_gpu = a_gpu + b_gpu;
+    pc = pa*pb;
+    pgpuc = pgpua*pgpub;
     
-    std::cout << a_gpu << std::endl;
-    std::cout << b_gpu << std::endl;
-    std::cout << c_gpu << std::endl;
+    printf("CPU \n");
+    std::cout << pc(0,0) << std::endl; 
+    std::cout << pc(0,1) << std::endl; 
+    std::cout << pc(1,0) << std::endl; 
+    std::cout << pc(1,1) << std::endl; 
+    printf("---------------------------\n");
+    printf("GPU \n");
+    std::cout << pgpuc(0,0) << std::endl; 
+    std::cout << pgpuc(0,1) << std::endl; 
+    std::cout << pgpuc(1,0) << std::endl; 
+    std::cout << pgpuc(1,1) << std::endl; 
     
-	vli_vector_gpu<vli_cpu<int> > b_gpu(b);
     
-    //	c = a+b;
-    
-    //	c_gpu(c);//=a_gpu+b_gpu;
-	
-	std::cout << a << std::endl;	
-	std::cout << a_gpu << std::endl;	
-    
-    //	BOOST_CHECK_EQUAL(a[0],b[0]);
- */
 	GPU->instance().destructor();
+    return 0;
 }
+

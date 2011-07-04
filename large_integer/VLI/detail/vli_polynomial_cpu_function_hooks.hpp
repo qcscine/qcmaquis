@@ -17,7 +17,7 @@ void poly_multiply(polynomial<vli_cpu<BaseInt, Size>, Order> & result,
                    polynomial<vli_cpu<BaseInt, Size>, Order> const & p1, 
                    polynomial<vli_cpu<BaseInt, Size>, Order> const & p2)
 {
-    typedef typename polynomial::<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
+    typedef typename polynomial<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
     //C
     //C If you use a std::size_t max_order you allow the compiler to evaluate
     //C the term at runtime, even though p1.max_order is already available at
@@ -39,7 +39,7 @@ void poly_multiply(polynomial<vli_cpu<BaseInt, Size>, Order> & result,
 template <class BaseInt, int Size, int Order>
 polynomial<vli_cpu<BaseInt, Size>, Order> operator * (polynomial<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<vli_cpu<BaseInt, Size> > const& m)
 {
-    typedef typename polynomial::<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
+    typedef typename polynomial<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
     
     polynomial<vli_cpu<BaseInt, Size>, Order> r;
     // TODO perhaps there is a better way to write these loops,
