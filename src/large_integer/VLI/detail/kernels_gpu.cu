@@ -264,15 +264,30 @@ __device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
     
     
 template <typename T>
-__global__ void single_multiplication(const T* x,  const T* y , T* z , int num_integers, int vli_size)     
+__global__ void single_multiplication(T const* x, T const* y , T* z , int num_integers, int vli_size)     
 {
     multiplication_classic_kernel_gpu(x, y, z, num_integers, vli_size);    
 }
     
+template <typename T>
+__global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, int vli_size, int max_order)
+{
+    std::size_t offset(0);
     
+    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+	
+	if(xIndex < 2) //useless, because we set the number of thread to one
+	{
+        for(std::size_t i = 0 ; i < max_order*max_order ; i++)
+        {
+            offset = i*vli_size;
+            multiplication_classic_kernel_gpu((p+offset),m,(res+offset),1,vli_size);
+        }
+    }
+}
     
 template <typename T>
-__global__ void polynome_polynome_multication(const T* p1, const T* p2, T* res, int vli_size, int max_order)
+__global__ void polynome_polynome_multication(T const* p1, T const* p2, T* res, int vli_size, int max_order)
 {
     std::size_t offset0(0),offset1(0), offset2(0) ;
  
@@ -295,7 +310,6 @@ __global__ void polynome_polynome_multication(const T* p1, const T* p2, T* res, 
                         offset2 = (je2*max_order+he2)*vli_size;
                         multiplication_classic_kernel_gpu((p1+offset1),(p2+offset2),inter,1,vli_size);
                         addition_classic_kernel_gpu((res+offset0),inter,1,vli_size);
-//                    res.coeffs[ offset0] += p1.coeffs[offset1]*p2.coeffs[offset2];
                     }
                 }
             }      
@@ -304,9 +318,8 @@ __global__ void polynome_polynome_multication(const T* p1, const T* p2, T* res, 
 } 
  
 template <typename T>
-__global__ void equality_gpu(const T* p1, const T* p2, int vli_size, int* t)
+__global__ void equality_gpu(T const* p1, T const* p2, int vli_size, int* t)
 {   
-    
     const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	
 	if(xIndex < 32){
@@ -315,11 +328,9 @@ __global__ void equality_gpu(const T* p1, const T* p2, int vli_size, int* t)
             __syncthreads(); 
         }
     }
-    
-    
 }   
     
-void plus_assign_gpu(TYPE*  A,  const TYPE*  B, int num_integers, int vli_size)
+void plus_assign_gpu(TYPE*  A, TYPE const*  B, int num_integers, int vli_size)
 {
     dim3 dimgrid(1,1,1);
 	dim3 dimblock(1,1,1);
@@ -338,7 +349,7 @@ void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int
     assert(false);
 }
     
-void poly_multiply_gpu(const TYPE* a, const TYPE* b, TYPE* c, int vli_size, int max_order)
+void poly_multiply_gpu(TYPE const* a, TYPE const* b, TYPE* c, int vli_size, int max_order)
 {
    	dim3 dimgrid(1,1,1);
 	dim3 dimblock(1,1,1);
@@ -352,7 +363,14 @@ void poly_addition_gpu(TYPE* a, TYPE const* b, int vli_size, int max_order)
     polynome_polynome_addition  <<< dimgrid, dimblock >>>(a, b , vli_size, max_order);
 }
     
-void equal_gpu(const TYPE* a, const TYPE* b, int vli_size, int* t)
+void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, int max_order)
+{
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    monome_polynome_multiplication  <<< dimgrid, dimblock >>>(a, b, c ,vli_size, max_order);
+}
+    
+void equal_gpu(TYPE const* a, const TYPE* b, int vli_size, int* t)
 {
     dim3 dimgrid(1,1,1);
 	dim3 dimblock(1,1,1);

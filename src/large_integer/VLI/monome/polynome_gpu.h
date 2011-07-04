@@ -107,13 +107,12 @@ namespace vli
             size_type j_; // for operator (j,h) 
             size_type h_; // for operator (j,h)
         };
-        
+        /** Serious on the specialization */
         friend polynomial_gpu operator * <> (polynomial_gpu const& p, polynomial_gpu const& m);
         friend void poly_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, polynomial_gpu const& p2);
         friend polynomial_gpu operator * <> (polynomial_gpu const& p, monomial<Vli> const& m);
         friend void poly_mono_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, monomial<Vli>  const& m2);
        
-        
         
         polynomial_gpu(){
         }
@@ -151,6 +150,21 @@ namespace vli
             return *this;
         }        
         
+        /**  TO DO shame on me, think to integrate *= += into the kernel **/
+        polynomial_gpu operator *= (Vli const& c)
+        {
+            polynomial_gpu<Vli, Order> result;
+            poly_mono_multiply(result, (*this), c);
+            *this = result;
+            return *this;
+        }
+        
+        polynomial_gpu& operator *= (monomial<Vli> const& c)
+        {
+            (*this) *= c.coeff;
+            return *this;
+        }
+        
         /** GPU/GPU**/
         bool operator==(polynomial_gpu const & p) const 
         {
@@ -177,10 +191,27 @@ namespace vli
         }
         
         /** 
-         Due to the derivation a large part of the operator come from vli_gpu
+         Due to the derivation a large part of the operators come from vli_gpu
          */
+    }; //end class
+    
+    /**
+     * Multiplication of a polynomial with a factor
+     */
+    template<class Vli, int Order>
+    polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> p, Vli const& c)
+    {
+        p *= c;
+        return p;
+    }
+    
+    template<class Vli, int Order>
+    polynomial_gpu<Vli, Order> operator * (Vli const& c, polynomial_gpu<Vli, Order> const& p)
+    {
+        return p * c;
+    }
+    
 
-    };
 }
 
 #endif //VLI_MONOME_GPU_H

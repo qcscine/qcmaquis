@@ -52,7 +52,15 @@ namespace vli
         typename Vli::value_type & operator[](size_type i){
             return coeff[i];
         }
+        
+        typename Vli::value_type*  p(){
+            return coeff.p();   
+        }
 
+        typename Vli::value_type const* p() const{
+            return coeff.p();   
+        }
+        
         size_type j_exp;
         size_type h_exp;
         Vli coeff;                

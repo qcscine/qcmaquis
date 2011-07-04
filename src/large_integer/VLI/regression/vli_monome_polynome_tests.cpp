@@ -61,34 +61,25 @@ BOOST_AUTO_TEST_CASE(monome)
 
 BOOST_AUTO_TEST_CASE(monome_polynome)
 {
-    
-	gpu::gpu_manager* GPU;
+  	gpu::gpu_manager* GPU;
 	GPU->instance();
-    
+    //init vli cpu    
     vli_cpu<int,8> a;
-    vli_cpu<int,8> b(a);
+    vli_cpu<int,8> b;
     b[0] = 255;
     b[1] = 255;
     a[0] = 185;
     a[1]  =254;
-
-    vli_cpu<int,8> agpu;
-    vli_cpu<int,8> bgpu(a);
-    bgpu[0] = 255;
-    bgpu[1] = 255;
-    agpu[0] = 185;
-    agpu[1]  =254;
-    
+    //init vli gpu
+    vli_cpu<int,8> agpu(a);
+    vli_cpu<int,8> bgpu(b);
+    //inti momone cpu
     monomial<vli_cpu<int, 8> > mb(b);
-    monomial<vli_cpu<int, 8> > ma;
-    ma[0] = 255;
-    ma[1] = 255;
-
-    
+    monomial<vli_cpu<int, 8> > ma(a);
+    //init monome gpu
     monomial<vli_gpu<int, 8> > mbgpu(b);
     monomial<vli_gpu<int, 8> > magpu(a);    
-    
-    
+    //init polynome cpu
     polynomial<vli_cpu<int,8>, 2> pa;
     polynomial<vli_cpu<int,8>, 2> pb;
     
@@ -98,18 +89,25 @@ BOOST_AUTO_TEST_CASE(monome_polynome)
         pa(1,0)[i] = 255;
         pa(1,1)[i] = 255;        
     }
-    
+    //init polynome gpu
     polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
     polynomial_gpu<vli_gpu<int,8>, 2> pbgpu(pb);
     
-    pb = pa*ma;    
-    pb *= ma;
-    pb *= b;
+    std::cout << pa << std::endl;
+    std::cout << pagpu << std::endl;
+    std::cout << ma << std::endl;
+    std::cout << magpu << std::endl;
     
-    pbgpu = pbgpu*magpu;
     
     
-    printf(" Pc=Pa*Pb \n");
+    pb = pa*ma;        
+    pbgpu = pagpu*magpu;
+    
+    
+    std::cout << pb << std::endl;
+    std::cout << pbgpu << std::endl;
+    
+    printf(" Pb=Pa*ma \n");
     printf("CPU \n");
     std::cout << pb(0,0) << std::endl; 
     std::cout << pb(0,1) << std::endl; 
@@ -122,7 +120,58 @@ BOOST_AUTO_TEST_CASE(monome_polynome)
     std::cout << pbgpu(1,0) << std::endl; 
     std::cout << pbgpu(1,1) << std::endl; 
     
-  //  BOOST_CHECK_EQUAL(pc,pgpuc);
+    BOOST_CHECK_EQUAL(pb,pbgpu);
 	GPU->instance().destructor();
-
 }
+
+BOOST_AUTO_TEST_CASE(monome_polynome_deux)
+{
+    gpu::gpu_manager* GPU;
+	GPU->instance();
+    //init vli cpu    
+    vli_cpu<int,8> a;
+    vli_cpu<int,8> b;
+    a[0] = 185;
+    a[1]  =254;
+    b[0] = 255;
+    b[1] = 255;
+    //init vli gpu
+    vli_gpu<int,8> agpu(a);
+    vli_gpu<int,8> bgpu(b);
+    //init polynome cpu
+    polynomial<vli_cpu<int,8>, 2> pa;
+    polynomial<vli_cpu<int,8>, 2> pb;
+    
+    for(int i=0; i<2; i++){
+        pa(0,0)[i] = 255;
+        pa(0,1)[i] = 255;
+        pa(1,0)[i] = 255;
+        pa(1,1)[i] = 255;        
+    }
+    //init polynome gpu
+    polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
+    polynomial_gpu<vli_gpu<int,8>, 2> pbgpu(pb);
+
+
+    pb = pa*a;
+    pbgpu = pagpu*agpu;
+    
+    
+    printf(" Pb=Pa*ma \n");
+    printf("CPU \n");
+    std::cout << pb(0,0) << std::endl; 
+    std::cout << pb(0,1) << std::endl; 
+    std::cout << pb(1,0) << std::endl; 
+    std::cout << pb(1,1) << std::endl; 
+    printf("---------------------------\n");
+    printf("GPU \n");
+    std::cout << pbgpu(0,0) << std::endl; 
+    std::cout << pbgpu(0,1) << std::endl; 
+    std::cout << pbgpu(1,0) << std::endl; 
+    std::cout << pbgpu(1,1) << std::endl; 
+    
+    BOOST_CHECK_EQUAL(pb,pbgpu);
+	GPU->instance().destructor();
+    
+}
+
