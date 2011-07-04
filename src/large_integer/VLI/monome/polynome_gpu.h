@@ -1,17 +1,17 @@
 /*
- *  monome.h
- *  vli
+ *  monome_gpu.h
  *
  *  Created by Tim Ewart (timothee.ewart@unige.ch) and  Andreas Hehn (hehn@phys.ethz.ch) on 18.03.11.
  *  Copyright 2011 University of Geneva and Eidgenössische Technische Hochschule Züric. All rights reserved.
  *
  */
 
-#ifndef VLI_MONOME_GPU_H
-#define VLI_MONOME_GPU_H
+#ifndef VLI_POLYNOME_GPU_H
+#define VLI_POLYNOME_GPU_H
 #include "boost/swap.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "detail/vli_polynomial_gpu_function_hooks.hpp"
+#include "monome/monome.h"
 
 #include <ostream>
 #include <cmath>
@@ -21,8 +21,6 @@ namespace vli
     template<class BaseInt, int Size>
     class vli_cpu;
     
-//    template<class BaseInt, int Size>
-//    class vli_gpu;
     
     template<class Vli, int Order>
 	class polynomial;
@@ -38,22 +36,28 @@ namespace vli
         return result;
     }
     
+    /**
+     * Multiplication of  polynomial * monomial
+     */
+    template<class Vli, int Order>
+    polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, monomial<Vli> const &m2)
+    {
+        polynomial_gpu<Vli, Order> result;
+        poly_mono_multiply(result, p1, m2);
+        return result;
+    }
+    
+    
 	template<class Vli, int Order>
 	class polynomial_gpu : public vli_gpu<typename Vli::value_type, Order*Order*Vli::size> {
         private:
             typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
         public:
-        typedef typename Vli::size_type size_type;      // Type of the exponents (has to be the same type as Vli::size_type)
+        typedef typename Vli::size_type size_type; // Type of the exponents (has to be the same type as Vli::size_type)
 
-        //C
-        //C enum { vli_size  = Vli::vli_size, max_order = Order };
-        //C Please use seperate enums when defining "compile-time variables".    
-        //C
+        //C Please use seperate enums when defining "compile-time variables"., one more time I didn't know
+        //C I am a good believer, I trust my compiler ..... \o/
         enum { max_order = Order };
-
-        //C
-        //C see comments in monome.h
-        //C
 
         class proxy
         {
@@ -82,10 +86,7 @@ namespace vli
             }
             
             proxy& operator[] (size_type i ){
-                //C
-                //C what is this operator used for?
-                //C
-                i_=i;
+                i_=i; // serial access
                 return *this;
             }
                            
@@ -109,7 +110,11 @@ namespace vli
         
         friend polynomial_gpu operator * <> (polynomial_gpu const& p, polynomial_gpu const& m);
         friend void poly_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, polynomial_gpu const& p2);
+        friend polynomial_gpu operator * <> (polynomial_gpu const& p, monomial<Vli> const& m);
+        friend void poly_mono_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, monomial<Vli>  const& m2);
        
+        
+        
         polynomial_gpu(){
         }
         
@@ -136,8 +141,7 @@ namespace vli
             assert(h_exp < max_order);
             return (*this)[j_exp*max_order+h_exp];
         }
-       
-        
+               
         /**
         * Plus assign with a polynomial
         */
@@ -145,8 +149,7 @@ namespace vli
         {
             poly_addition(*(this), p);
             return *this;
-        }
-        
+        }        
         
         /** GPU/GPU**/
         bool operator==(polynomial_gpu const & p) const 

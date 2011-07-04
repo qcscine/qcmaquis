@@ -155,12 +155,15 @@ namespace vli
 
         bool operator == (vli_gpu const& vli) const
         {
-            // TODO this should also work directly on the gpu
+            // TODO try on gpu, debug my kernel 
             return vli_cpu<BaseInt, Size>(*this) == vli_cpu<BaseInt, Size>(vli);
         }
+        
+        bool operator == (vli_cpu<value_type, Size> const& vli) const
+        {
+             return vli_cpu<value_type, Size> (*this) == vli;
+        }
                 
-        /** It is extremely slow
-        To do write a kernel*/
         proxy operator[](size_type i) 
         {
             return proxy(*this, i);

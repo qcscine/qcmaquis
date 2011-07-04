@@ -10,7 +10,8 @@
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "monome/monome.h"
-#include "monome/monome_gpu.h"
+#include "monome/polynome.h"
+#include "monome/polynome_gpu.h"
 
 #include "utils/timings.h"
 
@@ -28,9 +29,27 @@ int main (int argc, char * const argv[])
 	GPU->instance();
     
     vli_cpu<int,8> a;
+    a[0] = 255;
+    a[1] = 255;
+    
     vli_cpu<int,8> b(a);
-    vli_cpu<int,8> c;
-	
+    vli_gpu<int,8> c(a);
+     
+   
+    
+
+	a+=a;
+    std::cout << a <<std::endl;
+    
+    vli::monomial<vli_cpu<int, 8> > ma(a);
+    ma*=a;
+
+    vli::monomial<vli_gpu<int, 8> > magpu(c);
+    
+    //    ma[0] = 255;
+ 
+    
+    
     polynomial<vli_cpu<int,8>, 2> pa;
     polynomial<vli_cpu<int,8>, 2> pb;
     polynomial<vli_cpu<int,8>, 2> pc;
@@ -51,20 +70,29 @@ int main (int argc, char * const argv[])
     polynomial_gpu<vli_gpu<int,8>, 2> pgpub(pb);
     polynomial_gpu<vli_gpu<int,8>, 2> pgpuc(pc);
     
-    pc = pa*pb;
-    pgpuc = pgpua*pgpub;
+    pa += pa;
     
+    pc = pa*ma;
+    pc = ma*pa;
+    pc *= ma;
+    
+    pc = pa*a;
+    pc = a*pa;
+    pgpua = pgpua*magpu;
+    
+    
+    printf(" Pc=Pa*pb \n");
     printf("CPU \n");
-    std::cout << pc(0,0) << std::endl; 
-    std::cout << pc(0,1) << std::endl; 
-    std::cout << pc(1,0) << std::endl; 
-    std::cout << pc(1,1) << std::endl; 
+    std::cout << pa(0,0) << std::endl; 
+    std::cout << pa(0,1) << std::endl; 
+    std::cout << pa(1,0) << std::endl; 
+    std::cout << pa(1,1) << std::endl; 
     printf("---------------------------\n");
     printf("GPU \n");
-    std::cout << pgpuc(0,0) << std::endl; 
-    std::cout << pgpuc(0,1) << std::endl; 
-    std::cout << pgpuc(1,0) << std::endl; 
-    std::cout << pgpuc(1,1) << std::endl; 
+    std::cout << pgpua(0,0) << std::endl; 
+    std::cout << pgpua(0,1) << std::endl; 
+    std::cout << pgpua(1,0) << std::endl; 
+    std::cout << pgpua(1,1) << std::endl; 
     
     
 	GPU->instance().destructor();

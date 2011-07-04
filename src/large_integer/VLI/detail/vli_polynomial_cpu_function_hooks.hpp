@@ -18,15 +18,7 @@ void poly_multiply(polynomial<vli_cpu<BaseInt, Size>, Order> & result,
                    polynomial<vli_cpu<BaseInt, Size>, Order> const & p2)
 {
     typedef typename polynomial<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
-    //C
-    //C If you use a std::size_t max_order you allow the compiler to evaluate
-    //C the term at runtime, even though p1.max_order is already available at
-    //C compile-time.
-    //C This may inhibit possible loop unrolling.
-    //C For integers that are available at compile-time and are supposed to be
-    //C evaluated at compile-time use enum or the template parameter directly.
-    //C This really forces the compiler to evaluate these things before runtime.
-    //C
+ 
     for(size_type je1 = 0; je1 < Order; ++je1)
         for(size_type he1 = 0; he1 < Order; ++he1)
         {
