@@ -26,10 +26,10 @@ namespace vli
 	class vli_gpu 
 	{
 	public:
-		typedef BaseInt             value_type;      
-        typedef std::size_t         size_type;       
-        enum {vli_size = Size};
-      
+	    typedef BaseInt         value_type;     // Data type to store parts of the very long integer (usually int)
+        typedef std::size_t     size_type;      // Size type of the very long integers (number of parts)
+        
+        enum {size = Size};                     // Number of parts of the very long integer (eg. how many ints)
         
         /**
          proxy objects to access elements of the VLI
@@ -87,7 +87,6 @@ namespace vli
 
 		vli_gpu(vli_cpu<BaseInt, Size> const& vli)
         {
-        //    BOOST_STATIC_ASSERT(vli_cpu<BaseInt, Size>::size == static_cast<std::size_t>(Size) );
 			gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)  ), __LINE__);
 			gpu::cu_check_error(cudaMemcpy((void*)data_, (void*)&vli[0], Size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 		
         }
@@ -115,7 +114,6 @@ namespace vli
 
 		void copy_vli_to_cpu(vli::vli_cpu<BaseInt, Size>& vli) const
         {
-         //   BOOST_STATIC_ASSERT( vli_cpu<BaseInt>::size == static_cast<std::size_t>(Size) );
  			gpu::cu_check_error(cudaMemcpy( (void*)&vli[0], (void*)data_, Size*sizeof(BaseInt), cudaMemcpyDeviceToHost ), __LINE__); 					
         }
 
