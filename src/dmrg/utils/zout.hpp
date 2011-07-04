@@ -5,14 +5,21 @@
 #include "ambient/ambient.h"
 #endif
 #include <iostream>
+#include <fstream>
 
 class dmrg_cout {
 public:
+
+    std::fstream nullio;
+    dmrg_cout():nullio("/dev/null"){}
+
     template<class T>
     dmrg_cout& operator <<(T const & obj)
     {
 #ifdef MPI_PARALLEL
-        if(ambient::is_master())
+        if(!ambient::is_master())
+        this->nullio << obj;
+        else
 #endif
         std::cout << obj;
         return *this;
@@ -21,7 +28,9 @@ public:
     dmrg_cout& operator <<(std::ostream& (*pf)(std::ostream&))
     {
 #ifdef MPI_PARALLEL
-        if(ambient::is_master())
+        if(!ambient::is_master())
+        this->nullio << pf;
+        else
 #endif
         std::cout << pf;
         return *this;
