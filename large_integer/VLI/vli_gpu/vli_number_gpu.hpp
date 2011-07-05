@@ -37,8 +37,8 @@ namespace vli
         class proxy
         {
         public:
-            proxy(vli_gpu& v, size_type i)
-            :data_(v.p()), pos(i)
+            proxy(BaseInt* p, size_type i)
+            :data_(p), pos(i)
             {
             }
             
@@ -49,10 +49,9 @@ namespace vli
                 return vli;
             }
             
-            proxy& operator= (size_t i)
+            proxy& operator= (BaseInt i)
             {
-                BaseInt num = static_cast<BaseInt>(i);
-                gpu::cu_check_error(cudaMemcpy( (void*)(data_+pos),(void*)&num, sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 					
+                gpu::cu_check_error(cudaMemcpy( (void*)(data_+pos),(void*)&i, sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 					
                 return *this;
             }
             
@@ -166,7 +165,7 @@ namespace vli
                 
         proxy operator[](size_type i) 
         {
-            return proxy(*this, i);
+            return proxy(data_, i);
         }
 
         void print(std::ostream& os) const
