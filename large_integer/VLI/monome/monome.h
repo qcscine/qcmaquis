@@ -17,7 +17,7 @@ namespace vli
 	template <class Vli>
     struct monomial
     {
-        typedef typename Vli::size_type size_type;      // Type of the exponents (has 
+        typedef typename Vli::size_type size_type;
          
         /**
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
@@ -27,8 +27,7 @@ namespace vli
         }
         
         explicit monomial(Vli const& vli, size_type j_exp = 0, size_type h_exp = 0)// for me !
-        :j_exp(j_exp), h_exp(h_exp){
-            coeff = vli;
+        :j_exp(j_exp), h_exp(h_exp), coeff(vli){
         }
         
         monomial& operator *= (Vli const& c){
@@ -36,14 +35,21 @@ namespace vli
             return (*this);
         }
         
-        monomial& operator *= (Vli &c){ // I add the &, do you forget it ?
+        monomial& operator *= (int c){
             (*this).coeff *= c;
-            return (*this);            
+            return (*this);
         }
-        
-        bool operator=(monomial const& m){
-            return (*this).coeff == m.coeff;
-        }        
+
+        void print(std::ostream& os) const
+        {
+//            if(coeff > 0)
+//                os<<"+";
+            os<<coeff<<"*J^"<<j_exp<<"*h^"<<h_exp;
+        }
+
+        bool operator == (monomial const& m) const{
+            return ((*this).j_exp == m.j_exp) && ((*this).h_exp == m.h_exp) && ((*this).coeff == m.coeff);
+        }
         
         typename Vli::value_type const& operator[](size_type i)const{ // for a serial acces of the VLI element
             return coeff[i];
@@ -54,21 +60,21 @@ namespace vli
         }
         
         typename Vli::value_type*  p(){
-            return coeff.p();   
+            return coeff.p();
         }
 
         typename Vli::value_type const* p() const{
-            return coeff.p();   
+            return coeff.p();
         }
         
         size_type j_exp;
         size_type h_exp;
-        Vli coeff;                
+        Vli coeff;
     };
     
-    template<class Vli> // need for the boost equal test
+    template<class Vli>
     std::ostream& operator<<(std::ostream& os, monomial<Vli> const& m){
-        os << m.coeff;
+        m.print(os);
         return os;
     }
 }

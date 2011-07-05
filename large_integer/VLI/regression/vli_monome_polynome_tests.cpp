@@ -7,7 +7,7 @@
 
 #define BOOST_TEST_MODULE vli_cpu
 #include <boost/test/unit_test.hpp>
-
+#include <cstdio>
 
 #define SIZE_BITS 256
 
