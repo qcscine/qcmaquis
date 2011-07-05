@@ -95,9 +95,7 @@ namespace vli
             size_type h_; // for operator (j,h)
         };
         /** Serious on the specialization */
-        friend polynomial_gpu operator * <> (polynomial_gpu const& p, polynomial_gpu const& m);
         friend void poly_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, polynomial_gpu const& p2);
-        friend polynomial_gpu operator * <> (polynomial_gpu const& p, monomial<Vli> const& m);
         friend void poly_mono_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, monomial<Vli>  const& m2);
        
         
