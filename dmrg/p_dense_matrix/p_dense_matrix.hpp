@@ -163,6 +163,7 @@ namespace blas {
         int block_j = j / (this->breakdown()->get_mem_t_dim().x);
         int element_i = i % (this->breakdown()->get_mem_t_dim().y);
         int element_j = j % (this->breakdown()->get_mem_t_dim().x);
+        ambient::world_loop();
         T& value = *(T*)(*this->breakdown())(block_i, block_j).element(element_i, element_j);
         ambient::world_loop();
         return value;

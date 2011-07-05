@@ -62,7 +62,7 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         for (int i = 0; i < L; ++i)
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1]);
         
-        cout << mps.description() << endl;
+        zout << mps.description() << endl;
     }
 };
 
@@ -123,7 +123,7 @@ struct mott_mps_init : public mps_initializer<Matrix, SymmGroup>
         for (int i = 0; i < L; ++i)
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1], true);
         
-        cout << mps.description() << endl;
+        zout << mps.description() << endl;
     }
 };
 

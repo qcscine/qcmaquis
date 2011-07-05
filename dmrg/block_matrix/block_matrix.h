@@ -110,7 +110,6 @@ public:
 #endif
     
 private:
-//    std::vector<Matrix> data_;
     boost::ptr_vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
 };    
@@ -131,6 +130,5 @@ block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
     bm *= v;
     return bm;
 }
-
 
 #endif

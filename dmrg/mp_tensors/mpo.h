@@ -45,9 +45,9 @@ public:
             gemm(U, Sqrt, left);
             gemm(Sqrt, V, right);
             
-            std::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
+            zout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
             replace_pair(left, right, p);
-            std::cout << bond_indices[p+1].sum_of_sizes() << std::endl;
+            zout << bond_indices[p+1].sum_of_sizes() << std::endl;
         }
     }
     
@@ -90,7 +90,7 @@ private:
                 if (charge_diffs.size() > 1) {
                     std::copy(charge_diffs.begin(), charge_diffs.end(),
                               std::ostream_iterator<typename SymmGroup::charge>(std::cout, " "));
-                    std::cout << std::endl;
+                    zout << std::endl;
                 }
                 assert( charge_diffs.size() <= 1 );
 #endif
@@ -114,8 +114,7 @@ private:
                     index[index.position(it->second)] = std::make_pair(it->second, index.size_of_block(it->second)+1);
                 else
                     index.insert(std::make_pair(it->second, 1));
-            
-            std::cout << index << std::endl;
+            zout << index << std::endl;
         }
     }
     

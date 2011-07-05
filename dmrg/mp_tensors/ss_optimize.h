@@ -77,7 +77,7 @@ public:
 //        mps.normalize_right();
         mps.canonize(0);
         init_left_right(mpo);
-        cout << "Done init_left_right" << endl;
+        zout << "Done init_left_right" << endl;
     }
     
     int sweep(int sweep, Logger & iteration_log,
@@ -286,12 +286,12 @@ public:
             
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
-            cout << "Sweep has been running for " << elapsed << " seconds." << endl;
+            zout << "Sweep has been running for " << elapsed << " seconds." << endl;
             if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
                 return _site+1;
             }
             else
-                cout << max_secs - elapsed << " seconds left." << endl;
+                zout << max_secs - elapsed << " seconds left." << endl;
         }
         
         return -1;

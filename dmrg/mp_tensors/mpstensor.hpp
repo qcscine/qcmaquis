@@ -189,35 +189,26 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 //    pgemm(conjugate_transpose(data_), data_, t);
 //    real_type r = sqrt(trace(t));
 
+    scalar_type ret = 0;
     #ifdef MPI_PARALLEL
-    std::vector<Matrix> ret;
-    ret.reserve(data_.n_blocks());
-
     for(size_t i = 0 ; i < data_.n_blocks(); i++){
-        ret.push_back(Matrix(1,1));
         data_[i].nullcut(); // not counting redunant elements of workgroup
-        ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], ret[i]);
+        scalar_type* norm = &ret;
+        ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], norm);
     }
-    for(size_t i = 1 ; i < data_.n_blocks(); i++){
-        ambient::push(ambient::atomic_add_l, ambient::atomic_add_c, ret[0], ret[i]);
-    }
-    
-    timer.end();
-    scalar_type val = ret[0](0,0);
-    if(val <= 0){ assert(val > 0); }
-    return sqrt(val);
+    ambient::playout();
+    printf("R%d: Norm: %.2f\n", ambient::rank(), ret);
     #else
     using utils::conj;
-    scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b){
         for (std::size_t c = 0; c < num_cols(data_[b]); ++c)
             for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
                 ret += conj(data_[b](r,c)) * data_[b](r,c);
     }
+    #endif
     timer.end();
     assert(ret > 0);
     return sqrt(ret);
-    #endif
 }
 
 template<class Matrix, class SymmGroup>
@@ -230,33 +221,23 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     make_left_paired();
     rhs.make_left_paired();
 
+    scalar_type ret = 0;
 #ifdef MPI_PARALLEL
-    std::vector<Matrix> ret;
-    ret.reserve(data_.n_blocks());
-
     for(size_t i = 0 ; i < data_.n_blocks(); i++){
-        ret.push_back(Matrix(1,1));
         data_[i].nullcut(); // not counting redundant elements of workgroup
-        ambient::push(ambient::scalar_overlap_l, ambient::scalar_overlap_c, data_[i], rhs.data_[i], ret[i]);
+        scalar_type* overlap = &ret;
+        ambient::push(ambient::scalar_overlap_l, ambient::scalar_overlap_c, data_[i], rhs.data_[i], overlap);
     }
-    for(size_t i = 1 ; i < data_.n_blocks(); i++){
-        ambient::push(ambient::atomic_add_l, ambient::atomic_add_c, ret[0], ret[i]);
-    }
-    
-    timer.end();
-    scalar_type val = ret[0](0,0);
-    return val;
+    ambient::playout();
 #else
     using utils::conj;
-    scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
         for (std::size_t c = 0; c < num_cols(data_[b]); ++c)
             for (std::size_t r = 0; r < num_rows(data_[b]); ++r)
                 ret += conj(data_[b](r,c)) * rhs.data_[b](r,c);
-
+#endif
     timer.end();
     return ret;
-#endif
 }
 
 template<class Matrix, class SymmGroup>

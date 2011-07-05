@@ -64,7 +64,7 @@ public:
     {
         //        mps.normalize_right();
         mps.canonize(0);
-        cout << "Done init_left_right" << endl;
+        zout << "Done init_left_right" << endl;
     }
     
     int sweep(int sweep, Logger & iteration_log,

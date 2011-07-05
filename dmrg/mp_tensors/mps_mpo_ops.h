@@ -81,7 +81,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     
     for (int i = 0; i < L; ++i) {
         if (verbose)
-            std::cout << "expval site " << i << std::endl;
+            zout << "expval site " << i << std::endl;
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
