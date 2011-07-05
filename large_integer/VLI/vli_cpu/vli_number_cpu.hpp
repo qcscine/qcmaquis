@@ -12,7 +12,7 @@
 #define VLI_NUMBER_CPU_HPP
 #include <ostream>
 #include <vector>
-#include "detail/vli_number_cpu_function_hooks.hpp"
+#include "function_hooks/vli_number_cpu_function_hooks.hpp"
 #include <cmath>
 #include "boost/swap.hpp"
 
@@ -87,15 +87,15 @@ namespace vli
 		 */
         vli_cpu& operator += (vli_cpu const& vli)
         {
-            using vli::detail::plus_assign;
-            detail::plus_assign(*this,vli);
+            using vli::plus_assign;
+            plus_assign(*this,vli);
             return *this;
         }
 		
         vli_cpu& operator *= (vli_cpu const& vli)
         {
-            using vli::detail::multiplies_assign;
-            detail:multiplies_assign(*this,vli);
+            using vli::multiplies_assign;
+            multiplies_assign(*this,vli);
             return *this;
         }
 		

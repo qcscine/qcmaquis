@@ -1,7 +1,7 @@
 #ifndef VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
 #define VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
 
-#include "kernels_cpu.hpp"
+#include "detail/kernels_cpu.hpp"
 
 namespace vli{
 

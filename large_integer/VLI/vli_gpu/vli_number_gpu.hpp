@@ -14,7 +14,7 @@
 
 #include <iostream>
 #include <boost/static_assert.hpp>
-#include "detail/vli_number_gpu_function_hooks.hpp"
+#include "function_hooks/vli_number_gpu_function_hooks.hpp"
 #include "gpu/GpuManager.h"
 
 namespace vli
@@ -140,14 +140,14 @@ namespace vli
 		 */
 		vli_gpu& operator += (vli_gpu const& vli)
         {
-            using vli::detail::plus_assign;
+            using vli::plus_assign;
             plus_assign(*this,vli);
             return *this;
         }
 
 		vli_gpu& operator *= (vli_gpu const& vli)
         {
-            using vli::detail::multiplies_assign;
+            using vli::multiplies_assign;
             multiplies_assign(*this,vli);
             return *this;
         }
