@@ -32,20 +32,33 @@ public:
 };
 
 #ifdef HAVE_ALPS_HDF5
-inline alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
-                                        std::string const & p,
-                                        NullGroup::charge const & v)
-{
-    int k = 1;
-    ar << alps::make_pvp(p, k);
-    return ar;
-}
+namespace alps {
+    namespace hdf5 {
         
-inline alps::hdf5:: iarchive & serialize(alps::hdf5::iarchive & ar,
-                                         std::string const & p,
-                                         NullGroup::charge & v) {
-    v = NullGroup::Plus;
-    return ar;
+        void save(
+                  alps::hdf5::oarchive & ar
+                  , std::string const & path
+                  , NullGroup::charge const & value
+                  , std::vector<std::size_t> size = std::vector<std::size_t>()
+                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                  )
+        {
+            int k = 1;
+            ar << alps::make_pvp(path, k);            
+        }
+        void load(
+                  alps::hdf5::iarchive & ar
+                  , std::string const & path
+                  , NullGroup::charge & value
+                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                  )
+        {
+            value = NullGroup::Plus;
+        }
+        
+    }
 }
 #endif
 
