@@ -1,45 +1,47 @@
 
-//#include "vli_config.h"
 #include <iostream>
-#include <cstdio>
-
-#define SIZE_BITS 256
-
 
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
+
+#include "monome/vector_polynomial_gpu.h"
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "monome/monome.h"
-#include "monome/polynome.h"
 #include "monome/polynome_gpu.h"
+#include "monome/polynome.h"
 
-#include "utils/timings.h"
-
-typedef int TYPE; 
 using vli::vli_cpu;
 using vli::vli_gpu;
 using vli::monomial;
 using vli::polynomial;
 using vli::polynomial_gpu;
+using vli::vector_polynomial_gpu;
 
 int main (int argc, char * const argv[]) 
 {
- 	gpu::gpu_manager* GPU;
+	gpu::gpu_manager* GPU;
 	GPU->instance();
-    vli_cpu<int,8> a;
-    a[0] = 252;
-    a[1] = 245;
-    a[2] = 44;
-    a[3] = 97;
-    a[4] = 106;
-    a[5] = 219;
-    a[6] = 198;
-    a[7] = 0;
     
-    vli_cpu<int,8> b = a+a+a;
-    vli_cpu<int,8> c = a * vli_cpu<int,8>(3); 
-	GPU->instance().destructor();
-    return 0;
-}
+    polynomial<vli_cpu<int,8>, 2> pa;
+    
+    for(int i=0; i<2; i++){
+        pa(0,0)[i] = 255;
+        pa(0,1)[i] = 255;
+        pa(1,0)[i] = 255;
+        pa(1,1)[i] = 255;        
+    }
+ 
+    polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
+  
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > V(4);
+    std::cout << V << std::endl;
+    
+    V[0] = pagpu;
 
+    std::cout << pagpu << std::endl;
+    std::cout << V << std::endl;
+    
+   
+	GPU->instance().destructor();
+}
