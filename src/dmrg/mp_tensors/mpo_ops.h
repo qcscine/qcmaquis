@@ -51,7 +51,7 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
         if (p+1 < mpo.length())
             follow_mpo(mpo, s+oss.str(), p+1, k);
         else
-            cout << s+oss.str() << endl;
+            zout << s+oss.str() << endl;
     }
 }
 
@@ -112,7 +112,7 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
     for (size_t p = 0; p < L; ++p)
     {
         MPOTensor<Matrix, SymmGroup> const & inp = mpo[p];
-        cout << "MPOTensor " << inp.row_dim()*inp.row_dim() << " " << inp.col_dim()*inp.col_dim() << endl;
+        zout << "MPOTensor " << inp.row_dim()*inp.row_dim() << " " << inp.col_dim()*inp.col_dim() << endl;
         MPOTensor<Matrix, SymmGroup> ret(inp.row_dim()*inp.row_dim(),
                                          inp.col_dim()*inp.col_dim());
         
@@ -135,10 +135,10 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
         sq[p] = ret;
     }
     
-    cout << "Done squaring." << endl;
+    zout << "Done squaring." << endl;
     
     sq = cleanup_mpo(sq);
-    cout << "Done cleaning up." << endl;
+    zout << "Done cleaning up." << endl;
 
     return sq;
 }

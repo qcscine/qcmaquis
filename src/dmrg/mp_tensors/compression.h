@@ -78,7 +78,7 @@ struct compression {
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
             else
-                cout << "Norm reduction: " << trace(t) << endl;
+                zout << "Norm reduction: " << trace(t) << endl;
         }
         
         return mps;

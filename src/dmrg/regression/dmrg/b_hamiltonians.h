@@ -332,7 +332,7 @@ namespace b_mpos {
         
         void push_extra_terms(MPOMaker<Matrix, U1> & mm, b_adj::Adjacency& adj)
         {
-            cout << "Adding extra term." << endl;
+            zout << "Adding extra term." << endl;
             std::vector<std::pair<std::size_t, op_t> > terms;
             block_matrix<Matrix, U1> c[3];
             
