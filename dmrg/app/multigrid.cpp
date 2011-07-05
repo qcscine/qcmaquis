@@ -69,6 +69,7 @@ alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
 #include "mp_tensors/mps_mpo_ops.h"
 #include "mp_tensors/mpo_ops.h"
 #include "mp_tensors/mps_initializers.h"
+#include "mp_tensors/multigrid.h"
 
 #include "utils/stream_storage.h"
 #include "utils/logger.h"
@@ -85,7 +86,11 @@ using namespace app;
 #ifdef UseTwoU1
 typedef TwoU1 grp;
 #else
-typedef U1 grp;
+ #ifdef UseNULL
+ typedef NullGroup grp;
+ #else
+ typedef U1 grp;
+ #endif
 #endif
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
@@ -117,6 +122,15 @@ void cont_model_parser (ModelParameters & parms, boost::shared_ptr<Lattice> & la
     else
         throw std::runtime_error("Don't know this lattice!");
 
+#ifdef UseNULL
+    if (parms.get<std::string>("model") == std::string("optical_lattice"))
+    {
+        OpticalLatticeNull<Matrix> model(*lattice, parms);
+        H = model.H();
+        meas = model.measurements();
+    } else
+        throw std::runtime_error("Don't know this model!");
+#else
     if (parms.get<std::string>("model") == std::string("optical_lattice"))
     {
         OpticalLattice<Matrix> model(*lattice, parms);
@@ -124,6 +138,7 @@ void cont_model_parser (ModelParameters & parms, boost::shared_ptr<Lattice> & la
         meas = model.measurements();
     } else
         throw std::runtime_error("Don't know this model!");
+#endif
 }
 
 int main(int argc, char ** argv)
@@ -181,7 +196,11 @@ int main(int argc, char ** argv)
     initc[0] = model.get<int>("u1_total_charge1");
     initc[1] = model.get<int>("u1_total_charge2");
 #else
+ #ifdef UseNULL
+    initc = grp::SingletCharge;
+ #else
     initc = model.get<int>("u1_total_charge");
+ #endif
 #endif
     
     std::cout << "initc: " << initc << std::endl;
@@ -234,79 +253,150 @@ int main(int argc, char ** argv)
         h5ar << alps::make_pvp("/parameters", model);
     }
     
-    //    BaseStorageMaster * bsm = bsm_factory(parms);
-    StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
-    
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
+
 #ifndef MEASURE_ONLY
-    
-    bool early_exit = false;
-    {   
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(initial_mps,
-                                                                parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
-                                                                parms, ssm);
+    for (int n_extend=0; n_extend<3; ++n_extend)
+    {
         
-        for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
-            gettimeofday(&snow, NULL);
+        //    BaseStorageMaster * bsm = bsm_factory(parms);
+        StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
+        
+                
+        bool early_exit = false;
+        MPS<Matrix, grp> cur_mps = initial_mps;
+        {   
+            std::cout << "*** Starting optimization ***" << std::endl;
+            ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(initial_mps,
+                                                                    parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                                                    parms, ssm);
             
-            Logger iteration_log;
-            
-            optimizer.sweep(sweep, iteration_log);
+            for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+                gettimeofday(&snow, NULL);
+                
+                Logger iteration_log;
+                
+                optimizer.sweep(sweep, iteration_log);
+                ssm.sync();
+                
+                cur_mps = optimizer.get_current_mps();
+                
+                entropies = calculate_bond_entropies(cur_mps);
+                
+                gettimeofday(&sthen, NULL);
+                double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
+                
+                {
+                    alps::hdf5::oarchive h5ar(rfile);
+                    
+                    std::ostringstream oss;
+                    
+                    oss.str("");
+                    oss << "/simulation/sweep" << sweep << "/results";
+                    h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
+                    
+                    oss.str("");
+                    oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
+                    h5ar << alps::make_pvp(oss.str().c_str(), entropies);
+                    
+                    cout << "Sweep done after " << elapsed << " seconds." << endl;
+                    oss.str("");
+                    oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
+                    h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));                
+                }
+                {
+                    std::ostringstream oss;
+                    oss << "/simulation/sweep" << sweep << "/results/";
+                    if (meas_always.n_terms() > 0)
+                        measure(cur_mps, *lat, meas_always, rfile, oss.str());
+
+                    alps::hdf5::oarchive h5ar(rfile);
+                    oss.str("");
+                    oss << "/simulation/sweep" << sweep << "/results/Density/mean/value";
+                    double dens;
+                    h5ar >> alps::make_pvp(oss.str(), dens);
+                    std::cout << "Density: " << dens << std::endl;
+
+                }
+                
+                if (parms.get<int>("donotsave") == 0)
+                {
+                    alps::hdf5::oarchive h5ar(chkpfile);
+                    
+                    h5ar << alps::make_pvp("/state", cur_mps);
+                    h5ar << alps::make_pvp("/status/sweep", sweep);
+                }
+                
+                gettimeofday(&then, NULL);
+                elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
+                int rs = parms.get<int>("run_seconds");
+                if (rs > 0 && elapsed > rs) {
+                    early_exit = true;
+                    break;
+                }
+            }
             ssm.sync();
-            
-            MPS<Matrix, grp> cur_mps = optimizer.get_current_mps();
-            
-            entropies = calculate_bond_entropies(cur_mps);
-            
-            gettimeofday(&sthen, NULL);
-            double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-            
-            {
-                alps::hdf5::oarchive h5ar(rfile);
-                
-                std::ostringstream oss;
-                
-                oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results";
-                h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
-                
-                oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), entropies);
-                
-                cout << "Sweep done after " << elapsed << " seconds." << endl;
-                oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));                
-            }
-            {
-                std::ostringstream oss;
-                oss << "/simulation/sweep" << sweep << "/results/";
-                if (meas_always.n_terms() > 0)
-                    measure(cur_mps, *lat, meas_always, rfile, oss.str());
-            }
-            
-            if (parms.get<int>("donotsave") == 0)
-            {
-                alps::hdf5::oarchive h5ar(chkpfile);
-                
-                h5ar << alps::make_pvp("/state", cur_mps);
-                h5ar << alps::make_pvp("/status/sweep", sweep);
-            }
-            
-            gettimeofday(&then, NULL);
-            elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
-            int rs = parms.get<int>("run_seconds");
-            if (rs > 0 && elapsed > rs) {
-                early_exit = true;
-                break;
-            }
         }
-        ssm.sync();
+        
+        std::cout << "*** Optimization finished, starting extension() ***" << std::endl;
+        
+        model.set("Ndiscr", 2*model.get<int>("Ndiscr"));
+        
+        cont_model_parser(model, lat, H, measurements);
+                
+        meas_always = Measurements<Matrix, grp>();
+        if (!parms.get<std::string>("always_measure").empty()) {
+            meas_always.set_identity(measurements.get_identity());
+            std::vector<std::string> meas_list = parms.get<std::vector<std::string> >("always_measure");
+            for (int i=0; i<meas_list.size(); ++i)
+                meas_always.add_term(measurements.get(meas_list[i]));
+        }
+        
+        mpo = make_mpo(lat->size(), H);
+        mpoc = mpo;
+        if (parms.get<int>("use_compressed") > 0)
+            mpoc.compress(1e-12);
+        
+        initial_mps = MPS<Matrix, grp>(lat->size(),
+                                       parms.get<std::size_t>("init_bond_dimension"),
+                                       H.get_phys(), initc,
+                                       *initializer_factory<Matrix>(parms));
+        
+        cout << "Energy of larger mps: " << expval(initial_mps, mpo) << endl;
+//        std::ostringstream oss;
+//        for (int i = 0; i < initial_mps.length(); ++i)
+//        {
+//            oss << "MPS site " << i << std::endl;
+//            oss << initial_mps[i].data().left_basis() << std::endl;
+//            oss << initial_mps[i].data().right_basis() << std::endl;
+//        }
+//        std::cout << oss.str() << std::endl;
+
+        std::cout << initial_mps.description() << std::endl;
+        std::cout << "extending:" << std::endl;
+        multigrid::extension(cur_mps, initial_mps);
+        std::cout << "extension finished!" << std::endl;
+        
+        {
+            std::ostringstream oss;
+            oss << "/simulation/extend" << n_extend << "/results/";
+            if (meas_always.n_terms() > 0)
+                measure(initial_mps, *lat, meas_always, rfile, oss.str());
+            
+            alps::hdf5::oarchive h5ar(rfile);
+            oss.str("");
+            oss << "/simulation/extend" << n_extend << "/results/Density/mean/value";
+            double dens;
+            h5ar >> alps::make_pvp(oss.str(), dens);
+            std::cout << "Density after extend: " << dens << std::endl;
+            
+        }
+        cout << "Energy after extend: " << expval(initial_mps, mpo) << endl;
+        exit(-1);
     }
 #endif
     

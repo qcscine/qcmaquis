@@ -36,10 +36,7 @@ public:
               Index<SymmGroup> const & ld = Index<SymmGroup>(),
               Index<SymmGroup> const & rd = Index<SymmGroup>(),
               bool fillrand = true);
-    
-    MPSTensor(std::vector<block_matrix<Matrix, SymmGroup> > const &,
-              Index<SymmGroup> const &);
-    
+        
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
     Index<SymmGroup> const & col_dim() const;
@@ -80,6 +77,7 @@ public:
     
     friend struct contraction;
     friend struct compression;
+    friend struct multigrid;
     
     // math functions: these are not part of the Python code, but required by IETL
     MPSTensor const & operator*=(scalar_type);
