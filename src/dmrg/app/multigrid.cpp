@@ -260,7 +260,7 @@ int main(int argc, char ** argv)
     std::vector<std::size_t> truncations;
 
 #ifndef MEASURE_ONLY
-    for (int n_extend=0; n_extend<3; ++n_extend)
+    for (int n_extend=0; n_extend<parms.get<int>("nfinegrains")+1; ++n_extend)
     {
         
         //    BaseStorageMaster * bsm = bsm_factory(parms);
@@ -342,61 +342,57 @@ int main(int argc, char ** argv)
             ssm.sync();
         }
         
-        std::cout << "*** Optimization finished, starting extension() ***" << std::endl;
-        
-        model.set("Ndiscr", 2*model.get<int>("Ndiscr"));
-        
-        cont_model_parser(model, lat, H, measurements);
-                
-        meas_always = Measurements<Matrix, grp>();
-        if (!parms.get<std::string>("always_measure").empty()) {
-            meas_always.set_identity(measurements.get_identity());
-            std::vector<std::string> meas_list = parms.get<std::vector<std::string> >("always_measure");
-            for (int i=0; i<meas_list.size(); ++i)
-                meas_always.add_term(measurements.get(meas_list[i]));
-        }
-        
-        mpo = make_mpo(lat->size(), H);
-        mpoc = mpo;
-        if (parms.get<int>("use_compressed") > 0)
-            mpoc.compress(1e-12);
-        
-        initial_mps = MPS<Matrix, grp>(lat->size(),
-                                       parms.get<std::size_t>("init_bond_dimension"),
-                                       H.get_phys(), initc,
-                                       *initializer_factory<Matrix>(parms));
-        
-        cout << "Energy of larger mps: " << expval(initial_mps, mpo) << endl;
-//        std::ostringstream oss;
-//        for (int i = 0; i < initial_mps.length(); ++i)
-//        {
-//            oss << "MPS site " << i << std::endl;
-//            oss << initial_mps[i].data().left_basis() << std::endl;
-//            oss << initial_mps[i].data().right_basis() << std::endl;
-//        }
-//        std::cout << oss.str() << std::endl;
-
-        std::cout << initial_mps.description() << std::endl;
-        std::cout << "extending:" << std::endl;
-        multigrid::extension(cur_mps, initial_mps);
-        std::cout << "extension finished!" << std::endl;
-        
+        if (n_extend < parms.get<int>("nfinegrains"))
         {
-            std::ostringstream oss;
-            oss << "/simulation/extend" << n_extend << "/results/";
-            if (meas_always.n_terms() > 0)
-                measure(initial_mps, *lat, meas_always, rfile, oss.str());
+            std::cout << "*** Optimization finished, starting extension() ***" << std::endl;
             
-            alps::hdf5::oarchive h5ar(rfile);
-            oss.str("");
-            oss << "/simulation/extend" << n_extend << "/results/Density/mean/value";
-            double dens;
-            h5ar >> alps::make_pvp(oss.str(), dens);
-            std::cout << "Density after extend: " << dens << std::endl;
+            model.set("Ndiscr", 2*model.get<int>("Ndiscr"));
             
+            cont_model_parser(model, lat, H, measurements);
+            
+            meas_always = Measurements<Matrix, grp>();
+            if (!parms.get<std::string>("always_measure").empty()) {
+                meas_always.set_identity(measurements.get_identity());
+                std::vector<std::string> meas_list = parms.get<std::vector<std::string> >("always_measure");
+                for (int i=0; i<meas_list.size(); ++i)
+                    meas_always.add_term(measurements.get(meas_list[i]));
+            }
+            
+            mpo = make_mpo(lat->size(), H);
+            mpoc = mpo;
+            if (parms.get<int>("use_compressed") > 0)
+                mpoc.compress(1e-12);
+            
+            initial_mps = MPS<Matrix, grp>(lat->size(),
+                                           parms.get<std::size_t>("init_bond_dimension"),
+                                           H.get_phys(), initc,
+                                           *initializer_factory<Matrix>(parms));
+            
+            cout << "Energy of larger mps: " << expval(initial_mps, mpo) << endl;
+            
+            std::cout << initial_mps.description() << std::endl;
+            std::cout << "extending:" << std::endl;
+            multigrid::extension(cur_mps, initial_mps);
+            std::cout << "New MPS:" << std::endl << initial_mps.description();
+            
+            {
+                std::ostringstream oss;
+                oss << "/simulation/extend" << n_extend << "/results/";
+                if (meas_always.n_terms() > 0)
+                    measure(initial_mps, *lat, meas_always, rfile, oss.str());
+                
+                alps::hdf5::oarchive h5ar(rfile);
+                oss.str("");
+                oss << "/simulation/extend" << n_extend << "/results/Density/mean/value";
+                double dens;
+                h5ar >> alps::make_pvp(oss.str(), dens);
+                std::cout << "Density after extend: " << dens << std::endl;
+                
+            }
+            cout << "Energy after extend: " << expval(initial_mps, mpo) << endl;
+            
+            sweep = 0;
         }
-        cout << "Energy after extend: " << expval(initial_mps, mpo) << endl;
-        exit(-1);
     }
 #endif
     
