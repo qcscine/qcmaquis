@@ -34,15 +34,7 @@ polynomial<Vli, Order> operator * (polynomial<Vli, Order> const& p1, polynomial<
     return result;
 }
 
-// Andreas -> Should we renamed this class polynomial_cpu for convenience ? 
-// As the class works with both implementation of VLI, keep presently polynomial
-//
-//C Sure. Rename it.
-//C
-//C I would write //C (for communication) if it is just a message to me
-//C and not a real comment on the code.
-//C That way we can clean the files easily afterwards.
-//C
+
 template<class Vli, int Order>
 class polynomial{
 public:
@@ -164,7 +156,7 @@ polynomial<Vli, Order> operator * (Vli const& c, polynomial<Vli, Order> const& p
     return p * c;
 }
 
-template<class Vli, int Order>//PUTAIN DE & !!!!!!! -> lol -> \o/
+template<class Vli, int Order> 
 std::ostream& operator<<(std::ostream& os, polynomial<Vli, Order> const& p){
     p.print(os);
     return os;

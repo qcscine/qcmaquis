@@ -50,11 +50,12 @@ namespace vli
     
 	template<class Vli, int Order>
 	class polynomial_gpu : public vli_gpu<typename Vli::value_type, Order*Order*Vli::size> {
-        private:
-            typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
         public:
+ 
+        typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
         typedef typename Vli::size_type size_type; // Type of the exponents (has to be the same type as Vli::size_type)
         enum { max_order = Order };
+        enum { size = Vli::size }; // C to remove if you find a solution see vector_poly ...
 
         class proxy
         {
@@ -68,6 +69,7 @@ namespace vli
             }
        
            //TODO do we really want this? Or just using an explicit conversion? 
+           // C - you have to explain me 
             proxy& operator= (vli_cpu<vli_value_type, Vli::size> const& vli ){
                 gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)&vli[0], Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
                 return *this;
@@ -155,7 +157,7 @@ namespace vli
         {
             //TODO
             //BUGY , presently the kernel destroy the data, I do not know why !
-            assert(false);
+            //assert(false);
             int test(0); // shoud be a bool
             detail::equal_gpu((*this).p(), p.p(), max_order*max_order*Vli::size, &test);    
             return (test == 0) ? true : false;
@@ -194,6 +196,16 @@ namespace vli
     polynomial_gpu<Vli, Order> operator * (Vli const& c, polynomial_gpu<Vli, Order> const& p)
     {
         return p * c;
+    }
+    
+    template <class BaseInt, int Order, int SizeVli >
+	std::ostream & operator<<(std::ostream & os, polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > & p)
+    {
+        for(std::size_t i = 0; i < Order ; i++)
+            for(std::size_t j = 0; j < Order ; j++)
+                os << p(i,j) << std::endl;
+
+        return os;
     }
     
 

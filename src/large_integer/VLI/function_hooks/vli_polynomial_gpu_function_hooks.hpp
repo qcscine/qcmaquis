@@ -28,7 +28,6 @@ namespace vli{
     void poly_mono_multiply(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
                               polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1, 
                               monome const & m2)
-//                              monomial<vli_gpu<BaseInt, Size> > const & m2)
     {
         detail::poly_mono_multiply_gpu(p1.p(),m2.p(),result.p(),Size,Order);
     }
