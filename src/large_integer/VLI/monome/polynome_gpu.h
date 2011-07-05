@@ -54,45 +54,30 @@ namespace vli
             typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
         public:
         typedef typename Vli::size_type size_type; // Type of the exponents (has to be the same type as Vli::size_type)
-
-        //C Please use seperate enums when defining "compile-time variables"., one more time I didn't know
-        //C I am a good believer, I trust my compiler ..... \o/
-        //C
-        //C That's why I'm telling you. :)
-        //C
         enum { max_order = Order };
 
         class proxy
         {
         public:
             proxy(polynomial_gpu& poly, size_type j, size_type h)
-            :data_(poly.p()),j_(j),h_(h),i_(-1){}
+            :data_(poly.p()),j_(j),h_(h){}
             
             proxy& operator= (Vli const& vli ){
                 gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)vli.p(), Vli::size*sizeof(vli_value_type), cudaMemcpyDeviceToDevice), __LINE__);
                 return *this;
             }
-        
-            proxy& operator= (vli_cpu<vli_value_type, Vli::size> & vli ){
+       
+           //TODO do we really want this? Or just using an explicit conversion? 
+            proxy& operator= (vli_cpu<vli_value_type, Vli::size> const& vli ){
                 gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)&vli[0], Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
                 return *this;
             }
-            
-            proxy& operator= (vli_value_type i){
-                if(i_ != -1){
-                    vli_value_type num(i);
-                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size+i_)), (void*)&num, sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
-                }else{
-                    assert(false); //dummy case, e.g. pa(0,0) = 255; or set everything to the corresponding value
-                }
-                return *this;
+
+            typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy operator[](size_type i)
+            {
+                return typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy(data_+(j_*max_order*Vli::size+h_*Vli::size),i);
             }
-            
-            proxy& operator[] (size_type i ){
-                i_=i; // serial access
-                return *this;
-            }
-                           
+
             friend std::ostream& operator << (std::ostream& os, proxy const& pr){
                 pr.print(os);
                 return os;
@@ -106,7 +91,6 @@ namespace vli
             
         private:
             vli_value_type* data_;   
-            size_type i_; // for operator [i]
             size_type j_; // for operator (j,h) 
             size_type h_; // for operator (j,h)
         };
