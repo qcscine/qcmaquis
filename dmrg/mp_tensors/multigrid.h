@@ -35,14 +35,9 @@ struct multigrid {
         typedef typename SymmGroup::charge charge;
         typedef typename Index<SymmGroup>::basis_iterator bi_t;
 
-        
-        std::cout << std::endl << std::endl << " #####  MPS Small ##### " << std::endl;
-        std::cout << mps_small.description() << std::endl;
-
-        std::cout << "inside extension" << std::endl;
         for (std::size_t p = 0; p < L1; ++p)
         {
-            std::cout << std::endl << std::endl << "********************" << std::endl << "starting loop for p = " << p << std::endl;
+//            std::cout << std::endl << std::endl << "********************" << std::endl << "starting loop for p = " << p << std::endl;
             
             block_matrix<Matrix, SymmGroup> M;
             
@@ -52,11 +47,11 @@ struct multigrid {
             Index<SymmGroup> s1_basis = mps_large.site_dim(2*p);
             Index<SymmGroup> s2_basis = mps_large.site_dim(2*p+1);
             
-            std::cout << "alpha_basis:" <<std::endl << alpha_basis << std::endl;
-            std::cout << "beta_basis:" <<std::endl << beta_basis << std::endl;
-            std::cout << "s_basis:" <<std::endl << s_basis << std::endl;
-            std::cout << "s1_basis:" <<std::endl << s1_basis << std::endl;
-            std::cout << "s2_basis:" <<std::endl << s2_basis << std::endl;
+//            std::cout << "alpha_basis:" <<std::endl << alpha_basis << std::endl;
+//            std::cout << "beta_basis:" <<std::endl << beta_basis << std::endl;
+//            std::cout << "s_basis:" <<std::endl << s_basis << std::endl;
+//            std::cout << "s1_basis:" <<std::endl << s1_basis << std::endl;
+//            std::cout << "s2_basis:" <<std::endl << s2_basis << std::endl;
             
             
             mps_small[p].make_left_paired();
@@ -77,7 +72,7 @@ struct multigrid {
                             std::pair<charge, std::size_t> s(SymmGroup::fuse(s1->first, s2->first),
                                                              s1->second*s2_basis.size_of_block(s2->first)+s2->second);
                             
-                            if (!s_basis.has(s.first))
+                            if (!s_basis.has(s.first) || s_basis.size_of_block(s.first) <= s.second)
                                 continue;
                             
                             charge in_left_c = SymmGroup::fuse(s.first, alpha->first);
@@ -89,12 +84,12 @@ struct multigrid {
                             charge out_left_c = SymmGroup::fuse(s1->first, alpha->first);
                             charge out_right_c = SymmGroup::fuse(-s2->first, beta->first);
                             
-                            std::cout << "--" << std::endl;
-                            std::cout << "alpha: " << alpha->first << ", " << alpha->second << std::endl;
-                            std::cout << "beta: " << beta->first << ", " << beta->second << std::endl;
-                            std::cout << "s1: " << s1->first << ", " << s1->second << std::endl;
-                            std::cout << "s2: " << s2->first << ", " << s2->second << std::endl;
-                            std::cout << "s: " << s.first << ", " << s.second << std::endl;
+//                            std::cout << "--" << std::endl;
+//                            std::cout << "alpha: " << alpha->first << ", " << alpha->second << std::endl;
+//                            std::cout << "beta: " << beta->first << ", " << beta->second << std::endl;
+//                            std::cout << "s1: " << s1->first << ", " << s1->second << std::endl;
+//                            std::cout << "s2: " << s2->first << ", " << s2->second << std::endl;
+//                            std::cout << "s: " << s.first << ", " << s.second << std::endl;
 
                             if (!M.has_block(out_left_c, out_right_c))
                                 M.insert_block(Matrix(out_left.size(s1->first, alpha->first),
@@ -105,11 +100,11 @@ struct multigrid {
                                                out_left_c, out_right_c);
 
                             
-                            std::cout << "block has size " << out_left.size(s1->first, alpha->first)
-                            << "x"
-                            << out_right.size(s2->first, beta->first,
-                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                  -boost::lambda::_1, boost::lambda::_2)) << std::endl;
+//                            std::cout << "block has size " << out_left.size(s1->first, alpha->first)
+//                            << "x"
+//                            << out_right.size(s2->first, beta->first,
+//                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+//                                                                  -boost::lambda::_1, boost::lambda::_2)) << std::endl;
                             
                             std::size_t in_left_offset = in_left(s.first, alpha->first);
                             std::size_t in_right_offset = 0;
@@ -117,15 +112,15 @@ struct multigrid {
                             std::size_t out_left_offset = out_left(s1->first, alpha->first);
                             std::size_t out_right_offset = out_right(s2->first, beta->first);
                             
-                            std::cout << "M[" << out_left_c << ", " << out_right_c << "]"
-                            << "(" << out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second << ", " << out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second << ")" << std::endl;
-                            std::cout << " = " << M(std::make_pair(out_left_c, out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second),
-                                                    std::make_pair(out_right_c, out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second)) << std::endl;
-                            
-                            std::cout << "mps[" << in_left_c << ", " << in_right_c << "]"
-                            << "(" << in_left_offset + s.second*alpha_basis.size_of_block(alpha->first) + alpha->second << ", " << in_right_offset + beta->second << ")" << std::endl;
-                            std::cout << " = " << mps_small[p].data()(std::make_pair(in_left_c, in_left_offset + s.second*alpha_basis.size_of_block(alpha->first) + alpha->second),
-                                                                      std::make_pair(in_right_c, in_right_offset + beta->second)) << std::endl;
+//                            std::cout << "M[" << out_left_c << ", " << out_right_c << "]"
+//                            << "(" << out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second << ", " << out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second << ")" << std::endl;
+//                            std::cout << " = " << M(std::make_pair(out_left_c, out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second),
+//                                                    std::make_pair(out_right_c, out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second)) << std::endl;
+//                            
+//                            std::cout << "mps[" << in_left_c << ", " << in_right_c << "]"
+//                            << "(" << in_left_offset + s.second*alpha_basis.size_of_block(alpha->first) + alpha->second << ", " << in_right_offset + beta->second << ")" << std::endl;
+//                            std::cout << " = " << mps_small[p].data()(std::make_pair(in_left_c, in_left_offset + s.second*alpha_basis.size_of_block(alpha->first) + alpha->second),
+//                                                                      std::make_pair(in_right_c, in_right_offset + beta->second)) << std::endl;
                             
                             M(std::make_pair(out_left_c, out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second),
                               std::make_pair(out_right_c, out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second))
@@ -153,13 +148,9 @@ struct multigrid {
             mps_large[2*p+1].left_i = right.left_basis();
             mps_large[2*p+1].cur_storage = RightPaired;
             
-//            mps_large[2*p+1].make_left_paired();
         }
-        
-        std::cout << std::endl << std::endl << " #####  MPS Large ##### " << std::endl;
-        std::cout << mps_large.description() << std::endl;
-        
-        mps_large.canonize(0);
+                
+        mps_large.normalize_left();
     }
     
 };
