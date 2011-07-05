@@ -10,7 +10,7 @@
 #define VLI_POLYNOME_CPU_H
 #include "boost/swap.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
-#include "detail/vli_polynomial_cpu_function_hooks.hpp"
+#include "function_hooks/vli_polynomial_cpu_function_hooks.hpp"
 
 #include "monome/monome.h"
 

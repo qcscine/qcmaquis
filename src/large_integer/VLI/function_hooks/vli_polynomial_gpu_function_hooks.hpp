@@ -1,7 +1,7 @@
 #ifndef VLI_POLYNOMIAL_GPU_FUNCTION_HOOKS_HPP
 #define VLI_POLYNOMIAL_GPU_FUNCTION_HOOKS_HPP
 
-#include "kernels_gpu.h"
+#include "detail/kernels_gpu.h"
 
 namespace vli{
     
