@@ -1,6 +1,7 @@
 
 //#include "vli_config.h"
 #include <iostream>
+#include <cstdio>
 
 #define SIZE_BITS 256
 
@@ -21,7 +22,6 @@ using vli::vli_gpu;
 using vli::monomial;
 using vli::polynomial;
 using vli::polynomial_gpu;
-
 
 int main (int argc, char * const argv[]) 
 {

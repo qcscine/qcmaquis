@@ -14,8 +14,6 @@ namespace vli{
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1, 
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p2)
     {
-        //C In principle enums were correct, but why don't we just use the template parameters directly?
-        // => It was late !
         detail::poly_multiply_gpu(p1.p(),p2.p(),result.p(),Size,Order);
     }
     

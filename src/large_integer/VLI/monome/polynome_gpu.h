@@ -57,6 +57,9 @@ namespace vli
 
         //C Please use seperate enums when defining "compile-time variables"., one more time I didn't know
         //C I am a good believer, I trust my compiler ..... \o/
+        //C
+        //C That's why I'm telling you. :)
+        //C
         enum { max_order = Order };
 
         class proxy

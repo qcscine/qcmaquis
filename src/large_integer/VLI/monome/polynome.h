@@ -34,16 +34,20 @@ polynomial<Vli, Order> operator * (polynomial<Vli, Order> const& p1, polynomial<
     return result;
 }
 
-//Andreas -> Should we renamed this class polynomial_cpu for convenience ? 
-//As the class works with both implementation of VLI, keep presently polynomial
+// Andreas -> Should we renamed this class polynomial_cpu for convenience ? 
+// As the class works with both implementation of VLI, keep presently polynomial
+//
+//C Sure. Rename it.
+//C
+//C I would write //C (for communication) if it is just a message to me
+//C and not a real comment on the code.
+//C That way we can clean the files easily afterwards.
+//C
 template<class Vli, int Order>
 class polynomial{
 public:
     typedef typename Vli::size_type size_type;      // Type of the exponents (has to be the same type as Vli::size_type)
     enum { max_order = Order};
-    //C
-    //C See comments in monomial
-    //C
     
     //   friend polynomial operator * <>(const polynomial& p, const monomial<Vli> & m);
     friend void poly_multiply <>(polynomial& result ,const polynomial& p1, const polynomial& p2);
