@@ -115,7 +115,7 @@ namespace vli
 	template <typename BaseInt, int Size>
 	void multiplication_classic_cpu(BaseInt* x, const BaseInt* y)	
 	{
-        std::size_t size = Size/2;
+        std::size_t size = Size;
 
 		BaseInt r[2] = {0,0};	//for local block calculation
 		BaseInt m = 0;
