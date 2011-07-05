@@ -120,7 +120,7 @@ namespace vli
 		BaseInt r[2] = {0,0};	//for local block calculation
 		BaseInt m = 0;
 		
-        vli::vli_cpu<BaseInt, Size> inter; 
+        vli::vli_cpu<BaseInt, Size+1> inter; //+1 for avoiding over flow
 		
 		for (size_type i = 0 ; i < size; i++)
 		{

@@ -32,13 +32,13 @@ int main (int argc, char * const argv[])
     a[1] = 245;
     a[2] = 44;
     a[3] = 97;
-    a[4] = 120;
-    a[5] = 89;
-    a[6] = 128;
+    a[4] = 106;
+    a[5] = 219;
+    a[6] = 198;
     a[7] = 0;
     
     vli_cpu<int,8> b = a+a+a;
-    vli_cpu<int,8> c = a * vli_cpu<int,8>(3);    
+    vli_cpu<int,8> c = a * vli_cpu<int,8>(3); 
 	GPU->instance().destructor();
     return 0;
 }

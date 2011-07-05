@@ -146,6 +146,7 @@ BOOST_AUTO_TEST_CASE( plus )
 }
 
 
+
 BOOST_AUTO_TEST_CASE( multiplies )
 {
     vli_cpu<int,8> a;
@@ -161,5 +162,8 @@ BOOST_AUTO_TEST_CASE( multiplies )
     vli_cpu<int,8> b = a+a+a;
     vli_cpu<int,8> c = a * vli_cpu<int,8>(3);
 
-    BOOST_CHECK_EQUAL(a,c);
+    BOOST_CHECK_EQUAL(b,c);
 }
+
+
+
