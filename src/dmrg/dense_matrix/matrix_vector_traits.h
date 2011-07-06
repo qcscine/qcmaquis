@@ -10,6 +10,16 @@ namespace blas {
     template<class FullMatrixClass>
     struct associated_vector { };
     
+    template<class M>
+    struct associated_real_diagonal_matrix { };
+    
+    template<class M>
+    struct associated_real_vector { };
+    
+    namespace detail {
+        template<class T> struct real_type { typedef T type; };
+        template<class T> struct real_type<std::complex<T> > { typedef T type; };
+    }
 }
 
 #endif

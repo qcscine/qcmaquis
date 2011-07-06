@@ -270,6 +270,12 @@ namespace blas {
         typedef diagonal_matrix<T> type;
     };
     
+    template<typename T, typename MemoryBlock>
+    struct associated_real_diagonal_matrix<dense_matrix<T, MemoryBlock> >
+    {
+        typedef diagonal_matrix<typename detail::real_type<T>::type> type;
+    };
+    
     
     //
     // std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
@@ -278,6 +284,12 @@ namespace blas {
     struct associated_vector<dense_matrix<T,MemoryBlock> >
     {
         typedef std::vector<T> type;
+    };
+    
+    template<class T, class MemoryBlock>
+    struct associated_real_vector<dense_matrix<T,MemoryBlock> >
+    {
+        typedef std::vector<typename detail::real_type<T>::type> type;
     };
 }
 
