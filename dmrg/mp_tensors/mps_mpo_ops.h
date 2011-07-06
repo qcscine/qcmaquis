@@ -105,7 +105,7 @@ std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    return left.traces();
+    return alps::numeric::real(left.traces());
 }
 
 template<class Matrix, class SymmGroup>

@@ -7,6 +7,7 @@
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/lapack/driver/syevd.hpp>
+#include <boost/numeric/bindings/lapack/driver/heevd.hpp>
 #include <boost/numeric/bindings/lapack/computational/geqrf.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 
@@ -72,9 +73,11 @@ namespace blas
     dense_matrix<T, MemoryBlock> exp (dense_matrix<T, MemoryBlock> M, T const & alpha=1)
     {
         dense_matrix<T, MemoryBlock> N, tmp;
-        typename blas::associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type S;
+        typename blas::associated_real_vector<dense_matrix<T, MemoryBlock> >::type Sv(num_rows(M));
         
-        syev(M, N, S);
+        syev(M, N, Sv);
+        
+        typename blas::associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type S(Sv);
         S = exp(alpha*S);
         gemm(N, S, tmp);
         gemm(tmp, conjugate(transpose(N)), M);
@@ -98,7 +101,7 @@ namespace blas
     template<typename T, class MemoryBlock>
     void syev(dense_matrix<T, MemoryBlock> M,
               dense_matrix<T, MemoryBlock> & evecs,
-              typename associated_vector<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type & evals) 
+              typename associated_vector<dense_matrix<T, MemoryBlock> >::type & evals) 
     {
         assert(num_rows(M) == num_cols(M));
         assert(evals.size() == num_rows(M));
@@ -118,8 +121,52 @@ namespace blas
               typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
     {
         assert(num_rows(M) == num_cols(M));
-        std::vector<double> evals_(num_rows(M));
+        typename associated_vector<dense_matrix<T, MemoryBlock> >::type evals_(num_rows(M));
         syev(M, evecs, evals_);
+        evals = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(evals_);
+    }
+    
+    template<typename T, class MemoryBlock>
+    void syev(dense_matrix<std::complex<T>, MemoryBlock> M,
+              dense_matrix<std::complex<T>, MemoryBlock> & evecs,
+              typename associated_vector<dense_matrix<T, MemoryBlock> >::type & evals) 
+    {
+        heev(M, evecs, evals);
+    }
+    
+    template<typename T, class MemoryBlock>
+    void syev(dense_matrix<std::complex<T>, MemoryBlock> M,
+              dense_matrix<std::complex<T>, MemoryBlock> & evecs,
+              typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
+    {
+        heev(M, evecs, evals);
+    }
+
+    template<typename T, class MemoryBlock>
+    void heev(dense_matrix<T, MemoryBlock> M,
+              dense_matrix<T, MemoryBlock> & evecs,
+              typename associated_real_vector<dense_matrix<T, MemoryBlock> >::type & evals) 
+    {
+        assert(num_rows(M) == num_cols(M));
+        assert(evals.size() == num_rows(M));
+        boost::numeric::bindings::lapack::heevd('V', M, evals);
+        // to be consistent with the SVD, I reorder in decreasing order
+        std::reverse(evals.begin(), evals.end());
+        // and the same with the matrix
+        evecs.resize(num_rows(M), num_cols(M));
+        for (std::size_t c = 0; c < num_cols(M); ++c)
+			std::copy(column(M, c).first, column(M, c).second,
+                      column(evecs, num_cols(M)-1-c).first);
+    }
+    
+    template<typename T, class MemoryBlock>
+    void heev(dense_matrix<T, MemoryBlock> M,
+              dense_matrix<T, MemoryBlock> & evecs,
+              typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
+    {
+        assert(num_rows(M) == num_cols(M));
+        typename associated_real_vector<dense_matrix<T, MemoryBlock> >::type evals_(num_rows(M));
+        heev(M, evecs, evals_);
         evals = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(evals_);
     }
     
