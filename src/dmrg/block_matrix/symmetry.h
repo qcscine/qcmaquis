@@ -35,7 +35,7 @@ public:
 namespace alps {
     namespace hdf5 {
         
-        void save(
+        inline void save(
                   alps::hdf5::oarchive & ar
                   , std::string const & path
                   , NullGroup::charge const & value
@@ -47,7 +47,7 @@ namespace alps {
             int k = 1;
             ar << alps::make_pvp(path, k);            
         }
-        void load(
+        inline void load(
                   alps::hdf5::iarchive & ar
                   , std::string const & path
                   , NullGroup::charge & value
