@@ -59,8 +59,10 @@ namespace app {
                 double U = model.get<double>("c")/lat.get_prop<double>("dx", p);
                 double mu = ( -model.get<double>("mu")
                              + exp_potential
-                             + 2*model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p)) );
-                         
+                             + model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p)) );
+                if (!lat.get_prop<bool>("at_open_boundary", p))
+                    mu += model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p));
+
                 op_t site_op;
                 for (int n=1; n<=model.get<int>("Nmax"); ++n)
                     if (U*(n*n-n)+mu*n != 0)
@@ -196,7 +198,9 @@ namespace app {
                 double U = model.get<double>("c")/lat.get_prop<double>("dx", p);
                 double mu = ( -model.get<double>("mu")
                              + exp_potential
-                             + 2*model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p)) );
+                             + model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p)) );
+                if (!lat.get_prop<bool>("at_open_boundary", p))
+                    mu += model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p));
                 
                 op_t site_op;
                 site_op.insert_block(U*interaction[0]+mu*count[0], c, c);

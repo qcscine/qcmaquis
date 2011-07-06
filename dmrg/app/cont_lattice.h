@@ -69,6 +69,8 @@ namespace app {
                 return boost::any( a/N );
             else if (property == "dx" && pos.size() == 2)
                 return boost::any( a/N );
+            else if (property == "at_open_boundary" && pos.size() == 1)
+                return boost::any( (!pbc) && (pos[0]==0 || pos[0]==L*N-1) );
             else if (property == "wraps_pbc" && pos.size() == 2)
                 return boost::any( (pos[0] < pos[1]) );
             else {
