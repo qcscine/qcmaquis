@@ -141,7 +141,8 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     Index<SymmGroup> old_basis = S.left_basis();
     
-    typename blas::associated_vector<Matrix>::type allS;
+    typename blas::associated_real_vector<Matrix>::type allS;
+    
 #ifdef MPI_PARALLEL
     ambient_assert(false);
 #else

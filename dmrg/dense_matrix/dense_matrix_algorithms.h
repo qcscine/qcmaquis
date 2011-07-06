@@ -18,11 +18,11 @@ namespace blas
         struct sv_type<std::complex<T> > { typedef T type; };
     }
     
-    template<typename T, class MemoryBlock>
+    template<typename T, class MemoryBlock, class DiagMatrix>
     void svd(dense_matrix<T, MemoryBlock> M,
              dense_matrix<T, MemoryBlock> & U,
              dense_matrix<T, MemoryBlock>& V,
-             typename associated_diagonal_matrix<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type & S)
+             DiagMatrix & S)
     {
         BOOST_CONCEPT_ASSERT((blas::Matrix<dense_matrix<T, MemoryBlock> >));
         typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
@@ -37,7 +37,7 @@ namespace blas
         if (info != 0)
             throw std::runtime_error("Error in SVD!");
         
-        S = typename associated_diagonal_matrix<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type(S_);
+        S = DiagMatrix(S_);
     }
     
     template<typename T, class MemoryBlock>

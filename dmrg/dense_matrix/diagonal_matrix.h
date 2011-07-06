@@ -30,6 +30,10 @@ namespace blas {
         diagonal_matrix(Vector const & init)
         : data_(init.begin(), init.end()) { }
 
+        template<class Tp>
+        diagonal_matrix(diagonal_matrix<Tp> const & rhs)
+        : data_(rhs.elements().first, rhs.elements().second) { }
+        
         diagonal_matrix(std::size_t size = 0, T const & init = T())
         : data_(size, init) { }
         

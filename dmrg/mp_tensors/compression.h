@@ -27,7 +27,7 @@ struct compression {
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
-        typedef typename blas::associated_diagonal_matrix<Matrix>::type dmt;
+        typedef typename blas::associated_real_diagonal_matrix<Matrix>::type dmt;
 
         block_matrix<dmt, SymmGroup> s;
         
