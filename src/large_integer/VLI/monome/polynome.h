@@ -122,11 +122,19 @@ public:
     
     void print(std::ostream& os) const
     {
-        // TODO nice output
-        for(int i=0; i<Order*Order;++i)
-            std::cout<<coeffs[i] << " ";
+        os << "------------------------" << std::endl;
+        for(std::size_t i = 0; i < Order ; i++){
+            for(std::size_t j = 0; j < Order ; j++){
+                os << "cpu --- Coeff (j,h) = " << i <<" "<<j<< std::endl;
+                os <<coeffs[i*Order+j] << std::endl;
+            }
+        }
+        os <<  "------------------------" << std::endl; 
+// old       for(int i=0; i<Order*Order;++i)
+//            std::cout<<coeffs[i] << " " << std::endl; 
+
     }
-    
+     
 private:
     Vli coeffs[Order*Order];
 };

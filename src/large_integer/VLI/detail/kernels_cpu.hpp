@@ -77,8 +77,8 @@ namespace vli
 	template <typename T>
 	void multiplication_kernel_base_reshaping_cpu(T const * a, T  const *  b, T * r)	
 	{			
-		int q1,q2;
-		int r1,r2;
+		T q1,q2;
+		T r1,r2;
 		q1 = q2 = r1 =r2 = 0;
 		
 		q1 = (*(a+1) + *b)/BASE_HALF;
@@ -86,7 +86,7 @@ namespace vli
 		r1 = r1 * BASE_HALF;
 		q2 = (r1 + *a)/BASE; 
 		r2 = (r1 + *a)%BASE;
-		*r  = r2;
+		*r = r2;
 		*(r+1) = q1 + q2 + *(b+1);
 	}
 	
@@ -120,8 +120,13 @@ namespace vli
 		BaseInt r[2] = {0,0};	//for local block calculation
 		BaseInt m = 0;
 		
-        vli::vli_cpu<BaseInt, Size+1> inter; //+1 for avoiding over flow
-		
+//        vli::vli_cpu<BaseInt, 2*Size+1> inter; //+1 for avoiding over flow
+
+        BaseInt inter[16];
+        //for unroll
+        for(int i=0; i<16;i++)
+            inter[i]=0;
+        
 		for (size_type i = 0 ; i < size; i++)
 		{
 			for(size_type k = 0 ; k < size ; k++) // loop on numbers for multiplication the classical multiplication
@@ -132,8 +137,10 @@ namespace vli
 				addition_kernel_cpu(&inter[m+1],&r[1]);
 			}
 		}
-		
-        memcpy((void*)x,(void*)&inter[0],Size*sizeof(BaseInt));
+        for(int i=0; i<8;i++)
+            x[i] = inter[i];
+        //memcpy((void*)x,(void*)&inter[0],Size*sizeof(BaseInt));
+       // delete[] inter;
 	}
     
 	/***************************** choses exotiques *************************************/

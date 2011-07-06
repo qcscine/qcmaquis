@@ -176,20 +176,20 @@ namespace vli
         void realloc(size_type size) // size = the number of entry of VLI, polynomial or vector
         {
             BaseInt* temp;
-            gpu::cu_check_error(cudaMalloc((void**)(temp),size*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)(&temp),size*sizeof(BaseInt)), __LINE__);
             gpu::cu_check_error(cudaMemset((void*)(temp),0, size*sizeof(BaseInt)), __LINE__);	
             gpu::cu_check_error(cudaMemcpy((void*)temp,data_, Size*sizeof(BaseInt),cudaMemcpyDeviceToDevice), __LINE__); 
             std::swap(temp,data_);
-            gpu::cu_check_error(cudaFree(data_), __LINE__);
+            gpu::cu_check_error(cudaFree(temp), __LINE__);
         }
         
         void realloc_lost(size_type size) // datas lost
         {
             BaseInt* temp;
-            gpu::cu_check_error(cudaMalloc((void**)(temp),size*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)(&temp),size*sizeof(BaseInt)), __LINE__);
             gpu::cu_check_error(cudaMemset((void*)(temp),0, size*sizeof(BaseInt)), __LINE__);	
             std::swap(temp,data_);
-            gpu::cu_check_error(cudaFree(data_), __LINE__);
+            gpu::cu_check_error(cudaFree(temp), __LINE__);
         }
     
 	private:

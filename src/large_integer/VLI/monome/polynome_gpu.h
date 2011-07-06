@@ -201,10 +201,15 @@ namespace vli
     template <class BaseInt, int Order, int SizeVli >
 	std::ostream & operator<<(std::ostream & os, polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > & p)
     {
-        for(std::size_t i = 0; i < Order ; i++)
-            for(std::size_t j = 0; j < Order ; j++)
+        os << "------------------------" << std::endl;
+        for(std::size_t i = 0; i < Order ; i++){
+            for(std::size_t j = 0; j < Order ; j++){
+                os << "gpu --- Coeff (j,h) = " << i <<" "<<j<< std::endl;
                 os << p(i,j) << std::endl;
-
+            }
+        }
+        os <<  "------------------------" << std::endl;
+                
         return os;
     }
     
