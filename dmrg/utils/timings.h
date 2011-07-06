@@ -1,8 +1,9 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
 
-#include <iostream>
-#include <fstream>
+#define NO_ZOUT_IN_HEADERS
+#include "utils/zout.hpp"
+#undef NO_ZOUT_IN_HEADERS
 #include <string>
 
 #ifdef _OPENMP
@@ -54,7 +55,7 @@ public:
     : val(0), name(name_), freq(CPU_FREQ),nCounter(0)
     { }
     
-    ~Timer() { std::cout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
+    ~Timer() { zout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
     
     Timer & operator+=(double t)
     {

@@ -7,51 +7,69 @@
 #include <iostream>
 #include <fstream>
 
-class dmrg_cout {
+class master_cout {
 public:
 
     std::fstream nullio;
-    dmrg_cout():nullio("/dev/null"){}
+    master_cout():nullio("/dev/null"){}
 
     template<class T>
-    dmrg_cout& operator <<(T const & obj)
+    master_cout& operator <<(T const & obj)
     {
 #ifdef MPI_PARALLEL
-        if(!ambient::is_master())
-        this->nullio << obj;
-        else
+        !ambient::is_master() ? this->nullio << obj :
 #endif
         std::cout << obj;
         return *this;
     }
-
-    dmrg_cout& operator <<(std::ostream& (*pf)(std::ostream&))
+    master_cout& operator <<(std::ostream& (*pf)(std::ostream&))
     {
 #ifdef MPI_PARALLEL
-        if(!ambient::is_master())
-        this->nullio << pf;
-        else
+        !ambient::is_master() ? this->nullio << pf :
 #endif
         std::cout << pf;
         return *this;
     }
-
     void precision(int p)
     {
         std::cout.precision(p);
     }
 };
 
+class group_master_cout : public master_cout
+{
+public:
+    template<class T>
+    group_master_cout& operator <<(T const & obj)
+    {
+#ifdef MPI_PARALLEL
+        !ambient::is_group_master() ? this->nullio << obj :
+#endif
+        std::cout << obj;
+        return *this;
+    }
+
+    group_master_cout& operator <<(std::ostream& (*pf)(std::ostream&))
+    {
+#ifdef MPI_PARALLEL
+        !ambient::is_group_master() ? this->nullio << pf :
+#endif
+        std::cout << pf;
+        return *this;
+    }
+};
 
 #ifdef NO_ZOUT_IN_HEADERS
 // zout in different compilation unit!
 
-extern dmrg_cout zout;
+extern master_cout zout;
+extern group_master_cout gzout;
 
 #else
 // define zout here!
 
-dmrg_cout zout;
+master_cout zout;
+group_master_cout gzout;
 
 #endif
 
