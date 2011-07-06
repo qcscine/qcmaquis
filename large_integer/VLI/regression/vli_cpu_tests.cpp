@@ -5,9 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 
-//#define SIZE_BITS 256
 #include "vli_cpu/vli_number_cpu.hpp"
-
 
 using vli::vli_cpu;
 
@@ -158,7 +156,7 @@ BOOST_AUTO_TEST_CASE( multiplies )
     a[5] = 219;
     a[6] = 198;
     a[7] = 0;
-
+    
     vli_cpu<int,8> b = a+a+a;
     vli_cpu<int,8> c = a * vli_cpu<int,8>(3);
 

@@ -33,14 +33,12 @@ int main (int argc, char * const argv[])
     }
  
     polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
-  
+ 
     vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > V(4);
-    std::cout << V << std::endl;
     
     V[0] = pagpu;
-
-    std::cout << pagpu << std::endl;
-    std::cout << V << std::endl;
+    
+     std::cout << V << std::endl;
     
    
 	GPU->instance().destructor();

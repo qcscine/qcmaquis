@@ -44,7 +44,7 @@ namespace vli
         class proxy
         {
         public:
-            proxy(vli_value_type* p, size_t i)
+            proxy(vli_value_type* p, int i)
             :pdata_(p), pos(i), offset_(OffSet)
             {
             }
@@ -60,22 +60,22 @@ namespace vli
                 return os; 
             }
             
-            void print(std::ostream & os) const{ // PUTAIN DE CONST ! 
+            void print(std::ostream & os) const{ // CONST ! 
                 polynomial<vli_cpu<vli_value_type, vli_size>, max_order_poly > P;
-                gpu::cu_check_error(cudaMemcpy((void*)&P(0,0),(void*)(pdata_),max_order_poly*max_order_poly*vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
+                gpu::cu_check_error(cudaMemcpy((void*)(&P(0,0)),(void*)(pdata_+pos*OffSet),max_order_poly*max_order_poly*vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
                 os << P;
             }
                                  
         private:
             int offset_; // it corresponds to the shift between each poly (arithmetic of pointer)
             vli_value_type* pdata_;
-            size_t pos;
+            int pos;
         };    
         
         vector_polynomial_gpu(size_t size)
         :size_(size),full_size_(size*max_order_poly*max_order_poly*vli_size)
         {
-            this->realloc_lost(size_); // polynomial size : Order*Order*Vli::size
+            this->realloc_lost(full_size_); // polynomial size : Order*Order*Vli::size
         }
         
         vector_polynomial_gpu()
