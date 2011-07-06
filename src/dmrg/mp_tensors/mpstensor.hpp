@@ -197,7 +197,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
         ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], norm);
     }
     ambient::playout();
-    printf("R%d: Norm: %.2f\n", ambient::rank(), ret);
+    //printf("R%d: Norm: %.2f\n", ambient::rank(), ret);
     #else
     using utils::conj;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b){

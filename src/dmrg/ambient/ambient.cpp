@@ -72,7 +72,7 @@ namespace ambient
     int  size()      { return engine.size;       }
     bool occupied()  { return engine.occupied(); }
 
-    scheduler::scheduler(): item_dim(dim2(128,128)), stirring(false){ } // to revert to 128,128
+    scheduler::scheduler(): item_dim(dim2(32,32)), stirring(false){ } // to revert to 128,128
     dim2 scheduler::get_mem_dim() { return this->mem_dim;  }
     dim2 scheduler::get_item_dim(){ return this->item_dim; }
     dim2 scheduler::get_work_dim(){ return this->work_dim; }
@@ -177,6 +177,7 @@ namespace ambient
         while(repeat)
         {   repeat = false;
             //dt.begin();
+            this->world_loop(); // fixes race condition between iterations
             while(!this->stack.end_reached()){
                 logistics = this->stack.pick()->first;
                 if(logistics->executed) continue;
@@ -235,10 +236,13 @@ namespace ambient
     bool is_master(){
         if(ambient::rank() == 0) return true;
         else return false;
-//
-//        if(scope.get_group() != NULL) return ambient::rank.is_master(scope.get_group());
-//        return ambient::rank.is_master("ambient");
     }
+
+    bool is_group_master(){
+        if(scope.get_group() != NULL) return ambient::rank.is_master(scope.get_group());
+        return ambient::rank.is_master("ambient");
+    }
+
     group* world(){
         return engine.ambient;
     }

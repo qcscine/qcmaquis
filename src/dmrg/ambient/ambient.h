@@ -84,6 +84,7 @@ namespace ambient
     void world_spin();
     int size();
     bool is_master();
+    bool is_group_master();
     bool occupied();
     groups::group* world();
 
