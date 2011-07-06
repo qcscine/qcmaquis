@@ -84,7 +84,7 @@ namespace meas_detail {
 				mpom.add_term(term);
 				MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
 
-				double val = expval(mps, mpo, 0);
+				double val = expval(mps, mpo);
 				vals.push_back(val);
 				labels.push_back(lat.get_prop<std::string>("label", p));
             } else {
@@ -101,7 +101,7 @@ namespace meas_detail {
 					mpom.add_term(term);
 					MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
 
-					double val = expval(mps, mpo, 0);
+					double val = expval(mps, mpo);
 					vals.push_back(val);
 					labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
             	}
@@ -145,7 +145,7 @@ namespace meas_detail {
             }
         }
         MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-        double val = expval(mps, mpo, 0);
+        double val = expval(mps, mpo);
         
         {
             alps::hdf5::oarchive ar(h5name);
