@@ -32,6 +32,7 @@ option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
 set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 
+add_definitions(" -O0 -g ")
 
 
 ########################################################################
