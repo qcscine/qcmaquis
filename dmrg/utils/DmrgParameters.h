@@ -210,6 +210,7 @@ public:
             add_option("always_measure",value<std::string>()->default_value(""), "comma separated list of measurements");
             
             add_option("dt", value<double>()->default_value(1e-3),"");
+            add_option("nsweeps_img", value<int>()->default_value(0),"");
 
             add_option("nfinegrains", value<int>()->default_value(0),"");
 

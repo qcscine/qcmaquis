@@ -85,11 +85,11 @@ namespace app {
             std::sort(ret[n].begin(), ret[n].end());
         
         // Output
-        for (int n=0; n<ret.size(); ++n)
-        {
-            std::cout << "Hamiltonian #" << n << std::endl;
-            std::cout << ret[n];
-        }
+//        for (int n=0; n<ret.size(); ++n)
+//        {
+//            std::cout << "Hamiltonian #" << n << std::endl;
+//            std::cout << ret[n];
+//        }
         
         return ret;
     }
@@ -104,7 +104,6 @@ namespace app {
         
         for (int n=0; n<H.n_terms(); )
         {
-            std::cout << "new group starting at n=" << n << std::endl;
             assert(H[n].operators.size() == 2);
             int pos1 = H[n].operators[0].first;
             int pos2 = H[n].operators[1].first;
@@ -115,7 +114,6 @@ namespace app {
             int k = n+1;
             for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
             {
-                std::cout << "using k=" << k << std::endl;
                 typename ham::op_t tmp;
                 if (H[k].operators.size() == 2)
                     op_kron(H.get_phys(), H[k].operators[0].second, H[k].operators[1].second, tmp);
@@ -127,7 +125,6 @@ namespace app {
                     std::runtime_error("Operator k not matching any valid position.");
                 bond_op += tmp;
             }
-            std::cout << "group finishing with k=" << k << std::endl;
             
             bond_op = op_exp(H.get_phys()*H.get_phys(), bond_op, alpha);
             

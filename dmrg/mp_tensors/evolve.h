@@ -74,7 +74,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
 {
     std::size_t L = mps.length();
     
-    int i = (map_op.begin()->first % 2) + 1; // odd/even
+    int i = (map_op.begin()->first % 2); // odd/even
     
     mps.canonize(i+1);
     block_matrix<Matrix, SymmGroup> v0, v1, t;

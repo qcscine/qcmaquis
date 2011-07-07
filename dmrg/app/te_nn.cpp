@@ -99,16 +99,32 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > >
 get_hb (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
 {
-    std::complex<double> i;
+    std::complex<double> I;
     if (img)
-        i = std::complex<double>(1, 0);
+        I = std::complex<double>(1, 0);
     else
-        i = std::complex<double>(0, 1);
-    
+        I = std::complex<double>(0, 1);
+
+    std::complex<double> alpha = -I*dt;
+
     std::vector<Hamiltonian<Matrix, grp> > splitted_H = separate_overlaps(H);
     std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > > expH(splitted_H.size());
     for (int i=0; i<splitted_H.size(); ++i)
-        expH[i] = make_exp_nn(splitted_H[i], -i*dt);
+        expH[i] = make_exp_nn(splitted_H[i], -I*dt);
+    
+    std::cout << expH.size() << " non overlapping Hamiltonians" << std::endl;
+    for (int i=0; i<expH.size(); ++i)
+    {
+        std::cout << "Hamiltonian " << i << std::endl;
+        for (std::map<std::size_t, block_matrix<Matrix, grp> >::const_iterator it = expH[i].begin();
+             it != expH[i].end();
+             ++it)
+        {
+            std::cout << " ** position " << it->first << std::endl;
+            std::cout << " ** matrix " << std::endl << it->second << std::endl;
+            
+        }
+    }
     
     return expH;
 }
@@ -169,7 +185,7 @@ int main(int argc, char ** argv)
         for (int i=0; i<meas_list.size(); ++i)
             meas_always.add_term(measurements.get(meas_list[i]));
     }
-    
+
     MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
     
     MPS<Matrix, grp> mps(lat->size(),
@@ -230,7 +246,7 @@ int main(int argc, char ** argv)
             
             for (int i=0; i<expH.size(); ++i)
                 mps = evolve(mps, expH[i], parms.get<std::size_t>("max_bond_dimension"), parms.get<double>("truncation_final"));
-                                    
+            
 //            entropies = calculate_bond_entropies(mps);
             
             std::complex<double> mps_norm = norm(mps);
