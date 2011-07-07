@@ -287,7 +287,7 @@ __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, i
 }
     
 template <typename T>
-__global__ void polynome_polynome_multication(T const* p1, T const* p2, T* res, int vli_size, int max_order)
+__device__ void polynome_polynome_multiplication(T const* p1, T const* p2, T* res, int vli_size, int max_order)
 {
     std::size_t offset0(0),offset1(0), offset2(0) ;
  
@@ -316,6 +316,30 @@ __global__ void polynome_polynome_multication(T const* p1, T const* p2, T* res, 
         }
     }
 } 
+    
+template <typename T>
+__global__ void polynome_multication(T const* p1, T const* p2, T* res, int vli_size, int max_order)
+{
+    polynome_polynome_multiplication(p1,p2,res,vli_size,max_order);
+}
+    
+    
+template <typename T>
+__global__ void inner_prod_vector(T const* p1, T const* p2, T* res, int vli_size, int max_order, int size_vector)
+{
+    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+    int offset;
+	
+	if(xIndex < size_vector) //useless, because we set the number of thread to one
+	{   
+        offset = xIndex*max_order*max_order*vli_size;
+        polynome_polynome_multiplication(p1+offset,p2+offset,res+offset,vli_size,max_order);
+        //mutiplication
+        //addition
+        
+    }
+        
+}
  
 template <typename T>
 __global__ void equality_gpu(T const* p1, T const* p2, int vli_size, int* t)
@@ -353,7 +377,7 @@ void poly_multiply_gpu(TYPE const* a, TYPE const* b, TYPE* c, int vli_size, int 
 {
    	dim3 dimgrid(1,1,1);
 	dim3 dimblock(1,1,1);
-    polynome_polynome_multication  <<< dimgrid, dimblock >>>(a, b , c, vli_size, max_order);
+    polynome_multication  <<< dimgrid, dimblock >>>(a, b , c, vli_size, max_order);
 }
     
 void poly_addition_gpu(TYPE* a, TYPE const* b, int vli_size, int max_order)
@@ -370,9 +394,11 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
     monome_polynome_multiplication  <<< dimgrid, dimblock >>>(a, b, c ,vli_size, max_order);
 }
  
-void inner_product_vector_gpu(TYPE const* A, TYPE const* Bm, TYPE* C, int vli_size, int max_order, int vector_size)
+void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order, int vector_size)
 {
-//TO DO    
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(4,4,4);
+    inner_prod_vector  <<< dimgrid, dimblock >>>(A, B, C ,vli_size, max_order,vector_size); 
 }
     
     

@@ -49,7 +49,8 @@ namespace vli
     
     
 	template<class Vli, int Order>
-	class polynomial_gpu : public vli_gpu<typename Vli::value_type, Order*Order*Vli::size> {
+	class polynomial_gpu :  public  gpu_array<typename Vli::value_type,  Order*Order*Vli::size> 
+    {
         public:
  
         typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
@@ -120,13 +121,6 @@ namespace vli
         {
             gpu::cu_check_error(cudaMemcpy( (void*)&p(0,0)[0], (void*)this->p(), Order*Order*Vli::size*sizeof(vli_value_type),cudaMemcpyDeviceToHost ), __LINE__);					
         }
-        
-        inline Vli operator ()(unsigned int j_exp, unsigned int h_exp) const
-        {
-            assert(j_exp < max_order);
-            assert(h_exp < max_order);
-            return (*this)[j_exp*max_order+h_exp];
-        }
                
         /**
         * Plus assign with a polynomial
@@ -177,6 +171,14 @@ namespace vli
             return proxy(*this, j_exp, h_exp);
         }
         
+        
+        inline Vli operator ()(size_type j_exp, size_type h_exp) const
+        {
+            assert(j_exp < max_order);
+            assert(h_exp < max_order);
+            return Vli(this->data_+(j_exp*max_order+h_exp)*Vli::size);
+        }
+        
         /** 
          Due to the derivation a large part of the operators come from vli_gpu
          */
@@ -199,7 +201,7 @@ namespace vli
     }
     
     template <class BaseInt, int Order, int SizeVli >
-	std::ostream & operator<<(std::ostream & os, polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > & p)
+	std::ostream & operator<<(std::ostream & os, polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > const& p)
     {
         os << "------------------------" << std::endl;
         for(std::size_t i = 0; i < Order ; i++){
