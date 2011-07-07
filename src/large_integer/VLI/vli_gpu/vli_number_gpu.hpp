@@ -178,7 +178,7 @@ namespace vli
             BaseInt* temp;
             gpu::cu_check_error(cudaMalloc((void**)(&temp),size*sizeof(BaseInt)), __LINE__);
             gpu::cu_check_error(cudaMemset((void*)(temp),0, size*sizeof(BaseInt)), __LINE__);	
-            gpu::cu_check_error(cudaMemcpy((void*)temp,data_, Size*sizeof(BaseInt),cudaMemcpyDeviceToDevice), __LINE__); 
+            gpu::cu_check_error(cudaMemcpy((void*)(temp),data_, size*sizeof(BaseInt),cudaMemcpyDeviceToDevice), __LINE__); 
             std::swap(temp,data_);
             gpu::cu_check_error(cudaFree(temp), __LINE__);
         }

@@ -369,6 +369,13 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
     dim3 dimblock(1,1,1);
     monome_polynome_multiplication  <<< dimgrid, dimblock >>>(a, b, c ,vli_size, max_order);
 }
+ 
+void inner_product_vector_gpu(TYPE const* A, TYPE const* Bm, TYPE* C, int vli_size, int max_order, int vector_size)
+{
+//TO DO    
+}
+    
+    
     
 void equal_gpu(TYPE const* a, const TYPE* b, int vli_size, int* t)
 {
