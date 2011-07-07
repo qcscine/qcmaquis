@@ -22,10 +22,7 @@ namespace vli
     public:
         
         gpu_pointer():data_(NULL){};
-        
-        ~gpu_pointer(){}
-        
-        
+                
         T* p(){
             return data_;
         }
@@ -52,6 +49,7 @@ namespace vli
 		    gpu::cu_check_error(cudaMalloc((void**)&(this->data_), Size*sizeof(BaseInt)), __LINE__);
             gpu::cu_check_error(cudaMemcpy((void*)this->data_,(void*)a.data_,Size*sizeof(BaseInt), cudaMemcpyDeviceToDevice), __LINE__);
         } 
+        
         ~gpu_array(){
              gpu::cu_check_error(cudaFree(this->data_), __LINE__);   
         }
@@ -77,6 +75,11 @@ namespace vli
 	    	gpu::cu_check_error(cudaMemset((void*)(this->data_), 0, Size*sizeof(BaseInt)), __LINE__);			            
         }
         
+        gpu_vector(gpu_vector const& a){
+            gpu::cu_check_error(cudaMalloc((void**)&(this->data_), Size_*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMemcpy((void*)this->data_,(void*)a.data_,Size_*sizeof(BaseInt), cudaMemcpyDeviceToDevice), __LINE__);
+        }
+        
         ~gpu_vector(){
             gpu::cu_check_error(cudaFree(this->data_), __LINE__);   
         }
@@ -88,6 +91,17 @@ namespace vli
             gpu::cu_check_error(cudaMemcpy((void*)(temp),this->data_, newsize*sizeof(BaseInt),cudaMemcpyDeviceToDevice), __LINE__); 
             std::swap(temp,this->data_);
             gpu::cu_check_error(cudaFree(temp), __LINE__);
+        }
+        
+        gpu_vector& operator = (gpu_vector a)
+        {
+            swap(*this,a);
+            return *this;
+        }
+        
+        friend void swap(gpu_vector& a1, gpu_vector& a2)
+        {
+            std::swap(a1.data_,a2.data_);
         }
         
         const std::size_t size() const {
