@@ -22,7 +22,7 @@ int main (int argc, char * const argv[])
 {
 	gpu::gpu_manager* GPU;
 	GPU->instance();
-    /*
+    
     polynomial<vli_cpu<int,8>, 2> pa;
     
     for(int i=0; i<6; i++){
@@ -48,49 +48,6 @@ int main (int argc, char * const argv[])
     Vc = inner_product(Va,Vb);
     
     std::cout << Vc << std::endl;
-*/
-    
-  
-    vli::polynomial<vli_cpu<int,8>,2> pa;
-    vli::polynomial<vli_cpu<int,8>,2> pb;
-    vli::polynomial<vli_cpu<int,8>,2> pc;
-    
-    vli::polynomial_gpu<vli_gpu<int,8>,2> pagpu;
-    vli::polynomial_gpu<vli_gpu<int,8>,2> pbgpu;
-    vli::polynomial_gpu<vli_gpu<int,8>,2> pcgpu;
-    
-    
-    for(int i=0; i <2; i++){     
-        
-        pa(0,0)[i] = 255;        
-        pa(0,1)[i] = 255;
-        pa(1,0)[i] = 255;
-        pa(1,1)[i] = 255;
-        
-        pb(0,0)[i] = 255;
-        pb(0,1)[i] = 255;
-        pb(1,0)[i] = 255;
-        pb(1,1)[i] = 255;
-        
-        pagpu(0,0)[i] = 255;        
-        pagpu(0,1)[i] = 255;
-        pagpu(1,0)[i] = 255;
-        pagpu(1,1)[i] = 255;
-        
-        pbgpu(0,0) = pb(0,0);
-        pbgpu(0,1) = pb(0,1);
-        pbgpu(1,0) = pb(1,0);
-        pbgpu(1,1) = pb(1,1); 
-    }
-    
-    pc = pa*pb;
-    pcgpu = pagpu*pbgpu;
-    
-    printf("GPU \n");
-    std::cout << pcgpu << std::endl;
-    printf("--------------------------- \n");
-    printf("CPU \n");
-    std::cout << pc << std::endl;
 
     
 	GPU->instance().destructor();
