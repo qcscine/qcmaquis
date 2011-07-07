@@ -73,6 +73,7 @@ namespace vli
         gpu_vector(std::size_t size = 8)
         :size_(size){ // here, Size is an argument
             gpu::cu_check_error(cudaMalloc((void**)&(this->data_), size*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMemset((void*)this->data_,0, size*sizeof(BaseInt)), __LINE__);   
         }
         
         gpu_vector(gpu_vector const& a)

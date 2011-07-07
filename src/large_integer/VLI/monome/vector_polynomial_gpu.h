@@ -86,7 +86,8 @@ namespace vli
         }
     
         void vec_resize(std::size_t num){
-            gpu_vector<typename polynomial_gpu::vli_value_type>::resize(num*max_order_poly*max_order_poly);        
+            gpu_vector<typename polynomial_gpu::vli_value_type>::resize(num*max_order_poly*max_order_poly*vli_size);
+            vector_size_ = num;
         }
  
     private:
@@ -109,7 +110,7 @@ namespace vli
     template <class BaseInt, int Order, int SizeVli >
 	std::ostream & operator<<(std::ostream & os, vector_polynomial_gpu< polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > >   & v)
     {
-        for(std::size_t i = 0; i < v.size(); i++)
+        for(std::size_t i = 0; i < v.vec_size(); i++)
             os << v[i] << std::endl;
 
         return os;
