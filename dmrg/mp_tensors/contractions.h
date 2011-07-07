@@ -35,9 +35,9 @@ struct contraction {
         assert(left.right_basis() == ket_tensor.left_i);
         
         bra_tensor.make_left_paired();
-        ket_tensor.make_right_paired();
         
         block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(bra_tensor.data_), t3;
+        ket_tensor.make_right_paired();
         gemm(left, ket_tensor.data_, t1);
         reshape_right_to_left(ket_tensor.phys_i, left.left_basis(), ket_tensor.right_i,
                               t1, t3);
