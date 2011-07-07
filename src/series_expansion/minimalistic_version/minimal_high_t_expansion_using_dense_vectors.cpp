@@ -38,6 +38,8 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
+//#include "minimal_polynomial_fixed_size_indirect.hpp"
+//#include "minimal_polynomial_fixed_size.hpp"
 #include "minimal_polynomial.hpp"
 
 // A large integer of 128-256 bits (fixed size)
@@ -72,20 +74,8 @@ typedef std::vector<polynomial_type> polynomial_vector_type;
 
 
 
-
-
-///**
-//  * Returns the index of the element of the sparse vector to which iterator 'it' points.
-//  */
-//inline index_type get_index_from_iterator(sparse_vector_type::const_iterator const& it)
-//{
-//    return it->first;
-//}
-
-
-
 /**
-  * The inner product of two sparse vectors. (We assume same dimension.)
+  * The inner product of two vectors of polynomials. (We assume same dimension.)
   */
 polynomial_type inner_product(polynomial_vector_type const& a, polynomial_vector_type const& b)
 {
@@ -121,7 +111,7 @@ class sparse_matrix
 
         /**
           * Extracts the physical state of a single vertex/site from
-          * the index of the sparse vector.
+          * the index of the vector.
           * (The state of all vertices/sites is encoded in the index.)
           */
         inline unsigned int get_vertex_state_from_index(index_type index, vertex_type vertex)
@@ -178,20 +168,18 @@ class sparse_matrix
         }
 
         /**
-          * Does a matrix vector multiplication with a sparse vector.
+          * Does a matrix vector multiplication with the vector of polynomials.
           */
         polynomial_vector_type apply(polynomial_vector_type const& v)
         {
 
             // H =    -J * \sum_{<i,j>} \sigma^z_i \sigma^z_j     - h \sum_i \sigma^x_i
             polynomial_vector_type result(v.size());
-//            for(sparse_vector_type::const_iterator it = v.begin(); it != v.end(); ++it)
-//            {
             for(polynomial_vector_type::size_type  index = 0; index < v.size(); ++index)
             {
                 // TODO check if v[index] == 0
-                if(v[index] == 0)
-                    continue;
+                // if(v[index] == 0)
+                // continue;
 
                 // J term
                 for(
@@ -224,17 +212,13 @@ class sparse_matrix
                     if( vtx_state == 0 )
                     {
                         index_type r = generate_index_from_index_and_vertex_state(index,vtx,1);
-                        result[
-                            r
-                            ] += v[index]*monomial<large_int>(0,1);
+                        result[r] += v[index]*monomial<large_int>(0,1);
                     }
                     else
                     {
-                        assert(vtx_state == 1);
-                        index_type r = generate_index_from_index_and_vertex_state(index,vtx,1);
-                        result[
-                            r
-                            ] += v[index]*monomial<large_int>(0,1);
+                        //assert(vtx_state == 1);
+                        index_type r = generate_index_from_index_and_vertex_state(index,vtx,0);
+                        result[r] += v[index]*monomial<large_int>(0,1);
                     }
 
                 } 
@@ -272,9 +256,11 @@ class high_t_expansion
 
             polynomial_type result;
             result += sp_matrix.get_dimension(); // 0th order contribution
+
+            // Compute the trace of (sparse_matrix)^max_order
             for(std::size_t i = 0; i < sp_matrix.get_dimension(); ++i)
             {
-                // Create an initial sparse vector with a single entry
+                // Create an initial vector with a single entry
                 polynomial_vector_type state(sp_matrix.get_dimension());
                 state[i] = (polynomial_type()+= 1);
 
