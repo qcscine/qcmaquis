@@ -14,7 +14,6 @@ namespace gpu
 	gpu_manager::gpu_manager(int device = 0):device_(device)
 	{
 		cuInit(device_);
-		cublasInit();
 		cudaGetDeviceProperties(&deviceProp_, device_);
 	};			
 
@@ -34,7 +33,6 @@ namespace gpu
 	
 	void gpu_manager::destructor()
 	{
-		cublasShutdown();
 	};
 	
 	
