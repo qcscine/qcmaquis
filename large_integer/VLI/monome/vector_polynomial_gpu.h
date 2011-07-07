@@ -61,13 +61,12 @@ namespace vli
         };    
         
         vector_polynomial_gpu(size_t size = 8)
-        :gpu_vector<typename polynomial_gpu::vli_value_type>(size*max_order_poly*max_order_poly*vli_size)
+        :gpu_vector<typename polynomial_gpu::vli_value_type>(size*max_order_poly*max_order_poly*vli_size), vector_size_(size)
         {
-            size_ = size;
         }
         
         vector_polynomial_gpu(vector_polynomial_gpu const& v)
-        :gpu_vector<typename polynomial_gpu::vli_value_type>(v),size_(v.size_){	
+        :gpu_vector<typename polynomial_gpu::vli_value_type>(v),vector_size_(v.vector_size_){	
            
         }
         
@@ -82,16 +81,16 @@ namespace vli
             return proxy(this->p(),i);
         }
     
-        const size_t size() const{
-            return size_;
+        const size_t vec_size() const{
+            return vector_size_;
         }
     
-        void resize(std::size_t num){
+        void vec_resize(std::size_t num){
             gpu_vector<typename polynomial_gpu::vli_value_type>::resize(num*max_order_poly*max_order_poly);        
         }
  
     private:
-        std::size_t size_; // number of polynomial
+        std::size_t vector_size_; // number of polynomial
         
     };
     
@@ -99,9 +98,9 @@ namespace vli
     vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inner_product(
                                                                                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a, 
                                                                                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >   const& b){
-        assert(a.size() == b.size());
+        assert(a.vec_size() == b.vec_size());
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > res;
-        res.resize(a.size());
+        res.vec_resize(a.vec_size());
        // inner_product_gpu(a,b,res);
         return res;
     }
