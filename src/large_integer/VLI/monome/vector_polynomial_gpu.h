@@ -80,19 +80,27 @@ namespace vli
         
         vector_polynomial_gpu()
         {
-            this->realloc_lost(1); // crash if 0
+        //    this->realloc_lost(8); // crash if 0
         }
 
         vector_polynomial_gpu(vector_polynomial_gpu const& v) 
         {
-            assert(v.size() == this->size()); // C - maybe if and realloc
+            assert(v.size() == this->size()); 
             gpu::cu_check_error(cudaMemcpy((void*)this->p(), v.p(), full_size_*sizeof(typename polynomial_gpu::vli_value_type) , cudaMemcpyDeviceToDevice), __LINE__);
         }
 
         vector_polynomial_gpu& operator=(vector_polynomial_gpu v)
         {  
-        //  swap(*this, v);
+            swap(*this, v);
             return *this;
+        }
+        
+        friend void swap(vector_polynomial_gpu & v1, vector_polynomial_gpu & v2)
+        {
+            using std::swap;
+            swap(v1.data_, v2.data_);           
+            swap(v1.size_,v2.size_);
+            swap(v1.full_size_,v2.full_size_);
         }
         
         
@@ -110,8 +118,6 @@ namespace vli
         size_t const & size() const {
              return size_;
         }
-        
-
         
     private:
         size_t size_; // num of poly

@@ -26,7 +26,6 @@ void inner_product_vector_gpu(int const* A, int const* Bm, int* C, int vli_size,
 /** equality between to gpu buffer e.g. VLI, mono, poly, dut to latency is it usefull ? **/
 void equal_gpu(int const* A, int const* B, int vli_size, int* T);    
     
-    
 } //namespace detail
 
 } //namespace vli

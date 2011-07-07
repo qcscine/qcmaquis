@@ -16,6 +16,7 @@
 #include <boost/static_assert.hpp>
 #include "function_hooks/vli_number_gpu_function_hooks.hpp"
 #include "gpu/GpuManager.h"
+#include "utils/gpu_base.h"
 
 namespace vli
 {    
@@ -23,7 +24,7 @@ namespace vli
     class vli_cpu;
     
 	template<class BaseInt, int Size>
-	class vli_gpu 
+	class vli_gpu : public  gpu_array<BaseInt, Size>
 	{
 	public:
 	    typedef BaseInt         value_type;     // Data type to store parts of the very long integer (usually int)
@@ -45,7 +46,7 @@ namespace vli
             operator vli_gpu() const
             {
                 vli_gpu vli;
-                gpu::cu_check_error( cudaMemcpy( vli.p(), data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+                gpu::cu_check_error( cudaMemcpy( vli.data_, data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
                 return vli;
             }
             
@@ -67,36 +68,41 @@ namespace vli
 		*/
         vli_gpu()
         {
-		    gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);			
-	    	gpu::cu_check_error(cudaMemset((void*)data_, 0, Size*sizeof(BaseInt)), __LINE__);			
+//		    gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);			
+//	    	gpu::cu_check_error(cudaMemset((void*)data_, 0, Size*sizeof(BaseInt)), __LINE__);			
         }
 
 		explicit vli_gpu(int num)
         {
-            gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);			
-			gpu::cu_check_error(cudaMemset((void*)data_, 0, Size*sizeof(BaseInt)), __LINE__); //Everything is set to 0	
-			gpu::cu_check_error(cudaMemset((void*)data_, num, sizeof(BaseInt)), __LINE__); //The first number is set to the num value			
+//          gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);			
+//			gpu::cu_check_error(cudaMemset((void*)data_, 0, Size*sizeof(BaseInt)), __LINE__); //Everything is set to 0	
+			gpu::cu_check_error(cudaMemset((void*)(this->data_), num, sizeof(BaseInt)), __LINE__); //The first number is set to the num value			
         }
 
+        explicit vli_gpu(BaseInt * p){
+    			gpu::cu_check_error(cudaMemcpy((void*)(this->data_), (void*)p, Size*sizeof(BaseInt), cudaMemcpyDeviceToDevice ), __LINE__);
+        }
+        
 		vli_gpu(vli_gpu const& vli)
         {
-			gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);
-            gpu::cu_check_error(cudaMemcpy((void*)data_, vli.data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
+//			gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMemcpy((void*)(this->data_), vli.data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
         }
 
 		vli_gpu(vli_cpu<BaseInt, Size> const& vli)
         {
-			gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)  ), __LINE__);
-			gpu::cu_check_error(cudaMemcpy((void*)data_, (void*)&vli[0], Size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 		
+//			gpu::cu_check_error(cudaMalloc((void**)&data_, Size*sizeof(BaseInt)  ), __LINE__);
+			gpu::cu_check_error(cudaMemcpy((void*)(this->data_), (void*)&vli[0], Size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 		
         }
 		
 		/**
 		destructors 
 		*/
+        /*
 		~vli_gpu()
         {
             gpu::cu_check_error(cudaFree(data_), __LINE__);
-        }
+        }*/
 
 		friend void swap(vli_gpu& a, vli_gpu& b)
         {
@@ -113,7 +119,7 @@ namespace vli
 
 		void copy_vli_to_cpu(vli::vli_cpu<BaseInt, Size>& vli) const
         {
- 			gpu::cu_check_error(cudaMemcpy( (void*)&vli[0], (void*)data_, Size*sizeof(BaseInt), cudaMemcpyDeviceToHost ), __LINE__); 					
+ 			gpu::cu_check_error(cudaMemcpy( (void*)&vli[0], (void*)(this->data_), Size*sizeof(BaseInt), cudaMemcpyDeviceToHost ), __LINE__); 					
         }
 
 		operator vli_cpu<BaseInt, Size>() const
@@ -122,7 +128,7 @@ namespace vli
             copy_vli_to_cpu(r);
             return r;
         }
-		
+		/*
 		inline const BaseInt* p() const
         {
             // TODO hide the pointer?
@@ -133,7 +139,7 @@ namespace vli
         {
             // TODO hide the pointer?
             return data_;
-        }
+        }*/
 
 		/**
 		 multiply and addition operators
@@ -165,14 +171,14 @@ namespace vli
                 
         proxy operator[](size_type i) 
         {
-            return proxy(data_, i);
+            return proxy(this->data_, i);
         }
 
         void print(std::ostream& os) const
         {
             os<<vli_cpu<BaseInt, Size>(*this);
         }
-		
+		/*
         void realloc(size_type size) // size = the number of entry of VLI, polynomial or vector
         {
             BaseInt* temp;
@@ -190,10 +196,10 @@ namespace vli
             gpu::cu_check_error(cudaMemset((void*)(temp),0, size*sizeof(BaseInt)), __LINE__);	
             std::swap(temp,data_);
             gpu::cu_check_error(cudaFree(temp), __LINE__);
-        }
+        }*/
     
-	private:
-		BaseInt* data_;
+	protected:
+//		BaseInt* data_;
 	};
 	
 	/**
