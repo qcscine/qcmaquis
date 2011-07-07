@@ -1,4 +1,3 @@
-
 #include <iostream>
 
 #include "gpu/GpuManager.h"
@@ -25,21 +24,21 @@ int main (int argc, char * const argv[])
     
     polynomial<vli_cpu<int,8>, 2> pa;
     
-    for(int i=0; i<2; i++){
-        pa(0,0)[i] = 255;
-        pa(0,1)[i] = 255;
-        pa(1,0)[i] = 255;
-        pa(1,1)[i] = 255;        
+    for(int i=0; i<6; i++){
+        pa(0,0)[i] = 22*i;
+        pa(0,1)[i] = 22*i;
+        pa(1,0)[i] = 22*i;
+        pa(1,1)[i] = 22*i;        
     }
  
     polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
  
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > V(4);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Va(4);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vb(4);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vc(4);
+
+    Vc = inner_product(Va,Vb);
     
-    V[0] = pagpu;
     
-     std::cout << V << std::endl;
-    
-   
 	GPU->instance().destructor();
 }
