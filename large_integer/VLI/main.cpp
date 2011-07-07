@@ -45,6 +45,8 @@ int main (int argc, char * const argv[])
     
     std::cout << Vc << std::endl;
     
+    Vc = Vb;
+    
     Vc = inner_product(Va,Vb);
     
     std::cout << Vc << std::endl;

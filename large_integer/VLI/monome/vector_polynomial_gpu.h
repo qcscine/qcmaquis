@@ -20,17 +20,6 @@
 
 namespace vli
 {
-
-    // C I improved the inheritance, derived with one number and then realloc
-    // C should we 100 % compatible with the stl::vector ?
-    // C very bad news the size is static ................ 
-    // C Bad luck due to my trick at the inialization I can not used the mother class ...
-    // C Do you have any idea ?????
-    // C Can we retemplate during run time compilation
-    // C at the end I will think template is fortran programming .....
-    // C But iw we consider the spare ou dense matrix on GPU with a fix size no pb ...... 
-    // C I am preparign the worst case, mean dynamic
-
     template<class polynomial_gpu> 
     class vector_polynomial_gpu : public gpu_vector<typename polynomial_gpu::vli_value_type>{ 
     private:
@@ -74,6 +63,12 @@ namespace vli
         vector_polynomial_gpu(size_t size = 8)
         :gpu_vector<typename polynomial_gpu::vli_value_type>(size*max_order_poly*max_order_poly*vli_size)
         {
+            size_ = size;
+        }
+        
+        vector_polynomial_gpu(vector_polynomial_gpu const& v)
+        :gpu_vector<typename polynomial_gpu::vli_value_type>(v),size_(v.size_){	
+           
         }
         
         vector_polynomial_gpu& operator=(vector_polynomial_gpu v)
@@ -86,6 +81,17 @@ namespace vli
         {
             return proxy(this->p(),i);
         }
+    
+        const size_t size() const{
+            return size_;
+        }
+    
+        void resize(std::size_t num){
+            gpu_vector<typename polynomial_gpu::vli_value_type>::resize(num*max_order_poly*max_order_poly);        
+        }
+ 
+    private:
+        std::size_t size_; // number of polynomial
         
     };
     
@@ -94,9 +100,9 @@ namespace vli
                                                                                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a, 
                                                                                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >   const& b){
         assert(a.size() == b.size());
-        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  res;
+        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > res;
         res.resize(a.size());
-        inner_product_gpu(a,b,res);
+       // inner_product_gpu(a,b,res);
         return res;
     }
     

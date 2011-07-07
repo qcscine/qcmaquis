@@ -92,7 +92,7 @@ namespace vli
             if(newsize > size_)
             {
                 gpu::cu_check_error(cudaMemcpy((void*)(temp), this->data_, size_*sizeof(BaseInt),cudaMemcpyDeviceToDevice), __LINE__);
-                gpu::cu_check_error(cudaMemset((void*)(temp+size_*sizeof(BaseInt)),0, (newsize-size_)*sizeof(BaseInt)), __LINE__);
+                gpu::cu_check_error(cudaMemset((void*)(temp+size_),0, (newsize-size_)*sizeof(BaseInt)), __LINE__);
             }
             else
             {
@@ -118,7 +118,7 @@ namespace vli
         std::size_t size() const {
             return size_;
         }
-        
+ 
     private:
         std::size_t size_; // number of elements
     };
