@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdio>
 
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"

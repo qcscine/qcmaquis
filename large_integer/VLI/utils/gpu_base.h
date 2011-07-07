@@ -46,9 +46,25 @@ namespace vli
 		    gpu::cu_check_error(cudaMalloc((void**)&(this->data_), Size*sizeof(BaseInt)), __LINE__);			
 	    	gpu::cu_check_error(cudaMemset((void*)(this->data_), 0, Size*sizeof(BaseInt)), __LINE__);			
         }
-                
+        
+        gpu_array(gpu_array const& a)
+        {
+		    gpu::cu_check_error(cudaMalloc((void**)&(this->data_), Size*sizeof(BaseInt)), __LINE__);
+            gpu::cu_check_error(cudaMemcpy((void*)this->data_,(void*)a.data_,Size*sizeof(BaseInt), cudaMemcpyDeviceToDevice), __LINE__);
+        } 
         ~gpu_array(){
              gpu::cu_check_error(cudaFree(this->data_), __LINE__);   
+        }
+
+        gpu_array& operator = (gpu_array a)
+        {
+            swap(*this,a);
+            return *this;
+        }
+
+        friend void swap(gpu_array& a1, gpu_array& a2)
+        {
+            std::swap(a1.data_,a2.data_);
         }
     };
 
@@ -62,7 +78,7 @@ namespace vli
         }
         
         ~gpu_vector(){
-            gpu::cu_check_error(cudaFree(this->p()), __LINE__);   
+            gpu::cu_check_error(cudaFree(this->data_), __LINE__);   
         }
         
         void resize(std::size_t newsize){
