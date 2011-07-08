@@ -27,7 +27,7 @@ namespace vli
         typedef typename std::size_t size_t;
         enum {max_order_poly = polynomial_gpu::max_order };
         enum {vli_size   = polynomial_gpu::size }; // C bad solution, I need the size of vli (#entry), because the polynomial has the good size
-        enum {OffSet = max_order_poly*max_order_poly*vli_size};
+        enum {OffSet = max_order_poly*max_order_poly*vli_size}; // number of element of a poly
     public:
         // the usual proxy for have acces to element, we initialize with a polynomial, take care of the size !
         class proxy
@@ -61,12 +61,12 @@ namespace vli
         };    
         
         vector_polynomial_gpu(size_t size = 8)
-        :gpu_vector<typename polynomial_gpu::vli_value_type>(size*max_order_poly*max_order_poly*vli_size), vector_size_(size)
+        :gpu_vector<typename polynomial_gpu::vli_value_type>(size*max_order_poly*max_order_poly*vli_size), size_(size)
         {
         }
         
         vector_polynomial_gpu(vector_polynomial_gpu const& v)
-        :gpu_vector<typename polynomial_gpu::vli_value_type>(v),vector_size_(v.vector_size_){	
+        :gpu_vector<typename polynomial_gpu::vli_value_type>(v),size_(v.size_){	
            
         }
         
@@ -81,28 +81,28 @@ namespace vli
             return proxy(this->p(),i);
         }
     
-        const size_t vec_size() const{
-            return vector_size_;
+        const size_t size() const{
+            return size_;
         }
     
-        void vec_resize(std::size_t num){
-            gpu_vector<typename polynomial_gpu::vli_value_type>::resize(num*max_order_poly*max_order_poly*vli_size);
-            vector_size_ = num;
+        void resize(std::size_t num){
+            size_ = num;
+            gpu_vector<typename polynomial_gpu::vli_value_type>::vec_resize(num*max_order_poly*max_order_poly*vli_size);
         }
- 
+        
     private:
-        std::size_t vector_size_; // number of polynomial
+        std::size_t size_; // number of polynomial
         
     };
-    
+   
     template <class BaseInt, int Size, int Order>
-    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inner_product(
-                                                                                           vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a, 
-                                                                                           vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >   const& b){
-        assert(a.vec_size() == b.vec_size());
+    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > 
+    inner_product( vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a, 
+                   vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b){
+        assert(a.size() == b.size());
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > res;
-        res.vec_resize(a.vec_size());
-       // inner_product_gpu(a,b,res);
+        res.resize(a.size());
+        inner_product_gpu(a,b,res);
         return res;
     }
     
@@ -110,7 +110,7 @@ namespace vli
     template <class BaseInt, int Order, int SizeVli >
 	std::ostream & operator<<(std::ostream & os, vector_polynomial_gpu< polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > >   & v)
     {
-        for(std::size_t i = 0; i < v.vec_size(); i++)
+        for(std::size_t i = 0; i < v.size(); i++)
             os << v[i] << std::endl;
 
         return os;

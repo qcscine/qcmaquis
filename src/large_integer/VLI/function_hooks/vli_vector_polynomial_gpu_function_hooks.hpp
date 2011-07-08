@@ -18,13 +18,13 @@ namespace vli{
     template <class Polynomial> 
     class vector_polynomial_gpu;
     
-    template <class BaseInt, int Size, int Order>
-    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inner_product_gpu(
-                                                                                    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a,
-                                                                                    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b,
-                                                                                    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >   & res)
+    template <class BaseInt, int Size, int Order> 
+    void inner_product_gpu(
+                           vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a,
+                           vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b,
+                           vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >   & res)
     {
-      //  detail::inner_product_vector_gpu(a.p(), b.p(), res.p(), Size, Order, a.size()); 
+        detail::inner_product_vector_gpu(a.p(), b.p(), res.p(), Size, Order, a.size()); 
     }
     
     
