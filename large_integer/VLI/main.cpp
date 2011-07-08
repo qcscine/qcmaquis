@@ -25,11 +25,11 @@ int main (int argc, char * const argv[])
     
     polynomial<vli_cpu<int,8>, 2> pa;
     
-    for(int i=0; i<6; i++){
-        pa(0,0)[i] = 22*i;
-        pa(0,1)[i] = 22*i;
-        pa(1,0)[i] = 22*i;
-        pa(1,1)[i] = 22*i;        
+    for(int i=0; i<2; i++){
+        pa(0,0)[i] = 22*i+22;
+        pa(0,1)[i] = 22*i+22;
+        pa(1,0)[i] = 22*i+223;
+        pa(1,1)[i] = 22*i+22;        
     }
  
     polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
@@ -37,20 +37,17 @@ int main (int argc, char * const argv[])
     vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Va(4);
     vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vb(4);
     vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vc(4);
+ 
+    for(int i=0;i < 4;i++){
+        Va[i]=pa;
+        Vb[i]=pa;
+    }
+     
+// std::cout << Va << std::endl;
+    
+    Vc =  inner_product(Va,Vb);
 
-    Va[0]=pa;   
-    Va[2]=pa;   
-    Vb[0]=pa;   
-    Vb[2]=pa;   
-    
     std::cout << Vc << std::endl;
-    
-    Vc = Vb;
-    
-    Vc = inner_product(Va,Vb);
-    
-    std::cout << Vc << std::endl;
-
     
 	GPU->instance().destructor();
 }

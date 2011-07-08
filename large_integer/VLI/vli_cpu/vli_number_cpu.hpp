@@ -28,12 +28,6 @@ namespace vli
     public:
 	    typedef BaseInt         value_type;     // Data type to store parts of the very long integer (usually int)
         typedef std::size_t     size_type;      // Size type of the very long integers (number of parts)
-
-        //C
-        //C I renamed this enum from vli_size to size to be more consistent
-        //C with the name of the template parameter.
-        //C If you access it from outside Vli::size also looks nicer than Vli::vli_size
-        //C
         enum {size = Size};                     // Number of parts of the very long integer (eg. how many ints)
         
         vli_cpu()

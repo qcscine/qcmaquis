@@ -13,7 +13,6 @@
 
 // utilities and system includes
 #include <cuda.h>
-#include <cublas.h>
 
 #include "boost/lexical_cast.hpp"
 #include <cuda_runtime_api.h>

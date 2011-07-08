@@ -67,7 +67,7 @@ namespace gpu
 				
 				
 			default:
-				//std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
+				//std::cout << "CUBLAS_STATUS_SUCCESS" << std::endl;
 				break;
 		}
 	}

@@ -131,7 +131,7 @@ __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, in
 classical addition, the operation " addition " is serial but we sum all number together 
 */
 template <typename T>
-__device__ void addition_kernel_gpu(T* x,   T const* y, int k)
+__device__ void addition_kernel_gpu(T* x, T const* y, int k)
 {
 	T carry_bit;
 	*(x+k)    += *(y+k);
@@ -143,13 +143,13 @@ __device__ void addition_kernel_gpu(T* x,   T const* y, int k)
 template <typename T>
 __device__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, int vli_size)
 {
-	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	const int j = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
-	if(xIndex < num_integers) // the classical condition to avoid overflow
-	{
+//	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+//	const int j = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
+//	if(xIndex < num_integers) // the classical condition to avoid overflow
+//	{
 		for (int i = 0; i < vli_size; ++i) 
-			addition_kernel_gpu(x,y,i+j);
-	}
+			addition_kernel_gpu(x,y,i); //+j
+//	}
 }
     
 template <typename T>
@@ -167,7 +167,7 @@ __global__ void polynome_polynome_addition(T* x, T const* y,  int vli_size, int 
 	if(xIndex < 2) //useless, because we set the number of thread to one
 	{
         for(int i=0; i< max_order*max_order;++i){
-            addition_classic_kernel_gpu((x+offset),(y+offset),1,vli_size);    //1 see line 148
+            addition_classic_kernel_gpu(&x[offset],&y[offset],1,vli_size);    //1 see line 148
             offset += vli_size;
         }
     }
@@ -231,10 +231,9 @@ __device__  void multiplication_block_gpu( const T*   x,   const  T*   y, T *r)
 	------- 
 	= (q1+q2 + Xl*Yl)*BASE + r2  (multiplication_kernel_base_reshaping)
 	*/
-	multiplication_kernel_down_gpu(x,y, a);
-	multiplication_kernel_up_gpu(x,y, b);
+	multiplication_kernel_down_gpu(x,y,a);
+	multiplication_kernel_up_gpu(x,y,b);
 	multiplication_kernel_base_reshaping_gpu(a,b, r);
-	//r[0] = 9999;
 }	
 
 template <typename T>
@@ -242,24 +241,16 @@ __device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
 {
 	T r[2] = {0,0};	//for local block calculation
 	
-	const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	const int i_ld = xIndex*vli_size; // index to be on the beginning of the vli (beginning of every columns)
-	
-	if(xIndex < num_integers) // the classical condition to avoid overflow useless ?
-	{
-		//One of this two loops could be remove to do
-		for (int i = 0 ; i < vli_size; ++i) 
-		{
-			for(int j = 0 ; j < vli_size ; ++j)  			
-			{	
-				int m = j + i;
-				multiplication_block_gpu((x+i_ld+i), (y+i_ld+j), r);
-				addition_kernel_gpu_noiter((z+i_ld+m),r);//,i_ld+m);	
-				addition_kernel_gpu_noiter((z+i_ld+m+1),r+1);//,i_ld+m+1);					
-				__syncthreads(); // Need, why (carry bit propagation), useless ?
-			}
-		}
-	}
+    for (int i = 0 ; i < vli_size; ++i) 
+    {
+        for(int j = 0 ; j < vli_size ; ++j)  			
+        {	
+            int m = j + i;
+            multiplication_block_gpu(&x[i], &y[j], &r[0]);
+            addition_kernel_gpu_noiter(&z[m] , &r[0]);
+            addition_kernel_gpu_noiter(&z[m+1], &r[1]);
+        }
+    }
 }
     
     
@@ -281,21 +272,20 @@ __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, i
         for(std::size_t i = 0 ; i < max_order*max_order ; i++)
         {
             offset = i*vli_size;
-            multiplication_classic_kernel_gpu((p+offset),m,(res+offset),1,vli_size);
+            multiplication_classic_kernel_gpu(&p[offset],&m[0],&res[offset],1,vli_size);
         }
     }
 }
-    
+   
 template <typename T>
 __device__ void polynome_polynome_multiplication(T const* p1, T const* p2, T* res, int vli_size, int max_order)
 {
     std::size_t offset0(0),offset1(0), offset2(0) ;
- 
-    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+   
+//   const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
 	
-	if(xIndex < 2) //useless, because we set the number of thread to one
+//	if(xIndex < 2) //useless, because we set the number of thread to one
 	{
-        
         for(std::size_t je1 = 0; je1 < max_order; ++je1)
         {
             for(std::size_t he1 = 0; he1 < max_order; ++he1)
@@ -308,14 +298,18 @@ __device__ void polynome_polynome_multiplication(T const* p1, T const* p2, T* re
                         offset0 = ((je1+je2)*max_order + he1+he2)*vli_size;
                         offset1 = (je1*max_order+he1)*vli_size;                    
                         offset2 = (je2*max_order+he2)*vli_size;
-                        multiplication_classic_kernel_gpu((p1+offset1),(p2+offset2),inter,1,vli_size);
-                        addition_classic_kernel_gpu((res+offset0),inter,1,vli_size);
-                    }
+                        multiplication_classic_kernel_gpu(&p1[offset1],&p2[offset2],&inter[0],1,vli_size);
+                        addition_classic_kernel_gpu(&res[offset0],&inter[0],1,vli_size);
+                        __syncthreads();
+                    } 
                 }
             }      
         }
-    }
+    } 
+    
 } 
+
+    
     
 template <typename T>
 __global__ void polynome_multication(T const* p1, T const* p2, T* res, int vli_size, int max_order)
@@ -330,15 +324,14 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, int vli_size
     const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
     int offset;
 	
-	if(xIndex < size_vector) //useless, because we set the number of thread to one
+	if(xIndex < size_vector) 
 	{   
         offset = xIndex*max_order*max_order*vli_size;
-        polynome_polynome_multiplication(p1+offset,p2+offset,res+offset,vli_size,max_order);
         //mutiplication
-        //addition
-        
+        polynome_polynome_multiplication(&p1[offset],&p2[offset],&res[offset],vli_size,max_order);
+        //reduction
+        __syncthreads();         
     }
-        
 }
  
 template <typename T>
@@ -400,9 +393,7 @@ void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_siz
     dim3 dimblock(4,4,4);
     inner_prod_vector  <<< dimgrid, dimblock >>>(A, B, C ,vli_size, max_order,vector_size); 
 }
-    
-    
-    
+
 void equal_gpu(TYPE const* a, const TYPE* b, int vli_size, int* t)
 {
     dim3 dimgrid(1,1,1);
