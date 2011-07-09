@@ -87,7 +87,6 @@ namespace vli
         }
         
         void vec_resize(std::size_t newsize){
-            vector_size_ = newsize;
             BaseInt* temp;
             gpu::cu_check_error(cudaMalloc((void**)(&temp), newsize*sizeof(BaseInt)), __LINE__);
             if(newsize > vector_size_)
@@ -99,6 +98,7 @@ namespace vli
             {
                 gpu::cu_check_error(cudaMemcpy((void*)(temp),this->data_, newsize*sizeof(BaseInt),cudaMemcpyDeviceToDevice), __LINE__);
             }
+            vector_size_ = newsize;
             std::swap(temp,this->data_);
             gpu::cu_check_error(cudaFree(temp), __LINE__);
         }

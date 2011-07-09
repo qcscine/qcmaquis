@@ -23,17 +23,17 @@ namespace vli
     template<class polynomial_gpu> 
     class vector_polynomial_gpu : public gpu_vector<typename polynomial_gpu::vli_value_type>{ 
     private:
-        typedef typename polynomial_gpu::vli_value_type vli_value_type; // Just for convenience inside this class
+        typedef typename polynomial_gpu::vli_value_type vli_value_type; 
         typedef typename std::size_t size_t;
         enum {max_order_poly = polynomial_gpu::max_order };
-        enum {vli_size   = polynomial_gpu::size }; // C bad solution, I need the size of vli (#entry), because the polynomial has the good size
-        enum {OffSet = max_order_poly*max_order_poly*vli_size}; // number of element of a poly
+        enum {vli_size   = polynomial_gpu::size }; 
+        enum {OffSet = max_order_poly*max_order_poly*vli_size}; 
     public:
         // the usual proxy for have acces to element, we initialize with a polynomial, take care of the size !
         class proxy
         {
         public:
-            proxy(vli_value_type* p, int i)
+            proxy(vli_value_type* p, size_t i)
             :pdata_(p), pos(i)
             {
             }
@@ -57,10 +57,10 @@ namespace vli
                                  
         private:
             vli_value_type* pdata_;
-            int pos;
+            size_t pos;
         };    
         
-        vector_polynomial_gpu(size_t size = 8)
+        vector_polynomial_gpu(size_t size = 1) // by default one polynomial
         :gpu_vector<typename polynomial_gpu::vli_value_type>(size*max_order_poly*max_order_poly*vli_size), size_(size)
         {
         }
@@ -101,12 +101,10 @@ namespace vli
                    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b){
         assert(a.size() == b.size());
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > res;
-        res.resize(a.size());
-        inner_product_gpu(a,b,res);
+        inner_product_multiplication_gpu(a,b,res);
         return res;
     }
     
-    // C - tricky of tricky, is it the definition of french or bad programming ?
     template <class BaseInt, int Order, int SizeVli >
 	std::ostream & operator<<(std::ostream & os, vector_polynomial_gpu< polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > >   & v)
     {

@@ -18,6 +18,8 @@ using vli::polynomial;
 using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 
+#define SIZE 4
+
 int main (int argc, char * const argv[]) 
 {
 	gpu::gpu_manager* GPU;
@@ -34,11 +36,11 @@ int main (int argc, char * const argv[])
  
     polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
  
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Va(4);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vb(4);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vc(4);
- 
-    for(int i=0;i < 4;i++){
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Va(SIZE);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vb(SIZE);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vc;
+    
+    for(int i=0;i < SIZE;i++){
         Va[i]=pa;
         Vb[i]=pa;
     }
