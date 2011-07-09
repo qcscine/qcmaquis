@@ -22,7 +22,8 @@ void poly_addition_gpu(int* A, int const* B, int vli_size, int max_order);
 /** multiplication polynome-monome **/
 void poly_mono_multiply_gpu(int const* A, int const* B, int* C, int vli_size, int max_order);
 /** inner product of vector of polynome **/
-void inner_product_vector_gpu(int const* A, int const* B, int* C, int vli_size, int max_order, int vector_size);
+void inner_product_vector_gpu(int const* A, int const* B, int* C, int* D, int vli_size, int max_order, int vector_size);
+
 /** equality between to gpu buffer e.g. VLI, mono, poly, dut to latency is it usefull ? **/
 void equal_gpu(int const* A, int const* B, int vli_size, int* T);    
     

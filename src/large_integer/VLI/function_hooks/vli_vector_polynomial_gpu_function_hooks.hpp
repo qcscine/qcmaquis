@@ -19,14 +19,16 @@ namespace vli{
     class vector_polynomial_gpu;
     
     template <class BaseInt, int Size, int Order> 
-    void inner_product_gpu(
+    void inner_product_multiplication_gpu(
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a,
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b,
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >   & res)
     {
-        detail::inner_product_vector_gpu(a.p(), b.p(), res.p(), Size, Order, a.size()); 
+        //As inter is dynamic I prefer make the alloc by the CPU ....
+        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inter;
+        inter.resize(a.size());
+        detail::inner_product_vector_gpu(a.p(), b.p(), res.p(),inter.p(), Size, Order, a.size()); 
     }
-    
     
     
     
