@@ -6,18 +6,18 @@
 namespace vli{
 
 template<class Vli, int Order>
-class polynomial;
+class polynomial_cpu;
    
 template<class Vli>
 class monomial;
     
     
 template <class BaseInt, int Size, int Order>
-void poly_multiply(polynomial<vli_cpu<BaseInt, Size>, Order> & result, 
-                   polynomial<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                   polynomial<vli_cpu<BaseInt, Size>, Order> const & p2)
+void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, Size>, Order> & result, 
+                   polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
+                   polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
 {
-    typedef typename polynomial<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
+    typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
  
     for(size_type je1 = 0; je1 < Order; ++je1)
         for(size_type he1 = 0; he1 < Order; ++he1)
@@ -29,11 +29,11 @@ void poly_multiply(polynomial<vli_cpu<BaseInt, Size>, Order> & result,
 }
         
 template <class BaseInt, int Size, int Order>
-polynomial<vli_cpu<BaseInt, Size>, Order> operator * (polynomial<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<vli_cpu<BaseInt, Size> > const& m)
+polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<vli_cpu<BaseInt, Size> > const& m)
 {
-    typedef typename polynomial<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
+    typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
     
-    polynomial<vli_cpu<BaseInt, Size>, Order> r;
+    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> r;
     // TODO perhaps there is a better way to write these loops,
     //      so that they can be unrolled.
     for(size_type je = 0; je < Order-m.j_exp; ++je)
