@@ -10,7 +10,7 @@
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "monome/monome.h"
 #include "monome/polynome_gpu.h"
-#include "monome/polynome.h"
+#include "monome/polynome_cpu.h"
 
 
 #include "utils/timings.h"
@@ -18,7 +18,7 @@
 typedef int TYPE; 
 using vli::vli_cpu;
 using vli::vli_gpu;
-using vli::polynomial;
+using vli::polynomial_cpu;
 using vli::monomial;
 #define SIZE 8
 #define SIZE_VECTOR 8
@@ -28,9 +28,9 @@ BOOST_AUTO_TEST_CASE( constructors_test_site_monome)
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	
-    vli::polynomial<vli_cpu<int,8>,2> pa;
-    vli::polynomial<vli_cpu<int,8>,2> pb;
-    vli::polynomial<vli_cpu<int,8>,2> pc;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pa;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pb;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pc;
     
     vli::polynomial_gpu<vli_gpu<int,8>,2> pagpu;
     vli::polynomial_gpu<vli_gpu<int,8>,2> pcgpu;
@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE( multiplication_polynomial)
   	gpu::gpu_manager* GPU;
 	GPU->instance();
         
-    vli::polynomial<vli_cpu<int,8>,2> pa;
-    vli::polynomial<vli_cpu<int,8>,2> pb;
-    vli::polynomial<vli_cpu<int,8>,2> pc;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pa;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pb;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pc;
     
     vli::polynomial_gpu<vli_gpu<int,8>,2> pagpu;
     vli::polynomial_gpu<vli_gpu<int,8>,2> pbgpu;
@@ -135,9 +135,9 @@ BOOST_AUTO_TEST_CASE( addition_polynomial)
     gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    vli::polynomial<vli_cpu<int,8>,2> pa;
-    vli::polynomial<vli_cpu<int,8>,2> pb;
-    vli::polynomial<vli_cpu<int,8>,2> pc;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pa;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pb;
+    vli::polynomial_cpu<vli_cpu<int,8>,2> pc;
     
     for(int i=0; i <2; i++){     
         

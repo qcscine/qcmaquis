@@ -332,7 +332,7 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, in
         //mutiplication
         polynome_polynome_multiplication(&p1[offset],&p2[offset],&inter[offset],vli_size,max_order); // perfectly //
         __syncthreads(); // to do check if need
-        //reduction from cuda pdf
+        //reduction from cuda pdf, to tune
         for(int i= (size_vector/2);  i>0;i>>=1){
             if(tid < i){
                 addition_classic_kernel_gpu(&inter[offset],&inter[offset+i*size_poly],1,size_poly);

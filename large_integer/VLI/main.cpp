@@ -4,19 +4,21 @@
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
 
+#include "monome/vector_polynomial_cpu.h"
 #include "monome/vector_polynomial_gpu.h"
+#include "monome/polynome_gpu.h"
+#include "monome/polynome_cpu.h"
+#include "monome/monome.h"
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
-#include "monome/monome.h"
-#include "monome/polynome_gpu.h"
-#include "monome/polynome.h"
 
 using vli::vli_cpu;
 using vli::vli_gpu;
 using vli::monomial;
-using vli::polynomial;
+using vli::polynomial_cpu;
 using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
+using vli::vector_polynomial_cpu;
 
 #define SIZE 4
 
@@ -25,7 +27,7 @@ int main (int argc, char * const argv[])
 	gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    polynomial<vli_cpu<int,8>, 2> pa;
+    polynomial_cpu<vli_cpu<int,8>, 2> pa;
     
     for(int i=0; i<2; i++){
         pa(0,0)[i] = 22*i+22;
@@ -36,20 +38,30 @@ int main (int argc, char * const argv[])
  
     polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
  
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Va(SIZE);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vb(SIZE);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > Vc;
-    
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VaGPU(SIZE);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VbGPU(SIZE);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VcGPU;
+
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VaCPU(SIZE);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VbCPU(SIZE);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VcCPU;
+
     for(int i=0;i < SIZE;i++){
-        Va[i]=pa;
-        Vb[i]=pa;
+        VaCPU[i]=pa;
+        VbCPU[i]=pa;
+
+        VaGPU[i]=pa;
+        VbGPU[i]=pa;
+ 
     }
      
-// std::cout << Va << std::endl;
-    
-    Vc =  inner_product(Va,Vb);
+    VcCPU =  inner_product(VaCPU,VbCPU);
+    VcGPU =  inner_product(VaGPU,VbGPU);
 
-    std::cout << Vc << std::endl;
+    std::cout << VcCPU << std::endl;
+    std::cout << VcGPU << std::endl;
+    
+//    if(VcGPU[0] == VcGPU[0]){printf("ok \n");}
     
 	GPU->instance().destructor();
 }

@@ -23,7 +23,7 @@ namespace vli
     
     
     template<class Vli, int Order>
-	class polynomial;
+	class polynomial_cpu;
     
     /**
      * Multiplication of two polynomials
@@ -37,7 +37,7 @@ namespace vli
     }
     
     /**
-     * Multiplication of  polynomial * monomial
+     * Multiplication of  polynomial_cpu * monomial
      */
     template<class Vli, int Order>
     polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, monomial<Vli> const &m2)
@@ -106,24 +106,24 @@ namespace vli
         }
         
         /** GPU poly to GPU poly */
-        polynomial_gpu(polynomial<vli_cpu<vli_value_type, Vli::size>, Order>& poly){ 
+        polynomial_gpu(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>& poly){ 
             gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&poly(0,0), Order*Order*Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__); 
         }
         
-        operator polynomial<vli_cpu<vli_value_type, Vli::size>, Order>() const
+        operator polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>() const
         {
-            polynomial<vli_cpu<vli_value_type, Vli::size>, Order> r;
+            polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order> r;
             copy_poly_vli_to_cpu(r);
             return r;
         }
         
-        void copy_poly_vli_to_cpu(polynomial<vli_cpu<vli_value_type, Vli::size>, Order> & p) const
+        void copy_poly_vli_to_cpu(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order> & p) const
         {
             gpu::cu_check_error(cudaMemcpy( (void*)&p(0,0)[0], (void*)this->p(), Order*Order*Vli::size*sizeof(vli_value_type),cudaMemcpyDeviceToHost ), __LINE__);					
         }
                
         /**
-        * Plus assign with a polynomial
+        * Plus assign with a polynomial_cpu
         */
         polynomial_gpu& operator += (polynomial_gpu const& p)
         {
@@ -158,9 +158,9 @@ namespace vli
         }
 
          /** GPU/CPU, order cares !**/
-        bool operator==(polynomial<vli_cpu<vli_value_type, Vli::size>, Order>  & p) const
+        bool operator==(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>  & p) const
         {
-            return polynomial<vli_cpu<vli_value_type, Vli::size>, Order > (*this) == p;
+            return polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order > (*this) == p;
          //   return (*this) == polynomial_gpu(p);
         }
      
@@ -185,7 +185,7 @@ namespace vli
     }; //end class
     
     /**
-     * Multiplication of a polynomial with a factor
+     * Multiplication of a polynomial_cpu with a factor
      */
     template<class Vli, int Order>
     polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> p, Vli const& c)

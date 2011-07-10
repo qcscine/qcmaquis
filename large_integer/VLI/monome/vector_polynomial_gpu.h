@@ -9,7 +9,7 @@
 #ifndef VLI_VECTOR_POLYNOME_GPU_H
 #define VLI_VECTOR_POLYNOME_GPU_H
 #include "boost/swap.hpp"
-#include "monome/polynome.h"
+#include "monome/polynome_cpu.h"
 #include "monome/polynome_gpu.h"
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
@@ -18,8 +18,21 @@
 #include <ostream>
 
 
+
+
+
 namespace vli
 {
+
+    template<class BaseInt, int Size>
+    class vli_cpu;
+    
+    template<class Vli, int Order>
+	class polynomial_cpu;
+
+    template<class polynomial>
+    class vector_polynomial_cpu;
+
     template<class polynomial_gpu> 
     class vector_polynomial_gpu : public gpu_vector<typename polynomial_gpu::vli_value_type>{ 
     private:
@@ -50,7 +63,7 @@ namespace vli
             }
             
             void print(std::ostream & os) const{ // CONST ! 
-                polynomial<vli_cpu<vli_value_type, vli_size>, max_order_poly > P;
+                polynomial_cpu<vli_cpu<vli_value_type, vli_size>, max_order_poly > P;
                 gpu::cu_check_error(cudaMemcpy((void*)(&P(0,0)),(void*)(pdata_+pos*OffSet),max_order_poly*max_order_poly*vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
                 os << P;
             }
@@ -90,6 +103,17 @@ namespace vli
             gpu_vector<typename polynomial_gpu::vli_value_type>::vec_resize(num*max_order_poly*max_order_poly*vli_size);
         }
         
+        bool operator==(vector_polynomial_cpu<polynomial_cpu<vli_cpu<vli_value_type, vli_size>, max_order_poly> >  & v) const 
+        {//slow, need for boost test
+            bool B(true);
+            size_t i(0);
+            while(B || i == v.size()){
+               //(v[i] == (*this)[i]) ? (B =true) : (B = false) ;
+                ++i;
+            }
+            return B;
+        }
+            
     private:
         std::size_t size_; // number of polynomial
         
@@ -108,6 +132,8 @@ namespace vli
     template <class BaseInt, int Order, int SizeVli >
 	std::ostream & operator<<(std::ostream & os, vector_polynomial_gpu< polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > >   & v)
     {
+        os << "---------- GPU ----------" << std::endl;
+    
         for(std::size_t i = 0; i < v.size(); i++)
             os << v[i] << std::endl;
 

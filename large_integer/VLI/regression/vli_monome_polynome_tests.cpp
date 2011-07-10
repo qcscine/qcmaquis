@@ -17,7 +17,7 @@
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "monome/monome.h"
-#include "monome/polynome.h"
+#include "monome/polynome_cpu.h"
 #include "monome/polynome_gpu.h"
 
 //#include "utils/timings.h"
@@ -26,7 +26,7 @@ typedef int TYPE;
 using vli::vli_cpu;
 using vli::vli_gpu;
 using vli::monomial;
-using vli::polynomial;
+using vli::polynomial_cpu;
 using vli::polynomial_gpu;
 
 BOOST_AUTO_TEST_CASE(monome)
@@ -80,8 +80,8 @@ BOOST_AUTO_TEST_CASE(monome_polynome)
     monomial<vli_gpu<int, 8> > mbgpu(b);
     monomial<vli_gpu<int, 8> > magpu(a);    
     //init polynome cpu
-    polynomial<vli_cpu<int,8>, 2> pa;
-    polynomial<vli_cpu<int,8>, 2> pb;
+    polynomial_cpu<vli_cpu<int,8>, 2> pa;
+    polynomial_cpu<vli_cpu<int,8>, 2> pb;
     
     for(int i=0; i<2; i++){
         pa(0,0)[i] = 255;
@@ -139,8 +139,8 @@ BOOST_AUTO_TEST_CASE(monome_polynome_deux)
     vli_gpu<int,8> agpu(a);
     vli_gpu<int,8> bgpu(b);
     //init polynome cpu
-    polynomial<vli_cpu<int,8>, 2> pa;
-    polynomial<vli_cpu<int,8>, 2> pb;
+    polynomial_cpu<vli_cpu<int,8>, 2> pa;
+    polynomial_cpu<vli_cpu<int,8>, 2> pb;
     
     for(int i=0; i<2; i++){
         pa(0,0)[i] = 255;
