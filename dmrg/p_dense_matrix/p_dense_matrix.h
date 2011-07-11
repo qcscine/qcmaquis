@@ -3,6 +3,7 @@
 
 #include "ambient/ambient.hpp"
 #include "utils/zout.hpp"
+#include "utils/matrix_vector_traits.h"
 
 #include "p_dense_matrix/p_diagonal_matrix.h"
 
@@ -73,11 +74,23 @@ namespace blas {
     {
         typedef p_diagonal_matrix<T> type;
     };
+    
+    template<typename T, ambient::policy P>
+    struct associated_real_diagonal_matrix< p_dense_matrix<T,P> >
+    {
+        typedef p_diagonal_matrix<typename detail::real_type<T>::type> type;
+    };
 
     template<typename T, ambient::policy P>
     struct associated_vector<p_dense_matrix<T,P> >
     {
         typedef p_diagonal_matrix<T> type;
+    };
+    
+    template<typename T, ambient::policy P>
+    struct associated_real_vector<p_dense_matrix<T,P> >
+    {
+        typedef p_diagonal_matrix<typename detail::real_type<T>::type> type;
     };
 } // namespace blas
 
