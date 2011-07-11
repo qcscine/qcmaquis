@@ -89,11 +89,29 @@ namespace vli
             return *this;
         }
         
+        operator vector_polynomial_cpu<polynomial_cpu< vli_cpu<vli_value_type, vli_size>, max_order_poly> > () const
+        {
+            vector_polynomial_cpu< polynomial_cpu < vli_cpu<vli_value_type, vli_size>, max_order_poly> >  r;
+            copy_vec_vli_to_cpu(r);
+            return r;
+        }
+        
+        void copy_vec_vli_to_cpu( vector_polynomial_cpu< polynomial_cpu < vli_cpu<vli_value_type, vli_size>, max_order_poly> > & v) const
+        {
+            gpu::cu_check_error(cudaMemcpy( (void*)&v[0], (void*)this->p(),OffSet*sizeof(vli_value_type),cudaMemcpyDeviceToHost ), __LINE__);					
+        }
+        
         proxy operator[](size_t i)
         {
             return proxy(this->p(),i);
         }
     
+        const proxy operator[](size_t i) const
+        {
+            return proxy(this->p(),i);
+        }
+        
+        
         const size_t size() const{
             return size_;
         }
@@ -103,15 +121,9 @@ namespace vli
             gpu_vector<typename polynomial_gpu::vli_value_type>::vec_resize(num*max_order_poly*max_order_poly*vli_size);
         }
         
-        bool operator==(vector_polynomial_cpu<polynomial_cpu<vli_cpu<vli_value_type, vli_size>, max_order_poly> >  & v) const 
-        {//slow, need for boost test
-            bool B(true);
-            size_t i(0);
-            while(B || i == v.size()){
-               //(v[i] == (*this)[i]) ? (B =true) : (B = false) ;
-                ++i;
-            }
-            return B;
+        bool operator==(vector_polynomial_cpu<polynomial_cpu<vli_cpu<vli_value_type, vli_size>, max_order_poly> > const & v) const
+        {
+            return vector_polynomial_cpu<polynomial_cpu<vli_cpu<vli_value_type, vli_size>, max_order_poly> >(*this) == v;
         }
             
     private:
@@ -130,7 +142,7 @@ namespace vli
     }
     
     template <class BaseInt, int Order, int SizeVli >
-	std::ostream & operator<<(std::ostream & os, vector_polynomial_gpu< polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > >   & v)
+	std::ostream & operator<<(std::ostream & os, vector_polynomial_gpu< polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > >   const& v)
     {
         os << "---------- GPU ----------" << std::endl;
     

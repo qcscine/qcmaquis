@@ -38,7 +38,11 @@ namespace vli
     :std::vector<polynomial_cpu>(size)
     {
     }
-    //copy and assignemant are done by the std vector    
+    //copy and assignemant are done by the std vector   
+        
+//    vector_polynomial_cpu()
+        
+        
     };
     template <class BaseInt, int Size, int Order>
     vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > 
@@ -56,7 +60,7 @@ namespace vli
     }
 
     template<class BaseInt, int Size, int Order > // the << cpu and gpu should be commun
- 	std::ostream & operator<<(std::ostream & os, vector_polynomial_cpu< polynomial_cpu< vli_cpu<BaseInt, Size>, Order > >   & v)
+ 	std::ostream & operator<<(std::ostream & os, vector_polynomial_cpu< polynomial_cpu< vli_cpu<BaseInt, Size>, Order > >   const& v)
     {
         os << "---------- CPU ----------" << std::endl;
         
