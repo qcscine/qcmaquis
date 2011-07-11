@@ -61,7 +61,7 @@ int main (int argc, char * const argv[])
     std::cout << VcCPU << std::endl;
     std::cout << VcGPU << std::endl;
     
-//    if(VcGPU[0] == VcGPU[0]){printf("ok \n");}
+    if(pagpu == pa){printf("ok \n");}
     
 	GPU->instance().destructor();
 }

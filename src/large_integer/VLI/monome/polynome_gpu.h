@@ -161,7 +161,6 @@ namespace vli
         bool operator==(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>  & p) const
         {
             return polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order > (*this) == p;
-         //   return (*this) == polynomial_gpu(p);
         }
      
         proxy operator ()(size_type j_exp, size_type h_exp) 

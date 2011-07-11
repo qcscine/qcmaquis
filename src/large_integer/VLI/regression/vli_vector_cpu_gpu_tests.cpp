@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(vector_inner_product)
     std::cout << VcCPU << std::endl;
     std::cout << VcGPU << std::endl;
     
-//    BOOST_CHECK_EQUAL(VcCPU,VcGPU);
+    BOOST_CHECK_EQUAL(VcGPU,VcCPU);
     GPU->instance().destructor();
 }
 
