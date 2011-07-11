@@ -2,12 +2,6 @@
 #define __ALPS_P_DIAGONAL_MATRIX_H
 
 namespace blas {
-
-    template<class FullMatrixClass>
-    struct associated_diagonal_matrix { };
-
-    template<class FullMatrixClass>
-    struct associated_vector { };
     
     template<typename T>
     class p_diagonal_matrix
