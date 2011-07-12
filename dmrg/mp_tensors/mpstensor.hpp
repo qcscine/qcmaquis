@@ -178,6 +178,13 @@ MPSTensor<Matrix, SymmGroup>::multiply_by_scalar(scalar_type s)
 }
 
 template<class Matrix, class SymmGroup>
+void
+MPSTensor<Matrix, SymmGroup>::inplace_conjugate()
+{
+    data_ = conjugate(data_);
+}
+
+template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::real_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 {

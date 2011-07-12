@@ -138,7 +138,9 @@ namespace app {
 
     // Precondition: Hamiltonian has to be sorted with bond terms coming before site terms (default behaviour of Operator_Term::operator<())
     template <class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_exp_mpo (std::size_t length, Hamiltonian<Matrix, SymmGroup> const & H, typename Matrix::value_type const & alpha = 1)
+    MPO<Matrix, SymmGroup> make_exp_mpo (std::size_t length,
+                                         Hamiltonian<Matrix, SymmGroup> const & H,
+                                         typename Matrix::value_type const & alpha = 1)
     {
         typedef Hamiltonian<Matrix, SymmGroup> ham;
         

@@ -177,7 +177,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
             for (typename blas::associated_diagonal_matrix<Matrix>::type::element_iterator it = elements(s[k]).first;
                  it != elements(s[k]).second; ++it)
             {
-                double a = fabs(*it);
+                double a = std::abs(*it);
                 if (a > 1e-10)
                     sv.push_back(a*a);
             }
