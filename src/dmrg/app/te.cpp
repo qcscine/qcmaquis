@@ -16,17 +16,7 @@ using std::endl;
 #include "dense_matrix/dense_matrix_blas.hpp"
 #include "dense_matrix/aligned_allocator.h"
 
-#ifdef USE_GPU
-#include <cublas.h>
-#endif
-
-#ifdef USE_MTM
-#define USE_MTM_MAIN
-#include "dense_matrix/mt_matrix.h"
-typedef mt_matrix<double> Matrix;
-#else
-typedef blas::dense_matrix<double> Matrix;
-#endif
+typedef blas::dense_matrix<std::complex<double> > Matrix;
 
 #include <alps/hdf5.hpp>
 
@@ -106,10 +96,6 @@ int main(int argc, char ** argv)
     
     cout.precision(10);
     
-#ifdef USE_GPU
-	cublasInit();
-#endif
-    
     std::ifstream param_file(argv[1]);
     if (!param_file) {
         cerr << "Could not open parameter file." << endl;
@@ -145,10 +131,10 @@ int main(int argc, char ** argv)
     
     std::cout << measurements << std::endl;
     
-    std::vector<Hamiltonian<Matrix, grp> > splitted_H = separate_overlaps(H);
-    std::vector<MPO<Matrix, grp> > expMPO(splitted_H.size(), MPO<Matrix, grp>(lat->size()));
-    for (int i=0; i<splitted_H.size(); ++i)
-        expMPO[i] = make_exp_mpo(lat->size(), splitted_H[i]);
+    std::vector<Hamiltonian<Matrix, grp> > split_H = separate_overlaps(H);
+    std::vector<MPO<Matrix, grp> > expMPO(split_H.size(), MPO<Matrix, grp>(lat->size()));
+    for (int i=0; i<split_H.size(); ++i)
+        expMPO[i] = make_exp_mpo(lat->size(), split_H[i], -parms.get<double>("dt") * std::complex<double>(0,1));
     
     Measurements<Matrix, grp> meas_always;
     if (!parms.get<std::string>("always_measure").empty()) {
@@ -199,52 +185,63 @@ int main(int argc, char ** argv)
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
+    MPS<Matrix, grp> cur_mps = initial_mps, old_mps = initial_mps;
+    
 #ifndef MEASURE_ONLY
     
     bool early_exit = false;
-    {   
-        time_evolve<Matrix, grp, NoopStorageMaster> evolution(initial_mps,
-                                                                expMPO,
-                                                                parms, ssm);
-        
+    {
         for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
             gettimeofday(&snow, NULL);
             
             Logger iteration_log;
             
-            evolution.sweep(sweep, iteration_log);
+            /* this will need some thinking about how to do it most efficiently */
+            for (int which = 0; which < expMPO.size(); ++which)
+            {
+                old_mps = cur_mps;
+                time_evolve<Matrix, grp, NoopStorageMaster> evolution(cur_mps,
+                                                                      expMPO[which],
+                                                                      parms, ssm);
+                for (int k = 0; k < 5; ++k)
+                    evolution.sweep(sweep, iteration_log);
+                cur_mps = evolution.get_current_mps();
+                // this is basically just debug output
+                cout << "Overlap " << overlap(cur_mps, old_mps) << endl;
+            }
             
-            MPS<Matrix, grp> cur_mps = evolution.get_current_mps();
-            
-            entropies = calculate_bond_entropies(cur_mps);
+//            entropies = calculate_bond_entropies(cur_mps);
             
             double energy = expval(cur_mps, mpoc);
+            cout << "Energy " << energy << endl;
 
             gettimeofday(&sthen, NULL);
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
+            cout << "Sweep " << sweep << " done after " << elapsed << " seconds." << endl;
             
             {
-                alps::hdf5::oarchive h5ar(rfile);
-                
-                std::ostringstream oss;
-                
-                oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results";
-                h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
-
-                oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results/Energy/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, energy));
-
-                oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), entropies);
-                
-                cout << "Sweep done after " << elapsed << " seconds." << endl;
-                oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));                
+//                alps::hdf5::oarchive h5ar(rfile);
+//                
+//                std::ostringstream oss;
+//                
+//                oss.str("");
+//                oss << "/simulation/sweep" << sweep << "/results";
+//                h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
+//
+//                oss.str("");
+//                oss << "/simulation/sweep" << sweep << "/results/Energy/mean/value";
+//                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, energy));
+//
+//                oss.str("");
+//                oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
+//                h5ar << alps::make_pvp(oss.str().c_str(), entropies);
+//                
+//                oss.str("");
+//                oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
+//                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));                
             }
+            
+            if (sweep % parms.get<int>("measure_each") == 0)
             {
                 std::ostringstream oss;
                 oss << "/simulation/sweep" << sweep << "/results/";
@@ -252,21 +249,21 @@ int main(int argc, char ** argv)
                     measure(cur_mps, *lat, meas_always, rfile, oss.str());
             }
             
-            if (parms.get<int>("donotsave") == 0)
-            {
-                alps::hdf5::oarchive h5ar(chkpfile);
-                
-                h5ar << alps::make_pvp("/state", cur_mps);
-                h5ar << alps::make_pvp("/status/sweep", sweep);
-            }
-            
-            gettimeofday(&then, NULL);
-            elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
-            int rs = parms.get<int>("run_seconds");
-            if (rs > 0 && elapsed > rs) {
-                early_exit = true;
-                break;
-            }
+//            if (parms.get<int>("donotsave") == 0)
+//            {
+//                alps::hdf5::oarchive h5ar(chkpfile);
+//                
+//                h5ar << alps::make_pvp("/state", cur_mps);
+//                h5ar << alps::make_pvp("/status/sweep", sweep);
+//            }
+//            
+//            gettimeofday(&then, NULL);
+//            elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
+//            int rs = parms.get<int>("run_seconds");
+//            if (rs > 0 && elapsed > rs) {
+//                early_exit = true;
+//                break;
+//            }
         }
     }
 #endif
@@ -275,8 +272,4 @@ int main(int argc, char ** argv)
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
     
     cout << "Task took " << elapsed << " seconds." << endl;
-    
-#ifdef USE_GPU
-	cublasShutdown();
-#endif
 }

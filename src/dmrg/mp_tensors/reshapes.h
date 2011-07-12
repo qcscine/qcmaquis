@@ -267,7 +267,7 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
             for (int i=0; i<blas::num_rows(tmp); ++i)
             {
                 for (int j=0; j<blas::num_cols(tmp); ++j)
-                    if (tmp(i,j) != 0) {
+                    if (tmp(i,j) != typename Matrix::value_type()) {
                         empty=false;
                         break;
                     }
@@ -332,7 +332,7 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
         	bool empty = true;
         	for (int i=0; i<blas::num_rows(Ai[n]) && empty; ++i)
         		for (int j=0; j<blas::num_cols(Ai[n]) && empty; ++j)
-        			if (Ai[n](i,j) != 0)
+        			if (Ai[n](i,j) != typename Matrix::value_type())
         				empty=false;
 
         	if (empty)
@@ -397,7 +397,7 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_left_to_list (Index<SymmGr
 			bool empty = true;
 			for (int i=0; i<blas::num_rows(Ai[n]) && empty; ++i)
 				for (int j=0; j<blas::num_cols(Ai[n]) && empty; ++j)
-					if (Ai[n](i,j) != 0)
+					if (Ai[n](i,j) != typename Matrix::value_type())
 						empty=false;
 
 			if (empty)

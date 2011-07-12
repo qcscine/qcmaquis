@@ -38,7 +38,7 @@ public:
             
             block_matrix<Matrix, SymmGroup> M, U, V;
 
-            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;
+            block_matrix<typename blas::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;
             gemm(left, right, M);
             svd_truncate(M, U, V, S, cutoff, 100000, false);
             Sqrt = sqrt(S);
@@ -320,7 +320,7 @@ private:
                         typename Matrix::value_type val = left(std::make_pair(lc, outr),
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
-                        if (fabs(val) > 1e-40) {
+                        if (std::abs(val) > 1e-40) {
                             block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             
@@ -358,7 +358,7 @@ private:
                         typename Matrix::value_type val = right(std::make_pair(lc, visited_r_basis[lc]),
                                                                 std::make_pair(rc, outc));
                         
-                        if (fabs(val) > 1e-40) {
+                        if (std::abs(val) > 1e-40) {
                             block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             

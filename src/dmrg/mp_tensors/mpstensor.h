@@ -95,6 +95,8 @@ public:
         a.swap_with(b);
     }
     
+    void inplace_conjugate();
+    
     /* friend
     MPSTensor join(MPSTensor const & m1,
                    MPSTensor const & m2)
