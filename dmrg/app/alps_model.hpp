@@ -57,7 +57,7 @@ namespace app {
                     tmp_qn.push_back(*it);
                 }
             } else {
-                std::runtime_error("No conserved quantum numbers defined!");
+                throw std::runtime_error("No conserved quantum numbers defined!");
             }
             
             // Load all possible basis
@@ -400,7 +400,7 @@ namespace app {
 						SiteOperator op = make_site_term(it->value(), parms);
 #ifndef NDEBUG
 						if (b.is_fermionic(simplify_name(op)))
-							std::runtime_error("Cannot measure local fermionic operators.");
+							throw std::runtime_error("Cannot measure local fermionic operators.");
 #endif
 						alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
 
@@ -461,7 +461,7 @@ namespace app {
 						SiteOperator op = make_site_term(it->value(), parms);
 #ifndef NDEBUG
 						if (b.is_fermionic(simplify_name(op)))
-							std::runtime_error("Cannot measure local fermionic operators.");
+							throw std::runtime_error("Cannot measure local fermionic operators.");
 #endif
 						alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
 
@@ -534,7 +534,7 @@ namespace app {
                     
 #ifndef NDEBUG
                     if (f_ops % 2 != 0)
-                        std::runtime_error("Number of fermionic operators has to be even.");
+                        throw std::runtime_error("Number of fermionic operators has to be even.");
 #endif
                     meas.add_term(term);
                 }

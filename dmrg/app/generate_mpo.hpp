@@ -52,7 +52,7 @@ namespace generate_mpo
                 return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
             else
             {
-                std::runtime_error("site_match not implemented for this type of operator." );
+                throw std::runtime_error("site_match not implemented for this type of operator." );
                 return false;
             }
                 

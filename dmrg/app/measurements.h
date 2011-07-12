@@ -27,6 +27,8 @@
 
 #include "generate_mpo.hpp"
 
+#include <stdexcept>
+
 namespace app {
     
     template<class Matrix, class SymmGroup>
@@ -56,11 +58,11 @@ namespace app {
         }
         const Measurement_Term<Matrix, SymmGroup>& get(std::string const & name) const
         {
-        	for (int i=0; i<terms.size(); ++i) {
+            for (int i=0; i<terms.size(); ++i) {
                 if (terms[i].name == name)
                     return terms[i];
             }
-            std::runtime_error("Measurement "+name+" not found!");
+            throw std::runtime_error("Measurement "+name+" not found!");
             return *(terms.end());
         }
         
