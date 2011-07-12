@@ -122,7 +122,7 @@ namespace app {
                 else if (H[k].operators[0].first == pos2)
                     op_kron(H.get_phys(), H.get_identity(), H[k].operators[0].second, tmp);
                 else
-                    std::runtime_error("Operator k not matching any valid position.");
+                    throw std::runtime_error("Operator k not matching any valid position.");
                 bond_op += tmp;
             }
             
@@ -168,7 +168,7 @@ namespace app {
                 else if (H[k].operators[0].first == pos2)
                     op_kron(H.get_phys(), H.get_identity(), H[k].operators[0].second, tmp);
                 else
-                    std::runtime_error("Operator k not matching any valid position.");
+                    throw std::runtime_error("Operator k not matching any valid position.");
                 bond_op += tmp;
             }
             std::cout << "group finishing with k=" << k << std::endl;
