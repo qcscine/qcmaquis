@@ -291,14 +291,6 @@ int main(int argc, char ** argv)
                     measure(mps, *lat, meas_always, rfile, oss.str());
             }
             
-            if (parms.get<int>("donotsave") == 0)
-            {
-                alps::hdf5::oarchive h5ar(chkpfile);
-                
-                h5ar << alps::make_pvp("/state", mps);
-                h5ar << alps::make_pvp("/status/sweep", sweep);
-            }
-            
             gettimeofday(&then, NULL);
             elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
             int rs = parms.get<int>("run_seconds");
@@ -308,6 +300,14 @@ int main(int argc, char ** argv)
             }
         }
         ssm.sync();
+    }
+    
+    if (parms.get<int>("donotsave") == 0)
+    {
+        alps::hdf5::oarchive h5ar(chkpfile);
+        
+        h5ar << alps::make_pvp("/state", mps);
+        h5ar << alps::make_pvp("/status/sweep", sweep);
     }
     
     gettimeofday(&then, NULL);
