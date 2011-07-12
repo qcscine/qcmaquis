@@ -481,7 +481,7 @@ struct contraction {
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
-            gemm(transpose(lbtm.data_[b]), bra_tensor.data(), ret.data_[b]);
+            gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
         
         timer.end();
         
@@ -505,7 +505,7 @@ struct contraction {
         ret.data_.resize(mpo.row_dim());
         
         std::size_t loop_max = mpo.row_dim();
-        block_matrix<Matrix, SymmGroup> tmp = transpose(bra_tensor.data());
+        block_matrix<Matrix, SymmGroup> tmp = conjugate(transpose(bra_tensor.data()));
 #ifndef MPI_PARALLEL
 #pragma omp parallel for schedule(guided)
 #endif
@@ -602,7 +602,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
-        syev_truncate(dm, U, S, cutoff, Mmax, logger);
+        heev_truncate(dm, U, S, cutoff, Mmax, logger);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = U;
@@ -672,7 +672,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> U, V;
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
-        syev_truncate(dm, U, S, cutoff, Mmax, logger);
+        heev_truncate(dm, U, S, cutoff, Mmax, logger);
         V = transpose(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
@@ -715,8 +715,9 @@ struct contraction {
         using std::size_t;
         typedef typename SymmGroup::charge charge;
         
-        // they should have the same structure
-        block_matrix<Matrix, SymmGroup> ret(vec.left_basis(), vec.right_basis());
+        Index<SymmGroup> l_index = phys_i * left_i, r_index = phys_i * right_i;
+        common_subset(l_index, r_index);
+        block_matrix<Matrix, SymmGroup> ret(l_index, r_index);
         
         ProductBasis<SymmGroup> left_pb(phys_i, left_i);
         ProductBasis<SymmGroup> right_pb(phys_i, right_i,
@@ -731,7 +732,8 @@ struct contraction {
                         for (size_t ilps = 0; ilps < phys_i.size(); ++ilps)
                             for (size_t irps = 0; irps < phys_i.size(); ++irps)
                             {
-                                charge lc = left_i[ls].first, rc = right_i[rs].first, lpc = phys_i[lps].first, rpc = phys_i[rps].first;
+                                charge lc = left_i[ls].first, rc = right_i[rs].first;
+                                charge lpc = phys_i[lps].first, rpc = phys_i[rps].first;
                                 charge ilpc = phys_i[ilps].first, irpc = phys_i[irps].first;
                                 
                                 charge left_vec_charge = SymmGroup::fuse(ilpc, lc);
@@ -749,8 +751,6 @@ struct contraction {
                                 if (SymmGroup::fuse(lpc, rpc) != SymmGroup::fuse(ilpc, irpc))
                                     continue;
                                 
-        //                        cout << "Yes!" << endl;
-                                
                                 charge both_charge = SymmGroup::fuse(lpc, rpc);
                                 
                                 assert( op.has_block(both_charge, both_charge) );
@@ -766,22 +766,12 @@ struct contraction {
                                 size_t i_op_offset = phys_pb(ilpc, irpc);
                                 size_t op_offset = phys_pb(lpc, rpc);
                                 
-//                                cout << ilpc << " " << irpc << " " << lpc << " " << rpc << endl;
-                                
                                 for (size_t ll = 0; ll < left_i[ls].second; ++ll)
                                     for (size_t rr = 0; rr < right_i[rs].second; ++rr)
                                         for (size_t lp = 0; lp < phys_i[lps].second; ++lp)
                                             for (size_t rp = 0; rp < phys_i[rps].second; ++rp)
-                                                for (size_t ilp = 0; ilp < phys_i[lps].second; ++ilp)
-                                                    for (size_t irp = 0; irp < phys_i[rps].second; ++irp) {
-        //                                                cout << "Yo" << endl;
-//                                                        cout << i_op_offset + ilp*phys_i[irps].second + irp << " " << op_offset + lp*phys_i[rps].second + rp << endl;
-//                                                        oblock(l_offset + lp*left_i[ls].second + ll,
-//                                                               r_offset + rp*right_i[rs].second + rr);
-//                                                        iblock(i_l_offset + ilp*left_i[ls].second + ll,
-//                                                               i_r_offset + irp*right_i[rs].second + rr);
-//                                                        op_block(i_op_offset + ilp*phys_i[irps].second + irp,
-//                                                                 op_offset + lp*phys_i[rps].second + rp);
+                                                for (size_t ilp = 0; ilp < phys_i[ilps].second; ++ilp)
+                                                    for (size_t irp = 0; irp < phys_i[irps].second; ++irp) {
                                                         oblock(l_offset + lp*left_i[ls].second + ll,
                                                                r_offset + rp*right_i[rs].second + rr) += 
                                                         iblock(i_l_offset + ilp*left_i[ls].second + ll,

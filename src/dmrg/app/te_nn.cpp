@@ -97,7 +97,7 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 }
 
 std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > >
-get_hb (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
+get_U (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
 {
     std::complex<double> I;
     if (img)
@@ -107,10 +107,10 @@ get_hb (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
 
     std::complex<double> alpha = -I*dt;
 
-    std::vector<Hamiltonian<Matrix, grp> > splitted_H = separate_overlaps(H);
-    std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > > expH(splitted_H.size());
-    for (int i=0; i<splitted_H.size(); ++i)
-        expH[i] = make_exp_nn(splitted_H[i], -I*dt);
+    std::vector<Hamiltonian<Matrix, grp> > split_H = separate_overlaps(H);
+    std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > > expH(split_H.size());
+    for (int i=0; i<split_H.size(); ++i)
+        expH[i] = make_exp_nn(split_H[i], alpha);
     
     std::cout << expH.size() << " non overlapping Hamiltonians" << std::endl;
     for (int i=0; i<expH.size(); ++i)
@@ -216,8 +216,8 @@ int main(int argc, char ** argv)
         h5ar << alps::make_pvp("/parameters", model);
     }
     
-    //    BaseStorageMaster * bsm = bsm_factory(parms);
-    StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
+//    StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
+    NoopStorageMaster ssm;
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
@@ -228,9 +228,9 @@ int main(int argc, char ** argv)
     
     std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > > expH;
     if (sweep < parms.get<int>("nsweeps_img"))
-        expH = get_hb(H, parms.get<double>("dt"), true);
+        expH = get_U(H, parms.get<double>("dt"), true);
     else
-        expH = get_hb(H, parms.get<double>("dt"), false);
+        expH = get_U(H, parms.get<double>("dt"), false);
     
     bool early_exit = false;
     {   
@@ -242,15 +242,16 @@ int main(int argc, char ** argv)
             
             // switching from ground state to time evolution
             if (sweep == parms.get<int>("nsweeps_img"))
-                expH = get_hb(H, parms.get<double>("dt"), false);
+                expH = get_U(H, parms.get<double>("dt"), false);
             
-            for (int i=0; i<expH.size(); ++i)
-                mps = evolve(mps, expH[i], parms.get<std::size_t>("max_bond_dimension"), parms.get<double>("truncation_final"));
+            for (int i=0; i < expH.size(); ++i)
+                mps = evolve(mps, expH[i],
+                             parms.get<std::size_t>("max_bond_dimension"), parms.get<double>("truncation_final"));
             
 //            entropies = calculate_bond_entropies(mps);
             
-            std::complex<double> mps_norm = norm(mps);
-            std::cout << "Norm " << mps_norm << std::endl;
+//            std::complex<double> mps_norm = norm(mps);
+//            std::cout << "Norm " << mps_norm << std::endl;
 
             double energy = expval(mps, mpo);
             std::cout << "Energy " << energy << std::endl;
@@ -258,6 +259,7 @@ int main(int argc, char ** argv)
             gettimeofday(&sthen, NULL);
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
             
+            if (sweep % parms.get<int>("measure_each") == 0)
             {
                 alps::hdf5::oarchive h5ar(rfile);
                 
@@ -272,18 +274,16 @@ int main(int argc, char ** argv)
                 h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, energy));
 
                 oss.str("");
-                oss << "/simulation/sweep" << sweep << "/results/Norm/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<std::complex<double> >(1, mps_norm));
-
-                oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), entropies);
                 
-                cout << "Sweep done after " << elapsed << " seconds." << endl;
+                cout << "Sweep " << sweep << " done after " << elapsed << " seconds." << endl;
                 oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));                
             }
+            
+            if (sweep % parms.get<int>("measure_each") == 0)
             {
                 std::ostringstream oss;
                 oss << "/simulation/sweep" << sweep << "/results/";

@@ -90,6 +90,15 @@ namespace blas
     }
 
     template<typename T>
+    void heev(p_dense_matrix<T> a,
+              p_dense_matrix<T>& evecs,
+              typename associated_diagonal_matrix< p_dense_matrix<T> >::type& evals)
+    {
+        /* implement me */
+        throw std::runtime_error("Not implemented.");
+    }
+    
+    template<typename T>
     void syev(p_dense_matrix<T> a,
               p_dense_matrix<T>& evecs,
               typename associated_diagonal_matrix< p_dense_matrix<T> >::type& evals)

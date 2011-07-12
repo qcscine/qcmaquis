@@ -15,8 +15,9 @@
 #include "mp_tensors/mpo.h"
 
 #include "mp_tensors/special_mpos.h"
-
 #include "mp_tensors/contractions.h"
+
+#include "utils/utils.hpp"
 
 template<class Matrix, class SymmGroup>
 std::vector<Boundary<Matrix, SymmGroup> >
@@ -87,7 +88,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     }
     
     std::vector<typename Matrix::value_type> traces = left.traces();
-    
+    assert( check_real(traces[0]) );
     return alps::numeric::real(traces[0]);
 }
 

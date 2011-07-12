@@ -4,7 +4,7 @@
 
 #include "hamiltonian.h"
 
-#include "dense_matrix/matrix_vector_traits.h"
+#include "utils/matrix_vector_traits.h"
 #include "mp_tensors/reshapes.h"
 
 #include <vector>

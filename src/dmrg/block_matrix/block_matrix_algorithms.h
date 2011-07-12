@@ -103,7 +103,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void syev(block_matrix<Matrix, SymmGroup> const & M,
+void heev(block_matrix<Matrix, SymmGroup> const & M,
           block_matrix<Matrix, SymmGroup> & evecs,
           block_matrix<DiagMatrix, SymmGroup> & evals)
 {
@@ -117,7 +117,7 @@ void syev(block_matrix<Matrix, SymmGroup> const & M,
 #pragma omp parallel for schedule(dynamic)
 #endif
     for(std::size_t k = 0; k < loop_max; ++k)
-        syev(M[k], evecs[k], evals[k]);
+        heev(M[k], evecs[k], evals[k]);
 
     timer.end();
 }
@@ -217,7 +217,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
    blas::reverse<Matrix>(allS); */
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
+void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                              block_matrix<Matrix, SymmGroup> & evecs,
                                              block_matrix<DiagMatrix, SymmGroup> & evals,
                                              double cutoff, std::size_t Mmax,
@@ -226,7 +226,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 {
 
     // very analogous to the above svd method
-    syev(M, evecs, evals);
+    heev(M, evecs, evals);
     
     Index<SymmGroup> old_basis = evals.left_basis();
     
@@ -311,7 +311,7 @@ void syev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
    
     if (verbose /* && ! (old_basis == evals.left_basis())*/ ) {
-//        zout << "syev_truncate performed: (cutoff = " << cutoff << ")" << std::endl;
+//        zout << "heev_truncate performed: (cutoff = " << cutoff << ")" << std::endl;
 //        zout << old_basis << std::endl << evals.left_basis() << std::endl;
         zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
 //        zout << "Smallest EV kept: " << evalscut / allevals[0] << std::endl;
@@ -412,7 +412,7 @@ block_matrix<Matrix, SymmGroup> exp (block_matrix<Matrix, SymmGroup> const & M, 
     block_matrix<Matrix, SymmGroup> N, tmp, res;
     block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
     
-    syev(M, N, S);
+    heev(M, N, S);
     for (std::size_t k = 0; k < S.n_blocks(); ++k)
         S[k] = exp(alpha*S[k]);
     gemm(N, S, tmp);

@@ -253,8 +253,8 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
                 }
     
     // Removing empty blocks
-    Index<U1> out_left = phys*adjoin(phys);
-    Index<U1> out_right = phys*adjoin(phys);
+    Index<SymmGroup> out_left = phys*adjoin(phys);
+    Index<SymmGroup> out_right = phys*adjoin(phys);
     for (typename Index<U1>::const_iterator it1 = out_left.begin(); it1 != out_left.end(); it1++)
     {
         for (typename Index<U1>::const_iterator it2 = out_right.begin(); it2 != out_right.end(); it2++)
