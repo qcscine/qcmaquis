@@ -75,7 +75,7 @@ namespace blas
         dense_matrix<T, MemoryBlock> N, tmp;
         typename blas::associated_real_vector<dense_matrix<T, MemoryBlock> >::type Sv(num_rows(M));
         
-        syev(M, N, Sv);
+        heev(M, N, Sv);
         
         typename blas::associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type S(Sv);
         S = exp(alpha*S);
@@ -98,46 +98,10 @@ namespace blas
         std::generate(elements(m).first, elements(m).second, g);
     }
     
-    template<typename T, class MemoryBlock>
+    template<typename T, class MemoryBlock, class ThirdArgument>
     void syev(dense_matrix<T, MemoryBlock> M,
               dense_matrix<T, MemoryBlock> & evecs,
-              typename associated_vector<dense_matrix<T, MemoryBlock> >::type & evals) 
-    {
-        assert(num_rows(M) == num_cols(M));
-        assert(evals.size() == num_rows(M));
-        boost::numeric::bindings::lapack::syevd('V', M, evals);
-        // to be consistent with the SVD, I reorder in decreasing order
-        std::reverse(evals.begin(), evals.end());
-        // and the same with the matrix
-        evecs.resize(num_rows(M), num_cols(M));
-        for (std::size_t c = 0; c < num_cols(M); ++c)
-			std::copy(column(M, c).first, column(M, c).second,
-                      column(evecs, num_cols(M)-1-c).first);
-    }
-    
-    template<typename T, class MemoryBlock>
-    void syev(dense_matrix<T, MemoryBlock> M,
-              dense_matrix<T, MemoryBlock> & evecs,
-              typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
-    {
-        assert(num_rows(M) == num_cols(M));
-        typename associated_vector<dense_matrix<T, MemoryBlock> >::type evals_(num_rows(M));
-        syev(M, evecs, evals_);
-        evals = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(evals_);
-    }
-    
-    template<typename T, class MemoryBlock>
-    void syev(dense_matrix<std::complex<T>, MemoryBlock> M,
-              dense_matrix<std::complex<T>, MemoryBlock> & evecs,
-              typename associated_vector<dense_matrix<T, MemoryBlock> >::type & evals) 
-    {
-        heev(M, evecs, evals);
-    }
-    
-    template<typename T, class MemoryBlock>
-    void syev(dense_matrix<std::complex<T>, MemoryBlock> M,
-              dense_matrix<std::complex<T>, MemoryBlock> & evecs,
-              typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
+              ThirdArgument & evals)
     {
         heev(M, evecs, evals);
     }

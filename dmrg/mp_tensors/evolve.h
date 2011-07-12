@@ -58,7 +58,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
             }
         }
         
-//        cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << endl;
+//        cout << "Norm loss " << i << ": " << trace(t)-1.0 << " " << -log(trace(t)) << endl;
     }
     
     return mps;

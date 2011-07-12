@@ -3,6 +3,7 @@
 #define UTILS_HPP_
 
 #include <cstddef>
+#include <complex>
 
 struct cmp_with_prefactor {
 	static double prefactor;
@@ -13,5 +14,13 @@ struct cmp_with_prefactor {
 	}
 };
 
+template<class T>
+bool check_real(T x) { return true; }
+
+template<class T>
+bool check_real(std::complex<T> x)
+{
+    return std::imag(x)/std::real(x) < 1e-14 || std::imag(x) < 1e-14;
+}
 
 #endif /* UTILS_HPP_ */

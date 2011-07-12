@@ -191,8 +191,8 @@ int main(int argc, char ** argv)
         h5ar << alps::make_pvp("/parameters", model);
     }
     
-    //    BaseStorageMaster * bsm = bsm_factory(parms);
-    StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
+//    StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
+    NoopStorageMaster ssm;
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
@@ -203,7 +203,7 @@ int main(int argc, char ** argv)
     
     bool early_exit = false;
     {   
-        time_evolve<Matrix, grp, StreamStorageMaster> evolution(initial_mps,
+        time_evolve<Matrix, grp, NoopStorageMaster> evolution(initial_mps,
                                                                 expMPO,
                                                                 parms, ssm);
         
@@ -213,7 +213,6 @@ int main(int argc, char ** argv)
             Logger iteration_log;
             
             evolution.sweep(sweep, iteration_log);
-            ssm.sync();
             
             MPS<Matrix, grp> cur_mps = evolution.get_current_mps();
             
@@ -269,7 +268,6 @@ int main(int argc, char ** argv)
                 break;
             }
         }
-        ssm.sync();
     }
 #endif
         

@@ -34,6 +34,9 @@ struct compression {
         svd_truncate(t, u, v, s,
                      cutoff, Mmax, false);
         
+        mps[p].make_left_paired();
+        mps[p+1].make_right_paired();
+        
         mps[p].data() = u;
         mps[p].right_i = u.right_basis();
         
