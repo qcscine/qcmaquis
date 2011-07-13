@@ -145,7 +145,7 @@ namespace app {
         typedef Hamiltonian<Matrix, SymmGroup> ham;
         
         MPO<Matrix, SymmGroup> mpo(length);
-        std::vector<bool> used_p(false);
+        std::vector<bool> used_p(length, false);
         
         for (int n=0; n<H.n_terms(); )
         {
