@@ -23,7 +23,8 @@ struct compression {
     replace_two_sites(MPS<Matrix, SymmGroup> & mps,
                       std::size_t Mmax, double cutoff,
                       block_matrix<Matrix, SymmGroup> const & t,
-                      std::size_t p)
+                      std::size_t p,
+                      Logger * logger = NULL)
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
@@ -32,7 +33,7 @@ struct compression {
         block_matrix<dmt, SymmGroup> s;
         
         svd_truncate(t, u, v, s,
-                     cutoff, Mmax, false);
+                     cutoff, Mmax, false, logger);
         
         mps[p].make_left_paired();
         mps[p+1].make_right_paired();
@@ -48,7 +49,8 @@ struct compression {
     template<class Matrix, class SymmGroup>
     static void compress_two_sites(MPS<Matrix, SymmGroup> & mps,
                                    std::size_t Mmax, double cutoff,
-                                   std::size_t p)
+                                   std::size_t p,
+                                   Logger * logger = NULL)
     {
         block_matrix<Matrix, SymmGroup> t;
         
@@ -57,13 +59,15 @@ struct compression {
         
         gemm(mps[p].data(), mps[p+1].data(), t);
         
-        replace_two_sites(mps, Mmax, cutoff, t, p);
+        replace_two_sites(mps, Mmax, cutoff, t, p, logger);
     }
         
     template<class Matrix, class SymmGroup>
     MPS<Matrix, SymmGroup>
     static l2r_compress(MPS<Matrix, SymmGroup> mps,
-                        std::size_t Mmax, double cutoff)
+                        std::size_t Mmax, double cutoff,
+                        Logger * logger = NULL,
+                        bool verbose = false)
     {
         std::size_t L = mps.length();
         std::vector<double> ret;
@@ -72,9 +76,15 @@ struct compression {
         
         mps.canonize(1);
         
+        if (verbose) cout << "Compressing @ ";
         for (std::size_t p = 1; p < L; ++p)
         {
-            compress_two_sites(mps, Mmax, cutoff, p-1);
+            if (verbose) {
+                cout << p << " ";
+                cout.flush();
+            }
+            
+            compress_two_sites(mps, Mmax, cutoff, p-1, logger);
             
             t = mps[p].normalize_left(SVD);
             
