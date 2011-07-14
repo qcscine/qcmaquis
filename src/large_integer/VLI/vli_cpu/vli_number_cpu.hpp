@@ -12,9 +12,11 @@
 #define VLI_NUMBER_CPU_HPP
 #include <ostream>
 #include <vector>
-#include "function_hooks/vli_number_cpu_function_hooks.hpp"
+#include <string>
 #include <cmath>
 #include "boost/swap.hpp"
+#include "function_hooks/vli_number_cpu_function_hooks.hpp"
+
 
 namespace vli
 {
@@ -77,8 +79,16 @@ namespace vli
         }
 		
         /**
-		 multiply and addition operators
+		 multiply,substraction, addition operators
 		 */
+        
+        vli_cpu& operator -= (vli_cpu const& vli)
+        {
+            using vli::minus_assign;
+            minus_assign(*this,vli);
+            return *this;
+        }
+        
         vli_cpu& operator += (vli_cpu const& vli)
         {
             using vli::plus_assign;
@@ -111,7 +121,7 @@ namespace vli
 			}
 		}
 		
-		size_type BaseTen()
+		size_type BaseTen() // for debuging on small BASE
 		{
 			std::size_t Res = 0;
 			for(int i=0;i < Size;i++)
@@ -119,7 +129,30 @@ namespace vli
 			
 			return Res;
 		}
-		
+        
+        
+        void GetString(){
+          
+            int toto[4] = {BASE_MINUS,0,0,0};
+            int inter0[4] = {data_[0],0,0,0};
+            int inter1[4] = {data_[1],0,0,0};
+                        
+            using vli::multiplies_assign_array;
+            using vli::plus_assign_array;
+            
+            
+            multiplies_assign_array<int,8>(&toto[0],&inter1[0]);
+            plus_assign_array<int,8>(&toto[0],&inter1[0]);
+            plus_assign_array<int,8>(&toto[0],&inter0[0]);
+            
+            
+//            for(int i=0;i<4;i++)
+  //              std::cout << toto[i] << std::endl;
+
+            
+            
+        }
+        
     private:
 		BaseInt data_[Size] __attribute__ ((aligned (16)));
     };

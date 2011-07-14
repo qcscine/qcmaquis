@@ -11,19 +11,35 @@ namespace vli {
     template <class BaseInt, int Size>
     class vli_cpu;
 
-template <class BaseInt, int Size>
-void plus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
-{
-    addition_classic_cpu<BaseInt, Size>(&vli_a[0],&vli_b[0]);
-}
+    template <class BaseInt, int Size>
+    void plus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
+    {
+        addition_classic_cpu<BaseInt, Size>(&vli_a[0],&vli_b[0]);
+    }
 
+    template <class BaseInt, int Size>
+    void minus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
+    {
+        substraction_classic_cpu<BaseInt, Size>(&vli_a[0],&vli_b[0]);
+    }
+        
+    template <class BaseInt, int Size>
+    void multiplies_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
+    {
+        multiplication_classic_cpu<BaseInt,Size>(&vli_a[0], &vli_b[0]);
+    }
 
-template <class BaseInt, int Size>
-void multiplies_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
-{
-     multiplication_classic_cpu<BaseInt,Size>(&vli_a[0], &vli_b[0]);
-}
+    template <class BaseInt, int Size>
+    void multiplies_assign_array(BaseInt* a, BaseInt const* b )
+    {
+        multiplication_classic_cpu<BaseInt,Size>(a, b);
+    }
 
+    template <class BaseInt, int Size>
+    void plus_assign_array(BaseInt* a, BaseInt const* b )
+    {
+        addition_classic_cpu<BaseInt,Size>(a, b);
+    }
 } //namespace vli
 
 #endif //VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP

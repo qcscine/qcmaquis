@@ -20,48 +20,32 @@ using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
 
-#define SIZE 4
+#define SIZE 8
 
 int main (int argc, char * const argv[]) 
 {
 	gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    polynomial_cpu<vli_cpu<int,8>, 2> pa;
+    vli_cpu<int,SIZE> a;
+    vli_cpu<int,SIZE> b;
+        
+    a[0] = 155;
+    a[1] = 155;
+    a[2] = 155;
+    a[3] = 155;
+ 
+    b[0] = 200;
+    b[1] = 200;
+    b[2] = 200;
+    b[3] = 200;
+
     
-    for(int i=0; i<2; i++){
-        pa(0,0)[i] = 22*i+22;
-        pa(0,1)[i] = 22*i+22;
-        pa(1,0)[i] = 22*i+223;
-        pa(1,1)[i] = 22*i+22;        
-    }
- 
-    polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
- 
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VaGPU(SIZE);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VbGPU(SIZE);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VcGPU;
-
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VaCPU(SIZE);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VbCPU(SIZE);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VcCPU;
-
-    for(int i=0;i < SIZE;i++){
-        VaCPU[i]=pa;
-        VbCPU[i]=pa;
-
-        VaGPU[i]=pa;
-        VbGPU[i]=pa;
- 
-    }
+    a-=b;
      
-    VcCPU =  inner_product(VaCPU,VbCPU);
-    VcGPU =  inner_product(VaGPU,VbGPU);
-
-    std::cout << VcCPU << std::endl;
-    std::cout << VcGPU << std::endl;
-    
-    if(pagpu == pa){printf("ok \n");}
+    std::cout << a << std::endl;   
+//    std::cout << a.BaseTen() << std::endl;
+ 
     
 	GPU->instance().destructor();
 }
