@@ -20,32 +20,42 @@ using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
 
-#define SIZE 8
+#define SIZE 4
 
 int main (int argc, char * const argv[]) 
 {
 	gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    vli_cpu<int,SIZE> a;
-    vli_cpu<int,SIZE> b;
-        
-    a[0] = 155;
-    a[1] = 155;
-    a[2] = 155;
-    a[3] = 155;
- 
-    b[0] = 200;
-    b[1] = 200;
-    b[2] = 200;
-    b[3] = 200;
+    vli_cpu<unsigned int,SIZE> a;
+    vli_cpu<unsigned int,SIZE> b;
+    a[0]=100;
+    a[1]=100;
+    a[2]=1;
 
-    
-    a-=b;
-     
-    std::cout << a << std::endl;   
-//    std::cout << a.BaseTen() << std::endl;
- 
+    b[0]=123;
+    b[1]=245;
+    b[2]=2;
+//    b[4]=245;
+//    b[5]=245;
+//    b[6]=231;
+//    b[7]=12;
+
+//    a.negate();
+
+    int A = a.BaseTen();
+    int B = b.BaseTen();
+
+
+    std::cout<<A<<std::endl;
+    std::cout<< A*B <<std::endl;
+
+   std::cout<< a <<std::endl;
+   std::cout<< a.get_string() <<std::endl;
+   std::cout<< b <<std::endl;
+    b*= a;
+   std::cout<< b <<std::endl;
+   std::cout<<b.BaseTen()<<std::endl;
     
 	GPU->instance().destructor();
 }

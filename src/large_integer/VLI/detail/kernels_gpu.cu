@@ -28,7 +28,6 @@ the size of each block is 16X16
 /**
 	Do not forget, change to the desired type inside the kernels because I use special memory
 */
-typedef int TYPE;
 
 /**
 	C = A + B

@@ -32,13 +32,14 @@ using vli::vector_polynomial_cpu;
 
 #define SIZE 4
 
+typedef unsigned int TYPE;
 
 BOOST_AUTO_TEST_CASE(vector_inner_product)
 {
 	gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    polynomial_cpu<vli_cpu<int,8>, 2> pa;
+    polynomial_cpu<vli_cpu<TYPE,8>, 2> pa;
     
     for(int i=0; i<2; i++){
         pa(0,0)[i] = 22*i+22;
@@ -47,15 +48,15 @@ BOOST_AUTO_TEST_CASE(vector_inner_product)
         pa(1,1)[i] = 22*i+22;        
     }
  
-    polynomial_gpu<vli_gpu<int,8>, 2> pagpu(pa);
+    polynomial_gpu<vli_gpu<TYPE,8>, 2> pagpu(pa);
  
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VaGPU(SIZE);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VbGPU(SIZE);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<int, 8>,2> > VcGPU;
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,2> > VaGPU(SIZE);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,2> > VbGPU(SIZE);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,2> > VcGPU;
 
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VaCPU(SIZE);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VbCPU(SIZE);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<int, 8>,2> > VcCPU;
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,2> > VaCPU(SIZE);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,2> > VbCPU(SIZE);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,2> > VcCPU;
 
     for(int i=0;i < SIZE;i++){
         VaCPU[i]=pa;

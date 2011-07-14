@@ -13,7 +13,7 @@
 #define LOG_BASE_HALF		 0x4   // 4
 #define BASE				 0x100 // 256
 #define BASE_HALF			 0x10  // 16
-#define BASE_MINUS			 255  // 16
+#define BASE_MINUS			 0xFF  //255  // 16
 #define BASE_MINUS2			 0xFE  // 254   
 #define MINUS_BASE_PLUS2	 -254
 #define MASK_DOWN			 0xF
