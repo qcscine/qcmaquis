@@ -33,22 +33,20 @@ namespace vli
 		*x += *y; 
 		carry_bit  = *x >> LOG_BASE;
 		*x    %= BASE; 
-		*(x+1)+= carry_bit; //MAYBE PB TO CHECK
+		*(x+1)+= carry_bit; //BE CARREFUL NO CONTROL THE OVERFLOW
 	}	
-	
-	/**
-	 addition for the multiplication, just for a plus
-	 */
-	template <typename T>
-	void addition_kernel2_cpu(T const* x, T const*  y , T* z)
+    
+    template <typename T>
+	void substraction_kernel_cpu(T* x, T const*  y)
 	{
 		T carry_bit = 0;
-		*z = *x + *y; // <- no plus ><
-		carry_bit  = *z >> LOG_BASE;
-		*z    %= BASE;
-		*(z+1)+= carry_bit; //MAYBE PB TO CHECK
+        *x -= *y;
+        carry_bit  = *x >> (sizeof(T)*8-1); //Do we template ????
+        *x = abs(*x); 
+	    *x    %= BASE; 
+		*(x+1)+= (-carry_bit); //MAYBE PB TO CHECK
 	}
-    
+        	
 	/**
 	 addition classic version on array 
 	 */
@@ -60,6 +58,17 @@ namespace vli
 			addition_kernel_cpu((x+i), (y+i));
 	}
 	
+    /**
+	 substraction classic version on array 
+	 */
+	template <class T, int Size>
+	void substraction_classic_cpu(T* x,  T const*  y)
+	{
+        std::size_t size = Size;
+		for(size_type i = 0; i < size ; ++i)
+			substraction_kernel_cpu((x+i), (y+i));
+    }
+    
 	template <typename T>
 	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
 	{
@@ -77,9 +86,8 @@ namespace vli
 	template <typename T>
 	void multiplication_kernel_base_reshaping_cpu(T const * a, T  const *  b, T * r)	
 	{			
-		T q1,q2;
-		T r1,r2;
-		q1 = q2 = r1 =r2 = 0;
+		T q1(0),q2(0);
+		T r1(0),r2(0);
 		
 		q1 = (*(a+1) + *b)/BASE_HALF;
 		r1 = (*(a+1) + *b)%BASE_HALF;
@@ -124,7 +132,7 @@ namespace vli
 
         BaseInt inter[16];
         //for unroll
-        for(int i=0; i<16;i++)
+        for(BaseInt i=0; i<16;i++)
             inter[i]=0;
         
 		for (size_type i = 0 ; i < size; i++)
@@ -197,6 +205,22 @@ namespace vli
     //			}
     //		}
     //	}
+    
+    
+    /**
+	 addition for the multiplication, just for a plus
+	 */
+/*
+	template <typename T>
+	void addition_kernel2_cpu(T const* x, T const*  y , T* z)
+	{
+		T carry_bit = 0;
+		*z = *x + *y; // <- no plus ><
+		carry_bit  = *z >> LOG_BASE;
+		*z    %= BASE;
+		*(z+1)+= carry_bit; //MAYBE PB TO CHECK
+	}
+  */  
 }
 
 #endif //VLI_KERNELS_CPU_HPP
