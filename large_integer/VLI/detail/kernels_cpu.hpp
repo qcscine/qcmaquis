@@ -50,12 +50,13 @@ namespace vli
 	/**
 	 addition classic version on array 
 	 */
-	template <class T, int Size>
+	template <class T, std::size_t Size>
 	void addition_classic_cpu(T* x,  T const*  y)
 	{
-        std::size_t size = Size;
-		for(size_type i = 0; i < size ; ++i)
+		for(std::size_t i = 0; i < Size-1 ; ++i)
 			addition_kernel_cpu((x+i), (y+i));
+		*(x+Size-1) += *(y+Size-1);
+        *(x+Size-1) = *(x+Size-1)&(BASE+BASE_MINUS); //0x1FF;
 	}
 	
     /**

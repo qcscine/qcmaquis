@@ -10,6 +10,7 @@
 
 #ifndef VLI_NUMBER_CPU_HPP
 #define VLI_NUMBER_CPU_HPP
+#include <boost/lexical_cast.hpp>
 #include <ostream>
 #include <vector>
 #include <string>
@@ -17,6 +18,7 @@
 #include "boost/swap.hpp"
 #include "function_hooks/vli_number_cpu_function_hooks.hpp"
 
+#include <iostream>
 
 namespace vli
 {
@@ -51,11 +53,11 @@ namespace vli
                 data_[i] = r.data_[i]; // because copy constructor
         }
         
-        vli_cpu(BaseInt* p)
-        {
-            for(int i=0; i<Size; ++i)
-                data_[i] = p->data_[i]; // because copy constructor
-        }
+//        vli_cpu(BaseInt* p)
+//        {
+//            for(int i=0; i<Size; ++i)
+//                data_[i] = p->data_[i]; // because copy constructor
+//        }
         
         friend void swap(vli_cpu& a, vli_cpu& b)
         {
@@ -84,8 +86,10 @@ namespace vli
         
         vli_cpu& operator -= (vli_cpu const& vli)
         {
-            using vli::minus_assign;
-            minus_assign(*this,vli);
+            using vli::plus_assign;
+            vli_cpu tmp(vli);
+            tmp.negate();
+            plus_assign(*this,tmp);
             return *this;
         }
         
@@ -108,8 +112,20 @@ namespace vli
 			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
 			return (0 == n);
         }
-
         
+        void negate()
+        {
+            for(size_type i=0; i < Size-1; ++i)
+                data_[i] = (~data_[i])&BASE_MINUS;
+           data_[Size-1] = (~data_[Size-1])&(BASE+BASE_MINUS);//0x1FF;
+           (*this)+=vli_cpu(1);
+        }
+
+        bool is_negative() const
+        {
+            return static_cast<bool>((data_[Size-1]>>LOG_BASE));
+        }
+
         void print(std::ostream& os) const
         {
             int i = Size;
@@ -121,37 +137,84 @@ namespace vli
 			}
 		}
 		
-		size_type BaseTen() // for debuging on small BASE
-		{
-			std::size_t Res = 0;
-			for(int i=0;i < Size;i++)
-				Res+=data_[i]*(pow (BASE,i));
-			
-			return Res;
-		}
-        
-        
-        void GetString(){
-          
-            int toto[4] = {BASE_MINUS,0,0,0};
-            int inter0[4] = {data_[0],0,0,0};
-            int inter1[4] = {data_[1],0,0,0};
-                        
-            using vli::multiplies_assign_array;
-            using vli::plus_assign_array;
-            
-            
-            multiplies_assign_array<int,8>(&toto[0],&inter1[0]);
-            plus_assign_array<int,8>(&toto[0],&inter1[0]);
-            plus_assign_array<int,8>(&toto[0],&inter0[0]);
-            
-            
-//            for(int i=0;i<4;i++)
-  //              std::cout << toto[i] << std::endl;
-
-            
-            
+        std::string get_string() const
+        {
+            std::string result;
+            vli_cpu tmp(*this);
+            return get_string_helper(tmp);
         }
+
+        // TODO make private
+        std::string get_string_helper(vli_cpu& value) const
+        {
+            std::string result;
+            // Find correct order (=exponent in (10^exponent) )
+            vli_cpu decimal(1);
+            size_type exponent = 0;
+            while(1)
+            {
+                value-=decimal;
+                if(value.is_negative())
+                {
+                    value+=decimal;
+                    break;
+                }
+                value+=decimal;
+                decimal *= vli_cpu(10);
+                ++exponent;
+            }
+
+            // TODO check
+            vli_cpu dec(1);
+            for(size_type e=0; e < exponent; ++e)
+                dec *= vli_cpu(10);
+
+            // Find digit for 10^exponent
+            int i=1;
+            while(1)
+            {
+                // TODO int * vli
+                value-=vli_cpu(i)*dec;
+                if(value.is_negative())
+                {
+                    // TODO int * vli
+                    value+=vli_cpu(i)*dec;
+                    --i;
+                    // Subtract the found leading order digit
+                    // TODO int * vli
+                    value-=vli_cpu(i)*dec;
+                    std::cout<<i<<std::endl;
+                    break;
+                }
+                value+=vli_cpu(i)*dec;
+                ++i;
+            }
+            if(exponent <= 1)
+            {
+                return boost::lexical_cast<std::string>(i);
+            }
+            result += boost::lexical_cast<std::string>(i);
+            result += get_string_helper(value);
+            return result;
+        }
+		int BaseTen() // for debuging on small BASE
+		{
+			int Res = 0;
+            if(this->is_negative())
+            {
+                this->negate();
+                for(size_type i=0;i < Size;i++)
+                    Res+=(data_[i]&BASE_MINUS)*(pow(BASE,i));
+                Res *= -1;
+                this->negate();
+            }
+            else
+            {
+                for(size_type i=0;i < Size;i++)
+                    Res+=(data_[i]&BASE_MINUS)*(pow(BASE,i));
+            }
+            return Res;
+		}
         
     private:
 		BaseInt data_[Size] __attribute__ ((aligned (16)));

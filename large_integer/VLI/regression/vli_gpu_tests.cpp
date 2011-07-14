@@ -9,7 +9,7 @@
 #include "vli_gpu/vli_number_gpu.hpp"
 
 
-#define TYPE int
+#define TYPE unsigned int
 using vli::vli_cpu;
 using vli::vli_gpu;
 
@@ -163,17 +163,17 @@ BOOST_AUTO_TEST_CASE(baseten_multiplication)
 	A[1] = 255;
 	B[1] = 255;
     
-    std::size_t ATen = A.BaseTen();
-	std::size_t BTen = B.BaseTen();
+    int ATen = A.BaseTen();
+	int BTen = B.BaseTen();
 	
 	C=A*B;
-    C*=A;
+//    C*=A;
             
-	std::size_t CTenRes = 0;	
+	int CTenRes = 0;	
 	CTenRes = ATen * BTen;
-    CTenRes*=ATen;
+//    CTenRes*=ATen;
 
-    std::size_t CTen = C.BaseTen();
+    int CTen = C.BaseTen();
     
 	BOOST_CHECK_EQUAL(CTen,CTenRes);
 }
