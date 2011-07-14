@@ -139,9 +139,16 @@ namespace vli
 		
         std::string get_string() const
         {
-            std::string result;
             vli_cpu tmp(*this);
-            return get_string_helper(tmp);
+            if(tmp.is_negative())
+            {
+                tmp.negate();
+                return std::string("-")+get_string_helper(tmp);
+            }
+            else
+            {
+                return get_string_helper(tmp);
+            }
         }
 
         // TODO make private
@@ -166,7 +173,7 @@ namespace vli
 
             // TODO check
             vli_cpu dec(1);
-            for(size_type e=0; e < exponent; ++e)
+            for(size_type e=0; e < exponent-1; ++e)
                 dec *= vli_cpu(10);
 
             // Find digit for 10^exponent
@@ -183,7 +190,6 @@ namespace vli
                     // Subtract the found leading order digit
                     // TODO int * vli
                     value-=vli_cpu(i)*dec;
-                    std::cout<<i<<std::endl;
                     break;
                 }
                 value+=vli_cpu(i)*dec;
