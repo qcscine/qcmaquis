@@ -41,7 +41,7 @@ int main (int argc, char * const argv[])
 //    b[6]=231;
 //    b[7]=12;
 
-//    a.negate();
+    a.negate();
 
     int A = a.BaseTen();
     int B = b.BaseTen();
@@ -56,6 +56,7 @@ int main (int argc, char * const argv[])
     b*= a;
    std::cout<< b <<std::endl;
    std::cout<<b.BaseTen()<<std::endl;
+   std::cout<<b.get_string()<<std::endl;
     
 	GPU->instance().destructor();
 }
