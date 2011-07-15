@@ -19,7 +19,7 @@
 #define MASK_DOWN			 0xF
 #define MASK_UP				 0xF0
 #define PARITYBITINT         0x1F  // TO calculate the parity bit with int  
-#define PARITYBITLONGINT     0x3F  // TO calculate the parity bit with int  
+#define PARITYBITLONGINT     0x1F  // TO calculate the parity bit with int  
 
 /*
 //BASE 2**30

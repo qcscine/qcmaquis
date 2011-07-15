@@ -130,6 +130,7 @@ namespace vli
         {
             int i = Size;
             os << "(" ;
+                        
 			while( i != 0){
 			   	i--;
 				os << *(data_+i);
@@ -203,9 +204,9 @@ namespace vli
             result += get_string_helper(value);
             return result;
         }
-		int BaseTen() // for debuging on small BASE
+		long int BaseTen() // for debuging on small BASE
 		{
-			int Res = 0;
+			long int Res = 0;
             if(this->is_negative())
             {
                 this->negate();
