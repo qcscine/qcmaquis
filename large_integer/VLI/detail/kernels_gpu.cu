@@ -236,19 +236,7 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, in
     }
 
 }
- 
-template <typename T>
-__global__ void equality_gpu(T const* p1, T const* p2, int vli_size, int* t)
-{   
-    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	
-	if(xIndex < 32){
-        if( p1[xIndex] != p2[xIndex]){
-            t[0] = 1;            
-        }
-    }
-}   
-    
+     
 void plus_assign_gpu(TYPE*  A, TYPE const*  B, int num_integers, int vli_size)
 {
     dim3 dimgrid(1,1,1);
@@ -296,14 +284,6 @@ void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, i
     inner_prod_vector  <<< dimgrid, dimblock >>>(A, B, C , D ,vli_size, max_order,vector_size); 
 }
 
-void equal_gpu(TYPE const* a, const TYPE* b, int vli_size, int* t)
-{
-    dim3 dimgrid(1,1,1);
-	dim3 dimblock(1,1,1);
-    equality_gpu  <<< dimgrid, dimblock >>>(a, b , vli_size, t);
-}
-
-    
 } //namespace detail
 } //namespace vli
 
