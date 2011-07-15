@@ -146,17 +146,6 @@ namespace vli
             return *this;
         }
         
-        /** GPU/GPU**/
-        bool operator==(polynomial_gpu const & p) const 
-        {
-            //TODO
-            //BUGY , presently the kernel destroy the data, I do not know why !
-            //assert(false);
-            int test(0); // shoud be a bool
-            detail::equal_gpu((*this).p(), p.p(), max_order*max_order*Vli::size, &test);    
-            return (test == 0) ? true : false;
-        }
-
          /** GPU/CPU, order cares !**/
         bool operator==(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>  & p) const
         {

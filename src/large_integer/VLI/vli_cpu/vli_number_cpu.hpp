@@ -137,7 +137,13 @@ namespace vli
                 (i == 0) ? (os << ")"):(os << " ");
 			}
 		}
-		
+
+		char const* get_char() const
+        {
+            return get_string().c_str();
+        }
+        
+        
         std::string get_string() const
         {
             vli_cpu tmp(*this);
