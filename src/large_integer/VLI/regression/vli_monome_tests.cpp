@@ -12,9 +12,6 @@
 #include "monome/polynome_gpu.h"
 #include "monome/polynome_cpu.h"
 
-
-#include "utils/timings.h"
-
 typedef unsigned int TYPE; 
 using vli::vli_cpu;
 using vli::vli_gpu;
@@ -104,26 +101,9 @@ BOOST_AUTO_TEST_CASE( multiplication_polynomial)
         pbgpu(1,1) = pb(1,1); 
     }
     
-    Timer A("CPU");
-    A.begin();
     pc = pa*pb;
-    A.end();
-    
-    Timer B("GPU classic");
-    B.begin();
-    TimerCuda C("GPU Cuda");
-    B.begin();
-    C.begin();    
     pcgpu = pagpu*pbgpu;
-    B.end();
-    C.end();
-    
-    printf("GPU \n");
-    std::cout << pcgpu << std::endl;
-    printf("--------------------------- \n");
-    printf("CPU \n");
-    std::cout << pc << std::endl;
-    
+        
     /** THE ORDER IS VERY IMPORTANT, first CPU second GPU*/
     BOOST_CHECK_EQUAL(pc,pcgpu);
     

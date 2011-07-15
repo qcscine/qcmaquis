@@ -29,8 +29,6 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 	GPU->instance();
     vli_gpu<int,8> a;
     vli_gpu<int,8> b(0);
-    std::cout << a << std::endl;
-    std::cout << b << std::endl;
 
     BOOST_CHECK_EQUAL(a,b);
 	GPU->instance().destructor();
@@ -151,6 +149,7 @@ BOOST_AUTO_TEST_CASE(baseten_addition)
     
 	std::size_t CTen = C.BaseTen();
     
+
 	BOOST_CHECK_EQUAL(CTen,CTenRes);	
 }
 
@@ -160,20 +159,20 @@ BOOST_AUTO_TEST_CASE(baseten_multiplication)
 	vli::vli_cpu<TYPE,8> B(254);
 	vli::vli_cpu<TYPE,8> C(0);
 	
-	A[1] = 255;
-	B[1] = 255;
+	A[1] = 20;
+	B[1] = 20;
     
-    int ATen = A.BaseTen();
-	int BTen = B.BaseTen();
+    long int ATen = A.BaseTen();
+	long int BTen = B.BaseTen();
 	
 	C=A*B;
-//    C*=A;
+    C*=A;
             
-	int CTenRes = 0;	
+	long int CTenRes = 0;	
 	CTenRes = ATen * BTen;
-//    CTenRes*=ATen;
-
-    int CTen = C.BaseTen();
+    CTenRes*=ATen;
+    
+    long int CTen = C.BaseTen();
     
 	BOOST_CHECK_EQUAL(CTen,CTenRes);
 }

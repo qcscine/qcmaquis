@@ -36,17 +36,6 @@ namespace vli
 		*(x+1)+= carry_bit; //BE CARREFUL NO CONTROL THE OVERFLOW
 	}	
     
-    template <typename T>
-	void substraction_kernel_cpu(T* x, T const*  y)
-	{
-		T carry_bit = 0;
-        *x -= *y;
-        carry_bit  = *x >> (sizeof(T)*8-1); //Do we template ????
-        *x = abs(*x); 
-	    *x    %= BASE; 
-		*(x+1)+= (-carry_bit); //MAYBE PB TO CHECK
-	}
-        	
 	/**
 	 addition classic version on array 
 	 */
@@ -66,6 +55,7 @@ namespace vli
 	void substraction_classic_cpu(T* x,  T const*  y)
 	{
         std::size_t size = Size;
+        
 		for(size_type i = 0; i < size ; ++i)
 			substraction_kernel_cpu((x+i), (y+i));
     }
@@ -131,9 +121,9 @@ namespace vli
 		
 //        vli::vli_cpu<BaseInt, 2*Size+1> inter; //+1 for avoiding over flow
 
-        BaseInt inter[16];
+        BaseInt inter[17]; // largeur for avoid overflow
         //for unroll
-        for(BaseInt i=0; i<16;i++)
+        for(BaseInt i=0; i<17;i++)
             inter[i]=0;
         
 		for (size_type i = 0 ; i < size; i++)
@@ -146,7 +136,7 @@ namespace vli
 				addition_kernel_cpu(&inter[m+1],&r[1]);
 			}
 		}
-        for(int i=0; i<8;i++)
+        for(int i=0; i<8;i++) // we keep only what we need ...
             x[i] = inter[i];
         //memcpy((void*)x,(void*)&inter[0],Size*sizeof(BaseInt));
        // delete[] inter;

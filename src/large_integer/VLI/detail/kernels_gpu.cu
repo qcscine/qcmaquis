@@ -20,117 +20,10 @@ Just very basic C++ or C (template ok).
 
 namespace vli {
 namespace detail {
-
-/**
-the size of each block is 16X16
-*/
-
-/**
-	Do not forget, change to the desired type inside the kernels because I use special memory
-*/
-
-/**
-	C = A + B
-	if this kernel we introduce new arithmetic
-	A. Avizienis. Signed-digit number representations for fast parallel arithmetic. IRE Transactions on electronic computers, vol 10, pages 389-400, 1961
-	No carry bit ^^'
-	num_integer = # of vli
-	ld = size of one vli
-*/
-
-extern const int NUM_SHARED = 128; // must be equal to the size of a block
-extern const int SIZE = 8; // must be equal to the size of a block
-
-template <typename T>
-__global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, int ld)
-{
-
-/**
-	sharred array for the local calculation t must be larger (+1) due to the algo
-*/
-
-	__shared__ TYPE t[NUM_SHARED+1]; 
-	__shared__ TYPE w[NUM_SHARED];
-	__shared__ TYPE s[NUM_SHARED];
-
-	int nsize = ld*num_integer; //remove if the size of the grid is exact 
-	
-/**
-	just to remember how to calculate the index of the grid
-	int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	int yIndex = blockIdx.y*blockDim.y + threadIdx.y; // all index on y
-	int i = xIndex + yIndex* blockDim.x * gridDim.x ; // all index on xy 
-*/
-	int i = threadIdx.y + blockDim.y*threadIdx.x; // index on the block (0,0)
-	int j = i; // the copy for the local memory
-
-
-/**
-	addition block by block to have a better access W/R of the shared memory
-	We should have only one block on y; because y represents the size ot the vli
-	
-	k ( on x direction)
-	--->
-	______________________ ......
-	|blockId|blockId|
-	|(0,0)  |(1,0)	|
-	|		|		|
-	|		|		|
-	|		|		|
-	______________________ ......
-	
-	we make the addition on a block and we go to another block
-	i is the index of the global memory
-	j is the index of the shared memory
-	
-*/
-	
-/**
-	inspire froan scan pattern design 
-	http://developer.nvidia.com/object/cuda_training.html
-	class : Stanford university CS193G Parallel Patterns I, slide 40
-*/
-	for(int k =0 ; k < gridDim.x ; k++) //loop on the block
-	{
-		if(i < nsize) // To avoid the corruption of the memory card (overflow), remove is the size of the grid is perfect
-		{
-			s[j] = 0;
-			w[j] = 0;
-			t[j] = 0;
-		
-			s[j] = x[i] + y[i];
-		
-			__syncthreads(); // wait on read
-
-			// To do : optimize 
-			if(s[j] > BASE_MINUS2)
-				t[j+1] = 1;
-			if(s[j] < MINUS_BASE_PLUS2)
-				t[j+1] = -1;
-			if(s[j]<=BASE_MINUS2 && s[j]>= MINUS_BASE_PLUS2)
-				t[j+1] = 0;
-			
-			w[j] = s[j] - BASE*t[j+1];
-	
-			z[i] = w[j] + t[j];
-		
-			__syncthreads(); // wait on write
-			
-			i+=NUM_SHARED; // iterate to go to the next block
-		}
-	}
-}
-
-/**
-	num_integer is the number of integer to construct the very large integer
-	ld is the number of very large integer (size of vector)
-*/
-
 template < typename T>
 __device__ void copy_kernel_gpu(T* x, T const* y, int size)
 {
-   #pragma unroll
-   for(int i=0;i<size;i++)
+   for(int i=0;i<size;++i)
        *(x+i) = *(y+i);
 }
 
@@ -145,14 +38,17 @@ __device__ void addition_kernel_gpu(T* x, T const* y, int k)
 	*(x+k)    += *(y+k);
 	carry_bit  = *(x+k) >> LOG_BASE;
 	*(x+k)    %= BASE;
-	*(x+k+1)  += carry_bit; //MAYBE PB TO CHECK
+	*(x+k+1)  += carry_bit;
 }
 
 template <typename T>
 __device__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, int vli_size)
 {
-    for (int i = 0; i < vli_size; ++i) 
+    for (int i = 0; i < vli_size-1; ++i) 
         addition_kernel_gpu(x,y,i);
+    
+    *(x+vli_size-1) += *(y+vli_size-1);
+    *(x+vli_size-1) = *(x+vli_size-1)&(BASE+BASE_MINUS);
 }
     
 template <typename T>
@@ -206,10 +102,8 @@ __device__ void multiplication_kernel_down_gpu(const T*  x,  const T*   y, T * r
 template <typename T>
 __device__ void multiplication_kernel_base_reshaping_gpu(T*  a, const T*   b, T * r)	
 {	
-	int q1,q2;
-	int r1,r2;
-	q1 = q2 = r1 =r2 = 0;
-
+	T q1(0),q2(0);
+	T r1(0),r2(0);
 	q1 = (*(a+1) + *b)/BASE_HALF;
 	r1 = (*(a+1) + *b)%BASE_HALF;
 	r1 = r1 * BASE_HALF;
@@ -293,13 +187,12 @@ __device__ void polynome_polynome_multiplication(T const* p1, T const* p2, T* re
                 {
                     for(std::size_t he2 = 0; he2 < max_order - he1; ++he2)
                     {
-                        T inter[8] = {0,0,0,0,0,0,0,0}; // to do find better
+                        T inter[17] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // to do find better
                         offset0 = ((je1+je2)*max_order + he1+he2)*vli_size;
                         offset1 = (je1*max_order+he1)*vli_size;                    
                         offset2 = (je2*max_order+he2)*vli_size;
                         multiplication_classic_kernel_gpu(&p1[offset1],&p2[offset2],&inter[0],1,vli_size);
                         addition_classic_kernel_gpu(&res[offset0],&inter[0],1,vli_size);
-                        __syncthreads();
                     } 
                 }
             }      
@@ -319,36 +212,28 @@ __global__ void polynome_multication(T const* p1, T const* p2, T* res, int vli_s
 template <typename T>
 __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, int vli_size, int max_order, int size_vector)
 {
-    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-    const int tid = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
- 
-       int size_poly = vli_size*max_order*max_order;
+    unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+    unsigned int tid = threadIdx.x;
+    int size_poly = vli_size*max_order*max_order;
     int offset;
 
 	if(xIndex < size_vector) 
 	{   
         offset = xIndex*size_poly;
         //mutiplication
-        polynome_polynome_multiplication(&p1[offset],&p2[offset],&inter[offset],vli_size,max_order); // perfectly //
-        __syncthreads(); // to do check if need
-        //reduction from cuda pdf, to tune
-        for(int i= (size_vector/2);  i>0;i>>=1){
+        polynome_polynome_multiplication(&p1[offset],&p2[offset],&inter[offset],vli_size,max_order); 
+        
+        for(unsigned int i= ( blockDim.x/2);  i>0;i>>=1){
             if(tid < i){
                 addition_classic_kernel_gpu(&inter[offset],&inter[offset+i*size_poly],1,size_poly);
+                __syncthreads();
             }
-            /*
-            if(xIndex % (2*i) == 0){
-                addition_classic_kernel_gpu(&inter[offset],&inter[offset+i*size_poly],1,size_poly);
-            } 
-            */   
         }
-    
+        
+        if(xIndex == 0){       
+            copy_kernel_gpu(&res[0],&inter[0],size_poly);     //serial maximum 8 elements to copy
+        }
     }
-    //serial maximum 8 elements to copy
-    if(xIndex == 0){       
-        copy_kernel_gpu(&res[0],&inter[0],size_poly);
-    }
-    __syncthreads();
 
 }
  
@@ -360,7 +245,6 @@ __global__ void equality_gpu(T const* p1, T const* p2, int vli_size, int* t)
 	if(xIndex < 32){
         if( p1[xIndex] != p2[xIndex]){
             t[0] = 1;            
-            __syncthreads(); 
         }
     }
 }   
@@ -408,7 +292,7 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
 void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, int vli_size, int max_order, int vector_size)
 {
     dim3 dimgrid(1,1,1);
-    dim3 dimblock(vector_size,vector_size,vector_size);
+    dim3 dimblock(vector_size,1,1);
     inner_prod_vector  <<< dimgrid, dimblock >>>(A, B, C , D ,vli_size, max_order,vector_size); 
 }
 
@@ -446,3 +330,111 @@ void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_i
     dimgrid.y = 1;
 	dimgrid.z = 1;
 }*/
+
+/**
+ the size of each block is 16X16
+ */
+
+/**
+ Do not forget, change to the desired type inside the kernels because I use special memory
+ */
+
+/**
+ C = A + B
+ if this kernel we introduce new arithmetic
+ A. Avizienis. Signed-digit number representations for fast parallel arithmetic. IRE Transactions on electronic computers, vol 10, pages 389-400, 1961
+ No carry bit ^^'
+ num_integer = # of vli
+ ld = size of one vli
+ */
+/*
+ extern const int NUM_SHARED = 128; // must be equal to the size of a block
+ extern const int SIZE = 8; // must be equal to the size of a block
+ 
+ template <typename T>
+ __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, int ld)
+ {
+ */
+/**
+ sharred array for the local calculation t must be larger (+1) due to the algo
+ */
+/*
+ __shared__ TYPE t[NUM_SHARED+1]; 
+ __shared__ TYPE w[NUM_SHARED];
+ __shared__ TYPE s[NUM_SHARED];
+ 
+ int nsize = ld*num_integer; //remove if the size of the grid is exact 
+ */	
+/**
+ just to remember how to calculate the index of the grid
+ int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+ int yIndex = blockIdx.y*blockDim.y + threadIdx.y; // all index on y
+ int i = xIndex + yIndex* blockDim.x * gridDim.x ; // all index on xy 
+ */
+/*
+ int i = threadIdx.y + blockDim.y*threadIdx.x; // index on the block (0,0)
+ int j = i; // the copy for the local memory
+ */
+
+/**
+ addition block by block to have a better access W/R of the shared memory
+ We should have only one block on y; because y represents the size ot the vli
+ 
+ k ( on x direction)
+ --->
+ ______________________ ......
+ |blockId|blockId|
+ |(0,0)  |(1,0)	|
+ |		|		|
+ |		|		|
+ |		|		|
+ ______________________ ......
+ 
+ we make the addition on a block and we go to another block
+ i is the index of the global memory
+ j is the index of the shared memory
+ 
+ */
+
+/**
+ inspire froan scan pattern design 
+ http://developer.nvidia.com/object/cuda_training.html
+ class : Stanford university CS193G Parallel Patterns I, slide 40
+ */
+/*
+ for(int k =0 ; k < gridDim.x ; k++) //loop on the block
+ {
+ if(i < nsize) // To avoid the corruption of the memory card (overflow), remove is the size of the grid is perfect
+ {
+ s[j] = 0;
+ w[j] = 0;
+ t[j] = 0;
+ 
+ s[j] = x[i] + y[i];
+ 
+ __syncthreads(); // wait on read
+ 
+ // To do : optimize 
+ if(s[j] > BASE_MINUS2)
+ t[j+1] = 1;
+ if(s[j] < MINUS_BASE_PLUS2)
+ t[j+1] = -1;
+ if(s[j]<=BASE_MINUS2 && s[j]>= MINUS_BASE_PLUS2)
+ t[j+1] = 0;
+ 
+ w[j] = s[j] - BASE*t[j+1];
+ 
+ z[i] = w[j] + t[j];
+ 
+ __syncthreads(); // wait on write
+ 
+ i+=NUM_SHARED; // iterate to go to the next block
+ }
+ }
+ }
+ */
+/**
+ num_integer is the number of integer to construct the very large integer
+ ld is the number of very large integer (size of vector)
+ */
+
