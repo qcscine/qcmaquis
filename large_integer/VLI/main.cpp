@@ -14,6 +14,11 @@
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 
+#include "vli_cpu/converter.h"   
+
+#define SIZE 8
+#define TYPE long unsigned int 
+
 using vli::vli_cpu;
 using vli::vli_gpu;
 using vli::monomial;
@@ -21,9 +26,9 @@ using vli::polynomial_cpu;
 using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
+using vli::converter;
 
-#define SIZE 8
-#define TYPE long unsigned int 
+
 
 int main (int argc, char * const argv[]) 
 {
@@ -34,30 +39,50 @@ int main (int argc, char * const argv[])
     vli_cpu<TYPE,SIZE> a;
     vli_cpu<TYPE,SIZE> b;
     vli_cpu<TYPE,SIZE> c;
+    
 
     a[0]=100;
-    a[1]=2;
-    a[2]=2;
-
-    b[0]=1;
-    b[1]=46;
-    b[2]=234;
-    b[3]=0;
-    b[5]=0;
+    a[1]=0;
+    a[2]=12;
+    a[2]=1;
+    
+    b[0]=234;
+    b[1]=20;
+    b[2]=100;
+    b[3]=23;
+    b[5]=1;
     b[6]=0;
     b[7]=0;
 
+    std::cout<< " a "  <<a.get_string()<<std::endl;
+    std::cout<< " b "  <<b.get_string()<<std::endl;
+   
     c = b* a;
-    std::cout<< " VLI "  <<c.get_string()<<std::endl;
-   /*
+    
+    converter<TYPE,SIZE>convert_a(a);
+    converter<TYPE,SIZE>convert_b(b);
+    converter<TYPE,SIZE>convert_c(c);
+   
+   
+    
+//    std::cout<< " VLI "  <<c.get_string()<<std::endl;
+//    std::cout<< " VLI  base 10  "  <<c.BaseTen()<<std::endl;
+   
     mpz_t agmp, bgmp;                 	
 
-    mpz_init_set_str (agmp, a.get_char(), 10);
-    mpz_init_set_str (bgmp, b.get_char(), 10);
+    mpz_init_set_str (agmp, "65636", 10);
+    mpz_init_set_str (bgmp, " 1099904062698", 10);
     mpz_mul (bgmp, bgmp, agmp);	
 
+    std::cout << "    Dirty a    "<< convert_a ;
+    std::cout << "    Dirty b    "<< convert_b ;
+    std::cout << "    Dirty c    "<< convert_c ;
+
+
     gmp_printf ("%s is an mpz %Zd\n", "here", bgmp);
-*/
+
+
+
 	GPU->instance().destructor();
     return 0;
 

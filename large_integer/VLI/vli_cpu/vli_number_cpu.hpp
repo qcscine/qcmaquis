@@ -17,8 +17,10 @@
 #include <cmath>
 #include "boost/swap.hpp"
 #include "function_hooks/vli_number_cpu_function_hooks.hpp"
-
 #include <iostream>
+
+    
+
 
 namespace vli
 {
@@ -285,7 +287,7 @@ namespace vli
         vli.print(os);
         return os;
     }
-     
+  
 }
 
 #endif //VLI_NUMBER_CPU_HPP
