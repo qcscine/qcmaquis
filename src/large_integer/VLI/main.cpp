@@ -23,7 +23,7 @@ using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
 
 #define SIZE 8
-#define TYPE unsigned int 
+#define TYPE long unsigned int 
 
 int main (int argc, char * const argv[]) 
 {
@@ -36,30 +36,20 @@ int main (int argc, char * const argv[])
     vli_cpu<TYPE,SIZE> c;
 
     a[0]=100;
-    a[1]=100;
-    a[2]=1;
+    a[1]=2;
+    a[2]=2;
 
-    b[0]=123;
-    b[1]=245;
-    b[2]=1;
-    b[3]=1;
+    b[0]=1;
+    b[1]=46;
+    b[2]=234;
+    b[3]=0;
     b[5]=0;
     b[6]=0;
     b[7]=0;
 
-    TYPE A = a.BaseTen();
-    TYPE B = b.BaseTen();
-
-
-    std::cout<<A<<std::endl;
-    std::cout<<B<<std::endl;
-
     c = b* a;
-    std::cout<<c<<std::endl;
-
-    std::cout<<c.get_string()<<std::endl;
-   
-    
+    std::cout<< " VLI "  <<c.get_string()<<std::endl;
+   /*
     mpz_t agmp, bgmp;                 	
 
     mpz_init_set_str (agmp, a.get_char(), 10);
@@ -67,8 +57,7 @@ int main (int argc, char * const argv[])
     mpz_mul (bgmp, bgmp, agmp);	
 
     gmp_printf ("%s is an mpz %Zd\n", "here", bgmp);
-    
-
+*/
 	GPU->instance().destructor();
     return 0;
 
