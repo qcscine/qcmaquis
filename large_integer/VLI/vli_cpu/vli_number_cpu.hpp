@@ -125,6 +125,15 @@ namespace vli
         {
             return static_cast<bool>((data_[Size-1]>>LOG_BASE));
         }
+        
+        bool is_null() const
+        {
+            for(int i=0; i < Size - 1 ; ++i){
+                if(data_[i] != 0)
+                    return false;
+            }
+            return true;
+        }
 
         void print(std::ostream& os) const
         {
@@ -164,7 +173,7 @@ namespace vli
             std::string result;
             // Find correct order (=exponent in (10^exponent) )
             vli_cpu decimal(1);
-            size_type exponent = 0;
+            int exponent = 0;
             while(1)
             {
                 value-=decimal;
@@ -180,15 +189,21 @@ namespace vli
 
             // TODO check
             vli_cpu dec(1);
-            for(size_type e=0; e < exponent-1; ++e)
-                dec *= vli_cpu(10);
-
+            int i;
+            
+            if(exponent > 0){
+                for(size_type e=0; e < exponent-1; ++e)
+                    dec *= vli_cpu(10);
+                i = 1;
+            }else{
+                i = 0;
+            }
             // Find digit for 10^exponent
-            int i=1;
             while(1)
             {
                 // TODO int * vli
                 value-=vli_cpu(i)*dec;
+      
                 if(value.is_negative())
                 {
                     // TODO int * vli
@@ -202,14 +217,25 @@ namespace vli
                 value+=vli_cpu(i)*dec;
                 ++i;
             }
+            
             if(exponent <= 1)
             {
-                return boost::lexical_cast<std::string>(i);
+                 return boost::lexical_cast<std::string>(i);
             }
+            
             result += boost::lexical_cast<std::string>(i);
+
+            if(value.is_null()){// if multiple of 0
+                for(int e=0 ; e < exponent - e; ++i)
+                    result += boost::lexical_cast<std::string>(0);
+
+                return result;
+            }
+
             result += get_string_helper(value);
             return result;
         }
+        
 		long int BaseTen() // for debuging on small BASE
 		{
 			long int Res = 0;
