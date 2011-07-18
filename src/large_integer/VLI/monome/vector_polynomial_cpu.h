@@ -11,10 +11,7 @@
 #include <vector>
 #include "boost/swap.hpp"
 #include "monome/polynome_cpu.h"
-#include "monome/polynome_gpu.h"
 #include "vli_cpu/vli_number_cpu.hpp"
-#include "vli_gpu/vli_number_gpu.hpp"
-#include "function_hooks/vli_vector_polynomial_gpu_function_hooks.hpp"
 
 #include <ostream>
 

@@ -14,8 +14,6 @@
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 
-#include "vli_cpu/converter.h"   
-
 #define SIZE 8
 #define TYPE long unsigned int 
 
@@ -26,7 +24,6 @@ using vli::polynomial_cpu;
 using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
-using vli::converter;
 
 
 
@@ -59,13 +56,13 @@ int main (int argc, char * const argv[])
     mpz_t agmp, bgmp;                 	
 
 
-    mpz_init_set_str (agmp, a.get_char(), 10);
-    mpz_init_set_str (bgmp, b.get_char(), 10);
+    mpz_init_set_str (agmp, a.get_str().c_str(), 10);
+    mpz_init_set_str (bgmp, b.get_str().c_str(), 10);
     mpz_mul (bgmp, bgmp, agmp);	
 
-    std::cout << "    Dirty a    "<< a.get_string() << std::endl;
-    std::cout << "    Dirty b    "<< b.get_string() << std::endl; 
-    std::cout << "    Dirty c    "<< c.get_string() << std::endl;
+    std::cout << "    Dirty a    "<< a.get_str() << std::endl;
+    std::cout << "    Dirty b    "<< b.get_str() << std::endl; 
+    std::cout << "    Dirty c    "<< c.get_str() << std::endl;
 
 
     gmp_printf ("%s is an mpz %Zd\n", "here", bgmp);
