@@ -47,19 +47,7 @@ namespace vli
 		*(x+Size-1) += *(y+Size-1);
         *(x+Size-1) = *(x+Size-1)&(BASE+BASE_MINUS); //0x1FF;
 	}
-	
-    /**
-	 substraction classic version on array 
-	 */
-	template <class T, int Size>
-	void substraction_classic_cpu(T* x,  T const*  y)
-	{
-        std::size_t size = Size;
-        
-		for(size_type i = 0; i < size ; ++i)
-			substraction_kernel_cpu((x+i), (y+i));
-    }
-    
+	    
 	template <typename T>
 	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
 	{

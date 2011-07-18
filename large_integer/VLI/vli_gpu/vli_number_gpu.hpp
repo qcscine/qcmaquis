@@ -131,6 +131,14 @@ namespace vli
             return *this;
         }
 
+        vli_gpu& operator -= (vli_gpu const& vli)
+        {
+            using vli::minus_assign;
+            vli_gpu tmp(vli);
+            minus_assign(*this,tmp);
+            return *this;
+        }
+        
         bool operator == (vli_gpu const& vli) const
         {
             // TODO try on gpu, debug my kernel 

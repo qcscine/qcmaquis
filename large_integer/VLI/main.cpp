@@ -15,7 +15,7 @@
 #include "vli_gpu/vli_number_gpu.hpp"
 
 #define SIZE 8
-#define TYPE long unsigned int 
+#define TYPE unsigned int 
 
 using vli::vli_cpu;
 using vli::vli_gpu;
@@ -38,6 +38,8 @@ int main (int argc, char * const argv[])
     vli_cpu<TYPE,SIZE> c;
     
 
+
+
     a[0]=100;
     a[1]=99;
     a[2]=12;
@@ -51,13 +53,24 @@ int main (int argc, char * const argv[])
     b[6]=0;
     b[7]=0;
 
+    vli_gpu<TYPE,SIZE> agpu(a);
+    vli_gpu<TYPE,SIZE> bgpu(b);
+    vli_gpu<TYPE,SIZE> cgpu(c);
+    
+    c -= a;
+    cgpu -= agpu;
+    
+    
+    std::cout << c << std::endl;
+    std::cout << cgpu << std::endl;
+    
     c = b* a;
        
     mpz_t agmp, bgmp;                 	
 
 
-    mpz_init_set_str (agmp, a.get_str().c_str(), 10);
-    mpz_init_set_str (bgmp, b.get_str().c_str(), 10);
+    mpz_init_set_str (agmp, a.get_char(), 10);
+    mpz_init_set_str (bgmp, b.get_char(), 10);
     mpz_mul (bgmp, bgmp, agmp);	
 
     std::cout << "    Dirty a    "<< a.get_str() << std::endl;

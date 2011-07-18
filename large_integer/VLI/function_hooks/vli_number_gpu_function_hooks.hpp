@@ -19,6 +19,12 @@ void plus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli
     plus_assign_gpu( vli_a.p(), vli_b.p(), 1, Size);
 }
 
+template <class BaseInt, int Size>
+void minus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b )
+{
+    using detail::minus_assign_gpu;
+    minus_assign_gpu(vli_a.p(),vli_b.p(),Size);
+}
 
 template <class BaseInt, int Size>
 void multiplies_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b )

@@ -109,9 +109,9 @@ namespace vli
         
         void negate()
         {
-            for(size_type i=0; i < Size-1; ++i)
+           for(size_type i=0; i < Size-1; ++i)
                 data_[i] = (~data_[i])&BASE_MINUS;
-           data_[Size-1] = (~data_[Size-1])&(BASE+BASE_MINUS);//0x1FF;
+           data_[Size-1] = (~data_[Size-1])&(BASE+BASE_MINUS);
            (*this)+=vli_cpu(1);
         }
 
@@ -136,10 +136,16 @@ namespace vli
             os<<get_str();
         }
 
-        /**
-          * Returns a string with a base10 represenation of the VLI
-          */
+
+        
+        const char*  get_char() // for GMP
+        {
+            return this->get_str().c_str();
+        }
           
+        /**
+         * Returns a string with a base10 represenation of the VLI
+         */
         std::string get_str() const
         {
             vli_cpu tmp(*this);
