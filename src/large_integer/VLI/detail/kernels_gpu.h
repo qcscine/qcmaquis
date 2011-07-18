@@ -8,8 +8,9 @@ namespace detail {
 typedef unsigned int TYPE;
 
 void plus_assign_gpu(TYPE* A, TYPE const* B, int num_integers, int vli_size);
-//void addition_gpu(int* A, const int*  B, int num_integers, int vli_size);  
-
+    
+void minus_assign_gpu(TYPE* A, TYPE* B, int vli_size);
+    
 void entrywise_multiplies_assign_gpu(TYPE* A, TYPE const* B, int num_integers, int vli_size);
 
 void entrywise_multiplies_gpu(TYPE const* A, TYPE const*  B, TYPE* C, int num_integers, int vli_size);

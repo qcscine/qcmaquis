@@ -5,7 +5,7 @@ Just very basic C++ or C (template ok).
 */
 
 /**
-	The link between the DMRG code (CPU) and the DMRG code (GPU) is done inside the file  list_functions.h
+	The link between the DMRG code (CPU) and the DMRG code (GPU) is done inside the file  kernels_gpu.h
 	where the definition of function/wrapper are presented
 */
 
@@ -23,11 +23,25 @@ namespace detail {
 template < typename T>
 __device__ void copy_kernel_gpu(T* x, T const* y, int size)
 {
+   #pragma unroll
    for(int i=0;i<size;++i)
        *(x+i) = *(y+i);
+}    
+    
+template <typename T>
+__device__ void negate(T* x, int vli_size)
+{
+    T one[8] = {1,0,0,0,0,0,0,0}; //to do find something else
+    
+    #pragma unroll
+    for(size_type i=0; i < vli_size-1; ++i)
+        *(x+i) = (~*(x+i))&BASE_MINUS;
+
+    *(x+vli_size-1) = (~*(x+vli_size-1))&(BASE+BASE_MINUS);
+    
+    addition_classic_kernel_gpu(x, &one[0], vli_size);
 }
-
-
+    
 /**
 classical addition, the operation " addition " is serial but we sum all number together 
 */
@@ -42,8 +56,9 @@ __device__ void addition_kernel_gpu(T* x, T const* y, int k)
 }
 
 template <typename T>
-__device__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, int vli_size)
+__device__ void addition_classic_kernel_gpu(T* x, T const* y, int vli_size)
 {
+    #pragma unroll
     for (int i = 0; i < vli_size-1; ++i) 
         addition_kernel_gpu(x,y,i);
     
@@ -52,10 +67,20 @@ __device__ void addition_classic_kernel_gpu(T* x, T const* y, int num_integers, 
 }
     
 template <typename T>
-__global__ void single_addition(T* x,   T const* y , int num_integers, int vli_size)     
+__global__ void single_addition(T* x,   T const* y, int vli_size)     
 {
-    addition_classic_kernel_gpu(x, y, num_integers, vli_size);    
+    addition_classic_kernel_gpu(x, y, vli_size);    
 }    
+    
+
+template <typename T>
+__global__ void single_substraction(T* x,   T* y, int vli_size)     
+{
+    negate(y,vli_size);
+    addition_classic_kernel_gpu(x, y, vli_size);        
+}    
+
+    
 
 template <typename T>    
 __global__ void polynome_polynome_addition(T* x, T const* y,  int vli_size, int max_order ) 
@@ -66,7 +91,7 @@ __global__ void polynome_polynome_addition(T* x, T const* y,  int vli_size, int 
 	if(xIndex < 2) //useless, because we set the number of thread to one
 	{
         for(int i=0; i< max_order*max_order;++i){
-            addition_classic_kernel_gpu(&x[offset],&y[offset],1,vli_size);    //1 see line 148
+            addition_classic_kernel_gpu(&x[offset],&y[offset],vli_size);    //1 see line 148
             offset += vli_size;
         }
     }
@@ -116,7 +141,7 @@ __device__ void multiplication_kernel_base_reshaping_gpu(T*  a, const T*   b, T 
 template <typename T>
 __device__  void multiplication_block_gpu( const T*   x,   const  T*   y, T *r)	
 {
-	T a[2] = {0,0};
+    T a[2] = {0,0};
 	T b[2] = {0,0};
 	/**
 	 Divide and conquer algo (see my notes - for the euclidian division tips)
@@ -133,7 +158,7 @@ __device__  void multiplication_block_gpu( const T*   x,   const  T*   y, T *r)
 }	
 
 template <typename T>
-__device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z , int num_integers, int vli_size)// remove num_int maybe ?
+__device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z, int vli_size)// remove num_int maybe ?
 {
 	T r[2] = {0,0};	//for local block calculation
 	
@@ -153,7 +178,7 @@ __device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
 template <typename T>
 __global__ void single_multiplication(T const* x, T const* y , T* z , int num_integers, int vli_size)     
 {
-    multiplication_classic_kernel_gpu(x, y, z, num_integers, vli_size);    
+    multiplication_classic_kernel_gpu(x, y, z, vli_size);    
 }
     
 template <typename T>
@@ -168,7 +193,7 @@ __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, i
         for(std::size_t i = 0 ; i < max_order*max_order ; i++)
         {
             offset = i*vli_size;
-            multiplication_classic_kernel_gpu(&p[offset],&m[0],&res[offset],1,vli_size);
+            multiplication_classic_kernel_gpu(&p[offset],&m[0],&res[offset],vli_size);
         }
     }
 }
@@ -191,8 +216,8 @@ __device__ void polynome_polynome_multiplication(T const* p1, T const* p2, T* re
                         offset0 = ((je1+je2)*max_order + he1+he2)*vli_size;
                         offset1 = (je1*max_order+he1)*vli_size;                    
                         offset2 = (je2*max_order+he2)*vli_size;
-                        multiplication_classic_kernel_gpu(&p1[offset1],&p2[offset2],&inter[0],1,vli_size);
-                        addition_classic_kernel_gpu(&res[offset0],&inter[0],1,vli_size);
+                        multiplication_classic_kernel_gpu(&p1[offset1],&p2[offset2],&inter[0],vli_size);
+                        addition_classic_kernel_gpu(&res[offset0],&inter[0],vli_size);
                     } 
                 }
             }      
@@ -225,7 +250,7 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, in
         
         for(unsigned int i= ( blockDim.x/2);  i>0;i>>=1){
             if(tid < i){
-                addition_classic_kernel_gpu(&inter[offset],&inter[offset+i*size_poly],1,size_poly);
+                addition_classic_kernel_gpu(&inter[offset],&inter[offset+i*size_poly],size_poly);
                 __syncthreads();
             }
         }
@@ -234,16 +259,23 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, in
             copy_kernel_gpu(&res[0],&inter[0],size_poly);     //serial maximum 8 elements to copy
         }
     }
-
 }
      
 void plus_assign_gpu(TYPE*  A, TYPE const*  B, int num_integers, int vli_size)
 {
     dim3 dimgrid(1,1,1);
 	dim3 dimblock(1,1,1);
-	single_addition <<< dimgrid, dimblock >>>(A, B, num_integers, vli_size);
+	single_addition <<< dimgrid, dimblock >>>(A, B, vli_size);
 }
 
+void minus_assign_gpu(TYPE*  A, TYPE*  B, int vli_size)
+{
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    single_substraction <<< dimgrid, dimblock >>>(A, B, vli_size);
+}    
+    
+    
 void entrywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_integers, int vli_size)
 {
     dim3 dimgrid(1,1,1);
@@ -267,7 +299,7 @@ void poly_addition_gpu(TYPE* a, TYPE const* b, int vli_size, int max_order)
 {
     dim3 dimgrid(1,1,1);
     dim3 dimblock(1,1,1);
-    polynome_polynome_addition  <<< dimgrid, dimblock >>>(a, b , vli_size, max_order);
+    polynome_polynome_addition  <<< dimgrid, dimblock >>>(a, b, vli_size, max_order);
 }
     
 void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, int max_order)
@@ -283,6 +315,7 @@ void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, i
     dim3 dimblock(vector_size,1,1);
     inner_prod_vector  <<< dimgrid, dimblock >>>(A, B, C , D ,vli_size, max_order,vector_size); 
 }
+    
 
 } //namespace detail
 } //namespace vli
