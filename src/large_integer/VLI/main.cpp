@@ -33,8 +33,8 @@ using vli::converter;
 int main (int argc, char * const argv[]) 
 {
 
-	gpu::gpu_manager* GPU;
-	GPU->instance();
+    gpu::gpu_manager* GPU;
+    GPU->instance();
     
     vli_cpu<TYPE,SIZE> a;
     vli_cpu<TYPE,SIZE> b;
@@ -42,41 +42,30 @@ int main (int argc, char * const argv[])
     
 
     a[0]=100;
-    a[1]=0;
+    a[1]=99;
     a[2]=12;
-    a[2]=1;
+    a[2]=136;
     
     b[0]=234;
     b[1]=20;
     b[2]=100;
-    b[3]=23;
+    b[3]=233;
     b[5]=1;
     b[6]=0;
     b[7]=0;
 
-    std::cout<< " a "  <<a.get_string()<<std::endl;
-    std::cout<< " b "  <<b.get_string()<<std::endl;
-   
     c = b* a;
-    
-    converter<TYPE,SIZE>convert_a(a);
-    converter<TYPE,SIZE>convert_b(b);
-    converter<TYPE,SIZE>convert_c(c);
-   
-   
-    
-//    std::cout<< " VLI "  <<c.get_string()<<std::endl;
-//    std::cout<< " VLI  base 10  "  <<c.BaseTen()<<std::endl;
-   
+       
     mpz_t agmp, bgmp;                 	
 
-    mpz_init_set_str (agmp, "65636", 10);
-    mpz_init_set_str (bgmp, " 1099904062698", 10);
+
+    mpz_init_set_str (agmp, a.get_char(), 10);
+    mpz_init_set_str (bgmp, b.get_char(), 10);
     mpz_mul (bgmp, bgmp, agmp);	
 
-    std::cout << "    Dirty a    "<< convert_a ;
-    std::cout << "    Dirty b    "<< convert_b ;
-    std::cout << "    Dirty c    "<< convert_c ;
+    std::cout << "    Dirty a    "<< a.get_string() << std::endl;
+    std::cout << "    Dirty b    "<< b.get_string() << std::endl; 
+    std::cout << "    Dirty c    "<< c.get_string() << std::endl;
 
 
     gmp_printf ("%s is an mpz %Zd\n", "here", bgmp);

@@ -9,7 +9,7 @@
 #ifndef VLI_CONVERTER_H
 #define VLI_CONVERTER_H
 
-#include <string>
+#include "boost/lexical_cast.hpp"
 namespace vli
 { 
 
@@ -27,7 +27,7 @@ namespace vli
         delete data_; // think shared pointer for automatic desalocate
     }
   
-    std::string get_string() 
+    const std::string get_string() 
     {
         vli_cpu<BaseInt, Size> tmp(*data_);
         if(tmp.is_negative())
@@ -41,7 +41,7 @@ namespace vli
         }
     }
     
-    std::string  get_string_helper(vli_cpu<BaseInt, Size>& value) 
+    const std::string  get_string_helper(vli_cpu<BaseInt, Size>& value)
     {
           std::string result;
             // Find correct order (=exponent in (10^exponent) )
@@ -111,13 +111,13 @@ namespace vli
                 return result;
             }
 
-            exponent_old_=exponent;
+            exponent_old_= exponent;
             
             result += get_string_helper(value);
             return result;
     }
   
-    char* get_char() const
+    char const* get_char() 
     {
         return get_string().c_str();
     }
@@ -135,7 +135,7 @@ namespace vli
 };
 
     template<class BaseInt, int Size>
-    std::ostream & operator <<( std::ostream & os, converter<BaseInt, Size> & convert)
+    std::ostream& operator <<( std::ostream & os, converter<BaseInt, Size>  & convert) 
     {
         convert.print(os);
         return os;

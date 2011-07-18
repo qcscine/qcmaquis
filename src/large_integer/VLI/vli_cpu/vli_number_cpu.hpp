@@ -10,14 +10,15 @@
 
 #ifndef VLI_NUMBER_CPU_HPP
 #define VLI_NUMBER_CPU_HPP
-#include <boost/lexical_cast.hpp>
+#include "boost/swap.hpp"
+
 #include <ostream>
 #include <vector>
-#include <string>
+
 #include <cmath>
-#include "boost/swap.hpp"
+
 #include "function_hooks/vli_number_cpu_function_hooks.hpp"
-#include <iostream>
+#include "vli_cpu/converter.h"
 
     
 
@@ -54,12 +55,6 @@ namespace vli
             for(int i=0; i<Size; ++i)
                 data_[i] = r.data_[i]; // because copy constructor
         }
-        
-//        vli_cpu(BaseInt* p)
-//        {
-//            for(int i=0; i<Size; ++i)
-//                data_[i] = p->data_[i]; // because copy constructor
-//        }
         
         friend void swap(vli_cpu& a, vli_cpu& b)
         {
@@ -136,7 +131,7 @@ namespace vli
             }
             return true;
         }
-
+        
         void print(std::ostream& os) const
         {
             int i = Size;
@@ -149,95 +144,6 @@ namespace vli
 			}
 		}
 
-		char const* get_char() const
-        {
-            return get_string().c_str();
-        }
-        
-        
-        std::string get_string() const
-        {
-            vli_cpu tmp(*this);
-            if(tmp.is_negative())
-            {
-                tmp.negate();
-                return std::string("-")+get_string_helper(tmp);
-            }
-            else
-            {
-                return get_string_helper(tmp);
-            }
-        }
-
-        // TODO make private
-        std::string get_string_helper(vli_cpu& value) const
-        {
-            std::string result;
-            // Find correct order (=exponent in (10^exponent) )
-            vli_cpu decimal(1);
-            int exponent = 0;
-            while(1)
-            {
-                value-=decimal;
-                if(value.is_negative())
-                {
-                    value+=decimal;
-                    break;
-                }
-                value+=decimal;
-                decimal *= vli_cpu(10);
-                ++exponent;
-            }
-
-            // TODO check
-            vli_cpu dec(1);
-            int i;
-            
-            if(exponent > 0){
-                for(size_type e=0; e < exponent-1; ++e)
-                    dec *= vli_cpu(10);
-                i = 1;
-            }else{
-                i = 0;
-            }
-            // Find digit for 10^exponent
-            while(1)
-            {
-                // TODO int * vli
-                value-=vli_cpu(i)*dec;
-      
-                if(value.is_negative())
-                {
-                    // TODO int * vli
-                    value+=vli_cpu(i)*dec;
-                    --i;
-                    // Subtract the found leading order digit
-                    // TODO int * vli
-                    value-=vli_cpu(i)*dec;
-                    break;
-                }
-                value+=vli_cpu(i)*dec;
-                ++i;
-            }
-            
-            if(exponent <= 1)
-            {
-                 return boost::lexical_cast<std::string>(i);
-            }
-            
-            result += boost::lexical_cast<std::string>(i);
-
-            if(value.is_null()){// if multiple of 0
-                for(int e=0 ; e < exponent - e; ++i)
-                    result += boost::lexical_cast<std::string>(0);
-
-                return result;
-            }
-
-            result += get_string_helper(value);
-            return result;
-        }
-        
 		long int BaseTen() // for debuging on small BASE
 		{
 			long int Res = 0;
@@ -256,6 +162,18 @@ namespace vli
             }
             return Res;
 		}
+        
+        const std::string get_string(){
+            converter<BaseInt,Size> convert(*this);
+            return convert.get_string();
+        }
+        
+        char const* get_char(){
+            converter<BaseInt,Size> convert(*this);
+            return convert.get_char();
+        }
+        
+        
         
     private:
 		BaseInt data_[Size] __attribute__ ((aligned (16)));
