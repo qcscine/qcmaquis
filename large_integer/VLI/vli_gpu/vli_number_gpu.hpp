@@ -57,8 +57,8 @@ namespace vli
             }
             
         private:
-            size_type pos;
             BaseInt* data_;    
+            size_type pos;
         };
 
 
