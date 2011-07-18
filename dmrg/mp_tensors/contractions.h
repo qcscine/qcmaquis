@@ -715,7 +715,7 @@ struct contraction {
         using std::size_t;
         typedef typename SymmGroup::charge charge;
         
-        Index<SymmGroup> l_index = phys_i * left_i, r_index = phys_i * right_i;
+        Index<SymmGroup> l_index = phys_i * left_i, r_index = adjoin(phys_i) * right_i;
         common_subset(l_index, r_index);
         block_matrix<Matrix, SymmGroup> ret(l_index, r_index);
         
@@ -772,6 +772,13 @@ struct contraction {
                                             for (size_t rp = 0; rp < phys_i[rps].second; ++rp)
                                                 for (size_t ilp = 0; ilp < phys_i[ilps].second; ++ilp)
                                                     for (size_t irp = 0; irp < phys_i[irps].second; ++irp) {
+                                                        oblock(l_offset + lp*left_i[ls].second + ll,
+                                                               r_offset + rp*right_i[rs].second + rr);
+                                                        iblock(i_l_offset + ilp*left_i[ls].second + ll,
+                                                               i_r_offset + irp*right_i[rs].second + rr);
+                                                        op_block(i_op_offset + ilp*phys_i[irps].second + irp,
+                                                                 op_offset + lp*phys_i[rps].second + rp);
+                                                        
                                                         oblock(l_offset + lp*left_i[ls].second + ll,
                                                                r_offset + rp*right_i[rs].second + rr) += 
                                                         iblock(i_l_offset + ilp*left_i[ls].second + ll,
