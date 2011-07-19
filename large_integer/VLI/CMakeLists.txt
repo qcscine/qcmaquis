@@ -24,8 +24,8 @@ option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
 set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
-set (VLI_COMPILE_FLAGS_RELEASE "-frecord-gcc-switches -Wall -O3 -funroll-loops -march=native" CACHE STRING "Compiler flags for a regular compile.")
-set (VLI_COMPILE_FLAGS_DEBUG "-frecord-gcc-switches -Wall -g -O0" CACHE STRING "Compiler flags for a debug compile.")
+set (VLI_COMPILE_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native" CACHE STRING "Compiler flags for a regular compile.")
+set (VLI_COMPILE_FLAGS_DEBUG " -Wall -g -O0" CACHE STRING "Compiler flags for a debug compile.")
 
 
 ########################################################################

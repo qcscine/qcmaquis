@@ -40,25 +40,22 @@ int main (int argc, char * const argv[])
 
 
 
-    a[0]=100;
-    a[1]=99;
-    a[2]=12;
-    a[2]=136;
+    a[0]= 0x3FFFFFFF;
+    a[1]= 0x3FFFFFFF;
+    a[2]= 0x3FFFFFFF;
+    a[3]= 0x3FFFFFFF;
     
-    b[0]=234;
-    b[1]=20;
-    b[2]=100;
-    b[3]=233;
-    b[5]=1;
+    b[0]= 0x3FFFFFFF;
+    b[1]= 0x3FFFFFFF;
+    b[2]=0;
+    b[3]=0;
+    b[5]=0;
     b[6]=0;
     b[7]=0;
 
     vli_gpu<TYPE,SIZE> agpu(a);
     vli_gpu<TYPE,SIZE> bgpu(b);
     vli_gpu<TYPE,SIZE> cgpu(c);
-    
-    c -= a;
-    cgpu -= agpu;
     
     
     std::cout << c << std::endl;
@@ -67,7 +64,6 @@ int main (int argc, char * const argv[])
     c = b* a;
        
     mpz_t agmp, bgmp;                 	
-
 
     mpz_init_set_str (agmp, a.get_char(), 10);
     mpz_init_set_str (bgmp, b.get_char(), 10);

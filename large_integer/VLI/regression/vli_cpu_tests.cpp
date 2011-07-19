@@ -57,62 +57,8 @@ BOOST_AUTO_TEST_CASE( copy_constructor_and_assignment )
 
 BOOST_AUTO_TEST_CASE( plus_assign )
 {
-    //
-    // Assuming a base size of 8 bits = base256
-    //
-    vli_cpu<int,8> a;
-    a[0] = 174;
-    a[1] = 94;
-    a[2] = 64;
-    a[3] = 126;
-    a[4] = 243;
-    a[5] = 112;
-    a[6] = 93;
-    a[7] = 17;
-
-    vli_cpu<int,8> b;
-    b[0] = 239;
-    b[1] = 54;
-    b[2] = 71;
-    b[3] = 108;
-    b[4] = 155;
-    b[5] = 92;
-    b[6] = 192;
-    b[7] = 0;
-
-    vli_cpu<int,8> ab;
-    ab[0] = 157;
-    ab[1] = 149;
-    ab[2] = 135;
-    ab[3] = 234;
-    ab[4] = 142;
-    ab[5] = 205;
-    ab[6] = 29;
-    ab[7] = 18;
-   
-    b+=a;
-
-    vli_cpu<int,8> c;
-    c[0] = 255;
-    c[1] = 255;
-    c[2] = 255;
-    c[3] = 255;
-    c[4] = 255;
-    c[5] = 255;
-    c[6] = 255;
-    c[7] = 254;
-
-    vli_cpu<int,8> d(c);
-    d[7] = 0;
-
-    vli_cpu<int,8> cd(c);
-    cd[0] = 254;
-    cd[7] = 255;
-
-    d+=c;
-
-    BOOST_CHECK_EQUAL(b,ab);
-    BOOST_CHECK_EQUAL(d,cd);
+// make a new one
+//    BOOST_CHECK_EQUAL(d,cd);
 }
 
 BOOST_AUTO_TEST_CASE( plus )
