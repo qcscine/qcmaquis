@@ -26,6 +26,7 @@
 
 
 //BASE 2**30 unsigned it carry = parity bit 
+#define MAX_VALUE            0x3FFFFFFF
 #define LOG_BASE			 30   
 #define LOG_BASE_HALF		 15   
 #define BASE				 0x40000000 
