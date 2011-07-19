@@ -74,8 +74,8 @@ public:
     }    
 protected:
     double val, t0;
-    unsigned long long freq, nCounter;
     std::string name;
+    unsigned long long freq, nCounter;
 };
 
 
