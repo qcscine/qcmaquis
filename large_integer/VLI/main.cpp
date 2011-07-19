@@ -29,6 +29,7 @@ using vli::vector_polynomial_cpu;
 
 int main (int argc, char * const argv[]) 
 {
+    srand(87);
 
     gpu::gpu_manager* GPU;
     GPU->instance();
@@ -40,13 +41,14 @@ int main (int argc, char * const argv[])
 
 
 
-    a[0]= 0x3FFFFFFF;
-    a[1]= 0x3FFFFFFF;
-    a[2]= 0x3FFFFFFF;
-    a[3]= 0x3FFFFFFF;
+    a[0]= rand()%(0x3FFFFFFF);
+    a[1]= rand()%(0x3FFFFFFF);
+    a[2]= rand()%(0x3FFFFFFF);
+    a[3]= rand()%(0x3FFFFFFF);
     
-    b[0]= 0x3FFFFFFF;
-    b[1]= 0x3FFFFFFF;
+    
+    b[0]= rand()%(0x3FFFFFFF);
+    b[1]= rand()%(0x3FFFFFFF);
     b[2]=0;
     b[3]=0;
     b[5]=0;
@@ -69,6 +71,17 @@ int main (int argc, char * const argv[])
     mpz_init_set_str (bgmp, b.get_char(), 10);
     mpz_mul (bgmp, bgmp, agmp);	
 
+    char str[128];
+    
+    for(int i=0;i<128; i++)
+        str[i]=0;
+    
+    mpz_get_str(str,10,bgmp);
+    
+    std::string strname(str);
+    
+    std::cout << str << std::endl;
+    
     std::cout << "    Dirty a    "<< a.get_str() << std::endl;
     std::cout << "    Dirty b    "<< b.get_str() << std::endl; 
     std::cout << "    Dirty c    "<< c.get_str() << std::endl;
@@ -76,8 +89,11 @@ int main (int argc, char * const argv[])
 
     gmp_printf ("%s is an mpz %Zd\n", "here", bgmp);
 
-
-
+    if(strname == c.get_str())
+        std::cout << " ok " << std::endl;
+    else
+        std::cout << " not ok " << std::endl;
+    
 	GPU->instance().destructor();
     return 0;
 

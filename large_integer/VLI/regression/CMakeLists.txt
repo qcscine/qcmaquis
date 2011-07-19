@@ -10,7 +10,7 @@ add_definitions (-DBOOST_TEST_DYN_LINK -DCPU_FREQ=2.4e9)
 #
 
 add_executable (vli_cpu_tests vli_cpu_tests.cpp)
-target_link_libraries (vli_cpu_tests ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
+target_link_libraries (vli_cpu_tests ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgmp)
 
 add_executable (vli_gpu_tests vli_gpu_tests.cpp)
 target_link_libraries (vli_gpu_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
