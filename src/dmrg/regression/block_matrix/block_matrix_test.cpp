@@ -11,8 +11,9 @@ using namespace std;
 #include "dense_matrix/resizable_matrix_interface.hpp"
 #include "dense_matrix/matrix_algorithms.hpp"
 #include "dense_matrix/diagonal_matrix.h"
+#include "dense_matrix/dense_matrix_algorithms.h"
 typedef blas::dense_matrix<double> Matrix;
-typedef blas::associated_diagonal_matrix<Matrix>::type DiagMatrix;
+typedef blas::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
 
 #include "block_matrix/block_matrix.h"
 #include "block_matrix/block_matrix_algorithms.h"
@@ -44,7 +45,7 @@ int main()
         
         Matrix foo(10,10);
         block_matrix<Matrix, grp> test;
-        test.insert_block(boost::tuples::make_tuple(foo, 0, 0));
+        test.insert_block(foo, 0, 0);
         
         zout << test.description() << endl;
     }
@@ -53,20 +54,12 @@ int main()
     {
         typedef U1 grp;
         
-        std::vector<grp::charge> c;
-        c.push_back(-1); c.push_back(0); c.push_back(1);
+        Index<grp> rc;
+        rc.insert(std::make_pair(-1, 2));
+        rc.insert(std::make_pair( 0, 2));
+        rc.insert(std::make_pair(+1, 2));
         
-        std::vector<std::size_t> s(3, 2);
-        Index<grp> rows(c, s);
-        
-        c.clear();
-        c.push_back(1); c.push_back(0); c.push_back(-1);
-        s.clear();
-        s.push_back(2); s.push_back(3); s.push_back(4);
-        Index<grp> cols(c, s);
-        grp::get_map(cols.charges());
-        
-        block_matrix<Matrix, grp> m1(rows, cols), m2(cols, rows), m3;
+        block_matrix<Matrix, grp> m1(rc, rc), m2(rc, rc), m3;
         
         zout << m1.description() << endl << m2.description() << endl;
         zout << m1.description() << endl << m2.description() << endl;
@@ -74,7 +67,7 @@ int main()
         
         for (std::size_t k = 0; k < m3.n_blocks(); ++k)
             for (std::size_t l = 0; l < num_rows(m3[k]); ++l)
-                for (std::size_t r = 0; r < num_columns(m3[k]); ++r)
+                for (std::size_t r = 0; r < num_cols(m3[k]); ++r)
                     m3[k](l,r) = drand48();
         
         zout << m3 << endl;
