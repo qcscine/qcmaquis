@@ -3,19 +3,11 @@ cmake_minimum_required (VERSION 2.6)
 
 ########################################################################
 #
-# DEBUG mode
+# Project and version information
 #
 ########################################################################
-set(CMAKE_VERBOSE_MAKEFILE false)
 
 project (vli)
-
-########################################################################
-#
-# Version information
-#
-########################################################################
-
 set (VLI_VERSION_MAJOR 0)
 set (VLI_VERSION_MINOR 1)
 
@@ -26,13 +18,14 @@ set (VLI_VERSION_MINOR 1)
 # Options
 #
 ########################################################################
-set (BOOST_ROOT "${BOOST_ROOT}" CACHE PATH "Path to the Boost installation (or to the Boost source)")
+
+set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
+option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
 set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
-
-add_definitions(" -Wall -O0 -g ")
-#add_definitions(" -O3 ")
+set (VLI_COMPILE_FLAGS_RELEASE "-frecord-gcc-switches -Wall -O3 -funroll-loops -march=native" CACHE STRING "Compiler flags for a regular compile.")
+set (VLI_COMPILE_FLAGS_DEBUG "-frecord-gcc-switches -Wall -g -O0" CACHE STRING "Compiler flags for a debug compile.")
 
 
 ########################################################################
@@ -46,6 +39,7 @@ if (VLI_USE_GPU)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif (VLI_USE_GPU)
 
+set(BOOST_ROOT ${BOOST_DIR})
 find_package (Boost COMPONENTS unit_test_framework)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -104,4 +98,18 @@ if(VLI_TESTS)
     add_subdirectory (regression/)
 endif(VLI_TESTS)
 
+
+########################################################################
+#
+# Set internal variables according to the variables in section "options"
+#
+########################################################################
+mark_as_advanced(CMAKE_BUILD_TYPE)
+if(VLI_DEBUG_COMPILE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
+else(VLI_DEBUG_COMPILE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
+endif(VLI_DEBUG_COMPILE)
+set(CMAKE_CXX_FLAGS_RELEASE ${VLI_COMPILE_FLAGS_RELEASE} CACHE STRING "Compiler flags for Release compiles." FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILE_FLAGS_DEBUG} CACHE STRING "Compiler flags for Debug compiles." FORCE)
 
