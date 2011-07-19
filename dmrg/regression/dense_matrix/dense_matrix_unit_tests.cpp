@@ -82,18 +82,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 {
     dense_matrix<T> a;
     BOOST_CHECK_EQUAL(num_rows(a), 0 );
-    BOOST_CHECK_EQUAL(num_columns(a), 0 );
+    BOOST_CHECK_EQUAL(num_cols(a), 0 );
 
     dense_matrix<T> b(10,10);
     BOOST_CHECK_EQUAL(num_rows(b), 10 );
-    BOOST_CHECK_EQUAL(num_columns(b), 10 );
+    BOOST_CHECK_EQUAL(num_cols(b), 10 );
     for(unsigned int i=0; i<10; ++i)
         for(unsigned int j=0; j<10; ++j)
             BOOST_CHECK_EQUAL(b(i,j), T());
 
     dense_matrix<T> c(15,5,5);
     BOOST_CHECK_EQUAL(num_rows(c), 15 );
-    BOOST_CHECK_EQUAL(num_columns(c), 5 );
+    BOOST_CHECK_EQUAL(num_cols(c), 5 );
     for(unsigned int i=0; i<15; ++i)
         for(unsigned int j=0; j<5; ++j)
             BOOST_CHECK_EQUAL(c(i,j), T(5));
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( row_iterator_test, T, test_types )
         }
     }
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
             BOOST_CHECK_EQUAL(a(i,j),T(i+j));
 }
 
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( column_iterator_test, T, test_types )
 {
     dense_matrix<T> a(10,20);
     fill_matrix_with_numbers(a);
-    for(unsigned int j=0; j<num_columns(a); ++j)
+    for(unsigned int j=0; j<num_cols(a); ++j)
     {
         std::pair<typename dense_matrix<T>::column_element_iterator, typename dense_matrix<T>::column_element_iterator> range(column(a,j));
         unsigned int i=0;
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( column_iterator_test, T, test_types )
         }
     }
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
             BOOST_CHECK_EQUAL(a(i,j),T(i+j));
 }
 
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( element_iterator_test, T, test_types )
 
     T k = T(0);
     T sum = T(0);
-    for(unsigned int j=0; j<num_columns(a); ++j)
+    for(unsigned int j=0; j<num_cols(a); ++j)
         for(unsigned int i=0; i<num_rows(a); ++i)
         {
             b(i,j) = k;
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
     // Check primitive enlargement
     resize(a,10,5);
     BOOST_CHECK_EQUAL(num_rows(a),10);
-    BOOST_CHECK_EQUAL(num_columns(a),5);
+    BOOST_CHECK_EQUAL(num_cols(a),5);
     fill_matrix_with_numbers(a);
     dense_matrix<T> b(a);
 
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
     // Check whether enlargement keeps the values of the original matrix
     resize(a,size1,15,1);
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if( i >=10 || j >= 5)
                 BOOST_CHECK_EQUAL(a(i,j),T(1));
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
     // size1 > size1_
     resize(a,15,10);
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if( i >= 10 || j >= 5) BOOST_CHECK_EQUAL(a(i,j),T(0));
             else BOOST_CHECK_EQUAL(a(i,j), T(i+j));
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_rows_test, T, test_types)
     // Append a single row
     append_rows(a, std::make_pair(data_single.begin(), data_single.end()) );
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if( i != initsize)
                 BOOST_CHECK_EQUAL(a(i,j),b(i,j));
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_rows_test, T, test_types)
     // Append multiple rows
     append_rows(a, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if( i < initsize)
                 BOOST_CHECK_EQUAL(a(i,j),b(i,j));
@@ -382,7 +382,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_columns_test, T, test_types)
     // Append a single column
     append_columns(a, std::make_pair(data_single.begin(), data_single.end()) );
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if( j != initsize)
                 BOOST_CHECK_EQUAL(a(i,j),b(i,j));
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_columns_test, T, test_types)
     // Append multiple rows
     append_columns(a, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if( j < initsize)
                 BOOST_CHECK_EQUAL(a(i,j),b(i,j));
@@ -439,7 +439,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows_test, T, test_types)
     BOOST_CHECK_EQUAL(num_rows(a),initsize-7);
 
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if(i<5)
                 BOOST_CHECK_EQUAL(a(i,j),b(i+1,j));
@@ -468,10 +468,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_columns_test, T, test_types)
     remove_columns(a,5);
     remove_columns(a,11,4);
 
-    BOOST_CHECK_EQUAL(num_columns(a),initsize-7);
+    BOOST_CHECK_EQUAL(num_cols(a),initsize-7);
 
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             if(j<5)
                 BOOST_CHECK_EQUAL(a(i,j),b(i,j+1));
@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( insert_rows_test, T, test_types)
     insert_rows(a, 5, std::make_pair(data_single.begin(), data_single.end()) );
     insert_rows(a, 8, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             switch(i)
             {
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( insert_columns_test, T, test_types)
     insert_columns(a, 5, std::make_pair(data_single.begin(), data_single.end()) );
     insert_columns(a, 8, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
         {
             switch(j)
             {
@@ -581,12 +581,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_test, T, test_types)
     
     a += b;
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
             BOOST_CHECK_EQUAL( a(i,j), T((i+j)*2) );
 
     a += a;
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
             BOOST_CHECK_EQUAL( a(i,j), T((i+j)*4) );
 }
 
@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_test, T, test_types)
     fill_matrix_with_numbers(a);
     a *= T(2);
     for(unsigned int i=0; i<num_rows(a); ++i)
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
             BOOST_CHECK_EQUAL( a(i,j), T(i+j)*T(2) );
 }
 
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_test, T, test_types)
     dense_matrix<T> e(b);
     b*= 5;
     for(unsigned int i=0; i<num_rows(c); ++i)
-        for(unsigned int j=0; j<num_columns(c); ++j)
+        for(unsigned int j=0; j<num_cols(c); ++j)
         {
             typename dense_matrix<T>::value_type tmp (e(i,j));
             tmp *= 5;
@@ -693,7 +693,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_test, T, test_types)
     for(unsigned int i=0; i<num_rows(a); ++i)
     {
         T row_result(0);
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
             row_result += a(i,j)*v(j);
         BOOST_CHECK_EQUAL(result(i),row_result);
     }
@@ -718,7 +718,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_mixed_types_test, TPair, t
     for(unsigned int i=0; i<num_rows(a); ++i)
     {
         typename blas::MultiplyReturnType<typename TPair::first_type, std::vector<typename TPair::first_type>,typename TPair::second_type, std::vector<typename TPair::second_type> >::value_type row_result(0);
-        for(unsigned int j=0; j<num_columns(a); ++j)
+        for(unsigned int j=0; j<num_cols(a); ++j)
             row_result += a(i,j)*v(j);
         BOOST_CHECK_EQUAL(result(i),row_result);
     }
@@ -734,13 +734,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_matrix_multiply_test, T, test_types)
     dense_matrix<T> c = a * b;
 
     BOOST_CHECK_EQUAL(num_rows(c), num_rows(a));
-    BOOST_CHECK_EQUAL(num_columns(c), num_columns(b));
+    BOOST_CHECK_EQUAL(num_cols(c), num_cols(b));
 
     for(unsigned int i=0; i<num_rows(c); ++i)
-        for(unsigned int j=0; j<num_columns(c); ++j)
+        for(unsigned int j=0; j<num_cols(c); ++j)
         {
             T result(0);
-            for(unsigned int k=0; k< num_columns(a); ++k)
+            for(unsigned int k=0; k< num_cols(a); ++k)
                 result += a(i,k) * b(k,j);
             BOOST_CHECK_EQUAL(c(i,j),result);
         }
