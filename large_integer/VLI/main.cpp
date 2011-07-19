@@ -13,7 +13,7 @@
 #include "monome/monome.h"
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
-
+#include "utils/timings.h"
 #define SIZE 8
 #define TYPE unsigned int 
 
@@ -58,18 +58,31 @@ int main (int argc, char * const argv[])
     vli_gpu<TYPE,SIZE> agpu(a);
     vli_gpu<TYPE,SIZE> bgpu(b);
     vli_gpu<TYPE,SIZE> cgpu(c);
-    
-    
-    std::cout << c << std::endl;
-    std::cout << cgpu << std::endl;
-    
-    c = b* a;
-       
+
     mpz_t agmp, bgmp;                 	
 
     mpz_init_set_str (agmp, a.get_char(), 10);
     mpz_init_set_str (bgmp, b.get_char(), 10);
+
+    Timer Am("VLI *");
+    Am.begin();    
+       b*=a;
+    Am.end();   
+
+    Timer Ap("VLI +");
+    Ap.begin();    
+       b+=a;
+    Ap.end();   
+ 
+    Timer Bm("GMP *");
+    Bm.begin();    
     mpz_mul (bgmp, bgmp, agmp);	
+    Bm.end();
+
+    Timer Bp("GMP +");
+    Bp.begin();    
+    mpz_add (bgmp, bgmp, agmp);	
+    Bp.end();
 
     char str[128];
     
@@ -79,22 +92,11 @@ int main (int argc, char * const argv[])
     mpz_get_str(str,10,bgmp);
     
     std::string strname(str);
-    
-    std::cout << str << std::endl;
-    
-    std::cout << "    Dirty a    "<< a.get_str() << std::endl;
-    std::cout << "    Dirty b    "<< b.get_str() << std::endl; 
-    std::cout << "    Dirty c    "<< c.get_str() << std::endl;
+    std::cout << " TEST b=*a b+=a " << std::endl; 
+    if(strname==b.get_str()){printf("OK \n");}
+    else{printf("NO OK");}    
 
-
-    gmp_printf ("%s is an mpz %Zd\n", "here", bgmp);
-
-    if(strname == c.get_str())
-        std::cout << " ok " << std::endl;
-    else
-        std::cout << " not ok " << std::endl;
-    
-	GPU->instance().destructor();
+    GPU->instance().destructor();
     return 0;
 
 }
