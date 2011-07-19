@@ -78,6 +78,12 @@ namespace vli
 		 multiply,substraction, addition operators
 		 */
         
+        vli_cpu& operator += (vli_cpu const& vli)
+        {
+            using vli::plus_assign;
+            plus_assign(*this,vli);
+            return *this;
+        }
         vli_cpu& operator -= (vli_cpu const& vli)
         {
             using vli::plus_assign;
@@ -86,14 +92,7 @@ namespace vli
             plus_assign(*this,tmp);
             return *this;
         }
-        
-        vli_cpu& operator += (vli_cpu const& vli)
-        {
-            using vli::plus_assign;
-            plus_assign(*this,vli);
-            return *this;
-        }
-		
+
         vli_cpu& operator *= (vli_cpu const& vli)
         {
             using vli::multiplies_assign;
@@ -106,13 +105,23 @@ namespace vli
 			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
 			return (0 == n);
         }
+
+        bool operator < (vli_cpu const& vli) const
+        {
+            // TODO improve
+            vli_cpu tmp(*this);
+            if( (tmp-=vli).is_negative() )
+                return true;
+            else
+                return false;
+        }
         
         void negate()
         {
-           for(size_type i=0; i < Size-1; ++i)
+            for(size_type i=0; i < Size-1; ++i)
                 data_[i] = (~data_[i])&BASE_MINUS;
-           data_[Size-1] = (~data_[Size-1])&(BASE+BASE_MINUS);
-           (*this)+=vli_cpu(1);
+            data_[Size-1] = (~data_[Size-1])&(BASE+BASE_MINUS);
+            (*this)+=vli_cpu(1);
         }
 
         bool is_negative() const
@@ -199,8 +208,14 @@ namespace vli
             {
                 value_cpy=value; // reset
                 value_cpy-=decimal;
+                vli_cpu previous_decimal(decimal);
                 decimal *= vli_cpu(10);
                 ++exp;
+                if(decimal < previous_decimal) // Overflow! (we can handle it.)
+                {
+                    ++exp;
+                    break;
+                }
             }
             --exp;
             return exp;
@@ -221,11 +236,16 @@ namespace vli
             // Find the right digit for 10^ten_exp
             vli_cpu value_cpy(value);
             int digit=1;
-            while((!value_cpy.is_negative()) && digit<=10)
+            while((!value_cpy.is_negative()) && digit<=11)
             {
                 value_cpy = value; // reset
                 value_cpy-= vli_cpu(digit)*dec;
                 ++digit;
+                if(vli_cpu(digit)*dec < vli_cpu(digit-1)*dec) // Overflow (we can handle it.)
+                {
+                    ++digit;
+                    break;
+                }
             }
             digit-=2; // we got two to far
 
