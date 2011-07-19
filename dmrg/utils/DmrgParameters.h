@@ -186,9 +186,7 @@ public:
             add_option("alpha_main",value<double>()->default_value(1e-6),"");
             add_option("alpha_final",value<double>()->default_value(0),"");
             
-            add_option("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"");
-            add_option("arpack_tol",value<double>()->default_value(1e-8),"");
-            add_option("arpack_ncv",value<int>()->default_value(20),"");
+            add_option("eigensolver",value<std::string>()->default_value(std::string("IETL_JCD")),"");
             add_option("ietl_jcd_tol",value<double>()->default_value(1e-8),"");
             add_option("ietl_jcd_gmres",value<int>()->default_value(5),"");
             add_option("ietl_jcd_maxiter",value<int>()->default_value(100),"");

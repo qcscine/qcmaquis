@@ -17,9 +17,6 @@
 
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
-#ifdef HAVE_ARPACK
-#include "arpackpp_solver.h"
-#endif
 
 #include "utils/DmrgParameters.h"
 #include "utils/logger.h"
