@@ -200,22 +200,21 @@ namespace vli
             assert(!value.is_negative());
             
             vli_cpu value_cpy(value);
-            vli_cpu decimal(10);
+            vli_cpu decimal(1);
             size_type exp = 0;
 
             // Find correct order (10^exp) 
             while(!value_cpy.is_negative())
             {
                 value_cpy=value; // reset
-                value_cpy-=decimal;
                 vli_cpu previous_decimal(decimal);
                 decimal *= vli_cpu(10);
                 ++exp;
                 if(decimal < previous_decimal) // Overflow! (we can handle it.)
                 {
-                    ++exp;
                     break;
                 }
+                value_cpy-=decimal;
             }
             --exp;
             return exp;
@@ -235,19 +234,18 @@ namespace vli
 
             // Find the right digit for 10^ten_exp
             vli_cpu value_cpy(value);
-            int digit=1;
+            int digit=0;
             while((!value_cpy.is_negative()) && digit<=11)
             {
                 value_cpy = value; // reset
-                value_cpy-= vli_cpu(digit)*dec;
                 ++digit;
                 if(vli_cpu(digit)*dec < vli_cpu(digit-1)*dec) // Overflow (we can handle it.)
                 {
-                    ++digit;
                     break;
                 }
+                value_cpy-= vli_cpu(digit)*dec;
             }
-            digit-=2; // we got two to far
+            --digit; // we went to far
 
             assert(digit >=0);
             assert(digit < 10);
