@@ -98,15 +98,15 @@ void u1()
 //    left = contraction::overlap_right_step(mps, mps2, left);
 //    zout << left << endl;
     
-    MPOTensor<Matrix, U1> ident(physical, 1, 1);
+    MPOTensor<Matrix, U1> ident(1, 1);
     ident(0,0) = block_matrix<Matrix, U1>();
-    ident(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, -1));
-    ident(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));
+    ident(0,0).insert_block(Matrix(1, 1, 1), -1, -1);
+    ident(0,0).insert_block(Matrix(1, 1, 1), 1, 1);
     
-    MPOTensor<Matrix, U1> splus(physical, 1, 1);
+    MPOTensor<Matrix, U1> splus(1, 1);
     splus(0,0) = block_matrix<Matrix, U1>();
-    splus(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, -1));
-    splus(0,0).insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, 1));
+    splus(0,0).insert_block(Matrix(1, 1, 1), 1, -1);
+    splus(0,0).insert_block(Matrix(1, 1, 1), -1, 1);
     
     mps.normalize_left(SVD);
     mps2 = mps;
@@ -130,7 +130,7 @@ void u1()
 
 int main()
 {
-//    ng();
+    ng();
     u1();
 }
 
