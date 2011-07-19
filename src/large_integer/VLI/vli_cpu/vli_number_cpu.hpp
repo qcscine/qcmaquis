@@ -144,8 +144,6 @@ namespace vli
         {
             os<<get_str();
         }
-
-
         
         const char*  get_char() // for GMP
         {
@@ -289,7 +287,7 @@ namespace vli
     template<typename BaseInt, int Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
-        vli.print(os);
+        vli.print_raw(os);
         return os;
     }
   
