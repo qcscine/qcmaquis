@@ -159,7 +159,19 @@ namespace vli
         {
             os<<vli_cpu<BaseInt, Size>(*this);
         }
-	};
+
+        std::string get_str() const
+        {
+            return vli_cpu<BaseInt, Size>(*this).get_str();        
+        }
+        
+        const char* get_char()
+        {
+            return vli_cpu<BaseInt, Size>(*this).get_char();       
+        }
+        
+        
+    };
 	
 	/**
 	 multiply and addition operators, suite ...
@@ -171,7 +183,15 @@ namespace vli
         vli_a += vli_b;
         return vli_a;
     }
-	
+
+    template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator - (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
+    {
+        // TODO check whether direct implementation (without += ) is faster
+        vli_a -= vli_b;
+        return vli_a;
+    }
+
 	template <class BaseInt, int Size>
 	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {

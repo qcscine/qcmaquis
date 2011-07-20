@@ -11,6 +11,7 @@
 #include "monome/monome.h"
 #include "monome/polynome_gpu.h"
 #include "monome/polynome_cpu.h"
+#include "gmpxx.h"
 
 typedef unsigned int TYPE; 
 using vli::vli_cpu;
@@ -36,15 +37,15 @@ BOOST_AUTO_TEST_CASE( constructors_test_site_monome)
     
     for(int i=0; i <2; i++){     
         
-        pa(0,0)[i] = 255;        
-        pa(0,1)[i] = 255;
-        pa(1,0)[i] = 255;
-        pa(1,1)[i] = 255;
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         
-        pb(0,0)[i] = 255;
-        pb(0,1)[i] = 255;
-        pb(1,0)[i] = 255;
-        pb(1,1)[i] = 255;
+        pb(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         
         pagpu(0,0) = pa(0,0);        
         pagpu(0,1) = pa(0,1);
@@ -80,20 +81,20 @@ BOOST_AUTO_TEST_CASE( multiplication_polynomial)
     
     for(int i=0; i <2; i++){     
         
-        pa(0,0)[i] = 255;        
-        pa(0,1)[i] = 255;
-        pa(1,0)[i] = 255;
-        pa(1,1)[i] = 255;
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         
-        pb(0,0)[i] = 255;
-        pb(0,1)[i] = 255;
-        pb(1,0)[i] = 255;
-        pb(1,1)[i] = 255;
+        pb(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         
-        pagpu(0,0)[i] = 255;        
-        pagpu(0,1)[i] = 255;
-        pagpu(1,0)[i] = 255;
-        pagpu(1,1)[i] = 255;
+        pagpu(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
+        pagpu(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pagpu(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pagpu(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         
         pbgpu(0,0) = pb(0,0);
         pbgpu(0,1) = pb(0,1);
@@ -121,15 +122,15 @@ BOOST_AUTO_TEST_CASE( addition_polynomial)
     
     for(int i=0; i <2; i++){     
         
-        pa(0,0)[i] = 255;        
-        pa(0,1)[i] = 255;
-        pa(1,0)[i] = 255;
-        pa(1,1)[i] = 255;
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         
-        pb(0,0)[i] = 255;
-        pb(0,1)[i] = 255;
-        pb(1,0)[i] = 255;
-        pb(1,1)[i] = 255;
+        pb(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
     }
     
     vli::polynomial_gpu<vli_gpu<TYPE,8>,2> pagpu(pa);

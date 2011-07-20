@@ -24,6 +24,15 @@ namespace vli{
         detail::poly_addition_gpu(result.p(),p.p(),Size,Order);
     }
 
+    template <class BaseInt, int Size, int Order>
+    void poly_substraction(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
+                       polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p)
+    {
+        detail::poly_substraction_gpu(result.p(),p.p(),Size,Order);
+    }
+
+    
+
     template <class BaseInt, int Size, int Order, class monome> // monome can be a monome_gpu or a vli_gpu
     void poly_mono_multiply(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
                               polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1, 

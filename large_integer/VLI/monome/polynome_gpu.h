@@ -131,6 +131,16 @@ namespace vli
             return *this;
         }        
         
+        /**
+         * Minus assign with a polynomial_cpu
+         */
+        polynomial_gpu& operator -= (polynomial_gpu const& p)
+        {
+            poly_substraction(*(this), p);
+            return *this;
+        }
+        
+        
         /**  TO DO shame on me, think to integrate *= += into the kernel **/
         polynomial_gpu operator *= (Vli const& c)
         {

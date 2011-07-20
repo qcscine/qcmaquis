@@ -42,10 +42,10 @@ BOOST_AUTO_TEST_CASE(vector_inner_product)
     polynomial_cpu<vli_cpu<TYPE,8>, 2> pa;
     
     for(int i=0; i<2; i++){
-        pa(0,0)[i] = 22*i+22;
-        pa(0,1)[i] = 22*i+22;
-        pa(1,0)[i] = 22*i+22;
-        pa(1,1)[i] = 22*i+22;        
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
     }
  
     polynomial_gpu<vli_gpu<TYPE,8>, 2> pagpu(pa);

@@ -72,6 +72,17 @@ public:
         return *this;
     }
     
+    /**
+     * Minus assign with a polynomial_cpu
+     */
+    polynomial_cpu& operator -= (polynomial_cpu const& p)
+    {
+        for(int i=0; i<Order*Order;++i)
+            coeffs[i]-=p.coeffs[i];
+        
+        return *this;
+    }
+
     bool operator==(polynomial_cpu const& p) const
     {
         int n = memcmp((void*)&coeffs[0],(void*)&p.coeffs[0],Order*Order*Vli::size*sizeof(typename Vli::value_type));

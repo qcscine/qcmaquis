@@ -25,8 +25,6 @@ using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
 
-
-
 int main (int argc, char * const argv[]) 
 {
     srand(87);
@@ -38,14 +36,9 @@ int main (int argc, char * const argv[])
     vli_cpu<TYPE,SIZE> b;
     vli_cpu<TYPE,SIZE> c;
     
-
-
-
-    a[0]= rand()%(0x3FFFFFFF);
     a[1]= rand()%(0x3FFFFFFF);
     a[2]= rand()%(0x3FFFFFFF);
     a[3]= rand()%(0x3FFFFFFF);
-    
     
     b[0]= rand()%(0x3FFFFFFF);
     b[1]= rand()%(0x3FFFFFFF);
@@ -61,6 +54,7 @@ int main (int argc, char * const argv[])
 
     mpz_class agmp(a.get_str());
     mpz_class bgmp(b.get_str());
+    mpz_class cgmp;
 
     Timer Am("VLI *");
     Am.begin();    
@@ -91,5 +85,4 @@ int main (int argc, char * const argv[])
 
     GPU->instance().destructor();
     return 0;
-
 }

@@ -275,6 +275,13 @@ namespace vli
     }
     
     template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
+    {
+        vli_a -= vli_b;
+        return vli_a;
+    }
+    
+    template <class BaseInt, int Size>
     const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a *= vli_b;

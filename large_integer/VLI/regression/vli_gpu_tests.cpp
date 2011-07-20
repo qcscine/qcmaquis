@@ -7,6 +7,7 @@
 #include "gpu/GpuManager.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
+#include "gmpxx.h"
 
 
 #define TYPE unsigned int
@@ -23,7 +24,7 @@ BOOST_AUTO_TEST_CASE(gpu_manager)
     GPU->instance().destructor();
 }
 
-BOOST_AUTO_TEST_CASE( constructors_test )
+BOOST_AUTO_TEST_CASE(constructors_test)
 {
 	gpu::gpu_manager* GPU;
 	GPU->instance();
@@ -39,11 +40,15 @@ BOOST_AUTO_TEST_CASE(copy_construction)
 	gpu::gpu_manager* GPU;
 	GPU->instance();
 	
-	vli::vli_cpu<TYPE,8> A(255);
+    vli_cpu<TYPE,8> A;
 
-	A[1] = 255;
-	A[2] = 255;
-	A[3] = 255;
+    A[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
 	
     vli::vli_gpu<TYPE,8> B(A);
 	    
@@ -54,26 +59,29 @@ BOOST_AUTO_TEST_CASE(copy_construction)
 
 BOOST_AUTO_TEST_CASE(serial_addition)
 {
-/** this number is the result by hand */
-// TO DO change the test GMP
-/*
 	gpu::gpu_manager* GPU;
 	GPU->instance();
-	
-	vli::vli_cpu<TYPE,8> A(255);
-	vli::vli_cpu<TYPE,8> B(255);
+		
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
+    
+    A[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+        
+    B[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
 	vli::vli_cpu<TYPE,8> C(0);
-
-	A[1] = 255;
-	A[2] = 255;
-	A[3] = 255;
-	vli::vli_cpu<TYPE,8> Res;
-
-	Res[0] = 254;
-	Res[1] = 0;
-	Res[2] = 0;
-	Res[3] = 0;
-	Res[4] = 1;
 	
     vli::vli_gpu<TYPE,8> D(A);
 	vli::vli_gpu<TYPE,8> E(B);
@@ -82,105 +90,239 @@ BOOST_AUTO_TEST_CASE(serial_addition)
 	C = A+B;
 	F = D+E;
 	
+    mpz_class Agmp(A.get_str());
+    mpz_class Bgmp(B.get_str());
+    mpz_class Cgmp(C.get_str());
+    
+    Cgmp = Agmp+Bgmp;
+    
 	BOOST_CHECK_EQUAL(C,F);
-	BOOST_CHECK_EQUAL(C,Res);
-	BOOST_CHECK_EQUAL(Res,F);
+	BOOST_CHECK_EQUAL(C.get_str(),Cgmp.get_str());
+	BOOST_CHECK_EQUAL(F.get_str(),Cgmp.get_str());
 
 	GPU->instance().destructor();
-*/
 }
+
+BOOST_AUTO_TEST_CASE(serial_substraction)
+{
+	gpu::gpu_manager* GPU;
+	GPU->instance();
+    
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
+    
+    A[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
+    B[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
+	vli::vli_cpu<TYPE,8> C(0);
+	
+    vli::vli_gpu<TYPE,8> D(A);
+	vli::vli_gpu<TYPE,8> E(B);
+	vli::vli_gpu<TYPE,8> F(0);
+    
+	C = A-B;
+	F = D-E;
+	
+    mpz_class Agmp(A.get_str());
+    mpz_class Bgmp(B.get_str());
+    mpz_class Cgmp(C.get_str());
+    
+    Cgmp = Agmp-Bgmp;
+    
+	BOOST_CHECK_EQUAL(C,F);
+	BOOST_CHECK_EQUAL(C.get_str(),Cgmp.get_str());
+	BOOST_CHECK_EQUAL(F.get_str(),Cgmp.get_str());
+    
+	GPU->instance().destructor();
+}
+
+
+
 
 
 BOOST_AUTO_TEST_CASE(serial_multiplication)
 {
 	gpu::gpu_manager* GPU;
 	GPU->instance();
-	
-	vli::vli_cpu<TYPE,8> A(254);
-	vli::vli_cpu<TYPE,8> B(254);
+    
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
+    
+    A[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
+    B[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
 	vli::vli_cpu<TYPE,8> C(0);
 	
-	A[1] = 255;
-	A[2] = 255;
-//	A[3] = 255;
-	/** this number is the result by hand */
-/*
-	vli::vli_cpu<TYPE,8> Res;
-	
-	Res[0] = 4;
-	Res[1] = 254;
-	Res[2] = 255;
-	Res[3] = 253;
-*/	
     vli::vli_gpu<TYPE,8> D(A);
 	vli::vli_gpu<TYPE,8> E(B);
 	vli::vli_gpu<TYPE,8> F(0);
-	
+    
 	C = A*B;
 	F = D*E;
 	
+    mpz_class Agmp(A.get_str());
+    mpz_class Bgmp(B.get_str());
+    mpz_class Cgmp(C.get_str());
+    
+    Cgmp = Agmp*Bgmp;
+    
 	BOOST_CHECK_EQUAL(C,F);
-//	BOOST_CHECK_EQUAL(C,Res);
-//	BOOST_CHECK_EQUAL(Res,F); result not correct because by hand
-	
+	BOOST_CHECK_EQUAL(C.get_str(),Cgmp.get_str());
+	BOOST_CHECK_EQUAL(F.get_str(),Cgmp.get_str());
+    
 	GPU->instance().destructor();
 
 }
 
-BOOST_AUTO_TEST_CASE(baseten_addition)
+BOOST_AUTO_TEST_CASE(PlusAssign)
 {
-/* change by gmp
-	vli::vli_cpu<TYPE,8> A(254);
-	vli::vli_cpu<TYPE,8> B(254);
-	vli::vli_cpu<TYPE,8> C(0);
+    gpu::gpu_manager* GPU;
+	GPU->instance();
+    
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
+    
+    A[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
+    B[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
 	
-	A[1] = 255;
-	B[1] = 255;
-
-    std::size_t ATen = A.BaseTen();
-	std::size_t BTen = B.BaseTen();
-
+    vli::vli_gpu<TYPE,8> D(A);
+	vli::vli_gpu<TYPE,8> E(B);
+	
+	A+=B;
+	D+=E;
+	
+    mpz_class Agmp(A.get_str());
+    mpz_class Bgmp(B.get_str());
+       
+    Agmp+=Bgmp;
     
-	C=A+B;
-    A+=C;
-    B+=A;
-    C+=A;
+	BOOST_CHECK_EQUAL(A,D);
+	BOOST_CHECK_EQUAL(A.get_str(),Bgmp.get_str());
     
-	std::size_t CTenRes = 0;
-	CTenRes = ATen + BTen;
-    ATen+=CTenRes;
-    BTen+=ATen;
-    CTenRes+=ATen;
-    
-	std::size_t CTen = C.BaseTen();
-    
-
-	BOOST_CHECK_EQUAL(CTen,CTenRes);	
-*/
+	GPU->instance().destructor();
 }
 
-BOOST_AUTO_TEST_CASE(baseten_multiplication)
+BOOST_AUTO_TEST_CASE(MinusAssign)
 {
-// change by gmp
-/*	vli::vli_cpu<TYPE,8> A(254);
-	vli::vli_cpu<TYPE,8> B(254);
-	vli::vli_cpu<TYPE,8> C(0);
+    gpu::gpu_manager* GPU;
+	GPU->instance();
+    
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
+    
+    A[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
+    B[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
 	
-	A[1] = 20;
-	B[1] = 20;
-    
-    long int ATen = A.BaseTen();
-	long int BTen = B.BaseTen();
+    vli::vli_gpu<TYPE,8> D(A);
+	vli::vli_gpu<TYPE,8> E(B);
 	
-	C=A*B;
-    C*=A;
-            
-	long int CTenRes = 0;	
-	CTenRes = ATen * BTen;
-    CTenRes*=ATen;
+	A-=B;
+	D-=E;
+	
+    mpz_class Agmp(A.get_str());
+    mpz_class Bgmp(B.get_str());
     
-    long int CTen = C.BaseTen();
+    Agmp-=Bgmp;
     
-	BOOST_CHECK_EQUAL(CTen,CTenRes);
-*/
+	BOOST_CHECK_EQUAL(A,D);
+	BOOST_CHECK_EQUAL(A.get_str(),Bgmp.get_str());
+    
+	GPU->instance().destructor();
 }
+
+BOOST_AUTO_TEST_CASE(MultiplyAssign)
+{
+    gpu::gpu_manager* GPU;
+	GPU->instance();
+    
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
+    
+    A[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    A[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
+    B[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    B[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    
+	
+    vli::vli_gpu<TYPE,8> D(A);
+	vli::vli_gpu<TYPE,8> E(B);
+	
+	A*=B;
+	D*=E;
+	
+    mpz_class Agmp(A.get_str());
+    mpz_class Bgmp(B.get_str());
+    
+    Agmp*=Bgmp;
+    
+	BOOST_CHECK_EQUAL(A,D);
+	BOOST_CHECK_EQUAL(A.get_str(),Bgmp.get_str());
+    
+	GPU->instance().destructor();
+}
+

@@ -35,11 +35,11 @@ BOOST_AUTO_TEST_CASE(monome)
 	GPU->instance();
     
     vli_cpu<TYPE,8> a;
-    a[0] = 185;
-    a[1]  =254;
+    a[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[1]  =static_cast<TYPE>(drand48())%(MAX_VALUE);
     vli_cpu<TYPE,8> b(a);
-    a[0] = 255;
-    a[1] = 255;
+    a[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[1] = static_cast<TYPE>(drand48())%(MAX_VALUE);
 
     vli_gpu<TYPE,8> agpu(a);
     vli_gpu<TYPE,8> bgpu(b);
@@ -66,10 +66,10 @@ BOOST_AUTO_TEST_CASE(monome_polynome)
     //init vli cpu    
     vli_cpu<TYPE,8> a;
     vli_cpu<TYPE,8> b;
-    b[0] = 255;
-    b[1] = 255;
-    a[0] = 185;
-    a[1]  =254;
+    b[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+    b[1] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[1]  =static_cast<TYPE>(drand48())%(MAX_VALUE);
     //init vli gpu
     vli_cpu<TYPE,8> agpu(a);
     vli_cpu<TYPE,8> bgpu(b);
@@ -84,10 +84,10 @@ BOOST_AUTO_TEST_CASE(monome_polynome)
     polynomial_cpu<vli_cpu<TYPE,8>, 2> pb;
     
     for(int i=0; i<2; i++){
-        pa(0,0)[i] = 255;
-        pa(0,1)[i] = 255;
-        pa(1,0)[i] = 255;
-        pa(1,1)[i] = 255;        
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
     }
     //init polynome gpu
     polynomial_gpu<vli_gpu<TYPE,8>, 2> pagpu(pa);
@@ -131,10 +131,10 @@ BOOST_AUTO_TEST_CASE(monome_polynome_deux)
     //init vli cpu    
     vli_cpu<TYPE,8> a;
     vli_cpu<TYPE,8> b;
-    a[0] = 185;
-    a[1]  =254;
-    b[0] = 255;
-    b[1] = 255;
+    a[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[1]  =static_cast<TYPE>(drand48())%(MAX_VALUE);
+    b[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+    b[1] = static_cast<TYPE>(drand48())%(MAX_VALUE);
     //init vli gpu
     vli_gpu<TYPE,8> agpu(a);
     vli_gpu<TYPE,8> bgpu(b);
@@ -143,10 +143,10 @@ BOOST_AUTO_TEST_CASE(monome_polynome_deux)
     polynomial_cpu<vli_cpu<TYPE,8>, 2> pb;
     
     for(int i=0; i<2; i++){
-        pa(0,0)[i] = 255;
-        pa(0,1)[i] = 255;
-        pa(1,0)[i] = 255;
-        pa(1,1)[i] = 255;        
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
     }
     //init polynome gpu
     polynomial_gpu<vli_gpu<TYPE,8>, 2> pagpu(pa);
