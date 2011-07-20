@@ -118,31 +118,31 @@ namespace blas {
     }
 
     template <typename T, typename MemoryBlock>
-    inline const bool dense_matrix<T, MemoryBlock>::empty() const
+    inline bool dense_matrix<T, MemoryBlock>::empty() const
     {
         return (this->size1_ == 0 || this->size2_ == 0);
     }
 
     template <typename T, typename MemoryBlock>
-    inline const std::size_t dense_matrix<T, MemoryBlock>::num_rows() const
+    inline std::size_t dense_matrix<T, MemoryBlock>::num_rows() const
     {
         return this->size1_;
     }
 
     template <typename T, typename MemoryBlock>
-    inline const std::size_t dense_matrix<T, MemoryBlock>::num_cols() const
+    inline std::size_t dense_matrix<T, MemoryBlock>::num_cols() const
     {
         return this->size2_;
     }
 
     template <typename T, typename MemoryBlock>
-    inline const std::ptrdiff_t dense_matrix<T, MemoryBlock>::stride1() const
+    inline std::ptrdiff_t dense_matrix<T, MemoryBlock>::stride1() const
     {
         return 1;
     }
 
     template <typename T, typename MemoryBlock>
-    inline const std::ptrdiff_t dense_matrix<T, MemoryBlock>::stride2() const
+    inline std::ptrdiff_t dense_matrix<T, MemoryBlock>::stride2() const
     {
         return this->reserved_size1_;
     }

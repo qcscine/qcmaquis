@@ -129,27 +129,27 @@ namespace blas {
           * Checks if a matrix is empty
           * @return true if the matrix is a 0x0 matrix, false otherwise.
           */
-        inline const bool empty() const;
+        inline bool empty() const;
 
         /**
           * @return number of rows of the matrix
           */
-        inline const size_type num_rows() const;
+        inline size_type num_rows() const;
 
         /**
           * @return number of columns of the matrix
           */
-        inline const size_type num_cols() const;
+        inline size_type num_cols() const;
 
         /**
           * @return The stride for moving to the next element along a row
           */
-        inline const difference_type stride1() const;
+        inline difference_type stride1() const;
         
         /**
           * @return The stride for moving to the next element along a column
           */
-        inline const difference_type stride2() const;
+        inline difference_type stride2() const;
 
         /** Resize the matrix.
           * Resizes the matrix to size1 rows and size2 columns and initializes
