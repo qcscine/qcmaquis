@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( addition_gmp )
     
     mpz_init_set_str (agmp, a.get_char(), 10);
     mpz_init_set_str (bgmp, b.get_char(), 10);
-    mpz_init_set_str (bgmp, c.get_char(), 10);
+    mpz_init_set_str (cgmp, c.get_char(), 10);
 
     
     c = a+b;
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE( multi_gmp )
     
     mpz_init_set_str (agmp, a.get_char(), 10);
     mpz_init_set_str (bgmp, b.get_char(), 10);
-    mpz_init_set_str (bgmp, c.get_char(), 10);
+    mpz_init_set_str (cgmp, c.get_char(), 10);
     
     
     c = a*b;
