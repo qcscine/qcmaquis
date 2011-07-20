@@ -83,7 +83,7 @@ endif(VLI_USE_GPU)
 add_executable (vli main.cpp)
 
 if(VLI_USE_GPU)
-    target_link_libraries (vli kernels_gpu ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgmp)
+    target_link_libraries (vli kernels_gpu ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgmp -lgmpxx)
 endif(VLI_USE_GPU)
 
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdio>
 
-#include "gmp.h"
+#include "gmpxx.h"
 
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
@@ -59,10 +59,8 @@ int main (int argc, char * const argv[])
     vli_gpu<TYPE,SIZE> bgpu(b);
     vli_gpu<TYPE,SIZE> cgpu(c);
 
-    mpz_t agmp, bgmp;                 	
-
-    mpz_init_set_str (agmp, a.get_char(), 10);
-    mpz_init_set_str (bgmp, b.get_char(), 10);
+    mpz_class agmp(a.get_str());
+    mpz_class bgmp(b.get_str());
 
     Timer Am("VLI *");
     Am.begin();    
@@ -75,26 +73,21 @@ int main (int argc, char * const argv[])
     Ap.end();   
  
     Timer Bm("GMP *");
-    Bm.begin();    
-    mpz_mul (bgmp, bgmp, agmp);	
+    Bm.begin();
+        bgmp*=agmp; 
     Bm.end();
 
     Timer Bp("GMP +");
-    Bp.begin();    
-    mpz_add (bgmp, bgmp, agmp);	
+    Bp.begin();
+        bgmp+=agmp; 
     Bp.end();
 
-    char str[128];
-    
-    for(int i=0;i<128; i++)
-        str[i]=0;
-    
-    mpz_get_str(str,10,bgmp);
-    
-    std::string strname(str);
-    std::cout << " TEST b=*a b+=a " << std::endl; 
-    if(strname==b.get_str()){printf("OK \n");}
-    else{printf("NO OK");}    
+    std::cout << " TEST b=*a b+=a " << std::endl;
+    std::cout << b.get_str() <<std::endl; 
+    if(bgmp.get_str()==b.get_str())
+        std::cout<< "OK"  << std::endl;
+    else
+        std::cout<< "NOT OK!!" << std::endl;    
 
     GPU->instance().destructor();
     return 0;
