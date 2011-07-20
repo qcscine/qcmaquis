@@ -97,6 +97,23 @@ __global__ void polynome_polynome_addition(T* x, T const* y,  int vli_size, int 
     }
 }
     
+template <typename T>    
+__global__ void polynome_polynome_substraction(T* x, T const* y,  int vli_size, int max_order ) 
+{
+    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+    int offset(0);
+        
+    if(xIndex < 2) //useless, because we set the number of thread to one
+    {
+        for(int i=0; i< max_order*max_order;++i){
+            negate(&x[offset],vli_size);
+            addition_classic_kernel_gpu(&x[offset],&y[offset],vli_size);    //1 see line 148
+            offset += vli_size;
+        }
+    }
+}
+        
+    
 /**
 classical multiplication, the operation " addition " is serial but we sum all number together 
 */
@@ -301,6 +318,16 @@ void poly_addition_gpu(TYPE* a, TYPE const* b, int vli_size, int max_order)
     dim3 dimblock(1,1,1);
     polynome_polynome_addition  <<< dimgrid, dimblock >>>(a, b, vli_size, max_order);
 }
+
+void poly_substraction_gpu(TYPE* a, TYPE const* b, int vli_size, int max_order)
+{ 
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    polynome_polynome_substraction  <<< dimgrid, dimblock >>>(a, b, vli_size, max_order);
+}    
+    
+    
+    
     
 void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, int max_order)
 {

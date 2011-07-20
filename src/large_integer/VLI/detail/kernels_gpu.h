@@ -22,6 +22,8 @@ void inner_product_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, 
 void poly_multiply_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order);
 /** addition polynome **/
 void poly_addition_gpu(TYPE* A, TYPE const* B, int vli_size, int max_order);
+/** substraction polynome **/
+void poly_substraction_gpu(TYPE* A, TYPE const* B, int vli_size, int max_order);    
 /** multiplication polynome-monome **/
 void poly_mono_multiply_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order);
 /** inner product of vector of polynome **/

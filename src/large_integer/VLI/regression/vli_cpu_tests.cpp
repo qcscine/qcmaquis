@@ -124,8 +124,6 @@ BOOST_AUTO_TEST_CASE( addition_gmp )
     b[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
     b[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
     b[7]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-
-    
     
     vli_cpu<TYPE,SIZE> c;
 

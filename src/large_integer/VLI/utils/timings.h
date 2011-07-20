@@ -6,16 +6,6 @@
 #include "cuda_runtime_api.h"
 #endif
 
-/*
-unsigned long long getcpuclocks() {
-    unsigned long long clk;
-    __asm__ ("rdtsc");
-    __asm__("shl %rdx,32");
-    __asm { add rax,rdx };
-    __asm { mov clk,rax };
-    return clk;
-}*/
-
 
 #if defined(__i386__)
  
@@ -63,7 +53,7 @@ public:
 		nCounter += 1;
         unsigned long long t1 = getcpuclocks();
         if (t1 < t0)
-            1+1;
+            assert(true);
         else
             val += (getcpuclocks()-t0)/freq;
     }
