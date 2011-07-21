@@ -14,7 +14,9 @@
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
-#define SIZE 8
+#define SIZE_POLY 4
+#define SIZE_VECTOR 16
+
 #define TYPE unsigned int 
 
 using vli::vli_cpu;
@@ -27,62 +29,52 @@ using vli::vector_polynomial_cpu;
 
 int main (int argc, char * const argv[]) 
 {
-    srand(87);
-
-    gpu::gpu_manager* GPU;
-    GPU->instance();
+ 	gpu::gpu_manager* GPU;
+	GPU->instance();
     
-    vli_cpu<TYPE,SIZE> a;
-    vli_cpu<TYPE,SIZE> b;
-    vli_cpu<TYPE,SIZE> c;
+    polynomial_cpu<vli_cpu<TYPE,8>, SIZE_POLY> pa;
     
-    a[1]= rand()%(0x3FFFFFFF);
-    a[2]= rand()%(0x3FFFFFFF);
-    a[3]= rand()%(0x3FFFFFFF);
+    for(int i=0; i<3; i++){
+        for(int j = 0; j < SIZE_POLY; j++ ){
+            for(int k= 0; k< SIZE_POLY; k++){
+                pa(j,k)[i]= MAX_VALUE-1;                
+            }
+        }
+    }
     
-    b[0]= rand()%(0x3FFFFFFF);
-    b[1]= rand()%(0x3FFFFFFF);
-    b[2]=0;
-    b[3]=0;
-    b[5]=0;
-    b[6]=0;
-    b[7]=0;
-
-    vli_gpu<TYPE,SIZE> agpu(a);
-    vli_gpu<TYPE,SIZE> bgpu(b);
-    vli_gpu<TYPE,SIZE> cgpu(c);
-
-    mpz_class agmp(a.get_str());
-    mpz_class bgmp(b.get_str());
-    mpz_class cgmp;
-
-    Timer Am("VLI *");
-    Am.begin();    
-       b*=a;
-    Am.end();   
-
-    Timer Ap("VLI +");
-    Ap.begin();    
-       b+=a;
-    Ap.end();   
+    polynomial_gpu<vli_gpu<TYPE,8>, SIZE_POLY> pagpu(pa);
+    
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VaGPU(SIZE_VECTOR);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VbGPU(SIZE_VECTOR);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VcGPU;
+    
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VaCPU(SIZE_VECTOR);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VbCPU(SIZE_VECTOR);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VcCPU;
+    
+    for(int i=0;i < SIZE_VECTOR;i++){
+        VaCPU[i]=pa;
+        VbCPU[i]=pa;
+        
+        VaGPU[i]=pa;
+        VbGPU[i]=pa;
+    }
+    
+    Timer A("CPU");
+    A.begin();
+    VcCPU =  inner_product(VaCPU,VbCPU);
+    A.end();
+    
+    TimerCuda B("GPU");
+    B.begin();
+    VcGPU =  inner_product(VaGPU,VbGPU);
+    B.end();
+    
+  //  std::cout << VcCPU << std::endl;
+  //  std::cout << VcGPU << std::endl;
  
-    Timer Bm("GMP *");
-    Bm.begin();
-        bgmp*=agmp; 
-    Bm.end();
-
-    Timer Bp("GMP +");
-    Bp.begin();
-        bgmp+=agmp; 
-    Bp.end();
-
-    std::cout << " TEST b=*a b+=a " << std::endl;
-    std::cout << b.get_str() <<std::endl; 
-    if(bgmp.get_str()==b.get_str())
-        std::cout<< "OK"  << std::endl;
-    else
-        std::cout<< "NOT OK!!" << std::endl;    
-
+    if(VcGPU == VcCPU){ printf("ok \n");}else{printf("no ok \n");}
+    
     GPU->instance().destructor();
     return 0;
 }

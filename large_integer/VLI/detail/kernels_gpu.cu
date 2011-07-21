@@ -191,7 +191,6 @@ __device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
     }
 }
     
-    
 template <typename T>
 __global__ void single_multiplication(T const* x, T const* y , T* z , int num_integers, int vli_size)     
 {
@@ -243,13 +242,11 @@ __device__ void polynome_polynome_multiplication(T const* p1, T const* p2, T* re
     
 } 
 
-
 template <typename T>
 __global__ void polynome_multication(T const* p1, T const* p2, T* res, int vli_size, int max_order)
 {
     polynome_polynome_multiplication(p1,p2,res,vli_size,max_order);
 }
-    
     
 template <typename T>
 __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, int vli_size, int max_order, int size_vector)
@@ -326,9 +323,6 @@ void poly_substraction_gpu(TYPE* a, TYPE const* b, int vli_size, int max_order)
     polynome_polynome_substraction  <<< dimgrid, dimblock >>>(a, b, vli_size, max_order);
 }    
     
-    
-    
-    
 void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, int max_order)
 {
     dim3 dimgrid(1,1,1);
@@ -338,12 +332,26 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
  
 void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, int vli_size, int max_order, int vector_size)
 {
-    dim3 dimgrid(1,1,1);
-    dim3 dimblock(vector_size,1,1);
-    inner_prod_vector  <<< dimgrid, dimblock >>>(A, B, C , D ,vli_size, max_order,vector_size); 
+    int threadsPerBlock = 8;
+    int blocksPerGrid = (vector_size+threadsPerBlock-1)/threadsPerBlock;
+    inner_prod_vector  <<< blocksPerGrid, threadsPerBlock >>>(A, B, C , D ,vli_size, max_order,vector_size); 
 }
+    /*
+void param(int vector_size)
+{
+    dimthread.x = NUM;
+    dimthread.x = 1;
+	dimthread.z = 1;
     
-
+    dimblock.x = NUM;
+	dimblock.y = 1;
+	dimblock.z = 1;
+    
+    dimgrid.x = (int(vector_size) + dimblock.x - 1)/ dimblock.x;
+    dimgrid.y = 1;
+	dimgrid.z = 1;
+}*/
+    
 } //namespace detail
 } //namespace vli
 
