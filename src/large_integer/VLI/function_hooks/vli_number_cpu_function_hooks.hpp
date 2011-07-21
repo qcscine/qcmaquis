@@ -16,7 +16,14 @@ namespace vli {
     {
         addition_classic_cpu<BaseInt, Size>(&vli_a[0],&vli_b[0]);
     }
-        
+     
+    template <class BaseInt, int Size>
+    void plus_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const& b )
+    {  
+        assert(b < MAX_VALUE);
+        addition_classic_cpu<BaseInt, Size>(&vli_a[0],&b);
+    }
+    
     template <class BaseInt, int Size>
     void multiplies_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
     {

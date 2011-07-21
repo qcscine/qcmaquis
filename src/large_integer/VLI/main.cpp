@@ -14,8 +14,8 @@
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
-#define SIZE_POLY 10
-#define SIZE_VECTOR 32
+#define SIZE_POLY 20
+#define SIZE_VECTOR 16
 
 #define TYPE unsigned int 
 
@@ -29,79 +29,57 @@ using vli::vector_polynomial_cpu;
 
 int main (int argc, char * const argv[]) 
 {
- 	gpu::gpu_manager* GPU;
+	gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    polynomial_cpu<vli_cpu<TYPE,8>, SIZE_POLY> pa;
-/*
-    polynomial_cpu<vli_cpu<TYPE,8>, SIZE_POLY> pb;
-    polynomial_cpu<vli_cpu<TYPE,8>, SIZE_POLY> pc;
-  */  
-    for(int i=0; i<3; i++){
-        for(int j = 0; j < SIZE_POLY; j++ ){
-            for(int k= 0; k< SIZE_POLY; k++){
-                pa(j,k)[i]= MAX_VALUE-1;                
-    //            pb(j,k)[i]= MAX_VALUE-2;                
-            }
-        }
-    }
-    /*
-    polynomial_gpu<vli_gpu<TYPE,8>, SIZE_POLY> pagpu(pa);
-    polynomial_gpu<vli_gpu<TYPE,8>, SIZE_POLY> pbgpu(pb);
-    polynomial_gpu<vli_gpu<TYPE,8>, SIZE_POLY> pcgpu(pa);
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
+    
+    A[0]= 823764;
+    A[1]= 823764;
+    A[2]= 823764;
+    A[3]= 823764;
+    A[4]= 823764;
+    A[5]= 823764;
+    A[6]= 823764;
 
-    Timer A("CPU");
-    A.begin();
-    pc = pa*pb;
-    A.end();
     
-    TimerCuda B("GPU");
-    B.begin();
-    pcgpu = pagpu*pbgpu;
-    B.end();
+    B[0]= 823764;
+    B[1]= 823764;
+    B[2]= 823764;
+    B[3]= 823764;
+    B[4]= 823764;
+    B[5]= 823764;
+    B[6]= 823764; 
+    
+	vli::vli_cpu<TYPE,8> C(0);
+	
+    vli::vli_gpu<TYPE,8> D(A);
+	vli::vli_gpu<TYPE,8> E(B);
+	vli::vli_gpu<TYPE,8> F(0);
 
+    
+    mpz_class Agmp(A.get_str());
+    mpz_class Bgmp(B.get_str());
+    mpz_class Cgmp(C.get_str());
 
-    if(pc == pcgpu){ printf("ok \n");}else{printf("no ok \n");
-    std::cout << pc << std::endl;
-    std::cout << pcgpu << std::endl;
-    }
-*/
+    Timer TimerA("VLI");
+    TimerA.begin();
+    for(int i= 0 ; i< 10000 ;i++)
+     	A+=B;
+	TimerA.end();    
+
+    Timer TimerB("GMP");
+    TimerB.begin();
+    for(int i= 0 ; i< 10000 ;i++)
+        Agmp+=Bgmp;
+    TimerB.end(); 
     
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VaGPU(SIZE_VECTOR);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VbGPU(SIZE_VECTOR);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VcGPU(1);
+    std::cout << Agmp << std::endl;
+    std::cout << A << std::endl;
+
+	GPU->instance().destructor();
     
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VaCPU(SIZE_VECTOR);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VbCPU(SIZE_VECTOR);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VcCPU(1);
-    
-    for(int i=0;i < SIZE_VECTOR;i++){
-        VaCPU[i]=pa;
-        VbCPU[i]=pa;
-        
-        VaGPU[i]=pa;
-        VbGPU[i]=pa;
-    }
-    
-    Timer A("CPU");
-    A.begin();
-    VcCPU =  inner_product(VaCPU,VbCPU);
-    A.end();
-    
-    TimerCuda B("GPU");
-    B.begin();
-    VcGPU =  inner_product(VaGPU,VbGPU);
-    B.end();
-    
- 
-    if(VcGPU == VcCPU){ 
-        printf("ok \n");
-    }else{
-        std::cout << VcCPU << std::endl;
-        std::cout << VcGPU << std::endl;
-        printf("no ok \n");
-    }
-  
-    GPU->instance().destructor();
+
     return 0;
 }

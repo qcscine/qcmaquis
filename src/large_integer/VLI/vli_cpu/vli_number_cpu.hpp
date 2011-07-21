@@ -78,12 +78,22 @@ namespace vli
 		 multiply,substraction, addition operators
 		 */
         
+        
         vli_cpu& operator += (vli_cpu const& vli)
         {
             using vli::plus_assign;
             plus_assign(*this,vli);
             return *this;
         }
+        
+        vli_cpu& operator += (BaseInt const& a)
+        {
+            using vli::plus_assign;
+            vli_cpu a_vli(a);
+            plus_assign(*this,a_vli);
+            return *this;
+        }
+        
         vli_cpu& operator -= (vli_cpu const& vli)
         {
             using vli::plus_assign;
@@ -93,13 +103,30 @@ namespace vli
             return *this;
         }
 
+        vli_cpu& operator -= (BaseInt const& a)
+        {
+            using vli::plus_assign;
+            vli_cpu tmp(a);
+            tmp.negate();
+            plus_assign(*this,tmp);
+            return *this;
+        }
+        
         vli_cpu& operator *= (vli_cpu const& vli)
         {
             using vli::multiplies_assign;
             multiplies_assign(*this,vli);
             return *this;
         }
-		
+
+        vli_cpu& operator *= (BaseInt const& a)
+        {
+            using vli::multiplies_assign;
+            vli_cpu vli_a(a); 
+            multiplies_assign(*this,vli_a);
+            return *this;
+        }
+
         bool operator == (vli_cpu const& vli) const
         {
 			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
