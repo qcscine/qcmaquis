@@ -26,6 +26,7 @@
 
 
 //BASE 2**30 unsigned + one carry = parity bit 
+/*
 #define MAX_VALUE            0x3FFFFFFF
 #define LOG_BASE			 30   
 #define LOG_BASE_HALF		 15   
@@ -34,9 +35,17 @@
 #define BASE_MINUS			 0x3FFFFFFF
 #define MASK_DOWN			 0x7FFF
 #define MASK_UP				 0x3FFF8000
-#define PARITYBITINT         0xFFFF  // TO calculate the parity bit with int  
-#define PARITYBITLONGINT     0xFFFF  // TO calculate the parity bit with int  
+*/
 
+//BASE 2**62 unsigned + one carry = parity bit 
+#define MAX_VALUE            0x3FFFFFFFFFFFFFFF
+#define LOG_BASE			 62   
+#define LOG_BASE_HALF		 31   
+#define BASE				 0x4000000000000000
+#define BASE_HALF			 0x8000000000000000
+#define BASE_MINUS			 0x3FFFFFFFFFFFFFFF
+#define MASK_DOWN			 0x7FFFFFFF
+#define MASK_UP				 0x3FFFFFFF80000000
 
 
 //#define BASE_MINUS2			 0x7FFFFFFD

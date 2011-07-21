@@ -17,7 +17,7 @@
 #define SIZE_POLY 20
 #define SIZE_VECTOR 16
 
-#define TYPE unsigned int 
+#define TYPE unsigned long int 
 
 using vli::vli_cpu;
 using vli::vli_gpu;
@@ -32,37 +32,33 @@ int main (int argc, char * const argv[])
 	gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    vli_cpu<TYPE,8> A;
-    vli_cpu<TYPE,8> B;
+    vli_cpu<TYPE,4> A;
+    vli_cpu<TYPE,4> B;
     
-    A[0]= 10;
+    A[0]= 1000000000000000000;
       
-    B[0]= 10;
+    B[0]= 1000000000000000000;
     
-	vli::vli_cpu<TYPE,8> C(0);
-	
-    vli::vli_gpu<TYPE,8> D(A);
-	vli::vli_gpu<TYPE,8> E(B);
-	vli::vli_gpu<TYPE,8> F(0);
-
-    
+    for(int i= 0 ; i< 100000 ;i++)
+     	A+=B;
+/*    
     mpz_class Agmp(A.get_str());
     mpz_class Bgmp(B.get_str());
     mpz_class Cgmp(C.get_str());
 
     Timer TimerA("VLI");
     TimerA.begin();
-    for(int i= 0 ; i< 10 ;i++)
-     	A*=B;
-	TimerA.end();    
+    for(int i= 0 ; i< 100000 ;i++)
+     	A+=B;
+    TimerA.end();    
 
     Timer TimerB("GMP");
     TimerB.begin();
-    for(int i= 0 ; i< 10 ;i++)
-        Agmp*=Bgmp;
+    for(int i= 0 ; i< 100000  ;i++)
+        Agmp+=Bgmp;
     TimerB.end(); 
-    
-    std::cout << Agmp << std::endl;
+  */  
+ //   std::cout << Agmp << std::endl;
     std::cout << A << std::endl;
 
 	GPU->instance().destructor();
