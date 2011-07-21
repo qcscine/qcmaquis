@@ -35,22 +35,9 @@ int main (int argc, char * const argv[])
     vli_cpu<TYPE,8> A;
     vli_cpu<TYPE,8> B;
     
-    A[0]= 823764;
-    A[1]= 823764;
-    A[2]= 823764;
-    A[3]= 823764;
-    A[4]= 823764;
-    A[5]= 823764;
-    A[6]= 823764;
-
-    
-    B[0]= 823764;
-    B[1]= 823764;
-    B[2]= 823764;
-    B[3]= 823764;
-    B[4]= 823764;
-    B[5]= 823764;
-    B[6]= 823764; 
+    A[0]= 10;
+      
+    B[0]= 10;
     
 	vli::vli_cpu<TYPE,8> C(0);
 	
@@ -65,14 +52,14 @@ int main (int argc, char * const argv[])
 
     Timer TimerA("VLI");
     TimerA.begin();
-    for(int i= 0 ; i< 10000 ;i++)
-     	A+=B;
+    for(int i= 0 ; i< 10 ;i++)
+     	A*=B;
 	TimerA.end();    
 
     Timer TimerB("GMP");
     TimerB.begin();
-    for(int i= 0 ; i< 10000 ;i++)
-        Agmp+=Bgmp;
+    for(int i= 0 ; i< 10 ;i++)
+        Agmp*=Bgmp;
     TimerB.end(); 
     
     std::cout << Agmp << std::endl;
