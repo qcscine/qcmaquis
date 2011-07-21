@@ -36,11 +36,10 @@ namespace vli
     {
     }
     //copy and assignemant are done by the std vector   
-        
-//    vector_polynomial_cpu()
-        
-        
-    };
+            
+    }; //end class
+    
+    
     template <class BaseInt, int Size, int Order>
     vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > 
     inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
