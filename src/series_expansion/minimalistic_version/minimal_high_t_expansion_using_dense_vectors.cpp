@@ -55,6 +55,14 @@ namespace hp2c
 }
 #endif //USE_INT64_INTEGERS
 
+#ifdef USE_VLI_INTEGERS
+#include "vli_cpu/vli_number_cpu.hpp"
+namespace hp2c
+{
+    typedef vli::vli_cpu<unsigned int,8> large_int;
+}
+#endif //USE_VLI_INTEGERS
+
 
 
 
@@ -282,7 +290,7 @@ class high_t_expansion
 large_int faculty(int i)
 {
     if (i <= 1)
-        return 1;
+        return large_int(1);
     return i*faculty(i-1);
 }
 
