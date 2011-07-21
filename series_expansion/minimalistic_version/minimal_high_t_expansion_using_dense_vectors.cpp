@@ -59,7 +59,7 @@ namespace hp2c
 #include "vli_cpu/vli_number_cpu.hpp"
 namespace hp2c
 {
-    typedef vli::vli_cpu<unsigned int,8> large_int;
+    typedef vli::vli_cpu<long int,4> large_int;
 }
 #endif //USE_VLI_INTEGERS
 
@@ -172,7 +172,7 @@ class sparse_matrix
           */
         std::size_t get_dimension() const
         {
-            return std::pow(2,static_cast<unsigned int>(num_vertices));
+            return pow(2,static_cast<unsigned int>(num_vertices));
         }
 
         /**
@@ -291,7 +291,10 @@ large_int faculty(int i)
 {
     if (i <= 1)
         return large_int(1);
-    return i*faculty(i-1);
+
+    large_int a(i);
+
+    return a*faculty(i-1);
 }
 
 int main(int argc, char** argv)
@@ -321,10 +324,10 @@ int main(int argc, char** argv)
     {
         for(std::size_t h = 0; h < r.max_order; ++h)
         {
-            if(r(j,h) > 0)
-                std::cout <<" +"<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h;
-            else if(r(j,h) < 0)
-                std::cout <<" "<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h;
+//            if(r(j,h) > 0)
+  //              std::cout <<" +"<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h;
+    //        else if(r(j,h) < 0)
+                std::cout <<" "<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h << std::endl;
         }
     }
 
