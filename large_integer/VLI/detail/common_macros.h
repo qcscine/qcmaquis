@@ -33,7 +33,7 @@
 #define BASE_HALF			 0x8000 
 #define BASE_MINUS			 0x3FFFFFFF
 #define MASK_DOWN			 0x7FFF
-#define MASK_UP				 0x23FFF8000
+#define MASK_UP				 0x3FFF8000
 #define PARITYBITINT         0xFFFF  // TO calculate the parity bit with int  
 #define PARITYBITLONGINT     0xFFFF  // TO calculate the parity bit with int  
 
