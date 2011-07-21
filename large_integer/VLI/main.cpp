@@ -34,32 +34,26 @@ int main (int argc, char * const argv[])
     
     vli_cpu<TYPE,4> A;
     vli_cpu<TYPE,4> B;
-    
-    A[0]= 1000000000000000000;
-      
-    B[0]= 1000000000000000000;
-    
-    for(int i= 0 ; i< 100000 ;i++)
-     	A+=B;
-/*    
+    A[0]= 100;
+    B[0]= 100;
+       
     mpz_class Agmp(A.get_str());
     mpz_class Bgmp(B.get_str());
-    mpz_class Cgmp(C.get_str());
-
+ 
     Timer TimerA("VLI");
     TimerA.begin();
-    for(int i= 0 ; i< 100000 ;i++)
-     	A+=B;
+    for(int i= 0 ; i< 100;i++)
+     	A*=3;
     TimerA.end();    
 
     Timer TimerB("GMP");
     TimerB.begin();
-    for(int i= 0 ; i< 100000  ;i++)
-        Agmp+=Bgmp;
+    for(int i= 0 ; i< 100  ;i++)
+        Agmp*=3;
     TimerB.end(); 
-  */  
- //   std::cout << Agmp << std::endl;
+
     std::cout << A << std::endl;
+    std::cout << Agmp << std::endl;
 
 	GPU->instance().destructor();
     

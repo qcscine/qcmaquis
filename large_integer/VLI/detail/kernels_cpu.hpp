@@ -124,7 +124,7 @@ namespace vli
 				addition_kernel_cpu(&inter[m+1],&r[1]);
 			}
 		}
-        for(int i=0; i<8;i++) // we keep only what we need ... think how to remove it
+        for(int i=0; i<size;i++) // we keep only what we need ... think how to remove it
             x[i] = inter[i];
         //memcpy((void*)x,(void*)&inter[0],Size*sizeof(BaseInt));
        // delete[] inter;
