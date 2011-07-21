@@ -15,7 +15,7 @@
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
 #define SIZE_POLY 10
-#define SIZE_VECTOR 256
+#define SIZE_VECTOR 32
 
 #define TYPE unsigned int 
 

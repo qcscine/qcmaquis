@@ -332,8 +332,8 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
  
 void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, int vli_size, int max_order, int vector_size)
 {
-    int threadsPerBlock = 8;
-    int blocksPerGrid = (vector_size+threadsPerBlock-1)/threadsPerBlock;
+    int threadsPerBlock = 16;
+    int blocksPerGrid = vector_size/16;
     inner_prod_vector  <<< blocksPerGrid, threadsPerBlock >>>(A, B, C , D ,vli_size, max_order,vector_size); 
 }
     /*
