@@ -47,7 +47,7 @@ namespace vli
 		*(x+Size-1) += *(y+Size-1);
         *(x+Size-1) = *(x+Size-1)&(BASE+BASE_MINUS); //0x1FF;
 	}
-	    
+    
 	template <typename T>
 	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
 	{
