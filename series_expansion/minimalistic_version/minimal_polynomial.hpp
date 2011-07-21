@@ -197,7 +197,8 @@ class polynomial
           * Plus assign with a coefficient
           * Adds the coefficient to the 0th order element of the polynomial
           */
-        polynomial& operator += (CoeffType const& c)
+        template <typename T>
+        polynomial& operator += (T const& c)
         {
             coeffs[0] += c;
             return *this;
@@ -229,7 +230,8 @@ class polynomial
           * Multiplies assign with coefficient
           * Mutliplies all elements the argument
           */
-        polynomial& operator *= (CoeffType const& c)
+        template <typename T>
+        polynomial& operator *= (T const& c)
         {
             for(typename std::vector<CoeffType>::iterator it = coeffs.begin(); it != coeffs.end(); ++it)
                 *it *= c;
@@ -296,15 +298,15 @@ polynomial<CoeffType> operator * (monomial<CoeffType> const& m,polynomial<CoeffT
 /**
   * Multiplication of a polynomial with a factor
   */
-template <typename CoeffType>
-polynomial<CoeffType> operator * (polynomial<CoeffType> p, CoeffType const& c)
+template <typename CoeffType, typename T>
+polynomial<CoeffType> operator * (polynomial<CoeffType> p, T const& c)
 {
     p *= c;
     return p;
 }
 
-template <typename CoeffType>
-polynomial<CoeffType> operator * (CoeffType const& c, polynomial<CoeffType> const& p)
+template <typename CoeffType, typename T>
+polynomial<CoeffType> operator * (T const& c, polynomial<CoeffType> const& p)
 {
     return p * c;
 }
