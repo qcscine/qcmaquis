@@ -61,37 +61,40 @@ BOOST_AUTO_TEST_CASE(monome)
 
 BOOST_AUTO_TEST_CASE(monome_polynome)
 {
-  	gpu::gpu_manager* GPU;
+  	enum {vli_size = 8};
+    gpu::gpu_manager* GPU;
 	GPU->instance();
+    
     //init vli cpu    
-    vli_cpu<TYPE,8> a;
-    vli_cpu<TYPE,8> b;
+    vli_cpu<TYPE,vli_size> a;
+    vli_cpu<TYPE,vli_size> b;
+
     b[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
     b[1] = static_cast<TYPE>(drand48())%(MAX_VALUE);
     a[0] = static_cast<TYPE>(drand48())%(MAX_VALUE);
     a[1]  =static_cast<TYPE>(drand48())%(MAX_VALUE);
     //init vli gpu
-    vli_cpu<TYPE,8> agpu(a);
-    vli_cpu<TYPE,8> bgpu(b);
+    vli_cpu<TYPE,vli_size> agpu(a);
+    vli_cpu<TYPE,vli_size> bgpu(b);
     //TYPEi momone cpu
-    monomial<vli_cpu<TYPE, 8> > mb(b);
-    monomial<vli_cpu<TYPE, 8> > ma(a);
+    monomial<vli_cpu<TYPE, vli_size> > mb(b);
+    monomial<vli_cpu<TYPE, vli_size> > ma(a);
     //init monome gpu
-    monomial<vli_gpu<TYPE, 8> > mbgpu(b);
-    monomial<vli_gpu<TYPE, 8> > magpu(a);    
+    monomial<vli_gpu<TYPE, vli_size> > mbgpu(b);
+    monomial<vli_gpu<TYPE, vli_size> > magpu(a);    
     //init polynome cpu
-    polynomial_cpu<vli_cpu<TYPE,8>, 2> pa;
-    polynomial_cpu<vli_cpu<TYPE,8>, 2> pb;
+    polynomial_cpu<vli_cpu<TYPE,vli_size>, 20> pa;
+    polynomial_cpu<vli_cpu<TYPE,vli_size>, 20> pb;
     
-    for(int i=0; i<2; i++){
+    for(int i=0; i<vli_size; i++){
         pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
         pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
     }
     //init polynome gpu
-    polynomial_gpu<vli_gpu<TYPE,8>, 2> pagpu(pa);
-    polynomial_gpu<vli_gpu<TYPE,8>, 2> pbgpu(pb);
+    polynomial_gpu<vli_gpu<TYPE,vli_size>, 20> pagpu(pa);
+    polynomial_gpu<vli_gpu<TYPE,vli_size>, 20> pbgpu(pb);
     
     std::cout << pa << std::endl;
     std::cout << pagpu << std::endl;
