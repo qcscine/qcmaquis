@@ -121,6 +121,7 @@ option(BUILD_APP "Build DMRG Apps" ON)
 option(BUILD_BELA_BRANCH "Build Bela's branch DMRG Apps" OFF)
 set(BELA_BRANCH ${PROJECT_SOURCE_DIR}/../../branches/bela/src CACHE FILEPATH "Path to Bela's branch")
 option(BUILD_REGRESSION "Build regression tests" OFF)
+option(BUILD_MULTIGRID "Build multigrid code" OFF)
 
 set(BLAS_LAPACK_SELECTOR ${DEFAULT_BLAS_LAPACK} CACHE STRING "Choose the Blas/Lapack version to use, possible values 'alps', 'veclib', 'manual'")
 set(BLAS_LAPACK_MANUAL_LIBS ${BLAS_LAPACK_MANUAL_LIBS} CACHE STRINGS "")
