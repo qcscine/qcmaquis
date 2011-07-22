@@ -20,9 +20,11 @@
 #include "monome/polynome_cpu.h"
 #include "monome/monome.h"
 #include "vli_cpu/vli_number_cpu.hpp"
+#include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 
 using vli::vli_cpu;
+using vli::max_int_value;
 using vli::vli_gpu;
 using vli::monomial;
 using vli::polynomial_cpu;
@@ -42,10 +44,10 @@ BOOST_AUTO_TEST_CASE(vector_inner_product)
     polynomial_cpu<vli_cpu<TYPE,8>, 2> pa;
     
     for(int i=0; i<2; i++){
-        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);        
     }
  
     polynomial_gpu<vli_gpu<TYPE,8>, 2> pagpu(pa);

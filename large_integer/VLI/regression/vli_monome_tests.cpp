@@ -7,6 +7,7 @@
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
+#include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "monome/monome.h"
 #include "monome/polynome_gpu.h"
@@ -15,6 +16,7 @@
 
 typedef unsigned int TYPE; 
 using vli::vli_cpu;
+using vli::max_int_value;
 using vli::vli_gpu;
 using vli::polynomial_cpu;
 using vli::monomial;
@@ -37,15 +39,15 @@ BOOST_AUTO_TEST_CASE( constructors_test_site_monome)
     
     for(int i=0; i <2; i++){     
         
-        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
-        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);        
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
         
-        pb(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
         
         pagpu(0,0) = pa(0,0);        
         pagpu(0,1) = pa(0,1);
@@ -81,20 +83,20 @@ BOOST_AUTO_TEST_CASE( multiplication_polynomial)
     
     for(int i=0; i <2; i++){     
         
-        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
-        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);        
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
         
-        pb(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
         
-        pagpu(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
-        pagpu(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pagpu(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pagpu(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pagpu(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);        
+        pagpu(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pagpu(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pagpu(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
         
         pbgpu(0,0) = pb(0,0);
         pbgpu(0,1) = pb(0,1);
@@ -122,15 +124,15 @@ BOOST_AUTO_TEST_CASE( addition_polynomial)
     
     for(int i=0; i <2; i++){     
         
-        pa(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);        
-        pa(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pa(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pa(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);        
+        pa(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pa(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
         
-        pb(0,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(0,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(1,0)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
-        pb(1,1)[i] = static_cast<TYPE>(drand48())%(MAX_VALUE);
+        pb(0,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(0,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(1,0)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
+        pb(1,1)[i] = static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,8> >::value);
     }
     
     vli::polynomial_gpu<vli_gpu<TYPE,8>,2> pagpu(pa);
