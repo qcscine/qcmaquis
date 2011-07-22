@@ -1,33 +1,32 @@
-
 #define BOOST_TEST_MODULE vli_cpu
-
-
 #include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
+
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_cpu/vli_number_traits.hpp"
-#include "gmp.h"
+#include "gmpxx.h"
 
 using vli::vli_cpu;
 using vli::max_int_value;
 #define SIZE 8
-#define TYPE int
 
+typedef boost::mpl::list<unsigned int, unsigned long int> test_types;
 
-BOOST_AUTO_TEST_CASE( constructors_test )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a;
-    vli_cpu<TYPE,SIZE> b(0);
+    vli_cpu<T,SIZE> a;
+    vli_cpu<T,SIZE> b(0);
 
     BOOST_CHECK_EQUAL(a,b);
 
 }
 
-BOOST_AUTO_TEST_CASE( equal_operator )
+BOOST_AUTO_TEST_CASE_TEMPLATE( equal_operator, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a(0);
-    vli_cpu<TYPE,SIZE> b;
+    vli_cpu<T,SIZE> a(0);
+    vli_cpu<T,SIZE> b;
 
-    for(unsigned TYPE i=0; i < SIZE; ++i)
+    for(typename vli_cpu<T,SIZE>::size_type i=0; i < SIZE; ++i)
     {
         b[i] = 1;
         BOOST_CHECK_EQUAL(false,(a == b));
@@ -38,48 +37,48 @@ BOOST_AUTO_TEST_CASE( equal_operator )
 
 }
 
-BOOST_AUTO_TEST_CASE( copy_constructor_and_assignment )
+BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_assignment, T, test_types )
 { 
-    vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> a;
+    a[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
 
     
-    vli_cpu<TYPE,SIZE> b(a);
+    vli_cpu<T,SIZE> b(a);
     BOOST_CHECK_EQUAL(a,b);
 
-    vli_cpu<TYPE,SIZE> c(static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value));
+    vli_cpu<T,SIZE> c(static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value));
     c = b;
     BOOST_CHECK_EQUAL(c,b);
 }
 
-BOOST_AUTO_TEST_CASE( plus )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> a;
+    a[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[7]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
     
-    vli_cpu<TYPE,SIZE> b;
-    b[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> b;
+    b[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[7]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
     
-    vli_cpu<TYPE,SIZE> ab = a + b;
+    vli_cpu<T,SIZE> ab = a + b;
 
     b += a;
 
@@ -88,114 +87,84 @@ BOOST_AUTO_TEST_CASE( plus )
 
 
 
-BOOST_AUTO_TEST_CASE( multiplies )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> a;
+    a[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[7]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
     
-    vli_cpu<TYPE,SIZE> b = a+a+a;
-    vli_cpu<TYPE,SIZE> c = a * vli_cpu<TYPE,SIZE>(3);
+    vli_cpu<T,SIZE> b = a+a+a;
+    vli_cpu<T,SIZE> c = a * vli_cpu<T,SIZE>(3);
 
     BOOST_CHECK_EQUAL(b,c);
 }
 
-BOOST_AUTO_TEST_CASE( addition_gmp )
+BOOST_AUTO_TEST_CASE_TEMPLATE( addition_gmp, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> a;
+    a[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[7]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
     
-    vli_cpu<TYPE,SIZE> b;
-    b[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> b;
+    b[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[7]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
     
-    vli_cpu<TYPE,SIZE> c;
+    vli_cpu<T,SIZE> c;
 
-    mpz_t agmp, bgmp, cgmp;
-    
-    mpz_init_set_str (agmp, a.get_char(), 10);
-    mpz_init_set_str (bgmp, b.get_char(), 10);
-    mpz_init_set_str (cgmp, c.get_char(), 10);
-
+    mpz_class agmp(a.get_str()), bgmp(b.get_str()), cgmp(c.get_str());
     
     c = a+b;
-    mpz_add (cgmp, bgmp, agmp);	
+    cgmp = agmp + bgmp;
     
-    char str[128];
-    
-    for(int i=0;i<128; i++)
-        str[i]=0;
-    
-    mpz_get_str(str,10,bgmp);
-    
-    std::string strname(str);
-    
-    BOOST_CHECK_EQUAL(strname,c.get_str());
-    
+    BOOST_CHECK_EQUAL(cgmp.get_str(),c.get_str());
 }
 
 
 
-BOOST_AUTO_TEST_CASE( multi_gmp )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multi_gmp, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> a;
+    a[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    a[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
     
-    vli_cpu<TYPE,SIZE> b;
-    b[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
-    b[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    vli_cpu<T,SIZE> b;
+    b[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
+    b[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,SIZE> >::value);
     
     
-    vli_cpu<TYPE,SIZE> c;
+    vli_cpu<T,SIZE> c;
     
-    mpz_t agmp, bgmp, cgmp;
-    
-    mpz_init_set_str (agmp, a.get_char(), 10);
-    mpz_init_set_str (bgmp, b.get_char(), 10);
-    mpz_init_set_str (cgmp, c.get_char(), 10);
-    
+    mpz_class agmp(a.get_str()), bgmp(b.get_str()), cgmp(c.get_str());
     
     c = a*b;
-    mpz_mul (cgmp, bgmp, agmp);	
+    cgmp = agmp * bgmp;
     
-    char str[128];
-    
-    for(int i=0;i<128; i++)
-        str[i]=0;
-    
-    mpz_get_str(str,10,bgmp);
-    
-    std::string strname(str);
-    
-    BOOST_CHECK_EQUAL(strname,c.get_str());
-    
+    BOOST_CHECK_EQUAL(cgmp.get_str(),c.get_str());
 }
 
-BOOST_AUTO_TEST_CASE( comparison_vli )
+BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a(0);
-    vli_cpu<TYPE,SIZE> b(0);
+    vli_cpu<T,SIZE> a(0);
+    vli_cpu<T,SIZE> b(0);
     
     BOOST_CHECK_EQUAL(a<b, false);
     BOOST_CHECK_EQUAL(a>b, false);
@@ -223,9 +192,9 @@ BOOST_AUTO_TEST_CASE( comparison_vli )
     BOOST_CHECK_EQUAL(b>a, false);
 }
 
-BOOST_AUTO_TEST_CASE( comparison_int )
+BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, T, test_types )
 {
-    vli_cpu<TYPE,SIZE> a(0);
+    vli_cpu<T,SIZE> a(0);
 
     int zero = 0;
     int one = 1;
@@ -255,7 +224,7 @@ BOOST_AUTO_TEST_CASE( comparison_int )
     
 
 
-    vli_cpu<TYPE,SIZE> b(0);
+    vli_cpu<T,SIZE> b(0);
     b[1] = 1;
     BOOST_CHECK_EQUAL(b<zero, false);
     BOOST_CHECK_EQUAL(b>zero, true);

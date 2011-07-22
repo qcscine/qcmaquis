@@ -29,8 +29,9 @@ __device__ void copy_kernel_gpu(T* x, T const* y, int size)
 }    
     
 template <typename T>
-__device__ void negate(T* x, int vli_size)
+__device__ void negate_device(T* x, int vli_size)
 {
+    // TODO fix bug!
     T one[8] = {1,0,0,0,0,0,0,0}; //to do find something else
     
     #pragma unroll
@@ -63,7 +64,13 @@ __device__ void addition_classic_kernel_gpu(T* x, T const* y, int vli_size)
     *(x+vli_size-1) += *(y+vli_size-1);
     *(x+vli_size-1) &= base<T>::value + data_mask<T>::value;
 }
-    
+
+template <typename T>
+__global__ void negate(T* x, int vli_size)
+{
+    negate_device(x,vli_size);
+}
+
 template <typename T>
 __global__ void single_addition(T* x,   T const* y, int vli_size)     
 {
@@ -74,7 +81,7 @@ __global__ void single_addition(T* x,   T const* y, int vli_size)
 template <typename T>
 __global__ void single_substraction(T* x,   T* y, int vli_size)     
 {
-    negate(y,vli_size);
+    negate_device(y,vli_size);
     addition_classic_kernel_gpu(x, y, vli_size);        
 }    
 
@@ -104,7 +111,7 @@ __global__ void polynome_polynome_substraction(T* x, T const* y,  int vli_size, 
     if(xIndex < 2) //useless, because we set the number of thread to one
     {
         for(int i=0; i< max_order*max_order;++i){
-            negate(&x[offset],vli_size);
+            negate_device(&x[offset],vli_size);
             addition_classic_kernel_gpu(&x[offset],&y[offset],vli_size);    //1 see line 148
             offset += vli_size;
         }
@@ -261,6 +268,12 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, in
 }
 
 #define VLI_IMPLEMENT_GPU_KERNELS_FOR(r, data, TYPE) \
+void negate_gpu(TYPE* A, int vli_size) \
+{ \
+    dim3 dimgrid(1,1,1); \
+    dim3 dimblock(1,1,1); \
+    negate <<< dimgrid, dimblock >>>(A, vli_size); \
+} \
 void plus_assign_gpu(TYPE*  A, TYPE const*  B, int num_integers, int vli_size) \
 { \
     dim3 dimgrid(1,1,1); \

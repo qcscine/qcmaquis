@@ -15,6 +15,7 @@ namespace detail {
 
 
 #define VLI_DECLARE_GPU_KERNELS_FOR(r, data, TYPE) \
+    void negate_gpu(TYPE* A, int vli_size); \
     void plus_assign_gpu(TYPE* A, TYPE const* B, int num_integers, int vli_size); \
     void minus_assign_gpu(TYPE* A, TYPE* B, int vli_size);  \
     void entrywise_multiplies_gpu(TYPE const* A, TYPE const*  B, TYPE* C, int num_integers, int vli_size);  \
@@ -27,7 +28,7 @@ namespace detail {
 
 BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_KERNELS_FOR, _, VLI_GPU_BASE_INT_TYPES_SEQ)
 
-#undef VLI_DECLASE_GPU_KERNELS_FOR
+#undef VLI_DECLARE_GPU_KERNELS_FOR
 
 } //namespace detail
 

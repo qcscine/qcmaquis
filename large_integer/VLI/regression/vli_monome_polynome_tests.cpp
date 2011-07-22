@@ -58,9 +58,10 @@ BOOST_AUTO_TEST_CASE(monome)
     std::cout << ma << std::endl;
     std::cout << magpu << std::endl;
 
-    BOOST_CHECK_EQUAL(ma.coeff,magpu.coeff);
+    BOOST_CHECK_EQUAL(ma.coeff_,magpu.coeff_);
+	
+    GPU->instance().destructor();
 }
-
 BOOST_AUTO_TEST_CASE(monome_polynome)
 {
   	enum {vli_size = 8};
@@ -179,4 +180,3 @@ BOOST_AUTO_TEST_CASE(monome_polynome_deux)
 	GPU->instance().destructor();
     
 }
-

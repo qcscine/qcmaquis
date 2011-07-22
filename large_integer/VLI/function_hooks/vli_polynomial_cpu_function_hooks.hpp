@@ -36,9 +36,9 @@ polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order> r;
     // TODO perhaps there is a better way to write these loops,
     //      so that they can be unrolled.
-    for(size_type je = 0; je < Order-m.j_exp; ++je)
-        for(size_type he = 0; he < Order-m.h_exp; ++he)
-            r(je+m.j_exp,he+m.h_exp) = p(je,he) * m.coeff;
+    for(size_type je = 0; je < Order-m.j_exp_; ++je)
+        for(size_type he = 0; he < Order-m.h_exp_; ++he)
+            r(je+m.j_exp_,he+m.h_exp_) = p(je,he) * m.coeff_;
     return r;
 }
     

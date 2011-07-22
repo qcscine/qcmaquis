@@ -23,53 +23,53 @@ namespace vli
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
          */
         explicit monomial(size_type j_exp = 0, size_type h_exp = 0)
-        :j_exp(j_exp), h_exp(h_exp){
+        :j_exp_(j_exp), h_exp_(h_exp){
         }
         
         explicit monomial(Vli const& vli, size_type j_exp = 0, size_type h_exp = 0)// for me !
-        :j_exp(j_exp), h_exp(h_exp), coeff(vli){
+        :j_exp_(j_exp), h_exp_(h_exp), coeff_(vli){
         }
         
         monomial& operator *= (Vli const& c){
-            (*this).coeff *= c;
+            coeff_ *= c;
             return (*this);
         }
         
         monomial& operator *= (int c){
-            (*this).coeff *= c;
+            coeff_ *= c;
             return (*this);
         }
 
         void print(std::ostream& os) const
         {
-//            if(coeff > 0)
-//                os<<"+";
-            os<<coeff<<"*J^"<<j_exp<<"*h^"<<h_exp;
+            if(coeff_ > 0)
+                os<<"+";
+            os<<coeff_<<"*J^"<<j_exp_<<"*h^"<<h_exp_;
         }
 
         bool operator == (monomial const& m) const{
-            return ((*this).j_exp == m.j_exp) && ((*this).h_exp == m.h_exp) && ((*this).coeff == m.coeff);
+            return (j_exp_ == m.j_exp_) && (h_exp_ == m.h_exp_) && (coeff_ == m.coeff_);
         }
         
         typename Vli::value_type const& operator[](size_type i)const{ // for a serial acces of the VLI element
-            return coeff[i];
+            return coeff_[i];
         }
 
         typename Vli::value_type & operator[](size_type i){
-            return coeff[i];
+            return coeff_[i];
         }
         
         typename Vli::value_type*  p(){
-            return coeff.p();
+            return coeff_.p();
         }
 
         typename Vli::value_type const* p() const{
-            return coeff.p();
+            return coeff_.p();
         }
         
-        size_type j_exp;
-        size_type h_exp;
-        Vli coeff;
+        size_type j_exp_;
+        size_type h_exp_;
+        Vli coeff_;
     };
     
     template<class Vli>
@@ -77,5 +77,21 @@ namespace vli
         m.print(os);
         return os;
     }
+    
+    template <typename Vli, typename T>
+    monomial<Vli> operator * (monomial<Vli> m, T c)
+    {
+        m*=c;
+        return m;
+    }
+
+    template <typename Vli, typename T>
+    monomial<Vli> operator * (T c, monomial<Vli> m)
+    {
+        return m*c;
+    }
+
 }
+
+
 #endif //VLI_MONOME_H

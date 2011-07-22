@@ -43,11 +43,11 @@ namespace vli
             {
             }
             
-            operator vli_gpu() const
+            operator BaseInt() const
             {
-                vli_gpu vli;
-                gpu::cu_check_error( cudaMemcpy( vli.data_, data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
-                return vli;
+                BaseInt base;
+                gpu::cu_check_error(cudaMemcpy((void*)&base, (void*)(data_+pos), sizeof(BaseInt),cudaMemcpyDeviceToHost),__LINE__);
+                return base;
             }
             
             proxy& operator= (BaseInt i)
@@ -72,13 +72,22 @@ namespace vli
 
 		explicit vli_gpu(int num)
         {
-			gpu::cu_check_error(cudaMemset((void*)(this->data_), num, sizeof(BaseInt)), __LINE__); //The first number is set to the num value			
+            assert( static_cast<BaseInt>((num<0) ? -num : num)  < static_cast<BaseInt>(max_value<BaseInt>::value) );
+            
+            BaseInt tmp = num & data_mask<BaseInt>::value;
+            BaseInt sign = 0x01 & (num>>(sizeof(int)*8-1));
+            BaseInt bulk[Size-1];
+            for(std::size_t i = 0; i < Size-1; ++i)
+                bulk[i] = sign * data_mask<BaseInt>::value;
+			
+            gpu::cu_check_error(cudaMemcpy((void*)this->data_, (void*)&tmp, sizeof(BaseInt), cudaMemcpyHostToDevice),  __LINE__); //The first number is set to the num value
+            gpu::cu_check_error(cudaMemcpy((void*)(this->data_+1), (void*)&bulk[0], (Size-1)*sizeof(BaseInt), cudaMemcpyHostToDevice),  __LINE__);
         }
 
         explicit vli_gpu(BaseInt * p){
     			gpu::cu_check_error(cudaMemcpy((void*)(this->data_), (void*)p, Size*sizeof(BaseInt), cudaMemcpyDeviceToDevice ), __LINE__);
         }
-        
+
 		vli_gpu(vli_gpu const& vli)
         {
             gpu::cu_check_error(cudaMemcpy((void*)(this->data_), vli.data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
@@ -149,10 +158,56 @@ namespace vli
         {
              return vli_cpu<value_type, Size> (*this) == vli;
         }
-                
+
+        bool operator < (vli_gpu const& vli) const
+        {
+            vli_gpu tmp(*this);
+            return ( (tmp-=vli).is_negative() );
+        }
+        
+        bool operator < (int i) const
+        {
+            //TODO improve
+            vli_gpu tmp(*this);
+            return ( (tmp-=i).is_negative() );
+        }
+      
+        bool operator > (vli_gpu vli) const
+        {
+            //TODO improve
+            return ( (vli-=*this).is_negative() );
+        }
+
+        bool operator > (int i) const
+        {
+            //TODO improve
+            vli_gpu tmp(i);
+            return ( (tmp-=*this).is_negative() );
+        }
+
+        void negate()
+        {
+            //TODO write test
+            using detail::negate_gpu;
+            negate_gpu(this->data_,Size);
+        }
+
+        bool is_negative() const
+        {
+            //TODO write test
+            return static_cast<bool>(this->operator[](Size-1)>>data_bits<BaseInt>::value);
+        }
+
         proxy operator[](size_type i) 
         {
             return proxy(this->data_, i);
+        }
+
+        const BaseInt operator[] (size_type i) const
+        {
+            BaseInt base;
+            gpu::cu_check_error(cudaMemcpy((void*)&base, (void*)(this->data_+i), sizeof(BaseInt),cudaMemcpyDeviceToHost),__LINE__);
+            return base;
         }
 
         void print(std::ostream& os) const
@@ -164,12 +219,6 @@ namespace vli
         {
             return vli_cpu<BaseInt, Size>(*this).get_str();        
         }
-        
-        const char* get_char()
-        {
-            return vli_cpu<BaseInt, Size>(*this).get_char();       
-        }
-        
         
     };
 	
