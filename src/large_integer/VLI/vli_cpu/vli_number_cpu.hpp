@@ -45,7 +45,7 @@ namespace vli
         {
             assert( static_cast<BaseInt>((num<0) ? -num : num)  < static_cast<BaseInt>(max_value<BaseInt>::value) );
             data_[0] = num & data_mask<BaseInt>::value;
-            int sign = 0x01 & (num>>(sizeof(int)*8-1));
+            BaseInt sign = 0x01 & (num>>(sizeof(int)*8-1));
             for(int i=1; i<Size-1; ++i)
                 data_[i] = sign * data_mask<BaseInt>::value;
             data_[Size-1] = sign * (base<BaseInt>::value+data_mask<BaseInt>::value);
@@ -141,39 +141,27 @@ namespace vli
         {
             // TODO improve
             vli_cpu tmp(*this);
-            if( (tmp-=vli).is_negative() )
-                return true;
-            else
-                return false;
+            return ( (tmp-=vli).is_negative() );
         }
 
         bool operator < (int i) const
         {
             //TODO improve
             vli_cpu tmp(*this);
-            if( (tmp-=i).is_negative() )
-                return true;
-            else
-                return false;
+            return ( (tmp-=i).is_negative() );
         }
       
         bool operator > (vli_cpu vli) const
         {
             //TODO improve
-            if( (vli-=*this).is_negative() )
-                return true;
-            else
-                return false;
+            return ( (vli-=*this).is_negative() );
         }
 
         bool operator > (int i) const
         {
             //TODO improve
             vli_cpu tmp(i);
-            if( (tmp-=*this).is_negative() )
-                return true;
-            else
-                return false;
+            return ( (tmp-=*this).is_negative() );
         }
 
         void negate()
@@ -205,11 +193,6 @@ namespace vli
             os<<get_str();
         }
         
-        const char*  get_char() // for GMP
-        {
-            return this->get_str().c_str();
-        }
-          
         /**
          * Returns a string with a base10 represenation of the VLI
          */
@@ -229,25 +212,6 @@ namespace vli
             }
         }
 
-        long int BaseTen() // for debuging on small base<BaseInt>::value
-		{
-			long int Res = 0;
-            if(this->is_negative())
-            {
-                this->negate();
-                for(size_type i=0;i < Size;i++)
-                    Res+=(data_[i]&data_mask<BaseInt>::value)*(pow(base<BaseInt>::value,i));
-                Res *= -1;
-                this->negate();
-            }
-            else
-            {
-                for(size_type i=0;i < Size;i++)
-                    Res+=(data_[i]&data_mask<BaseInt>::value)*(pow(base<BaseInt>::value,i));
-            }
-            return Res;
-		}
-        
     private:
 
         /**

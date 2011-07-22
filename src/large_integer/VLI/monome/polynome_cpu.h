@@ -68,7 +68,13 @@ public:
     {
         for(int i=0; i<Order*Order;++i)
             coeffs[i]+=p.coeffs[i];
-        
+        return *this;
+    }
+    
+    template <typename T>
+    polynomial_cpu& operator += (T const& t)
+    {
+        coeffs[0]+=t;
         return *this;
     }
     
