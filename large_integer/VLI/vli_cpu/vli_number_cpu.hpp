@@ -40,11 +40,14 @@ namespace vli
                 data_[i] = 0;
         }
         
-		explicit vli_cpu(BaseInt num)
+        explicit vli_cpu(int num)
         {
-            data_[0] = num;
-            for(int i=1; i<Size; ++i)
-                data_[i]=0;
+            assert( num < MAX_VALUE);
+            data_[0] = num & BASE_MINUS;
+            int sign = 0x01 & (num>>(sizeof(int)*8-1));
+            for(int i=1; i<Size-1; ++i)
+                data_[i] = sign * BASE_MINUS;
+            data_[Size-1] = sign * (BASE+BASE_MINUS);
         }
 		
         vli_cpu(vli_cpu const& r)
@@ -142,7 +145,36 @@ namespace vli
             else
                 return false;
         }
-        
+
+        bool operator < (int i) const
+        {
+            //TODO improve
+            vli_cpu tmp(*this);
+            if( (tmp-=i).is_negative() )
+                return true;
+            else
+                return false;
+        }
+      
+        bool operator > (vli_cpu vli) const
+        {
+            //TODO improve
+            if( (vli-=*this).is_negative() )
+                return true;
+            else
+                return false;
+        }
+
+        bool operator > (int i) const
+        {
+            //TODO improve
+            vli_cpu tmp(i);
+            if( (tmp-=*this).is_negative() )
+                return true;
+            else
+                return false;
+        }
+
         void negate()
         {
             for(size_type i=0; i < Size-1; ++i)
@@ -288,8 +320,7 @@ namespace vli
           * Data members
           */
 
-    //    BaseInt data_[Size] __attribute__ ((aligned (16)));
-        BaseInt data_[Size] ;
+        BaseInt data_[Size] __attribute__ ((aligned (16)));
     };
 	
     /**
@@ -308,12 +339,25 @@ namespace vli
         vli_a -= vli_b;
         return vli_a;
     }
-    
+
     template <class BaseInt, int Size>
     const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a *= vli_b;
         return vli_a;
+    }
+
+    template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, BaseInt b)
+    {
+        vli_a *= b;
+        return vli_a;
+    }
+
+    template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator * (BaseInt b, vli_cpu<BaseInt, Size> const& a)
+    {
+        return a*b;
     }
     
     /**

@@ -190,4 +190,83 @@ BOOST_AUTO_TEST_CASE( multi_gmp )
     
 }
 
+BOOST_AUTO_TEST_CASE( comparison_vli )
+{
+    vli_cpu<TYPE,SIZE> a(0);
+    vli_cpu<TYPE,SIZE> b(0);
+    
+    BOOST_CHECK_EQUAL(a<b, false);
+    BOOST_CHECK_EQUAL(a>b, false);
+    
+    a[1] = 1;
+    b[1] = 1;
 
+    BOOST_CHECK_EQUAL(a<b, false);
+    BOOST_CHECK_EQUAL(a>b, false);
+
+    b[2] = 1;
+    a[0] = 1;
+
+    BOOST_CHECK_EQUAL(a<b, true);
+    BOOST_CHECK_EQUAL(b<a, false);
+    BOOST_CHECK_EQUAL(a>b, false);
+    BOOST_CHECK_EQUAL(b>a, true);
+
+    // How about different signs?
+    b.negate();
+
+    BOOST_CHECK_EQUAL(a<b, false);
+    BOOST_CHECK_EQUAL(b<a, true);
+    BOOST_CHECK_EQUAL(a>b, true);
+    BOOST_CHECK_EQUAL(b>a, false);
+}
+
+BOOST_AUTO_TEST_CASE( comparison_int )
+{
+    vli_cpu<TYPE,SIZE> a(0);
+
+    int zero = 0;
+    int one = 1;
+    int minus_one = -1;
+    BOOST_CHECK_EQUAL(a<zero, false);
+    BOOST_CHECK_EQUAL(a>zero, false);
+    BOOST_CHECK_EQUAL(a<minus_one, false);
+    BOOST_CHECK_EQUAL(a>minus_one, true);
+    BOOST_CHECK_EQUAL(a<one, true);
+    BOOST_CHECK_EQUAL(a>one, false);
+
+    a+=1;
+    BOOST_CHECK_EQUAL(a<zero, false);
+    BOOST_CHECK_EQUAL(a>zero, true);
+    BOOST_CHECK_EQUAL(a<minus_one, false);
+    BOOST_CHECK_EQUAL(a>minus_one, true);
+    BOOST_CHECK_EQUAL(a<one, false);
+    BOOST_CHECK_EQUAL(a>one, false);
+
+    a.negate();
+    BOOST_CHECK_EQUAL(a<zero, true);
+    BOOST_CHECK_EQUAL(a>zero, false);
+    BOOST_CHECK_EQUAL(a<minus_one, false);
+    BOOST_CHECK_EQUAL(a>minus_one, false);
+    BOOST_CHECK_EQUAL(a<one, true);
+    BOOST_CHECK_EQUAL(a>one, false);
+    
+
+
+    vli_cpu<TYPE,SIZE> b(0);
+    b[1] = 1;
+    BOOST_CHECK_EQUAL(b<zero, false);
+    BOOST_CHECK_EQUAL(b>zero, true);
+    BOOST_CHECK_EQUAL(b<minus_one, false);
+    BOOST_CHECK_EQUAL(b>minus_one, true);
+    BOOST_CHECK_EQUAL(b<one, false);
+    BOOST_CHECK_EQUAL(b>one, true);
+
+    b.negate();
+    BOOST_CHECK_EQUAL(b<zero, true);
+    BOOST_CHECK_EQUAL(b>zero, false);
+    BOOST_CHECK_EQUAL(b<minus_one, true);
+    BOOST_CHECK_EQUAL(b>minus_one, false);
+    BOOST_CHECK_EQUAL(b<one, true);
+    BOOST_CHECK_EQUAL(b>one, false);
+}
