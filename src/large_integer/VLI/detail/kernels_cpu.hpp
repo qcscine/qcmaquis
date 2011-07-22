@@ -99,32 +99,30 @@ namespace vli
 	/**
 	 multiplication classic version, efficiency O(n**2)
 	 */
-	template <typename BaseInt, int Size>
+	template <typename BaseInt, std::size_t Size>
 	void multiplication_classic_cpu(BaseInt* x, const BaseInt* y)	
 	{
-        std::size_t size = Size;
-
 		BaseInt r[2] = {0,0};	//for local block calculation
-		BaseInt m = 0;
+        std::size_t m = 0;
 		
 //        vli::vli_cpu<BaseInt, 2*Size+1> inter; //+1 for avoiding over flow
 
-        BaseInt inter[17]; // largeur for avoid overflow
+        BaseInt inter[2*Size+1]; // largeur for avoid overflow
         //for unroll
-        for(BaseInt i=0; i<17;i++)
+        for(std::size_t i=0; i<(2*Size+1);i++)
             inter[i]=0;
         
-		for (size_type i = 0 ; i < size; i++)
+		for (std::size_t i = 0 ; i < Size; i++)
 		{
-			for(size_type k = 0 ; k < size ; k++) // loop on numbers for multiplication the classical multiplication
+			for(std::size_t k = 0 ; k < Size ; k++) // loop on numbers for multiplication the classical multiplication
 			{	
-				m = static_cast<BaseInt>(k + i);
+				m = k + i;
 				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
 				addition_kernel_cpu(&inter[m],&r[0]);
 				addition_kernel_cpu(&inter[m+1],&r[1]);
 			}
 		}
-        for(int i=0; i<size;i++) // we keep only what we need ... think how to remove it
+        for(std::size_t i=0; i<Size; ++i) // we keep only what we need ... think how to remove it
             x[i] = inter[i];
         //memcpy((void*)x,(void*)&inter[0],Size*sizeof(BaseInt));
        // delete[] inter;
