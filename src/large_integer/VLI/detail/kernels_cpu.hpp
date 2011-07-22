@@ -10,10 +10,10 @@
 #ifndef VLI_KERNELS_CPU_HPP 
 #define VLI_KERNELS_CPU_HPP
 
-#include "common_macros.h"
 #include <cassert>
 #include <boost/static_assert.hpp>
 #include <cstring>
+#include "detail/bit_masks.hpp"
 
 namespace vli
 {
@@ -27,13 +27,11 @@ namespace vli
 	 addition classic version on array 
 	 */	
 	template <typename T>
-	void addition_kernel_cpu(T* x, T const*  y)
+	inline void addition_kernel_cpu(T* x, T const*  y)
 	{
-		T carry_bit = 0;
 		*x += *y; 
-		carry_bit  = *x >> LOG_BASE;
-		*x    %= BASE; 
-		*(x+1)+= carry_bit; //BE CARREFUL NO CONTROL THE OVERFLOW
+		*(x+1) += *x >> data_bits<T>::value; //carry bit
+		*x    &= data_mask<T>::value; // Remove the carry bit
 	}	
     
 	/**
@@ -45,34 +43,31 @@ namespace vli
 		for(std::size_t i = 0; i < Size-1 ; ++i)
 			addition_kernel_cpu((x+i), (y+i));
 		*(x+Size-1) += *(y+Size-1);
-        *(x+Size-1) = *(x+Size-1)&(BASE+BASE_MINUS); //0x1FF;
+        *(x+Size-1) &= base<T>::value + data_mask<T>::value;
 	}
     
 	template <typename T>
 	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
 	{
-		*r	   = ((*x & MASK_UP) >> LOG_BASE_HALF ) * (*y & MASK_DOWN);	
-		*(r+1) = ((*x & MASK_UP) >> LOG_BASE_HALF ) * ((*y & MASK_UP) >> LOG_BASE_HALF);
+		*r	   = ((*x & mask_up<T>::value) >> (data_bits<T>::value/2) ) * (*y & mask_down<T>::value);	
+		*(r+1) = ((*x & mask_up<T>::value) >> (data_bits<T>::value/2) ) * ((*y & mask_up<T>::value) >> (data_bits<T>::value/2));
 	}		
 	
 	template <typename T>
 	void multiplication_kernel_down_cpu(T const* x, T const*  y, T * r)	
 	{	
-		*r     = (*x & MASK_DOWN) * (*y & MASK_DOWN);
-		*(r+1) = (*x & MASK_DOWN) * ((*y & MASK_UP) >> LOG_BASE_HALF);
+		*r     = (*x & mask_down<T>::value) * (*y & mask_down<T>::value);
+		*(r+1) = (*x & mask_down<T>::value) * ((*y & mask_up<T>::value) >> (data_bits<T>::value/2));
 	}
 	
 	template <typename T>
 	void multiplication_kernel_base_reshaping_cpu(T const * a, T  const *  b, T * r)	
 	{			
-		T q1(0),q2(0);
-		T r1(0),r2(0);
-		
-		q1 = (*(a+1) + *b)/BASE_HALF;
-		r1 = (*(a+1) + *b)%BASE_HALF;
-		r1 = r1 * BASE_HALF;
-		q2 = (r1 + *a)/BASE; 
-		r2 = (r1 + *a)%BASE;
+		T q1 = (*(a+1) + *b) >> (data_bits<T>::value/2);
+		T r1 = (*(a+1) + *b) & mask_down<T>::value;
+		r1 *= base_half<T>::value;
+		T q2 = (r1 + *a) >> data_bits<T>::value; 
+		T r2 = (r1 + *a) & data_mask<T>::value;
 		*r = r2;
 		*(r+1) = q1 + q2 + *(b+1);
 	}
@@ -89,7 +84,7 @@ namespace vli
 		 -------
 		 = 2^n XlYl + 2^(n/2) (XlYr + XrYl) + XrYr (multiplication_kernel_cpu_down and multiplication_kernel_cpu_up)
 		 ------- 
-		 = (q1+q2 + Xl*Yl)*BASE + r2  (multiplication_kernel_base_reshaping)
+		 = (q1+q2 + Xl*Yl)*base<T>::value + r2  (multiplication_kernel_base_reshaping)
 		 */
 		multiplication_kernel_down_cpu(x,y, a);
 		multiplication_kernel_up_cpu(x,y, b);
@@ -103,20 +98,17 @@ namespace vli
 	void multiplication_classic_cpu(BaseInt* x, const BaseInt* y)	
 	{
 		BaseInt r[2] = {0,0};	//for local block calculation
-        std::size_t m = 0;
-		
-//        vli::vli_cpu<BaseInt, 2*Size+1> inter; //+1 for avoiding over flow
-
         BaseInt inter[2*Size+1]; // largeur for avoid overflow
+        
         //for unroll
-        for(std::size_t i=0; i<(2*Size+1);i++)
+        for(std::size_t i=0; i<(2*Size+1); ++i)
             inter[i]=0;
         
-		for (std::size_t i = 0 ; i < Size; i++)
+		for(std::size_t i = 0 ; i < Size; ++i)
 		{
-			for(std::size_t k = 0 ; k < Size ; k++) // loop on numbers for multiplication the classical multiplication
+			for(std::size_t k = 0 ; k < Size ; ++k) // loop on numbers for multiplication the classical multiplication
 			{	
-				m = k + i;
+                std::size_t m = k + i;
 				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
 				addition_kernel_cpu(&inter[m],&r[0]);
 				addition_kernel_cpu(&inter[m+1],&r[1]);
@@ -170,14 +162,14 @@ namespace vli
     //				/**
     //				 this three if could be optimize, to do ...... il else statement
     //				 */
-    //				if(s[i] > BASE_MINUS2)
+    //				if(s[i] > data_mask<T>::value2)
     //					t[i+1] = 1;
-    //				if(s[i] < MINUS_BASE_PLUS2)
+    //				if(s[i] < MINUS_base<T>::value_PLUS2)
     //					t[i+1] = -1;
-    //				if(s[i]<=BASE_MINUS2 && s[i]>= MINUS_BASE_PLUS2)
+    //				if(s[i]<=data_mask<T>::value2 && s[i]>= MINUS_base<T>::value_PLUS2)
     //					t[i+1] = 0;
     //				
-    //				w[i] = s[i] - BASE*t[i+1];
+    //				w[i] = s[i] - base<T>::value*t[i+1];
     //				z(i,j) = t[i] + w[i];
     //			}
     //		}
@@ -193,8 +185,8 @@ namespace vli
 	{
 		T carry_bit = 0;
 		*z = *x + *y; // <- no plus ><
-		carry_bit  = *z >> LOG_BASE;
-		*z    %= BASE;
+		carry_bit  = *z >> LOG_base<T>::value;
+		*z    %= base<T>::value;
 		*(z+1)+= carry_bit; //MAYBE PB TO CHECK
 	}
   */  

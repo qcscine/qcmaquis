@@ -20,7 +20,7 @@ namespace vli {
     template <class BaseInt, int Size>
     void plus_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const& b )
     {  
-        assert(b < MAX_VALUE);
+        assert(b < max_value<BaseInt>::value);
         addition_classic_cpu<BaseInt, Size>(&vli_a[0],&b);
     }
     

@@ -32,8 +32,8 @@ int main (int argc, char * const argv[])
 	gpu::gpu_manager* GPU;
 	GPU->instance();
     
-    vli_cpu<TYPE,4> A;
-    vli_cpu<TYPE,4> B;
+    vli_cpu<TYPE,8> A;
+    vli_cpu<TYPE,8> B;
     A[0]= 100;
     B[0]= 100;
        
@@ -42,13 +42,31 @@ int main (int argc, char * const argv[])
  
     Timer TimerA("VLI");
     TimerA.begin();
-    for(int i= 0 ; i< 100;i++)
+    for(int i= 0 ; i< 250;++i)
+     	A*=3;
+     	A*=3;
+     	A*=3;
+     	A*=3;
+     	A*=3;
+     	A*=3;
+     	A*=3;
+     	A*=3;
+     	A*=3;
      	A*=3;
     TimerA.end();    
 
     Timer TimerB("GMP");
     TimerB.begin();
-    for(int i= 0 ; i< 100  ;i++)
+    for(int i= 0 ; i< 250;++i)
+        Agmp*=3;
+        Agmp*=3;
+        Agmp*=3;
+        Agmp*=3;
+        Agmp*=3;
+        Agmp*=3;
+        Agmp*=3;
+        Agmp*=3;
+        Agmp*=3;
         Agmp*=3;
     TimerB.end(); 
 

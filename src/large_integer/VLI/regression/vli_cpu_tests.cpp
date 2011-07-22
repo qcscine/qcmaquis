@@ -4,9 +4,11 @@
 
 #include <boost/test/unit_test.hpp>
 #include "vli_cpu/vli_number_cpu.hpp"
+#include "vli_cpu/vli_number_traits.hpp"
 #include "gmp.h"
 
 using vli::vli_cpu;
+using vli::max_int_value;
 #define SIZE 8
 #define TYPE int
 
@@ -39,19 +41,19 @@ BOOST_AUTO_TEST_CASE( equal_operator )
 BOOST_AUTO_TEST_CASE( copy_constructor_and_assignment )
 { 
     vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
 
     
     vli_cpu<TYPE,SIZE> b(a);
     BOOST_CHECK_EQUAL(a,b);
 
-    vli_cpu<TYPE,SIZE> c(static_cast<TYPE>(drand48())%(MAX_VALUE));
+    vli_cpu<TYPE,SIZE> c(static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value));
     c = b;
     BOOST_CHECK_EQUAL(c,b);
 }
@@ -59,23 +61,23 @@ BOOST_AUTO_TEST_CASE( copy_constructor_and_assignment )
 BOOST_AUTO_TEST_CASE( plus )
 {
     vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[7]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
     
     vli_cpu<TYPE,SIZE> b;
-    b[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[7]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    b[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
     
     vli_cpu<TYPE,SIZE> ab = a + b;
 
@@ -89,14 +91,14 @@ BOOST_AUTO_TEST_CASE( plus )
 BOOST_AUTO_TEST_CASE( multiplies )
 {
     vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[7]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
     
     vli_cpu<TYPE,SIZE> b = a+a+a;
     vli_cpu<TYPE,SIZE> c = a * vli_cpu<TYPE,SIZE>(3);
@@ -107,23 +109,23 @@ BOOST_AUTO_TEST_CASE( multiplies )
 BOOST_AUTO_TEST_CASE( addition_gmp )
 {
     vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[6]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[7]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[6]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
     
     vli_cpu<TYPE,SIZE> b;
-    b[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[4]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[5]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[7]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    b[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[4]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[5]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[7]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
     
     vli_cpu<TYPE,SIZE> c;
 
@@ -155,14 +157,14 @@ BOOST_AUTO_TEST_CASE( addition_gmp )
 BOOST_AUTO_TEST_CASE( multi_gmp )
 {
     vli_cpu<TYPE,SIZE> a;
-    a[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[2]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    a[3]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    a[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[2]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    a[3]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
     
     vli_cpu<TYPE,SIZE> b;
-    b[0]=static_cast<TYPE>(drand48())%(MAX_VALUE);
-    b[1]=static_cast<TYPE>(drand48())%(MAX_VALUE);
+    b[0]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
+    b[1]=static_cast<TYPE>(drand48())%(max_int_value<vli_cpu<TYPE,SIZE> >::value);
     
     
     vli_cpu<TYPE,SIZE> c;

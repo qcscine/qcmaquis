@@ -10,6 +10,7 @@
 
 #ifndef VLI_NUMBER_CPU_HPP
 #define VLI_NUMBER_CPU_HPP
+#include <detail/bit_masks.hpp>
 #include <boost/lexical_cast.hpp>
 #include <ostream>
 #include <vector>
@@ -42,12 +43,12 @@ namespace vli
         
         explicit vli_cpu(int num)
         {
-            assert( num < MAX_VALUE);
-            data_[0] = num & BASE_MINUS;
+            assert( static_cast<BaseInt>((num<0) ? -num : num)  < static_cast<BaseInt>(max_value<BaseInt>::value) );
+            data_[0] = num & data_mask<BaseInt>::value;
             int sign = 0x01 & (num>>(sizeof(int)*8-1));
             for(int i=1; i<Size-1; ++i)
-                data_[i] = sign * BASE_MINUS;
-            data_[Size-1] = sign * (BASE+BASE_MINUS);
+                data_[i] = sign * data_mask<BaseInt>::value;
+            data_[Size-1] = sign * (base<BaseInt>::value+data_mask<BaseInt>::value);
         }
 		
         vli_cpu(vli_cpu const& r)
@@ -89,7 +90,7 @@ namespace vli
             return *this;
         }
         
-        vli_cpu& operator += (BaseInt const& a)
+        vli_cpu& operator += (int a)
         {
             using vli::plus_assign;
             vli_cpu a_vli(a);
@@ -106,7 +107,7 @@ namespace vli
             return *this;
         }
 
-        vli_cpu& operator -= (BaseInt const& a)
+        vli_cpu& operator -= (int a)
         {
             using vli::plus_assign;
             vli_cpu tmp(a);
@@ -122,7 +123,7 @@ namespace vli
             return *this;
         }
 
-        vli_cpu& operator *= (BaseInt const& a)
+        vli_cpu& operator *= (int a)
         {
             using vli::multiplies_assign;
             vli_cpu vli_a(a); 
@@ -178,14 +179,14 @@ namespace vli
         void negate()
         {
             for(size_type i=0; i < Size-1; ++i)
-                data_[i] = (~data_[i])&BASE_MINUS;
-            data_[Size-1] = (~data_[Size-1])&(BASE+BASE_MINUS);
+                data_[i] = (~data_[i])&data_mask<BaseInt>::value;
+            data_[Size-1] = (~data_[Size-1])&(base<BaseInt>::value+data_mask<BaseInt>::value);
             (*this)+=vli_cpu(1);
         }
 
         bool is_negative() const
         {
-            return static_cast<bool>((data_[Size-1]>>LOG_BASE));
+            return static_cast<bool>((data_[Size-1]>>data_bits<BaseInt>::value));
         }
 
         void print_raw(std::ostream& os) const
@@ -228,21 +229,21 @@ namespace vli
             }
         }
 
-        long int BaseTen() // for debuging on small BASE
+        long int BaseTen() // for debuging on small base<BaseInt>::value
 		{
 			long int Res = 0;
             if(this->is_negative())
             {
                 this->negate();
                 for(size_type i=0;i < Size;i++)
-                    Res+=(data_[i]&BASE_MINUS)*(pow(BASE,i));
+                    Res+=(data_[i]&data_mask<BaseInt>::value)*(pow(base<BaseInt>::value,i));
                 Res *= -1;
                 this->negate();
             }
             else
             {
                 for(size_type i=0;i < Size;i++)
-                    Res+=(data_[i]&BASE_MINUS)*(pow(BASE,i));
+                    Res+=(data_[i]&data_mask<BaseInt>::value)*(pow(base<BaseInt>::value,i));
             }
             return Res;
 		}
@@ -348,14 +349,14 @@ namespace vli
     }
 
     template <class BaseInt, int Size>
-    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, BaseInt b)
+    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, int b)
     {
         vli_a *= b;
         return vli_a;
     }
 
     template <class BaseInt, int Size>
-    const vli_cpu<BaseInt, Size> operator * (BaseInt b, vli_cpu<BaseInt, Size> const& a)
+    const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
     {
         return a*b;
     }
