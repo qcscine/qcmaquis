@@ -98,7 +98,7 @@ struct measure_<Matrix, U1>
                 mpom.add_term(v);
                 MPO<Matrix, U1> mpo = mpom.create_mpo();
                 
-                double val = expval(mps, mpo, 0);
+                double val = expval(mps, mpo);
                 magns.push_back(val);
             }
             
@@ -145,7 +145,7 @@ struct measure_<Matrix, U1>
             mpom.add_term(v);
             MPO<Matrix, U1> mpo = mpom.create_mpo();
             
-            double val = expval(mps, mpo, 0);
+            double val = expval(mps, mpo);
             magns.push_back(val);
         }
             
@@ -166,7 +166,7 @@ struct measure_<Matrix, U1>
                 mpom.add_term(v);
                 MPO<Matrix, U1> mpo = mpom.create_mpo();
                 
-                double val = expval(mps, mpo, 0);
+                double val = expval(mps, mpo);
                 corrs.push_back(val);
             }
         }
@@ -201,7 +201,7 @@ struct measure_<Matrix, U1>
             mpom.add_term(v);
             MPO<Matrix, U1> mpo = mpom.create_mpo();
             
-            double val = expval(mps, mpo, 0);
+            double val = expval(mps, mpo);
             density.push_back(val);
         }
         ar << alps::make_pvp("/spectrum/results/Density/mean/value", density);
