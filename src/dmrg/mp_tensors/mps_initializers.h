@@ -81,6 +81,24 @@ struct thin_mps_init : public mps_initializer<Matrix, SymmGroup>
 };
 
 template<class Matrix, class SymmGroup>
+struct empty_mps_init : public mps_initializer<Matrix, SymmGroup>
+{
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys,
+                    typename SymmGroup::charge right_end)
+    {
+        std::size_t L = mps.length();
+        
+        Index<SymmGroup> triv;
+        triv.insert( std::make_pair(SymmGroup::SingletCharge, 1) );
+        
+        for (int i = 0; i < L; ++i)
+            mps[i] = MPSTensor<Matrix, SymmGroup>(phys, triv, triv);        
+    }
+};
+
+template<class Matrix, class SymmGroup>
 struct mott_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
     void operator()(MPS<Matrix, SymmGroup> & mps,
