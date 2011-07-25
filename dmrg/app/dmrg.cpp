@@ -141,6 +141,7 @@ int main(int argc, char ** argv)
     ModelParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
     Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
+//    std::cout << "phys:" << std::endl << phys << std::endl;
     
     /*
     std::cout << measurements << std::endl;
