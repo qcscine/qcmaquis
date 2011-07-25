@@ -30,6 +30,8 @@ typedef blas::dense_matrix<std::complex<double> > Matrix;
 
 #include <alps/hdf5.hpp>
 
+#include "utils/DmrgParameters2.h"
+
 #include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
 #include "mp_tensors/mpo.h"
@@ -43,8 +45,6 @@ typedef blas::dense_matrix<std::complex<double> > Matrix;
 
 #include "te_utils.hpp"
 #include "mp_tensors/evolve.h"
-
-#include "utils/DmrgParameters.h"
 
 #include "models.h"
 
