@@ -64,30 +64,120 @@ namespace meas_detail {
 		return ret;
 	}
     
-	template<class Matrix, class SymmGroup>
+    template <class Matrix, class SymmGroup>
+    class LocalMPSMeasurement
+    {
+    public:
+        LocalMPSMeasurement (const MPS<Matrix, SymmGroup> & mps_, const Lattice & lat_)
+        : mps(mps_)
+        , lat(lat_)
+        , L(mps.size())
+        , phys_i(mps[0].site_dim())
+        , left_(L)
+        , right_(L)
+        {
+            ident(0,0) = identity_matrix<Matrix>(phys_i);
+            
+            // init right_ & left_
+            Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
+            right_[L-1] = right;
+            left_[0] = left;
+            for (int i = 1; i < L; ++i) {
+                MPSTensor<Matrix, SymmGroup> bkp;
+
+                bkp = mps[L-i];
+                right = contraction::overlap_mpo_right_step(mps[L-i], bkp, right, ident);
+                right_[L-1-i] = right;
+                
+                bkp = mps[i-1];
+                left = contraction::overlap_mpo_left_step(mps[i-1], bkp, left, ident);
+                left_[i] = left;
+            }
+
+        }
+        
+        void site_term (std::pair<block_matrix<Matrix, SymmGroup>, bool> const & op,
+                        std::string const & h5name,
+                        std::string const & base_path) const
+        {
+            std::vector<double> vals;
+            std::vector<std::string> labels;
+            MPOTensor<Matrix, SymmGroup> temp;
+
+            for (int p = 0; p < L; ++p) {
+                temp(0,0) = op.first;
+                MPSTensor<Matrix, SymmGroup> vec2 =
+                contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
+                vals.push_back( mps[p].scalar_overlap(vec2) );
+                labels.push_back( lat.get_prop<std::string>("label", p) );
+            }
+            
+            {
+                alps::hdf5::oarchive ar(h5name);
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
+                ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+            }
+        }
+        
+        void bond_term (std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                        std::string const & h5name,
+                        std::string const & base_path) const
+        {
+            assert(ops.size() == 2);
+            
+            std::vector<double> vals;
+            std::vector<std::string> labels;
+            MPOTensor<Matrix, SymmGroup> temp;
+            Boundary<Matrix, SymmGroup> tmp_b;
+            
+            for (int p = 0; p < L-1; ++p) {
+                temp(0,0) = ops[0].first;
+                MPSTensor<Matrix, SymmGroup> bkp = mps[p];
+                
+                tmp_b = contraction::overlap_mpo_left_step(mps[p], bkp, left_[p], temp);
+                
+                temp(0,0) = ops[1].first;
+                MPSTensor<Matrix, SymmGroup> vec2 =
+                contraction::site_hamil2(mps[p+1], tmp_b, right_[p+1], temp);
+                vals.push_back( mps[p+1].scalar_overlap(vec2) );
+                labels.push_back( lat.get_prop<std::string>("label", p, p+1) );
+            }
+            
+            {
+                alps::hdf5::oarchive ar(h5name);
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
+                ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+            }
+        }
+        
+    private:
+        int L;
+        Index<SymmGroup> phys_i;
+        MPOTensor<Matrix, SymmGroup> ident;
+        std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+        const MPS<Matrix, SymmGroup> & mps;
+        const Lattice & lat;
+
+    };
+    
+    template<class Matrix, class SymmGroup>
 	void measure_local(MPS<Matrix, SymmGroup> & mps,
-                       const Lattice & lat,
-                       block_matrix<Matrix, SymmGroup> const & identity,
-                       block_matrix<Matrix, SymmGroup> const & fill,
-						  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-                       std::string const & h5name,
-                       std::string base_path)
+                           const Lattice & lat,
+                           block_matrix<Matrix, SymmGroup> const & identity,
+                           block_matrix<Matrix, SymmGroup> const & fill,
+                           std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                           std::string const & h5name,
+                           std::string base_path)
 	{
 		std::vector<double> vals;
         std::vector<std::string> labels;
-		for (std::size_t p = 0; p < lat.size(); ++p)
-        {
-            if (ops.size() == 1) {
-				generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
-				generate_mpo::Operator_Term<Matrix, SymmGroup> term;
-				term.operators.push_back( std::make_pair(p, ops[0].first) );
-				mpom.add_term(term);
-				MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-
-				double val = expval(mps, mpo);
-				vals.push_back(val);
-				labels.push_back(lat.get_prop<std::string>("label", p));
-            } else {
+        
+        if (ops.size() == 1) {
+            measure_correlation_(mps, lat, identity, fill, ops, std::vector<std::size_t>(), false, vals, labels);
+        } else {
+            // TODO: optimize this, by building a special MPO (MPOMaker and CorrMaker don't support it)
+            for (std::size_t p = 0; p < lat.size(); ++p)
+            {
             	std::vector<Lattice::pos_t> neighs = lat.forward(p);
             	for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
             		 hopto != neighs.end();
@@ -100,21 +190,21 @@ namespace meas_detail {
 					term.fill_operator = (ops[0].second) ? fill : identity;
 					mpom.add_term(term);
 					MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-
+                    
 					double val = expval(mps, mpo);
 					vals.push_back(val);
 					labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
             	}
             }
         }
-        
+                
         {
             alps::hdf5::oarchive ar(h5name);
             ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
             ar << alps::make_pvp(base_path + std::string("/labels"), labels);
         }
 	}
-    
+
 	template<class Matrix, class SymmGroup>
 	void measure_average(MPS<Matrix, SymmGroup> & mps,
                          const Lattice & lat,

@@ -473,6 +473,50 @@ namespace app {
         }
         
         {
+            boost::regex expression("^MEASURE_MPS_BONDS\\[(.*)]$");
+            boost::smatch what;
+            for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+                std::string lhs = it->key();
+                std::string value;
+                
+                mterm_t term;
+                term.fill_operator = tfill[type];
+                
+                if (boost::regex_match(lhs, what, expression)) {
+                    value = it->value();
+                    term.name = what.str(1);
+                    term.type = mterm_t::MPSBonds;
+                    
+                    alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+                    int f_ops = 0;
+                    
+                    boost::char_separator<char> sep(":");
+                    tokenizer corr_tokens(value, sep);
+                    for (tokenizer::iterator it2=corr_tokens.begin();
+                         it2 != corr_tokens.end();
+                         it2++)
+                    {
+                        SiteOperator op = make_site_term(*it2, parms);
+                        alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
+                        bool f = b.is_fermionic(simplify_name(op));
+                        term.operators.push_back( std::make_pair(convert_matrix(m, type), f) );
+                        if (f) ++f_ops;
+                    }
+                    if (term.operators.size() == 1) {
+                        term.operators.push_back(term.operators[0]);
+                        if (term.operators[1].second) ++f_ops;
+                    }
+                    
+#ifndef NDEBUG
+                    if (f_ops % 2 != 0)
+                        throw std::runtime_error("Number of fermionic operators has to be even.");
+#endif
+                    meas.add_term(term);
+                }
+            }
+        }
+        
+        {
             boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
             boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
             boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");

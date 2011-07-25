@@ -35,7 +35,7 @@ namespace app {
     struct Measurement_Term
     {
         typedef block_matrix<Matrix, SymmGroup> op_t;
-        enum type_t {Local, Average, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN};
+        enum type_t {Local, MPSBonds, Average, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN};
         
         std::string name;
         type_t type;
@@ -48,15 +48,19 @@ namespace app {
     class Measurements
     {
     public:
+        typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
+        typedef typename mterm_t::type_t meas_type_t;
+        typedef typename mterm_t::op_t op_t;
+                
         int n_terms() const
         {
         	return terms.size();
         }
-        const Measurement_Term<Matrix, SymmGroup>& operator[](int i) const
+        const mterm_t& operator[](int i) const
         {
         	return terms[i];
         }
-        const Measurement_Term<Matrix, SymmGroup>& get(std::string const & name) const
+        const mterm_t& get(std::string const & name) const
         {
             for (int i=0; i<terms.size(); ++i) {
                 if (terms[i].name == name)
@@ -66,24 +70,24 @@ namespace app {
             return *(terms.end());
         }
         
-        const typename Measurement_Term<Matrix, SymmGroup>::op_t& get_identity() const
+        const op_t& get_identity() const
         {
         	return ident;
         }
         
-        void set_identity(const typename Measurement_Term<Matrix, SymmGroup>::op_t& ident_)
+        void set_identity(const op_t& ident_)
         {
         	ident = ident_;
         }
         
-        void add_term (Measurement_Term<Matrix, SymmGroup> const & term)
+        void add_term (mterm_t const & term)
         {
         	terms.push_back(term);
         }
         
     protected:
-        std::vector<Measurement_Term<Matrix, SymmGroup> > terms;
-        typename Measurement_Term<Matrix, SymmGroup>::op_t ident;
+        std::vector<mterm_t> terms;
+        op_t ident;
     };
 }
 
@@ -99,20 +103,32 @@ namespace app {
     			 Measurements<Matrix, SymmGroup> const & meas,
                  std::string const & h5name, std::string basepath = std::string("/spectrum/results/"))
     {
-    	for (int i = 0; i < meas.n_terms(); ++i)
+    	
+        meas_detail::LocalMPSMeasurement<Matrix, SymmGroup> local_measurement(mps, lat);
+        
+        for (int i = 0; i < meas.n_terms(); ++i)
     	{
     		std::cout << "Calculating " << meas[i].name << std::endl;
     		switch (meas[i].type)
     		{
                 case Measurement_Term<Matrix, SymmGroup>::Local:
                     assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
-                    meas_detail::measure_local(mps, lat,
-                            				   meas.get_identity(), meas[i].fill_operator,
-                            				   meas[i].operators,
-                                               h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                    if (meas[i].operators.size() == 1) // Local measurements are fast and efficient!
+                        local_measurement.site_term(meas[i].operators[0],
+                                                    h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                    else
+                        meas_detail::measure_local(mps, lat,
+                                                   meas.get_identity(), meas[i].fill_operator,
+                                                   meas[i].operators,
+                                                   h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                    break;
+                case Measurement_Term<Matrix, SymmGroup>::MPSBonds:
+                    assert(meas[i].operators.size() == 2);
+                    local_measurement.bond_term(meas[i].operators,
+                                                h5name, basepath + alps::hdf5_name_encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Average:
-                assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
+                    assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
                     meas_detail::measure_average(mps, lat,
                                                  meas.get_identity(), meas[i].fill_operator,
                                                  meas[i].operators,
@@ -131,7 +147,7 @@ namespace app {
                 case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
 #ifndef NDEBUG
                     if (meas[i].operators.size() % 2 != 0)
-                        std::runtime_error("Next neighbors correlators have to have even number of operators");
+                        throw std::runtime_error("Next neighbors correlators have to have even number of operators");
 #endif
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
 													meas[i].fill_operator, meas[i].operators,
@@ -140,7 +156,7 @@ namespace app {
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
 #ifndef NDEBUG
                     if (meas[i].operators.size() % 2 != 0)
-                        std::runtime_error("Next neighbors correlators have to have even number of operators");
+                        throw std::runtime_error("Next neighbors correlators have to have even number of operators");
 #endif
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
 													meas[i].fill_operator, meas[i].operators,
