@@ -19,7 +19,11 @@ struct multigrid {
     
     template<class Matrix, class SymmGroup>
     MPS<Matrix, SymmGroup>
-    static restriction ();
+    static restriction (MPS<Matrix, SymmGroup> mps_large,
+                        MPS<Matrix, SymmGroup> & mps_small)
+    {
+        
+    }
     
     
     

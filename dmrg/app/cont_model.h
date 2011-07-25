@@ -26,7 +26,7 @@ namespace app {
         typedef Measurement_Term<Matrix, U1> mterm_t;
         typedef typename ham::op_t op_t;
     public:
-        OpticalLattice (const Lattice& lat_, ModelParameters & model_)
+        OpticalLattice (const Lattice& lat_, BaseParameters & model_)
         : lat(lat_)
         , model(model_)
         {
@@ -144,7 +144,7 @@ namespace app {
         
     private:
         const Lattice & lat;
-        ModelParameters & model;
+        BaseParameters & model;
         
         op_t ident;
         op_t create, destroy;
@@ -161,7 +161,7 @@ namespace app {
         typedef Measurement_Term<Matrix, NullGroup> mterm_t;
         typedef typename ham::op_t op_t;
     public:
-        OpticalLatticeNull (const Lattice& lat_, ModelParameters & model_)
+        OpticalLatticeNull (const Lattice& lat_, BaseParameters & model_)
         : lat(lat_)
         , model(model_)
         {
@@ -281,7 +281,7 @@ namespace app {
         
     private:
         const Lattice & lat;
-        ModelParameters & model;
+        BaseParameters & model;
         
         op_t ident;
         op_t create, destroy;

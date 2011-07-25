@@ -23,7 +23,7 @@ namespace app {
     public:
         typedef Lattice::pos_t pos_t;
         
-        ContChain (ModelParameters & parms, bool pbc_=false)
+        ContChain (BaseParameters & parms, bool pbc_=false)
         : L(parms.get<int>("L"))
         , N(parms.get<int>("Ndiscr"))
         , a(parms.get<double>("a"))
