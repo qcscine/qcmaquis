@@ -90,14 +90,14 @@ public:
         return boost::shared_ptr<BaseStorage<Object> >(new Hdf5Storage<Object>(get_path(), this));
     }
     
-    locking_ptr<alps::hdf5::oarchive, boost::mutex> get_oa_ptr()
+    locking_ptr<alps::hdf5::archive, boost::mutex> get_oa_ptr()
     {
-        return locking_ptr<alps::hdf5::oarchive, boost::mutex>(new alps::hdf5::oarchive(file_path), &h5mtx);
+        return locking_ptr<alps::hdf5::archive, boost::mutex>(new alps::hdf5::archive(file_path), &h5mtx);
     }
     
-    locking_ptr<alps::hdf5::iarchive, boost::mutex> get_ia_ptr()
+    locking_ptr<alps::hdf5::archive, boost::mutex> get_ia_ptr()
     {
-        return locking_ptr<alps::hdf5::iarchive, boost::mutex>(new alps::hdf5::iarchive(file_path), &h5mtx);
+        return locking_ptr<alps::hdf5::archive, boost::mutex>(new alps::hdf5::archive(file_path), &h5mtx);
     }
     
 protected:
@@ -154,7 +154,7 @@ void Hdf5Storage<Object>::load(boost::weak_ptr<storage<Object> > ptr)
     boost::shared_ptr<storage<Object> > workspace(ptr);
     
     workspace->object_.reset(new Object());
-    locking_ptr<alps::hdf5::iarchive, boost::mutex> ia = master->get_ia_ptr();
+    locking_ptr<alps::hdf5::archive, boost::mutex> ia = master->get_ia_ptr();
     *ia >> alps::make_pvp(object_path, *workspace->object_);
     
     timer.end();
@@ -172,7 +172,7 @@ void Hdf5Storage<Object>::store(boost::weak_ptr<storage<Object> > ptr)
         return;
     boost::shared_ptr<storage<Object> > workspace(ptr);
     
-    locking_ptr<alps::hdf5::oarchive, boost::mutex> oa = master->get_oa_ptr();
+    locking_ptr<alps::hdf5::archive, boost::mutex> oa = master->get_oa_ptr();
     *oa << alps::make_pvp(object_path, *workspace->object_);
     ptr.reset();
     ever_stored = true;
@@ -183,7 +183,7 @@ void Hdf5Storage<Object>::store(boost::weak_ptr<storage<Object> > ptr)
 template<class Object>
 Hdf5Storage<Object>::~Hdf5Storage()
 {
-    locking_ptr<alps::hdf5::oarchive, boost::mutex> oa = master->get_oa_ptr();
+    locking_ptr<alps::hdf5::archive, boost::mutex> oa = master->get_oa_ptr();
     if (ever_stored && oa->is_group(object_path))
         oa->delete_group(object_path);
     

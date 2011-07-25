@@ -170,14 +170,14 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 #ifdef HAVE_ALPS_HDF5
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
+void MPS<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
 {
     ar >> alps::make_pvp("MPS",
                          static_cast<std::vector<MPSTensor<Matrix, SymmGroup> >&>(*this));
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::serialize(alps::hdf5::oarchive & ar) const
+void MPS<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 {
     ar << alps::make_pvp("MPS",
                          static_cast<std::vector<MPSTensor<Matrix, SymmGroup> > const &>(*this));

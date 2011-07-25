@@ -289,7 +289,7 @@ void block_matrix<Matrix, SymmGroup>::remove_block(std::size_t which)
 #ifdef HAVE_ALPS_HDF5
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
+void block_matrix<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
 {
     ar >> alps::make_pvp("rows_", rows_);
     ar >> alps::make_pvp("cols_", cols_);
@@ -300,7 +300,7 @@ void block_matrix<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::serialize(alps::hdf5::oarchive & ar) const
+void block_matrix<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 {
     ar << alps::make_pvp("rows_", rows_);
     ar << alps::make_pvp("cols_", cols_);

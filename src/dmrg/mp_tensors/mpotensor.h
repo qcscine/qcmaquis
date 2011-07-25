@@ -46,12 +46,12 @@ public:
     }
     
 #ifdef HAVE_ALPS_HDF5
-    void serialize(alps::hdf5::iarchive & ar)
+    void load(alps::hdf5::archive & ar)
     {
         ar >> alps::make_pvp("data", data_);
     }
     
-    void serialize(alps::hdf5::oarchive & ar) const
+    void save(alps::hdf5::archive & ar) const
     {
         ar << alps::make_pvp("data", data_);
     }

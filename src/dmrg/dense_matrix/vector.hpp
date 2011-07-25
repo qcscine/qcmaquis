@@ -249,7 +249,7 @@ namespace alps {
         
 		template <typename T, typename MemoryBlock>
         void save(
-                  alps::hdf5::oarchive & ar
+                  alps::hdf5::archive & ar
                   , std::string const & path
                   , blas::vector<T, MemoryBlock> const & value
                   , std::vector<std::size_t> size = std::vector<std::size_t>()
@@ -260,7 +260,7 @@ namespace alps {
         }
 		template <typename T, typename MemoryBlock>
         void load(
-                  alps::hdf5::iarchive & ar
+                  alps::hdf5::archive & ar
                   , std::string const & path
                   , blas::vector<T, MemoryBlock> & value
                   , std::vector<std::size_t> chunk = std::vector<std::size_t>()

@@ -40,27 +40,7 @@ typedef blas::dense_matrix<double> Matrix;
 
 #include <alps/hdf5.hpp>
 
-template<class T, class A>
-alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> const & v)
-{
-    std::vector<T> foo(v.begin(), v.end());
-    ar << alps::make_pvp(p, foo);
-    return ar;
-}
-
-template<class T, class A>
-alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> & v)
-{
-    std::vector<T> foo;
-    ar >> alps::make_pvp(p, foo);
-    v.resize(foo.size());
-    std::copy(foo.begin(), foo.end(), v.begin());
-    return ar;
-}
+#include "utils/DmrgParameters.h"
 
 #include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
@@ -75,8 +55,6 @@ alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
 #include "utils/logger.h"
 
 #include "mp_tensors/ss_optimize.h"
-
-#include "utils/DmrgParameters.h"
 
 #include "cont_lattice.h"
 #include "cont_model.h"
@@ -232,23 +210,23 @@ int main(int argc, char ** argv)
         
     int sweep = 0;
     if (restore) {
-        alps::hdf5::iarchive h5ar_in(chkpfile);
+        alps::hdf5::archive h5ar_in(chkpfile);
         h5ar_in >> alps::make_pvp("/state", initial_mps);
         h5ar_in >> alps::make_pvp("/status/sweep", sweep);
         ++sweep;
     } else if (parms.get<std::string>("initfile").size() > 0) {
-        alps::hdf5::iarchive h5ar_in(parms.get<std::string>("initfile"));
+        alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
         h5ar_in >> alps::make_pvp("/state", initial_mps);
     }
     
     {
-        alps::hdf5::oarchive h5ar(rfile);
+        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
     
     if (!dns) {
-        alps::hdf5::oarchive h5ar(chkpfile);
+        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
@@ -291,7 +269,7 @@ int main(int argc, char ** argv)
                 double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
                 
                 {
-                    alps::hdf5::oarchive h5ar(rfile);
+                    alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                     
                     std::ostringstream oss;
                     
@@ -314,7 +292,7 @@ int main(int argc, char ** argv)
                     if (meas_always.n_terms() > 0)
                         measure(cur_mps, *lat, meas_always, rfile, oss.str());
 
-                    alps::hdf5::oarchive h5ar(rfile);
+                    alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                     oss.str("");
                     oss << "/simulation/sweep" << sweep << "/results/Density/mean/value";
                     double dens;
@@ -325,7 +303,7 @@ int main(int argc, char ** argv)
                 
                 if (parms.get<int>("donotsave") == 0)
                 {
-                    alps::hdf5::oarchive h5ar(chkpfile);
+                    alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
                     
                     h5ar << alps::make_pvp("/state", cur_mps);
                     h5ar << alps::make_pvp("/status/sweep", sweep);
@@ -381,7 +359,7 @@ int main(int argc, char ** argv)
                 if (meas_always.n_terms() > 0)
                     measure(initial_mps, *lat, meas_always, rfile, oss.str());
                 
-                alps::hdf5::oarchive h5ar(rfile);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                 oss.str("");
                 oss << "/simulation/extend" << n_extend << "/results/Density/mean/value";
                 double dens;
@@ -411,7 +389,7 @@ int main(int argc, char ** argv)
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         {
-            alps::hdf5::oarchive h5ar(rfile);
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
             if (entropies.size() > 0)
                 h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
             if (renyi2.size() > 0)
@@ -422,7 +400,7 @@ int main(int argc, char ** argv)
         cout << "Energy before: " << expval(mps, mpo) << endl;
         cout << "Energy after: " << expval(mps, mpoc) << endl;
         {
-            alps::hdf5::oarchive h5ar(rfile);
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
             h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         }
         
@@ -441,7 +419,7 @@ int main(int argc, char ** argv)
             cout << "Variance: " << energy2 - energy*energy << endl;
             
             {
-                alps::hdf5::oarchive h5ar(rfile);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                 h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
                 h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
                                        std::vector<double>(1, energy2 - energy*energy));

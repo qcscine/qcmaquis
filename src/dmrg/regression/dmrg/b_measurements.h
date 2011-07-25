@@ -16,7 +16,7 @@ void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
                              b_adj::Adjacency & adj,
                              block_matrix<Matrix, SymmGroup> const & identity,
                              block_matrix<Matrix, SymmGroup> const & fill,
-                             alps::hdf5::oarchive & ar,
+                             alps::hdf5::archive & ar,
                              std::vector<block_matrix<Matrix, SymmGroup> > & ops,
                              std::string base_path)
 {
@@ -42,7 +42,7 @@ void measure_4ptnn_correlation(MPS<Matrix, SymmGroup> & mps,
                                b_adj::Adjacency & adj,
                                block_matrix<Matrix, SymmGroup> const & identity,
                                block_matrix<Matrix, SymmGroup> const & fill,
-                               alps::hdf5::oarchive & ar,
+                               alps::hdf5::archive & ar,
                                std::vector<block_matrix<Matrix, SymmGroup> > & ops,
                                std::string base_path)
 {
@@ -71,7 +71,7 @@ struct measure_
                     b_adj::Adjacency & adj,
                     b_mpos::Hamiltonian<Matrix, SymmGroup> & H,
                     BaseParameters & model,
-                    alps::hdf5::oarchive & ar)
+                    alps::hdf5::archive & ar)
     { }
 };
 
@@ -85,7 +85,7 @@ void measure(MPS<Matrix, SymmGroup> & mps,
              b_adj::Adjacency & adj,
              b_mpos::Hamiltonian<Matrix, SymmGroup> & H,
              BaseParameters & model,
-             alps::hdf5::oarchive & ar)
+             alps::hdf5::archive & ar)
 {
     measure_<Matrix, SymmGroup>()(mps, adj, H, model, ar);
 }

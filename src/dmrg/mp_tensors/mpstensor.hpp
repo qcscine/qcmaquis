@@ -360,7 +360,7 @@ void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
 #ifdef HAVE_ALPS_HDF5
 
 template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
+void MPSTensor<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
 {
     data_.clear();
     
@@ -373,7 +373,7 @@ void MPSTensor<Matrix, SymmGroup>::serialize(alps::hdf5::iarchive & ar)
 }
 
 template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::serialize(alps::hdf5::oarchive & ar) const
+void MPSTensor<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 {
     make_left_paired();
     ar << alps::make_pvp("phys_i", phys_i);

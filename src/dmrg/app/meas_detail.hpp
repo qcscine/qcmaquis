@@ -113,7 +113,7 @@ namespace meas_detail {
             }
             
             {
-                alps::hdf5::oarchive ar(h5name);
+                alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE);
                 ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
                 ar << alps::make_pvp(base_path + std::string("/labels"), labels);
             }
@@ -144,7 +144,7 @@ namespace meas_detail {
             }
             
             {
-                alps::hdf5::oarchive ar(h5name);
+                alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE);
                 ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
                 ar << alps::make_pvp(base_path + std::string("/labels"), labels);
             }
@@ -199,7 +199,7 @@ namespace meas_detail {
         }
                 
         {
-            alps::hdf5::oarchive ar(h5name);
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE);
             ar << alps::make_pvp(base_path + std::string("/mean/value"), vals);
             ar << alps::make_pvp(base_path + std::string("/labels"), labels);
         }
@@ -238,7 +238,7 @@ namespace meas_detail {
         double val = expval(mps, mpo);
         
         {
-            alps::hdf5::oarchive ar(h5name);
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE);
             ar << alps::make_pvp(base_path + std::string("/mean/value"), val);
         }
 	}
@@ -361,7 +361,7 @@ namespace meas_detail {
 	    	}
 	    }
         {
-            alps::hdf5::oarchive ar(h5name);
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE);
             ar << alps::make_pvp(base_path + std::string("/mean/value"), dc);
             ar << alps::make_pvp(base_path + std::string("/labels"), labels);
         }

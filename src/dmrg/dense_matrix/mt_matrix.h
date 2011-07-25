@@ -279,15 +279,15 @@ public:
     }
     
 #ifdef HAVE_ALPS_HDF5
-    void serialize(alps::hdf5::iarchive & ar)
+    void load(alps::hdf5::archive & ar)
     {
         wait();
-        data_.serialize(ar);
+        data_.load(ar);
     }
-    void serialize(alps::hdf5::oarchive & ar) const
+    void save(alps::hdf5::archive & ar) const
     {
         wait();
-        data_.serialize(ar);
+        data_.save(ar);
     }
 #endif
     

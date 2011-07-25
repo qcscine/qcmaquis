@@ -21,7 +21,7 @@
 #define DCOLLECTOR_SAVE(var, ar, path) ar << alps::make_pvp(path, var);
 #define DCOLLECTOR_SAVE_TO_FILE(var, fname, path)                           \
 {                                                                           \
-    alps::hdf5::oarchive h5ar_dcollector(fname);                            \
+    alps::hdf5::archive h5ar_dcollector(fname, alps::hdf5::archive::WRITE); \
     h5ar_dcollector << alps::make_pvp(path, var);                           \
 }
 
@@ -60,7 +60,7 @@ public:
 	}
 
 #ifdef HAVE_ALPS_HDF5
-	alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar) const
+	void save(alps::hdf5::archive & ar) const
 	{
 		if (data.size() == 1) {
 			ar << alps::make_pvp("mean/value", data.begin()->second);
@@ -77,7 +77,6 @@ public:
 			ar << alps::make_pvp("mean/value", values);
 			ar << alps::make_pvp("labels", keys);
 		}
-		return ar;
 	}
 #endif
 

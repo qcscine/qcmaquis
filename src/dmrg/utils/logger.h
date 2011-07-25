@@ -19,7 +19,7 @@ namespace detail {
     {
     public:
         virtual void log(boost::any const &) = 0;
-        virtual void serialize(alps::hdf5::oarchive & ar) const = 0;
+        virtual void save(alps::hdf5::archive & ar) const = 0;
     };
 
     template<class T>
@@ -31,7 +31,7 @@ namespace detail {
             vals.push_back(boost::any_cast<T>(val));
         }
         
-        void serialize(alps::hdf5::oarchive & ar) const
+        void save(alps::hdf5::archive & ar) const
         {
             ar << alps::make_pvp("mean/value", vals);
         }
@@ -62,7 +62,7 @@ public:
         }
     }
     
-    void serialize(alps::hdf5::oarchive & ar) const
+    void save(alps::hdf5::archive & ar) const
     {
         for (std::map<std::string, boost::shared_ptr<detail::Logger_impl_base> >::const_iterator
              it = loggers.begin(); it != loggers.end(); ++it)
