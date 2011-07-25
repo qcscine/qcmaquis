@@ -151,12 +151,12 @@ namespace meas_detail {
         }
         
     private:
+        const MPS<Matrix, SymmGroup> & mps;
+        const Lattice & lat;
         int L;
         Index<SymmGroup> phys_i;
         MPOTensor<Matrix, SymmGroup> ident;
         std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
-        const MPS<Matrix, SymmGroup> & mps;
-        const Lattice & lat;
 
     };
     
