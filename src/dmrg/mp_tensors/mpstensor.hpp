@@ -214,7 +214,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     }
     #endif
     timer.end();
-    assert(ret > 0);
+    assert(ret >= 0);
     return sqrt(ret);
 }
 
