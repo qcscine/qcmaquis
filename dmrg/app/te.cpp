@@ -227,7 +227,7 @@ int main(int argc, char ** argv)
                     measure(cur_mps, *lat, meas_always, rfile, oss.str());
             }
             
-//            if (parms.get<int>("donotsave") == 0)
+//            if (!dns)
 //            {
 //                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
 //                
