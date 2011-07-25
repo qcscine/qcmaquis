@@ -280,7 +280,7 @@ int main(int argc, char ** argv)
         ssm.sync();
     }
     
-    if (parms.get<int>("donotsave") == 0)
+    if (!dns)
     {
         alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
         
