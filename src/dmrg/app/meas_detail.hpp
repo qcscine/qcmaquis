@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "utils/utils.hpp"
+#include <alps/numeric/real.hpp>
 
 #include <alps/hdf5.hpp>
 
@@ -108,7 +109,7 @@ namespace meas_detail {
                 temp(0,0) = op.first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
-                vals.push_back( mps[p].scalar_overlap(vec2) );
+                vals.push_back( alps::numeric::real(mps[p].scalar_overlap(vec2)) );
                 labels.push_back( lat.get_prop<std::string>("label", p) );
             }
             
@@ -139,7 +140,7 @@ namespace meas_detail {
                 temp(0,0) = ops[1].first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p+1], tmp_b, right_[p+1], temp);
-                vals.push_back( mps[p+1].scalar_overlap(vec2) );
+                vals.push_back( alps::numeric::real(mps[p+1].scalar_overlap(vec2)) );
                 labels.push_back( lat.get_prop<std::string>("label", p, p+1) );
             }
             
