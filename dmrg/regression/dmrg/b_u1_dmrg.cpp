@@ -19,28 +19,31 @@ using std::endl;
 typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
 
 #include <alps/hdf5.hpp>
-
-template<class T, class A>
-alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> const & v)
-{
-    std::vector<T> foo(v.begin(), v.end());
-    ar << alps::make_pvp(p, foo);
-    return ar;
-}
-
-template<class T, class A>
-alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> & v)
-{
-    std::vector<T> foo;
-    ar >> alps::make_pvp(p, foo);
-    v.resize(foo.size());
-    std::copy(foo.begin(), foo.end(), v.begin());
-    return ar;
-}
+//template<class T, class A>
+//void save(alps::hdf5::archive & ar,
+//          std::string const & p,
+//          std::vector<T, A> const & v,
+//          std::vector<std::size_t> size = std::vector<std::size_t>(),
+//          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+//          std::vector<std::size_t> offset = std::vector<std::size_t>())
+//{
+//    std::vector<T> foo(v.begin(), v.end());
+//    ar << alps::make_pvp(p, foo);
+//}
+//
+//template<class T, class A>
+//void load(alps::hdf5::archive & ar,
+//          std::string const & p,
+//          std::vector<T, A> & v,
+//          std::vector<std::size_t> size = std::vector<std::size_t>(),
+//          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+//          std::vector<std::size_t> offset = std::vector<std::size_t>())
+//{
+//    std::vector<T> foo;
+//    ar >> alps::make_pvp(p, foo);
+//    v.resize(foo.size());
+//    std::copy(foo.begin(), foo.end(), v.begin());
+//}
 
 #include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"
@@ -218,23 +221,23 @@ int main(int argc, char ** argv)
     
     int sweep = 0;
     if (restore) {
-        alps::hdf5::iarchive h5ar_in(chkpfile);
+        alps::hdf5::archive h5ar_in(chkpfile);
         h5ar_in >> alps::make_pvp("/state", mps);
         h5ar_in >> alps::make_pvp("/status/sweep", sweep);
         ++sweep;
     } else if (parms.get<std::string>("initfile").size() > 0) {
-        alps::hdf5::iarchive h5ar_in(parms.get<std::string>("initfile"));
+        alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
         h5ar_in >> alps::make_pvp("/state", mps);
     }
     
     {
-        alps::hdf5::oarchive h5ar(rfile);
+        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
     
     if (!dns) {
-        alps::hdf5::oarchive h5ar(chkpfile);
+        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
@@ -278,7 +281,7 @@ int main(int argc, char ** argv)
 
 
             {
-                alps::hdf5::oarchive h5ar(rfile);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                 
                 std::ostringstream oss;
                 
@@ -298,7 +301,7 @@ int main(int argc, char ** argv)
                 
             if (parms.get<int>("donotsave") == 0)
             {
-                alps::hdf5::oarchive h5ar(chkpfile);
+                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
                 
                 h5ar << alps::make_pvp("/state", mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
@@ -318,7 +321,7 @@ int main(int argc, char ** argv)
 #ifdef MEASURE_ONLY
     {
 
-        alps::hdf5::oarchive h5ar(rfile);
+        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
         
         cout << "Measurements." << endl;
         measure(mps, *adj, *H, model, h5ar);

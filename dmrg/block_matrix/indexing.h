@@ -167,13 +167,13 @@ public:
 #endif /* PYTHON_EXPORTS */
     
 #ifdef HAVE_ALPS_HDF5
-    void serialize(alps::hdf5::iarchive & ar)
+    void load(alps::hdf5::archive & ar)
     {
         typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
         ar >> alps::make_pvp("Index",
                              static_cast<my_type&>(*this));
     }
-    void serialize(alps::hdf5::oarchive & ar) const
+    void save(alps::hdf5::archive & ar) const
     {
         typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
         ar << alps::make_pvp("Index",

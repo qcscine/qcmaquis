@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 
-#ifndef DMRGPARAMETERS_H
+#if !defined(DMRGPARAMETERS_H) && !defined(BASEPARAMETERS_H)
 #define DMRGPARAMETERS_H
 
 #include <boost/program_options.hpp>
@@ -74,10 +74,10 @@ namespace conversion
 namespace detail
 {
     struct SerializationHelperBase {
-        virtual void operator()(alps::hdf5::oarchive & ar,
+        virtual void operator()(alps::hdf5::archive & ar,
                                 std::string const & path,
                                 boost::any const & a) const = 0;
-        virtual void operator()(alps::hdf5::oarchive & ar,
+        virtual void operator()(alps::hdf5::archive & ar,
                                 std::string const & path,
                                 boost::program_options::variable_value const & a) const = 0;
     };
@@ -85,14 +85,14 @@ namespace detail
     template<class T>
     struct SerializationHelper : public SerializationHelperBase
     {
-        void operator()(alps::hdf5::oarchive & ar,
+        void operator()(alps::hdf5::archive & ar,
                         std::string const & path,
                         boost::any const & a) const
         {
             if (!a.empty())
                 ar << alps::make_pvp(path, boost::any_cast<T>(a));
         }
-        void operator()(alps::hdf5::oarchive & ar,
+        void operator()(alps::hdf5::archive & ar,
                         std::string const & path,
                         boost::program_options::variable_value const & a) const
         {
@@ -128,7 +128,7 @@ public:
     }
     
 #ifdef HAVE_ALPS_HDF5
-    void serialize(alps::hdf5::oarchive & ar) const
+    void save(alps::hdf5::archive & ar) const
     {
         using boost::program_options::option_description;
         using boost::shared_ptr;

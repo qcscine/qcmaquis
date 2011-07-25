@@ -36,24 +36,22 @@ namespace alps {
     namespace hdf5 {
         
         inline void save(
-                  alps::hdf5::oarchive & ar
-                  , std::string const & path
-                  , NullGroup::charge const & value
-                  , std::vector<std::size_t> size = std::vector<std::size_t>()
-                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
-                  )
+                         alps::hdf5::archive & ar
+                         , std::string const & path
+                         , NullGroup::charge const & value
+                         , std::vector<std::size_t> size = std::vector<std::size_t>()
+                         , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                         , std::vector<std::size_t> offset = std::vector<std::size_t>())
         {
             int k = 1;
             ar << alps::make_pvp(path, k);            
         }
         inline void load(
-                  alps::hdf5::iarchive & ar
-                  , std::string const & path
-                  , NullGroup::charge & value
-                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
-                  )
+                         alps::hdf5::archive & ar
+                         , std::string const & path
+                         , NullGroup::charge & value
+                         , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                         , std::vector<std::size_t> offset = std::vector<std::size_t>())
         {
             value = NullGroup::Plus;
         }
@@ -90,12 +88,18 @@ class Ztwo
 	};	
 
 #ifdef HAVE_ALPS_HDF5
-alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
-                                 std::string const & p,
-                                 Ztwo::charge const & v);
-alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
-                                 std::string const & p,
-                                 Ztwo::charge & v);
+void save(alps::hdf5::archive & ar,
+          std::string const & p,
+          Ztwo::charge const & v,
+          std::vector<std::size_t> size = std::vector<std::size_t>(),
+          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+          std::vector<std::size_t> offset = std::vector<std::size_t>());
+void load(alps::hdf5::archive & ar,
+          std::string const & p,
+          Ztwo::charge & v,
+          std::vector<std::size_t> size = std::vector<std::size_t>(),
+          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+          std::vector<std::size_t> offset = std::vector<std::size_t>());
 #endif
 
 inline Ztwo::charge operator-(Ztwo::charge a) { return a; }
@@ -174,8 +178,8 @@ public:
     unsigned int get() { return c_; }
     
 #ifdef HAVE_ALPS_HDF5
-    void serialize(alps::hdf5::oarchive & ar) const { ar << alps::make_pvp("c", c_); }
-    void serialize(alps::hdf5::iarchive & ar) { ar >> alps::make_pvp("c", c_); }
+    void save(alps::hdf5::archive & ar) const { ar << alps::make_pvp("c", c_); }
+    void load(alps::hdf5::archive & ar) { ar >> alps::make_pvp("c", c_); }
 #endif
     
 protected:
@@ -231,13 +235,13 @@ public:
     int const & operator[](std::size_t p) const { return data_[p]; }
     
 #ifdef HAVE_ALPS_HDF5
-    void serialize(alps::hdf5::oarchive & ar) const
+    void save(alps::hdf5::archive & ar) const
     {
         for (int i = 0; i < N; ++i)
             ar << alps::make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);
     }
     
-    void serialize(alps::hdf5::iarchive & ar)
+    void load(alps::hdf5::archive & ar)
     {
         for (int i = 0; i < N; ++i)
             ar >> alps::make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);

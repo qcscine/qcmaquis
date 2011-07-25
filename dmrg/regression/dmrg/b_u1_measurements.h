@@ -8,7 +8,7 @@ struct measure_<Matrix, U1>
                       b_adj::Adjacency & adj,
                       b_mpos::Hamiltonian<Matrix, U1> & H,
                       BaseParameters & model,
-                      alps::hdf5::oarchive & ar)
+                      alps::hdf5::archive & ar)
     {
         std::vector<double> magns;
         
@@ -147,7 +147,7 @@ struct measure_<Matrix, U1>
                         b_adj::Adjacency & adj,
                         b_mpos::Hamiltonian<Matrix, U1> & H,
                         BaseParameters & model,
-                        alps::hdf5::oarchive & ar)
+                        alps::hdf5::archive & ar)
     {
         std::vector<double> magns;
         
@@ -196,7 +196,7 @@ struct measure_<Matrix, U1>
                     b_adj::Adjacency & adj,
                     b_mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::oarchive & ar)
+                    alps::hdf5::archive & ar)
     {
         block_matrix<Matrix, U1> dens, create, destroy, sign, ident;
         
@@ -244,7 +244,7 @@ struct measure_<Matrix, U1>
                     b_adj::Adjacency & adj,
                     b_mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::oarchive & ar)
+                    alps::hdf5::archive & ar)
     {
         if (model.get<std::string>("model") == std::string("biquadratic"))
             measure_blbq(mps, adj, H, model, ar);

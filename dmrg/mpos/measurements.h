@@ -26,7 +26,7 @@ struct measure_
                     adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, SymmGroup> & H,
                     BaseParameters & model,
-                    alps::hdf5::oarchive & ar)
+                    alps::hdf5::archive & ar)
     { }
 };
 
@@ -35,7 +35,7 @@ void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
                              adj::Adjacency & adj,
                              block_matrix<Matrix, SymmGroup> const & identity,
                              block_matrix<Matrix, SymmGroup> const & fill,
-                             alps::hdf5::oarchive & ar,
+                             alps::hdf5::archive & ar,
                              std::vector<block_matrix<Matrix, SymmGroup> > & ops,
                              std::string base_path)
 {
@@ -66,7 +66,7 @@ struct measure_<Matrix, U1>
                       adj::Adjacency & adj,
                       mpos::Hamiltonian<Matrix, U1> & H,
                       BaseParameters & model,
-                      alps::hdf5::oarchive & ar)
+                      alps::hdf5::archive & ar)
     {
         std::vector<double> magns;
 
@@ -129,7 +129,7 @@ struct measure_<Matrix, U1>
                         adj::Adjacency & adj,
                         mpos::Hamiltonian<Matrix, U1> & H,
                         BaseParameters & model,
-                        alps::hdf5::oarchive & ar)
+                        alps::hdf5::archive & ar)
     {
         std::vector<double> magns;
         
@@ -178,7 +178,7 @@ struct measure_<Matrix, U1>
                     adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::oarchive & ar)
+                    alps::hdf5::archive & ar)
     {
         block_matrix<Matrix, U1> dens, create, destroy, sign, ident;
         
@@ -226,7 +226,7 @@ struct measure_<Matrix, U1>
                     adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::oarchive & ar)
+                    alps::hdf5::archive & ar)
     {
         if (model.get<std::string>("model") == std::string("biquadratic"))
             measure_blbq(mps, adj, H, model, ar);
@@ -240,7 +240,7 @@ void measure(MPS<Matrix, SymmGroup> & mps,
              adj::Adjacency & adj,
              mpos::Hamiltonian<Matrix, SymmGroup> & H,
              BaseParameters & model,
-             alps::hdf5::oarchive & ar)
+             alps::hdf5::archive & ar)
 {
     measure_<Matrix, SymmGroup>()(mps, adj, H, model, ar);
 }

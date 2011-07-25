@@ -20,28 +20,31 @@ using std::endl;
 typedef blas::dense_matrix<std::complex<double> > Matrix;
 
 #include <alps/hdf5.hpp>
-
-template<class T, class A>
-alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> const & v)
-{
-    std::vector<T> foo(v.begin(), v.end());
-    ar << alps::make_pvp(p, foo);
-    return ar;
-}
-
-template<class T, class A>
-alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar,
-                                 std::string const & p,
-                                 std::vector<T, A> & v)
-{
-    std::vector<T> foo;
-    ar >> alps::make_pvp(p, foo);
-    v.resize(foo.size());
-    std::copy(foo.begin(), foo.end(), v.begin());
-    return ar;
-}
+//template<class T, class A>
+//void save(alps::hdf5::archive & ar,
+//          std::string const & p,
+//          std::vector<T, A> const & v,
+//          std::vector<std::size_t> size = std::vector<std::size_t>(),
+//          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+//          std::vector<std::size_t> offset = std::vector<std::size_t>())
+//{
+//    std::vector<T> foo(v.begin(), v.end());
+//    ar << alps::make_pvp(p, foo);
+//}
+//
+//template<class T, class A>
+//void load(alps::hdf5::archive & ar,
+//          std::string const & p,
+//          std::vector<T, A> & v,
+//          std::vector<std::size_t> size = std::vector<std::size_t>(),
+//          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+//          std::vector<std::size_t> offset = std::vector<std::size_t>())
+//{
+//    std::vector<T> foo;
+//    ar >> alps::make_pvp(p, foo);
+//    v.resize(foo.size());
+//    std::copy(foo.begin(), foo.end(), v.begin());
+//}
 
 #include "block_matrix/indexing.h"
 #include "mp_tensors/mps.h"

@@ -8,7 +8,7 @@ struct measure_<Matrix, TwoU1>
                       b_adj::Adjacency & adj,
                       b_mpos::Hamiltonian<Matrix, TwoU1> & H,
                       BaseParameters & model,
-                      alps::hdf5::oarchive & ar)
+                      alps::hdf5::archive & ar)
     {
         TwoU1::charge A, B, C;
         B[0] = 1;
@@ -137,7 +137,7 @@ struct measure_<Matrix, TwoU1>
                                b_adj::Adjacency & adj,
                                b_mpos::Hamiltonian<Matrix, TwoU1> & H,
                                BaseParameters & model,
-                               alps::hdf5::oarchive & ar)
+                               alps::hdf5::archive & ar)
     {
         block_matrix<Matrix, TwoU1> create_up, create_down;
         block_matrix<Matrix, TwoU1> destroy_up, destroy_down;
@@ -334,7 +334,7 @@ struct measure_<Matrix, TwoU1>
                     b_adj::Adjacency & adj,
                     b_mpos::Hamiltonian<Matrix, TwoU1> & H,
                     BaseParameters & model,
-                    alps::hdf5::oarchive & ar)
+                    alps::hdf5::archive & ar)
     {
         if (model.get<std::string>("model") == std::string("biquadratic"))
             measure_blbq(mps, adj, H, model, ar);
