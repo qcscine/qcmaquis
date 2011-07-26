@@ -11,7 +11,7 @@
 #include "boost/swap.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "function_hooks/vli_polynomial_gpu_function_hooks.hpp"
-#include "monome/monome.h"
+#include "polynomial/monomial.hpp"
 
 #include <ostream>
 #include <cmath>

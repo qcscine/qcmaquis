@@ -22,14 +22,14 @@ add_test (vli_gpu_tests vli_gpu_tests)
 # monomei polynome cpu - gpu test
 #
 
-add_executable ( vli_monome_polynome_tests vli_monome_polynome_tests.cpp)
-target_link_libraries (vli_monome_polynome_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
+add_executable ( vli_monomial_polynomial_tests vli_monomial_polynomial_tests.cpp)
+target_link_libraries (vli_monomial_polynomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
 
-add_executable ( vli_monome_tests vli_monome_tests.cpp)
-target_link_libraries (vli_monome_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
+add_executable ( vli_monomial_tests vli_monomial_tests.cpp)
+target_link_libraries (vli_monomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
 
-add_test(vli_monome_polynome_tests vli_monome_polynome_tests)
-add_test(vli_monome_tests vli_monome_tests)
+add_test(vli_monomial_polynomial_tests vli_monomial_polynomial_tests)
+add_test(vli_monomial_tests vli_monomial_tests)
 #
 # vector
 #
