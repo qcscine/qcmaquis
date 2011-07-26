@@ -77,8 +77,9 @@ namespace vli
             BaseInt tmp = num & data_mask<BaseInt>::value;
             BaseInt sign = 0x01 & (num>>(sizeof(int)*8-1));
             BaseInt bulk[Size-1];
-            for(std::size_t i = 0; i < Size-1; ++i)
+            for(std::size_t i = 0; i < Size-2; ++i)
                 bulk[i] = sign * data_mask<BaseInt>::value;
+            bulk[Size-2] = sign * (data_mask<BaseInt>::value | base<BaseInt>::value);
 			
             gpu::cu_check_error(cudaMemcpy((void*)this->data_, (void*)&tmp, sizeof(BaseInt), cudaMemcpyHostToDevice),  __LINE__); //The first number is set to the num value
             gpu::cu_check_error(cudaMemcpy((void*)(this->data_+1), (void*)&bulk[0], (Size-1)*sizeof(BaseInt), cudaMemcpyHostToDevice),  __LINE__);
@@ -132,6 +133,31 @@ namespace vli
             plus_assign(*this,vli);
             return *this;
         }
+        
+        vli_gpu& operator += (int a)
+        {
+            using vli::plus_assign;
+            vli_gpu a_vli(a);
+            plus_assign(*this,a_vli);
+            return *this;
+        }
+        
+        vli_gpu& operator -= (vli_gpu const& vli)
+        {
+            using vli::minus_assign;
+            vli_gpu tmp(vli);
+            minus_assign(*this,tmp);
+            return *this;
+        }
+        
+        vli_gpu& operator -= (int a)
+        {
+            using vli::plus_assign;
+            vli_gpu tmp(a);
+            tmp.negate();
+            plus_assign(*this,tmp);
+            return *this;
+        }
 
 		vli_gpu& operator *= (vli_gpu const& vli)
         {
@@ -139,12 +165,12 @@ namespace vli
             multiplies_assign(*this,vli);
             return *this;
         }
-
-        vli_gpu& operator -= (vli_gpu const& vli)
+        
+        vli_gpu& operator *= (int a)
         {
-            using vli::minus_assign;
-            vli_gpu tmp(vli);
-            minus_assign(*this,tmp);
+            using vli::multiplies_assign;
+            vli_gpu vli_a(a); 
+            multiplies_assign(*this,vli_a);
             return *this;
         }
         
