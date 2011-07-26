@@ -258,12 +258,34 @@ namespace vli
         vli_a += vli_b;
         return vli_a;
     }
+	
+    template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator + (vli_gpu<BaseInt, Size> vli_a, int b)
+    {
+        // TODO check whether direct implementation (without += ) is faster
+        vli_a += b;
+        return vli_a;
+    }
+    
+    template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator + (int b, vli_gpu<BaseInt, Size> const& vli_a)
+    {
+        return vli_a+b;
+    }
 
     template <class BaseInt, int Size>
 	const vli_gpu<BaseInt, Size> operator - (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
         // TODO check whether direct implementation (without += ) is faster
         vli_a -= vli_b;
+        return vli_a;
+    }
+    
+    template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator - (vli_gpu<BaseInt, Size> vli_a, int b)
+    {
+        // TODO check whether direct implementation (without += ) is faster
+        vli_a -= b;
         return vli_a;
     }
 
@@ -273,6 +295,20 @@ namespace vli
         // TODO check whether direct implementation (without *= ) is faster
         vli_a *= vli_b;
         return vli_a;
+    }
+	
+    template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, int b)
+    {
+        // TODO check whether direct implementation (without *= ) is faster
+        vli_a *= b;
+        return vli_a;
+    }
+    
+    template <class BaseInt, int Size>
+	const vli_gpu<BaseInt, Size> operator * (int b, vli_gpu<BaseInt, Size> const& vli_a)
+    {
+        return vli_a*b;
     }
 	
 	template <class BaseInt, int Size>

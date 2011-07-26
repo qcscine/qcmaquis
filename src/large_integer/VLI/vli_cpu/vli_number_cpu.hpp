@@ -93,8 +93,7 @@ namespace vli
         vli_cpu& operator += (int a)
         {
             using vli::plus_assign;
-            vli_cpu a_vli(a);
-            plus_assign(*this,a_vli);
+            plus_assign(*this,vli_cpu(a));
             return *this;
         }
         
@@ -110,9 +109,7 @@ namespace vli
         vli_cpu& operator -= (int a)
         {
             using vli::plus_assign;
-            vli_cpu tmp(a);
-            tmp.negate();
-            plus_assign(*this,tmp);
+            plus_assign(*this,vli_cpu(-a));
             return *this;
         }
         
@@ -126,8 +123,7 @@ namespace vli
         vli_cpu& operator *= (int a)
         {
             using vli::multiplies_assign;
-            vli_cpu vli_a(a); 
-            multiplies_assign(*this,vli_a);
+            multiplies_assign(*this,vli_cpu(a));
             return *this;
         }
 
@@ -299,9 +295,29 @@ namespace vli
     }
     
     template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, int b)
+    {
+        vli_a += b;
+        return vli_a;
+    }
+    
+    template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator + (int b, vli_cpu<BaseInt, Size> const& vli_a)
+    {
+        return vli_a+b;
+    }
+    
+    template <class BaseInt, int Size>
     const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a -= vli_b;
+        return vli_a;
+    }
+    
+    template <class BaseInt, int Size>
+    const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, int b)
+    {
+        vli_a -= b;
         return vli_a;
     }
 
