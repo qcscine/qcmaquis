@@ -23,7 +23,7 @@ namespace vli
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
          */
         explicit monomial(size_type j_exp = 0, size_type h_exp = 0)
-        :j_exp_(j_exp), h_exp_(h_exp){
+        :j_exp_(j_exp), h_exp_(h_exp), coeff_(1){
         }
         
         explicit monomial(Vli const& vli, size_type j_exp = 0, size_type h_exp = 0)// for me !
@@ -50,7 +50,7 @@ namespace vli
         bool operator == (monomial const& m) const{
             return (j_exp_ == m.j_exp_) && (h_exp_ == m.h_exp_) && (coeff_ == m.coeff_);
         }
-        
+        /*
         typename Vli::value_type const& operator[](size_type i)const{ // for a serial acces of the VLI element
             return coeff_[i];
         }
@@ -58,6 +58,7 @@ namespace vli
         typename Vli::value_type & operator[](size_type i){
             return coeff_[i];
         }
+        */
         
         typename Vli::value_type*  p(){
             return coeff_.p();
@@ -79,14 +80,14 @@ namespace vli
     }
     
     template <typename Vli, typename T>
-    monomial<Vli> operator * (monomial<Vli> m, T c)
+    monomial<Vli> operator * (monomial<Vli> m, T const& c)
     {
         m*=c;
         return m;
     }
 
     template <typename Vli, typename T>
-    monomial<Vli> operator * (T c, monomial<Vli> m)
+    monomial<Vli> operator * (T const& c, monomial<Vli> const& m)
     {
         return m*c;
     }
