@@ -31,35 +31,38 @@ __device__ void copy_kernel_gpu(T* x, T const* y, int size)
 template <typename T>
 __device__ void negate_device(T* x, int vli_size)
 {
-    // TODO fix bug!
-    T one[8] = {1,0,0,0,0,0,0,0}; //to do find something else
-    
     #pragma unroll
     for(int i=0; i < vli_size-1; ++i)
         *(x+i) = (~*(x+i))&data_mask<T>::value;
 
     *(x+vli_size-1) = (~*(x+vli_size-1))&(base<T>::value+data_mask<T>::value);
     
-    addition_classic_kernel_gpu(x, &one[0], vli_size);
+    addition_with_int_kernel_gpu(x, 1, vli_size);
 }
-    
-/**
-classical addition, the operation " addition " is serial but we sum all number together 
-*/
+
 template <typename T>
-__device__ void addition_kernel_gpu(T* x, T const* y, int k)
+__device__ void addition_with_int_kernel_gpu(T* x, int y, int vli_size)
 {
-	*(x+k)    += *(y+k);
-	*(x+k+1)  += *(x+k) >> data_bits<T>::value;
-	*(x+k)    &= data_mask<T>::value;
+    *x    += y;
+    #pragma unroll
+    for (int k = 0; k < vli_size-1; ++k)
+    { 
+        *(x+k+1)  += *(x+k) >> data_bits<T>::value;
+        *(x+k)    &= data_mask<T>::value;
+    }
+    *(x+vli_size-1) &= base<T>::value + data_mask<T>::value;
 }
 
 template <typename T>
 __device__ void addition_classic_kernel_gpu(T* x, T const* y, int vli_size)
 {
     #pragma unroll
-    for (int i = 0; i < vli_size-1; ++i) 
-        addition_kernel_gpu(x,y,i);
+    for (int k = 0; k < vli_size-1; ++k)
+    { 
+        *(x+k)    += *(y+k);
+        *(x+k+1)  += *(x+k) >> data_bits<T>::value;
+        *(x+k)    &= data_mask<T>::value;
+    }
     
     *(x+vli_size-1) += *(y+vli_size-1);
     *(x+vli_size-1) &= base<T>::value + data_mask<T>::value;

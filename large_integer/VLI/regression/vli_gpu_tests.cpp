@@ -1,6 +1,11 @@
 #define BOOST_TEST_MODULE vli_cpu
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
+#include <boost/mpl/list_c.hpp>
+#include <boost/mpl/fold.hpp>
+#include <boost/mpl/transform.hpp>
+#include <boost/mpl/pair.hpp>
+#include <boost/mpl/push_front.hpp>
 
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
@@ -13,8 +18,61 @@ using vli::vli_cpu;
 using vli::max_int_value;
 using vli::vli_gpu;
 
-typedef boost::mpl::list<unsigned int, unsigned long int> test_types;
+/**
+  * Specify which BaseInt types and vli sizes ought to be tested
+  */
 
+typedef boost::mpl::list<unsigned int, unsigned long int> test_types;
+typedef boost::mpl::list_c<std::size_t,2,4,8,16> test_sizes;
+
+
+namespace detail
+{
+/**
+  * Generate all combinations from test types and test sizes
+  */
+template <typename SizeList>
+struct all_sizes
+{
+    template<typename MplList,typename Element>
+    struct apply
+    {
+        typedef typename boost::mpl::fold<
+            SizeList,
+            MplList,
+            boost::mpl::push_front<
+                  typename boost::mpl::_1
+                , typename boost::mpl::pair<Element,boost::mpl::_2>
+                >
+            >::type type;
+    };
+};
+
+typedef boost::mpl::fold<
+    test_types,
+    boost::mpl::list<>,
+    all_sizes<test_sizes>
+    >::type type_size_pairs;
+
+/**
+  * Convert the Boost MPL Pairs pair<Base_int_type, size> to vli_cpu types.
+  */
+template <typename Pair>
+struct vli_type
+{
+    typedef vli::vli_cpu<typename boost::mpl::first<Pair>::type,boost::mpl::second<Pair>::type::value> type;
+};
+
+typedef boost::mpl::transform<
+        detail::type_size_pairs,
+        vli_type<boost::mpl::_1>
+        >::type vli_types;
+} //namespace detail
+
+typedef detail::vli_types vli_types;
+
+
+//TODO is the gpu_manager needed for the execution of the other vli_gpu tests?
 BOOST_AUTO_TEST_CASE(gpu_manager)
 {
 	gpu::gpu_manager* GPU;
@@ -25,343 +83,5 @@ BOOST_AUTO_TEST_CASE(gpu_manager)
     GPU->instance().destructor();
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(constructors_test, T, test_types)
-{
-	gpu::gpu_manager* GPU;
-	GPU->instance();
-    vli_gpu<T,8> a;
-    vli_gpu<T,8> b(0);
-
-    BOOST_CHECK_EQUAL(a,b);
-	GPU->instance().destructor();
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(copy_construction, T, test_types)
-{
-	gpu::gpu_manager* GPU;
-	GPU->instance();
-	
-    vli_cpu<T,8> A;
-
-    A[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-	
-    vli::vli_gpu<T,8> B(A);
-	    
-	BOOST_CHECK_EQUAL(A,B);
-	
-	GPU->instance().destructor();
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(proxy_access, T, test_types)
-{
-
-    // Read access
-    vli_cpu<T,8> c;
-    c[0] = 219837;
-    c[1] = 7823;
-    c[2] = 937;
-    c[3] = 0;
-    c[4] = 898123;
-    c[5] = 716324;
-    c[6] = 123;
-    c[7] = 52782;
-
-    vli_gpu<T,8> cg(c);
-
-    for(std::size_t i=0; i < 8; ++i)
-        BOOST_CHECK_EQUAL(c[i],cg[i]);
-    
-    // Write access
-    c[0] = 845234;
-    c[1] = 4562;
-    c[2] = 98972;
-    c[3] = 2343;
-    c[4] = 10;
-    c[5] = 7723;
-    c[6] = 173643;
-    c[7] = 52873;
-
-    cg[0] = 845234;
-    cg[1] = 4562;
-    cg[2] = 98972;
-    cg[3] = 2343;
-    cg[4] = 10;
-    cg[5] = 7723;
-    cg[6] = 173643;
-    cg[7] = 52873;
-    
-    for(std::size_t i=0; i < 8; ++i)
-        BOOST_CHECK_EQUAL(c[i],cg[i]);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(serial_addition, T, test_types)
-{
-	gpu::gpu_manager* GPU;
-	GPU->instance();
-		
-    vli_cpu<T,8> A;
-    vli_cpu<T,8> B;
-    
-    A[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-        
-    B[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-	vli::vli_cpu<T,8> C(0);
-	
-    vli::vli_gpu<T,8> D(A);
-	vli::vli_gpu<T,8> E(B);
-	vli::vli_gpu<T,8> F(0);
-
-	C = A+B;
-	F = D+E;
-	
-    mpz_class Agmp(A.get_str());
-    mpz_class Bgmp(B.get_str());
-    mpz_class Cgmp(C.get_str());
-    
-    Cgmp = Agmp+Bgmp;
-    
-	BOOST_CHECK_EQUAL(C,F);
-	BOOST_CHECK_EQUAL(C.get_str(),Cgmp.get_str());
-	BOOST_CHECK_EQUAL(F.get_str(),Cgmp.get_str());
-
-	GPU->instance().destructor();
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(serial_substraction, T, test_types)
-{
-	gpu::gpu_manager* GPU;
-	GPU->instance();
-    
-    vli_cpu<T,8> A;
-    vli_cpu<T,8> B;
-    
-    A[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-    B[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-	vli::vli_cpu<T,8> C(0);
-	
-    vli::vli_gpu<T,8> D(A);
-	vli::vli_gpu<T,8> E(B);
-	vli::vli_gpu<T,8> F(0);
-    
-	C = A-B;
-	F = D-E;
-	
-    mpz_class Agmp(A.get_str());
-    mpz_class Bgmp(B.get_str());
-    mpz_class Cgmp(C.get_str());
-    
-    Cgmp = Agmp-Bgmp;
-    
-	BOOST_CHECK_EQUAL(C,F);
-	BOOST_CHECK_EQUAL(C.get_str(),Cgmp.get_str());
-	BOOST_CHECK_EQUAL(F.get_str(),Cgmp.get_str());
-    
-	GPU->instance().destructor();
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(serial_multiplication, T, test_types)
-{
-	gpu::gpu_manager* GPU;
-	GPU->instance();
-    
-    vli_cpu<T,8> A;
-    vli_cpu<T,8> B;
-    
-    A[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-    B[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-	vli::vli_cpu<T,8> C(0);
-	
-    vli::vli_gpu<T,8> D(A);
-	vli::vli_gpu<T,8> E(B);
-	vli::vli_gpu<T,8> F(0);
-    
-	C = A*B;
-	F = D*E;
-	
-    mpz_class Agmp(A.get_str());
-    mpz_class Bgmp(B.get_str());
-    mpz_class Cgmp(C.get_str());
-    
-    Cgmp = Agmp*Bgmp;
-    
-	BOOST_CHECK_EQUAL(C,F);
-	BOOST_CHECK_EQUAL(C.get_str(),Cgmp.get_str());
-	BOOST_CHECK_EQUAL(F.get_str(),Cgmp.get_str());
-    
-	GPU->instance().destructor();
-
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(PlusAssign, T, test_types)
-{
-    gpu::gpu_manager* GPU;
-	GPU->instance();
-    
-    vli_cpu<T,8> A;
-    vli_cpu<T,8> B;
-    
-    A[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-    B[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-	
-    vli::vli_gpu<T,8> D(A);
-	vli::vli_gpu<T,8> E(B);
-	
-	A+=B;
-	D+=E;
-	
-    mpz_class Agmp(A.get_str());
-    mpz_class Bgmp(B.get_str());
-       
-    Agmp+=Bgmp;
-    
-	BOOST_CHECK_EQUAL(A,D);
-	BOOST_CHECK_EQUAL(A.get_str(),Bgmp.get_str());
-    
-	GPU->instance().destructor();
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(MinusAssign, T, test_types)
-{
-    gpu::gpu_manager* GPU;
-	GPU->instance();
-    
-    vli_cpu<T,8> A;
-    vli_cpu<T,8> B;
-    
-    A[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-    B[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-	
-    vli::vli_gpu<T,8> D(A);
-	vli::vli_gpu<T,8> E(B);
-	
-	A-=B;
-	D-=E;
-	
-    mpz_class Agmp(A.get_str());
-    mpz_class Bgmp(B.get_str());
-    
-    Agmp-=Bgmp;
-    
-	BOOST_CHECK_EQUAL(A,D);
-	BOOST_CHECK_EQUAL(A.get_str(),Bgmp.get_str());
-    
-	GPU->instance().destructor();
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(MultiplyAssign, T, test_types)
-{
-    gpu::gpu_manager* GPU;
-	GPU->instance();
-    
-    vli_cpu<T,8> A;
-    vli_cpu<T,8> B;
-    
-    A[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    A[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-    B[0]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[1]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[2]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[3]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[4]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[5]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    B[6]=static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-    
-	
-    vli::vli_gpu<T,8> D(A);
-	vli::vli_gpu<T,8> E(B);
-	
-	A*=B;
-	D*=E;
-	
-    mpz_class Agmp(A.get_str());
-    mpz_class Bgmp(B.get_str());
-    
-    Agmp*=Bgmp;
-    
-	BOOST_CHECK_EQUAL(A,D);
-	BOOST_CHECK_EQUAL(A.get_str(),Bgmp.get_str());
-    
-	GPU->instance().destructor();
-}
-
+// Load all the other tests
+#include "regression/vli_number_common_tests.hpp"
