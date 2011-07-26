@@ -8,126 +8,83 @@
 #include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "polynomial/monomial.hpp"
-#include "polynomial/polynomial_gpu.hpp"
-#include "polynomial/polynomial_cpu.hpp"
 #include "gmpxx.h"
+
+#include "regression/common_test_functions.hpp"
 
 using vli::vli_cpu;
 using vli::max_int_value;
 using vli::vli_gpu;
-using vli::polynomial_cpu;
 using vli::monomial;
 
-typedef boost::mpl::list<unsigned int, unsigned long int> test_types;
+using vli::test::fill_random;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test_site_monome, T, test_types)
+typedef boost::mpl::list<
+        vli_cpu<unsigned int,8>,
+        vli_cpu<unsigned int,16>,
+        vli_cpu<unsigned long int,8>,
+        vli_cpu<unsigned long int,16>,
+        vli_gpu<unsigned int,8>,
+        vli_gpu<unsigned int,16>,
+        vli_gpu<unsigned long int,8>,
+        vli_gpu<unsigned long int,16>
+        > vli_types;
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE ( constructor, Vli, vli_types )
 {
-    enum {poly_size = 10};
-	gpu::gpu_manager* GPU;
-	GPU->instance();
-	
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pa;
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pb;
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pc;
-    
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pagpu;
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pcgpu;
-    
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pdgpu(pc);
-    
-    for(std::size_t i=0; i < poly_size; ++i){     
-        for(std::size_t j=0; j < poly_size; ++j){
-            for(std::size_t k=0; k < 8; ++k){
-                pa(i,j)[k] = static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-                pb(i,j)[k] = static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-            }
-            pagpu(i,j) = pa(i,j);
-        }
-    }
-    
-    
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pbgpu(pb);
-    
-    
-    /** THE ORDER IS VERY IMPORTANT, first CPU second GPU*/
-    BOOST_CHECK_EQUAL(pa,pagpu);
-    BOOST_CHECK_EQUAL(pb,pbgpu);
-    BOOST_CHECK_EQUAL(pc,pcgpu);
+    monomial<Vli> ma;
+    monomial<Vli> mb(0,0);
+    BOOST_CHECK_EQUAL(ma,mb);
 
-	GPU->instance().destructor();
+    monomial<Vli> mc(1,2);
+    monomial<Vli> md(2,1);
+
+    BOOST_CHECK_EQUAL(mc == md, false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplication_polynomial, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE ( copy_constructor, Vli, vli_types )
 {
-  	gpu::gpu_manager* GPU;
-	GPU->instance();
-    
-    enum {poly_size = 10};
-
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pa;
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pb;
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pc;
-    
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pagpu;
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pbgpu;
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pcgpu;
-    
-    
-    for(std::size_t i=0; i < poly_size; ++i){     
-        for(std::size_t j=0; j < poly_size; ++j){
-            for(std::size_t k=0; k < 8; ++k){
-                pa(i,j)[k] = static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-                pb(i,j)[k] = static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-            }
-            pagpu(i,j) = pa(i,j);
-            pbgpu(i,j) = pb(i,j);
-        }
-    }
-    
-    pc = pa*pb;
-    pcgpu = pagpu*pbgpu;
-        
-    /** THE ORDER IS VERY IMPORTANT, first CPU second GPU*/
-    BOOST_CHECK_EQUAL(pc,pcgpu);
-    
-	GPU->instance().destructor();
+    monomial<Vli> ma;
+    monomial<Vli> mb(8,5);
+    monomial<Vli> mc(mb);
+    BOOST_CHECK_EQUAL(mb,mc);
+    BOOST_CHECK_EQUAL(ma == mc,false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addition_polynomial, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_vli, Vli, vli_types )
 {
-    gpu::gpu_manager* GPU;
-	GPU->instance();
-   
-    enum {poly_size = 20 };
+    Vli a;
+    fill_random(a,Vli::size-1);
+    monomial<Vli> ma(2,3);
+    monomial<Vli> mo(ma);
 
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pa;
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pb;
-    vli::polynomial_cpu<vli_cpu<T,8>,poly_size> pc;
-    
-    for(std::size_t i=0; i < poly_size; ++i){     
-        for(std::size_t j=0; j < poly_size; ++j){
-            for(std::size_t k=0; k < 8; ++k){
-                pa(i,j)[k] = static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-                pb(i,j)[k] = static_cast<T>(drand48())%(max_int_value<vli_cpu<T,8> >::value);
-            }
-        }
-    }
-    
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pagpu(pa);
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pbgpu(pb);
-    vli::polynomial_gpu<vli_gpu<T,8>,poly_size> pcgpu(pb);
+    monomial<Vli> mb = ma * a;
+    monomial<Vli> mc = a * ma;
 
-    pa+=pb;
-    pagpu+=pbgpu;
-    
-    printf("GPU \n");
-    std::cout << pagpu << std::endl;
-    printf("--------------------------- \n");
-    printf("CPU \n");
-    std::cout << pa << std::endl;
-    /** THE ORDER IS VERY IMPORTANT, first CPU second GPU*/
-    BOOST_CHECK_EQUAL(pa,pagpu);
-    
-	GPU->instance().destructor();
-    
+    ma *= a;
+
+    BOOST_CHECK_EQUAL(ma,mb);
+    BOOST_CHECK_EQUAL(ma,mc);
+
+    BOOST_CHECK_EQUAL(ma == mo, false);
+    BOOST_CHECK_EQUAL(ma.coeff_,a); 
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_int, Vli, vli_types )
+{
+    int a = 10;
+    monomial<Vli> ma(5,7);
+    monomial<Vli> mo(ma);
+
+    monomial<Vli> mb = ma * a;
+    monomial<Vli> mc = a* ma;
+
+    ma *= a;
+
+    BOOST_CHECK_EQUAL(ma,mb);
+    BOOST_CHECK_EQUAL(ma,mc);
+
+    BOOST_CHECK_EQUAL(ma == mo, false);
+    BOOST_CHECK_EQUAL(ma.coeff_,Vli(a));
 }
