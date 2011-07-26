@@ -240,7 +240,7 @@ namespace meas_detail {
         
         {
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), val);
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, val));
         }
 	}
 
