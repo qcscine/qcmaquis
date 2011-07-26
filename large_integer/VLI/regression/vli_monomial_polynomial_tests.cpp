@@ -17,9 +17,9 @@
 #include "vli_cpu/vli_number_cpu.hpp"
 #include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
-#include "monome/monome.h"
-#include "monome/polynome_cpu.h"
-#include "monome/polynome_gpu.h"
+#include "polynomial/monomial.hpp"
+#include "polynomial/polynomial_cpu.hpp"
+#include "polynomial/polynomial_gpu.hpp"
 
 //#include "utils/timings.h"
 

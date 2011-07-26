@@ -11,7 +11,7 @@
 #include "boost/swap.hpp"
 #include "function_hooks/vli_polynomial_cpu_function_hooks.hpp"
 
-#include "monome/monome.h"
+#include "polynomial/monomial.hpp"
 
 #include <ostream>
 #include <cmath>

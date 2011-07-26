@@ -10,7 +10,7 @@
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include <vector>
 #include "boost/swap.hpp"
-#include "monome/polynome_cpu.h"
+#include "polynomial/polynomial_cpu.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
 
 #include <ostream>
