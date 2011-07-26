@@ -1,3 +1,33 @@
+
+template <typename Vli>
+typename Vli::value_type rnd_digit()
+{
+    static boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
+    return rnd(rng);
+}
+
+template <typename Vli>
+int rnd_valid_int()
+{
+    static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(max_int_value<Vli>::value)));
+    return rnd(rng);
+}
+
+template <typename Vli>
+void fill_random(Vli& v)
+{
+    for(typename Vli::size_type i=0; i < Vli::size; ++i)
+        v[i] = rnd_digit<Vli>();
+}
+
+template <typename Vli>
+void fill_random(Vli& v, typename Vli::size_type size)
+{
+    assert(size <= Vli::size);
+    for(typename Vli::size_type i=0; i < size; ++i)
+        v[i] = rnd_digit<Vli>();
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, Vli, vli_types )
 {
     Vli a;
@@ -23,20 +53,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( equal_operator, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_assignment, Vli, vli_types )
 { 
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-    
     Vli a;
-    
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-            a[i] = rnd(rng);
-    
+    fill_random(a); 
     Vli b(a);
     BOOST_CHECK_EQUAL(a,b);
 
     Vli c;
-    
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-            c[i] = rnd(rng);
+    fill_random(c);
 
     c = b;
     BOOST_CHECK_EQUAL(c,b);
@@ -44,12 +67,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_assignment, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-    
     Vli a;
-    
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-            a[i] = rnd(rng);
+    fill_random(a);    
 
     Vli b(a);
     BOOST_CHECK_EQUAL(a.is_negative(), false);
@@ -72,15 +91,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate_and_construct_from_negative_int, Vli, vli_
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
     Vli b;
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-    {
-        a[i] = rnd(rng);
-        b[i] = rnd(rng);
-    }
+    fill_random(a);
+    fill_random(b);
    
     Vli ab = a + b;
     Vli ba = b + a;
@@ -91,13 +105,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
-    int b = rnd(rng);
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-        a[i] = rnd(rng);
-   
+    fill_random(a);
+    int b = rnd_valid_int<Vli>();
+
     Vli ab = a + b;
     Vli ba = b + a;
     a += b;
@@ -107,12 +118,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
     Vli b;
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-        b[i] = rnd(rng);
+    fill_random(b);
 
     Vli c(a);
     
@@ -125,10 +133,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence_int, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
-    int b = rnd(rng);
+    int b = rnd_valid_int<Vli>();
     Vli c(a);
 
     a -= b;
@@ -139,15 +145,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
     Vli b;
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-    {
-        a[i] = rnd(rng);
-        b[i] = rnd(rng);
-    }
+    fill_random(a);
+    fill_random(b);
    
     Vli ab = a - b;
     Vli ba = b - a;
@@ -159,12 +160,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
-    int b = rnd(rng);
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-        a[i] = rnd(rng);
+    fill_random(a);
+    int b = rnd_valid_int<Vli>();
    
     Vli ab = a - b;
     a -= b;
@@ -173,15 +171,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_type
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
     Vli b;
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-    {
-        a[i] = rnd(rng);
-        b[i] = rnd(rng);
-    }
+    fill_random(a);
+    fill_random(b);
 
     Vli ab = a*b;
     Vli ba = b*a;
@@ -193,12 +186,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vl
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-
     Vli a;
-    int b = rnd(rng);
-    for(typename Vli::size_type i=0; i<Vli::size; ++i)
-        a[i] = rnd(rng);
+    fill_random(a);
+    int b = rnd_valid_int<Vli>();
 
     Vli ab = a*b;
     Vli ba = b*a;
@@ -210,13 +200,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-    
     Vli a;
-    
-    for(typename Vli::size_type i=0; i<Vli::size-1; ++i)
-        a[i] = rnd(rng);
-    
+    fill_random(a,Vli::size-1);
     
     Vli b = a+a+a;
     Vli c = a * Vli(3);
@@ -226,13 +211,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-    
     Vli a;
-    
-    for(typename Vli::size_type i=0; i<Vli::size-1; ++i)
-        a[i] = rnd(rng);
-    
+    fill_random(a,Vli::size-1); 
     
     Vli b = a+a+a;
     Vli c = a * 3;
@@ -242,15 +222,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
     Vli a;
     Vli b;
-    
-    for(typename Vli::size_type i=0; i<Vli::size-1; ++i)
-    {
-        a[i] = rnd(rng);
-        b[i] = rnd(rng);
-    }
+    fill_random(a,Vli::size-1);
+    fill_random(b,Vli::size-1); 
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
@@ -260,17 +235,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_int_gmp, Vli, vli_types )
+{
+    Vli a;
+    fill_random(a,Vli::size-1);
+
+    int b = rnd_valid_int<Vli>();
+    
+    mpz_class agmp(a.get_str());
+    
+    Vli c = a+b;
+    mpz_class cgmp = agmp + b;
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_gmp, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
     Vli a;
     Vli b;
-    
-    for(typename Vli::size_type i=0; i<Vli::size-1; ++i)
-    {
-        a[i] = rnd(rng);
-        b[i] = rnd(rng);
-    }
+    fill_random(a,Vli::size-1);
+    fill_random(b,Vli::size-1); 
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
@@ -280,18 +265,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_int_gmp, Vli, vli_types )
+{
+    Vli a;
+    fill_random(a,Vli::size-1);
+    int b = rnd_valid_int<Vli>();
+    
+    mpz_class agmp(a.get_str());
+    
+    Vli c = a-b;
+    mpz_class cgmp = agmp - b;
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-    
     Vli a;
     Vli b;
-    
-    for(typename Vli::size_type i=0; i<Vli::size/2; ++i)
-        a[i] = rnd(rng);
-    
-    for(typename Vli::size_type i=0; i<Vli::size/4; ++i)
-        b[i] = rnd(rng);
+    fill_random(a,Vli::size/2);
+    fill_random(b,Vli::size/4); 
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
@@ -301,19 +294,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int_gmp, Vli, vli_types )
+{
+    Vli a;
+    fill_random(a,Vli::size/2);
+    int b = rnd_valid_int<Vli>();
+    
+    mpz_class agmp(a.get_str());
+    
+    Vli c = a*b;
+    mpz_class cgmp = agmp * b;
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp, Vli, vli_types )
 {
-    boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-    
     Vli a;
     Vli b;
-    
-    for(typename Vli::size_type i=0; i<Vli::size/2; ++i)
-        a[i] = rnd(rng);
+    fill_random(a,Vli::size/2);
+    fill_random(b,Vli::size/4); 
     a.negate();
-    
-    for(typename Vli::size_type i=0; i<Vli::size/4; ++i)
-        b[i] = rnd(rng);
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
