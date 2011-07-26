@@ -106,10 +106,9 @@ public:
     
     BaseParameters get_at_index(std::string const & var, std::size_t val)
     {
-        // loop like in measurements
         BaseParameters p(*this);
         
-        boost::regex expression("(.*)\\[" + var + "]$");
+        boost::regex expression("^(.*)\\[" + var + "\\]$");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=p.begin();it != p.end();++it) {
             std::string key = it->key();
@@ -117,9 +116,9 @@ public:
                 conversion::get_<std::vector<value_type> > g;
                 std::vector<value_type> v = g((*this)[key]);
                 if (val < v.size())
-                    (*this)[what.str(1)] = v[val];
+                    p[what.str(1)] = v[val];
                 else
-                    (*this)[what.str(1)] = *(v.rbegin());
+                    p[what.str(1)] = *(v.rbegin());
             }
         }
 
