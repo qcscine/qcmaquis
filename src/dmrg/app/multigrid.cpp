@@ -199,11 +199,6 @@ int main(int argc, char ** argv)
     std::cout << "initc: " << initc << std::endl;
     
     
-    BaseParameters parms = raw_parms.get_at_index("graining", graining);
-    BaseParameters model = raw_model.get_at_index("graining", graining);
-    
-    
-    
     boost::shared_ptr<Lattice> lat;
     Hamiltonian<Matrix, grp> H;
     Measurements<Matrix, grp> measurements;
@@ -217,16 +212,21 @@ int main(int argc, char ** argv)
     if (restore) {
         alps::hdf5::archive h5ar_in(chkpfile);
         h5ar_in >> alps::make_pvp("/state", cur_mps);
-    } else if (parms.get<std::string>("initfile").size() > 0) {
-        alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
+    } else if (raw_parms.get<std::string>("initfile").size() > 0) {
+        alps::hdf5::archive h5ar_in(raw_parms.get<std::string>("initfile"));
         h5ar_in >> alps::make_pvp("/state", cur_mps);
     }
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
-    for (; graining < parms.get<int>("ngrainings")+1; ++graining)
+    for (; graining < raw_parms.get<int>("ngrainings")+1; ++graining)
     {
         
+        BaseParameters parms = raw_parms.get_at_index("graining", graining);
+        BaseParameters model = raw_model.get_at_index("graining", graining);
+        
+        std::cout << model << std::endl;
+
         cont_model_parser(model, lat, H, measurements);
         phys = H.get_phys();
         
