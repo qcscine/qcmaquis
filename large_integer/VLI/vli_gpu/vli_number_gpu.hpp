@@ -174,6 +174,13 @@ namespace vli
             return *this;
         }
         
+        vli_gpu operator - () const
+        {
+            vli_gpu tmp(*this);
+            tmp.negate();
+            return tmp;
+        }
+        
         bool operator == (vli_gpu const& vli) const
         {
             // TODO try on gpu, debug my kernel 

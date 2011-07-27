@@ -34,12 +34,25 @@ polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> const& p1, pol
 }
 
 
+template <class BaseInt, int Size, int Order>
+polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<vli_cpu<BaseInt, Size> > const& m)
+{
+    typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
+    
+    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> r;
+    // TODO perhaps there is a better way to write these loops,
+    //      so that they can be unrolled.
+    for(size_type je = 0; je < Order-m.j_exp_; ++je)
+        for(size_type he = 0; he < Order-m.h_exp_; ++he)
+            r(je+m.j_exp_,he+m.h_exp_) = p(je,he) * m.coeff_;
+    return r;
+}
+
 template<class Vli, int Order>
 class polynomial_cpu{
 public:
     typedef typename Vli::size_type size_type;      // Type of the exponents (has to be the same type as Vli::size_type)
-    typedef typename Vli::value_type value_type;
-    enum { size = Vli::size};
+    typedef Vli value_type;
     enum { max_order = Order};
     
     //   friend polynomial_cpu operator * <>(const polynomial_cpu& p, const monomial<Vli> & m);
@@ -47,12 +60,12 @@ public:
     
     polynomial_cpu(){
         for(int i=0; i<Order*Order;++i)
-            coeffs[i]=Vli();
+            coeffs_[i]=Vli();
     }
     
     polynomial_cpu(const polynomial_cpu& p){
         for(int i=0; i<Order*Order;++i)
-            coeffs[i]=p.coeffs[i];
+            coeffs_[i]=p.coeffs_[i];
     }
     
     polynomial_cpu& operator = (polynomial_cpu p)
@@ -67,14 +80,20 @@ public:
     polynomial_cpu& operator += (polynomial_cpu const& p)
     {
         for(int i=0; i<Order*Order;++i)
-            coeffs[i]+=p.coeffs[i];
+            coeffs_[i]+=p.coeffs_[i];
+        return *this;
+    }
+    
+    polynomial_cpu& operator += (monomial<Vli> const& m)
+    {
+        operator()(m.j_exp_,m.h_exp_) += m.coeff_; 
         return *this;
     }
     
     template <typename T>
     polynomial_cpu& operator += (T const& t)
     {
-        coeffs[0]+=t;
+        coeffs_[0]+=t;
         return *this;
     }
     
@@ -84,20 +103,34 @@ public:
     polynomial_cpu& operator -= (polynomial_cpu const& p)
     {
         for(int i=0; i<Order*Order;++i)
-            coeffs[i]-=p.coeffs[i];
+            coeffs_[i]-=p.coeffs_[i];
         
+        return *this;
+    }
+    
+    polynomial_cpu& operator -= (monomial<Vli> const& m)
+    {
+        operator()(m.j_exp_,m.h_exp_) -= m.coeff_; 
+        return *this;
+    }
+
+    template <typename T>
+    polynomial_cpu& operator -= (T const& t)
+    {
+        coeffs_[0]-=t;
         return *this;
     }
 
     bool operator==(polynomial_cpu const& p) const
     {
-        int n = memcmp((void*)&coeffs[0],(void*)&p.coeffs[0],Order*Order*Vli::size*sizeof(typename Vli::value_type));
+        int n = memcmp((void*)&coeffs_[0],(void*)&p.coeffs_[0],Order*Order*Vli::size*sizeof(typename Vli::value_type));
         return (0 == n);
     }
     
     friend void swap(polynomial_cpu& p1, polynomial_cpu& p2)
     {
-        boost::swap(p1.coeffs,p2.coeffs);
+        using boost::swap;
+        swap(p1.coeffs_,p2.coeffs_);
     }
     
     /**
@@ -107,13 +140,14 @@ public:
     polynomial_cpu& operator *= (Vli const& c)
     {
         for(int i=0; i<Order*Order;++i)
-            coeffs[i] *= c;
+            coeffs_[i] *= c;
         return *this;
     }
     
     
     polynomial_cpu& operator *= (monomial<Vli> const& c)
     {
+        assert(false); // TODO
         (*this) *= c.coeff;
         return *this;
     }
@@ -121,11 +155,11 @@ public:
     /**
      * Access coefficient of monomial J^j_exp*h^h_exp
      */
-    inline Vli operator ()(size_type j_exp, size_type h_exp) const
+    inline Vli const& operator ()(size_type j_exp, size_type h_exp) const
     {
         assert(j_exp < max_order);
         assert(h_exp < max_order);
-        return coeffs[j_exp*max_order+h_exp];
+        return coeffs_[j_exp*max_order+h_exp];
     }
     
     /**
@@ -135,7 +169,7 @@ public:
     {
         assert(j_exp < max_order);
         assert(h_exp < max_order);
-        return coeffs[j_exp*max_order+h_exp];
+        return coeffs_[j_exp*max_order+h_exp];
     }
     
     void print(std::ostream& os) const
@@ -143,13 +177,13 @@ public:
         for(std::size_t i = 0; i < Order ; i++){
             for(std::size_t j = 0; j < Order ; j++){
                 os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
-                os <<coeffs[i*Order+j] << std::endl;
+                os <<coeffs_[i*Order+j] << std::endl;
             }
         }
     }
      
 private:
-    Vli coeffs[Order*Order];
+    Vli coeffs_[Order*Order];
 };
 
 /*
