@@ -1,10 +1,11 @@
 #ifndef APP_MODELS_H
 #define APP_MODELS_H
 
+#include "utils/DmrgParameters2.h"
+
 #include "lattice.h"
 #include "hamiltonian.h"
 #include "measurements.h"
-#include "utils/DmrgParameters.h"
 
 namespace app {
     

@@ -15,6 +15,8 @@
 
 #include "models.h"
 
+#include "utils/DmrgParameters2.h"
+
 #include <fstream>
 #include <boost/tokenizer.hpp>
 
@@ -23,7 +25,6 @@
 #include "alps_lattice.hpp"
 #include "alps_model.hpp"
 
-#include "utils/DmrgParameters.h"
 #include <alps/parameter.h>
 #include <alps/expression.h>
 
