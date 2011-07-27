@@ -136,10 +136,24 @@ namespace app {
                     
                 }
 
-                for (int n=0; n<site_terms[type].size(); ++n) {
+                // Many site terms
+                /*
+                 for (int n=0; n<site_terms[type].size(); ++n) {
+                 hamterm_t term;
+                 term.fill_operator = tident[type];
+                 term.operators.push_back( std::make_pair(p, site_terms[type][n]) );
+                 terms.push_back(term);
+                 }
+                 */
+                
+                // All site terms summed into one
+                if (site_terms[type].size() > 0) {
+                    op_t op_matrix;
+                    for (int n=0; n<site_terms[type].size(); ++n)
+                        op_matrix += site_terms[type][n];
                     hamterm_t term;
                     term.fill_operator = tident[type];
-                    term.operators.push_back( std::make_pair(p, site_terms[type][n]) );
+                    term.operators.push_back( std::make_pair(p, op_matrix) );
                     terms.push_back(term);
                 }
                 
