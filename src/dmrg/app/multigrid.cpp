@@ -219,8 +219,7 @@ int main(int argc, char ** argv)
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
-    for (; graining < raw_parms.get<int>("ngrainings")+1; ++graining)
-    {
+    do {
         
         BaseParameters parms = raw_parms.get_at_index("graining", graining);
         BaseParameters model = raw_model.get_at_index("graining", graining);
@@ -322,9 +321,9 @@ int main(int argc, char ** argv)
                         measure(cur_mps, *lat, meas_always, rfile, oss.str());
                     
                     alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
-                    double dens;
+                    std::vector<double> dens;
                     h5ar >> alps::make_pvp(oss.str()+"Density/mean/value", dens);
-                    std::cout << "Density: " << dens << std::endl;
+                    std::cout << "Density: " << dens[0] << std::endl;
                     
                 }
                 
@@ -349,7 +348,9 @@ int main(int argc, char ** argv)
         }
         sweep = 0;
 #endif
-    }
+        
+        ++graining;
+    } while (graining < raw_parms.get<int>("ngrainings"));
     
 #ifdef MEASURE_ONLY
     {
