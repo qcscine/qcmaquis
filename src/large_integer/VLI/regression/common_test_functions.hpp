@@ -3,6 +3,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
+#include <vli_cpu/vli_number_traits.hpp>
 
 namespace vli
 {
@@ -37,6 +38,14 @@ void fill_random(Vli& v, typename Vli::size_type size)
     assert(size <= Vli::size);
     for(typename Vli::size_type i=0; i < size; ++i)
         v[i] = rnd_digit<Vli>();
+}
+
+template <typename Polynomial>
+void fill_poly_random(Polynomial& p)
+{
+    for(typename Polynomial::size_type i=0; i < Polynomial::max_order; ++i)
+        for(typename Polynomial::size_type j=0; j < Polynomial::max_order; ++j)
+            fill_random(p(i,j));
 }
 
 } //namespace test

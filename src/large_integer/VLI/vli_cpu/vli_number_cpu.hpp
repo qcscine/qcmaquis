@@ -127,6 +127,13 @@ namespace vli
             return *this;
         }
 
+        vli_cpu operator - () const
+        {
+            vli_cpu tmp(*this);
+            tmp.negate();
+            return tmp;
+        }
+
         bool operator == (vli_cpu const& vli) const
         {
 			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));

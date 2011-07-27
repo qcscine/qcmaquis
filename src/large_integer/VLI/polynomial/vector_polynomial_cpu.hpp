@@ -24,10 +24,10 @@ namespace vli
     template<class polynomial_cpu> 
     class vector_polynomial_cpu : public std::vector<polynomial_cpu>{ 
     private:
-        typedef typename polynomial_cpu::value_type vli_value_type; 
+        typedef typename polynomial_cpu::value_type::value_type vli_value_type; 
         typedef typename std::size_t size_t;
         enum {max_order_poly = polynomial_cpu::max_order };
-        enum {vli_size   = polynomial_cpu::size }; 
+        enum {vli_size   = polynomial_cpu::value_type::size }; 
         enum {OffSet = max_order_poly*max_order_poly*vli_size}; 
     public:
     

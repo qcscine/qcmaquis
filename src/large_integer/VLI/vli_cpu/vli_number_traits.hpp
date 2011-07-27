@@ -1,3 +1,5 @@
+#ifndef VLI_NUMBER_TRAITS_HPP
+#define VLI_NUMBER_TRAITS_HPP
 
 namespace vli
 {
@@ -9,3 +11,5 @@ struct max_int_value
 };
 
 } // namespace vli
+
+#endif //VLI_NUMBER_TRAITS_HPP

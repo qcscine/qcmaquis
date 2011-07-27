@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( equal_operator, Vli, vli_types )
     for(typename Vli::size_type i=0; i < Vli::size; ++i)
     {
         b[i] = 1;
-        BOOST_CHECK_EQUAL(false,(a == b));
+        BOOST_CHECK_EQUAL((a == b),false);
         b[i] = 0;
     }
 
@@ -34,6 +34,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_assignment, Vli, vli_types )
 
     c = b;
     BOOST_CHECK_EQUAL(c,b);
+    
+    // Check if c stays the same if we change b
+    b[1] = 57642;
+    BOOST_CHECK_EQUAL(c == b, false);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Vli, vli_types )
