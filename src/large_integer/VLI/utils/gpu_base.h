@@ -14,6 +14,8 @@
 #include <boost/static_assert.hpp>
 #include "gpu/GpuManager.h"
 
+#include "utils/timings.h"
+
 namespace vli
 {   
     template<class T>
@@ -55,7 +57,9 @@ namespace vli
 
         gpu_array& operator = (gpu_array a)
         {
+            
             swap(*this,a);
+
             return *this;
         }
 
@@ -104,8 +108,11 @@ namespace vli
         }
         
         gpu_vector& operator = (gpu_vector a)
-        {
+        {   printf(" timer operator =\n "); 
+            Timer A("SWAP VECTOR");
+            A.begin();
             swap(*this,a);
+            A.end();
             return *this;
         }
         

@@ -55,7 +55,7 @@ public:
         if (t1 < t0)
             assert(true);
         else
-            val += (getcpuclocks()-t0)/freq;
+            val += (getcpuclocks()-t0)/freq; // to milliseconds
     }
 
     const double GetTime()
@@ -93,7 +93,7 @@ public:
 		cudaEventElapsedTime(&elapsedTime, start, stop); // that's our time!
 		cudaEventDestroy(start);
 		cudaEventDestroy(stop);
-		val = static_cast<double>(elapsedTime)/1000 ; // because time is in microsecond
+		val = static_cast<double>(elapsedTime)/1000; // because time is in milisecond
     }
 	
 private:

@@ -20,6 +20,7 @@ Just very basic C++ or C (template ok).
 
 namespace vli {
 namespace detail {
+
 template < typename T>
 __device__ void copy_kernel_gpu(T* x, T const* y, int size)
 {
@@ -257,16 +258,29 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* res, T* inter, in
         //mutiplication
         polynome_polynome_multiplication(&p1[offset],&p2[offset],&inter[offset],vli_size,max_order); 
         
+        __syncthreads();
+         
+//syncro between grid block is impossible !
+
+        if(xIndex == 0 ){ 
+            for(unsigned int i=1 ; i < size_vector ; i++){
+                addition_classic_kernel_gpu(&inter[0],&inter[i*size_poly], size_poly);   
+            } 
+            copy_kernel_gpu(&res[0],&inter[0],size_poly);     //serial maximum 8 elements to copy
+        }
+/* 
         for(unsigned int i= ( blockDim.x/2);  i>0;i>>=1){
             if(tid < i){
+                lock(mutex);
                 addition_classic_kernel_gpu(&inter[offset],&inter[offset+i*size_poly],size_poly);
                 __syncthreads();
+                unlock(mutex);
             }
         }
         
         if(xIndex == 0){       
             copy_kernel_gpu(&res[0],&inter[0],size_poly);     //serial maximum 8 elements to copy
-        }
+        }*/
     }
 }
 
@@ -325,9 +339,9 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
 } \
 void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, int vli_size, int max_order, int vector_size) \
 { \
-    int threadsPerBlock = 16; \
-    int blocksPerGrid = vector_size/16; \
-    inner_prod_vector  <<< blocksPerGrid, threadsPerBlock >>>(A, B, C , D ,vli_size, max_order,vector_size);  \
+    int threadsPerBlock = 512; \
+    int blocksPerGrid = vector_size/512; \
+    inner_prod_vector  <<< blocksPerGrid,threadsPerBlock  >>>(A, B, C , D ,vli_size, max_order,vector_size);  \
 }
 
 
