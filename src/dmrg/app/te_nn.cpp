@@ -25,7 +25,13 @@ using std::endl;
 #include "dense_matrix/mt_matrix.h"
 typedef mt_matrix<std::complex<double> > Matrix;
 #else
+
+#ifdef IMG_ONLY
+typedef blas::dense_matrix<double> Matrix;
+#else
 typedef blas::dense_matrix<std::complex<double> > Matrix;
+#endif
+
 #endif
 
 #include <alps/hdf5.hpp>
@@ -77,13 +83,16 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > >
 get_U (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
 {
+#ifdef IMG_ONLY
+    double alpha = -dt;
+#else
     std::complex<double> I;
     if (img)
         I = std::complex<double>(1, 0);
     else
         I = std::complex<double>(0, 1);
-
     std::complex<double> alpha = -I*dt;
+#endif
 
     std::vector<Hamiltonian<Matrix, grp> > split_H = separate_overlaps(H);
     std::vector<std::map<std::size_t, block_matrix<Matrix, grp> > > expH(split_H.size());
@@ -145,6 +154,13 @@ int main(int argc, char ** argv)
     }
     
     srand48(parms.get<int>("seed"));
+    
+#ifdef IMG_ONLY
+    if (parms.get<int>("nsweeps_img") != parms.get<int>("nsweeps")) {
+        cerr << "IMG_ONLY code, make sure that nsweeps_img == nsweeps." << endl;
+        exit(1);
+    }
+#endif
     
     Lattice * lat;
     Hamiltonian<Matrix, grp> H;
