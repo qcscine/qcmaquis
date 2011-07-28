@@ -339,8 +339,8 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
 } \
 void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, int vli_size, int max_order, int vector_size) \
 { \
-    int threadsPerBlock = 512; \
-    int blocksPerGrid = vector_size/512; \
+    int threadsPerBlock = 256; \
+    int blocksPerGrid = vector_size/256; \
     inner_prod_vector  <<< blocksPerGrid,threadsPerBlock  >>>(A, B, C , D ,vli_size, max_order,vector_size);  \
 }
 
@@ -348,153 +348,7 @@ void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE * D, i
 BOOST_PP_SEQ_FOR_EACH(VLI_IMPLEMENT_GPU_KERNELS_FOR, _, VLI_GPU_BASE_INT_TYPES_SEQ)
 
 #undef VLI_IMPLEMENT_GPU_KERNELS_FOR
-    /*
-void param(int vector_size)
-{
-    dimthread.x = NUM;
-    dimthread.x = 1;
-	dimthread.z = 1;
-    
-    dimblock.x = NUM;
-	dimblock.y = 1;
-	dimblock.z = 1;
-    
-    dimgrid.x = (int(vector_size) + dimblock.x - 1)/ dimblock.x;
-    dimgrid.y = 1;
-	dimgrid.z = 1;
-}*/
-    
-} //namespace detail
-} //namespace vli
 
-/** TO DO make something clean later
-void DeterminationGrid(dim3& dimgrid, dim3& dimblock, dim3& dimthread, int num_integers, int vli_size)
-{
-    //
-    // TODO since an operation on a single vli_number is not parallelized yet,
-    // dimblock.y = 1 instead of vli_size
-    // setting it to vli_size will break the current addition_classic_kernel_gpu !!!
-    //
-	dimblock.x = NUM;
-	dimblock.y = 1;
-    //	dimblock.y = vli_size;
-	dimblock.z = 1;
-    
-	dimthread.x = NUM;
-    dimthread.x = 1;
-    //	dimthread.y = vli_size;
-	dimthread.z = 1;		
-	
-	dimgrid.x = (int(num_integers) + dimblock.x - 1)/ dimblock.x;
-    //	dimgrid.y = (int(vli_size) + dimblock.y - 1)/ dimblock.y;
-    dimgrid.y = 1;
-	dimgrid.z = 1;
-}*/
-
-/**
- the size of each block is 16X16
- */
-
-/**
- Do not forget, change to the desired type inside the kernels because I use special memory
- */
-
-/**
- C = A + B
- if this kernel we introduce new arithmetic
- A. Avizienis. Signed-digit number representations for fast parallel arithmetic. IRE Transactions on electronic computers, vol 10, pages 389-400, 1961
- No carry bit ^^'
- num_integer = # of vli
- ld = size of one vli
- */
-/*
- extern const int NUM_SHARED = 128; // must be equal to the size of a block
- extern const int SIZE = 8; // must be equal to the size of a block
- 
- template <typename T>
- __global__ void addition_Avizienis_kernel_gpu(T x, T y , T z,int num_integer, int ld)
- {
- */
-/**
- sharred array for the local calculation t must be larger (+1) due to the algo
- */
-/*
- __shared__ TYPE t[NUM_SHARED+1]; 
- __shared__ TYPE w[NUM_SHARED];
- __shared__ TYPE s[NUM_SHARED];
- 
- int nsize = ld*num_integer; //remove if the size of the grid is exact 
- */	
-/**
- just to remember how to calculate the index of the grid
- int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
- int yIndex = blockIdx.y*blockDim.y + threadIdx.y; // all index on y
- int i = xIndex + yIndex* blockDim.x * gridDim.x ; // all index on xy 
- */
-/*
- int i = threadIdx.y + blockDim.y*threadIdx.x; // index on the block (0,0)
- int j = i; // the copy for the local memory
- */
-
-/**
- addition block by block to have a better access W/R of the shared memory
- We should have only one block on y; because y represents the size ot the vli
- 
- k ( on x direction)
- --->
- ______________________ ......
- |blockId|blockId|
- |(0,0)  |(1,0)	|
- |		|		|
- |		|		|
- |		|		|
- ______________________ ......
- 
- we make the addition on a block and we go to another block
- i is the index of the global memory
- j is the index of the shared memory
- 
- */
-
-/**
- inspire froan scan pattern design 
- http://developer.nvidia.com/object/cuda_training.html
- class : Stanford university CS193G Parallel Patterns I, slide 40
- */
-/*
- for(int k =0 ; k < gridDim.x ; k++) //loop on the block
- {
- if(i < nsize) // To avoid the corruption of the memory card (overflow), remove is the size of the grid is perfect
- {
- s[j] = 0;
- w[j] = 0;
- t[j] = 0;
- 
- s[j] = x[i] + y[i];
- 
- __syncthreads(); // wait on read
- 
- // To do : optimize 
- if(s[j] > BASE_MINUS2)
- t[j+1] = 1;
- if(s[j] < MINUS_BASE_PLUS2)
- t[j+1] = -1;
- if(s[j]<=BASE_MINUS2 && s[j]>= MINUS_BASE_PLUS2)
- t[j+1] = 0;
- 
- w[j] = s[j] - BASE*t[j+1];
- 
- z[i] = w[j] + t[j];
- 
- __syncthreads(); // wait on write
- 
- i+=NUM_SHARED; // iterate to go to the next block
- }
- }
- }
- */
-/**
- num_integer is the number of integer to construct the very large integer
- ld is the number of very large integer (size of vector)
- */
+}//detail
+}//vli
 

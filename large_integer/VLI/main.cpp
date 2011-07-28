@@ -17,7 +17,7 @@
 #include "utils/timings.h"
 
 #define SIZE_POLY 20
-#define SIZE_VECTOR 131072
+#define SIZE_VECTOR 3072
 
 #define TYPE unsigned long int 
 
@@ -35,24 +35,28 @@ int main (int argc, char * const argv[])
     gpu::gpu_manager* GPU;
     GPU->instance();
 
-    polynomial_cpu<vli_cpu<TYPE,8>, 2> pa;
-    
-    for(int i=0; i<2; i++){
-        pa(0,0)[i] = static_cast<TYPE>(max_int_value<vli_cpu<TYPE,8> >::value);
-        pa(0,1)[i] = static_cast<TYPE>(max_int_value<vli_cpu<TYPE,8> >::value);
-        pa(1,0)[i] = static_cast<TYPE>(max_int_value<vli_cpu<TYPE,8> >::value);
-        pa(1,1)[i] = static_cast<TYPE>(max_int_value<vli_cpu<TYPE,8> >::value);        
-    }
- 
-    polynomial_gpu<vli_gpu<TYPE,8>, 2> pagpu(pa);
- 
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,2> > VaGPU(SIZE_VECTOR);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,2> > VbGPU(SIZE_VECTOR);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,2> > VcGPU;
+    polynomial_cpu<vli_cpu<TYPE,8>, SIZE_POLY> pa;
 
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,2> > VaCPU(SIZE_VECTOR);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,2> > VbCPU(SIZE_VECTOR);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,2> > VcCPU;
+    
+    for(int i=0; i< 8 ; i++){
+        for(int j=0; j < SIZE_POLY; j++){
+            for(int k=0; k < SIZE_POLY; k++)
+                pa(j,k)[i] = 9999;
+            }
+         } 
+     
+ 
+    polynomial_gpu<vli_gpu<TYPE,8>, SIZE_POLY> pagpu(pa);
+
+    
+
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VaGPU(SIZE_VECTOR);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VbGPU(SIZE_VECTOR);
+    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VcGPU;
+
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VaCPU(SIZE_VECTOR);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VbCPU(SIZE_VECTOR);
+    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VcCPU;
 
     for(int i=0;i < SIZE_VECTOR;i++){
         VaCPU[i]=pa;
@@ -60,20 +64,17 @@ int main (int argc, char * const argv[])
 
         VaGPU[i]=pa;
         VbGPU[i]=pa;
- 
     }
-
 
     Timer A("CPU");
     A.begin();     
     VcCPU =  inner_product(VaCPU,VbCPU);
     A.end();
 
-
-    Timer B("GPU");
-    B.begin();     
+    TimerCuda C("GPU");
+    C.begin();     
     VcGPU =  inner_product(VaGPU,VbGPU);
-    B.end();
+    C.end();
 
     if(VcGPU == VcCPU){
         std::cout << " ok " << std::endl; 
