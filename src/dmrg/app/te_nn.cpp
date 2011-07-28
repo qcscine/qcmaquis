@@ -170,7 +170,8 @@ int main(int argc, char ** argv)
     Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
     
-    std::cout << measurements << std::endl;
+//    std::cout << "Hamiltonian: " << std::endl << H << std::endl;
+//    std::cout << "Measurements: " << std::endl << measurements << std::endl;
         
     Measurements<Matrix, grp> meas_always;
     if (!parms.get<std::string>("always_measure").empty()) {
