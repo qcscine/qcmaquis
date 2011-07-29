@@ -50,6 +50,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Vli, vli_types )
     
     a.negate();
     BOOST_CHECK_EQUAL(a.is_negative(), true);
+    BOOST_CHECK_EQUAL(a == b, false);
     
     a.negate();
     BOOST_CHECK_EQUAL(a.is_negative(), false);
@@ -70,12 +71,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence, Vli, vli_types )
     Vli b;
     fill_random(a);
     fill_random(b);
+    
+    Vli b_orig(b);
    
     Vli ab = a + b;
     Vli ba = b + a;
     a += b;
     BOOST_CHECK_EQUAL(a,ab);
     BOOST_CHECK_EQUAL(a,ba);
+
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types )
@@ -83,12 +89,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types 
     Vli a;
     fill_random(a);
     int b = rnd_valid_int<Vli>();
+    int b_orig(b);
 
     Vli ab = a + b;
     Vli ba = b + a;
     a += b;
     BOOST_CHECK_EQUAL(a,ab);
     BOOST_CHECK_EQUAL(a,ba);
+    
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence, Vli, vli_types )
@@ -96,26 +106,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
     Vli a;
     Vli b;
     fill_random(b);
-
+    Vli b_orig(b);
     Vli c(a);
     
     a -= b;
-    b.negate();
+    b.negate(); b_orig.negate();
     c += b;
 
     BOOST_CHECK_EQUAL(a,c);
+    
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence_int, Vli, vli_types )
 {
     Vli a;
     int b = rnd_valid_int<Vli>();
+    int b_orig(b);
     Vli c(a);
 
     a -= b;
     c += (-b);
 
     BOOST_CHECK_EQUAL(a,c);
+    
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
@@ -124,6 +141,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
     Vli b;
     fill_random(a);
     fill_random(b);
+    Vli b_orig(b);
    
     Vli ab = a - b;
     Vli ba = b - a;
@@ -131,6 +149,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
     BOOST_CHECK_EQUAL(a,ab);
     a.negate();
     BOOST_CHECK_EQUAL(a,ba);
+    
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_types )
@@ -138,10 +159,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_type
     Vli a;
     fill_random(a);
     int b = rnd_valid_int<Vli>();
+    int b_orig(b);
    
     Vli ab = a - b;
     a -= b;
     BOOST_CHECK_EQUAL(a,ab);
+    
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vli_types )
@@ -150,6 +175,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vl
     Vli b;
     fill_random(a);
     fill_random(b);
+    Vli b_orig(b);
 
     Vli ab = a*b;
     Vli ba = b*a;
@@ -157,6 +183,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vl
 
     BOOST_CHECK_EQUAL(a,ab);
     BOOST_CHECK_EQUAL(a,ba);
+    
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli, vli_types )
@@ -164,6 +193,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli
     Vli a;
     fill_random(a);
     int b = rnd_valid_int<Vli>();
+    int b_orig(b);
 
     Vli ab = a*b;
     Vli ba = b*a;
@@ -171,28 +201,39 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli
 
     BOOST_CHECK_EQUAL(a,ab);
     BOOST_CHECK_EQUAL(a,ba);
+    
+    //Check that b hasn't changed
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
 {
     Vli a;
     fill_random(a,Vli::size-1);
+    Vli a_orig(a);
     
     Vli b = a+a+a;
     Vli c = a * Vli(3);
 
     BOOST_CHECK_EQUAL(c,b);
+    
+    //Check that a hasn't changed
+    BOOST_CHECK_EQUAL(a,a_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int, Vli, vli_types )
 {
     Vli a;
     fill_random(a,Vli::size-1); 
+    Vli a_orig(a);
     
     Vli b = a+a+a;
     Vli c = a * 3;
 
     BOOST_CHECK_EQUAL(c,b);
+    
+    //Check that a hasn't changed
+    BOOST_CHECK_EQUAL(a,a_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_types )
@@ -200,7 +241,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_types )
     Vli a;
     Vli b;
     fill_random(a,Vli::size-1);
-    fill_random(b,Vli::size-1); 
+    fill_random(b,Vli::size-1);
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
@@ -310,31 +351,45 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, Vli, vli_types )
 
     Vli a(0);
     Vli b(0);
+    Vli a_orig(a);
+    Vli b_orig(b);
     
     BOOST_CHECK_EQUAL(a<b, false);
     BOOST_CHECK_EQUAL(a>b, false);
-    
-    a[1] = 1;
-    b[1] = 1;
+
+    BOOST_CHECK_EQUAL(a,a_orig);
+    BOOST_CHECK_EQUAL(b,b_orig);
+
+    a[1] = 1; a_orig[1] = 1;
+    b[1] = 1; b_orig[1] = 1;
 
     BOOST_CHECK_EQUAL(a<b, false);
     BOOST_CHECK_EQUAL(a>b, false);
+    
+    BOOST_CHECK_EQUAL(a,a_orig);
+    BOOST_CHECK_EQUAL(b,b_orig);
 
-    b[1] = 2;
-    a[0] = 1;
+    b[1] = 2; b_orig[1] = 2;
+    a[0] = 1; a_orig[0] = 1;
 
     BOOST_CHECK_EQUAL(a<b, true);
     BOOST_CHECK_EQUAL(b<a, false);
     BOOST_CHECK_EQUAL(a>b, false);
     BOOST_CHECK_EQUAL(b>a, true);
+    
+    BOOST_CHECK_EQUAL(a,a_orig);
+    BOOST_CHECK_EQUAL(b,b_orig);
 
     // How about different signs?
-    b.negate();
+    b.negate(); b_orig.negate();
 
     BOOST_CHECK_EQUAL(a<b, false);
     BOOST_CHECK_EQUAL(b<a, true);
     BOOST_CHECK_EQUAL(a>b, true);
     BOOST_CHECK_EQUAL(b>a, false);
+    
+    BOOST_CHECK_EQUAL(a,a_orig);
+    BOOST_CHECK_EQUAL(b,b_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, Vli, vli_types )
@@ -342,6 +397,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, Vli, vli_types )
     BOOST_STATIC_ASSERT(Vli::size > 1);
     
     Vli a(0);
+    Vli a_orig(a);
 
     int zero = 0;
     int one = 1;
@@ -353,15 +409,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, Vli, vli_types )
     BOOST_CHECK_EQUAL(a<one, true);
     BOOST_CHECK_EQUAL(a>one, false);
 
-    a+=1;
+    BOOST_CHECK_EQUAL(a,a_orig);
+    BOOST_CHECK_EQUAL(zero, 0);
+    BOOST_CHECK_EQUAL(one, 1);
+    BOOST_CHECK_EQUAL(minus_one,-1);
+
+
+    a += 1;  a_orig += 1;
     BOOST_CHECK_EQUAL(a<zero, false);
     BOOST_CHECK_EQUAL(a>zero, true);
     BOOST_CHECK_EQUAL(a<minus_one, false);
     BOOST_CHECK_EQUAL(a>minus_one, true);
     BOOST_CHECK_EQUAL(a<one, false);
     BOOST_CHECK_EQUAL(a>one, false);
+    
+    BOOST_CHECK_EQUAL(a,a_orig);
 
-    a.negate();
+    a.negate(); a_orig.negate();
     BOOST_CHECK_EQUAL(a<zero, true);
     BOOST_CHECK_EQUAL(a>zero, false);
     BOOST_CHECK_EQUAL(a<minus_one, false);
@@ -369,22 +433,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, Vli, vli_types )
     BOOST_CHECK_EQUAL(a<one, true);
     BOOST_CHECK_EQUAL(a>one, false);
     
-
+    BOOST_CHECK_EQUAL(a,a_orig);
+    
 
     Vli b(0);
     b[1] = 1;
+    Vli b_orig(b);
     BOOST_CHECK_EQUAL(b<zero, false);
     BOOST_CHECK_EQUAL(b>zero, true);
     BOOST_CHECK_EQUAL(b<minus_one, false);
     BOOST_CHECK_EQUAL(b>minus_one, true);
     BOOST_CHECK_EQUAL(b<one, false);
     BOOST_CHECK_EQUAL(b>one, true);
+    
+    BOOST_CHECK_EQUAL(b,b_orig);
 
-    b.negate();
+    b.negate(); b_orig.negate();
     BOOST_CHECK_EQUAL(b<zero, true);
     BOOST_CHECK_EQUAL(b>zero, false);
     BOOST_CHECK_EQUAL(b<minus_one, true);
     BOOST_CHECK_EQUAL(b>minus_one, false);
     BOOST_CHECK_EQUAL(b<one, true);
     BOOST_CHECK_EQUAL(b>one, false);
+    
+    BOOST_CHECK_EQUAL(b,b_orig);
 }

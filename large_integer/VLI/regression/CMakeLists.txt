@@ -3,7 +3,7 @@
 # Find Package boost
 #
 
-add_definitions (-DBOOST_TEST_DYN_LINK -DCPU_FREQ=2.4e9)
+add_definitions (-DBOOST_TEST_DYN_LINK)
 
 #
 # serial test cases
