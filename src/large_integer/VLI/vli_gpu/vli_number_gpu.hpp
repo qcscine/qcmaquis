@@ -12,14 +12,14 @@
 #define __VLI_GPU__
 
 
-#include <iostream>
+#include <ostream>
 #include <boost/static_assert.hpp>
 #include "function_hooks/vli_number_gpu_function_hooks.hpp"
 #include "gpu/GpuManager.h"
 #include "utils/gpu_base.h"
 
 namespace vli
-{    
+{
     template<class BaseInt, int Size>
     class vli_cpu;
     
@@ -152,10 +152,9 @@ namespace vli
         
         vli_gpu& operator -= (int a)
         {
-            using vli::plus_assign;
+            using vli::minus_assign;
             vli_gpu tmp(a);
-            tmp.negate();
-            plus_assign(*this,tmp);
+            minus_assign(*this,tmp);
             return *this;
         }
 

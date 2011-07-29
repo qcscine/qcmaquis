@@ -46,18 +46,14 @@ BOOST_AUTO_TEST_CASE(gpu_manager)
 BOOST_AUTO_TEST_CASE_TEMPLATE( conversion_from_cpu_and_equal_test, Vli, vli_types )
 {
     vli_cpu<typename Vli::value_type, Vli::size> a;
+    fill_random(a);
+    vli_cpu<typename Vli::value_type, Vli::size> a_orig(a);
+
     Vli ag(a);
 
-    BOOST_CHECK_EQUAL(a,ag);
-    BOOST_CHECK_EQUAL(ag,a);
-
-    vli_cpu<typename Vli::value_type, Vli::size> b;
-    fill_random(b);
-
-    Vli bg(b);
-
-    BOOST_CHECK_EQUAL(b,bg);
-    BOOST_CHECK_EQUAL(bg,b);
+    BOOST_CHECK_EQUAL(a == ag, true);
+    BOOST_CHECK_EQUAL(ag == a, true);
+    BOOST_CHECK_EQUAL(a,a_orig);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( proxy_access, Vli, vli_types )
@@ -67,6 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( proxy_access, Vli, vli_types )
     // Read access
     vli_cpu<typename Vli::value_type,Vli::size> a;
     fill_random(a);
+    vli_cpu<typename Vli::value_type,Vli::size> a_orig(a);
 
     Vli ag(a);
 
@@ -80,6 +77,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( proxy_access, Vli, vli_types )
     
     for(typename Vli::size_type i=0; i < Vli::size; ++i)
         BOOST_CHECK_EQUAL(bg[i],a[i]);
+    
+    BOOST_CHECK_EQUAL(a,a_orig);
 }
 
 // Load all the other tests
