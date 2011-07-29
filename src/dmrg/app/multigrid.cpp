@@ -147,6 +147,8 @@ int main(int argc, char ** argv)
     }
     ModelParameters raw_model(model_file);
     
+    BaseParameters parms, model;
+
     
     srand48(raw_parms.get<int>("seed"));
     
@@ -221,21 +223,22 @@ int main(int argc, char ** argv)
     gettimeofday(&now, NULL);
     do {
         
-        BaseParameters parms = raw_parms.get_at_index("graining", graining);
-        BaseParameters model = raw_model.get_at_index("graining", graining);
+        parms = raw_parms.get_at_index("graining", graining);
+        model = raw_model.get_at_index("graining", graining);
         
-        std::cout << model << std::endl;
-
         cont_model_parser(model, lat, H, measurements);
         phys = H.get_phys();
-        
+
+#ifndef NDEBUG
+        std::cout << parms << std::endl;
+        std::cout << model << std::endl;
         std::cout << measurements << std::endl;
-        
         std::cout << H << std::endl;
-        
+
         std::cout << "LATTICE:" << std::endl;
         for (int i=0; i<lat->size(); ++i)
             std::cout << i << ": " << lat->get_prop<double>("x", i) << std::endl;
+#endif
         
         Measurements<Matrix, grp> meas_always;
         if (!parms.get<std::string>("always_measure").empty()) {
@@ -254,9 +257,9 @@ int main(int argc, char ** argv)
                                      parms.get<std::size_t>("init_bond_dimension"),
                                      phys, initc,
                                      *initializer_factory<Matrix>(parms));
+
         
-        
-        if (cur_mps.length() > 0)
+        if (cur_mps.length() > 0 && cur_mps.length() != initial_mps.length())
         {
             std::cout << "*** Starting grainings ***" << std::endl;
             
@@ -266,8 +269,10 @@ int main(int argc, char ** argv)
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
             std::cout << "New MPS:" << std::endl << initial_mps.description();
+        } else if (cur_mps.length() > 0) {
+            initial_mps = cur_mps;
         }
-        
+        cur_mps = initial_mps;
         
                 
 #ifndef MEASURE_ONLY
@@ -277,7 +282,6 @@ int main(int argc, char ** argv)
         
         
         bool early_exit = false;
-        cur_mps = initial_mps;
         {   
             std::cout << "*** Starting optimization ***" << std::endl;
             ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(initial_mps,
@@ -307,6 +311,12 @@ int main(int argc, char ** argv)
                     alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                     
                     std::ostringstream oss;
+                    
+                    oss.str("");
+                    oss << "/simulation/iteration/graining/" << graining << "/parameters";
+                    h5ar << alps::make_pvp(oss.str(), parms);
+                    h5ar << alps::make_pvp(oss.str(), model);
+                    
                     oss.str("");
                     oss << "/simulation/iteration/graining/" << graining << "/sweep" << sweep << "/results";
                     
