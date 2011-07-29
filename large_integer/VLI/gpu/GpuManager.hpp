@@ -17,10 +17,10 @@ namespace gpu
 		cudaGetDeviceProperties(&deviceProp_, device_);
 	};			
 
-	gpu_manager::~gpu_manager()
+    gpu_manager::~gpu_manager()
 	{
-		destructor();
 	}
+    
 	gpu_manager& gpu_manager::instance()
 	{
 		static gpu_manager* singleton = NULL;
@@ -30,12 +30,21 @@ namespace gpu
 		}
 		return *singleton;
 	};
-	
+    
+    void gpu_manager::constructor()
+    {
+        this->instance();        
+    }
+    
 	void gpu_manager::destructor()
 	{
-	};
+	}
 	
-	
+    unsigned int gpu_manager::GetmaxThreadsPerBlock()
+    {
+        return this->instance().GetDeviceProperties().maxThreadsPerBlock; 
+    }    
+    	
 	cudaDeviceProp gpu_manager::GetDeviceProperties() const
 	{
 		return deviceProp_;

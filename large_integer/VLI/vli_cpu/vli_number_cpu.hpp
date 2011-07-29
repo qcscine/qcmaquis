@@ -167,7 +167,7 @@ namespace vli
             return ( (tmp-=*this).is_negative() );
         }
 
-        void negate()
+void negate()
         {
             for(size_type i=0; i < Size-1; ++i)
                 data_[i] = (~data_[i])&data_mask<BaseInt>::value;

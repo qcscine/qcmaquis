@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 2.6)
 # DEBUG move false to true
 #
 ########################################################################
-set(CMAKE_VERBOSE_MAKEFILE false)
+set(CMAKE_VERBOSE_MAKEFILE true)
 
 
 ########################################################################

@@ -9,11 +9,6 @@ namespace detail {
 
 #define VLI_GPU_BASE_INT_TYPES_SEQ (unsigned int) (unsigned long int)
 
-
-
-
-
-
 #define VLI_DECLARE_GPU_KERNELS_FOR(r, data, TYPE) \
     void negate_gpu(TYPE* A, int vli_size); \
     void plus_assign_gpu(TYPE* A, TYPE const* B, int num_integers, int vli_size); \
@@ -24,8 +19,9 @@ namespace detail {
     void poly_addition_gpu(TYPE* A, TYPE const* B, int vli_size, int max_order);  \
     void poly_substraction_gpu(TYPE* A, TYPE const* B, int vli_size, int max_order);  \
     void poly_mono_multiply_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order);  \
-    void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, TYPE* D, int vli_size, int max_order, int vector_size); 
-
+    void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order, int vector_size); \
+    void vector_reduction_gpu(TYPE const* A, TYPE * B,  int vli_size, int max_order, int vector_size);
+    
 BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_KERNELS_FOR, _, VLI_GPU_BASE_INT_TYPES_SEQ)
 
 #undef VLI_DECLARE_GPU_KERNELS_FOR
@@ -33,8 +29,5 @@ BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_KERNELS_FOR, _, VLI_GPU_BASE_INT_TYPES_SEQ
 } //namespace detail
 
 } //namespace vli
-
-
-//void multiply_gpu(const int * A, const int*  B, int* C, int num_integers, int vli_size);  
 
 #endif
