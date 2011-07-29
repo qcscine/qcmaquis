@@ -108,11 +108,8 @@ namespace vli
         }
         
         gpu_vector& operator = (gpu_vector a)
-        {   printf(" timer operator =\n "); 
-            Timer A("SWAP VECTOR");
-            A.begin();
+        {  
             swap(*this,a);
-            A.end();
             return *this;
         }
         

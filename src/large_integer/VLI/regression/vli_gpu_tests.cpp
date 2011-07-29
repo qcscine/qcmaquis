@@ -31,6 +31,8 @@ typedef boost::mpl::list<
 
 
 //TODO is the gpu_manager needed for the execution of the other vli_gpu tests?
+//yeap I am now getting the maximum of threads per block per the manager
+//and I always hope have the manager as master chief for the mix mode CPU/GPU
 BOOST_AUTO_TEST_CASE(gpu_manager)
 {
 	gpu::gpu_manager* GPU;

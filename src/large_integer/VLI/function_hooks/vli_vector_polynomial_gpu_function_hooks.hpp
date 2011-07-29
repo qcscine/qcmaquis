@@ -10,6 +10,7 @@
 #ifndef VLI_VECTOR_POLYNOMIAL_GPU_FUNCTION_HOOKS_HPP
 #define VLI_VECTOR_POLYNOMIAL_GPU_FUNCTION_HOOKS_HPP
 
+#include "gpu/GpuManager.h"
 #include "detail/kernels_gpu.h"
 
 namespace vli{
@@ -27,7 +28,8 @@ namespace vli{
         //As inter is dynamic I prefer make the alloc by the CPU ....
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inter;
         inter.resize(a.size());
-        detail::inner_product_vector_gpu(a.p(), b.p(), res.p(),inter.p(), Size, Order, a.size()); 
+        detail::inner_product_vector_gpu(a.p(), b.p(),inter.p(), Size, Order, a.size());
+        detail::vector_reduction_gpu(inter.p(),res.p(),Size, Order, inter.size());
     }
     
     

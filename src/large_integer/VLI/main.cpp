@@ -2,6 +2,7 @@
 #include <cstdio>
 
 #include "gmpxx.h"
+#include <boost/lexical_cast.hpp>
 
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
@@ -15,11 +16,10 @@
 #include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
+#define SIZE_POLY 8
+#define SIZE_VECTOR 512
 
-#define SIZE_POLY 20
-#define SIZE_VECTOR 3072
-
-#define TYPE unsigned long int 
+#define TYPE unsigned  int 
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -29,6 +29,8 @@ using vli::polynomial_cpu;
 using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
+
+
 
 int main (int argc, char * const argv[]) 
 {
@@ -41,7 +43,7 @@ int main (int argc, char * const argv[])
     for(int i=0; i< 8 ; i++){
         for(int j=0; j < SIZE_POLY; j++){
             for(int k=0; k < SIZE_POLY; k++)
-                pa(j,k)[i] = 9999;
+                pa(j,k)[i] = 9;
             }
          } 
      
@@ -83,7 +85,5 @@ int main (int argc, char * const argv[])
         std::cout << VcGPU << std::endl;
     }
 
-
-    GPU->instance().destructor();
     return 0;
 }
