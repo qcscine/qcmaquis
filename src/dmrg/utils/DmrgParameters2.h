@@ -21,7 +21,7 @@ public:
         add_option("truncation_final", "", "Final value for the truncation");
         
         add_option("init_bond_dimension", "5", "");
-        add_option("max_bond_dimension", "", "", REQUIRED);
+        add_option("max_bond_dimension", "", "");
         add_option("sweep_bond_dimensions", "", "");
         
         add_option("alpha_initial", "1e-2", "");
@@ -33,9 +33,9 @@ public:
         add_option("ietl_jcd_gmres", "5", "");
         add_option("ietl_jcd_maxiter", "100", "");
         
-        add_option("nsweeps", "", "", REQUIRED);
-        add_option("nmainsweeps", "", "", REQUIRED);
-        add_option("ngrowsweeps", "", "", REQUIRED);
+        add_option("nsweeps", "", "");
+        add_option("nmainsweeps", "", "");
+        add_option("ngrowsweeps", "", "");
         
         add_option("resultfile", "", "", REQUIRED);
         add_option("chkpfile", "", "", REQUIRED);
