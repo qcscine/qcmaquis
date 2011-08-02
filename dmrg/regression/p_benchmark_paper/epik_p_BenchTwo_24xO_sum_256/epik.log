@@ -1,0 +1,107 @@
+S=C=A=N: Thu Jul 28 17:55:31 2011: Collect start
+/usr/bin/aprun -n 24 ./p_BenchTwo.paper 256 12
+[.0]EPIK: p7345: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7346: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7347: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7349: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7340: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7328: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7348: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7334: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7350: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7335: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7337: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7343: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7342: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7331: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7336: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7341: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7333: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7339: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7344: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7338: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7329: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7330: Abort: MPI_Init interposition unsuccessful!
+[.0]EPIK: p7332: Abort: MPI_Init interposition unsuccessful!
+[00000.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7351!
+[00003.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7354!
+[00020.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7371!
+[00010.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7361!
+[00008.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7359!
+[00011.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7362!
+[00021.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7372!
+[00002.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7353!
+[00001.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7352!
+[00016.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7367!
+[00022.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7373!
+[00009.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7360!
+[00012.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7363!
+[00015.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7366!
+[00007.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7358!
+[00023.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7374!
+[00014.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7365!
+[00017.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7368!
+[00013.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7364!
+[00019.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7370!
+[00004.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7355!
+[00006.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7357!
+[00005.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7356!
+[00018.0]EPIK: esd_mpi_init resetting init_pid 7327 to 7369!
+[00000.0]EPIK: Created new measurement archive ./epik_p_BenchTwo_24xO_sum
+[00000.0]EPIK: Activated ./epik_p_BenchTwo_24xO_sum [NO TRACE] (0.024s)
+[00000.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00004.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00008.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00006.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00010.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00002.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00016.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00014.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00012.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00020.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00022.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00005.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00007.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00009.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00003.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00017.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00011.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00015.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00021.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00013.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00023.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00001.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00018.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00019.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+Ambient series of GEMM 0.170678, nCounter : 1
+PBLAS series of GEMM 2.68619e-06, nCounter : 1
+[00000.0]EPIK: Closing experiment ./epik_p_BenchTwo_24xO_sum
+[00000.0]EPIK: 4939 unique paths (4096 max paths, 27 max frames, 874432 unknowns)
+[00000.0]EPIK: Hint: Increase ESD_PATHS to avoid/reduce unknown paths
+[00000.0]EPIK: cpath[1]: rid=160 ppid=-1 order=109812.812448 OutOfOrder
+[00000.0]EPIK: cpath[1493]: rid=769 ppid=1466 order=109812.975651 OutOfOrder
+[00000.0]EPIK: cpath[1674]: rid=331 ppid=1445 order=109812.976524 OutOfOrder
+[00000.0]EPIK: cpath[1814]: rid=331 ppid=1465 order=109812.976850 OutOfOrder
+[00000.0]EPIK: cpath[2244]: rid=854 ppid=1871 order=109812.982437 OutOfOrder
+[00000.0]EPIK: cpath[2691]: rid=1015 ppid=1858 order=109812.983756 OutOfOrder
+[00000.0]EPIK: cpath[2907]: rid=1067 ppid=1409 order=109812.983765 OutOfOrder
+[00000.0]EPIK: cpath[3143]: rid=1085 ppid=2934 order=109812.989067 OutOfOrder
+[00000.0]EPIK: cpath[3183]: rid=1087 ppid=1409 order=109812.983772 OutOfOrder
+[00000.0]EPIK: cpath[3190]: rid=1092 ppid=1920 order=109812.983839 OutOfOrder
+[00000.0]EPIK: cpath[3570]: rid=1104 ppid=3560 order=109813.095527 OutOfOrder
+[00000.0]EPIK: cpath[3583]: rid=1106 ppid=3573 order=109813.095548 OutOfOrder
+[00000.0]EPIK: cpath[3601]: rid=1109 ppid=3591 order=109813.095565 OutOfOrder
+[00000.0]EPIK: cpath[3972]: rid=1119 ppid=1409 order=109813.108591 OutOfOrder
+[00000.0]EPIK: cpath[4096]: rid=1215 ppid=1920 order=109812.993491 OutOfOrder
+[00000.0]EPIK: cpath[4331]: rid=664 ppid=4082 order=109813.108929 OutOfOrder
+[00000.0]EPIK: cpath[4610]: rid=1155 ppid=1409 order=109813.108716 OutOfOrder
+[00000.0]EPIK: cpath[4876]: rid=1102 ppid=3567 order=109813.095524 OutOfOrder
+[00000.0]EPIK: cpath[4897]: rid=1102 ppid=4876 order=109813.095578 OutOfOrder
+[00000.0]EPIK: cpath[4918]: rid=1102 ppid=4897 order=109813.104639 OutOfOrder
+[00000.0]EPIK: Unifying... done (0.138s)
+[00000.0]EPIK: Collating... done (0.933s)
+[00000.0]EPIK: Closed experiment ./epik_p_BenchTwo_24xO_sum (1.083s) maxHeap(0)=42.223/999.277MB
+[.0]EPIK: p7327: Abort: MPI_Init interposition unsuccessful!
+Application 2494393 exit codes: 1
+Application 2494393 resources: utime ~189s, stime ~2s
+S=C=A=N: Thu Jul 28 17:55:41 2011: Collect done (status=0) 10s

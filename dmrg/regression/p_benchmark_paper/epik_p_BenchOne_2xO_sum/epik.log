@@ -1,0 +1,29 @@
+S=C=A=N: Thu Jul 28 15:33:37 2011: Collect start
+/usr/bin/aprun -n 2 ./p_BenchOne.paper 2048
+[.0]EPIK: p9819: Abort: MPI_Init interposition unsuccessful!
+[00000.0]EPIK: esd_mpi_init resetting init_pid 9818 to 9820!
+[00001.0]EPIK: esd_mpi_init resetting init_pid 9818 to 9821!
+[00000.0]EPIK: Created new measurement archive ./epik_p_BenchOne_2xO_sum
+[00000.0]EPIK: Activated ./epik_p_BenchOne_2xO_sum [NO TRACE] (0.129s)
+[00000.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+[00001.0]EPIK: Clipping call-paths in excess of ESD_PATHS=4096!
+Pblas_gemm.txt 1.95333e-06, nCounter : 1
+Ambient_gemm.txt 2.83569, nCounter : 1
+[00000.0]EPIK: Closing experiment ./epik_p_BenchOne_2xO_sum
+[00000.0]EPIK: 4576 unique paths (4096 max paths, 27 max frames, 1322909 unknowns)
+[00000.0]EPIK: Hint: Increase ESD_PATHS to avoid/reduce unknown paths
+[00000.0]EPIK: cpath[1]: rid=160 ppid=-1 order=101448.196045 OutOfOrder
+[00000.0]EPIK: cpath[3004]: rid=1053 ppid=2776 order=101448.398369 OutOfOrder
+[00000.0]EPIK: cpath[3101]: rid=751 ppid=1643 order=101448.349335 OutOfOrder
+[00000.0]EPIK: cpath[3158]: rid=312 ppid=1643 order=101448.349363 OutOfOrder
+[00000.0]EPIK: cpath[3163]: rid=757 ppid=3106 order=101448.349350 OutOfOrder
+[00000.0]EPIK: cpath[3385]: rid=1079 ppid=1586 order=101448.608830 OutOfOrder
+[00000.0]EPIK: cpath[3682]: rid=452 ppid=3437 order=101448.608923 OutOfOrder
+[00000.0]EPIK: cpath[4044]: rid=331 ppid=3809 order=101448.609533 OutOfOrder
+[00000.0]EPIK: Unifying... done (0.115s)
+[00000.0]EPIK: Collating... done (0.538s)
+[00000.0]EPIK: Closed experiment ./epik_p_BenchOne_2xO_sum (0.655s) maxHeap(*)=148.090/293.941MB
+[.0]EPIK: p9818: Abort: MPI_Init interposition unsuccessful!
+Application 2494082 exit codes: 1
+Application 2494082 resources: utime ~14s, stime ~0s
+S=C=A=N: Thu Jul 28 15:33:45 2011: Collect done (status=0) 8s
