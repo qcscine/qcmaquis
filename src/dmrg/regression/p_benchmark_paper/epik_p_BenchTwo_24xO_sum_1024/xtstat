@@ -1,0 +1,32 @@
+Current Allocation Status at Thu Jul 28 17:48:09 2011
+
+     C0-0     C1-0     
+  n3 -------- -------- 
+  n2 -------- -------- 
+  n1 -------- -------- 
+c2n0 -------- -------- 
+  n3 -------- -------- 
+  n2 -------- -------- 
+  n1 -------- -------- 
+c1n0 -------- -------- 
+  n3 Sbba---S S------S 
+  n2 Sbaa---S S------S 
+  n1 S------S S--c---S 
+c0n0 S------S S--A---S 
+    s01234567 01234567 
+
+Legend:
+   nonexistent node                 S  service node
+;  free interactive compute node    -  free batch compute node
+A  allocated, but idle compute node ?  suspect compute node
+X  down compute node                Y  down or admindown service node
+Z  admindown compute node
+
+Available compute nodes:          0 interactive,        168 batch
+
+
+Job ID     User       Size   Age              command line
+--- ------ --------   -----  ---------  ----------------------------------
+a   2494264 tobiaslu   3      0h48m      cobolts.x                         
+b   2494266 tobiaslu   3      0h48m      cobolts.x                         
+c   2494371 ewartt     1      0h00m      p_BenchTwo.pa                     
