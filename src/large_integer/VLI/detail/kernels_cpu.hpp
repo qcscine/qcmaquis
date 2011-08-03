@@ -99,20 +99,25 @@ namespace vli
 	{
 		BaseInt r[2] = {0,0};	//for local block calculation
         BaseInt inter[2*Size+1]; // largeur for avoid overflow
-        
+        std::size_t DynamicSize = Size;
+      
         //for unroll
         for(std::size_t i=0; i<(2*Size+1); ++i)
             inter[i]=0;
         
 		for(std::size_t i = 0 ; i < Size; ++i)
 		{
-			for(std::size_t k = 0 ; k < Size ; ++k) // loop on numbers for multiplication the classical multiplication
+            /** 
+             WE do not calculate all digits so DANGEROUS !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             */
+			for(std::size_t k = 0 ; k < DynamicSize ; ++k) // loop on numbers for multiplication the classical multiplication
 			{	
                 std::size_t m = k + i;
 				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
 				addition_kernel_cpu(&inter[m],&r[0]);
-				addition_kernel_cpu(&inter[m+1],&r[1]);
+				addition_kernel_cpu(&inter[m+1],&r[1]);        
 			}
+            DynamicSize --;
 		}
         for(std::size_t i=0; i<Size; ++i) // we keep only what we need ... think how to remove it
             x[i] = inter[i];
