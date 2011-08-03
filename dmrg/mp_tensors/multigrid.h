@@ -19,7 +19,7 @@ struct multigrid {
     
     template<class Matrix, class SymmGroup>
     MPS<Matrix, SymmGroup>
-    static restriction (MPS<Matrix, SymmGroup> mps_large,
+    static restriction (MPS<Matrix, SymmGroup> const & mps_large,
                         MPS<Matrix, SymmGroup> & mps_small)
     {
         std::size_t L = mps_small.length();
@@ -150,7 +150,7 @@ struct multigrid {
     
     template<class Matrix, class SymmGroup>
     void
-    static extension (MPS<Matrix, SymmGroup> mps_small,
+    static extension (MPS<Matrix, SymmGroup> const & mps_small,
                       MPS<Matrix, SymmGroup> & mps_large)
     {
         std::size_t L1 = mps_small.length();
