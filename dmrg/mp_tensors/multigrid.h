@@ -160,6 +160,8 @@ struct multigrid {
         typedef typename SymmGroup::charge charge;
         typedef typename Index<SymmGroup>::basis_iterator bi_t;
 
+        block_matrix<Matrix, SymmGroup> t_norm;
+
         for (std::size_t p = 0; p < L1; ++p)
         {
 //            std::cout << std::endl << std::endl << "********************" << std::endl << "starting loop for p = " << p << std::endl;
@@ -255,13 +257,11 @@ struct multigrid {
                         }
             
             
-            block_matrix<Matrix, SymmGroup> U, V, left, right;
-            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
+            block_matrix<Matrix, SymmGroup> V, left, right;
+            block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
             
-            svd(M, U, V, S);
-            Ssqrt = sqrt(S);
-            gemm(U, Ssqrt, left);
-            gemm(Ssqrt, V, right);
+            svd(M, left, V, S);
+            gemm(S, V, right);
 
             mps_large[2*p].data() = left;
             mps_large[2*p].left_i = alpha_basis;
@@ -273,9 +273,15 @@ struct multigrid {
             mps_large[2*p+1].left_i = right.left_basis();
             mps_large[2*p+1].cur_storage = RightPaired;
             
+            // Normalization
+            if (p != 0) {
+                mps_large[2*p].multiply_from_left(t_norm);
+                t_norm = mps_large[2*p].normalize_left(SVD);
+                mps_large[2*p+1].multiply_from_left(t_norm);
+            }
+            t_norm = mps_large[2*p+1].normalize_left(SVD);
         }
                 
-        mps_large.normalize_left();
     }
     
 };
