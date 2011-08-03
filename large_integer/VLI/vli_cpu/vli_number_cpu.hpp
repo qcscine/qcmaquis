@@ -116,7 +116,8 @@ namespace vli
         vli_cpu& operator *= (vli_cpu const& vli)
         {
             using vli::multiplies_assign;
-            if(mult_is_negative(vli))// test if 
+            bool result_is_negative = static_cast<bool>((this->data_[Size-1] ^ vli[Size-1]) >> data_bits<BaseInt>::value);
+            if(result_is_negative)// test if 
             {
                 multiplies_assign_negate(*this,vli); // +*- or -*+ 
             }
@@ -124,7 +125,6 @@ namespace vli
             {
                 multiplies_assign(*this,vli); // +*+ or -*- the default multiplications works
             }
-                
             return *this;
         }
 
@@ -188,11 +188,6 @@ namespace vli
             return static_cast<bool>((data_[Size-1]>>data_bits<BaseInt>::value));
         }
         
-        bool mult_is_negative(vli_cpu const& vli) const 
-        {
-            return static_cast<bool>((this->data_[Size-1]>>data_bits<BaseInt>::value ^ vli[Size-1]>>data_bits<BaseInt>::value ));
-        }
-
         void print_raw(std::ostream& os) const
         {
             int i = Size;
