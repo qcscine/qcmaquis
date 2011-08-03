@@ -29,16 +29,6 @@ namespace vli {
     {
         multiplication_classic_cpu<BaseInt,Size>(&vli_a[0], &vli_b[0]);
     }
-
-    template <class BaseInt, int Size>
-    void multiplies_assign_negate(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
-    {
-        // Assuming not only + * + but also - * - works correctly,
-        // we can neglect checking which one we have to negate.
-        vli_a.negate(); // - to + 
-        multiplication_classic_cpu<BaseInt,Size>(&vli_a[0], &vli_b[0]);
-        vli_a.negate(); // + to -
-    }
     
     template <class BaseInt, int Size>
     void multiplies_assign_array(BaseInt* a, BaseInt const* b )

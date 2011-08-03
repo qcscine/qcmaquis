@@ -13,7 +13,7 @@ namespace detail {
     void negate_gpu(TYPE* A, int vli_size); \
     void plus_assign_gpu(TYPE* A, TYPE const* B, int num_integers, int vli_size); \
     void minus_assign_gpu(TYPE* A, TYPE* B, int vli_size);  \
-    void entrywise_multiplies_gpu(TYPE const* A, TYPE const*  B, TYPE* C, int num_integers, int vli_size);  \
+    void entrywise_multiplies_gpu(TYPE const* A, TYPE const*  B, TYPE* C, int vli_size);  \
     void inner_product_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size);  \
     void poly_multiply_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order);  \
     void poly_addition_gpu(TYPE* A, TYPE const* B, int vli_size, int max_order);  \
