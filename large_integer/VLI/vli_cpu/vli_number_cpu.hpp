@@ -119,11 +119,13 @@ namespace vli
             bool result_is_negative = static_cast<bool>((this->data_[Size-1] ^ vli[Size-1]) >> data_bits<BaseInt>::value);
             if(result_is_negative)// test if 
             {
-                multiplies_assign_negate(*this,vli); // +*- or -*+ 
+                this->negate(); // - to +
+                multiplies_assign(*this,vli); // +*- or -*+ 
+                this->negate(); // + to -
             }
             else
             {
-                multiplies_assign(*this,vli); // +*+ or -*- the default multiplications works
+                multiplies_assign(*this,vli); // +*+ or -*- the default multiplication works
             }
             return *this;
         }
@@ -362,7 +364,7 @@ namespace vli
     template<typename BaseInt, int Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
-        vli.print(os);
+        vli.print_raw(os);
         return os;
     }
   

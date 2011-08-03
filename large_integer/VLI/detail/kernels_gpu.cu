@@ -193,9 +193,19 @@ __device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
 }
     
 template <typename T>
-__global__ void single_multiplication(T const* x, T const* y , T* z , int num_integers, int vli_size)     
+__global__ void single_multiplication(T const* x, T const* y , T* z, int vli_size)     
 {
-    multiplication_classic_kernel_gpu(x, y, z, vli_size);    
+//   bool result_is_negative = static_cast<bool>((x[Size-1] ^ y[Size-1]) >> data_bits<BaseInt>::value);
+//     if(result_is_negative)// test if 
+//   {
+//      negate_device(y,vli_size);
+        multiplication_classic_kernel_gpu(x, y, z, vli_size);  // +*- or -*+ 
+//      negate_device(y,vli_size);
+//   }
+//   else
+//   {
+//       multiplication_classic_kernel_gpu(x, y, z, vli_size);  // +*+ or -*-  
+//   }
 }
     
 template <typename T>
@@ -285,13 +295,13 @@ void minus_assign_gpu(TYPE*  A, TYPE*  B, int vli_size) \
     dim3 dimblock(1,1,1); \
     single_substraction <<< dimgrid, dimblock >>>(A, B, vli_size); \
 }     \
-void entrywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int num_integers, int vli_size) \
+void entrywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int vli_size) \
 { \
     dim3 dimgrid(1,1,1); \
 	dim3 dimblock(1,1,1); \
-	single_multiplication <<< dimgrid, dimblock >>>(a, b , c, num_integers, vli_size); \
+	single_multiplication <<< dimgrid, dimblock >>>(a, b , c, vli_size); \
 } \
-void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size) \
+void inner_prod_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size) \
 { \
     assert(false); \
 } \

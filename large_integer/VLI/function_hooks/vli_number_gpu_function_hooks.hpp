@@ -33,8 +33,9 @@ void multiplies_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> cons
     // TODO this seems to be quite inefficient
     // (We implement the a *= b as a regular c = a * b and do a swap(a,c)...)
     // (I guess it's better to try implement a *= b directly.)
+    // I need an intermediate buffer unfortunatly
     vli_gpu<BaseInt,Size> vli_c;
-    entrywise_multiplies_gpu( vli_a.p(), vli_b.p(), vli_c.p(), 1,Size);
+    entrywise_multiplies_gpu( vli_a.p(), vli_b.p(), vli_c.p(), Size);
     swap(vli_a,vli_c);
 }
 

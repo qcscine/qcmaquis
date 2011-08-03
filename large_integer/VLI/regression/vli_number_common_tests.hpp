@@ -345,6 +345,49 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_reverse_negative_numbers_gmp, Vli, vli_types )
+{
+    Vli a;
+    Vli b;
+    fill_random(a,Vli::size/2);
+    fill_random(b,Vli::size/4); 
+    b.negate();
+    
+    mpz_class agmp(a.get_str()), bgmp(b.get_str());
+    
+    Vli c = a*b;
+    mpz_class cgmp = agmp * bgmp;
+    
+    b.negate();
+    Vli d = a*b;
+    mpz_class dgmp = agmp * (-bgmp);
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+    BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp, Vli, vli_types )
+{
+    Vli a;
+    Vli b;
+    fill_random(a,Vli::size/2);
+    fill_random(b,Vli::size/4); 
+    a.negate();
+    b.negate();
+    
+    mpz_class agmp(a.get_str()), bgmp(b.get_str());
+    
+    Vli c = a*b;
+    mpz_class cgmp = agmp * bgmp;
+    
+    b.negate();
+    Vli d = a*b;
+    mpz_class dgmp = agmp * (-bgmp);
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+    BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, Vli, vli_types )
 {
     BOOST_STATIC_ASSERT(Vli::size > 1);

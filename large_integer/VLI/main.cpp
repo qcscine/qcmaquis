@@ -36,7 +36,9 @@ int main (int argc, char * const argv[])
 {
     gpu::gpu_manager* GPU;
     GPU->instance();
-
+    
+    
+/*
     polynomial_cpu<vli_cpu<TYPE,8>, SIZE_POLY> pa;
 
     
@@ -84,6 +86,26 @@ int main (int argc, char * const argv[])
         std::cout << VcCPU << std::endl;
         std::cout << VcGPU << std::endl;
     }
+ 
+ */
 
+    vli_cpu<TYPE,8> a;
+    vli_cpu<TYPE,8> b;
+    vli_cpu<TYPE,8> c;
+
+    a[0] = 3;
+    b[0] = 3;    
+    c[0] = -3;
+    
+    b.negate();
+
+    std::cout << b << std::endl;
+    std::cout << c << std::endl;
+
+    a*=b;
+    
+  //  std::cout << a << std::endl;
+    
+    
     return 0;
 }
