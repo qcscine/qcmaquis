@@ -116,7 +116,15 @@ namespace vli
         vli_cpu& operator *= (vli_cpu const& vli)
         {
             using vli::multiplies_assign;
-            multiplies_assign(*this,vli);
+            if(mult_is_negative(vli))// test if 
+            {
+                multiplies_assign_negate(*this,vli); // +*- or -*+ 
+            }
+            else
+            {
+                multiplies_assign(*this,vli); // +*+ or -*- the default multiplications works
+            }
+                
             return *this;
         }
 
@@ -167,7 +175,7 @@ namespace vli
             return ( (tmp-=*this).is_negative() );
         }
 
-void negate()
+       void negate()
         {
             for(size_type i=0; i < Size-1; ++i)
                 data_[i] = (~data_[i])&data_mask<BaseInt>::value;
@@ -178,6 +186,11 @@ void negate()
         bool is_negative() const
         {
             return static_cast<bool>((data_[Size-1]>>data_bits<BaseInt>::value));
+        }
+        
+        bool mult_is_negative(vli_cpu const& vli) const 
+        {
+            return static_cast<bool>((this->data_[Size-1]>>data_bits<BaseInt>::value ^ vli[Size-1]>>data_bits<BaseInt>::value ));
         }
 
         void print_raw(std::ostream& os) const

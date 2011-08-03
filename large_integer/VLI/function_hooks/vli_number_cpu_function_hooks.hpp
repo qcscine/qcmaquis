@@ -31,6 +31,25 @@ namespace vli {
     }
 
     template <class BaseInt, int Size>
+    void multiplies_assign_negate(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b )
+    {
+        // no tmp variable, I minimize copy .....
+        if (vli_a.is_negative()) // this is -
+        {
+            vli_a.negate(); // - to + 
+            multiplication_classic_cpu<BaseInt,Size>(&vli_a[0], &vli_b[0]);
+            vli_a.negate(); // + to -
+        }
+        else // vli_b is negative
+        { // Putain de const -> const
+            vli_cpu<BaseInt,Size>  tmp(vli_b); 
+            tmp.negate();
+            multiplication_classic_cpu<BaseInt,Size>(&vli_a[0], &tmp[0]);
+            vli_a.negate();    
+        }
+    }
+    
+    template <class BaseInt, int Size>
     void multiplies_assign_array(BaseInt* a, BaseInt const* b )
     {
         multiplication_classic_cpu<BaseInt,Size>(a, b);
