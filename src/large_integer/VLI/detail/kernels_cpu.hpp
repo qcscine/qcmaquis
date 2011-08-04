@@ -109,12 +109,6 @@ namespace vli
 				addition_kernel_cpu(&res[m+1],&r[1]);
 			}
 		}
-/*
-        r[2] = {0,0};
-        
-        multiplication_block_cpu( &x[Size-1], &y[Size-1], &(r[0]));
-        addition_kernel_cpu(&res[2*Size-2],&r[0]);
-  */      
 	}
 
     template <typename BaseInt, std::size_t Size>

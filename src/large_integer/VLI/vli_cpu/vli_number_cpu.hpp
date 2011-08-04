@@ -349,10 +349,12 @@ namespace vli
         if(result_is_negative)// test if 
         {
             const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
-//            vli_a.negate(); // - to +
+           
+         //   for(size_t i=Size ; i < 2*Size; ++i)
+         //       vli_res[i]=vli::data_mask<BaseInt>::value+vli::base<BaseInt>::value;            
+            
             multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b);// +*- or -*+ 
             const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
-//            vli_a.negate(); // + to -
             vli_res.negate();           
         }
         else
