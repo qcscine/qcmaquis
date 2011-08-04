@@ -112,7 +112,7 @@ namespace vli
             plus_assign(*this,vli_cpu(-a));
             return *this;
         }
-        
+        /*
         vli_cpu& operator *= (vli_cpu const& vli)
         {
             using vli::multiplies_assign;
@@ -129,6 +129,7 @@ namespace vli
             }
             return *this;
         }
+         */
 
         vli_cpu& operator *= (int a)
         {
@@ -244,7 +245,7 @@ namespace vli
             {
                 value_cpy=value; // reset
                 vli_cpu previous_decimal(decimal);
-                decimal *= vli_cpu(10);
+                decimal *= 10;
                 ++exp;
                 if(decimal < previous_decimal) // Overflow! (we can handle it.)
                 {
@@ -266,7 +267,7 @@ namespace vli
             // Create a number 10^(exponent-1) sin
             vli_cpu dec(1);
             for(size_type e=0; e < ten_exp; ++e)
-                dec *= vli_cpu(10);
+                dec *= 10;
 
             // Find the right digit for 10^ten_exp
             vli_cpu value_cpy(value);
@@ -340,10 +341,11 @@ namespace vli
     }
 
     template <class BaseInt, int Size>
-    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
+    const vli_cpu<BaseInt, 2*Size> operator * (vli_cpu<BaseInt, Size> const& vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
-        vli_a *= vli_b;
-        return vli_a;
+        vli_cpu<BaseInt, 2*Size> vli_res;
+        multiplies<BaseInt, 2*Size, Size>(vli_a, vli_b, vli_res);
+        return vli_res;
     }
 
     template <class BaseInt, int Size>

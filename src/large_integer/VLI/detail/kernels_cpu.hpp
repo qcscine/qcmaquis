@@ -115,28 +115,24 @@ namespace vli
 	 multiplication classic version, efficiency O(n**2)
 	 */
 	template <typename BaseInt, std::size_t Size>
-	void multiplication_classic_cpu(BaseInt* x, const BaseInt* y)	
+	void multiplication_classic_cpu(BaseInt * res, BaseInt const* x, BaseInt const* y)	
 	{
 		BaseInt r[2] = {0,0};	//for local block calculation
-        BaseInt inter[2*Size+1]; // largeur for avoid overflow
-        
-        //for unroll
-        for(std::size_t i=0; i<(2*Size+1); ++i)
-            inter[i]=0;
         
 		for(std::size_t i = 0 ; i < Size; ++i)
 		{
-			for(std::size_t k = 0 ; k < Size ; ++k) // loop on numbers for multiplication the classical multiplication
+			for(std::size_t k = 0 ; k < Size-1 ; ++k) // loop on numbers for multiplication the classical multiplication
 			{	
                 std::size_t m = k + i;
 				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
-				addition_kernel_cpu(&inter[m],&r[0]);
-				addition_kernel_cpu(&inter[m+1],&r[1]);
+				addition_kernel_cpu(&res[m],&r[0]);
+				addition_kernel_cpu(&res[m+1],&r[1]);
 			}
 		}
+
+        multiplication_block_cpu( &x[Size-1], &y[Size-1], &(r[0]));
+        addition_kernel_cpu(&res[2*Size-2],&r[0]);
         
-        for(std::size_t i=0; i<Size; ++i) // we keep only what we need ... think how to remove it
-            x[i] = inter[i];
 	}
 
     template <typename BaseInt, std::size_t Size>
