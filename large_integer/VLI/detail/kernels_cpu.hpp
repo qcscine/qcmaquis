@@ -46,26 +46,6 @@ namespace vli
         *(x+Size-1) &= base<T>::value + data_mask<T>::value;
 	}
     
-   	template <class T, std::size_t Size>
-    void addition_kernel_cpu_dynamic(T* x, T* y, int n)
-    {
-        int m = Size-n;
-        
-        if(n == 0)
-            return;    
- 
-        addition_kernel_cpu((x+m), y); // addition r[1]
-        
-        if(n != 0 || n != 1)
-        {
-            for(int i = 0; i < n;i++)
-            {
-                *(x+2+m) += *(x+1+m) >> data_bits<T>::value;  
-                *(x+1+m) &= data_mask<T>::value;
-            }
-        }
-    }
-    
 	template <typename T>
 	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
 	{
@@ -121,7 +101,7 @@ namespace vli
         
 		for(std::size_t i = 0 ; i < Size; ++i)
 		{
-			for(std::size_t k = 0 ; k < Size-1 ; ++k) // loop on numbers for multiplication the classical multiplication
+			for(std::size_t k = 0 ; k < Size; ++k) // loop on numbers for multiplication the classical multiplication
 			{	
                 std::size_t m = k + i;
 				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
@@ -129,10 +109,12 @@ namespace vli
 				addition_kernel_cpu(&res[m+1],&r[1]);
 			}
 		}
-
+/*
+        r[2] = {0,0};
+        
         multiplication_block_cpu( &x[Size-1], &y[Size-1], &(r[0]));
         addition_kernel_cpu(&res[2*Size-2],&r[0]);
-        
+  */      
 	}
 
     template <typename BaseInt, std::size_t Size>

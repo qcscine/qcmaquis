@@ -344,7 +344,22 @@ namespace vli
     const vli_cpu<BaseInt, 2*Size> operator * (vli_cpu<BaseInt, Size> const& vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_cpu<BaseInt, 2*Size> vli_res;
-        multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b);
+        
+        bool result_is_negative = static_cast<bool>((vli_a[Size-1] ^ vli_b[Size-1]) >> data_bits<BaseInt>::value);
+        if(result_is_negative)// test if 
+        {
+            const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
+//            vli_a.negate(); // - to +
+            multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b);// +*- or -*+ 
+            const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
+//            vli_a.negate(); // + to -
+            vli_res.negate();           
+        }
+        else
+        {
+             multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b); // +*+ or -*- the default multiplication works
+        }
+
         return vli_res;
     }
 
