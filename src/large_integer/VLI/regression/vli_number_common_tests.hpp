@@ -169,6 +169,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_type
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vli_types )
 {
     Vli a;
@@ -187,6 +188,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vl
     //Check that b hasn't changed
     BOOST_CHECK_EQUAL(b,b_orig);
 }
+*/
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli, vli_types )
 {
@@ -213,7 +215,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
     Vli a_orig(a);
     
     Vli b = a+a+a;
-    Vli c = a * Vli(3);
+    Vli c = a * 3;
 
     BOOST_CHECK_EQUAL(c,b);
     
@@ -304,7 +306,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp, Vli, vli_types )
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
-    Vli c = a*b;
+    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
     mpz_class cgmp = agmp * bgmp;
     
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
@@ -334,11 +336,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp, Vli, vli_types )
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
-    Vli c = a*b;
+    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
     mpz_class cgmp = agmp * bgmp;
     
     b.negate();
-    Vli d = a*b;
+    vli_cpu<typename Vli::value_type,2*Vli::size> d = a*b;
     mpz_class dgmp = agmp * (-bgmp);
     
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
@@ -355,11 +357,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_reverse_negative_numbers_gmp, Vli, vli
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
-    Vli c = a*b;
+    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
     mpz_class cgmp = agmp * bgmp;
     
     b.negate();
-    Vli d = a*b;
+    vli_cpu<typename Vli::value_type,2*Vli::size> d = a*b;
     mpz_class dgmp = agmp * (-bgmp);
     
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
@@ -377,11 +379,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp, Vli, vli_
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
-    Vli c = a*b;
+    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
     mpz_class cgmp = agmp * bgmp;
     
     b.negate();
-    Vli d = a*b;
+    vli_cpu<typename Vli::value_type,2*Vli::size> d = a*b;
     mpz_class dgmp = agmp * (-bgmp);
     
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
