@@ -132,8 +132,9 @@ namespace vli
 
         vli_cpu& operator *= (int a)
         {
-            using vli::multiplies_assign;
-            multiplies_assign(*this,vli_cpu(a));
+            using vli::multiplies_assign_number;
+            multiplies_assign_number(*this,a);
+       //   multiplies_assign(*this,vli_cpu(a));
             return *this;
         }
 

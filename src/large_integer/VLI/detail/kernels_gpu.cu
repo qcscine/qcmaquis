@@ -176,7 +176,7 @@ __device__  void multiplication_block_gpu( const T*   x,   const  T*   y, T *r)
 }	
 
 template <typename T>
-__device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z, int vli_size)// remove num_int maybe ?
+__device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z, int vli_size)
 {
 	T r[2] = {0,0};	//for local block calculation
 	
