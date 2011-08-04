@@ -365,7 +365,7 @@ namespace vli
     template<typename BaseInt, int Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
-        vli.print_raw(os);
+        vli.print(os);
         return os;
     }
   
