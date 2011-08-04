@@ -41,6 +41,17 @@ namespace vli {
     {
         addition_classic_cpu<BaseInt,Size>(a, b);
     }
+    
+    template <class BaseInt, int Size>
+    void multiplies_assign_number(vli_cpu<BaseInt,Size> & vli_a, int n)
+    {
+        BaseInt tmp = static_cast<BaseInt>(n);
+        multiplication_classic_cpu_number<BaseInt,Size>(&vli_a[0],tmp);
+    }
+    
+    
+    
+    
 } //namespace vli
 
 #endif //VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP

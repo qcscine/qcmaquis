@@ -46,6 +46,26 @@ namespace vli
         *(x+Size-1) &= base<T>::value + data_mask<T>::value;
 	}
     
+   	template <class T, std::size_t Size>
+    void addition_kernel_cpu_dynamic(T* x, T* y, int n)
+    {
+        int m = Size-n;
+        
+        if(n == 0)
+            return;    
+ 
+        addition_kernel_cpu((x+m), y); // addition r[1]
+        
+        if(n != 0 || n != 1)
+        {
+            for(int i = 0; i < n;i++)
+            {
+                *(x+2+m) += *(x+1+m) >> data_bits<T>::value;  
+                *(x+1+m) &= data_mask<T>::value;
+            }
+        }
+    }
+    
 	template <typename T>
 	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
 	{
@@ -99,29 +119,40 @@ namespace vli
 	{
 		BaseInt r[2] = {0,0};	//for local block calculation
         BaseInt inter[2*Size+1]; // largeur for avoid overflow
-        std::size_t DynamicSize = Size;
-      
+        
         //for unroll
         for(std::size_t i=0; i<(2*Size+1); ++i)
             inter[i]=0;
         
 		for(std::size_t i = 0 ; i < Size; ++i)
 		{
-            /** 
-             WE do not calculate all digits so DANGEROUS !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-             */
-			for(std::size_t k = 0 ; k < DynamicSize ; ++k) // loop on numbers for multiplication the classical multiplication
+			for(std::size_t k = 0 ; k < Size ; ++k) // loop on numbers for multiplication the classical multiplication
 			{	
                 std::size_t m = k + i;
 				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
 				addition_kernel_cpu(&inter[m],&r[0]);
-				addition_kernel_cpu(&inter[m+1],&r[1]);        
+				addition_kernel_cpu(&inter[m+1],&r[1]);
 			}
-            DynamicSize --;
 		}
+        
         for(std::size_t i=0; i<Size; ++i) // we keep only what we need ... think how to remove it
             x[i] = inter[i];
 	}
+
+    template <typename BaseInt, std::size_t Size>
+	void multiplication_classic_cpu_number(BaseInt* x, BaseInt a)	
+	{      
+        int n=0;
+        BaseInt r[2] = {0,0};
+        for( int i = Size-1; i >= 0; --i)
+        {
+            multiplication_block_cpu(&x[i],&a,&(r[0]));
+            x[i] = r[0];
+            addition_kernel_cpu_dynamic<BaseInt,Size>(&x[i],&r[1],n);
+            ++n;
+        }
+    }
+
 }
 
 #endif //VLI_KERNELS_CPU_HPP
