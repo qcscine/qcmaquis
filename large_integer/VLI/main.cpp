@@ -86,20 +86,29 @@ int main (int argc, char * const argv[])
         std::cout << VcCPU << std::endl;
         std::cout << VcGPU << std::endl;
     }
- 
     */
     
     vli_cpu<TYPE, 4> a;
+    vli_cpu<TYPE, 4> b;
+    vli_cpu<TYPE, 8> c;
 
     a[0]=vli::data_mask<TYPE>::value;
     a[1]=vli::data_mask<TYPE>::value;
-    a[2]=vli::data_mask<TYPE>::value;
- 
-    
+//    a[2]=vli::data_mask<TYPE>::value;
+//    a[3]=vli::data_mask<TYPE>::value;
+
+    b[0]=vli::data_mask<TYPE>::value;
+    b[1]=vli::data_mask<TYPE>::value;
+//    b[2]=vli::data_mask<TYPE>::value;
+//    b[3]=vli::data_mask<TYPE>::value;
+
+    c = a*b;  
+    /*
     mpz_class agmp(a.get_str());    
     a*=2;
     agmp*=2;
     std::cout<<a<<std::endl; 
     std::cout<<agmp<<std::endl;
-    return 0;
+*/
+     return 0;
 }

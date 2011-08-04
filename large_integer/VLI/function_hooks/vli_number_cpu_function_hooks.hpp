@@ -25,7 +25,7 @@ namespace vli {
     }
     
     template <class BaseInt, int Size1, int Size2>
-    void multiplies( vli_cpu<BaseInt, Size1> vli_res, vli_cpu<BaseInt,Size2> const & vli_a, vli_cpu<BaseInt,Size2> const& vli_b)
+    void multiplies( vli_cpu<BaseInt, Size1>& vli_res, vli_cpu<BaseInt,Size2> const & vli_a, vli_cpu<BaseInt,Size2> const& vli_b)
     {
         multiplication_classic_cpu<BaseInt,Size2>(&vli_res[0],&vli_a[0], &vli_b[0]);
     }
