@@ -276,18 +276,18 @@ namespace vli
             {
                 value_cpy = value; // reset
                 ++digit;
-                if(vli_cpu(digit)*dec < vli_cpu(digit-1)*dec) // Overflow (we can handle it.)
+                if(digit*dec < (digit-1)*dec) // Overflow (we can handle it.)
                 {
                     break;
                 }
-                value_cpy-= vli_cpu(digit)*dec;
+                value_cpy-= digit*dec;
             }
             --digit; // we went to far
 
             assert(digit >=0);
             assert(digit < 10);
 
-            value-= vli_cpu(digit)*dec;
+            value-= digit*dec;
 
             if(ten_exp <= 0)
                 return boost::lexical_cast<std::string>(digit);
@@ -344,7 +344,7 @@ namespace vli
     const vli_cpu<BaseInt, 2*Size> operator * (vli_cpu<BaseInt, Size> const& vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_cpu<BaseInt, 2*Size> vli_res;
-        multiplies<BaseInt, 2*Size, Size>(vli_a, vli_b, vli_res);
+        multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b);
         return vli_res;
     }
 

@@ -93,7 +93,7 @@ namespace vli
 	}
 	
 	template <typename T>
-	void multiplication_block_cpu(T* x, T  const*  y, T * r )	
+	void multiplication_block_cpu(T const* x, T  const*  y, T * r )	
 	{
 		T a[2] = {0,0};
 		T b[2] = {0,0};
