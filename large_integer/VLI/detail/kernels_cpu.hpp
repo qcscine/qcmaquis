@@ -142,14 +142,21 @@ namespace vli
     template <typename BaseInt, std::size_t Size>
 	void multiplication_classic_cpu_number(BaseInt* x, BaseInt a)	
 	{      
-        int n=0;
         BaseInt r[2] = {0,0};
-        for( int i = Size-1; i >= 0; --i)
+        multiplication_block_cpu(&x[Size-1],&a,&(r[0]));
+        x[Size-1] = r[0];
+        for( std::size_t i = Size-1; i > 0; --i)
         {
-            multiplication_block_cpu(&x[i],&a,&(r[0]));
-            x[i] = r[0];
-            addition_kernel_cpu_dynamic<BaseInt,Size>(&x[i],&r[1],n);
-            ++n;
+            multiplication_block_cpu(&x[i-1],&a,&(r[0]));
+            x[i-1] = r[0];
+            x[i] += r[1];
+
+            // Carry bit propagation
+            for(std::size_t j = i; j < Size-2; ++j)
+            { 
+                x[j+1] += x[j] >> data_bits<BaseInt>::value; //carry bit
+                x[j] &= data_mask<BaseInt>::value; // Remove the carry bit
+            }
         }
     }
 

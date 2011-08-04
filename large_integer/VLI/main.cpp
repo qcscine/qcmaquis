@@ -96,8 +96,10 @@ int main (int argc, char * const argv[])
     a[2]=vli::data_mask<TYPE>::value;
  
     
-    
+    mpz_class agmp(a.get_str());    
     a*=2;
-    
+    agmp*=2;
+    std::cout<<a<<std::endl; 
+    std::cout<<agmp<<std::endl;
     return 0;
 }
