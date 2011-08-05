@@ -204,7 +204,11 @@ namespace generate_mpo
                 size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert( it->first < prempo.size() );
                 prempo[it->first].push_back( make_tuple(first_use_b, second_use_b, it->second) );
-                used_dims[it->first].insert(use_b);
+                if (minp != maxp) { // bond term
+                    prempo[it->first].push_back( make_tuple(first_use_b, second_use_b, it->second) );
+                    used_dims[it->first].insert(use_b);
+                } else // site term
+                    site_terms[it->first] += it->second;
                 done[it->first] = true;
             }
             
@@ -220,13 +224,17 @@ namespace generate_mpo
         
         MPO<Matrix, SymmGroup> create_mpo()
         {
+            for (typename std::map<std::size_t, op_t>::const_iterator it = site_terms.begin();
+                 it != site_terms.end(); ++it)
+                prempo[it->first].push_back( make_tuple(0, 1, it->second) );
+            
             for (size_t p = leftmost_right + 1; p < length; ++p)
                 prempo[p].push_back( make_tuple(1, 1, ident) );
-            
-            //            for (typename vector<vector<block> >::iterator it = prempo.begin();
-            //                 it + 1 != prempo.end();
-            //                 ++it)
-            //                compress_on_bond(*it, *(it+1));
+//            
+//            for (typename vector<vector<block> >::iterator it = prempo.begin();
+//                 it + 1 != prempo.end();
+//                 ++it)
+//                compress_on_bond(*it, *(it+1));
             
             MPO<Matrix, SymmGroup> r(length);
             for (size_t p = 1; p < length - 1; ++p)
@@ -242,6 +250,7 @@ namespace generate_mpo
         block_matrix<Matrix, SymmGroup> ident;
         vector<set<size_t> > used_dims;
         vector<vector<block> > prempo;
+        std::map<std::size_t, op_t> site_terms;
         
         size_t maximum, leftmost_right;
         
