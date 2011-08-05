@@ -12,11 +12,11 @@
 \usepackage{aeguill}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END PACKAGE
-
+\graphicspath{{PLOT/SinglePDGEMM/}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN AUTHORS AND INSTITUTIONS
 \title{AMBIENT; an  execution and an MPI-CUDA scheduler  }
-\author[A. Kosenkov, T. Ewart, B. Bauerb, A. Kantian,  M. Troyer, T. Giarmarchy]{Alexandr Kosenkov, Timoth\'ee Ewart, Bela Bauerb, Adrian Kantian, Matthias Troyer and Thierry Giamarchy }
+\author[A. Kosenkov, T. Ewart, B. Bauerb, A. Kantian,  M. Troyer, T. Giarmarchy]{Alexandr Kosenkov, Timoth\'ee Ewart, Bela Bauer, Adrian Kantian, Matthias Troyer and Thierry Giamarchy }
 %\author[UNIGE, ETHZ, CSCS]{UNIGE, ETHZ, CSCS}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN AUTHORS AND INSTITUTIONS
 
@@ -91,18 +91,17 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN DESCRIPTION OF THE FRAMEWORK
 
-\section{Design of the software layer}
-In this section, we describe our framework in simple terms, without  a deep technical description.
-We will focus on the main functionalities  and show the essential features.
-
+\section{Design of the framework}
+%In this section, we describe our framework in simple terms, without  a deep technical description.
+%We will focus on the main functionalities  and show the essential features.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN CUDA IDEOLOGY SECTION
 \subsection{Extending the CUDA approach} \label{CUDAIDEOLOGYSECTION}
 
-Ambient employs an extension on the CUDA approach to a distributed cluster. This is based on the observation that modern clusters employ many thousands of nodes, just like a GPU consists of thousands of small, simple cores, on each of which an runs an independent thread. In such a comparison however, the technical specifics of the basic cluster unit in terms of processor power, memory bandwidth, network speed, \etc must be considered. A basic comparison between CUDA and Ambient is shown in the table \ref{ANALOGY}.
+Ambient employs an extension on the CUDA approach to a distributed cluster. This is based on the observation that modern clusters employ many thousands of nodes, just like a GPU consists of thousands of small, simple cores, on each of which an runs an independent thread. In such a comparison however, the technical specifics of the basic cluster unit in terms of processor power, memory bandwidth, network speed, \etc  \, must be considered. 
 
-First, given the entirely different capabilities of a CPU core over a single GPU core, the scope of data for a single CPU (on which a single Ambient "thread" is typically running) in Ambient is rather comparable to that of a CUDA block or an OpenCL work group, the typical  blocks of size is $ 128 \times 128$.
-Of course, the user has full control of the size and can adapt it to the treated problem. Like in CUDA, blocks (i.e. groups of "threads") and a grid of blocks can then be formed in Ambient.
+The first thing coming in mind when we compare a  cluster and a GPU is the number of available cores.   Assimilate a single  CPU core  to  GPU core is reducer  because a CPU has additional capacities than a GPU core.
+Thus, given the entirely different capabilities of a CPU core over a single GPU core, the scope of data for a single CPU (on which a single Ambient "thread" is typically running) in Ambient is rather comparable to that of a CUDA block or an OpenCL work group, the typical  blocks of size is $ 128 \times 128$. Of course, the user has full control of the size and can adapt it to the treated problem. Like in CUDA, blocks (i.e. groups of "threads") and a grid of blocks can then be formed in Ambient. A basic comparison between CUDA and Ambient is shown in the table \ref{ANALOGY}.
 
 \begin{figure}[t]
 	\begin{center}
@@ -408,7 +407,7 @@ and it will pushed up needed kernels on the top of stack. When the \texttt{playo
 	\begin{center}
 	 	\begin{tabular}{l l }
                            \hline 
-                           Determination of the directed  acyclic graph determination   &    \\ \hline
+                           Determination of the directed  acyclic graph   &    \\ \hline
                            \textbf{Require}    A class Matrix  that fits with Ambient framework   &  \\  
                            and  vector of matrices  of size $n$, $A[n]$, $B[n]$, $C[n]$ and $D[n]$ & \\
                            \begin{tabular}{c l} 
@@ -468,15 +467,65 @@ We illustrate the two last previous situations on the figure \ref{MPIEXCHANGE}.
              \includegraphics[scale=0.35]{FIGURES/ComGroup.eps} 
 	\end{center}
           \caption{On the left, we illustrate communications inside the same group. On the right, we illustrate the communications between  two MPI-groups. The dashed circle indicated the previous MPI group. In both cases, the masters process have the key 
-          role to distribute informations for the exchange. The requests (\texttt{mpi\_isend} and \texttt{mpi\_irecv}) are arrows, and the orders of operations are marked by numbers.}  \label{MPIEXCHANGE}
+          role to distribute informations for the exchange. The requests  are arrows, and the orders of operations are marked by numbers.}  \label{MPIEXCHANGE}
 \end{figure}
 
-In the previous section, we reveled the importance of the data exchange.   the scheduler, its perfect execution is relevant to  the packet manager.
-The packet manager  manage the intra communication inside the same MPI group \eg to perform an multiplication, and the inter communication
+In the previous section, we reveled the importance of the communications, theirs perfect execution is relevant to  the packet manager.
+The packet manager  manages the intra communication inside the same MPI group \eg to perform an multiplication, and the inter communication
 between the MPI groups. The packet manager is unique for every MPI-group, it is based on a singleton pattern. 
 
-The role of the p
 
+ In the previous paragraph, we presented different communication blueprint when datas are requested by a process.
+As communication path between the applicant  and the owner of the data can be more and less complex,  to solve every communication scheme,  we designed the packet manager on two main things :
+the delegate pattern and a finite state machine (FSM).
+
+To reach the best performance in HPC,  synchronization operations should be avoided  \cite{EXASCALE-2010}, because it is  a bottleneck.
+Thus, we privileged  MPI asynchronous communication into Ambient (\texttt{mpi\_isend} and \texttt{mpi\_irecv}). Nevertheless, if a message 
+is sent by a asynchronous instruction, an MPI test is necessary to check if the packet can be received.  As we refused synchronization instructions,
+we repeat the process until receiving the message by an infinite loop. Thus we integrated the delegate pattern and the FSM inside the loop.
+
+
+\begin{table}[t] 
+	\begin{center}
+	 	\begin{tabular}{l l }
+                           \hline 
+                           Algorithm of the packet manager   &    \\ \hline
+                           \textbf{Require}  a MPI process require a block of data &  \\                           
+                            \begin{tabular}{c l}                                
+                               \tiny{1:}   & \textbf{for}  ;;  \textbf{do} $\vartriangleright$  infinite loop \\
+                               \tiny{2:}   & \hspace{0.2 cm}  \texttt{Delegate()}  $\vartriangleright$ check if  packet has been, \\
+                                                & and received and re-send if needed \\
+                               \tiny{3:}   & \hspace{0.2 cm}  FSM $\vartriangleright$ break the loop, \\
+                                               & if all packets arrived at destination. \\
+                               \tiny{4:}   & \textbf{end do} \\
+                           \end{tabular}   &  \\ \hline
+        	     \end{tabular}
+	\end{center}
+	\caption{Description of the packet manager}
+\end{table} 
+
+
+
+\begin{figure}[h]
+	\begin{center}
+	    \psfrag{1}{\tiny \hspace{-0.1 cm}  1}
+	    \psfrag{2}{\tiny \hspace{-0.1 cm}  2}
+	    \psfrag{Loose}{\tiny \hspace{-0.2 cm}   Loose}
+	    \psfrag{Closure}{\tiny \hspace{-0.2 cm}  Closure}
+	    \psfrag{Open}{\tiny \hspace{-0.4 cm}  Opening}
+             \includegraphics[scale=0.45]{FIGURES/FSM.eps} 
+	\end{center}
+          \caption{Schematic of the finite sate machine for the closing procedure. The states 1 and 2 correspond to open or close. The transitions are loose, closure or opening, they  depend of the situation of all packets (if they all reach theirs targets or not),
+                          the loose transition means the packet has not been received, thus we iterate one more time on the infinite loop.}  \label{FSM}
+\end{figure}
+
+
+
+A delegate pattern (C\#) encapsulated methods,    It is similar to pointer of function under C++  but is allows a safer execution, we ported this pattern into Ambient.
+The packet manager class contains a delegate object. The delegate class contains a series of operations pill-up  in a stack. These operations consists of forwarding requests, 
+ block of data,  layout of the MPI group (block distribution) and theirs updates. As this delegate is included, into an infinite loop, the packets
+will propagate process by process after every iterations (as shown on Fig. \ref{EXECUTION}). At the end of the delegate execution, a finite state machine checks the states of the packets. 
+If all packets received (data packet, layout packet, \ldots), the FSM (Fig. \ref{FSM}) breaks the infinite loop.
 
 
 \subsection{Abstract parallel datatypes} % <- to change ? 
@@ -485,6 +534,21 @@ The role of the p
 As  validation test, we code a new implementation of PDGEMM using our framework, and we compare to the classical version of PDGEMM of ScaLAPACK (MKL-Version).
 The algorithm of our implementation is based on the classical method using a columns order distribution for the matrices nevertheless, we give a description of the algorithm 
 into the table \ref{AMBIENTDGEMM} to show the modification due to Ambient. 
+
+
+
+The main advantages in our implementation is the size of coding, it is limited at 7 lines  of code using our framework.
+
+----------------------------------------------------------------------------------------------------- \\
+TO DO EXPLAIN THE ADVANTAGE AGAINST   SCALAPACK \\
+IN TERM OF NETWORK, DATA EXCHANGE \\
+----------------------------------------------------------------------------------------------------- \\
+
+The results will be compare with the ScaLAPACK implementation, in the section \ref{CUDAIDEOLOGYSECTION}, we announced a compatibility with the ScaLAPACK.
+The representation of the memory of ScaLAPACK and Ambient have significant differences, although matrixes are subdivided into small block, the layout into
+the memory is different. In Ambient all blocks named work group are independent even if they belong to the same process. In ScaLAPACK block will be regrouped
+by process to get a contiguous memory, the multiplication between blocks will be assure by using a correct offset inside the DEGMM call. Therefore, in ambient if we execute a solver from ScaLAPACK,
+one of the first operation to perform will be the rearrangement of the work groups of a same owner into a contiguous block. This operation add a certain overload.
 
  \begin{table}[t] 
 	\begin{center}
@@ -507,18 +571,7 @@ into the table \ref{AMBIENTDGEMM} to show the modification due to Ambient.
 	\end{center}
 \end{table} 
 
-The main advantages in our implementation is the size of coding, it is limited at 7 lines  of code using our framework.
 
------------------------------------------------------------------------------------------------------ \\
-TO DO EXPLAIN THE ADVANTAGE AGAINST   SCALAPACK \\
-IN TERM OF NETWORK, DATA EXCHANGE \\
------------------------------------------------------------------------------------------------------ \\
-
-The results will be compare with the ScaLAPACK implementation, in the section \ref{CUDAIDEOLOGYSECTION}, we announced a compatibility with the ScaLAPACK.
-The representation of the memory of ScaLAPACK and Ambient have significant differences, although matrixes are subdivided into small block, the layout into
-the memory is different. In Ambient all blocks named work group are independent even if they belong to the same process. In ScaLAPACK block will be regrouped
-by process to get a contiguous memory, the multiplication between blocks will be assure by using a correct offset inside the DEGMM call. Therefore, in ambient if we execute a solver from ScaLAPACK,
-one of the first operation to perform will be the rearrangement of the work groups of a same owner into a contiguous block. This operation add a certain overload.
 
 The validation test consists of multiplying matrices and saving the results into an output matrix, as follow :
 \begin{eqnarray}
@@ -548,6 +601,10 @@ pseudo-random numbers non-negative, double-precision,  uniformly distributed ove
 The first benchmark consists of evaluating the performance of our parallel matrix multiplication. The initial condition are the same than the validation test. The benchmarks 
 were performed on a AMD-2427 2.2 Ghz ..........
 
+\begin{figure}
+\include{PLOT/SinglePDGEMM/SinglePGEMM}
+\end{figure}
+
 
 \subsection{Second benchmark case}
 \subsection{Third benchmark case}
@@ -557,7 +614,8 @@ were performed on a AMD-2427 2.2 Ghz ..........
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN BIBLIO
 \bibliographystyle{abbrv}
 \bibliography{biblio}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END BIBLIO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END BIBLIOr
+
 
 
 \end{document}  
