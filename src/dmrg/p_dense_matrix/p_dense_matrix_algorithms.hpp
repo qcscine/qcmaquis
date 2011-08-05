@@ -34,7 +34,6 @@ namespace blas
     template<typename T>
     p_dense_matrix<T> conjugate(p_dense_matrix<T> m)
     {
-        assert(false);
         m.inplace_conjugate();
         return m;
     }
