@@ -5,7 +5,7 @@ struct pre_measurements<Matrix, U1> {
 	typedef Measurement_Term<Matrix, U1> mterm_t;
 	typedef typename mterm_t::op_t op_t;
     
-	void pre_ff (const Lattice& lattice, ModelParameters& model,
+	void pre_ff (const Lattice& lattice, BaseParameters& model,
 				 std::vector<Measurement_Term<Matrix, U1> >& terms,
 				 op_t & ident)
 	{
@@ -53,7 +53,7 @@ struct pre_measurements<Matrix, U1> {
 	}
     
     
-	void operator() (const Lattice& lattice, ModelParameters& model,
+	void operator() (const Lattice& lattice, BaseParameters& model,
 					 std::vector<Measurement_Term<Matrix, U1> >& terms,
 					 typename Measurement_Term<Matrix, U1>::op_t& ident)
 	{

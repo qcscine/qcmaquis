@@ -10,7 +10,7 @@
 #define IETL_JD_SOLVER_H
 
 #include "utils/zout.hpp"
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 
 #include "ietl_lanczos_solver.h"
 

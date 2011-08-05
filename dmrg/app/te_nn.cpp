@@ -166,7 +166,7 @@ int main(int argc, char ** argv)
     Hamiltonian<Matrix, grp> H;
     grp::charge initc;
     Measurements<Matrix, grp> measurements;
-    ModelParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
+    BaseParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
     Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
     

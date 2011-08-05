@@ -39,11 +39,16 @@ target_link_libraries(te_nn_u1 ${DMRG_APP_LIBRARIES})
 add_executable(te_nn_2u1 te_nn.cpp)
 target_link_libraries(te_nn_2u1 ${DMRG_APP_LIBRARIES})
 
+add_executable(te_u1 te.cpp)
+target_link_libraries(te_u1 ${DMRG_APP_LIBRARIES})
+
+add_executable(te_2u1 te.cpp)
+target_link_libraries(te_2u1 ${DMRG_APP_LIBRARIES})
 
 set_target_properties(measure_u1 measure_2u1 PROPERTIES COMPILE_DEFINITIONS MEASURE_ONLY)
-set_target_properties(dmrg_2u1 measure_2u1 te_nn_2u1 PROPERTIES COMPILE_DEFINITIONS UseTwoU1)
+set_target_properties(dmrg_2u1 measure_2u1 te_nn_2u1 te_2u1 PROPERTIES COMPILE_DEFINITIONS UseTwoU1)
 
-install(TARGETS dmrg_u1 dmrg_2u1 te_nn_u1 te_nn_2u1 measure_u1 measure_2u1 RUNTIME DESTINATION bin COMPONENT applications)
+install(TARGETS dmrg_u1 dmrg_2u1 te_nn_u1 te_nn_2u1 te_u1 te_2u1 measure_u1 measure_2u1 RUNTIME DESTINATION bin COMPONENT applications)
 
 if(BUILD_MULTIGRID)
 	set_target_properties(multigrid_measure_u1 multigrid_measure_2u1 PROPERTIES COMPILE_DEFINITIONS MEASURE_ONLY)

@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 
 namespace app {
     

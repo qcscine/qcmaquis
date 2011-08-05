@@ -18,7 +18,7 @@
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
 
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 #include "utils/logger.h"
 #include "utils/stream_storage.h"
 

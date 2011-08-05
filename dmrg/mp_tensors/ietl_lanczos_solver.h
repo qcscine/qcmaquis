@@ -10,7 +10,7 @@
 #define IETL_LANCZOS_SOLVER_H
 
 #include "utils/zout.hpp"
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 
 namespace ietl
 {

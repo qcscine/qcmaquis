@@ -16,7 +16,11 @@ using std::endl;
 #include "dense_matrix/dense_matrix_blas.hpp"
 #include "dense_matrix/aligned_allocator.h"
 
+#ifdef IMG_ONLY
+typedef blas::dense_matrix<double> Matrix;
+#else
 typedef blas::dense_matrix<std::complex<double> > Matrix;
+#endif
 
 #include <alps/hdf5.hpp>
 
@@ -64,6 +68,27 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
     }
 }
 
+std::vector<MPO<Matrix, grp> >
+getU(std::vector<Hamiltonian<Matrix, grp> > const & split_H, Lattice * lat,
+     double dt, bool img)
+{
+#ifdef IMG_ONLY
+    double alpha = -dt;
+#else
+    std::complex<double> I;
+    if (img)
+        I = std::complex<double>(1, 0);
+    else
+        I = std::complex<double>(0, 1);
+    std::complex<double> alpha = -I*dt;
+#endif
+    
+    std::vector<MPO<Matrix, grp> > expMPO(split_H.size(), MPO<Matrix, grp>(lat->size()));
+    for (int i=0; i<split_H.size(); ++i)
+        expMPO[i] = make_exp_mpo(lat->size(), split_H[i], alpha);
+    return expMPO;
+}
+
 int main(int argc, char ** argv)
 {
     if (argc != 3)
@@ -99,20 +124,25 @@ int main(int argc, char ** argv)
     
     srand48(parms.get<int>("seed"));
     
+#ifdef IMG_ONLY
+    if (parms.get<int>("nsweeps_img") != parms.get<int>("nsweeps")) {
+        cerr << "IMG_ONLY code, make sure that nsweeps_img == nsweeps." << endl;
+        exit(1);
+    }
+#endif
+    
     Lattice * lat;
     Hamiltonian<Matrix, grp> H;
     grp::charge initc;
     Measurements<Matrix, grp> measurements;
-    ModelParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
+    BaseParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
     Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
     
     std::cout << measurements << std::endl;
     
     std::vector<Hamiltonian<Matrix, grp> > split_H = separate_overlaps(H);
-    std::vector<MPO<Matrix, grp> > expMPO(split_H.size(), MPO<Matrix, grp>(lat->size()));
-    for (int i=0; i<split_H.size(); ++i)
-        expMPO[i] = make_exp_mpo(lat->size(), split_H[i], -parms.get<double>("dt") * std::complex<double>(0,1));
+    std::vector<MPO<Matrix, grp> > expMPO = getU(split_H, lat, parms.get<double>("dt"), true);
     
     Measurements<Matrix, grp> meas_always;
     if (!parms.get<std::string>("always_measure").empty()) {
@@ -170,6 +200,9 @@ int main(int argc, char ** argv)
     bool early_exit = false;
     {
         for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+            if (sweep == parms.get<int>("nsweeps_img"))
+                expMPO = getU(split_H, lat, parms.get<double>("dt"), false);
+            
             gettimeofday(&snow, NULL);
             
             Logger iteration_log;
@@ -183,8 +216,10 @@ int main(int argc, char ** argv)
                                                                       parms, ssm);
                 for (int k = 0; k < 5; ++k)
                     evolution.sweep(sweep, iteration_log);
+                evolution.finalize();
                 cur_mps = evolution.get_current_mps();
 //                cout << "Overlap " << overlap(cur_mps, old_mps) << endl;
+//                cout << norm(cur_mps) << endl;
             }
             
 //            entropies = calculate_bond_entropies(cur_mps);

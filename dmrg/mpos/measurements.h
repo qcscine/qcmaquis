@@ -17,7 +17,7 @@
 #include "mpos/generate_mpo.h"
 #include "mpos/hamiltonians.h"
 
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 
 template<class Matrix, class SymmGroup>
 struct measure_

@@ -17,21 +17,21 @@ public:
     DmrgParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
     {
-        add_option("truncation_initial", "", "Initial value for the truncation error");
-        add_option("truncation_final", "", "Final value for the truncation");
+        add_option("truncation_initial", "1e-16", "Initial value for the truncation error");
+        add_option("truncation_final", "1e-16", "Final value for the truncation");
         
         add_option("init_bond_dimension", "5", "");
         add_option("max_bond_dimension", "", "");
         add_option("sweep_bond_dimensions", "", "");
         
         add_option("alpha_initial", "1e-2", "");
-        add_option("alpha_main", "1e-6", "");
-        add_option("alpha_final", "0", "");
+        add_option("alpha_main", "1e-4", "");
+        add_option("alpha_final", "1e-8", "");
         
         add_option("eigensolver", "IETL_JCD", "");
         add_option("ietl_jcd_tol", "1e-8", "");
-        add_option("ietl_jcd_gmres", "5", "");
-        add_option("ietl_jcd_maxiter", "100", "");
+        add_option("ietl_jcd_gmres", "0", "");
+        add_option("ietl_jcd_maxiter", "12", "");
         
         add_option("nsweeps", "", "");
         add_option("nmainsweeps", "", "");
