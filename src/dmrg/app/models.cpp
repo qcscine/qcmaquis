@@ -1,6 +1,3 @@
-
-#define NO_ZOUT_IN_HEADERS
-
 #include <complex>
 #include <vector>
 #include "dense_matrix/dense_matrix.h"
