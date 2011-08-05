@@ -345,21 +345,31 @@ namespace vli
     {
         vli_cpu<BaseInt, 2*Size> vli_res;
         
-        bool result_is_negative = static_cast<bool>((vli_a[Size-1] ^ vli_b[Size-1]) >> data_bits<BaseInt>::value);
-        if(result_is_negative)// test if 
-        {
+        int na(1);
+        int nb(1);        
+                
+        //Fortran style so every body undestand ...
+        if(vli_a.is_negative()){
             const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
-           
-         //   for(size_t i=Size ; i < 2*Size; ++i)
-         //       vli_res[i]=vli::data_mask<BaseInt>::value+vli::base<BaseInt>::value;            
-            
-            multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b);// +*- or -*+ 
-            const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
-            vli_res.negate();           
+            na = -1;
         }
-        else
-        {
-             multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b); // +*+ or -*- the default multiplication works
+        
+        if(vli_b.is_negative()){
+            const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();
+            nb = -1;
+        }
+
+        multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b);
+        
+        if(nb*na == -1)
+            vli_res.negate();
+       
+        if(na == -1){
+           const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();   
+        }
+
+        if(nb == -1){
+            const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
         }
 
         return vli_res;

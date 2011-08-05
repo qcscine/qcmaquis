@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_int_gmp, Vli, vli_types )
 {
     Vli a;
-    fill_random(a,Vli::size-1);
+    fill_random(a,Vli::size);
 
     int b = rnd_valid_int<Vli>();
     
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_gmp, Vli, vli_types )
 {
     Vli a;
     Vli b;
-    fill_random(a,Vli::size-1);
+    fill_random(a,Vli::size);
     fill_random(b,Vli::size-1); 
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_gmp, Vli, vli_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_int_gmp, Vli, vli_types )
 {
     Vli a;
-    fill_random(a,Vli::size-1);
+    fill_random(a,Vli::size);
     int b = rnd_valid_int<Vli>();
     
     mpz_class agmp(a.get_str());
@@ -301,8 +301,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp, Vli, vli_types )
 {
     Vli a;
     Vli b;
-    fill_random(a,Vli::size/2);
-    fill_random(b,Vli::size/4); 
+    fill_random(a,Vli::size);
+    fill_random(b,Vli::size); 
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
     
@@ -330,8 +330,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp, Vli, vli_types )
 {
     Vli a;
     Vli b;
-    fill_random(a,Vli::size/2);
-    fill_random(b,Vli::size/4); 
+    fill_random(a,Vli::size);
+    fill_random(b,Vli::size); 
     a.negate();
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
@@ -351,8 +351,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_reverse_negative_numbers_gmp, Vli, vli
 {
     Vli a;
     Vli b;
-    fill_random(a,Vli::size/2);
-    fill_random(b,Vli::size/4); 
+    fill_random(a,Vli::size);
+    fill_random(b,Vli::size); 
     b.negate();
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());
@@ -372,8 +372,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp, Vli, vli_
 {
     Vli a;
     Vli b;
-    fill_random(a,Vli::size/2);
-    fill_random(b,Vli::size/4); 
+    fill_random(a,Vli::size);
+    fill_random(b,Vli::size); 
     a.negate();
     b.negate();
     

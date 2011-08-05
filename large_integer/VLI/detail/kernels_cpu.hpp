@@ -9,7 +9,7 @@
 
 #ifndef VLI_KERNELS_CPU_HPP 
 #define VLI_KERNELS_CPU_HPP
-
+#include <iostream>
 #include <cassert>
 #include <boost/static_assert.hpp>
 #include <cstring>
@@ -109,7 +109,25 @@ namespace vli
 				addition_kernel_cpu(&res[m+1],&r[1]);
 			}
 		}
-	}
+/*
+        std::size_t i = Size-1;
+        
+        for(std::size_t k = 0 ; k < Size-1; ++k)
+        {	
+            std::size_t m = k + i;
+            multiplication_block_cpu( &x[i], &y[k], &(r[0]));
+            addition_kernel_cpu(&res[m],&r[0]);
+            addition_kernel_cpu(&res[m+1],&r[1]);
+        }
+        
+        std::size_t k = Size-1;
+        std::size_t m = k + i;
+        multiplication_block_cpu( &x[i], &y[k], &(r[0]));
+        std::cout << r[0] << " " << r[1] << std::endl;
+        addition_kernel_cpu(&res[m],&r[0]);
+        res[m+1] += r[1];
+        res[m+1] &= data_mask<BaseInt>::value; */
+    }
 
     template <typename BaseInt, std::size_t Size>
 	void multiplication_classic_cpu_number(BaseInt* x, BaseInt a)	

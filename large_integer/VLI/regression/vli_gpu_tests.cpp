@@ -19,13 +19,13 @@ using vli::test::rnd_valid_int;
 using vli::test::fill_random;
 
 typedef boost::mpl::list<
-        vli_gpu<unsigned int,2>,
-        vli_gpu<unsigned int,4>,
-        vli_gpu<unsigned int,8>,
-        vli_gpu<unsigned int,16>,
-        vli_gpu<unsigned long int,2>,
-        vli_gpu<unsigned long int,4>,
-        vli_gpu<unsigned long int,8>,
+//        vli_gpu<unsigned int,2>,
+//        vli_gpu<unsigned int,4>,
+//        vli_gpu<unsigned int,8>,
+//        vli_gpu<unsigned int,16>,
+//        vli_gpu<unsigned long int,2>,
+//        vli_gpu<unsigned long int,4>,
+//        vli_gpu<unsigned long int,8>,
         vli_gpu<unsigned long int,16>
         > vli_types;
 
