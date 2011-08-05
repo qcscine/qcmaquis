@@ -184,8 +184,7 @@ int main(int argc, char ** argv)
                 for (int k = 0; k < 5; ++k)
                     evolution.sweep(sweep, iteration_log);
                 cur_mps = evolution.get_current_mps();
-                // this is basically just debug output
-                cout << "Overlap " << overlap(cur_mps, old_mps) << endl;
+//                cout << "Overlap " << overlap(cur_mps, old_mps) << endl;
             }
             
 //            entropies = calculate_bond_entropies(cur_mps);

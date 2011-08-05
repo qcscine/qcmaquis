@@ -59,18 +59,7 @@ public:
     }
 };
 
-#ifdef NO_ZOUT_IN_HEADERS
-// zout in different compilation unit!
-
 extern master_cout zout;
 extern group_master_cout gzout;
-
-#else
-// define zout here!
-
-master_cout zout;
-group_master_cout gzout;
-
-#endif
 
 #endif
