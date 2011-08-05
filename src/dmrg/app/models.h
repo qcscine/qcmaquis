@@ -1,7 +1,7 @@
 #ifndef APP_MODELS_H
 #define APP_MODELS_H
 
-#include "utils/DmrgParameters2.h"
+#include "utils/BaseParameters.h"
 
 #include "lattice.h"
 #include "hamiltonian.h"
@@ -10,9 +10,9 @@
 namespace app {
     
     template <class Matrix, class SymmGroup>
-    ModelParameters model_parser (std::string const & type, std::string const & fname,
-                       Lattice* & lattice, Hamiltonian<Matrix, SymmGroup> & H,
-                       typename SymmGroup::charge& initc, Measurements<Matrix, SymmGroup>& meas);
+    BaseParameters model_parser (std::string const & type, std::string const & fname,
+                                 Lattice* & lattice, Hamiltonian<Matrix, SymmGroup> & H,
+                                  typename SymmGroup::charge& initc, Measurements<Matrix, SymmGroup>& meas);
 }
 
 

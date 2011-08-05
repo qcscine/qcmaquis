@@ -14,7 +14,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 
 namespace app {
     

@@ -4,13 +4,13 @@
 
 #include "measurements.h"
 
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 
 namespace app {
     
     template<class Matrix, class SymmGroup>
     struct pre_measurements {
-        void operator() (const Lattice& lattice, ModelParameters& model,
+        void operator() (const Lattice& lattice, BaseParameters & model,
                          std::vector<Measurement_Term<Matrix, SymmGroup> >& terms,
                          typename Measurement_Term<Matrix, SymmGroup>::op_t& ident)
         { }
@@ -25,7 +25,7 @@ namespace app {
     {
         typedef Measurements<Matrix, SymmGroup> super_t;
     public:
-        CodedMeasurements (const Lattice& lattice, ModelParameters& model)
+        CodedMeasurements (const Lattice& lattice, BaseParameters & model)
         {
             pre_measurements<Matrix, SymmGroup>()(lattice, model, super_t::terms, super_t::ident);
         }

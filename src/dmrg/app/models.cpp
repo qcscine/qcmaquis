@@ -12,7 +12,7 @@
 
 #include "models.h"
 
-#include "utils/DmrgParameters2.h"
+#include "utils/BaseParameters.h"
 
 #include <fstream>
 #include <boost/tokenizer.hpp>
@@ -33,7 +33,7 @@ namespace app {
 		Hamiltonian<MATRIX, SYMMGROUP> H;															\
 		Measurements<MATRIX, SYMMGROUP> meas;														\
 		SYMMGROUP::charge initc;																	\
-		ModelParameters model = model_parser(std::string(), std::string(), lat, H, initc, meas);	\
+		BaseParameters model = model_parser(std::string(), std::string(), lat, H, initc, meas);	\
 	}
     void init_model_parser()
     {
@@ -81,12 +81,12 @@ namespace app {
     };
     
     template <class SymmGroup>
-    typename SymmGroup::charge init_qn (ModelParameters & model);
+    typename SymmGroup::charge init_qn (BaseParameters & model);
     
-    ModelParameters convert_parms (alps::Parameters const & parms);
+    BaseParameters convert_parms (alps::Parameters const & parms);
     
     template <class Matrix, class SymmGroup>
-    ModelParameters model_parser (std::string const & type, std::string const & fname,
+    BaseParameters model_parser (std::string const & type, std::string const & fname,
                        Lattice* & lattice, Hamiltonian<Matrix, SymmGroup>& H,
                        typename SymmGroup::charge& initc, Measurements<Matrix, SymmGroup>& meas)
     {
@@ -106,7 +106,7 @@ namespace app {
             std::ifstream ifs(fname.c_str());
             alps::Parameters parms(ifs);
             lattice = new ALPSLattice(parms);
-            ModelParameters model = convert_parms(parms);
+            BaseParameters model = convert_parms(parms);
             H = hamil_factory<Matrix, SymmGroup>::parse(model, *lattice);
             initc = init_qn<SymmGroup>(model);
             meas = CodedMeasurements<Matrix, SymmGroup>(*lattice, model);
@@ -150,12 +150,12 @@ namespace app {
     
     
     template <>
-    U1::charge init_qn<U1> (ModelParameters & model)
+    U1::charge init_qn<U1> (BaseParameters & model)
     {
         return model.get<int>("u1_total_charge");
     }
     template <>
-    TwoU1::charge init_qn<TwoU1> (ModelParameters & model)
+    TwoU1::charge init_qn<TwoU1> (BaseParameters & model)
     {
         TwoU1::charge initc;
         initc[0] = model.get<int>("u1_total_charge1");
@@ -164,9 +164,9 @@ namespace app {
     }
     
     
-    ModelParameters convert_parms (alps::Parameters const & parms)
+    BaseParameters convert_parms (alps::Parameters const & parms)
     {
-    	ModelParameters model;
+    	BaseParameters model;
         alps::expression::ParameterEvaluator<double> eval(parms,false);
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             try {

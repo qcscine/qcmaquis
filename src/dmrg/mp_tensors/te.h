@@ -21,7 +21,7 @@
 #include "arpackpp_solver.h"
 #endif
 
-#include "utils/DmrgParameters.h"
+#include "utils/BaseParameters.h"
 #include "utils/logger.h"
 #include "utils/stream_storage.h"
 
@@ -72,10 +72,7 @@ public:
         timeval sweep_now, sweep_then;
         gettimeofday(&sweep_now, NULL);
         
-        static Timer
-        t_io("sweep_io"),
-        t_solver("sweep_solver"),
-        t_grow("sweep_grow");
+        static Timer t_solver("sweep_solver");
         
 #ifdef MPI_PARALLEL
         ambient::playout();
@@ -85,15 +82,8 @@ public:
         
         init_left_right(mpo);
         
-        /* commented out for now */
-//            storage::prefetch(left_[0], left_stores_[0]);
-//            storage::prefetch(right_[1], right_stores_[1]);
-        
         for (int _site = 0; _site < 2*L; ++_site)
         {
-//                Timer iteration_t("Iteration took");
-//                iteration_t.begin();
-            
             int site, lr;
             if (_site < L) {
                 site = _site;
@@ -103,54 +93,41 @@ public:
                 lr = -1;
             }
             
-//                zout << "Sweep " << sweep << ", optimizing site " << site << endl;
-            
-            t_io.begin();
-            
-//                storage::load(left_[site], left_stores_[site]);
-//                storage::load(right_[site+1], right_stores_[site+1]);
-//                
-//                if (lr == +1) {
-//                    storage::prefetch(left_[site+1], left_stores_[site+1]);
-//                    if (site+2 < right_.size())
-//                        storage::prefetch(right_[site+2], right_stores_[site+2]);
-//                } else {
-//                    storage::prefetch(right_[site], right_stores_[site]);
-//                    if (site > 1)
-//                        storage::prefetch(left_[site-1], left_stores_[site-1]);
-//                }
-            
-            t_io.end();
             t_solver.begin();
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
             ietl::mult(sp, mps[site], mpsp[site]);
             
             if (lr == +1) {
-                block_matrix<Matrix, SymmGroup> t;
-                t = mpsp[site].normalize_left(SVD);
-                if (site < L-1)
+                if (site < L-1) {
+                    block_matrix<Matrix, SymmGroup> t;
+                    t = mpsp[site].normalize_left(SVD);
                     mpsp[site+1].multiply_from_left(t);
+                }
                 
                 left_[site+1] = contraction::overlap_mpo_left_step(mpsp[site], mps[site],
                                                                    left_[site], mpo[site]);
             } else if (lr == -1) {
-                block_matrix<Matrix, SymmGroup> t;
-                t = mpsp[site].normalize_right(SVD);
-                if (site > 0)
+                if (site > 0) {
+                    block_matrix<Matrix, SymmGroup> t;
+                    t = mpsp[site].normalize_right(SVD);
                     mpsp[site-1].multiply_from_right(t);
-                    
+                }   
                 
                 right_[site] = contraction::overlap_mpo_right_step(mpsp[site], mps[site],
                                                                    right_[site+1], mpo[site]);
             }
             
             t_solver.end(); 
-//                iteration_t.end();
             
         }
         
         return -1;
+    }
+    
+    void finalize()
+    {
+        mpsp[0].normalize_right(SVD);
     }
     
     MPS<Matrix, SymmGroup> get_original_mps() const { return mps; }
