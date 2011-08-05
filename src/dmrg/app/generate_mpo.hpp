@@ -97,23 +97,27 @@ namespace generate_mpo
         
         set<size_t> bond_used_dims;
         for (typename vector<block>::iterator it = pm1.begin(); it != pm1.end(); ++it)
-            bond_used_dims.insert(get<1>(*it));
+            if (get<1>(*it) > 1)
+                bond_used_dims.insert(get<1>(*it));
         for (typename vector<block>::iterator it = pm2.begin(); it != pm2.end(); ++it)
-            bond_used_dims.insert(get<0>(*it));
+            if (get<0>(*it) > 1)
+                bond_used_dims.insert(get<0>(*it));
         
         //        cout << "Compression: " << *max_element(bond_used_dims.begin(),
         //                                                bond_used_dims.end()) << " -> " << bond_used_dims.size() << endl;
         
         map<size_t, size_t> compression_map;
-        size_t c = 0;
+        size_t c = 2;
         for (set<size_t>::iterator it = bond_used_dims.begin();
              it != bond_used_dims.end(); ++it)
             compression_map[*it] = c++;
         
         for (typename vector<block>::iterator it = pm1.begin(); it != pm1.end(); ++it)
-            get<1>(*it) = compression_map[get<1>(*it)];
+            if (compression_map.count(get<1>(*it)) > 0)
+                get<1>(*it) = compression_map[get<1>(*it)];
         for (typename vector<block>::iterator it = pm2.begin(); it != pm2.end(); ++it)
-            get<0>(*it) = compression_map[get<0>(*it)];
+            if (compression_map.count(get<0>(*it)) > 0)
+                get<0>(*it) = compression_map[get<0>(*it)];
     }
     
     template<class Matrix, class SymmGroup>
@@ -230,11 +234,11 @@ namespace generate_mpo
             
             for (size_t p = leftmost_right + 1; p < length; ++p)
                 prempo[p].push_back( make_tuple(1, 1, ident) );
-//            
-//            for (typename vector<vector<block> >::iterator it = prempo.begin();
-//                 it + 1 != prempo.end();
-//                 ++it)
-//                compress_on_bond(*it, *(it+1));
+            
+            for (typename vector<vector<block> >::iterator it = prempo.begin();
+                 it + 1 != prempo.end();
+                 ++it)
+                compress_on_bond(*it, *(it+1));
             
             MPO<Matrix, SymmGroup> r(length);
             for (size_t p = 1; p < length - 1; ++p)
