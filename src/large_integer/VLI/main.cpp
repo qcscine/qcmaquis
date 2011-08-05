@@ -94,21 +94,24 @@ int main (int argc, char * const argv[])
 
     a[0]=vli::data_mask<TYPE>::value;
     a[1]=vli::data_mask<TYPE>::value;
-//    a[2]=vli::data_mask<TYPE>::value;
-//    a[3]=vli::data_mask<TYPE>::value;
+    a[2]=vli::data_mask<TYPE>::value;
+    a[3]=vli::data_mask<TYPE>::value;
 
     b[0]=vli::data_mask<TYPE>::value;
     b[1]=vli::data_mask<TYPE>::value;
-//    b[2]=vli::data_mask<TYPE>::value;
-//    b[3]=vli::data_mask<TYPE>::value;
+    b[2]=vli::data_mask<TYPE>::value;
+//    b[3]=vli::data_mask<TYPE>::value-1000000;
 
     c = a*b;  
-    /*
+    
     mpz_class agmp(a.get_str());    
-    a*=2;
-    agmp*=2;
-    std::cout<<a<<std::endl; 
-    std::cout<<agmp<<std::endl;
-*/
-     return 0;
+    mpz_class bgmp(b.get_str());    
+    mpz_class cgmp(c.get_str());    
+
+    cgmp = agmp*bgmp;
+    
+    std::cout << c    << std::endl;
+    std::cout << cgmp << std::endl;
+    
+    return 0;
 }
