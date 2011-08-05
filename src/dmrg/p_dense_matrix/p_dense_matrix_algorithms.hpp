@@ -156,6 +156,7 @@ namespace blas
     { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector
         std::vector<typename T::value_type>* sc_ptr = &sc;
         ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, s.get_data(), prec);
+        ambient::playout(); // the sc reference points to the deleted object if not to issue playout here
     }
 
     template<typename T>
