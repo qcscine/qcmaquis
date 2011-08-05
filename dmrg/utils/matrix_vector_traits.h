@@ -2,12 +2,14 @@
 #ifndef __ALPS_MATRIX_VECTOR_TRAITS_HPP__
 #define __ALPS_MATRIX_VECTOR_TRAITS_HPP__
 
+#include <complex>
+
 namespace blas {
     
-    template<class FullMatrixClass>
+    template<class M>
     struct associated_diagonal_matrix { };
     
-    template<class FullMatrixClass>
+    template<class M>
     struct associated_vector { };
     
     template<class M>
