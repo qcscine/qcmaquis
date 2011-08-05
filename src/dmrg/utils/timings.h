@@ -1,9 +1,9 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
 
-//#define NO_ZOUT_IN_HEADERS
+#define NO_ZOUT_IN_HEADERS
 #include "utils/zout.hpp"
-//#undef NO_ZOUT_IN_HEADERS
+#undef NO_ZOUT_IN_HEADERS
 #include <string>
 
 #ifdef _OPENMP
