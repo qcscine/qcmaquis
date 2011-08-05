@@ -7,9 +7,12 @@ namespace blas {
     #define self this->self
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::~p_dense_matrix(){ // #destructor
+    //    if(this->p == ambient::ANY) return;
     }
     template <typename T, ambient::policy P> // proxy object construction
-    p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){}
+    p_dense_matrix<T,P>::p_dense_matrix(ambient::void_pt* p): livelong(p){
+        if(this->p == ambient::ANY) return;
+    }
 
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::p_dense_matrix()
@@ -21,6 +24,7 @@ namespace blas {
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::p_dense_matrix(size_type rows, size_type cols = 0, T init_v = T() )
     : livelong(rows, cols, init_v){
+        if(this->p == ambient::ANY) return;
         self->rows   = rows;
         self->cols   = cols;
         self->init_v = init_v;
@@ -31,6 +35,7 @@ namespace blas {
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::p_dense_matrix(const p_dense_matrix& m) // copy constructor (to be optimized)
     : livelong(m){
+        if(this->p == ambient::ANY) return;
         self->rows   = m.num_rows();
         self->cols   = m.num_cols();
         self->init_v = m.get_init_v();
@@ -111,8 +116,7 @@ namespace blas {
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::inplace_conjugate()
-    {
-        assert(false);
+    { // does nothing for now (no complex nums for now)
     }
 
     template<typename T, ambient::policy P>
