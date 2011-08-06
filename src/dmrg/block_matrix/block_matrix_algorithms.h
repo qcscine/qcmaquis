@@ -210,11 +210,11 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
 //        zout << "Truncated weight: " << truncated_weight << std::endl;
     }
     
-    if (logger != NULL) {
-        *logger << make_log("BondDimension", S.left_basis().sum_of_sizes());
-        *logger << make_log("TruncatedWeight", truncated_weight);
-        *logger << make_log("SmallestEV", Scut / allS[0]);
-    }
+//    if (logger != NULL) {
+//        *logger << make_log("BondDimension", S.left_basis().sum_of_sizes());
+//        *logger << make_log("TruncatedWeight", truncated_weight);
+//        *logger << make_log("SmallestEV", Scut / allS[0]);
+//    }
 }
 
 /*
