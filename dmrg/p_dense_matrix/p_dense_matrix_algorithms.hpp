@@ -93,8 +93,13 @@ namespace blas
               p_dense_matrix<T>& evecs,
               typename associated_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     {
-        /* implement me */
-        throw std::runtime_error("Not implemented.");
+        assert(num_rows(a) == num_cols(a));
+        assert(num_rows(evals) == num_rows(a));
+        int m = num_rows(a);
+
+        evecs.resize(m, m);
+        ambient::push(ambient::heev_l_scalapack, ambient::heev_c_scalapack, a, m, evals.get_data()); // destoys U triangle of M
+        evecs = a;
     }
     
     template<typename T>
@@ -102,14 +107,7 @@ namespace blas
               p_dense_matrix<T>& evecs,
               typename associated_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     {
-        assert(num_rows(a) == num_cols(a));
-        assert(num_rows(evals) == num_rows(a));
-        int m = num_rows(a);
-
-        evecs.resize(m, m);
-        ambient::push(ambient::syev_l_scalapack, ambient::syev_c_scalapack, a, m, evals.get_data()); // destoys U triangle of M
-        //reverse< p_dense_matrix<T> >(evals);
-        evecs = a;
+        heev(a, evecs, evals);
     }
     
     template<typename T>
