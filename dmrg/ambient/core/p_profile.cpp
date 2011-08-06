@@ -228,11 +228,8 @@ namespace ambient {
     }
 
     void p_profile::deallocate(){
-        int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
-        int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
-        
-        for(int i=0; i < y_size; i++)
-            for(int j=0; j < x_size; j++)
+        for(int i=0; i < this->skeleton.size(); i++)
+            for(int j=0; j < this->skeleton[i].size(); j++)
                 delete this->skeleton[i][j];
     }
 

@@ -54,8 +54,7 @@ public:
         }else if(this->is_loose_copy()){              // I am a copy
             self->original->self->meta.loose_copied = false;
         }
-
-        //if(this->p != ANY){
+        //if(this->p == REPLICA){
         //    this->breakdown()->deallocate(); // deallocate profile
         //}
     }
