@@ -91,7 +91,7 @@ void copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a)
 {
     scope_select("1 from ambient as copy where master is 0 and breakdown contains "+get_id(a));
     if(!scope.involved()) return;
-    gzout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
+    //gzout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
 
     block_2d_cycle_assign(ac);
     block_2d_cycle_assign(a);
@@ -251,6 +251,17 @@ void svd_l_scalapack(const p_dense_matrix<double>& a, int& m, int& n, p_dense_ma
 }
 
 void syev_l_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
+{
+    int num = 1;
+    scope_select(num+" from ambient as syev where master is 0 and breakdown contains "+ get_id(a));
+    if(!scope.involved()) return;
+    //gzout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; info(a); info(w);
+
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(w);
+}
+
+void heev_l_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
 {
     int num = 1;
     scope_select(num+" from ambient as syev where master is 0 and breakdown contains "+ get_id(a));

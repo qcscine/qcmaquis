@@ -213,3 +213,28 @@ void syev_c_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<do
 */
 }
 
+void heev_c_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
+{
+     int lda = get_grid_dim(a).y*get_mem_t_dim(a).y;
+     int info, lwork = -1;
+
+     double wkopt;
+     double* work;
+     assert(current(a).layout->get_list().size() != 0);
+     current(a).solidify(current(a).layout->get_list());
+     current(w).solidify(current(w).layout->get_list());
+     
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,&wkopt,&lwork,&info);
+     lwork = (int)wkopt;
+     work = (double*)malloc( lwork*sizeof(double) );
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,work,&lwork,&info);
+
+     if( info > 0 ) {
+         printf( "The algorithm computing SYEV failed to converge.\n" );
+         exit( 1 );
+     }
+
+     current(a).disperse(current(a).layout->get_list());
+     current(w).disperse(current(w).layout->get_list());
+     free( (void*)work );
+}

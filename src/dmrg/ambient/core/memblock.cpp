@@ -4,7 +4,7 @@
 namespace ambient {
 
     memblock::~memblock(){
-        free(this->header);
+        //free(this->header);
     }
 
     memblock::memblock(p_profile** p, int i, int j)
