@@ -4,7 +4,7 @@
 #include "block_matrix/block_matrix.h"
 #include "block_matrix/block_matrix_algorithms.h"
 #include "b_generate_mpo.h"
-#include "utils/DmrgParameters.h"
+#include "b_DmrgParameters.h"
 
 #include <vector>
 #include <utility>
