@@ -10,13 +10,158 @@
 #include <fstream>
 #include <iostream>
 
+#include "utils/BaseParameters.h"
+
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
 #endif
 
-#include "utils/DmrgParameters.h"
+namespace branch {
+    namespace conversion
+    {
+        // this can be specialized to provide conversion for types that cannot be read
+        // with the boost::any_cast, or whatever program options uses for the as<>
+        // method
+        template<class T> struct get_
+        {
+            T operator()(boost::program_options::variables_map & vm_, std::string const & key)
+            {
+                try {
+                    return vm_[key].as<T>();
+                } catch (std::exception &e) {
+                    std::cerr << "Exception raised reading parameter " << key << " to type " << typeid(T).name() << std::endl;
+                    throw e;
+                }
+            }
+        };
+        
+        // eliminating quatation marks around strings
+        template <> struct get_<std::string>
+        {
+            std::string operator()(boost::program_options::variables_map& vm_, std::string const & key)
+            {
+                std::string ret = vm_[key].as<std::string>();
+                boost::trim_if(ret, boost::is_any_of("\"'"));
+                return ret;
+            }
+        };	
+        
+        template<class T> struct get_<std::vector<T> >
+        {
+            std::vector<T> operator()(boost::program_options::variables_map& vm_, std::string const & key)
+            {
+                //            cerr << "reading " << key << endl;
+                std::string raw = vm_[key].as<std::string>();
+                boost::trim_if(raw, boost::is_any_of("\"'"));
+                std::vector<T> ret;
+                
+                typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+                boost::char_separator<char> sep(",");
+                tokenizer tokens(raw, sep);
+                std::transform(tokens.begin(), tokens.end(), std::back_inserter(ret),
+                               boost::lexical_cast<T, std::string>);
+                return ret;
+            }
+        };
+    }
 
-class b_DmrgParameters : public BaseParameters
+    namespace detail
+    {
+        struct SerializationHelperBase {
+            virtual void operator()(alps::hdf5::archive & ar,
+                                    std::string const & path,
+                                    boost::any const & a) const = 0;
+            virtual void operator()(alps::hdf5::archive & ar,
+                                    std::string const & path,
+                                    boost::program_options::variable_value const & a) const = 0;
+        };
+        
+        template<class T>
+        struct SerializationHelper : public SerializationHelperBase
+        {
+            void operator()(alps::hdf5::archive & ar,
+                            std::string const & path,
+                            boost::any const & a) const
+            {
+                if (!a.empty())
+                    ar << alps::make_pvp(path, boost::any_cast<T>(a));
+            }
+            void operator()(alps::hdf5::archive & ar,
+                            std::string const & path,
+                            boost::program_options::variable_value const & a) const
+            {
+                if (!a.empty())
+                    ar << alps::make_pvp(path, a.as<T>());
+            }
+        };
+    }
+}
+
+class b_BaseParameters : public BaseParameters
+{
+public:
+    bool is_set (std::string const & key)
+    {
+        return (vm.count(key)) || (sv.count(key) > 0);
+    }
+    
+    template<class T> T get(std::string const & key)
+    {
+        if (sv.count(key) > 0) { // has been changed using set()
+            return boost::any_cast<T>(sv[key]);
+        } else {
+            branch::conversion::get_<T> g;
+            return g(vm, key);
+        }
+    }
+    
+    template<class T> void set(std::string const & key, T const & value)
+    {
+        sv[key] = value;
+        shelpers[key] = boost::shared_ptr<branch::detail::SerializationHelperBase>(new branch::detail::SerializationHelper<T>());
+    }
+    
+#ifdef HAVE_ALPS_HDF5
+    void save(alps::hdf5::archive & ar) const
+    {
+        using boost::program_options::option_description;
+        using boost::shared_ptr;
+        
+        for (std::map<std::string, boost::shared_ptr<branch::detail::SerializationHelperBase> >::const_iterator it = shelpers.begin();
+             it != shelpers.end(); ++it)
+        {
+            std::string name = it->first;
+            branch::detail::SerializationHelperBase * helper = it->second.get();
+            try {
+                if (sv.count(name) > 0)
+                	(*helper)(ar, name, sv.find(name)->second);
+                else if (vm.count(name) > 0)
+                	(*helper)(ar, name, vm[name]);
+            } catch (std::exception &e) {
+                std::cerr << "Error writing parameter " << name << std::endl;
+                throw e;
+            }
+        }
+    }
+#endif
+    
+protected:
+    boost::program_options::options_description config;
+    boost::program_options::variables_map vm;
+    std::map<std::string, boost::any> sv;
+    std::map<std::string, boost::shared_ptr<branch::detail::SerializationHelperBase> > shelpers;
+    
+    template<class T>
+    void add_option(const char * name,
+                    boost::program_options::typed_value<T> * val,
+                    const char * desc)
+    {
+        config.add_options()(name, val, desc);
+        shelpers[name] = boost::shared_ptr<branch::detail::SerializationHelperBase>(new branch::detail::SerializationHelper<T>());
+    }
+};
+
+class b_DmrgParameters : public b_BaseParameters
 {
 public:
     b_DmrgParameters(std::ifstream& param_file)
@@ -29,10 +174,11 @@ public:
             
             add_option("init_bond_dimension",value<std::size_t>()->default_value(5),"");
             add_option("max_bond_dimension",value<std::size_t>(),"");
+            add_option("sweep_bond_dimensions",value<std::string>(),"");
             
             add_option("alpha_initial",value<double>()->default_value(1e-2),"");
             add_option("alpha_main",value<double>()->default_value(1e-6),"");
-            add_option("alpha_final",value<double>()->default_value(1e-20),"");
+            add_option("alpha_final",value<double>()->default_value(0),"");
             
             add_option("eigensolver",value<std::string>()->default_value(std::string("ARPACK")),"");
             add_option("arpack_tol",value<double>()->default_value(1e-8),"");
@@ -55,6 +201,7 @@ public:
             add_option("use_compressed",value<int>()->default_value(0),"");
             add_option("calc_h2",value<int>()->default_value(0),"");
             add_option("seed",value<int>()->default_value(42),"");
+            add_option("always_measure",value<int>()->default_value(0),"");
             
             add_option("init_state", value<std::string>()->default_value("default"),"");
             
@@ -67,7 +214,7 @@ public:
     }
 };
     
-class b_ModelParameters : public BaseParameters
+class b_ModelParameters : public b_BaseParameters
 {
 public:
     b_ModelParameters(std::ifstream& param_file)
@@ -84,6 +231,8 @@ public:
             
             add_option("Jxy", value<double>(), "");
             add_option("Jz", value<double>(), "");
+            add_option("Jxy1", value<double>()->default_value(0), "");
+            add_option("Jz1", value<double>()->default_value(0), "");
             
             add_option("U", value<double>(), "");
             add_option("t", value<double>()->default_value(1.), "");
