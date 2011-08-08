@@ -28,6 +28,8 @@ project (DMRG)
 ######################################################################
 # Libraries
 ######################################################################
+find_package(MPI)
+
 # ALPS
 if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
   set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)

@@ -1,6 +1,6 @@
 # Create a library called "ambient" which includes the source files. 
 # The extension is already found. Any number of sources could be listed here.
-#enable_mpi()
+enable_mpi()
 add_library (ambient 
              auxiliary.cpp
              packets/packet.cpp
