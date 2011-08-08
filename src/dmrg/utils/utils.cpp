@@ -1,3 +1,7 @@
+#ifdef MPI_PARALLEL
+#include "mpi.h"
+#endif
+
 #include "utils.hpp"
 #include "zout.hpp"
 
