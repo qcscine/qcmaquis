@@ -7,6 +7,8 @@
 
 #include "p_dense_matrix/p_diagonal_matrix.h"
 
+#include <alps/hdf5.hpp>
+
 #include <ostream>
 
 namespace blas {
