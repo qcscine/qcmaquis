@@ -33,6 +33,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
             mpl::pair< tag::size_type<2>,    size_type >,
             mpl::pair< tag::data_structure,  tag::linear_array >,
             mpl::pair< tag::data_order,      tag::column_major >,
+            mpl::pair< tag::data_side,       tag::upper >,
             mpl::pair< tag::stride_type<1>,  tag::contiguous >,
             mpl::pair< tag::stride_type<2>,  difference_type >
         > property_map;
@@ -62,6 +63,8 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
         }
 
     };
+    
+    
 }}}}
 
 #endif //__ALPS_DENSE_MATRIX_ADAPTOR_HPP__
