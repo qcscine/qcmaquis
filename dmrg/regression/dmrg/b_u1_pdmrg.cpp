@@ -147,14 +147,14 @@ int main(int argc, char ** argv)
         cerr << "Could not open parameter file." << endl;
         exit(1);
     }
-    b_DmrgParameters parms(param_file);
+    DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
         cerr << "Could not open model file." << endl;
         exit(1);
     }
-    b_ModelParameters model(model_file);
+    ModelParameters model(model_file);
     
     std::string chkpfile = parms.get<std::string>("chkpfile");
   
