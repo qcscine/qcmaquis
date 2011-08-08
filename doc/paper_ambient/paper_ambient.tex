@@ -89,6 +89,14 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END INTRODUCTION
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN WORKFLOW
+\section{Ambient workflow}
+
+Alex, your part !
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END WORKFLOW
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN DESCRIPTION OF THE FRAMEWORK
 
 \section{Design of the framework}
@@ -253,7 +261,7 @@ As just shown for the matrix addition, we can recode other linear algebra solver
 
 \subsection{SQL resource management}  \label{SQLSECTION}
  In the previous section, we introduced the logistics kernels and their role in initializing resources for the execution of the computational kernels. 
- One of Ambients' main qualities is the ability to perform a dynamic management of the CPU resources of the cluster. To facilitate this, we integrated a light SQL framework [cite something] inside Ambient, which selects the desired number of processors inside the logistics kernel, in order to execute the computational kernel. 
+ One of Ambients' main qualities is the ability to perform a dynamic management of the CPU resources of the cluster. To facilitate this, we integrated a light SQL framework \cite{SQLite} inside Ambient, which selects the desired number of processors inside the logistics kernel, in order to execute the computational kernel. 
 
 At the beginning of the framework execution, a main MPI group is created named \texttt{ambient}. To create groups inside this main group we used the abilities of MPI to build nested independent groups of processors  (chapter 6 of  \cite{MPI-2002}).  We encapsulated these features in the framework, and we control them through the SQL requests. This allows for a simple yet flexible management  of the MPI groups.  
 These requests (done by the \texttt{scope\_select} Ambient-function) are applied to the logistics/computational addition kernels of our example by the following SQL syntax: \\

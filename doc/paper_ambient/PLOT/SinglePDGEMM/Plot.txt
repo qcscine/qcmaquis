@@ -10,7 +10,7 @@ set xtics 1024
 
 set key right top
 
-set ylabel "t[s]"
+set ylabel "GFlops"
 set xlabel "Matrix size"
 
 set style line 1 lt 1 lw 1
