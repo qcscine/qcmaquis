@@ -13,7 +13,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "utils/zout.hpp"
+#include "utils/utils.cpp"
 #include "p_dense_matrix/p_dense_matrix.h"
 #include "p_dense_matrix/concept/matrix_interface.hpp"
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
@@ -136,11 +136,11 @@ int main(int argc, char ** argv)
 
     if (argc != 3)
     {
-        cout << "Usage: <parms> <model_parms>" << endl;
+        zout << "Usage: <parms> <model_parms>" << endl;
         exit(1);
     }
     
-    cout.precision(10);
+    zout.precision(10);
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
@@ -158,7 +158,7 @@ int main(int argc, char ** argv)
     
     std::string chkpfile = parms.get<std::string>("chkpfile");
   
-    srand48(parms.get<int>("seed"));
+    srand48(parms.get<int>("seed"));//+ambient::rank() :D
     
     b_adj::Adjacency * adj = adj_factory(model);
     b_mpos::Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model, 0);
@@ -204,9 +204,6 @@ int main(int argc, char ** argv)
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
-    std::cout << "eval1 " << expval(mps,mpo,0) << std::endl;
-    //std::cout << "eval2 " << expval(mps,mpo,1) << std::endl;
-    //std::cout << "eval3 " << expval(mps,mpo) << std::endl;
 
 #ifndef MEASURE_ONLY
     
@@ -221,9 +218,6 @@ int main(int argc, char ** argv)
             gettimeofday(&snow, NULL);
             Logger iteration_log;
             //assert(false);
-        for(int i=0 ; i < mps.length(); i ++){
-	    std::cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
-        }
             optimizer.sweep(sweep, iteration_log);
 
             zout << "\nSweep is done\n";
@@ -253,14 +247,14 @@ int main(int argc, char ** argv)
     {
 
         Timer tvn("vN entropy"), tr2("Renyi n=2");
-        cout << "Calculating vN entropy." << endl;
+        zout << "Calculating vN entropy." << endl;
         tvn.begin(); entropies = calculate_bond_entropies(mps); tvn.end();
-        cout << "Calculating n=2 Renyi entropy." << endl;
+        zout << "Calculating n=2 Renyi entropy." << endl;
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         double energy = expval(mps, mpoc);
-        cout << "Energy before: " << expval(mps, mpo) << endl;
-        cout << "Energy after: " << expval(mps, mpoc) << endl;
+        zout << "Energy before: " << expval(mps, mpo) << endl;
+        zout << "Energy after: " << expval(mps, mpoc) << endl;
         h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         
         if (parms.get<int>("calc_h2") > 0) {
@@ -274,14 +268,14 @@ int main(int argc, char ** argv)
             double energy2 = expval(mps, mpo2, true);
             t4.end();
         
-            cout << "Energy^2: " << energy2 << endl;
-            cout << "Variance: " << energy2 - energy*energy << endl;
+            zout << "Energy^2: " << energy2 << endl;
+            zout << "Variance: " << energy2 - energy*energy << endl;
         }
 
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
-        cout << "Task took " << elapsed << " seconds." << endl;
+        zout << "Task took " << elapsed << " seconds." << endl;
     }
 #endif
     printf("Exiting... Finalize!\n");
