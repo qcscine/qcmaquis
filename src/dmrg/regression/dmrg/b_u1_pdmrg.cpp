@@ -13,7 +13,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "utils/utils.cpp"
+#include "utils/utils.hpp"
 #include "p_dense_matrix/p_dense_matrix.h"
 #include "p_dense_matrix/concept/matrix_interface.hpp"
 #include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
