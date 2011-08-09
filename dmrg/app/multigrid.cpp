@@ -147,9 +147,6 @@ int main(int argc, char ** argv)
     }
     ModelParameters raw_model(model_file);
     
-    BaseParameters parms, model;
-
-    
     srand48(raw_parms.get<int>("seed"));
     
     std::string chkpfile = raw_parms.get<std::string>("chkpfile");
@@ -206,10 +203,24 @@ int main(int argc, char ** argv)
     Measurements<Matrix, grp> measurements;
     Index<grp> phys;
     
-    MPO<Matrix, grp> mpo(0);
-    MPO<Matrix, grp> mpoc(0);
+    MPO<Matrix, grp> mpo(0), mpoc(0);
     mps_initializer<Matrix, grp> * initializer = new empty_mps_init<Matrix, grp>();
     MPS<Matrix, grp> cur_mps(0, 0, phys, grp::SingletCharge, *initializer);
+    
+    {
+        int t_graning = (graining > 0) ? graining-1 : 0;
+                
+        BaseParameters parms = raw_parms.get_at_index("graining", t_graning);
+        BaseParameters model = raw_model.get_at_index("graining", t_graning);
+        
+        cont_model_parser(model, lat, H, measurements);
+        phys = H.get_phys();
+        
+        mpo = make_mpo(lat->size(), H);
+        mpoc = mpo;
+        if (parms.get<int>("use_compressed") > 0)
+            mpoc.compress(1e-12);
+    }
     
     if (restore) {
         alps::hdf5::archive h5ar_in(chkpfile);
@@ -223,8 +234,8 @@ int main(int argc, char ** argv)
     gettimeofday(&now, NULL);
     do {
         
-        parms = raw_parms.get_at_index("graining", graining);
-        model = raw_model.get_at_index("graining", graining);
+        BaseParameters parms = raw_parms.get_at_index("graining", graining);
+        BaseParameters model = raw_model.get_at_index("graining", graining);
         
         cont_model_parser(model, lat, H, measurements);
         phys = H.get_phys();
@@ -248,10 +259,10 @@ int main(int argc, char ** argv)
                 meas_always.add_term(measurements.get(meas_list[i]));
         }
         
-        mpo = make_mpo(lat->size(), H);
-        mpoc = mpo;
+        MPO<Matrix, grp> t_mpo = make_mpo(lat->size(), H);
+        MPO<Matrix, grp> t_mpoc = t_mpo;
         if (parms.get<int>("use_compressed") > 0)
-            mpoc.compress(1e-12);
+            t_mpoc.compress(1e-12);
         
         MPS<Matrix, grp> initial_mps(lat->size(),
                                      parms.get<std::size_t>("init_bond_dimension"),
@@ -265,7 +276,9 @@ int main(int argc, char ** argv)
             
             std::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
             if (cur_mps.length() < initial_mps.length())
-                multigrid::extension(cur_mps, initial_mps);
+                multigrid::extension_optim(parms,
+                                           cur_mps, parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                           initial_mps, parms.get<int>("use_compressed") == 0 ? t_mpo : t_mpoc);
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
             std::cout << "New MPS:" << std::endl << initial_mps.description();
@@ -273,6 +286,8 @@ int main(int argc, char ** argv)
             initial_mps = cur_mps;
         }
         cur_mps = initial_mps;
+        mpo = t_mpo;
+        mpoc = t_mpoc;
         
                 
 #ifndef MEASURE_ONLY
@@ -358,7 +373,7 @@ int main(int argc, char ** argv)
         }
         sweep = 0;
 #endif
-        
+
         ++graining;
     } while (graining < raw_parms.get<int>("ngrainings"));
     
@@ -394,7 +409,7 @@ int main(int argc, char ** argv)
             h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         }
         
-        if (parms.get<int>("calc_h2") > 0) {
+        if (raw_parms.get<int>("calc_h2") > 0) {
             Timer tt1("square"), tt2("compress");
             tt1.begin(); MPO<Matrix, grp> mpo2 = square_mpo(mpo); tt1.end();
             tt2.begin(); mpo2.compress(1e-12); tt2.end();
