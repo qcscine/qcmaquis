@@ -81,10 +81,19 @@ public:
     BaseParameters ()
     : alps::Parameters()
     { }
-    
+
     BaseParameters (std::istream& param_file)
-    : alps::Parameters(param_file)
-    { }
+    : alps::Parameters()
+    {
+        try {
+            alps::Parameters temp(param_file);
+            *static_cast<alps::Parameters*>(this) = temp;
+        } catch (std::exception & e) {
+            std::cerr << "Exception thrown when parsing parameters:" << std::endl;
+            std::cerr << e.what() << std::endl;
+            exit(1);
+        }
+    }
     
     bool is_set (std::string const & key)
     {
