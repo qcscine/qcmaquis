@@ -27,9 +27,9 @@ add_executable(measure_2u1 dmrg.cpp)
 target_link_libraries(measure_2u1 ${DMRG_APP_LIBRARIES})
 
 if(BUILD_MULTIGRID)
-	add_executable(multigrid_measure_u1 multigrid.cpp)
+	add_executable(multigrid_measure_u1 ${PROJECT_SOURCE_DIR}/utils/utils.cpp multigrid.cpp)
 	target_link_libraries(multigrid_measure_u1 ${DMRG_APP_LIBRARIES})
-	add_executable(multigrid_measure_2u1 multigrid.cpp)
+	add_executable(multigrid_measure_2u1 ${PROJECT_SOURCE_DIR}/utils/utils.cpp multigrid.cpp)
 	target_link_libraries(multigrid_measure_2u1 ${DMRG_APP_LIBRARIES})
 endif(BUILD_MULTIGRID)
 

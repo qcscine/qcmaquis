@@ -109,6 +109,9 @@ void cont_model_parser (BaseParameters & parms, boost::shared_ptr<Lattice> & lat
     } else
         throw std::runtime_error("Don't know this model!");
 #else
+#ifdef UseTwoU1
+    throw std::runtime_error("No model with 2xU1 symmetries is yet implemented.");
+#else
     if (parms.get<std::string>("model") == std::string("optical_lattice"))
     {
         OpticalLattice<Matrix> model(*lattice, parms);
@@ -116,6 +119,7 @@ void cont_model_parser (BaseParameters & parms, boost::shared_ptr<Lattice> & lat
         meas = model.measurements();
     } else
         throw std::runtime_error("Don't know this model!");
+#endif
 #endif
 }
 
