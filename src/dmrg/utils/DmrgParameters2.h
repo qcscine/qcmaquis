@@ -17,47 +17,49 @@ public:
     DmrgParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
     {
-        add_option("truncation_initial", "1e-16", "Initial value for the truncation error");
-        add_option("truncation_final", "1e-16", "Final value for the truncation");
+        using parameters::value;
         
-        add_option("init_bond_dimension", "5", "");
-        add_option("max_bond_dimension", "", "");
-        add_option("sweep_bond_dimensions", "", "");
+        add_option("truncation_initial", "Initial value for the truncation error", value(1e-16));
+        add_option("truncation_final", "Final value for the truncation", value(1e-16));
         
-        add_option("alpha_initial", "1e-2", "");
-        add_option("alpha_main", "1e-4", "");
-        add_option("alpha_final", "1e-8", "");
+        add_option("init_bond_dimension", "", value(5));
+        add_option("max_bond_dimension", "");
+        add_option("sweep_bond_dimensions", "");
         
-        add_option("eigensolver", "IETL_JCD", "");
-        add_option("ietl_jcd_tol", "1e-8", "");
-        add_option("ietl_jcd_gmres", "0", "");
-        add_option("ietl_jcd_maxiter", "12", "");
+        add_option("alpha_initial","", value(1e-2));
+        add_option("alpha_main", "", value(1e-4));
+        add_option("alpha_final", "", value(1e-8));
         
-        add_option("nsweeps", "", "");
-        add_option("nmainsweeps", "", "");
-        add_option("ngrowsweeps", "", "");
+        add_option("eigensolver", "", value("IETL_JCD"));
+        add_option("ietl_jcd_tol", "", value(1e-8));
+        add_option("ietl_jcd_gmres", "", value(0));
+        add_option("ietl_jcd_maxiter", "", value(12));
         
-        add_option("resultfile", "", "", REQUIRED);
-        add_option("chkpfile", "", "", REQUIRED);
-        add_option("initfile", "", "", EMPTY_VALUE);
+        add_option("nsweeps", "");
+        add_option("nmainsweeps", "");
+        add_option("ngrowsweeps", "");
         
-        add_option("donotsave", "0", "");
-        add_option("run_seconds", "0", "");
-        add_option("storagedir", "", "", EMPTY_VALUE);
-        add_option("use_compressed", "0", "");
-        add_option("calc_h2", "0", "");
-        add_option("seed", "42", "");
-        add_option("always_measure", "", "comma separated list of measurements", EMPTY_VALUE);
-        add_option("measure_each", "1", ""); 
+        add_option("resultfile", "");
+        add_option("chkpfile", "");
+        add_option("initfile", "", value(""));
         
-        add_option("dt", "1e-3", "");
-        add_option("nsweeps_img", "0", "");
+        add_option("donotsave", "", value(0));
+        add_option("run_seconds", "", value(0));
+        add_option("storagedir", "", value(""));
+        add_option("use_compressed", "", value(0));
+        add_option("calc_h2", "", value(0));
+        add_option("seed", "", value(42));
+        add_option("always_measure", "comma separated list of measurements", value(""));
+        add_option("measure_each", "", value(1)); 
         
-        add_option("ngrainings", "0", "");
+        add_option("dt", "", value(1e-3));
+        add_option("nsweeps_img", "", value(0));
         
-        add_option("init_state", "default", "");
+        add_option("ngrainings", "", value(0));
         
-        add_option("model_library", "alps", "");
+        add_option("init_state", "", value("default"));
+        
+        add_option("model_library", "", value("alps"));
         
     }
 };
@@ -69,47 +71,48 @@ public:
 	ModelParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
     {
+        using parameters::value;
         
-        add_option("model", "", "");
-        add_option("lattice", "", "");
-        add_option("alps_lattice", "", "");
+        add_option("model", "");
+        add_option("lattice", "");
+        add_option("alps_lattice", "");
         
-        add_option("L", "", "");
-        add_option("W", "", "");
+        add_option("L", "");
+        add_option("W", "");
         
-        add_option("Jxy", "", "");
-        add_option("Jz", "", "");
-        add_option("Jxy1", "", "");
-        add_option("Jz1", "", "");
+        add_option("Jxy", "");
+        add_option("Jz", "");
+        add_option("Jxy1", "");
+        add_option("Jz1", "");
         
-        add_option("U", "", "");
-        add_option("t", "", "");
-        add_option("t1", "", "");
-        add_option("t2", "", "");
+        add_option("U", "");
+        add_option("t", "");
+        add_option("t1", "");
+        add_option("t2", "");
         
-        add_option("theta", "", "");
-        add_option("h0", "", "");
-        add_option("pin", "", "");
+        add_option("theta", "");
+        add_option("h0", "");
+        add_option("pin", "");
         
-        add_option("K0", "", "");
-        add_option("K1", "", "");
+        add_option("K0", "");
+        add_option("K1", "");
         
-        add_option("penalty", "", "");
-        add_option("twist", "", "");
-        add_option("move", "", "");
+        add_option("penalty", "");
+        add_option("twist", "");
+        add_option("move", "");
         
-        add_option("Nmax", "", "");
-        add_option("mu", "", "");
-        add_option("h", "", "");
-        add_option("c", "", "");
-        add_option("V0", "", "");
-        add_option("k", "", "");
-        add_option("a", "", "");
-        add_option("Ndiscr", "", "");
+        add_option("Nmax", "");
+        add_option("mu", "", value(0));
+        add_option("h", "", value(1));
+        add_option("c", "", value(0));
+        add_option("V0", "", value(0));
+        add_option("k", "", value(0));
+        add_option("a", "", value(1));
+        add_option("Ndiscr", "");
         
-        add_option("u1_total_charge", "", "");
-        add_option("u1_total_charge1", "", "");
-        add_option("u1_total_charge2", "", "");
+        add_option("u1_total_charge", "");
+        add_option("u1_total_charge1", "");
+        add_option("u1_total_charge2", "");
     }
 };
 

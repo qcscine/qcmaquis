@@ -9,13 +9,14 @@
 #if !defined(BASEPARAMETERS_H) && !defined(DMRGPARAMETERS_H)
 #define BASEPARAMETERS_H
 
+#include <string>
+#include <fstream>
+#include <iostream>
+
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
-
-#include <fstream>
-#include <iostream>
 
 #include <alps/parameter.h>
 
@@ -68,20 +69,35 @@ namespace conversion
     };
 }
 
- 
+namespace parameters {
+    
+    class value {
+    public:
+        value () : val_(""), empty_(true) { }
+        
+        template <class T>
+        value (const T & val)
+        : val_(boost::lexical_cast<std::string>(val))
+        , empty_(false)
+        { }
+        
+        std::string get() const {return val_;}
+        bool empty() const {return empty_;}
+    private:
+        bool empty_;
+        std::string val_;
+        
+    };
+}
+
 class BaseParameters : public alps::Parameters
 {
 public:
     
-    // REQUIRED: if it is not defined you get an error
-    // OPTIONAL: can have a default value, but if it is empty it won't be written to the results file
-    // EMPTY_VALUE: force the default empty value to be written  
-    enum parm_req_t {OPTIONAL, REQUIRED, EMPTY_VALUE};
-    
     BaseParameters ()
     : alps::Parameters()
     { }
-
+    
     BaseParameters (std::istream& param_file)
     : alps::Parameters()
     {
@@ -103,7 +119,10 @@ public:
     template<class T> T get(std::string const & key)
     {
         if (!defined(key))
-            boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
+            if (defaults.count(key) > 0)
+                (*this)[key] = defaults[key];
+            else
+                boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
         conversion::get_<T> g;
         return g((*this)[key]);
     }
@@ -130,25 +149,23 @@ public:
                     p[what.str(1)] = *(v.rbegin());
             }
         }
-
+        
         return p;
     }
     
 protected:
     void add_option(std::string const & name,
-                    std::string const & val,
                     std::string const & desc,
-                    parm_req_t req = OPTIONAL)
+                    parameters::value const & val = parameters::value())
     {
-        if (!defined(name))
-            if (req == REQUIRED)
-                throw std::runtime_error("Parameter " + name + " is required!");
-            else if (req == EMPTY_VALUE)
-                (*this)[name] = "";
-            else if (req == OPTIONAL)
-                if (!val.empty())
-                    (*this)[name] = val;
+        if (!val.empty())
+            defaults[name] = val.get();
+        descriptions[name] = desc;        
     }
+    
+    std::map<std::string, std::string> defaults;
+    std::map<std::string, std::string> descriptions;
+    
 };
 
 #endif
