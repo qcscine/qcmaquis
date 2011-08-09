@@ -1,0 +1,7 @@
+LATTICE = "open square lattice"
+MODEL = "spinless fermions"
+t = 1
+CONSERVED_QUANTUMNUMBERS = "N"
+N_total = 10
+L = 5
+W = 5
