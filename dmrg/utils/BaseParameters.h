@@ -129,7 +129,7 @@ public:
     
     template<class T> void set(std::string const & key, T const & value)
     {
-        (*this)[key] = value;
+        (*this)[key] = boost::lexical_cast<std::string>(value);
     }
     
     BaseParameters get_at_index(std::string const & var, std::size_t val)
