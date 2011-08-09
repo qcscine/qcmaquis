@@ -13,6 +13,7 @@
 #include "utils/logger.h"
 #include "utils/timings.h"
 #include "utils/ambient_assert.h"
+#include "utils/matrix_vector_traits.h"
 
 #include "block_matrix/block_matrix.h"
 #include "block_matrix/indexing.h"
@@ -39,39 +40,49 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     }
 }
 
-template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-void pgemm(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
+template<class Tag> struct basis_eval;
+
+template<> struct basis_eval<blas::NoTranspose>
+{
+    template<class Matrix, class SymmGroup> static Index<SymmGroup> const &
+    first(block_matrix<Matrix, SymmGroup> const & m) { return m.left_basis(); }
+    
+    template<class Matrix, class SymmGroup> static Index<SymmGroup> const &
+    second(block_matrix<Matrix, SymmGroup> const & m) { return m.right_basis(); }
+};
+
+template<> struct basis_eval<blas::Transpose>
+{
+    template<class Matrix, class SymmGroup> static Index<SymmGroup> const &
+    first(block_matrix<Matrix, SymmGroup> const & m) { return m.right_basis(); }
+    
+    template<class Matrix, class SymmGroup> static Index<SymmGroup> const &
+    second(block_matrix<Matrix, SymmGroup> const & m) { return m.left_basis(); }
+};
+
+template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Tag1, class Tag2>
+void gemm(block_matrix<Matrix1, SymmGroup> const & A, Tag1,
+          block_matrix<Matrix2, SymmGroup> const & B, Tag2,
           block_matrix<Matrix3, SymmGroup> & C)
 {
     C.clear();
     
     typedef typename SymmGroup::charge charge;
-    std::size_t loop_max = A.n_blocks();
-    for (std::size_t k = 0; k < loop_max; ++k) {
-        if (! B.left_basis().has(A.right_basis()[k].first))
-            continue;
-
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-
-        // avoid copying, use resize
-        C.insert_block(Matrix3(),
-                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
-        C.resize_block(A.left_basis()[k].first, B.right_basis()[matched_block].first,
-                       num_rows(A[k]), num_cols(B[matched_block]));
-    }
-
-#ifndef MPI_PARALLEL
-#pragma omp parallel for schedule(dynamic)
-#endif
-    for (std::size_t k = 0; k < loop_max; ++k) {
-        if (! B.left_basis().has(A.right_basis()[k].first))
+    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+        if (! basis_eval<Tag2>::first(B).has(basis_eval<Tag1>::second(A)[k].first))
             continue;
         
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
+        std::size_t matched_block = basis_eval<Tag2>::first(B).position(basis_eval<Tag1>::second(A)[k].first);
         
         // avoid copying, use resize
-        gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
+        std::size_t s1 = result_size(A[k], Tag1(), B[matched_block], Tag2()).first;
+        std::size_t s2 = result_size(A[k], Tag1(), B[matched_block], Tag2()).second;
+        
+        C.insert_block(Matrix3(s1, s2),
+                       basis_eval<Tag1>::first(A)[k].first,
+                       basis_eval<Tag2>::second(B)[matched_block].first);
+        
+        gemm(A[k], Tag1(), B[matched_block], Tag2(), C[C.left_basis().position(basis_eval<Tag1>::first(A)[k].first)]);
     }
 }
 

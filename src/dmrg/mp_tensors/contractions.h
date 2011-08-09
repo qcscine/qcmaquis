@@ -625,7 +625,8 @@ struct contraction {
         A.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(transpose(A.data_), psi.data_, tmp);
+//        gemm(transpose(A.data_), psi.data_, tmp);
+        gemm(A.data_, blas::Transpose(), psi.data_, blas::NoTranspose(), tmp);
         
         B.multiply_from_left(tmp);
         
