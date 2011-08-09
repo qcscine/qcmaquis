@@ -59,9 +59,9 @@ namespace app {
                 double U = model.get<double>("c")/lat.get_prop<double>("dx", p);
                 double mu = ( -model.get<double>("mu")
                              + exp_potential
-                             + model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p)) );
+                             + model.get<double>("h")/(lat.get_prop<double>("dx", p, p+1)*lat.get_prop<double>("dx", p, p+1)) );
                 if (!lat.get_prop<bool>("at_open_boundary", p))
-                    mu += model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p));
+                    mu += model.get<double>("h")/(lat.get_prop<double>("dx", p, p+1)*lat.get_prop<double>("dx", p, p+1));
 
                 op_t site_op;
                 for (int n=1; n<=model.get<int>("Nmax"); ++n)
