@@ -100,7 +100,7 @@ int main (int argc, char * const argv[])
     b[0]=vli::data_mask<TYPE>::value;
     b[1]=vli::data_mask<TYPE>::value;
     b[2]=vli::data_mask<TYPE>::value;
-//    b[3]=vli::data_mask<TYPE>::value-1000000;
+//  b[3]=vli::data_mask<TYPE>::value-1000000;
 
     c = a*b;  
     
