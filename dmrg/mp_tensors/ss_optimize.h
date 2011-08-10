@@ -181,6 +181,10 @@ public:
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, mps[site], parms);
                     END_TIMING("JCD")
+                } else if (parms.get<std::string>("eigensolver") == std::string("IETL_NEW_JCD")) {
+                    BEGIN_TIMING("JD")
+                    res = solve_ietl_new_jd(sp, mps[site], parms);
+                    END_TIMING("JD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
