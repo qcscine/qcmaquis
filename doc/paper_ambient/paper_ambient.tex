@@ -27,6 +27,8 @@
 \newcommand\eg{\textit{e.g. }}
 \newcommand\ie{\textit{i.e. }}
 \newcommand\cf{\textit{c.f. }}
+\renewcommand{\labelitemi}{$\diamond$}
+
 
 \makeatother
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END MACRO
@@ -93,12 +95,61 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN WORKFLOW
 \section{Ambient workflow}
 
-Alex, your part !
+In this section we describe the workflow of Ambient applications execution in general terms.
+As the Ambient approach derives from CUDA - first we will look at the simplified workflow of CUDA and Ambient-application's execution:
+
+\begin{table}[h]  
+	\begin{center}
+	 	\begin{tabular}{l l  l l} % L L  L L 
+                        \hline 
+                             \multicolumn{2}{c}{CUDA} &  \multicolumn{2}{c}{Ambient} \\
+                             \hline
+                             \multicolumn{4}{c}{  $\diamond$ Serial code}  \\
+                            $\diamond$ & Kernel encountered                                  &  $\diamond$ & Kernel-pair (logistic/computa- \\
+                               & & & tional) encountered \\
+                               $\diamond$ &Thread block grid construction&     $\diamond$  & Kernel-pair stacked for later \\
+                                &(gridDim, blockDim)  &  &  execution  \\ 
+                               $\diamond$ &  Thread blocks mapping onto de-  &   $\diamond$  &  Serial code   \\
+                                & vice (GPU SMPs) &  & \\
+                               $\diamond$ &  Execution of kernel: GPU SMP  &  $\diamond$&Stack flush signal encountered :  \\
+                               &  executes kernel on every thread& &   execution of kernels  \\
+                               &  of corresponding thread blocks  & & \\
+                                 $\diamond$  &  Serial code &  & \\
+                                  \hline
+        		 \end{tabular}  
+              \caption{Workflow analogy between CUDA and Ambient-application's execution} \label{WORKFLOW}
+	\end{center}
+\end{table}
+
+When the Ambient's flush signal indicates the execution of kernels. It is performed by the followings sequences:
+
+\begin{itemize}
+\item Execution of logistic kernel: allocation of device (MPI group) according to the request. 
+\item Execution of logistic kernel: argument's workgroups (tiles) marking with workDim.
+\item Execution of logistic kernel: selected (pinned) argument's workgroups mapping onto device (MPI processes).
+\item Transfer of workgroups to the target processes.
+\item Execution of computational kernel: MPI process executes kernel thread for work items of assigned work groups.
+\end{itemize}
+
+The main reason of the workflow difference comparing to CUDA is the scale of available resources. 
+As we can use unlimited amount of resources for a kernel's launch - the data becomes the key factor around which we evolve Ambient's design.
+In particular, in order to control the data movements and resource usage we introduce the logistic kernel and making kernel calls non-blocking. 
+
+In general, Ambient application operates with abstract types that already have tiled memory structure. Upon the kernel operation 
+call the Ambient framework stacks the operation for later execution and proceeds to the rest of the code.
+
+When the framework encounters the signal to flush the stack of kernels - the actual execution starts. Framework goes through accumulated stack 
+and executes independent operations at once. When executing one operation first the engine goes through the logistic kernel and allocates specified
+ amount of resources for this operation. Next the engine marks argument's tiling using specified parameters and maps resulting workgroups onto allocated processes in a user specified way. 
+Now engine can freely transfer the tiled data from previous owners to the allocated processes changing the tile size if needed. After the transfer is complete the computational kernel kicks in. 
+The computational kernel behaves almost the same way as in CUDA and workgroups are simply being mapped onto threads of MPI process as if it were GPU SMP (the main difference here lies in user being in control of particular process workgroup's ownership).
+
+In further sections we are going to review mechanisms that we have used here in more details.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END WORKFLOW
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN DESCRIPTION OF THE FRAMEWORK
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN DESCRIPTION OF THE FRAMEWORK
 \section{Design of the framework}
 %In this section, we describe our framework in simple terms, without  a deep technical description.
 %We will focus on the main functionalities  and show the essential features.
@@ -355,37 +406,38 @@ The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGINNING EXECUTION AND OPERATIONS SCHEDULING SECTION
 \subsection{Execution model and Operations scheduling}
-In a typical HPC application, the programming model imposes a parallel execution of every function of the code, step by step, where the data granularity
-of the problem  has imposed the parallelization. In ambient, we developed an scheduler, an  \guillemotleft engine\guillemotright \, that privileged a queue execution model  (promoted  and popularized by the CELL processor), where operations (\eg linear algebra operations \ldots)
-will be stacked up into a list  and then executing according the model of logistics/computation kernel. This model is inspired from computer architecture design;
-the queue data flow execution in a processor \cite{DENNIS-1974}, nevertheless, we are working now on a larger scale where basic instructions ($+,-,*,/$) are  replaced 
-by the pair logistics/computation kernels. 
+In a typical HPC application, the programming model imposes a  parallel execution of every function of the code, with data granularity imposing the details 
+of the parallelization. In Ambient, we developed an scheduler, an  \guillemotleft engine\guillemotright \, that privileges a queue execution model, where operations (\eg linear algebra operations \ldots)
+are stacked up in a list first, and are executed afterwards according to the model of the logistics/computation kernel. This model is inspired by computer architecture design, i.e.
+the queue data flow execution in a processor \cite{DENNIS-1974}. We are replicating this approach now on a larger scale where basic instructions ($+,-,*,/$) are replaced 
+by the pairs of logistics/computational kernels. 
 
-An HPC application can be always decomposed as a set of functions that perform numerical operations.  Start by a basic example, we want to perform the three following algebra operations :
+Any HPC application can be decomposed into a set of functions performing numerical operations.  Starting from basic examples, we want to perform the three following operations :
 
 \begin{eqnarray} 
 \text{Operation 1:} & & A + \!\! =  B, \label{3OPERATIONS}  \\
-\text{Operation 2:} & & A \times \!\!= 3,   \nonumber  \\ 
+\text{Operation 2:} & & A \times \!\!= \lambda,   \nonumber  \\ 
 \text{Operation 3:} & & C \times \!\!= D. \nonumber
 \end{eqnarray}
+where $A$, $B$, $C$ and $D$ are some matrices and $\lambda$ is some scalar.
 
-In the usual way, the three operations will be executed in parallel one after one. Transposing this example in Ambient's conception means; each operation is now  associated to a logistics and a computational kernel. In Practice, considering our addition example(\ref{3OPERATIONS}),  the users will use the following \texttt{push} function:
+Conventionally, these three operations would be executed in parallel one after another. Transposing into Ambients' conception means associating each operation with a logistics and a computational kernel. Considering the first example of example (\ref{3OPERATIONS}),  a user would invoke the following \texttt{push} function:
 
 \begin{eqnarray}
      \texttt{push(Addition\_logistics, Addition\_computional, \textit{A}, \textit{B})},
 \end{eqnarray} 
 
-where we have the appropriated logistics and computational kernel named \texttt{Addition\_logistics} and \texttt{Addition\_computational}  presented in the table \ref{LKERNEL} and \ref{CKERNEL} previously, followed by the two arguments \texttt{\textit{A}} and \texttt{\textit{B}}. During the execution of the application, operations will be stack up, and in an ideal case, the content of the stack should be executed at the end of the application. Nevertheless, the users have the possibility to execute the content of the stack during the code,
-by the basic following instruction :
+with the appropriate logistics and computational kernels \texttt{Addition\_logistics} and \texttt{Addition\_computational}  (c.f. table \ref{LKERNEL} and \ref{CKERNEL}), followed by the arguments \texttt{\textit{A}} and \texttt{\textit{B}}. In this way operations, such as those in (\ref{3OPERATIONS}), will stack up during execution of the application. At any time then, the operations on the stack can be executed using the basic Ambient instruction
 
 \begin{eqnarray}
-      \texttt{playout().}
+      \texttt{playout(),}
 \end{eqnarray} 
 
-This command triggered on the engine of ambient. The engine will scan through the stack of operation and identifies the independent operations, and also mark the different dependencies by incrementing a local dedicated counter. Then, it adds a  dedicated MPI packet manager\footnote{A packet manager is a tool that manages the communication between processors.} (see section \ref{MPIABSTRACTION})  for every operations and performed all logistics kernels. Due to the dependencies, the data will be map in a first MPI group and marked as need in others, with a trace of the previous owner.
-Finally, the independent computational kernels are executed followed by  the depending computational kernels in the appropriated order. In case of dependency of the data, the migration of the datas will be done by the packet manager. 
-When all computational kernels are over, the stack is cleaned. Thus, this method combined to the execution of the computational kernels creates two layers of parallelization : the simultaneous execution of  kernels executed in parallel.  
-A schematic of the stack execution is presented on Fig. \ref{EXECUTION} 
+although ideally this command would be invoked at the end, when all operations have been pushed onto the stack.
+The \texttt{playout()} command triggers the Ambient engine, scanning through the operation stack, identifying the independent operations and marking dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistics kernels are executed. Where dependencies exist, the relevant data - which is mapped  to some MPI group according to the requirements of the first operation in which it is needed - will be marked as 'needed in other operations' ; those later dependent operations can always trace it to its then-current owner.
+Finally, the computational kernels of independent operations are executed, followed by the dependent computational kernels in the appropriate order. In the case of data dependency, the data transfer is handled by the packet manager. When all computational kernels have been executed, the stack is cleared. A schematic of the stack execution is presented in Fig. \ref{EXECUTION} .
+
+Overall, the Ambient approach combines two levels of parallelism: that of each computational kernel and that of several kernels executed in parallel by assigning them to different MPI groups.  
 
 \begin{figure}[h]
 	\begin{center}
@@ -408,9 +460,8 @@ A schematic of the stack execution is presented on Fig. \ref{EXECUTION}
           \caption{Model of execution of the ambient scheduler. On the classical approach (left) the operations will be executed in parallel step by step whatever the dependencies (marked by the symbol \guillemotleft [\guillemotright \, in the schematic). In ambient (right), operations will be associated to the pair logistics/computation (abbreviate l/c) kernel, as operations 1 and 3  (l/c kernels 1 and 3) are independents, the execution of computational kernel will be done, simultaneously.  Due to the dependency between the kernel 1 and 2, the computational kernel of operation 2 (l/c kernel 2) will be executed later. It should be performed in a new MPI group but  with an appropriate SQL request (\ref{SQL2}) in logistics kernel, we can execute the computational kernel where the data are. }   \label{EXECUTION}
 \end{figure}
 
-Now, we  generalized the example \ref{3OPERATIONS} to a vectors of matrices. We  add  conditional statements to know which matrices should add and multiply (Table \ref{GRAPH}). First, from line 1 to 11, as a dry run, the application execution will determine which operations should be performed, 
-and it will pushed up needed kernels on the top of stack. When the \texttt{playout()} function is called line 12, the engine will execute the stack, by solving dependency, it will  create the directed  acyclic graph of the application, naturally. Moreover this example shows the strength of Ambient, we have integrated a double parallelization without any, hard coding of MPI instruction in the original code. Thus, a full parallel linear algebra  application can be developed without taking into account the geometry of the problem, which usually done.
-
+Next, we generalize example \ref{3OPERATIONS} to deal with vectors of matrices. We assume conditional statements determining which matrices should be added and/or multipled (Table \ref{GRAPH}). First, from line 1 to 11, as a dry run, the application execution will determine which operations should be performed, 
+pushing the required kernels on the top of stack. When the \texttt{playout()} function is called line 12, the engine will execute the stack. By resolving dependency, it will create the directed acyclic graph of the application naturally. 
 \begin{table}[t] 
 	\begin{center}
 	 	\begin{tabular}{l l }
@@ -424,7 +475,7 @@ and it will pushed up needed kernels on the top of stack. When the \texttt{playo
                                \tiny{3:}   & \hspace{0.4 cm}  \textbf{if}  the conditions on $A[i]$ and  $B[j]$ are verified \textbf{do} \\                               
                                \tiny{4:}   & \hspace{0.8 cm}  $A[i]+ \!\! =B[j]$, $\vartriangleright$  push l/c kernel 1, \\
                                \tiny{5:}   & \hspace{0.4 cm} \textbf{end if} \\   
-                               \tiny{6:}   & \hspace{0.4 cm} $A[i]\times \!\! =3$,  $\vartriangleright$  push l/c kernel 2, \\                   
+                               \tiny{6:}   & \hspace{0.4 cm} $A[i]\times \!\! =\lambda$,  $\vartriangleright$  push l/c kernel 2, \\                   
                                \tiny{7:}   & \hspace{0.4 cm} \textbf{if}  the conditions on $C[i]$ and  $D[j]$ are verified \textbf{do} \\                               
                                \tiny{8:}   & \hspace{0.8 cm} $C[i]\times \!\! =D[j]$,  $\vartriangleright$ push l/c kernel 3, \\
                                \tiny{9:}   & \hspace{0.4 cm}  \textbf{end if} \\       
@@ -439,59 +490,61 @@ and it will pushed up needed kernels on the top of stack. When the \texttt{playo
 	\caption{Generalization of the example \ref{3OPERATIONS} with conditional statements. The association of a cumulative stack and  delate stack execution will determine the  directed  acyclic graph. \label{GRAPH}}
 \end{table} 
 
-To conclude this section, unlike a typical parallel execution, this model have several decisive advantages. It allows a transparent parallelization of two layers of parallel execution, and most important, it determined the directed  acyclic graph on the full application in order to get the best performance.
+These examples demonstrate the strength of Ambient, allowing for two levels of parallelization without any hard coding of MPI instructions in the original code, with a great degree of flexibility and adaptability. Thus, a fully parallel linear algebra  application can be developed without taking into account the geometry of the problem, which usually done.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END EXECUTION AND OPERATIONS SCHEDULING SECTION
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN PACKET MANAGER 
 \subsection{Packet manager and MPI abstraction} \label{MPIABSTRACTION}
-In a normal HPC application, the  data could be prepared when communications are needed, if the data have more than one type especially. In this case  
-we should prepare a MPI structure and then perform the exchange. These preliminary conversions are painful for the performance. In  Ambient,
- the structure of data layout by work groups necessitates additional metadata to coordinate the good executions of logistics and 
- computational kernels. Particularly, when a remote access is performed in 
-a computational kernel. Thus,  before the block of data (literally the numbers 
-inside the matrix) of the any workgroups,  contiguous data  are included. We called this ensemble \guillemotleft block of data+metadata\guillemotright \, as a netweork packet. It is built
-on a MPI structure. Thus the work groups  are  ready to send or receive without any additional movements or copying. 
-To assure the good execution of the framework, several additional type of packets are  available, they all derived from a standard packet. 
+In standard HPC applications, data may have to be prepared for exchange over the network, particularly if the data is of more than one type; in the latter case,
+a MPI structure is set up, to which the data is then copied, and then this structure is send via network. These preliminary conversions can cut into
+performance. In Ambient, the data layout inside each work group necessitates additional metadata to coordinate the execution of logistics and 
+computational kernels, particularly the latter has to perform a remote access. Thus, before the block of data held by a workgroup, contiguous
+metadata is included. We call this ensemble \guillemotleft block of data+metadata\guillemotright \, as a network packet, which is built
+on a MPI structure. Thereby, work groups are able to send or receive without any additional movements or copying. 
+To assure proper execution of the framework, several additional type of packets are  available, all derived from a standard packet. (MORE INFO HERE. OTHERWISE LAST
+SENTENCE IS REDUNDANT)
 %The control of the packet and MPI exchange is done by a packet manager.
 
-When we execute a computational kernel, we get the data by the Ambient command  \texttt{current(\textit{A})(i,j)} (ref. \ref{CURRENT}), where \textit{A} is a matrix 
-compatible with Ambient, and the indices $i$ and $j$ are the coordinates of the work group (Fig. \ref{MPIGROUP}). Three possibilities are possibles for getting the data when a process execute this functions
-in a computational kernel.
+When a computational kernel is executed, it can access the any required, such as a block of matrix $A$, by use of the Ambient command  \texttt{current(\textit{A})(i,j)}
+(ref. \ref{CURRENT}), where \textit{A} has to be a matrix  compatible with Ambient (REFERENCE HERE TO SECTION WHERE WE EXPLAIN WHAT AMBIENT-COMPATIBLE
+MATRICES MUST LOOK LIKE), the indices $i$ and $j$ being the coordinates of the work group (Fig. \ref{MPIGROUP}). 
+There are three possibilities for the resultant types of data communication when a process executes this function inside a computational kernel:
+
 \begin{enumerate}
 \item The work group is already in the memory of the process. The access is direct.
-\item The work group is in the memory space of the present MPI-group (previously created by the associated logistics kernel). The applicant process sends a query request (a specific packet) to its  master process of its MPI group.
-The master process of the group gets the request (the master process knows the repartition of the workgroup inside the MPI-group), it sends a new request to
-the actual owner, when the actual owner gets the request, it send the workgroup needed to the first applicant. 
-\item The work group is inside an other MPI-group. As previously, the applicant process sends to the master process a query  request, and the master process of 
-the actual MPI group  sends an other request to the older owner group. The older master process gets the message and sends a message to actual owner of the data. Then the owner 
-of the data sends the data to the first applicant.
+\item The work group is in the memory space of the present MPI-group (previously created by the associated logistics kernel). 
+The process requiring this data sends a query (a specific type of packet) to the master process of its MPI group.
+The master process, which knows which slave process of its' group holds the required work group, sends a new request to
+the that process, which in turn sends the requested workgroup to the requesting process. 
+\item The work group is held inside another MPI-group. As previously, the process which executes the computational kernel sends a query to the master process of its MPI group,
+which in turn sends a request to the master process of the MPI group within which the data is held. That master process then sends a message to the actual owner process,
+which finally sends the data to the initially requesting process.
 \end{enumerate}
-We illustrate the two last previous situations on the figure \ref{MPIEXCHANGE}.
+Case (2) and (3) are illustrated in Fig. \ref{MPIEXCHANGE}.
 \begin{figure}[h]
 	\begin{center}
 	    \psfrag{case 2}{\tiny case 2}
 	    \psfrag{case 3}{\tiny case 3}
              \includegraphics[scale=0.35]{FIGURES/ComGroup.eps} 
 	\end{center}
-          \caption{On the left, we illustrate communications inside the same group. On the right, we illustrate the communications between  two MPI-groups. The dashed circle indicated the previous MPI group. In both cases, the masters process have the key 
-          role to distribute informations for the exchange. The requests  are arrows, and the orders of operations are marked by numbers.}  \label{MPIEXCHANGE}
+          \caption{On the left: communications inside the same group. On the right: communications between two MPI-groups. The dashed circle indicates the group holding the requested data.
+          In both cases, the master processes have a key role in distributing information for the exchange. Each arrow marks a request, the sequence of requests is enumerated.}  \label{MPIEXCHANGE}
 \end{figure}
 
-In the previous section, we reveled the importance of the communications, theirs perfect execution is relevant to  the packet manager.
-The packet manager  manages the intra communication inside the same MPI group \eg to perform an multiplication, and the inter communication
-between the MPI groups. The packet manager is unique for every MPI-group, it is based on a singleton pattern. 
-
-
- In the previous paragraph, we presented different communication blueprint when datas are requested by a process.
-As communication path between the applicant  and the owner of the data can be more and less complex,  to solve every communication scheme,  we designed the packet manager on two main things :
+Clearly, smooth execution of any communication pattern arising from the great number of possible data dependencies
+is key to a good performance of the Ambient approach. The resolution of communication patters also falls under the purview
+of the packet manager, as it manages both intra- and inter-group communication. Each MPI-group has a unique packet manager,
+identified by a singleton pattern. For the packet manager to be adaptable to any communication pattern, it consists of two parts:
 the delegate pattern and a finite state machine (FSM).
 
-To reach the best performance in HPC,  synchronization operations should be avoided  \cite{EXASCALE-2010}, because it is  a bottleneck.
-Thus, we privileged  MPI asynchronous communication into Ambient (\texttt{mpi\_isend} and \texttt{mpi\_irecv}). Nevertheless, if a message 
-is sent by a asynchronous instruction, an MPI test is necessary to check if the packet can be received.  As we refused synchronization instructions,
-we repeat the process until receiving the message by an infinite loop. Thus we integrated the delegate pattern and the FSM inside the loop.
-
+To reach the best performance in HPC, bottlenecks arising from synchronization operations should be avoided  \cite{EXASCALE-2010}.
+Thus, MPI asynchronous communication is privileged in Ambient (\texttt{mpi\_isend} and \texttt{mpi\_irecv}). Still, an asynchronously
+sent message  requires a MPI test to check whether the packet can be received.  As we avoid synchronization instructions,
+the receiving process repeatedly checks for the availability of the expected data in an infinite loop, until actually receiving the
+data. Both the delegate pattern and the FSM are placed inside this loop.
 
 \begin{table}[t] 
 	\begin{center}
@@ -523,40 +576,55 @@ we repeat the process until receiving the message by an infinite loop. Thus we i
 	    \psfrag{Open}{\tiny \hspace{-0.4 cm}  Opening}
              \includegraphics[scale=0.45]{FIGURES/FSM.eps} 
 	\end{center}
-          \caption{Schematic of the finite sate machine for the closing procedure. The states 1 and 2 correspond to open or close. The transitions are loose, closure or opening, they  depend of the situation of all packets (if they all reach theirs targets or not),
+          \caption{Schematic of the finite sate machine for the closing procedure. The states 1 and 2 correspond to open or close.
+           The transitions are loose, closure or opening, they  depend of the situation of all packets (if they all reach theirs targets or not),
                           the loose transition means the packet has not been received, thus we iterate one more time on the infinite loop.}  \label{FSM}
 \end{figure}
 
+The delegate pattern (from C\#) encapsulates a method, behaving similar to a function pointer in C++,  but allowing for safer execution.
+The delegate object inside the packet manager class contains a series of operations pil in a stack, such as forwarding requests, 
+data communication and communication of changes in MPI group layout (i.e. block distribution). As this delegate is inside the infinite loop, the packets
+will propagate process by process after every iterations (as shown on Fig. \ref{EXECUTION}). After the delegate execution is done, a finite state machine
+checks the states of the packets.  If all packets (data packet, layout packet, etc.) have been received, the FSM (Fig. \ref{FSM}) breaks the infinite loop.
 
 
-A delegate pattern (C\#) encapsulated methods,    It is similar to pointer of function under C++  but is allows a safer execution, we ported this pattern into Ambient.
-The packet manager class contains a delegate object. The delegate class contains a series of operations pill-up  in a stack. These operations consists of forwarding requests, 
- block of data,  layout of the MPI group (block distribution) and theirs updates. As this delegate is included, into an infinite loop, the packets
-will propagate process by process after every iterations (as shown on Fig. \ref{EXECUTION}). At the end of the delegate execution, a finite state machine checks the states of the packets. 
-If all packets received (data packet, layout packet, \ldots), the FSM (Fig. \ref{FSM}) breaks the infinite loop.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END PACKET MANAGER 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN ABSTRACT PARALLEL DATATYPES 
+\subsection{Abstract parallel datatypes} 
+
+To assure the largest scope to Ambient, we designed the framework on the data structures and not a specific problem. Thus, we enlarge the utilization of the framework
+for a various set of applied computing fields. The connection  between Ambient and the \guillemotleft outside world \guillemotright  is done by an intermediate class that assure the
+connectivity between a class and ambient.
+
+For linear algebra, we designed a matrix class, we contained usual data members for describing the object (number of raws, number of columns, \dots) and  methods for linear
+algebra operations (associated to logistics and computational kernel).This matrix class derived from an other who assured the connection to Ambient.
+When an instance of the matrix class is created, the inheritance mechanics will call constructors, methods in the mother class that  will 
+structure  the memory (tile  layout).
+
+Therefore, we can extend Ambient for new problems. Per example, in fluid mechanics the  two-dimensional finite difference method is very popular for solving the Navier-Stokes  differential equations.
+These equations describes the parameters of the \guillemotleft fluid particle \guillemotright. In this case Ambient will discretize the space and assure, as for a matrix,  the distribution
+ of the data inside the memory. Thus, a fluid particle class will contain enough information to assure a good discretization in the cartezian space (as the number of raws and columns inside the matrix class). 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END ABSTRACT PARALLEL DATATYPES 
 
 
-\subsection{Abstract parallel datatypes} % <- to change ? 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN VALIDATION
 \subsection{Validation}
-As  validation test, we code a new implementation of PDGEMM using our framework, and we compare to the classical version of PDGEMM of ScaLAPACK (MKL-Version).
-The algorithm of our implementation is based on the classical method using a columns order distribution for the matrices nevertheless, we give a description of the algorithm 
-into the table \ref{AMBIENTDGEMM} to show the modification due to Ambient. 
-
-
-
-The main advantages in our implementation is the size of coding, it is limited at 7 lines  of code using our framework.
+As a validation test, we code a new implementation of PDGEMM using the Ambient framework, and compare to the ScaLAPACK version of PDGEMM (MKL-Version).
+The algorithm of our implementation is based on the classical method [CITATION NEEDED] using a column order distribution for the matrices (c.f. table \ref{AMBIENTDGEMM} 
+for the modification due to Ambient). The main advantage in our implementation is the required amount of coding, which is limited to seven lines.
 
 ----------------------------------------------------------------------------------------------------- \\
-TO DO EXPLAIN THE ADVANTAGE AGAINST   SCALAPACK \\
+TO DO: EXPLAIN THE ADVANTAGE AGAINST   SCALAPACK \\
 IN TERM OF NETWORK, DATA EXCHANGE \\
 ----------------------------------------------------------------------------------------------------- \\
 
-The results will be compare with the ScaLAPACK implementation, in the section \ref{CUDAIDEOLOGYSECTION}, we announced a compatibility with the ScaLAPACK.
-The representation of the memory of ScaLAPACK and Ambient have significant differences, although matrixes are subdivided into small block, the layout into
-the memory is different. In Ambient all blocks named work group are independent even if they belong to the same process. In ScaLAPACK block will be regrouped
-by process to get a contiguous memory, the multiplication between blocks will be assure by using a correct offset inside the DEGMM call. Therefore, in ambient if we execute a solver from ScaLAPACK,
-one of the first operation to perform will be the rearrangement of the work groups of a same owner into a contiguous block. This operation add a certain overload.
+We compare the Ambient results with the ScaLAPACK implementation. As related in section \ref{CUDAIDEOLOGYSECTION}, Ambient is compatible with ScaLAPACK,
+despite the difference in memory layout. In Ambient, each work group is principally independent from any other, even if they belong to the same process, while in ScaLAPACK
+blocks are grouped by process s.t. a memory-contiguous object is obtained. Therefore, calling a ScaLAPACK solver from Ambient must entail rearrangement of appropriate
+work groups into a contiguous blocks, and thus a certain overhead. Due to Ambients flexibility in handling and grouping data, from a programming perspective this task
+is simple to accomplish however. 
 
  \begin{table}[t] 
 	\begin{center}
@@ -579,45 +647,60 @@ one of the first operation to perform will be the rearrangement of the work grou
 	\end{center}
 \end{table} 
 
+The validation test consists of multiplying matrices and saving the results into an output matrix, $C = A \times B$,
+where we further compare between the output of the Ambient computational kernel and the ScaLAPACK PDGEMM solver.
+Using the C++ language, the operations $\times$ and $=$ have been overloaded appropriately, now containing the "pushing" of the required logistics and computational kernels.
+Afterwards, results are compared element by element using the test  \cite{Dongarra:1990:SLB:77626.79170}  $\left \lvert C^S_{ij} - C^A_{ij} \right \rvert/\left \lvert  \epsilon C^S_{ij} \right \rvert  < n$,
+where  the precision factor $\epsilon$  is the \texttt{double} precision $10^{-16}$, indices  $S$ and $A$ represent the ScaLAPACK and the Ambient version, and $n$ is equal to 16 (decimal digits), the exponent of numerical precision. 
 
-
-The validation test consists of multiplying matrices and saving the results into an output matrix, as follow :
-\begin{eqnarray}
-C = A \times B
-\end{eqnarray}
-This test will be executed with the ambient computational kernel and the Scalapack PDGEMM solver inside Ambient (with the additional workload of rearrangement of the memory)
-As we are using C++ language, the operations $\times$ and $=$ have been overloaded correctly by pushing the good logistics and computational kernels.
-When the calculation is over for both methods results are compared element by element respecting the following test  \cite{Dongarra:1990:SLB:77626.79170} :
-
-\begin{eqnarray}
-\frac{\left \lvert C^S_{ij} - C^A_{ij} \right \rvert}{\left \lvert  \epsilon C^S_{ij} \right \rvert } < n,
-\end{eqnarray}
-
-Where  the precision factor $\epsilon$  is equal to the \texttt{double} precision $10^{-16}$, the indices  $S$ and $A$ represent the ScaLAPACK and the Ambient version,
-indices $i$ and $j$ are the entries of the matrices and $n$ is equal to 16 (decimal digits), the exponent of the numerical precision. 
-
-For the validation the size of work groups have been fixed to $128 \times 128$, and the matrices are squares from 256 up to 8196 (by step of 128 elements). The numbers of MPI-Process varied from 2 to 8.
+For the test, the size of work groups has been fixed to $128 \times 128$, and the square matrices $A$, $B$ range from 256 up to 8196 in size (step size of 128). The numbers of MPI-Process varied from 2 to 8.
 Matrices were filled up with pseudo random number generator  \texttt{drand48()}\footnote{This function returns 
 pseudo-random numbers non-negative, double-precision,  uniformly distributed over the interval $[0.0 , 1.0]$ using a linear congruential algorithm and 
-48-bit integer arithmetic. }  from \texttt{stdlib}.  The validation tests have always been verified successfully . The benchmarks are performed and evaluated in the next sections.
+48-bit integer arithmetic. }  from \texttt{stdlib}.  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END VALIDATION
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END DESCRIPTION OF THE FRAMEWORK
 
-
 \section{Results and discutions}
 \subsection{First benchmark case}
-The first benchmark consists of evaluating the performance of our parallel matrix multiplication. The initial condition are the same than the validation test. The benchmarks 
-were performed on a AMD-2427 2.2 Ghz ..........
+The first benchmark consists of evaluating the performance of our parallel matrix multiplication to the implementation into the ScaLAPACK-MKL. Both solvers are included as computational kernels
+in Ambient.  The initial condition are the same than the validation test. As the validation test, the matrices size vary from 256 up to 8196 by step of (128 elements). A 1-D cyclic  column distribution is
+used for both algorithm. As both kernels are included inside the framework additional workload should take into account and for the ScaLAPACK pDGEMM, we reorganize data to fit the ScaLAPACK
+representation. The benchmarks  were performed on AMD Opteron  Magny-Cours) CPUs at 2.1 GHz on the Swiss National Supercomputing Centre facilities. The performance is reported in [GFlops], it is simply
+calculated by :
+
+\begin{eqnarray}
+P  = \frac{2n^i}{t},
+\end{eqnarray}
+where $n$ is the size of the square-matrix,  $t$ the full time of calculation and $i$ is equal to 3 for the classical matrix multiplication algorithm.
 
 \begin{figure}
 \include{PLOT/SinglePDGEMM/SinglePGEMM}
+\caption{Performances of PDGEMM using scalapack }
 \end{figure}
 
 
 \subsection{Second benchmark case}
+This benchmarks consists to evaluate the performance of the scheduler, especially the repartition of several operation all over the cluster. 
+
+
+
+
 \subsection{Third benchmark case}
 
+
+
+
+
 \section{Conclusions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN THANK 
+\thanks{The authors are grateful to W. Sawyer and G. Fourestey from the CSCS staff and V. Rezzonico from EPFL.} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END THANK 
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN BIBLIO
 \bibliographystyle{abbrv}

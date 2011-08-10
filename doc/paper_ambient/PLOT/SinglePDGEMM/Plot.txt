@@ -10,8 +10,8 @@ set xtics 1024
 
 set key right top
 
-set ylabel "GFlops"
-set xlabel "Matrix size"
+set ylabel "$P$ [GFlops]"
+set xlabel "$n$"
 
 set style line 1 lt 1 lw 1
 set style line 2 lt 1 pt 8 ps 1
