@@ -15,7 +15,7 @@ set(MPIEXEC_PREFLAGS )
 set(MPIEXEC_POSTFLAGS )
 
 set(DEFAULT_BLAS_LAPACK manual)
-set(BLAS_LAPACK_MANUAL_LIBS -lmkl_scalapack_ilp64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core -lmkl_blacs_intelmpi_ilp64 -lpthread)
+set(BLAS_LAPACK_MANUAL_LIBS -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core -lpthread)
 #set(BLAS_LAPACK_MANUAL_LIBS -Wl,--start-group -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core -Wl,--end-group -lpthread)
 set(BLAS_LAPACK_MANUAL_LIBS_DIR /apps/eiger/Intel-Composer-XE-2011/mkl/lib/intel64)
 set(BLAS_LAPACK_MANUAL_INCLUDES /apps/eiger/Intel-Composer-XE-2011/mkl/include)
