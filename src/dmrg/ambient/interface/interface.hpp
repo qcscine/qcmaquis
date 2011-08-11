@@ -5,31 +5,8 @@ void memoryfence(){
     //scope.get_group()->spin_loop(); // just spin for now
 }
 
-template <typename FL, typename FC, class T0, class T1, class T2>
-void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2){
-    if(breakdown(arg0).state == PROXY) pin(arg0, arg2);
-    if(breakdown(arg1).state == PROXY) pin(arg1, arg2);
-    ambient::engine.push(new core::operation(l_kernel, &arg0, &arg1, &arg2),
-			 new core::operation(c_kernel, &arg0, &arg1, &arg2));
-}
-template <typename ST, typename FL, typename FC, class T0, class T1>
-ST& push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1){
-    void_pt* handle = new void_pt((ST*)NULL);
-    ST out(handle);
-    push(l_kernel, c_kernel, arg0, arg1, out);
-    return *(ST*)out.self; // trying to omit casting copy
-}
-#include "ambient/interface/push.pp.hpp" // all other variants of push
+#include "ambient/interface/push.pp.hpp" // all variants of push
 
-template <typename L, typename R>
-void pin(L& proxy_object, const R& real_object){
-    void_pt& proxy = breakdown(proxy_object);
-    void_pt& real  = breakdown(real_object);
-    ((livelong<R,REPLICA>*)(get_handle(real_object).get()))->use_count += 2; // avoiding false deallocation (which is memory leak)
-    proxy.profile   = real.profile;
-    proxy.set_dim(real.get_dim());
-    real.imitate(&proxy); // copy proxy settings to the actual profile
-}
 template<typename T>
 void assign(const T& ref, int i, int j)
 {

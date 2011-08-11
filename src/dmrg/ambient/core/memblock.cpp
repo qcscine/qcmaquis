@@ -7,11 +7,11 @@ namespace ambient {
         //free(this->header);
     }
 
-    memblock::memblock(p_profile** p, int i, int j)
+    memblock::memblock(p_profile* p, int i, int j)
     : profile(p), i(i), j(j), header(NULL), data(NULL), timestamp(0) {};
 
     p_profile* memblock::get_profile(){
-        return *this->profile;
+        return this->profile;
     }
 
     dim2 memblock::get_mem_dim(){
@@ -37,9 +37,8 @@ namespace ambient {
     }
 
     void* memblock::element(int i, int j){
-        p_profile* profile = *this->profile;
-        int lda = profile->get_mem_t_dim().y;
-        return &((char*)this->data)[(j*lda+i)*profile->t_size];
+        int lda = this->profile->get_mem_t_dim().y;
+        return &((char*)this->data)[(j*lda+i)*this->profile->t_size];
     }
 
     void* memblock::operator()(int i, int j){
@@ -47,12 +46,11 @@ namespace ambient {
     }
 
     void* memblock::item(int i, int j){
-        p_profile* profile = *this->profile;
-        i = i*profile->get_item_dim().y;
-        j = j*profile->get_item_dim().x;
+        i = i*this->profile->get_item_dim().y;
+        j = j*this->profile->get_item_dim().x;
     
-        int x_size = profile->get_mem_dim().x;
-        int y_size = profile->get_mem_dim().y;
+        int x_size = this->profile->get_mem_dim().x;
+        int y_size = this->profile->get_mem_dim().y;
         if(i >= y_size || j >= x_size) printf("Warning: accessing block item that is out of range (%d %d)\n", i, j);
         return (void*)((size_t)this->data + j*y_size + i); // the model of accessing actual data can be changed in future - will need to try out!
     }

@@ -171,6 +171,17 @@ void sqrt_diagonal_l(pinned p_dense_matrix<double>& a)
     block_2d_cycle_assign(a);
 }
 
+void gemm_inplace_l(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+{
+    int num = 1;//get_grid_dim(a).y;
+    scope_select(num+" from ambient as gemm where master is 0 and breakdown contains "+get_id(a));
+    if(!scope.involved()) return;
+    //gzout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; info(a); info(b);
+
+    block_2d_cycle_assign(a);
+    block_2d_cycle_assign(b);
+}
+
 void gemm_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
     int num = 1;//get_grid_dim(a).y;
@@ -214,25 +225,23 @@ void scalar_overlap_l(pinned const p_dense_matrix<double>& a, const p_dense_matr
     block_outright_assign(b);
 }
 
-void mem_bound_l(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  pinned p_dense_matrix<double>& c)
+void mem_bound_l(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
 {
-    scope_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ get_id(c));
+    scope_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
-    //gzout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
+    //gzout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; info(a); info(b);
 
     block_2d_cycle_assign(a);
     block_2d_cycle_assign(b);
-    block_2d_cycle_assign(c);
 }
 
-void scale_l(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
+void scale_l(pinned p_dense_matrix<double>& m, const double& t)
 {
     scope_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ get_id(m));
     if(!scope.involved()) return;
-    //gzout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; info(m); info(out);
+    //gzout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; info(m);
 
     block_2d_cycle_assign(m);
-    block_2d_cycle_assign(out);
 }
 /////////////////////
 // testing kernels // 
