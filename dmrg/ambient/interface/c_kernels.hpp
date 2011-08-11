@@ -24,6 +24,44 @@ void print_pinned_block(T& a)
     std::cout << " --------------------------- " << std::endl;
 }
 
+void gemm_inplace_c(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+{
+//  --- --- ---       --- --- ---       --- --- ---
+// | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
+//  --- --- ---       --- --- ---       --- --- ---
+// | 0 | 1 | 2 |  x  | 0 | 1 | 2 |  =  | 0 | 1 | 2 |
+//  --- --- ---       --- --- ---       --- --- ---
+// | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
+//  --- --- ---       --- --- ---       --- --- ---
+//
+// partial reduce?..
+/////////////////////////////////////////////////////////////////////////
+    assert(false);
+    int m   = get_mem_t_dim(a).y;
+    int n   = get_mem_t_dim(b).x;
+    int k   = get_mem_t_dim(b).y;
+    int lda = m;
+    int ldb = k;
+    int ldc = m;
+    double alpha = 1.0; 
+    double beta  = 1.0;
+// a(i,j) => a(z,j) x b(j,i)  where z : [0,m)
+// current block of matrix a:
+    int i = get_block_id(a).y;
+    int j = get_block_id(a).x;
+// taking (j,i) of b:
+    if(get_grid_dim(b).y > j) while(i < get_grid_dim(b).x){
+        double* bd = current(b)(j,i); // remote
+// multiplying with column of a:
+        for(int z = 0; z < get_grid_dim(a).y; z++){
+            double* ad = current(a)(z,j);
+            double* cd = reduced<'+'>(a)(z,i); // a(z,j) x b(j,i) => a(z,i)
+            dgemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+        }
+        i += get_grid_dim(a).y;
+    }
+}
+
 void gemm_c(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, p_dense_matrix<double>& c)
 {
 //  --- --- ---       --- --- ---       --- --- ---
@@ -423,30 +461,27 @@ void scalar_overlap_c(pinned const p_dense_matrix<double>& a, const p_dense_matr
     *overlap += summ;
 }
 
-void add_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
+void add_c(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
 {
-    double* ad = current(a)(get_block_id(c).y, get_block_id(c).x);
-    double* bd = current(b)(get_block_id(c).y, get_block_id(c).x);
-    double* cd = current(c)(get_block_id(c).y, get_block_id(c).x);
-    for(int i=0; i < get_mem_t_dim(c).x*get_mem_t_dim(c).y; i++)
-    cd[i] = ad[i] + bd[i];
+    double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
+    double* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
+    for(int i=0; i < get_mem_t_dim(a).x*get_mem_t_dim(a).y; i++)
+    ad[i] += bd[i];
 }
 
-void sub_c(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, pinned p_dense_matrix<double>& c)
+void sub_c(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
 {
-    double* ad = current(a)(get_block_id(c).y, get_block_id(c).x);
-    double* bd = current(b)(get_block_id(c).y, get_block_id(c).x);
-    double* cd = current(c)(get_block_id(c).y, get_block_id(c).x);
-    for(int i=0; i < get_mem_t_dim(c).x*get_mem_t_dim(c).y; i++)
-    cd[i] = ad[i] - bd[i];
+    double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
+    double* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
+    for(int i=0; i < get_mem_t_dim(a).x*get_mem_t_dim(a).y; i++)
+    ad[i] -= bd[i];
 }
 
-void scale_c(const p_dense_matrix<double>& m, const double& t, pinned p_dense_matrix<double>& out)
+void scale_c(pinned p_dense_matrix<double>& m, const double& t)
 {
-    double* md   = current(m)(get_block_id(out).y, get_block_id(out).x);
-    double* outd = current(out)(get_block_id(out).y, get_block_id(out).x);
-    for(int i=0; i < get_mem_t_dim(out).x*get_mem_t_dim(out).y; i++)
-    outd[i] = md[i]*t;
+    double* md   = current(m)(get_block_id(m).y, get_block_id(m).x);
+    for(int i=0; i < get_mem_t_dim(m).x*get_mem_t_dim(m).y; i++)
+    md[i] *= t;
 }
 
 void gemm_diagonal_lhs_c(const p_dense_matrix<double>& a_diag, pinned const p_dense_matrix<double>& b, p_dense_matrix<double>& c)

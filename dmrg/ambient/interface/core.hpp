@@ -13,7 +13,7 @@ class void_pt: public p_profile
 public: 
     template <typename T> void_pt(const T* ptr) : p_profile()
     { breakdown_model(this, ptr); }
-    ~void_pt(){ };  // use with caution
+    ~void_pt(){ printf("Deleting profile\n"); };  // use with caution
 private: 
     friend class T; // the container can delete its profile
     template<class T> friend inline void boost::checked_delete(T * x); // so as boost >_<
@@ -24,7 +24,6 @@ void null_deleter(T* object){ }
 
 template<typename T>
 void poke_deleter(T* object){
-//    printf("Poking... %d - %d ---- proxy: %d\n", object->use_count, ambient::rank(), object->breakdown()->id);
     if(--object->use_count) return;
     delete object;
 }
@@ -34,72 +33,34 @@ class livelong
 {
 public:
    ~livelong(){
-        if(this->is_loose_copied()){                  // I have a copy
-            if(this->is_loose_copy()){                // I am a copy
-                self->duplicant->self->original = self->original;
-                self->original->self->duplicant = self->duplicant;
-            }else{ 
-                if(!this->is_loose()){
-                    //this->bind(); // works
-                    resize_bind_model((T*)this, self->duplicant->num_rows(), 
-                                                self->duplicant->num_cols());
-                    self->meta.loose_copied = self->duplicant->self->meta.loose_copied;
-                    std::swap(this->handle, self->duplicant->handle);
-                    self->duplicant->self = this->self;
-                }else{ 
-                    self->duplicant->self->meta.loose_copy = false;
-                    self->duplicant->self->meta.loose      = true;
-                }
-            }              // I am original
-        }else if(this->is_loose_copy()){              // I am a copy
-            self->original->self->meta.loose_copied = false;
+        if(this->p == REPLICA){
+            //printf("Deleting profile!\n");
+            //delete this->profile; //->deallocate(); // deallocate profile
+            //printf("Deleted profile!\n");
         }
-        //if(this->p == REPLICA){
-        //    this->breakdown()->deallocate(); // deallocate profile
-        //}
     }
     
     void bind() const {
         assert(self != NULL);
         self->modifier = NULL;
-        if(this->is_loose_copy()){
-            while(this->is_loose_copy()) // due to else if
-            self->original->bind();
-        }else if(this->is_loose_copied()){
-            self->meta.loose_copied = false;
-            self->duplicant->self->meta.loose_copy = false; // replica
-            bool loose_copied = self->duplicant->self->meta.loose_copied;
-            self->duplicant->self->meta.loose_copied = false; // preventing false stacking
-            resize_bind_model(self->duplicant);
-            ambient::push(ambient::copy_l, ambient::copy_c, 
-                         *self->duplicant, *(const T*)this);
-            self->duplicant->self->meta.loose_copied = loose_copied;
-        }else if(this->is_loose()){
+        if(this->is_loose()){
             self->meta.loose = false;
             bind_model((T*)this);
         }
     }
 
-    T* snapshot(T* holder) const {
-        if(this->is_loose_copied()){ // somebody loose copied me
-            return self->duplicant->snapshot(holder);
-        }
-        self->duplicant = holder; 
-        self->meta.loose_copied = true;
-        T* snapshot = (T*)(new typename T::replica(*self));
-        snapshot->original = (T*)this;
-        return snapshot;
+    T* snapshot() const {
+        return (T*)(new typename T::replica(*self));
     }
 
     livelong(const livelong& o){ // copy constructor
         this->init();
         if(P != REPLICA){
-            if(P == ANY) handle.reset( self = o.snapshot((T*)this) );
-            else if(P == MANUAL) handle.reset( self = o.snapshot((T*)this), null_deleter<T> );
-            else if(P == WEAK) self = o.snapshot((T*)this);
-            self->meta.loose = false;         // avoiding binding
+            if(P == ANY) handle.reset( self = o.snapshot() );
+            else if(P == MANUAL) handle.reset( self = o.snapshot(), null_deleter<T> );
+            else if(P == WEAK) self = o.snapshot();
             copy_bind_model((T*)this);
-            self->meta.loose_copy = true;     // avoiding binding
+            ambient::push(ambient::copy_l, ambient::copy_c, *(T*)this, *(const T*)&o);
         }else if(P == REPLICA){
             self = (T*)this;
         }
@@ -109,8 +70,6 @@ public:
         this->p                 = P;
         this->use_count         = 0;
         this->meta.loose        = true;
-        this->meta.loose_copy   = false;
-        this->meta.loose_copied = false;
         this->self              = NULL;
         this->modifier          = NULL;
     }
@@ -183,30 +142,17 @@ public:
         this->unlatch_meta();
     }
     bool is_loose()        const { return  self->meta.loose;            } 
-    bool is_loose_copied() const { return  self->meta.loose_copied;     }
-    bool is_loose_copy()   const { return  self->meta.loose_copy;       }
-    bool is_abstract()     const { return (this->is_loose()            || 
-                                           this->is_loose_copy());      }
+    bool is_abstract()     const { return  this->is_loose();            }
+
     void latch_meta(){ 
         self->meta_latch        = self->meta;
         self->meta.loose        = false;
-        self->meta.loose_copy   = false;
-        self->meta.loose_copied = false;
     }
     void unlatch_meta(){
         self->meta = self->meta_latch;
     }
-    void decouple_copy(){
-        if(this->is_loose_copy()){
-            self->meta.loose_copy = false;
-            self->original->self->meta.loose_copied = false;
-            self->meta.loose = true;
-        }
-    }
     struct loose_state{
         bool loose;
-        bool loose_copy;
-        bool loose_copied;
     } meta, meta_latch;
 
 public:
@@ -219,9 +165,6 @@ public:
     void_pt* profile;
     policy p; // the same as P (avoiding casting collisions)
     boost::shared_ptr<T> handle;
-    mutable T* duplicant;
-private:
-    T* original;
 };
 
 template<typename T>
@@ -248,7 +191,6 @@ boost::shared_ptr< p_dense_matrix<T> > get_handle(const p_dense_matrix<T,P>& a){
 template <typename T> 
 void_pt& breakdown(p_dense_matrix<T>& obj){
     void_pt** profile_ptr = const_cast<void_pt**>(&obj.breakdown());
-    *profile_ptr = (void_pt*)(*profile_ptr)->dereference();
     (*profile_ptr)->inconstant();
     return **profile_ptr;
 }
@@ -256,7 +198,6 @@ void_pt& breakdown(p_dense_matrix<T>& obj){
 template <typename T> 
 void_pt& breakdown(const p_dense_matrix<T>& obj){
     void_pt** profile_ptr = const_cast<void_pt**>(&obj.breakdown());
-    *profile_ptr = (void_pt*)(*profile_ptr)->dereference();
     (*profile_ptr)->constant();
     return **profile_ptr;
 }
@@ -276,8 +217,7 @@ void plus_reduce(memblock* grp, void* update){
 template <char R, typename T>
 void_pt& reduced(T& obj){
     if(breakdown(obj).associated_proxy == NULL){
-        if(R == '+') breakdown(obj).associate_proxy(new void_pt((T*)NULL), plus_reduce<T>);
-        breakdown_proxy_model((void_pt*)breakdown(obj).associated_proxy, &(breakdown(obj)), &obj);
+        if(R == '+') breakdown(obj).associate_proxy(plus_reduce<T>);
     }
     return *((void_pt*)breakdown(obj).associated_proxy);
 }

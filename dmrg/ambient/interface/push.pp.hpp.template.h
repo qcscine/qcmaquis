@@ -15,8 +15,13 @@ void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1){
     ambient::engine.push(new core::operation(l_kernel, &arg0, &arg1), 
                          new core::operation(c_kernel, &arg0, &arg1)); 
 }
+template <typename FL, typename FC, class T0, class T1, class T2>
+void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2){
+    ambient::engine.push(new core::operation(l_kernel, &arg0, &arg1, &arg2), 
+                         new core::operation(c_kernel, &arg0, &arg1, &arg2)); 
+}
 
-#define BOOST_PP_ITERATION_LIMITS (4, ARGS_MAX_LEN) // 3 is special case
+#define BOOST_PP_ITERATION_LIMITS (4, ARGS_MAX_LEN)
 #define BOOST_PP_FILENAME_1 "ambient/interface/push.pp.hpp.template.h"
 #include BOOST_PP_ITERATE()
 #endif

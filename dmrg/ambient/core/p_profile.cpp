@@ -28,7 +28,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : dim(NULL), reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), default_block(NULL), 
-      profile(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
+      reference(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->mem_dim  = engine.get_mem_dim();
         this->item_dim = engine.get_item_dim();
@@ -36,44 +36,8 @@ namespace ambient {
         this->gpu_dim  = engine.get_gpu_dim();
     };
 
-    p_profile* p_profile::dereference(){
-        if(!this->valid) assert(false);//printf("Error: attempting to use invalid profile (object was deleted)\n");
-        while((this->profile = this->profile->profile) != this->profile->profile);
-        return this->profile; // todo - deallocate proxy objects
-    }
-
-    void p_profile::operator=(const p_profile& profile){
-        // todo I guess or update imitate function
-        assert(false);
-        this->profile      = const_cast<p_profile*>(&profile);
-        this->state        = PROXY;                   // to handle properly
-        this->group_id     = profile.group_id;
-        this->id           = profile.id;
-        this->scope        = profile.scope;
-        this->layout       = profile.layout;         // pointer
-        this->dim          = profile.dim;
-        this->t_size       = profile.t_size; 
-        this->packet_type  = profile.packet_type;    // pointer
-        this->work_dim     = profile.get_work_dim();
-        this->mem_dim      = profile.get_mem_dim();
-        this->item_dim     = profile.get_item_dim(); 
-        this->gpu_dim      = profile.get_gpu_dim();  
-        //this->skeleton; 
-
-        //this->xscope       = profile.xscope;       // not needed
-        //this->data         = profile.data;         // not needed
-        //this->master_relay = profile.master_relay; // not needed ?
-        //this->timestamp    = profile.timestamp;    // not needed
-        //this->solid_lda    = profile.solid_lda;    // not needed
-        //this->state        = profile.state;        // not needed ?
-        //this->reserved_x   = profile.reserved_x;   // not needed
-        //this->reserved_y   = profile.reserved_y;   // not needed
-    }
-
-    p_profile* p_profile::associate_proxy(p_profile* proxy, void(*R)(memblock*,void*)){
-        this->associated_proxy = proxy;
-        this->associated_proxy->reduce = R;
-        return this->associated_proxy;
+    p_profile::~p_profile(){
+// do nothing here...
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
@@ -133,26 +97,35 @@ namespace ambient {
         return *instance >> mem_dim;
     }
 
-    bool p_profile::is_proxy(){
+    bool p_profile::is_associated_proxy(){
         return (this->state == PROXY);
     }
 
+    void p_profile::associate_proxy(void(*R)(memblock*,void*)){
+        this->associated_proxy = new p_profile();
+        this->associated_proxy->reduce    = R;
+        this->associated_proxy->reference = this;
+        this->associated_proxy->dim       = this->dim;
+        this->associated_proxy->mem_dim   = this->mem_dim;
+        this->associated_proxy->item_dim  = this->item_dim;
+        this->associated_proxy->t_size    = this->t_size; 
+        this->associated_proxy->state     = PROXY;
+        this->associated_proxy->reblock();
+    }
+
     void p_profile::reblock(){
-        if(!this->is_proxy()){
-            int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
-            int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
-            if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
-            for(int i = 0; i < y_size; i++){
-                if(i >= this->reserved_y) skeleton.push_back(std::vector<memblock*>());
-                for(int j = 0; j < x_size; j++){
-                    if(j >= this->reserved_x || i >= this->reserved_y) 
-                        skeleton[i].push_back(new memblock(&profile, i, j));
-                }
+        int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
+        int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
+        if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
+        for(int i = 0; i < y_size; i++){
+            if(i >= this->reserved_y) skeleton.push_back(std::vector<memblock*>());
+            for(int j = 0; j < x_size; j++){
+                if(j >= this->reserved_x || i >= this->reserved_y) 
+                    skeleton[i].push_back(new memblock(this->reference, i, j));
             }
-            if(x_size > this->reserved_x) this->reserved_x = x_size;
-            if(y_size > this->reserved_y) this->reserved_y = y_size;
-        }else{
         }
+        if(x_size > this->reserved_x) this->reserved_x = x_size;
+        if(y_size > this->reserved_y) this->reserved_y = y_size;
     }
 
     size_t p_profile::get_block_lda(){
@@ -265,7 +238,7 @@ namespace ambient {
         }
     }
     void p_profile::postprocess(int i, int j){
-        // can check if(this->block(i,j)->header != NULL) and reuse memory (reservation in reblock function) 
+        // can check if(this->block(i,j)->header != NULL) and reuse memory (reservation in reblck function) 
         this->block(i,j)->set_memory(alloc_t(*this->packet_type));
         this->set_default_block(i, j);
         this->init->invoke();
@@ -293,7 +266,7 @@ namespace ambient {
     }
 
     memblock& p_profile::operator()(int i, int j){
-        if(this->is_proxy()){ // on-touch init for proxy
+        if(this->is_associated_proxy()){ // on-touch init for proxy
             if(!this->block(i,j)->available()){
                 this->block(i,j)->set_memory(alloc_t(*this->packet_type));
                 memset(this->block(i,j)->data,0,this->get_mem_t_dim().x*this->get_mem_t_dim().y*this->t_size);          
@@ -317,15 +290,6 @@ namespace ambient {
         
         if(i >= y_size || j >= x_size){ printf("Warning: accessing block that is out of range (%d %d)\n", i, j); assert(false); }
         return this->skeleton[i][j];
-    }
-
-    void p_profile::imitate(p_profile* profile){
-        this->set_init     (profile->get_init     ());
-        this->set_gpu_dim  (profile->get_gpu_dim  ());
-        this->set_work_dim (profile->get_work_dim ());
-        this->set_mem_dim  (profile->get_mem_dim  ());
-        this->set_item_dim (profile->get_item_dim ());
-        this->reblock();
     }
 
     size_t p_profile::get_bound() const {
@@ -392,11 +356,5 @@ namespace ambient {
     }
     void p_profile::set_item_dim(dim2 dim){
         this->item_dim = dim;
-    }
-    void p_profile::invalidate(){
-        if(!this->is_proxy()) this->valid = false;
-    }
-    bool p_profile::is_valid(){
-        return this->valid;
     }
 }

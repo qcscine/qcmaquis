@@ -4,15 +4,9 @@
 template <typename T, policy P>  
 void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
 {
-    if(ptr == NULL){
-        profile->state  = PROXY;
-        profile->dim.x  = 0;
-        profile->dim.y  = 0;
-    }else{
-        profile->t_size = sizeof(T);
-        profile->dim.x  = ptr->num_cols();
-        profile->dim.y  = ptr->num_rows();
-    }
+    profile->t_size = sizeof(T);
+    profile->dim.x  = ptr->num_cols();
+    profile->dim.y  = ptr->num_rows();
 }
 
 template <typename T, policy P>
@@ -38,22 +32,6 @@ void resize_bind_model(p_dense_matrix<T,P>* ptr, size_t rows, size_t cols)
 {
     ptr->latch_meta(); // for unloose objects only!
     ptr->resize(rows, cols);
-}
-
-template <typename T, policy P>
-void breakdown_proxy_model(void_pt* proxy, void_pt* profile, const p_dense_matrix<T,P>* ptr)
-{
-    proxy->profile      = profile;
-    proxy->group_id     = profile->group_id;
-    proxy->id           = profile->id;
-    proxy->scope        = profile->scope;
-    proxy->layout       = profile->layout;         // pointer
-    proxy->dim          = profile->dim;
-    proxy->t_size       = profile->t_size; 
-    proxy->packet_type  = profile->packet_type;    // pointer
-    proxy->state        = GENERIC;                 // spike for now
-    proxy->imitate(profile); 
-    proxy->state        = PROXY;
 }
 
 template <typename T>

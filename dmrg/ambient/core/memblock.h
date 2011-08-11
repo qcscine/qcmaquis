@@ -11,12 +11,12 @@ namespace ambient {
     class memblock {
     public:
        ~memblock();
-        memblock(p_profile** p, int i, int j = 0);
+        memblock(p_profile* p, int i, int j = 0);
         void set_memory(void* memory);
         void* element(int i, int j = 0);
         void* operator()(int i, int j = 0);
         void* item(int i, int j = 0);
-        p_profile** profile;
+        p_profile* profile;
         p_profile* get_profile();
         dim2 get_mem_dim();
         dim2 get_mem_t_dim();

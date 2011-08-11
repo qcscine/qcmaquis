@@ -17,6 +17,7 @@ namespace ambient {
     protected:
         p_profile();
     public:
+       ~p_profile();
 // state description knobs /////////////////////
         p_state             state;            //
         bool                consted;          //
@@ -34,7 +35,7 @@ namespace ambient {
 
 // data driven fields //////////////////////////
         size_t              t_size;           //
-        p_profile*          profile;          // pointer to this profile (this on init - can be changed in proxy objects)
+        p_profile*          reference;        // pointer to this profile (this on init - can be changed in proxy objects)
         core::layout_table* layout;           // spatial layout of the profile
         std::vector< std::vector<memblock*> > //
                             skeleton;         //
@@ -64,23 +65,18 @@ namespace ambient {
         dim2                gpu_dim;          // work-item size of gpgpu smp workload fractions
 ////////////////////////////////////////////////
     public:
-        void                operator = (const p_profile& profile);
         p_profile&          operator >>(dim2 mem_dim);
         p_profile&          operator , (dim2 dim);
 
         void                constant();
         void                inconstant();
-        bool                is_proxy();
-        bool                is_valid();
-        void                invalidate();
-        p_profile*          dereference(); // finds out if the profile pointer is up to date
+        bool                is_associated_proxy();
         void                deallocate();
 
         void                set_init(core::operation* op);
         core::operation*    get_init() const;
-        p_profile*          associate_proxy(p_profile* proxy, void(*R)(memblock*,void*));
+        void                associate_proxy(void(*R)(memblock*,void*));
         void                reblock();
-        void                imitate(p_profile* profile);
         void                solidify(std::vector<core::layout_table::entry> entries);
         void                disperse(std::vector<core::layout_table::entry> entries);
 
