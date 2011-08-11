@@ -95,8 +95,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN WORKFLOW
 \section{Ambient workflow}
 
-In this section we describe the workflow of Ambient applications execution in general terms.
-As the Ambient approach derives from CUDA - first we will look at the simplified workflow of CUDA and Ambient-application's execution:
+[REPHRASED THIS SECTION. I THINK WE SHOULD EXPAND IT A LITTLE BIT, EXPLAINING
+FOR EXAMPLE WHERE IN THE LATER SECTIONS THE VARIOUS ELEMENTS WILL BE EXPLAINED
+(LIKE I DID WITH "PINNED" AND "PLAYOUT", AND GENERALLY EXPLAIN A LITTLE MORE WHAT THE
+BROAD FEATURES AND CAPABILITIES OF AMBIENT ARE (E.G. BOOTSTRAP PARALLELIZATION OF EXISTING
+SERIAL CODE,]
+Before presenting the various elements of Ambient in more detail, we want to describe the
+workflow of execution for an Ambient-parallelized application in general terms. 
+As the Ambient approach derives from CUDA, we consider a simplified workflow of CUDA
+ and Ambient-application's execution side-by-side:
 
 \begin{table}[h]  
 	\begin{center}
@@ -105,9 +112,9 @@ As the Ambient approach derives from CUDA - first we will look at the simplified
                              \multicolumn{2}{c}{CUDA} &  \multicolumn{2}{c}{Ambient} \\
                              \hline
                              \multicolumn{4}{c}{  $\diamond$ Serial code}  \\
-                            $\diamond$ & Kernel encountered                                  &  $\diamond$ & Kernel-pair (logistic/computa- \\
+                            $\diamond$ & Kernel encountered                                  &  $\diamond$ & Kernel-pair (logistics/computa- \\
                                & & & tional) encountered \\
-                               $\diamond$ &Thread block grid construction&     $\diamond$  & Kernel-pair stacked for later \\
+                               $\diamond$ &Thread block grid construction&     $\diamond$  & Kernel-pair stacked for later  \\
                                 &(gridDim, blockDim)  &  &  execution  \\ 
                                $\diamond$ &  Thread blocks mapping onto de-  &  &  \\
                                 & vice (GPU SMPs) &  & \\
@@ -119,34 +126,39 @@ As the Ambient approach derives from CUDA - first we will look at the simplified
                                & & & execution of kernels \\
                                   \hline
         		 \end{tabular}  
-              \caption{Workflow analogy between CUDA and Ambient-application's execution} \label{WORKFLOW}
+              \caption{Workflow analogy between the execution of a CUDA and a Ambient application} \label{WORKFLOW}
 	\end{center}
 \end{table}
 
-When the Ambient's flush signal indicates the execution of kernels. It is performed by the followings sequences:
+As soon as Ambient encounters the flush signal (called \texttt{playout()}, see section [APPROPRIATE CITATION HERE]), kernel
+execution is initiated, along the following sequence:
 
 \begin{itemize}
-\item Execution of logistic kernel: allocation of device (MPI group) according to the request. 
-\item Execution of logistic kernel: argument's workgroups (tiles) marking with workDim.
-\item Execution of logistic kernel: selected (pinned) argument's workgroups mapping onto device (MPI processes).
-\item Transfer of workgroups to the target processes.
+\item Execution of logistics kernel: allocation of device (MPI group) according to specifics of request. 
+\item Execution of logistics kernel: argument's work groups (tiles) marking with workDim. [DON'T KNOW WHAT IS MEANT HERE, CANNOT REFORMULATE]
+\item Execution of logistics kernel: selected argument's workgroups  (see keyword \texttt{pinned}, section [APPROPRIATE CITATION HERE])
+mapping onto device (MPI processes).
+\item Transfer of work groups to the target processes.
 \item Execution of computational kernel: MPI process executes kernel thread for work items of assigned work groups.
 \end{itemize}
 
-The main reason of the workflow difference comparing to CUDA is the scale of available resources. 
-As we can use unlimited amount of resources for a kernel's launch - the data becomes the key factor around which we evolve Ambient's design.
-In particular, in order to control the data movements and resource usage we introduce the logistic kernel and making kernel calls non-blocking. 
+The main reason for the difference in workflow compared to CUDA is the scale of available resources.  As practically unlimited resources
+are available for a kernel's launch, the data becomes the key factor around which we evolve Ambient's design.
+In particular, in order to control the data movements and resource usage, we introduce the logistics kernel and make kernel calls non-blocking. 
 
-In general, Ambient application operates with abstract types that already have tiled memory structure. Upon the kernel operation 
-call the Ambient framework stacks the operation for later execution and proceeds to the rest of the code.
+In general, Ambient applications operate with abstract types that already have tiled memory structure. Upon encountering a kernel operation 
+call, the Ambient framework stacks it for later execution, and proceeds in this way throughout the code. This ideology of design
+allows a high degree of code re-usage from the original serial code, while at the same time providing both flexible and automatized
+tools to manage resources and thus  tune performance.
 
-When the framework encounters the signal to flush the stack of kernels - the actual execution starts. Framework goes through accumulated stack 
-and executes independent operations at once. When executing one operation first the engine goes through the logistic kernel and allocates specified
- amount of resources for this operation. Next the engine marks argument's tiling using specified parameters and maps resulting workgroups onto allocated processes in a user specified way. 
-Now engine can freely transfer the tiled data from previous owners to the allocated processes changing the tile size if needed. After the transfer is complete the computational kernel kicks in. 
-The computational kernel behaves almost the same way as in CUDA and workgroups are simply being mapped onto threads of MPI process as if it were GPU SMP (the main difference here lies in user being in control of particular process workgroup's ownership).
+When the framework encounters the signal to flush the stack of kernels - the actual execution starts, going through the accumulated stack of operations 
+and executes the independent ones at once. When executing one operation, the engine invokes first the associated logistics kernel and allocates a specified
+amount of resources for this operation. Next, the engine marks argument's tiling using specified parameters and maps resulting work groups onto allocated
+processes in a user specified way. Now, the engine can freely transfer the tiled data from previous owners to the allocated processes changing
+the tile size if needed. After the transfer is complete the computational kernel kicks in, behaving in almost the same way as in CUDA, with work groups
+simply being mapped onto threads of MPI process as if they were GPU SMP (the main difference being that the user is in control as to which process owns which workgroup).
 
-In further sections we are going to review mechanisms that we have used here in more details.
+In the following sections, we expand on the role and functionalities of the different elements listed here.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END WORKFLOW
 
@@ -657,11 +669,11 @@ The validation test consists of multiplying matrices and saving the results into
 where we further compare between the output of the Ambient computational kernel and the ScaLAPACK PDGEMM solver.
 Using the C++ language, the operations $\times$ and $=$ have been overloaded appropriately, now containing the "pushing" of the required logistics and computational kernels.
 Afterwards, results are compared element by element using the test  \cite{Dongarra:1990:SLB:77626.79170}  $\left \lvert C^S_{ij} - C^A_{ij} \right \rvert/\left \lvert  \epsilon C^S_{ij} \right \rvert  < n$,
-where  the precision factor $\epsilon$  is the \texttt{double} precision $10^{-16}$, indices  $S$ and $A$ represent the ScaLAPACK and the Ambient version, and $n$ is equal to 16 (decimal digits), the exponent of numerical precision. 
+where  the precision factor $\epsilon$  is the \texttt{double} precision $10^{-16}$, indices  $S$ and $A$ represent the ScaLAPACK and the Ambient version, and $n=16$, the exponent of numerical precision. 
 
 For the test, the size of work groups has been fixed to $128 \times 128$, and the square matrices $A$, $B$ range from 256 up to 8196 in size (step size of 128). The numbers of MPI-Process varied from 2 to 8.
-Matrices were filled up with pseudo random number generator  \texttt{drand48()}\footnote{This function returns 
-pseudo-random numbers non-negative, double-precision,  uniformly distributed over the interval $[0.0 , 1.0]$ using a linear congruential algorithm and 
+Matrices were filled upusing a pseudo random number generator  \texttt{drand48()}\footnote{This function returns 
+pseudo-random numbers non-negative, double-precision,  uniformly distributed over the interval $[0, 1]$ using a linear congruential algorithm and 
 48-bit integer arithmetic. }  from \texttt{stdlib}.  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END VALIDATION
 
@@ -669,9 +681,10 @@ pseudo-random numbers non-negative, double-precision,  uniformly distributed ove
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END DESCRIPTION OF THE FRAMEWORK
 
-\section{Results and discutions}
+\section{Results and discussions}
 \subsection{First benchmark case}
-The first benchmark consists of evaluating the performance of our parallel matrix multiplication to the implementation into the ScaLAPACK-MKL. Both solvers are included as computational kernels
+[STARTED REWRITING THIS; BUT NOT FINISHED]
+The first benchmark consists of evaluating the performance of our parallel matrix multiplication relative to the iScaLAPACK-MKL mplementation. Both solvers are included as computational kernels
 in Ambient.  The initial condition are the same than the validation test. As the validation test, the matrices size vary from 256 up to 8196 by step of (128 elements). A 1-D cyclic  column distribution is
 used for both algorithm. As both kernels are included inside the framework additional workload should take into account and for the ScaLAPACK pDGEMM, we reorganize data to fit the ScaLAPACK
 representation. The benchmarks  were performed on AMD Opteron  Magny-Cours) CPUs at 2.1 GHz on the Swiss National Supercomputing Centre facilities. The performance is reported in [GFlops], it is simply
