@@ -62,9 +62,6 @@ namespace blas {
         return this->data_;                          
     }
 
-
-// free-functions (possibly should return copies or proxy-objects) <- to check
-
     template<typename T>
     typename p_diagonal_matrix<T>::size_type num_rows(const p_diagonal_matrix<T>& m)
     {

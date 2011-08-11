@@ -13,7 +13,7 @@ namespace blas
 {
     template<typename T>
     p_dense_matrix<T> transpose(const p_dense_matrix<T>& m)
-    {   // TODO: perhaps this could return a proxy object
+    {   // TODO: perhaps this could return a prox object
         //printf("transpose: %d %d\n", m.num_rows(), m.num_cols());
         p_dense_matrix<T> mt(num_cols(m), num_rows(m));
         ambient::push(ambient::transpose_l, ambient::transpose_c, mt, m);
@@ -136,9 +136,8 @@ namespace blas
     template<typename T, class G>
     void generate(p_dense_matrix<T>& a, G g)
     {
-        assert(a.is_abstract());
+        //assert(a.is_abstract());
         a.set_init(ambient::random_i<T>);
-        a.decouple_copy();
         //a.touch(); // to purge (redunant)
     }
  
