@@ -272,7 +272,8 @@ __global__ void reduction_polynome(T const* A, T * B,  int vli_size, int max_ord
     int size_poly = vli_size*max_order*max_order;
     
     for(unsigned int i=0 ; i < size_vector ; i++)
-            addition_classic_kernel_gpu(&B[0],&A[i*size_poly], size_poly);   
+            addition_classic_kernel_gpu(&B[0],&A[i*size_poly], size_poly);  
+            
 }
     
 
@@ -331,8 +332,8 @@ void poly_mono_multiply_gpu(TYPE const* a, TYPE const*b, TYPE* c, int vli_size, 
 } \
 void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order, int vector_size) \
 { \
-    int threadsPerBlock = 512; \
-    int blocksPerGrid = vector_size/512; \
+    int threadsPerBlock = 16; \
+    int blocksPerGrid = vector_size/16; \
     inner_prod_vector  <<< blocksPerGrid,threadsPerBlock  >>>(A, B, C,vli_size, max_order,vector_size);  \
 } \
 void vector_reduction_gpu(TYPE const* A, TYPE * B,  int vli_size, int max_order, int vector_size) \

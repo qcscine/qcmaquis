@@ -20,14 +20,15 @@ using vli::monomial;
 using vli::test::fill_random;
 
 typedef boost::mpl::list<
-        vli_cpu<unsigned int,8>,
+        vli_cpu<unsigned int,8>
+        /*
         vli_cpu<unsigned int,16>,
         vli_cpu<unsigned long int,8>,
         vli_cpu<unsigned long int,16>,
         vli_gpu<unsigned int,8>,
         vli_gpu<unsigned int,16>,
         vli_gpu<unsigned long int,8>,
-        vli_gpu<unsigned long int,16>
+        vli_gpu<unsigned long int,16> */
         > vli_types;
 
 

@@ -115,7 +115,7 @@ namespace vli
         /*
         vli_cpu& operator *= (vli_cpu const& vli)
         {
-            using vli::multiplies_assign;
+            using vli::multiplies_assign; 
             bool result_is_negative = static_cast<bool>((this->data_[Size-1] ^ vli[Size-1]) >> data_bits<BaseInt>::value);
             if(result_is_negative)// test if 
             {
