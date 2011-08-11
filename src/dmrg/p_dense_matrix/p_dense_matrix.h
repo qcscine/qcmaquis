@@ -27,7 +27,6 @@ namespace blas {
 
        ~p_dense_matrix();
         p_dense_matrix();
-        p_dense_matrix(ambient::void_pt* p);              // proxy object construction
         p_dense_matrix(size_type rows, size_type cols, T init_v);
         p_dense_matrix(p_dense_matrix const& m);
   
@@ -57,6 +56,7 @@ namespace blas {
         inline const value_type&                          operator()(size_type i, size_type j) const;
         p_dense_matrix<T,P>&                              operator += (const p_dense_matrix& rhs); 
         p_dense_matrix<T,P>&                              operator -= (const p_dense_matrix& rhs);
+        p_dense_matrix<T,P>&                              operator *= (const p_dense_matrix& rhs);
         template <typename T2> p_dense_matrix<T,P>&       operator *= (const T2& t);
         template <typename T2> p_dense_matrix<T,P>&       operator /= (const T2& t);
 
