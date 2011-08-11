@@ -27,7 +27,7 @@ template <>
 struct data_bits<unsigned int>
 {
     BOOST_STATIC_ASSERT( sizeof(unsigned int) == 4 );
-    enum { value= 30 };
+    enum { value = 30 };
 };
 
 

@@ -91,25 +91,35 @@ int main (int argc, char * const argv[])
     vli_cpu<TYPE, 4> a;
     vli_cpu<TYPE, 4> b;
     vli_cpu<TYPE, 8> c;
-
+    
     a[0]=vli::data_mask<TYPE>::value;
+/*
     a[1]=vli::data_mask<TYPE>::value;
     a[2]=vli::data_mask<TYPE>::value;
     a[3]=vli::data_mask<TYPE>::value;
-
+*/
     b[0]=vli::data_mask<TYPE>::value;
     b[1]=vli::data_mask<TYPE>::value;
     b[2]=vli::data_mask<TYPE>::value;
-//  b[3]=vli::data_mask<TYPE>::value-1000000;
+    b[3]=vli::data_mask<TYPE>::value;
 
+    std::cout << a << std::endl;    
+    a.negate();
+    std::cout << a << std::endl;
+    
+    mpz_class cgmp(c.get_str());    
+
+    
     c = a*b;  
+    
+    
+    
     
     mpz_class agmp(a.get_str());    
     mpz_class bgmp(b.get_str());    
-    mpz_class cgmp(c.get_str());    
 
     cgmp = agmp*bgmp;
-    
+
     std::cout << c    << std::endl;
     std::cout << cgmp << std::endl;
     

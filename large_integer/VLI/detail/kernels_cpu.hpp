@@ -98,37 +98,23 @@ namespace vli
 	void multiplication_classic_cpu(BaseInt * res, BaseInt const* x, BaseInt const* y)	
 	{
 		BaseInt r[2] = {0,0};	//for local block calculation
+        std::size_t m(0);
         
 		for(std::size_t i = 0 ; i < Size; ++i)
 		{
 			for(std::size_t k = 0 ; k < Size; ++k) // loop on numbers for multiplication the classical multiplication
 			{	
-                std::size_t m = k + i;
+                m = k + i;
 				multiplication_block_cpu( &x[i], &y[k], &(r[0]));
 				addition_kernel_cpu(&res[m],&r[0]);
 				addition_kernel_cpu(&res[m+1],&r[1]);
 			}
 		}
-/*
-        std::size_t i = Size-1;
-        
-        for(std::size_t k = 0 ; k < Size-1; ++k)
-        {	
-            std::size_t m = k + i;
-            multiplication_block_cpu( &x[i], &y[k], &(r[0]));
-            addition_kernel_cpu(&res[m],&r[0]);
-            addition_kernel_cpu(&res[m+1],&r[1]);
-        }
-        
-        std::size_t k = Size-1;
-        std::size_t m = k + i;
-        multiplication_block_cpu( &x[i], &y[k], &(r[0]));
-        std::cout << r[0] << " " << r[1] << std::endl;
-        addition_kernel_cpu(&res[m],&r[0]);
-        res[m+1] += r[1];
-        res[m+1] &= data_mask<BaseInt>::value; */
     }
-
+    
+    /** 
+     This multiplication is done from right to left
+    */
     template <typename BaseInt, std::size_t Size>
 	void multiplication_classic_cpu_number(BaseInt* x, BaseInt a)	
 	{      
