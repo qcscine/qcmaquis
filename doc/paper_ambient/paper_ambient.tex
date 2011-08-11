@@ -12,12 +12,12 @@
 \usepackage{aeguill}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END PACKAGE
-\graphicspath{{PLOT/SinglePDGEMM/}}
+\graphicspath{{PLOT/SinglePDGEMM/}{PLOT/VectorPDGEMM/}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN AUTHORS AND INSTITUTIONS
 \title{AMBIENT; an  execution and an MPI-CUDA scheduler  }
 \author[A. Kosenkov, T. Ewart, B. Bauerb, A. Kantian,  M. Troyer, T. Giarmarchy]{Alexandr Kosenkov, Timoth\'ee Ewart, Bela Bauer, Adrian Kantian, Matthias Troyer and Thierry Giamarchy }
-%\author[UNIGE, ETHZ, CSCS]{UNIGE, ETHZ, CSCS}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN AUTHORS AND INSTITUTIONS
 
 
@@ -109,12 +109,14 @@ As the Ambient approach derives from CUDA - first we will look at the simplified
                                & & & tional) encountered \\
                                $\diamond$ &Thread block grid construction&     $\diamond$  & Kernel-pair stacked for later \\
                                 &(gridDim, blockDim)  &  &  execution  \\ 
-                               $\diamond$ &  Thread blocks mapping onto de-  &   $\diamond$  &  Serial code   \\
+                               $\diamond$ &  Thread blocks mapping onto de-  &  &  \\
                                 & vice (GPU SMPs) &  & \\
-                               $\diamond$ &  Execution of kernel: GPU SMP  &  $\diamond$&Stack flush signal encountered :  \\
-                               &  executes kernel on every thread& &   execution of kernels  \\
+                               $\diamond$ &  Execution of kernel: GPU SMP & & \\
+                               &  executes kernel on every thread& &    \\
                                &  of corresponding thread blocks  & & \\
-                                 $\diamond$  &  Serial code &  & \\
+                               \multicolumn{4}{c}{  $\diamond$ Serial code}  \\
+                               & &    $\diamond$&Stack flush signal encountered : \\
+                               & & & execution of kernels \\
                                   \hline
         		 \end{tabular}  
               \caption{Workflow analogy between CUDA and Ambient-application's execution} \label{WORKFLOW}
@@ -177,6 +179,35 @@ The work group approach imposes the adaptation of the data layout to the framewo
 For the sake of backward compatibility with the standard BLAS-based mathematical libraries (BLAS, LaPACK ScaLAPACK), we keep, the column order, but do not conserve a full contiguous buffer. As in the plasma library \cite{LTAIEF-2011}, we select
 a tile data layout. It confers the ability to fit perfectly with the work group representation of Ambient, and further allows an excellent MPI/Thread control (section \ref{MPIABSTRACTION}). One of the main features of Ambient is to map this new data layout  to our work group approach, as shown in Fig. \ref{CUDAANALOGY}. 
 
+In CUDA and OpenCL, the execution model imposes kernel initialization with the appropriate resources (\eg numthread, numblock and grid dimension),
+after which the user does not have to manage the memory access inside GPU memory; further, all threads can readily access any part of the GPU. Due to memory distribution in clusters we need to adapt this method of execution. Thus, we split this execution into two parts.
+
+First, we prepare the memory, and then execute our "numerical" operation \eg a matrix multiplication in the following sequence \footnote{From here onwards, we will illustrate the execution model through parallel matrix addition and multiplication.}:
+\begin{enumerate}
+	\item A logistic kernel; where we select the number of processors, and map the memory with the datas.
+	\item A computational kernel; where we execute the associated functions (the kernel in CUDA).
+\end{enumerate}
+
+Thus, every operations will have an associated logistics and computational kernel \eg multiplication, addition, or more sophisticated linear algebra operations
+
+\newpage
+
+\begin{figure}[!t]
+	\begin{center}
+           	        \psfrag{Ambient representation}{\tiny{\hspace{-0.4cm}Ambient representation}}
+           	        \psfrag{CUDA/OpenCL representation}{\tiny{\hspace{-0.9cm}CUDA/OpenCL representation}}
+	                 \psfrag{Associated mapping of the data with Ambient}{\tiny{\hspace{+0.15cm}Associated data mapping}}
+	                 \psfrag{1x1 workgroup}{\tiny{\hspace{-0.5cm} \vspace{-0.1cm}1x1 workgroup}}
+	                  \psfrag{of Ambient}{\tiny{\hspace{-0.4cm}\vspace{-0.9cm} of Ambient}}
+	                  \psfrag{Workgroup of 4X4 threads}{\tiny{\hspace{-0.5cm} \vspace{-0.1cm}4x4 workgroup}}
+	                  \psfrag{of CUDA}{\tiny{\hspace{-0.25cm}of CUDA}}
+	                  \psfrag{Scope of GPU thread (left)}{\tiny{\hspace{-0.25cm}GPU scope left}}
+	                  \psfrag{CPU (right)}{\tiny{\hspace{-0.7cm}CPU scope right}}       
+		        \includegraphics[scale=0.44]{FIGURES/CUDAanalogy.eps} 
+	\end{center}
+          \caption{Corresponding of the CUDA representation, to the ambient representation, in terms of the scope of the CPU with the associated data.}
+          \label{CUDAANALOGY}
+\end{figure}
 \begin{table}[h]
 	\begin{center}
 	 	\begin{tabular}{c  c  c}
@@ -199,40 +230,14 @@ a tile data layout. It confers the ability to fit perfectly with the work group 
 	\end{center}
 \end{table}
 
-In CUDA and OpenCL, the execution model imposes kernel initialization with the appropriate resources (\eg numthread, numblock and grid dimension),
-after which the user does not have to manage the memory access inside GPU memory; further, all threads can readily access any part of the GPU. Due to memory distribution in clusters we need to adapt this method of execution. Thus, we split this execution into two parts.
-
-First, we prepare the memory, and then execute our "numerical" operation \eg a matrix multiplication in the following sequence \footnote{From here onwards, we will illustrate the execution model through parallel matrix addition and multiplication.}:
-\begin{enumerate}
-	\item A logistic kernel; where we select the number of processors, and map the memory with the datas.
-	\item A computational kernel; where we execute the associated functions (the kernel in CUDA).
-\end{enumerate}
-
-\begin{figure}[!t]
-	\begin{center}
-           	        \psfrag{Ambient representation}{\tiny{\hspace{-0.4cm}Ambient representation}}
-           	        \psfrag{CUDA/OpenCL representation}{\tiny{\hspace{-0.9cm}CUDA/OpenCL representation}}
-	                 \psfrag{Associated mapping of the data with Ambient}{\tiny{\hspace{+0.15cm}Associated data mapping}}
-	                 \psfrag{1x1 workgroup}{\tiny{\hspace{-0.5cm} \vspace{-0.1cm}1x1 workgroup}}
-	                  \psfrag{of Ambient}{\tiny{\hspace{-0.4cm}\vspace{-0.9cm} of Ambient}}
-	                  \psfrag{Workgroup of 4X4 threads}{\tiny{\hspace{-0.5cm} \vspace{-0.1cm}4x4 workgroup}}
-	                  \psfrag{of CUDA}{\tiny{\hspace{-0.25cm}of CUDA}}
-	                  \psfrag{Scope of GPU thread (left)}{\tiny{\hspace{-0.25cm}GPU scope left}}
-	                  \psfrag{CPU (right)}{\tiny{\hspace{-0.7cm}CPU scope right}}       
-		        \includegraphics[scale=0.44]{FIGURES/CUDAanalogy.eps} 
-	\end{center}
-          \caption{Corresponding of the CUDA representation, to the ambient representation, in terms of the scope of the CPU with the associated data.}
-          \label{CUDAANALOGY}
-\end{figure}
-
-Thus, every operations will have an associated logistics and computational kernel \eg multiplication, addition, or more sophisticated linear algebra operations
+\newpage
 
 \subsubsection{The logistics kernel} The role of the logistics kernel is to initialize both memory and data for execution. It consists of creating a MPI-group and mapping the data to the group with the appropriate pattern (1D or 2D block-cyclic distribution for a matrix, or alternatively
 a row/column-wise block distribution for two-dimensional Finite Difference Methods in fluid dynamics).  The creation of the group is done by an SQL-like request, and the data is mapped into this newly created group using a modular assignment
 function. Both these functionalities are described in section \ref{SQLSECTION}.
 
 In linear algebra, the optimal distribution in terms of load balancing is the 2D block-cyclic distributions, esp. in ScaLAPACK, but this will generally depend of the solver used. For example, in a QR factorization \cite{DEMMEL-2008} it can be demonstrated that a row-wise distribution is superior to a 2D block-cyclic decomposition for matrices with more rows than columns. Switching from one distribution scheme to another, which is a challenge in ScaLAPACK, is easily accomplished with Ambient.
- \begin{table}[t]  
+ \begin{table}[h]
 	\begin{center}
 	 	\begin{tabular}{l l }
                            \hline 
@@ -266,7 +271,8 @@ We have introduced a keyword (as the \texttt{const} keyword) named \texttt{pinne
 \begin{itemize}
 \item Line 1: the signature of the computational kernel must be the same than that of the associated logistics kernel. The only difference is the use of the keyword \texttt{pinned}, indicating an execution over all Ambient work groups.
 \item Line 2: the cartesian coordinates of the work group are obtained from the Ambient instruction \texttt{get\_block\_id(A).x}  for $i$ and \texttt{get\_block\_id(A).y}  for $j$. \label{CURRENT}
-\item Line 3 to 5 : we refer the work group $i,j$ to a temporary variable $A_{ref}$ using the Ambient instruction \texttt{current(A)(i,j)}. Note that if the processor requires data outside its memory, it will perform a remote access in the background (see section ... for details).
+\item Line 3 to 5 : we refer the work group $i,j$ to a temporary variable $A_{ref}$ using the Ambient instruction \texttt{current(A)(i,j)}. Note that if the processor requires data outside its memory,
+ it will perform a remote access in the background (see section \ref{MPIABSTRACTION} for details).
 \item Line 6 to 8 : the addition is performed by looping over the total size of the work group, in parallel for each workgroup (because of the use of the keyword \texttt{pinned}.
 \end{itemize}
 
@@ -324,7 +330,7 @@ These requests (done by the \texttt{scope\_select} Ambient-function) are applied
 This command selects \texttt{\textit{N}} processors from the original MPI group  \texttt{ambient}. The newly created group is 
 named \texttt{addition\_group}, and its master processor locally has MPI-rank 0 (see Fig. \ref{MPIGROUP}).
 
-\begin{figure}[h]
+\begin{figure}[b]
 	\begin{center}
            	         \psfrag{Datas distributed over work group}{\tiny{\hspace{-0.5cm}Datas distributed over work group}}
 	                  \psfrag{Local MPI rank}{\tiny{Local MPI rank}}                
@@ -504,13 +510,11 @@ performance. In Ambient, the data layout inside each work group necessitates add
 computational kernels, particularly the latter has to perform a remote access. Thus, before the block of data held by a workgroup, contiguous
 metadata is included. We call this ensemble \guillemotleft block of data+metadata\guillemotright \, as a network packet, which is built
 on a MPI structure. Thereby, work groups are able to send or receive without any additional movements or copying. 
-To assure proper execution of the framework, several additional type of packets are  available, all derived from a standard packet. (MORE INFO HERE. OTHERWISE LAST
-SENTENCE IS REDUNDANT)
-%The control of the packet and MPI exchange is done by a packet manager.
+To assure proper execution of the framework, several additional type of packets are  available, request packet, layout packet and data-block packet
+they  all derived from a standard packet. 
 
 When a computational kernel is executed, it can access the any required, such as a block of matrix $A$, by use of the Ambient command  \texttt{current(\textit{A})(i,j)}
-(ref. \ref{CURRENT}), where \textit{A} has to be a matrix  compatible with Ambient (REFERENCE HERE TO SECTION WHERE WE EXPLAIN WHAT AMBIENT-COMPATIBLE
-MATRICES MUST LOOK LIKE), the indices $i$ and $j$ being the coordinates of the work group (Fig. \ref{MPIGROUP}). 
+(ref. \ref{CURRENT}), where \textit{A} has to be a matrix  compatible with Ambient (\cite{ABSTRACTPARADATATYPE}), the indices $i$ and $j$ being the coordinates of the work group (Fig. \ref{MPIGROUP}). 
 There are three possibilities for the resultant types of data communication when a process executes this function inside a computational kernel:
 
 \begin{enumerate}
@@ -537,16 +541,18 @@ Case (2) and (3) are illustrated in Fig. \ref{MPIEXCHANGE}.
 Clearly, smooth execution of any communication pattern arising from the great number of possible data dependencies
 is key to a good performance of the Ambient approach. The resolution of communication patters also falls under the purview
 of the packet manager, as it manages both intra- and inter-group communication. Each MPI-group has a unique packet manager,
-identified by a singleton pattern. For the packet manager to be adaptable to any communication pattern, it consists of two parts:
-the delegate pattern and a finite state machine (FSM).
+identified by a singleton pattern.
 
 To reach the best performance in HPC, bottlenecks arising from synchronization operations should be avoided  \cite{EXASCALE-2010}.
 Thus, MPI asynchronous communication is privileged in Ambient (\texttt{mpi\_isend} and \texttt{mpi\_irecv}). Still, an asynchronously
-sent message  requires a MPI test to check whether the packet can be received.  As we avoid synchronization instructions,
+sent message  requires a \texttt{mpi\_test} to check whether the packet can be received.  As we avoid synchronization instructions,
 the receiving process repeatedly checks for the availability of the expected data in an infinite loop, until actually receiving the
-data. Both the delegate pattern and the FSM are placed inside this loop.
+data. 
 
-\begin{table}[t] 
+ For the packet manager to be adaptable to any communication pattern, it consists of two parts:
+the delegate pattern and a finite state machine (FSM), both are placed inside this loop.
+
+\begin{table}[b] 
 	\begin{center}
 	 	\begin{tabular}{l l }
                            \hline 
@@ -567,34 +573,34 @@ data. Both the delegate pattern and the FSM are placed inside this loop.
 
 
 
-\begin{figure}[h]
-	\begin{center}
-	    \psfrag{1}{\tiny \hspace{-0.1 cm}  1}
-	    \psfrag{2}{\tiny \hspace{-0.1 cm}  2}
-	    \psfrag{Loose}{\tiny \hspace{-0.2 cm}   Loose}
-	    \psfrag{Closure}{\tiny \hspace{-0.2 cm}  Closure}
-	    \psfrag{Open}{\tiny \hspace{-0.4 cm}  Opening}
-             \includegraphics[scale=0.45]{FIGURES/FSM.eps} 
-	\end{center}
-          \caption{Schematic of the finite sate machine for the closing procedure. The states 1 and 2 correspond to open or close.
-           The transitions are loose, closure or opening, they  depend of the situation of all packets (if they all reach theirs targets or not),
-                          the loose transition means the packet has not been received, thus we iterate one more time on the infinite loop.}  \label{FSM}
-\end{figure}
+%\begin{figure}[h]
+%	\begin{center}
+%	    \psfrag{1}{\tiny \hspace{-0.1 cm}  1}
+%	    \psfrag{2}{\tiny \hspace{-0.1 cm}  2}
+%	    \psfrag{Loose}{\tiny \hspace{-0.2 cm}   Loose}
+%	    \psfrag{Closure}{\tiny \hspace{-0.2 cm}  Closure}
+%	    \psfrag{Open}{\tiny \hspace{-0.4 cm}  Opening}
+%          \includegraphics[scale=0.45]{FIGURES/FSM.eps} 
+%	\end{center}
+%          \caption{Schematic of the finite sate machine for the closing procedure. The states 1 and 2 correspond to open or close.
+%           The transitions are loose, closure or opening, they  depend of the situation of all packets (if they all reach theirs targets or not),
+%                          the loose transition means the packet has not been received, thus we iterate one more time on the infinite loop.}  \label{FSM}
+%\end{figure}
 
-The delegate pattern (from C\#) encapsulates a method, behaving similar to a function pointer in C++,  but allowing for safer execution.
-The delegate object inside the packet manager class contains a series of operations pil in a stack, such as forwarding requests, 
-data communication and communication of changes in MPI group layout (i.e. block distribution). As this delegate is inside the infinite loop, the packets
-will propagate process by process after every iterations (as shown on Fig. \ref{EXECUTION}). After the delegate execution is done, a finite state machine
-checks the states of the packets.  If all packets (data packet, layout packet, etc.) have been received, the FSM (Fig. \ref{FSM}) breaks the infinite loop.
+The delegate pattern (from C\#) encapsulates  methods, behaving similar to a function pointer in C++,  but allowing for safer execution.
+The delegate object inside the packet manager class contains a series of functions pile up in a stack, such as forwarding requests, 
+layout and block of data. As this delegate is inside the infinite loop, the delegate execution 
+will propagate the packets process by process after every iterations (as shown on Fig. \ref{EXECUTION}). When the delegate execution is over, a finite state machine
+checks the states of the packets (arrived or not).  If all packets (data packet, layout packet, etc.) have been received, the FSM breaks the infinite loop.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END PACKET MANAGER 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN ABSTRACT PARALLEL DATATYPES 
-\subsection{Abstract parallel datatypes} 
+\subsection{Abstract parallel datatypes} \label{ABSTRACTPARADATATYPE}
 
 To assure the largest scope to Ambient, we designed the framework on the data structures and not a specific problem. Thus, we enlarge the utilization of the framework
-for a various set of applied computing fields. The connection  between Ambient and the \guillemotleft outside world \guillemotright  is done by an intermediate class that assure the
+for a various set of applied computing fields. The connection  between Ambient and the \guillemotleft outside world \guillemotright  \, is done by an intermediate class that assure the
 connectivity between a class and ambient.
 
 For linear algebra, we designed a matrix class, we contained usual data members for describing the object (number of raws, number of columns, \dots) and  methods for linear
@@ -612,7 +618,7 @@ These equations describes the parameters of the \guillemotleft fluid particle \g
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN VALIDATION
 \subsection{Validation}
 As a validation test, we code a new implementation of PDGEMM using the Ambient framework, and compare to the ScaLAPACK version of PDGEMM (MKL-Version).
-The algorithm of our implementation is based on the classical method [CITATION NEEDED] using a column order distribution for the matrices (c.f. table \ref{AMBIENTDGEMM} 
+The algorithm of our implementation is based on the classical method [CITATION NEEDED] using a column order distribution for the matrices (\cf table \ref{AMBIENTDGEMM} 
 for the modification due to Ambient). The main advantage in our implementation is the required amount of coding, which is limited to seven lines.
 
 ----------------------------------------------------------------------------------------------------- \\
@@ -678,14 +684,16 @@ where $n$ is the size of the square-matrix,  $t$ the full time of calculation an
 
 \begin{figure}
 \include{PLOT/SinglePDGEMM/SinglePGEMM}
-\caption{Performances of PDGEMM using scalapack }
+\caption{Performances of PDGEMM using ScaLAPACK }
 \end{figure}
-
 
 \subsection{Second benchmark case}
 This benchmarks consists to evaluate the performance of the scheduler, especially the repartition of several operation all over the cluster. 
 
-
+\begin{figure}
+\include{PLOT/VectorPDGEMM/VectorPGEMM}
+\caption{Performances of a vector of PDGEMM using ScaLAPACK}
+\end{figure}
 
 
 \subsection{Third benchmark case}
