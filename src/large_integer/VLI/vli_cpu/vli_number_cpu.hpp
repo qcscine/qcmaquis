@@ -213,7 +213,25 @@ namespace vli
          */
         std::string get_str() const
         {
-            vli_cpu tmp(*this);
+            
+            vli_cpu<BaseInt, size*2> tmp;
+            
+            if((*this).is_negative())
+            {
+                const_cast<vli_cpu<BaseInt, Size> & >(*this).negate();
+                
+                for(int i=0; i<size; ++i)
+                    tmp[i] = (*this)[i];
+                 
+                tmp.negate();
+                const_cast<vli_cpu<BaseInt, Size> & >(*this).negate();
+            }else{
+                
+                for(int i=0; i<size; ++i)
+                    tmp[i] = (*this)[i];
+                
+            }
+                    
             if(tmp.is_negative())
             {
                 tmp.negate();
@@ -232,19 +250,20 @@ namespace vli
         /**
           * Returns the order of magnitude of 'value' in base10
           */
-        size_type order_of_magnitude_base10(vli_cpu const& value) const
+        template<int SizeDouble>
+        size_type order_of_magnitude_base10(vli_cpu<BaseInt,SizeDouble> const& value) const
         {
             assert(!value.is_negative());
             
-            vli_cpu value_cpy(value);
-            vli_cpu decimal(1);
+            vli_cpu<BaseInt,SizeDouble> value_cpy(value);
+            vli_cpu<BaseInt,SizeDouble> decimal(1);
             size_type exp = 0;
 
             // Find correct order (10^exp) 
             while(!value_cpy.is_negative())
             {
                 value_cpy=value; // reset
-                vli_cpu previous_decimal(decimal);
+                vli_cpu<BaseInt,SizeDouble> previous_decimal(decimal);
                 decimal *= 10;
                 ++exp;
                 if(decimal < previous_decimal) // Overflow! (we can handle it.)
@@ -260,17 +279,18 @@ namespace vli
         /**
           * A helper function to generate the base10 representation for get_str().
           */
-        std::string get_str_helper_inplace(vli_cpu& value, size_type ten_exp) const
+        template<int SizeDouble>
+         std::string get_str_helper_inplace(vli_cpu<BaseInt,SizeDouble>& value, size_type ten_exp) const
         {
             assert(!value.is_negative());
 
             // Create a number 10^(exponent-1) sin
-            vli_cpu dec(1);
+            vli_cpu<BaseInt,SizeDouble> dec(1);
             for(size_type e=0; e < ten_exp; ++e)
                 dec *= 10;
 
             // Find the right digit for 10^ten_exp
-            vli_cpu value_cpy(value);
+            vli_cpu<BaseInt,SizeDouble> value_cpy(value);
             int digit=0;
             while((!value_cpy.is_negative()) && digit<=11)
             {
@@ -285,7 +305,7 @@ namespace vli
             --digit; // we went to far
 
             assert(digit >=0);
-            assert(digit < 10);
+            assert(digit < 10); 
 
             value-= digit*dec;
 
