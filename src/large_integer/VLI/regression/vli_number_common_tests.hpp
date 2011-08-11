@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_type
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vli_types )
 {
     Vli a;
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vl
     //Check that b hasn't changed
     BOOST_CHECK_EQUAL(b,b_orig);
 }
-*/
+
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli, vli_types )
 {

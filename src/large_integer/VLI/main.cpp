@@ -16,8 +16,8 @@
 #include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
-#define SIZE_POLY 8
-#define SIZE_VECTOR 512
+#define SIZE_POLY 4
+#define SIZE_VECTOR 32
 
 #define TYPE unsigned  int 
 
@@ -47,12 +47,9 @@ int main (int argc, char * const argv[])
             for(int k=0; k < SIZE_POLY; k++)
                 pa(j,k)[i] = 9;
             }
-         } 
-     
+         }      
  
     polynomial_gpu<vli_gpu<TYPE,8>, SIZE_POLY> pagpu(pa);
-
-    
 
     vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VaGPU(SIZE_VECTOR);
     vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VbGPU(SIZE_VECTOR);
