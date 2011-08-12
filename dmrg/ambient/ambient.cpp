@@ -215,7 +215,6 @@ namespace ambient
                     }
                 }
                 computing->release();
-                logistics->release();
             }
             //ct.end();
 // cleaning the layout
@@ -224,6 +223,7 @@ namespace ambient
                 for(int i=0; i < logistics->count; i++)
                     logistics->profiles[i]->clean();
                 logistics->resolve_dependencies();
+                logistics->release();
             }
             cleanup_stack.clean(); // :))
             this->router.clean();

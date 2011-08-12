@@ -21,7 +21,6 @@ namespace ambient {
 // state description knobs /////////////////////
         p_state             state;            //
         bool                consted;          //
-        bool                valid;            //
 ////////////////////////////////////////////////
 
 // identification //////////////////////////////
@@ -71,7 +70,6 @@ namespace ambient {
         void                constant();
         void                inconstant();
         bool                is_associated_proxy();
-        void                deallocate();
 
         void                set_init(core::operation* op);
         core::operation*    get_init() const;

@@ -87,6 +87,7 @@ namespace core{ class operation; }
     class one_touch_stack {
     public:
         one_touch_stack();
+       ~one_touch_stack();
         void push_back(T element);
         bool end_reached();
         bool alt_end_reached();

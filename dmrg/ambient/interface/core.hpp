@@ -13,7 +13,7 @@ class void_pt: public p_profile
 public: 
     template <typename T> void_pt(const T* ptr) : p_profile()
     { breakdown_model(this, ptr); }
-    ~void_pt(){ printf("Deleting profile\n"); };  // use with caution
+    ~void_pt(){ }//printf("Deleting profile\n"); };  // use with caution
 private: 
     friend class T; // the container can delete its profile
     template<class T> friend inline void boost::checked_delete(T * x); // so as boost >_<
@@ -34,9 +34,7 @@ class livelong
 public:
    ~livelong(){
         if(this->p == REPLICA){
-            //printf("Deleting profile!\n");
-            //delete this->profile; //->deallocate(); // deallocate profile
-            //printf("Deleted profile!\n");
+            delete this->profile;
         }
     }
     
