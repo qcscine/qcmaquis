@@ -5,7 +5,8 @@
 
 namespace ambient{ namespace packets {
 
-    packet::packet(const packet_t& type, void* memory, va_list& fields) : type(type){
+    packet::packet(const packet_t& type, void* memory, va_list& fields) 
+    : type(type), disposable(true){
         type.fill_packet(memory, type.t_code, fields);
         this->data = memory;
         this->mpi_t = this->get_mpi_t();

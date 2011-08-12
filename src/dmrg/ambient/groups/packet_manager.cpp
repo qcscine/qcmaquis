@@ -214,7 +214,8 @@ namespace ambient{ namespace groups{
             if(flag){
                 this->target_packet = unpack(this->type, (*it)->memory); 
                 this->packet_delivered();
-                (*it)->memory = alloc_t(this->type); // otherwise will overwrite old memory
+//                if(!this->target_packet->disposable) // user type is responsible for deallocation
+                    (*it)->memory = alloc_t(this->type);
                 this->recv(*it); // request renewal
             }
         }
@@ -223,7 +224,8 @@ namespace ambient{ namespace groups{
             MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
             if(flag){
                 this->target_packet = (packet*)(*it)->memory;
-              //  this->packet_delivered();
+//                if(this->target_packet->disposable)
+//                    free(this->target_packet);
                 this->return_request(*it);
                 it = this->reqs.erase(it);
             }

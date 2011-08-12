@@ -10,7 +10,7 @@ namespace ambient{ namespace packets{
     public:
         void* data;
         MPI_Datatype mpi_t;
-
+        bool  disposable;
         const packet_t& type;
         const packet_t& get_t();
         MPI_Datatype get_mpi_t();

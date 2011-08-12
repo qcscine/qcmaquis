@@ -8,6 +8,11 @@ namespace ambient{
     }
 
     template<typename T>
+    one_touch_stack<T>::~one_touch_stack(){
+        free(this->content);
+    }
+
+    template<typename T>
     void one_touch_stack<T>::push_back(T element){
         this->content[this->write_iterator++] = element;
         this->length++;

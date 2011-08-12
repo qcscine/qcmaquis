@@ -28,7 +28,7 @@ namespace ambient {
 
     p_profile::p_profile()
     : dim(NULL), reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), default_block(NULL), 
-      reference(this), valid(true), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
+      reference(this), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->mem_dim  = engine.get_mem_dim();
         this->item_dim = engine.get_item_dim();
@@ -37,7 +37,9 @@ namespace ambient {
     };
 
     p_profile::~p_profile(){
-// do nothing here...
+        for(int i=0; i < this->skeleton.size(); i++)
+            for(int j=0; j < this->skeleton[i].size(); j++)
+                delete this->skeleton[i][j];
     }
 
     void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
@@ -177,6 +179,7 @@ namespace ambient {
             memory += this->get_mem_t_dim().y*this->t_size;
             if(++jumper == this->solid_lda){ jumper = 0; memory += this->get_mem_t_dim().y*this->solid_lda*this->t_size*(this->get_mem_t_dim().x-1); }
         }
+        free(this->data);
     }
 
     void p_profile::set_default_block(int i, int j)
@@ -198,12 +201,6 @@ namespace ambient {
             this->state = GENERIC;
         }else if(this->state == GENERIC){
         }
-    }
-
-    void p_profile::deallocate(){
-        for(int i=0; i < this->skeleton.size(); i++)
-            for(int j=0; j < this->skeleton[i].size(); j++)
-                delete this->skeleton[i][j];
     }
 
     void p_profile::constant(){ this->consted = true; }
