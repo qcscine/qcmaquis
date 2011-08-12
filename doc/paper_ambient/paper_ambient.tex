@@ -95,15 +95,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN WORKFLOW
 \section{Ambient workflow}
 
-[REPHRASED THIS SECTION. I THINK WE SHOULD EXPAND IT A LITTLE BIT, EXPLAINING
-FOR EXAMPLE WHERE IN THE LATER SECTIONS THE VARIOUS ELEMENTS WILL BE EXPLAINED
-(LIKE I DID WITH "PINNED" AND "PLAYOUT", AND GENERALLY EXPLAIN A LITTLE MORE WHAT THE
-BROAD FEATURES AND CAPABILITIES OF AMBIENT ARE (E.G. BOOTSTRAP PARALLELIZATION OF EXISTING
-SERIAL CODE,]
-Before presenting the various elements of Ambient in more detail, we want to describe the
+Before presenting various elements of Ambient in more details, here we describe the
 workflow of execution for an Ambient-parallelized application in general terms. 
-As the Ambient approach derives from CUDA, we consider a simplified workflow of CUDA
- and Ambient-application's execution side-by-side:
+As the Ambient computational architecture derives from CUDA, we will show a simplified workflow of CUDA
+ vs Ambient enabled applications execution side-by-side:
 
 \begin{table}[h]  
 	\begin{center}
@@ -130,35 +125,34 @@ As the Ambient approach derives from CUDA, we consider a simplified workflow of 
 	\end{center}
 \end{table}
 
-As soon as Ambient encounters the flush signal (called \texttt{playout()}, see section [APPROPRIATE CITATION HERE]), kernel
-execution is initiated, along the following sequence:
+As soon as Ambient encounters the flush signal - kernel
+execution is initiated along the following sequence:
 
 \begin{itemize}
-\item Execution of logistics kernel: allocation of device (MPI group) according to specifics of request. 
-\item Execution of logistics kernel: argument's work groups (tiles) marking with workDim. [DON'T KNOW WHAT IS MEANT HERE, CANNOT REFORMULATE]
-\item Execution of logistics kernel: selected argument's workgroups  (see keyword \texttt{pinned}, section [APPROPRIATE CITATION HERE])
-mapping onto device (MPI processes).
+\item Execution of logistics kernel: allocation of device (MPI group) according to specified request. 
+\item Execution of logistics kernel: argument's work groups decomposure according to workDim.
+\item Execution of logistics kernel: selected argument's work groups mapping onto device (MPI processes).
 \item Transfer of work groups to the target processes.
 \item Execution of computational kernel: MPI process executes kernel thread for work items of assigned work groups.
 \end{itemize}
 
 The main reason for the difference in workflow compared to CUDA is the scale of available resources.  As practically unlimited resources
-are available for a kernel's launch, the data becomes the key factor around which we evolve Ambient's design.
+are available for a kernel's launch, the data becomes the key factor around which Ambient's design evolves.
 In particular, in order to control the data movements and resource usage, we introduce the logistics kernel and make kernel calls non-blocking. 
 
-In general, Ambient applications operate with abstract types that already have tiled memory structure. Upon encountering a kernel operation 
-call, the Ambient framework stacks it for later execution, and proceeds in this way throughout the code. This ideology of design
-allows a high degree of code re-usage from the original serial code, while at the same time providing both flexible and automatized
-tools to manage resources and thus  tune performance.
+Generally, Ambient enabled application operates with abstract types that already have tiled memory structure. Upon a kernel operation 
+call, the Ambient framework stacks the operation for later execution and proceeds to the following part of the serial code. This design
+enables high degree of original serial code's reusage while providing powerfull instrumentation capabilities to manage resources and tune performance 
+of the overall application.
 
-When the framework encounters the signal to flush the stack of kernels - the actual execution starts, going through the accumulated stack of operations 
-and executes the independent ones at once. When executing one operation, the engine invokes first the associated logistics kernel and allocates a specified
+When the framework encounters the signal to flush the stack of kernels - the actual execution starts. Framework's engine goes through the accumulated stack 
+and executes all independent operations at once. Executing an operation first the engine invokes the associated logistics kernel and allocates specified
 amount of resources for this operation. Next, the engine marks argument's tiling using specified parameters and maps resulting work groups onto allocated
-processes in a user specified way. Now, the engine can freely transfer the tiled data from previous owners to the allocated processes changing
-the tile size if needed. After the transfer is complete the computational kernel kicks in, behaving in almost the same way as in CUDA, with work groups
-simply being mapped onto threads of MPI process as if they were GPU SMP (the main difference being that the user is in control as to which process owns which workgroup).
+processes in a user specified way. Now the engine can freely transfer the tiled data from previous owners to the allocated processes changing
+the tile size if needed. After the transfer is complete the computational kernel kicks in behaving almost the same way as in CUDA with work groups
+simply being mapped onto threads of MPI process as if they were GPU SMP (mainly, the difference is the user's control over processes/work groups mapping).
 
-In the following sections, we expand on the role and functionalities of the different elements listed here.
+In the following sections, we elaborate on the role and functionalities of the different elements listed here.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END WORKFLOW
 
