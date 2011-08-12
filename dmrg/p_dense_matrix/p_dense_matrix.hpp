@@ -7,7 +7,6 @@ namespace blas {
     #define self this->self
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>::~p_dense_matrix(){ // #destructor
-    //    if(this->p == ambient::ANY) return;
     }
 
     template <typename T, ambient::policy P>
