@@ -95,10 +95,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN WORKFLOW
 \section{Ambient workflow}
 
-Before presenting various elements of Ambient in more details, here we describe the
+Before presenting various elements of Ambient in more detail, this section provides the
 workflow of execution for an Ambient-parallelized application in general terms. 
-As the Ambient computational architecture derives from CUDA, we will show a simplified workflow of CUDA
- vs Ambient enabled applications execution side-by-side:
+As the Ambient computational architecture derives from CUDA, we start with a simplified
+workflow of execution for both CUDA-enabled and Ambient enabled applications side-by-side:
 
 \begin{table}[h]  
 	\begin{center}
@@ -130,7 +130,7 @@ execution is initiated along the following sequence:
 
 \begin{itemize}
 \item Execution of logistic kernel: allocation of device (MPI group) according to specified request. 
-\item Execution of logistic kernel: argument's work groups decomposure according to workDim.
+\item Execution of logistic kernel: argument's work groups decomposition according to workDim.
 \item Execution of logistic kernel: selected argument's work groups mapping onto device (MPI processes).
 \item Transfer of work groups to the target processes.
 \item Execution of computational kernel: MPI process executes kernel thread for work items of assigned work groups.
@@ -140,17 +140,17 @@ The main reason for the difference in workflow compared to CUDA is the scale of 
 are available for a kernel's launch, the data becomes the key factor around which Ambient's design evolves.
 In particular, in order to control the data movements and resource usage, we introduce the logistic kernel and make kernel calls non-blocking. 
 
-Generally, Ambient enabled application operates with abstract types that already have tiled memory structure. Upon a kernel operation 
-call, the Ambient framework stacks the operation for later execution and proceeds to the following part of the serial code. This design
-enables high degree of original serial code's reusage while providing powerfull instrumentation capabilities to manage resources and tune performance 
-of the overall application.
+Generally, Ambient enabled applications operate with abstract types that already have tiled memory structure. Upon encountering a kernel operation 
+call, the Ambient framework stacks the operation for later execution and proceeds in this manner through the serial code. This design
+enables a high degree of reusage of the original serial code, while providing powerful instrumentation capabilities to manage resources and tune performance 
+of the application overall.
 
-When the framework encounters the signal to flush the stack of kernels - the actual execution starts. Framework's engine goes through the accumulated stack 
-and executes all independent operations at once. Executing an operation first the engine invokes the associated logistic kernel and allocates specified
-amount of resources for this operation. Next, the engine marks argument's tiling using specified parameters and maps resulting work groups onto allocated
+When the framework encounters the signal to flush the stack of kernels the actual execution starts. The framework's engine goes through the accumulated stack 
+and executes all independent operations at once. Executing an operation, the engine first invokes the associated logistic kernel and allocates a specified
+amount of resources for this operation. Next, the engine marks argument's tiling using specified parameters (???) and maps resulting work groups onto allocated
 processes in a user specified way. Now the engine can freely transfer the tiled data from previous owners to the allocated processes changing
-the tile size if needed. After the transfer is complete the computational kernel kicks in behaving almost the same way as in CUDA with work groups
-simply being mapped onto threads of MPI process as if they were GPU SMP (mainly, the difference is the user's control over processes/work groups mapping).
+the tile size if needed. After the transfer is complete the computational kernel kicks in behaving almost the same way as in CUDA, with work groups
+simply being mapped onto threads of MPI process as if they were GPU SMP (the difference lies mainly in the user's control over the mapping of processes to work groups).
 
 In the following sections, we elaborate on the role and functionalities of the different elements listed here.
 
@@ -167,8 +167,8 @@ In the following sections, we elaborate on the role and functionalities of the d
 
 Ambient employs an extension on the CUDA approach to a distributed cluster. This is based on the observation that modern clusters employ many thousands of nodes, just like a GPU consists of thousands of small, simple cores, on each of which it runs an independent thread. In such a comparison however, the technical specifics of the basic cluster unit in terms of processor power, memory bandwidth, network speed, \etc  \, must be considered. 
 
-CPU core has much more additional capabilities comparing to the one of a GPU and therefore we can't simply downcast the CPU core to the GPU one.
-Thus, the scope of the data for a single CPU (on which a single Ambient's thread typically runs) in Ambient is rather comparable to the capacity of CUDA's thread block or an OpenCL work group, the typical block size is $ 128 \times 128$. Though, the user has full control of the size and can adapt it for the needs of target problem. Like in CUDA, blocks (i.e. groups of threads) and the grid of blocks can be formed in Ambient. A basic comparison between CUDA and Ambient is shown in the table \ref{ANALOGY}.
+A CPU core has much higher capabilities than a GPU core, and thus we can't simply downcast the CPU core to the GPU one.
+Therefore, the scope of the data for a single CPU (on which a single Ambient thread typically runs) in Ambient is rather comparable to the capacity of CUDA's thread block or an OpenCL work group. The typical block size is $ 128 \times 128$, although, the user has full control of this size and can adapt it to the needs of target problem. As in CUDA, blocks (i.e. groups of threads) and the grid of blocks can be formed in Ambient. A basic comparison between CUDA and Ambient is shown in the table \ref{ANALOGY}.
 
 \begin{figure}[t]
 	\begin{center}
@@ -180,7 +180,7 @@ Thus, the scope of the data for a single CPU (on which a single Ambient's thread
           \label{MEMMATRIX}
 \end{figure}
 
-The work group approach imposes the adaptation of the data layout to the framework. In linear algebra,  BLAS \cite{LAWSON-1979} is \textit{de facto}  the standard for high performance dense Linear Algebra computations. It imposes column order on matrix storage, as well as a contiguous storage in memory (figure \ref{MEMMATRIX}).
+The work group approach imposes the adaptation of the data layout to the framework. In linear algebra,  BLAS \cite{LAWSON-1979} is \textit{de facto} the standard for high performance dense Linear Algebra computations. It imposes column order on matrix storage, as well as a contiguous storage in memory (figure \ref{MEMMATRIX}).
 
 For the sake of backward compatibility with the standard BLAS-based mathematical libraries (BLAS, LaPACK ScaLAPACK), we keep, the column order, but do not conserve a full contiguous buffer. As in the plasma library \cite{LTAIEF-2011}, we select
 a tile data layout. It confers the ability to fit perfectly with the work group representation of Ambient, and further allows an excellent MPI/Thread control (section \ref{MPIABSTRACTION}). One of the main features of Ambient is to map this new data layout  to our work group approach, as shown in Fig. \ref{CUDAANALOGY}. 
@@ -190,11 +190,11 @@ after which the user does not have to manage the memory access inside GPU memory
 
 First, we prepare the memory, and then execute our "numerical" operation \eg a matrix multiplication in the following sequence \footnote{From here onwards, we will illustrate the execution model through parallel matrix addition and multiplication.}:
 \begin{enumerate}
-	\item A logistic kernel; where we select the number of processors, and map the memory with the datas.
+	\item A logistic kernel; where we select the number of processors, and map the data to memory.
 	\item A computational kernel; where we execute the associated functions (the kernel in CUDA).
 \end{enumerate}
 
-Thus, every operations will have an associated logistic and computational kernel \eg multiplication, addition, or more sophisticated linear algebra operations
+Thus, every operation (\eg multiplication, addition, or more sophisticated linear algebra operations) will have an associated logistic and computational kernel 
 
 \newpage
 
@@ -231,7 +231,7 @@ Thus, every operations will have an associated logistic and computational kernel
 			 grid size                                     &  \texttt{gridDim}                                  & \texttt{get\_grid\_dim(A)}  \\ \hline
 
 		\end{tabular}
-		\caption{Analogy between our framework and  the CUDA and OpenCL ideology.  \texttt{A} is the associated matrix to the  logistic and computational kernel.  
+		\caption{Analogy between the Ambient framework and  the CUDA and OpenCL ideology.  \texttt{A} is the associated matrix to the  logistic and computational kernel.  
 		The access of the cartesian values are done by the classical operator C/C++ \guillemotleft.\guillemotright     \, \eg \texttt{get\_mem\_dim(A).x}  	\label{ANALOGY}}
 	\end{center}
 \end{table}
@@ -239,8 +239,7 @@ Thus, every operations will have an associated logistic and computational kernel
 \newpage
 
 \subsubsection{The logistic kernel} The role of the logistic kernel is to initialize both memory and data for execution. It consists of creating a MPI-group and mapping the data to the group with the appropriate pattern (1D or 2D block-cyclic distribution for a matrix, or alternatively
-a row/column-wise block distribution for two-dimensional Finite Difference Methods in fluid dynamics).  The creation of the group is done by an SQL-like request, and the data is mapped into this newly created group using a modular assignment
-function. Both these functionalities are described in section \ref{SQLSECTION}.
+a row/column-wise block distribution for two-dimensional Finite Difference Methods in fluid dynamics).  The creation of the group is done by an SQL-like request, and the data is mapped into this newly created group using a modular assignment function. Both these functionalities are described in section \ref{SQLSECTION}.
 
 In linear algebra, the optimal distribution in terms of load balancing is the 2D block-cyclic distributions, esp. in ScaLAPACK, but this will generally depend of the solver used. For example, in a QR factorization \cite{DEMMEL-2008} it can be demonstrated that a row-wise distribution is superior to a 2D block-cyclic decomposition for matrices with more rows than columns. Switching from one distribution scheme to another, which is a challenge in ScaLAPACK, is easily accomplished with Ambient.
  \begin{table}[h]
@@ -248,7 +247,7 @@ In linear algebra, the optimal distribution in terms of load balancing is the 2D
 	 	\begin{tabular}{l l }
                            \hline 
                            \textbf{Logistic kernel }  Algorithm of the addition logistic kernel  &    \\ \hline
-                           \textbf{Require}                 A class Matrix  that fits with Ambient framework  &  \\
+                           \textbf{Require}                 A class \texttt{Matrix}  that fits with the Ambient framework  &  \\
                            \begin{tabular}{c l} 
                            \tiny{1:} &  Addition\_logistic(Matrix $A$,  Matrix $B$)  \\
                            \tiny{2:} &  SQL request for selecting $N$ number of processors   \\
@@ -264,7 +263,7 @@ In linear algebra, the optimal distribution in terms of load balancing is the 2D
 
 To illustrate, we describe the example of a simplified\footnote{without any C++ language annotations} logistic kernel of the matrix addition in table {\ref{LKERNEL}}. 
 \begin{itemize}
-\item Line 1:  the signature of the logistic kernel, showing the input/ouput by the keyword\texttt{const}. In this example there are onlz three matrices, but additional arguments like float number, integer \etc can be added.
+\item Line 1:  the signature of the logistic kernel, showing the input/ouput by the keyword\texttt{const} (???). In this example, there are only two matrices, but additional arguments like float numbers, integers \etc can be added.
 \item Line 2: The SQL-like request selecting the desired number of processors for the operation and performing the required MPI calls. 
 \item Line 3-5: Performing a block-cyclic distribution of the matrixes \texttt{A} and  \texttt{B}. A detailed description of the SQL requests and the distribution functions
 is given in section \ref{SQLSECTION}. Note that the present kernel can be reused for any subsequent operation that uses the same data distribution.
@@ -272,14 +271,14 @@ is given in section \ref{SQLSECTION}. Note that the present kernel can be reused
 
 \subsubsection{The computational kernel}  After the logistic kernel has been executed, we are ready for the computational kernel. The mode of execution is similar to the CUDA API with a few specificities. In the CUDA parallel computing model, the programmer writes a single thread program, using the CUDA-API,  after which the GPU runs multiple instances of this thread in parallel. We transpose this approach into Ambient. Nevertheless, we should not forget the data scope of a single CPU "thread" in Ambient roughly corresponds to the scope of a full OpenCL work group. 
 
-We have introduced a keyword (as the \texttt{const} keyword) named \texttt{pinned}. This keyword indicates to the framework than the kernel execution must be executed over all Ambient work groups. Inside a kernel, we employ several Ambient API, analogous to CUDA, to obtain key information about the work groups 
+We have introduced a keyword (as the \texttt{const} keyword (???)) named \texttt{pinned}. This keyword indicates to the framework that the kernel must be executed over all Ambient work groups. Inside a kernel, we employ several Ambient API, analogous to CUDA, to obtain key information about the work groups 
 (positions, dimensions, \ldots).These are summarized in table \ref{ANALOGY}.  For illustration, the computational kernel (table \ref{CKERNEL}) of an addition of the two matrices associated with the previous example of the logistic kernel is presented in the table \ref{LKERNEL}.
 \begin{itemize}
 \item Line 1: the signature of the computational kernel must be the same than that of the associated logistic kernel. The only difference is the use of the keyword \texttt{pinned}, indicating an execution over all Ambient work groups.
 \item Line 2: the cartesian coordinates of the work group are obtained from the Ambient instruction \texttt{get\_block\_id(A).x}  for $i$ and \texttt{get\_block\_id(A).y}  for $j$. \label{CURRENT}
 \item Line 3 to 5 : we refer the work group $i,j$ to a temporary variable $A_{ref}$ using the Ambient instruction \texttt{current(A)(i,j)}. Note that if the processor requires data outside its memory,
  it will perform a remote access in the background (see section \ref{MPIABSTRACTION} for details).
-\item Line 6 to 8 : the addition is performed by looping over the total size of the work group, in parallel for each workgroup (because of the use of the keyword \texttt{pinned}.
+\item Line 6 to 8 : the addition is performed by looping over the total size of the work group, in parallel for each workgroup (because of the use of the keyword \texttt{pinned}).
 \end{itemize}
 
  \begin{table}[t] 
@@ -299,11 +298,11 @@ We have introduced a keyword (as the \texttt{const} keyword) named \texttt{pinne
                                \tiny{7:} &  \textbf{end for} \\                               
                           \end{tabular} & \\ \hline
 		 \end{tabular} 
-		 \caption{Algorithm of the computational kernel associated to the matrix addition.   \label{CKERNEL}}
+		 \caption{Algorithm of the computational kernel associated to matrix addition.   \label{CKERNEL}}
 	\end{center}
 \end{table} 
 
-As just shown for the matrix addition, we can recode other linear algebra solvers with the Ambient approach. For the presentation of our framework, we will focus on the MPI version of BLAS named pBLAS \cite{SCALAPACK-1992}, as well as a possible alternative to the pDGEMM solver, called ...., using a recursive algorithm.
+As just shown for the matrix addition, we can recode other linear algebra solvers with the Ambient approach. For the presentation of our framework, we will focus on the MPI version of BLAS named pBLAS \cite{SCALAPACK-1992}, as well as a possible alternative to the pDGEMM solver, called (???), using a recursive algorithm.
 
 %\begin{table}[h]
 %	\begin{center}
@@ -338,7 +337,7 @@ named \texttt{addition\_group}, and its master processor locally has MPI-rank 0 
 
 \begin{figure}[b]
 	\begin{center}
-           	         \psfrag{Datas distributed over work group}{\tiny{\hspace{-0.5cm}Datas distributed over work group}}
+           	         \psfrag{Data distributed over work group}{\tiny{\hspace{-0.5cm}Data distributed over work group}}
 	                  \psfrag{Local MPI rank}{\tiny{Local MPI rank}}                
 	                  \psfrag{Ambient master proc}{\hspace{-0.8cm} \tiny{Ambient master proc}}        	                  
 	                   \psfrag{Ambient MPI group, N process}{ \tiny Ambient MPI group, cardinal $N$ process}
@@ -396,15 +395,15 @@ The construction of nested MPI-groups is related to the ability of MPI to create
 	\end{center}
 \end{table} 
 
-During the execution, many group will be created in practice, and data will have to be moved between groups.
+During execution, many groups will be created in practice, and data will have to be moved between groups.
 To obtain better performance and to reduce the number of data transfers between groups, there are additional possible settings for the SQL request. For example, consider the previous illustration for the SQL request in case of the matrix addition operation ($ A \, +\!\!\!= B$).
 If matrix $A$ has already been created and mapped on specific processors, the logistic kernel can create a MPI group that includes its previous owner group (created in the previous operation), thereby avoiding superfluous data transfer. The concrete SQL request would be as follows:
  
 \begin{eqnarray}  \label{SQL2}
          & & \texttt{scope\_select("\textit{N} from ambient as addition\_group }\\ 
-         & & \texttt{	where master is 0 where breakdown contains" + get\_id(\textit{A})}, \nonumber
+         & & \texttt{	where master is 0 where breakdown contains" + get\_id(\textit{A})}), \nonumber
 \end{eqnarray} 
-The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}} to know is present binding.
+The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}} to know its present binding.
  
 %\begin{figure}[h]
 %	\begin{center}
@@ -418,11 +417,11 @@ The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGINNING EXECUTION AND OPERATIONS SCHEDULING SECTION
 \subsection{Execution model and Operations scheduling}
-In a typical HPC application, the programming model imposes a  parallel execution of every function of the code, with data granularity imposing the details 
-of the parallelization. In Ambient, we developed an scheduler, an  \guillemotleft engine\guillemotright \, that privileges a queue execution model, where operations (\eg linear algebra operations \ldots)
-are stacked up in a list first, and are executed afterwards according to the model of the logistics/computation kernel. This model is inspired by computer architecture design, i.e.
+In a typical HPC application, the programming model imposes parallel execution of every function of the code, with data granularity imposing the details 
+of the parallelization. In Ambient, we developed an scheduler, an \guillemotleft engine\guillemotright \, that privileges a queue execution model, where operations (\eg linear algebra operations \ldots)
+are stacked up in a list first, and are executed afterwards according to the model of the logistic/computation kernel. This model is inspired by computer architecture design, i.e.
 the queue data flow execution in a processor \cite{DENNIS-1974}. We are replicating this approach now on a larger scale where basic instructions ($+,-,*,/$) are replaced 
-by the pairs of logistic/computational kernels. 
+by pairs of logistic/computational kernels. 
 
 Any HPC application can be decomposed into a set of functions performing numerical operations.  Starting from basic examples, we want to perform the three following operations :
 
@@ -433,23 +432,23 @@ Any HPC application can be decomposed into a set of functions performing numeric
 \end{eqnarray}
 where $A$, $B$, $C$ and $D$ are some matrices and $\lambda$ is some scalar.
 
-Conventionally, these three operations would be executed in parallel one after another. Transposing into Ambients' conception means associating each operation with a logistic and a computational kernel. Considering the first example of example (\ref{3OPERATIONS}),  a user would invoke the following \texttt{push} function:
+Conventionally, each of these three operations would be executed in parallel, one after another. Transposing into Ambients' conception means associating each operation with a logistic and a computational kernel. Considering the first example of example (\ref{3OPERATIONS}),  a user would invoke the following \texttt{push} function:
 
 \begin{eqnarray}
      \texttt{push(Addition\_logistic, Addition\_computional, \textit{A}, \textit{B})},
 \end{eqnarray} 
 
-with the appropriate logistic and computational kernels \texttt{Addition\_logistic} and \texttt{Addition\_computational}  (c.f. table \ref{LKERNEL} and \ref{CKERNEL}), followed by the arguments \texttt{\textit{A}} and \texttt{\textit{B}}. In this way operations, such as those in (\ref{3OPERATIONS}), will stack up during execution of the application. At any time then, the operations on the stack can be executed using the basic Ambient instruction
+with the appropriate logistic and computational kernels \texttt{Addition\_logistic} and \texttt{Addition\_computational}  (c.f. table \ref{LKERNEL} and \ref{CKERNEL}), followed by the arguments \texttt{\textit{A}} and \texttt{\textit{B}}. In this way, operations, such as those in (\ref{3OPERATIONS}), will stack up during execution of the application. At any time then, the operations on the stack can be executed using the basic Ambient instruction
 
 \begin{eqnarray}
-      \texttt{playout(),}
+      \texttt{playout()},
 \end{eqnarray} 
 
 although ideally this command would be invoked at the end, when all operations have been pushed onto the stack.
-The \texttt{playout()} command triggers the Ambient engine, scanning through the operation stack, identifying the independent operations and marking dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels are executed. Where dependencies exist, the relevant data - which is mapped  to some MPI group according to the requirements of the first operation in which it is needed - will be marked as 'needed in other operations' ; those later dependent operations can always trace it to its then-current owner.
+The \texttt{playout()} command triggers the Ambient engine, scanning through the operation stack, identifying the independent operations and marking dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels are executed. Where dependencies exist, the relevant data - which is mapped  to some MPI group according to the requirements of the first operation in which it is needed - will be marked as 'needed in other operations' ; those later dependent operations can always trace this data to its then-current owner.
 Finally, the computational kernels of independent operations are executed, followed by the dependent computational kernels in the appropriate order. In the case of data dependency, the data transfer is handled by the packet manager. When all computational kernels have been executed, the stack is cleared. A schematic of the stack execution is presented in Fig. \ref{EXECUTION} .
 
-Overall, the Ambient approach combines two levels of parallelism: that of each computational kernel and that of several kernels executed in parallel by assigning them to different MPI groups.  
+Overall, the Ambient approach combines two levels of parallelism: that of each computational kernel and that of several such kernels executed in parallel by assigning them to different MPI groups.  
 
 \begin{figure}[h]
 	\begin{center}
@@ -473,7 +472,7 @@ Overall, the Ambient approach combines two levels of parallelism: that of each c
 \end{figure}
 
 Next, we generalize example \ref{3OPERATIONS} to deal with vectors of matrices. We assume conditional statements determining which matrices should be added and/or multipled (Table \ref{GRAPH}). First, from line 1 to 11, as a dry run, the application execution will determine which operations should be performed, 
-pushing the required kernels on the top of stack. When the \texttt{playout()} function is called line 12, the engine will execute the stack. By resolving dependency, it will create the directed acyclic graph of the application naturally. 
+pushing the required kernels on the top of the stack. When the \texttt{playout()} function is called in line 12, the engine will execute the stack. By resolving dependencies, it will naturally create the directed acyclic graph of the application. 
 \begin{table}[t] 
 	\begin{center}
 	 	\begin{tabular}{l l }
@@ -502,7 +501,7 @@ pushing the required kernels on the top of stack. When the \texttt{playout()} fu
 	\caption{Generalization of the example \ref{3OPERATIONS} with conditional statements. The association of a cumulative stack and  delate stack execution will determine the  directed  acyclic graph. \label{GRAPH}}
 \end{table} 
 
-These examples demonstrate the strength of Ambient, allowing for two levels of parallelization without any hard coding of MPI instructions in the original code, with a great degree of flexibility and adaptability. Thus, a fully parallel linear algebra  application can be developed without taking into account the geometry of the problem, which usually done.
+These examples demonstrate the strength of Ambient, allowing for two levels of parallelization without any hard coding of MPI instructions in the original code, with a great degree of flexibility and adaptability. Thus, a fully parallel linear algebra  application can be developed without taking into account the geometry of the problem, which is usually done.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END EXECUTION AND OPERATIONS SCHEDULING SECTION
@@ -524,12 +523,12 @@ When a computational kernel is executed, it can access the any required, such as
 There are three possibilities for the resultant types of data communication when a process executes this function inside a computational kernel:
 
 \begin{enumerate}
-\item The work group is already in the memory of the process. The access is direct.
-\item The work group is in the memory space of the present MPI-group (previously created by the associated logistic kernel). 
+\item \textit{The work group is already in the memory of the process.} The access is direct.
+\item \textit{The work group is in the memory space of the present MPI-group (previously created by the associated logistic kernel).} 
 The process requiring this data sends a query (a specific type of packet) to the master process of its MPI group.
 The master process, which knows which slave process of its' group holds the required work group, sends a new request to
-the that process, which in turn sends the requested workgroup to the requesting process. 
-\item The work group is held inside another MPI-group. As previously, the process which executes the computational kernel sends a query to the master process of its MPI group,
+that process, which in turn sends the requested workgroup to the requesting process. 
+\item \textit{The work group is held inside another MPI-group.} As previously, the process which executes the computational kernel sends a query to the master process of its MPI group,
 which in turn sends a request to the master process of the MPI group within which the data is held. That master process then sends a message to the actual owner process,
 which finally sends the data to the initially requesting process.
 \end{enumerate}
@@ -551,11 +550,11 @@ identified by a singleton pattern.
 
 To reach the best performance in HPC, bottlenecks arising from synchronization operations should be avoided  \cite{EXASCALE-2010}.
 Thus, MPI asynchronous communication is privileged in Ambient (\texttt{mpi\_isend} and \texttt{mpi\_irecv}). Still, an asynchronously
-sent message  requires a \texttt{mpi\_test} to check whether the packet can be received.  As we avoid synchronization instructions,
+sent message requires \texttt{mpi\_test} to check whether the packet can be received.  As we avoid synchronization instructions,
 the receiving process repeatedly checks for the availability of the expected data in an infinite loop, until actually receiving the
 data. 
 
- For the packet manager to be adaptable to any communication pattern, it consists of two parts:
+For the packet manager to be adaptable to any communication pattern, it consists of two parts:
 the delegate pattern and a finite state machine (FSM), both are placed inside this loop.
 
 \begin{table}[b] 
@@ -563,13 +562,13 @@ the delegate pattern and a finite state machine (FSM), both are placed inside th
 	 	\begin{tabular}{l l }
                            \hline 
                            Algorithm of the packet manager   &    \\ \hline
-                           \textbf{Require}  a MPI process require a block of data &  \\                           
+                           \textbf{Require}  a MPI process requires a block of data &  \\                           
                             \begin{tabular}{c l}                                
                                \tiny{1:}   & \textbf{for}  ;;  \textbf{do} $\vartriangleright$  infinite loop \\
-                               \tiny{2:}   & \hspace{0.2 cm}  \texttt{Delegate()}  $\vartriangleright$ check if  packet has been, \\
-                                                & and received and re-send if needed \\
+                               \tiny{2:}   & \hspace{0.2 cm}  \texttt{Delegate()}  $\vartriangleright$ check if packet has been \\
+                                                & received, and re-send if needed \\
                                \tiny{3:}   & \hspace{0.2 cm}  FSM $\vartriangleright$ break the loop, \\
-                                               & if all packets arrived at destination. \\
+                                               & if all packets have arrived at destination. \\
                                \tiny{4:}   & \textbf{end do} \\
                            \end{tabular}   &  \\ \hline
         	     \end{tabular}
@@ -594,9 +593,9 @@ the delegate pattern and a finite state machine (FSM), both are placed inside th
 %\end{figure}
 
 The delegate pattern (from C\#) encapsulates  methods, behaving similar to a function pointer in C++,  but allowing for safer execution.
-The delegate object inside the packet manager class contains a series of functions pile up in a stack, such as forwarding requests, 
-layout and block of data. As this delegate is inside the infinite loop, the delegate execution 
-will propagate the packets process by process after every iterations (as shown on Fig. \ref{EXECUTION}). When the delegate execution is over, a finite state machine
+The delegate object inside the packet manager class contains a series of functions piled up in a stack, such as forwarding requests, 
+layout, and block of data (???). As this delegate is inside the infinite loop, the delegate execution 
+will propagate the packets process by process after every iteration (as shown in Fig. \ref{EXECUTION}). When the delegate execution is over, a finite state machine
 checks the states of the packets (arrived or not).  If all packets (data packet, layout packet, etc.) have been received, the FSM breaks the infinite loop.
 
 
@@ -605,18 +604,18 @@ checks the states of the packets (arrived or not).  If all packets (data packet,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN ABSTRACT PARALLEL DATATYPES 
 \subsection{Abstract parallel datatypes} \label{ABSTRACTPARADATATYPE}
 
-To assure the largest scope to Ambient, we designed the framework on the data structures and not a specific problem. Thus, we enlarge the utilization of the framework
-for a various set of applied computing fields. The connection  between Ambient and the \guillemotleft outside world \guillemotright  \, is done by an intermediate class that assure the
-connectivity between a class and ambient.
+To assure that Ambient has the largest possible scope, we designed the framework on the data structures and not on a specific problem. Thus, we enlarge the utilization of the framework
+to encompass various applied computing fields. The connection  between Ambient and the \guillemotleft outside world \guillemotright  \, is done by an intermediate class that assures the
+connectivity between a class and Ambient.
 
-For linear algebra, we designed a matrix class, we contained usual data members for describing the object (number of raws, number of columns, \dots) and  methods for linear
-algebra operations (associated to logistic and computational kernel).This matrix class derived from an other who assured the connection to Ambient.
-When an instance of the matrix class is created, the inheritance mechanics will call constructors, methods in the mother class that  will 
-structure  the memory (tile  layout).
+For linear algebra, we designed a matrix class which contains the usual data members for describing the object (number of rows, number of columns, \dots) and methods for linear
+algebra operations (associated to logistic and computational kernels). This matrix class derives from another one which ensures the connection to Ambient.
+When an instance of the matrix class is created, the inheritance mechanism will call constructors, methods in the mother class that  will 
+structure the memory (tile  layout).
 
-Therefore, we can extend Ambient for new problems. Per example, in fluid mechanics the  two-dimensional finite difference method is very popular for solving the Navier-Stokes  differential equations.
-These equations describes the parameters of the \guillemotleft fluid particle \guillemotright. In this case Ambient will discretize the space and assure, as for a matrix,  the distribution
- of the data inside the memory. Thus, a fluid particle class will contain enough information to assure a good discretization in the cartezian space (as the number of raws and columns inside the matrix class). 
+Therefore, we can extend Ambient to new problems. For example, in fluid mechanics the two-dimensional finite difference method is very popular for solving the Navier-Stokes  differential equations.
+These equations describe the parameters of the \guillemotleft fluid particle \guillemotright. In this case Ambient will discretize the space and assure, as for a matrix,  the distribution
+ of the data inside the memory. Thus, a fluid particle class will contain enough information to ensure a good discretization in the cartesian space (as the number of rows and columns inside the matrix class) (???). 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END ABSTRACT PARALLEL DATATYPES 
 
