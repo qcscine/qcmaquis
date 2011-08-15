@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_type
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vli_types )
 {
     Vli a;
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vl
     //Check that b hasn't changed
     BOOST_CHECK_EQUAL(b,b_orig);
 }
-
+*/
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli, vli_types )
 {
@@ -297,21 +297,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_int_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp, Vli, vli_types )
-{
-    Vli a;
-    Vli b;
-    fill_random(a,Vli::size);
-    fill_random(b,Vli::size); 
-    
-    mpz_class agmp(a.get_str()), bgmp(b.get_str());
-    
-    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
-    mpz_class cgmp = agmp * bgmp;
-    
-    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
-}
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int_gmp, Vli, vli_types )
 {
     Vli a;
@@ -324,70 +309,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int_gmp, Vli, vli_types )
     mpz_class cgmp = agmp * b;
     
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp, Vli, vli_types )
-{
-    Vli a;
-    Vli b;
-    fill_random(a,Vli::size);
-    fill_random(b,Vli::size); 
-    a.negate();
-    
-    mpz_class agmp(a.get_str()), bgmp(b.get_str());
-    
-    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
-    mpz_class cgmp = agmp * bgmp;
-    
-    b.negate();
-    vli_cpu<typename Vli::value_type,2*Vli::size> d = a*b;
-    mpz_class dgmp = agmp * (-bgmp);
-    
-    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
-    BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_reverse_negative_numbers_gmp, Vli, vli_types )
-{
-    Vli a;
-    Vli b;
-    fill_random(a,Vli::size);
-    fill_random(b,Vli::size); 
-    b.negate();
-    
-    mpz_class agmp(a.get_str()), bgmp(b.get_str());
-    
-    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
-    mpz_class cgmp = agmp * bgmp;
-    
-    b.negate();
-    vli_cpu<typename Vli::value_type,2*Vli::size> d = a*b;
-    mpz_class dgmp = agmp * (-bgmp);
-    
-    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
-    BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp, Vli, vli_types )
-{
-    Vli a;
-    Vli b;
-    fill_random(a,Vli::size);
-    fill_random(b,Vli::size); 
-    a.negate();
-    b.negate();
-    
-    mpz_class agmp(a.get_str()), bgmp(b.get_str());
-    
-    vli_cpu<typename Vli::value_type,2*Vli::size> c = a*b;
-    mpz_class cgmp = agmp * bgmp;
-    
-    b.negate();
-    vli_cpu<typename Vli::value_type,2*Vli::size> d = a*b;
-    mpz_class dgmp = agmp * (-bgmp);
-    
-    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
-    BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, Vli, vli_types )

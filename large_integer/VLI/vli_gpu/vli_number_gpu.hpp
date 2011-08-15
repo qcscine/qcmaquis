@@ -168,8 +168,7 @@ namespace vli
         vli_gpu& operator *= (int a)
         {
             using vli::multiplies_assign;
-            vli_gpu vli_a(a); 
-            multiplies_assign(*this,vli_a);
+            multiplies_assign_single(*this, static_cast<BaseInt>(a));
             return *this;
         }
         
@@ -296,17 +295,17 @@ namespace vli
     }
 
 	template <class BaseInt, int Size>
-	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
+	const vli_gpu<BaseInt, 2*Size> operator * (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
-        // TODO check whether direct implementation (without *= ) is faster
-        vli_a *= vli_b;
-        return vli_a;
+        using vli::multiplies_assign;
+        vli_gpu<BaseInt, 2*Size> vli_c;
+        multiplies_assign(vli_a, vli_b , vli_c);
+        return vli_c;
     }
 	
     template <class BaseInt, int Size>
 	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, int b)
-    {
-        // TODO check whether direct implementation (without *= ) is faster
+    {        
         vli_a *= b;
         return vli_a;
     }

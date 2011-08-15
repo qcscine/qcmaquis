@@ -135,7 +135,6 @@ namespace vli
         {
             using vli::multiplies_assign_number;
             multiplies_assign_number(*this,a);
-       //   multiplies_assign(*this,vli_cpu(a));
             return *this;
         }
 
@@ -179,7 +178,7 @@ namespace vli
             return ( (tmp-=*this).is_negative() );
         }
 
-       void negate()
+        void negate()
         {
             for(size_type i=0; i < Size-1; ++i)
                 data_[i] = (~data_[i])&data_mask<BaseInt>::value;
@@ -322,7 +321,7 @@ namespace vli
 
         BaseInt data_[Size] __attribute__ ((aligned (16)));
     };
-	
+    
     /**
      multiply and addition operators, suite ...
      */
@@ -365,10 +364,8 @@ namespace vli
     {
         vli_cpu<BaseInt, 2*Size> vli_res;
         
-        int na(1);
-        int nb(1);        
+        int na(1),nb(1);        
                 
-        //Fortran style so every body undestand ...
         if(vli_a.is_negative()){
             const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
             na = -1;
@@ -389,7 +386,7 @@ namespace vli
         }
 
         if(nb == -1){
-            const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
+           const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
         }
 
         return vli_res;

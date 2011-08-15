@@ -179,12 +179,12 @@ template <typename T>
 __device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z, int vli_size)
 {
 	T r[2] = {0,0};	//for local block calculation
-	
+	int m = 0;
     for (int i = 0 ; i < vli_size; ++i) 
     {
         for(int j = 0 ; j < vli_size ; ++j)  			
         {	
-            int m = j + i;
+            m = j + i;
             multiplication_block_gpu(&x[i], &y[j], &r[0]);
             addition_kernel_gpu_noiter(&z[m] , &r[0]);
             addition_kernel_gpu_noiter(&z[m+1], &r[1]);
@@ -195,24 +195,60 @@ __device__ void multiplication_classic_kernel_gpu(const T* x,  const T* y , T* z
 template <typename T>
 __global__ void single_multiplication(T const* x, T const* y , T* z, int vli_size)     
 {
-//   bool result_is_negative = static_cast<bool>((x[Size-1] ^ y[Size-1]) >> data_bits<BaseInt>::value);
-//     if(result_is_negative)// test if 
-//   {
-//      negate_device(y,vli_size);
-        multiplication_classic_kernel_gpu(x, y, z, vli_size);  // +*- or -*+ 
-//      negate_device(y,vli_size);
-//   }
-//   else
-//   {
-//       multiplication_classic_kernel_gpu(x, y, z, vli_size);  // +*+ or -*-  
-//   }
+    int na(1),nb(1);
+    
+    if( static_cast<bool>((x[vli_size-1]) >> data_bits<T>::value)){
+        negate_device(const_cast<T* >(x),vli_size);
+        na = -1;
+    }
+
+    if( static_cast<bool>((y[vli_size-1]) >> data_bits<T>::value)){
+        negate_device(const_cast<T* >(y),vli_size);
+        nb = -1;
+    }
+
+    multiplication_classic_kernel_gpu(x, y, z, vli_size);  
+
+    if(nb*na == -1)
+        negate_device(z, 2*vli_size);
+       
+    if(na == -1){
+        negate_device(const_cast<T* >(x),vli_size);
+    }
+
+    if(nb == -1){
+        negate_device(const_cast<T* >(y),vli_size);
+    }
 }
+
+template <typename T>
+__global__ void single_multiplication_number( T *x, T a, int vli_size)
+{
+{      
+        T r[2] = {0,0};
+        multiplication_block_gpu(&x[vli_size-1],&a,&(r[0]));
+        x[vli_size-1] = r[0];
+        for( std::size_t i = vli_size-1; i > 0; --i)
+        {
+            multiplication_block_gpu(&x[i-1],&a,&(r[0]));
+            x[i-1] = r[0];
+            x[i] += r[1];
+
+            // Carry bit propagation
+            for(std::size_t j = i; j < vli_size-2; ++j)
+            { 
+                x[j+1] += x[j] >> data_bits<T>::value; //carry bit
+                x[j] &= data_mask<T>::value; // Remove the carry bit
+            }
+        }
+    }
+
+}
+
     
 template <typename T>
 __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, int vli_size, int max_order)
 {
-    const int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	
     #pragma unroll
     for(std::size_t i = 0 ; i < max_order*max_order ; i++)
     {
@@ -268,7 +304,6 @@ __global__ void inner_prod_vector(T const* p1, T const* p2, T* inter, int vli_si
 template <typename T>
 __global__ void reduction_polynome(T const* A, T * B,  int vli_size, int max_order, int size_vector)
 { 
-    unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; 
     int size_poly = vli_size*max_order*max_order;
     
     for(unsigned int i=0 ; i < size_vector ; i++)
@@ -295,6 +330,12 @@ void minus_assign_gpu(TYPE*  A, TYPE*  B, int vli_size) \
     dim3 dimgrid(1,1,1); \
     dim3 dimblock(1,1,1); \
     single_substraction <<< dimgrid, dimblock >>>(A, B, vli_size); \
+}     \
+void multiplies_assign_single_gpu(TYPE*  A, TYPE a, int vli_size) \
+{ \
+    dim3 dimgrid(1,1,1); \
+    dim3 dimblock(1,1,1); \
+    single_multiplication_number <<< dimgrid, dimblock >>>(A, a, vli_size); \
 }     \
 void entrywise_multiplies_gpu(TYPE const* a, TYPE const* b, TYPE* c, int vli_size) \
 { \

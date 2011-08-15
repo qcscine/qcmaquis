@@ -27,16 +27,18 @@ void minus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vl
 }
 
 template <class BaseInt, int Size>
-void multiplies_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b )
+void multiplies_assign_single(vli_gpu<BaseInt,Size>& vli_a, BaseInt a)
+{
+    using detail::multiplies_assign_single_gpu;
+    multiplies_assign_single_gpu(vli_a.p(),a,Size);
+
+}
+
+template <class BaseInt, int Size>
+void multiplies_assign(vli_gpu<BaseInt,Size> const& vli_a, vli_gpu<BaseInt,Size> const& vli_b, vli_gpu<BaseInt, 2*Size> & vli_c)
 {
     using detail::entrywise_multiplies_gpu;
-    // TODO this seems to be quite inefficient
-    // (We implement the a *= b as a regular c = a * b and do a swap(a,c)...)
-    // (I guess it's better to try implement a *= b directly.)
-    // I need an intermediate buffer unfortunatly
-    vli_gpu<BaseInt,Size> vli_c;
     entrywise_multiplies_gpu( vli_a.p(), vli_b.p(), vli_c.p(), Size);
-    swap(vli_a,vli_c);
 }
 
 } //namespace vli
