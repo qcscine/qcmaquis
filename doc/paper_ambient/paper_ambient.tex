@@ -422,16 +422,16 @@ Conventionally, each of these three operations would be executed in parallel, on
      \texttt{push(Addition\_logistic, Addition\_computional, \textit{A}, \textit{B})},
 \end{eqnarray} 
 
-with the appropriate logistic and computational kernels \texttt{Addition\_logistic} and \texttt{Addition\_computational}  (c.f. table \ref{LKERNEL} and \ref{CKERNEL}), followed by the arguments \texttt{\textit{A}} and \texttt{\textit{B}}. This way, operations, such as those in (\ref{3OPERATIONS}), will stack up during execution of the application. At any time then, the operations on the stack would be available for the execution through the basic Ambient instruction
+with the appropriate logistic and computational kernels \texttt{Addition\_logistic} and \texttt{Addition\_computational}  (c.f. table \ref{LKERNEL} and \ref{CKERNEL}), followed by the arguments \texttt{\textit{A}} and \texttt{\textit{B}}. This way, operations, such as those in (\ref{3OPERATIONS}), will stack up during execution of the application. At any time then, the operations on the stack would be available for execution through the basic Ambient instruction
 
 \begin{eqnarray}
       \texttt{playout()},
 \end{eqnarray} 
 
 although ideally this command would be invoked at the end, when all operations have been pushed onto the stack.
-The \texttt{playout()} command triggers the Ambient engine to scan through the operation stack, identify the independent operations and mark dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels for independent operations are executed. Next the computational kernels of these independent operations are executed. Following the completion of those, Ambient takes next chunk of independent operations (whose dependencies were just satisfied) and repeats the cycle transporting the necessary data to the new groups after the execution of logistic kernels is complete. In the case of data dependency, the data transfer is handled by the packet manager. When all computational kernels have been executed the stack is getting cleaned. The schematic overview of the stack execution is presented in Fig. \ref{EXECUTION} .
+The \texttt{playout()} command triggers the Ambient engine to scan through the operation stack, identify the independent operations and mark dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels for independent operations are executed. Next the computational kernels of these independent operations are executed. Following the completion of those, Ambient iterates over the remaining operations and takes the chunk of newly independent operations (whose dependencies were satisfied) and repeats the cycle, transporting the necessary data to the new groups after the execution of logistic kernels is complete. In the case of data dependency, the data transfer is handled by the packet manager. When all computational kernels have been executed, the stack is cleaned. The schematic overview of stack execution is presented in Fig. \ref{EXECUTION} .
 
-In overall, the Ambient employs single kernel multiple data parallelism model that is used over many process groups with different kernels and data.
+Overall, Ambient employs a "single kernel multiple data" parallelism model that is used simultaneously over many process groups with different kernels and data sets.
 
 \begin{figure}[h]
 	\begin{center}
@@ -451,10 +451,10 @@ In overall, the Ambient employs single kernel multiple data parallelism model th
                            \psfrag{Usual execution}{\tiny{Usual execution}}                          
 	                  \includegraphics[scale=0.35]{FIGURES/execution.eps} 
 	\end{center}
-          \caption{Ambient scheduler's workflow model. On the classical approach (left) the operations will be executed in parallel step by step disregarding the dependencies (marked by the symbol \guillemotleft [\guillemotright \, in the schematic). In Ambient (right), operations will be associated to the logistic/computational kernel pair (abbreviate l/c), as operations 1 and 3  (l/c kernels 1 and 3) are independent - the execution of computational kernel will be performed simultaneously.  Due to the dependency between the kernel 1 and 2, the computational kernel of operation 2 (l/c kernel 2) will be executed later. It should be performed in a new MPI group but with an appropriate SQL request (\ref{SQL2}) in logistic kernel we can execute the computational kernel right in the place where the data currently is. }   \label{EXECUTION}
+          \caption{Ambient scheduler's workflow model. In the classical approach (left) the operations will be executed in parallel step by step disregarding the dependencies (marked by the symbol \guillemotleft [\guillemotright \, in the schematic). In Ambient (right), operations will be associated to the logistic/computational kernel pair (abbreviate l/c), as operations 1 and 3  (l/c kernels 1 and 3) are independent - the execution of computational kernels will be performed simultaneously.  Due to the dependency between the kernel 1 and 2, the computational kernel of operation 2 (l/c kernel 2) will be executed later. It should be performed in a new MPI group but with an appropriate SQL request (\ref{SQL2}) in logistic kernel we can execute the computational kernel right in the place where the data currently is. }   \label{EXECUTION}
 \end{figure}
 
-Next, we generalize example \ref{3OPERATIONS} to deal with vectors of matrices. We assume conditional statements determining which matrices should be added and/or multipled (Table \ref{GRAPH}). First, from line 1 to 11, as a dry run, the application execution will determine which operations should be performed, 
+Next, we generalize example (\ref{3OPERATIONS}) to deal with vectors of matrices. We assume conditional statements determining which matrices should be added and/or multipled (Table \ref{GRAPH}). First, from line 1 to 11, as a dry run, the application execution will determine which operations should be performed, 
 pushing the required kernels on the top of the stack. When the \texttt{playout()} function is called in line 12, the engine will execute the stack. By resolving dependencies it will naturally create the directed acyclic graph of the application. 
 \begin{table}[t] 
 	\begin{center}
@@ -495,10 +495,10 @@ These examples demonstrate the strength of Ambient, allowing two levels of paral
 In standard HPC applications, data may have to be prepared for exchange over the network, particularly if the data is of more than one type; in the latter case,
 an MPI structure is set up, to which the data is then copied, and then this structure is sent via network. These preliminary conversions can cut into
 performance. In Ambient, the data layout inside each work group necessitates additional metadata to coordinate the execution of logistic and 
-computational kernels, particularly the latter has to perform a remote access. Thus, the block of data associated with a workgroup exists only in the form that includes meta-data 
-in contiguous memory layout manner. We use this ensemble \guillemotleft block of data + metadata\guillemotright \, directly as a network packet based on top of MPI derived datatypes. 
-Thereby, work groups can move around without additional overhead on copying and any other composure. 
-To assure proper execution of the framework, several additional type of packets are available: control packet, layout packet and data-block packet that derive from one standard packet type. 
+computational kernels, particularly if the latter has to perform a remote access. Thus, the block of data associated with a workgroup exists only in a form that includes meta-data 
+in a contiguous memory layout. We use this ensemble \guillemotleft block of data + metadata\guillemotright \, directly as a network packet based on top of MPI derived datatypes. 
+Thereby, work groups can move around without additional copying or any other composition overhead. 
+To assure proper execution of the framework, several additional types of packets are available: control packets, layout packets and data-block packets that derive from one standard packet type. 
 
 During the computational kernel execution, one can access any required remote data, such as a block of matrix $A$, by use of the Ambient modificator  \texttt{current(\textit{A})(i,j)}
 (ref. \ref{CURRENT}), where \textit{A} has to be a matrix or other object that adheres Ambient's architecture (\cite{ABSTRACTPARADATATYPE}), the indices $i$ and $j$ are the coordinates of the work group (Fig. \ref{MPIGROUP}). 
@@ -582,12 +582,15 @@ checks the send completion state of the other MPI processes (whether they have s
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN ABSTRACT PARALLEL DATATYPES 
 \subsection{Abstract parallel datatypes} \label{ABSTRACTPARADATATYPE}
 
-To assure that Ambient has the largest possible scope, we designed the framework on the data structures and not on a specific problem. Thus, we enlarge the utilization of the framework
-to encompass various applied computing fields. The connection  between Ambient and the \guillemotleft outside world \guillemotright  \, is done by an intermediate class that assures the
-adherance of class to Ambient's architecture.
+In order to turn Ambient into general purpose framework, we have decoupled the Ambient data representation from the user datatypes. There are two aspects to the parallel datatypes. 
 
-For linear algebra, we designed a matrix class which contains the usual data members for describing the object (number of rows, number of columns, \dots) and methods for linear
-algebra operations (associated with logistic and computational kernels). This matrix class derives from another one which ensures the adherence to Ambient's architecture.
+First is the object's lifetime - as we employ the technique of accumulated execution - we have to unsure that the objects that were created on the stack are still alive at the time of the actual execution. For this purpose we introduced livelong class that forces derived data types to dplicate themselves in heap memory upon construction if they were allocated on stack. Using this duplicate we can ensure that the object will stay alive until the moment of the actual kernels execution. 
+
+Second aspect is the actual connection with the Ambient's work groups engine. Each data type that derives from the livelong class has a field pointing to an associated parallel profile of the object. This parallel profile object is responsible for the data storage and actual tracking of physical location of the data pieces throughout the cluster's processes. The relationship between user type and parallel profile is regulated by means of providing a specialized constructor for the user's data type that sets the memory storage parameters according to the actual user's object parameters in a user defined way. 
+
+That is, one is free to design his own data types like parallel sparse matrix alongside with embedded parallel dense matrix type. The simpliest example is dense matrix - inside the specialized constructor we simply set the dim.x and dim.y of parallel profile to be matrix cols and matrix rows numbers respectively. This setting immidiately sets work group grid of the object considering also provided size of the object's work group. Alongside with the dimension other parameters are being set - such as data element size and work block/work item dimensions (the latter can be changed individually for the object during the runtime).
+
+In general, the mechanism described above provides us with all means to adapt the framework in a simple and flexible way to any abstract parallel types that the user might want to use for computations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END ABSTRACT PARALLEL DATATYPES 
 
