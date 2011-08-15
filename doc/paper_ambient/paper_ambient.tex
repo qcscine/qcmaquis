@@ -597,9 +597,9 @@ In general, the mechanism described above provides us with all means to adapt th
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN VALIDATION
 \subsection{Validation}
-As a validation test, we code a new implementation of PDGEMM using the Ambient framework, and compare to the ScaLAPACK version of PDGEMM (MKL-Version).
-The algorithm of our implementation is based on the classical method [CITATION NEEDED] using a column order distribution for the matrices (\cf table \ref{AMBIENTDGEMM} 
-for the modification due to Ambient). The main advantage in our implementation is the required amount of coding, which is limited to seven lines.
+As a validation test, we've coded a new implementation of PDGEMM using the Ambient framework, and compare to the ScaLAPACK version of PDGEMM (MKL-Version).
+The algorithm of our implementation is based on the classical blocking method [CITATION NEEDED] using a column order distribution for the matrices (\cf table \ref{AMBIENTDGEMM} 
+for the modification due to Ambient). One of the obvious advantages in our implementation is the required amount of coding, which is limited to seven lines in this case.
 
 ----------------------------------------------------------------------------------------------------- \\
 TO DO: EXPLAIN THE ADVANTAGE AGAINST   SCALAPACK \\
