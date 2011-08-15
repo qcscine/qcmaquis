@@ -130,8 +130,8 @@ execution is initiated along the following sequence:
 
 \begin{itemize}
 \item Execution of logistic kernel: allocation of device (MPI group) according to specified request. 
-\item Execution of logistic kernel: argument's work groups decomposition according to workDim [MORE EXPLANATION].
-\item Execution of logistic kernel: selected argument's work groups mapping onto device (MPI processes). [MORE EXPLANATION]
+\item Execution of logistic kernel: argument's work groups decomposition according to workDim [INSERT OPENCL REF HERE].
+\item Execution of logistic kernel: selected argument's work groups mapping onto device (MPI processes).
 \item Transfer of work groups to the target processes.
 \item Execution of computational kernel: MPI process executes kernel thread for work items of assigned work groups.
 \end{itemize}
@@ -190,7 +190,7 @@ after which the user does not have to explicitely manage the memory transfer ins
 
 First, we prepare the memory of corresponding work groups. Then we execute our numerical operations \eg a matrix multiplication in the following sequence \footnote{From here onwards, we will illustrate the execution model through parallel matrix addition or multiplication.}:
 \begin{enumerate}
-	\item A logistic kernel; where we select the number of processors, and map the data onto processes indices (???).
+	\item A logistic kernel; where we select the number of processes, and map the data onto them.
 	\item A computational kernel; where we execute required computational operations (similar to the CUDA-kernel).
 \end{enumerate}
 
@@ -238,7 +238,8 @@ Thus, every operation (\eg multiplication, addition, or more sophisticated linea
 
 \newpage
 
-\subsubsection{The logistic kernel} The role of the logistic kernel is to initialize memory and work groups for execution. It consists of creating an MPI-group and mapping the data to the group with the appropriate pattern (for example 1D/2D block-cyclic distribution or the row/column-wise block distribution).  The selection of the group is done by issuing an SQL-like request. Afterward the data is mapped onto this newly created group using sporadic (???) assignments. Both these functionalities are described in section \ref{SQLSECTION}.
+\subsubsection{The logistic kernel} The role of the logistic kernel is to initialize memory and work groups for execution. It consists of creating an MPI-group and mapping the data to the group with the appropriate pattern (for example 1D/2D block-cyclic distribution or the row/column-wise block distribution).  The selection of the group is done by issuing an SQL-like request. Afterward the data is mapped onto this newly created group using surjective assignments. Both these functionalities are described in section \ref{SQLSECTION}.
+
 
 In linear algebra, the optimal distribution in terms of load balancing often is the 2D block-cyclic distributions, but in general it depends on the target algorithm. For example, for the QR factorization \cite{DEMMEL-2008} it can be demonstrated that the row-wise distribution is superior to the 2D block-cyclic decomposition for matrices with more rows than columns. Switching from one distribution scheme to another is a challenge for ScaLAPACK while can be easily accomplished with Ambient.
  \begin{table}[h]
@@ -404,8 +405,7 @@ The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}}
 \subsection{Execution model and Operations scheduling}
 In a typical HPC application, the programming model imposes parallel execution of every function of the code, with data granularity imposing the details 
 of the parallelization. In Ambient, we have made a scheduler that privileges a queue execution model where operations
-are stacked up in a list first and are executed afterwards according to the respective logistic/computational kernel. This model is inspired by computer architecture design, i.e.
-the queue data flow execution in a processor \cite{DENNIS-1974} (Alex: hell, no!).
+are stacked up in a list first and are executed afterwards according to the respective logistic/computational kernel.
 
 Any HPC application can be decomposed into a set of functions performing numerical operations. Let's start from a basic example, where we want to perform the three following operations :
 
