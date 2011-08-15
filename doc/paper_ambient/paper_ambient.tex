@@ -527,17 +527,14 @@ Case (2) and (3) are illustrated in Fig. \ref{MPIEXCHANGE}.
 
 Clearly, smooth execution of any communication pattern arising from the great number of possible data dependencies
 is key to a good performance of the Ambient approach. The resolution of communication patters also falls under the purview
-of the packet manager, as it manages both intra- and inter-group communication. Each MPI-group has a unique packet manager,
-identified by a singleton pattern.
+of the packet manager, as it manages both intra- and inter-group communication. Each MPI-group has its own singleton packet manager.
 
 To reach the best performance in HPC, bottlenecks arising from synchronization operations should be avoided  \cite{EXASCALE-2010}.
-Thus, MPI asynchronous communication is privileged in Ambient (\texttt{mpi\_isend} and \texttt{mpi\_irecv}). Still, an asynchronously
-sent message requires \texttt{mpi\_test} to check whether the packet can be received.  As we avoid synchronization instructions,
-the receiving process repeatedly checks for the availability of the expected data in an infinite loop, until actually receiving the
-data. 
+Thus, MPI asynchronous communication is privileged in Ambient (\texttt{mpi\_isend} and \texttt{mpi\_irecv}). As we avoid synchronization 
+instructions, the process repeatedly checks for the availability of the incoming data in an infinite loop, until actually receiving the
+data.
 
-For the packet manager to be adaptable to any communication pattern, it employs two parts:
-a delegate mechanism and a finite state machine (FSM).
+For the packet manager to be adaptable to any communication pattern, it employs the delegate mechanism and a finite state machine (FSM).
 
 \begin{table}[b] 
 	\begin{center}
@@ -587,16 +584,10 @@ checks the send completion state of the other MPI processes (whether they have s
 
 To assure that Ambient has the largest possible scope, we designed the framework on the data structures and not on a specific problem. Thus, we enlarge the utilization of the framework
 to encompass various applied computing fields. The connection  between Ambient and the \guillemotleft outside world \guillemotright  \, is done by an intermediate class that assures the
-connectivity between a class and Ambient.
+adherance of class to Ambient's architecture.
 
 For linear algebra, we designed a matrix class which contains the usual data members for describing the object (number of rows, number of columns, \dots) and methods for linear
-algebra operations (associated to logistic and computational kernels). This matrix class derives from another one which ensures the connection to Ambient.
-When an instance of the matrix class is created, the inheritance mechanism will call constructors, methods in the mother class that  will 
-structure the memory (tile  layout).
-
-Therefore, we can extend Ambient to new problems. For example, in fluid mechanics the two-dimensional finite difference method is very popular for solving the Navier-Stokes  differential equations.
-These equations describe the parameters of the \guillemotleft fluid particle \guillemotright. In this case Ambient will discretize the space and assure, as for a matrix,  the distribution
- of the data inside the memory. Thus, a fluid particle class will contain enough information to ensure a good discretization in the cartesian space (as the number of rows and columns inside the matrix class) (???). 
+algebra operations (associated with logistic and computational kernels). This matrix class derives from another one which ensures the adherence to Ambient's architecture.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END ABSTRACT PARALLEL DATATYPES 
 
