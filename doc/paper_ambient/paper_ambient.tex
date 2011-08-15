@@ -484,7 +484,7 @@ pushing the required kernels on the top of the stack. When the \texttt{playout()
 	\caption{Generalization of the example \ref{3OPERATIONS} with conditional statements. The cumulativeness of the stack and delayed manner of execution compromise the directed acyclic graph together. \label{GRAPH}}
 \end{table} 
 
-These examples demonstrate the strength of Ambient, allowing two levels of parallelization without any MPI hardcoding inside of the original code, with a great degree of flexibility and adaptability. Thus, a fully parallel linear algebra  application can be developed without taking into account the geometry of the problem, which is usually done.
+These examples demonstrate the strength of Ambient, allowing two levels of parallelization without any MPI hardcoding inside of the original code, with a great degree of flexibility and adaptability. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END EXECUTION AND OPERATIONS SCHEDULING SECTION
@@ -493,17 +493,16 @@ These examples demonstrate the strength of Ambient, allowing two levels of paral
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN PACKET MANAGER 
 \subsection{Packet manager and MPI abstraction} \label{MPIABSTRACTION}
 In standard HPC applications, data may have to be prepared for exchange over the network, particularly if the data is of more than one type; in the latter case,
-a MPI structure is set up, to which the data is then copied, and then this structure is send via network. These preliminary conversions can cut into
+an MPI structure is set up, to which the data is then copied, and then this structure is sent via network. These preliminary conversions can cut into
 performance. In Ambient, the data layout inside each work group necessitates additional metadata to coordinate the execution of logistic and 
-computational kernels, particularly the latter has to perform a remote access. Thus, before the block of data held by a workgroup, contiguous
-metadata is included. We call this ensemble \guillemotleft block of data+metadata\guillemotright \, as a network packet, which is built
-on a MPI structure. Thereby, work groups are able to send or receive without any additional movements or copying. 
-To assure proper execution of the framework, several additional type of packets are  available, request packet, layout packet and data-block packet
-they  all derived from a standard packet. 
+computational kernels, particularly the latter has to perform a remote access. Thus, the block of data associated with a workgroup exists only in the form that includes meta-data 
+in contiguous memory layout manner. We use this ensemble \guillemotleft block of data + metadata\guillemotright \, directly as a network packet based on top of MPI derived datatypes. 
+Thereby, work groups can move around without additional overhead on copying and any other composure. 
+To assure proper execution of the framework, several additional type of packets are available: control packet, layout packet and data-block packet that derive from one standard packet type. 
 
-When a computational kernel is executed, it can access the any required, such as a block of matrix $A$, by use of the Ambient command  \texttt{current(\textit{A})(i,j)}
-(ref. \ref{CURRENT}), where \textit{A} has to be a matrix  compatible with Ambient (\cite{ABSTRACTPARADATATYPE}), the indices $i$ and $j$ being the coordinates of the work group (Fig. \ref{MPIGROUP}). 
-There are three possibilities for the resultant types of data communication when a process executes this function inside a computational kernel:
+During the computational kernel execution, one can access any required remote data, such as a block of matrix $A$, by use of the Ambient modificator  \texttt{current(\textit{A})(i,j)}
+(ref. \ref{CURRENT}), where \textit{A} has to be a matrix or other object that adheres Ambient's architecture (\cite{ABSTRACTPARADATATYPE}), the indices $i$ and $j$ are the coordinates of the work group (Fig. \ref{MPIGROUP}). 
+There are three possibilities of resulting communication while a process issues data via modificators inside computational kernel:
 
 \begin{enumerate}
 \item \textit{The work group is already in the memory of the process.} The access is direct.
