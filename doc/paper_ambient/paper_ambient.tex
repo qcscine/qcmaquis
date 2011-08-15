@@ -311,18 +311,18 @@ As it was shown for the matrix addition, we can recode other linear algebra solv
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN SQL SECTION
 
 \subsection{SQL resource management}  \label{SQLSECTION}
- In the previous section, we introduced the logistic kernels and their role in initializing resources for the execution of the computational kernels. 
- One of Ambients' main qualities is the ability to perform a dynamic management of the CPU resources of the cluster. To facilitate this, we integrated a light SQL framework \cite{SQLite} inside Ambient, which selects the desired number of processors inside the logistic kernel, in order to execute the computational kernel. 
+ In the previous section, we have introduced the logistic kernel and its role in resources initialization for the execution of the computational kernels. 
+ One of the main Ambient's qualities is the ability to perform dynamic management of the CPU resources on a cluster. To facilitate this, we have integrated an SQL parser from \cite{SQLite} into Ambient. Using this parser we select the desired number of processors according to supplied SQL string inside the logistic kernel. 
 
-At the beginning of the framework execution, a main MPI group is created named \texttt{ambient}. To create groups inside this main group we used the abilities of MPI to build nested independent groups of processors  (chapter 6 of  \cite{MPI-2002}).  We encapsulated these features in the framework, and we control them through the SQL requests. This allows for a simple yet flexible management  of the MPI groups.  
-These requests (done by the \texttt{scope\_select} Ambient-function) are applied to the logistic/computational addition kernels of our example by the following SQL syntax: \\
+At the beginning of the application's execution global MPI group gets created under the name \texttt{ambient}. In order to create nested groups we have used the ability of MPI to construct a new MPI group on top of the parent one (chapter 6 of \cite{MPI-2002}). We encapsulated this into the framework controlling it via the mentioned SQL request mechanism. It enables simple yet flexible control over the resources.  
+An example request for the addition kernel can be described as below (done by the \texttt{scope\_select} function).\\
 
 \begin{eqnarray}
        & &\texttt{scope\_select("\textit{N} from ambient as addition\_group }   \label{SQL1} \\
        & &\texttt{	where master is 0")}, \nonumber
 \end{eqnarray}
-This command selects \texttt{\textit{N}} processors from the original MPI group  \texttt{ambient}. The newly created group is 
-named \texttt{addition\_group}, and its master processor locally has MPI-rank 0 (see Fig. \ref{MPIGROUP}).
+This query will select \texttt{\textit{N}} processors from the global \texttt{ambient} MPI group. The newly created group then is 
+accessible under the name \texttt{addition\_group}, its master process will have local rank 0 (see Fig. \ref{MPIGROUP}).
 
 \begin{figure}[b]
 	\begin{center}
@@ -350,18 +350,14 @@ named \texttt{addition\_group}, and its master processor locally has MPI-rank 0 
                            \psfrag{n}{\hspace{-0.25cm} \tiny $n$}
 	                  \includegraphics[scale=0.35]{FIGURES/MpiGroupData.eps} 
 	\end{center}
-          \caption[]{Creation of a MPI group by the SQL request, with \hbox{\cloud \hspace{0.02cm}} representing a MPI group with its own communicator;  $\bullet$ represents the master 
-          process inside the group whereas the $\circ$ are the associated slave processors inside the corresponding group. Also shown is the assignment of the data blocks (each block corresponding to an Ambient work group) inside the newly created MPI group. In this example, the matrix is mapped, block by block, on the processors using a 1D column-cyclic distribution.}
+          \caption[]{Creation of an MPI group using SQL request, with \hbox{\cloud \hspace{0.02cm}} representing an MPI group with its own communicator;  $\bullet$ represents the master 
+          process inside the group whereas the $\circ$ are the associated slave processes inside the corresponding group. In this example the matrix is mapped block by block onto the processors using 1D column-cyclic distribution.}
           \label{MPIGROUP}
 \end{figure}
 
-After the SQL request, the data (workgroup) is mapped to the processes inside the newly created MPI group by a distribution function (\eg 1D or 2D block-cyclic distribution), the algorithm of which is described in table \ref{2DCYCLIC} (\cf Fig. \ref{MPIGROUP}). After this transfer, the processes of the MPI group are the primary owners in terms of data access and execution. In the Ambient approach, every operation is associated with
-a logistic and a computational kernel, therefore the SQL request will be called several times. To create new groups, processes from the existing group are selected in ascending numerical rank, until all processes of the \texttt{ambient} group 
-have been selected. If further groups are required, the selection is restarted from the beginning, thus a processor can belong to multiple groups simultaneously.
+After SQL request section, the data is being mapped to the processes of the newly created MPI group in terms of work groups. Frequently the algorithm would be simply 1D or 2D block-cyclic distribution, the algorithm of which is described in the table \ref{2DCYCLIC} (\cf Fig. \ref{MPIGROUP}). After the actual transfer later those processes will become the primary owners of their data in terms of storage and handling. With Ambient every operation is associated with a pair of logistic and computational kernels - that is, there will be multiple SQL requests. In order to create new groups, processes from the parent group are being selected in a queue fashion until all processes of the group have been selected. If more groups are required - the selection restarts from the beginning of the queue making one process simultaneously a member of several groups.
 
-Every new group will have its own intra-communicator to allow intra-group communication, as well as an inter-communicator to allow for communication between groups, using the master process of the \texttt{ambient} group.
-
-The construction of nested MPI-groups is related to the ability of MPI to create virtual and cartesian topologies  (chapter 7 of  \cite{MPI-2002}). However, Ambient allows for the simultaneous construction of the MPI topology and the mapping of the  data (work group).
+Every new group will have its own intra-communicator (allowing intra-group communication) as well as an inter-communicator (allowing communication between groups).
 
  \begin{table}[t] 
 	\begin{center}
@@ -375,7 +371,7 @@ The construction of nested MPI-groups is related to the ability of MPI to create
                                              &  the initialization of $i,j$ will fix   the distribution (1D or 2D) \\
                                \tiny{3:} &  \textbf{for} from $i$  to the number of the work group on $x$ \textbf{do} \\
                                \tiny{4:} &  \hspace{0.2 cm}  \textbf{for} from $j$  to the number of the work group on $y$ \textbf{do} \\
-                               \tiny{5:} & \hspace{0.4 cm}    Assign the work group $(i,j)$ to the corresponding processor\\
+                               \tiny{5:} & \hspace{0.4 cm}    Assign the work group $(i,j)$ to the corresponding process\\
                                \tiny{6:} &   \hspace{0.2 cm}    \textbf{end for} \\
                                \tiny{7:} &  \textbf{end for} \\                               
                           \end{tabular} & \\ \hline
@@ -386,13 +382,13 @@ The construction of nested MPI-groups is related to the ability of MPI to create
 
 During execution, many groups will be created in practice, and data will have to be moved between groups.
 To obtain better performance and to reduce the number of data transfers between groups, there are additional possible settings for the SQL request. For example, consider the previous illustration for the SQL request in case of the matrix addition operation ($ A \, +\!\!\!= B$).
-If matrix $A$ has already been created and mapped on specific processors, the logistic kernel can create a MPI group that includes its previous owner group (created in the previous operation), thereby avoiding superfluous data transfer. The concrete SQL request would be as follows:
+If matrix $A$ has already been created and mapped on specific processors, the logistic kernel can create an MPI group as a subset or superset of the previous owner group (created in the previous operation), thereby avoiding superfluous data transfer. The concrete SQL request would be as follows:
  
 \begin{eqnarray}  \label{SQL2}
          & & \texttt{scope\_select("\textit{N} from ambient as addition\_group }\\ 
          & & \texttt{	where master is 0 where breakdown contains" + get\_id(\textit{A})}), \nonumber
 \end{eqnarray} 
-The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}} to know its present binding.
+The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}} to get its current binding.
  
 %\begin{figure}[h]
 %	\begin{center}
@@ -407,12 +403,11 @@ The function \texttt{get\_id(\textit{A})} will get a tag  of \texttt{\textit{A}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGINNING EXECUTION AND OPERATIONS SCHEDULING SECTION
 \subsection{Execution model and Operations scheduling}
 In a typical HPC application, the programming model imposes parallel execution of every function of the code, with data granularity imposing the details 
-of the parallelization. In Ambient, we developed an scheduler, an \guillemotleft engine\guillemotright \, that privileges a queue execution model, where operations (\eg linear algebra operations \ldots)
-are stacked up in a list first, and are executed afterwards according to the model of the logistic/computation kernel. This model is inspired by computer architecture design, i.e.
-the queue data flow execution in a processor \cite{DENNIS-1974}. We are replicating this approach now on a larger scale where basic instructions ($+,-,*,/$) are replaced 
-by pairs of logistic/computational kernels. 
+of the parallelization. In Ambient, we have made a scheduler that privileges a queue execution model where operations
+are stacked up in a list first and are executed afterwards according to the respective logistic/computational kernel. This model is inspired by computer architecture design, i.e.
+the queue data flow execution in a processor \cite{DENNIS-1974} (Alex: hell, no!).
 
-Any HPC application can be decomposed into a set of functions performing numerical operations.  Starting from basic examples, we want to perform the three following operations :
+Any HPC application can be decomposed into a set of functions performing numerical operations. Let's start from basic example: we want to perform three following operations :
 
 \begin{eqnarray} 
 \text{Operation 1:} & & A + \!\! =  B, \label{3OPERATIONS}  \\
@@ -421,20 +416,20 @@ Any HPC application can be decomposed into a set of functions performing numeric
 \end{eqnarray}
 where $A$, $B$, $C$ and $D$ are some matrices and $\lambda$ is some scalar.
 
-Conventionally, each of these three operations would be executed in parallel, one after another. Transposing into Ambients' conception means associating each operation with a logistic and a computational kernel. Considering the first example of example (\ref{3OPERATIONS}),  a user would invoke the following \texttt{push} function:
+Conventionally, each of these three operations would be executed in parallel, one after another. Transposing into Ambient's conception means associating each operation with a logistic and a computational kernel. Considering the example (\ref{3OPERATIONS}), one would invoke the following \texttt{push} function:
 
 \begin{eqnarray}
      \texttt{push(Addition\_logistic, Addition\_computional, \textit{A}, \textit{B})},
 \end{eqnarray} 
 
-with the appropriate logistic and computational kernels \texttt{Addition\_logistic} and \texttt{Addition\_computational}  (c.f. table \ref{LKERNEL} and \ref{CKERNEL}), followed by the arguments \texttt{\textit{A}} and \texttt{\textit{B}}. In this way, operations, such as those in (\ref{3OPERATIONS}), will stack up during execution of the application. At any time then, the operations on the stack can be executed using the basic Ambient instruction
+with the appropriate logistic and computational kernels \texttt{Addition\_logistic} and \texttt{Addition\_computational}  (c.f. table \ref{LKERNEL} and \ref{CKERNEL}), followed by the arguments \texttt{\textit{A}} and \texttt{\textit{B}}. This way, operations, such as those in (\ref{3OPERATIONS}), will stack up during execution of the application. At any time then, the operations on the stack would be available for the execution through the basic Ambient instruction
 
 \begin{eqnarray}
       \texttt{playout()},
 \end{eqnarray} 
 
 although ideally this command would be invoked at the end, when all operations have been pushed onto the stack.
-The \texttt{playout()} command triggers the Ambient engine, scanning through the operation stack, identifying the independent operations and marking dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels are executed. Where dependencies exist, the relevant data - which is mapped  to some MPI group according to the requirements of the first operation in which it is needed - will be marked as 'needed in other operations' ; those later dependent operations can always trace this data to its then-current owner.
+The \texttt{playout()} command triggers the Ambient engine to scan through the operation stack, identify the independent operations and mark dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels are executed. Where dependencies exist, the relevant data - which is mapped  to some MPI group according to the requirements of the first operation in which it is needed - will be marked as 'needed in other operations' ; those later dependent operations can always trace this data to its then-current owner.
 Finally, the computational kernels of independent operations are executed, followed by the dependent computational kernels in the appropriate order. In the case of data dependency, the data transfer is handled by the packet manager. When all computational kernels have been executed, the stack is cleared. A schematic of the stack execution is presented in Fig. \ref{EXECUTION} .
 
 Overall, the Ambient approach combines two levels of parallelism: that of each computational kernel and that of several such kernels executed in parallel by assigning them to different MPI groups.  
