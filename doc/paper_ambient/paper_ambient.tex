@@ -275,7 +275,7 @@ We have introduced a keyword (like the \texttt{const} keyword) named \texttt{pin
 	 	\begin{tabular}{l l }
                            \hline 
                            \textbf{Computatiomal kernel }  Algorithm of the addition computational kernel  &    \\ \hline
-                           \textbf{Require}                 A class Matrix  that fits with Ambient framework  &  \\
+                           \textbf{Require}                 A class Matrix  that adheres the Ambient architecture  &  \\
                            \begin{tabular}{c l} 
                                \tiny{1:} &  Addition\_computational(Matrix $A$,  \texttt{pinned const}  Matrix $B$) \\
                                \tiny{2:} &  Get the cartesian coordinate $i,j$ of the work group \\ 
@@ -429,10 +429,9 @@ with the appropriate logistic and computational kernels \texttt{Addition\_logist
 \end{eqnarray} 
 
 although ideally this command would be invoked at the end, when all operations have been pushed onto the stack.
-The \texttt{playout()} command triggers the Ambient engine to scan through the operation stack, identify the independent operations and mark dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels are executed. Where dependencies exist, the relevant data - which is mapped  to some MPI group according to the requirements of the first operation in which it is needed - will be marked as 'needed in other operations' ; those later dependent operations can always trace this data to its then-current owner.
-Finally, the computational kernels of independent operations are executed, followed by the dependent computational kernels in the appropriate order. In the case of data dependency, the data transfer is handled by the packet manager. When all computational kernels have been executed, the stack is cleared. A schematic of the stack execution is presented in Fig. \ref{EXECUTION} .
+The \texttt{playout()} command triggers the Ambient engine to scan through the operation stack, identify the independent operations and mark dependencies. Next, a dedicated MPI packet manager\footnote{a tool managing the communication between processors.} (see section \ref{MPIABSTRACTION})  is added for each operation, and all logistic kernels for independent operations are executed. Next the computational kernels of these independent operations are executed. Following the completion of those, Ambient takes next chunk of independent operations (whose dependencies were just satisfied) and repeats the cycle transporting the necessary data to the new groups after the execution of logistic kernels is complete. In the case of data dependency, the data transfer is handled by the packet manager. When all computational kernels have been executed the stack is getting cleaned. The schematic overview of the stack execution is presented in Fig. \ref{EXECUTION} .
 
-Overall, the Ambient approach combines two levels of parallelism: that of each computational kernel and that of several such kernels executed in parallel by assigning them to different MPI groups.  
+In overall, the Ambient employs single kernel multiple data parallelism model that is used over many process groups with different kernels and data.
 
 \begin{figure}[h]
 	\begin{center}
@@ -442,27 +441,27 @@ Overall, the Ambient approach combines two levels of parallelism: that of each c
 		        \psfrag{l/c kernel 1}{\tiny{l/c kernel 1}}
                            \psfrag{l/c kernel 2}{\tiny{l/c kernel 2}}
                            \psfrag{l/c kernel 3}{\tiny{l/c kernel 3}}
-                           \psfrag{Abiemt}{\tiny{Ambient}}
-                           \psfrag{schedule}{\tiny{Schedule}}
+                           \psfrag{Ambient}{\tiny{Ambient}}
+                           \psfrag{Schedule}{\tiny{Schedule}}
                            \psfrag{Dependency}{\tiny{Dependency}}
                            \psfrag{Time}{\tiny{Time}}
-                           \psfrag{evolution}{\tiny{evolution}}
+                           \psfrag{Evolution}{\tiny{evolution}}
                            \psfrag{Mapping and execution}{\tiny{Mapping and execution}}                          
                            \psfrag{Ambient execution}{\tiny{Ambient execution}}                          
                            \psfrag{Usual execution}{\tiny{Usual execution}}                          
 	                  \includegraphics[scale=0.35]{FIGURES/execution.eps} 
 	\end{center}
-          \caption{Model of execution of the ambient scheduler. On the classical approach (left) the operations will be executed in parallel step by step whatever the dependencies (marked by the symbol \guillemotleft [\guillemotright \, in the schematic). In ambient (right), operations will be associated to the pair logistics/computation (abbreviate l/c) kernel, as operations 1 and 3  (l/c kernels 1 and 3) are independents, the execution of computational kernel will be done, simultaneously.  Due to the dependency between the kernel 1 and 2, the computational kernel of operation 2 (l/c kernel 2) will be executed later. It should be performed in a new MPI group but  with an appropriate SQL request (\ref{SQL2}) in logistic kernel, we can execute the computational kernel where the data are. }   \label{EXECUTION}
+          \caption{Ambient scheduler's workflow model. On the classical approach (left) the operations will be executed in parallel step by step disregarding the dependencies (marked by the symbol \guillemotleft [\guillemotright \, in the schematic). In Ambient (right), operations will be associated to the logistic/computational kernel pair (abbreviate l/c), as operations 1 and 3  (l/c kernels 1 and 3) are independent - the execution of computational kernel will be performed simultaneously.  Due to the dependency between the kernel 1 and 2, the computational kernel of operation 2 (l/c kernel 2) will be executed later. It should be performed in a new MPI group but with an appropriate SQL request (\ref{SQL2}) in logistic kernel we can execute the computational kernel right in the place where the data currently is. }   \label{EXECUTION}
 \end{figure}
 
 Next, we generalize example \ref{3OPERATIONS} to deal with vectors of matrices. We assume conditional statements determining which matrices should be added and/or multipled (Table \ref{GRAPH}). First, from line 1 to 11, as a dry run, the application execution will determine which operations should be performed, 
-pushing the required kernels on the top of the stack. When the \texttt{playout()} function is called in line 12, the engine will execute the stack. By resolving dependencies, it will naturally create the directed acyclic graph of the application. 
+pushing the required kernels on the top of the stack. When the \texttt{playout()} function is called in line 12, the engine will execute the stack. By resolving dependencies it will naturally create the directed acyclic graph of the application. 
 \begin{table}[t] 
 	\begin{center}
 	 	\begin{tabular}{l l }
                            \hline 
                            Determination of the directed  acyclic graph   &    \\ \hline
-                           \textbf{Require}    A class Matrix  that fits with Ambient framework   &  \\  
+                           \textbf{Require}    A class Matrix  that adheres Ambient architecture   &  \\  
                            and  vector of matrices  of size $n$, $A[n]$, $B[n]$, $C[n]$ and $D[n]$ & \\
                            \begin{tabular}{c l} 
                                \tiny{1:}   & \textbf{for} from $i$  to the size of the vector \textbf{do} \\
@@ -482,10 +481,10 @@ pushing the required kernels on the top of the stack. When the \texttt{playout()
                            \end{tabular}   &  \\ \hline
         	     \end{tabular}
 	\end{center}
-	\caption{Generalization of the example \ref{3OPERATIONS} with conditional statements. The association of a cumulative stack and  delate stack execution will determine the  directed  acyclic graph. \label{GRAPH}}
+	\caption{Generalization of the example \ref{3OPERATIONS} with conditional statements. The cumulativeness of the stack and delayed manner of execution compromise the directed acyclic graph together. \label{GRAPH}}
 \end{table} 
 
-These examples demonstrate the strength of Ambient, allowing for two levels of parallelization without any hard coding of MPI instructions in the original code, with a great degree of flexibility and adaptability. Thus, a fully parallel linear algebra  application can be developed without taking into account the geometry of the problem, which is usually done.
+These examples demonstrate the strength of Ambient, allowing two levels of parallelization without any MPI hardcoding inside of the original code, with a great degree of flexibility and adaptability. Thus, a fully parallel linear algebra  application can be developed without taking into account the geometry of the problem, which is usually done.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END EXECUTION AND OPERATIONS SCHEDULING SECTION
