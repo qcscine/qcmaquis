@@ -109,6 +109,11 @@ add_definitions(-DCPU_FREQ=${CPU_FREQ})
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
+# For static linking
+#set(CMAKE_SKIP_BUILD_RPATH  TRUE)
+#set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
+#set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS) 
+
 ######################################################################
 # User options
 ######################################################################
@@ -208,7 +213,7 @@ if(ENABLE_AMBIENT)
       enable_mpi()
       add_definitions(-DMPI_PARALLEL)
       set(AMBIENT_LIBRARIES ambient boost ${MPI_LIBRARIES})
-      set(AMBIENT_SCALAPACK_LIBRARIES -lmkl_scalapack_ilp64 -lmkl_blacs_intelmpi_ilp64 ${AMBIENT_LIBRARIES})
+      set(AMBIENT_SCALAPACK_LIBRARIES -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 ${AMBIENT_LIBRARIES})
     endmacro(enable_ambient)
   else(MPI_FOUND)
     message("MPI not found!")
