@@ -38,55 +38,73 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
-//#include "minimal_polynomial_fixed_size_indirect.hpp"
-//#include "minimal_polynomial_fixed_size.hpp"
-#include "minimal_polynomial.hpp"
 
 // A large integer of 128-256 bits (fixed size)
 // this will define type >  large_int  <
-#ifdef USE_GMP_INTEGERS
-#include "integer_classes/use_gmp_integers.hpp"
-#endif //USE_GMP_INTEGERS
+
 
 #ifdef USE_INT64_INTEGERS
 namespace hp2c
 {
     typedef int64_t large_int;
+    using namespace hp2c;
+    typedef polynomial<large_int> polynomial_type;
+    typedef std::vector<polynomial_type> polynomial_vector_type;
 }
 #endif //USE_INT64_INTEGERS
 
-#ifdef USE_VLI_INTEGERS
+#ifdef USE_GMP_INTEGERS
+#include "integer_classes/use_gmp_integers.hpp"
+#include "minimal_polynomial.hpp"
+using namespace hp2c;
+typedef polynomial<large_int> polynomial_type;
+typedef std::vector<polynomial_type> polynomial_vector_type;
+
+#endif //USE_GMP_INTEGERS
+
+#ifdef USE_VLI_INTEGERS_CPU
 #include "vli_cpu/vli_number_cpu.hpp"
+#include "polynomial/monomial.hpp"
+#include "polynomial/polynomial_cpu.hpp"
+#include "polynomial/vector_polynomial_cpu.hpp"
+
 namespace hp2c
 {
     typedef vli::vli_cpu<unsigned long int,3> large_int;
-    typedef vli::vli_cpu<unsigned long int,3> large_int_double;
-    typedef polynomial<large_int_double> polynomial_type_double;
 }
-#endif //USE_VLI_INTEGERS
-
-
-
 
 using namespace hp2c;
+using namespace vli;
 
-//
-// Typedefs
-//
-
-
-// A polynomial with large_int coefficients
-typedef polynomial<large_int> polynomial_type;
-
-
-// A sparse vector of polynomials (filling about 10%-15%)
 typedef std::size_t index_type;
-typedef std::vector<polynomial_type> polynomial_vector_type;
+typedef vli::polynomial_cpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
+typedef vli::vector_polynomial_cpu< polynomial_type > polynomial_vector_type;
 
+#endif //USE_VLI_INTEGERS
 
+#ifdef USE_VLI_INTEGERS_GPU
+#include "detail/bit_masks.hpp"
+#include "gpu/GpuManager.h"
+#include "gpu/GpuManager.hpp"
+#include "vli_gpu/vli_number_gpu.hpp"
+#include "polynomial/monomial.hpp"
+#include "polynomial/polynomial_gpu.hpp"
+#include "polynomial/vector_polynomial_gpu.hpp"
 
+namespace hp2c
+{
+    typedef vli::vli_gpu<unsigned long int,3> large_int;
+}
 
+using namespace hp2c;
+using namespace vli;
 
+typedef vli::polynomial_gpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
+typedef vli::vector_polynomial_gpu< polynomial_type > polynomial_vector_type;
+
+#endif //USE_VLI_INTEGERS
+
+typedef std::size_t index_type;
 
 class sparse_matrix
 {
@@ -260,6 +278,7 @@ class high_t_expansion
 
                     result += inner_product(state,state);
                     result += inner_product(state,previous_state);
+              
                 }
             }
             return result;
@@ -267,13 +286,14 @@ class high_t_expansion
 
 };
 
+large_int faculty(int i);
+
 large_int faculty(int i)
 {
     if (i <= 1){
         large_int a(1);
         return a;
     }
-    
     
     large_int a(i);
     
@@ -294,24 +314,20 @@ int main(int argc, char** argv)
         // Default values may be overwritten by command line arguments.
         expansion_order = atoi(argv[1]);
         num_vertices = atoi(argv[2]);
-    }
-
-    
+    }    
     
     // Run expansion
     high_t_expansion ht(expansion_order,num_vertices);
     polynomial_type r = ht.exec();
     
-    
-    
     // Print out the result
-    for(std::size_t j = 0; j < r.max_order; ++j)
+    for(int j = 0; j < r.max_order; ++j)
     {
-        for(std::size_t h = 0; h < r.max_order; ++h)
+        for(int h = 0; h < r.max_order; ++h)
         {
-            if(r(j,h) > 0)
+             if(r(j,h) > 0)
                 std::cout <<" +"<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h;
-            else if(r(j,h) < 0)
+             else if(r(j,h) < 0)
                 std::cout <<" "<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h << std::endl;
         }
     }
