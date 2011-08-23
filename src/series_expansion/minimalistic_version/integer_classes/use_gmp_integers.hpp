@@ -14,6 +14,8 @@ typedef mpz_class large_int;
 
 
 // std out for gmp
+std::ostream& operator << (std::ostream& o, mpz_class const &mpz);
+
 std::ostream& operator << (std::ostream& o, mpz_class const &mpz)
 {
     o<<mpz.get_str();
