@@ -134,11 +134,10 @@ namespace vli
             return *this;
         }
         
-        vli_gpu& operator += (int a)
+        vli_gpu& operator += (BaseInt a)
         {
-            using vli::plus_assign;
-            vli_gpu a_vli(a);
-            plus_assign(*this,a_vli);
+            using vli::plus_assign_int;
+            plus_assign_int(*this,a);
             return *this;
         }
         
@@ -160,8 +159,11 @@ namespace vli
 
 		vli_gpu& operator *= (vli_gpu const& vli)
         {
+            // TO DO find a better soluce not fin untill now !
             using vli::multiplies_assign;
-            multiplies_assign(*this,vli);
+            vli_gpu tmp;            
+            multiplies_assign(*this,vli,tmp);            
+            *this = tmp;
             return *this;
         }
         
@@ -295,10 +297,10 @@ namespace vli
     }
 
 	template <class BaseInt, int Size>
-	const vli_gpu<BaseInt, 2*Size> operator * (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
+	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
         using vli::multiplies_assign;
-        vli_gpu<BaseInt, 2*Size> vli_c;
+        vli_gpu<BaseInt, Size> vli_c;
         multiplies_assign(vli_a, vli_b , vli_c);
         return vli_c;
     }

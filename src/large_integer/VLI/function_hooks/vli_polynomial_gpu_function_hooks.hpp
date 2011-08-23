@@ -8,6 +8,13 @@ namespace vli{
     template<class Vli, int Order>
     class polynomial_gpu;
 
+    template <class BaseInt, int Size, int Order>
+    void poly_addition_int(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & p1, int b)
+    {
+        using detail::plus_assign_int_gpu;
+        plus_assign_int_gpu(p1.p(),b,Size);
+    } 
+
     /** I think all these specializations are useless */
     template <class BaseInt, int Size, int Order>
     void poly_multiply(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 

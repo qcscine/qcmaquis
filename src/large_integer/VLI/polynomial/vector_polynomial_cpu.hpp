@@ -9,17 +9,18 @@
 #ifndef VLI_VECTOR_POLYNOME_CPU_H
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include <vector>
+#include <omp.h>
+#include <ostream>
+#include <cassert>
 #include "boost/swap.hpp"
 #include "polynomial/polynomial_cpu.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
 
-#include <ostream>
-
-
 namespace vli
 {
 
-
+    template <class BaseInt, int Size>
+    class vli_cpu;
 
     template<class polynomial_cpu> 
     class vector_polynomial_cpu : public std::vector<polynomial_cpu>{ 
@@ -41,15 +42,24 @@ namespace vli
     
     
     template <class BaseInt, int Size, int Order>
-    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > 
+    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
     inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         assert(v1.size() == v2.size());
         size_t size_v = v1.size();
-        vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  res;
-        
-        for(size_t i=0 ; i < size_v ; i++){
-            res[0] += v1[i]*v2[i]; 
+        vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > inter;
+        inter.resize(size_v);
+        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>   res;
+        /**
+        * reduction is impossible on class type  
+        */
+        #pragma omp parallel for
+        for(int i=0 ; i < size_v ; i++){
+            inter[i] = v1[i]*v2[i]; 
+        }
+
+        for(int i=0 ; i < size_v ; i++){
+            res += inter[i]; 
         }
 
         return res;

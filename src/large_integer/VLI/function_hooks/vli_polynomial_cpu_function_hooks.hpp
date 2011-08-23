@@ -1,8 +1,6 @@
 #ifndef VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
 #define VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
 
-#include "detail/kernels_cpu.hpp"
-
 namespace vli{
 
 template<class Vli, int Order>
@@ -10,6 +8,9 @@ class polynomial_cpu;
    
 template<class Vli>
 class monomial;
+
+template<class BaseInt, int Size>
+class vli_cpu;
     
     
 template <class BaseInt, int Size, int Order>

@@ -28,7 +28,9 @@ int rnd_valid_int()
 template <typename Vli>
 void fill_random(Vli& v)
 {
-    for(typename Vli::size_type i=0; i < Vli::size; ++i)
+    typename Vli::value_type midle = Vli::size/2;
+
+    for(typename Vli::size_type i=0; i < midle; ++i)
         v[i] = rnd_digit<Vli>();
 }
 
@@ -36,7 +38,7 @@ template <typename Vli>
 void fill_random(Vli& v, typename Vli::size_type size)
 {
     assert(size <= Vli::size);
-    for(typename Vli::size_type i=0; i < size; ++i)
+    for(typename Vli::size_type i=0; i < (Vli::size/2)-1; ++i)
         v[i] = rnd_digit<Vli>();
 }
 

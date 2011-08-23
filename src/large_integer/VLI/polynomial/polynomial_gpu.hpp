@@ -55,6 +55,7 @@ namespace vli
  
         typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
         typedef typename Vli::size_type size_type; // Type of the exponents (has to be the same type as Vli::size_type)
+        typedef Vli value_type;
         enum { max_order = Order };
         enum { size = Vli::size }; // C to remove if you find a solution see vector_poly ...
 
@@ -68,6 +69,18 @@ namespace vli
                 gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)vli.p(), Vli::size*sizeof(vli_value_type), cudaMemcpyDeviceToDevice), __LINE__);
                 return *this;
             }
+            
+            bool operator>(int i){
+                vli_cpu<vli_value_type,Vli::size> vli;
+                gpu::cu_check_error(cudaMemcpy((void*)&vli[0],(void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)),Vli::size*sizeof(vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
+                return (vli > i);
+            }
+
+            bool operator<(int i){
+                vli_cpu<vli_value_type,Vli::size> vli;
+                gpu::cu_check_error(cudaMemcpy((void*)&vli[0],(void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)),Vli::size*sizeof(vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
+                return (vli < i);
+            }
        
            //TODO do we really want this? Or just using an explicit conversion? 
            // C - you have to explain me 
@@ -75,7 +88,7 @@ namespace vli
                 gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)&vli[0], Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
                 return *this;
             }
-
+            
             typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy operator[](size_type i)
             {
                 return typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy(data_+(j_*max_order*Vli::size+h_*Vli::size),i);
@@ -131,6 +144,16 @@ namespace vli
             return *this;
         }        
         
+        template <typename T>
+        polynomial_gpu& operator += (T const& t)
+        {
+            // Possible because we sum only the first coefficient
+            using vli::poly_addition_int;
+            poly_addition_int(*this,t);
+            return *this;
+        }
+        
+        
         /**
          * Minus assign with a polynomial_cpu
          */
@@ -152,7 +175,7 @@ namespace vli
         
         polynomial_gpu& operator *= (monomial<Vli> const& c)
         {
-            (*this) *= c.coeff;
+            (*this) *= c.coeff_;
             return *this;
         }
         
@@ -204,7 +227,7 @@ namespace vli
         os << "------------------------" << std::endl;
         for(std::size_t i = 0; i < Order ; i++){
             for(std::size_t j = 0; j < Order ; j++){
-                os << "gpu --- Coeff (j,h) = " << i <<" "<<j<< std::endl;
+                os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
                 os << p(i,j) << std::endl;
             }
         }

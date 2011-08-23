@@ -8,13 +8,18 @@
 #include "polynomial/polynomial_cpu.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
 
+#include "polynomial/polynomial_gpu.hpp"
+#include "vli_gpu/vli_number_gpu.hpp"
+
 #include "regression/common_test_functions.hpp"
 
 using vli::test::fill_random;
 using vli::test::fill_poly_random;
 using vli::vli_cpu;
+using vli::vli_gpu;
 using vli::monomial;
 using vli::polynomial_cpu;
+using vli::polynomial_gpu;
 
 typedef boost::mpl::list<
         polynomial_cpu<vli_cpu<unsigned int,8>,2>,

@@ -6,6 +6,8 @@
 #include "cuda_runtime_api.h"
 #endif
 
+//prototype for removing warning of my compiler
+unsigned long getcpuclocks();
 
 #if defined(__i386__)
  

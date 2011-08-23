@@ -46,31 +46,6 @@ namespace vli
         *(x+Size-1) &= base<T>::value + data_mask<T>::value;
 	}
     
-	template <typename T>
-	void multiplication_kernel_up_cpu(T const* x, T const*  y, T * r)	
-	{
-		*r	   = ((*x & mask_up<T>::value) >> (data_bits<T>::value/2) ) * (*y & mask_down<T>::value);	
-		*(r+1) = ((*x & mask_up<T>::value) >> (data_bits<T>::value/2) ) * ((*y & mask_up<T>::value) >> (data_bits<T>::value/2));
-	}		
-	
-	template <typename T>
-	void multiplication_kernel_down_cpu(T const* x, T const*  y, T * r)	
-	{	
-		*r     = (*x & mask_down<T>::value) * (*y & mask_down<T>::value);
-		*(r+1) = (*x & mask_down<T>::value) * ((*y & mask_up<T>::value) >> (data_bits<T>::value/2));
-	}
-	
-	template <typename T>
-	void multiplication_kernel_base_reshaping_cpu(T const * a, T  const *  b, T * r)	
-	{			
-		T q1 = (*(a+1) + *b) >> (data_bits<T>::value/2);
-		T r1 = (*(a+1) + *b) & mask_down<T>::value;
-		r1 *= base_half<T>::value;
-		T q2 = (r1 + *a) >> data_bits<T>::value; 
-		T r2 = (r1 + *a) & data_mask<T>::value;
-		*r = r2;
-		*(r+1) = q1 + q2 + *(b+1);
-	}
 	
 	template <typename T>
 	void multiplication_block_cpu(T const* x, T  const*  y, T * r )	
@@ -86,13 +61,15 @@ namespace vli
 		 ------- 
 		 = (q1+q2 + Xl*Yl)*base<T>::value + r2  (multiplication_kernel_base_reshaping)
 		 */
-		multiplication_kernel_down_cpu(x,y, a);
-		multiplication_kernel_up_cpu(x,y, b);
-		multiplication_kernel_base_reshaping_cpu(a,b, r);
+		kernels::kernels_multiplication_block_down(x,y, a);
+        kernels::kernels_multiplication_block_up(x,y, b);
+        kernels::kernels_multiplication_base_reshaping(a,b,r);
 	}		
 	
 	/**
+    Only used for the polynomial inner product
 	 multiplication classic version, efficiency O(n**2)
+     the size of res is 2*size
 	 */
 	template <typename BaseInt, std::size_t Size>
 	void multiplication_classic_cpu(BaseInt * res, BaseInt const* x, BaseInt const* y)	
@@ -112,28 +89,23 @@ namespace vli
 		}
     }
     
+    
+    /** 
+    truncated multiplication
+    */
+    template <typename BaseInt, std::size_t Size>
+	void multiplication_classic_truncate_cpu(BaseInt * res, BaseInt const* x, BaseInt const* y)	
+	{
+       kernels::kernels_multiplication_classic_truncate<BaseInt,Size>(res,x,y);
+    }
+    
     /** 
      This multiplication is done from right to left
     */
     template <typename BaseInt, std::size_t Size>
 	void multiplication_classic_cpu_number(BaseInt* x, BaseInt a)	
 	{      
-        BaseInt r[2] = {0,0};
-        multiplication_block_cpu(&x[Size-1],&a,&(r[0]));
-        x[Size-1] = r[0];
-        for( std::size_t i = Size-1; i > 0; --i)
-        {
-            multiplication_block_cpu(&x[i-1],&a,&(r[0]));
-            x[i-1] = r[0];
-            x[i] += r[1];
-
-            // Carry bit propagation
-            for(std::size_t j = i; j < Size-2; ++j)
-            { 
-                x[j+1] += x[j] >> data_bits<BaseInt>::value; //carry bit
-                x[j] &= data_mask<BaseInt>::value; // Remove the carry bit
-            }
-        }
+        kernels::kernels_multiplication_number<BaseInt,Size>(x,a);  
     }
 
 }
