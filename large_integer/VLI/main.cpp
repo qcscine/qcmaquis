@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cstdio>
 
-#include "gmpxx.h"
 #include <boost/lexical_cast.hpp>
 
 #include "gpu/GpuManager.h"
@@ -16,10 +15,9 @@
 #include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
-#define SIZE_POLY 4
-#define SIZE_VECTOR 32
+#include "regression/common_test_functions.hpp"
+#include "detail/vli_size_param.hpp"
 
-#define TYPE unsigned  int 
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -30,95 +28,43 @@ using vli::polynomial_gpu;
 using vli::vector_polynomial_gpu;
 using vli::vector_polynomial_cpu;
 
+using vli::test::fill_random;
+using vli::test::fill_poly_random;
 
+#define  MAXORDER vli::size_poly_vli::value
+typedef   vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>  Vli_cpu;
+typedef   vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>  Vli_gpu;
 
 int main (int argc, char * const argv[]) 
 {
     gpu::gpu_manager* GPU;
     GPU->instance();
     
+    Vli_cpu acpu;
+    fill_random(acpu);
+    Vli_gpu agpu(acpu);
+    Vli_gpu bgpu(acpu);
+
+    
     /*
+    monomial<Vli> ma(a);
+    polynomial_cpu<Vli, MAXORDER> pa;    
+    fill_poly_random(pa);
 
-    polynomial_cpu<vli_cpu<TYPE,8>, SIZE_POLY> pa;
+    //Init GPU
+    vli_gpu< Vli::value_type,Vli::size> a_gpu(a);
+    monomial<vli_gpu< Vli::value_type,Vli::size> > magpu(a);
+    polynomial_gpu<vli_gpu<Vli::value_type,Vli::size>, MAXORDER> pagpu(pa);
+
+    pa = pa * ma; 
+    pagpu = pagpu * magpu; 
 
     
-    for(int i=0; i< 8 ; i++){
-        for(int j=0; j < SIZE_POLY; j++){
-            for(int k=0; k < SIZE_POLY; k++)
-                pa(j,k)[i] = 9;
-            }
-         }      
- 
-    polynomial_gpu<vli_gpu<TYPE,8>, SIZE_POLY> pagpu(pa);
-
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VaGPU(SIZE_VECTOR);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VbGPU(SIZE_VECTOR);
-    vector_polynomial_gpu< polynomial_gpu<vli_gpu<TYPE, 8>,SIZE_POLY> > VcGPU;
-
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VaCPU(SIZE_VECTOR);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VbCPU(SIZE_VECTOR);
-    vector_polynomial_cpu< polynomial_cpu<vli_cpu<TYPE, 8>,SIZE_POLY> > VcCPU;
-
-    for(int i=0;i < SIZE_VECTOR;i++){
-        VaCPU[i]=pa;
-        VbCPU[i]=pa;
-
-        VaGPU[i]=pa;
-        VbGPU[i]=pa;
-    }
-
-    Timer A("CPU");
-    A.begin();     
-    VcCPU =  inner_product(VaCPU,VbCPU);
-    A.end();
-
-    TimerCuda C("GPU");
-    C.begin();     
-    VcGPU =  inner_product(VaGPU,VbGPU);
-    C.end();
-
-    if(VcGPU == VcCPU){
-        std::cout << " ok " << std::endl; 
-    }else{
-        std::cout << VcCPU << std::endl;
-        std::cout << VcGPU << std::endl;
-    }
+    if(pagpu == pa){
+       std::cout << "ok" << std::endl;
+     }else{
+        std::cout << "no ok" << std::endl;
+     }
     */
-    
-    vli_cpu<TYPE, 4> a;
-    vli_cpu<TYPE, 4> b;
-    vli_cpu<TYPE, 8> c;
-    
-    a[0]=vli::data_mask<TYPE>::value;
-/*
-    a[1]=vli::data_mask<TYPE>::value;
-    a[2]=vli::data_mask<TYPE>::value;
-    a[3]=vli::data_mask<TYPE>::value;
-*/
-    b[0]=vli::data_mask<TYPE>::value;
-    b[1]=vli::data_mask<TYPE>::value;
-    b[2]=vli::data_mask<TYPE>::value;
-    b[3]=vli::data_mask<TYPE>::value;
-
-    std::cout << a << std::endl;    
-    a.negate();
-    std::cout << a << std::endl;
-    
-    mpz_class cgmp(c.get_str());    
-
-    
-    c = a*b;  
-    
-    
-    
-    
-    mpz_class agmp(a.get_str());    
-    mpz_class bgmp(b.get_str());    
-
-    cgmp = agmp*bgmp;
-
-    std::cout << c    << std::endl;
-    std::cout << cgmp << std::endl;
-    
     return 0;
 }

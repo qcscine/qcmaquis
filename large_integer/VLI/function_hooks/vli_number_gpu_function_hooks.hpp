@@ -16,7 +16,24 @@ template <class BaseInt, int Size>
 void plus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b )
 {
     using detail::plus_assign_gpu;
-    plus_assign_gpu( vli_a.p(), vli_b.p(), 1, Size);
+    plus_assign_lib(vli_a.p(), vli_b.p());
+}
+
+/*
+
+template <class BaseInt, int Size>
+void plus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b )
+{
+    using detail::plus_assign_gpu;
+    plus_assign_gpu( vli_a.p(), vli_b.p(), Size);
+}
+
+*/
+template <class BaseInt, int Size>
+void plus_assign_int(vli_gpu<BaseInt,Size> & vli_a, BaseInt b )
+{
+    using detail::plus_assign_int_gpu;
+    plus_assign_int_gpu( vli_a.p(), b, Size);
 }
 
 template <class BaseInt, int Size>
@@ -35,7 +52,7 @@ void multiplies_assign_single(vli_gpu<BaseInt,Size>& vli_a, BaseInt a)
 }
 
 template <class BaseInt, int Size>
-void multiplies_assign(vli_gpu<BaseInt,Size> const& vli_a, vli_gpu<BaseInt,Size> const& vli_b, vli_gpu<BaseInt, 2*Size> & vli_c)
+void multiplies_assign(vli_gpu<BaseInt,Size> const& vli_a, vli_gpu<BaseInt,Size> const& vli_b, vli_gpu<BaseInt, Size> & vli_c)
 {
     using detail::entrywise_multiplies_gpu;
     entrywise_multiplies_gpu( vli_a.p(), vli_b.p(), vli_c.p(), Size);

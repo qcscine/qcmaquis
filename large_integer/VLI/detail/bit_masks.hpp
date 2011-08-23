@@ -16,6 +16,7 @@ struct data_bits
     enum { value = 0 };
 };
 
+
 template <>
 struct data_bits<unsigned long int>
 {
@@ -29,8 +30,6 @@ struct data_bits<unsigned int>
     BOOST_STATIC_ASSERT( sizeof(unsigned int) == 4 );
     enum { value = 30 };
 };
-
-
 
 /**
   * traits/masks calculated based on data_bits<>

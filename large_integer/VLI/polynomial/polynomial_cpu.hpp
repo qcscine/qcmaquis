@@ -93,7 +93,7 @@ public:
     template <typename T>
     polynomial_cpu& operator += (T const& t)
     {
-        coeffs_[0]+=t;
+        coeffs_[0]+=static_cast<value_type>(t);
         return *this;
     }
     
@@ -144,11 +144,22 @@ public:
         return *this;
     }
     
+     /**
+     * Multiplies assign with coefficient
+     * Mutliplies all elements the argument
+     */
+     polynomial_cpu& operator *= (int c)
+     {
+        for(int i=0; i<Order*Order;++i)
+            coeffs_[i] *= c;
+        return *this;
+     }
+    
+    
     
     polynomial_cpu& operator *= (monomial<Vli> const& c)
     {
-        assert(false); // TODO
-        (*this) *= c.coeff;
+        (*this) *= c.coeff_;
         return *this;
     }
     
@@ -206,10 +217,25 @@ polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> p, Vli const& 
 }
 
 template<class Vli, int Order>
+polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> p, int c)
+{
+    p *= c;
+    return p;
+}
+
+template<class Vli, int Order>
 polynomial_cpu<Vli, Order> operator * (Vli const& c, polynomial_cpu<Vli, Order> const& p)
 {
     return p * c;
 }
+
+template<class Vli, int Order>
+polynomial_cpu<Vli, Order> operator * (int c, polynomial_cpu<Vli, Order> const& p)
+{
+    return p * c; 
+}
+
+
 
 template<class Vli, int Order> 
 std::ostream& operator<<(std::ostream& os, polynomial_cpu<Vli, Order> const& p){

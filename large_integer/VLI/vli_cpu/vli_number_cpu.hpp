@@ -42,7 +42,7 @@ namespace vli
         }
         
         explicit vli_cpu(int num)
-        {
+        {            
             assert( static_cast<BaseInt>((num<0) ? -num : num)  < static_cast<BaseInt>(max_value<BaseInt>::value) );
             data_[0] = num & data_mask<BaseInt>::value;
             BaseInt sign = 0x01 & (num>>(sizeof(int)*8-1));
@@ -112,29 +112,46 @@ namespace vli
             plus_assign(*this,vli_cpu(-a));
             return *this;
         }
-        /*
-        vli_cpu& operator *= (vli_cpu const& vli)
+
+        vli_cpu& operator *= (int a)
         {
-            using vli::multiplies_assign; 
-            bool result_is_negative = static_cast<bool>((this->data_[Size-1] ^ vli[Size-1]) >> data_bits<BaseInt>::value);
+            assert(true);// add a test if a is very large
+            using vli::multiplies_assign;
+    
+            int na(1),nb(1);        
+                  
+            if((*this).is_negative()){
+                (*this).negate();
+                na = -1;
+            }
+        
+            if(a<0){
+                a *=-1;
+                nb = -1;
+            }
+        
+            multiplies_assign(*this,a);
+        
+            if(nb*na == -1)
+                (*this).negate();
+       
+            return *this;
+        }
+
+        vli_cpu& operator *= (vli_cpu const& a)
+        {
+            using vli::multiplies_assign;
+            bool result_is_negative = static_cast<bool>((this->data_[Size-1] ^ a[Size-1]) >> data_bits<BaseInt>::value);
             if(result_is_negative)// test if 
             {
                 this->negate(); // - to +
-                multiplies_assign(*this,vli); // +*- or -*+ 
+                multiplies_assign(*this,a); // +*- or -*+ 
                 this->negate(); // + to -
             }
             else
             {
-                multiplies_assign(*this,vli); // +*+ or -*- the default multiplication works
+                multiplies_assign(*this,a); // +*+ or -*- the default multiplication works
             }
-            return *this;
-        }
-         */
-
-        vli_cpu& operator *= (int a)
-        {
-            using vli::multiplies_assign_number;
-            multiplies_assign_number(*this,a);
             return *this;
         }
 
@@ -150,6 +167,17 @@ namespace vli
 			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
 			return (0 == n);
         }
+        
+        bool operator != (vli_cpu const& vli) const
+        {
+           for(std::size_t i(0); i < Size-1 ; ++i)
+           {
+               if((*this)[i] != vli[i])
+                   return true;
+           }        
+           return false;
+        }
+        
 
         bool operator < (vli_cpu const& vli) const
         {
@@ -279,7 +307,7 @@ namespace vli
           * A helper function to generate the base10 representation for get_str().
           */
         template<int SizeDouble>
-         std::string get_str_helper_inplace(vli_cpu<BaseInt,SizeDouble>& value, size_type ten_exp) const
+        std::string get_str_helper_inplace(vli_cpu<BaseInt,SizeDouble>& value, size_type ten_exp) const
         {
             assert(!value.is_negative());
 
@@ -360,8 +388,11 @@ namespace vli
     }
 
     template <class BaseInt, int Size>
-    const vli_cpu<BaseInt, 2*Size> operator * (vli_cpu<BaseInt, Size> const& vli_a, vli_cpu<BaseInt, Size> const& vli_b)
+    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size>  vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
+        vli_a *= vli_b;
+        return vli_a;
+    /*
         vli_cpu<BaseInt, 2*Size> vli_res;
         
         int na(1),nb(1);        
@@ -390,6 +421,7 @@ namespace vli
         }
 
         return vli_res;
+    */
     }
 
     template <class BaseInt, int Size>
