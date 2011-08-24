@@ -7,7 +7,7 @@ template<class Vli, int Order>
 class polynomial_cpu;
    
 template<class Vli>
-class monomial;
+struct monomial;
 
 template<class BaseInt, int Size>
 class vli_cpu;

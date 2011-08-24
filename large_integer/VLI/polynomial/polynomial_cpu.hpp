@@ -34,8 +34,8 @@ polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> const& p1, pol
 }
 
 
-template <class BaseInt, int Size, int Order>
-polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<vli_cpu<BaseInt, Size> > const& m)
+template <class BaseInt, int Size, int Order, class T>
+polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<T> const& m)
 {
     typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
     
@@ -84,7 +84,8 @@ public:
         return *this;
     }
     
-    polynomial_cpu& operator += (monomial<Vli> const& m)
+    template <typename T>
+    polynomial_cpu& operator += (monomial<T> const& m)
     {
         operator()(m.j_exp_,m.h_exp_) += m.coeff_; 
         return *this;
@@ -93,7 +94,7 @@ public:
     template <typename T>
     polynomial_cpu& operator += (T const& t)
     {
-        coeffs_[0]+=static_cast<value_type>(t);
+        coeffs_[0]+=t;
         return *this;
     }
     
@@ -156,9 +157,11 @@ public:
      }
     
     
-    
-    polynomial_cpu& operator *= (monomial<Vli> const& c)
+    template <typename T> 
+    polynomial_cpu& operator *= (monomial<T> const& c)
     {
+        // TODO this implementation is wrong!!!
+        assert(false);
         (*this) *= c.coeff_;
         return *this;
     }
@@ -200,8 +203,8 @@ private:
 /*
  * Multiplication of a monomial with a polynomial_cpu
  */
-template<class Vli, int Order>
-polynomial_cpu<Vli, Order> operator * (monomial<Vli> const& m,polynomial_cpu<Vli, Order> const& p)
+template<class T, class Vli, int Order>
+polynomial_cpu<Vli, Order> operator * (monomial<T> const& m,polynomial_cpu<Vli, Order> const& p)
 {
     return p * m;
 }
