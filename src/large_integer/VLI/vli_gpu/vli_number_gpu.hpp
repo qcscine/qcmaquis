@@ -94,7 +94,7 @@ namespace vli
             gpu::cu_check_error(cudaMemcpy((void*)(this->data_), vli.data_, Size*sizeof(BaseInt) , cudaMemcpyDeviceToDevice), __LINE__);
         }
 
-		vli_gpu(vli_cpu<BaseInt, Size> const& vli)
+		explicit vli_gpu(vli_cpu<BaseInt, Size> const& vli)
         {
 			gpu::cu_check_error(cudaMemcpy((void*)(this->data_), (void*)&vli[0], Size*sizeof(BaseInt), cudaMemcpyHostToDevice ), __LINE__); 		
         }
@@ -117,12 +117,6 @@ namespace vli
  			gpu::cu_check_error(cudaMemcpy( (void*)&vli[0], (void*)(this->data_), Size*sizeof(BaseInt), cudaMemcpyDeviceToHost ), __LINE__); 					
         }
 
-		operator vli_cpu<BaseInt, Size>() const
-        {
-            vli_cpu<BaseInt, Size> r;
-            copy_vli_to_cpu(r);
-            return r;
-        }
 
 		/**
 		 multiply and addition operators
@@ -184,12 +178,12 @@ namespace vli
         bool operator == (vli_gpu const& vli) const
         {
             // TODO try on gpu, debug my kernel 
-            return vli_cpu<BaseInt, Size>(*this) == vli_cpu<BaseInt, Size>(vli);
+            return (vli_cpu_from(*this) == vli_cpu_from(vli));
         }
         
         bool operator == (vli_cpu<value_type, Size> const& vli) const
         {
-             return vli_cpu<value_type, Size> (*this) == vli;
+             return vli_cpu_from(*this) == vli;
         }
 
         bool operator < (vli_gpu const& vli) const
@@ -245,12 +239,12 @@ namespace vli
 
         void print(std::ostream& os) const
         {
-            os<<vli_cpu<BaseInt, Size>(*this);
+            os<<vli_cpu_from(*this);
         }
 
         std::string get_str() const
         {
-            return vli_cpu<BaseInt, Size>(*this).get_str();        
+            return vli_cpu_from(*this).get_str();        
         }
         
     };
@@ -325,5 +319,23 @@ namespace vli
         return os;
     }
 	
+    /**
+      * Ugly conversion functions
+      * (due to lack of "explicit" conversion operators in the current standard (will come in C++11))
+      */
+    template<class BaseInt, int Size>
+    vli_cpu<BaseInt,Size> vli_cpu_from(vli_gpu<BaseInt,Size> const& vli_g)
+    {
+        vli_cpu<BaseInt, Size> r;
+        vli_g.copy_vli_to_cpu(r);
+        return r;
+    }
+    
+    template<class BaseInt, int Size>
+    vli_gpu<BaseInt,Size> vli_gpu_from(vli_cpu<BaseInt,Size> const& vli_c)
+    {
+        return vli_gpu<BaseInt,Size>(vli_c);
+    }
+
 }
 #endif

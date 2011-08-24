@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE vli_cpu
+#define BOOST_TEST_MODULE vli_gpu
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
@@ -53,8 +53,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conversion_from_cpu_and_equal_test, Vli, vli_type
 
     Vli ag(a);
 
-    BOOST_CHECK_EQUAL(a == ag, true);
-    BOOST_CHECK_EQUAL(ag == a, true);
+    BOOST_CHECK_EQUAL((a == vli_cpu_from(ag)), true);
+    BOOST_CHECK_EQUAL((vli_cpu_from(ag) == a), true);
     BOOST_CHECK_EQUAL(a,a_orig);
 }
 

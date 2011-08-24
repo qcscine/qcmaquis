@@ -1,6 +1,8 @@
 #ifndef VLI_NUMBER_TRAITS_HPP
 #define VLI_NUMBER_TRAITS_HPP
 
+#include "detail/bit_masks.hpp"
+
 namespace vli
 {
 

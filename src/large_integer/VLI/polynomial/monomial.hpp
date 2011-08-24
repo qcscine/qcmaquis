@@ -21,17 +21,13 @@ namespace vli
 	template <class Vli>
     struct monomial
     {
-        typedef typename Vli::size_type size_type;
+        typedef std::size_t size_type;
          
         /**
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
          */
         explicit monomial(size_type j_exp = 0, size_type h_exp = 0)
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(1){
-        }
-        
-        explicit monomial(Vli const& vli, size_type j_exp = 0, size_type h_exp = 0)// for me !
-        :j_exp_(j_exp), h_exp_(h_exp), coeff_(vli){
         }
         
         monomial& operator *= (Vli const& c){
@@ -68,23 +64,6 @@ namespace vli
 
         bool operator == (monomial const& m) const{
             return (j_exp_ == m.j_exp_) && (h_exp_ == m.h_exp_) && (coeff_ == m.coeff_);
-        }
-        /*
-        typename Vli::value_type const& operator[](size_type i)const{ // for a serial acces of the VLI element
-            return coeff_[i];
-        }
-
-        typename Vli::value_type & operator[](size_type i){
-            return coeff_[i];
-        }
-        */
-        
-        typename Vli::value_type*  p(){
-            return coeff_.p();
-        }
-
-        typename Vli::value_type const* p() const{
-            return coeff_.p();
         }
         
         size_type j_exp_;
