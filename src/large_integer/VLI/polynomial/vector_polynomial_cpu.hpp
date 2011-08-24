@@ -54,11 +54,11 @@ namespace vli
         * reduction is impossible on class type  
         */
         #pragma omp parallel for
-        for(int i=0 ; i < size_v ; i++){
+        for(std::size_t i=0 ; i < size_v ; i++){
             inter[i] = v1[i]*v2[i]; 
         }
 
-        for(int i=0 ; i < size_v ; i++){
+        for(std::size_t i=0 ; i < size_v ; i++){
             res += inter[i]; 
         }
 
