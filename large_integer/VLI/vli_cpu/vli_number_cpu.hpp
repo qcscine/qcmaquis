@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <cstring>
 #include <ostream>
 #include "boost/swap.hpp"
 #include "function_hooks/vli_number_cpu_function_hooks.hpp"
