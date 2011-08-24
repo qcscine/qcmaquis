@@ -85,9 +85,8 @@ polynomial<CoeffType> operator * (polynomial<CoeffType> const& p1, polynomial<Co
     polynomial<CoeffType> result;
 //            bool overflow = false;
     std::size_t max_order = p1.max_order;
-    for(std::size_t je1 = 0; je1 < max_order; ++je1)
-        for(std::size_t he1 = 0; he1 < max_order; ++he1)
-        {
+    for(std::size_t je1 = 0; je1 < max_order; ++je1){
+        for(std::size_t he1 = 0; he1 < max_order; ++he1){
             for(std::size_t je2 = 0; je2 < max_order - je1; ++je2){
                for(std::size_t he2 = 0; he2 < max_order - he1; ++he2){
                      result.coeffs[ (je1+je2)*max_order + he1+he2 ] += p1.coeffs[je1*max_order+he1] * p2.coeffs[je2*max_order+he2];
@@ -100,6 +99,7 @@ polynomial<CoeffType> operator * (polynomial<CoeffType> const& p1, polynomial<Co
 //                            if( coeffs[je2*max_order+he2] != CoeffType(0))
 //                                overflow = true;
         }
+    }
 //            if (overflow)
 //                std::cerr<<"WARNING: polynomial overflow -> truncated!"<<std::endl;
 
@@ -109,8 +109,8 @@ polynomial<CoeffType> operator * (polynomial<CoeffType> const& p1, polynomial<Co
 /**
   * Multiplication of a polynomial with a monomial
   */
-template <typename CoeffType>
-polynomial<CoeffType> operator * (polynomial<CoeffType> const& p, monomial<CoeffType> const& m)
+template <typename CoeffType, typename T>
+polynomial<CoeffType> operator * (polynomial<CoeffType> const& p, monomial<T> const& m)
 {
     polynomial<CoeffType> r;
     std::size_t max_order = r.max_order;
@@ -209,7 +209,8 @@ class polynomial
         /**
           * Plus assign with a monomial
           */
-        polynomial& operator += (monomial<CoeffType> const& m)
+        template <typename T>
+        polynomial& operator += (monomial<T> const& m)
         {
             assert(m.j_exp < max_order);
             assert(m.h_exp < max_order);
@@ -291,8 +292,8 @@ std::ostream& operator <<(std::ostream& o, polynomial<CoeffType> const& p)
 /**
   * Multiplication of a monomial with a polynomial
   */
-template <typename CoeffType>
-polynomial<CoeffType> operator * (monomial<CoeffType> const& m,polynomial<CoeffType> const& p)
+template <typename CoeffType, typename T>
+polynomial<CoeffType> operator * (monomial<T> const& m,polynomial<CoeffType> const& p)
 {
     return p * m;
 }

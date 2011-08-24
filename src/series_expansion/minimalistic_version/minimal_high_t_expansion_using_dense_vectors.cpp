@@ -38,55 +38,76 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
-//#include "minimal_polynomial_fixed_size_indirect.hpp"
-//#include "minimal_polynomial_fixed_size.hpp"
-#include "minimal_polynomial.hpp"
 
+// ------------------------------------------------------------------
+// Typedefs and includes for the different integer classes
+// ------------------------------------------------------------------
+//
 // A large integer of 128-256 bits (fixed size)
 // this will define type >  large_int  <
-#ifdef USE_GMP_INTEGERS
-#include "integer_classes/use_gmp_integers.hpp"
-#endif //USE_GMP_INTEGERS
 
 #ifdef USE_INT64_INTEGERS
 namespace hp2c
 {
     typedef int64_t large_int;
+    typedef hp2c::monomial<large_int> monomial_type;
+    typedef hp2c::polynomial<large_int> polynomial_type;
+    typedef std::vector<polynomial_type> polynomial_vector_type;
 }
 #endif //USE_INT64_INTEGERS
 
-#ifdef USE_VLI_INTEGERS
+#ifdef USE_GMP_INTEGERS
+#include "integer_classes/use_gmp_integers.hpp"
+#include "minimal_polynomial.hpp"
+namespace hp2c
+{
+    typedef mpz_class large_int;
+    typedef hp2c::monomial<large_int> monomial_type;
+    typedef hp2c::polynomial<large_int> polynomial_type;
+    typedef std::vector<polynomial_type> polynomial_vector_type;
+}
+#endif //USE_GMP_INTEGERS
+
+#ifdef USE_VLI_INTEGERS_CPU
 #include "vli_cpu/vli_number_cpu.hpp"
+#include "polynomial/monomial.hpp"
+#include "polynomial/polynomial_cpu.hpp"
+#include "polynomial/vector_polynomial_cpu.hpp"
 namespace hp2c
 {
     typedef vli::vli_cpu<unsigned long int,3> large_int;
-    typedef vli::vli_cpu<unsigned long int,3> large_int_double;
-    typedef polynomial<large_int_double> polynomial_type_double;
+    typedef vli::monomial<int> monomial_type;
+    typedef vli::polynomial_cpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
+    typedef vli::vector_polynomial_cpu< polynomial_type > polynomial_vector_type;
 }
-#endif //USE_VLI_INTEGERS
+#endif //USE_VLI_INTEGERS_CPU
+
+#ifdef USE_VLI_INTEGERS_GPU
+#include "detail/bit_masks.hpp"
+#include "gpu/GpuManager.h"
+#include "gpu/GpuManager.hpp"
+#include "vli_gpu/vli_number_gpu.hpp"
+#include "polynomial/monomial.hpp"
+#include "polynomial/polynomial_gpu.hpp"
+#include "polynomial/vector_polynomial_gpu.hpp"
+namespace hp2c
+{
+    typedef vli::vli_gpu<unsigned long int,3> large_int;
+    typedef vli::monomial<large_int> monomial_type;
+    typedef vli::polynomial_gpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
+    typedef vli::vector_polynomial_gpu< polynomial_type > polynomial_vector_type;
+}
+#endif //USE_VLI_INTEGERS_GPU
 
 
 
+// ------------------------------------------------------------------
+// Code
+// ------------------------------------------------------------------
 
 using namespace hp2c;
 
-//
-// Typedefs
-//
-
-
-// A polynomial with large_int coefficients
-typedef polynomial<large_int> polynomial_type;
-
-
-// A sparse vector of polynomials (filling about 10%-15%)
 typedef std::size_t index_type;
-typedef std::vector<polynomial_type> polynomial_vector_type;
-
-
-
-
-
 
 class sparse_matrix
 {
@@ -186,11 +207,11 @@ class sparse_matrix
 
                     if(vtx_A_state == vtx_B_state)
                     {
-                        result[index] += v[index]*monomial<large_int>(1,0); // <=> result[index] = v[index];
+                        result[index] += v[index]*monomial_type(1,0); // <=> result[index] = v[index];
                     }
                     else
                     {
-                        result[index] += -1*(monomial<large_int>(1,0)*v[index]); //negate result will be very faster
+                        result[index] += -1*(monomial_type(1,0)*v[index]); //negate result will be very faster
                     }
                 }
 
@@ -202,13 +223,13 @@ class sparse_matrix
                     if( vtx_state == 0 )
                     {
                         index_type r = generate_index_from_index_and_vertex_state(index,vtx,1);
-                        result[r] += v[index]*monomial<large_int>(0,1);
+                        result[r] += v[index]*monomial_type(0,1);
                     }
                     else
                     {
                         //assert(vtx_state == 1);
                         index_type r = generate_index_from_index_and_vertex_state(index,vtx,0);
-                        result[r] += v[index]*monomial<large_int>(0,1);
+                        result[r] += v[index]*monomial_type(0,1);
                     }
 
                 } 
@@ -267,19 +288,14 @@ class high_t_expansion
 
 };
 
-large_int faculty(int i)
+large_int factorial(unsigned int i)
 {
-    if (i <= 1){
-        large_int a(1);
-        return a;
-    }
-    
-    
-    large_int a(i);
-    
-    a *= faculty(i-1);
+    if (i <= 1)
+        return large_int(1);
 
-    return a;
+    large_int a(i);
+
+    return a*factorial(i-1);
 }
 
 int main(int argc, char** argv)
@@ -305,14 +321,14 @@ int main(int argc, char** argv)
     
     
     // Print out the result
-    for(std::size_t j = 0; j < r.max_order; ++j)
+    for(unsigned int j = 0; j < r.max_order; ++j)
     {
-        for(std::size_t h = 0; h < r.max_order; ++h)
+        for(unsigned int h = 0; h < r.max_order; ++h)
         {
             if(r(j,h) > 0)
-                std::cout <<" +"<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h;
+                std::cout <<" +"<< r(j,h) << "/"<< factorial(j+h)<<"*J^"<<j<<"*h^"<<h;
             else if(r(j,h) < 0)
-                std::cout <<" "<< r(j,h) << "/"<< faculty(j+h)<<"*J^"<<j<<"*h^"<<h << std::endl;
+                std::cout <<" "<< r(j,h) << "/"<< factorial(j+h)<<"*J^"<<j<<"*h^"<<h << std::endl;
         }
     }
 
