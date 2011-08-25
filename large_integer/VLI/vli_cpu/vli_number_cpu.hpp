@@ -223,13 +223,12 @@ namespace vli
         
         void print_raw(std::ostream& os) const
         {
-            int i = Size;
             os << "(" ;
-			while( i != 0){
-			   	i--;
-				os << *(data_+i);
-                (i == 0) ? (os << ")"):(os << " ");
-			}
+            for(std::size_t i=Size-1; i > 0; --i)
+				os << std::showbase << std::hex << data_[i]<<" ";
+
+		    os << std::showbase << std::hex << data_[0];
+            os << ")";
 		}
 
         void print(std::ostream& os) const
