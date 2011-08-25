@@ -5,7 +5,7 @@
 
 
 // DRMG version
-#cmakedefine ALPS_VERSION "@ALPS_VERSION@"
+#cmakedefine DMRG_VERSION "@DMRG_VERSION@"
 
 #cmakedefine DMRG_VERSION_MAJOR @DMRG_VERSION_MAJOR@
 #cmakedefine DMRG_VERSION_MINOR @DMRG_VERSION_MINOR@
