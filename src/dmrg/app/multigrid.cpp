@@ -146,10 +146,22 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
 //        std::cout << lat.get_prop<std::string>("label", p, p+1) << ": " << lat.get_prop<double>("dx", p, p+1) << std::endl;
 //        std::cout << lat.get_prop<std::string>("label", p, p-1) << ": " << lat.get_prop<double>("dx", p, p-1) << std::endl;
 //    }
-    
+
+#ifdef UseNULL
     OpticalLattice<Matrix> model(*lat, parms1);
     Hamiltonian<Matrix, grp> H = model.H();
     MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
+#else
+#ifdef UseTwoU1
+    throw std::runtime_error("No model with 2xU1 symmetries is yet implemented.");
+    MPO<Matrix, grp> mpo(0);
+#else
+    OpticalLattice<Matrix> model(*lat, parms1);
+    Hamiltonian<Matrix, grp> H = model.H();
+    MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
+#endif
+#endif
+
     return mpo;
 }
 
