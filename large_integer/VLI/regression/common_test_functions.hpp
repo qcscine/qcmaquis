@@ -50,6 +50,9 @@ void fill_poly_random(Polynomial& p)
             fill_random(p(i,j));
 }
 
+
+
+
 } //namespace test
 } //namespace vli
 

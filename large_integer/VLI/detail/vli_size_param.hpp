@@ -16,24 +16,25 @@
 
 /** BEGINNING FIX YOUR PARAMETERS
 * Fix your parameters before compiling !!!!!!!
+* Parameters are fixed into cmake
 */
 
 /**
 * size of the vli
 */
-#define SIZE_VLI 4
+#define SIZE_VLI VLI_MAX_ORDER
 /**
 * size of the polynomial
 */
-#define SIZE_POLY_VLI 4
+#define SIZE_POLY_VLI POLYNOMIAL_MAX_ORDER
 /**
 * size of the vector
 */
-#define SIZE_VECTOR_VLI 4
+#define SIZE_VECTOR_VLI VECTOR_MAX_ORDER
 /**
 * type of the vli
 */
-typedef unsigned int type;
+typedef unsigned long int type;
 
 /** 
 *END FIX YOUR PARAMETERS 

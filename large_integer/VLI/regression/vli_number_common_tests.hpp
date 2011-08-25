@@ -126,8 +126,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
     int b_orig(b);
     Vli c(a);
 
+    std::cout << a << " " << b << std::endl;
+
     a -= b;
+
+    std::cout << a << " " << b << std::endl;
+
+
     c += (-b);
+
+    std::cout << c << " " << (-b) << std::endl;
 
     BOOST_CHECK_EQUAL(a,c);
     

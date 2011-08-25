@@ -21,12 +21,21 @@ using vli::monomial;
 using vli::polynomial_cpu;
 using vli::polynomial_gpu;
 
+        
+        
+typedef vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_cpu;
+typedef vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_gpu;
+typedef vli::monomial<vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> > monomial_type_cpu;
+typedef vli::monomial<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> > monomial_type_gpu;
+typedef vli::polynomial_cpu<vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>, vli::detail::size_poly_vli::value > polynomial_type_cpu;
+typedef vli::polynomial_gpu<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>, vli::detail::size_poly_vli::value > polynomial_type_gpu;
+        
 typedef boost::mpl::list<
-        polynomial_cpu<vli_cpu<unsigned int,8>,2>,
-        polynomial_cpu<vli_cpu<unsigned int,8>,10>,
-        polynomial_cpu<vli_cpu<unsigned long int, 4>,2>,
-        polynomial_cpu<vli_cpu<unsigned long int, 4>,10>
+          polynomial_type_cpu
         > polynomial_types;
+
+        
+        
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomial_types )
 {

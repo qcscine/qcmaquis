@@ -29,11 +29,14 @@ set (VLI_VERSION_MINOR 1)
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
+option (VLI_USE_GMP "Compile with GMP components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
-set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
-set (VLI_COMPILE_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native" CACHE STRING "Compiler flags for a regular compile.")
-set (VLI_COMPILE_FLAGS_DEBUG " -Wall -g -O0" CACHE STRING "Compiler flags for a debug compile.")
+option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 
+set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
+set (VLI_COMPILE_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native -m64" CACHE STRING "Compiler flags for a regular compile.")
+set (VLI_COMPILE_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
+add_definitions(-DPOLYNOMIAL_MAX_ORDER=3 -DVLI_MAX_ORDER=4 -DVECTOR_MAX_ORDER=256)
 
 ########################################################################
 #
@@ -41,10 +44,37 @@ set (VLI_COMPILE_FLAGS_DEBUG " -Wall -g -O0" CACHE STRING "Compiler flags for a 
 #
 ########################################################################
 
+if(VLU_USE_OPENMP)
+    add_definitions(-fopenmp)
+    set(ENV{OMP_NUM_THREADS} "2")
+endif(VLU_USE_OPENMP)
+
+
 if (VLI_USE_GPU)
-    find_package (CUDA)
+   find_package (CUDA) 
     include_directories(${CUDA_INCLUDE_DIRS})
 endif (VLI_USE_GPU)
+
+if (VLI_USE_GMP)
+
+find_path(GMP_INCLUDE_DIR gmp.h $ENV{HOME}/.local/include)
+find_library(GMP_LIBRARY_CXX NAMES gmpxx PATH $ENV{HOME}/.local/include)
+find_library(GMP_LIBRARY_C NAMES gmp PATH $ENV{HOME}/.local/include)
+
+if (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
+   set(GMP_FOUND true)
+endif (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
+
+if (GMP_FOUND)
+   if (NOT GMP_FIND_QUIETLY)
+      message(STATUS "Found GMP: ${GMP_LIBRARY_CXX} ${GMP_LIBRARY_C}")
+   endif (NOT GMP_FIND_QUIETLY)
+else (GMP_FOUND)
+   if (GMP_FIND_REQUIRED)
+      message(FATAL_ERROR "Could not find GMP")
+   endif (GMP_FIND_REQUIRED)
+endif (GMP_FOUND)
+endif (VLI_USE_GMP)
 
 set(BOOST_ROOT ${BOOST_DIR})
 find_package (Boost COMPONENTS unit_test_framework)
@@ -78,8 +108,6 @@ if(VLI_USE_GPU)
     CUDA_ADD_LIBRARY(kernels_gpu detail/kernels_gpu.cu)
 endif(VLI_USE_GPU)
 
-
-
 ########################################################################
 #
 # Main Compile
@@ -89,7 +117,7 @@ endif(VLI_USE_GPU)
 add_executable (vli main.cpp)
 
 if(VLI_USE_GPU)
-    target_link_libraries (vli kernels_gpu ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgmp -lgmpxx)
+    target_link_libraries (vli kernels_gpu ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARIES})
 endif(VLI_USE_GPU)
 
 

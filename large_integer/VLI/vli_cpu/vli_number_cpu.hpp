@@ -94,6 +94,7 @@ namespace vli
         vli_cpu& operator += (int a)
         {
             using vli::plus_assign;
+            //  plus_assign(*this,a); doest not work if a is negative to do ! 
             plus_assign(*this,vli_cpu(a));
             return *this;
         }
