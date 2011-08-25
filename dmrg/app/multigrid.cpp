@@ -155,10 +155,10 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
 
 int main(int argc, char ** argv)
 {
+    cout << DMRG_VERSION_STRING << endl;
     if (argc != 3)
     {
         cout << "Usage: <parms> <model_parms>" << endl;
-        cout << DMRG_VERSION_STRING << endl;
         exit(1);
     }
     
@@ -211,11 +211,13 @@ int main(int argc, char ** argv)
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", raw_parms);
         h5ar << alps::make_pvp("/parameters", raw_model);
+        h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
     }
     if (!dns) {
         alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", raw_parms);
         h5ar << alps::make_pvp("/parameters", raw_model);
+        h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
     }
     
     grp::charge initc;

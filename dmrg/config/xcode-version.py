@@ -21,7 +21,6 @@ for line in fin.readlines():
 		line = '#define DMRG_VERSION_BUILD "'+rev+'"\n'
 	if '#cmakedefine DMRG_VERSION_STRING "@DMRG_VERSION_STRING@"' in line:
 		line = '#define DMRG_VERSION_STRING "DMRG version 0.1-'+rev+'"\n'
-	print line
 	fout.write(line)
 fin.close()
 fout.close()
