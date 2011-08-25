@@ -2,6 +2,9 @@
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 enable_omp_if_found()
 
+configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 set(DMRG_APP_LIB_SOURCES ${PROJECT_SOURCE_DIR}/utils/utils.cpp models.cpp)
 add_library(dmrg_app STATIC ${DMRG_APP_LIB_SOURCES})
 
