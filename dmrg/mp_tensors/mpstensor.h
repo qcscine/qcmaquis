@@ -144,6 +144,9 @@ public:
     void save(alps::hdf5::archive & ar) const;
 #endif
     
+    void check_equal(MPSTensor<Matrix, SymmGroup> const &) const;
+    bool reasonable() const;
+    
 private:
     Index<SymmGroup> phys_i, left_i, right_i;
     mutable block_matrix<Matrix, SymmGroup> data_;

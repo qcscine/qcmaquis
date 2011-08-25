@@ -184,3 +184,22 @@ void MPS<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 }
 
 #endif
+
+
+template <class Matrix, class SymmGroup>
+void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup> const & mps2)
+{
+    // Length
+    if (mps1.length() != mps2.length())
+        throw std::runtime_error("Length doesn't match.");
+    
+    for (int i=0; i<mps1.length(); ++i)
+        try {
+            mps1[i].check_equal(mps2[i]);
+        } catch (std::exception & e) {
+            std::cerr << "Problem on site " << i << ":" << e.what() << std::endl;
+            exit(1);
+        }
+}
+
+

@@ -214,6 +214,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     }
     #endif
     timer.end();
+    assert( ret == ret );
     assert(ret >= 0);
     return sqrt(ret);
 }
@@ -384,3 +385,69 @@ void MPSTensor<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 
 #endif
 
+template<class Matrix, class SymmGroup>
+bool MPSTensor<Matrix, SymmGroup>::reasonable() const
+{
+    {
+        make_left_paired();
+        if (right_i != data_.right_basis())
+            throw std::runtime_error("right basis is wrong");
+        
+        make_right_paired();
+        if (left_i != data_.left_basis())
+            throw std::runtime_error("left basis is wrong");
+        
+    }
+    
+    {
+        for (std::size_t i = 0; i < data_.n_blocks(); ++i)
+        {
+            if (data_.left_basis()[i].first != data_.right_basis()[i].first)
+                throw std::runtime_error("particle number is wrong");
+        }
+    }
+    return true;
+}
+
+template <class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::check_equal (MPSTensor<Matrix, SymmGroup> const & rhs) const
+{
+    std::string error;
+    // Indexes
+    
+    try {
+        reasonable();
+    } catch (std::exception & e) {
+        error += "I'm unreasonable. " + std::string(e.what());
+    }
+    try {
+        rhs.reasonable();
+    } catch (std::exception & e) {
+        error += "He's unreasonable. " + std::string(e.what());
+    }
+    
+    // Storage
+//    if (cur_storage != rhs.cur_storage)
+//        error += "Storage doesn't match. ";
+
+    make_left_paired();
+    rhs.make_left_paired();
+    
+    // Data
+    if (data_.n_blocks() != rhs.data_.n_blocks())
+        error += "n_blocks doesn't match. ";
+    else {
+        for (int b=0; b<data_.n_blocks(); ++b) {
+            if (data_[b].num_cols() != rhs.data_[b].num_cols() || data_[b].num_rows() != rhs.data_[b].num_rows())
+                error += "Size of block doesn't match. ";
+            for (int i=0; i<data_[b].num_rows() && error.empty(); ++i)
+                for (int j=0; j<data_[b].num_cols() && error.empty(); ++j)
+                    if (data_[b](i,j) != rhs.data_[b](i,j))
+                        error += "Data doesn't match. ";
+        }
+    }
+    // Finalize
+    if (!error.empty())
+        throw std::runtime_error(error);
+        
+}
