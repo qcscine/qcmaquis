@@ -130,8 +130,9 @@ namespace vli
         
         vli_gpu& operator += (BaseInt a)
         {
-            using vli::plus_assign_int;
-            plus_assign_int(*this,a);
+            using vli::plus_assign;
+//          plus_assign(*this,a); doest not work if a is negative to do !
+            plus_assign(*this,vli_gpu(a));
             return *this;
         }
         
@@ -164,7 +165,7 @@ namespace vli
         vli_gpu& operator *= (int a)
         {
             using vli::multiplies_assign;
-            multiplies_assign_single(*this, static_cast<BaseInt>(a));
+            multiplies_assign(*this, static_cast<BaseInt>(a));
             return *this;
         }
         
@@ -215,8 +216,8 @@ namespace vli
         void negate()
         {
             //TODO write test
-            using detail::negate_gpu;
-            negate_gpu(this->data_,Size);
+            using detail::negate;
+            negate(this->data_);
         }
 
         bool is_negative() const

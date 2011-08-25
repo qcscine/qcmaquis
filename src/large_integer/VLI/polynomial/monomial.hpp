@@ -29,6 +29,12 @@ namespace vli
         explicit monomial(size_type j_exp = 0, size_type h_exp = 0)
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(1){
         }
+
+        explicit monomial(Vli a,size_type j_exp = 0, size_type h_exp = 0)
+        :j_exp_(j_exp), h_exp_(h_exp), coeff_(a){
+        }
+
+
         
         monomial& operator *= (Vli const& c){
             coeff_ *= c;

@@ -66,8 +66,9 @@ namespace vli
             template <class Vli> // Funny !
             proxy& operator+=(monomial<Vli> const& m)
             {
-                using detail::plus_assign_gpu;
-                plus_assign_gpu(pdata_, m.coeff_.p(), vli_size);
+                assert(false);
+//              using detail::plus_assign_gpu;
+//              plus_assign_gpu(pdata_, m.coeff_.p(), vli_size);
                 return *this;
             }
    

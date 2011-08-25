@@ -32,20 +32,55 @@ using vli::test::fill_random;
 using vli::test::fill_poly_random;
 
 #define  MAXORDER vli::size_poly_vli::value
-typedef   vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>  Vli_cpu;
 typedef   vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>  Vli_gpu;
+typedef   vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>  Vli_cpu;
 
 int main (int argc, char * const argv[]) 
 {
     gpu::gpu_manager* GPU;
     GPU->instance();
     
-    Vli_cpu acpu;
+    Vli_cpu acpu, ccpu;
     fill_random(acpu);
+    Vli_cpu bcpu(acpu);
+
     Vli_gpu agpu(acpu);
     Vli_gpu bgpu(acpu);
+    Vli_gpu cgpu;
 
+
+    acpu.negate();
+    agpu.negate();
+/*
+    bcpu.negate();
+    bgpu.negate();
+
+*/
+
+    std::cout << agpu  << std::endl;
+    std::cout << acpu  << std::endl;
+
+
+    ccpu = bcpu*acpu;
+    cgpu = bgpu*agpu;
+
+
+
+    std::cout << cgpu  << std::endl;
+    std::cout << ccpu  << std::endl;
+/*
+
+       
+    ccpu = acpu * bcpu;   
+    cgpu = agpu * bgpu;   
+       
+    std::cout << agpu << " " << bgpu << std::endl;
+    std::cout << acpu << " " << bcpu << std::endl;
     
+    std::cout << cgpu << std::endl;
+    std::cout << ccpu << std::endl;
+
+  */
     /*
     monomial<Vli> ma(a);
     polynomial_cpu<Vli, MAXORDER> pa;    

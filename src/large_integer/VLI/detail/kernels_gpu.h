@@ -7,22 +7,60 @@
 namespace vli {
 namespace detail {
 
-    void plus_assign_lib(type_vli::BaseInt* A, type_vli::BaseInt const* B); 
-   
+    /**
+    * VLI declarations
+    */
+
+    /** vli_gpu -> -vli_gpu */
+    void negate(type_vli::BaseInt* A); 
+    
+    /** vli_gpu += vli_gpu */
+    void plus_assign(type_vli::BaseInt* A, type_vli::BaseInt const* B); 
+ 
+    /** vli_gpu += lambda */
+    void plus_assign(type_vli::BaseInt* A, type_vli::BaseInt a); 
+
+    /** vli_gpu -= vli_gpu */
+    void minus_assign(type_vli::BaseInt* A, type_vli::BaseInt const* B);  
+
+    /** vli_gpu = vli_gpu * vli_gpu*/
+    void entrywise_multiplies(type_vli::BaseInt const* A, type_vli::BaseInt const*  B, type_vli::BaseInt* C);  
+
+    /** vli_gpu *= lambda */
+    void multiplies_assign(type_vli::BaseInt* A, int a); 
+
+    /**
+    *  MONO VLI declaration
+    */
+
+    /** vli_poly_gpu *= vli_mono_gpu */
+    void poly_mono_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C);
+
+    /** vli_poly_gpu += vli_mono_gpu */
+    // void plus_assign_poly_mono(type_vli::BaseInt* A, type_vli::BaseInt const* B);
+
+    /**
+    *  POLY VLI declaration
+    */
+
+    /** vli_poly_gpu += vli_poly_gpu */
+    void plus_assign_poly(type_vli::BaseInt* A, type_vli::BaseInt const* B);  
+
+    /** vli_poly_gpu -= vli_poly_gpu */
+    void minus_assign_poly(type_vli::BaseInt* A, type_vli::BaseInt const* B);  
+
+    /** vli_poly_gpu *= vli_poly_gpu */
+    void poly_poly_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C);
+
+    /**
+    *  VECTOR VLI declaration
+    */
+
+
 
 #define VLI_GPU_BASE_INT_TYPES_SEQ (unsigned int) (unsigned long int)
 #define VLI_DECLARE_GPU_KERNELS_FOR(r, data, TYPE) \
-    void negate_gpu(TYPE* A, int vli_size); \
-    void plus_assign_gpu(TYPE* A, TYPE const* B, int vli_size); \
-    void plus_assign_int_gpu(TYPE* A, TYPE B, int vli_size); \
-    void minus_assign_gpu(TYPE* A, TYPE* B, int vli_size);  \
-    void multiplies_assign_single_gpu(TYPE* A, TYPE a, int vli_size); \
-    void entrywise_multiplies_gpu(TYPE const* A, TYPE const*  B, TYPE* C, int vli_size);  \
     void inner_product_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size);  \
-    void poly_multiply_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order);  \
-    void poly_addition_gpu(TYPE* A, TYPE const* B, int vli_size, int max_order);  \
-    void poly_substraction_gpu(TYPE* A, TYPE const* B, int vli_size, int max_order);  \
-    void poly_mono_multiply_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order);  \
     void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order, TYPE vector_size); \
     void vector_reduction_gpu(TYPE const* A, TYPE * B,  int vli_size, int max_order, TYPE vector_size);
 BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_KERNELS_FOR, _, VLI_GPU_BASE_INT_TYPES_SEQ)

@@ -140,7 +140,7 @@ namespace vli
         */
         polynomial_gpu& operator += (polynomial_gpu const& p)
         {
-            poly_addition(*(this), p);
+            plus_assign_poly(*(this), p);
             return *this;
         }        
         
@@ -150,6 +150,13 @@ namespace vli
             // Possible because we sum only the first coefficient
             using vli::poly_addition_int;
             poly_addition_int(*this,t);
+            return *this;
+        }
+        
+        
+        polynomial_gpu& operator += (monomial<Vli> const& m)
+        {
+            assert(false);
             return *this;
         }
         
