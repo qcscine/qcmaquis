@@ -297,18 +297,18 @@ struct multigrid {
     template<class Matrix, class SymmGroup>
     void
     static extension_optim (BaseParameters & parms,
-                            MPS<Matrix, SymmGroup> const & mps_small,
+                            Logger & iteration_log,
+                            MPS<Matrix, SymmGroup> mps_small,
                             MPO<Matrix, SymmGroup> const & mpo_small,
                             MPS<Matrix, SymmGroup> & mps_large,
-                            MPO<Matrix, SymmGroup> const & mpo_large)
+                            MPO<Matrix, SymmGroup> const & mpo_large,
+                            std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
     {
         static Timer
         t_extend("fine-graining_extension"),
         t_solver("fine-graining_solver"),
         t_grow("fine-graining_grow");
-        
-        Logger iteration_log;
-        
+                
         std::size_t L = mps_small.length();
         std::size_t LL = mps_large.length();
         assert(LL == 2*L);
@@ -345,6 +345,7 @@ struct multigrid {
             Mmax = parms.get<std::size_t>("max_bond_dimension");
         
         
+        mps_small.normalize_right();
         /*
          * INIT BOUNDARIES
          */
@@ -353,7 +354,7 @@ struct multigrid {
         {
             left_[0] = mps_small.left_boundary();
             
-            Boundary<Matrix, SymmGroup> right = mps_large.right_boundary();
+            Boundary<Matrix, SymmGroup> right = mps_small.right_boundary();
             right_[L] = right;
             
             for(int i = L-1; i >= 0; --i) {
@@ -378,58 +379,111 @@ struct multigrid {
             t_extend.begin();
             site_extension(Msmall, mps_large[2*p], mps_large[2*p+1]);
             t_extend.end();
-                        
+            
+            
+            // Normalizing the MPS
+            t_norm = mps_large[2*p+1].normalize_right(SVD);
+            mps_large[2*p].multiply_from_right(t_norm);
+            mps_large[2*p].multiply_by_scalar(1./mps_large[2*p].scalar_norm());
+
+            
             MPSTensor<Matrix, SymmGroup> bkp;
             Boundary<Matrix, SymmGroup> right;
+            
+            
+            Boundary<Matrix, SymmGroup> right_mixed;
+            if (p<L-1) {
+                right_mixed = right_[p+2];
+                bkp = mps_small[p+1];
+                right_mixed = contraction::overlap_mpo_right_step(mps_small[p+1], bkp, right_mixed, mpos_mix[p][2*(p+1)]);
+            }
+
+            // Testing energy calculations
+            if (false) {
+                
+                MPS<Matrix, SymmGroup> mps_mixed = mps_small;
+                mps_mixed.resize(2*(p+1) + (L-1-p));
+                MPO<Matrix, SymmGroup> mpo_mixed(0);
+                mpo_mixed.resize(2*(p+1) + (L-1-p));
+                
+                std::copy(mpo_large.begin(), mpo_large.begin()+2*(p+1), mpo_mixed.begin());
+                std::copy(mpo_small.begin()+(p+1), mpo_small.end(), mpo_mixed.begin()+2*(p+1));
+                                
+                std::copy(mps_large.begin(), mps_large.begin()+2*(p+1), mps_mixed.begin());
+                std::copy(mps_small.begin()+(p+1), mps_small.end(), mps_mixed.begin()+2*(p+1));
+                
+                
+                if (false && p == 0) {
+                    for (int shift=0; shift<4; shift++) {
+                        std::cout << "MPO(" << 2*p+shift << ")::" << std::endl;
+                        for (int i=0; i<mpos_mix[p][2*p+shift].row_dim(); ++i)
+                            for(int j=0; j<mpos_mix[p][2*p+shift].col_dim(); ++j)
+                                std::cout << "(" << i << " --> " << j << "):" << std::endl << mpos_mix[p][2*p+shift](i, j);
+                    }
+                    
+                    std::cout << "MPO_large(last)::" << std::endl;
+                    for (int i=0; i<mpo_large[LL-1].row_dim(); ++i)
+                        for(int j=0; j<mpo_large[LL-1].col_dim(); ++j)
+                            std::cout << "(" << i << " --> " << j << "):" << std::endl << mpo_large[LL-1](i, j);
+                    exit(-1);
+                    
+                }
+                
+                {
+                    std::cout << "Norm " << norm(mps_mixed) << endl;
+                    zout << "Energy " << "finegraining_joinmpo " << expval(mps_mixed, mpo_mixed) << endl;
+                    zout << "Energy " << "finegraining_fullmpomix " << expval(mps_mixed, mpos_mix[p]) << endl;
+                }
+                
+            }
             
             /*
              * OPTIMIZATION 2*p
              */
-            {                
-                t_norm = mps_large[2*p+1].normalize_right(SVD);
-                mps_large[2*p].multiply_from_right(t_norm);
-                mps_large[2*p].multiply_by_scalar(1./mps_large[2*p].scalar_norm());
-                
-                right = right_[p+1];
-                                
-                
+            {
+                right = (p<L-1) ? right_mixed : right_[p+1];
                 bkp = mps_large[2*p+1];
-                right = contraction::overlap_mpo_right_step(mps_large[2*p+1], bkp, right, mpo_large[2*p+1]);
+                right = contraction::overlap_mpo_right_step(mps_large[2*p+1], bkp, right, mpos_mix[p][2*p+1]);
                 if (p == 0)
                     left_[0] = mps_large.left_boundary();
+                
+                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p], left_[2*p], right, mpos_mix[p][2*p]);
 
-                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p], left_[2*p], right, mpo_large[2*p]);
                 
                 // solver
-                t_solver.begin();
-                
-                std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-                timeval now, then;
-                if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
-                    BEGIN_TIMING("IETL")
-                    res = solve_ietl_lanczos(sp, mps_large[2*p], parms);
-                    END_TIMING("IETL")
-                } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
-                    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, mps_large[2*p], parms);
-                    END_TIMING("JCD")
-                } else {
-                    throw std::runtime_error("I don't know this eigensolver.");
-                }
-                
-                mps_large[2*p] = res.second;
-                
-                t_solver.end();
-                
-                zout << "Energy " << "finegraining_1 " << res.first << endl;
+                if (parms.get<bool>("finegrain_optim"))
+                {
+                    t_solver.begin();
+                    
+                    std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+                    timeval now, then;
+                    if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+                        BEGIN_TIMING("IETL")
+                        res = solve_ietl_lanczos(sp, mps_large[2*p], parms);
+                        END_TIMING("IETL")
+                    } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                        BEGIN_TIMING("JCD")
+                        res = solve_ietl_jcd(sp, mps_large[2*p], parms);
+                        END_TIMING("JCD")
+                    } else {
+                        throw std::runtime_error("I don't know this eigensolver.");
+                    }
+                    
+                    mps_large[2*p] = res.second;
+                    t_solver.end();
+                    
+                    zout << "Energy " << "finegraining_1 " << res.first << endl;
+                    iteration_log << make_log("Energy", res.first);
 
-                // Compute Energy
-                /*
-                MPSTensor<Matrix, SymmGroup> vec2 =
-                contraction::site_hamil2(sp.ket_tensor, sp.left, sp.right, sp.mpo);
-                double energy = sp.ket_tensor.scalar_overlap(vec2);
-                zout << "Energy " << "finegraining_1 " << energy << endl;
-                 */
+                } else if (true) {
+                    // Compute Energy
+                    MPSTensor<Matrix, SymmGroup> vec2 =
+                    contraction::site_hamil2(sp.ket_tensor, sp.left, sp.right, sp.mpo);
+                    double energy = sp.ket_tensor.scalar_overlap(vec2);
+                    zout << "Energy " << "finegraining_00 " << energy << endl;
+                    iteration_log << make_log("Energy", energy);
+
+                }
                 
                 // growing
                 /*
@@ -450,44 +504,46 @@ struct multigrid {
              * OPTIMIZATION 2*p+1
              */
             {
-                right = right_[p+1];
+                right = (p<L-1) ? right_mixed : right_[p+1];
                 bkp = mps_large[2*p];
                 left_[2*p+1] = contraction::overlap_mpo_left_step(mps_large[2*p], bkp,
                                                                   left_[2*p], mpo_large[2*p]);
                 
+                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p+1], left_[2*p+1], right, mpos_mix[p][2*p+1]);
 
-                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p+1], left_[2*p+1], right, mpo_large[2*p+1]);
-                
                 // solver
-                t_solver.begin();
-                
-                std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-                timeval now, then;
-                if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
-                    BEGIN_TIMING("IETL")
-                    res = solve_ietl_lanczos(sp, mps_large[2*p+1], parms);
-                    END_TIMING("IETL")
-                } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
-                    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, mps_large[2*p+1], parms);
-                    END_TIMING("JCD")
-                } else {
-                    throw std::runtime_error("I don't know this eigensolver.");
-                }
-                
-                mps_large[2*p+1] = res.second;
-                
-                t_solver.end();
-                
-                zout << "Energy " << "finegraining_2 " << res.first << endl;
+                if (parms.get<bool>("finegrain_optim"))
+                {
+                    t_solver.begin();
+                    
+                    std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+                    timeval now, then;
+                    if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+                        BEGIN_TIMING("IETL")
+                        res = solve_ietl_lanczos(sp, mps_large[2*p+1], parms);
+                        END_TIMING("IETL")
+                    } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                        BEGIN_TIMING("JCD")
+                        res = solve_ietl_jcd(sp, mps_large[2*p+1], parms);
+                        END_TIMING("JCD")
+                    } else {
+                        throw std::runtime_error("I don't know this eigensolver.");
+                    }
+                    
+                    mps_large[2*p+1] = res.second;
+                    t_solver.end();
+                    
+                    zout << "Energy " << "finegraining_2 " << res.first << endl;
+                    iteration_log << make_log("Energy", res.first);
 
-                // Compute Energy
-                /*
-                MPSTensor<Matrix, SymmGroup> vec2 =
-                contraction::site_hamil2(sp.ket_tensor, sp.left, sp.right, sp.mpo);
-                double energy = sp.ket_tensor.scalar_overlap(vec2);
-                zout << "Energy " << "finegraining_2 " << energy << endl;
-                 */
+                } else if (true) {
+                    // Compute Energy
+                    MPSTensor<Matrix, SymmGroup> vec2 =
+                    contraction::site_hamil2(sp.ket_tensor, sp.left, sp.right, sp.mpo);
+                    double energy = sp.ket_tensor.scalar_overlap(vec2);
+                    zout << "Energy " << "finegraining_01 " << energy << endl;
+                    iteration_log << make_log("Energy", energy);
+                }
                 
                 // growing
                 /*

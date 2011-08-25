@@ -56,6 +56,7 @@ public:
         add_option("nsweeps_img", "", value(0));
         
         add_option("ngrainings", "", value(0));
+        add_option("finegrain_optim", "", value(false));
         
         add_option("init_state", "", value("default"));
         

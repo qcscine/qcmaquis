@@ -93,7 +93,9 @@ template <class Matrix>
 void cont_model_parser (BaseParameters & parms, boost::shared_ptr<Lattice> & lattice,
                         Hamiltonian<Matrix, grp>& H, Measurements<Matrix, grp>& meas)
 {
-    if (parms.get<std::string>("lattice") == std::string("continuous_chain"))
+    if (parms.get<std::string>("lattice") == std::string("continuous_chain")
+        || parms.get<std::string>("lattice") == std::string("continuous_left_chain")
+        || parms.get<std::string>("lattice") == std::string("continuous_center_chain"))
         lattice = boost::shared_ptr<Lattice>(new ContChain(parms, false));
     else if (parms.get<std::string>("lattice") == std::string("periodic_continuous_chain"))
         lattice = boost::shared_ptr<Lattice>(new ContChain(parms, true));
@@ -121,6 +123,32 @@ void cont_model_parser (BaseParameters & parms, boost::shared_ptr<Lattice> & lat
         throw std::runtime_error("Don't know this model!");
 #endif
 #endif
+}
+
+MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & parms2, int L2)
+{
+    assert( parms1.get<std::string>("lattice") == parms2.get<std::string>("lattice") );
+    
+    
+    Lattice * lat;
+    if (parms1.get<std::string>("lattice") == "continuous_chain"
+        || parms1.get<std::string>("lattice") == std::string("continuous_left_chain"))
+        lat = new MixedContChain(parms1, L1, parms2, L2);
+    else if (parms2.get<std::string>("lattice") == std::string("continuous_center_chain"))
+        lat = new MixedContChain_c(parms1, L1, parms2, L2);
+    else
+        throw std::runtime_error("Don't know this lattice!");
+    
+//    std::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
+//    for (int p=0; p<lat.size(); ++p) {
+//        std::cout << lat.get_prop<std::string>("label", p, p+1) << ": " << lat.get_prop<double>("dx", p, p+1) << std::endl;
+//        std::cout << lat.get_prop<std::string>("label", p, p-1) << ": " << lat.get_prop<double>("dx", p, p-1) << std::endl;
+//    }
+    
+    OpticalLattice<Matrix> model(*lat, parms1);
+    Hamiltonian<Matrix, grp> H = model.H();
+    MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
+    return mpo;
 }
 
 int main(int argc, char ** argv)
@@ -176,7 +204,6 @@ int main(int argc, char ** argv)
     }
     
     
-    
     {
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", raw_parms);
@@ -211,11 +238,14 @@ int main(int argc, char ** argv)
     mps_initializer<Matrix, grp> * initializer = new empty_mps_init<Matrix, grp>();
     MPS<Matrix, grp> cur_mps(0, 0, phys, grp::SingletCharge, *initializer);
     
+    BaseParameters old_model;
     {
         int t_graning = (graining > 0) ? graining-1 : 0;
                 
         BaseParameters parms = raw_parms.get_at_index("graining", t_graning);
         BaseParameters model = raw_model.get_at_index("graining", t_graning);
+        
+        old_model = model;
         
         cont_model_parser(model, lat, H, measurements);
         phys = H.get_phys();
@@ -245,14 +275,14 @@ int main(int argc, char ** argv)
         phys = H.get_phys();
 
 #ifndef NDEBUG
-        std::cout << parms << std::endl;
-        std::cout << model << std::endl;
-        std::cout << measurements << std::endl;
-        std::cout << H << std::endl;
-
-        std::cout << "LATTICE:" << std::endl;
-        for (int i=0; i<lat->size(); ++i)
-            std::cout << i << ": " << lat->get_prop<double>("x", i) << std::endl;
+//        std::cout << parms << std::endl;
+//        std::cout << model << std::endl;
+//        std::cout << measurements << std::endl;
+//        std::cout << H << std::endl;
+//
+//        std::cout << "LATTICE:" << std::endl;
+//        for (int i=0; i<lat->size(); ++i)
+//            std::cout << i << ": " << lat->get_prop<double>("x", i) << std::endl;
 #endif
         
         Measurements<Matrix, grp> meas_always;
@@ -277,22 +307,62 @@ int main(int argc, char ** argv)
         if (cur_mps.length() > 0 && cur_mps.length() != initial_mps.length())
         {
             std::cout << "*** Starting grainings ***" << std::endl;
+            Logger iteration_log;
+                        
+            int oldL = old_model.get<double>("Ndiscr") * old_model.get<double>("L");
+            std::vector<MPO<Matrix, grp> > mpo_mix(oldL, MPO<Matrix, grp>(0));
+            double r = model.get<double>("Ndiscr")/old_model.get<double>("Ndiscr");
+            for (int i=1; i<=oldL; ++i)
+                mpo_mix[i-1] = mixed_mpo(model, r*i, old_model, oldL-i);
             
-            std::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
+//            std::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
             if (cur_mps.length() < initial_mps.length())
-                multigrid::extension_optim(parms,
+                multigrid::extension_optim(parms, iteration_log,
                                            cur_mps, parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
-                                           initial_mps, parms.get<int>("use_compressed") == 0 ? t_mpo : t_mpoc);
+                                           initial_mps, parms.get<int>("use_compressed") == 0 ? t_mpo : t_mpoc,
+                                           mpo_mix);
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
-            std::cout << "New MPS:" << std::endl << initial_mps.description();
+//            std::cout << "New MPS:" << std::endl << initial_mps.description();
+            
+            std::vector<double> energies, entropies;            
+            entropies = calculate_bond_entropies(initial_mps);
+                        
+            {
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+                
+                std::ostringstream oss;
+                
+                oss.str("");
+                oss << "/simulation/iteration/graining/" << graining << "/parameters";
+                h5ar << alps::make_pvp(oss.str(), parms);
+                h5ar << alps::make_pvp(oss.str(), model);
+                
+                oss.str("");
+                oss << "/simulation/iteration/graining/" << graining << "/results";
+                
+                h5ar << alps::make_pvp(oss.str(), iteration_log);
+                h5ar << alps::make_pvp(oss.str()+"/Iteration Entropies/mean/value", entropies);
+            }
+            {
+                std::ostringstream oss;
+                oss << "/simulation/iteration/graining/" << graining << "/results/";
+                if (meas_always.n_terms() > 0)
+                    measure(initial_mps, *lat, meas_always, rfile, oss.str());
+                
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+                std::vector<double> dens;
+                h5ar >> alps::make_pvp(oss.str()+"Density/mean/value", dens);
+                std::cout << "Density: " << dens[0] << std::endl;
+            }
+
         } else if (cur_mps.length() > 0) {
             initial_mps = cur_mps;
         }
         cur_mps = initial_mps;
         mpo = t_mpo;
         mpoc = t_mpoc;
-        
+        old_model = model;
                 
 #ifndef MEASURE_ONLY
         
