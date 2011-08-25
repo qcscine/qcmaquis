@@ -1,0 +1,18 @@
+
+
+#ifndef DMRG_APP_VERSION
+#define DMRG_APP_VERSION
+
+
+// DRMG version
+#cmakedefine ALPS_VERSION "@ALPS_VERSION@"
+
+#cmakedefine DMRG_VERSION_MAJOR @DMRG_VERSION_MAJOR@
+#cmakedefine DMRG_VERSION_MINOR @DMRG_VERSION_MINOR@
+#cmakedefine DMRG_VERSION_BUILD @DMRG_VERSION_BUILD@
+
+// DMRG version (full string)
+#cmakedefine DMRG_VERSION_STRING "@DMRG_VERSION_STRING@"
+
+
+#endif

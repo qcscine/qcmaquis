@@ -6,6 +6,8 @@
 //  Copyright 2011 ETHZ. All rights reserved.
 //
 
+#include "version.h"
+
 #include <cmath>
 #include <iterator>
 #include <iostream>
@@ -156,6 +158,7 @@ int main(int argc, char ** argv)
     if (argc != 3)
     {
         cout << "Usage: <parms> <model_parms>" << endl;
+        cout << DMRG_VERSION_STRING << endl;
         exit(1);
     }
     
