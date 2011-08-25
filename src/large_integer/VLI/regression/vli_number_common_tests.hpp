@@ -126,16 +126,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
     int b_orig(b);
     Vli c(a);
 
-    std::cout << a << " " << b << std::endl;
-
     a -= b;
-
-    std::cout << a << " " << b << std::endl;
-
-
     c += (-b);
-
-    std::cout << c << " " << (-b) << std::endl;
 
     BOOST_CHECK_EQUAL(a,c);
     
@@ -514,3 +506,62 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp, Vli, vli_
     BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
 }
 
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( pointer_range_overflows, Vli, vli_types )
+{
+    Vli a;
+    for(std::size_t i=0; i<Vli::size;++i)
+        a[i] = max_int_value<Vli>::value;
+    
+    Vli b(a);
+    b-= Vli(1);
+
+    BOOST_CHECK_EQUAL(b,a-Vli(1));
+    
+    Vli a_orig(a);
+
+    Vli *c = new Vli[3];
+    c[0] = Vli(0);
+    c[1] = a;
+    c[2] = Vli(0);
+
+    c[1] *= b;
+
+    a *= b;
+
+//    a.print_raw(std::cout);
+//    std::cout<<std::endl;
+//    std::cout<<std::endl;
+//    b.print_raw(std::cout);
+//    std::cout<<std::endl;
+//    std::cout<<std::endl;
+//    c[0].print_raw(std::cout);
+//    std::cout<<std::endl;
+//    std::cout<<std::endl;
+//    c[1].print_raw(std::cout);
+//    std::cout<<std::endl;
+//    std::cout<<std::endl;
+//    c[2].print_raw(std::cout);
+//    std::cout<<std::endl;
+//    std::cout<<std::endl;
+    BOOST_CHECK_EQUAL(c[0],Vli(0));
+    BOOST_CHECK_EQUAL(c[1],a);
+    BOOST_CHECK_EQUAL(c[2],Vli(0));
+
+    delete[] c;
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( two_times_not_equal_minus_one, Vli, vli_types )
+{
+    Vli a;
+    for(std::size_t i=0; i<Vli::size;++i)
+        a[i] = max_int_value<Vli>::value;
+
+    Vli c(a); 
+    Vli b(2);
+    
+    a *= b;
+    c -= 1;
+    
+    BOOST_CHECK_EQUAL((a == c), false);
+}
