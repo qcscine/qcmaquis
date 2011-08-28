@@ -321,8 +321,10 @@ int main(int argc, char ** argv)
                                      *initializer_factory<Matrix>(parms));
 
         
+        static Timer multigrid_t("Multigrid");
         if (cur_mps.length() > 0 && cur_mps.length() != initial_mps.length())
         {
+            multigrid_t.begin();
             std::cout << "*** Starting grainings ***" << std::endl;
             Logger iteration_log;
                         
@@ -341,7 +343,8 @@ int main(int argc, char ** argv)
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
 //            std::cout << "New MPS:" << std::endl << initial_mps.description();
-            
+            multigrid_t.end();
+
             std::vector<double> energies, entropies;            
             entropies = calculate_bond_entropies(initial_mps);
                         
@@ -366,13 +369,7 @@ int main(int argc, char ** argv)
                 oss << "/simulation/iteration/graining/" << graining << "/results/";
                 if (meas_always.n_terms() > 0)
                     measure(initial_mps, *lat, meas_always, rfile, oss.str());
-                
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
-                std::vector<double> dens;
-                h5ar >> alps::make_pvp(oss.str()+"Density/mean/value", dens);
-                std::cout << "Density: " << dens[0] << std::endl;
-            }
-
+            }            
         } else if (cur_mps.length() > 0) {
             initial_mps = cur_mps;
         }
@@ -435,12 +432,6 @@ int main(int argc, char ** argv)
                     oss << "/simulation/iteration/graining/" << graining << "/sweep" << sweep << "/results/";
                     if (meas_always.n_terms() > 0)
                         measure(cur_mps, *lat, meas_always, rfile, oss.str());
-                    
-                    alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
-                    std::vector<double> dens;
-                    h5ar >> alps::make_pvp(oss.str()+"Density/mean/value", dens);
-                    std::cout << "Density: " << dens[0] << std::endl;
-                    
                 }
                 
                 if (!dns)
