@@ -261,8 +261,8 @@ __global__ void inner_prod_vector(T const* v1, T const* v2, T* res)
 }
     
     
-template  <typename T, int vli_size, int poly_size, int vector_size>
-__global__ void reduction_polynome(T const* v1, T* v2)
+template  <typename T, int vli_size, int poly_size>
+__global__ void reduction_polynome(T const* v1, T* v2, std::size_t SizeVector)
 { 
     /*
     *  WARNING the kernels can only be instancied with one value
@@ -271,7 +271,7 @@ __global__ void reduction_polynome(T const* v1, T* v2)
     std::size_t size_poly = static_cast<std::size_t>(vli_size*poly_size*poly_size);  
     std::size_t offset0(0);  
     std::size_t offset1(0);  
-    for(std::size_t i=0 ; i < vector_size ; ++i){
+    for(std::size_t i=0 ; i < SizeVector ; ++i){
         for(std::size_t j=0 ; j < poly_size*poly_size ; ++j){ //additional loop
             offset0 = j*vli_size;
             offset1 = i*size_poly+j*vli_size;
