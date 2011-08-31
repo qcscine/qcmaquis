@@ -34,7 +34,7 @@
 /**
 * type of the vli
 */
-typedef unsigned int type;
+typedef unsigned long int type;
 
 /** 
 *END FIX YOUR PARAMETERS 

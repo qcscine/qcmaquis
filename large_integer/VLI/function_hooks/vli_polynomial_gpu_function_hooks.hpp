@@ -11,9 +11,7 @@ namespace vli{
     template <class BaseInt, int Size, int Order>
     void poly_addition_int(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & p1, int b)
     {
-        assert(false);
-//        using detail::plus_assign_int_gpu;
-//        plus_assign_int_gpu(p1.p(),b,Size);
+        detail::plus_assign_poly_int(p1.p(),b);
     } 
 
     template <class BaseInt, int Size, int Order, class Monomial> // monomial can be a monomial_gpu or a vli_gpu

@@ -31,8 +31,8 @@ typedef vli::polynomial_cpu<vli_cpu<vli::detail::type_vli::BaseInt, vli::detail:
 typedef vli::polynomial_gpu<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>, vli::detail::size_poly_vli::value > polynomial_type_gpu;
         
 typedef boost::mpl::list<
-          polynomial_type_cpu
-//          polynomial_type_gpu          
+        polynomial_type_cpu
+         // polynomial_type_gpu          
         > polynomial_types;
 
         

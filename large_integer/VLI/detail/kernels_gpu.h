@@ -49,9 +49,12 @@ namespace detail {
     /** vli_poly_gpu -= vli_poly_gpu */
     void minus_assign_poly(type_vli::BaseInt* A, type_vli::BaseInt const* B);  
 
+    /** vli_poly_gpu += int */
+    void plus_assign_poly_int(type_vli::BaseInt* A, int b);  
+
     /** vli_poly_gpu *= vli_poly_gpu */
     void poly_poly_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C);
-
+    
     /**
     *  VECTOR VLI declaration
     *  by definition vectors are dynamics so no templated

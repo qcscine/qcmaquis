@@ -44,19 +44,35 @@ namespace vli
 			kernels_addition_block((x+i), (y+i));
      
 		*(x+Size-1) += *(y+Size-1);
-                *(x+Size-1) &= base<BaseInt>::value + data_mask<BaseInt>::value;
+        *(x+Size-1) &= base<BaseInt>::value + data_mask<BaseInt>::value;
 	}
     
     /**
-	 addition classic on a block 
+	 * addition classic on a block 
 	 */	
-        template <typename BaseInt>
+    template <typename BaseInt>
 	inline void kernels_addition_block(BaseInt* x, BaseInt const*  y)
 	{
 		*x     += *y; 
 		*(x+1) += *x >> data_bits<BaseInt>::value; //carry bit
 		*x     &= data_mask<BaseInt>::value; // Remove the carry bit
 	}	
+    
+    /**
+    * addition classic vli and a int 
+    */
+    template <typename BaseInt, std::size_t Size>
+	inline void kernels_addition_int(BaseInt* x, int y)
+    {
+        *x += y;
+        for (int k = 0; k < Size-1; ++k)
+        { 
+            *(x+k+1)  += *(x+k) >> data_bits<BaseInt>::value;
+            *(x+k)    &= data_mask<BaseInt>::value;
+        }
+        *(x+Size-1) &= base<BaseInt>::value + data_mask<BaseInt>::value;       
+    }    
+    
     /**
     * END ADDITION BETWEEN TWO VLI
     */
