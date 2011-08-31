@@ -114,7 +114,7 @@ __device__  void single_multiplication_device(T const* x, T const* y, T* z)
     {
         kernels_multiplication_classic_truncate<T,static_cast<std::size_t>(size)>(z,x,y); 
     }
- */
+*/
        
     if( static_cast<bool>((x[size-1]) >> data_bits<T>::value)){
         kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T* >(x));
@@ -230,7 +230,10 @@ __device__ void polynome_polynome_multiplication_device(T const* p1, T const* p2
                 for(std::size_t he2 = 0; he2 < poly_size - he1; ++he2)
                 {
                     T inter[vli_size];
-                    memset(&inter[0], 0 , vli_size*sizeof(T));
+                    #pragma unroll
+                    for(std::size_t i=0 ; i < vli_size ;++i)
+                        inter[i] = 0;
+                    //memset(&inter[0], 0 , vli_size*sizeof(T)); memset forbiden on GPU it is corrupted the memory, not stable !!!
                     std::size_t offset0 = ((je1+je2)*poly_size + he1+he2)*vli_size;
                     std::size_t offset1 = (je1*poly_size+he1)*vli_size;                    
                     std::size_t offset2 = (je2*poly_size+he2)*vli_size;
@@ -242,39 +245,42 @@ __device__ void polynome_polynome_multiplication_device(T const* p1, T const* p2
     }
 } 
 
-  
-/*    
-     
+/**
+* VLI_GPU_VECTOR functions
+*/
+
     
-    
-template <typename T>
-__global__ void inner_prod_vector(T const* p1, T const* p2, T* inter, int vli_size, int max_order, int size_vector)
+template  <typename T, int vli_size, int poly_size>
+__global__ void inner_prod_vector(T const* v1, T const* v2, T* res)
 {
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-    unsigned int size_poly = vli_size*max_order*max_order;
+    unsigned int size_poly = vli_size*poly_size*poly_size;
     unsigned int offset = xIndex*size_poly;
-        //mutiplication
-    polynome_polynome_multiplication(&p1[offset],&p2[offset],&inter[offset],vli_size,max_order); 
+    //multiplication between polynomial
+    polynome_polynome_multiplication_device<T,vli_size,poly_size>(&v1[offset],&v2[offset],&res[offset]); 
 }
     
     
-template <typename T>
-__global__ void reduction_polynome(T const* A, T * B,  int vli_size, int max_order, int size_vector)
+template  <typename T, int vli_size, int poly_size, int vector_size>
+__global__ void reduction_polynome(T const* v1, T* v2)
 { 
-    int size_poly = vli_size*max_order*max_order;
-    
-    for(unsigned int i=0 ; i < size_vector ; i++)
-            addition_classic_kernel_gpu(&B[0],&A[i*size_poly], size_poly);  
-            
+    /*
+    *  WARNING the kernels can only be instancied with one value
+    *  here vli_size, so, one more loop.
+    */    
+    std::size_t size_poly = static_cast<std::size_t>(vli_size*poly_size*poly_size);  
+    std::size_t offset0(0);  
+    std::size_t offset1(0);  
+    for(std::size_t i=0 ; i < vector_size ; ++i){
+        for(std::size_t j=0 ; j < poly_size*poly_size ; ++j){ //additional loop
+            offset0 = j*vli_size;
+            offset1 = i*size_poly+j*vli_size;
+            kernels_addition_classic<T,vli_size>(&v2[offset0],&v1[offset1]);
+        }
+    }
 }
-    
-    
-template <typename T>
-__device__ void copy_kernel_gpu(T* x, T const* y)
-{
-    *x = *y;
-}    
-    
+
+/*    
 
 template <typename T>
 __device__ void addition_with_int_kernel_gpu(T* x, int y, int vli_size)
@@ -288,25 +294,6 @@ __device__ void addition_with_int_kernel_gpu(T* x, int y, int vli_size)
     }
     *(x+vli_size-1) &= base<T>::value + data_mask<T>::value;
 }
-
-
-
-template <typename T>
-__device__ void addition_classic_kernel_gpu(T* x, T const* y, int vli_size)
-{
-
-    for (int k = 0; k < vli_size-1; ++k)
-    { 
-        *(x+k)    += *(y+k);
-        *(x+k+1)  += *(x+k) >> data_bits<T>::value;
-        *(x+k)    &= data_mask<T>::value;
-    }
-    
-    *(x+vli_size-1) += *(y+vli_size-1);
-    *(x+vli_size-1) &= base<T>::value + data_mask<T>::value;
-}    
-    
-
 
 */
 }//detail

@@ -15,6 +15,7 @@
 #include "boost/swap.hpp"
 #include "polynomial/polynomial_cpu.hpp"
 #include "vli_cpu/vli_number_cpu.hpp"
+#include "detail/vli_size_param.hpp"
 
 namespace vli
 {
@@ -54,11 +55,11 @@ namespace vli
         * reduction is impossible on class type  
         */
         #pragma omp parallel for
-        for(std::size_t i=0 ; i < size_v ; i++){
+        for(std::size_t i=0 ; i < size_v ; ++i){
             inter[i] = v1[i]*v2[i]; 
         }
-
-        for(std::size_t i=0 ; i < size_v ; i++){
+        
+        for(std::size_t i=0 ; i < size_v ; ++i){
             res += inter[i]; 
         }
 

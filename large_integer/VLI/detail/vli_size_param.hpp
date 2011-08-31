@@ -34,7 +34,7 @@
 /**
 * type of the vli
 */
-typedef unsigned long int type;
+typedef unsigned int type;
 
 /** 
 *END FIX YOUR PARAMETERS 
@@ -63,6 +63,7 @@ namespace vli
         enum { value = SIZE_POLY_VLI};
     };
 
+    // Presently not used, because the vectors are dynamics
     struct size_vector_vli    
     {
         enum { value = SIZE_VECTOR_VLI};
