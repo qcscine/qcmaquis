@@ -108,7 +108,7 @@ namespace vli
         /** CPU vector to GPU vector */
         explicit vector_polynomial_gpu(vector_polynomial_cpu< polynomial_cpu< vli_cpu <vli_value_type, vli_size>, max_order_poly > >& vector){ 
              resize(vector.size()); // because default value is one !
-             gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&(vector[0](0,0)), detail::size_vector_vli::value*max_order_poly*max_order_poly*vli_size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__); 
+             gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&(vector[0](0,0)), vector.size()*max_order_poly*max_order_poly*vli_size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__); 
         }
 
         vector_polynomial_gpu& operator=(vector_polynomial_gpu v)
