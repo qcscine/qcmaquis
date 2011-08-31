@@ -118,8 +118,8 @@ namespace vli
         polynomial_gpu(){
         }
         
-        /** GPU poly to GPU poly */
-        polynomial_gpu(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>& poly){ 
+        /** CPU poly to GPU poly */
+            polynomial_gpu(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>& poly){ 
             gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&poly(0,0), Order*Order*Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__); 
         }
         

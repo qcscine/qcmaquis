@@ -93,7 +93,7 @@ public:
     
     template <typename T>
     polynomial_cpu& operator += (T const& t)
-    {
+    { 
         coeffs_[0]+=t;
         return *this;
     }

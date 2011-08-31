@@ -63,6 +63,7 @@ int main (int argc, char * const argv[])
     vector_type_gpu VaGPU(VaCPU); 
     vector_type_gpu VbGPU(VbCPU); 
 
+
     Timer A("CPU");
     A.begin();            
     pcCPU =  inner_product(VaCPU,VbCPU);

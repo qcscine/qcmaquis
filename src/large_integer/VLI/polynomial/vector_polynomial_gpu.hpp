@@ -59,7 +59,7 @@ namespace vli
             
             proxy& operator=(polynomial_gpu const& p)
             {
-                gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos*OffSet),(void*)(p.p()), max_order_poly*max_order_poly*vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
+                gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos*OffSet),(void*)p.p(), max_order_poly*max_order_poly*vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
                 return *this;
             }
            
@@ -67,8 +67,7 @@ namespace vli
             proxy& operator+=(monomial<Vli> const& m)
             {
                 assert(false);
-//              using detail::plus_assign_gpu;
-//              plus_assign_gpu(pdata_, m.coeff_.p(), vli_size);
+            //    plus_assign(pdata_, m.coeff_.p());
                 return *this;
             }
    
@@ -96,8 +95,8 @@ namespace vli
             size_t pos;
         };    
         
-        vector_polynomial_gpu(size_t size = 1) // by default param file         :gpu_vector<typename polynomial_gpu::vli_value_type>(size*max_order_poly*max_order_poly*vli_size), size_(size)
-        {
+        vector_polynomial_gpu(size_t size = 1):gpu_vector<typename polynomial_gpu::vli_value_type>(size*OffSet),size_(size)
+        {   
         }
         
         vector_polynomial_gpu(vector_polynomial_gpu const& v)

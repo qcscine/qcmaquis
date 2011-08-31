@@ -34,6 +34,9 @@ template <typename BaseInt>
 __host__ __device__ void kernels_addition_block(BaseInt* x, BaseInt const* y); 
 
 template <typename BaseInt, std::size_t Size>
+__host__ __device__ void kernels_addition_int(BaseInt* x, int a);
+
+template <typename BaseInt, std::size_t Size>
 __host__ __device__ void kernels_multiplication_classic_truncate(BaseInt * res, BaseInt const* x, BaseInt const* y);	
 
 template <typename BaseInt>
@@ -267,6 +270,7 @@ __global__ void reduction_polynome(T const* v1, T* v2, std::size_t SizeVector)
     /*
     *  WARNING the kernels can only be instancied with one value
     *  here vli_size, so, one more loop.
+    *  SOLUTION : BOOST_PP_SEQ_FOR_EACH ..... 
     */    
     std::size_t size_poly = static_cast<std::size_t>(vli_size*poly_size*poly_size);  
     std::size_t offset0(0);  
@@ -279,23 +283,14 @@ __global__ void reduction_polynome(T const* v1, T* v2, std::size_t SizeVector)
         }
     }
 }
-
-/*    
-
-template <typename T>
-__device__ void addition_with_int_kernel_gpu(T* x, int y, int vli_size)
+   
+template <typename T, int vli_size>
+__global__ void polynome_int_addition(T* x, int y)
 {
-    *x  += y;
-
-    for (int k = 0; k < vli_size-1; ++k)
-    { 
-        *(x+k+1)  += *(x+k) >> data_bits<T>::value;
-        *(x+k)    &= data_mask<T>::value;
-    }
-    *(x+vli_size-1) &= base<T>::value + data_mask<T>::value;
+    kernels_addition_int<T, vli_size>(x,y);
 }
 
-*/
+
 }//detail
 }//vli
 

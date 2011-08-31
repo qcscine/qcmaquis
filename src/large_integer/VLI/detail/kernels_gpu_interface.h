@@ -57,6 +57,9 @@ __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res);
 template <typename T, int vli_size, int poly_size>
 __global__ void monome_polynome_addition(T* p, T const* m);
 
+template <typename T, int vli_size> 
+__global__ void polynome_int_addition(T* pa, int a);
+
 template <typename T, int vli_size, int poly_size> 
 __global__ void polynome_polynome_addition(T* pa, T const* pb);
 
@@ -133,6 +136,13 @@ void poly_mono_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, 
     dim3 dimblock(size_poly_vli_value_square,1,1); 
     monome_polynome_multiplication<type_vli::BaseInt, size_vli::value, size_poly_vli::value>  <<< dimgrid, dimblock >>>(A, B, C); 
 } 
+
+void plus_assign_poly_int(type_vli::BaseInt* A, int a)
+{
+    dim3 dimgrid(1,1,1); 
+    dim3 dimblock(1,1,1); 
+    polynome_int_addition<type_vli::BaseInt, size_vli::value> <<< dimgrid, dimblock>>>(A,a);
+}
 
 void plus_assign_poly(type_vli::BaseInt* A, type_vli::BaseInt const* B) 
 { 
