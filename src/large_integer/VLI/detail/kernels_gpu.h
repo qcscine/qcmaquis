@@ -54,9 +54,18 @@ namespace detail {
 
     /**
     *  VECTOR VLI declaration
+    *  by definition vectors are dynamics so no templated
     */
+    
+    /** vli_vector_gpu[i] * vli_vector_gpu[i] */
+    void inner_product_vector(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C, std::size_t SizeVector, std::size_t NumThreads); 
+    
+    /** vli_poly_gpu += vli_vector_gpu[i] */
+    void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt* B);
 
 
+
+/*
 
 #define VLI_GPU_BASE_INT_TYPES_SEQ (unsigned int) (unsigned long int)
 #define VLI_DECLARE_GPU_KERNELS_FOR(r, data, TYPE) \
@@ -66,7 +75,7 @@ namespace detail {
 BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_KERNELS_FOR, _, VLI_GPU_BASE_INT_TYPES_SEQ)
 
 #undef VLI_DECLARE_GPU_KERNELS_FOR
-
+*/
 } //namespace detail
 
 } //namespace vli

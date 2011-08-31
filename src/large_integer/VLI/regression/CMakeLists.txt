@@ -25,8 +25,8 @@ add_test (vli_gpu_tests vli_gpu_tests)
 add_executable ( vli_monomial_tests vli_monomial_tests.cpp)
 target_link_libraries (vli_monomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
 
-add_executable ( vli_monomial_polynomial_tests vli_monomial_polynomial_tests.cpp)
-target_link_libraries (vli_monomial_polynomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARY_C} ${GMP_LIBRARY_CXX})
+#add_executable ( vli_monomial_polynomial_tests vli_monomial_polynomial_tests.cpp)
+#target_link_libraries (vli_monomial_polynomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARY_C} ${GMP_LIBRARY_CXX})
 
 add_executable ( vli_polynomial_tests vli_polynomial_tests.cpp)
 target_link_libraries (vli_polynomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
@@ -36,13 +36,12 @@ target_link_libraries (vli_polynomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUD
 #target_link_libraries (vli_monomial_polynomial_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
 
 add_test(vli_monomial_tests vli_monomial_tests)
-#add_test(vli_monomial_polynomial_tests vli_monomial_polynomial_tests)
 add_test(vli_polynomial_tests vli_polynomial_tests)
 #
 # vector
 #
 
-#add_executable(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests.cpp)
-#target_link_libraries( vli_vector_cpu_gpu_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
+add_executable(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests.cpp)
+target_link_libraries( vli_vector_cpu_gpu_tests kernels_gpu ${Boost_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES})
 
-#add_test(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests)
+add_test(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests)

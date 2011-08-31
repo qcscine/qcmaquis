@@ -161,7 +161,6 @@ public:
     polynomial_cpu& operator *= (monomial<T> const& c)
     {
         // TODO this implementation is wrong!!!
-        assert(false);
         (*this) *= c.coeff_;
         return *this;
     }

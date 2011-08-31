@@ -69,13 +69,12 @@ __global__ void polynome_polynome_multiplication(T const* pa, T const* pb, T* pr
 /**
 * VLI_GPU_VECTOR functions
 */
-/*
-template <typename T>
-__global__ void inner_prod_vector(T const* p1, T const* p2, T* inter, int vli_size, int max_order, int size_vector);
 
-template <typename T>
-__global__ void reduction_polynome(T const* A, T * B,  int vli_size, int max_order, int size_vector);
-*/
+template <typename T, int vli_size, int poly_size>
+__global__ void inner_prod_vector(T const* va, T const* vb, T* vres);
+
+template <typename T, int vli_size, int poly_size, int vector_size>
+__global__ void reduction_polynome(T const* va, T * vb);
 
 /**
 * VLI_GPU functions
@@ -162,23 +161,18 @@ void poly_poly_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, 
 * VLI_GPU_VECTOR functions
 */
 
-/*
-
-void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order, TYPE vector_size) \
-{ \
-    int threadsPerBlock = 16; \
-    int blocksPerGrid = vector_size/16; \
-    inner_prod_vector  <<< blocksPerGrid,threadsPerBlock  >>>(A, B, C,vli_size, max_order,vector_size);  \
-} \
-void vector_reduction_gpu(TYPE const* A, TYPE * B,  int vli_size, int max_order, TYPE vector_size) \
-{ \
-    dim3 dimgrid(1,1,1); \
-    dim3 dimblock(1,1,1); \
-    reduction_polynome <<< dimgrid, dimblock >>>(A, B, vli_size, max_order, vector_size); \
+void inner_product_vector(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C, std::size_t SizeVector, std::size_t threadsPerBlock) 
+{ 
+    std::size_t blocksPerGrid =  SizeVector/threadsPerBlock;
+    inner_prod_vector<type_vli::BaseInt, size_vli::value, size_poly_vli::value> <<< blocksPerGrid,threadsPerBlock  >>>(A, B, C);  
+} 
+void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt * B) 
+{ 
+    //the reduction should be // if executed on one smp
+    dim3 dimgrid(1,1,1); 
+    dim3 dimblock(1,1,1); 
+    reduction_polynome<type_vli::BaseInt, size_vli::value, size_poly_vli::value, size_vector_vli::value> <<< dimgrid, dimblock >>>(A, B);
 }
-
-*/
-
 
 
 /*
