@@ -61,7 +61,7 @@ namespace detail {
     void inner_product_vector(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C, std::size_t SizeVector, std::size_t NumThreads); 
     
     /** vli_poly_gpu += vli_vector_gpu[i] */
-    void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt* B);
+    void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt* B, std::size_t SizeVector);
 
 
 

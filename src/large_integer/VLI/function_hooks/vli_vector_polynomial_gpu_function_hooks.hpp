@@ -29,7 +29,7 @@ namespace vli{
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inter;
         inter.resize(a.size()); //default size 1 so resize        
         detail::inner_product_vector(a.p(), b.p(),inter.p(),a.size(),NumThreads);
-        detail::vector_reduction(inter.p(),res.p());
+        detail::vector_reduction(inter.p(),res.p(),a.size());
     }
     
     

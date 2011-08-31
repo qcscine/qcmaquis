@@ -73,8 +73,8 @@ __global__ void polynome_polynome_multiplication(T const* pa, T const* pb, T* pr
 template <typename T, int vli_size, int poly_size>
 __global__ void inner_prod_vector(T const* va, T const* vb, T* vres);
 
-template <typename T, int vli_size, int poly_size, int vector_size>
-__global__ void reduction_polynome(T const* va, T * vb);
+template <typename T, int vli_size, int poly_size>
+__global__ void reduction_polynome(T const* va, T * vb, std::size_t SizeVector);
 
 /**
 * VLI_GPU functions
@@ -166,12 +166,12 @@ void inner_product_vector(type_vli::BaseInt const* A, type_vli::BaseInt const* B
     std::size_t blocksPerGrid =  SizeVector/threadsPerBlock;
     inner_prod_vector<type_vli::BaseInt, size_vli::value, size_poly_vli::value> <<< blocksPerGrid,threadsPerBlock  >>>(A, B, C);  
 } 
-void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt * B) 
+void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt * B, std::size_t SizeVector) 
 { 
     //the reduction should be // if executed on one smp
     dim3 dimgrid(1,1,1); 
     dim3 dimblock(1,1,1); 
-    reduction_polynome<type_vli::BaseInt, size_vli::value, size_poly_vli::value, size_vector_vli::value> <<< dimgrid, dimblock >>>(A, B);
+    reduction_polynome<type_vli::BaseInt, size_vli::value, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, SizeVector);
 }
 
 
