@@ -42,6 +42,7 @@ typedef blas::dense_matrix<double> Matrix;
 
 #include "utils/stream_storage.h"
 #include "utils/logger.h"
+#include "utils/random.hpp"
 
 #include "mp_tensors/ss_optimize.h"
 
@@ -111,6 +112,7 @@ int main(int argc, char ** argv)
     }
     
     srand48(parms.get<int>("seed"));
+    dmrg_random::engine.seed(parms.get<int>("seed"));
     
     Lattice * lat;
     Hamiltonian<Matrix, grp> H;

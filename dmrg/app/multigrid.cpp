@@ -55,6 +55,7 @@ typedef blas::dense_matrix<double> Matrix;
 
 #include "utils/stream_storage.h"
 #include "utils/logger.h"
+#include "utils/random.hpp"
 
 #include "mp_tensors/ss_optimize.h"
 
@@ -195,6 +196,7 @@ int main(int argc, char ** argv)
     ModelParameters raw_model(model_file);
     
     srand48(raw_parms.get<int>("seed"));
+    dmrg_random::engine.seed(raw_parms.get<int>("seed"));
     
     std::string chkpfile = raw_parms.get<std::string>("chkpfile");
     std::string rfile = raw_parms.get<std::string>("resultfile");
@@ -377,7 +379,7 @@ int main(int argc, char ** argv)
         mpo = t_mpo;
         mpoc = t_mpoc;
         old_model = model;
-                
+        
 #ifndef MEASURE_ONLY
         
         //    BaseStorageMaster * bsm = bsm_factory(parms);

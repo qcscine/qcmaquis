@@ -48,6 +48,7 @@ typedef blas::dense_matrix<std::complex<double> > Matrix;
 
 #include "utils/stream_storage.h"
 #include "utils/logger.h"
+#include "utils/random.hpp"
 
 #include "te_utils.hpp"
 #include "mp_tensors/evolve.h"
@@ -154,6 +155,7 @@ int main(int argc, char ** argv)
     }
     
     srand48(parms.get<int>("seed"));
+    dmrg_random::engine.seed(parms.get<int>("seed"));
     
 #ifdef IMG_ONLY
     if (parms.get<int>("nsweeps_img") != parms.get<int>("nsweeps")) {
