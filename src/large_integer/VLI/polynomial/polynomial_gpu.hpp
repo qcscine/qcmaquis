@@ -25,11 +25,13 @@ namespace vli
     template<class Vli, int Order>
 	class polynomial_cpu;
     
+    
+    
     /**
      * Multiplication of two polynomials
      */
    	template<class Vli, int Order>
-    polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, polynomial_gpu<Vli, Order> const& p2)
+    const polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, polynomial_gpu<Vli, Order> const& p2)
     {
         polynomial_gpu<Vli, Order> result;
         poly_multiply(result, p1, p2);
@@ -40,7 +42,7 @@ namespace vli
      * Multiplication of  polynomial_cpu * monomial
      */
     template<class Vli, int Order>
-    polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, monomial<Vli> const &m2)
+    const polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, monomial<Vli> const &m2)
     {
         polynomial_gpu<Vli, Order> result;
         poly_mono_multiply(result, p1, m2);
@@ -84,10 +86,11 @@ namespace vli
        
            //TODO do we really want this? Or just using an explicit conversion? 
            // C - you have to explain me 
+           /*
             proxy& operator= (vli_cpu<vli_value_type, Vli::size> const& vli ){
                 gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)&vli[0], Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
                 return *this;
-            }
+            }*/
             
             typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy operator[](size_type i)
             {
@@ -118,8 +121,12 @@ namespace vli
         polynomial_gpu(){
         }
         
+        explicit polynomial_gpu(vli_value_type* p){
+            gpu::cu_check_error(cudaMemcpy((void*)(this->p()), (void*)p, Order*Order*Vli::size*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__);
+        }
+        
         /** CPU poly to GPU poly */
-            polynomial_gpu(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>& poly){ 
+        polynomial_gpu(polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order>& poly){ 
             gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&poly(0,0), Order*Order*Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__); 
         }
         
@@ -175,7 +182,8 @@ namespace vli
         polynomial_gpu operator *= (Vli const& c)
         {
             polynomial_gpu<Vli, Order> result;
-            poly_mono_multiply(result, (*this), c);
+            monomial<Vli> m(c,0,0);
+            poly_mono_multiply(result, (*this), m);
             *this = result;
             return *this;
         }
@@ -200,7 +208,7 @@ namespace vli
         }
         
         
-        inline Vli operator ()(size_type j_exp, size_type h_exp) const
+        const Vli operator ()(size_type j_exp, size_type h_exp) const
         {
             assert(j_exp < max_order);
             assert(h_exp < max_order);
@@ -228,17 +236,24 @@ namespace vli
         return p * c;
     }
     
+    template<class Vli, int Order>
+    polynomial_gpu<Vli, Order> operator * (int c, polynomial_gpu<Vli, Order> const& p)
+    {
+        return Vli(c) * p;
+    }
+    
+    
     template <class BaseInt, int Order, int SizeVli >
 	std::ostream & operator<<(std::ostream & os, polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > const& p)
     {
-        os << "------------------------" << std::endl;
+    //    os << "------------------------" << std::endl;
         for(std::size_t i = 0; i < Order ; i++){
             for(std::size_t j = 0; j < Order ; j++){
                 os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
                 os << p(i,j) << std::endl;
             }
         }
-        os <<  "------------------------" << std::endl;
+   //     os <<  "------------------------" << std::endl;
                 
         return os;
     }

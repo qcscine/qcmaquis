@@ -51,21 +51,30 @@ typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 
 BOOST_AUTO_TEST_CASE(vector_copy)
 {
-/*
-    bool test(false);        
     vector_type_cpu VaCPU( vli::detail::size_vector_vli::value); 
     
     fill_vector_random(VaCPU);
     vector_type_gpu VaGPU(VaCPU); ;
-    
 
-    if(VaGPU == VaCPU)
-        test = true;
-
-    BOOST_CHECK_EQUAL(test,true); //BUG BOOST CUDA MALLOC IF TEST ON THE VECTOR, DON'T KNOW WHY
-*/
+    BOOST_CHECK_EQUAL(VaGPU,VaCPU); //BUG BOOST CUDA MALLOC IF TEST ON THE VECTOR, DON'T KNOW WHY
 }
 
+BOOST_AUTO_TEST_CASE(vector_polys)
+{
+    vector_type_cpu VaCPU( vli::detail::size_vector_vli::value); 
+    
+    fill_vector_random(VaCPU);
+
+    monomial_type_cpu MaCPU;   
+     
+
+
+
+
+    vector_type_gpu VaGPU(VaCPU); ;
+
+    BOOST_CHECK_EQUAL(VaGPU,VaCPU); //BUG BOOST CUDA MALLOC IF TEST ON THE VECTOR, DON'T KNOW WHY
+}
 
 BOOST_AUTO_TEST_CASE(vector_inner_product)
 {

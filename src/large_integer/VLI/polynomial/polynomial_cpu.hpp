@@ -86,7 +86,7 @@ public:
     
     template <typename T>
     polynomial_cpu& operator += (monomial<T> const& m)
-    {
+    {std::cout << " ici " << std::endl;
         operator()(m.j_exp_,m.h_exp_) += m.coeff_; 
         return *this;
     }

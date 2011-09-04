@@ -36,14 +36,14 @@ using vli::test::fill_vector_random;
 typedef vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_cpu;
 typedef vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_gpu;
 
-typedef vli::monomial<vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> > monomial_type_cpu;
-typedef vli::monomial<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> > monomial_type_gpu;
+typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
+typedef vli::monomial<vli_type_gpu> monomial_type_gpu;
 
-typedef vli::polynomial_cpu<vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>, vli::detail::size_poly_vli::value > polynomial_type_cpu;
-typedef vli::polynomial_gpu<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>, vli::detail::size_poly_vli::value > polynomial_type_gpu;
+typedef vli::polynomial_cpu< vli_type_cpu, vli::detail::size_poly_vli::value > polynomial_type_cpu;
+typedef vli::polynomial_gpu< vli_type_gpu, vli::detail::size_poly_vli::value > polynomial_type_gpu;
 
-typedef vli::vector_polynomial_gpu<polynomial_type_gpu> vector_type_gpu;
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
+typedef vli::vector_polynomial_gpu<polynomial_type_gpu> vector_type_gpu;
 
 
 int main (int argc, char * const argv[]) 
@@ -51,36 +51,54 @@ int main (int argc, char * const argv[])
     
     gpu::gpu_manager* GPU;
     GPU->instance();
-    polynomial_type_cpu pcCPU;
-    polynomial_type_gpu pcGPU;
+       
+    vector_type_cpu VaCPU( vli::detail::size_vector_vli::value); 
     
+    vector_type_cpu result( vli::detail::size_vector_vli::value); 
+    vector_type_gpu resultgpu( vli::detail::size_vector_vli::value); 
 
-    vector_type_cpu VaCPU(512),VbCPU(512); 
-    
     fill_vector_random(VaCPU);
-    fill_vector_random(VbCPU);
+    vector_type_gpu VaGPU( VaCPU); 
 
-    vector_type_gpu VaGPU(VaCPU); 
-    vector_type_gpu VbGPU(VbCPU); 
+    polynomial_type_cpu  A;
+    fill_poly_random(A);
 
-
-    Timer A("CPU");
-    A.begin();            
-    pcCPU =  inner_product(VaCPU,VbCPU);
-    A.end();
-
-    Timer B("GPU");
-    B.begin();            
-    pcGPU =  inner_product(VaGPU,VbGPU);
-    B.end();
+    polynomial_type_gpu  Ag(A);
   
-    if(pcGPU == pcCPU)
-        std::cout << " OK " << std::endl;
-    else{
-        std::cout << pcGPU << std::endl;
-        std::cout << pcCPU << std::endl;
+
+    vli_type_cpu a;
+    fill_random(a); 
+    vli_type_gpu b(a);
+
+    monomial_type_cpu mcpu(a,2,2);
+    monomial_type_gpu mgpu(b,2,2);
+    {
+    result[2] = VaCPU[3]*monomial_type_cpu(1,0); 
+    resultgpu[2] = Ag; 
+    Ag  = VaGPU[3]; //*monomial_type_gpu(1,0);
+   }
+
+
+    if(VaGPU == VaCPU ) {
+       std::cout << "ok" << std::endl;
+       std::cout <<  VaCPU;
+    }else{
+       std::cout << "no ok" << std::endl;     
+       std::cout << A << std::endl;
+       std::cout << Ag << std::endl;
     }
-      
+
+    
+
+        
+    //std::cout << VaCPU << std::endl;
+//    std::cout << VaGPU << std::endl;
+
+   
+       
+       
+       
+       
     return 0;
 }
 
