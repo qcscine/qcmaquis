@@ -68,9 +68,7 @@ namespace vli
 
     template<class BaseInt, int Size, int Order > // the << cpu and gpu should be commun
  	std::ostream & operator<<(std::ostream & os, vector_polynomial_cpu< polynomial_cpu< vli_cpu<BaseInt, Size>, Order > >   const& v)
-    {
-        os << "---------- CPU ----------" << std::endl;
-        
+    {        
         for(std::size_t i = 0; i < v.size(); i++)
             os << v[i] << std::endl;
         return os;

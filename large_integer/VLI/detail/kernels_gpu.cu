@@ -185,11 +185,22 @@ __device__ void kernel_negate_device(BaseInt* x)
 */
 
 template <typename T, int vli_size, int poly_size> 
-__global__ void monome_polynome_multiplication(T const* p, T const* m, T* res)
+__global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, std::size_t j_exp, std::size_t h_exp)
 {
-    std::size_t xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	std::size_t offset = xIndex*vli_size;    
-    single_multiplication_device<T,static_cast<std::size_t>(vli_size)>(&p[offset],&m[0],&res[offset]);        
+//  std::size_t xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+//	std::size_t offset = xIndex*vli_size;    
+    std::size_t max_order = static_cast<std::size_t>(poly_size);
+    std::size_t offset0(0);
+    std::size_t offset1(0);
+    for(std::size_t je = 0; je < max_order-j_exp; ++je)
+    {
+        for(std::size_t he = 0; he < max_order-h_exp; ++he)
+        {   
+            offset0 = (je*max_order+he)*static_cast<std::size_t>(vli_size);
+            offset1 = ((j_exp+je)*max_order+h_exp+he)*static_cast<std::size_t>(vli_size);
+            single_multiplication_device<T,static_cast<std::size_t>(vli_size)>(&p[offset0],&m[0],&res[offset1]);        
+        }
+    }
 }  
 
 /**

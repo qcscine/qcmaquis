@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_int, Vli, vli_types )
     monomial<Vli> ma_orig(ma);
 
     monomial<Vli> mb = ma * a;
-    monomial<Vli> mc = a* ma;
+    monomial<Vli> mc = a * ma;
     BOOST_CHECK_EQUAL(ma, ma_orig);
 
     ma *= a;

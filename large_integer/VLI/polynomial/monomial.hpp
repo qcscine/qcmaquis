@@ -21,8 +21,10 @@ namespace vli
 	template <class Vli>
     struct monomial
     {
-        typedef std::size_t size_type;
-         
+        typedef   std::size_t size_type;
+
+        typedef typename  Vli::value_type value_type;
+
         /**
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
          */
@@ -30,12 +32,19 @@ namespace vli
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(1){
         }
 
-        explicit monomial(Vli a,size_type j_exp = 0, size_type h_exp = 0)
+        explicit monomial(Vli a, size_type j_exp = 0, size_type h_exp = 0)
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(a){
         }
-
-
+    
+//#ifdef USE_VLI_INTEGERS_GPU // To do wrap shadow p() for vli_cpu ?
+        value_type* p(){
+            return coeff_.p();
+        }
         
+        value_type* const p() const{
+            return coeff_.p();
+        }
+//#endif        
         monomial& operator *= (Vli const& c){
             coeff_ *= c;
             return (*this);
@@ -48,7 +57,7 @@ namespace vli
 
         /**
         * For the GPU proxy 
-        * MEGA DANGEROUS BUT PUTAIN DE BORDEL DE TEMPLATE A LA CON
+        * MEGA DANGEROUS
         * Andreas one free drink, if you get a safer solution solution
         * I tried to specify but my compilo is blind
         */        

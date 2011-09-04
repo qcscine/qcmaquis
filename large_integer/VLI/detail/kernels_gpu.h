@@ -34,7 +34,7 @@ namespace detail {
     */
 
     /** vli_poly_gpu *= vli_mono_gpu */
-    void poly_mono_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C);
+    void poly_mono_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C, std::size_t j_exp, std::size_t h_exp);
 
     /** vli_poly_gpu += vli_mono_gpu */
     // void plus_assign_poly_mono(type_vli::BaseInt* A, type_vli::BaseInt const* B);

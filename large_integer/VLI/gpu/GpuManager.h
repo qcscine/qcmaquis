@@ -44,6 +44,7 @@ namespace gpu
 		*/
 		int device_;
 	};
+        
 	void cu_check_error(cudaError_t  const& err, std::size_t line)
 	{
 		switch (err) 

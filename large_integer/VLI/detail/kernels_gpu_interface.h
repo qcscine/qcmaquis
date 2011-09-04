@@ -52,7 +52,7 @@ __global__ void negate_gpu(T* x);
 */
 
 template <typename T, int vli_size, int poly_size>
-__global__ void monome_polynome_multiplication(T const* p, T const* m, T* res);
+__global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, std::size_t j_exp, std::size_t h_exp);
 
 template <typename T, int vli_size, int poly_size>
 __global__ void monome_polynome_addition(T* p, T const* m);
@@ -129,12 +129,12 @@ void multiplies_assign(type_vli::BaseInt* A, int a)
 /**
 * VLI_GPU_POLYNOMIAL functions
 */
-void poly_mono_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C)
+void poly_mono_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C, std::size_t j_exp, std::size_t h_exp)
 { 
-    size_t size_poly_vli_value_square = size_poly_vli::value*size_poly_vli::value;
+    //size_t size_poly_vli_value_square = size_poly_vli::value*size_poly_vli::value;
     dim3 dimgrid(1,1,1); 
-    dim3 dimblock(size_poly_vli_value_square,1,1); 
-    monome_polynome_multiplication<type_vli::BaseInt, size_vli::value, size_poly_vli::value>  <<< dimgrid, dimblock >>>(A, B, C); 
+    dim3 dimblock(1,1,1); 
+    monome_polynome_multiplication<type_vli::BaseInt, size_vli::value, size_poly_vli::value>  <<< dimgrid, dimblock >>>(A, B, C, j_exp, h_exp); 
 } 
 
 void plus_assign_poly_int(type_vli::BaseInt* A, int a)
@@ -176,6 +176,7 @@ void inner_product_vector(type_vli::BaseInt const* A, type_vli::BaseInt const* B
     std::size_t blocksPerGrid =  SizeVector/threadsPerBlock;
     inner_prod_vector<type_vli::BaseInt, size_vli::value, size_poly_vli::value> <<< blocksPerGrid,threadsPerBlock  >>>(A, B, C);  
 } 
+
 void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt * B, std::size_t SizeVector) 
 { 
     //the reduction should be // if executed on one smp

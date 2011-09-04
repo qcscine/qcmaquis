@@ -32,7 +32,7 @@ typedef vli::polynomial_gpu<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail:
         
 typedef boost::mpl::list<
         polynomial_type_cpu
-         // polynomial_type_gpu          
+      //    polynomial_type_gpu          
         > polynomial_types;
 
         
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomi
         for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j),a[i*Poly::max_order+j]);
 }
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_equal, Poly, polynomial_types )
 {
     BOOST_STATIC_ASSERT(Poly::max_order >= 2);
@@ -275,3 +275,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
 
     BOOST_CHECK_EQUAL(pc,result);    
 }
+*/

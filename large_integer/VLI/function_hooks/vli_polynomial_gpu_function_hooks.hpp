@@ -19,7 +19,7 @@ namespace vli{
                             polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1, 
                             Monomial const & m2)
     {
-        detail::poly_mono_multiply(p1.p(),m2.p(),result.p());
+        detail::poly_mono_multiply(p1.p(),m2.p(),result.p(), m2.j_exp_, m2.h_exp_);
     }
     
     template <class BaseInt, int Size, int Order>
