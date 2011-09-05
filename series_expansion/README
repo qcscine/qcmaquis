@@ -1,0 +1,25 @@
+There are two application codes.
+
+-High temperature series expansion: high_t_expansion_testcode.cpp
+    This code uses (large) integers
+
+-T=0 perturbative series expansion: zero_expansion_testcode.cpp
+    This code uses rational numbers based on (large) integers.
+
+
+
+There are two parameters which change the performance drastically:
+
+-maximal order: the order of the expansion.
+    can be modified using the MAXORDER macro
+    (we aim at a maximal order of 17 to 20)
+
+-graph size: number of vertices of the graph for which the computation is done.
+    can be modified by adding edges to new vertices (in main()) to the graph g
+    (The number of vertices will typically correspond to the maximal order
+     and we will have several thoundands of graphs like that.)
+
+
+
+A typical 'sparse matrix' is defined in operators.hpp as a function that
+transforms the vector it gets as argument.
