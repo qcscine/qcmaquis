@@ -9,7 +9,7 @@
 #ifndef VLI_VECTOR_POLYNOME_CPU_H
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include <vector>
-#include <omp.h>
+//#include <omp.h>
 #include <ostream>
 #include <cassert>
 #include "boost/swap.hpp"
