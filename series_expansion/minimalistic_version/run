@@ -1,4 +1,0 @@
-#!/bin/bash
-
-time ./bin/high_t__gmp-version $1 $2 > out.gmp
-time ./bin/high_t__vli-version $1 $2 > out.vli
