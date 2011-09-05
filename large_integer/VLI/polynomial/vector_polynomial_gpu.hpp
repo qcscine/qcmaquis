@@ -57,11 +57,23 @@ namespace vli
             {
             }
             
+            operator polynomial_gpu() const
+            {
+                return polynomial_gpu(pdata_+pos*OffSet);
+            }
+            
             proxy& operator=(polynomial_gpu const& p)
             {
                 gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos*OffSet),(void*)p.p(),OffSet*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
                 return *this;
             }
+            
+            proxy& operator=(proxy const& pr)
+            {
+                std::cout << "copy" << std::endl;
+                gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos*OffSet),(void*)(pr.pdata_+pr.pos*OffSet),OffSet*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
+                return *this;
+            }            
            
             proxy& operator+=(polynomial_gpu const& p) 
             {
@@ -116,7 +128,7 @@ namespace vli
             swap(*this, v);
             return *this;
         }
-        
+                
         operator vector_polynomial_cpu<polynomial_cpu< vli_cpu<vli_value_type, vli_size>, max_order_poly> > () const
         {
             vector_polynomial_cpu< polynomial_cpu < vli_cpu<vli_value_type, vli_size>, max_order_poly> >  r(this->size());
@@ -131,14 +143,24 @@ namespace vli
         
         proxy operator[](size_t i) 
         {
-            return proxy(this->p(),i);
+           std::cout << "[] write proxy " << std::endl; 
+           return proxy(this->p(),i);
         }
-
+        
+        const proxy operator[](size_t i) const
+        {
+           std::cout << "[] read proxy " << std::endl; 
+           return proxy(this->p(),i);
+        }
+        
+        
+        /*
         const polynomial_gpu operator[](size_t i) const
         {
+            std::cout << "[] read  " << std::endl; 
             return polynomial_gpu(this->p()+i*OffSet);
         }
-            
+          */        
         const size_t size() const{
             return size_;
         }
