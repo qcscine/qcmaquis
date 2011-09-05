@@ -18,7 +18,7 @@ namespace vli
     template<class BaseInt, int Size>
     class vli_gpu;
         
-	template <class Vli>
+    template <class Vli>
     struct monomial
     {
         typedef   std::size_t size_type;
@@ -36,7 +36,7 @@ namespace vli
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(a){
         }
     
-//#ifdef USE_VLI_INTEGERS_GPU // To do wrap shadow p() for vli_cpu ?
+#ifdef USE_VLI_INTEGERS_GPU // To do wrap shadow p() for vli_cpu ?
         value_type* p(){
             return coeff_.p();
         }
@@ -44,7 +44,7 @@ namespace vli
         value_type* const p() const{
             return coeff_.p();
         }
-//#endif        
+#endif        
         monomial& operator *= (Vli const& c){
             coeff_ *= c;
             return (*this);
