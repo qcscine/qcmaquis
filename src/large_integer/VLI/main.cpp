@@ -74,17 +74,14 @@ int main (int argc, char * const argv[])
     monomial_type_gpu mgpu(b,2,2);
     
     VaCPU[2] = VaCPU[3];//*monomial_type_cpu(1,0); 
-    VaGPU[2] = VaGPU[3];//*monomial_type_gpu(1,0); // VaGPU[2] = VaGPU[3] call 2 times the [] proxy operator
-
-
+    VaGPU[2] = VaGPU[3]; //*monomial_type_gpu(1,0); // VaGPU[2] = VaGPU[3] call 2 times the [] proxy operator
+    VaCPU[1] = A;
+    VaGPU[1] = Ag;
+//    Ag = VaGPU[3];
     if(VaGPU == VaCPU ) {
        std::cout << "ok" << std::endl;
-       std::cout << VaCPU<< std::endl;
     }else{
        std::cout << "no ok" << std::endl;     
-       std::cout << VaGPU << std::endl;
-      std::cout << "-------------------------------------------------------- "<< std::endl;
-      std::cout << VaCPU << std::endl;
 // yy      std::cout << Ag << std::endl;
     }
 
