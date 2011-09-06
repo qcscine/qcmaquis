@@ -74,7 +74,7 @@ namespace app {
                             
                             for (int i=0; i<states.size(); ++i) {
                                 charge c = convert_alps<SymmGroup>(states[i], conserved_qn);
-                                //std::cout << "Inserting " << c << " for " << states[i] << std::endl;
+                                // std::cout << "Inserting " << c << " for " << states[i] << std::endl;
                                 tphys[type].push_back(c);
                                 tident[type].insert_block(Matrix(1, 1, 1), c, c);
                                 int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
@@ -303,8 +303,15 @@ namespace app {
         std::vector<std::pair<int, std::string> > conserved_qn;
         
     };
-
-
+    
+    namespace details {
+        template <class T>
+        int to_integer (alps::half_integer<T> const & qn_value)
+        {
+            return (qn_value.get_twice() % 2 == 0) ? alps::to_integer(qn_value) : qn_value.get_twice();
+        }
+    }
+    
     // Symmetry dependent implementation
 
     // U1 Symmetry
@@ -314,7 +321,8 @@ namespace app {
         assert(qn.size() == 1);
         U1::charge c = U1::SingletCharge;
         if (parms.defined(qn[0].second+"_total")) {
-            c = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]),parms)*2;
+            alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]), parms);
+            c = details::to_integer(tmp);
         }
         return c;
     }
@@ -323,7 +331,7 @@ namespace app {
     U1::charge convert_alps<U1> (alps::site_state<short> const & state, std::vector<std::pair<int, std::string> > const& qn)
     {
         assert(qn.size() == 1);
-        return get_quantumnumber(state, qn[0].first).get_twice();
+        return details::to_integer( get_quantumnumber(state, qn[0].first) );
     }
 
     // TwoU1 Symmetry
@@ -332,8 +340,8 @@ namespace app {
     {
         assert(qn.size() == 2);
         TwoU1::charge ret;
-        ret[0] = get_quantumnumber(state, qn[0].first).get_twice();
-        ret[1] = get_quantumnumber(state, qn[1].first).get_twice();
+        ret[0] = details::to_integer (get_quantumnumber(state, qn[0].first) );
+        ret[1] = details::to_integer( get_quantumnumber(state, qn[1].first) );
         return ret;
     }
 
@@ -343,10 +351,12 @@ namespace app {
         assert(qn.size() == 2);
         TwoU1::charge c = TwoU1::SingletCharge;
         if (parms.defined(qn[0].second+"_total")) {
-            c[0] = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]),parms)*2;
+            alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]), parms);
+            c[0] = details::to_integer(tmp);
         }
         if (parms.defined(qn[1].second+"_total")) {
-            c[1] = alps::evaluate<double>(static_cast<std::string>(parms[qn[1].second+"_total"]),parms)*2;
+            alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[1].second+"_total"]), parms);
+            c[1] = details::to_integer(tmp);
         }
         return c;
     }
