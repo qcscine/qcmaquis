@@ -40,7 +40,7 @@ template <typename BaseInt, std::size_t Size>
 __host__ __device__ void kernels_multiplication_classic_truncate(BaseInt * res, BaseInt const* x, BaseInt const* y);	
 
 template <typename BaseInt>
-__host__ __device__  void kernels_multiplication_block(BaseInt const* x, BaseInt const* y, BaseInt* r);
+__host__ __device__ void kernels_multiplication_block(BaseInt const* x, BaseInt const* y, BaseInt* r);
 
 template <typename BaseInt>
 __host__ __device__ void kernels_multiplication_block_down(BaseInt const* x, BaseInt const*  y, BaseInt* r);
@@ -55,7 +55,7 @@ template <typename BaseInt, std::size_t Size>
 __host__ __device__ void kernels_multiplication_number(BaseInt* x, BaseInt a);
 
 template <typename BaseInt, int size>
-__device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y, BaseInt* z);  
+__device__ void single_multiplication_device(BaseInt const* x, BaseInt const* y, BaseInt* z);  
 
 template <typename T, int vli_size, int poly_size>
 __device__ void polynome_polynome_multiplication_device(T const* p1, T const* p2, T* res);
@@ -186,12 +186,11 @@ __device__ void kernel_negate_device(BaseInt* x)
 
 template <typename T, int vli_size, int poly_size> 
 __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, std::size_t j_exp, std::size_t h_exp)
-{
-//  std::size_t xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-//	std::size_t offset = xIndex*vli_size;    
+{ 
     std::size_t max_order = static_cast<std::size_t>(poly_size);
     std::size_t offset0(0);
     std::size_t offset1(0);
+    
     for(std::size_t je = 0; je < max_order-j_exp; ++je)
     {
         for(std::size_t he = 0; he < max_order-h_exp; ++he)
@@ -201,6 +200,7 @@ __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, s
             single_multiplication_device<T,static_cast<std::size_t>(vli_size)>(&p[offset0],&m[0],&res[offset1]);        
         }
     }
+
 }  
 
 /**
@@ -286,6 +286,7 @@ __global__ void reduction_polynome(T const* v1, T* v2, std::size_t SizeVector)
     std::size_t size_poly = static_cast<std::size_t>(vli_size*poly_size*poly_size);  
     std::size_t offset0(0);  
     std::size_t offset1(0);  
+    
     for(std::size_t i=0 ; i < SizeVector ; ++i){
         for(std::size_t j=0 ; j < poly_size*poly_size ; ++j){ //additional loop
             offset0 = j*vli_size;
@@ -293,6 +294,13 @@ __global__ void reduction_polynome(T const* v1, T* v2, std::size_t SizeVector)
             kernels_addition_classic<T,vli_size>(&v2[offset0],&v1[offset1]);
         }
     }
+    /*
+     for(std::size_t i=0 ; i < SizeVector ; ++i){
+        kernels_addition_classic<T,vli_size*poly_size*poly_size>(&v2[i],&v1[i]); 
+         
+     }*/
+    
+    
 }
    
 template <typename T, int vli_size>

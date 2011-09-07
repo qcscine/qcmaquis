@@ -114,8 +114,8 @@ namespace vli
             size_type h_; // for operator (j,h)
         };
         /** Serious on the specialization */
-        friend void poly_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, polynomial_gpu const& p2);
-        friend void poly_mono_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, monomial<Vli>  const& m2);
+      //friend void poly_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, polynomial_gpu const& p2);
+      //   friend void poly_mono_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, monomial<Vli>  const& m2);
        
         
         polynomial_gpu(){
@@ -179,7 +179,7 @@ namespace vli
         
         
         /**  TO DO shame on me, think to integrate *= += into the kernel **/
-        polynomial_gpu operator *= (Vli const& c)
+        polynomial_gpu& operator *= (Vli const& c)
         {
             polynomial_gpu<Vli, Order> result;
             monomial<Vli> m(c,0,0);
@@ -188,9 +188,11 @@ namespace vli
             return *this;
         }
         
-        polynomial_gpu& operator *= (monomial<Vli> const& c)
-        {
-            (*this) *= c.coeff_;
+        polynomial_gpu& operator *= (monomial<Vli> const& m)
+        {            // TO DO TO CHANGE
+            polynomial_gpu<Vli, Order> result;
+            poly_mono_multiply(result, *this, m);
+            *this = result;
             return *this;
         }
         
@@ -199,6 +201,7 @@ namespace vli
         {
             return polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order > (*this) == p;
         }
+        
      
         proxy operator ()(size_type j_exp, size_type h_exp) 
         {
@@ -249,7 +252,7 @@ namespace vli
     //    os << "------------------------" << std::endl;
         for(std::size_t i = 0; i < Order ; i++){
             for(std::size_t j = 0; j < Order ; j++){
-                os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
+          //      os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
                 os << p(i,j) << std::endl;
             }
         }

@@ -53,34 +53,49 @@ namespace vli
         {
         public:
             proxy(vli_value_type* p, size_t i)
-            :pdata_(p), pos(i)
+            :pdata_(p), pos_(i)
             {
             }
             
-            operator polynomial_gpu() const
+            operator polynomial_gpu() const // in case [] is right value
             {
-                return polynomial_gpu(pdata_+pos*OffSet);
+                return polynomial_gpu(pdata_+pos_*OffSet);
             }
             
             proxy& operator=(polynomial_gpu const& p)
-            {
-                gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos*OffSet),(void*)p.p(),OffSet*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
+            {               
+                gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos_*OffSet),(void*)p.p(),OffSet*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
                 return *this;
             }
             
-            proxy& operator=(proxy const& pr)
+            proxy& operator=(proxy const& pr) // in case [] is right value
             {
-                std::cout << "copy" << std::endl;
-                gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos*OffSet),(void*)(pr.pdata_+pr.pos*OffSet),OffSet*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
-                return *this;
+                  gpu::cu_check_error(cudaMemcpy((void*)(pdata_+pos_*OffSet),(void*)(pr.pdata_+pr.pos_*OffSet),OffSet*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
+                  return *this;
             }            
-           
+                       
+            polynomial_gpu operator*(monomial<vli_gpu<vli_value_type,vli_size > > const& m) 
+            {
+                polynomial_gpu inter(pdata_+pos_*OffSet);
+                inter *= m;  
+                return inter;
+                
+            }
+            
+            polynomial_gpu operator*(int i)
+            {
+                vli_gpu<vli_value_type,vli_size >  inter(i);
+                polynomial_gpu inter_poly(pdata_+pos_*OffSet);                
+                inter_poly *= inter;
+                return inter;
+            }
+            
             proxy& operator+=(polynomial_gpu const& p) 
             {
-                polynomial_gpu inter(pdata_+pos*OffSet);
-                inter += p;
+                //    plus_assign(this->p()+i*OffSet, m.coeff_.p());
+                polynomial_gpu inter(pdata_+pos_*OffSet);
+                inter += p; // I think by cheating I could merge this 2 lines
                 *this = inter;
-            //    plus_assign(this->p()+i*OffSet, m.coeff_.p());
                 return *this;
             }
 
@@ -91,21 +106,21 @@ namespace vli
             
             void print(std::ostream & os) const{ // CONST ! 
                 polynomial_cpu<vli_cpu<vli_value_type, vli_size>, max_order_poly > P;
-                gpu::cu_check_error(cudaMemcpy((void*)(&P(0,0)),(void*)(pdata_+pos*OffSet),max_order_poly*max_order_poly*vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
+                gpu::cu_check_error(cudaMemcpy((void*)(&P(0,0)),(void*)(pdata_+pos_*OffSet),max_order_poly*max_order_poly*vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToHost), __LINE__);
                 os << P;
             }
             
             vli_gpu<vli_value_type, vli_size> BuildProxyToVli() const
             {
                 vli_gpu<vli_value_type, vli_size> res;
-                gpu::cu_check_error(cudaMemcpy((void*)(res.p()),(void*)(pdata_+pos*OffSet), vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
+                gpu::cu_check_error(cudaMemcpy((void*)(res.p()),(void*)(pdata_+pos_*OffSet), vli_size*sizeof(typename polynomial_gpu::vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
                 return res;
             }
             
                                  
         private:
             vli_value_type* pdata_;
-            size_t pos;
+            size_t pos_;
         };    
         
         vector_polynomial_gpu(size_t size = 1):gpu_vector<typename polynomial_gpu::vli_value_type>(size*OffSet),size_(size)
@@ -143,24 +158,21 @@ namespace vli
         
         proxy operator[](size_t i) 
         {
-           std::cout << "[] write proxy " << std::endl; 
            return proxy(this->p(),i);
         }
         
         const proxy operator[](size_t i) const
         {
-           std::cout << "[] read proxy " << std::endl; 
            return proxy(this->p(),i);
-        }
-        
+        }        
         
         /*
         const polynomial_gpu operator[](size_t i) const
         {
             std::cout << "[] read  " << std::endl; 
             return polynomial_gpu(this->p()+i*OffSet);
-        }
-          */        
+        } 
+        */        
         const size_t size() const{
             return size_;
         }

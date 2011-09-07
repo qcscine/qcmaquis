@@ -57,7 +57,7 @@ int main (int argc, char * const argv[])
     vector_type_cpu result( vli::detail::size_vector_vli::value); 
     vector_type_gpu resultgpu( vli::detail::size_vector_vli::value); 
 
-    fill_vector_random(VaCPU);
+   // fill_vector_random(VaCPU);
     vector_type_gpu VaGPU( VaCPU); 
 
     polynomial_type_cpu  A;
@@ -73,16 +73,16 @@ int main (int argc, char * const argv[])
     monomial_type_cpu mcpu(a,2,2);
     monomial_type_gpu mgpu(b,2,2);
     
-    VaCPU[2] = VaCPU[3];//*monomial_type_cpu(1,0); 
-    VaGPU[2] = VaGPU[3]; //*monomial_type_gpu(1,0); // VaGPU[2] = VaGPU[3] call 2 times the [] proxy operator
-    VaCPU[1] = A;
-    VaGPU[1] = Ag;
-//    Ag = VaGPU[3];
-    if(VaGPU == VaCPU ) {
+    
+    
+    result[0] += VaCPU[0]*monomial_type_cpu(1,0); 
+    resultgpu[0] += VaGPU[0]*monomial_type_gpu(1,0); // VaGPU[2] = VaGPU[3] call 2 times the [] proxy operator
+//    Ag =Ag*monomial_type_gpu(1,0); // VaGPU[2] = VaGPU[3] call 2 times the [] proxy operator
+    std::cout << resultgpu[0];
+    if(resultgpu == result ) {
        std::cout << "ok" << std::endl;
     }else{
-       std::cout << "no ok" << std::endl;     
-// yy      std::cout << Ag << std::endl;
+        std::cout << "no ok" << std::endl;     
     }
 
     
