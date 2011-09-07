@@ -35,8 +35,10 @@ namespace vli
         explicit monomial(Vli a, size_type j_exp = 0, size_type h_exp = 0)
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(a){
         }
-    
-#ifdef USE_VLI_INTEGERS_GPU // To do wrap shadow p() for vli_cpu ?
+        
+        /*
+        * These two functions are only called inside the vli_polynomial_gpu_function_hooks.hpp
+        */
         value_type* p(){
             return coeff_.p();
         }
@@ -44,7 +46,7 @@ namespace vli
         value_type* const p() const{
             return coeff_.p();
         }
-#endif        
+
         monomial& operator *= (Vli const& c){
             coeff_ *= c;
             return (*this);
@@ -63,13 +65,14 @@ namespace vli
         */        
 //      template<class Order>
 //      monomial& operator *= (typename vector_polynomial_gpu<polynomial_gpu<Vli,Order> >::proxy const& p){
+ /*
         template <class T>                                    
         monomial& operator *= (T const& p){
             Vli Tmp = p.BuildProxyToVli();
             coeff_ *= Tmp;
             return (*this);
         }
-        
+       */     
         void print(std::ostream& os) const
         {
             if(coeff_ > 0)
@@ -80,7 +83,7 @@ namespace vli
         bool operator == (monomial const& m) const{
             return (j_exp_ == m.j_exp_) && (h_exp_ == m.h_exp_) && (coeff_ == m.coeff_);
         }
-        
+    
         size_type j_exp_;
         size_type h_exp_;
         Vli coeff_;
@@ -91,7 +94,7 @@ namespace vli
         m.print(os);
         return os;
     }
-    
+    /*
     template <typename Vli, typename T>
     monomial<Vli> operator * (monomial<Vli> m, T const& c)
     {
@@ -103,7 +106,7 @@ namespace vli
     monomial<Vli> operator * (T const& c, monomial<Vli> const& m)
     {
         return m*c;
-    }
+    }*/
 
 }
 

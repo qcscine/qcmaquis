@@ -37,7 +37,7 @@ set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timer
 set (VLI_COMPILE_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native -m64" CACHE STRING "Compiler flags for a regular compile.")
 set (VLI_COMPILE_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 #add_definitions(-DPOLYNOMIAL_MAX_ORDER=8 -DVLI_MAX_ORDER=4 -DVECTOR_MAX_ORDER=512)
-add_definitions(-DPOLYNOMIAL_MAX_ORDER=4 -DVLI_MAX_ORDER=8 -DVECTOR_MAX_ORDER=8)
+add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21 -DVLI_MAX_ORDER=4 -DVECTOR_MAX_ORDER=256)
 
 ########################################################################
 #
