@@ -162,13 +162,13 @@ namespace meas_detail {
     };
     
     template<class Matrix, class SymmGroup>
-	void measure_local(MPS<Matrix, SymmGroup> & mps,
-                           const Lattice & lat,
-                           block_matrix<Matrix, SymmGroup> const & identity,
-                           block_matrix<Matrix, SymmGroup> const & fill,
-                           std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-                           std::string const & h5name,
-                           std::string base_path)
+	void measure_local(MPS<Matrix, SymmGroup> const & mps,
+                       const Lattice & lat,
+                       block_matrix<Matrix, SymmGroup> const & identity,
+                       block_matrix<Matrix, SymmGroup> const & fill,
+                       std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                       std::string const & h5name,
+                       std::string base_path)
 	{
 		std::vector<double> vals;
         std::vector<std::string> labels;
@@ -207,7 +207,7 @@ namespace meas_detail {
 	}
 
 	template<class Matrix, class SymmGroup>
-	void measure_average(MPS<Matrix, SymmGroup> & mps,
+	void measure_average(MPS<Matrix, SymmGroup> const & mps,
                          const Lattice & lat,
                          block_matrix<Matrix, SymmGroup> const & identity,
                          block_matrix<Matrix, SymmGroup> const & fill,
@@ -300,7 +300,7 @@ namespace meas_detail {
 	};
 
 	template<class Matrix, class SymmGroup>
-	void measure_correlation_(MPS<Matrix, SymmGroup> & mps,
+	void measure_correlation_(MPS<Matrix, SymmGroup> const & mps,
 							  const Lattice & lat,
 							  block_matrix<Matrix, SymmGroup> const & identity,
 							  block_matrix<Matrix, SymmGroup> const & fill,
@@ -341,7 +341,7 @@ namespace meas_detail {
 	}
 
 	template<class Matrix, class SymmGroup>
-	void measure_correlation(MPS<Matrix, SymmGroup> & mps,
+	void measure_correlation(MPS<Matrix, SymmGroup> const & mps,
 							 const Lattice & lat,
 							 block_matrix<Matrix, SymmGroup> const & identity,
 							 block_matrix<Matrix, SymmGroup> const & fill,
