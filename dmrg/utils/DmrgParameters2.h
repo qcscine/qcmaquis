@@ -104,6 +104,7 @@ public:
         
         add_option("Nmax", "");
         add_option("mu", "", value(0));
+        add_option("mu0", "", value(0));
         add_option("h", "", value(1));
         add_option("c", "", value(0));
         add_option("V0", "", value(0));
