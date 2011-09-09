@@ -217,7 +217,8 @@ namespace vli
         {
             //TODO write test
             using detail::negate;
-            negate(this->data_);
+            using detail::vli_size_tag;
+            negate(vli_size_tag<Size>(), this->data_);
         }
 
         bool is_negative() const

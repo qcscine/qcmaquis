@@ -6,4 +6,6 @@
 
 #define CPU_FREQ @VLI_CPU_FREQ@ 
 
+#define VLI_GPU_BASEINT_SIZE_PAIRS_SEQ @VLI_GPU_TYPES@
+
 #endif //VLI_CONFIG_H

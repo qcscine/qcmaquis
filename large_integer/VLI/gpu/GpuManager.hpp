@@ -15,7 +15,7 @@ namespace gpu
 	{
 		cuInit(device_);
 		cudaGetDeviceProperties(&deviceProp_, device_);
-	};			
+	}
 
     gpu_manager::~gpu_manager()
 	{
@@ -29,7 +29,7 @@ namespace gpu
 			singleton = new gpu_manager();
 		}
 		return *singleton;
-	};
+	}
     
     void gpu_manager::constructor()
     {

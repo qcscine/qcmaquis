@@ -1,84 +1,72 @@
 #ifndef VLI_KERNELS_GPU_H
 #define VLI_KERNELS_GPU_H
 
+#include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
-#include "detail/vli_size_param.hpp"
+#include <boost/preprocessor/seq/for_each_i.hpp>
+#include "vli_utils/vli_config.h"
 
 namespace vli {
 namespace detail {
 
-    /**
-    * VLI declarations
-    */
 
-    /** vli_gpu -> -vli_gpu */
-    void negate(type_vli::BaseInt* A); 
-    
-    /** vli_gpu += vli_gpu */
-    void plus_assign(type_vli::BaseInt* A, type_vli::BaseInt const* B); 
- 
-    /** vli_gpu += lambda */
-    void plus_assign(type_vli::BaseInt* A, type_vli::BaseInt a); 
-
-    /** vli_gpu -= vli_gpu */
-    void minus_assign(type_vli::BaseInt* A, type_vli::BaseInt const* B);  
-
-    /** vli_gpu = vli_gpu * vli_gpu*/
-    void entrywise_multiplies(type_vli::BaseInt const* A, type_vli::BaseInt const*  B, type_vli::BaseInt* C);  
-
-    /** vli_gpu *= lambda */
-    void multiplies_assign(type_vli::BaseInt* A, int a); 
-
-    /**
-    *  MONO VLI declaration
-    */
-
-    /** vli_poly_gpu *= vli_mono_gpu */
-    void poly_mono_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C, std::size_t j_exp, std::size_t h_exp);
-
-    /** vli_poly_gpu += vli_mono_gpu */
-    // void plus_assign_poly_mono(type_vli::BaseInt* A, type_vli::BaseInt const* B);
-
-    /**
-    *  POLY VLI declaration
-    */
-
-    /** vli_poly_gpu += vli_poly_gpu */
-    void plus_assign_poly(type_vli::BaseInt* A, type_vli::BaseInt const* B);  
-
-    /** vli_poly_gpu -= vli_poly_gpu */
-    void minus_assign_poly(type_vli::BaseInt* A, type_vli::BaseInt const* B);  
-
-    /** vli_poly_gpu += int */
-    void plus_assign_poly_int(type_vli::BaseInt* A, int b);  
-
-    /** vli_poly_gpu *= vli_poly_gpu */
-    void poly_poly_multiply(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C);
-    
-    /**
-    *  VECTOR VLI declaration
-    *  by definition vectors are dynamics so no templated
-    */
-    
-    /** vli_vector_gpu[i] * vli_vector_gpu[i] */
-    void inner_product_vector(type_vli::BaseInt const* A, type_vli::BaseInt const* B, type_vli::BaseInt* C, std::size_t SizeVector, std::size_t NumThreads); 
-    
-    /** vli_poly_gpu += vli_vector_gpu[i] */
-    void vector_reduction(type_vli::BaseInt const* A, type_vli::BaseInt* B, std::size_t SizeVector);
+template <std::size_t N>
+struct vli_size_tag
+{
+    enum {size = N};
+};
 
 
+#define VLI_DECLARE_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
+    void negate(vli_size_tag<VLI_SIZE>, TYPE* A); \
+    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B); \
+    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE B); \
+    void minus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B); \
+    void multiplies_assign(vli_size_tag<VLI_SIZE>, TYPE* A, int a); \
+    void entrywise_multiplies(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const*  B, TYPE* C); \
+    void poly_mono_multiply(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C, std::size_t j_exp, std::size_t h_exp); \
+    void plus_assign_poly_int(vli_size_tag<VLI_SIZE>, TYPE* A, int a); \
+    void plus_assign_poly(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B); \
+    void minus_assign_poly(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B); \
+    void poly_poly_multiply(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C); \
+    void inner_product_vector(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C, std::size_t vector_size, std::size_t threads_per_block); \
+    void vector_reduction(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE* B, std::size_t vector_size); 
 
-/*
+#define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
+    void negate(vli_size_tag<VLI_SIZE>, TYPE* A) {negate<TYPE,VLI_SIZE>(A);} \
+    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {plus_assign<TYPE,VLI_SIZE>(A,B);} \
+    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE B) {plus_assign<TYPE,VLI_SIZE>(A,B);} \
+    void minus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {minus_assign<TYPE,VLI_SIZE>(A,B);} \
+    void multiplies_assign(vli_size_tag<VLI_SIZE>, TYPE* A, int a) {multiplies_assign<TYPE,VLI_SIZE>(A,a);} \
+    void entrywise_multiplies(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const*  B, TYPE* C) {entrywise_multiplies<TYPE,VLI_SIZE>(A,B,C);} \
+    void poly_mono_multiply(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C, std::size_t j_exp, std::size_t h_exp) {poly_mono_multiply<TYPE,VLI_SIZE>(A,B,C,j_exp,h_exp);} \
+    void plus_assign_poly_int(vli_size_tag<VLI_SIZE>, TYPE* A, int a) {plus_assign_poly_int<TYPE,VLI_SIZE>(A,a);} \
+    void plus_assign_poly(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {plus_assign_poly<TYPE,VLI_SIZE>(A,B);} \
+    void minus_assign_poly(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {minus_assign_poly<TYPE,VLI_SIZE>(A,B);} \
+    void poly_poly_multiply(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C) {poly_poly_multiply<TYPE,VLI_SIZE>(A,B,C);} \
+    void inner_product_vector(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C, std::size_t vector_size, std::size_t threads_per_block) {inner_product_vector<TYPE,VLI_SIZE>(A,B,C,vector_size,threads_per_block);} \
+    void vector_reduction(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE* B, std::size_t vector_size) {vector_reduction<TYPE,VLI_SIZE>(A,B,vector_size);}
 
-#define VLI_GPU_BASE_INT_TYPES_SEQ (unsigned int) (unsigned long int)
-#define VLI_DECLARE_GPU_KERNELS_FOR(r, data, TYPE) \
-    void inner_product_gpu(TYPE const* A, TYPE const* B, TYPE* C, int num_integers, int vli_size);  \
-    void inner_product_vector_gpu(TYPE const* A, TYPE const* B, TYPE* C, int vli_size, int max_order, TYPE vector_size); \
-    void vector_reduction_gpu(TYPE const* A, TYPE * B,  int vli_size, int max_order, TYPE vector_size);
-BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_KERNELS_FOR, _, VLI_GPU_BASE_INT_TYPES_SEQ)
+#define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
+    VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )
 
-#undef VLI_DECLARE_GPU_KERNELS_FOR
-*/
+#define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
+    VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )
+
+//#define VLI_GPU_BASEINT_SIZE_PAIRS_SEQ ((unsigned int,3)) ((unsigned long int,4)) ((unsigned long int,8))
+
+BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_FUNCTIONS_FOR, _, VLI_GPU_BASEINT_SIZE_PAIRS_SEQ)
+
+#ifdef __CUDACC__
+BOOST_PP_SEQ_FOR_EACH(VLI_IMPLEMENT_GPU_FUNCTIONS_FOR, _, VLI_GPU_BASEINT_SIZE_PAIRS_SEQ)
+#endif //__CUDACC__
+
+#undef VLI_DECLARE_GPU_FUNCTIONS_FOR
+#undef VLI_IMPLEMENT_GPU_FUNCTIONS_FOR
+#undef VLI_DECLARE_GPU_FUNCTIONS 
+#undef VLI_IMPLEMENT_GPU_FUNCTIONS
+
+
 } //namespace detail
 
 } //namespace vli

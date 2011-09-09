@@ -79,7 +79,6 @@ namespace vli
                 polynomial_gpu inter(pdata_+pos_*OffSet);
                 inter *= m;  
                 return inter;
-                
             }
             
             polynomial_gpu operator*(int i)
