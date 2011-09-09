@@ -20,10 +20,6 @@
 */
 
 /**
-* size of the vli
-*/
-#define SIZE_VLI VLI_MAX_ORDER
-/**
 * size of the polynomial
 */
 #define SIZE_POLY_VLI POLYNOMIAL_MAX_ORDER
@@ -47,16 +43,6 @@ namespace vli
 {
     namespace detail
     {
-
-    struct type_vli
-    {
-        typedef type BaseInt ;
-    };
-
-    struct size_vli
-    { 
-        enum { value = SIZE_VLI};
-    };
 
     struct size_poly_vli
     {

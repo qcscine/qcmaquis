@@ -211,8 +211,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
 {
     Vli a;
-//    fill_random(a,Vli::size-2);
-    fill_random(a);
+    fill_random(a,Vli::size-1);
 
     Vli a_orig(a);
     

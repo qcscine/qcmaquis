@@ -36,6 +36,8 @@ option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_COMPILE_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native -m64" CACHE STRING "Compiler flags for a regular compile.")
 set (VLI_COMPILE_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
+set (VLI_GPU_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be used for the vli_gpu class?")
+
 #add_definitions(-DPOLYNOMIAL_MAX_ORDER=8 -DVLI_MAX_ORDER=4 -DVECTOR_MAX_ORDER=512)
 add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21 -DVLI_MAX_ORDER=4 -DVECTOR_MAX_ORDER=256)
 

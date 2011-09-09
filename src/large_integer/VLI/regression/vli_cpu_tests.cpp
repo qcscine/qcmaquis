@@ -15,21 +15,17 @@ using vli::max_int_value;
 using vli::test::rnd_valid_int;
 using vli::test::fill_random;
 
-// Andreas as the lib is now templated we can only run one test only true for the gpu
 typedef boost::mpl::list<
-        vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>
-        > vli_types;
-
-/*
-        vli_cpu<unsigned int,2>,
+//        vli_cpu<unsigned int,2>,
         vli_cpu<unsigned int,4>,
         vli_cpu<unsigned int,8>,
         vli_cpu<unsigned int,16>, 
 
-        vli_cpu<unsigned long int,2>,
+//        vli_cpu<unsigned long int,2>,
         vli_cpu<unsigned long int,4>, 
         vli_cpu<unsigned long int,8>,
-        vli_cpu<unsigned long int,16>,  */
+        vli_cpu<unsigned long int,16>
+        > vli_types;
        
 
 /**

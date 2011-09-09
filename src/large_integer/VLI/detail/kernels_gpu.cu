@@ -6,12 +6,8 @@
 //  Copyright 2011 Université de Genève. All rights reserved.
 //
 
-#ifdef VLI_GPU_DEBUG
-#include <cstdio>
-#endif //VLI_GPU_DEBUG
-//#include "kernels_gpu.h"
-#include "detail/kernels_cpu_gpu.hpp" 
-#include "kernels_gpu_interface.h"
+#include "detail/kernels_cpu_gpu.hpp"
+#include "detail/vli_size_param.hpp"
 #include <cassert>
 
 //TO DO REMOVE ALL THESE REDICULOUS STATIC CAST INT -> SIZE_T
@@ -84,6 +80,7 @@ __global__ void single_addition(T* x, T const* y)
 template <typename T>
 __global__ void single_addition_int(T* x, T y)
 {
+    //TODO BUG: what about the carry bit?
     kernels_addition_block<T>(x,&y);  
 }
 
@@ -309,8 +306,132 @@ __global__ void polynome_int_addition(T* x, int y)
     kernels_addition_int<T, vli_size>(x,y);
 }
 
+/**
+  * The C++ functions that call the kernels
+  */
+template <typename BaseInt, std::size_t Size>
+void negate(BaseInt* A)
+{
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    negate_gpu<BaseInt, Size> <<< dimgrid, dimblock >>>(A);
+}
 
-}//detail
-}//vli
+template <typename BaseInt, std::size_t Size>
+void plus_assign(BaseInt* A, BaseInt const* B)
+{
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+	single_addition<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
+}
 
+template <typename BaseInt, std::size_t Size>
+void plus_assign(BaseInt* A, BaseInt a)
+{
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+	single_addition_int<BaseInt> <<< dimgrid, dimblock >>>(A, a);
+}
+
+template <typename BaseInt, std::size_t Size>
+void minus_assign(BaseInt* A, BaseInt const* B)
+{
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    single_substraction<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
+}
+
+template <typename BaseInt, std::size_t Size>
+void entrywise_multiplies(BaseInt const* A, BaseInt const* B, BaseInt* C)
+{
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+	single_multiplication<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B, C);
+} 
+
+template <typename BaseInt, std::size_t Size>
+void multiplies_assign(BaseInt* A, int a)
+{
+    //TODO is 'int a' ok?
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(1,1,1);
+    single_multiplication_int<BaseInt, Size> <<< dimgrid, dimblock >>>(A, a);
+}
+
+
+/**
+* VLI_GPU_POLYNOMIAL functions
+*/
+template <typename BaseInt, std::size_t Size>
+void poly_mono_multiply(BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t j_exp, std::size_t h_exp)
+{
+    //size_t size_poly_vli_value_square = size_poly_vli::value*size_poly_vli::value;
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    // TODO size_poly
+    monome_polynome_multiplication<BaseInt, Size, size_poly_vli::value>  <<< dimgrid, dimblock >>>(A, B, C, j_exp, h_exp);
+}
+
+template <typename BaseInt, std::size_t Size>
+void plus_assign_poly_int(BaseInt* A, int a)
+{
+    // TODO is 'int a' ok?
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    polynome_int_addition<BaseInt, Size> <<< dimgrid, dimblock>>>(A,a);
+}
+
+template <typename BaseInt, std::size_t Size>
+void plus_assign_poly(BaseInt* A, BaseInt const* B)
+{
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(size_poly_vli::value*size_poly_vli::value,1,1);
+    // TODO size_poly 
+	polynome_polynome_addition<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B);
+}
+
+template <typename BaseInt, std::size_t Size>
+void minus_assign_poly(BaseInt* A, BaseInt const* B)
+{
+    size_t size_poly_vli_value_square = size_poly_vli::value*size_poly_vli::value;
+    dim3 dimgrid(1,1,1);
+	dim3 dimblock(size_poly_vli_value_square,1,1);
+    //TODO size_poly
+	polynome_polynome_substraction<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B);
+}
+
+template <typename BaseInt, std::size_t Size>
+void poly_poly_multiply(BaseInt const* A, BaseInt const* B, BaseInt* C)
+{
+  	dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1); 
+    //TODO size_poly
+    polynome_polynome_multiplication<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, C); 
+} 
+
+/**
+* VLI_GPU_VECTOR functions
+*/
+
+template <typename BaseInt, std::size_t Size>
+void inner_product_vector(BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t vector_size, std::size_t threads_per_block) 
+{
+    std::size_t blocksPerGrid =  vector_size/threads_per_block;
+    //TODO size_poly
+    inner_prod_vector<BaseInt, Size, size_poly_vli::value> <<< blocksPerGrid,threads_per_block  >>>(A, B, C);  
+} 
+
+template <typename BaseInt, std::size_t Size>
+void vector_reduction(BaseInt const* A, BaseInt * B, std::size_t vector_size)
+{
+    //the reduction should be // if executed on one smp
+    dim3 dimgrid(1,1,1);
+    dim3 dimblock(1,1,1);
+    reduction_polynome<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, vector_size);
+}
+
+} // namespace detail
+} // namespace vli
+
+#include "kernels_gpu.h"
 

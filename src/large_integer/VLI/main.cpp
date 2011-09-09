@@ -16,7 +16,6 @@
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
 #include "regression/common_test_functions.hpp"
-#include "detail/vli_size_param.hpp"
 
 
 using vli::vli_cpu;
@@ -33,8 +32,8 @@ using vli::test::fill_poly_random;
 using vli::test::fill_vector_random;
 
 
-typedef vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_cpu;
-typedef vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_gpu;
+typedef vli_cpu<long unsigned int, 3> vli_type_cpu;
+typedef vli_gpu<long unsigned int, 3> vli_type_gpu;
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 typedef vli::monomial<vli_type_gpu> monomial_type_gpu;

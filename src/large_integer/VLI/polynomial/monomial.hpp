@@ -94,7 +94,6 @@ namespace vli
         m.print(os);
         return os;
     }
-    /*
     template <typename Vli, typename T>
     monomial<Vli> operator * (monomial<Vli> m, T const& c)
     {
@@ -106,7 +105,7 @@ namespace vli
     monomial<Vli> operator * (T const& c, monomial<Vli> const& m)
     {
         return m*c;
-    }*/
+    }
 
 }
 
