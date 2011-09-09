@@ -27,9 +27,10 @@ namespace vli{
 //      gpu::gpu_manager* GPU; //GPU is a singleton initialized into the main
         std::size_t NumThreads = a.size()/2; // GPU->instance().GetmaxThreadsPerBlock()/2; // the full does not work ... 
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inter;
-        inter.resize(a.size()); //default size 1 so resize        
-        detail::inner_product_vector(a.p(), b.p(),inter.p(),a.size(),NumThreads);
-        detail::vector_reduction(inter.p(),res.p(),a.size());
+        inter.resize(a.size()); //default size 1 so resize
+        using detail::vli_size_tag; 
+        detail::inner_product_vector(vli_size_tag<Size>(), a.p(), b.p(),inter.p(),a.size(),NumThreads);
+        detail::vector_reduction(vli_size_tag<Size>(), inter.p(),res.p(),a.size());
     }
     
     
