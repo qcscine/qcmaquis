@@ -49,12 +49,6 @@ namespace vli
         enum { value = SIZE_POLY_VLI};
     };
 
-    // Presently not used, because the vectors are dynamics
-    struct size_vector_vli    
-    {
-        enum { value = SIZE_VECTOR_VLI};
-    };
-
     } // end namespace detail
 } // end namespace vli
 #endif  //VLI_SIZE_PARAM_HPP

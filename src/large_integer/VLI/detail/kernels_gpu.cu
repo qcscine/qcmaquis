@@ -91,7 +91,7 @@ __global__ void single_substraction(T* x, T const* y)
     kernels_addition_classic<T,static_cast<std::size_t>(size)>(x,y);
 }
 
-//__global__ and __device__ is impossible in the same time
+//__global__ and __device__ are impossible in the same time
 template <typename T, int size>
 __global__  void single_multiplication(T const* x, T const* y, T* z)     
 {
@@ -262,41 +262,33 @@ __device__ void polynome_polynome_multiplication_device(T const* p1, T const* p2
 
     
 template  <typename T, int vli_size, int poly_size>
-__global__ void inner_prod_vector(T const* v1, T const* v2, T* res)
+__global__ void inner_prod_vector(T const* v1, T const* v2, T* res, std::size_t SizeVector)
 {
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
     unsigned int size_poly = vli_size*poly_size*poly_size;
-    unsigned int offset = xIndex*size_poly;
+    unsigned int offset(0);
     //multiplication between polynomial
-    polynome_polynome_multiplication_device<T,vli_size,poly_size>(&v1[offset],&v2[offset],&res[offset]); 
+    if(xIndex < SizeVector)
+    {
+        offset = xIndex*size_poly;
+        polynome_polynome_multiplication_device<T,vli_size,poly_size>(&v1[offset],&v2[offset],&res[offset]); 
+    }
 }
     
     
 template  <typename T, int vli_size, int poly_size>
 __global__ void reduction_polynome(T const* v1, T* v2, std::size_t SizeVector)
 { 
-    /*
-    *  WARNING the kernels can only be instancied with one value
-    *  here vli_size, so, one more loop.
-    *  SOLUTION : BOOST_PP_SEQ_FOR_EACH ..... 
-    */    
     std::size_t size_poly = static_cast<std::size_t>(vli_size*poly_size*poly_size);  
-    std::size_t offset0(0);  
-    std::size_t offset1(0);  
-    
+    std::size_t offset0, offset1;
+      
     for(std::size_t i=0 ; i < SizeVector ; ++i){
         for(std::size_t j=0 ; j < poly_size*poly_size ; ++j){ //additional loop
             offset0 = j*vli_size;
             offset1 = i*size_poly+j*vli_size;
             kernels_addition_classic<T,vli_size>(&v2[offset0],&v1[offset1]);
         }
-    }
-    /*
-     for(std::size_t i=0 ; i < SizeVector ; ++i){
-        kernels_addition_classic<T,vli_size*poly_size*poly_size>(&v2[i],&v1[i]); 
-         
-     }*/
-    
+    }    
     
 }
    
@@ -414,24 +406,24 @@ void poly_poly_multiply(BaseInt const* A, BaseInt const* B, BaseInt* C)
 */
 
 template <typename BaseInt, std::size_t Size>
-void inner_product_vector(BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t vector_size, std::size_t threads_per_block) 
+void inner_product_vector(BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t VectorSize, std::size_t ThreadsPerBlock) 
 {
-    std::size_t blocksPerGrid =  vector_size/threads_per_block;
-    //TODO size_poly
-    inner_prod_vector<BaseInt, Size, size_poly_vli::value> <<< blocksPerGrid,threads_per_block  >>>(A, B, C);  
+    std::size_t BlocksPerGrid = VectorSize/ThreadsPerBlock+1;
+    dim3 dimgrid(BlocksPerGrid,1,1);
+	dim3 dimblock(ThreadsPerBlock,1,1);    
+    inner_prod_vector<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, C, VectorSize);  
 } 
 
 template <typename BaseInt, std::size_t Size>
-void vector_reduction(BaseInt const* A, BaseInt * B, std::size_t vector_size)
+void vector_reduction(BaseInt const* A, BaseInt * B, std::size_t VectorSize)
 {
     //the reduction should be // if executed on one smp
     dim3 dimgrid(1,1,1);
     dim3 dimblock(1,1,1);
-    reduction_polynome<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, vector_size);
+    reduction_polynome<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, VectorSize);
 }
 
 } // namespace detail
 } // namespace vli
 
 #include "kernels_gpu.h"
-

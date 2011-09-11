@@ -22,7 +22,7 @@
 namespace vli
 {
     /*
-     * Wellcome in the pointer jungle
+     * Welcome in the pointer jungle
      */
 
     namespace detail
@@ -172,7 +172,7 @@ namespace vli
     }
 
     template <typename BaseInt>
-    inline void kernels_multiplication_base_reshaping(BaseInt const * x, BaseInt  const *  y, BaseInt * r)	
+    inline void kernels_multiplication_base_reshaping(BaseInt const* x, BaseInt  const*  y, BaseInt * r)	
     {
         BaseInt q1 = (*(x+1) + *y) >> (data_bits<BaseInt>::value/2);
         BaseInt r1 = (*(x+1) + *y) & mask_down<BaseInt>::value;

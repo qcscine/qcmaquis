@@ -32,7 +32,7 @@ namespace gpu
 		cudaDeviceProp GetDeviceProperties() const;		
 		void constructor();
 		void destructor();
-        unsigned int GetmaxThreadsPerBlock();        
+        std::size_t GetmaxThreadsPerBlock();        
 	private: 
 		
 		/**
