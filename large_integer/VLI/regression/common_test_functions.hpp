@@ -48,11 +48,26 @@ void fill_poly_random(Polynomial& p)
             fill_random(p(i,j));
 }
 
+template <typename Polynomial>
+void fill_poly_random(Polynomial& p, typename Polynomial::size_type size)
+{
+    for(typename Polynomial::size_type i=0; i < Polynomial::max_order; ++i)
+        for(typename Polynomial::size_type j=0; j < Polynomial::max_order; ++j)
+            fill_random(p(i,j),size);
+}
+
 template <typename Vector>
 void fill_vector_random(Vector& v)
 {
     for(typename Vector::size_type i=0; i < v.size(); ++i)
         fill_poly_random(v[i]);
+}
+
+template <typename Vector>
+void fill_vector_random(Vector& v, typename Vector::size_type size)
+{
+    for(typename Vector::size_type i=0; i < v.size(); ++i)
+        fill_poly_random(v[i], size);
 }
 
 

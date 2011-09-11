@@ -24,13 +24,20 @@ namespace vli{
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b,
                            polynomial_gpu<vli_gpu<BaseInt, Size>, Order>& res)
     {
-//      gpu::gpu_manager* GPU; //GPU is a singleton initialized into the main
-        std::size_t NumThreads = a.size()/2; // GPU->instance().GetmaxThreadsPerBlock()/2; // the full does not work ... 
+        gpu::gpu_manager* GPU; //GPU is a singleton initialized into the main
+        std::size_t NumThreads = GPU->instance().GetmaxThreadsPerBlock()/2;
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inter;
         inter.resize(a.size()); //default size 1 so resize
         using detail::vli_size_tag; 
+        TimerCuda GPUinner("GPUinner");
+        GPUinner.begin(); 
         detail::inner_product_vector(vli_size_tag<Size>(), a.p(), b.p(),inter.p(),a.size(),NumThreads);
+        GPUinner.end();
+
+        TimerCuda GPUreduc("GPUreduc");
+        GPUreduc.begin(); 
         detail::vector_reduction(vli_size_tag<Size>(), inter.p(),res.p(),a.size());
+        GPUreduc.end();
     }
     
     

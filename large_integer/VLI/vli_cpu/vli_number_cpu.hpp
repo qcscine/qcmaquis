@@ -348,7 +348,9 @@ namespace vli
           * Data members
           */
 
-        BaseInt data_[Size] __attribute__ ((aligned (16)));
+//        BaseInt data_[Size] __attribute__ ((aligned (16)));
+        BaseInt data_[Size];
+
     };
     
     /**

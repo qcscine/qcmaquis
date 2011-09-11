@@ -40,7 +40,7 @@ namespace gpu
 	{
 	}
 	
-    unsigned int gpu_manager::GetmaxThreadsPerBlock()
+    std::size_t gpu_manager::GetmaxThreadsPerBlock()
     {
         return this->instance().GetDeviceProperties().maxThreadsPerBlock; 
     }    

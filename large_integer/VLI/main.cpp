@@ -48,52 +48,30 @@ typedef vli::vector_polynomial_gpu<polynomial_type_gpu> vector_type_gpu;
 int main (int argc, char * const argv[]) 
 {
     
-    gpu::gpu_manager* GPU;
-    GPU->instance();
+    gpu::gpu_manager* gpu;
+    gpu->instance();
        
-    vector_type_cpu VaCPU( vli::detail::size_vector_vli::value); 
-    
-    vector_type_cpu result( vli::detail::size_vector_vli::value); 
-    vector_type_gpu resultgpu( vli::detail::size_vector_vli::value); 
+    vector_type_cpu VaCPU( 1024); 
+    vector_type_cpu VbCPU( 1024); 
+    polynomial_type_cpu result; 
+    polynomial_type_gpu result_gpu; 
 
-   // fill_vector_random(VaCPU);
+    fill_vector_random(VaCPU,1);
+    fill_vector_random(VbCPU,1);
+
     vector_type_gpu VaGPU( VaCPU); 
+    vector_type_gpu VbGPU( VbCPU); 
 
-    polynomial_type_cpu  A;
-    fill_poly_random(A);
+    Timer CPU("CPU");
+    CPU.begin();
+    result = inner_product(VaCPU,VbCPU);
+    CPU.end();
 
-    polynomial_type_gpu  Ag(A);
-  
-
-    vli_type_cpu a;
-    fill_random(a); 
-    vli_type_gpu b(a);
-
-    monomial_type_cpu mcpu(a,2,2);
-    monomial_type_gpu mgpu(b,2,2);
-    
-    
-    
-    result[0] += VaCPU[0]*monomial_type_cpu(1,0); 
-    resultgpu[0] += VaGPU[0]*monomial_type_gpu(1,0); // VaGPU[2] = VaGPU[3] call 2 times the [] proxy operator
-//    Ag =Ag*monomial_type_gpu(1,0); // VaGPU[2] = VaGPU[3] call 2 times the [] proxy operator
-    std::cout << resultgpu[0];
-    if(resultgpu == result ) {
-       std::cout << "ok" << std::endl;
-    }else{
-        std::cout << "no ok" << std::endl;     
-    }
-
-    
-
-        
-    //std::cout << VaCPU << std::endl;
-//    std::cout << VaGPU << std::endl;
-
+    TimerCuda GPU("GPU");
+    GPU.begin();    
+    result_gpu = inner_product(VaGPU,VbGPU);
+    GPU.end();
    
-       
-       
-       
        
     return 0;
 }

@@ -45,7 +45,7 @@ struct vli_size_tag
     void minus_assign_poly(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {minus_assign_poly<TYPE,VLI_SIZE>(A,B);} \
     void poly_poly_multiply(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C) {poly_poly_multiply<TYPE,VLI_SIZE>(A,B,C);} \
     void inner_product_vector(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C, std::size_t vector_size, std::size_t threads_per_block) {inner_product_vector<TYPE,VLI_SIZE>(A,B,C,vector_size,threads_per_block);} \
-    void vector_reduction(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE* B, std::size_t vector_size) {vector_reduction<TYPE,VLI_SIZE>(A,B,vector_size);}
+    void vector_reduction(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE* B, std::size_t vector_size ) {vector_reduction<TYPE,VLI_SIZE>(A,B,vector_size);}
 
 #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
     VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )
