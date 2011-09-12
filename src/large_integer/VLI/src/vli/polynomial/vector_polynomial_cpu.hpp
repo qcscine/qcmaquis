@@ -13,9 +13,9 @@
 #include <ostream>
 #include <cassert>
 #include "boost/swap.hpp"
-#include "polynomial/polynomial_cpu.hpp"
-#include "vli_cpu/vli_number_cpu.hpp"
-#include "detail/vli_size_param.hpp"
+#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/vli_cpu.hpp"
+#include "vli/detail/vli_size_param.hpp"
 
 namespace vli
 {

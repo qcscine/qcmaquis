@@ -10,7 +10,8 @@
 
 #ifndef VLI_NUMBER_CPU_HPP
 #define VLI_NUMBER_CPU_HPP
-#include <detail/bit_masks.hpp>
+#include "vli/detail/bit_masks.hpp"
+#include "vli/function_hooks/vli_number_cpu_function_hooks.hpp"
 #include <boost/lexical_cast.hpp>
 #include <ostream>
 #include <vector>
@@ -18,8 +19,7 @@
 #include <cmath>
 #include <cstring>
 #include <ostream>
-#include "boost/swap.hpp"
-#include "function_hooks/vli_number_cpu_function_hooks.hpp"
+#include <boost/swap.hpp>
 
 
 namespace vli

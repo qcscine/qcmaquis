@@ -3,17 +3,17 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "gpu/GpuManager.h"
-#include "gpu/GpuManager.hpp"
+#include "vli/utils/gpu_manager.h"
+#include "vli/utils/gpu_manager.hpp"
 
-#include "polynomial/vector_polynomial_cpu.hpp"
-#include "polynomial/vector_polynomial_gpu.hpp"
-#include "polynomial/polynomial_gpu.hpp"
-#include "polynomial/polynomial_cpu.hpp"
-#include "polynomial/monomial.hpp"
-#include "vli_cpu/vli_number_cpu.hpp"
-#include "vli_cpu/vli_number_traits.hpp"
-#include "vli_gpu/vli_number_gpu.hpp"
+#include "vli/polynomial/vector_polynomial_cpu.hpp"
+#include "vli/polynomial/vector_polynomial_gpu.hpp"
+#include "vli/polynomial/polynomial_gpu.hpp"
+#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/polynomial/monomial.hpp"
+#include "vli/vli_cpu.hpp"
+#include "vli/vli_traits.hpp"
+#include "vli/vli_gpu.hpp"
 #include "utils/timings.h"
 #include "regression/vli_test.hpp"
 

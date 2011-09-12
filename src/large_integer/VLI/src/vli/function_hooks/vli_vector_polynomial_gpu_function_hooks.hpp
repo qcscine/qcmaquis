@@ -9,8 +9,8 @@
 #ifndef VLI_VECTOR_POLYNOMIAL_GPU_FUNCTION_HOOKS_HPP
 #define VLI_VECTOR_POLYNOMIAL_GPU_FUNCTION_HOOKS_HPP
 
-#include "detail/kernels_gpu.h"
-#include "gpu/GpuManager.h"
+#include "vli/detail/kernels_gpu.h"
+#include "vli/utils/gpu_manager.h"
 
 
 namespace vli{
@@ -29,15 +29,15 @@ namespace vli{
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inter;
         inter.resize(a.size()); //default size 1 so resize
         using detail::vli_size_tag; 
-        TimerCuda GPUinner("GPUinner");
-        GPUinner.begin(); 
+//        TimerCuda GPUinner("GPUinner");
+//        GPUinner.begin(); 
         detail::inner_product_vector(vli_size_tag<Size>(), a.p(), b.p(),inter.p(),a.size(),NumThreads);
-        GPUinner.end();
+//        GPUinner.end();
 
-        TimerCuda GPUreduc("GPUreduc");
-        GPUreduc.begin(); 
+//        TimerCuda GPUreduc("GPUreduc");
+//        GPUreduc.begin(); 
         detail::vector_reduction(vli_size_tag<Size>(), inter.p(),res.p(),a.size());
-        GPUreduc.end();
+//        GPUreduc.end();
     }
     
     

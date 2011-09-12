@@ -2,7 +2,7 @@
 #ifndef VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
 #define VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
 
-#include "detail/kernels_gpu.h"
+#include "vli/detail/kernels_gpu.h"
 
 
 namespace vli {

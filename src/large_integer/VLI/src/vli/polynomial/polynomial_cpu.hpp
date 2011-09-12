@@ -8,11 +8,10 @@
 
 #ifndef VLI_POLYNOME_CPU_H
 #define VLI_POLYNOME_CPU_H
-#include "boost/swap.hpp"
-#include "function_hooks/vli_polynomial_cpu_function_hooks.hpp"
+#include "vli/function_hooks/vli_polynomial_cpu_function_hooks.hpp"
+#include "vli/polynomial/monomial.hpp"
 
-#include "polynomial/monomial.hpp"
-
+#include <boost/swap.hpp>
 #include <ostream>
 #include <cmath>
 

@@ -3,7 +3,7 @@
 
 #include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
-#include "vli_utils/vli_config.h"
+#include "vli/vli_config.h"
 
 namespace vli {
 namespace detail {

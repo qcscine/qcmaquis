@@ -87,27 +87,19 @@ else()
     message(FATAL_ERROR "Boost libraries not found. Please specify location using the BOOST_ROOT variable")
 endif()
 
+
 ########################################################################
 #
-# Configure Header File Template
+# Compile and prepare library
 #
 ########################################################################
-configure_file (
-        "${PROJECT_SOURCE_DIR}/vli_utils/vli_config.h.in"
-        "${PROJECT_BINARY_DIR}/vli_utils/vli_config.h"
-        )
+
 include_directories ("${PROJECT_BINARY_DIR}")
 include_directories ("${PROJECT_SOURCE_DIR}")
+include_directories ("${PROJECT_SOURCE_DIR}/src/")
 
-########################################################################
-#
-# Kernel Compile
-#
-########################################################################
+add_subdirectory( src/vli/ )
 
-if(VLI_USE_GPU)
-    CUDA_ADD_LIBRARY(kernels_gpu detail/kernels_gpu.cu)
-endif(VLI_USE_GPU)
 
 ########################################################################
 #
@@ -115,10 +107,10 @@ endif(VLI_USE_GPU)
 #
 ########################################################################
 
-add_executable (vli main.cpp)
+add_executable (a.out main.cpp)
 
 if(VLI_USE_GPU)
-    target_link_libraries (vli kernels_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgomp)
+    target_link_libraries (a.out kernels_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgomp)
 endif(VLI_USE_GPU)
 
 

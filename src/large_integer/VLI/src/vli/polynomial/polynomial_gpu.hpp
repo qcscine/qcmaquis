@@ -8,11 +8,11 @@
 
 #ifndef VLI_POLYNOME_GPU_H
 #define VLI_POLYNOME_GPU_H
-#include "boost/swap.hpp"
-#include "vli_gpu/vli_number_gpu.hpp"
-#include "function_hooks/vli_polynomial_gpu_function_hooks.hpp"
-#include "polynomial/monomial.hpp"
+#include "vli/vli_gpu.hpp"
+#include "vli/function_hooks/vli_polynomial_gpu_function_hooks.hpp"
+#include "vli/polynomial/monomial.hpp"
 
+#include <boost/swap.hpp>
 #include <ostream>
 #include <cmath>
 
