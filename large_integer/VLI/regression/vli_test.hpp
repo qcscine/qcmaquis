@@ -10,8 +10,8 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include "vli_utils/vli_config.h"
-#include "vli_cpu/vli_number_traits.hpp"
+#include "vli/vli_config.h"
+#include "vli/vli_traits.hpp"
 
 
 namespace vli

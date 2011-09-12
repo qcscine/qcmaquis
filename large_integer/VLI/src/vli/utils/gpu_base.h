@@ -12,9 +12,7 @@
 
 #include <iostream>
 #include <boost/static_assert.hpp>
-#include "gpu/GpuManager.h"
-
-#include "utils/timings.h"
+#include "vli/utils/gpu_manager.h"
 
 namespace vli
 {   

@@ -7,7 +7,7 @@
  *
  */
 
-#include "GpuManager.h"
+#include "vli/utils/gpu_manager.h"
 
 namespace gpu 
 {

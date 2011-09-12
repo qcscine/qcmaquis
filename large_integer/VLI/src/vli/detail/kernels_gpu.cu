@@ -6,10 +6,10 @@
 //  Copyright 2011 Université de Genève. All rights reserved.
 //
 
-#include "detail/kernels_cpu_gpu.hpp"
-#include "detail/vli_size_param.hpp"
+#include "vli/detail/kernels_cpu_gpu.hpp"
+#include "vli/detail/vli_size_param.hpp"
+#include "vli/detail/kernels_gpu.h"
 #include <cassert>
-#include "kernels_gpu.h"
 
 //TO DO REMOVE ALL THESE REDICULOUS STATIC CAST INT -> SIZE_T
 

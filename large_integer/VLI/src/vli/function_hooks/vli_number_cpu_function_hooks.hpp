@@ -2,7 +2,7 @@
 #define VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP
 
 
-#include "detail/kernels_cpu_gpu.hpp"
+#include "vli/detail/kernels_cpu_gpu.hpp"
 
 namespace vli 
 {

@@ -8,15 +8,14 @@
 
 #ifndef VLI_VECTOR_POLYNOME_GPU_H
 #define VLI_VECTOR_POLYNOME_GPU_H
-#include "boost/swap.hpp"
-#include "polynomial/polynomial_cpu.hpp"
-#include "polynomial/polynomial_gpu.hpp"
-#include "polynomial/monomial.hpp"
-#include "vli_cpu/vli_number_cpu.hpp"
-#include "vli_gpu/vli_number_gpu.hpp"
-#include "function_hooks/vli_vector_polynomial_gpu_function_hooks.hpp"
-#include "function_hooks/vli_number_gpu_function_hooks.hpp"
-
+#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/polynomial/polynomial_gpu.hpp"
+#include "vli/polynomial/monomial.hpp"
+#include "vli/vli_cpu.hpp"
+#include "vli/vli_gpu.hpp"
+#include "vli/function_hooks/vli_vector_polynomial_gpu_function_hooks.hpp"
+#include "vli/function_hooks/vli_number_gpu_function_hooks.hpp"
+#include <boost/swap.hpp>
 #include <ostream>
 
 

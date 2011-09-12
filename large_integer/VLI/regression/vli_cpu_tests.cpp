@@ -1,10 +1,10 @@
 #define BOOST_TEST_MODULE vli_cpu
 #include <boost/test/unit_test.hpp>
+#include <gmpxx.h>
 
-#include "detail/vli_size_param.hpp"
-#include "vli_cpu/vli_number_cpu.hpp"
-#include "vli_cpu/vli_number_traits.hpp"
-#include "gmpxx.h"
+#include "vli/detail/vli_size_param.hpp"
+#include "vli/vli_cpu.hpp"
+#include "vli/vli_traits.hpp"
 #include "regression/vli_test.hpp"
 
 using vli::vli_cpu;

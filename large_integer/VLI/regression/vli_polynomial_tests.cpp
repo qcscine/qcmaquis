@@ -3,12 +3,12 @@
 #include <boost/mpl/transform.hpp>
 #include <boost/static_assert.hpp>
 
-#include "polynomial/monomial.hpp"
-#include "polynomial/polynomial_cpu.hpp"
-#include "vli_cpu/vli_number_cpu.hpp"
+#include "vli/polynomial/monomial.hpp"
+#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/vli_cpu.hpp"
 
-#include "polynomial/polynomial_gpu.hpp"
-#include "vli_gpu/vli_number_gpu.hpp"
+#include "vli/polynomial/polynomial_gpu.hpp"
+#include "vli/vli_gpu.hpp"
 
 #include "regression/vli_test.hpp"
 

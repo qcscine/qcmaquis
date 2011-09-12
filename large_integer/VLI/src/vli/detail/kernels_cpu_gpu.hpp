@@ -9,7 +9,7 @@
 #ifndef VLI_KERNELS_CPU_GPU_HPP 
 #define VLI_KERNELS_CPU_GPU_HPP 
 
-#include "detail/bit_masks.hpp"
+#include "vli/detail/bit_masks.hpp"
 
 
 /**
