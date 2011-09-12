@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE vli_cpu
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
@@ -10,7 +9,7 @@
 #include "polynomial/monomial.hpp"
 #include "gmpxx.h"
 
-#include "regression/common_test_functions.hpp"
+#include "regression/vli_test.hpp"
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -19,9 +18,7 @@ using vli::monomial;
 
 using vli::test::fill_random;
 
-typedef boost::mpl::list<
-        vli_cpu<unsigned long int, 4>
-        > vli_types;
+typedef vli::test::vli_cpu_type_list vli_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE ( constructor, Vli, vli_types )
 {

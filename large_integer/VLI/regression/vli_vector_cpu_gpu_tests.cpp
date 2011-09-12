@@ -5,8 +5,9 @@
  *
  */
 
-#define BOOST_TEST_MODULE vli_cpu
+#define BOOST_TEST_MODULE vli_vector_cpu_gpu_tests
 #include <boost/test/unit_test.hpp>
+#include <boost/mpl/front.hpp>
 #include <cstdio>
 
 #include "gpu/GpuManager.h"
@@ -20,7 +21,7 @@
 #include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 
-#include "regression/common_test_functions.hpp"
+#include "regression/vli_test.hpp"
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -35,23 +36,29 @@ using vli::test::fill_random;
 using vli::test::fill_poly_random;
 using vli::test::fill_vector_random;
 
+template <typename Vli>
+struct vli_gpu_from_vli_cpu
+{
+    typedef vli_gpu<typename Vli::value_type, Vli::size> type;
+};
 
-typedef vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_cpu;
-typedef vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> vli_type_gpu;
+typedef boost::mpl::front<vli::test::vli_cpu_type_list>::type vli_type_cpu;
+typedef vli_gpu_from_vli_cpu<vli_type_cpu>::type vli_type_gpu;
 
-typedef vli::monomial<vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> > monomial_type_cpu;
-typedef vli::monomial<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value> > monomial_type_gpu;
+typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
+typedef vli::monomial<vli_type_gpu> monomial_type_gpu;
 
-typedef vli::polynomial_cpu<vli_cpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>, vli::detail::size_poly_vli::value > polynomial_type_cpu;
-typedef vli::polynomial_gpu<vli_gpu<vli::detail::type_vli::BaseInt, vli::detail::size_vli::value>, vli::detail::size_poly_vli::value > polynomial_type_gpu;
+typedef vli::polynomial_cpu<vli_type_cpu, vli::detail::size_poly_vli::value > polynomial_type_cpu;
+typedef vli::polynomial_gpu<vli_type_gpu, vli::detail::size_poly_vli::value > polynomial_type_gpu;
 
 typedef vli::vector_polynomial_gpu<polynomial_type_gpu> vector_type_gpu;
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 
+enum { vector_size = 100 };
 
 BOOST_AUTO_TEST_CASE(vector_copy)
 {
-    vector_type_cpu VaCPU( vli::detail::size_vector_vli::value); 
+    vector_type_cpu VaCPU(vector_size); 
     
     fill_vector_random(VaCPU);
     vector_type_gpu VaGPU(VaCPU); ;
@@ -61,7 +68,7 @@ BOOST_AUTO_TEST_CASE(vector_copy)
 
 BOOST_AUTO_TEST_CASE(vector_polys)
 {
-    vector_type_cpu VaCPU( vli::detail::size_vector_vli::value); 
+    vector_type_cpu VaCPU(vector_size); 
     
     fill_vector_random(VaCPU);
 
@@ -78,7 +85,7 @@ BOOST_AUTO_TEST_CASE(vector_polys)
 
 BOOST_AUTO_TEST_CASE(vector_inner_product)
 {
-    vector_type_cpu VaCPU( vli::detail::size_vector_vli::value),VbCPU(vli::detail::size_vector_vli::value); 
+    vector_type_cpu VaCPU(vector_size),VbCPU(vector_size);
     
     polynomial_type_cpu pcCPU;
     polynomial_type_gpu pcGPU;
@@ -92,7 +99,7 @@ BOOST_AUTO_TEST_CASE(vector_inner_product)
     pcCPU =  inner_product(VaCPU,VbCPU);
     pcGPU =  inner_product(VaGPU,VbGPU);
       
-    BOOST_CHECK_EQUAL(pcCPU,pcGPU); 
+    BOOST_CHECK_EQUAL(pcCPU,pcGPU);
 }
 
 

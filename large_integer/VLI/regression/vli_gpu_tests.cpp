@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE vli_gpu
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <boost/mpl/transform.hpp>
 
 #include "gpu/GpuManager.h"
 #include "gpu/GpuManager.hpp"
@@ -9,7 +9,7 @@
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "gmpxx.h"
 
-#include "regression/common_test_functions.hpp"
+#include "regression/vli_test.hpp"
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -18,16 +18,23 @@ using vli::vli_gpu;
 using vli::test::rnd_valid_int;
 using vli::test::fill_random;
 
-typedef boost::mpl::list<
-        vli_gpu<unsigned int,3>,
-        vli_gpu<unsigned long int,3>,
-        vli_gpu<unsigned long int,4>
-        > vli_types;
 
 
-//TODO is the gpu_manager needed for the execution of the other vli_gpu tests?
-//yeap I am now getting the maximum of threads per block per the manager
-//and I always hope have the manager as master chief for the mix mode CPU/GPU
+
+template <typename Vli>
+struct vli_gpu_from_vli_cpu
+{
+    typedef vli_gpu<typename Vli::value_type, Vli::size> type;
+};
+
+
+typedef boost::mpl::transform<
+      vli::test::vli_cpu_type_list
+    , vli_gpu_from_vli_cpu<boost::mpl::_1>
+    >::type vli_types;
+
+
+
 BOOST_AUTO_TEST_CASE(gpu_manager)
 {
 	gpu::gpu_manager* GPU;

@@ -1,7 +1,6 @@
-
 #define BOOST_TEST_MODULE vli_polynomial
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <boost/mpl/transform.hpp>
 #include <boost/static_assert.hpp>
 
 #include "polynomial/monomial.hpp"
@@ -11,7 +10,7 @@
 #include "polynomial/polynomial_gpu.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 
-#include "regression/common_test_functions.hpp"
+#include "regression/vli_test.hpp"
 
 using vli::test::fill_random;
 using vli::test::fill_poly_random;
@@ -21,13 +20,16 @@ using vli::monomial;
 using vli::polynomial_cpu;
 using vli::polynomial_gpu;
 
-        
-        
-typedef boost::mpl::list<
-        polynomial_cpu<vli_cpu<unsigned long int, 4>, 10>
-        > polynomial_types;
+template <typename Vli>
+struct polynomial_from_vli_cpu
+{
+    typedef polynomial_cpu<Vli, 10> type;
+};
 
-        
+typedef boost::mpl::transform<
+      vli::test::vli_cpu_type_list
+    , polynomial_from_vli_cpu<boost::mpl::_1>
+    >::type polynomial_types;
         
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomial_types )
