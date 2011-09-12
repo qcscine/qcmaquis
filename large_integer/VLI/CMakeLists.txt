@@ -55,6 +55,7 @@ if (VLI_TESTS)
 
     if (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
        set(GMP_FOUND true)
+       include_directories(${GMP_INCLUDE_DIR})
     endif (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
 
     if (GMP_FOUND)
