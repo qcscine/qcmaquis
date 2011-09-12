@@ -1,13 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
 
-
-########################################################################
-#
-# DEBUG move false to true
-#
-########################################################################
-set(CMAKE_VERBOSE_MAKEFILE false)
-
 ########################################################################
 #
 # Project and version information
@@ -19,7 +11,6 @@ set (VLI_VERSION_MAJOR 0)
 set (VLI_VERSION_MINOR 1)
 
 
-
 ########################################################################
 #
 # Options
@@ -29,7 +20,6 @@ set (VLI_VERSION_MINOR 1)
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
-option (VLI_USE_GMP "Compile with GMP components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 
@@ -38,7 +28,6 @@ set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native -m64" C
 set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 set (VLI_COMPILE_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
-#add_definitions(-DPOLYNOMIAL_MAX_ORDER=8 -DVLI_MAX_ORDER=4 -DVECTOR_MAX_ORDER=512)
 add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21)
 
 ########################################################################
@@ -58,33 +47,30 @@ if (VLI_USE_GPU)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif (VLI_USE_GPU)
 
-if (VLI_USE_GMP)
+# The tests need the GMP library
+if (VLI_TESTS)
+    find_path(GMP_INCLUDE_DIR gmp.h $ENV{HOME}/.local/include)
+    find_library(GMP_LIBRARY_CXX NAMES gmpxx PATH $ENV{HOME}/.local/include)
+    find_library(GMP_LIBRARY_C NAMES gmp PATH $ENV{HOME}/.local/include)
 
-find_path(GMP_INCLUDE_DIR gmp.h $ENV{HOME}/.local/include)
-find_library(GMP_LIBRARY_CXX NAMES gmpxx PATH $ENV{HOME}/.local/include)
-find_library(GMP_LIBRARY_C NAMES gmp PATH $ENV{HOME}/.local/include)
+    if (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
+       set(GMP_FOUND true)
+    endif (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
 
-if (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
-   set(GMP_FOUND true)
-endif (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
-
-if (GMP_FOUND)
-   if (NOT GMP_FIND_QUIETLY)
+    if (GMP_FOUND)
       message(STATUS "Found GMP: ${GMP_LIBRARY_CXX} ${GMP_LIBRARY_C}")
-   endif (NOT GMP_FIND_QUIETLY)
-else (GMP_FOUND)
-   if (GMP_FIND_REQUIRED)
-      message(FATAL_ERROR "Could not find GMP")
-   endif (GMP_FIND_REQUIRED)
-endif (GMP_FOUND)
-endif (VLI_USE_GMP)
+    else (GMP_FOUND)
+      message(WARNING "Could not find GMP library which are needed for the regression tests -> Deactivating tests.")
+      set (VLI_TESTS OFF)
+    endif (GMP_FOUND)
+endif (VLI_TESTS)
 
 set(BOOST_ROOT ${BOOST_DIR})
 find_package (Boost COMPONENTS unit_test_framework)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 else()
-    message(FATAL_ERROR "Boost libraries not found. Please specify location using the BOOST_ROOT variable")
+    message(FATAL_ERROR "Boost libraries not found. Please specify location using the BOOST_DIR variable")
 endif()
 
 
@@ -110,7 +96,7 @@ add_subdirectory( src/vli/ )
 add_executable (a.out main.cpp)
 
 if(VLI_USE_GPU)
-    target_link_libraries (a.out kernels_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgomp)
+    target_link_libraries (a.out vli_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgomp)
 endif(VLI_USE_GPU)
 
 
@@ -129,9 +115,19 @@ endif(VLI_TESTS)
 
 ########################################################################
 #
+# Install
+#
+########################################################################
+
+install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN ".h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
+install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a DESTINATION lib)
+
+########################################################################
+#
 # Set internal variables according to the variables in section "options"
 #
 ########################################################################
+
 mark_as_advanced(CMAKE_BUILD_TYPE)
 if(VLI_DEBUG_COMPILE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
