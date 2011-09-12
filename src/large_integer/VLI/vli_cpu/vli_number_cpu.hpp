@@ -225,9 +225,11 @@ namespace vli
         {
             os << "(" ;
             for(std::size_t i=Size-1; i > 0; --i)
-				os << std::showbase << std::hex << data_[i]<<" ";
+				os << std::showbase << data_[i]<<" ";
 
-		    os << std::showbase << std::hex << data_[0];
+//		    os << std::showbase << std::hex << data_[0];
+		    os << std::showbase  << data_[0];
+
             os << ")";
 		}
 

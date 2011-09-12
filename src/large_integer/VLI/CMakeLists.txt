@@ -47,10 +47,10 @@ add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21)
 #
 ########################################################################
 
-if(VLU_USE_OPENMP)
+if(VLI_USE_OPENMP)
     add_definitions(-fopenmp)
     set(ENV{OMP_NUM_THREADS} "2")
-endif(VLU_USE_OPENMP)
+endif(VLI_USE_OPENMP)
 
 
 if (VLI_USE_GPU)

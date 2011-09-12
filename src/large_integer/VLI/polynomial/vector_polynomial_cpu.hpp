@@ -9,7 +9,7 @@
 #ifndef VLI_VECTOR_POLYNOME_CPU_H
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include <vector>
-//#include <omp.h>
+#include <omp.h>
 #include <ostream>
 #include <cassert>
 #include "boost/swap.hpp"
@@ -50,20 +50,22 @@ namespace vli
         size_t size_v = v1.size();
         vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > inter;
         inter.resize(size_v);
-        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>   res;
+        
+        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
+   
         /**
         * reduction is impossible on class type  
+        * so type
         */
         #pragma omp parallel for
-        for(std::size_t i=0 ; i < size_v ; ++i){
-            inter[i] = v1[i]*v2[i]; 
+        for(std::size_t i=0 ; i < size_v ; ++i){            
+            res[omp_get_thread_num()] += v1[i]*v2[i]; 
         }
         
-        for(std::size_t i=0 ; i < size_v ; ++i){
-            res += inter[i]; 
-        }
-
-        return res;
+        for(int i=1; i < omp_get_max_threads(); ++i)
+            res[0]+=res[i];
+        
+        return res[0];
     }
 
     template<class BaseInt, int Size, int Order > // the << cpu and gpu should be commun

@@ -189,7 +189,7 @@ public:
     {
         for(std::size_t i = 0; i < Order ; i++){
             for(std::size_t j = 0; j < Order ; j++){
-        //        os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
+             //   os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
                 os <<coeffs_[i*Order+j] << std::endl;
             }
         }

@@ -85,7 +85,7 @@ namespace vli
             gpu::cu_check_error(cudaMemcpy((void*)(this->data_+1), (void*)&bulk[0], (Size-1)*sizeof(BaseInt), cudaMemcpyHostToDevice),  __LINE__);
         }
 
-        explicit vli_gpu(BaseInt * p){
+        explicit vli_gpu(BaseInt* p){
     			gpu::cu_check_error(cudaMemcpy((void*)(this->data_), (void*)p, Size*sizeof(BaseInt), cudaMemcpyDeviceToDevice ), __LINE__);
         }
 

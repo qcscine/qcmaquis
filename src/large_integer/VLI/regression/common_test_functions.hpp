@@ -45,7 +45,7 @@ void fill_poly_random(Polynomial& p)
 {
     for(typename Polynomial::size_type i=0; i < Polynomial::max_order; ++i)
         for(typename Polynomial::size_type j=0; j < Polynomial::max_order; ++j)
-            fill_random(p(i,j));
+            fill_random(p(i,j),1);
 }
 
 template <typename Polynomial>
