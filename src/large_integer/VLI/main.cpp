@@ -15,7 +15,7 @@
 #include "vli_cpu/vli_number_traits.hpp"
 #include "vli_gpu/vli_number_gpu.hpp"
 #include "utils/timings.h"
-#include "regression/common_test_functions.hpp"
+#include "regression/vli_test.hpp"
 
 
 using vli::vli_cpu;

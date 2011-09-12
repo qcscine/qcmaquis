@@ -132,7 +132,7 @@ namespace vli
         }
         
         /** CPU vector to GPU vector */
-        explicit vector_polynomial_gpu(vector_polynomial_cpu< polynomial_cpu< vli_cpu <vli_value_type, vli_size>, max_order_poly > >& vector){ 
+        explicit vector_polynomial_gpu(vector_polynomial_cpu< polynomial_cpu< vli_cpu <vli_value_type, vli_size>, max_order_poly > > const& vector){ 
             resize(vector.size()); // because default value is one !
             std::cout <<  vector.size()*max_order_poly*max_order_poly*vli_size*sizeof(vli_value_type) << std::endl;
         

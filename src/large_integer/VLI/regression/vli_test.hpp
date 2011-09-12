@@ -1,14 +1,44 @@
 #ifndef COMMON_TEST_FUNCTIONS_HPP
 #define COMMON_TEST_FUNCTIONS_HPP
 
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/pop_front.hpp>
+
+#include <boost/preprocessor/tuple/elem.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
-#include <vli_cpu/vli_number_traits.hpp>
+
+#include "vli_utils/vli_config.h"
+#include "vli_cpu/vli_number_traits.hpp"
+
 
 namespace vli
 {
 namespace test
 {
+
+
+//
+// Generate a list of all vli types for which the library was compiled
+// and run tests for them.
+// (VLI_COMPILE_BASEINT_SIZE_PAIRS_SEQ is defined by CMake
+//  in vli_utils/vli_config.h)
+//
+
+#define VLI_CPU_APPEND_TEST_TYPE(r,data,BASEINT_SIZE_PAIR) \
+        , vli_cpu< BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR) , BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) >
+
+typedef boost::mpl::pop_front<
+    boost::mpl::list<
+        boost::mpl::void_
+BOOST_PP_SEQ_FOR_EACH(VLI_CPU_APPEND_TEST_TYPE, _, VLI_COMPILE_BASEINT_SIZE_PAIRS_SEQ)
+    >
+>::type vli_cpu_type_list;
+
+
+
 boost::mt11213b rng;
 
 template <typename Vli>

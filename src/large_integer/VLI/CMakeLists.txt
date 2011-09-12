@@ -34,9 +34,9 @@ option (VLI_TESTS "Build and execute the VLI regression tests" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 
 set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
-set (VLI_COMPILE_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native -m64" CACHE STRING "Compiler flags for a regular compile.")
-set (VLI_COMPILE_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
-set (VLI_GPU_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be used for the vli_gpu class?")
+set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native -m64" CACHE STRING "Compiler flags for a regular compile.")
+set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
+set (VLI_COMPILE_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
 #add_definitions(-DPOLYNOMIAL_MAX_ORDER=8 -DVLI_MAX_ORDER=4 -DVECTOR_MAX_ORDER=512)
 add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21)
@@ -118,7 +118,7 @@ endif(VLI_USE_GPU)
 add_executable (vli main.cpp)
 
 if(VLI_USE_GPU)
-    target_link_libraries (vli kernels_gpu ${CUDA_CUBLAS_LIBRARIES}  ${CUDA_LIBRARIES} ${GMP_LIBRARIES})
+    target_link_libraries (vli kernels_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgomp)
 endif(VLI_USE_GPU)
 
 
@@ -146,6 +146,6 @@ if(VLI_DEBUG_COMPILE)
 else(VLI_DEBUG_COMPILE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
 endif(VLI_DEBUG_COMPILE)
-set(CMAKE_CXX_FLAGS_RELEASE ${VLI_COMPILE_FLAGS_RELEASE} CACHE STRING "Compiler flags for Release compiles." FORCE)
-set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILE_FLAGS_DEBUG} CACHE STRING "Compiler flags for Debug compiles." FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE ${VLI_COMPILER_FLAGS_RELEASE} CACHE STRING "Compiler flags for Release compiles." FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILER_FLAGS_DEBUG} CACHE STRING "Compiler flags for Debug compiles." FORCE)
 
