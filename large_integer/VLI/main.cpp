@@ -51,16 +51,16 @@ int main (int argc, char * const argv[])
     gpu::gpu_manager* gpu;
     gpu->instance();
        
-    vector_type_cpu VaCPU( 1024); 
-    vector_type_cpu VbCPU( 1024); 
+    vector_type_cpu VaCPU(4096); 
+    vector_type_cpu VbCPU(4096); 
     polynomial_type_cpu result; 
     polynomial_type_gpu result_gpu; 
 
     fill_vector_random(VaCPU,1);
     fill_vector_random(VbCPU,1);
 
-    vector_type_gpu VaGPU( VaCPU); 
-    vector_type_gpu VbGPU( VbCPU); 
+ //   vector_type_gpu VaGPU( VaCPU); 
+ //   vector_type_gpu VbGPU( VbCPU); 
 
     Timer CPU("CPU");
     CPU.begin();
@@ -69,10 +69,16 @@ int main (int argc, char * const argv[])
 
     TimerCuda GPU("GPU");
     GPU.begin();    
-    result_gpu = inner_product(VaGPU,VbGPU);
+//    result_gpu = inner_product(VaGPU,VbGPU);
     GPU.end();
    
-       
+    if(result == result_gpu)
+        printf( "OK \n"); 
+    else{
+        printf( "NO OK \n"); 
+        std::cout << result << std::endl;
+        std::cout << result_gpu << std::endl;
+    }
     return 0;
 }
 
