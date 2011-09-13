@@ -39,6 +39,8 @@ add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21)
 if(VLI_USE_OPENMP)
     add_definitions(-fopenmp)
     set(ENV{OMP_NUM_THREADS} "2")
+# TODO is there a more general way to find the right library?
+    set(OPENMP_LIBRARIES "gomp")
 endif(VLI_USE_OPENMP)
 
 
@@ -97,7 +99,7 @@ add_subdirectory( src/vli/ )
 add_executable (a.out main.cpp)
 
 if(VLI_USE_GPU)
-    target_link_libraries (a.out vli_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARIES} -lgomp)
+    target_link_libraries (a.out vli_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARY_CXX} ${OPENMP_LIBRARIES})
 endif(VLI_USE_GPU)
 
 

@@ -16,7 +16,7 @@
 #include <ostream>
 #include <vector>
 #include <string>
-#include <cmath>
+#include <cassert>
 #include <cstring>
 #include <ostream>
 #include <boost/swap.hpp>
