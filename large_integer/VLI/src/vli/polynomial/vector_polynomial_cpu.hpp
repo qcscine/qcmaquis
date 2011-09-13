@@ -52,7 +52,6 @@ namespace vli
         size_t size_v = v1.size();
         
 #ifdef _OPENMP
-        //TODO bug? don't we have to initialize all elements?
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
         
         /**

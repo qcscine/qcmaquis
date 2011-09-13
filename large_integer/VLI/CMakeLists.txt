@@ -56,6 +56,7 @@ if (VLI_TESTS)
     find_library(GMP_LIBRARY_C NAMES gmp PATH $ENV{HOME}/.local/include)
 
     if (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
+       set(GMP_LIBRARY_CXX ${GMP_LIBRARY_CXX} ${GMP_LIBRARY_C})
        set(GMP_FOUND true)
        include_directories(${GMP_INCLUDE_DIR})
     endif (GMP_INCLUDE_DIR AND GMP_LIBRARY_C AND GMP_LIBRARY_CXX)
@@ -122,7 +123,8 @@ endif(VLI_TESTS)
 #
 ########################################################################
 
-install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN ".h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
+install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
+install(FILES ${PROJECT_BINARY_DIR}/vli/vli_config.h DESTINATION include/vli/)
 install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a DESTINATION lib)
 
 ########################################################################

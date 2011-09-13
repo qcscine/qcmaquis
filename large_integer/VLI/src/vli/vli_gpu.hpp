@@ -14,6 +14,7 @@
 
 #include <ostream>
 #include <boost/static_assert.hpp>
+#include "vli/detail/bit_masks.hpp"
 #include "vli/function_hooks/vli_number_gpu_function_hooks.hpp"
 #include "vli/utils/gpu_manager.h"
 #include "vli/utils/gpu_base.h"
