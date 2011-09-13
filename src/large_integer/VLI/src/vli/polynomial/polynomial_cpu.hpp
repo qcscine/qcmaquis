@@ -14,6 +14,7 @@
 #include <boost/swap.hpp>
 #include <ostream>
 #include <cmath>
+#include <cassert>
 
 namespace vli
 {	    
