@@ -83,7 +83,6 @@ namespace hp2c
 #endif //USE_VLI_INTEGERS_CPU
 
 #ifdef USE_VLI_INTEGERS_GPU
-//#include "detail/bit_masks.hpp"
 #include "vli/utils/gpu_manager.h"
 #include "vli/utils/gpu_manager.hpp"
 #include "vli/vli_gpu.hpp"
@@ -92,7 +91,7 @@ namespace hp2c
 #include "vli/polynomial/vector_polynomial_gpu.hpp"
 namespace hp2c
 {
-    typedef vli::vli_gpu<unsigned long int,4> large_int;
+    typedef vli::vli_gpu<unsigned long int,3> large_int;
     typedef vli::monomial<large_int> monomial_type;
     typedef vli::polynomial_gpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
     typedef vli::vector_polynomial_gpu< polynomial_type > polynomial_vector_type;
