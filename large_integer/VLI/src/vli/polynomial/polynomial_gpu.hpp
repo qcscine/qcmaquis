@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef VLI_POLYNOME_GPU_H
-#define VLI_POLYNOME_GPU_H
+#ifndef VLI_POLYNOMIAL_GPU_HPP
+#define VLI_POLYNOMIAL_GPU_HPP
 #include "vli/vli_gpu.hpp"
 #include "vli/function_hooks/vli_polynomial_gpu_function_hooks.hpp"
 #include "vli/polynomial/monomial.hpp"
@@ -18,11 +18,11 @@
 
 namespace vli
 {	    
-    template<class BaseInt, int Size>
+    template<class BaseInt, std::size_t Size>
     class vli_cpu;
     
     
-    template<class Vli, int Order>
+    template<class Vli, unsigned int Order>
 	class polynomial_cpu;
     
     
@@ -30,7 +30,7 @@ namespace vli
     /**
      * Multiplication of two polynomials
      */
-   	template<class Vli, int Order>
+   	template<class Vli, unsigned int Order>
     const polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, polynomial_gpu<Vli, Order> const& p2)
     {
         polynomial_gpu<Vli, Order> result;
@@ -41,7 +41,7 @@ namespace vli
     /**
      * Multiplication of  polynomial_cpu * monomial
      */
-    template<class Vli, int Order>
+    template<class Vli, unsigned int Order>
     const polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> const& p1, monomial<Vli> const &m2)
     {
         polynomial_gpu<Vli, Order> result;
@@ -50,21 +50,21 @@ namespace vli
     }
     
     
-	template<class Vli, int Order>
+	template<class Vli, unsigned int Order>
 	class polynomial_gpu :  public  gpu_array<typename Vli::value_type,  Order*Order*Vli::size> 
     {
         public:
  
         typedef typename Vli::value_type vli_value_type; // Just for convenience inside this class
-        typedef typename Vli::size_type size_type; // Type of the exponents (has to be the same type as Vli::size_type)
+        typedef unsigned int exponent_type; // Type of the exponents (has to be the same type as Vli::size_type)
         typedef Vli value_type;
         enum { max_order = Order };
-        enum { size = Vli::size }; // C to remove if you find a solution see vector_poly ...
+//        enum { size = Vli::size }; // C to remove if you find a solution see vector_poly ...
 
         class proxy
         {
         public:
-            proxy(polynomial_gpu& poly, size_type j, size_type h)
+            proxy(polynomial_gpu& poly, exponent_type j, exponent_type h)
             :data_(poly.p()),j_(j),h_(h){}
             
             proxy& operator= (Vli const& vli ){
@@ -84,15 +84,7 @@ namespace vli
                 return (vli < i);
             }
        
-           //TODO do we really want this? Or just using an explicit conversion? 
-           // C - you have to explain me 
-           /*
-            proxy& operator= (vli_cpu<vli_value_type, Vli::size> const& vli ){
-                gpu::cu_check_error(cudaMemcpy((void*)(data_+(j_*max_order*Vli::size+h_*Vli::size)), (void*)&vli[0], Vli::size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__);
-                return *this;
-            }*/
-            
-            typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy operator[](size_type i)
+            typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy operator[](typename Vli::size_type i)
             {
                 return typename vli_gpu<typename Vli::value_type,Order*Order*Vli::size>::proxy(data_+(j_*max_order*Vli::size+h_*Vli::size),i);
             }
@@ -110,8 +102,8 @@ namespace vli
             
         private:
             vli_value_type* data_;   
-            size_type j_; // for operator (j,h) 
-            size_type h_; // for operator (j,h)
+            exponent_type j_; // for operator (j,h)
+            exponent_type h_; // for operator (j,h)
         };
         /** Serious on the specialization */
       //friend void poly_multiply <>(polynomial_gpu& result , polynomial_gpu const& p1, polynomial_gpu const& p2);
@@ -203,7 +195,7 @@ namespace vli
         }
         
      
-        proxy operator ()(size_type j_exp, size_type h_exp) 
+        proxy operator ()(exponent_type j_exp, exponent_type h_exp) 
         {
             assert(j_exp < max_order);
             assert(h_exp < max_order);
@@ -211,7 +203,7 @@ namespace vli
         }
         
         
-        const Vli operator ()(size_type j_exp, size_type h_exp) const
+        const Vli operator ()(exponent_type j_exp, exponent_type h_exp) const
         {
             assert(j_exp < max_order);
             assert(h_exp < max_order);
@@ -226,42 +218,37 @@ namespace vli
     /**
      * Multiplication of a polynomial_cpu with a factor
      */
-    template<class Vli, int Order>
+    template<class Vli, unsigned int Order>
     polynomial_gpu<Vli, Order> operator * (polynomial_gpu<Vli, Order> p, Vli const& c)
     {
         p *= c;
         return p;
     }
     
-    template<class Vli, int Order>
+    template<class Vli, unsigned int Order>
     polynomial_gpu<Vli, Order> operator * (Vli const& c, polynomial_gpu<Vli, Order> const& p)
     {
         return p * c;
     }
     
-    template<class Vli, int Order>
+    template<class Vli, unsigned int Order>
     polynomial_gpu<Vli, Order> operator * (int c, polynomial_gpu<Vli, Order> const& p)
     {
         return Vli(c) * p;
     }
     
     
-    template <class BaseInt, int Order, int SizeVli >
-	std::ostream & operator<<(std::ostream & os, polynomial_gpu< vli_gpu<BaseInt, SizeVli>, Order > const& p)
+    template <class BaseInt, std::size_t Size, unsigned int Order>
+	std::ostream & operator<<(std::ostream & os, polynomial_gpu< vli_gpu<BaseInt, Size>, Order > const& p)
     {
-    //    os << "------------------------" << std::endl;
-        for(std::size_t i = 0; i < Order ; i++){
-            for(std::size_t j = 0; j < Order ; j++){
-          //      os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
+        typedef typename polynomial_gpu<vli_gpu<BaseInt,Size>,Order>::exponent_type exponent_type;
+        for(exponent_type i = 0; i < Order ; ++i)
+            for(exponent_type j = 0; j < Order ; ++j)
                 os << p(i,j) << std::endl;
-            }
-        }
-   //     os <<  "------------------------" << std::endl;
-                
         return os;
     }
     
 
 }
 
-#endif //VLI_MONOME_GPU_H
+#endif //VLI_POLYNOMIAL_GPU_HPP

@@ -10,18 +10,18 @@ namespace vli {
 /**
 template forward declaration 
 */
-template <class BaseInt, int Size>
+template <class BaseInt, std::size_t Size>
 class vli_gpu;
 
 
-template <class BaseInt, int Size>
+template <class BaseInt, std::size_t Size>
 void plus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b)
 {
     using detail::vli_size_tag;
     detail::plus_assign(vli_size_tag<Size>(), vli_a.p(), vli_b.p());
 }
 
-template <class BaseInt, int Size>
+template <class BaseInt, std::size_t Size>
 void plus_assign(vli_gpu<BaseInt,Size> & vli_a, BaseInt b)
 {
 //    assert(b < max_value<BaseInt>::value); //avoid overflow
@@ -29,21 +29,21 @@ void plus_assign(vli_gpu<BaseInt,Size> & vli_a, BaseInt b)
     detail::plus_assign(vli_size_tag<Size>(), vli_a.p(), b);
 }
 
-template <class BaseInt, int Size>
+template <class BaseInt, std::size_t Size>
 void minus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b )
 {
     using detail::vli_size_tag;
     detail::minus_assign(vli_size_tag<Size>(), vli_a.p(),vli_b.p());
 }
 
-template <class BaseInt, int Size>
+template <class BaseInt, std::size_t Size>
 void multiplies_assign(vli_gpu<BaseInt,Size>& vli_a, BaseInt a)
 {
     using detail::vli_size_tag;
     detail::multiplies_assign(vli_size_tag<Size>(), vli_a.p(), a);
 }
 
-template <class BaseInt, int Size>
+template <class BaseInt, std::size_t Size>
 void multiplies_assign(vli_gpu<BaseInt,Size> const& vli_a, vli_gpu<BaseInt,Size> const& vli_b, vli_gpu<BaseInt, Size> & vli_c)
 {
     using detail::vli_size_tag;

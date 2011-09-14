@@ -18,7 +18,7 @@ namespace vli{
     template <class Polynomial> 
     class vector_polynomial_gpu;
     
-    template <class BaseInt, int Size, int Order> 
+    template <class BaseInt, std::size_t Size, unsigned int Order> 
     void inner_product_multiplication_gpu(
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a,
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b,

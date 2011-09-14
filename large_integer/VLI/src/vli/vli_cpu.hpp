@@ -28,7 +28,7 @@ namespace vli
     template forward declaration 
     */    
 
-    template<class BaseInt, int Size>
+    template<class BaseInt, std::size_t Size>
     class vli_cpu 
     {
     public:
@@ -38,7 +38,7 @@ namespace vli
         
         vli_cpu()
         {
-            for(int i=0; i<Size; ++i)
+            for(size_type i=0; i<size; ++i)
                 data_[i] = 0;
         }
         
@@ -47,14 +47,14 @@ namespace vli
             assert( static_cast<BaseInt>((num<0) ? -num : num)  < static_cast<BaseInt>(max_value<BaseInt>::value) );
             data_[0] = num & data_mask<BaseInt>::value;
             BaseInt sign = 0x01 & (num>>(sizeof(int)*8-1));
-            for(int i=1; i<Size-1; ++i)
+            for(size_type i=1; i<size-1; ++i)
                 data_[i] = sign * data_mask<BaseInt>::value;
             data_[Size-1] = sign * (base<BaseInt>::value+data_mask<BaseInt>::value);
         }
 		
         vli_cpu(vli_cpu const& r)
         {
-            for(int i=0; i<Size; ++i)
+            for(size_type i=0; i<size; ++i)
                 data_[i] = r.data_[i];
         }
         
@@ -71,11 +71,13 @@ namespace vli
         
         BaseInt& operator[](size_type i)
         {
+            assert( i < size );
             return *(data_+i);
         }
 		
         const BaseInt& operator[](size_type i) const
         {
+            assert( i < size );
             return *(data_+i);
         }
 		
@@ -172,7 +174,7 @@ namespace vli
         
         bool operator != (vli_cpu const& vli) const
         {
-           for(std::size_t i(0); i < Size-1 ; ++i)
+           for(size_type i(0); i < size-1 ; ++i)
            {
                if((*this)[i] != vli[i])
                    return true;
@@ -210,27 +212,28 @@ namespace vli
 
         void negate()
         {
-            for(size_type i=0; i < Size-1; ++i)
+            for(size_type i=0; i < size-1; ++i)
                 data_[i] = (~data_[i])&data_mask<BaseInt>::value;
-            data_[Size-1] = (~data_[Size-1])&(base<BaseInt>::value+data_mask<BaseInt>::value);
+            data_[size-1] = (~data_[size-1])&(base<BaseInt>::value+data_mask<BaseInt>::value);
             (*this)+=vli_cpu(1);
         }
 
         bool is_negative() const
         {
-            return static_cast<bool>((data_[Size-1]>>data_bits<BaseInt>::value));
+            return static_cast<bool>((data_[size-1]>>data_bits<BaseInt>::value));
         }
         
         void print_raw(std::ostream& os) const
         {
             os << "(" ;
-            for(std::size_t i=Size-1; i > 0; --i)
-				os << std::showbase << data_[i]<<" ";
+            for(size_type i = size-1; i > 0; --i)
+				os << std::showbase << std::hex << data_[i]<<" ";
+//				os << std::showbase << data_[i]<<" ";
 
-//		    os << std::showbase << std::hex << data_[0];
-		    os << std::showbase  << data_[0];
+		    os << std::showbase << std::hex << data_[0];
+//		    os << std::showbase  << data_[0];
 
-            os << ")";
+            os << ")"<<std::dec;
 		}
 
         void print(std::ostream& os) const
@@ -250,14 +253,14 @@ namespace vli
             {
                 const_cast<vli_cpu<BaseInt, Size> & >(*this).negate();
                 
-                for(int i=0; i<size; ++i)
+                for(size_type i=0; i<size; ++i)
                     tmp[i] = (*this)[i];
                  
                 tmp.negate();
                 const_cast<vli_cpu<BaseInt, Size> & >(*this).negate();
             }else{
                 
-                for(int i=0; i<size; ++i)
+                for(size_type i=0; i<size; ++i)
                     tmp[i] = (*this)[i];
                 
             }
@@ -280,20 +283,19 @@ namespace vli
         /**
           * Returns the order of magnitude of 'value' in base10
           */
-        template<int SizeDouble>
-        size_type order_of_magnitude_base10(vli_cpu<BaseInt,SizeDouble> const& value) const
+        size_type order_of_magnitude_base10(vli_cpu<BaseInt,2*size> const& value) const
         {
             assert(!value.is_negative());
             
-            vli_cpu<BaseInt,SizeDouble> value_cpy(value);
-            vli_cpu<BaseInt,SizeDouble> decimal(1);
+            vli_cpu<BaseInt,2*size> value_cpy(value);
+            vli_cpu<BaseInt,2*size> decimal(1);
             size_type exp = 0;
 
             // Find correct order (10^exp) 
             while(!value_cpy.is_negative())
             {
                 value_cpy=value; // reset
-                vli_cpu<BaseInt,SizeDouble> previous_decimal(decimal);
+                vli_cpu<BaseInt,2*size> previous_decimal(decimal);
                 decimal *= 10;
                 ++exp;
                 if(decimal < previous_decimal) // Overflow! (we can handle it.)
@@ -309,18 +311,17 @@ namespace vli
         /**
           * A helper function to generate the base10 representation for get_str().
           */
-        template<int SizeDouble>
-        std::string get_str_helper_inplace(vli_cpu<BaseInt,SizeDouble>& value, size_type ten_exp) const
+        std::string get_str_helper_inplace(vli_cpu<BaseInt,2*size>& value, size_type ten_exp) const
         {
             assert(!value.is_negative());
 
             // Create a number 10^(exponent-1) sin
-            vli_cpu<BaseInt,SizeDouble> dec(1);
+            vli_cpu<BaseInt,2*size> dec(1);
             for(size_type e=0; e < ten_exp; ++e)
                 dec *= 10;
 
             // Find the right digit for 10^ten_exp
-            vli_cpu<BaseInt,SizeDouble> value_cpy(value);
+            vli_cpu<BaseInt,2*size> value_cpy(value);
             int digit=0;
             while((!value_cpy.is_negative()) && digit<=11)
             {
@@ -358,41 +359,41 @@ namespace vli
     /**
      multiply and addition operators, suite ...
      */
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a += vli_b;
         return vli_a;
     }
     
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, int b)
     {
         vli_a += b;
         return vli_a;
     }
     
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator + (int b, vli_cpu<BaseInt, Size> const& vli_a)
     {
         return vli_a+b;
     }
     
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a -= vli_b;
         return vli_a;
     }
     
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, int b)
     {
         vli_a -= b;
         return vli_a;
     }
 
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size>  vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a *= vli_b;
@@ -429,14 +430,14 @@ namespace vli
     */
     }
 
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, int b)
     {
         vli_a *= b;
         return vli_a;
     }
 
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
     {
         return a*b;
@@ -445,7 +446,7 @@ namespace vli
     /**
     stream 
     */
-    template<typename BaseInt, int Size>
+    template<typename BaseInt, std::size_t Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
         vli.print(os);

@@ -27,7 +27,7 @@ namespace vli
             return data_;
         }
         
-        T* const p() const{
+        T const* p() const{
             return data_;
         }
         

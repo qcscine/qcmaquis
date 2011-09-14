@@ -35,23 +35,24 @@ typedef boost::mpl::transform<
 BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomial_types )
 {
     Poly pa;
+    typedef typename Poly::exponent_type exponent_type;
     typename Poly::value_type a[Poly::max_order*Poly::max_order];
 
-    for(typename Poly::size_type i=0; i < Poly::max_order; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
+    for(exponent_type i=0; i < Poly::max_order; ++i)
+        for(exponent_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j), typename Poly::value_type(0));
 
-    for(typename Poly::size_type i=0; i < Poly::max_order; ++i)
+    for(exponent_type i=0; i < Poly::max_order; ++i)
     {
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
+        for(exponent_type j=0; j < Poly::max_order; ++j)
         {
             fill_random(a[i*Poly::max_order+j]);
             pa(i,j) = a[i*Poly::max_order+j];
         }
     }
 
-    for(typename Poly::size_type i=0; i < Poly::max_order; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
+    for(exponent_type i=0; i < Poly::max_order; ++i)
+        for(exponent_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j),a[i*Poly::max_order+j]);
 }
 /*
