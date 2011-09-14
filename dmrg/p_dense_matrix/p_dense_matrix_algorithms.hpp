@@ -2,10 +2,10 @@
 #define __ALPS_P_DENSE_MATRIX_ALGORITHMS_HPP__
 
 #include "p_dense_matrix/concept/matrix_concept_check.hpp"
-
+/*
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
-
+*/
 #include "p_dense_matrix/p_dense_matrix.h"
 #include "utils/timings.h"
 

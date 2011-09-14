@@ -7,7 +7,10 @@
 
 #include "p_dense_matrix/p_diagonal_matrix.h"
 
+
+#ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
+#endif
 
 #include <ostream>
 
