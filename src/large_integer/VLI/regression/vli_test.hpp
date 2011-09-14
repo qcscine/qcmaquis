@@ -73,16 +73,16 @@ void fill_random(Vli& v, typename Vli::size_type size)
 template <typename Polynomial>
 void fill_poly_random(Polynomial& p)
 {
-    for(typename Polynomial::size_type i=0; i < Polynomial::max_order; ++i)
-        for(typename Polynomial::size_type j=0; j < Polynomial::max_order; ++j)
+    for(typename Polynomial::exponent_type i=0; i < Polynomial::max_order; ++i)
+        for(typename Polynomial::exponent_type j=0; j < Polynomial::max_order; ++j)
             fill_random(p(i,j),1);
 }
 
 template <typename Polynomial>
-void fill_poly_random(Polynomial& p, typename Polynomial::size_type size)
+void fill_poly_random(Polynomial& p, typename Polynomial::exponent_type size)
 {
-    for(typename Polynomial::size_type i=0; i < Polynomial::max_order; ++i)
-        for(typename Polynomial::size_type j=0; j < Polynomial::max_order; ++j)
+    for(typename Polynomial::exponent_type i=0; i < Polynomial::max_order; ++i)
+        for(typename Polynomial::exponent_type j=0; j < Polynomial::max_order; ++j)
             fill_random(p(i,j),size);
 }
 
@@ -94,7 +94,7 @@ void fill_vector_random(Vector& v)
 }
 
 template <typename Vector>
-void fill_vector_random(Vector& v, typename Vector::size_type size)
+void fill_vector_random(Vector& v, typename Vector::value_type::exponent_type size)
 {
     for(typename Vector::size_type i=0; i < v.size(); ++i)
         fill_poly_random(v[i], size);

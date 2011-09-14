@@ -21,10 +21,10 @@
 
 namespace vli
 {
-    template<class BaseInt, int Size>
+    template<class BaseInt, std::size_t Size>
     class vli_cpu;
     
-	template<class BaseInt, int Size>
+	template<class BaseInt, std::size_t Size>
 	class vli_gpu : public  gpu_array<BaseInt, Size>
 	{
 	public:
@@ -78,7 +78,7 @@ namespace vli
             BaseInt tmp = num & data_mask<BaseInt>::value;
             BaseInt sign = 0x01 & (num>>(sizeof(int)*8-1));
             BaseInt bulk[Size-1];
-            for(std::size_t i = 0; i < Size-2; ++i)
+            for(size_type i = 0; i < Size-2; ++i)
                 bulk[i] = sign * data_mask<BaseInt>::value;
             bulk[Size-2] = sign * (data_mask<BaseInt>::value | base<BaseInt>::value);
 			
@@ -255,7 +255,7 @@ namespace vli
 	/**
 	 multiply and addition operators, suite ...
 	 */
-	template <class BaseInt, int Size>
+	template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator + (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
         // TODO check whether direct implementation (without += ) is faster
@@ -263,7 +263,7 @@ namespace vli
         return vli_a;
     }
 	
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator + (vli_gpu<BaseInt, Size> vli_a, int b)
     {
         // TODO check whether direct implementation (without += ) is faster
@@ -271,13 +271,13 @@ namespace vli
         return vli_a;
     }
     
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator + (int b, vli_gpu<BaseInt, Size> const& vli_a)
     {
         return vli_a+b;
     }
 
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator - (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
         // TODO check whether direct implementation (without += ) is faster
@@ -285,7 +285,7 @@ namespace vli
         return vli_a;
     }
     
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator - (vli_gpu<BaseInt, Size> vli_a, int b)
     {
         // TODO check whether direct implementation (without += ) is faster
@@ -293,7 +293,7 @@ namespace vli
         return vli_a;
     }
 
-	template <class BaseInt, int Size>
+	template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, vli_gpu<BaseInt, Size> const& vli_b)
     {
         using vli::multiplies_assign;
@@ -302,20 +302,20 @@ namespace vli
         return vli_c;
     }
 	
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator * (vli_gpu<BaseInt, Size> vli_a, int b)
     {        
         vli_a *= b;
         return vli_a;
     }
     
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
 	const vli_gpu<BaseInt, Size> operator * (int b, vli_gpu<BaseInt, Size> const& vli_a)
     {
         return vli_a*b;
     }
 	
-	template <class BaseInt, int Size>
+	template <class BaseInt, std::size_t Size>
 	std::ostream& operator<<(std::ostream& os, vli_gpu<BaseInt, Size> const& vli)
     {
         vli.print(os);
@@ -326,7 +326,7 @@ namespace vli
       * Ugly conversion functions
       * (due to lack of "explicit" conversion operators in the current standard (will come in C++11))
       */
-    template<class BaseInt, int Size>
+    template<class BaseInt, std::size_t Size>
     vli_cpu<BaseInt,Size> vli_cpu_from(vli_gpu<BaseInt,Size> const& vli_g)
     {
         vli_cpu<BaseInt, Size> r;
@@ -334,7 +334,7 @@ namespace vli
         return r;
     }
     
-    template<class BaseInt, int Size>
+    template<class BaseInt, std::size_t Size>
     vli_gpu<BaseInt,Size> vli_gpu_from(vli_cpu<BaseInt,Size> const& vli_c)
     {
         return vli_gpu<BaseInt,Size>(vli_c);

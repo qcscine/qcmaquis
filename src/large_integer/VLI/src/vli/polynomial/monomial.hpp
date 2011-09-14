@@ -6,46 +6,41 @@
  *
  */
 
-#ifndef VLI_MONOME_H
-#define VLI_MONOME_H
+#ifndef VLI_MONOMIAL_HPP
+#define VLI_MONOMIAL_HPP
 
 #include <ostream>
 #include <cmath>
 
 namespace vli
 {
-	
-    template<class BaseInt, int Size>
-    class vli_gpu;
-        
     template <class Vli>
     struct monomial
     {
-        typedef   std::size_t size_type;
-
-        typedef typename  Vli::value_type value_type;
+        typedef unsigned int exponent_type;
+        typedef Vli value_type;
 
         /**
          * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
          */
-        explicit monomial(size_type j_exp = 0, size_type h_exp = 0)
+        explicit monomial(exponent_type j_exp = 0, exponent_type h_exp = 0)
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(1){
         }
 
-        explicit monomial(Vli a, size_type j_exp = 0, size_type h_exp = 0)
+        explicit monomial(Vli a, exponent_type j_exp = 0, exponent_type h_exp = 0)
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(a){
         }
         
         /*
         * These two functions are only called inside the vli_polynomial_gpu_function_hooks.hpp
         */
-        value_type* p(){
-            return coeff_.p();
-        }
-        
-        value_type* const p() const{
-            return coeff_.p();
-        }
+//        value_type* p(){
+//            return coeff_.p();
+//        }
+//        
+//        value_type* const p() const{
+//            return coeff_.p();
+//        }
 
         monomial& operator *= (Vli const& c){
             coeff_ *= c;
@@ -84,9 +79,9 @@ namespace vli
             return (j_exp_ == m.j_exp_) && (h_exp_ == m.h_exp_) && (coeff_ == m.coeff_);
         }
     
-        size_type j_exp_;
-        size_type h_exp_;
-        Vli coeff_;
+        exponent_type j_exp_;
+        exponent_type h_exp_;
+        value_type coeff_;
     };
     
     template<class Vli>
@@ -110,4 +105,4 @@ namespace vli
 }
 
 
-#endif //VLI_MONOME_H
+#endif //VLI_MONOMIAL_HPP

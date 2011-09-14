@@ -22,20 +22,19 @@
 namespace vli
 {
 
-    template <class BaseInt, int Size>
+    template <class BaseInt, std::size_t Size>
     class vli_cpu;
 
-    template<class polynomial_cpu> 
+    template<class polynomial_cpu>
     class vector_polynomial_cpu : public std::vector<polynomial_cpu>{ 
     private:
-        typedef typename polynomial_cpu::value_type::value_type vli_value_type; 
-        typedef typename std::size_t size_t;
+        typedef typename polynomial_cpu::value_type::value_type vli_value_type;
         enum {max_order_poly = polynomial_cpu::max_order };
         enum {vli_size   = polynomial_cpu::value_type::size }; 
-        enum {OffSet = max_order_poly*max_order_poly*vli_size}; 
+        enum {element_offset = max_order_poly*max_order_poly*vli_size}; 
     public:
     
-    vector_polynomial_cpu(size_t size = 1)
+    vector_polynomial_cpu(std::size_t size = 1)
     :std::vector<polynomial_cpu>(size)
     {
     }
@@ -44,12 +43,12 @@ namespace vli
     }; //end class
     
     
-    template <class BaseInt, int Size, int Order>
+    template <class BaseInt, std::size_t Size, unsigned int Order>
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
     inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         assert(v1.size() == v2.size());
-        size_t size_v = v1.size();
+        std::size_t size_v = v1.size();
         
 #ifdef _OPENMP
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
@@ -77,10 +76,10 @@ namespace vli
 
     }
 
-    template<class BaseInt, int Size, int Order > // the << cpu and gpu should be commun
- 	std::ostream & operator<<(std::ostream & os, vector_polynomial_cpu< polynomial_cpu< vli_cpu<BaseInt, Size>, Order > >   const& v)
+    template<class BaseInt, std::size_t Size, unsigned int Order > // the << cpu and gpu should be commun
+ 	std::ostream & operator<<(std::ostream & os, vector_polynomial_cpu< polynomial_cpu< vli_cpu<BaseInt, Size>, Order > > const& v)
     {        
-        for(std::size_t i = 0; i < v.size(); i++)
+        for(std::size_t i = 0; i < v.size(); ++i)
             os << v[i] << std::endl;
         return os;
     }

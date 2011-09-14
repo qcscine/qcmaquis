@@ -19,13 +19,13 @@
 namespace vli
 {	    
     
-template<class Vli, int Order>
+template<class Vli, unsigned int Order>
 class polynomial_cpu;
 
 /**
  * Multiplication of two polynomial_cpus
  */
-template<class Vli, int Order>
+template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> const& p1, polynomial_cpu<Vli, Order> const& p2)
 {
     polynomial_cpu<Vli, Order> result;
@@ -34,24 +34,24 @@ polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> const& p1, pol
 }
 
 
-template <class BaseInt, int Size, int Order, class T>
+template <class BaseInt, std::size_t Size, unsigned int Order, class T>
 polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<T> const& m)
 {
-    typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::size_type size_type;
+    typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::exponent_type exponent_type;
     
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order> r;
     // TODO perhaps there is a better way to write these loops,
     //      so that they can be unrolled.
-    for(size_type je = 0; je < Order-m.j_exp_; ++je)
-        for(size_type he = 0; he < Order-m.h_exp_; ++he)
+    for(exponent_type je = 0; je < Order-m.j_exp_; ++je)
+        for(exponent_type he = 0; he < Order-m.h_exp_; ++he)
             r(je+m.j_exp_,he+m.h_exp_) = p(je,he) * m.coeff_;
     return r;
 }
 
-template<class Vli, int Order>
+template<class Vli, unsigned int Order>
 class polynomial_cpu{
 public:
-    typedef typename Vli::size_type size_type;      // Type of the exponents (has to be the same type as Vli::size_type)
+    typedef unsigned int exponent_type;      // Type of the exponents (has to be the same type as Vli::size_type)
     typedef Vli value_type;
     enum { max_order = Order};
     
@@ -59,12 +59,12 @@ public:
     friend void poly_multiply <>(polynomial_cpu& result ,const polynomial_cpu& p1, const polynomial_cpu& p2);
     
     polynomial_cpu(){
-        for(int i=0; i<Order*Order;++i)
+        for(exponent_type i=0; i<Order*Order;++i)
             coeffs_[i]=Vli();
     }
     
     polynomial_cpu(const polynomial_cpu& p){
-        for(int i=0; i<Order*Order;++i)
+        for(exponent_type i=0; i<Order*Order;++i)
             coeffs_[i]=p.coeffs_[i];
     }
     
@@ -79,7 +79,7 @@ public:
      */
     polynomial_cpu& operator += (polynomial_cpu const& p)
     {
-        for(int i=0; i<Order*Order;++i)
+        for(exponent_type i=0; i<Order*Order;++i)
             coeffs_[i]+=p.coeffs_[i];
         return *this;
     }
@@ -103,7 +103,7 @@ public:
      */
     polynomial_cpu& operator -= (polynomial_cpu const& p)
     {
-        for(int i=0; i<Order*Order;++i)
+        for(exponent_type i=0; i<Order*Order;++i)
             coeffs_[i]-=p.coeffs_[i];
         
         return *this;
@@ -140,7 +140,7 @@ public:
      */
     polynomial_cpu& operator *= (Vli const& c)
     {
-        for(int i=0; i<Order*Order;++i)
+        for(exponent_type i=0; i<Order*Order;++i)
             coeffs_[i] *= c;
         return *this;
     }
@@ -151,7 +151,7 @@ public:
      */
      polynomial_cpu& operator *= (int c)
      {
-        for(int i=0; i<Order*Order;++i)
+        for(exponent_type i=0; i<Order*Order;++i)
             coeffs_[i] *= c;
         return *this;
      }
@@ -168,7 +168,7 @@ public:
     /**
      * Access coefficient of monomial J^j_exp*h^h_exp
      */
-    inline Vli const& operator ()(size_type j_exp, size_type h_exp) const
+    inline Vli const& operator ()(exponent_type j_exp, exponent_type h_exp) const
     {
         assert(j_exp < max_order);
         assert(h_exp < max_order);
@@ -178,7 +178,7 @@ public:
     /**
      * Access coefficient of monomial J^j_exp*h^h_exp
      */
-    inline Vli& operator ()(size_type j_exp, size_type h_exp)
+    inline Vli& operator ()(exponent_type j_exp, exponent_type h_exp)
     {
         assert(j_exp < max_order);
         assert(h_exp < max_order);
@@ -187,8 +187,8 @@ public:
     
     void print(std::ostream& os) const
     {
-        for(std::size_t i = 0; i < Order ; i++){
-            for(std::size_t j = 0; j < Order ; j++){
+        for(exponent_type i = 0; i < Order ; i++){
+            for(exponent_type j = 0; j < Order ; j++){
              //   os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
                 os <<coeffs_[i*Order+j] << std::endl;
             }
@@ -202,7 +202,7 @@ private:
 /*
  * Multiplication of a monomial with a polynomial_cpu
  */
-template<class T, class Vli, int Order>
+template<class T, class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (monomial<T> const& m,polynomial_cpu<Vli, Order> const& p)
 {
     return p * m;
@@ -211,27 +211,27 @@ polynomial_cpu<Vli, Order> operator * (monomial<T> const& m,polynomial_cpu<Vli, 
 /**
  * Multiplication of a polynomial_cpu with a factor
  */
-template<class Vli, int Order>
+template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> p, Vli const& c)
 {
     p *= c;
     return p;
 }
 
-template<class Vli, int Order>
+template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (polynomial_cpu<Vli, Order> p, int c)
 {
     p *= c;
     return p;
 }
 
-template<class Vli, int Order>
+template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (Vli const& c, polynomial_cpu<Vli, Order> const& p)
 {
     return p * c;
 }
 
-template<class Vli, int Order>
+template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (int c, polynomial_cpu<Vli, Order> const& p)
 {
     return p * c; 
@@ -239,7 +239,7 @@ polynomial_cpu<Vli, Order> operator * (int c, polynomial_cpu<Vli, Order> const& 
 
 
 
-template<class Vli, int Order> 
+template<class Vli, unsigned int Order> 
 std::ostream& operator<<(std::ostream& os, polynomial_cpu<Vli, Order> const& p){
     p.print(os);
     return os;
