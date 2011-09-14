@@ -157,6 +157,11 @@ namespace vli
             gpu::cu_check_error(cudaMemcpy( (void*)&v[0], (void*)this->p(),v.size()*element_offset*sizeof(vli_value_type),cudaMemcpyDeviceToHost ), __LINE__);					
         }
         
+        void copy_vec_vli_to_gpu( vector_polynomial_cpu< polynomial_cpu < vli_cpu<vli_value_type, vli_size>, max_order_poly> > const & v) 
+        {
+            gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&v[0],this->size()*element_offset*sizeof(vli_value_type),cudaMemcpyHostToDevice ), __LINE__);					
+        }    
+        
         proxy operator[](size_type i) 
         {
            return proxy(this->p(),i);

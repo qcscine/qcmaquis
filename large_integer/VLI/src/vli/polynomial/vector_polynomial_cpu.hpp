@@ -9,6 +9,8 @@
 #ifndef VLI_VECTOR_POLYNOME_CPU_H
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/polynomial/polynomial_gpu.hpp"
+#include "vli/polynomial/vector_polynomial_gpu.hpp"
 #include "vli/vli_cpu.hpp"
 #include "vli/detail/vli_size_param.hpp"
 #include <vector>
@@ -52,13 +54,24 @@ namespace vli
         
 #ifdef _OPENMP
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
+        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res_gpu_to_cpu;
         
         /**
-        * reduction is impossible on class type  
-        * so type
+        * 
+        * Quick Mixmode
         */
+        std::size_t split = static_cast<std::size_t>(v1.size()*0.5);
+        polynomial_gpu<vli_gpu<BaseInt, Size>, Order>  resGpu;
+
+        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > v1Gpu,v2Gpu;
+        v1Gpu.resize(split);
+        v2Gpu.resize(split);
+        v1Gpu.copy_vec_vli_to_gpu(v1);
+        v2Gpu.copy_vec_vli_to_gpu(v2);
+        resGpu = inner_product(v1Gpu,v2Gpu);
+
         #pragma omp parallel for
-        for(std::size_t i=0 ; i < size_v ; ++i){
+        for(std::size_t i=split+1 ; i < size_v ; ++i){
             res[omp_get_thread_num()] += v1[i]*v2[i];
         }
 
@@ -70,6 +83,9 @@ namespace vli
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res;
         for(std::size_t i=0 ; i < size_v ; ++i)
             res += v1[i]*v2[i];
+
+        res += polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order >(resGpu);
+
 
         return res;
 #endif //_OPENMP
