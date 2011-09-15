@@ -23,8 +23,8 @@ option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build and execute the VLI regression tests" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 
-set (VLI_CPU_FREQ "2.66" CACHE STRING "Frequency of the CPU (for benchmark timers)")
-set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O3 -funroll-loops -mtune=native -m64" CACHE STRING "Compiler flags for a regular compile.")
+set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
+set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
 set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 set (VLI_COMPILE_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 

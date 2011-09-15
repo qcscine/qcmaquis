@@ -59,15 +59,16 @@ namespace vli
         * 
         * Quick Mixmode
         */
-        std::size_t split = static_cast<std::size_t>(v1.size()*0.5);
-        polynomial_gpu<vli_gpu<BaseInt, Size>, Order>  resGpu;
-
+        std::size_t split = static_cast<std::size_t>(v1.size()*0.1);
+        
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > v1Gpu,v2Gpu;
+        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  tmp;
         v1Gpu.resize(split);
         v2Gpu.resize(split);
         v1Gpu.copy_vec_vli_to_gpu(v1);
         v2Gpu.copy_vec_vli_to_gpu(v2);
-        resGpu = inner_product(v1Gpu,v2Gpu);
+        polynomial_gpu<vli_gpu<BaseInt,Size>,Order> resGpu;// = inner_product(v1Gpu,v2Gpu);
+        inner_product_multiplication_gpu(v1Gpu,v2Gpu,tmp,resGpu);
 
         #pragma omp parallel for
         for(std::size_t i=split ; i < size_v ; ++i){
@@ -77,7 +78,7 @@ namespace vli
         for(int i=1; i < omp_get_max_threads(); ++i)
             res[0]+=res[i];
 
-        res[0] += polynomial_cpu<vli_cpu<vli_value_type, Vli::size>, Order >(resGpu);
+        res[0] += polynomial_cpu<vli_cpu<BaseInt, Size>, Order >(resGpu);
         
         return res[0];
 #else //_OPENMP
