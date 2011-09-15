@@ -16,6 +16,8 @@
 #include "vli/vli_gpu.hpp"
 #include "utils/timings.h"
 #include "regression/vli_test.hpp"
+#include <cublas_v2.h>
+#include <cuda_runtime.h>
 
 
 using vli::vli_cpu;
@@ -50,35 +52,39 @@ int main (int argc, char * const argv[])
     
     gpu::gpu_manager* gpu;
     gpu->instance();
-       
-    vector_type_cpu VaCPU(512); 
-    vector_type_cpu VbCPU(512); 
+
+    cublasHandle_t cuhandle;
+    cublasCreate(&cuhandle);
+    vector_type_cpu VaCPU(10000); 
+    vector_type_cpu VbCPU(10000); 
     polynomial_type_cpu result; 
     polynomial_type_gpu result_gpu; 
 
     fill_vector_random(VaCPU,1);
     fill_vector_random(VbCPU,1);
 
-    vector_type_gpu VaGPU( VaCPU); 
-    vector_type_gpu VbGPU( VbCPU); 
+//    vector_type_gpu VaGPU( VaCPU); 
+//    vector_type_gpu VbGPU( VbCPU); 
 
     Timer CPU("CPU");
     CPU.begin();
     result = inner_product(VaCPU,VbCPU);
     CPU.end();
 
-    TimerCuda GPU("GPU");
-    GPU.begin();    
-    result_gpu = inner_product(VaGPU,VbGPU);
-    GPU.end();
+//    TimerCuda GPU("GPU");
+//    GPU.begin();    
+//    result_gpu = inner_product(VaGPU,VbGPU);
+//    GPU.end();
    
-    if(result == result_gpu)
-        printf( "OK \n"); 
-    else{
-        printf( "NO OK \n"); 
-        std::cout << result << std::endl;
-        std::cout << result_gpu << std::endl;
-    }
+    cublasDestroy(cuhandle);
+    std::cout<<result<<std::endl;
+//    if(result == result_gpu)
+//        printf( "OK \n"); 
+//    else{
+//        printf( "NO OK \n"); 
+//        std::cout << result << std::endl;
+//        std::cout << result_gpu << std::endl;
+//    }
     return 0;
 }
 

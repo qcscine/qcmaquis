@@ -196,8 +196,9 @@ namespace vli
     inner_product( vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a, 
                    vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b){
         assert(a.size() == b.size());
+        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > tmp;
         polynomial_gpu<vli_gpu<BaseInt, Size>, Order> res;
-        inner_product_multiplication_gpu(a,b,res);
+        inner_product_multiplication_gpu(a,b,tmp,res);
         return res;
     }
     

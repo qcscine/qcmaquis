@@ -22,11 +22,11 @@ namespace vli{
     void inner_product_multiplication_gpu(
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& a,
                            vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  const& b,
+                           vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >& inter,
                            polynomial_gpu<vli_gpu<BaseInt, Size>, Order>& res)
     {
 //      gpu::gpu_manager* GPU; // GPU is a singleton initialized into the main
         std::size_t NumThreads = 256; // GPU->instance().GetmaxThreadsPerBlock()/2;
-        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > inter;
         inter.resize(a.size()); //default size 1 so resize
         using detail::vli_size_tag; 
 //        TimerCuda GPUinner("GPUinner");
