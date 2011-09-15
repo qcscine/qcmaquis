@@ -27,20 +27,17 @@ namespace vli
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(1){
         }
 
-        explicit monomial(Vli a, exponent_type j_exp = 0, exponent_type h_exp = 0)
-        :j_exp_(j_exp), h_exp_(h_exp), coeff_(a){
-        }
         
         /*
         * These two functions are only called inside the vli_polynomial_gpu_function_hooks.hpp
         */
-//        value_type* p(){
-//            return coeff_.p();
-//        }
-//        
-//        value_type* const p() const{
-//            return coeff_.p();
-//        }
+        value_type* p(){
+            return coeff_.p();
+        }
+        
+        value_type* const p() const{
+            return coeff_.p();
+        }
 
         monomial& operator *= (Vli const& c){
             coeff_ *= c;
