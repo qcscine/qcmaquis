@@ -27,6 +27,7 @@
 \newcommand\eg{\textit{e.g. }}
 \newcommand\ie{\textit{i.e. }}
 \newcommand\cf{\textit{c.f. }}
+\newcommand\df{\textit{d.f. }}
 \renewcommand{\labelitemi}{$\diamond$}
 
 
@@ -84,10 +85,47 @@
 %of clusters. The first possible  targets are applications that require large buffer of contiguous memory: quantum mechanic, linear algebra,  computational fluid dynamics, molecular dynamic \ldots 
 %\, Until the end of this paper, we will focus on the linear algebra problems and their applications.
 
+In the last twenties years, the High Performance Computing (HPC) community has lived a series of technical evolutions that have always influenced the  programming model.
+These new paradigms are always introduced by the new products deliver from the computer industry.  If we examined the two last decades, the most powerful
+machines were based on shared memory architecture(CITE TOP 500), these machines were powerful but expensive and not  configurable, easily. Since, three revolutions appeared.
 
-- Stress Performance of Ambient 
-  - in terms of flexible and dynamical resource allocation
-  - Stress performance boost derived from this (we need the benchmarks for that!)
+Firstly, the introduction of modular computer, based  on independent blade system in the nineties , was a  revolution\footnote{The TOP 500 web site inventories the list of
+ the most powerfull computer in the world. It delivers statistic among the architecture; we find the SMP system disappeared of the list in 2002} . It cuts the price of HPC system, and change the programming  model.
+As the systems are became independents \df the address space is not shared among nodes,  parallel processes have to transmit data over an interconnecting network in order to access
+data that other processes have updated. Several technologies were developed to allow communication between nodes (PVM, NX, Express, P4, \etc), one in particularly were developed as 
+a standard; the Message Passing Interface (MPI). This interface has been developed by the participation of more 40 organizations, started working on the standard in 1992, delivered in 1994 for the first version and 1997 for 
+the second version. Nowadays, it is the standard for  large grain scalability, it is available under several distributions  from the academic world and HPC constructors.
+
+In the last decade, the distributed memory were confirmed like the technology in HPC architecture machine, 100 \% of the top 500 are now based on this model, as the large scalability applications
+used  a main MPI layer, we can cite as popular   in a few scientist field :  {\sc Quantum ESPRESSO} \cite{QE-2009} in quantum chemistry, Abinit \cite{ABINIT-2005, ABINIT-2009} in quantum mechanic,
+  ScaLAPACK \cite{SCALAPACK-1997} in linear  algebra. Of course, this short list is not exhaustive, and it can be fill up easily in every fields of science and engineering.
+The limitation of this programming model (the scalability) will be the communication overhead and the workload imbalance among process.
+
+Secondly, the multicore technology  introduced by the ship makers the last decade.  Indeed, the progress of the industrial process allowed the integration of several cores into the same die. 
+The technology is available on several processor architecture (Power, X86, \etc). One more time, the programming 
+model was modified. It is curious than multicore technology redirect the shared memory model on the sunset. 
+To program shared memory model, a proved technology exists, it is the POSIX threads library. Two possibilities exist,
+the first one, the programmer utilizes the library directly (pThreads) or he lets the compiler generates a multi-thread executables.  
+Generally, the former option places the burden on the programmer, but when well done, it provides good performance.
+On the other hand,  the second option  named OpenM, easy to program, it is based on preprocessor directive.
+
+As MPI, OpenMP is developed into a consortium, the version 1.0 was released in 1997, the 2.0 in 2005 and new features were integrated in 2008.
+This programming model becomes popular, it is now integrated natively in all compilers and it allows hybrid programs. Hybrid mode MPI/OpenMP
+is the actual programming model in HPC \cite{EXASCALE-2010}.  Per example the performance of the ScaLAPACK library can be improved by a multithread BLAS library (MK, ESSLSMP or ACML). 
+Although this ideology gives results, the threads management  gives an additional workload, when the  grain problem size will become too fine \cite{SMITH-2001}. 
+
+And then, the present evolution comes from the introduction of the graphic card into HPC, graphic card exists since the eightiees \cite{iSBX_1983}, the graphic card market 
+was disconnected to the HPC market until a few years ago due to the incredible power of calculation of last generation of GPU. The introducing of the CUDA API allows a real
+opportunity to exploit graphic card into a cluster.  To summarize the GPU ideology : it is the ability to performed thousand of threads simultaneously, where the thread applied a transformation (kernel)
+on a pixel. Translate to a scientist computational problem, the pixel becomes an entry a tensor (mathematic) or a particle  (kinetic fluid dynamic), \etc.
+
+The classical new programming model introduced by the GPU was an hybrid mode were operation are executed  asynchronously between  multiple CPU's core and GPU.
+The best example of this programming model is the mathematical library MAGMA \cite{MAGMA_2011}. 
+
+In this paper, we proposed an alternative approach of programming.  We developed a powerful oriented object framework named Ambient, that transposed  the CUDA ideology to a cluster. 
+As in the CUDA framework, in Ambient developers write kernels which are executed dynamically, and independently if needed, all other the cluster in function of the  resource.
+The needed communications  are assured by a nested MPI layer away from the users. In this paper, we are going to describe the difference of workflow between an Ambient  and a CUDA program, 
+describe the main functionality  of Ambient and perform several  benchmarks.  Until the end of this paper, we will apply and illustrate our framework on basic linear algebra problems.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END INTRODUCTION
 
