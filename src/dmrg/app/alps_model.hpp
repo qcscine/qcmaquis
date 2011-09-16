@@ -16,10 +16,83 @@
 namespace app {
     
     template <class SymmGroup>
-    typename SymmGroup::charge convert_alps (alps::site_state<short> const & state, std::vector<std::pair<int, std::string> > const& qn);
+    typename SymmGroup::charge convert_alps (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn);
     
     template <class SymmGroup>
-    typename SymmGroup::charge init_charge (const alps::Parameters& parms, std::vector<std::pair<int, std::string> > const& qn);
+    typename SymmGroup::charge init_charge (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn);
+    
+    template <class SymmGroup>
+    std::map<typename SymmGroup::charge,std::size_t> init_qn_charges
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states);
+    
+    template <class SymmGroup>
+    std::map<alps::site_state<short>, std::pair<typename SymmGroup::charge, std::size_t> > init_coords
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states);
+    
+    
+    template <class SymmGroup>
+    class basis_converter {
+    public:
+        typedef short I;
+        typedef typename SymmGroup::charge charge_t;
+        typedef std::size_t size_t;
+        typedef std::pair<charge_t, size_t> coord_t;
+        
+        //basis_converter () : states(alps::SiteBasisDescriptor<I>()) { std::cout << "default constructor!" << std::endl; }
+        
+        basis_converter (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn,
+                         alps::SiteBasisDescriptor<I> const & b)
+        : states(alps::site_basis<I>(b))
+        , charges(init_qn_charges<SymmGroup>(conserved_qn, states))
+        , coords_(init_coords<SymmGroup>(conserved_qn, states))
+        { std::cout << "right constructor!" << std::endl; }
+        
+        
+        coord_t coords (alps::site_state<I> const & state) const
+        {
+            if (coords_.find(state) != coords_.end())
+                return coords_.find(state)->second;
+            else
+                throw std::runtime_error("state not found!");
+        }
+        coord_t coords (size_t i) const { return coords(states[i]); }
+
+        charge_t charge (alps::site_state<I> const & state) const
+        {
+            if (coords_.find(state) != coords_.end())
+                return (coords_.find(state)->second).first;
+            else
+                throw std::runtime_error("state not found!");
+        }
+        charge_t charge (size_t i) const { return charge(states[i]); }
+
+        size_t block_size (alps::site_state<I> const & state) const
+        {
+            charge_t c = charge(state);
+            if (charges.find(c) != charges.end())
+                return charges.find(c)->second;
+            else
+                throw std::runtime_error("state not found!");
+        }
+        size_t block_size (size_t i) const { return block_size(states[i]); }
+
+
+        Index<SymmGroup> phys_dim () const
+        {
+            Index<SymmGroup> phys_i;
+            
+            for (typename std::map<charge_t,size_t>::const_iterator it = charges.begin();
+                 it != charges.end(); ++it)
+                phys_i.insert( std::make_pair(it->first, it->second) );
+            
+            return phys_i;
+        }
+        
+    private:
+        alps::site_basis<I> states;
+        std::map<charge_t,size_t> charges;
+        std::map<alps::site_state<I>, coord_t> coords_;
+    };
     
     template <class Matrix, class SymmGroup>
     class ALPSModel
@@ -27,7 +100,7 @@ namespace app {
         typedef alps::SiteOperator SiteOperator;
         typedef alps::BondOperator BondOperator;
         typedef boost::multi_array<double,2> alps_matrix;
-        typedef short I;
+        typedef typename basis_converter<SymmGroup>::I I;
         typedef alps::graph_helper<> graph_type;
         
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -71,15 +144,20 @@ namespace app {
                     for (std::size_t i=0; i<b.size(); ++i)
                         if (std::find(tmp_qn.begin(), tmp_qn.end(), b[i].name()) != tmp_qn.end())
                             conserved_qn.push_back( std::make_pair(i, b[i].name()) );
-                            
-                            for (int i=0; i<states.size(); ++i) {
-                                charge c = convert_alps<SymmGroup>(states[i], conserved_qn);
-                                // std::cout << "Inserting " << c << " for " << states[i] << std::endl;
-                                tphys[type].push_back(c);
-                                tident[type].insert_block(Matrix(1, 1, 1), c, c);
-                                int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
-                                tfill[type].insert_block(Matrix(1, 1, sign), c, c);
-                            }
+                
+                converter.push_back(basis_converter<SymmGroup>(conserved_qn, b));
+                
+                for (int i=0; i<states.size(); ++i) {
+                    charge c = converter[type].charge(i);
+                    size_t bsize = converter[type].block_size(i);
+                    // std::cout << "Inserting " << c << " for " << states[i] << std::endl;
+                    if (!tident[type].has_block(c, c))
+                        tident[type].insert_block(Matrix::identity_matrix(bsize), c, c);
+                    int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
+                    if (!tfill[type].has_block(c, c))
+                        tfill[type].insert_block(Matrix::identity_matrix(bsize), c, c);
+                    tfill[type](converter[type].coords(i), converter[type].coords(i)) = sign;
+                }
             }
             
             
@@ -119,17 +197,8 @@ namespace app {
                             SiteOperator op = ops[n].get<1>();
                             alps_matrix m = alps::get_matrix(double(), op, model.site_basis(type), parms, true);
                             
-                            op_t newm;
-                            for (int i=0; i<m.shape()[0]; ++i) {
-                                for (int j=0; j<m.shape()[1]; ++j) {
-                                    if (m[i][j] != 0.)
-                                        // Notation: going from state i to state j
-                                        newm.insert_block(Matrix(1, 1, ops[n].get<0>().value()*m[i][j]),
-                                                          tphys[type][i],
-                                                          tphys[type][j]);
-                                }
-                            }
-                            site_terms[type].push_back(newm);
+                            double coeff = ops[n].get<0>().value();
+                            site_terms[type].push_back( coeff*convert_matrix(m, type) );
                         }
                         
                     }
@@ -225,12 +294,7 @@ namespace app {
         
         Index<SymmGroup> get_phys() const
         {
-            Index<SymmGroup> phys;
-            // TODO: do we need multiple site types?
-            for (int i=0; i<tphys[0].size(); ++i) {
-                phys.insert( std::make_pair(tphys[0][i], 1) );
-            }
-            return phys;
+            return converter[0].phys_dim();
         }
         
         Hamiltonian<Matrix, SymmGroup> get_hamiltonian () const
@@ -275,9 +339,17 @@ namespace app {
             op_t newm;
             for (int i=0; i<m.shape()[0]; ++i) {
                 for (int j=0; j<m.shape()[1]; ++j) {
-                    if (m[i][j] != 0.)
+                    if (m[i][j] != 0.) {
+                        charge c_i = converter[type].charge(i);
+                        size_t bsize_i = converter[type].block_size(i);
+                        charge c_j = converter[type].charge(j);
+                        size_t bsize_j = converter[type].block_size(j);
+                        
+                        if (!newm.has_block(c_i, c_j))
+                            newm.insert_block(Matrix(bsize_i, bsize_j, 0), c_i, c_j);
                         // Notation: going from state i to state j
-                        newm.insert_block(Matrix(1, 1, m[i][j]), tphys[type][i], tphys[type][j]);
+                        newm(converter[type].coords(i), converter[type].coords(j)) = m[i][j];
+                    }
                 }
             }
             return newm;
@@ -295,12 +367,14 @@ namespace app {
         const graph_type& lattice;
         alps::model_helper<I> model;
         
+        std::vector<basis_converter<SymmGroup> > converter;
+        
         std::map<int, std::vector<op_t> > site_terms;
         mutable std::map<int, op_t> tident;
         mutable std::map<int, op_t> tfill;
         mutable std::map<int, std::vector<typename SymmGroup::charge> > tphys;
         std::vector<hamterm_t> terms;
-        std::vector<std::pair<int, std::string> > conserved_qn;
+        std::vector<std::pair<std::size_t, std::string> > conserved_qn;
         
     };
     
@@ -313,10 +387,43 @@ namespace app {
     }
     
     // Symmetry dependent implementation
+    
+    // NullGroup Symmetry
+    template <>
+    NullGroup::charge init_charge<NullGroup> (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn)
+    {
+        return NullGroup::SingletCharge;
+    }
+    
+    template <>
+    NullGroup::charge convert_alps<NullGroup> (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn)
+    {
+        return NullGroup::SingletCharge;
+    }
 
+    template <>
+    std::map<NullGroup::charge,std::size_t> init_qn_charges<NullGroup>
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
+    {
+        std::map<NullGroup::charge, std::size_t> ret;
+        ret[convert_alps<NullGroup>(states[0], conserved_qn)] = states.size();
+        return ret;
+    }
+    
+    template <>
+    std::map<alps::site_state<short>, std::pair<NullGroup::charge, std::size_t> > init_coords<NullGroup>
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
+    {
+        std::map<alps::site_state<short>, std::pair<NullGroup::charge, std::size_t> > ret;
+        for (std::size_t i=0; i<states.size(); ++i)
+            ret[states[i]] = std::make_pair(NullGroup::SingletCharge, i);
+        return ret;
+    }
+
+    
     // U1 Symmetry
     template <>
-    U1::charge init_charge<U1> (const alps::Parameters& parms, std::vector<std::pair<int, std::string> > const& qn)
+    U1::charge init_charge<U1> (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn)
     {
         assert(qn.size() == 1);
         U1::charge c = U1::SingletCharge;
@@ -328,15 +435,38 @@ namespace app {
     }
 
     template <>
-    U1::charge convert_alps<U1> (alps::site_state<short> const & state, std::vector<std::pair<int, std::string> > const& qn)
+    U1::charge convert_alps<U1> (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn)
     {
         assert(qn.size() == 1);
         return details::to_integer( get_quantumnumber(state, qn[0].first) );
     }
+    
+    template <>
+    std::map<U1::charge,std::size_t> init_qn_charges<U1>
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
+    {
+        assert(conserved_qn.size() == 1);
+        std::map<U1::charge,std::size_t> ret;
+        for (int i=0; i<states.size(); ++i)
+            ret[convert_alps<U1>(states[i], conserved_qn)] = 1;
+        return ret;
+    }
+
+    template <>
+    std::map<alps::site_state<short>, std::pair<U1::charge, std::size_t> > init_coords<U1>
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
+    {
+        assert(conserved_qn.size() == 1);
+        std::map<alps::site_state<short>, std::pair<U1::charge, std::size_t> > ret;
+        for (std::size_t i=0; i<states.size(); ++i)
+            ret[states[i]] = std::make_pair(convert_alps<U1>(states[i], conserved_qn), 0);
+        return ret;
+    }
+
 
     // TwoU1 Symmetry
     template <>
-    TwoU1::charge convert_alps<TwoU1> (alps::site_state<short> const & state, std::vector<std::pair<int, std::string> > const& qn)
+    TwoU1::charge convert_alps<TwoU1> (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn)
     {
         assert(qn.size() == 2);
         TwoU1::charge ret;
@@ -346,7 +476,7 @@ namespace app {
     }
 
     template <>
-    TwoU1::charge init_charge<TwoU1> (const alps::Parameters& parms, std::vector<std::pair<int, std::string> > const& qn)
+    TwoU1::charge init_charge<TwoU1> (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn)
     {
         assert(qn.size() == 2);
         TwoU1::charge c = TwoU1::SingletCharge;
@@ -359,6 +489,28 @@ namespace app {
             c[1] = details::to_integer(tmp);
         }
         return c;
+    }
+
+    template <>
+    std::map<TwoU1::charge,std::size_t> init_qn_charges<TwoU1>
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
+    {
+        assert(conserved_qn.size() == 2);
+        std::map<TwoU1::charge,std::size_t> ret;
+        for (int i=0; i<states.size(); ++i)
+            ret[convert_alps<TwoU1>(states[i], conserved_qn)] = 1;
+        return ret;
+    }
+
+    template <>
+    std::map<alps::site_state<short>, std::pair<TwoU1::charge, std::size_t> > init_coords<TwoU1>
+    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
+    {
+        assert(conserved_qn.size() == 2);
+        std::map<alps::site_state<short>, std::pair<TwoU1::charge, std::size_t> > ret;
+        for (std::size_t i=0; i<states.size(); ++i)
+            ret[states[i]] = std::make_pair(convert_alps<TwoU1>(states[i], conserved_qn), 0);
+        return ret;
     }
 
 

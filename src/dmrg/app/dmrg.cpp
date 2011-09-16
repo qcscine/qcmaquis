@@ -53,7 +53,11 @@ using namespace app;
 #ifdef UseTwoU1
 typedef TwoU1 grp;
 #else
+#ifdef UseNullGroup
+typedef NullGroup grp;
+#else
 typedef U1 grp;
+#endif
 #endif
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
