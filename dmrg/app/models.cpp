@@ -53,17 +53,22 @@ namespace app {
         
         
 #ifdef USE_MTM
+        model_parser_for(mtmatrix1, NullGroup)
         model_parser_for(mtmatrix1, U1)
         model_parser_for(mtmatrix1, TwoU1)        
         //        model_parser_for(cmtmatrix1, U1)
         //        model_parser_for(cmtmatrix1, TwoU1)
 #else
+        model_parser_for(matrix1, NullGroup)
         model_parser_for(matrix1, U1)
         model_parser_for(matrix1, TwoU1)
+        model_parser_for(matrix2, NullGroup)
         model_parser_for(matrix2, U1)
         model_parser_for(matrix2, TwoU1)
+        model_parser_for(cmatrix1, NullGroup)
         model_parser_for(cmatrix1, U1)
         model_parser_for(cmatrix1, TwoU1)
+        model_parser_for(cmatrix2, NullGroup)
         model_parser_for(cmatrix2, U1)
         model_parser_for(cmatrix2, TwoU1)
 #endif
@@ -117,7 +122,16 @@ namespace app {
         
     }
     
-    
+
+    template<class Matrix>
+    struct hamil_factory<Matrix, NullGroup> {
+        static Hamiltonian<Matrix, NullGroup> parse (BaseParameters & model, Lattice const & lattice)
+        {
+            throw std::runtime_error("No models with NullGroup defined in the factory!");
+            return Hamiltonian<Matrix, NullGroup>();
+        }
+    };
+
     template<class Matrix>
     struct hamil_factory<Matrix, TwoU1> {
         static Hamiltonian<Matrix, TwoU1> parse (BaseParameters & model, Lattice const & lattice)
@@ -149,6 +163,11 @@ namespace app {
     };
     
     
+    template <>
+    NullGroup::charge init_qn<NullGroup> (BaseParameters & model)
+    {
+        return NullGroup::SingletCharge;
+    }
     template <>
     U1::charge init_qn<U1> (BaseParameters & model)
     {
