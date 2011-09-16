@@ -37,15 +37,13 @@ namespace app {
         typedef typename SymmGroup::charge charge_t;
         typedef std::size_t size_t;
         typedef std::pair<charge_t, size_t> coord_t;
-        
-        //basis_converter () : states(alps::SiteBasisDescriptor<I>()) { std::cout << "default constructor!" << std::endl; }
-        
+                
         basis_converter (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn,
                          alps::SiteBasisDescriptor<I> const & b)
         : states(alps::site_basis<I>(b))
         , charges(init_qn_charges<SymmGroup>(conserved_qn, states))
         , coords_(init_coords<SymmGroup>(conserved_qn, states))
-        { std::cout << "right constructor!" << std::endl; }
+        { }
         
         
         coord_t coords (alps::site_state<I> const & state) const
@@ -129,8 +127,6 @@ namespace app {
                 {
                     tmp_qn.push_back(*it);
                 }
-            } else {
-                throw std::runtime_error("No conserved quantum numbers defined!");
             }
             
             // Load all possible basis
