@@ -260,7 +260,7 @@ class polynomial
         /**
          * Access coefficient of monomial J^j_exp*h^h_exp
          */
-        inline CoeffType operator ()(unsigned int j_exp, unsigned int h_exp) const
+        inline CoeffType const& operator ()(unsigned int j_exp, unsigned int h_exp) const
         {
             assert(j_exp < max_order);
             assert(h_exp < max_order);
