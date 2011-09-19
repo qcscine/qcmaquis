@@ -2,7 +2,6 @@
 #include <boost/test/unit_test.hpp>
 #include <gmpxx.h>
 
-#include "vli/detail/vli_size_param.hpp"
 #include "vli/vli_cpu.hpp"
 #include "vli/vli_traits.hpp"
 #include "regression/vli_test.hpp"

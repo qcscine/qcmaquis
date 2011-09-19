@@ -140,16 +140,14 @@ namespace vli
         vli_gpu& operator -= (vli_gpu const& vli)
         {
             using vli::minus_assign;
-            vli_gpu tmp(vli);
-            minus_assign(*this,tmp);
+            minus_assign(*this,vli);
             return *this;
         }
         
         vli_gpu& operator -= (int a)
         {
             using vli::minus_assign;
-            vli_gpu tmp(a);
-            minus_assign(*this,tmp);
+            minus_assign(*this,a);
             return *this;
         }
 

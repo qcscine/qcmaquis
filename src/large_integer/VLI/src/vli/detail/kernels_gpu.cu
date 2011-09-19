@@ -7,11 +7,7 @@
 //
 
 #include "vli/detail/kernels_cpu_gpu.hpp"
-#include "vli/detail/vli_size_param.hpp"
 #include "vli/detail/kernels_gpu.h"
-#include <cassert>
-
-//TO DO REMOVE ALL THESE REDICULOUS STATIC CAST INT -> SIZE_T
 
 
 namespace vli {
@@ -51,11 +47,11 @@ __host__ __device__ void kernels_multiplication_base_reshaping(BaseInt const* x,
 template <typename BaseInt, std::size_t Size>
 __host__ __device__ void kernels_multiplication_number(BaseInt* x, BaseInt a);
 
-template <typename BaseInt, int size>
+template <typename BaseInt, std::size_t Size>
 __device__ void single_multiplication_device(BaseInt const* x, BaseInt const* y, BaseInt* z);  
 
-template <typename T, int vli_size, int poly_size>
-__device__ void polynome_polynome_multiplication_device(T const* p1, T const* p2, T* res);
+template <typename BaseInt, std::size_t Size>
+__device__ void polynome_polynome_multiplication_device(BaseInt const* p1, BaseInt const* p2, BaseInt* res);
 
 
 /**
@@ -66,41 +62,41 @@ __device__ void polynome_polynome_multiplication_device(T const* p1, T const* p2
 * VLI_GPU functions
 */
 
-template <typename T, int size>
-__global__ void negate_gpu(T* x)
+template <typename BaseInt, std::size_t Size>
+__global__ void negate_gpu(BaseInt* x)
 {
-     kernel_negate_device<T,static_cast<std::size_t>(size)>(x);
+     kernel_negate_device<BaseInt,Size>(x);
 }
 
-template <typename T, int size>
-__global__ void single_addition(T* x, T const* y)     
+template <typename BaseInt, std::size_t Size>
+__global__ void single_addition(BaseInt* x, BaseInt const* y)     
 {
-    kernels_addition_classic<T,static_cast<std::size_t>(size)>(x,y);
+    kernels_addition_classic<BaseInt,Size>(x,y);
 }    
 
-template <typename T>
-__global__ void single_addition_int(T* x, T y)
+template <typename BaseInt>
+__global__ void single_addition_int(BaseInt* x, BaseInt y)
 {
     //TODO BUG: what about the carry bit?
-    kernels_addition_block<T>(x,&y);  
+    kernels_addition_block<BaseInt>(x,&y);  
 }
 
-template <typename T, int size>
-__global__ void single_substraction(T* x, T const* y)
+template <typename BaseInt, std::size_t Size>
+__global__ void single_subtraction(BaseInt* x, BaseInt* y)
 {
-    kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T*>(y));
-    kernels_addition_classic<T,static_cast<std::size_t>(size)>(x,y);
+    kernel_negate_device<BaseInt,Size>(y);
+    kernels_addition_classic<BaseInt,Size>(x,y);
 }
 
 //__global__ and __device__ are impossible in the same time
-template <typename T, int size>
-__global__  void single_multiplication(T const* x, T const* y, T* z)     
+template <typename BaseInt, std::size_t Size>
+__global__  void single_multiplication(BaseInt const* x, BaseInt const* y, BaseInt* z)     
 {
-     single_multiplication_device<T,size>(x,y,z);
+     single_multiplication_device<BaseInt,Size>(x,y,z);
 }
 
-template <typename T, int size>
-__device__  void single_multiplication_device(T const* x, T const* y, T* z)  
+template <typename BaseInt, std::size_t Size>
+__device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y, BaseInt* z)  
 {
     int na(1),nb(1);
 /*
@@ -117,37 +113,37 @@ __device__  void single_multiplication_device(T const* x, T const* y, T* z)
     }
 */
        
-    if( static_cast<bool>((x[size-1]) >> data_bits<T>::value)){
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T* >(x));
+    if( static_cast<bool>((x[Size-1]) >> data_bits<BaseInt>::value)){
+        kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(x));
         na = -1;
     }
 
-    if( static_cast<bool>((y[size-1]) >> data_bits<T>::value)){
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T* >(y));
+    if( static_cast<bool>((y[Size-1]) >> data_bits<BaseInt>::value)){
+        kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(y));
         nb = -1;
     }
 
-    kernels_multiplication_classic_truncate<T,static_cast<std::size_t>(size)>(z,x,y);
+    kernels_multiplication_classic_truncate<BaseInt,Size>(z,x,y);
 
     if(nb*na == -1)
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(z);
+        kernel_negate_device<BaseInt,Size>(z);
        
     if(na == -1){
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T* >(x));
+        kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(x));
     }
 
     if(nb == -1){
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T* >(y));
+        kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(y));
     }
 }
 
-template <typename T, int size>
-__global__ void single_multiplication_int(T* x, int y)
+template <typename BaseInt, std::size_t Size>
+__global__ void single_multiplication_int(BaseInt* x, int y)
 {
     int na(1),nb(1);
     
-    if( static_cast<bool>((x[size-1]) >> data_bits<T>::value)){
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(x);
+    if( static_cast<bool>((x[Size-1]) >> data_bits<BaseInt>::value)){
+        kernel_negate_device<BaseInt,Size>(x);
         na = -1;
     }
     
@@ -156,10 +152,10 @@ __global__ void single_multiplication_int(T* x, int y)
         nb = -1;
     }
      
-    kernels_multiplication_number<T,static_cast<std::size_t>(size)>(x,y); 
+    kernels_multiplication_number<BaseInt,Size>(x,y); 
      
     if(nb*na == -1)
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(x);
+        kernel_negate_device<BaseInt,Size>(x);
 }
 
 /**
@@ -170,11 +166,11 @@ template <typename BaseInt, std::size_t Size>
 __device__ void kernel_negate_device(BaseInt* x)
 {
     BaseInt one(1);
-    #pragma unroll
-    for(int i=0; i < Size-1; ++i)
+    for(std::size_t i=0; i < Size-1; ++i)
         *(x+i) = (~*(x+i))&data_mask<BaseInt>::value;
     *(x+Size-1) = (~*(x+Size-1))&(base<BaseInt>::value+data_mask<BaseInt>::value);
     
+    // TODO BUG!!!!
     kernels_addition_block(x,&one);
 }
 
@@ -182,20 +178,16 @@ __device__ void kernel_negate_device(BaseInt* x)
 * VLI_GPU_MONOMIAL functions
 */
 
-template <typename T, int vli_size, int poly_size> 
-__global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, std::size_t j_exp, std::size_t h_exp)
+template <typename BaseInt, std::size_t Size> 
+__global__ void monome_polynome_multiplication(unsigned int max_order, BaseInt const* p, BaseInt const* m, BaseInt* res, std::size_t j_exp, std::size_t h_exp)
 { 
-    std::size_t max_order = static_cast<std::size_t>(poly_size);
-    std::size_t offset0(0);
-    std::size_t offset1(0);
-    
     for(std::size_t je = 0; je < max_order-j_exp; ++je)
     {
         for(std::size_t he = 0; he < max_order-h_exp; ++he)
         {   
-            offset0 = (je*max_order+he)*static_cast<std::size_t>(vli_size);
-            offset1 = ((j_exp+je)*max_order+h_exp+he)*static_cast<std::size_t>(vli_size);
-            single_multiplication_device<T,static_cast<std::size_t>(vli_size)>(&p[offset0],&m[0],&res[offset1]);        
+            std::size_t offset0 = (je*max_order+he)*Size;
+            std::size_t offset1 = ((j_exp+je)*max_order+h_exp+he)*Size;
+            single_multiplication_device<BaseInt,Size>(&p[offset0],&m[0],&res[offset1]);        
         }
     }
 
@@ -205,98 +197,95 @@ __global__ void monome_polynome_multiplication(T const* p, T const* m, T* res, s
 * VLI_GPU_POLYNOMIAL functions
 */
 
-template <typename T, int vli_size, int poly_size> 
-__global__ void polynome_polynome_addition(T* x, T const* y) 
+template <typename BaseInt, std::size_t Size>
+__global__ void polynome_polynome_addition(BaseInt* x, BaseInt const* y) 
 {   
     std::size_t xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	std::size_t offset = xIndex*vli_size;    
-    kernels_addition_classic<T,static_cast<std::size_t>(vli_size)>(&x[offset],&y[offset]);    //1 see line 148
+	std::size_t offset = xIndex*Size;
+    kernels_addition_classic<BaseInt,Size>(&x[offset],&y[offset]);    //1 see line 148
 }
   
 
-template <typename T, int vli_size, int poly_size> 
-__global__ void polynome_polynome_substraction(T* x, T const* y) 
+template <typename BaseInt, std::size_t Size>
+__global__ void polynome_polynome_subtraction(BaseInt* x, BaseInt* y) 
 {
     std::size_t xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-	std::size_t offset = xIndex*vli_size;    
-    kernel_negate_device<T,static_cast<std::size_t>(vli_size)>(const_cast<T*>(&y[offset]));
-    kernels_addition_classic<T,static_cast<std::size_t>(vli_size)>(&x[offset],&y[offset]);
+	std::size_t offset = xIndex*Size;
+    kernel_negate_device<BaseInt,Size>(&y[offset]);
+    kernels_addition_classic<BaseInt,Size>(&x[offset],&y[offset]);
 }
 
 
-template <typename T, int vli_size, int poly_size>
-__global__ void polynome_polynome_multiplication(T const* x, T const* y, T* res)
+template <typename BaseInt, std::size_t Size>
+__device__ void polynome_polynome_multiplication_device(unsigned int max_order, BaseInt const* p1, BaseInt const* p2, BaseInt* res)
 {
-    polynome_polynome_multiplication_device<T, vli_size, poly_size>(x,y,res);
-}
-
-template <typename T, int vli_size, int poly_size>
-__device__ void polynome_polynome_multiplication_device(T const* p1, T const* p2, T* res)
-{
-    for(std::size_t je1 = 0; je1 < poly_size; ++je1)
+    for(std::size_t je1 = 0; je1 < max_order; ++je1)
     {
-        for(std::size_t he1 = 0; he1 < poly_size; ++he1)
+        for(std::size_t he1 = 0; he1 < max_order; ++he1)
         {
-            for(std::size_t je2 = 0; je2 < poly_size - je1; ++je2)
+            for(std::size_t je2 = 0; je2 < max_order - je1; ++je2)
             {
-                for(std::size_t he2 = 0; he2 < poly_size - he1; ++he2)
+                for(std::size_t he2 = 0; he2 < max_order - he1; ++he2)
                 {
-                    T inter[vli_size];
+                    // BUG??
+                    BaseInt inter[Size];
                     #pragma unroll
-                    for(std::size_t i=0 ; i < vli_size ;++i)
+                    for(std::size_t i=0 ; i < Size ;++i)
                         inter[i] = 0;
                     //memset(&inter[0], 0 , vli_size*sizeof(T)); memset forbiden on GPU it is corrupted the memory, not stable !!!
-                    std::size_t offset0 = ((je1+je2)*poly_size + he1+he2)*vli_size;
-                    std::size_t offset1 = (je1*poly_size+he1)*vli_size;                    
-                    std::size_t offset2 = (je2*poly_size+he2)*vli_size;
-                    single_multiplication_device<T,static_cast<std::size_t>(vli_size)>(&p1[offset1],&p2[offset2],&inter[0]);        
-                    kernels_addition_classic<T,static_cast<std::size_t>(vli_size)>(&res[offset0],&inter[0]);
+                    std::size_t offset0 = ((je1+je2)*max_order + he1+he2)*Size;
+                    std::size_t offset1 = (je1*max_order+he1)*Size;
+                    std::size_t offset2 = (je2*max_order+he2)*Size;
+                    single_multiplication_device<BaseInt,Size>(&p1[offset1],&p2[offset2],&inter[0]);
+                    kernels_addition_classic<BaseInt,Size>(&res[offset0],&inter[0]);
                 } 
             }
         }      
     }
 } 
 
+
+template <typename BaseInt, std::size_t Size>
+__global__ void polynome_polynome_multiplication(unsigned int max_order, BaseInt const* x, BaseInt const* y, BaseInt* res)
+{
+    polynome_polynome_multiplication_device<BaseInt, Size>(max_order,x,y,res);
+}
 /**
 * VLI_GPU_VECTOR functions
 */
 
     
-template  <typename T, int vli_size, int poly_size>
-__global__ void inner_prod_vector(T const* v1, T const* v2, T* res, std::size_t SizeVector)
+template  <typename BaseInt, std::size_t Size>
+__global__ void inner_prod_vector(unsigned int max_order, std::size_t vector_size, BaseInt const* v1, BaseInt const* v2, BaseInt* res)
 {
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-    unsigned int size_poly = vli_size*poly_size*poly_size;
-    unsigned int offset(0);
+    std::size_t size_poly = Size*max_order*max_order;
     //multiplication between polynomial
-    if(xIndex < SizeVector)
+    if(xIndex < vector_size)
     {
-        offset = xIndex*size_poly;
-        polynome_polynome_multiplication_device<T,vli_size,poly_size>(&v1[offset],&v2[offset],&res[offset]); 
+        std::size_t offset = xIndex*size_poly;
+        polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset],&v2[offset],&res[offset]); 
     }
 }
     
     
-template  <typename T, int vli_size, int poly_size>
-__global__ void reduction_polynome(T const* v1, T* v2, std::size_t SizeVector)
+template  <typename BaseInt, std::size_t Size>
+__global__ void reduction_polynome(unsigned int max_order, std::size_t vector_size, BaseInt const* v1, BaseInt* v2)
 { 
-    std::size_t size_poly = static_cast<std::size_t>(vli_size*poly_size*poly_size);  
-    std::size_t offset0, offset1;
-      
-    for(std::size_t i=0 ; i < SizeVector ; ++i){
-        for(std::size_t j=0 ; j < poly_size*poly_size ; ++j){ //additional loop
-            offset0 = j*vli_size;
-            offset1 = i*size_poly+j*vli_size;
-            kernels_addition_classic<T,vli_size>(&v2[offset0],&v1[offset1]);
+    std::size_t size_poly = Size*max_order*max_order;
+    for(std::size_t i=0 ; i < vector_size ; ++i){
+        for(std::size_t j=0 ; j < max_order*max_order; ++j){ //additional loop
+            std::size_t offset0 = j*Size;
+            std::size_t offset1 = i*size_poly+j*Size;
+            kernels_addition_classic<BaseInt,Size>(&v2[offset0],&v1[offset1]);
         }
-    }    
-    
+    }
 }
    
-template <typename T, int vli_size>
-__global__ void polynome_int_addition(T* x, int y)
+template <typename BaseInt, std::size_t Size>
+__global__ void polynome_int_addition(BaseInt* x, int y)
 {
-    kernels_addition_int<T, vli_size>(x,y);
+    kernels_addition_int<BaseInt,Size>(x,y);
 }
 
 /**
@@ -327,11 +316,11 @@ void plus_assign(BaseInt* A, BaseInt a)
 }
 
 template <typename BaseInt, std::size_t Size>
-void minus_assign(BaseInt* A, BaseInt const* B)
+void minus_assign_destructive(BaseInt* A, BaseInt* B)
 {
     dim3 dimgrid(1,1,1);
     dim3 dimblock(1,1,1);
-    single_substraction<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
+    single_subtraction<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
 }
 
 template <typename BaseInt, std::size_t Size>
@@ -356,13 +345,12 @@ void multiplies_assign(BaseInt* A, int a)
 * VLI_GPU_POLYNOMIAL functions
 */
 template <typename BaseInt, std::size_t Size>
-void poly_mono_multiply(BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t j_exp, std::size_t h_exp)
+void poly_mono_multiply(unsigned int max_order, BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t j_exp, std::size_t h_exp)
 {
-    //size_t size_poly_vli_value_square = size_poly_vli::value*size_poly_vli::value;
     dim3 dimgrid(1,1,1);
-    dim3 dimblock(1,1,1);
+    dim3 dimblock(max_order*max_order,1,1);
     // TODO size_poly
-    monome_polynome_multiplication<BaseInt, Size, size_poly_vli::value>  <<< dimgrid, dimblock >>>(A, B, C, j_exp, h_exp);
+    monome_polynome_multiplication<BaseInt, Size>  <<< dimgrid, dimblock >>>(max_order, A, B, C, j_exp, h_exp);
 }
 
 template <typename BaseInt, std::size_t Size>
@@ -371,73 +359,83 @@ void plus_assign_poly_int(BaseInt* A, int a)
     // TODO is 'int a' ok?
     dim3 dimgrid(1,1,1);
     dim3 dimblock(1,1,1);
-    polynome_int_addition<BaseInt, Size> <<< dimgrid, dimblock>>>(A,a);
+    polynome_int_addition<BaseInt, Size> <<< dimgrid, dimblock>>>(A, a);
 }
 
 template <typename BaseInt, std::size_t Size>
-void plus_assign_poly(BaseInt* A, BaseInt const* B)
+void plus_assign_poly(unsigned int max_order, BaseInt* A, BaseInt const* B)
 {
     dim3 dimgrid(1,1,1);
-	dim3 dimblock(size_poly_vli::value*size_poly_vli::value,1,1);
-    // TODO size_poly 
-	polynome_polynome_addition<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B);
+	dim3 dimblock(max_order*max_order,1,1);
+	polynome_polynome_addition<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
 }
 
 template <typename BaseInt, std::size_t Size>
-void minus_assign_poly(BaseInt* A, BaseInt const* B)
+void minus_assign_poly_destructive(unsigned int max_order, BaseInt* A, BaseInt* B)
 {
-    size_t size_poly_vli_value_square = size_poly_vli::value*size_poly_vli::value;
     dim3 dimgrid(1,1,1);
-	dim3 dimblock(size_poly_vli_value_square,1,1);
-    //TODO size_poly
-	polynome_polynome_substraction<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B);
+	dim3 dimblock(max_order*max_order,1,1);
+	polynome_polynome_subtraction<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
 }
 
 template <typename BaseInt, std::size_t Size>
-void poly_poly_multiply(BaseInt const* A, BaseInt const* B, BaseInt* C)
+void poly_poly_multiply(unsigned int max_order, BaseInt const* A, BaseInt const* B, BaseInt* C)
 {
   	dim3 dimgrid(1,1,1);
-    dim3 dimblock(1,1,1); 
+    dim3 dimblock(1,1,1);
     //TODO size_poly
-    polynome_polynome_multiplication<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, C); 
-} 
+    polynome_polynome_multiplication<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, A, B, C); 
+}
 
 /**
 * VLI_GPU_VECTOR functions
 */
 
 template <typename BaseInt, std::size_t Size>
-void inner_product_vector(BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t VectorSize, std::size_t ThreadsPerBlock) 
+void inner_product_vector(unsigned int max_order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t threads_per_block) 
 {
-    std::size_t BlocksPerGrid = VectorSize/ThreadsPerBlock+1;
-    dim3 dimgrid(BlocksPerGrid,1,1);
-	dim3 dimblock(ThreadsPerBlock,1,1);    
-    inner_prod_vector<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, C, VectorSize);  
+    std::size_t blocks_per_grid = vector_size/threads_per_block+1;
+    dim3 dimgrid(blocks_per_grid,1,1);
+	dim3 dimblock(threads_per_block,1,1);
+    inner_prod_vector<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, vector_size, A, B, C);
 } 
 
 template <typename BaseInt, std::size_t Size>
-void vector_reduction(BaseInt const* A, BaseInt * B, std::size_t VectorSize)
+void vector_reduction(unsigned int max_order, std::size_t vector_size, BaseInt const* A, BaseInt * B)
 {
     //the reduction should be // if executed on one smp
     dim3 dimgrid(1,1,1);
     dim3 dimblock(1,1,1);
-    reduction_polynome<BaseInt, Size, size_poly_vli::value> <<< dimgrid, dimblock >>>(A, B, VectorSize);
+    reduction_polynome<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, vector_size, A, B);
 }
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
-    void negate(vli_size_tag<VLI_SIZE>, TYPE* A) {negate<TYPE,VLI_SIZE>(A);} \
-    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {plus_assign<TYPE,VLI_SIZE>(A,B);} \
-    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE B) {plus_assign<TYPE,VLI_SIZE>(A,B);} \
-    void minus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {minus_assign<TYPE,VLI_SIZE>(A,B);} \
-    void multiplies_assign(vli_size_tag<VLI_SIZE>, TYPE* A, int a) {multiplies_assign<TYPE,VLI_SIZE>(A,a);} \
-    void entrywise_multiplies(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const*  B, TYPE* C) {entrywise_multiplies<TYPE,VLI_SIZE>(A,B,C);} \
-    void poly_mono_multiply(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C, std::size_t j_exp, std::size_t h_exp) {poly_mono_multiply<TYPE,VLI_SIZE>(A,B,C,j_exp,h_exp);} \
-    void plus_assign_poly_int(vli_size_tag<VLI_SIZE>, TYPE* A, int a) {plus_assign_poly_int<TYPE,VLI_SIZE>(A,a);} \
-    void plus_assign_poly(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {plus_assign_poly<TYPE,VLI_SIZE>(A,B);} \
-    void minus_assign_poly(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) {minus_assign_poly<TYPE,VLI_SIZE>(A,B);} \
-    void poly_poly_multiply(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C) {poly_poly_multiply<TYPE,VLI_SIZE>(A,B,C);} \
-    void inner_product_vector(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const* B, TYPE* C, std::size_t vector_size, std::size_t threads_per_block) {inner_product_vector<TYPE,VLI_SIZE>(A,B,C,vector_size,threads_per_block);} \
-    void vector_reduction(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE* B, std::size_t vector_size ) {vector_reduction<TYPE,VLI_SIZE>(A,B,vector_size);}
+    void negate(vli_size_tag<VLI_SIZE>, TYPE* A) \
+        {negate<TYPE,VLI_SIZE>(A);} \
+    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) \
+        {plus_assign<TYPE,VLI_SIZE>(A,B);} \
+    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE B) \
+        {plus_assign<TYPE,VLI_SIZE>(A,B);} \
+    void minus_assign_destructive(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE* B) \
+        {minus_assign_destructive<TYPE,VLI_SIZE>(A,B);} \
+    void multiplies_assign(vli_size_tag<VLI_SIZE>, TYPE* A, int a) \
+        {multiplies_assign<TYPE,VLI_SIZE>(A,a);} \
+    void entrywise_multiplies(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const*  B, TYPE* C) \
+        {entrywise_multiplies<TYPE,VLI_SIZE>(A,B,C);} \
+    void poly_mono_multiply(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE const* A, TYPE const* B, TYPE* C, std::size_t j_exp, std::size_t h_exp) \
+        {poly_mono_multiply<TYPE,VLI_SIZE>(max_order,A,B,C,j_exp,h_exp);} \
+    void plus_assign_poly_int(vli_size_tag<VLI_SIZE>, TYPE* A, int a) \
+        {plus_assign_poly_int<TYPE,VLI_SIZE>(A,a);} \
+    void plus_assign_poly(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE* A, TYPE const* B) \
+        {plus_assign_poly<TYPE,VLI_SIZE>(max_order,A,B);} \
+    void minus_assign_poly_destructive(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE* A, TYPE* B) \
+        {minus_assign_poly_destructive<TYPE,VLI_SIZE>(max_order,A,B);} \
+    void poly_poly_multiply(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE const* A, TYPE const* B, TYPE* C) \
+        {poly_poly_multiply<TYPE,VLI_SIZE>(max_order,A,B,C);} \
+    void inner_product_vector(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C, std::size_t threads_per_block) \
+        {inner_product_vector<TYPE,VLI_SIZE>(max_order,vector_size,A,B,C,threads_per_block);} \
+    void vector_reduction(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE* B) \
+        {vector_reduction<TYPE,VLI_SIZE>(max_order,vector_size,A,B);}
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
     VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )

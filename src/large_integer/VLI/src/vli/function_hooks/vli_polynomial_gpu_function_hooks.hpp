@@ -13,37 +13,39 @@ namespace vli{
     template <class BaseInt, std::size_t Size, unsigned int Order>
     void poly_addition_int(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & p1, int b)
     {
-        detail::plus_assign_poly_int(vli_size_tag<Size>(),p1.p(),b);
-    } 
+        detail::plus_assign_poly_int(vli_size_tag<Size>(),Order,p1.p(),b);
+    }
 
     template <class BaseInt, std::size_t Size, unsigned int Order, class Monomial> // monomial can be a monomial_gpu or a vli_gpu
-    void poly_mono_multiply(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
-                            polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1, 
+    void poly_mono_multiply(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result,
+                            polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1,
                             Monomial const & m2)
     {
-        detail::poly_mono_multiply(vli_size_tag<Size>(),p1.p(),m2.p(),result.p(), m2.j_exp_, m2.h_exp_);
+        detail::poly_mono_multiply(vli_size_tag<Size>(),Order,p1.p(),m2.p(),result.p(),m2.j_exp_,m2.h_exp_);
     }
     
     template <class BaseInt,std::size_t Size, unsigned int Order>
-    void plus_assign_poly(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
+    void plus_assign_poly(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result,
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p)
     {
-        detail::plus_assign_poly(vli_size_tag<Size>(),result.p(),p.p());
+        detail::plus_assign_poly(vli_size_tag<Size>(),Order,result.p(),p.p());
     }
 
     template <class BaseInt, std::size_t Size, unsigned int Order>
-    void poly_substraction(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
+    void poly_substraction(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result,
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p)
     {
-        detail::minus_assign_poly(vli_size_tag<Size>(),result.p(),p.p());
+        //TODO improve
+        polynomial_gpu<vli_gpu<BaseInt,Size>,Order> tmp(p);
+        detail::minus_assign_poly_destructive(vli_size_tag<Size>(),Order,result.p(),tmp.p());
     }
 
     template <class BaseInt, std::size_t Size, unsigned int Order>
-    void poly_multiply(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result, 
+    void poly_multiply(polynomial_gpu<vli_gpu<BaseInt, Size>, Order> & result,
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p1, 
                        polynomial_gpu<vli_gpu<BaseInt, Size>, Order> const & p2)
     {
-        detail::poly_poly_multiply(vli_size_tag<Size>(),p1.p(),p2.p(),result.p());
+        detail::poly_poly_multiply(vli_size_tag<Size>(),Order,p1.p(),p2.p(),result.p());
     }
 }// end namespace 
 

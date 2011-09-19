@@ -26,17 +26,17 @@ namespace vli{
                            polynomial_gpu<vli_gpu<BaseInt, Size>, Order>& res)
     {
 //      gpu::gpu_manager* GPU; // GPU is a singleton initialized into the main
-        std::size_t NumThreads = 256; // GPU->instance().GetmaxThreadsPerBlock()/2;
+        std::size_t num_threads = 256; // GPU->instance().GetmaxThreadsPerBlock()/2;
         inter.resize(a.size()); //default size 1 so resize
         using detail::vli_size_tag; 
 //        TimerCuda GPUinner("GPUinner");
 //        GPUinner.begin(); 
-        detail::inner_product_vector(vli_size_tag<Size>(), a.p(), b.p(),inter.p(),a.size(),NumThreads);
+        detail::inner_product_vector(vli_size_tag<Size>(),Order, a.size(), a.p(), b.p(),inter.p(),num_threads);
 //        GPUinner.end();
 
 //        TimerCuda GPUreduc("GPUreduc");
 //        GPUreduc.begin(); 
-        detail::vector_reduction(vli_size_tag<Size>(), inter.p(),res.p(),a.size());
+        detail::vector_reduction(vli_size_tag<Size>(), Order, a.size(), inter.p(),res.p());
 //        GPUreduc.end();
     }
     

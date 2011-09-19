@@ -33,7 +33,16 @@ template <class BaseInt, std::size_t Size>
 void minus_assign(vli_gpu<BaseInt,Size> & vli_a, vli_gpu<BaseInt,Size> const& vli_b )
 {
     using detail::vli_size_tag;
-    detail::minus_assign(vli_size_tag<Size>(), vli_a.p(),vli_b.p());
+    vli_gpu<BaseInt,Size> tmp(vli_b);
+    detail::minus_assign_destructive(vli_size_tag<Size>(), vli_a.p(),tmp.p());
+}
+
+template <class BaseInt, std::size_t Size>
+void minus_assign(vli_gpu<BaseInt,Size> & vli_a, int a )
+{
+    using detail::vli_size_tag;
+    vli_gpu<BaseInt,Size> tmp(a);
+    detail::minus_assign_destructive(vli_size_tag<Size>(), vli_a.p(),tmp.p());
 }
 
 template <class BaseInt, std::size_t Size>
