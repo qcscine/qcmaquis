@@ -10,7 +10,7 @@
 #define VLI_KERNELS_CPU_GPU_HPP 
 
 #include "vli/detail/bit_masks.hpp"
-
+#include <cassert>
 
 /**
 *
@@ -64,6 +64,7 @@ namespace vli
     template <typename BaseInt, std::size_t Size>
 	inline void kernels_addition_int(BaseInt* x, int y)
     {
+        //BUG negative y
         *x += y;
         for (int k = 0; k < Size-1; ++k)
         { 

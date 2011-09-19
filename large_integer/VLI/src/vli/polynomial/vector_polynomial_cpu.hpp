@@ -12,7 +12,6 @@
 #include "vli/polynomial/polynomial_gpu.hpp"
 #include "vli/polynomial/vector_polynomial_gpu.hpp"
 #include "vli/vli_cpu.hpp"
-#include "vli/detail/vli_size_param.hpp"
 #include <vector>
 #include <ostream>
 #include <cassert>
