@@ -430,13 +430,33 @@ namespace blas {
 
 #ifdef HAVE_ALPS_HDF5
 	template <typename T, typename MemoryBlock>
-    inline void dense_matrix<T, MemoryBlock>::load(alps::hdf5::archive & ar)
-    {
-		ar >> alps::make_pvp("size1", size1_);
-		ar >> alps::make_pvp("size2", size2_);
-		ar >> alps::make_pvp("reserved_size1", reserved_size1_);
-		ar >> alps::make_pvp("values", values_);
+    void dense_matrix<T, MemoryBlock>::load(alps::hdf5::archive & ar) {
+        load_impl(ar, typename alps::is_complex<T>::type());
     }
+	template <typename T, typename MemoryBlock>
+    void dense_matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::true_)
+    {
+        ar >> alps::make_pvp("size1", size1_);
+        ar >> alps::make_pvp("size2", size2_);
+        ar >> alps::make_pvp("reserved_size1", reserved_size1_);
+        if (ar.is_complex("values"))
+            ar >> alps::make_pvp("values", values_);    
+        else {
+            std::vector<typename T::value_type> data;
+            ar >> alps::make_pvp("values", data);
+            values_.resize_(data.size());
+            std::copy(data.begin(), data.end(), values_.begin());
+        }
+    }
+	template <typename T, typename MemoryBlock>
+    void dense_matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::false_)
+    {
+        ar >> alps::make_pvp("size1", size1_);
+        ar >> alps::make_pvp("size2", size2_);
+        ar >> alps::make_pvp("reserved_size1", reserved_size1_);
+        ar >> alps::make_pvp("values", values_);
+    }
+
 	template <typename T, typename MemoryBlock>
     inline void dense_matrix<T, MemoryBlock>::save(alps::hdf5::archive & ar) const
     {
