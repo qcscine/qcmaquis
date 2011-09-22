@@ -182,16 +182,12 @@ int main(int argc, char ** argv)
 #else
     int initc = model.get<int>("u1_total_charge");
 #endif
-//    ambient::playout();
-//    printf("Check point 1\n");
     MPS<Matrix, grp> mps(adj->size(),
                          parms.get<std::size_t>("init_bond_dimension"),
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
     int sweep = 0;
-//    ambient::playout();
-//    printf("Check point 2\n");
 
 /*
     std::string p = parms.get<std::string>("storagedir") + boost::lexical_cast<std::string>(ambient::rank());
@@ -278,7 +274,7 @@ int main(int argc, char ** argv)
         zout << "Task took " << elapsed << " seconds." << endl;
     }
 #endif
-    printf("Exiting... Finalize!\n");
+    zout << "Exiting... Finalize!\n";
     ambient::finalize();
     return 0;
 }
