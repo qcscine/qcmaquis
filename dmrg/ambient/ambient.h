@@ -14,10 +14,13 @@
 #include "ambient/core/scope_context.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/workgroup_context.h"
+#include "ambient/model.h"
 #include "ambient/core/layout.h"
 #include "ambient/core/select.h"
 #include "ambient/core/auxiliary.h"
 #include <boost/shared_ptr.hpp>
+
+class Timer;
 
 #define ALL -1
 #define UNDEFINED_RANK MPI_UNDEFINED
@@ -49,14 +52,17 @@ namespace ambient
         dim2 get_gpu_dim();
 
         void push(core::operation* logistics, core::operation* computing);
-        void playout();  // perform actual operations
-        void bailout();  // perform actual operations
-        void bailin();  // perform actual operations
-        void spin();
-        void spin_loop();
-        void world_loop();
-        void world_spin();
-        bool occupied();
+
+        inline void playout();  // perform actual operations
+        inline void bailout();  // perform actual operations
+        inline void bailin();  // perform actual operations
+        inline void spin();
+        inline void spin_loop();
+        inline void world_loop();
+        inline void world_spin();
+        inline bool occupied();
+        inline bool blank();
+
         int size;
         block_packet_t* default_data_packet_t;
         groups::group* ambient;
@@ -86,15 +92,19 @@ namespace ambient
     bool is_master();
     bool is_group_master();
     bool occupied();
+    bool blank();
     groups::group* world();
 
     extern scope_context& scope;
     extern scheduler& layout;
     extern scheduler& engine;
     extern groups::multirank& rank;
-    extern hash_map& p_profile_map;
+    extern i_model&  model;
+    extern i_controller& controller;
+    extern i_channel& channel;
     extern groups::comm_map& scope_map;
     extern access_marker& access;
+    extern Timer timer;
 }
 
 #endif

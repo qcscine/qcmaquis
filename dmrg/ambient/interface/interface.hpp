@@ -10,7 +10,7 @@ void memoryfence(){
 template<typename T>
 void assign(const T& ref, int i, int j)
 {
-    void_pt& profile = breakdown(ref);
+    parallel_t& profile = breakdown(ref);
     dim2 work_blocks(profile.get_work_dim().x / profile.get_mem_dim().x,
                      profile.get_work_dim().y / profile.get_mem_dim().y);
     int ii = i*work_blocks.y;
@@ -24,7 +24,7 @@ void assign(const T& ref, int i, int j)
 template<typename T>
 void assign(T& ref, int i, int j)
 {
-    void_pt& profile = breakdown(ref);
+    parallel_t& profile = breakdown(ref);
     dim2 work_blocks(profile.get_work_dim().x / profile.get_mem_dim().x,
                      profile.get_work_dim().y / profile.get_mem_dim().y);
     int ii = i*work_blocks.y;

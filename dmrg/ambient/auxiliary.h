@@ -70,13 +70,8 @@ namespace core{ class operation; }
     };
 
     class hash_map {
-    private: 
-        hash_map();                             // constructor is private
-        hash_map(hash_map const&);              // copy constructor is private
-        hash_map& operator=(hash_map const&);   // assignment operator is private
     public:
-        static hash_map& instance();
-    public:
+        hash_map();
         unsigned int insert(unsigned int* hash, unsigned int hash_len, core::layout_table* value, int shift = 0);
         core::layout_table* find(unsigned int* hash, unsigned int hash_len, unsigned int id, int shift = 0) const;
     private:
@@ -111,9 +106,9 @@ namespace core{ class operation; }
         delegate();
         void operator+=(core::operation* handler);
         void operator()();
+        size_t length;
     private:
         core::operation** handlers;
-        size_t length;
         size_t reserved;
     };
 }

@@ -6,18 +6,18 @@
 
 namespace ambient {
 
-    class p_profile;
+    class p_object;
 
     class memblock {
     public:
        ~memblock();
-        memblock(p_profile* p, int i, int j = 0);
+        memblock(p_object* p, int i, int j = 0);
         void set_memory(void* memory);
         void* element(int i, int j = 0);
         void* operator()(int i, int j = 0);
         void* item(int i, int j = 0);
-        p_profile* profile;
-        p_profile* get_profile();
+        p_object* profile;
+        p_object* get_profile();
         dim2 get_mem_dim();
         dim2 get_mem_t_dim();
         dim2 get_item_dim();

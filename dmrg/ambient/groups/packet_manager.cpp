@@ -54,7 +54,11 @@ namespace ambient{ namespace groups{
         else if(info == 'W') in_q.manager->state = packet_manager::OPEN;    // WITHDRAW CLOSURE
     }
 
-    bool packet_manager::process_locking(size_t active_sends_number){
+    bool packet_manager::process_locking(){
+        size_t active_sends_number = 0;
+        for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it)
+            if((*it)->flow == OUT) active_sends_number += (*it)->get_active();
+        active_sends_number -= this->get_pipe(get_t<control_packet_t>(), OUT)->get_active(); // excluding control pipe messages
 // finite state machine (closure proceedure).
 // note: the state also can be modified in callback of control_in queue.
         if(this->state == OPEN && active_sends_number == 0){
@@ -87,7 +91,8 @@ namespace ambient{ namespace groups{
     }
 
     void packet_manager::subscribe(const packet_t& type){
-        this->add_typed_q(type, packet_manager::IN,  60);
+        this->add_typed_q(type, IN,  2); // OMG!
+        this->add_typed_q(type, LO);
     }
 
     void packet_manager::add_handler(const packet_t& type, core::operation* callback){
@@ -96,19 +101,16 @@ namespace ambient{ namespace groups{
         }
     }
 
-    void packet_manager::emit(packet* pack){
-        const packet_t& type = pack->get_t();
-        for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
-            if((*it)->flow == OUT && &((*it)->type) == &type){ (*it)->push(pack); return; }
-        }
-        this->add_typed_q(pack->get_t(), packet_manager::OUT)->push(pack);
-    }
-
     packet_manager::typed_q* packet_manager::get_pipe(const packet_t& type, packet_manager::direction flow){
         for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
             if(&((*it)->type) == &(type) && flow == (*it)->flow){ return (*it); }
         }
         return this->add_typed_q(type, flow);
+    }
+
+    void packet_manager::emit(packet* pack){
+        typed_q* queue = get_pipe(pack->get_t(), packet_manager::OUT);
+        queue->send(queue->attach_request((void*)pack));
     }
 
     packet_manager::packet_manager(group* grp) {
@@ -126,28 +128,19 @@ namespace ambient{ namespace groups{
         this->closure_mutex = this->grp->get_size();
     };
     void packet_manager::spin_loop(){
-        size_t active_sends_number;
-        size_t counter = 0;
-        //printf("Spin looping!\n");
         for(;;){
             ambient::world_spin();
-            active_sends_number = 0;
             this->spin();
-            for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it)
-                if((*it)->flow == OUT) active_sends_number += (*it)->get_active();
-            active_sends_number -= this->get_pipe(get_t<control_packet_t>(), OUT)->get_active(); // excluding control pipe messages
-            if(this->process_locking(active_sends_number)){ return this->spin(); } // spinning last time
+            if(this->process_locking()) return;
         }
     }
-    void packet_manager::spin(int n){
-        for(int i=0; i < n; i++){
-            for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
-                if((*it)->get_active() > 0) for(int i=0; i < (*it)->priority; i++) (*it)->spin();
-            }
+    void packet_manager::spin(){
+        for(std::list<typed_q*>::const_iterator it = this->qs.begin(); it != qs.end(); ++it){
+            if((*it)->get_active() > 0) (*it)->spin();
         }
     }
-    packet_manager::typed_q* packet_manager::add_typed_q(const packet_t& type, packet_manager::direction flow, int reservation, int priority){
-        this->qs.push_back(new typed_q(this, type, flow, reservation, priority));
+    packet_manager::typed_q* packet_manager::add_typed_q(const packet_t& type, packet_manager::direction flow, int reservation){
+        this->qs.push_back(new typed_q(this, type, flow, reservation));
         return this->qs.back();
     }
 
@@ -155,34 +148,25 @@ namespace ambient{ namespace groups{
     : memory(memory), mpi_request(MPI_REQUEST_NULL), fail_count(0) { };
 
     packet_manager::request* packet_manager::typed_q::get_request(){
-        if(this->free_reqs.size() == 0){
-            this->free_reqs.push_back(new request(alloc_t(this->type)));
-        }
-        request* handle = this->free_reqs.back();
-        this->free_reqs.pop_back();
-        return handle;
+        this->reqs.push_back(new request(alloc_t(this->type)));
+        return this->reqs.back();
     }
-    void packet_manager::typed_q::return_request(request* r){
-        this->free_reqs.push_back(r);
-    }
-    packet_manager::typed_q::typed_q(packet_manager* manager, const packet_t& type, packet_manager::direction flow, int reservation, int priority) 
-    : manager(manager), type(type), priority(priority), flow(flow), packet_delivered()
-    {    
-        for(int i=0; i < PULL_RESERVATION; i++){
-            this->free_reqs.push_back(new request(alloc_t(this->type)));
-        }
-        if(flow == IN){ // make the initial recv request
-            for(int i=0; i < reservation; i++){
-                this->reqs.push_back(this->get_request());
-                this->recv(this->reqs.back());
-            }
-        }
-    }
-    void packet_manager::typed_q::push(packet* pack){
-        this->reqs.push_back(this->get_request());
+    packet_manager::request* packet_manager::typed_q::attach_request(void* memory){
+        this->reqs.push_back(new request(NULL));
         request* target = this->reqs.back();
-        target->memory = (void*)pack; // don't forget to free memory (if not needed)
-        this->send(target);
+        target->memory = memory;
+        return target;
+    }
+    packet_manager::typed_q::typed_q(packet_manager* manager, const packet_t& type, packet_manager::direction flow, int reservation) 
+    : manager(manager), type(type), flow(flow), packet_delivered()
+    {
+        if(flow == IN){ // make the initial recv request
+            for(int i=0; i < reservation; i++) this->recv(this->get_request());
+        }
+    }
+    size_t packet_manager::typed_q::get_active(){
+        if(this->flow == IN || this->flow == LO) return 1;
+        return this->reqs.size();
     }
     void packet_manager::typed_q::recv(request* r){
         MPI_Irecv(r->memory, 1, this->type.mpi_t, MPI_ANY_SOURCE, this->type.t_code, *this->manager->comm, &(r->mpi_request));
@@ -190,45 +174,56 @@ namespace ambient{ namespace groups{
     void packet_manager::typed_q::send(request* r){
         packet* pack = (packet*)r->memory;
         if(pack->get<char>(A_OP_T_FIELD) == 'P'){
-            MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(r->mpi_request));
+            //if(pack->get<int>(A_DEST_FIELD) != ambient::rank(this->manager->grp))
+                MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(r->mpi_request));
         }else if(pack->get<char>(A_OP_T_FIELD) == 'B'){
+            pack->lifetime += this->manager->get_group()->get_size()-1; // requires get_size hops before freeing
             pack->set(A_OP_T_FIELD, "P2P");
             pack->set(A_DEST_FIELD, 0); // using up this request
             MPI_Isend(pack->data, 1, pack->mpi_t, pack->get<int>(A_DEST_FIELD), pack->get_t_code(), *this->manager->comm, &(r->mpi_request));
             for(size_t i=1; i < this->manager->get_group()->get_size(); i++){
                 pack->set(A_DEST_FIELD, i);
-                this->push(pack);
+                this->send(this->attach_request((void*)pack));
             }
         }
     }
-    size_t packet_manager::typed_q::get_active(){
-        if(this->flow == IN) return 1;
-        return this->reqs.size();
-    }
-    void packet_manager::typed_q::spin(){
+    void packet_manager::typed_q::spin(){ // 17s
         int flag = 0;
         std::list<request*>::iterator it;
-        if(this->flow == IN)
+
+        if(this->flow == IN){ // 16.7s
+
         for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
+            timer.begin();
             MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
+            timer.end();
             if(flag){
                 this->target_packet = unpack(this->type, (*it)->memory); 
                 this->packet_delivered();
-//                if(!this->target_packet->disposable) // user type is responsible for deallocation
+                if(!this->target_packet->disposable()){ // user type is responsible for deallocation
                     (*it)->memory = alloc_t(this->type);
+                }
                 this->recv(*it); // request renewal
             }
         }
-        else 
+        }else{ 
         for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
-            MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
-            if(flag){
-                this->target_packet = (packet*)(*it)->memory;
-//                if(this->target_packet->disposable)
-//                    free(this->target_packet);
-                this->return_request(*it);
-                it = this->reqs.erase(it);
-            }
+            this->target_packet = (packet*)(*it)->memory;
+            //if(this->target_packet->get<int>(A_DEST_FIELD) == ambient::rank(this->manager->grp))
+            //    this->manager->get_pipe(this->target_packet->get_t(), IN)->target_packet = this->target_packet;
+            //    this->manager->get_pipe(this->target_packet->get_t(), IN)->packet_delivered();
+            //    if(this->target_packet->disposable())
+            //        delete this->target_packet;
+            //    it = this->reqs.erase(it);
+            //}else{
+                MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
+                if(flag){
+                    if(this->target_packet->disposable())
+                        delete this->target_packet;
+                    it = this->reqs.erase(it);
+                }
+            //}
+        }
         }
     }
 

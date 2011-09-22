@@ -2,7 +2,7 @@
 #define AMBIENT_CORE_SMP_H
 
 #include "ambient/core/operation/operation.h"
-#include "ambient/core/p_profile.h"
+#include "ambient/core/p_object.h"
 #include "ambient/core/layout.h"
 
 namespace ambient {

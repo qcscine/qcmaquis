@@ -6,7 +6,7 @@
 
 namespace ambient {
 
-    class p_profile;
+    class p_object;
 
     class workgroup_context {
     public:
@@ -15,7 +15,7 @@ namespace ambient {
         void discharge(core::operation* kernel);
         void finalize();
     private:
-        p_profile* pin;
+        p_object* pin;
         core::operation* bind_op;
     };
 }

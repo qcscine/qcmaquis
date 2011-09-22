@@ -1,6 +1,7 @@
 #ifndef AMBIENT_INTERFACE_H
 #define AMBIENT_INTERFACE_H
 #include "ambient/ambient.h"
+#include "utils/zout.hpp"
 
 namespace blas{ 
 //  forward declarations if handy
@@ -59,7 +60,6 @@ namespace ambient{
     #include "ambient/interface/i_kernels.hpp"
     #include "ambient/interface/l_kernels.hpp"
     #include "ambient/interface/c_kernels.hpp"
-    #include "ambient/interface/c_scalapack_kernels.hpp"
     #include "ambient/interface/model.hpp"
     #include "ambient/interface/interface.hpp"
 }

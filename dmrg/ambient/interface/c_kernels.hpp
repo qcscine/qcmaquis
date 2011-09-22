@@ -230,7 +230,7 @@ void remove_cols_c(pinned p_dense_matrix<double>& a, const size_t& j_mark, const
     }
 }
 
-void touch_c(p_dense_matrix<double>& a){ }
+void touch_c(const p_dense_matrix<double>& a){ }
 
 void resize_c(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
 {
@@ -685,3 +685,89 @@ void associated_validation_c(pinned const p_dense_matrix<double>& a, const p_den
         }                
     } 
 } 
+
+// MKL LAPACK kernels
+
+void svd_c(const p_dense_matrix<double>& a, int& m, int& n, p_dense_matrix<double>& u, p_dense_matrix<double>& vt, p_dense_matrix<double>& s)
+{
+/* Locals */
+    int lda = get_grid_dim(a).y*get_mem_t_dim(a).y;
+    int ldu = get_grid_dim(u).y*get_mem_t_dim(u).y;
+    int ldvt = get_grid_dim(vt).y*get_mem_t_dim(vt).y;
+    int info, lwork;
+    double wkopt;
+    double* work;
+    assert(current(a).layout->get_list().size() != 0);
+    current(a).solidify(current(a).layout->get_list());
+    current(u).solidify(current(u).layout->get_list());
+    current(vt).solidify(current(vt).layout->get_list());
+    current(s).solidify(current(s).layout->get_list());
+/* Query and allocate the optimal workspace */
+    lwork = -1;
+    dgesvd( "S", "S", &m, &n, (double*)breakdown(a).data, &lda, (double*)breakdown(s).data, (double*)breakdown(u).data, &ldu, (double*)breakdown(vt).data, &ldvt, &wkopt, &lwork, &info );
+    lwork = (int)wkopt;
+    work = (double*)malloc( lwork*sizeof(double) );
+/* Compute SVD */
+    dgesvd( "S", "S", &m, &n, (double*)breakdown(a).data, &lda, (double*)breakdown(s).data, (double*)breakdown(u).data, &ldu, (double*)breakdown(vt).data, &ldvt, work, &lwork, &info );
+/* Check for convergence */
+    if( info > 0 ) {
+        printf( "The algorithm computing SVD failed to converge.\n" );
+        exit( 1 );
+    }
+    current(u).disperse(current(u).layout->get_list());
+    current(vt).disperse(current(vt).layout->get_list());
+    current(s).disperse(current(s).layout->get_list());
+    free(work);
+}
+
+void syev_c(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
+{
+     int lda = get_grid_dim(a).y*get_mem_t_dim(a).y;
+     int info, lwork = -1;
+
+     double wkopt;
+     double* work;
+     assert(current(a).layout->get_list().size() != 0);
+     current(a).solidify(current(a).layout->get_list());
+     current(w).solidify(current(w).layout->get_list());
+     
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,&wkopt,&lwork,&info);
+     lwork = (int)wkopt;
+     work = (double*)malloc( lwork*sizeof(double) );
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,work,&lwork,&info);
+
+     if( info > 0 ) {
+         printf( "The algorithm computing SYEV failed to converge.\n" );
+         exit( 1 );
+     }
+
+     current(a).disperse(current(a).layout->get_list());
+     current(w).disperse(current(w).layout->get_list());
+     free(work); 
+}
+
+void heev_c(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
+{
+     int lda = get_grid_dim(a).y*get_mem_t_dim(a).y;
+     int info, lwork = -1;
+
+     double wkopt;
+     double* work;
+     assert(current(a).layout->get_list().size() != 0);
+     current(a).solidify(current(a).layout->get_list());
+     current(w).solidify(current(w).layout->get_list());
+     
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,&wkopt,&lwork,&info);
+     lwork = (int)wkopt;
+     work = (double*)malloc( lwork*sizeof(double) );
+     dsyev("V","U",&m,(double*)breakdown(a).data,&lda,(double*)breakdown(w).data,work,&lwork,&info);
+
+     if( info > 0 ) {
+         printf( "The algorithm computing SYEV failed to converge.\n" );
+         exit( 1 );
+     }
+
+     current(a).disperse(current(a).layout->get_list());
+     current(w).disperse(current(w).layout->get_list());
+     free(work);
+}

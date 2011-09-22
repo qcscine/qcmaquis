@@ -1,5 +1,5 @@
 #include "ambient/ambient.h"
-#include "ambient/core/p_profile.h"
+#include "ambient/core/p_object.h"
 #include "ambient/packets/auxiliary.hpp"
 #include "ambient/groups/packet_manager.h"
 
@@ -12,7 +12,7 @@ namespace ambient {
     void accept_block(groups::packet_manager::typed_q& in_q){
         ambient::packets::packet* pack = in_q.get_target_packet();
         try{
-            p_profile* profile = p_profile_map.find((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD))->profile;
+            p_object* profile = ambient::model.get_object((unsigned int*)pack->get(A_BLOCK_P_GID_FIELD), 1, pack->get<int>(A_BLOCK_P_ID_FIELD));
             if(pack->get<char>(A_BLOCK_P_STATE_FIELD) == 'P'){
                 if(profile->associated_proxy == NULL) throw core::race_condition_e();
                 memblock* grp = profile->block(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD));
@@ -20,15 +20,17 @@ namespace ambient {
                 profile->associated_proxy->reduce( grp, (void*)((size_t)pack->data + profile->get_bound())); // can be done differently
             }else{
                 profile->block(pack->get<int>(A_BLOCK_P_I_FIELD), pack->get<int>(A_BLOCK_P_J_FIELD))->set_memory(pack->data);
+                pack->lifetime = -1;  // keep it
             }
         }catch(core::race_condition_e){
+            pack->lifetime = 2;       // 2 hops because of rethrowing
             in_q.manager->emit(pack); // re-throwing the packet for future handling
         }
     }
 
-    p_profile::p_profile()
+    p_object::p_object()
     : dim(NULL), reserved_x(0), reserved_y(0), group_id(0), id(0), init(NULL), default_block(NULL), 
-      reference(this), state(ABSTRACT), master_relay(std::pair<int,int>(-1,-1)), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
+      reference(this), state(ABSTRACT), scope(NULL), xscope(NULL), consted(false), timestamp(0), associated_proxy(NULL), layout(NULL) {
         this->packet_type = ambient::layout.default_data_packet_t;
         this->mem_dim  = engine.get_mem_dim();
         this->item_dim = engine.get_item_dim();
@@ -36,46 +38,33 @@ namespace ambient {
         this->gpu_dim  = engine.get_gpu_dim();
     };
 
-    p_profile::~p_profile(){
+    p_object::~p_object(){
+        if(this->state == SERIAL) return;
         for(int i=0; i < this->skeleton.size(); i++)
             for(int j=0; j < this->skeleton[i].size(); j++)
                 delete this->skeleton[i][j];
+        delete this->init;
+        delete this->layout;
     }
 
-    void p_profile::set_id(std::pair<unsigned int*,size_t> group_id){
-        this->layout = new core::layout_table(this);
-        this->group_id = group_id.first;
-        this->id = p_profile_map.insert(group_id.first, group_id.second, this->layout);
-    }
-
-    std::pair<unsigned int*,size_t> p_profile::get_id(){
+    std::pair<unsigned int*,size_t> p_object::get_id(){
         if(this->id == 0) 
             return std::pair<unsigned int*,size_t>((unsigned int*)&this->id, this->id); // returning valid pointer
         else 
             return std::pair<unsigned int*,size_t>(this->group_id, this->id);
     }
 
-    void p_profile::set_master(int master){
-        this->master_relay = std::pair<int,int>(this->master_relay.second, master);
-    }
-
-    void p_profile::set_scope(groups::group* scope){
+    void p_object::set_scope(groups::group* scope){
         this->xscope = this->scope;
         this->scope = scope;
-        this->set_master(scope->get_master_g());
+        this->layout->set_master(scope->get_master_g());
     }
-    
-    int p_profile::get_master(){ return this->master_relay.second; }
-    int p_profile::get_xmaster(){ 
-        if(this->master_relay.first != -1) return this->master_relay.first; 
-        else return this->master_relay.second; 
-    }
-    groups::group* p_profile::get_scope(){ return this->scope; }
-    groups::group* p_profile::get_xscope(){ return this->xscope; } 
-    bool p_profile::xinvolved(){ return ((this->get_xscope() != NULL && this->get_xscope()->involved()) || this->involved()); } // modified
-    bool p_profile::involved(){ return this->get_scope()->involved(); }
+    groups::group* p_object::get_scope(){ return this->scope; }
+    groups::group* p_object::get_xscope(){ return this->xscope; } 
+    bool p_object::xinvolved(){ return ((this->get_xscope() != NULL && this->get_xscope()->involved()) || this->involved()); } // modified
+    bool p_object::involved(){ return this->get_scope()->involved(); }
 
-    p_profile & p_profile::operator>>(dim2 mem_dim) 
+    p_object & p_object::operator>>(dim2 mem_dim) 
     {
         this->mem_dim = mem_dim;
         this->xpacket_type = this->packet_type;
@@ -86,7 +75,7 @@ namespace ambient {
         this->gpu_dim = NULL;
         return *this;
     }
-    p_profile & p_profile::operator,(dim2 dim) 
+    p_object & p_object::operator,(dim2 dim) 
     {
         if(this->work_dim == NULL)
             this->work_dim = dim;
@@ -95,16 +84,16 @@ namespace ambient {
         return *this;
     }
 
-    p_profile & operator>>(p_profile* instance, dim2 mem_dim) {
+    p_object & operator>>(p_object* instance, dim2 mem_dim) {
         return *instance >> mem_dim;
     }
 
-    bool p_profile::is_associated_proxy(){
+    bool p_object::is_associated_proxy(){
         return (this->state == PROXY);
     }
 
-    void p_profile::associate_proxy(void(*R)(memblock*,void*)){
-        this->associated_proxy = new p_profile();
+    void p_object::associate_proxy(void(*R)(memblock*,void*)){
+        this->associated_proxy = new p_object();
         this->associated_proxy->reduce    = R;
         this->associated_proxy->reference = this;
         this->associated_proxy->dim       = this->dim;
@@ -115,7 +104,8 @@ namespace ambient {
         this->associated_proxy->reblock();
     }
 
-    void p_profile::reblock(){
+    void p_object::reblock(){
+        if(this->state == SERIAL) return;
         int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
         int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
         if(this->reserved_x >= x_size && this->reserved_y >= y_size) return;
@@ -130,7 +120,7 @@ namespace ambient {
         if(y_size > this->reserved_y) this->reserved_y = y_size;
     }
 
-    size_t p_profile::get_block_lda(){
+    size_t p_object::get_block_lda(){
         return this->get_mem_t_dim().y*this->t_size;
     }
 
@@ -141,7 +131,7 @@ namespace ambient {
         return e1.i < e2.i;
     }
 
-    void p_profile::solidify(std::vector<core::layout_table::entry> entries)
+    void p_object::solidify(std::vector<core::layout_table::entry> entries)
     {
         int jumper = 0;
 // let's find the solid_lda
@@ -165,7 +155,7 @@ namespace ambient {
     }
 
 
-    void p_profile::disperse(std::vector<core::layout_table::entry> entries)
+    void p_object::disperse(std::vector<core::layout_table::entry> entries)
     { 
         int jumper = 0;
         std::sort(entries.begin(), entries.end(), matrix_order_predicate);
@@ -182,38 +172,24 @@ namespace ambient {
         free(this->data);
     }
 
-    void p_profile::set_default_block(int i, int j)
+    void p_object::set_default_block(int i, int j)
     {
         if(i == -1) this->default_block = NULL;
         else this->default_block = this->block(i, j);
     }
 
-    dim2 p_profile::get_block_id()
+    dim2 p_object::get_block_id()
     {
         return dim2(this->default_block->j, this->default_block->i);
     }
 
-    void p_profile::touch()
-    {
-        if(this->state == ABSTRACT){
-            this->state = COMPOSING;
-        }else if(this->state == COMPOSING){
-            this->state = GENERIC;
-        }else if(this->state == GENERIC){
-        }
-    }
+    void p_object::constant(){ this->consted = true; }
+    void p_object::inconstant(){ this->consted = false; }
 
-    void p_profile::constant(){ this->consted = true; }
-    void p_profile::inconstant(){ this->consted = false; }
-
-    void p_profile::preprocess(){
+    void p_object::preprocess(){
+        if(this->state == SERIAL) return;
         groups::group* scope = ambient::scope.get_group();
-        if(this->id == 0) this->set_id(scope->id);
-        this->touch();
-        if(!this->consted){
-            this->timestamp++;
-            this->set_scope(scope);
-        }
+        ambient::model.update_object(scope, this);
         if(scope->involved()){
             if(!scope->get_manager()->subscribed(*this->packet_type)){
                 scope->get_manager()->subscribe(*this->packet_type);
@@ -228,20 +204,22 @@ namespace ambient {
         }
     }
 
-    void p_profile::postprocess(){
+    void p_object::postprocess(){
+        if(this->state == SERIAL) return;
         if(this->layout != NULL)
         if(this->layout->init_marker.active){
             this->layout->init_marker.clear();
         }
     }
-    void p_profile::postprocess(int i, int j){
-        // can check if(this->block(i,j)->header != NULL) and reuse memory (reservation in reblck function) 
+    void p_object::postprocess(int i, int j){
+        assert(this->block(i,j)->header == NULL); // if fails - try to reuse this memory
         this->block(i,j)->set_memory(alloc_t(*this->packet_type));
         this->set_default_block(i, j);
         this->init->invoke();
     }
 
-    void p_profile::finalize(){
+    void p_object::finalize(){
+        if(this->state == SERIAL) return;
         if(this->associated_proxy != NULL){
             ambient::scope.spin_loop();
             for(int i=0; i < this->layout->segment_count; i++){ // watch out of constness
@@ -256,13 +234,14 @@ namespace ambient {
         }
     }
 
-    void p_profile::clean(){
+    void p_object::clean(){
+        if(this->state == SERIAL) return;
         this->layout->clean();
         delete this->associated_proxy;
         this->associated_proxy = NULL;
     }
 
-    memblock& p_profile::operator()(int i, int j){
+    memblock& p_object::operator()(int i, int j){
         if(this->is_associated_proxy()){ // on-touch init for proxy
             if(!this->block(i,j)->available()){
                 this->block(i,j)->set_memory(alloc_t(*this->packet_type));
@@ -271,7 +250,7 @@ namespace ambient {
         }else if(!this->block(i,j)->available()){
             groups::packet_manager* manager = world()->get_manager(); //this->consted ? world()->get_manager() : this->get_scope()->get_manager();
             manager->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), 
-                                                this->get_master(), "P2P", 
+                                                this->layout->get_master(), "P2P", 
                                                "INFORM OWNER ABOUT REQUEST",
                                                *this->group_id, this->id, "GENERIC",
                                                 ambient::rank(),      // forward target
@@ -281,7 +260,7 @@ namespace ambient {
         return *(this->block(i,j));
     }
 
-    memblock* p_profile::block(int i, int j) const {
+    memblock* p_object::block(int i, int j) const {
         int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
         int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
         
@@ -289,25 +268,25 @@ namespace ambient {
         return this->skeleton[i][j];
     }
 
-    size_t p_profile::get_bound() const {
+    size_t p_object::get_bound() const {
         assert(this->packet_type != NULL);
         return (size_t)this->packet_type->displacements[A_BLOCK_P_DATA_FIELD];
     }
 
-    void* p_profile::get_data(){
+    void* p_object::get_data(){
         if(this->default_block == NULL) return NULL; // we asked to convert non structuring arg
         return this->default_block->data;            // >_< need to write proper get for blcck's items
     }
-    void p_profile::set_init(core::operation* op){
+    void p_object::set_init(core::operation* op){
         this->init = op;
     }
-    core::operation* p_profile::get_init() const {
+    core::operation* p_object::get_init() const {
         return this->init;
     }
-    dim2 p_profile::get_dim() const {
+    dim2 p_object::get_dim() const {
         return this->dim;
     }
-    void p_profile::set_dim(dim2 dim){
+    void p_object::set_dim(dim2 dim){
         if(this->layout != NULL){
             if(this->get_grid_dim().y < __a_ceil(dim.y / this->get_mem_t_dim().y) || 
                this->get_grid_dim().x < __a_ceil(dim.x / this->get_mem_t_dim().x)){
@@ -319,39 +298,39 @@ namespace ambient {
         if(this->layout != NULL)
             this->layout->remap();
     }
-    dim2 p_profile::get_work_dim() const {
+    dim2 p_object::get_work_dim() const {
         return this->work_dim;
     }
-    void p_profile::set_work_dim(dim2 dim){
+    void p_object::set_work_dim(dim2 dim){
         this->work_dim = dim;
     }
-    dim2 p_profile::get_gpu_dim() const {
+    dim2 p_object::get_gpu_dim() const {
         return this->gpu_dim;
     }
-    void p_profile::set_gpu_dim(dim2 dim){
+    void p_object::set_gpu_dim(dim2 dim){
         this->gpu_dim = dim;
     }
 
-    dim2 p_profile::get_grid_dim() const {
+    dim2 p_object::get_grid_dim() const {
         int x_size = __a_ceil(this->dim.x / this->get_mem_t_dim().x);
         int y_size = __a_ceil(this->dim.y / this->get_mem_t_dim().y);
         return dim2(x_size, y_size);
     }
 
-    dim2 p_profile::get_mem_t_dim() const {
+    dim2 p_object::get_mem_t_dim() const {
         return this->get_mem_dim() *= this->get_item_dim();
     }
-    dim2 p_profile::get_mem_dim() const {
+    dim2 p_object::get_mem_dim() const {
         return this->mem_dim;
     }
-    void p_profile::set_mem_dim(dim2 dim){
+    void p_object::set_mem_dim(dim2 dim){
         this->mem_dim = dim;
     }
 
-    dim2 p_profile::get_item_dim() const {
+    dim2 p_object::get_item_dim() const {
         return this->item_dim;
     }
-    void p_profile::set_item_dim(dim2 dim){
+    void p_object::set_item_dim(dim2 dim){
         this->item_dim = dim;
     }
 }

@@ -1,5 +1,5 @@
-#ifndef AMBIENT_CORE_P_PROFILE_H
-#define AMBIENT_CORE_P_PROFILE_H
+#ifndef AMBIENT_CORE_P_OBJECT_H
+#define AMBIENT_CORE_P_OBJECT_H
 #include "ambient/core/memblock.h"
 #include "ambient/auxiliary.h"
 #include <boost/scoped_ptr.hpp>
@@ -11,13 +11,13 @@ namespace ambient {
 
     namespace groups { class group; }
     class memblock;
-    enum  p_state { ABSTRACT, COMPOSING, GENERIC, PROXY };
+    enum  p_state { ABSTRACT, COMPOSING, GENERIC, PROXY, SERIAL };
 
-    class p_profile {
+    class p_object {
     protected:
-        p_profile();
+        p_object();
     public:
-       ~p_profile();
+       ~p_object();
 // state description knobs /////////////////////
         p_state             state;            //
         bool                consted;          //
@@ -27,20 +27,19 @@ namespace ambient {
         unsigned int*       group_id;         //
         unsigned int        id;               //
         size_t              timestamp;        //
-        std::pair<int,int>  master_relay;     //
         groups::group*      scope;            //
         groups::group*      xscope;           //
 ////////////////////////////////////////////////
 
 // data driven fields //////////////////////////
         size_t              t_size;           //
-        p_profile*          reference;        // pointer to this profile (this on init - can be changed in proxy objects)
+        p_object*           reference;        // pointer to this profile (this on init - can be changed in proxy objects)
         core::layout_table* layout;           // spatial layout of the profile
         std::vector< std::vector<memblock*> > //
                             skeleton;         //
         size_t              reserved_x;       // skeleton reservation
         size_t              reserved_y;       //
-        p_profile*          associated_proxy; //
+        p_object*           associated_proxy; //
 // self-operations /////////////////////////////
         core::operation*    init;             //
         void(*reduce)(memblock*,void*);       //
@@ -50,7 +49,7 @@ namespace ambient {
         block_packet_t*     packet_type;      //
         block_packet_t*     xpacket_type;     //
         memblock*           default_block;    //
-// scalapack knobs /////////////////////////////
+// lapack knobs ////////////////////////////////
         void*               data;             // 
         size_t              solid_lda;        //
 ////////////////////////////////////////////////
@@ -64,8 +63,8 @@ namespace ambient {
         dim2                gpu_dim;          // work-item size of gpgpu smp workload fractions
 ////////////////////////////////////////////////
     public:
-        p_profile&          operator >>(dim2 mem_dim);
-        p_profile&          operator , (dim2 dim);
+        p_object&          operator >>(dim2 mem_dim);
+        p_object&          operator , (dim2 dim);
 
         void                constant();
         void                inconstant();
@@ -80,10 +79,6 @@ namespace ambient {
 
         std::pair<unsigned int*,size_t> 
                             get_id();
-        void                set_id(std::pair<unsigned int*,size_t> group_id);
-        int                 get_xmaster();
-        int                 get_master();
-        void                set_master(int master);
         groups::group*      get_xscope();
         groups::group*      get_scope();
         void                set_scope(groups::group* scope);
@@ -125,7 +120,7 @@ namespace ambient {
         size_t              get_bound()     const;
     };
 
-    p_profile& operator>>(p_profile* instance, dim2 mem_dim);
+    p_object& operator>>(p_object* instance, dim2 mem_dim);
     void accept_block(groups::packet_manager::typed_q& in_q);
 }
 #endif

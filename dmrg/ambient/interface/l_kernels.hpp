@@ -23,7 +23,7 @@
 template<typename T> 
 void info(T& obj){
     if(rank.is_master(scope.get_group())){
-        void_pt& p = breakdown(obj);
+        parallel_t& p = breakdown(obj);
         printf("M%d:%d / %d x %d groups (each %d x %d items of %d x %d els)\n", 
                *p.group_id, p.id, p.get_grid_dim().y, p.get_grid_dim().x, p.get_mem_dim().y, p.get_mem_dim().x, p.get_item_dim().x, p.get_item_dim().y);
     }
@@ -64,7 +64,7 @@ void block_2d_cycle_transposed_assign(T& target)
 template<typename T>
 void block_outright_assign(T& target)
 {
-// this no "distribution" is only needed in side scalapack solver (SVD, ...) where we need a contiguous array (no splitting between proc) for the output (schmidt values ...)
+// this no "distribution" is only needed where we need a contiguous array (no splitting between proc) for the output (schmidt values ...)
 ///////////////////////////////////////////////////////////////////////////
     for(int i = 0; i < get_grid_dim(target).y; i++){
         for(int j = 0; j < get_grid_dim(target).x; j++){
@@ -210,18 +210,6 @@ void gemm_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>
     block_2d_cycle_assign(c);
 }
 
-void gemm_l_scalapack(const p_dense_matrix<double>& a, const p_dense_matrix<double>& b,  p_dense_matrix<double>& c)
-{
-    int num = 1;//get_grid_dim(a).y; 
-    scope_select(num+" from ambient as gemm_scalapack where master is 0 and breakdown contains "+get_id(a));
-    if(!scope.involved()) return;
-    //gzout << "2dbcd in gemm_scalapack ("<< ambient::rank() <<"):\n"; info(a); info(b); info(c);
-
-    block_2d_cycle_assign(a);
-    block_2d_cycle_assign(b);
-    block_2d_cycle_assign(c);
-}
-
 void scalar_norm_l(pinned const p_dense_matrix<double>& a, double*& norm)
 {
     scope_select("* from ambient as scalar_norm where master is 0");
@@ -262,7 +250,7 @@ void scale_l(pinned p_dense_matrix<double>& m, const double& t)
 /////////////////////
 // testing kernels // 
 
-void svd_l_scalapack(const p_dense_matrix<double>& a, int& m, int& n, p_dense_matrix<double>& u, p_dense_matrix<double>& vt, p_dense_matrix<double>& s)
+void svd_l(const p_dense_matrix<double>& a, int& m, int& n, p_dense_matrix<double>& u, p_dense_matrix<double>& vt, p_dense_matrix<double>& s)
 {
     int num = 1;
     scope_select(num+" from ambient as svd where master is 0 and breakdown contains "+ get_id(a));
@@ -275,7 +263,7 @@ void svd_l_scalapack(const p_dense_matrix<double>& a, int& m, int& n, p_dense_ma
     block_2d_cycle_assign(vt);
 }
 
-void syev_l_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
+void syev_l(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
 {
     int num = 1;
     scope_select(num+" from ambient as syev where master is 0 and breakdown contains "+ get_id(a));
@@ -286,7 +274,7 @@ void syev_l_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<do
     block_2d_cycle_assign(w);
 }
 
-void heev_l_scalapack(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
+void heev_l(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
 {
     int num = 1;
     scope_select(num+" from ambient as syev where master is 0 and breakdown contains "+ get_id(a));

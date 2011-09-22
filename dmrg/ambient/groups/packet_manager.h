@@ -17,7 +17,7 @@ namespace ambient{ namespace groups{
     {
     public: 
         enum locking_fsm { OPEN, LOOSE, CLOSURE, CLOSED };
-        enum direction   { IN, OUT };
+        enum direction   { IN, OUT, LO };
     private: 
         packet_manager(packet_manager const&);             // copy constructor is private
         packet_manager& operator=(packet_manager const&);  // assignment operator is private
@@ -34,30 +34,27 @@ namespace ambient{ namespace groups{
         class typed_q
         {
         public:
-            typed_q(packet_manager* manager, const packet_t& type, direction flow, int reservation, int priority);
+            typed_q(packet_manager* manager, const packet_t& type, direction flow, int reservation);
            ~typed_q();
-            void push(packet* pack);
             void spin();
             packet* get_target_packet();
             size_t get_active();
-        private:
+            request* attach_request(void* memory);
             request* get_request();
-            void return_request(request* r);
             void recv(request* r);
             void send(request* r);
-
+            void delay(request* r);
+        private:
             packet* target_packet;
             int reservation;
             std::list<request*> reqs;
-            std::list<request*> free_reqs;
         public:
             delegate packet_delivered;
-            int priority;
             direction flow;
             packet_manager* manager;
             const packet_t& type;
         };
-        typed_q* add_typed_q(const packet_t& type, direction flow, int reservation = 1, int priority = 1);
+        typed_q* add_typed_q(const packet_t& type, direction flow, int reservation = 1);
 
         bool     subscribed(const packet_t& type);
         void     subscribe(const packet_t& type);
@@ -66,8 +63,8 @@ namespace ambient{ namespace groups{
         typed_q* get_pipe(const packet_t& type, direction flow);
 
         void spin_loop();
-        void spin(int n = 1);
-        bool process_locking(size_t active_sends_number);
+        void spin();
+        bool process_locking();
         groups::group* get_group();
 
         locking_fsm state;

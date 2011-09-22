@@ -6,15 +6,25 @@
 namespace ambient{ namespace packets {
 
     packet::packet(const packet_t& type, void* memory, va_list& fields) 
-    : type(type), disposable(true){
+    : type(type), lifetime(1){
         type.fill_packet(memory, type.t_code, fields);
         this->data = memory;
         this->mpi_t = this->get_mpi_t();
     }
  
-    packet::packet(const packet_t& type, const void* memory) : type(type){
+    packet::packet(const packet_t& type, const void* memory)
+    : type(type), lifetime(1){
         this->data = const_cast<void*>(memory);
         this->mpi_t = this->get_mpi_t();
+    }
+
+    packet::~packet(){
+        free(this->data);
+    }
+
+    bool packet::disposable()
+    {
+        return (this->lifetime > 0 && (--this->lifetime) == 0);
     }
 
     const packet_t& packet::get_t()

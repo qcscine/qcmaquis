@@ -7,10 +7,10 @@ namespace ambient {
         free(this->header);
     }
 
-    memblock::memblock(p_profile* p, int i, int j)
+    memblock::memblock(p_object* p, int i, int j)
     : profile(p), i(i), j(j), header(NULL), data(NULL), timestamp(0) {};
 
-    p_profile* memblock::get_profile(){
+    p_object* memblock::get_profile(){
         return this->profile;
     }
 
@@ -27,10 +27,11 @@ namespace ambient {
     }
 
     bool memblock::available(){
-        return (this->timestamp == this->get_profile()->timestamp);
+        return (this->timestamp == this->get_profile()->timestamp && this->header != NULL);
     }
 
     void memblock::set_memory(void* memory){
+        if(this->header != NULL) free(this->header);
         this->header = memory;
         this->data = (void*)((size_t)memory + this->get_profile()->get_bound());
         this->timestamp = this->get_profile()->timestamp;

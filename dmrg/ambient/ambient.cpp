@@ -22,10 +22,15 @@ namespace ambient
     scheduler& layout        = scheduler::instance();
     scheduler& engine        = scheduler::instance();
     multirank& rank          = multirank::instance();
-    hash_map&  p_profile_map = hash_map::instance();
+// { Model View Controller
+    i_model&  model          = data_model::instance();
+    i_controller& controller = d_controller::instance();
+    i_channel& channel       = mpi_channel::instance();
+// } Model View Controller
     comm_map&  scope_map     = comm_map::instance();
     scope_context& scope     = scope_context::instance();
     access_marker& access    = access_marker::instance();
+    Timer timer("AMBIENT TUNING TIMER");
 // global objects accessible anywhere //
 
     scheduler & scheduler::operator>>(dim2 mem_dim) 
@@ -64,15 +69,16 @@ namespace ambient
     void finalize()  { engine.finalize();        }
     void playout()   { engine.playout();         }
     void bailout()   { engine.bailout();         }
-    void bailin()    { engine.bailin();         }
+    void bailin()    { engine.bailin();          }
     void spin()      { engine.spin();            }
     void spin_loop() { engine.spin_loop();       }
     void world_loop(){ engine.world_loop();      }
     void world_spin(){ engine.world_spin();      }
     int  size()      { return engine.size;       }
     bool occupied()  { return engine.occupied(); }
+    bool blank()     { return engine.blank();    }
 
-    scheduler::scheduler(): item_dim(dim2(32,32)), stirring(false){ } // to revert to 128,128
+    scheduler::scheduler(): item_dim(dim2(16,16)), stirring(false){ } // to revert to 128,128
     dim2 scheduler::get_mem_dim() { return this->mem_dim;  }
     dim2 scheduler::get_item_dim(){ return this->item_dim; }
     dim2 scheduler::get_work_dim(){ return this->work_dim; }
@@ -99,14 +105,14 @@ namespace ambient
     {
         this->stack.push_back(std::pair<core::operation*,core::operation*>(logistics,computing));
     }
-    void scheduler::spin()
+    inline void scheduler::spin()
     {
         this->world_spin();
         while(!this->router.alt_end_reached()){ // alt is for embedding
             (*this->router.alt_pick())->spin(); // router is slow as it contains hundreds of the same groups
         }
     }
-    void scheduler::spin_loop()
+    inline void scheduler::spin_loop()
     {
         this->world_loop();
         while(!this->router.end_reached()){
@@ -114,29 +120,33 @@ namespace ambient
             mgr->spin_loop();
         }
     }
-    void scheduler::world_spin()
+    inline void scheduler::world_spin()
     {
         world()->spin();
     }
-    void scheduler::world_loop()
+    inline void scheduler::world_loop()
     {
         world()->spin_loop();
     }
-    bool scheduler::occupied()
+    inline bool scheduler::occupied()
     {
         return this->stirring;
     }
-    void scheduler::bailout()
+    inline bool scheduler::blank()
+    {
+        return this->stack.empty();
+    }
+    inline void scheduler::bailout()
     {
         this->stirring = true;
     }
-    void scheduler::bailin()
+    inline void scheduler::bailin()
     {
         this->stirring = false;
     }
-    void scheduler::playout()
+    inline void scheduler::playout()
     {
-        if(this->stack.empty()) return; // easy out
+        if(this->blank()) return; // easy out
         if(this->occupied() != false){ free((void*) -1); assert(false); }
         this->stirring = true;
         //printf("R%d: playout...\n", ambient::rank());
@@ -147,9 +157,7 @@ namespace ambient
         core::operation* needle_op;
         core::operation* haystack_op;
         bool repeat = true;
-        //Timer ct("computing"); Timer dt("distribution"); Timer rt("relation scanning");
-        //Timer ambop("ambient pure computing");
-        //rt.begin();
+//////////////////// 2.5 seconds { /////////////
         while(!this->stack.end_reached()){
             pair = this->stack.pick();
             pair->first->extract_profiles();
@@ -162,25 +170,30 @@ namespace ambient
             } while(needle_op != haystack_op); 
             while(!this->stack.alt_end_reached()){
                 haystack_op = this->stack.alt_pick()->first;
-                for(int i=0; i < needle_op->count; i++)
-                for(int j=0; j < haystack_op->count; j++)
-                if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
-                    if(needle_op->constness[i] && haystack_op->constness[j]) continue;
-                    needle_op->add_dependant(haystack_op);
-                    goto double_break;
+                for(int i=0; i < needle_op->count; i++){
+                    if(needle_op->profiles[i]->state == SERIAL) continue; // not supporting serial deps
+                    for(int j=0; j < haystack_op->count; j++)
+                    if(needle_op->profiles[i] == haystack_op->profiles[j]){ // pointers comparison
+                        if(needle_op->constness[i] && haystack_op->constness[j]) continue;
+                        needle_op->add_dependant(haystack_op);
+                        goto double_break;
+                    }
                 }
                 double_break: continue;
             }
         }
-        //rt.end();
+////////////////// } 2.5 seconds //////////////
 // now we all set with dependencies!
+
+////////////////// 23 seconds { //////////////
         while(repeat)
         {   repeat = false;
-            //dt.begin();
-            this->world_loop(); // fixes race condition between iterations
+            /////// 19 seconds { ////////////
+            this->world_loop(); // 10.4 seconds // fixes race condition between iterations
+            /////// 2.4 seconds { /////////////
             while(!this->stack.end_reached()){
                 logistics = this->stack.pick()->first;
-                if(logistics->executed) continue;
+                if(logistics == NULL) continue;
                 if(logistics->dependency_count){ repeat = true; continue; }
                 logistics->perform();
                 core::apply_changes(logistics->profiles, logistics->count);
@@ -189,22 +202,23 @@ namespace ambient
                     this->router.push_back(logistics->get_scope()->get_manager());
                 }
             }
-            this->world_loop();
-            //dt.end();
+            /////// } 2.4 seconds /////////////
+            this->world_loop(); // 8 seconds
+            /////// } 19 seconds ////////////
             //printf("Computing!\n");
             //ct.begin();
             while(!this->stack.end_reached()){
                 pair = this->stack.pick();
                 logistics = pair->first;
                 computing = pair->second;
-                if(logistics->dependency_count || computing->executed) continue;
+                if(computing == NULL || logistics->dependency_count) continue;
                 cleanup_stack.push_back(logistics);
                 if(logistics->get_scope()->involved()){
                     computing->set_scope(logistics->get_scope());
                     scope.set_group(logistics->get_scope());
                     if(logistics->pin == NULL){ // nothing has been pinned
                         logistics->get_scope()->spin_loop();
-                        computing->invoke();    // scalapack style
+                        computing->invoke();    // lapack style
                         logistics->get_scope()->spin_loop();
                     }else{
                         this->context.bind(logistics);
@@ -214,20 +228,21 @@ namespace ambient
                         this->context.finalize();
                     }
                 }
-                computing->release();
+                pair->first  = NULL;
+                pair->second = NULL;
+                delete computing;
             }
             //ct.end();
 // cleaning the layout
             while(!cleanup_stack.end_reached()){
                 logistics = *cleanup_stack.pick();
-                for(int i=0; i < logistics->count; i++)
-                    logistics->profiles[i]->clean();
-                logistics->resolve_dependencies();
                 logistics->release();
+                delete logistics;
             }
             cleanup_stack.clean(); // :))
             this->router.clean();
         }
+////////////////// } 23 seconds //////////////
         this->stack.clean();
         scope.reset_group();
         this->stirring = false;

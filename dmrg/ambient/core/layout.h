@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace ambient { 
-    class p_profile;
+    class p_object;
 
 namespace core {
 
@@ -33,8 +33,8 @@ namespace core {
             int get_owner();
         };
 
-        layout_table(p_profile* profile);
-        ~layout_table();
+        layout_table(p_object* object);
+       ~layout_table();
         void remap();
 
         std::vector<core::layout_table::entry>& get_list();
@@ -51,7 +51,11 @@ namespace core {
         void clean();
         void print();
 
-        p_profile* profile;
+        int  get_xmaster();
+        int  get_master();
+        void set_master(int master);
+
+        p_object* object;
         std::vector< std::vector<entry*> > map;
         std::vector<entry> segment;
         std::vector<entry> requests;
@@ -61,9 +65,10 @@ namespace core {
         size_t count;
         size_t segment_count;
         size_t request_count;
+        std::pair<int,int>  master_relay;
     };
 
-    void apply_changes(p_profile** profiles, size_t count);
+    void apply_changes(p_object** objects, size_t count);
 
 } }
 #endif
