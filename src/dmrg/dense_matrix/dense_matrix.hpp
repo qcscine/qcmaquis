@@ -603,4 +603,19 @@ namespace blas {
         }
         return o;
     }
+
+   template <typename T, typename MemoryBlock>
+   const MemoryBlock& dense_matrix<T, MemoryBlock>::get_values() const
+   {   
+       return this->values_;
+   }   
+
+   template <typename T, typename MemoryBlock>
+   MemoryBlock& dense_matrix<T, MemoryBlock>::get_values()
+   {   
+       return this->values_;
+   }   
+
+
+
 }
