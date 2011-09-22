@@ -24,11 +24,14 @@ namespace blas
     const T trace(const p_dense_matrix<T>& m)
     {
         assert(num_rows(m) == num_cols(m));
+        T trace;
         T* tr = (T*)calloc(1,sizeof(T));
         if(m.is_abstract()) m.touch();
         ambient::push(ambient::trace_l, ambient::trace_c, m, tr);
-        ambient::playout(); // to remove in future
-        return *tr;
+        ambient::playout(); // execution weight: 4
+        trace = *tr;
+        free(tr);
+        return trace;
     }
         
     template<typename T>
@@ -38,14 +41,6 @@ namespace blas
         return m;
     }
         
-    template<typename T>
-    void pblas_gemm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c)
-    {
-        //c.resize(a.num_rows(), b.num_cols());
-        c.set_init(ambient::null_i<T>);
-        ambient::push(ambient::gemm_l_scalapack, ambient::gemm_c_scalapack, a, b, c);
-    }
-
     template<typename T>
     void gemm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c)
     {
@@ -85,7 +80,7 @@ namespace blas
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        ambient::push(ambient::svd_l_scalapack, ambient::svd_c_scalapack, a, m, n, u, vt, s.get_data());
+        ambient::push(ambient::svd_l, ambient::svd_c, a, m, n, u, vt, s.get_data());
     }
 
     template<typename T>
@@ -98,7 +93,7 @@ namespace blas
         int m = num_rows(a);
 
         evecs.resize(m, m);
-        ambient::push(ambient::heev_l_scalapack, ambient::heev_c_scalapack, a, m, evals.get_data()); // destoys U triangle of M
+        ambient::push(ambient::heev_l, ambient::heev_c, a, m, evals.get_data()); // destoys U triangle of M
         evecs = a;
     }
     
@@ -152,7 +147,6 @@ namespace blas
     { // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector
         std::vector<typename T::value_type>* sc_ptr = &sc;
         ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, s.get_data(), prec);
-        ambient::playout(); // the sc reference points to the deleted object if not to issue playout here
     }
 
     template<typename T>
