@@ -5,7 +5,10 @@
 namespace ambient{ namespace core{
 
     operation::~operation(){
-        //delete[] this->arguments;//->reset<p_dense_matrix<double> >();
+        free(this->profiles);
+        free(this->constness);
+        delete[] this->arguments;
+        delete this->dependants;
     }
 
     void operation::add_dependant(operation* dep){
@@ -29,19 +32,16 @@ namespace ambient{ namespace core{
         this->pin = NULL;
         this->dependants = NULL;
         this->dependency_count = 0;
-        this->executed = false;
         this->constness = NULL;
     }
     void operation::perform()
     {
         ambient::scope.set_op(this);
         (this->*prototype)();
-        this->executed = true;
     }
     void operation::invoke()
     {
         (this->*prototype)();
-        this->executed = true;
     }
     void operation::extract_profiles()
     {
@@ -71,10 +71,11 @@ namespace ambient{ namespace core{
     {
         for(size_t i=0; i < this->count; i++) this->profiles[i]->finalize();
     }
-    void operation::release()
+    void operation::release() // called only for one op in a pair
     {
-        this->executed = true;
-        delete[] this->arguments;
+        for(int i=0; i < this->count; i++)
+            this->profiles[i]->clean();
+        this->resolve_dependencies();
     }
     void operation::set_scope(groups::group* scope)
     {

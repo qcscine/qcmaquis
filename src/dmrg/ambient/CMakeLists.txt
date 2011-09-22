@@ -8,11 +8,12 @@ add_library (ambient
              groups/packet_manager.cpp
              groups/multirank.cpp
              groups/group.cpp
-             core/p_profile.cpp
+             core/p_object.cpp
              core/memblock.cpp
              core/select.cpp
              core/scope_context.cpp
              core/workgroup_context.cpp
              core/operation/operation.cpp
              core/layout.cpp
+             model.cpp
              ambient.cpp)

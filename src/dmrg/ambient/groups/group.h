@@ -25,6 +25,7 @@ namespace ambient{ namespace groups{
     class group
     {
     public:
+       ~group();
         group(const char* name, int master, group* parent);
         group(const char* name, int master, MPI_Comm parent); // special constructor for nest group
         void commit();

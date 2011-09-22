@@ -41,7 +41,7 @@ operation::operation( FP op, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER, T, *arg) 
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = TYPES_NUMBER;
-    this->profiles  = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles  = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;

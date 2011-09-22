@@ -8,12 +8,13 @@ using namespace blas;
 void copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a);
 void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a);
 
-class void_pt: public p_profile 
+class parallel_t: public p_object 
 { 
 public: 
-    template <typename T> void_pt(const T* ptr) : p_profile()
+    parallel_t() : p_object() { this->state = SERIAL; }
+    template <typename T> parallel_t(const T* ptr) : p_object()
     { breakdown_model(this, ptr); }
-    ~void_pt(){ }//printf("Deleting profile\n"); };  // use with caution
+    ~parallel_t(){ }//printf("Deleting profile\n"); };  // use with caution
 private: 
     friend class T; // the container can delete its profile
     template<class T> friend inline void boost::checked_delete(T * x); // so as boost >_<
@@ -79,7 +80,7 @@ public:
         else if(P == REPLICA || P == WEAK) self = (T*)this;
         thyself = self;
     }
-    livelong(void_pt* p):profile(p){
+    livelong(parallel_t* p):profile(p){
         this->init();
         if(P == ANY) handle.reset( self = (T*)(new typename T::replica(p)) );
         else if(P == MANUAL) handle.reset( self = (T*)this, null_deleter<T> );
@@ -119,12 +120,12 @@ public:
         else if(this->p == REPLICA) return boost::shared_ptr<T>(this->self, null_deleter<T>); // should never occur except copyed objects (not deleting in init :)) <- can lead to errors
         return boost::shared_ptr<T>();
     }
-    void_pt*& breakdown() const {
+    parallel_t*& breakdown() const {
         return self->profile;
     }
     void set_breakdown() {
         if(this->p == ANY) return;
-        self->profile = new void_pt(self);
+        self->profile = new parallel_t(self);
     }
 
     void(*init_fp)(T&);
@@ -160,7 +161,7 @@ public:
     T* self;
     T* thyself;
     size_t use_count;
-    void_pt* profile;
+    parallel_t* profile;
     policy p; // the same as P (avoiding casting collisions)
     boost::shared_ptr<T> handle;
 };
@@ -187,15 +188,15 @@ boost::shared_ptr< p_dense_matrix<T> > get_handle(const p_dense_matrix<T,P>& a){
 
 // user types //
 template <typename T> 
-void_pt& breakdown(p_dense_matrix<T>& obj){
-    void_pt** profile_ptr = const_cast<void_pt**>(&obj.breakdown());
+parallel_t& breakdown(p_dense_matrix<T>& obj){
+    parallel_t** profile_ptr = const_cast<parallel_t**>(&obj.breakdown());
     (*profile_ptr)->inconstant();
     return **profile_ptr;
 }
 
 template <typename T> 
-void_pt& breakdown(const p_dense_matrix<T>& obj){
-    void_pt** profile_ptr = const_cast<void_pt**>(&obj.breakdown());
+parallel_t& breakdown(const p_dense_matrix<T>& obj){
+    parallel_t** profile_ptr = const_cast<parallel_t**>(&obj.breakdown());
     (*profile_ptr)->constant();
     return **profile_ptr;
 }
@@ -203,7 +204,7 @@ void_pt& breakdown(const p_dense_matrix<T>& obj){
 
 // aliases for computational kernels
 template <typename T>
-void_pt& current(T& obj){
+parallel_t& current(T& obj){
     return breakdown(obj);
 }
 
@@ -213,11 +214,11 @@ void plus_reduce(memblock* grp, void* update){
 }
 
 template <char R, typename T>
-void_pt& reduced(T& obj){
+parallel_t& reduced(T& obj){
     if(breakdown(obj).associated_proxy == NULL){
         if(R == '+') breakdown(obj).associate_proxy(plus_reduce<T>);
     }
-    return *((void_pt*)breakdown(obj).associated_proxy);
+    return *((parallel_t*)breakdown(obj).associated_proxy);
 }
 
 std::string & operator+(std::string & lhs, double rhs){

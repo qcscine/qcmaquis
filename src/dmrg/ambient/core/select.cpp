@@ -13,12 +13,11 @@ namespace ambient {
         groups::group* grp;
         groups::group* vellum = NULL;
         int i, token_len, token_t;
-        char* quantity;
-        char* group; 
-        char* as;
-        char* field;
-        char* master_token;
-        char* breakdown_token;
+        char* group           = NULL;
+        char* as              = NULL;
+        char* field           = NULL;
+        char* master_token    = NULL;
+        char* breakdown_token = NULL;
         int master = 0;
 
         i = sqlite3GetToken((const unsigned char*)sql, &token_t);
@@ -27,7 +26,6 @@ namespace ambient {
         i += parseout<TK_ID>(sql, &group);
         i += parseout<TK_ID>(&sql[i], &as);
         parent_grp = groups::group_map(group);
-        if(as == NULL) as = (char*)"tmp";
 
         do{
             i += parseout<TK_ID>(&sql[i], &field);
@@ -38,13 +36,17 @@ namespace ambient {
                 if(group_id != 0){
                     i += parseout<TK_INTEGER>(&sql[i], &breakdown_token);
                     unsigned int id = (unsigned int)strtol(breakdown_token, NULL, 10);
-                    vellum = p_profile_map.find(&group_id, 1, id)->profile->get_scope();
+                    vellum = ambient::model.get_object(&group_id, 1, id)->get_scope();
                 }
             }else if(strcmp(field,"master") == 0){ 
                 i += parseout<TK_INTEGER>(&sql[i], &master_token);
                 master = (int)strtol(master_token, NULL, 10);
             }
         }while(field != NULL);
+        free(field);
+        free(breakdown_token);
+        free(master_token);
+        free(group);
 
         grp = new groups::group(as, master, parent_grp);
 
@@ -72,7 +74,11 @@ namespace ambient {
         }
 
         try{ grp->commit(); }
-        catch(groups::group* original){ grp = original; }
+        catch(groups::group* original){ 
+            delete grp;
+            free(as);
+            grp = original;
+        }
 
         assert(master < grp->get_size());
         scope.set_group(grp);
@@ -96,7 +102,7 @@ namespace ambient {
 
         if(token_t == TK_ILLEGAL) *id = NULL;
         else{
-            *id = (char*)malloc(sizeof(char)*(token_len+1));
+            *id = (char*)realloc(*id, sizeof(char)*(token_len+1));
             memcpy(*id, &sql[i-token_len], token_len*sizeof(char));
             (*id)[token_len] = 0; // end of the string
         }

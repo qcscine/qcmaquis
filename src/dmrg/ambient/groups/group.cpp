@@ -30,6 +30,15 @@ namespace ambient{ namespace groups {
         return &this->content[hash_w].second;
     }
 
+    group::~group()
+    {
+        delete this->manager;
+        free(this->vacations);
+        free(this->id.first);
+        free(this->members);
+        free(this->members_g);
+    }
+
     group::group(const char* name, int master, MPI_Comm parent): members(NULL), vacant_level(0)
     {
         this->parent = NULL;
@@ -41,7 +50,8 @@ namespace ambient{ namespace groups {
         memset(this->vacations, 0, sizeof(int)*this->count);
         this->members_g = (int*)malloc(sizeof(int)*this->count);
         for(int i=0; i < this->count; i++) this->members_g[i] = i;
-        this->name = name;
+        if(name == NULL) this->name = (char*)"tmp";
+        else this->name = name;
         this->master = master;
         this->manager = new packet_manager(this);
         this->id = hash_group_id();
@@ -81,10 +91,12 @@ namespace ambient{ namespace groups {
         return std::pair<unsigned int*,size_t>(hash_id,1);
     }
 
-    group::group(const char* name, int master, group* parent): count(0), members(NULL), members_g(NULL), vacations(NULL), vacant_level(0)
+    group::group(const char* name, int master, group* parent)
+    : count(0), members(NULL), members_g(NULL), vacations(NULL), vacant_level(0), manager(NULL)
     {
         this->parent = parent;
-        this->name = name;
+        if(name == NULL) this->name = (char*)"tmp";
+        else this->name = name;
         this->master = master;
         this->parent->children.insert(this);
         group_map(this->name, this);
@@ -300,15 +312,12 @@ namespace ambient{ namespace groups {
     }
 
     void group::spin_loop(){
-        assert(this->involved());
         return this->manager->spin_loop();
     }
     void group::spin(){
-        assert(this->involved());
         return this->manager->spin();
     }
     packet_manager* group::get_manager(){
-        assert(this->involved());
         return this->manager;
     }
     bool group::involved(){
@@ -323,7 +332,7 @@ namespace ambient{ namespace groups {
     const char* group::get_name(){
         return this->name;
     }
-    group* group_map(const char* name, group* instance){
+    group* group_map(const char* name, group* instance){ // timings: 0.36 seconds
         static std::map<std::string,group*> map;
         if(instance != NULL){
             if(map.find(name) != map.end()) map.find(name)->second = instance; // can delete the group here

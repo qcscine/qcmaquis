@@ -10,12 +10,13 @@ namespace ambient{ namespace packets{
     public:
         void* data;
         MPI_Datatype mpi_t;
-        bool  disposable;
+        int lifetime;
         const packet_t& type;
         const packet_t& get_t();
         MPI_Datatype get_mpi_t();
         int   get_t_code();
         const void* get(int field);
+        bool  disposable();
 
         template<typename T>
         T get(int field){
@@ -26,6 +27,7 @@ namespace ambient{ namespace packets{
         void set(int field, int value);
         packet(const packet_t& type, const void* memory);
         packet(const packet_t& type, void* memory, va_list& fields); // used in auxiliary.hpp
+       ~packet();
     };
 
     packet* pack(const packet_t& type, void* memory, ...);

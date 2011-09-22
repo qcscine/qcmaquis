@@ -7,7 +7,7 @@
 #include "ambient/auxiliary.h"
 
 namespace ambient{
-    class p_profile; 
+    class p_object; 
     namespace groups { class group; }
 }
 namespace ambient{ namespace core{
@@ -32,7 +32,6 @@ namespace ambient{ namespace core{
         void add_dependant(operation* dep);
         void resolve_dependencies();
 
-        bool executed;
         one_touch_stack<operation*>* dependants;
         size_t dependency_count;
         void(operation::*extract)();
@@ -41,8 +40,8 @@ namespace ambient{ namespace core{
         groups::group* scope;
         bool* constness;
         boost::shared_ptr<void>* arguments;
-        p_profile** profiles;
-        p_profile* pin;
+        p_object** profiles;
+        p_object* pin;
         size_t count;
     };
 } }

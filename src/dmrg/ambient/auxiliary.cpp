@@ -20,12 +20,6 @@ namespace ambient{
     }
     bool access_marker::write_only_marked(){ return this->write_only; }
     
-    hash_map::hash_map& hash_map::instance()
-    {
-        static hash_map* singleton = NULL;
-        if(!singleton) singleton = new hash_map();
-        return *singleton;
-    }
     hash_map::hash_map():content(HASH_MAP_PARTITION_SIZE){ }
     
     unsigned int hash_map::insert(unsigned int* hash, unsigned int hash_len, core::layout_table* value, int shift)

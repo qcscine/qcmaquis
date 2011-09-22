@@ -4,7 +4,7 @@ operation::operation( FP op, T0 *arg0 ){
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 1;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -30,7 +30,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 ){
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 2;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -56,7 +56,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 ){
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 3;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -82,7 +82,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 ){
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 4;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2)); this->arguments[3] = boost::shared_ptr<void>(get_handle(*arg3));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -108,7 +108,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 , T4 *arg
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 5;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2)); this->arguments[3] = boost::shared_ptr<void>(get_handle(*arg3)); this->arguments[4] = boost::shared_ptr<void>(get_handle(*arg4));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -134,7 +134,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 , T4 *arg
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 6;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2)); this->arguments[3] = boost::shared_ptr<void>(get_handle(*arg3)); this->arguments[4] = boost::shared_ptr<void>(get_handle(*arg4)); this->arguments[5] = boost::shared_ptr<void>(get_handle(*arg5));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -160,7 +160,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 , T4 *arg
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 7;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2)); this->arguments[3] = boost::shared_ptr<void>(get_handle(*arg3)); this->arguments[4] = boost::shared_ptr<void>(get_handle(*arg4)); this->arguments[5] = boost::shared_ptr<void>(get_handle(*arg5)); this->arguments[6] = boost::shared_ptr<void>(get_handle(*arg6));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -186,7 +186,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 , T4 *arg
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 8;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2)); this->arguments[3] = boost::shared_ptr<void>(get_handle(*arg3)); this->arguments[4] = boost::shared_ptr<void>(get_handle(*arg4)); this->arguments[5] = boost::shared_ptr<void>(get_handle(*arg5)); this->arguments[6] = boost::shared_ptr<void>(get_handle(*arg6)); this->arguments[7] = boost::shared_ptr<void>(get_handle(*arg7));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -212,7 +212,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 , T4 *arg
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 9;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2)); this->arguments[3] = boost::shared_ptr<void>(get_handle(*arg3)); this->arguments[4] = boost::shared_ptr<void>(get_handle(*arg4)); this->arguments[5] = boost::shared_ptr<void>(get_handle(*arg5)); this->arguments[6] = boost::shared_ptr<void>(get_handle(*arg6)); this->arguments[7] = boost::shared_ptr<void>(get_handle(*arg7)); this->arguments[8] = boost::shared_ptr<void>(get_handle(*arg8));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
@@ -238,7 +238,7 @@ operation::operation( FP op, T0 *arg0 , T1 *arg1 , T2 *arg2 , T3 *arg3 , T4 *arg
     this->init();
     this->operation_ptr = (void(*)())op;
     this->count = 10;
-    this->profiles = (p_profile**)malloc(sizeof(p_profile*)*this->count);
+    this->profiles = (p_object**)malloc(sizeof(p_object*)*this->count);
     this->arguments = new boost::shared_ptr<void>[this->count];
     this->arguments[0] = boost::shared_ptr<void>(get_handle(*arg0)); this->arguments[1] = boost::shared_ptr<void>(get_handle(*arg1)); this->arguments[2] = boost::shared_ptr<void>(get_handle(*arg2)); this->arguments[3] = boost::shared_ptr<void>(get_handle(*arg3)); this->arguments[4] = boost::shared_ptr<void>(get_handle(*arg4)); this->arguments[5] = boost::shared_ptr<void>(get_handle(*arg5)); this->arguments[6] = boost::shared_ptr<void>(get_handle(*arg6)); this->arguments[7] = boost::shared_ptr<void>(get_handle(*arg7)); this->arguments[8] = boost::shared_ptr<void>(get_handle(*arg8)); this->arguments[9] = boost::shared_ptr<void>(get_handle(*arg9));
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;

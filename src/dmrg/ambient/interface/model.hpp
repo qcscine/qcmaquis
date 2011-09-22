@@ -2,7 +2,7 @@
 
 
 template <typename T, policy P>  
-void breakdown_model(void_pt* profile, const p_dense_matrix<T,P>* ptr)
+void breakdown_model(parallel_t* profile, const p_dense_matrix<T,P>* ptr)
 {
     profile->t_size = sizeof(T);
     profile->dim.x  = ptr->num_cols();
@@ -35,9 +35,10 @@ void resize_bind_model(p_dense_matrix<T,P>* ptr, size_t rows, size_t cols)
 }
 
 template <typename T>
-void_pt& breakdown(T& obj){ return *(new void_pt(&obj)); }
-template <typename T>
-void breakdown_model(void_pt *profile, T *ptr){ }
+parallel_t& breakdown(T& obj){
+    static parallel_t* null_profile = new parallel_t(); 
+    return *null_profile; 
+}
 
 template<>
 void plus_reduce< p_dense_matrix<double> >(memblock* grp, void* update){
