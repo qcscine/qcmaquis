@@ -74,10 +74,6 @@ public:
         
         static Timer t_solver("sweep_solver");
         
-#ifdef MPI_PARALLEL
-        ambient::playout();
-#endif
-        
         std::size_t L = mps.length();
         
         init_left_right(mpo);

@@ -90,10 +90,6 @@ public:
         t_solver("sweep_solver"),
         t_grow("sweep_grow");
         
-#ifdef MPI_PARALLEL
-        ambient::playout();
-#endif
-        
         std::size_t L = mps.length();
         
         if (resume_at != -1)
