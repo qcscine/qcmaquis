@@ -251,6 +251,9 @@ namespace blas {
 		void load(alps::hdf5::archive & ar);
 		void save(alps::hdf5::archive & ar) const;
 #endif
+        MemoryBlock const& get_values() const;       
+        MemoryBlock & get_values();       
+
 
     private:
         template <typename OtherT,typename OtherMemoryBlock>

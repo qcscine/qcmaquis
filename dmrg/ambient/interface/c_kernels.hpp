@@ -331,6 +331,49 @@ void push_back_sqr_gt_c(std::vector<double>*& ac, pinned const p_dense_matrix<do
         if(ad[i] > prec) ac->push_back(ad[i]*ad[i]);
 }
 
+void cast_to_dense_c(std::vector<double>*& ac, pinned const p_dense_matrix<double>& a, const size_t& m, const size_t& n)
+{ // note as we cast to dense matrix, l_kernel on 1 proc, thus half work done
+    int offset,size_y(get_mem_t_dim(a).y),size_x(get_mem_t_dim(a).x);
+    int i = get_block_id(a).y;
+    int j = get_block_id(a).x;
+    int yi = get_mem_t_dim(a).y*i; // conversion cartersia coordinates dense / p_dense
+    int xj = get_mem_t_dim(a).x*j; 
+
+    double* ad = current(a)(i,j);
+   
+    //operator ?, case 1 matrix is lower than one work group, case 2 several work groups or fit in x direction
+    if(j+1 == get_grid_dim(a).x)
+        size_x = (get_mem_t_dim(a).x > n) ? n : (n - (get_grid_dim(a).x-1)*get_mem_t_dim(a).x);
+
+    for(int ii=0; ii < size_x; ++ii){
+        offset = yi + (xj+ii)*m;
+        if(i+1 == get_grid_dim(a).y)
+            size_y = (get_mem_t_dim(a).y > m) ? m : (m - (get_grid_dim(a).y-1)*get_mem_t_dim(a).y); // y direction
+        memcpy((void*)&(*ac)[offset],(void*)&ad[ii*get_mem_t_dim(a).x], size_y*sizeof(double));  
+    }
+}
+
+void cast_to_p_dense_c(const std::vector<double>*& ac, pinned p_dense_matrix<double>& a, const size_t& m, const size_t& n)
+{
+    int offset,size_y(get_mem_t_dim(a).y),size_x(get_mem_t_dim(a).x);
+    int i = get_block_id(a).y;
+    int j = get_block_id(a).x;
+    double* ad = current(a)(i,j);
+    int yi = get_mem_t_dim(a).y*i; // conversion cartersia coordinates dense / p_dense
+    int xj = get_mem_t_dim(a).x*j; 
+
+    //operator ?, case 1 matrix is lower than one work group, case 2 several work groups or fit in x direction
+    if(j+1 == get_grid_dim(a).x)
+        size_x = (get_mem_t_dim(a).x > n) ? n : (n - (get_grid_dim(a).x-1)*get_mem_t_dim(a).x);
+
+    for(int ii=0; ii < size_x; ++ii){
+        offset = yi + (xj+ii)*m;
+        if(i+1 == get_grid_dim(a).y)
+           size_y = (get_mem_t_dim(a).y > m) ? m : (m - (get_grid_dim(a).y-1)*get_mem_t_dim(a).y);
+        memcpy((void*)&ad[ii*get_mem_t_dim(a).x],(void*)&(*ac)[offset], size_y*sizeof(double)); // y direction 
+    }
+}
+
 void reshape_l2r_c(const p_dense_matrix<double>& left, pinned p_dense_matrix<double>& right,
                    const size_t& left_offset, const size_t& right_offset, 
                    const size_t& sdim, const size_t& ldim, const size_t& rdim)
