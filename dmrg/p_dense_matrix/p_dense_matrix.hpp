@@ -157,7 +157,7 @@ namespace blas {
         }
 
         if(this->is_abstract()) this->touch();
-        ambient::playout();
+        if(!ambient::blank()) ambient::playout();
         int block_i = i / (this->breakdown()->get_mem_t_dim().y);
         int block_j = j / (this->breakdown()->get_mem_t_dim().x);
         int element_i = i % (this->breakdown()->get_mem_t_dim().y);
