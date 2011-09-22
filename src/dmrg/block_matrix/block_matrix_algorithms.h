@@ -258,7 +258,7 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         blas::copy_after<Matrix>(allevals, position, evals[k]);
         position += evals[k].size();
     }
-    ambient::playout();
+    ambient::playout(); // execution weight: 64
 #else
     std::vector<typename Matrix::value_type> allevals;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k)
@@ -292,7 +292,7 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         size_t* keep_ptr = keeps + k;
         ambient::push(ambient::associated_find_if_l, ambient::associated_find_if_c, evals[k].get_data(), evalscut, keep_ptr);
     }
-    ambient::playout();
+    ambient::playout(); // execution weight 64
     #endif
 
     for (std::size_t k = 0; k < evals.n_blocks(); ++k)
