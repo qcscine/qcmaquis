@@ -172,6 +172,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
         #ifdef MPI_PARALLEL
         for (std::size_t k = 0; k < s.n_blocks(); ++k)
             blas::copy_sqr_gt<Matrix>(sv, s[k], 1e-10);
+        ambient::playout();
         #else
         for (std::size_t k = 0; k < s.n_blocks(); ++k)
             for (typename blas::associated_diagonal_matrix<Matrix>::type::element_iterator it = elements(s[k]).first;

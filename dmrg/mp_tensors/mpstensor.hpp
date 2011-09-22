@@ -205,8 +205,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
         scalar_type* norm = &ret;
         ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, data_[i], norm);
     }
-    ambient::playout();
-    //printf("R%d: Norm: %.2f\n", ambient::rank(), ret);
+    ambient::playout(); // execution weight: 452
     #else
     using utils::conj;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b){
@@ -238,7 +237,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
         scalar_type* overlap = &ret;
         ambient::push(ambient::scalar_overlap_l, ambient::scalar_overlap_c, data_[i], rhs.data_[i], overlap);
     }
-    ambient::playout();
+    ambient::playout(); // execution weight: 500
 #else
     using utils::conj;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
@@ -249,6 +248,25 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     timer.end();
     return ret;
 }
+
+#ifdef MPI_PARALLEL
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs, typename MPSTensor<Matrix, SymmGroup>::scalar_type* overlap) const
+{
+    static Timer timer("scalar_overlap_ambient");
+    timer.begin();
+
+    make_left_paired();
+    rhs.make_left_paired();
+
+    *overlap = 0;
+    for(size_t i = 0 ; i < data_.n_blocks(); i++){
+        data_[i].nullcut(); // not counting redundant elements of workgroup
+        ambient::push(ambient::scalar_overlap_l, ambient::scalar_overlap_c, data_[i], rhs.data_[i], overlap);
+    }
+    timer.end();
+}
+#endif
 
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, MPSTensor<Matrix, SymmGroup> const & mps)
