@@ -117,7 +117,7 @@ namespace blas
         using utils::conj;
         for (int i = 0; i < num_rows(M); ++i)
             for (int j = 0; j < num_cols(M); ++j)
-                assert( M(i,j) == conj(M(j,i)) );
+                assert( abs( M(i,j) - conj(M(j,i)) ) < 1e-10 );
 #endif
         
         boost::numeric::bindings::lapack::heevd('V', M, evals);
