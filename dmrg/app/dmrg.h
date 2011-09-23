@@ -16,8 +16,8 @@
 #include "dense_matrix/mt_matrix.h"
 typedef mt_matrix<double> Matrix;
 #else
-//typedef blas::dense_matrix<double> Matrix;
-typedef blas::dense_matrix<std::complex<double> > Matrix;
+typedef blas::dense_matrix<double> Matrix;
+//typedef blas::dense_matrix<std::complex<double> > Matrix;
 #endif
 
 #include "block_matrix/symmetry.h"
