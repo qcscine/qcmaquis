@@ -370,7 +370,7 @@ int main(int argc, char ** argv)
                 std::ostringstream oss;
                 oss << "/simulation/iteration/graining/" << graining << "/results/";
                 if (meas_always.n_terms() > 0)
-                    measure(initial_mps, *lat, meas_always, rfile, oss.str());
+                    measure_on_mps(initial_mps, *lat, meas_always, rfile, oss.str());
             }            
         } else if (cur_mps.length() > 0) {
             initial_mps = cur_mps;
@@ -433,7 +433,7 @@ int main(int argc, char ** argv)
                     std::ostringstream oss;
                     oss << "/simulation/iteration/graining/" << graining << "/sweep" << sweep << "/results/";
                     if (meas_always.n_terms() > 0)
-                        measure(cur_mps, *lat, meas_always, rfile, oss.str());
+                        measure_on_mps(cur_mps, *lat, meas_always, rfile, oss.str());
                 }
                 
                 if (!dns)
@@ -469,7 +469,7 @@ int main(int argc, char ** argv)
         std::vector<std::size_t> truncations;
         
         cout << "Measurements." << endl;
-        measure(mps, *lat, measurements, rfile);
+        measure_on_mps(mps, *lat, measurements, rfile);
         
         Timer tvn("vN entropy"), tr2("Renyi n=2");
         cout << "Calculating vN entropy." << endl;

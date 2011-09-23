@@ -1,5 +1,16 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #ifndef APP_ALPS_MODEL_H
 #define APP_ALPS_MODEL_H
+
+#include "dense_matrix/matrix_interface.hpp"
+#include "dense_matrix/dense_matrix_algorithms.h"
 
 #include "hamiltonian.h"
 #include "measurements.h"
@@ -97,7 +108,10 @@ namespace app {
     {
         typedef alps::SiteOperator SiteOperator;
         typedef alps::BondOperator BondOperator;
-        typedef boost::multi_array<double,2> alps_matrix;
+        
+        typedef typename Matrix::value_type T;
+        typedef boost::multi_array<T,2> alps_matrix;
+        
         typedef typename basis_converter<SymmGroup>::I I;
         typedef alps::graph_helper<> graph_type;
         
@@ -185,15 +199,15 @@ namespace app {
                 
                 
                 if (site_terms.find(type) == site_terms.end()) {
-                    typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator> > V;
-                    V  ops = model.site_term(type).template templated_split<double>();
+                    typedef std::vector<boost::tuple<alps::expression::Term<T>,alps::SiteOperator> > V;
+                    V  ops = model.site_term(type).template templated_split<T>();
                                                             
                     for (int n=0; n<ops.size(); ++n) {
                         if (ops[n].get<0>().value() != 0.) {
                             SiteOperator op = ops[n].get<1>();
-                            alps_matrix m = alps::get_matrix(double(), op, model.site_basis(type), parms, true);
+                            alps_matrix m = alps::get_matrix(T(), op, model.site_basis(type), parms, true);
                             
-                            double coeff = ops[n].get<0>().value();
+                            T coeff = ops[n].get<0>().value();
                             site_terms[type].push_back( coeff*convert_matrix(m, type) );
                         }
                         
@@ -238,12 +252,12 @@ namespace app {
                 
                 BondOperator bondop = model.bond_term(type);
                 
-                typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator,alps::SiteOperator > > V;
+                typedef std::vector<boost::tuple<alps::expression::Term<T>,alps::SiteOperator,alps::SiteOperator > > V;
                 alps::SiteBasisDescriptor<I> b1 = model.site_basis(type_s);
                 alps::SiteBasisDescriptor<I> b2 = model.site_basis(type_t);
                 
                 
-                V  ops = bondop.template templated_split<double>(b1,b2);
+                V  ops = bondop.template templated_split<T>(b1,b2);
                 for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
                     SiteOperator op1 = tit->get<1>();
                     SiteOperator op2 = tit->get<2>();
@@ -256,8 +270,8 @@ namespace app {
                     else
                         term.fill_operator = tident[type_s];
                     {
-                        alps_matrix m = alps::get_matrix(double(), op1, b1, parms, true);
-                        double coeff = tit->get<0>().value();
+                        alps_matrix m = alps::get_matrix(T(), op1, b1, parms, true);
+                        T coeff = tit->get<0>().value();
                         op_t tmp;
                         if (with_sign && !wrap_pbc) {                            
                             gemm(tfill[type_s], convert_matrix(m, type_s), tmp); // Note inverse notation because of notation in operator.
@@ -268,7 +282,7 @@ namespace app {
                         term.operators.push_back( std::make_pair(p_s, coeff*tmp) );
                     }
                     {
-                        alps_matrix m = alps::get_matrix(double(), op2, b2, parms, true);
+                        alps_matrix m = alps::get_matrix(T(), op2, b2, parms, true);
                         op_t tmp;
                         if (with_sign && wrap_pbc)
                             gemm(tfill[type_t], convert_matrix(m, type_t), tmp); // Note inverse notation because of notation in operator.
@@ -381,134 +395,6 @@ namespace app {
             return (qn_value.get_twice() % 2 == 0) ? alps::to_integer(qn_value) : qn_value.get_twice();
         }
     }
-    
-    // Symmetry dependent implementation
-    
-    // NullGroup Symmetry
-    template <>
-    NullGroup::charge init_charge<NullGroup> (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn)
-    {
-        return NullGroup::SingletCharge;
-    }
-    
-    template <>
-    NullGroup::charge convert_alps<NullGroup> (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn)
-    {
-        return NullGroup::SingletCharge;
-    }
-
-    template <>
-    std::map<NullGroup::charge,std::size_t> init_qn_charges<NullGroup>
-    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
-    {
-        std::map<NullGroup::charge, std::size_t> ret;
-        ret[convert_alps<NullGroup>(states[0], conserved_qn)] = states.size();
-        return ret;
-    }
-    
-    template <>
-    std::map<alps::site_state<short>, std::pair<NullGroup::charge, std::size_t> > init_coords<NullGroup>
-    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
-    {
-        std::map<alps::site_state<short>, std::pair<NullGroup::charge, std::size_t> > ret;
-        for (std::size_t i=0; i<states.size(); ++i)
-            ret[states[i]] = std::make_pair(NullGroup::SingletCharge, i);
-        return ret;
-    }
-
-    
-    // U1 Symmetry
-    template <>
-    U1::charge init_charge<U1> (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn)
-    {
-        assert(qn.size() == 1);
-        U1::charge c = U1::SingletCharge;
-        if (parms.defined(qn[0].second+"_total")) {
-            alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]), parms);
-            c = details::to_integer(tmp);
-        }
-        return c;
-    }
-
-    template <>
-    U1::charge convert_alps<U1> (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn)
-    {
-        assert(qn.size() == 1);
-        return details::to_integer( get_quantumnumber(state, qn[0].first) );
-    }
-    
-    template <>
-    std::map<U1::charge,std::size_t> init_qn_charges<U1>
-    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
-    {
-        assert(conserved_qn.size() == 1);
-        std::map<U1::charge,std::size_t> ret;
-        for (int i=0; i<states.size(); ++i)
-            ret[convert_alps<U1>(states[i], conserved_qn)] = 1;
-        return ret;
-    }
-
-    template <>
-    std::map<alps::site_state<short>, std::pair<U1::charge, std::size_t> > init_coords<U1>
-    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
-    {
-        assert(conserved_qn.size() == 1);
-        std::map<alps::site_state<short>, std::pair<U1::charge, std::size_t> > ret;
-        for (std::size_t i=0; i<states.size(); ++i)
-            ret[states[i]] = std::make_pair(convert_alps<U1>(states[i], conserved_qn), 0);
-        return ret;
-    }
-
-
-    // TwoU1 Symmetry
-    template <>
-    TwoU1::charge convert_alps<TwoU1> (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn)
-    {
-        assert(qn.size() == 2);
-        TwoU1::charge ret;
-        ret[0] = details::to_integer (get_quantumnumber(state, qn[0].first) );
-        ret[1] = details::to_integer( get_quantumnumber(state, qn[1].first) );
-        return ret;
-    }
-
-    template <>
-    TwoU1::charge init_charge<TwoU1> (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn)
-    {
-        assert(qn.size() == 2);
-        TwoU1::charge c = TwoU1::SingletCharge;
-        if (parms.defined(qn[0].second+"_total")) {
-            alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]), parms);
-            c[0] = details::to_integer(tmp);
-        }
-        if (parms.defined(qn[1].second+"_total")) {
-            alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[1].second+"_total"]), parms);
-            c[1] = details::to_integer(tmp);
-        }
-        return c;
-    }
-
-    template <>
-    std::map<TwoU1::charge,std::size_t> init_qn_charges<TwoU1>
-    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
-    {
-        assert(conserved_qn.size() == 2);
-        std::map<TwoU1::charge,std::size_t> ret;
-        for (int i=0; i<states.size(); ++i)
-            ret[convert_alps<TwoU1>(states[i], conserved_qn)] = 1;
-        return ret;
-    }
-
-    template <>
-    std::map<alps::site_state<short>, std::pair<TwoU1::charge, std::size_t> > init_coords<TwoU1>
-    (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states)
-    {
-        assert(conserved_qn.size() == 2);
-        std::map<alps::site_state<short>, std::pair<TwoU1::charge, std::size_t> > ret;
-        for (std::size_t i=0; i<states.size(); ++i)
-            ret[states[i]] = std::make_pair(convert_alps<TwoU1>(states[i], conserved_qn), 0);
-        return ret;
-    }
-
 
     // Loading Measurements
     template <class Matrix, class SymmGroup>
@@ -533,8 +419,8 @@ namespace app {
                     if (model.has_bond_operator(it->value())) {
                     	BondOperator bondop = model.get_bond_operator(it->value());
 
-                        typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator,alps::SiteOperator > > V;
-                        V  ops = bondop.template templated_split<double>(b,b);
+                        typedef std::vector<boost::tuple<alps::expression::Term<T>,alps::SiteOperator,alps::SiteOperator > > V;
+                        V  ops = bondop.template templated_split<T>(b,b);
                         for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
                             SiteOperator op1 = tit->get<1>();
                             SiteOperator op2 = tit->get<2>();
@@ -550,7 +436,7 @@ namespace app {
 
                             term.fill_operator = (with_sign) ? tfill[type] : tident[type];
                             {
-                            	alps_matrix m = alps::get_matrix(double(), op1, b, parms, true);
+                            	alps_matrix m = alps::get_matrix(T(), op1, b, parms, true);
                             	op_t tmp;
                             	if (with_sign)
                             		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
@@ -559,7 +445,7 @@ namespace app {
                             	term.operators.push_back( std::make_pair(tit->get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
                             }
                             {
-                                alps_matrix m = alps::get_matrix(double(), op2, b, parms, true);
+                                alps_matrix m = alps::get_matrix(T(), op2, b, parms, true);
                                 term.operators.push_back( std::make_pair(convert_matrix(m, type), b.is_fermionic(simplify_name(op2))) );
                             }
     	                    meas.add_term(term);
@@ -574,7 +460,7 @@ namespace app {
 						if (b.is_fermionic(simplify_name(op)))
 							throw std::runtime_error("Cannot measure local fermionic operators.");
 #endif
-						alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
+						alps_matrix m = alps::get_matrix(T(), op, b, parms, true);
 
 						term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
 	                    meas.add_term(term);
@@ -594,8 +480,8 @@ namespace app {
                     if (model.has_bond_operator(it->value())) {
                     	BondOperator bondop = model.get_bond_operator(it->value());
 
-                        typedef std::vector<boost::tuple<alps::expression::Term<double>,alps::SiteOperator,alps::SiteOperator > > V;
-                        V  ops = bondop.template templated_split<double>(b,b);
+                        typedef std::vector<boost::tuple<alps::expression::Term<T>,alps::SiteOperator,alps::SiteOperator > > V;
+                        V  ops = bondop.template templated_split<T>(b,b);
                         for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
                             SiteOperator op1 = tit->get<1>();
                             SiteOperator op2 = tit->get<2>();
@@ -611,7 +497,7 @@ namespace app {
 
                             term.fill_operator = (with_sign) ? tfill[type] : tident[type];
                             {
-                            	alps_matrix m = alps::get_matrix(double(), op1, b, parms, true);
+                            	alps_matrix m = alps::get_matrix(T(), op1, b, parms, true);
                             	op_t tmp;
                             	if (with_sign)
                             		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
@@ -620,7 +506,7 @@ namespace app {
                             	term.operators.push_back( std::make_pair(tit->get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
                             }
                             {
-                                alps_matrix m = alps::get_matrix(double(), op2, b, parms, true);
+                                alps_matrix m = alps::get_matrix(T(), op2, b, parms, true);
                                 term.operators.push_back( std::make_pair(convert_matrix(m, type), b.is_fermionic(simplify_name(op2))) );
                             }
     	                    meas.add_term(term);
@@ -635,7 +521,7 @@ namespace app {
 						if (b.is_fermionic(simplify_name(op)))
 							throw std::runtime_error("Cannot measure local fermionic operators.");
 #endif
-						alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
+						alps_matrix m = alps::get_matrix(T(), op, b, parms, true);
 
 						term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
 	                    meas.add_term(term);
@@ -669,7 +555,7 @@ namespace app {
                          it2++)
                     {
                         SiteOperator op = make_site_term(*it2, parms);
-                        alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
+                        alps_matrix m = alps::get_matrix(T(), op, b, parms, true);
                         bool f = b.is_fermionic(simplify_name(op));
                         term.operators.push_back( std::make_pair(convert_matrix(m, type), f) );
                         if (f) ++f_ops;
@@ -738,7 +624,7 @@ namespace app {
                          it2++)
                     {
                         SiteOperator op = make_site_term(*it2, parms);
-                        alps_matrix m = alps::get_matrix(double(), op, b, parms, true);
+                        alps_matrix m = alps::get_matrix(T(), op, b, parms, true);
                         bool f = b.is_fermionic(simplify_name(op));
                         term.operators.push_back( std::make_pair(convert_matrix(m, type), f) );
                         if (f) ++f_ops;

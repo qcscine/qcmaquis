@@ -60,6 +60,7 @@ public:
         
         add_option("init_state", "", value("default"));
         
+        add_option("symmetry", "null, u1 or 2u1", value("u1"));
         add_option("model_library", "", value("alps"));
         
     }

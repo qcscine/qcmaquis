@@ -174,7 +174,7 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> operator/(MPSTensor<Matrix, SymmGroup> m,
                                        typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
 {
-    m *= 1/t;
+    m *= typename MPSTensor<Matrix, SymmGroup>::scalar_type(1.0)/t;
     return m;
 }
 
@@ -196,7 +196,7 @@ MPSTensor<Matrix, SymmGroup> operator+(MPSTensor<Matrix, SymmGroup> m,
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> operator-(MPSTensor<Matrix, SymmGroup> m)
 {
-    m *= -1;
+    m *= -typename MPSTensor<Matrix, SymmGroup>::scalar_type(1.0);
     return m;
 }
 

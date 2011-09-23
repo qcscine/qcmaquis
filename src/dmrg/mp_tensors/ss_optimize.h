@@ -46,7 +46,7 @@ gettimeofday(&now, NULL);
 gettimeofday(&then, NULL); \
 zout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
 
-double log_interpolate(double y0, double y1, int N, int i)
+inline double log_interpolate(double y0, double y1, int N, int i)
 {
     if (N < 2)
         return y1;
@@ -177,11 +177,11 @@ public:
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, mps[site], parms);
                     END_TIMING("JCD")
-                } else if (parms.get<std::string>("eigensolver") == std::string("IETL_NEW_JCD")) {
+                } /* else if (parms.get<std::string>("eigensolver") == std::string("IETL_NEW_JCD")) {
                     BEGIN_TIMING("JD")
                     res = solve_ietl_new_jd(sp, mps[site], parms);
                     END_TIMING("JD")
-                } else {
+                } */ else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
  
@@ -197,6 +197,7 @@ public:
             t_solver.end();
             
             zout << "Energy " << lr << " " << res.first << endl;
+//            zout << "Energy check " << expval(mps, mpo) << endl;
             
             iteration_log << make_log("Energy", res.first);
             

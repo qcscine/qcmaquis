@@ -1,3 +1,11 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
 #ifndef APP_ALPS_LATTICE_H
 #define APP_ALPS_LATTICE_H
 

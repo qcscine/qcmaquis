@@ -1,15 +1,16 @@
 #ifndef MT_MATRIX_H
 #define MT_MATRIX_H
 
-#include <boost/thread.hpp>
-
 #include "dense_matrix/dense_matrix.h"
 
 #ifdef USE_GPU
 #include "dense_matrix/gpu/m_matrix_gpu_functions.hpp"
 #endif
 
+#include "utils/timings.h"
 #include "utils/data_collector.hpp"
+
+#include "mt_matrix/mtm_scheduler.h"
 
 #ifndef GEMM_MT_THRESHOLD
 #define GEMM_MT_THRESHOLD 50
@@ -18,16 +19,11 @@
 #define GEMM_GPU_THRESHOLD 100
 #endif
 
+#error The multithreads matrix type does not satify the dense_matrix concepts, it has to be fixed!
 
 template<typename T>
 class mt_matrix;
 
-class MtmRequest
-{
-public:
-    virtual void operator()() = 0;
-    virtual ~MtmRequest() { }
-};
 
 template<typename T>
 class MtmGemmRequest : public MtmRequest
@@ -69,98 +65,6 @@ private:
     boost::lock_guard<boost::mutex> lgA, lgB, lgC;
 };
 
-class MtmMaster;
-
-class MtmWorker
-{
-public:
-    MtmWorker(MtmMaster * m = NULL) : master(m) { };
-    
-    inline void operator()();
-    inline void execute();
-    
-private:
-    MtmMaster * master;
-};
-
-class MtmMaster
-{
-public:
-    MtmMaster(int n = 1)
-    {
-        for (int i = 0; i < n; ++i)
-            worker_threads.create_thread(MtmWorker(this));
-    }
-    
-    ~MtmMaster ()
-    {
-        worker_threads.interrupt_all();
-        notify();
-        worker_threads.join_all();
-    }
-    
-    void notify()
-    {
-        worker_cond.notify_one();
-    }
-    
-    void push(boost::shared_ptr<MtmRequest> req)
-    {
-        boost::lock_guard<boost::mutex> lock(queue_mutex);
-        queue.push_back(req);
-        notify();
-    }
-    
-private:
-    std::list<boost::shared_ptr<MtmRequest> > queue;
-    boost::mutex queue_mutex;
-    
-    boost::condition_variable worker_cond;
-    
-    template<typename T> friend class mt_matrix;
-    friend class MtmWorker;
-    
-    boost::thread_group worker_threads;
-};
-
-#ifdef USE_MTM_MAIN
-MtmMaster mtm_global_master;
-#else
-extern MtmMaster mtm_global_master;
-#endif
-
-void MtmWorker::operator()()
-{
-    while (true) {
-        while (true) {
-            boost::unique_lock<boost::mutex> lock(master->queue_mutex);
-//            if (!master->active)
-//                return;
-            if (!master->queue.empty())
-                break;
-            master->worker_cond.wait(lock);
-            boost::this_thread::interruption_point();
-        }
-        
-        execute();
-    }
-}
-
-void MtmWorker::execute()
-{
-    while (true) {
-        boost::shared_ptr<MtmRequest> req;
-        {
-            boost::lock_guard<boost::mutex> lock(master->queue_mutex);
-            if (master->queue.empty())
-                break;
-//            cerr << "Queue size: " << master->queue.size() << endl;
-            req = master->queue.front();
-            master->queue.pop_front();
-        }
-        (*req)();
-    }
-}
 
 template<typename T>
 class mt_matrix
@@ -175,6 +79,13 @@ public:
     typedef typename slave_t::difference_type difference_type;
     
     typedef typename slave_t::element_iterator element_iterator;
+    
+    static mt_matrix<T> identity_matrix (size_type size)
+    {
+    	mt_matrix<T> ret;
+    	ret.data_ = slave_t::identity_matrix(size);
+    	return ret;
+    }
     
     explicit mt_matrix(size_type rows = 0, size_type cols = 0,
                        value_type val = value_type())

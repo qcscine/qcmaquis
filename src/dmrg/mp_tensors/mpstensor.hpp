@@ -13,6 +13,8 @@
 
 #include "utils/random.hpp"
 
+#include <alps/numeric/real.hpp>
+
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
                                         Index<SymmGroup> const & ld,
@@ -216,8 +218,8 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     #endif
     timer.end();
     assert( ret == ret );
-    assert(ret >= 0);
-    return sqrt(ret);
+    assert( alps::numeric::real(ret) >= 0);
+    return sqrt(alps::numeric::real(ret));
 }
 
 template<class Matrix, class SymmGroup>

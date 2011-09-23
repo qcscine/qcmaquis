@@ -577,7 +577,7 @@ struct contraction {
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(mps.data_, transpose(mps.data_), dm);
+        gemm(mps.data_, conjugate(transpose(mps.data_)), dm);
         
         Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
         
@@ -585,7 +585,8 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(half_dm.data_[b], transpose(half_dm.data_[b]), tdm);
+            gemm(half_dm.data_[b], conjugate(transpose(half_dm.data_[b])), tdm);
+            
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -625,8 +626,8 @@ struct contraction {
         A.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-//        gemm(transpose(A.data_), psi.data_, tmp);
-        gemm(A.data_, blas::Transpose(), psi.data_, blas::NoTranspose(), tmp);
+        gemm(transpose(A.data_), psi.data_, tmp);
+//        gemm(A.data_, blas::Transpose(), psi.data_, blas::NoTranspose(), tmp);
         
         B.multiply_from_left(tmp);
         
@@ -648,7 +649,7 @@ struct contraction {
         
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(transpose(mps.data_), mps.data_, dm);
+        gemm(conjugate(transpose(mps.data_)), mps.data_, dm);
             
         Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
         
@@ -656,7 +657,7 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(transpose(half_dm.data_[b]), half_dm.data_[b], tdm);
+            gemm(conjugate(transpose(half_dm.data_[b])), half_dm.data_[b], tdm);
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -674,7 +675,7 @@ struct contraction {
         block_matrix<typename blas::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
-        V = transpose(U);
+        V = conjugate(transpose(U));
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.data_ = V;

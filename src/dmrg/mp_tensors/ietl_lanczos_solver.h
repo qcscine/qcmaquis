@@ -43,7 +43,7 @@ namespace ietl
     }
     
     template<class Matrix, class SymmGroup>
-    typename MPSTensor<Matrix, SymmGroup>::scalar_type
+    typename MPSTensor<Matrix, SymmGroup>::real_type
     two_norm(MPSTensor<Matrix, SymmGroup> const & x)
     {
         return x.scalar_norm();

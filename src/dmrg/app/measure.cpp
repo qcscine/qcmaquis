@@ -9,7 +9,7 @@ using std::cout;
 using std::endl;
 
 #include "utils/DmrgParameters2.h"
-#include "dmrg.h"
+#include "measure.h"
 
 // factory
 void dmrg(DmrgParameters & parms, ModelParameters & model)
@@ -51,13 +51,9 @@ int main(int argc, char ** argv)
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
     
-    try {
-        dmrg(parms, model);
-    } catch (std::exception & e) {
-        cerr << "Exception thrown!" << endl;
-        cerr << e.what() << endl;
-        exit(1);
-    }
+    
+    dmrg(parms, model);
+    
     
     gettimeofday(&then, NULL);
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);

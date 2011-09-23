@@ -99,7 +99,7 @@ namespace app {
     
     
     template<class Matrix, class SymmGroup>
-    void measure(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
+    void measure_on_mps(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
     			 Measurements<Matrix, SymmGroup> const & meas,
                  std::string const & h5name, std::string basepath = std::string("/spectrum/results/"))
     {

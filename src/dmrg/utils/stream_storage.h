@@ -14,6 +14,16 @@
 
 #include <fstream>
 
+#include "utils.hpp"
+#include "timings.h"
+
+#include "dense_matrix/dense_matrix.h"
+#include "dense_matrix/matrix_interface.hpp"
+#include "dense_matrix/dense_matrix_algorithms.h"
+#include "block_matrix/block_matrix.h"
+
+#include "mp_tensors/mpo.h"
+
 class NoopStorage { };
   
 class NoopStorageMaster {
@@ -30,11 +40,7 @@ class StreamStorage
 {
 public:
     StreamStorage(std::string const & object_path_,
-                  StreamStorageMaster * master_)
-    : object_path(object_path_)
-    , master(master_)
-    , status_(Complete)
-    { }
+                  StreamStorageMaster * master_);
     
     StreamStorage(StreamStorage const & rhs);
     
@@ -130,7 +136,7 @@ public:
         if (base_path.size() == 0)
             return;
         
-        cout << "Storage directory size: "; cout.flush();
+        std::cout << "Storage directory size: "; std::cout.flush();
         std::ostringstream oss;
         oss << "du -skh " << base_path << " | awk '{print $1}'";
         system(oss.str().c_str());
@@ -186,12 +192,6 @@ protected:
     friend struct storage;
 };
 
-StreamStorage::StreamStorage(StreamStorage const & rhs)
-: object_path(rhs.master->get_path())
-, master(rhs.master)
-, status_(StreamStorage::Complete)
-{ }
-
 template<class Object>
 class StreamReadRequest_impl : public StreamRequest
 {
@@ -230,7 +230,7 @@ public:
         std::string fp = store->master->base_path + store->object_path;
         std::ifstream ifs(fp.c_str(), std::ifstream::binary);
         if (!ifs) {
-            cerr << "File not found in StreamReadRequest!" << endl;
+            std::cerr << "File not found in StreamReadRequest!" << std::endl;
             exit(1);
         }
         
@@ -285,7 +285,7 @@ public:
         std::string fp = store->master->base_path + store->object_path;
         std::ifstream ifs(fp.c_str(), std::ifstream::binary);
         if (!ifs) {
-            cerr << "File not found in StreamReadRequest!" << endl;
+            std::cerr << "File not found in StreamReadRequest!" << std::endl;
             exit(1);
         }
         
@@ -425,40 +425,6 @@ private:
     std::string file_path;
 };
 
-StreamWorker::StreamWorker(StreamStorageMaster * master_)
-: master(master_)
-{ }
-
-void StreamWorker::operator()()
-{
-    while (true) {
-        while (true) {
-            boost::unique_lock<boost::mutex> lock(master->deque_mutex);
-            if (!master->active)
-                return;
-            if (!master->requests.empty())
-                break;
-            master->worker_cond.wait(lock);
-        }
-        
-        execute();
-    }
-}
-
-void StreamWorker::execute()
-{
-    while (true) {
-        boost::shared_ptr<StreamRequest> req;
-        {
-            boost::lock_guard<boost::mutex> lock(master->deque_mutex);
-            if (master->requests.empty())
-                break;
-            req = master->requests.front();
-            master->requests.pop_front();
-        }
-        (*req)();
-    }
-}
 
 struct storage {
     template<class T>
@@ -532,16 +498,5 @@ struct storage {
  static void reset(NoopStorage &) { }
 };
 
-
-StreamStorage::~StreamStorage()
-{
-    boost::shared_ptr<StreamRequest> req(new StreamDeleteRequest(this));
-    
-    {
-        boost::lock_guard<boost::mutex> lock(master->deque_mutex);
-        master->requests.push_back(req);
-    }
-    master->notify();
-}
 
 #endif
