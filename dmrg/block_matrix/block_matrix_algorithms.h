@@ -18,6 +18,9 @@
 #include "block_matrix/block_matrix.h"
 #include "block_matrix/indexing.h"
 
+#include <alps/numeric/real.hpp>
+#include <alps/numeric/imag.hpp>
+
 // some example functions
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
@@ -236,14 +239,15 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                                             block_matrix<Matrix, SymmGroup> & evecs,
-                                             block_matrix<DiagMatrix, SymmGroup> & evals,
-                                             double cutoff, std::size_t Mmax,
-                                             Logger & logger,
-                                             bool verbose = true)
+                   block_matrix<Matrix, SymmGroup> & evecs,
+                   block_matrix<DiagMatrix, SymmGroup> & evals,
+                   double cutoff, std::size_t Mmax,
+                   Logger & logger,
+                   bool verbose = true)
 {
 
     // very analogous to the above svd method
+    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     heev(M, evecs, evals);
     
     Index<SymmGroup> old_basis = evals.left_basis();
@@ -260,10 +264,15 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
     ambient::playout(); // execution weight: 64
 #else
-    std::vector<typename Matrix::value_type> allevals;
+    std::vector<double> allevals;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k)
-        std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
+//        std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
+        for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it) {
+            assert( check_real(*it) );
+            allevals.push_back(alps::numeric::real(*it));
+        }
 #endif
+    assert( allevals.size() > 0 );
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());
     /*std::cout << "All evals: ";
@@ -300,8 +309,20 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         #ifdef MPI_PARALLEL
         size_t keep = keeps[k];
         #else
-        size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
-                                        boost::lambda::_1 < evalscut)-evals[k].elements().first;
+        // FIXME: this is a stupid workaround
+        std::vector<double> evals_k;
+        for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
+            evals_k.push_back(alps::numeric::real(*it));
+        size_t keep = std::find_if(evals_k.begin(), evals_k.end(),
+                                   boost::lambda::_1 < evalscut)-evals_k.begin();
+//        size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
+//                                        boost::lambda::_1 < evalscut)-evals[k].elements().first;
+        if (keep == 0) {
+            std::cout << "Evals:" << std::endl;
+            std::copy(allevals.begin(), allevals.end(), std::ostream_iterator<double>(std::cout, " ")); std::cout << std::endl;
+            exit(1);
+        }
+        assert( keep > 0 );
         #endif
 
         if (keep >= num_rows(evals[k]))

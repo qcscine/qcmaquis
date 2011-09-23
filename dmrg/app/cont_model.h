@@ -1,10 +1,10 @@
-//
-//  model.h
-//  
-//
-//  Created by Michele Dolfi on 30.06.11.
-//  Copyright 2011 ETHZ. All rights reserved.
-//
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *
+ *****************************************************************************/
 
 #ifndef CONTINUOUS_MODELS_H
 #define CONTINUOUS_MODELS_H

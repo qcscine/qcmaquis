@@ -138,7 +138,12 @@ int main(int argc, char ** argv)
     }
     DmrgParameters parms(param_file);
     
-    std::string model_file(argv[2]);
+    std::ifstream model_file(argv[2]);
+    if (!model_file) {
+        cerr << "Could not open model file." << endl;
+        exit(1);
+    }
+    ModelParameters model(model_file);
     
     std::string chkpfile = parms.get<std::string>("chkpfile");
     std::string rfile = parms.get<std::string>("resultfile");
@@ -168,7 +173,7 @@ int main(int argc, char ** argv)
     Hamiltonian<Matrix, grp> H;
     grp::charge initc;
     Measurements<Matrix, grp> measurements;
-    BaseParameters model = model_parser(parms.get<std::string>("model_library"), model_file, lat, H, initc, measurements);
+    model_parser(parms.get<std::string>("model_library"), model, lat, H, initc, measurements);
     Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
     
@@ -285,7 +290,7 @@ int main(int argc, char ** argv)
                 std::ostringstream oss;
                 oss << "/simulation/sweep" << sweep << "/results/";
                 if (meas_always.n_terms() > 0)
-                    measure(mps, *lat, meas_always, rfile, oss.str());
+                    measure_on_mps(mps, *lat, meas_always, rfile, oss.str());
             }
             
             gettimeofday(&then, NULL);

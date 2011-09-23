@@ -64,9 +64,11 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 {
     if (d == 0) {
         std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
+        assert( check_real(left_[mps.length()].traces()[0]) );
         return alps::numeric::real(left_[mps.length()].traces()[0]);
     } else {
         std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
+        assert( check_real(right_[0].traces()[0]) );
         return alps::numeric::real(right_[0].traces()[0]);
     }
 }

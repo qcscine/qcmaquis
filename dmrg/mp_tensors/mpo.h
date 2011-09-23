@@ -19,6 +19,8 @@ class MPO : public std::vector<MPOTensor<Matrix, SymmGroup> >
 {
 public:
     typedef MPOTensor<Matrix, SymmGroup> elem_type;
+
+    MPO() { }
     
     MPO(std::size_t L, elem_type elem = elem_type())
     : std::vector<elem_type>(L, elem)
