@@ -269,6 +269,7 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 //        std::copy(evals[k].elements().first, evals[k].elements().second, std::back_inserter(allevals));
         for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it) {
             assert( check_real(*it) );
+            assert( alps::numeric::real(*it) > -1e-10 );
             allevals.push_back(alps::numeric::real(*it));
         }
 #endif
@@ -317,12 +318,6 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                    boost::lambda::_1 < evalscut)-evals_k.begin();
 //        size_t keep = std::find_if(evals[k].elements().first, evals[k].elements().second,
 //                                        boost::lambda::_1 < evalscut)-evals[k].elements().first;
-        if (keep == 0) {
-            std::cout << "Evals:" << std::endl;
-            std::copy(allevals.begin(), allevals.end(), std::ostream_iterator<double>(std::cout, " ")); std::cout << std::endl;
-            exit(1);
-        }
-        assert( keep > 0 );
         #endif
 
         if (keep >= num_rows(evals[k]))

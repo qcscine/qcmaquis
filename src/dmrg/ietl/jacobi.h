@@ -211,7 +211,7 @@ namespace ietl
         
         vector_type t, t2, t3;
         // t2 = (1-uu*) x
-        double ust = dot(u_, x);
+        scalar_type ust = dot(u_, x);
         t2 = x - ust*u_;
         
         // y = (A-theta*1) t2
