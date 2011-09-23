@@ -444,7 +444,7 @@ namespace blas {
         else {
             std::vector<typename T::value_type> data;
             ar >> alps::make_pvp("values", data);
-            values_.resize_(data.size());
+            values_.resize(data.size());
             std::copy(data.begin(), data.end(), values_.begin());
         }
     }
