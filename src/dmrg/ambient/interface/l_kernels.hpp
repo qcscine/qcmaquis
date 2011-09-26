@@ -127,10 +127,10 @@ void push_back_sqr_gt_l(std::vector<double>*& ac, pinned const p_dense_matrix<do
 
 void cast_to_dense_l(std::vector<double>*& ac, pinned const p_dense_matrix<double>& a, const size_t& m, const size_t& n )
 {
-    scope_select("1 from ambient as cast_to_dense where master is 0");
+    scope_select("* from ambient as cast_to_dense where master is 0");
     if(!scope.involved()) return;
 
-    block_2d_cycle_assign(a);
+    block_outright_assign(a); //because the dense matrix must be known by every procs
 } 
 
 void cast_to_p_dense_l(const std::vector<double>*& ac, pinned p_dense_matrix<double>& a, const size_t& m, const size_t& n)
