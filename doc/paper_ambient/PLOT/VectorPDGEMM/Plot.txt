@@ -3,14 +3,14 @@ set terminal epslatex
 #set grid
 #set key box
 set size 1.00,0.90 #golden ratio
-set xrange [0:100]
-set ytics 200
-set xtics 20
+set xrange [0:50]
+set ytics 20
+set xtics 10
 
-set key left top
+set key right bottom
 
-set ylabel "$P$ [GFlops]"
-set xlabel "MPI Process"
+set ylabel "Absolute difference \\%"
+set xlabel "Number of product of matrices"
 
 set style line 1 lt 1 lw 1
 set style line 2 lt 1 pt 8 ps 1
@@ -21,8 +21,14 @@ set style line 6 lt 2 lw 1
 set style line 7 lt 3 lw 1
 set style line 8 lt 4 pt 1 lw 1
 
-set out 'VectorPGEMM.tex';  plot "Peak.txt" using 1:2   title "Peak" linestyle 1 lw 3 with line
-set out 'VectorPGEMM.tex';replot "vector_1024.txt" using 3:($5*$3/2) title "1024" linestyle 8 lw 3 with line
-set out 'VectorPGEMM.tex';replot "vector_2048.txt" using 3:($5*$3/2) title "2048" linestyle 6 lw 3 with line  
-set out 'VectorPGEMM.tex';replot "vector_4224.txt" using 3:($5*$3/2) title "4224" linestyle 7 lw 3 with line  
+a=100
+b=0.353391
+c=1.71364
+d=0.0456363
+
+#set out 'VectorPGEMM.tex';  plot "Peak.txt" using 1:2   title "Peak" linestyle 1 lw 3 with line
+set out 'VectorPGEMM.tex';plot "vector_512.txt" using  ($2/2):(a*abs($1-d))/$1 title "$M = 512$" linestyle 7 lw 3 with line  
+set out 'VectorPGEMM.tex';replot "vector_1024.txt" using ($2/2):(a*abs($1-b))/$1 title "$M = 1024$" linestyle 8 lw 3 with line
+set out 'VectorPGEMM.tex';replot "vector_2048.txt" using ($2/2):(a*abs($1-c))/$1 title "$M = 2048$" linestyle 6 lw 3 with line
+#set out 'VectorPGEMM.tex';replot "vector_4224.txt" using 3:($5*$3/2) title "4224" linestyle 7 lw 3 with line  
 set output
