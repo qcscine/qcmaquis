@@ -44,7 +44,7 @@ namespace vli
 			kernels_addition_block((x+i), (y+i));
      
 		*(x+Size-1) += *(y+Size-1);
-        *(x+Size-1) &= base<BaseInt>::value + data_mask<BaseInt>::value;
+                *(x+Size-1) &= base<BaseInt>::value + data_mask<BaseInt>::value;
 	}
     
     /**
@@ -160,7 +160,7 @@ namespace vli
  
     template <typename BaseInt>
     inline void kernels_multiplication_block_down(BaseInt const* x, BaseInt const*  y, BaseInt * r)	
-    {
+    { 
         *r     = (*x & mask_down<BaseInt>::value) * (*y & mask_down<BaseInt>::value);
         *(r+1) = (*x & mask_down<BaseInt>::value) * ((*y & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2));
     }

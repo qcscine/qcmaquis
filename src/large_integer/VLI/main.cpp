@@ -49,12 +49,9 @@ typedef vli::vector_polynomial_gpu<polynomial_type_gpu> vector_type_gpu;
 
 int main (int argc, char * const argv[]) 
 {
-    
     gpu::gpu_manager* gpu;
     gpu->instance();
 
-    cublasHandle_t cuhandle;
-    cublasCreate(&cuhandle);
     vector_type_cpu VaCPU(10000); 
     vector_type_cpu VbCPU(10000); 
     polynomial_type_cpu result; 
@@ -76,8 +73,6 @@ int main (int argc, char * const argv[])
 //    result_gpu = inner_product(VaGPU,VbGPU);
 //    GPU.end();
    
-    cublasDestroy(cuhandle);
-    std::cout<<result<<std::endl;
 //    if(result == result_gpu)
 //        printf( "OK \n"); 
 //    else{
