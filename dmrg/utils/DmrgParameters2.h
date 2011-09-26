@@ -88,6 +88,8 @@ public:
         add_option("Jz", "");
         add_option("Jxy1", "");
         add_option("Jz1", "");
+        add_option("J1", "");
+        add_option("J2", "");
         
         add_option("U", "");
         add_option("t", "");
