@@ -83,6 +83,8 @@ public:
         add_option("W", "");
         
         add_option("Jxy", "");
+        add_option("Jx", "");
+        add_option("Jy", "");
         add_option("Jz", "");
         add_option("Jxy1", "");
         add_option("Jz1", "");
