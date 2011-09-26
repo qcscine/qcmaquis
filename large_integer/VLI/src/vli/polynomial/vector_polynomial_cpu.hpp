@@ -12,6 +12,7 @@
 #include "vli/polynomial/polynomial_gpu.hpp"
 #include "vli/polynomial/vector_polynomial_gpu.hpp"
 #include "vli/vli_cpu.hpp"
+#include "vli/vli_config.h"
 #include <vector>
 #include <ostream>
 #include <cassert>
@@ -58,7 +59,7 @@ namespace vli
         * 
         * Quick Mixmode
         */
-        std::size_t split = static_cast<std::size_t>(v1.size()*0.1);
+        std::size_t split = static_cast<std::size_t>(v1.size()*SPLIT_PARAM);
         
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > v1Gpu,v2Gpu;
         vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  tmp;

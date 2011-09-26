@@ -20,10 +20,11 @@ set (VLI_VERSION_MINOR 1)
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
-option (VLI_TESTS "Build and execute the VLI regression tests" ON)
+option (VLI_TESTS "Build and execute the VLI regression tests" OFF)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
+set (VLI_SPLIT_PARAM "0.1" CACHE STRING "Split param for cpu/gpu mix mode ")
 set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
 set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 set (VLI_COMPILE_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
@@ -42,7 +43,6 @@ if(VLI_USE_OPENMP)
 # TODO is there a more general way to find the right library?
     set(OPENMP_LIBRARIES "gomp")
 endif(VLI_USE_OPENMP)
-
 
 if (VLI_USE_GPU)
    find_package (CUDA) 
