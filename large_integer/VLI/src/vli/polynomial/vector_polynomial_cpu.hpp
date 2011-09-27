@@ -52,7 +52,7 @@ namespace vli
         assert(v1.size() == v2.size());
         std::size_t size_v = v1.size();
         
-#ifdef _OPENMP
+#ifdef _MIX
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res_gpu_to_cpu;
         /**
@@ -81,8 +81,21 @@ namespace vli
         res[0] += polynomial_cpu<vli_cpu<BaseInt, Size>, Order >(resGpu);
         
         return res[0];
-#else //_OPENMP
+#elif _OPENMP
+        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
+
+        #pragma omp parallel for
+        for(std::size_t i=0 ; i < size_v ; ++i){
+            res[omp_get_thread_num()] += v1[i]*v2[i];
+        }
+
+        for(int i=1; i < omp_get_max_threads(); ++i)
+            res[0]+=res[i];
+
+        return res[0];
+#else 
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res;
+
         for(std::size_t i=0 ; i < size_v ; ++i)
             res += v1[i]*v2[i];
         return res;
