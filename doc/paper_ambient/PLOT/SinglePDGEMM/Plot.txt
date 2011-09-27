@@ -1,5 +1,5 @@
 reset
-set terminal epslatex 
+set terminal epslatex color 
 #set grid
 #set key box
 set size 1.00,0.90 #golden ratio
@@ -13,17 +13,14 @@ set key right top
 set ylabel "$P$ [GFlops]"
 set xlabel "$n$"
 
-set style line 1 lt 1 lw 1
-set style line 2 lt 1 pt 8 ps 1
-set style line 3 lt 1 pt 7 ps 1
-set style line 4 lt 1 pt 2 ps 1
-set style line 5 lt 1 pt 5 ps 1 lw 1
-set style line 6 lt 2 lw 1
-set style line 7 lt 3 lw 1
-set style line 8 lt 4 pt 1 lw 1
+set style line 1 lt 1 lw 3
+set style line 2 lt 2 lw 3 
+set style line 3 lt 3 lw 3 
+set style line 4 lt 6 lw 3 
 
-set out 'SinglePGEMM.tex';  plot "Peak.txt" using 2:1   title "Peak" linestyle 1 lw 3 with line
-set out 'SinglePGEMM.tex';replot "SingleGEMM.txt" using 4:(2*$4*$4*$4)/($2*10**9) title "pDGEMM ScaLAPACK" linestyle 8 lw 3 with line
+
+set out 'SinglePGEMM.tex';  plot "Peak.txt" using 2:1   title "Peak" linestyle 1 with line
+#set out 'SinglePGEMM.tex';replot "SingleGEMM.txt" using 4:(2*$4*$4*$4)/($2*10**9) title "pDGEMM ScaLAPACK" linestyle 8 lw 3 with line
 #set out 'SinglePGEMM.tex';replot "SingleGEMM.txt" using 4:(2*$4*$4*$4)/($1*10**9) title "before" linestyle 8 lw 3 with line
-set out 'SinglePGEMM.tex';replot "Single" using 3:(2*$3*$3*$3)/($1*10**9) title "pDGEMM Ambient"   linestyle 6 lw 3 with line  
+set out 'SinglePGEMM.tex';replot "Single" using 3:(2*$3*$3*$3)/($1*10**9) title "pDGEMM Ambient"   linestyle 2  with line  
 set output
