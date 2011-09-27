@@ -22,6 +22,7 @@ set (VLI_DIR CACHE PATH "VLI install path")
  
 option (SE_DEBUG_COMPILE "Create a debug compile of SE" OFF)
 option (SE_USE_GMP " Compile the GMP version " ON)
+option (SE_USE_OMP " Compile the OMP version " ON)
 option (SE_USE_VLI " Compile the VLI version " ON)
 option (SE_USE_MIX " Compile the mix SE components" ON)
 option (SE_USE_GPU " Compile the GPU enhanced SE components" ON)
@@ -120,6 +121,9 @@ if(SE_USE_MIX)
    add_subdirectory(se_vli_mix)
 endif(SE_USE_MIX)
 
+if(SE_USE_OMP)
+   add_subdirectory(se_vli_omp)
+endif(SE_USE_OMP)
 ########################################################################
 #
 # Install

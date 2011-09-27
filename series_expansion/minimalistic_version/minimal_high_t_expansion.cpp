@@ -76,7 +76,7 @@ namespace hp2c
 namespace hp2c
 {
     typedef vli::vli_cpu<unsigned long int,3> large_int;
-    typedef vli::monomial<int> monomial_type;
+    typedef vli::monomial<large_int> monomial_type;
     typedef vli::polynomial_cpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
     typedef vli::vector_polynomial_cpu< polynomial_type > polynomial_vector_type;
 }
