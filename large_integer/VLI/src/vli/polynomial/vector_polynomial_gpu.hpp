@@ -83,7 +83,7 @@ namespace vli
             polynomial_gpu operator*(int i)
             {
                 vli_gpu<vli_value_type,vli_size >  inter(i);
-                polynomial_gpu inter_poly(pdata_+pos_*element_offset);                
+                polynomial_gpu inter_poly(pdata_+pos_*element_offset);
                 inter_poly *= inter;
                 return inter;
             }
@@ -111,7 +111,7 @@ namespace vli
             vli_gpu<vli_value_type, vli_size> BuildProxyToVli() const
             {
                 vli_gpu<vli_value_type, vli_size> res;
-                gpu::cu_check_error(cudaMemcpy((void*)(res.p()),(void*)(pdata_+pos_*element_offset), vli_size*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__); 	           
+                gpu::cu_check_error(cudaMemcpy((void*)(res.p()),(void*)(pdata_+pos_*element_offset), vli_size*sizeof(vli_value_type), cudaMemcpyDeviceToDevice ), __LINE__);
                 return res;
             }
             
@@ -134,9 +134,7 @@ namespace vli
         /** CPU vector to GPU vector */
         explicit vector_polynomial_gpu(vector_polynomial_cpu< polynomial_cpu< vli_cpu <vli_value_type, vli_size>, max_order_poly > > const& vector){ 
             resize(vector.size()); // because default value is one !
-            std::cout <<  vector.size()*max_order_poly*max_order_poly*vli_size*sizeof(vli_value_type) << std::endl;
-
-            gpu::cu_check_error(cudaMemcpy( (void*)this->p(), (void*)&vector[0], vector.size()*max_order_poly*max_order_poly*vli_size*sizeof(vli_value_type), cudaMemcpyHostToDevice), __LINE__); 
+            copy_vec_vli_to_gpu(vector);
         }
 
         vector_polynomial_gpu& operator=(vector_polynomial_gpu v)
@@ -154,7 +152,7 @@ namespace vli
         
         void copy_vec_vli_to_cpu( vector_polynomial_cpu< polynomial_cpu < vli_cpu<vli_value_type, vli_size>, max_order_poly> > & v) const
         {
-            gpu::cu_check_error(cudaMemcpy( (void*)&v[0], (void*)this->p(),v.size()*element_offset*sizeof(vli_value_type),cudaMemcpyDeviceToHost ), __LINE__);					
+            gpu::cu_check_error(cudaMemcpy( (void*)&v[0], (void*)this->p(),v.size()*element_offset*sizeof(vli_value_type),cudaMemcpyDeviceToHost ), __LINE__);
         }
         
         void copy_vec_vli_to_gpu( vector_polynomial_cpu< polynomial_cpu < vli_cpu<vli_value_type, vli_size>, max_order_poly> > const & v) 
