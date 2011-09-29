@@ -22,9 +22,9 @@ void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, Size>, Order> & result,
  
     for(exponent_type je1 = 0; je1 < Order; ++je1)
     {
-        for(exponent_type he1 = 0; he1 < Order; ++he1)
+        for(exponent_type je2 = 0; je2 < Order - je1; ++je2)
         {
-            for(exponent_type je2 = 0; je2 < Order - je1; ++je2)
+            for(exponent_type he1 = 0; he1 < Order; ++he1)
             {
                 for(exponent_type he2 = 0; he2 < Order - he1; ++he2)
                 {
