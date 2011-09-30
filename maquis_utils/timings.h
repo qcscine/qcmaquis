@@ -3,6 +3,7 @@
 
 #include "zout.hpp"
 #include <string>
+#include <fstream>
 
 #ifdef _OPENMP
 #include "omp.h"
