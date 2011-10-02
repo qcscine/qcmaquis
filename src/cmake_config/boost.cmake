@@ -1,0 +1,16 @@
+
+if(ALPS_FOUND)
+  set(MAQUIS_Boost_INCLUDE_DIRS ${ALPS_Boost_INCLUDE_DIR})
+  set(MAQUIS_Boost_LIBRARIES boost)
+  set(MAQUIS_Boost_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS})
+else(ALPS_FOUND)
+  set(BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost sources)")
+  find_package(Boost)
+  if(Boost_FOUND)
+    set(MAQUIS_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})  
+    set(MAQUIS_Boost_LIBRARIES ${Boost_LIBRARIES})
+    set(MAQUIS_Boost_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
+    #include_directories(${Boost_INCLUDE_DIRS})
+  endif(Boost_FOUND)
+endif(ALPS_FOUND)
+
