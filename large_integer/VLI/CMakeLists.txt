@@ -45,8 +45,8 @@ if(VLI_USE_OPENMP)
 endif(VLI_USE_OPENMP)
 
 if (VLI_USE_GPU)
-   find_package (CUDA) 
-    include_directories(${CUDA_INCLUDE_DIRS})
+   find_package (CUDA)
+   include_directories(${CUDA_INCLUDE_DIRS})
 endif (VLI_USE_GPU)
 
 # The tests need the GMP library
@@ -76,6 +76,21 @@ if(Boost_FOUND)
 else()
     message(FATAL_ERROR "Boost libraries not found. Please specify location using the BOOST_DIR variable")
 endif()
+
+########################################################################
+#
+# Set internal variables according to the variables in section "options"
+#
+########################################################################
+
+mark_as_advanced(CMAKE_BUILD_TYPE)
+if(VLI_DEBUG_COMPILE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
+else(VLI_DEBUG_COMPILE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
+endif(VLI_DEBUG_COMPILE)
+set(CMAKE_CXX_FLAGS_RELEASE ${VLI_COMPILER_FLAGS_RELEASE} CACHE STRING "Compiler flags for Release compiles." FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILER_FLAGS_DEBUG} CACHE STRING "Compiler flags for Debug compiles." FORCE)
 
 
 ########################################################################
@@ -126,19 +141,4 @@ endif(VLI_TESTS)
 install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
 install(FILES ${PROJECT_BINARY_DIR}/vli/vli_config.h DESTINATION include/vli/)
 install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a DESTINATION lib)
-
-########################################################################
-#
-# Set internal variables according to the variables in section "options"
-#
-########################################################################
-
-mark_as_advanced(CMAKE_BUILD_TYPE)
-if(VLI_DEBUG_COMPILE)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
-else(VLI_DEBUG_COMPILE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
-endif(VLI_DEBUG_COMPILE)
-set(CMAKE_CXX_FLAGS_RELEASE ${VLI_COMPILER_FLAGS_RELEASE} CACHE STRING "Compiler flags for Release compiles." FORCE)
-set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILER_FLAGS_DEBUG} CACHE STRING "Compiler flags for Debug compiles." FORCE)
 

@@ -63,39 +63,6 @@ __device__ void polynome_polynome_multiplication_device(BaseInt const* p1, BaseI
 */
 
 template <typename BaseInt, std::size_t Size>
-__global__ void negate_gpu(BaseInt* x)
-{
-     kernel_negate_device<BaseInt,Size>(x);
-}
-
-template <typename BaseInt, std::size_t Size>
-__global__ void single_addition(BaseInt* x, BaseInt const* y)     
-{
-    kernels_addition_classic<BaseInt,Size>(x,y);
-}    
-
-template <typename BaseInt>
-__global__ void single_addition_int(BaseInt* x, BaseInt y)
-{
-    //TODO BUG: what about the carry bit?
-    kernels_addition_block<BaseInt>(x,&y);  
-}
-
-template <typename BaseInt, std::size_t Size>
-__global__ void single_subtraction(BaseInt* x, BaseInt* y)
-{
-    kernel_negate_device<BaseInt,Size>(y);
-    kernels_addition_classic<BaseInt,Size>(x,y);
-}
-
-//__global__ and __device__ are impossible in the same time
-template <typename BaseInt, std::size_t Size>
-__global__  void single_multiplication(BaseInt const* x, BaseInt const* y, BaseInt* z)     
-{
-     single_multiplication_device<BaseInt,Size>(x,y,z);
-}
-
-template <typename BaseInt, std::size_t Size>
 __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y, BaseInt* z)  
 {
     int na(1),nb(1);
@@ -136,28 +103,6 @@ __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y
         kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(y));
     }
 }
-
-template <typename BaseInt, std::size_t Size>
-__global__ void single_multiplication_int(BaseInt* x, int y)
-{
-    int na(1),nb(1);
-    
-    if( static_cast<bool>((x[Size-1]) >> data_bits<BaseInt>::value)){
-        kernel_negate_device<BaseInt,Size>(x);
-        na = -1;
-    }
-    
-    if(y<0){
-        y *=-1;
-        nb = -1;
-    }
-     
-    kernels_multiplication_number<BaseInt,Size>(x,y); 
-     
-    if(nb*na == -1)
-        kernel_negate_device<BaseInt,Size>(x);
-}
-
 /**
 I try to implement this stuff into the commun kernel impossible ... (3 days of trying)
 the compiler does not want, we should move it inside ! 
@@ -221,18 +166,16 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
 {
     for(std::size_t je1 = 0; je1 < max_order; ++je1)
     {
-        for(std::size_t he1 = 0; he1 < max_order; ++he1)
+        for(std::size_t je2 = 0; je2 < max_order - je1; ++je2)
         {
-            for(std::size_t je2 = 0; je2 < max_order - je1; ++je2)
+            for(std::size_t he1 = 0; he1 < max_order; ++he1)
             {
                 for(std::size_t he2 = 0; he2 < max_order - he1; ++he2)
                 {
-                    // BUG??
                     BaseInt inter[Size];
                     #pragma unroll
                     for(std::size_t i=0 ; i < Size ;++i)
                         inter[i] = 0;
-                    //memset(&inter[0], 0 , vli_size*sizeof(T)); memset forbiden on GPU it is corrupted the memory, not stable !!!
                     std::size_t offset0 = ((je1+je2)*max_order + he1+he2)*Size;
                     std::size_t offset1 = (je1*max_order+he1)*Size;
                     std::size_t offset2 = (je2*max_order+he2)*Size;
@@ -270,14 +213,14 @@ __global__ void inner_prod_vector(unsigned int max_order, std::size_t vector_siz
     
     
 template  <typename BaseInt, std::size_t Size>
-__global__ void reduction_polynome(unsigned int max_order, std::size_t vector_size, BaseInt const* v1, BaseInt* v2)
+__global__ void reduction_polynome(unsigned int max_order, std::size_t vector_size, BaseInt* v1)
 { 
     std::size_t size_poly = Size*max_order*max_order;
-    for(std::size_t i=0 ; i < vector_size ; ++i){
+    for(std::size_t i=1 ; i < vector_size ; ++i){
         for(std::size_t j=0 ; j < max_order*max_order; ++j){ //additional loop
             std::size_t offset0 = j*Size;
             std::size_t offset1 = i*size_poly+j*Size;
-            kernels_addition_classic<BaseInt,Size>(&v2[offset0],&v1[offset1]);
+            kernels_addition_classic<BaseInt,Size>(&v1[offset0],&v1[offset1]);
         }
     }
 }
@@ -291,56 +234,6 @@ __global__ void polynome_int_addition(BaseInt* x, int y)
 /**
   * The C++ functions that call the kernels
   */
-template <typename BaseInt, std::size_t Size>
-void negate(BaseInt* A)
-{
-    dim3 dimgrid(1,1,1);
-    dim3 dimblock(1,1,1);
-    negate_gpu<BaseInt, Size> <<< dimgrid, dimblock >>>(A);
-}
-
-template <typename BaseInt, std::size_t Size>
-void plus_assign(BaseInt* A, BaseInt const* B)
-{
-    dim3 dimgrid(1,1,1);
-	dim3 dimblock(1,1,1);
-	single_addition<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
-}
-
-template <typename BaseInt, std::size_t Size>
-void plus_assign(BaseInt* A, BaseInt a)
-{
-    dim3 dimgrid(1,1,1);
-	dim3 dimblock(1,1,1);
-	single_addition_int<BaseInt> <<< dimgrid, dimblock >>>(A, a);
-}
-
-template <typename BaseInt, std::size_t Size>
-void minus_assign_destructive(BaseInt* A, BaseInt* B)
-{
-    dim3 dimgrid(1,1,1);
-    dim3 dimblock(1,1,1);
-    single_subtraction<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B);
-}
-
-template <typename BaseInt, std::size_t Size>
-void entrywise_multiplies(BaseInt const* A, BaseInt const* B, BaseInt* C)
-{
-    dim3 dimgrid(1,1,1);
-	dim3 dimblock(1,1,1);
-	single_multiplication<BaseInt, Size> <<< dimgrid, dimblock >>>(A, B, C);
-} 
-
-template <typename BaseInt, std::size_t Size>
-void multiplies_assign(BaseInt* A, int a)
-{
-    //TODO is 'int a' ok?
-    dim3 dimgrid(1,1,1);
-	dim3 dimblock(1,1,1);
-    single_multiplication_int<BaseInt, Size> <<< dimgrid, dimblock >>>(A, a);
-}
-
-
 /**
 * VLI_GPU_POLYNOMIAL functions
 */
@@ -401,27 +294,15 @@ void inner_product_vector(unsigned int max_order, std::size_t vector_size, BaseI
 } 
 
 template <typename BaseInt, std::size_t Size>
-void vector_reduction(unsigned int max_order, std::size_t vector_size, BaseInt const* A, BaseInt * B)
+void vector_reduction_inplace(unsigned int max_order, std::size_t vector_size, BaseInt* A)
 {
     //the reduction should be // if executed on one smp
     dim3 dimgrid(1,1,1);
     dim3 dimblock(1,1,1);
-    reduction_polynome<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, vector_size, A, B);
+    reduction_polynome<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, vector_size, A);
 }
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
-    void negate(vli_size_tag<VLI_SIZE>, TYPE* A) \
-        {negate<TYPE,VLI_SIZE>(A);} \
-    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B) \
-        {plus_assign<TYPE,VLI_SIZE>(A,B);} \
-    void plus_assign(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE B) \
-        {plus_assign<TYPE,VLI_SIZE>(A,B);} \
-    void minus_assign_destructive(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE* B) \
-        {minus_assign_destructive<TYPE,VLI_SIZE>(A,B);} \
-    void multiplies_assign(vli_size_tag<VLI_SIZE>, TYPE* A, int a) \
-        {multiplies_assign<TYPE,VLI_SIZE>(A,a);} \
-    void entrywise_multiplies(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const*  B, TYPE* C) \
-        {entrywise_multiplies<TYPE,VLI_SIZE>(A,B,C);} \
     void poly_mono_multiply(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE const* A, TYPE const* B, TYPE* C, std::size_t j_exp, std::size_t h_exp) \
         {poly_mono_multiply<TYPE,VLI_SIZE>(max_order,A,B,C,j_exp,h_exp);} \
     void plus_assign_poly_int(vli_size_tag<VLI_SIZE>, TYPE* A, int a) \
@@ -434,8 +315,8 @@ void vector_reduction(unsigned int max_order, std::size_t vector_size, BaseInt c
         {poly_poly_multiply<TYPE,VLI_SIZE>(max_order,A,B,C);} \
     void inner_product_vector(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C, std::size_t threads_per_block) \
         {inner_product_vector<TYPE,VLI_SIZE>(max_order,vector_size,A,B,C,threads_per_block);} \
-    void vector_reduction(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE* B) \
-        {vector_reduction<TYPE,VLI_SIZE>(max_order,vector_size,A,B);}
+    void vector_reduction_inplace(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE* A) \
+        {vector_reduction_inplace<TYPE,VLI_SIZE>(max_order,vector_size,A);}
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
     VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )

@@ -7,18 +7,13 @@
 #include "vli/polynomial/polynomial_cpu.hpp"
 #include "vli/vli_cpu.hpp"
 
-#include "vli/polynomial/polynomial_gpu.hpp"
-#include "vli/vli_gpu.hpp"
-
 #include "regression/vli_test.hpp"
 
 using vli::test::fill_random;
 using vli::test::fill_poly_random;
 using vli::vli_cpu;
-using vli::vli_gpu;
 using vli::monomial;
 using vli::polynomial_cpu;
-using vli::polynomial_gpu;
 
 template <typename Vli>
 struct polynomial_from_vli_cpu

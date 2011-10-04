@@ -8,11 +8,9 @@
 
 #ifndef VLI_VECTOR_POLYNOME_CPU_H
 #define VLI_VECTOR_POLYNOME_CPU_H
-#include "vli/polynomial/polynomial_cpu.hpp"
-#include "vli/polynomial/polynomial_gpu.hpp"
-#include "vli/polynomial/vector_polynomial_gpu.hpp"
-#include "vli/vli_cpu.hpp"
 #include "vli/vli_config.h"
+#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/vli_cpu.hpp"
 #include <vector>
 #include <ostream>
 #include <cassert>
@@ -20,6 +18,10 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif //_OPENMP
+
+#ifdef VLI_USE_GPU
+#include "vli/detail/inner_product_gpu_booster.hpp"
+#endif //VLI_USE_GPU
 
 namespace vli
 {
@@ -44,46 +46,16 @@ namespace vli
             
     }; //end class
     
-    
+namespace detail
+{    
     template <class BaseInt, std::size_t Size, unsigned int Order>
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
-    inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
+    inner_product_openmp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         assert(v1.size() == v2.size());
         std::size_t size_v = v1.size();
-        
-#ifdef _MIX
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
-        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res_gpu_to_cpu;
-        /**
-        * 
-        * Quick Mixmode
-        */
-        std::size_t split = static_cast<std::size_t>(v1.size()*SPLIT_PARAM);
         
-        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> > v1Gpu,v2Gpu;
-        vector_polynomial_gpu<polynomial_gpu<vli_gpu<BaseInt, Size>, Order> >  tmp;
-        v1Gpu.resize(split);
-        v2Gpu.resize(split);
-        v1Gpu.copy_vec_vli_to_gpu(v1);
-        v2Gpu.copy_vec_vli_to_gpu(v2);
-        polynomial_gpu<vli_gpu<BaseInt,Size>,Order> resGpu;// = inner_product(v1Gpu,v2Gpu);
-        inner_product_multiplication_gpu(v1Gpu,v2Gpu,tmp,resGpu);
-
-        #pragma omp parallel for
-        for(std::size_t i=split ; i < size_v ; ++i){
-            res[omp_get_thread_num()] += v1[i]*v2[i];
-        }
-
-        for(int i=1; i < omp_get_max_threads(); ++i)
-            res[0]+=res[i];
-
-        res[0] += polynomial_cpu<vli_cpu<BaseInt, Size>, Order >(resGpu);
-        
-        return res[0];
-#elif _OPENMP
-        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
-
         #pragma omp parallel for
         for(std::size_t i=0 ; i < size_v ; ++i){
             res[omp_get_thread_num()] += v1[i]*v2[i];
@@ -91,16 +63,41 @@ namespace vli
 
         for(int i=1; i < omp_get_max_threads(); ++i)
             res[0]+=res[i];
-
         return res[0];
-#else 
+    }
+   
+    
+    template <class BaseInt, std::size_t Size, unsigned int Order>
+    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
+    inner_product_plain( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
+                   vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+        assert(v1.size() == v2.size());
+        std::size_t size_v = v1.size();
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res;
-
         for(std::size_t i=0 ; i < size_v ; ++i)
             res += v1[i]*v2[i];
         return res;
-#endif //_OPENMP
+    }
+} // end namespace detail
 
+    template <class BaseInt, std::size_t Size, unsigned int Order>
+    inline polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
+    inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
+                   vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+        // TODO this is a little dirty and could be done better
+#ifdef _OPENMP
+#ifdef VLI_USE_GPU
+        return detail::inner_product_openmp_gpu(v1,v2);
+#else //VLI_USE_GPU
+        return detail::inner_product_openmp(v1,v2);
+#endif //VLI_USE_GPU
+#else //_OPENMP
+#ifdef VLI_USE_GPU
+        return detail::inner_product_gpu(v1,v2);
+#else //VLI_USE_GPU
+        return detail::inner_product_plain(v1,v2);
+#endif //VLI_USE_GPU
+#endif //_OPENMP
     }
 
     template<class BaseInt, std::size_t Size, unsigned int Order > // the << cpu and gpu should be commun

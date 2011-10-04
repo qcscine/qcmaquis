@@ -2,10 +2,7 @@
 #include <boost/test/unit_test.hpp>
 #include <gmpxx.h>
 
-#include "vli/utils/gpu_manager.h"
-#include "vli/utils/gpu_manager.hpp"
 #include "vli/vli_cpu.hpp"
-#include "vli/vli_gpu.hpp"
 #include "vli/vli_traits.hpp"
 #include "vli/polynomial/monomial.hpp"
 
@@ -13,7 +10,6 @@
 
 using vli::vli_cpu;
 using vli::max_int_value;
-using vli::vli_gpu;
 using vli::monomial;
 
 using vli::test::fill_random;
