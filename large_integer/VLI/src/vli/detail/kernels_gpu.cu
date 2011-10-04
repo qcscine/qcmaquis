@@ -65,21 +65,21 @@ __device__ void polynome_polynome_multiplication_device(BaseInt const* p1, BaseI
 template <typename BaseInt, std::size_t Size>
 __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y, BaseInt* z)  
 {
-    int na(1),nb(1);
-/*
-    bool result_is_negative = static_cast<bool>((x[size-1] ^ y[size-1]) >> data_bits<T>::value);
+ //   int na(1),nb(1);
+
+    bool result_is_negative = static_cast<bool>((x[Size-1] ^ y[Size-1]) >> data_bits<BaseInt>::value);
     if(result_is_negative)// test if 
     {
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T* >(x));
-        kernels_multiplication_classic_truncate<T,static_cast<std::size_t>(size)>(z,x,y); 
-        kernel_negate_device<T,static_cast<std::size_t>(size)>(const_cast<T* >(x));
+        kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(x));
+        kernels_multiplication_classic_truncate<BaseInt,Size>(z,x,y); 
+        kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(x));
     }
     else
     {
-        kernels_multiplication_classic_truncate<T,static_cast<std::size_t>(size)>(z,x,y); 
+        kernels_multiplication_classic_truncate<BaseInt,Size>(z,x,y); 
     }
-*/
-       
+
+/*    
     if( static_cast<bool>((x[Size-1]) >> data_bits<BaseInt>::value)){
         kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(x));
         na = -1;
@@ -101,7 +101,7 @@ __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y
 
     if(nb == -1){
         kernel_negate_device<BaseInt,Size>(const_cast<BaseInt* >(y));
-    }
+    }*/
 }
 /**
 I try to implement this stuff into the commun kernel impossible ... (3 days of trying)
