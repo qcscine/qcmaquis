@@ -30,15 +30,15 @@ typedef vli_cpu<long unsigned int, 4> vli_type_cpu;
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 
-typedef vli::polynomial_cpu< vli_type_cpu, 21 > polynomial_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, 11 > polynomial_type_cpu;
 
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 
 
 int main (int argc, char * const argv[]) 
 {
-    vector_type_cpu v1(500); 
-    vector_type_cpu v2(500);
+    vector_type_cpu v1(10000);
+    vector_type_cpu v2(10000);
     polynomial_type_cpu result;
     polynomial_type_cpu result_pure_gpu;
     polynomial_type_cpu result_pure_cpu; 
