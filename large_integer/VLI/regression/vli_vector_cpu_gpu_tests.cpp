@@ -28,18 +28,15 @@ using vli::test::fill_random;
 using vli::test::fill_poly_random;
 using vli::test::fill_vector_random;
 
-typedef boost::mpl::front<vli::test::vli_cpu_type_list>::type vli_type_cpu;
-
-typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
-
-typedef vli::polynomial_cpu<vli_type_cpu, 13 > polynomial_type_cpu;
-
-typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
+typedef vli::test::vli_cpu_type_list vli_types;
 
 enum { vector_size = 10000 };
 
-BOOST_AUTO_TEST_CASE(vector_inner_product)
+BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product, Vli, vli_types)
 {
+    typedef vli::polynomial_cpu<Vli, 13 > polynomial_type_cpu;
+    typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
+
     vector_type_cpu VaCPU(vector_size),VbCPU(vector_size);
     polynomial_type_cpu pcCPU0;
     fill_vector_random(VaCPU);
