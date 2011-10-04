@@ -72,7 +72,8 @@ namespace gpu
 				break;
 			
             default:
-				throw(std::runtime_error("Unknown CUDA error (Error:"+ boost::lexical_cast<std::string>(err) +") in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
+                char const* cuda_msg = cudaGetErrorString(err);
+				throw(std::runtime_error("Unknown CUDA error (Error:"+ boost::lexical_cast<std::string>(err) +") in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) + "\n cuda message:" + std::string(cuda_msg) ));
 				break;
 		}
 	}
