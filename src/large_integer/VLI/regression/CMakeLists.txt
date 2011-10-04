@@ -19,10 +19,10 @@ add_test (vli_cpu_tests vli_cpu_tests)
 #
 
 add_executable ( vli_monomial_tests vli_monomial_tests.cpp)
-target_link_libraries (vli_monomial_tests vli_gpu ${Boost_LIBRARIES} ${CUDA_LIBRARIES})
+target_link_libraries (vli_monomial_tests ${Boost_LIBRARIES} ${CUDA_LIBRARIES})
 
 add_executable ( vli_polynomial_tests vli_polynomial_tests.cpp)
-target_link_libraries (vli_polynomial_tests vli_gpu ${Boost_LIBRARIES} ${CUDA_LIBRARIES})
+target_link_libraries (vli_polynomial_tests ${Boost_LIBRARIES} ${CUDA_LIBRARIES})
 
 add_test(vli_monomial_tests vli_monomial_tests)
 add_test(vli_polynomial_tests vli_polynomial_tests)
@@ -31,6 +31,10 @@ add_test(vli_polynomial_tests vli_polynomial_tests)
 # vector
 #
 add_executable(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests.cpp)
-target_link_libraries( vli_vector_cpu_gpu_tests vli_gpu ${Boost_LIBRARIES} ${CUDA_LIBRARIES} ${OPENMP_LIBRARIES})
+if(VLI_USE_GPU)
+    target_link_libraries( vli_vector_cpu_gpu_tests vli_gpu ${Boost_LIBRARIES} ${CUDA_LIBRARIES} ${OPENMP_LIBRARIES})
+else(VLI_USE_GPU)
+    target_link_libraries( vli_vector_cpu_gpu_tests ${Boost_LIBRARIES} ${OPENMP_LIBRARIES})
+endif(VLI_USE_GPU)
 
 add_test(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests)

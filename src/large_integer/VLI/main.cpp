@@ -13,7 +13,6 @@
 #include "vli/vli_traits.hpp"
 #include "utils/timings.h"
 #include "regression/vli_test.hpp"
-#include <cuda_runtime.h>
 
 
 using vli::vli_cpu;
@@ -57,19 +56,27 @@ int main (int argc, char * const argv[])
     t1.begin();
     result = inner_product(v1,v2);
     t1.end();
-
+#ifdef VLI_USE_GPU
     Timer t2("GPU");
     t2.begin();
     vli::detail::inner_product_gpu_booster<vector_type_cpu> gpu_boost(v1,v2,v1.size());
     result_pure_gpu = polynomial_type_cpu(gpu_boost);
     t2.end();
+#endif //VLI_USE_GPU
 
 
     std::cout << result << std::endl << std::endl <<std::endl;
+#ifdef VLI_USE_GPU
     std::cout << result_pure_gpu << std::endl << std::endl << std::endl;
+#endif //VLI_USE_GPU
     std::cout << result_pure_cpu << std::endl << std::endl << std::endl;
     
-    if(result == result_pure_gpu && result == result_pure_cpu)
+    if(
+       result == result_pure_cpu
+#ifdef VLI_USE_GPU
+       && result == result_pure_gpu
+#endif //VLI_USE_GPU
+      )
         printf( "OK \n"); 
     else{
         printf( "NOT OK \n"); 
