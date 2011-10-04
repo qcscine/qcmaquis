@@ -71,7 +71,9 @@ namespace detail
 
             // run/queue the inner product computation
             inner_product_vector(vli_size_tag<vli_type::size>(),polynomial_type::max_order, partsize,v1_.p(), v2_.p(), tmp_.p(),num_threads);
+            gpu::cu_check_error(cudaGetLastError(),__LINE__);
             vector_reduction_inplace(vli_size_tag<vli_type::size>(), polynomial_type::max_order, partsize, tmp_.p());
+            gpu::cu_check_error(cudaGetLastError(),__LINE__);
         }
         
         operator polynomial_type() const
