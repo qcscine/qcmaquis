@@ -49,6 +49,8 @@ namespace gpu
 	{
 		switch (err) 
 		{
+            case cudaSuccess:
+                break;
 			case cudaErrorInvalidDevicePointer:
 				throw(std::runtime_error("cudaErrorInvalidDevicePointer, in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
@@ -65,19 +67,15 @@ namespace gpu
 				throw(std::runtime_error("cudaErrorInvalidMemcpyDirection in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;	
 			
-			case  cudaErrorInvalidValue:
+			case cudaErrorInvalidValue:
 				throw(std::runtime_error("cudaErrorInvalidValue in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
-				break;	
-				
-				
-			default:
-				//std::cout << "CUBLAS_STATUS_SUCCESS" << std::endl;
+				break;
+			
+            default:
+				throw(std::runtime_error("Unknown CUDA error (Error:"+ boost::lexical_cast<std::string>(err) +") in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) ));
 				break;
 		}
 	}
-    
-    void cu_check_error(cudaError_t  const& err, std::size_t line);
-    
 }
 
 
