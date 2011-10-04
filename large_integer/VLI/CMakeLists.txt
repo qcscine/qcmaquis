@@ -20,7 +20,7 @@ set (VLI_VERSION_MINOR 1)
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
-option (VLI_TESTS "Build and execute the VLI regression tests" OFF)
+option (VLI_TESTS "Build the VLI regression tests" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
@@ -36,10 +36,8 @@ add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21)
 # Find dependencies
 #
 ########################################################################
-
 if(VLI_USE_OPENMP)
     add_definitions(-fopenmp)
-    set(ENV{OMP_NUM_THREADS} "2")
 # TODO is there a more general way to find the right library?
     set(OPENMP_LIBRARIES "gomp")
 endif(VLI_USE_OPENMP)
@@ -47,6 +45,8 @@ endif(VLI_USE_OPENMP)
 if (VLI_USE_GPU)
    find_package (CUDA)
    include_directories(${CUDA_INCLUDE_DIRS})
+else (VLI_USE_GPU)
+   set (CUDA_LIBRARIES "")
 endif (VLI_USE_GPU)
 
 # The tests need the GMP library
@@ -115,8 +115,11 @@ add_subdirectory( src/vli/ )
 add_executable (a.out main.cpp)
 
 if(VLI_USE_GPU)
-    target_link_libraries (a.out vli_gpu ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${GMP_LIBRARY_CXX} ${OPENMP_LIBRARIES})
+    target_link_libraries (a.out vli_gpu ${CUDA_LIBRARIES} ${GMP_LIBRARY_CXX} ${OPENMP_LIBRARIES})
+else(VLI_USE_GPU)
+    target_link_libraries (a.out ${GMP_LIBRARY_CXX} ${OPENMP_LIBRARIES})
 endif(VLI_USE_GPU)
+
 
 
 
