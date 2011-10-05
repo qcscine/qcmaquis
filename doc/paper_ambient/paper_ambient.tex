@@ -43,94 +43,55 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN INTRODUCTION
 \section{Introduction}
 
-%Nowadays, the numerical simulations get an essential position, as experiments,  for studying physical 
-%properties of many problems. The numerical simulations are presented inside every fields of sciences 
-%and engineering, as classical and quantum mechanic, quantum chemistry,  \etc. As usual, the users always
-%want increase the size of their problems, as billion number of particles for a kinetic simulation, billion 
-%of meshes for a fluid dynamic computation, or else, matrixes of million entries for a quantum mechanic,
-%or the linear algebra problems. Thus, the high performance computing is the solution for solving very large problem,
-%with the peta flops  and the future generation of exa flops computers, the engineers and the scientists will
-%have a quasi unlimited set of resources for modeling, nevertheless, they will be confronted to a challenge, have compatible
-%programs for these machines. 
+Over the last twenty years, the High Performance Computing (HPC) community has seen the technical evolution of hardware continuously influence the programming model.
+Over this timespan, the most powerful machines have moved from shared to distributed memory architecture, with networks of
+distributed memory nodes with multicore processors using optional accelerators being the current norm\cite{Top500}.  This transition took place in three distinctive steps.
 
-%A large set of programs; solvers, and software solutions are now availabled to solve large problem in a lot of fields, \eg we can 
-%cite as popular in a few scientist field :  {\sc Quantum ESPRESSO} \cite{QE-2009} in quantum chemistry, Abinit \cite{ABINIT-2005, ABINIT-2009} in quantum mechanic,  ScaLAPACK \cite{SCALAPACK-1997} in linear 
-%algebra,  or else SMILE in hypersonic rarefied flow \cite{SMILE-2005}. Of course, this short list is not exhaustive,
-%and it can be fill up easily in every fields of science and engineering.
+First, was introduction of modular nodes based on modular blade systems in the nineties\footnote{SMP systems disappeared from theTOP 500 list 
+of supercomputers in 2002}. Cutting hardware costs, this changed the programming model from shared to distributed memory API, as memory address space was
+not shared among nodes and parallel processes now had to transmit data over an interconnecting network. Several technologies were designed to allow communication
+between nodes (PVM, NX, Express, P4, \etc) \cite{Aoyama:1999}, in particular the Message Passing Interface (MPI) \cite{Snir:1998:MCR:552013}. which has become the
+standard for coarse-grained problem ( \footnote{A number of scientific applications requiring scalability currently employ a main MPI layer,  [GIVE ME A MPI CODE INTO ALPS !!!!]
+{\sc Quantum ESPRESSO} \cite{QE-2009} for quantum chemistry, Abinit \cite{ABINIT-2005, ABINIT-2009} in quantum mechanics, ScaLAPACK \cite{SCALAPACK-1997}
+in linear  algebra or SMILE for hypersonic rarefied flows \cite{SMILE-2005}, to give just a brief, non-exhaustive list.} The factor limiting scalability in this programming model
+is the communication overhead and the workload imbalance among processes.
 
-%If the scientists or the  engineers have the right tools, it will be necessarily  limited by the scalability of the code, in the case of the famous mathematical library ScaLAPACK, the
-%efficiency  and thus the scalability, with the appropriated setting will reach up to 512 processors ($\sim  \mathcal{O}(100)$) \cite{SCALAPACK-1992}, beyond the interest is useless
-%due to the degradation of the performance. In the worst case, the programmers will start  from a white page, and must design and efficient code.
-%Due to the incredible number of cores, and optional accelerators as GPU, FGPA or "CELL like\footnote{Although the CELL processor is now depreciated, it herebies  
-%a way of integrated processor (CPU+GPU), as the prove the last processor products of Intel (core i series) and AMD (fusion).}", the programmers 
-%will have to introduce a mix programming model usually named mix-mode, based on a main MPI layer coupled with one or several additional layers \cite{EXASCALE-2010}.
+Secondly, the introduction of multicore technology has allowed the integration of several CPU cores into the same die, 
+rendering the shared memory model of parallelization once more current. The POSIX threads library is a proven technology in this regard, offering
+two possibilities: either utilize the library directly (using pThreads), or let the compiler generate a multi-threaded executable. The first option places the burden of
+shared memory parallelization on the programmer, but provides good performance when well done, while the second option, called OpenMP \cite{openmp:2002},
+is based on preprocessor directives and easier to use.  It is now integrated natively in all compilers, also allowing for hybrid programming, with hybrid MPI/OpenMP
+being the current programming model in HPC \cite{EXASCALE-2010}.  For example, the performance of the ScaLAPACK library has been shown to improve by
+employing multithreaded BLAS libraries (MKL, ESSLSMP or ACML) [A.K.: NEED CITATIONS HERE.] 
+Although this ideology can yield good results, the threads management imposes an additional workload when the grain problem size becomes too fine \cite{SMITH-2001}. 
 
-%The most popular layer for mix-mode is OpenMP, and it is based on the preprocessor directives \texttt{\#pragma}, it demonstrated its performance. It is included successfully inside
-%the  linear algebra libraries like the MKL from Intel or the PESSLSMP from IBM.  This ideology of the utilization of the pre-directives becomes more and more 
-%important, thus it is used for vectorization of loops using the intel compiler and even for GPU with the PGI compiler. Although this ideology gives results, there is 
-%a limitation for the main following reason: the creation/destruction of the threads will be extremely time consuming,
-%when the  grain problem size becomes too fine \cite{SMITH-2001}. To achieve the best performance, the number of thread should be  equal to the number of cores on a socket, 
-%thus the scalability will be increased at maximum by an order of magnitude.  The maximum number of processors now reach, becomes ($\sim \mathcal{O}(1000)$). 
-%This ideology of implementation of the mix mode is more an evolution of the programming model than a revolution. It is an fast hand-on to implement that prolongates the life and the performance on a existing code. But,
-%it will not prepare at all the code for the future, that will be automatically depreciated  by the new generation of cluster, in term of scalability.
-   
-%For getting several order of magnitude higher, we need a new programming model. The introduction of the GPU computing by NVidia a few years ago was
-%a real innovation in HPC \cite{NICKOLLS-2010}. On a GPU, it is usual to program  thousand of threads. Thus, in this paper, we propose a innovative programming model to program on very large distributed cluster. We develop
-%a framework named Ambient (C++) where we expend the CUDA programming ideology to  the a full cluster, thus we keep away the MPI programming model from the users.  In a way, we  extended
-%the philosophy of OpenCL, OpenCL extents  the GPU programming model to a processor, assimilate a socket as a GPU, where every cores of the socket are assimilated to a streaming processor.
-%We also developed inside a dynamic stack manager, that stocks and manages the execution of numerical "operations-solver" in functions of the resources of the distributed cluster.
-   
-%In this paper, we are going to describe our object oriented framework, and promote a first application based on linear algebra. Our main objective, is to 
-%promote a new technology to develop  parallel application, without any interaction with the MPI and thread layer, and allow, a real access in term of performance to the next generation
-%of clusters. The first possible  targets are applications that require large buffer of contiguous memory: quantum mechanic, linear algebra,  computational fluid dynamics, molecular dynamic \ldots 
-%\, Until the end of this paper, we will focus on the linear algebra problems and their applications.
+The latest step in this development is the introduction of graphics processing units (GPUs) into HPC. These devices typically perform hundreds or thousands of threads simultaneously, each applying a kernel
+to a single or multiple pieces of data. (???)
+As a framework to enable the use of these GPUs on a cluster, two APIs exist, CUDA \cite{CUDA2011} and OpenCL. Mixed CPU/GPU nodes can be run in hybrid mode, i.e. operations are split up
+and executed asynchronously between multiple CPU cores and the GPUs. As with pThreads, the programmer can manage this by hand or delegate via preprocessor directives \cite{PGICUDAFOR2010}.
+The MAGMA library \cite{MAGMA_2011} would be an example of this model.  
 
-In the last twenties years, the High Performance Computing (HPC) community has lived a series of technical evolutions that have always influenced the  programming model.
-These new paradigms are always introduced by the new products deliver from the computer companies.  If we examined the two last decades, the most powerful
-machines have moved from shared memory architecture, powerful but expensive and not  configurable, easily,  to distributed memory with multicores processors using
-optional accelerators \cite{Top500}.  This dual transition  material/programming models  were done in three distinctive steps.
+For the HPC developer, the challenge amidst all these advances is not just to develop code adapted to the latest hardware capabilities 
+and constraints, but to address both the given bottlenecks of the algorithm, the (possibly changing)  bottlenecks of the hardware, and that these 
+two may not be (or stay) congruent. Furthermore, in scientific simulations particularly, the structure of the problem has usually been
+exploited to write a complex code that performs very well - on a single node. The question of how to transpose such code to a large distributed
+cluster while keeping useful and well-performing design is non-trivial, as the direct approach of MPI-parallelizing each operation by hand may
+be prohibitively complex and expensive.
 
-Firstly, the introduction of modular computer, based  on independent blade system in the nineties, was a  revolution\footnote{The TOP 500 web site inventories the list of
- the most powerfull computer in the world. It delivers statistic among the architecture; we find the SMP system disappeared of the list in 2002} . It cuts the price of HPC system, and change the programming  model.
- We moved from shared memory API to distributed API. Indeed, as the systems  became independents \df the address space is not shared among nodes, 
-  parallel processes have to transmit data over an interconnecting network in order to access
-data that other processes have updated. Several technologies were designed to allow communication between nodes (PVM, NX, Express, P4, \etc) \cite{Aoyama:1999}, one in particularly were developed as 
-a standard; the Message Passing Interface (MPI) \cite{Snir:1998:MCR:552013}. This interface has been developed by the participation of more 40 organizations, started working on the standard in 1992,
- delivered in 1994 for the first version and 1997 for  the second version. Nowadays, it is the standard for  large grain scalability, it is available under several distributions  from the academic world and HPC constructors.
+The purpose of the paper is to present a new programming model based on a powerful oriented object (C++) framework named Ambient, that
+transposes the CUDA ideology to a cluster. As in the CUDA framework, in Ambient, the developer writes kernels which are executed in parallel under
+MPI groups, allocating cluster resources, dynamically if needed. The communications are assured by a nested MPI layer away from the user.
+Thus, amongst its capabilities, Ambient allows a bootstrap parallelization of existing serial or shared-memory parallel code to distributed-memory systems,
+where the operations that the serial code would perform at each step are collected into a stack. This operation stack is then executed, with Ambient grouping
+dependent and independent operations as necessary, designating MPI processes as appropriate to each of them, and, crucially, managing data storage and
+transfer between MPI processes with an eye towards keeping data volume over the network low and traffic fast. Any algorithm whose basic operations and data
+objects are inhomogenous in terms of time and size requires this dynamically adaptable resource allocation in practice, which Ambient handles largely in the background.
+The scientific algorithm for which Ambient was originally developed, the Density Matrix Renormalization Group (DMRG) [A.K.: INSERT CITATIONS HERE] for example has just this structure,
+as its basic operations are mostly dense matrix-matrix multiplications, with the dense matrices ranging widely in size. The largest ones may necessitate distribution
+over several nodes, while smaller ones may fit easily into the memory of a single node.
 
-In the last decade, the distributed memory clusters were confirmed like the technology in HPC architecture machine, 100 \% of the top 500 are now based on this model.  The large scalability applications
-used  a main MPI layer, we can cite as popular   in a few scientist field :  [GIVE ME A MPI CODE INTO ALPS !!!!]   {\sc Quantum ESPRESSO} \cite{QE-2009} in quantum chemistry, Abinit \cite{ABINIT-2005, ABINIT-2009} in 
-quantum mechanic,   ScaLAPACK \cite{SCALAPACK-1997} in linear  algebra or SMILE in hypersonic rarefied flow \cite{SMILE-2005}. Of course, this  list is not exhaustive, and it can be fill up easily in every fields of 
-science and engineering. The limitation of this programming model (the scalability) will be the communication overhead and the workload imbalance among process.
-
-Secondly, the multicore technology  introduced by the ship makers the last decade.  Indeed, the progress of the industrial process allowed the integration of several cores into the same die. 
-This technology is now available on all  processor architectures (Power, X86, ARM, \etc). One more time, the programming 
-model was modified, and it re-actualized the shared memory model.  To program shared memory machine, a proved technology exists, it is the POSIX threads library. 
-The programmers have two possibilities. They utilize the library directly (pThreads) or they let the compiler generates a multi-thread executables.  
-Generally, the former option places the burden on the programmer, but when well done, it provides good performance.
-On the other hand,  the second option more knew under the  name OpenMP  \cite{openmp:2002}, easier,  is based on  preprocessor directive. This last alternative
-is clearly the most popular nowadays. 
-
-As MPI, OpenMP is developed into a consortium, the version 1.0 was released in 1997, the 2.0 in 2005 and new features were integrated in 2008.
-It is now integrated natively in all compilers and it allows hybrid programs. Hybrid mode MPI/OpenMP
-is the actual programming model in HPC \cite{EXASCALE-2010}.  Per example the performance of the ScaLAPACK library can be improved by a multithread BLAS library (MKL, ESSLSMP or ACML). 
-Although this ideology gives results, the threads management  gives an additional workload, when the  grain problem size will become too fine \cite{SMITH-2001}. 
-
-And then, the present evolution comes from the introduction of the graphic card into HPC, graphic card exists since the eighties \cite{iSBX_1983}, the graphic card market 
-was disconnected to the HPC  until a few years ago due to the incredible power of calculation of last generation of GPU. The introducing of the CUDA \cite{CUDA2011} \footnote{An  Open Source alternative to CUDA exists
-it is OpenCL, it also extents the CUDA ideology to  multicore processor.}  API allows a real opportunity to exploit graphic card into a cluster.  To summarize the GPU ideology : it is the ability to performed thousand of threads simultaneously, where the threads applied a transformation (kernel)
-to a single or a piece of data.
-
-The classical new programming model introduced by the GPU was an hybrid mode were operation are executed  asynchronously between  multiple CPU's core and GPU.
-As the pThreads with OpenMP, the programmer can manage by hand or delegate by preprocessor directives  \cite{PGICUDAFOR2010}.
-The best example of this programming model is the mathematical library MAGMA \cite{MAGMA_2011}.  
-
-The purpose of the  paper is to present a new programming model based on a powerful oriented object (C++) framework named Ambient, that transposed  the CUDA ideology to a cluster. 
-As in the CUDA framework, in Ambient, the developer writes kernels which are executed in parallel under MPI group  all other the resource of the cluster, dynamically, and independently if needed.
-The  communications  are assured by a nested MPI layer away from the users. Our main objective is to allow parallel programming for the user without interacting  with the MPI API.
-
-In this paper, we are going to describe the difference of workflow between an Ambient  and a CUDA program,  describe the general blue print of Ambient and evaluated on several  benchmarks on basic linear algebra.  
-Until the end of this paper, we will apply and illustrate our framework on basic linear algebra problems, especially on pBLAS operations.
+In the following, we will describe the general blueprint of Ambient and its' workflow, the differences to CUDA, and evaluate several basic linear algebra benchmarks.  
+We will apply and illustrate our framework on basic linear algebra problems, especially on pBLAS operations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% END INTRODUCTION
 
@@ -168,13 +129,19 @@ workflow of execution for both CUDA-enabled and Ambient enabled applications sid
 	\end{center}
 \end{table}
 
-As soon as Ambient encounters the flush signal (contrary to CUDA, the programmer decides  the execution start  as in the queue model programming)
-kernel (a logistic kernel prepares the memory, a computational kernel execute pure calculation,   a deeper description of the pair logistics/computational kernels is given in the next section) execution is initiated along the following sequence:
+[A.K.: VERY BRIEF DESCRIPTION OF CUDA HERE] Any Ambient-parallelized operation on the other hand is broken down
+in two parts:  first, a logistic kernel sets up the necessary MPI processes and prepares the data. Secondly,
+a computational kernel executes the calculation, performing any necessary communication between MPI processes in the background.
 
+In a code bootstrap-parallelized via Ambient, operations are stacked up symbolically and are actually performed when a flush signal
+is encountered (accumulated execution model); contrary to CUDA, the programmer decides when to start execution.
+Kernel execution is initiated along the following sequence:
+(   a deeper description of the pair logistics/computational kernels is given in the next section)
 \begin{itemize}
 \item Execution of logistic kernel: allocation of device (MPI group) according to specified request. 
-\item Execution of logistic kernel: argument's work groups decomposition according to workDim \cite{OPENCL2011}.
-\item Execution of logistic kernel: selected argument's work groups mapping onto device (MPI processes).
+\item Execution of logistic kernel: different parts of an argument (i.e. data) passed to kernel are mapped to the different 
+        work groups making up the device (i.e. the MPI group).
+\item Execution of logistic kernel: selected argument's work groups are mapped onto device (MPI processes).
 \item Transfer of work groups to the target processes.
 \item Execution of computational kernel: MPI process executes kernel thread for work items of assigned work groups.
 \end{itemize}
@@ -188,8 +155,8 @@ call, the Ambient framework stacks the operation for later execution and proceed
 enables a high degree of reusage of the original serial code, while providing powerful instrumentation capabilities to manage resources and tune performance 
 of the application overall.
 
-The execution of kernels named \guillemotleft  accumulated execution \guillemotright is one of the most important purpose of Ambient because it can be parallel.
-Indeed several kernels can be push into the stack before the execution signal. When the framework encounters the signal to flush the stack of kernels the actual execution starts. 
+The  accumulated execution model is one of the important features of Ambient, it easily accomodates another layer of parallelization, that of operations,
+if that is useful for the problem at hand. Indeed several kernels can be push into the stack before the execution signal. When the framework encounters the signal to flush the stack of kernels the actual execution starts. 
 The framework's engine goes through the accumulated stack  and executes all independent operations at once. Executing an operation, the engine first invokes the associated logistic kernel and allocates a specified
 amount of resources for this operation. Next, the engine sets the argument's (here: the matrices) tiling using user specified work group sizes and maps resulting work groups onto allocated
 processes. Now the engine can freely transfer the tiled data from previous owners to the allocated processes changing
@@ -646,11 +613,6 @@ As a validation test, we've coded a new implementation of PDGEMM using the Ambie
 The algorithm of our implementation is based on the classical blocking method [CITATION NEEDED] using a column order distribution for the matrices (\cf table \ref{AMBIENTDGEMM} 
 for the modification due to Ambient). One of the obvious advantages in our implementation is the required amount of coding, which is limited to seven lines in this case.
 
------------------------------------------------------------------------------------------------------ \\
-TO DO: EXPLAIN THE ADVANTAGE AGAINST   SCALAPACK \\
-IN TERM OF NETWORK, DATA EXCHANGE \\
------------------------------------------------------------------------------------------------------ \\
-
 We compare the Ambient results with the ScaLAPACK implementation. As related in section \ref{CUDAIDEOLOGYSECTION}, Ambient is compatible with ScaLAPACK,
 despite the difference in memory layout. In Ambient, each work group is principally independent from any other, even if they belong to the same process, while in ScaLAPACK
 blocks are grouped by process s.t. a memory-contiguous object is obtained. Therefore, calling a ScaLAPACK solver from Ambient must entail rearrangement of appropriate
@@ -697,14 +659,14 @@ pseudo-random numbers non-negative, double-precision,  uniformly distributed ove
 \section{Results and discussions}
 \subsection{First benchmark case}
 [STARTED REWRITING THIS; BUT NOT FINISHED]
-The first benchmark consists of evaluating the performance of our parallel matrix multiplication relative to the iScaLAPACK-MKL mplementation. Both solvers are included as computational kernels
+The first benchmark consists of evaluating the performance of our parallel matrix multiplication relative to the ScaLAPACK-MKL implementation. Both solvers are included as computational kernels
 in Ambient.  The initial condition are the same than the validation test. As the validation test, the matrices size vary from 256 up to 8196 by step of (128 elements). A 1-D cyclic  column distribution is
 used for both algorithm. As both kernels are included inside the framework additional workload should take into account and for the ScaLAPACK pDGEMM, we reorganize data to fit the ScaLAPACK
-representation. The benchmarks  were performed on AMD Opteron  Magny-Cours) CPUs at 2.1 GHz on the Swiss National Supercomputing Centre facilities. The performance is reported in [GFlops], it is simply
+representation. The benchmarks  were performed on AMD Opteron  Magny-Cours) CPUs at 2.2 GHz on the Swiss National Supercomputing Centre facilities. The peak performance $P_m$ is reported in [GFlops], it is simply
 calculated by :
 
 \begin{eqnarray}
-P  = \frac{2n^i}{t},
+P_m  = \frac{2n^i}{t},
 \end{eqnarray}
 where $n$ is the size of the square-matrix,  $t$ the full time of calculation and $i$ is equal to 3 for the classical matrix multiplication algorithm.
 
@@ -714,11 +676,31 @@ where $n$ is the size of the square-matrix,  $t$ the full time of calculation an
 \end{figure}
 
 \subsection{Second benchmark case}
-This benchmarks consists to evaluate the performance of the scheduler, especially the repartition of several operation all over the cluster. 
+This benchmarks  evaluates the global performance of the scheduler, especially, when  the independent operations are executed all over the cluster. 
+We now multiply two vectors of matrices pair by pair. Every multiplication is performed by two MPI process and the size of the vectors vary from to
+1 to 48. Thus, the final number of MPI process is equal to 96 which corresponds to fill up 4 calculation nodes.
+
+Before presenting and commenting the results, we would like highlight the readers of the programming of this benchmark. The coding simply consists of few lines
+of declarations, initializations and a basic loop for, as we presented into the algorithm \ref{EXECUTION} . Naturally, coded algorithm  integrates two levels of distributed parallelization 
+without integrate any MPI instructions.
+ 
+In this benchmark, we  plot the ratio between the performance peak of  vector of matrices $P_{v_m}$ and the associated peak of the machine $P_m$. It is expressed by 
+$R = P_{v_m}/P_m$, or
+
+\begin{eqnarray}
+R = 100\frac{N_m 2n^3}{N_p t4f},
+\end{eqnarray}
+where $N_m$ is the number of matrices, $N_p$ the number of processor, $t$ the full time of execution and $f$ the frequency of the processor. Results are presented 
+ 
 
 \begin{figure}
-\include{PLOT/VectorPDGEMM/VectorPGEMM}
-\caption{Performances of a vector of pDGEMM using Ambient solver. Every single product used two MPI process for a maximum total of 96 MPI process. }
+\include{PLOT/VectorPDGEMM/VectorWL}
+\caption{something else}
+\end{figure}
+
+\begin{figure}
+\include{PLOT/VectorPDGEMM/VectorWL_2}
+\caption{something else}
 \end{figure}
 
 
