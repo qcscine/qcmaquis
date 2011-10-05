@@ -3,3 +3,5 @@
 time ./se_gmp/a_gmp.out $1 $1 > out.gmp
 time ./se_vli/a_vli.out $1 $1 > out.vli
 time ./se_vli_omp/a_vli_omp.out $1 $1 > out.omp
+time ./se_vli_mix/a_vli_mix.out $1 $1 > out.mix
+time ./se_vli_gpu/a_vli_gpu.out $1 $1 > out.gpu
