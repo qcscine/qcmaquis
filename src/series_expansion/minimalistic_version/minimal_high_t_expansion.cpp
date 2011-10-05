@@ -62,17 +62,24 @@ namespace hp2c
 namespace hp2c
 {
     typedef mpz_class large_int;
-    typedef hp2c::monomial<int> monomial_type;
+    typedef hp2c::monomial<large_int> monomial_type;
     typedef hp2c::polynomial<large_int> polynomial_type;
     typedef std::vector<polynomial_type> polynomial_vector_type;
 }
 #endif //USE_GMP_INTEGERS
 
 #ifdef USE_VLI_INTEGERS_CPU
-#include "vli/vli_cpu.hpp"
-#include "vli/polynomial/monomial.hpp"
-#include "vli/polynomial/polynomial_cpu.hpp"
+
+#ifdef VLI_USE_GPU
+#include "vli/utils/gpu_manager.h"
+#include "vli/utils/gpu_manager.hpp"
+#endif //VLI_USE_GPU
+
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
+#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/polynomial/monomial.hpp"
+#include "vli/vli_cpu.hpp"
+#include "vli/vli_traits.hpp"
 namespace hp2c
 {
     typedef vli::vli_cpu<unsigned long int,3> large_int;
@@ -81,24 +88,6 @@ namespace hp2c
     typedef vli::vector_polynomial_cpu< polynomial_type > polynomial_vector_type;
 }
 #endif //USE_VLI_INTEGERS_CPU
-
-#ifdef USE_VLI_INTEGERS_GPU
-#include "vli/utils/gpu_manager.h"
-#include "vli/utils/gpu_manager.hpp"
-#include "vli/vli_gpu.hpp"
-#include "vli/polynomial/monomial.hpp"
-#include "vli/polynomial/polynomial_gpu.hpp"
-#include "vli/polynomial/vector_polynomial_gpu.hpp"
-namespace hp2c
-{
-    typedef vli::vli_gpu<unsigned long int,3> large_int;
-    typedef vli::monomial<int> monomial_type;
-    typedef vli::polynomial_gpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
-    typedef vli::vector_polynomial_gpu< polynomial_type > polynomial_vector_type;
-}
-#endif //USE_VLI_INTEGERS_GPU
-
-
 
 // ------------------------------------------------------------------
 // Code

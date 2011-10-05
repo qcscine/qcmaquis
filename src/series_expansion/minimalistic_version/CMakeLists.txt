@@ -42,7 +42,6 @@ add_definitions(-DPOLYNOMIAL_MAX_ORDER=21 -DNDEBUG)
 
 if (SE_USE_GPU)
    find_package (CUDA) 
-   include_directories(${CUDA_INCLUDE_DIRS})
 endif (SE_USE_GPU)
 
 # The tests need the GMP library
@@ -124,6 +123,12 @@ endif(SE_USE_MIX)
 if(SE_USE_OMP)
    add_subdirectory(se_vli_omp)
 endif(SE_USE_OMP)
+
+if(SE_USE_GPU)
+   add_subdirectory(se_vli_GPU)
+endif(SE_USE_GPU)
+
+
 ########################################################################
 #
 # Install
