@@ -2,6 +2,8 @@
 #define INNER_PRODUCT_GPU_BOOSTER_HPP
 
 #include "vli/utils/gpu_manager.h"
+#include "vli/utils/timings.h"
+
 #include "vli/detail/kernels_gpu.h"
 #include <iostream>
 
@@ -70,6 +72,8 @@ namespace detail
             
 
             // run/queue the inner product computation
+//            TimerCuda A("produit");
+//            A.begin();
             inner_product_vector(vli_size_tag<vli_type::size>(),polynomial_type::max_order, partsize,v1_.p(), v2_.p(), tmp_.p(),num_threads);
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
             vector_reduction_inplace(vli_size_tag<vli_type::size>(), polynomial_type::max_order, partsize, tmp_.p());
