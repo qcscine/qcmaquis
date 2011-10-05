@@ -64,13 +64,13 @@ int main (int argc, char * const argv[])
     t2.end();
 #endif //VLI_USE_GPU
 
-
+/*
     std::cout << result << std::endl << std::endl <<std::endl;
 #ifdef VLI_USE_GPU
     std::cout << result_pure_gpu << std::endl << std::endl << std::endl;
 #endif //VLI_USE_GPU
     std::cout << result_pure_cpu << std::endl << std::endl << std::endl;
-    
+  */  
     if(
        result == result_pure_cpu
 #ifdef VLI_USE_GPU

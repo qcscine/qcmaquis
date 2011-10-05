@@ -48,6 +48,7 @@ namespace vli
     
 namespace detail
 {    
+#ifdef _OPENMP
     template <class BaseInt, std::size_t Size, unsigned int Order>
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
     inner_product_openmp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
@@ -65,7 +66,7 @@ namespace detail
             res[0]+=res[i];
         return res[0];
     }
-   
+#endif
     
     template <class BaseInt, std::size_t Size, unsigned int Order>
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
@@ -85,6 +86,7 @@ namespace detail
     inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         // TODO this is a little dirty and could be done better
+        // C - Can we template on a function ???
 #ifdef _OPENMP
 #ifdef VLI_USE_GPU
         return detail::inner_product_openmp_gpu(v1,v2);
