@@ -2,7 +2,7 @@
 #define INNER_PRODUCT_GPU_BOOSTER_HPP
 
 #include "vli/utils/gpu_manager.h"
-#include "vli/utils/timings.h"
+#include "utils/timings.h"
 
 #include "vli/detail/kernels_gpu.h"
 #include <iostream>
