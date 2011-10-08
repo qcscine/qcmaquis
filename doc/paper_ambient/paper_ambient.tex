@@ -51,9 +51,8 @@ First, was introduction of modular nodes based on modular blade systems in the n
 of supercomputers in 2002}. Cutting hardware costs, this changed the programming model from shared to distributed memory API, as memory address space was
 not shared among nodes and parallel processes now had to transmit data over an interconnecting network. Several technologies were designed to allow communication
 between nodes (PVM, NX, Express, P4, \etc) \cite{Aoyama:1999}, in particular the Message Passing Interface (MPI) \cite{Snir:1998:MCR:552013}. which has become the
-standard for coarse-grained problem ( \footnote{A number of scientific applications requiring scalability currently employ a main MPI layer,  [GIVE ME A MPI CODE INTO ALPS !!!!]
-{\sc Quantum ESPRESSO} \cite{QE-2009} for quantum chemistry, Abinit \cite{ABINIT-2005, ABINIT-2009} in quantum mechanics, ScaLAPACK \cite{SCALAPACK-1997}
-in linear  algebra or SMILE for hypersonic rarefied flows \cite{SMILE-2005}, to give just a brief, non-exhaustive list.} The factor limiting scalability in this programming model
+standard for coarse-grained problem ( \footnote{A number of scientific applications requiring scalability currently employ a main MPI layer, 
+{ ALPS \cite{ALPS2011} for strongly correlated quantum mechanical systems ,\sc Quantum ESPRESSO} \cite{QE-2009} for quantum chemistry, Abinit \cite{ABINIT-2005, ABINIT-2009} in quantum mechanics, ScaLAPACK \cite{SCALAPACK-1997} in linear  algebra or SMILE for hypersonic rarefied flows \cite{SMILE-2005}, to give just a brief, non-exhaustive list.} The factor limiting scalability in this programming model
 is the communication overhead and the workload imbalance among processes.
 
 Secondly, the introduction of multicore technology has allowed the integration of several CPU cores into the same die, 
@@ -658,7 +657,6 @@ pseudo-random numbers non-negative, double-precision,  uniformly distributed ove
 
 \section{Results and discussions}
 \subsection{First benchmark case}
-[STARTED REWRITING THIS; BUT NOT FINISHED]
 The first benchmark consists of evaluating the performance of our parallel matrix multiplication relative to the ScaLAPACK-MKL implementation. Both solvers are included as computational kernels
 in Ambient.  The initial condition are the same than the validation test. As the validation test, the matrices size vary from 256 up to 8196 by step of (128 elements). A 1-D cyclic  column distribution is
 used for both algorithm. As both kernels are included inside the framework additional workload should take into account and for the ScaLAPACK pDGEMM, we reorganize data to fit the ScaLAPACK
@@ -671,39 +669,47 @@ P_m  = \frac{2n^i}{t},
 where $n$ is the size of the square-matrix,  $t$ the full time of calculation and $i$ is equal to 3 for the classical matrix multiplication algorithm.
 
 \begin{figure}
-\include{PLOT/SinglePDGEMM/SinglePGEMM}
-\caption{Performances of PDGEMM using ScaLAPACK }
+\include{PLOT/SinglePDGEMM/SinglePGEMMWK}
+\caption{Performances of PDGEMM using Ambient  \label{PLOTSINGLE0}}
 \end{figure}
+
+\begin{figure}
+\include{PLOT/SinglePDGEMM/SinglePGEMMWKSCALA}
+\caption{Comparing Ambient's PDGEMM against ScaLAPACK  \label{PLOTSINGLEq}}
+\end{figure}
+
+The benchmark of our Ambient pDGEMM is presented on the figure \ref{PLOTSINGLE0}
+
 
 \subsection{Second benchmark case}
 This benchmarks  evaluates the global performance of the scheduler, especially, when  the independent operations are executed all over the cluster. 
-We now multiply two vectors of matrices pair by pair. Every multiplication is performed by two MPI process and the size of the vectors vary from to
+We now multiply two vectors of matrices pair by pair. Every multiplication is performed by 2 MPI process and the size of the vectors vary from to
 1 to 48. Thus, the final number of MPI process is equal to 96 which corresponds to fill up 4 calculation nodes.
 
 Before presenting and commenting the results, we would like highlight the readers of the programming of this benchmark. The coding simply consists of few lines
-of declarations, initializations and a basic loop for, as we presented into the algorithm \ref{EXECUTION} . Naturally, coded algorithm  integrates two levels of distributed parallelization 
+of declarations, initializations and a basic loop for, as we presented into the algorithm \ref{EXECUTION}. Naturally, coded algorithm  integrates two levels of distributed parallelization 
 without integrate any MPI instructions.
  
 In this benchmark, we  plot the ratio between the performance peak of  vector of matrices $P_{v_m}$ and the associated peak of the machine $P_m$. It is expressed by 
-$R = P_{v_m}/P_m$, or
+$R = P_{v_m}/P_m$, or developed by :
 
 \begin{eqnarray}
-R = 100\frac{N_m 2n^3}{N_p t4f},
+R = 100\frac{2n^3 N_m }{4f t N_p},
 \end{eqnarray}
-where $N_m$ is the number of matrices, $N_p$ the number of processor, $t$ the full time of execution and $f$ the frequency of the processor. Results are presented 
+where $N_m$ is the number of matrices, $N_p$ the number of processor, $t$ the full time of execution and $f$ the frequency of the processor. Results are presented on the figure \ref{PLOTVECTOR0}
  
 
 \begin{figure}
-\include{PLOT/VectorPDGEMM/VectorWL}
-\caption{something else}
+\include{PLOT/VectorPDGEMM/VectorWL0}
+\caption{Peak performance ration of a variable vector of matrices. \label{PLOTVECTOR0}}
 \end{figure}
 
 \begin{figure}
-\include{PLOT/VectorPDGEMM/VectorWL_2}
+\include{PLOT/VectorPDGEMM/VectorWL_2}	
 \caption{something else}
 \end{figure}
 
-
+ 	
 \subsection{Third benchmark case}
 
 
