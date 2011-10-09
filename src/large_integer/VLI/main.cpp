@@ -2,10 +2,10 @@
 #include <cstdio>
 
 #include <boost/lexical_cast.hpp>
-#ifdef VLI_USE_GPU
+//#ifdef VLI_USE_GPU
 #include "vli/utils/gpu_manager.h"
 #include "vli/utils/gpu_manager.hpp"
-#endif //VLI_USE_GPU
+//#endif //VLI_USE_GPU
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial_cpu.hpp"
 #include "vli/polynomial/monomial.hpp"
@@ -37,6 +37,10 @@ typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 
 int main (int argc, char * const argv[]) 
 {
+   
+    gpu::gpu_manager* gpu;
+    gpu->instance();
+
     vector_type_cpu v1(10000);
     vector_type_cpu v2(10000);
     polynomial_type_cpu result;
