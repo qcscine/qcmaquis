@@ -38,7 +38,8 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
-
+#include <string>
+#include "timings.h"
 // ------------------------------------------------------------------
 // Typedefs and includes for the different integer classes
 // ------------------------------------------------------------------
@@ -289,26 +290,28 @@ large_int factorial(unsigned int i)
 
 int main(int argc, char** argv)
 {
+    std::string name(argv[3]);
+    Timer A(name);    
+    A.begin();
     //
     // Runtime parameters
     //
     unsigned int expansion_order = 20;
     unsigned int num_vertices = 8;
-    if(argc == 3)
+    if(argc == 4)
     {
         // Default values may be overwritten by command line arguments.
         expansion_order = atoi(argv[1]);
         num_vertices = atoi(argv[2]);
     }
-
-    
     
     // Run expansion
     high_t_expansion ht(expansion_order,num_vertices);
     polynomial_type r = ht.exec();
-    
-    
-    
+
+    A.end();
+    A.save(); 
+
     // Print out the result
     for(unsigned int j = 0; j < r.max_order; ++j)
     {
@@ -320,7 +323,7 @@ int main(int argc, char** argv)
                 std::cout <<" "<< r(j,h) << "/"<< factorial(j+h)<<"*J^"<<j<<"*h^"<<h << std::endl;
         }
     }
-
+     
     std::cout<<std::endl;
     return 0;
 }
