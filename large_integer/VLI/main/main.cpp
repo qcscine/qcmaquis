@@ -43,8 +43,8 @@ int main (int argc, char * const argv[])
     gpu->instance();
 #endif
 
-    vector_type_cpu v1(10000);
-    vector_type_cpu v2(10000);
+    vector_type_cpu v1(100000);
+    vector_type_cpu v2(100000);
     polynomial_type_cpu result;
     polynomial_type_cpu result_pure_gpu;
     polynomial_type_cpu result_pure_cpu; 
@@ -53,12 +53,12 @@ int main (int argc, char * const argv[])
     fill_vector_random(v2,1);
 
 
-    Timer t3("CPU");
+    Timer t3("CPU openmp");
     t3.begin();
-    result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+    result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t3.end();
 
-    Timer t1("Default");
+    Timer t1("MIX CPU/GPU");
     t1.begin();
     result = inner_product(v1,v2);
     t1.end();

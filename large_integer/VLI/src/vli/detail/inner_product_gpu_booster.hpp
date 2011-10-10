@@ -57,7 +57,7 @@ namespace detail
         typedef typename polynomial_type::value_type    vli_type;
         typedef typename vli_type::value_type           base_int_type;
         enum {element_size = polynomial_type::max_order * polynomial_type::max_order * vli_type::size };
-        enum {num_threads = 256}; // TODO change
+        enum {num_threads = 512}; // TODO change
       public:
         typedef std::size_t size_type;
 
@@ -112,14 +112,13 @@ polynomial_cpu<vli_cpu<BaseInt, Size>, Order>
 inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
 
-//    std::cout<<"inner_product: OpenMP +CUDA"<<std::endl;
+    std::cout<<"inner_product: OpenMP +CUDA"<<std::endl;
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
     
     std::size_t split = static_cast<std::size_t>(v1.size()*0.1);
     detail::inner_product_gpu_booster<vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > > gpu_product(v1,v2,split);
-
     #pragma omp parallel for
     for(std::size_t i=split ; i < size_v ; ++i){
         res[omp_get_thread_num()] += v1[i]*v2[i];
@@ -133,17 +132,18 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     return res[0];
 }
 #endif
+
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
 inner_product_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
-//    std::cout<<"inner_product: single thread + CUDA"<<std::endl;
+    std::cout<<"inner_product: single thread + CUDA"<<std::endl;
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     
     polynomial_cpu<vli_cpu<BaseInt,Size>, Order> res;
 
-    std::size_t split = static_cast<std::size_t>(v1.size()*0.1);
+    std::size_t split = static_cast<std::size_t>(v1.size()*0.3);
     detail::inner_product_gpu_booster<vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > > gpu_product(v1,v2,split);
 
     for(std::size_t i=split ; i < size_v ; ++i){
