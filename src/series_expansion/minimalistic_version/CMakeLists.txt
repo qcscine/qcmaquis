@@ -125,7 +125,7 @@ if(SE_USE_OMP)
 endif(SE_USE_OMP)
 
 if(SE_USE_GPU)
-   add_subdirectory(se_vli_GPU)
+   add_subdirectory(se_vli_gpu)
 endif(SE_USE_GPU)
 
 
