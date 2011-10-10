@@ -22,6 +22,7 @@ option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build the VLI regression tests" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
+option (VLI_MAIN  "Build and execute the main" ON)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.1" CACHE STRING "Split param for cpu/gpu mix mode ")
@@ -29,7 +30,7 @@ set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "C
 set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 set (VLI_COMPILE_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
-add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYNOMIAL_MAX_ORDER=21)
+add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYOMIAL_MAX_ORDER=21)
 
 ########################################################################
 #
@@ -111,17 +112,9 @@ add_subdirectory( src/vli/ )
 # Main Compile
 #
 ########################################################################
-
-add_executable (a.out main.cpp)
-
-if(VLI_USE_GPU)
-    target_link_libraries (a.out vli_gpu ${CUDA_LIBRARIES} ${GMP_LIBRARY_CXX} ${OPENMP_LIBRARIES})
-else(VLI_USE_GPU)
-    target_link_libraries (a.out ${GMP_LIBRARY_CXX} ${OPENMP_LIBRARIES})
-endif(VLI_USE_GPU)
-
-
-
+if(VLI_MAIN)
+    add_subdirectory(main/)
+endif()
 
 ########################################################################
 #

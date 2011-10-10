@@ -60,7 +60,7 @@ public:
             val += (getcpuclocks()-t0)/freq; // to milliseconds
     }
 
-    const double GetTime()
+    double GetTime() const 
     {
 	return  val;
     }    
