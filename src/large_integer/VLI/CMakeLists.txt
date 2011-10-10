@@ -19,7 +19,7 @@ set (VLI_VERSION_MINOR 1)
 
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
-option (VLI_USE_GPU "Compile the GPU enhanced VLI components" ON)
+option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build the VLI regression tests" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
@@ -30,7 +30,6 @@ set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "C
 set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 set (VLI_COMPILE_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
-add_definitions(-DUSE_VLI_INTEGERS_GPU -DPOLYOMIAL_MAX_ORDER=21)
 
 ########################################################################
 #
@@ -43,12 +42,12 @@ if(VLI_USE_OPENMP)
     set(OPENMP_LIBRARIES "gomp")
 endif(VLI_USE_OPENMP)
 
-if (VLI_USE_GPU)
+if (VLI_COMPILE_GPU)
    find_package (CUDA)
    include_directories(${CUDA_INCLUDE_DIRS})
-else (VLI_USE_GPU)
+else (VLI_COMPILE_GPU)
    set (CUDA_LIBRARIES "")
-endif (VLI_USE_GPU)
+endif (VLI_COMPILE_GPU)
 
 # The tests need the GMP library
 if (VLI_TESTS)
@@ -136,6 +135,6 @@ endif(VLI_TESTS)
 
 install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
 install(FILES ${PROJECT_BINARY_DIR}/vli/vli_config.h DESTINATION include/vli/)
-if(VLI_USE_GPU)
+if(VLI_COMPILE_GPU)
 install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a DESTINATION lib)
-endif(VLI_USE_GPU)
+endif(VLI_COMPILE_GPU)

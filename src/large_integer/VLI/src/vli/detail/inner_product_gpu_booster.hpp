@@ -82,6 +82,7 @@ namespace detail
         
         operator polynomial_type() const
         {
+            gpu::cu_check_error(cudaGetLastError(),__LINE__);
             polynomial_type poly;
             gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)tmp_.p(),element_size*sizeof(base_int_type),cudaMemcpyDeviceToHost),__LINE__);
             return poly;

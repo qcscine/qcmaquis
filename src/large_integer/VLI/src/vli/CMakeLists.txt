@@ -15,6 +15,6 @@ configure_file (
 #
 ########################################################################
 
-if(VLI_USE_GPU)
+if(VLI_COMPILE_GPU)
     CUDA_ADD_LIBRARY(vli_gpu detail/kernels_gpu.cu)
-endif(VLI_USE_GPU)
+endif(VLI_COMPILE_GPU)

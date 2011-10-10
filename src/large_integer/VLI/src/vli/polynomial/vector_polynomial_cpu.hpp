@@ -19,9 +19,9 @@
 #include <omp.h>
 #endif //_OPENMP
 
-#ifdef VLI_USE_GPU
+#ifdef VLI_COMPILE_GPU
 #include "vli/detail/inner_product_gpu_booster.hpp"
-#endif //VLI_USE_GPU
+#endif //VLI_COMPILE_GPU
 
 namespace vli
 {
