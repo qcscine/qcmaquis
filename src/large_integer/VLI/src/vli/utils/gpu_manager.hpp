@@ -17,7 +17,7 @@ namespace gpu
 		cudaGetDeviceProperties(&deviceProp_, device_);
 	}
 
-    gpu_manager::~gpu_manager()
+        gpu_manager::~gpu_manager()
 	{
 	}
     

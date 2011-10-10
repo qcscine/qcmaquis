@@ -2,7 +2,7 @@
 #define INNER_PRODUCT_GPU_BOOSTER_HPP
 
 #include "vli/utils/gpu_manager.h"
-#include "utils/timings.h"
+//#include "utils/timings.h"
 
 #include "vli/detail/kernels_gpu.h"
 #include <iostream>
@@ -105,12 +105,13 @@ class vector_polynomial_cpu;
 
 namespace detail
 {
+#ifdef _OPENMP
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
 inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
 
-    std::cout<<"inner_product: OpenMP +CUDA"<<std::endl;
+//    std::cout<<"inner_product: OpenMP +CUDA"<<std::endl;
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
@@ -130,12 +131,12 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     
     return res[0];
 }
-
+#endif
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
 inner_product_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
-    std::cout<<"inner_product: single thread + CUDA"<<std::endl;
+//    std::cout<<"inner_product: single thread + CUDA"<<std::endl;
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     
