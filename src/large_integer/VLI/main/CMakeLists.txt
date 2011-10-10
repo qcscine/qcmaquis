@@ -1,0 +1,4 @@
+   include_directories(${CUDA_INCLUDE_DIRS})
+   add_definitions(-DVLI_USE_GPU )
+   add_executable (a.out main.cpp)
+   target_link_libraries (a.out ${GMP_LIBRARY_CXX} ${OPENMP_LIBRARIES} ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES})
