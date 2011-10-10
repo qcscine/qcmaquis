@@ -11,7 +11,9 @@
 
 #include <vector>
 #include <iostream>
-
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 namespace hp2c
 {
 
@@ -318,16 +320,33 @@ template <typename CoeffType>
 polynomial<CoeffType>  inner_product(std::vector<polynomial<CoeffType> > const& a, std::vector<polynomial<CoeffType> >const& b)
 {
     assert( a.size() == b.size() );
+
+
+#ifdef _OPENMP
+    polynomial<CoeffType> result[omp_get_max_threads()];
+    #pragma omp parallel for
+    for(int i=0; i < a.size();++i){
+        result[omp_get_thread_num()] += a[i]*b[i];
+    }
+    
+    for(int i=1; i < omp_get_max_threads();++i){
+        result[0] += result[i];
+    }
+    
+    return result[0];
+#else
     polynomial<CoeffType> result;
     typename std::vector<polynomial<CoeffType> >::const_iterator it = a.begin();
     typename std::vector<polynomial<CoeffType> >::const_iterator it_b = b.begin();
     while( it != a.end() )
-    {
+    {                         #endif
         result += *it * *it_b;
         ++it;
         ++it_b;
     }
+
     return result;
+#endif
 }
 
 }
