@@ -31,10 +31,10 @@ add_test(vli_polynomial_tests vli_polynomial_tests)
 # vector
 #
 add_executable(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests.cpp)
-if(VLI_USE_GPU)
+if(VLI_COMPILE_GPU)
     target_link_libraries( vli_vector_cpu_gpu_tests vli_gpu ${Boost_LIBRARIES} ${CUDA_LIBRARIES} ${OPENMP_LIBRARIES})
-else(VLI_USE_GPU)
+else(VLI_COMPILE_GPU)
     target_link_libraries( vli_vector_cpu_gpu_tests ${Boost_LIBRARIES} ${OPENMP_LIBRARIES})
-endif(VLI_USE_GPU)
+endif(VLI_COMPILE_GPU)
 
 add_test(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests)
