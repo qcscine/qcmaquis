@@ -33,7 +33,7 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
     
     if (fillrand)
-        data_.generate(dmrg_random::uniform);
+        data_.generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
     else
         data_.generate(utils::constant<typename Matrix::value_type>(0));
 }

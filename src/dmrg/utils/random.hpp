@@ -11,10 +11,15 @@ struct dmrg_random {
     
     static engine_t engine;
     
-    static value_type uniform (value_type min = 0., value_type max = 1.) {
+    static inline value_type uniform (value_type min, value_type max) {
         uniform_dist_t dist(min, max);
         return dist(engine);
     }
+    
+    static inline value_type uniform () {
+        return uniform(0, 1);
+    }
+ 
 };
 
 #endif
