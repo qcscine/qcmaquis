@@ -100,6 +100,7 @@ public:
         add_option("h0", "");
         add_option("pin", "");
         add_option("y", "", value(1));
+        add_option("x", "", value(1));
         add_option("delta", "");
         
         add_option("K0", "");
