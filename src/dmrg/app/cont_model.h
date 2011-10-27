@@ -65,7 +65,7 @@ namespace app {
 //                    neighs.push_back(p-2);
                 
 
-                double exp_potential = model.get<double>("V0")*std::pow( std::sin(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
+                double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
                 
 //              double dx = std::min(lat.get_prop<double>("dx", p, p+1), lat.get_prop<double>("dx", p-1, p));
                 double dx1 = lat.get_prop<double>("dx", p, neighs[0]);
@@ -256,7 +256,7 @@ namespace app {
             std::vector<hamterm_t> terms;
             for (int p=0; p<lat.size(); ++p)
             {
-                double exp_potential = model.get<double>("V0")*std::pow( std::sin(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
+                double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
                 
                 double U = model.get<double>("c")/lat.get_prop<double>("dx", p);
                 double mu = ( -model.get<double>("mu")
