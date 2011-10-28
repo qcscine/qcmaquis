@@ -339,6 +339,12 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
 }
 
 template<class Matrix, class SymmGroup>
+inline void block_matrix<Matrix, SymmGroup>::reserve_pos(charge c1, charge c2,
+                                                         std::size_t ri, std::size_t ci)
+{ reserve(c1, c2, ri+1, ci+1); }
+
+
+template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::allocate_blocks()
 {
     for (std::size_t k = 0; k < n_blocks(); ++k)
