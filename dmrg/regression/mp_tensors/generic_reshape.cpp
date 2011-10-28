@@ -51,13 +51,13 @@ void test_reshape() {
     phys_i.insert(std::make_pair(1, 1));
     
     // create alpha, beta indexes
-    for (size_t n=0; n<2; ++n)
+    for (size_t n=0; n<100; ++n)
         alpha_i.insert(std::make_pair(n, 4/(n+1) + 1));
 
-//    for (size_t n=0; n<2; ++n)
-//        beta_i.insert(std::make_pair(n, 3/(n+1) + 1));
+    for (size_t n=0; n<400; ++n)
+        beta_i.insert(std::make_pair(n, 3/(n+1) + 1));
 
-    beta_i = phys_i * alpha_i;
+//    beta_i = phys_i * alpha_i;
     
     MultiIndex<symm> midx;
     MultiIndex<symm>::index_id alpha = midx.insert_index(alpha_i);
@@ -78,29 +78,36 @@ void test_reshape() {
     
     // fill block_matrix
     cout << "* filling matrices" << endl;
-    Index<symm> left_i = phys_i*beta_i;
+    Index<symm> left_i = phys_i*alpha_i;
     Index<symm> right_i = adjoin(phys_i)*beta_i;
     
     cout << " - allocating matrix" << endl;
     block_matrix<Matrix, symm> m1; // left-paired
-    for(size_t i=0; i<left_i.size(); ++i)
-        for(size_t j=0; j<beta_i.size(); ++j)        
-            m1.insert_block(Matrix(left_i[i].second, beta_i[j].second), left_i[i].first, beta_i[j].first);
-
+    size_t max_i = std::min(left_i.size(), beta_i.size());
+    for(size_t i=0; i<max_i; ++i)
+        m1.insert_block(Matrix(left_i[i].second, beta_i[i].second), left_i[i].first, beta_i[i].first);
+    
     
     cout << " - filling values" << endl;
     m1.generate(drand48);
-    
-    
-    cout << "left basis: " << m1.left_basis() << endl;
-    cout << "right basis: " << m1.right_basis() << endl;
-    
-    for(index_product_iterator<symm> it(midx.begin());
-        it != midx.end();
-        it++)
-    {
-        cout << midx.get_coords(left_paired, *it) << endl;
-    }
+
+//    cout << "alpha basis: " << alpha_i << endl;
+//    cout << "beta basis: " << beta_i << endl;
+//    cout << "sigma basis: " << phys_i << endl;
+//    cout << "left_paired basis: " << left_i << endl;
+//    cout << "right_paired basis: " << right_i << endl;
+//    
+//    cout << "left basis: " << m1.left_basis() << endl;
+//    cout << "right basis: " << m1.right_basis() << endl;
+//    
+//    for(index_product_iterator<symm> it(midx.begin());
+//        it != midx.end();
+//        it++)
+//    {
+//        cout << *it << " = " << midx.get_coords(left_paired, *it)
+//        << " or " << midx.get_coords(right_paired, *it)
+//        << endl;
+//    }
 
     
     
@@ -117,11 +124,11 @@ void test_reshape() {
     
     cout << "* standard reshape" << endl;
     reshape_left_to_right(phys_i, alpha_i, beta_i, m1, res1);
-//    reshape_left_to_right(phys_i, alpha_i, beta_i, m2, res2);
+    reshape_left_to_right(phys_i, alpha_i, beta_i, m2, res2);
 
     cout << "* generic reshape" << endl;
     reshape(midx, left_paired, right_paired, m1, res1_gen);
-//    reshape2(midx, left_paired, right_paired, m2, res2_gen);
+    reshape(midx, left_paired, right_paired, m2, res2_gen);
 
     
     // compare results
@@ -142,7 +149,12 @@ void test_reshape() {
    
     
     
-    // benchmark??
+    // benchmarks
+    cout << "* benchmarks" << endl;
+    for (int n=0; n<1000; ++n) {
+        reshape_left_to_right(phys_i, alpha_i, beta_i, m1, res1);
+        reshape(midx, left_paired, right_paired, m1, res1_gen);
+    }
     
 }
 

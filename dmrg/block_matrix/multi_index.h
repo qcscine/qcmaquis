@@ -201,22 +201,22 @@ public:
                                                set_id set2) const
     {
         key_t key1_left = get_left_key(set1, coord1_left);
-        std::cout << "got left key" << std::endl;
+//        std::cout << "got left key" << std::endl;
         key_t key1_right = get_right_key(set1, coord1_right);
-        std::cout << "got right key" << std::endl;
+//        std::cout << "got right key" << std::endl;
 
         assert( key1_left.size() == set_left[set1].size() );
         assert( key1_right.size() == set_right[set1].size() );
 
         key_t key(idx_.size());
         for (int i=0; i<set_left[set1].size(); ++i) {
-            std::cout << "key index = " << set_left[set1][i].first << std::endl;
+//            std::cout << "key index = " << set_left[set1][i].first << std::endl;
             key[ set_left[set1][i].first ] = key1_left[i];
         }
-        std::cout << "left key --> key" << std::endl;
+//        std::cout << "left key --> key" << std::endl;
         for (int i=0; i<set_right[set1].size(); ++i)
             key[ set_right[set1][i].first ] = key1_right[i];
-        std::cout << "right key --> key" << std::endl;
+//        std::cout << "right key --> key" << std::endl;
 
         return get_coords(set2, key);
         

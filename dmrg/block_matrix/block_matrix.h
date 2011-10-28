@@ -77,6 +77,7 @@ public:
     void match_and_add_block(Matrix const &, charge, charge);
     
     void reserve(charge, charge, std::size_t, std::size_t);
+    inline void reserve_pos(charge, charge, std::size_t, std::size_t);
     void allocate_blocks();
     
     void resize_block(charge r, charge c,
