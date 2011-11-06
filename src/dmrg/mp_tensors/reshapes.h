@@ -292,7 +292,6 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
     Index<SymmGroup> aux_i = A.right_basis();
     ProductBasis<SymmGroup> pb(phys, adjoin(phys));
 
-    std::cout << "Beta index: " << aux_i << std::endl;
     typedef typename Index<SymmGroup>::basis_iterator bi_t;
     for (bi_t b = aux_i.basis_begin(); !b.end(); ++b)
     {

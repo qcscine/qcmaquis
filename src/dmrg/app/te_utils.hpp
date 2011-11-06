@@ -153,7 +153,6 @@ namespace app {
         
         for (int n=0; n<H.n_terms(); )
         {
-            std::cout << "new group starting at n=" << n << std::endl;
             assert(H[n].operators.size() == 2);
             int pos1 = H[n].operators[0].first;
             int pos2 = H[n].operators[1].first;
@@ -163,7 +162,6 @@ namespace app {
             int k = n+1;
             for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
             {
-                std::cout << "using k=" << k << std::endl;
                 typename ham::op_t tmp;
                 if (H[k].operators.size() == 2)
                     op_kron(H.get_phys(), H[k].operators[0].second, H[k].operators[1].second, tmp);
@@ -175,7 +173,6 @@ namespace app {
                     throw std::runtime_error("Operator k not matching any valid position.");
                 bond_op += tmp;
             }
-            std::cout << "group finishing with k=" << k << std::endl;
             
             bond_op = op_exp(H.get_phys()*H.get_phys(), bond_op, alpha);
             bond_op = reshape_2site_op(H.get_phys(), bond_op);
@@ -243,14 +240,11 @@ namespace app {
         
         for (int n=0; n<H.n_terms(); )
         {
-            std::cout << "new group starting at n=" << n << std::endl;
             assert(H[n].operators.size() == 2);
             int pos1 = H[n].operators[0].first;
             int pos2 = H[n].operators[1].first;
             int dist = pos2 - pos1; // only for OBC
             typename ham::op_t bond_op;
-            
-            std::cout << "dist in group = " << dist << std::endl; 
             
             Index<SymmGroup> op_basis = phys_i;
             std::vector<std::pair<index_id, index_id> > phys_indexes;
@@ -269,28 +263,15 @@ namespace app {
                 used_p[p] = true;
             }
             set_id op_set = midx.create_set(left_vec, right_vec);
-            
-//            cout << "* midx" << endl;
-//            for(index_product_iterator<SymmGroup> it = midx.begin();
-//                it != midx.end();
-//                it++)
-//            {
-//                cout << *it << " = " << midx.get_coords(op_set, *it) << endl;
-//            }
-
-            
+                        
             op_kron_long(midx, op_set, H[n].operators[0].second, H[n].operators[1].second, H[n].fill_operator, dist, bond_op);
             
             block_matrix<Matrix, SymmGroup> testtmp;
             op_kron(H.get_phys(), H[n].operators[0].second, H[n].operators[1].second, testtmp);
             
-            std::cout << "* op_kron:" << std::endl << testtmp;
-            std::cout << "* op_kron_long:" << std::endl << bond_op;
-            
             int k = n+1;
             for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
             {
-                std::cout << "using k=" << k << std::endl;
                 typename ham::op_t tmp;
                 if (H[k].operators.size() == 2)
                     op_kron_long(midx, op_set, H[k].operators[0].second, H[k].operators[1].second, H[k].fill_operator, dist, tmp);
@@ -302,27 +283,12 @@ namespace app {
                     throw std::runtime_error("Operator k not matching any valid position.");
                 bond_op += tmp;
             }
-            std::cout << "group finishing with k=" << k << std::endl;
             
-            std::cout << "before exp:" << std::endl << bond_op; 
             bond_op = op_exp(op_basis, bond_op, alpha);
-//            std::cout << "* op_basis:" << op_basis << std::endl;
-//            std::cout << "* exp(bond_op):" << std::endl << bond_op;
-
             
             MPO<Matrix, SymmGroup> block_mpo = block_to_mpo(phys_i, bond_op, dist+1);
-//            std::cout << "* final MPO:" << std::endl;
-//            for (size_t p=0; p<dist+1; ++p) {
-//                std::cout << " ** site " << p << std::endl;
-//                for (size_t i=0; i<block_mpo[p].row_dim(); ++i)
-//                    for (size_t j=0; j<block_mpo[p].col_dim(); ++j)
-//                        if (block_mpo[p].has(i,j))
-//                            std::cout << " [" << i << "," << j << "]:" << std::endl << block_mpo[p](i,j);
-//            }
-            std::cout << "start copying blocks" << std::endl;
             for (size_t p=0; p<dist+1; ++p)
                 mpo[pos1+p] = block_mpo[p];
-            std::cout << "blocks copied to mpo" << std::endl;
             
             n = k;
         }
