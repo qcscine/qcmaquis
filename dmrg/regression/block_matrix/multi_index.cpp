@@ -40,6 +40,38 @@ std::ostream& operator<< (std::ostream& os, std::pair<MultiIndex<symm>::coord_t,
     return os;
 }
 
+//template <class SymmGroup>
+//std::ostream& operator<< (std::ostream& os, std::pair<typename SymmGroup::charge, std::size_t> const& p)
+//{
+//    os << "(" << p.first << " : " << p.second << ")";
+//    return os;
+//}
+//
+//template<typename T> struct is_mystruct{
+//    typedef boost::false_type type;
+//};
+//template<class SymmGroup> struct is_mystruct<std::vector<std::pair<typename SymmGroup::charge, std::size_t> > > {
+//    typedef boost::true_type type;
+//};
+//
+//template <class SymmGroupPairVector>
+//typename boost::enable_if<typename is_mystruct<SymmGroupPairVector>::type,
+//std::ostream&
+//>::type
+//operator<< (std::ostream& os, SymmGroupPairVector const& v)
+//{
+//    for (int i=0; i<v.size(); ++i)
+//        os << v[i] << " ";
+//    return os;
+//}
+//
+//template <class SymmGroup>
+//std::ostream& operator<< (std::ostream& os, std::pair<typename MultiIndex<SymmGroup>::coord_t, typename MultiIndex<SymmGroup>::coord_t> const& p)
+//{
+//    os << p.first << ", " << p.second;
+//    return os;
+//}
+
 
 void test_iterator() {
     

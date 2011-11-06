@@ -58,16 +58,34 @@ void reshape(MultiIndex<SymmGroup> const & midx,
 //                    std::cout << "block[" << block << "](" << i << "," << j << ") -- out_left " << out_left << std::endl;
 //                    std::cout << "block[" << block << "](" << i << "," << j << ") -- out_right " << out_right << std::endl;
 //                    std::cout << "block[" << block << "](" << i << "," << j << ") -- do reserve/assign" <<std::endl;
-                    if (pretend)
-                        m2.reserve_pos(out_left.first, out_right.first,
-                                       out_left.second, out_right.second);
-                    else
-                        m2(out_left, out_right) = in_block(i, j);
+                    if (in_block(i, j) != 0.) {
+                        if (pretend)
+                            m2.reserve(out_left.first, out_right.first,
+                                       midx.left_size(out_set, out_left.first), midx.right_size(out_set, out_right.first));
+                        else
+                            m2(out_left, out_right) = in_block(i, j);
+                    }
                 }
 //            std::cout << "block " << block << " -- finish" <<std::endl;
         }
     }
     
+    // Removing empty blocks
+    // IT SEEMS NOT NEEDED BECAUSE OF "if (in_block(i, j) != 0)"
+    /*
+    for (int n=0; n<m2.n_blocks(); ++n)
+    {
+        bool empty = true;
+        for (int i=0; i<blas::num_rows(m2[n]) && empty; ++i)
+            for (int j=0; j<blas::num_cols(m2[n]) && empty; ++j)
+                if (m2[n](i,j) != typename Matrix::value_type(0))
+                    empty=false;
+        
+        if (empty)
+            m2.remove_block(n);
+    }
+     */
+     
     timer.end();
     
 }
@@ -111,8 +129,8 @@ void reshape2(MultiIndex<SymmGroup> const & midx,
             boost::tie(out_left, out_right) = midx.get_coords(out_set, *it);
             
             if (pretend)
-                m2.reserve_pos(out_left.first, out_right.first,
-                               out_left.second, out_right.second);
+                m2.reserve(out_left.first, out_right.first,
+                           midx.left_size(out_set, out_left.first), midx.right_size(out_set, out_right.first));
             else
                 m2(out_left, out_right) = m1(in_left, in_right);
         }

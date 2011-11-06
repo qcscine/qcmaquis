@@ -17,6 +17,7 @@
 
 #include "block_matrix/block_matrix.h"
 #include "block_matrix/indexing.h"
+#include "block_matrix/multi_index.h"
 
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/imag.hpp>
@@ -504,6 +505,54 @@ void op_kron(Index<SymmGroup> const & phys,
             
             C.match_and_add_block(tmp, new_left, new_right);
         }
+    }
+    
+}
+
+template<class Matrix, class SymmGroup>
+void op_kron_long(MultiIndex<SymmGroup> const & midx,
+                  typename MultiIndex<SymmGroup>::set_id s,
+                  block_matrix<Matrix, SymmGroup> const & A,
+                  block_matrix<Matrix, SymmGroup> const & B,
+                  block_matrix<Matrix, SymmGroup> const & F,
+                  std::size_t dist,
+                  block_matrix<Matrix, SymmGroup> & C)
+{
+    assert( midx.size() == 2*(dist+1) );
+    C = block_matrix<Matrix, SymmGroup>();
+    
+    for (size_t run=0; run<2; ++run) {
+        
+        if (run == 1)
+            C.allocate_blocks();
+        
+        for (index_product_iterator<SymmGroup> it = midx.begin();
+             it != midx.end(); ++it)
+        {
+            bool has_block = A.has_block((*it)[0].first, (*it)[1].first);
+            has_block = has_block && B.has_block((*it)[2*dist].first, (*it)[2*dist+1].first);
+            for (size_t i=1; has_block && i<dist; ++i)
+                has_block = F.has_block((*it)[2*i].first, (*it)[2*i+1].first);
+            
+            if (!has_block)
+                continue;
+            
+            typename Matrix::value_type val = A((*it)[0], (*it)[1]) * B((*it)[2*dist], (*it)[2*dist+1]);
+            for (size_t i=1; i<dist; ++i)
+                val *= F((*it)[2*i], (*it)[2*i+1]);
+            
+            if (val != 0.) {
+                typename MultiIndex<SymmGroup>::coord_t coord_l, coord_r;
+                boost::tie(coord_l, coord_r) = midx.get_coords(s, *it);
+                if (run == 0)
+                    C.reserve(coord_l.first, coord_r.first,
+                              midx.left_size(s, coord_l.first), midx.right_size(s, coord_r.first));
+                else
+                    C(coord_l, coord_r) += val;
+                
+            }
+        }
+        
     }
     
 }

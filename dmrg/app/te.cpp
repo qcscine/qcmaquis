@@ -54,6 +54,27 @@ typedef U1 grp;
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
 
+std::ostream& operator<< (std::ostream& os, std::pair<grp::charge, std::size_t> const& p)
+{
+    os << "(" << p.first << " : " << p.second << ")";
+    return os;
+}
+
+std::ostream& operator<< (std::ostream& os, index_product_iterator<grp>::value_type const& v)
+{
+    //std::copy(v.begin(), v.end(), std::ostream_iterator<std::pair<symm::charge, std::size_t> >(os, " "));
+    for (int i=0; i<v.size(); ++i)
+        os << v[i] << " ";
+    return os;
+}
+
+std::ostream& operator<< (std::ostream& os, std::pair<MultiIndex<grp>::coord_t, MultiIndex<grp>::coord_t> const& p)
+{
+    os << p.first << ", " << p.second;
+    return os;
+}
+
+
 template<class Matrix>
 mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 {
@@ -86,7 +107,8 @@ getU(std::vector<Hamiltonian<Matrix, grp> > const & split_H, Lattice * lat,
     
     std::vector<MPO<Matrix, grp> > expMPO(split_H.size(), MPO<Matrix, grp>(lat->size()));
     for (int i=0; i<split_H.size(); ++i)
-        expMPO[i] = make_exp_mpo(lat->size(), split_H[i], alpha);
+//        expMPO[i] = make_exp_mpo(lat->size(), split_H[i], alpha);
+        expMPO[i] = make_exp_mpo_gen(lat->size(), split_H[i], alpha);
     return expMPO;
 }
 

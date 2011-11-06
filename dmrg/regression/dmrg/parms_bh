@@ -1,0 +1,14 @@
+max_bond_dimension = 200
+
+truncation_final = 1e-10
+
+resultfile = results.h5
+chkpfile = results.h5
+
+ngrowsweeps = 2
+nmainsweeps = 4
+nsweeps=8
+
+measure_each = 20
+
+symmetry = "u1"

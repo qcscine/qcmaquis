@@ -5,7 +5,11 @@
 #include "hamiltonian.h"
 
 #include "utils/matrix_vector_traits.h"
+#include "block_matrix/block_matrix.h"
+#include "block_matrix/multi_index.h"
 #include "mp_tensors/reshapes.h"
+#include "mp_tensors/generic_reshape.h"
+#include "mp_tensors/mpo_manip.h"
 
 #include <vector>
 #include <set>
@@ -221,6 +225,120 @@ namespace app {
         
         return mpo;
     }
+    
+    // Precondition: Hamiltonian has to be sorted with bond terms coming before site terms (default behaviour of Operator_Term::operator<())
+    template <class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup> make_exp_mpo_gen (std::size_t length,
+                                             Hamiltonian<Matrix, SymmGroup> const & H,
+                                             typename Matrix::value_type const & alpha = 1)
+    {
+        typedef Hamiltonian<Matrix, SymmGroup> ham;
+        typedef typename MultiIndex<SymmGroup>::index_id index_id;
+        typedef typename MultiIndex<SymmGroup>::set_id set_id;
+
+        Index<SymmGroup> phys_i = H.get_phys();
+        
+        MPO<Matrix, SymmGroup> mpo(length);
+        std::vector<bool> used_p(length, false);
+        
+        for (int n=0; n<H.n_terms(); )
+        {
+            std::cout << "new group starting at n=" << n << std::endl;
+            assert(H[n].operators.size() == 2);
+            int pos1 = H[n].operators[0].first;
+            int pos2 = H[n].operators[1].first;
+            int dist = pos2 - pos1; // only for OBC
+            typename ham::op_t bond_op;
+            
+            std::cout << "dist in group = " << dist << std::endl; 
+            
+            Index<SymmGroup> op_basis = phys_i;
+            std::vector<std::pair<index_id, index_id> > phys_indexes;
+            std::vector<std::pair<index_id, bool> > left_vec, right_vec;
+            MultiIndex<SymmGroup> midx;
+            for (size_t p=pos1; p<=pos2; ++p) {
+                if (p > pos1)
+                    op_basis = op_basis * phys_i;
+                index_id id1 = midx.insert_index(phys_i);
+                index_id id2 = midx.insert_index(phys_i);
+                
+                phys_indexes.push_back(std::make_pair(id1, id2));
+                left_vec.push_back( std::make_pair(id1, true) );
+                right_vec.push_back( std::make_pair(id2, true) );
+                
+                used_p[p] = true;
+            }
+            set_id op_set = midx.create_set(left_vec, right_vec);
+            
+//            cout << "* midx" << endl;
+//            for(index_product_iterator<SymmGroup> it = midx.begin();
+//                it != midx.end();
+//                it++)
+//            {
+//                cout << *it << " = " << midx.get_coords(op_set, *it) << endl;
+//            }
+
+            
+            op_kron_long(midx, op_set, H[n].operators[0].second, H[n].operators[1].second, H[n].fill_operator, dist, bond_op);
+            
+            block_matrix<Matrix, SymmGroup> testtmp;
+            op_kron(H.get_phys(), H[n].operators[0].second, H[n].operators[1].second, testtmp);
+            
+            std::cout << "* op_kron:" << std::endl << testtmp;
+            std::cout << "* op_kron_long:" << std::endl << bond_op;
+            
+            int k = n+1;
+            for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
+            {
+                std::cout << "using k=" << k << std::endl;
+                typename ham::op_t tmp;
+                if (H[k].operators.size() == 2)
+                    op_kron_long(midx, op_set, H[k].operators[0].second, H[k].operators[1].second, H[k].fill_operator, dist, tmp);
+                else if (H[k].operators[0].first == pos1)
+                    op_kron_long(midx, op_set, H[k].operators[0].second, H.get_identity(), H.get_identity(), dist, tmp);
+                else if (H[k].operators[0].first == pos2)
+                    op_kron_long(midx, op_set, H.get_identity(), H[k].operators[0].second, H.get_identity(), dist, tmp);
+                else
+                    throw std::runtime_error("Operator k not matching any valid position.");
+                bond_op += tmp;
+            }
+            std::cout << "group finishing with k=" << k << std::endl;
+            
+            std::cout << "before exp:" << std::endl << bond_op; 
+            bond_op = op_exp(op_basis, bond_op, alpha);
+//            std::cout << "* op_basis:" << op_basis << std::endl;
+//            std::cout << "* exp(bond_op):" << std::endl << bond_op;
+
+            
+            MPO<Matrix, SymmGroup> block_mpo = block_to_mpo(phys_i, bond_op, dist+1);
+//            std::cout << "* final MPO:" << std::endl;
+//            for (size_t p=0; p<dist+1; ++p) {
+//                std::cout << " ** site " << p << std::endl;
+//                for (size_t i=0; i<block_mpo[p].row_dim(); ++i)
+//                    for (size_t j=0; j<block_mpo[p].col_dim(); ++j)
+//                        if (block_mpo[p].has(i,j))
+//                            std::cout << " [" << i << "," << j << "]:" << std::endl << block_mpo[p](i,j);
+//            }
+            std::cout << "start copying blocks" << std::endl;
+            for (size_t p=0; p<dist+1; ++p)
+                mpo[pos1+p] = block_mpo[p];
+            std::cout << "blocks copied to mpo" << std::endl;
+            
+            n = k;
+        }
+        
+        // Filling missing identities
+        for (std::size_t p=0; p<length; ++p)
+            if (!used_p[p]) {
+                MPOTensor<Matrix, SymmGroup> r(1, 1);
+                r(0, 0) = H.get_identity();
+                mpo[p] = r;
+                used_p[p] = true;
+            }
+        
+        return mpo;
+    }
+
     
 } // namespace
 
