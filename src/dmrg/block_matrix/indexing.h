@@ -96,7 +96,19 @@ public:
         return std::find_if(this->begin(), this->end(),
                             index_detail::is_first_equal<SymmGroup>(c)) - this->begin();
     }
-    
+
+    std::size_t position(std::pair<charge, std::size_t> x) const
+    {
+        assert( has(x.first) );
+        assert( x.second < size_of_block(x.first) );
+        return x.second + std::accumulate(this->begin(),
+                                          std::find_if(this->begin(), this->end(),
+                                                       index_detail::is_first_equal<SymmGroup>(x.first)),
+                                          0,
+                                          boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
+                                          );
+    }
+
     std::size_t destination(charge c) const
     {
         return std::find_if(this->begin(), this->end(),

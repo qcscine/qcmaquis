@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #include <boost/operators.hpp>
 
@@ -137,6 +138,9 @@ public:
     index_t const& index(index_id i) const
     { return idx_[i]; }
     
+    size_t size() const
+    { return idx_.size(); }
+    
     set_id create_set(std::vector<std::pair<index_id, bool> > const & vec_left,
                       std::vector<std::pair<index_id, bool> > const & vec_right);
     
@@ -154,13 +158,31 @@ public:
     {
         left_keys.clear();
         left_vals.clear();
+        left_sizes.clear();
         set_left.clear();
         right_keys.clear();
         right_vals.clear();
+        right_sizes.clear();
         set_right.clear();
     }
     
+    void clear()
+    {
+        clear_sets();
+        idx_.clear();
+    }
     
+    
+    size_t left_size(set_id s, charge const & c) const
+    {
+        assert( left_sizes[s].count(c) > 0 );
+        return left_sizes[s].find(c)->second;
+    }
+    size_t right_size(set_id s, charge const & c) const
+    {
+        assert( right_sizes[s].count(c) > 0 );
+        return right_sizes[s].find(c)->second;
+    }
     
     // TODO: cache the last search key to avoid find()
     
@@ -257,6 +279,7 @@ private:
     std::vector<std::vector<std::pair<index_id, bool> > > set_left, set_right;
     std::vector<std::vector<key_t> > left_keys, right_keys;
     std::vector<std::vector<coord_t> > left_vals, right_vals;
+    std::vector<std::map<charge, size_t> > left_sizes, right_sizes;
     
 };
 
@@ -289,6 +312,7 @@ MultiIndex<SymmGroup>::create_set(std::vector<std::pair<index_id, bool> > const 
         
         left_keys.push_back(keys_);
         left_vals.push_back(vals_);
+        left_sizes.push_back(block_begins);
     }
     
     {
@@ -314,12 +338,37 @@ MultiIndex<SymmGroup>::create_set(std::vector<std::pair<index_id, bool> > const 
         
         right_keys.push_back(keys_);
         right_vals.push_back(vals_);
+        right_sizes.push_back(block_begins);
     }
     
     set_left.push_back(vec_left);
     set_right.push_back(vec_right);
     return left_keys.size() - 1;
 }
+
+// ostreams
+//template <class SymmGroup>
+//std::ostream& operator<< (std::ostream& os, std::pair<typename SymmGroup::charge, std::size_t> const& p)
+//{
+//    os << "(" << p.first << " : " << p.second << ")";
+//    return os;
+//}
+//
+//template <class SymmGroup>
+//std::ostream& operator<< (std::ostream& os, typename index_product_iterator<SymmGroup>::value_type const& v)
+//{
+//    //std::copy(v.begin(), v.end(), std::ostream_iterator<std::pair<symm::charge, std::size_t> >(os, " "));
+//    for (int i=0; i<v.size(); ++i)
+//        os << v[i] << " ";
+//    return os;
+//}
+//
+//template <class SymmGroup>
+//std::ostream& operator<< (std::ostream& os, std::pair<typename MultiIndex<SymmGroup>::coord_t, typename MultiIndex<SymmGroup>::coord_t> const& p)
+//{
+//    os << p.first << ", " << p.second;
+//    return os;
+//}
 
 
 
