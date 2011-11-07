@@ -127,13 +127,13 @@ public:
         }
         
         {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
             h5ar << alps::make_pvp("/parameters", parms);
             h5ar << alps::make_pvp("/parameters", model);
         }
         
         if (!dns) {
-            alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
+            alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::REPLACE);
             h5ar << alps::make_pvp("/parameters", parms);
             h5ar << alps::make_pvp("/parameters", model);
         }
@@ -168,7 +168,7 @@ public:
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
             
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
                 
                 std::ostringstream oss;
                 
@@ -194,7 +194,7 @@ public:
             
             if (!dns)
             {
-                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
+                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::REPLACE);
                 
                 h5ar << alps::make_pvp("/state", cur_mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
@@ -226,7 +226,7 @@ public:
         tr2.begin(); std::vector<double> renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
             if (entropies.size() > 0)
                 h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
             if (renyi2.size() > 0)
@@ -237,7 +237,7 @@ public:
         cout << "Energy before: " << expval(mps, mpo) << endl;
         cout << "Energy after: " << expval(mps, mpoc) << endl;
         {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
             h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         }
         
@@ -256,7 +256,7 @@ public:
             cout << "Variance: " << energy2 - energy*energy << endl;
             
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
                 h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
                 h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
                                        std::vector<double>(1, energy2 - energy*energy));

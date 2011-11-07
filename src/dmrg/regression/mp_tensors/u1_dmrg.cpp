@@ -147,13 +147,13 @@ int main(int argc, char ** argv)
     }
     
     {
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
     
     if (!dns) {
-        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
@@ -193,7 +193,7 @@ int main(int argc, char ** argv)
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
             
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
                 
                 std::ostringstream oss;
                 oss << "/simulation/sweep" << sweep << "/results";
@@ -211,7 +211,7 @@ int main(int argc, char ** argv)
                 
                 if (parms.get<int>("donotsave") == 0)
                 {
-                    alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
+                    alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::REPLACE);
                     
                     h5ar << alps::make_pvp("/state", mps);
                     h5ar << alps::make_pvp("/status/sweep", sweep);
@@ -232,7 +232,7 @@ int main(int argc, char ** argv)
     
     if (!early_exit)
     {
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
         
         measure(mps, *adj, *H, model, h5ar);
         
