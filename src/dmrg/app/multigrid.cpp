@@ -222,13 +222,13 @@ int main(int argc, char ** argv)
     
     
     {
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
+        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", raw_parms);
         h5ar << alps::make_pvp("/parameters", raw_model);
         h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
     }
     if (!dns) {
-        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::REPLACE);
+        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
         h5ar << alps::make_pvp("/parameters", raw_parms);
         h5ar << alps::make_pvp("/parameters", raw_model);
         h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
@@ -351,7 +351,7 @@ int main(int argc, char ** argv)
             entropies = calculate_bond_entropies(initial_mps);
                         
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                 
                 std::ostringstream oss;
                 
@@ -413,7 +413,7 @@ int main(int argc, char ** argv)
                 cout << "Sweep done after " << elapsed << " seconds." << endl;
                 
                 {
-                    alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
+                    alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                     
                     std::ostringstream oss;
                     
@@ -438,7 +438,7 @@ int main(int argc, char ** argv)
                 
                 if (!dns)
                 {
-                    alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::REPLACE);
+                    alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
                     
                     h5ar << alps::make_pvp("/state", cur_mps);
                     h5ar << alps::make_pvp("/status/sweep", sweep);
@@ -478,7 +478,7 @@ int main(int argc, char ** argv)
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
             if (entropies.size() > 0)
                 h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
             if (renyi2.size() > 0)
@@ -489,7 +489,7 @@ int main(int argc, char ** argv)
         cout << "Energy before: " << expval(mps, mpo) << endl;
         cout << "Energy after: " << expval(mps, mpoc) << endl;
         {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
             h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         }
         
@@ -508,7 +508,7 @@ int main(int argc, char ** argv)
             cout << "Variance: " << energy2 - energy*energy << endl;
             
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::REPLACE);
+                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
                 h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
                 h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
                                        std::vector<double>(1, energy2 - energy*energy));

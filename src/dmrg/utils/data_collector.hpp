@@ -21,7 +21,7 @@
 #define DCOLLECTOR_SAVE(var, ar, path) ar << alps::make_pvp(path, var);
 #define DCOLLECTOR_SAVE_TO_FILE(var, fname, path)                           \
 {                                                                           \
-    alps::hdf5::archive h5ar_dcollector(fname, alps::hdf5::archive::REPLACE); \
+    alps::hdf5::archive h5ar_dcollector(fname, alps::hdf5::archive::WRITE); \
     h5ar_dcollector << alps::make_pvp(path, var);                           \
 }
 
