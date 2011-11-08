@@ -203,13 +203,13 @@ int main(int argc, char ** argv)
     }
     
     {
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
     
     if (!dns) {
-        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
     }
@@ -261,7 +261,7 @@ int main(int argc, char ** argv)
             cout << "Sweep " << sweep << " done after " << elapsed << " seconds." << endl;
             
             {
-//                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE);
+//                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
 //                
 //                std::ostringstream oss;
 //                
@@ -292,7 +292,7 @@ int main(int argc, char ** argv)
             
 //            if (!dns)
 //            {
-//                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE);
+//                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
 //                
 //                h5ar << alps::make_pvp("/state", cur_mps);
 //                h5ar << alps::make_pvp("/status/sweep", sweep);
