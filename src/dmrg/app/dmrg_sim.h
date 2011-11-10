@@ -126,18 +126,7 @@ public:
             h5ar_in >> alps::make_pvp("/state", mps);
         }
         
-        {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            h5ar << alps::make_pvp("/parameters", parms);
-            h5ar << alps::make_pvp("/parameters", model);
-        }
         
-        if (!dns) {
-            alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            h5ar << alps::make_pvp("/parameters", parms);
-            h5ar << alps::make_pvp("/parameters", model);
-        }
-                
         gettimeofday(&now, NULL);
         
     }
@@ -170,6 +159,9 @@ public:
             {
                 alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
                 
+                h5ar << alps::make_pvp("/parameters", parms);
+                h5ar << alps::make_pvp("/parameters", model);
+                
                 std::ostringstream oss;
                 
                 oss.str("");
@@ -196,6 +188,8 @@ public:
             {
                 alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
                 
+                h5ar << alps::make_pvp("/parameters", parms);
+                h5ar << alps::make_pvp("/parameters", model);
                 h5ar << alps::make_pvp("/state", cur_mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
             }
@@ -210,12 +204,21 @@ public:
                 break;
             }
         }
+        
         ssm.sync();
     }
     
     
     void measure ()
     {
+        
+        {
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+
+            h5ar << alps::make_pvp("/parameters", parms);
+            h5ar << alps::make_pvp("/parameters", model);
+        }
+
         cout << "Measurements." << endl;
         measure_on_mps(mps, *lat, measurements, rfile);
         

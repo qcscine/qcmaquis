@@ -299,7 +299,9 @@ int main(int argc, char ** argv)
                 break;
             }
 
-            if (!dns && (early_exit || sweep % parms.get<int>("ckp_each") == 0))
+            if (!dns && (early_exit ||
+                         sweep % parms.get<int>("ckp_each") == 0 ||
+                         sweep == parms.get<int>("nsweeps")))
             {
                 alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
                 
