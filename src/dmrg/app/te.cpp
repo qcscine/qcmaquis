@@ -290,21 +290,25 @@ int main(int argc, char ** argv)
                     measure_on_mps(cur_mps, *lat, meas_always, rfile, oss.str());
             }
             
-//            if (!dns)
-//            {
-//                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-//                
-//                h5ar << alps::make_pvp("/state", cur_mps);
-//                h5ar << alps::make_pvp("/status/sweep", sweep);
-//            }
-//            
-//            gettimeofday(&then, NULL);
-//            elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
-//            int rs = parms.get<int>("run_seconds");
-//            if (rs > 0 && elapsed > rs) {
-//                early_exit = true;
-//                break;
-//            }
+            
+            gettimeofday(&then, NULL);
+            elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
+            int rs = parms.get<int>("run_seconds");
+            if (rs > 0 && elapsed > rs) {
+                early_exit = true;
+                break;
+            }
+
+            if (!dns && (early_exit || sweep % parms.get<int>("ckp_each") == 0))
+            {
+                alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                
+                h5ar << alps::make_pvp("/state", cur_mps);
+                h5ar << alps::make_pvp("/status/sweep", sweep);
+            }
+            
+            if (early_exit)
+                break;
         }
     }
 #endif

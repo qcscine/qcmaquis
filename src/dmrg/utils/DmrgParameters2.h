@@ -51,6 +51,7 @@ public:
         add_option("seed", "", value(42));
         add_option("always_measure", "comma separated list of measurements", value(""));
         add_option("measure_each", "", value(1)); 
+        add_option("ckp_each", "", value(1)); 
         
         add_option("dt", "", value(1e-3));
         add_option("nsweeps_img", "", value(0));

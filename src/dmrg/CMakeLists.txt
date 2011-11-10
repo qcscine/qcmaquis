@@ -192,7 +192,7 @@ endif(USE_MTM)
 include_directories(${PROJECT_SOURCE_DIR} ${HDF5_INCLUDE_DIR} ${ALPS_INCLUDE_DIRS})
 link_directories(${ALPS_LIBRARY_DIRS})
 
-# OpenMPI
+# OpenMP
 if(ENABLE_OMP)
   if(OPENMP_FOUND)
     macro(enable_omp_if_found)
