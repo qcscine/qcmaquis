@@ -231,6 +231,7 @@ namespace app {
                     for (int n=0; n<site_terms[type].size(); ++n)
                         op_matrix += site_terms[type][n];
                     hamterm_t term;
+                    term.with_sign = false;
                     term.fill_operator = tident[type];
                     term.operators.push_back( std::make_pair(p, op_matrix) );
                     terms.push_back(term);
@@ -265,6 +266,7 @@ namespace app {
                     bool with_sign = fermionic(b1, op1, b2, op2);
                     
                     hamterm_t term;
+                    term.with_sign = with_sign;
                     if (with_sign)
                         term.fill_operator = tfill[type_s];
                     else
@@ -521,6 +523,7 @@ namespace app {
 						if (b.is_fermionic(simplify_name(op)))
 							throw std::runtime_error("Cannot measure local fermionic operators.");
 #endif
+
 						alps_matrix m = alps::get_matrix(T(), op, b, parms, true);
 
 						term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
@@ -538,7 +541,7 @@ namespace app {
                 std::string value;
                 
                 mterm_t term;
-                term.fill_operator = tfill[type];
+                term.fill_operator = tident[type];
                 
                 if (boost::regex_match(lhs, what, expression)) {
                     value = it->value();
@@ -565,6 +568,10 @@ namespace app {
                         if (term.operators[1].second) ++f_ops;
                     }
                     
+                    if (f_ops > 0) {
+                        term.fill_operator = tfill[type];
+                    }
+                    
 #ifndef NDEBUG
                     if (f_ops % 2 != 0)
                         throw std::runtime_error("Number of fermionic operators has to be even.");
@@ -585,7 +592,7 @@ namespace app {
                 std::string value;
                 
                 mterm_t term;
-                term.fill_operator = tfill[type];
+                term.fill_operator = tident[type];
                 
                 bool found = false;
                 if (boost::regex_match(lhs, what, expression)) {
@@ -634,6 +641,11 @@ namespace app {
                         if (term.operators[1].second) ++f_ops;
                     }
                     
+                    
+                    if (f_ops > 0) {
+                        term.fill_operator = tfill[type];
+                    }
+
 #ifndef NDEBUG
                     if (f_ops % 2 != 0)
                         throw std::runtime_error("Number of fermionic operators has to be even.");

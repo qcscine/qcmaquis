@@ -150,6 +150,7 @@ namespace app {
             for (int n=0; n<neighs.size(); ++n) {
                 {
                     hamterm_t term;
+                    term.with_sign = true;
                     term.fill_operator = sign;
                     term.operators.push_back( std::make_pair(p, -t*create) );
                     term.operators.push_back( std::make_pair(neighs[n], destroy) );
@@ -157,6 +158,7 @@ namespace app {
                 }
                 {
                     hamterm_t term;
+                    term.with_sign = true;
                     term.fill_operator = sign;
                     term.operators.push_back( std::make_pair(p, -t*destroy) );
                     term.operators.push_back( std::make_pair(neighs[n], create) );
@@ -241,6 +243,7 @@ namespace app {
                                       lat.get_prop<int>("type", p, *hopto));
                     { // t*cdag_up*c_up
                         hamterm_t term;
+                        term.with_sign = true;
                         term.fill_operator = sign_up;
                         gemm(sign_up, create_up, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
@@ -249,6 +252,7 @@ namespace app {
                     }
                     { // t*c_up*cdag_up
                         hamterm_t term;
+                        term.with_sign = true;
                         term.fill_operator = sign_up;
                         gemm(destroy_up, sign_up, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
@@ -257,6 +261,7 @@ namespace app {
                     }
                     { // t*cdag_down*c_down
                         hamterm_t term;
+                        term.with_sign = true;
                         term.fill_operator = sign_down;
                         gemm(sign_down, create_down, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
@@ -265,6 +270,7 @@ namespace app {
                     }
                     { // t*c_down*cdag_down
                         hamterm_t term;
+                        term.with_sign = true;
                         term.fill_operator = sign_down;
                         gemm(destroy_down, sign_down, tmp); // Note inverse notation because of notation in operator.
                         term.operators.push_back( std::make_pair(p, -ti*tmp) );
