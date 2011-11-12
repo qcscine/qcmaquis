@@ -30,6 +30,9 @@ namespace generate_mpo
         
 		std::vector<std::pair<typename Lattice::pos_t, op_t> > operators;
 		op_t fill_operator;
+        bool with_sign;
+        
+        Operator_Term() : with_sign(false) {}
         
         bool operator< (Operator_Term const & rhs) const
         {

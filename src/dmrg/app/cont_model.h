@@ -123,6 +123,7 @@ namespace app {
                 
                 { // site term
                     hamterm_t term;
+                    term.with_sign = false;
                     term.fill_operator = ident;
                     term.operators.push_back( std::make_pair(p, site_op) );
                     terms.push_back(term);
@@ -131,6 +132,7 @@ namespace app {
 //                if (mu != 0)
 //                { // density term
 //                    hamterm_t term;
+//                    term.with_sign = false;
 //                    term.fill_operator = ident;
 //                    term.operators.push_back( std::make_pair(p, mu*count) );
 //                    terms.push_back(term);
@@ -165,6 +167,7 @@ namespace app {
                     
                     {
                         hamterm_t term;
+                        term.with_sign = false;
                         term.fill_operator = ident;
                         term.operators.push_back( std::make_pair(p, -t*create) );
                         term.operators.push_back( std::make_pair(neighs[n], destroy) );
@@ -183,6 +186,7 @@ namespace app {
             
             {
                 mterm_t term;
+                term.with_sign = false;
                 term.fill_operator = ident;
                 term.name = "Density";
                 term.type = mterm_t::Average;
@@ -192,6 +196,7 @@ namespace app {
             }
             {
                 mterm_t term;
+                term.with_sign = false;
                 term.fill_operator = ident;
                 term.name = "Local density";
                 term.type = mterm_t::Local;
@@ -270,6 +275,7 @@ namespace app {
                 
                 { // site term
                     hamterm_t term;
+                    term.with_sign = false;
                     term.fill_operator = ident;
                     term.operators.push_back( std::make_pair(p, site_op) );
                     terms.push_back(term);
@@ -298,6 +304,7 @@ namespace app {
                     
                     {
                         hamterm_t term;
+                        term.with_sign = false;
                         term.fill_operator = ident;
                         term.operators.push_back( std::make_pair(p, -t*create) );
                         term.operators.push_back( std::make_pair(neighs[n], destroy) );
@@ -305,6 +312,7 @@ namespace app {
                     }
                     {
                         hamterm_t term;
+                        term.with_sign = false;
                         term.fill_operator = ident;
                         term.operators.push_back( std::make_pair(p, -t*destroy) );
                         term.operators.push_back( std::make_pair(neighs[n], create) );
@@ -323,6 +331,7 @@ namespace app {
             
             {
                 mterm_t term;
+                term.with_sign = false;
                 term.fill_operator = ident;
                 term.name = "Density";
                 term.type = mterm_t::Average;
@@ -332,6 +341,7 @@ namespace app {
             }
             {
                 mterm_t term;
+                term.with_sign = false;
                 term.fill_operator = ident;
                 term.name = "Local density";
                 term.type = mterm_t::Local;

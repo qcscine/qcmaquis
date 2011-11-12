@@ -108,7 +108,7 @@ getU(std::vector<Hamiltonian<Matrix, grp> > const & split_H, Lattice * lat,
     std::vector<MPO<Matrix, grp> > expMPO(split_H.size(), MPO<Matrix, grp>(lat->size()));
     for (int i=0; i<split_H.size(); ++i)
 //        expMPO[i] = make_exp_mpo(lat->size(), split_H[i], alpha);
-        expMPO[i] = make_exp_mpo_gen(lat->size(), split_H[i], alpha);
+        expMPO[i] = make_exp_mpo(lat->size(), split_H[i], alpha);
     return expMPO;
 }
 
