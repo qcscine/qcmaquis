@@ -44,6 +44,13 @@ inline unsigned long getcpuclocks()
  return( lo | (hi << 32) );
 }
 
+#else
+
+inline unsigned long getcpuclocks() // say, MSVC
+{
+	return 0;
+}
+
 #endif
 
 
@@ -158,5 +165,22 @@ private:
 
 #endif
 
+#ifndef WIN32
+#include <sys/time.h>
+#else
+
+#include <ctime>
+
+struct timeval {
+	time_t tv_sec, tv_usec;
+};
+
+void gettimeofday(timeval * tv, void *)
+{
+	tv->tv_sec = time(NULL);
+	tv->tv_usec = 0;
+}
+
+#endif
 
 #endif
