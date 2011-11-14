@@ -46,10 +46,7 @@ inline unsigned long getcpuclocks()
 
 #else
 
-inline unsigned long getcpuclocks() // say, MSVC
-{
-	return 0;
-}
+inline unsigned long getcpuclocks() { return 0; }
 
 #endif
 
