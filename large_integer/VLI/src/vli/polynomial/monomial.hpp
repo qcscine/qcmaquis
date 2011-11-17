@@ -35,7 +35,7 @@ namespace vli
             return coeff_.p();
         }
         
-        value_type* const p() const{
+        value_type* p() const{
             return coeff_.p();
         }
 
