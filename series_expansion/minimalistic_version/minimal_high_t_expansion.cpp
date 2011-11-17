@@ -115,7 +115,7 @@ class sparse_matrix
           */
         std::size_t get_dimension() const
         {
-            return pow(2,static_cast<unsigned int>(num_vertices_));
+            return pow(2.0,static_cast<int>(num_vertices_));
         }
 
         /**
