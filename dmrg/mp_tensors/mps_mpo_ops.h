@@ -225,4 +225,79 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
     return calculate_bond_renyi_entropies(mps, 1);
 }
 
+
+// Specific to Fermi-Hubbard on a Ladder!!
+template<class Matrix, class SymmGroup>
+void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, SymmGroup> > const & dens_ops, std::vector<std::vector<double> > const & dens)
+{
+    assert( mps.size() == dens[0].size() );
+    assert( dens_ops.size() == dens.size() );
+    size_t L = mps.size();
+    
+    mps.normalize_left();
+    mps.canonize(0);
+    for (int p=0; p<L; ++p)
+    {
+        
+
+        Index<SymmGroup> phys = mps[p].site_dim();
+        typename SymmGroup::charge empty, up, down, updown;
+        empty[0]  = 0;  empty[1]  = 0;
+        up[0]     = 1;  up[1]     = 0;
+        down[0]   = 0;  down[1]   = 1;
+        updown[0] = 1;  updown[1] = 1;
+        
+        
+        block_matrix<Matrix, SymmGroup> rho = contraction::density_matrix(mps[p], mps[p]);
+        
+        for (size_t j=0; j<dens.size(); ++j) {
+            
+            MPSTensor<Matrix, SymmGroup> tmp = contraction::local_op(mps[p], dens_ops[j]);
+            double cur_dens = mps[p].scalar_overlap(tmp);
+            zout << "Density[" << j << "] (before) = " << cur_dens << std::endl;
+        }
+        
+        double a = trace(rho(down, down)) * trace(rho(updown, updown));
+        double b = trace(rho(up, up)) * trace(rho(down, down)) + dens[0][p] * trace(rho(updown, updown)) - dens[1][p] * trace(rho(updown, updown));
+        double c = - dens[1][p] * trace(rho(up, up));
+        double k2 = ( -b + sqrt(b*b - 4*a*c) ) / (2*a);
+        
+        double k1 = dens[0][p] / ( trace(rho(up, up)) + k2*trace(rho(updown,updown)) );
+        
+        double t0 = 0.;
+        t0 += k1*trace( rho(up, up) );
+        t0 += k2*trace( rho(down, down) );
+        t0 += k1*k2*trace( rho(updown, updown) );
+        double k0 = (1.-t0) / trace(rho(empty, empty));
+        
+        std::cout << "k0 = " << k0 << std::endl;
+        std::cout << "k1 = " << k1 << std::endl;
+        std::cout << "k2 = " << k2 << std::endl;
+        assert( k0 > 0 ); // not always the case!!!
+        
+        block_matrix<Matrix, SymmGroup> rescale = identity_matrix<Matrix>(phys);
+        rescale(empty, empty) *= std::sqrt(k0);
+        rescale(up, up) *= std::sqrt(k1);
+        rescale(down, down) *= std::sqrt(k2);
+        rescale(updown, updown) *= std::sqrt(k1*k2);
+        
+        mps[p] = contraction::local_op(mps[p], rescale);
+        
+        {
+            for (size_t j=0; j<dens.size(); ++j) {
+                MPSTensor<Matrix, SymmGroup> tmp = contraction::local_op(mps[p], dens_ops[j]);
+                double meas_dens = mps[p].scalar_overlap(tmp) / mps[p].scalar_norm();
+                std::cout << "Density[" << j << "] (after) = " << meas_dens << ", should be " << dens[j][p] << std::endl;
+            }
+        }
+        
+        block_matrix<Matrix, SymmGroup> t_norm = mps[p].normalize_left(SVD);
+        if (p < L-1)
+            mps[p+1].multiply_from_left(t_norm);
+        
+    }
+
+}
+
+
 #endif

@@ -143,4 +143,18 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
     return sq;
 }
 
+template<class Matrix, class SymmGroup>
+MPO<Matrix, SymmGroup>
+zero_after(MPO<Matrix, SymmGroup> mpo, int p0)
+{
+    cout << "Zeroing out MPO after site " << p0 << endl;
+    for (int p = p0+1; p < mpo.size(); ++p)
+        for (int k = 2; k < mpo[p].row_dim(); ++k)
+            for (int l = 2; l < mpo[p].col_dim(); ++l)
+                if (mpo[p].has(k,l))
+                    mpo[p](k,l) *= 0;
+    
+    return mpo;
+}
+
 #endif

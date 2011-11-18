@@ -82,10 +82,12 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 {
     if (params.get<std::string>("init_state") == "default")
         return new default_mps_init<Matrix, grp>();
-    else if (params.get<std::string>("init_state") == "mott")
-        return new mott_mps_init<Matrix, grp>();
+    else if (params.get<std::string>("init_state") == "const")
+        return new const_mps_init<Matrix, grp>();
     else if (params.get<std::string>("init_state") == "thin")
         return new thin_mps_init<Matrix, grp>();
+    else if (params.get<std::string>("init_state") == "thin_const")
+        return new thin_const_mps_init<Matrix, grp>();
     else {
         throw std::runtime_error("Don't know this initial state.");
         return NULL;

@@ -64,6 +64,8 @@ public:
         add_option("symmetry", "null, u1 or 2u1", value("u1"));
         add_option("model_library", "", value("alps"));
         
+        add_option("beta_mode", "", value(0));
+        
     }
 };
 

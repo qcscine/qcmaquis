@@ -35,7 +35,8 @@ public:
     MPSTensor(Index<SymmGroup> const & sd = Index<SymmGroup>(),
               Index<SymmGroup> const & ld = Index<SymmGroup>(),
               Index<SymmGroup> const & rd = Index<SymmGroup>(),
-              bool fillrand = true);
+              bool fillrand = true,
+              value_type val = 0);
         
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
