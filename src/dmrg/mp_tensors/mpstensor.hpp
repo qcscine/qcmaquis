@@ -19,7 +19,8 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
                                         Index<SymmGroup> const & ld,
                                         Index<SymmGroup> const & rd,
-                                        bool fillrand)
+                                        bool fillrand,
+                                        typename Matrix::value_type val)
 : phys_i(sd)
 , left_i(ld)
 , right_i(rd)
@@ -35,7 +36,7 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     if (fillrand)
         data_.generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
     else
-        data_.generate(utils::constant<typename Matrix::value_type>(0));
+        data_.generate(utils::constant<typename Matrix::value_type>(val));
 }
 
 template<class Matrix, class SymmGroup>

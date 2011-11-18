@@ -68,12 +68,13 @@ public:
                 StorageMaster & sm)
     : mps(mps_)
     , mpo(mpo_)
+    , mpo_orig(mpo_)
     , parms(parms_)
     , storage_master(sm)
     {
 //        mps.normalize_right();
         mps.canonize(0);
-        init_left_right(mpo);
+        init_left_right(mpo, 0);
         zout << "Done init_left_right" << endl;
     }
     
@@ -82,6 +83,8 @@ public:
                int resume_at = -1,
                int max_secs = -1)
     {
+        mpo = mpo_orig;
+        
         timeval sweep_now, sweep_then;
         gettimeofday(&sweep_now, NULL);
         
@@ -100,9 +103,16 @@ public:
             else
                 site = 2*L-resume_at-1;
             mps.canonize(site);
-            init_left_right(mpo);
+            init_left_right(mpo, site);
         }
 
+        if (parms.get<bool>("beta_mode") && sweep == 0 && resume_at < L) {
+            int site = (resume_at == -1) ? 0 : resume_at;
+            mpo = zero_after(mpo_orig, site+2);
+            mps.canonize(site);
+            init_left_right(mpo, site);
+        }
+        
         storage::prefetch(left_[0], left_stores_[0]);
         storage::prefetch(right_[1], right_stores_[1]);
         
@@ -125,6 +135,25 @@ public:
 //            storage_master.print_size();
             
 //            mps[site].make_left_paired();
+            
+            if (parms.get<bool>("beta_mode")) {
+                if (sweep == 0 && lr == 1) {
+                    mpo = zero_after(mpo_orig, site+2);
+                    mps.canonize(site);
+                    init_left_right(mpo, site);
+                    // the following doesn't work, but why?!
+//                    if (site < L-2) {
+//                        boundary_right_step(mpo, site+2);
+//                        boundary_right_step(mpo, site+1);
+//                    }
+//                    if (site > 0)
+//                        boundary_left_step(mpo, site-1);
+                } else if (sweep == 0 && lr == -1 && site == L-1) {
+                    mpo = mpo_orig;
+                    mps.canonize(site);
+                    init_left_right(mpo, site);
+                }
+            }
             
             t_io.begin();
             
@@ -248,14 +277,16 @@ public:
                         mps[site+1].multiply_from_left(t);
                 }
                 
-                storage::load(left_[site+1], left_stores_[site+1]);
                 
-                MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-                left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,
-                                                                   left_[site], mpo[site]);
+                boundary_left_step(mpo, site);
+                // Please, check if removing this is correct.
+//                storage::load(left_[site+1], left_stores_[site+1]);
+//                MPSTensor<Matrix, SymmGroup> bkp = mps[site];
+//                left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,
+//                                                                   left_[site], mpo[site]);
+//                storage::store(left_[site], left_stores_[site]);
                 
-                storage::store(left_[site], left_stores_[site]);
-                storage::store(right_[site+1], right_stores_[site+1]);
+                // storage::store(right_[site+1], right_stores_[site+1]); // why do you need this??
             } else if (lr == -1) {
                 if (site > 0) {
                     zout << "Growing, alpha = " << alpha << endl;
@@ -268,14 +299,16 @@ public:
                         mps[site-1].multiply_from_right(t);
                 }
                 
-                storage::load(right_[site], right_stores_[site]);
                 
-                MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-                right_[site] = contraction::overlap_mpo_right_step(mps[site], bkp,
-                                                                   right_[site+1], mpo[site]);
+                boundary_right_step(mpo, site);
+                // Please, check if removing this is correct.
+//                storage::load(right_[site], right_stores_[site]);
+//                MPSTensor<Matrix, SymmGroup> bkp = mps[site];
+//                right_[site] = contraction::overlap_mpo_right_step(mps[site], bkp,
+//                                                                   right_[site+1], mpo[site]);
+//                storage::store(right_[site+1], right_stores_[site+1]);
                 
-                storage::store(left_[site], left_stores_[site]);
-                storage::store(right_[site+1], right_stores_[site+1]);
+                // storage::store(left_[site], left_stores_[site]); // why do you need this?
             }
             
             t_grow.end();
@@ -298,7 +331,27 @@ public:
     MPS<Matrix, SymmGroup> get_current_mps() const { return mps; }
     
 private:
-    void init_left_right(MPO<Matrix, SymmGroup> const & mpo)
+    inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
+    {
+        MPSTensor<Matrix, SymmGroup> bkp = mps[site];
+        Boundary<Matrix, SymmGroup> left = contraction::overlap_mpo_left_step(mps[site], bkp, left_[site], mpo[site]);
+        left_[site+1] = left;
+        
+        storage::reset(left_stores_[site+1]);
+        storage::store(left_[site+1], left_stores_[site+1]);
+    }
+    
+    inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
+    {
+        MPSTensor<Matrix, SymmGroup> bkp = mps[site];
+        Boundary<Matrix, SymmGroup> right = contraction::overlap_mpo_right_step(mps[site], bkp, right_[site+1], mpo[site]);
+        right_[site] = right;
+        
+        storage::reset(right_stores_[site]);
+        storage::store(right_[site], right_stores_[site]);
+    }
+
+    void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         static Timer timer2("init_left_right");
         timer2.begin();
@@ -316,13 +369,8 @@ private:
         storage::reset(left_stores_[0]);
         storage::store(left_[0], left_stores_[0]);
         
-        for (int i = 0; i < L; ++i) {
-            MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-            left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
-            left_[i+1] = left;
-            storage::reset(left_stores_[i+1]);
-            storage::store(left_[i+1], left_stores_[i+1]);
-        }
+        for (int i = 0; i < site; ++i)
+            boundary_left_step(mpo, i);
         
         Boundary<Matrix, SymmGroup> right = mps.right_boundary();
         right_[L] = right;
@@ -330,19 +378,14 @@ private:
         storage::reset(right_stores_[L]);
         storage::store(right_[L], right_stores_[L]);
         
-        for(int i = L-1; i >= 0; --i) {
-            MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-            right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
-            right_[i] = right;
-
-            storage::reset(right_stores_[i]);
-            storage::store(right_[i], right_stores_[i]);
-        }
+        for(int i = L-1; i >= site; --i)
+            boundary_right_step(mpo, i);
+        
         timer2.end();
     }
     
     MPS<Matrix, SymmGroup> mps;
-    MPO<Matrix, SymmGroup> mpo;
+    MPO<Matrix, SymmGroup> mpo, mpo_orig;
     
     BaseParameters & parms;
     std::vector<Boundary<Matrix, SymmGroup> > left_, right_;

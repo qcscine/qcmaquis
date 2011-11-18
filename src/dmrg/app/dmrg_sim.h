@@ -55,6 +55,27 @@ using std::endl;
 using namespace app;
 
 
+//template <class Matrix, class SymmGroup>
+//struct do_fix_density {
+//    
+//    static void apply (MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, SymmGroup> > const & dens_ops,
+//                       typename SymmGroup::charge initc)
+//    { }
+//};
+//template <class Matrix>
+//struct do_fix_density<Matrix, TwoU1> {
+//    
+//    static void apply (MPS<Matrix, TwoU1> & mps, std::vector<block_matrix<Matrix, TwoU1> > const & dens_ops,
+//                       TwoU1::charge initc)
+//    {
+//        std::vector<std::vector<double> > dens(2, std::vector<double>(mps.length(), 0.));
+//        std::fill(dens[0].begin(), dens[0].end(), double(initc[0])/(mps.length()/2));
+//        std::fill(dens[1].begin(), dens[1].end(), double(initc[1])/(mps.length()/2));
+//        
+//        fix_density(mps, dens_ops, dens);
+//    }
+//};
+
 template <class Matrix, class SymmGroup>
 class dmrg_sim {
         
@@ -125,7 +146,6 @@ public:
             alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
             h5ar_in >> alps::make_pvp("/state", mps);
         }
-        
         
         gettimeofday(&now, NULL);
         
@@ -283,10 +303,12 @@ private:
     {
         if (params.get<std::string>("init_state") == "default")
             return new default_mps_init<Matrix, grp>();
-        else if (params.get<std::string>("init_state") == "mott")
-            return new mott_mps_init<Matrix, grp>();
+        else if (params.get<std::string>("init_state") == "const")
+            return new const_mps_init<Matrix, grp>();
         else if (params.get<std::string>("init_state") == "thin")
             return new thin_mps_init<Matrix, grp>();
+        else if (params.get<std::string>("init_state") == "thin_const")
+            return new thin_const_mps_init<Matrix, grp>();
         else {
             throw std::runtime_error("Don't know this initial state.");
             return NULL;
