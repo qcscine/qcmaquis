@@ -106,12 +106,12 @@ public:
             init_left_right(mpo, site);
         }
 
-        if (parms.get<bool>("beta_mode") && sweep == 0 && resume_at < L) {
-            int site = (resume_at == -1) ? 0 : resume_at;
-            mpo = zero_after(mpo_orig, site+2);
-            mps.canonize(site);
-            init_left_right(mpo, site);
-        }
+//        if (parms.get<bool>("beta_mode") && sweep == 0 && resume_at < L) {
+//            int site = (resume_at == -1) ? 0 : resume_at;
+//            mpo = zero_after(mpo_orig, site+2);
+//            mps.canonize(site);
+//            init_left_right(mpo, site);
+//        }
         
         storage::prefetch(left_[0], left_stores_[0]);
         storage::prefetch(right_[1], right_stores_[1]);
@@ -137,20 +137,12 @@ public:
 //            mps[site].make_left_paired();
             
             if (parms.get<bool>("beta_mode")) {
-                if (sweep == 0 && lr == 1) {
-                    mpo = zero_after(mpo_orig, site+2);
-                    mps.canonize(site);
-                    init_left_right(mpo, site);
-                    // the following doesn't work, but why?!
-//                    if (site < L-2) {
-//                        boundary_right_step(mpo, site+2);
-//                        boundary_right_step(mpo, site+1);
-//                    }
-//                    if (site > 0)
-//                        boundary_left_step(mpo, site-1);
+                if (sweep == 0 && lr == 1 && site == 0) {
+                    mpo = zero_after(mpo_orig, 0);
+                    if (site == 0)
+                        init_left_right(mpo, 0);
                 } else if (sweep == 0 && lr == -1 && site == L-1) {
                     mpo = mpo_orig;
-                    mps.canonize(site);
                     init_left_right(mpo, site);
                 }
             }
