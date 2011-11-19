@@ -137,7 +137,7 @@ public:
 //            mps[site].make_left_paired();
             
             if (parms.get<bool>("beta_mode")) {
-                if (sweep == 0 && lr == 1 && site == 0) {
+                if (sweep == 0 && lr == 1) {
                     mpo = zero_after(mpo_orig, 0);
                     if (site == 0)
                         init_left_right(mpo, 0);
