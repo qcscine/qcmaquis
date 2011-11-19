@@ -96,6 +96,41 @@ struct compression {
         
         return mps;
     }
+    
+    template<class Matrix, class SymmGroup>
+    MPS<Matrix, SymmGroup>
+    static r2l_compress(MPS<Matrix, SymmGroup> mps,
+                        std::size_t Mmax, double cutoff,
+                        Logger * logger = NULL,
+                        bool verbose = false)
+    {
+        std::size_t L = mps.length();
+        std::vector<double> ret;
+        
+        block_matrix<Matrix, SymmGroup> t;
+        
+        mps.canonize(L-1);
+        
+        if (verbose) cout << "Compressing @ ";
+        for (std::size_t p = L-1; p > 0; --p)
+        {
+            if (verbose) {
+                cout << p << " ";
+                cout.flush();
+            }
+            
+            compress_two_sites(mps, Mmax, cutoff, p-1, logger);
+            
+            t = mps[p-1].normalize_right(SVD);
+            
+            if (p > 1)
+                mps[p-2].multiply_from_right(t);
+            else
+                zout << "Norm reduction: " << trace(t) << endl;
+        }
+        
+        return mps;
+    }
 };
 
 #endif
