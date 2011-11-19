@@ -148,11 +148,15 @@ MPO<Matrix, SymmGroup>
 zero_after(MPO<Matrix, SymmGroup> mpo, int p0)
 {
     cout << "Zeroing out MPO after site " << p0 << endl;
-    for (int p = p0+1; p < mpo.size(); ++p)
+    for (int p = p0+1; p < mpo.size(); ++p) {
         for (int k = 2; k < mpo[p].row_dim(); ++k)
             for (int l = 2; l < mpo[p].col_dim(); ++l)
                 if (mpo[p].has(k,l))
                     mpo[p](k,l) *= 0;
+    
+        if (mpo[p].has(0,1))
+            mpo[p](0,1) *= 0;
+    }
     
     return mpo;
 }
