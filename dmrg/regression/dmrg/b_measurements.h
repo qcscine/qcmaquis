@@ -3,7 +3,7 @@
 
 #include <alps/hdf5.hpp>
 
-#include "mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 #include "b_adjacency.h"
 #include "b_generate_mpo.h"

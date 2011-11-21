@@ -8,31 +8,30 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/dense_matrix_blas.hpp"
-#include "dense_matrix/aligned_allocator.h"
-
-typedef blas::dense_matrix<double> Matrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/matrix_algorithms.hpp"
+#include "types/dense_matrix/dense_matrix_blas.hpp"
+#include "types/dense_matrix/aligned_allocator.h"
+#include "types/dense_matrix/algorithms.hpp"
+typedef maquis::types::dense_matrix<double> Matrix;
 
 #include <alps/hdf5.hpp>
 
-#include "block_matrix/indexing.h"
-#include "mp_tensors/mps.h"
-#include "mp_tensors/mpo.h"
-#include "mp_tensors/contractions.h"
-#include "mp_tensors/mps_mpo_ops.h"
-#include "mp_tensors/mpo_ops.h"
-#include "mp_tensors/mps_initializers.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mpo_ops.h"
+#include "dmrg/mp_tensors/mps_initializers.h"
 
 
-#include "app/hamiltonian.h"
+#include "dmrg/models/hamiltonian.h"
 
-#include "app/te_utils.hpp"
-#include "mp_tensors/te.h"
+#include "dmrg/mp_tensors/te.h"
+#include "te_utils.hpp"
 
 
 using namespace app;
@@ -91,7 +90,7 @@ MPO<Matrix, grp> block_to_mpo(Index<grp> const & phys_i,
     
     bond_op = reshape_2site_op(phys_i, bond_op);
     block_matrix<Matrix, grp> U, V, left, right;
-    block_matrix<blas::associated_diagonal_matrix<Matrix>::type, grp> S, Ssqrt;
+    block_matrix<maquis::types::associated_diagonal_matrix<Matrix>::type, grp> S, Ssqrt;
     svd(bond_op, U, V, S);
     Ssqrt = sqrt(S);
     gemm(U, Ssqrt, left);

@@ -4,19 +4,19 @@
 using namespace std;
 
 #include "utils/zout.hpp"
-#include "dense_matrix/vector_interface.hpp"
+#include "types/dense_matrix/vector_interface.hpp"
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/diagonal_matrix.h"
-#include "dense_matrix/dense_matrix_algorithms.h"
-typedef blas::dense_matrix<double> Matrix;
-typedef blas::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/matrix_algorithms.hpp"
+#include "types/dense_matrix/diagonal_matrix.h"
+#include "types/dense_matrix/dense_matrix_algorithms.h"
+typedef maquis::types::dense_matrix<double> Matrix;
+typedef maquis::types::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
 
-#include "block_matrix/block_matrix.h"
-#include "block_matrix/block_matrix_algorithms.h"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/block_matrix_algorithms.h"
 
 int main()
 {

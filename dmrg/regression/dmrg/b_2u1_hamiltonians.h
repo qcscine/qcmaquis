@@ -1,8 +1,8 @@
 #ifndef B_2U1_HAMILTONIANS_H
 #define B_2U1_HAMILTONIANS_H
 
-#include "block_matrix/block_matrix.h"
-#include "block_matrix/block_matrix_algorithms.h"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "b_generate_mpo.h"
 
 #include <vector>

@@ -4,7 +4,7 @@
 #include "b_adjacency.h"
 #include "b_generate_mpo.h"
 #include "b_DmrgParameters.h"
-#include "mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/mpo.h"
 
 namespace b_mpos
 {

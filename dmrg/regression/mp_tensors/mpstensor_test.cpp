@@ -6,28 +6,28 @@ using std::endl;
 
 #include "utils/zout.hpp"
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-typedef blas::dense_matrix<double> Matrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/dense_matrix_algorithms.h"
+#include "types/dense_matrix/matrix_algorithms.hpp"
+typedef types::dense_matrix<double> Matrix;
 
 
-#include "block_matrix/indexing.h"
-#include "mp_tensors/mpstensor.h"
-#include "mp_tensors/mpotensor.h"
-#include "mp_tensors/contractions.h"
-#include "mp_tensors/special_mpos.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/mpotensor.h"
+#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/mp_tensors/special_mpos.h"
 
 void ng()
 {
-    typedef NullGroup grp;
+    typedef TrivialGroup grp;
     
     Index<grp> physical, aux1, aux2;
-    physical.insert(std::make_pair(NullGroup::Plus, 2));
-    aux1.insert(std::make_pair(NullGroup::Plus, 10));
-    aux2.insert(std::make_pair(NullGroup::Plus, 11));
+    physical.insert(std::make_pair(TrivialGroup::Plus, 2));
+    aux1.insert(std::make_pair(TrivialGroup::Plus, 10));
+    aux2.insert(std::make_pair(TrivialGroup::Plus, 11));
     
     MPSTensor<Matrix, grp> mps(physical, aux1, aux1);
     zout << mps.scalar_norm() << endl;

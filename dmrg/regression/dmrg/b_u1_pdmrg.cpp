@@ -13,31 +13,48 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "utils/utils.hpp"
-#include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/concept/matrix_interface.hpp"
-#include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
-#include "p_dense_matrix/p_dense_matrix_algorithms.hpp"
-#include "p_dense_matrix/p_diagonal_matrix.h"
+#include "dmrg/utils/utils.hpp"
+#include "types/p_dense_matrix/p_dense_matrix.h"
+#include "types/p_dense_matrix/concept/matrix_interface.hpp"
+#include "types/p_dense_matrix/concept/resizable_matrix_interface.hpp"
+//#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
+#include "types/p_dense_matrix/algorithms.hpp"
+#include "types/p_dense_matrix/p_diagonal_matrix.h"
 
-typedef blas::p_dense_matrix<double> Matrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/dense_matrix_algorithms.h"
+#include "types/dense_matrix/matrix_algorithms.hpp"
+#include "types/dense_matrix/algorithms.hpp"
+#include "types/dense_matrix/dense_matrix_blas.hpp"
+#include "types/dense_matrix/aligned_allocator.h"
+
+#include "types/utils/matrix_cast.h"
+
+typedef maquis::types::p_dense_matrix<double> Matrix;
+
 
 #include <alps/hdf5.hpp>
 
-#include "block_matrix/indexing.h"
-#include "mp_tensors/mps.h"
-#include "mp_tensors/mpo.h"
-#include "mp_tensors/contractions.h"
-#include "mp_tensors/mps_mpo_ops.h"
-#include "mp_tensors/mpo_ops.h"
-#include "mp_tensors/mps_initializers.h"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-#include "utils/stream_storage.h"
-#include "utils/logger.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mpo_ops.h"
+#include "dmrg/mp_tensors/mps_initializers.h"
 
-#include "mp_tensors/ss_optimize.h"
+#include "types/p_dense_matrix/block_matrix_callbacks.hpp"
 
-#include "mpos/alps_adjacency.h"
+#include "dmrg/utils/stream_storage.h"
+#include "dmrg/utils/logger.h"
+
+#include "dmrg/mp_tensors/ss_optimize.h"
+
+#include "dmrg/deprecated/mpos/alps_adjacency.h"
 
 #include "b_measurements.h"
 #include "b_adjacency.h"

@@ -1,5 +1,5 @@
 lattice = square_lattice
 model = FreeFermions
-u1_total_charge = 1
-L = 2
-W = 2
+u1_total_charge = 3
+L = 4
+W = 4

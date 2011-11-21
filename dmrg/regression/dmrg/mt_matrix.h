@@ -3,7 +3,7 @@
 
 #include <boost/thread.hpp>
 
-#include "dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/dense_matrix.h"
 
 class MtmRequest
 {
@@ -40,7 +40,7 @@ private:
 template<typename T>
 class mt_matrix
 {   
-    typedef blas::dense_matrix<T> slave_t;
+    typedef maquis::types::dense_matrix<T> slave_t;
     
 public:
     typedef typename slave_t::value_type value_type;
@@ -156,7 +156,7 @@ public:
     void svd(mt_matrix const & M,
              mt_matrix & U,
              mt_matrix & V,
-             typename blas::diagonal_matrix<double> & S)
+             typename maquis::types::diagonal_matrix<double> & S)
     {
         svd(M.data_, U.data_, V.data_, S);
     }
@@ -186,7 +186,7 @@ public:
     friend
     void syev(mt_matrix const & M,
               mt_matrix & vecs,
-              typename blas::diagonal_matrix<double> & S)
+              typename maquis::types::diagonal_matrix<double> & S)
     {
         syev(M.data_, vecs.data_, S);
     }

@@ -8,31 +8,30 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/dense_matrix_blas.hpp"
-#include "dense_matrix/aligned_allocator.h"
-
-typedef blas::dense_matrix<double> Matrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/matrix_algorithms.hpp"
+#include "types/dense_matrix/dense_matrix_blas.hpp"
+#include "types/dense_matrix/aligned_allocator.h"
+#include "types/dense_matrix/algorithms.hpp"
+typedef maquis::types::dense_matrix<double> Matrix;
 
 #include <alps/hdf5.hpp>
 
-#include "block_matrix/indexing.h"
-#include "mp_tensors/mps.h"
-#include "mp_tensors/mpo.h"
-#include "mp_tensors/contractions.h"
-#include "mp_tensors/mps_mpo_ops.h"
-#include "mp_tensors/mpo_ops.h"
-#include "mp_tensors/mps_initializers.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mpo_ops.h"
+#include "dmrg/mp_tensors/mps_initializers.h"
 
 
-#include "app/hamiltonian.h"
+#include "dmrg/models/hamiltonian.h"
 
-#include "app/te_utils.hpp"
-#include "mp_tensors/te.h"
+#include "dmrg/mp_tensors/te.h"
+#include "te_utils.hpp"
 
 
 using namespace app;
@@ -72,7 +71,7 @@ std::ostream& operator<< (std::ostream& os, MPO<Matrix, grp> const& mpo)
     return os;
 }
 
-Hamiltonian<Matrix, U1> create_H (size_t length)
+Hamiltonian<Matrix, U1> create_H (size_t length, bool with_sign=false)
 {
     typedef Hamiltonian<Matrix, U1> ham;        
     typedef ham::hamterm_t hamterm_t;        
@@ -99,6 +98,7 @@ Hamiltonian<Matrix, U1> create_H (size_t length)
     for (int p=0; p<length-1; ++p) {
         {
             hamterm_t term;
+            term.with_sign = with_sign;
             term.fill_operator = ident;
             term.operators.push_back( std::make_pair(p, -t*create) );
             term.operators.push_back( std::make_pair(p+1, destroy) );
@@ -106,6 +106,7 @@ Hamiltonian<Matrix, U1> create_H (size_t length)
         }
         {
             hamterm_t term;
+            term.with_sign = with_sign;
             term.fill_operator = ident;
             term.operators.push_back( std::make_pair(p, -t*destroy) );
             term.operators.push_back( std::make_pair(p+1, create) );
@@ -118,17 +119,14 @@ Hamiltonian<Matrix, U1> create_H (size_t length)
 
 
 std::vector<MPO<Matrix, grp> >
-getU(std::vector<Hamiltonian<Matrix, grp> > const & split_H, size_t length, bool gen = false)
+getU(std::vector<Hamiltonian<Matrix, grp> > const & split_H, size_t length)
 {
 //    double alpha = -dt;
     double alpha = 1;
-    
+        
     std::vector<MPO<Matrix, grp> > expMPO(split_H.size(), MPO<Matrix, grp>(length));
     for (int i=0; i<split_H.size(); ++i) {
-        if (gen)
-            expMPO[i] = make_exp_mpo_gen(length, split_H[i], alpha);
-        else
-            expMPO[i] = make_exp_mpo(length, split_H[i], alpha);
+        expMPO[i] = make_exp_mpo(length, split_H[i], alpha);
 
     }
     return expMPO;
@@ -139,14 +137,16 @@ int main(int argc, char ** argv)
     size_t length = 4;
     
     Hamiltonian<Matrix, grp> H = create_H(length);
+    Hamiltonian<Matrix, grp> H_signed = create_H(length, true);
 //    cout << "** Hamiltonian **" << endl << H;
     
     std::vector<Hamiltonian<Matrix, grp> > split_H = separate_overlaps(H);
+    std::vector<Hamiltonian<Matrix, grp> > split_H_signed = separate_overlaps(H_signed);
     cout << "length split_H = " << split_H.size() << endl;
     split_H.erase(split_H.begin() + 1);
     MPO<Matrix, grp> mpo = make_mpo(length, split_H[0]);
-    std::vector<MPO<Matrix, grp> > expMPO = getU(split_H, length, false);
-    std::vector<MPO<Matrix, grp> > expMPO_gen = getU(split_H, length, true);
+    std::vector<MPO<Matrix, grp> > expMPO = getU(split_H, length);
+    std::vector<MPO<Matrix, grp> > expMPO_gen = getU(split_H_signed, length);
     
     cout << "** MPO **" << endl << mpo;
     cout << "** expMPO **" << endl << expMPO[0];
