@@ -6,32 +6,32 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/aligned_allocator.h"
-typedef blas::dense_matrix<double> Matrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/dense_matrix_algorithms.h"
+#include "types/dense_matrix/matrix_algorithms.hpp"
+#include "types/dense_matrix/aligned_allocator.h"
+typedef maquis::types::dense_matrix<double> Matrix;
 
-#include "block_matrix/indexing.h"
-#include "mp_tensors/mps.h"
-#include "mp_tensors/mpo.h"
-#include "mp_tensors/contractions.h"
-#include "mp_tensors/mps_mpo_ops.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
 
-#include "mp_tensors/special_mpos.h"
+#include "dmrg/mp_tensors/special_mpos.h"
 
-#include "mp_tensors/ss_optimize.h"
+#include "dmrg/mp_tensors/ss_optimize.h"
 
-typedef NullGroup grp;
+typedef TrivialGroup grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
 typedef Boundary<Matrix, grp> boundary_t;
 
 int main()
 {
-    Index<grp> phys; phys.insert(std::make_pair(NullGroup::Plus, 2));
+    Index<grp> phys; phys.insert(std::make_pair(TrivialGroup::Plus, 2));
     
     int L = 32, M = 10;
     MPS<Matrix, grp> mps(L, M, phys);

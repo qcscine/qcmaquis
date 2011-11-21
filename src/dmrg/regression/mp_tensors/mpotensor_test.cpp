@@ -5,21 +5,21 @@ using std::cerr;
 using std::endl;
 #include "utils/zout.hpp"
 
-#include "block_matrix/indexing.h"
-#include "mp_tensors/mpstensor.h"
-#include "mp_tensors/mpotensor.h"
-#include "mp_tensors/contractions.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/mpotensor.h"
+#include "dmrg/mp_tensors/contractions.h"
 
-#include "mp_tensors/special_mpos.h"
+#include "dmrg/mp_tensors/special_mpos.h"
 
 int main()
 {
-    typedef NullGroup grp;
+    typedef TrivialGroup grp;
     
     Index<grp> physical, aux, mpo_aux;
-    physical.insert(std::make_pair(NullGroup::Plus, 2));
-    aux.insert(std::make_pair(NullGroup::Plus, 10));
-    mpo_aux.insert(std::make_pair(NullGroup::Plus, 1));
+    physical.insert(std::make_pair(TrivialGroup::Plus, 2));
+    aux.insert(std::make_pair(TrivialGroup::Plus, 10));
+    mpo_aux.insert(std::make_pair(TrivialGroup::Plus, 1));
     
     MPOTensor<Matrix, grp> mpo(physical, mpo_aux, mpo_aux);
     MPSTensor<Matrix, grp> mps(physical, aux, aux);

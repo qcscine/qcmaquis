@@ -7,16 +7,16 @@ using std::endl;
 #include <iterator>
 #include <algorithm>
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-typedef blas::dense_matrix<double> Matrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/dense_matrix_algorithms.h"
+#include "types/dense_matrix/algorithms.hpp"
+typedef maquis::types::dense_matrix<double> Matrix;
 
 
-#include "block_matrix/block_matrix.h"
-#include "block_matrix/multi_index.h"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/multi_index.h"
 
 typedef U1 symm;
 

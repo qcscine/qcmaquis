@@ -1,7 +1,0 @@
-#!/bin/bash
-#PBS -l select=1:ncpus=4
-#PBS -l walltime=1:00:00
-#PBS -l cput=1:00:00
-#PBS -j oe
-cd $PBS_O_WORKDIR
-mpirun  -np 4 ./p_dense_matrix.benchmark > out.txt 

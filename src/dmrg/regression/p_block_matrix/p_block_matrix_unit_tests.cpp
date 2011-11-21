@@ -1,9 +1,9 @@
 #include "utils/zout.hpp"
 #include <vector>
-#include "p_dense_matrix/p_dense_matrix.h"
-#include "p_dense_matrix/p_dense_matrix_algorithms.hpp"
-#include "p_dense_matrix/concept/matrix_interface.hpp"
-#include "p_dense_matrix/concept/resizable_matrix_interface.hpp"
+#include "types/p_dense_matrix/p_dense_matrix.h"
+#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
+#include "types/p_dense_matrix/concept/matrix_interface.hpp"
+#include "types/p_dense_matrix/concept/resizable_matrix_interface.hpp"
 
 #define BOOST_TEST_MODULE p_dense_matrix
 #include <boost/test/unit_test.hpp>
@@ -13,12 +13,12 @@
 #include <numeric>
 
 #define M_SIZE 6
-typedef blas::p_dense_matrix<double> Matrix;
+typedef maquis::types::p_dense_matrix<double> Matrix;
 using namespace blas;
 #include <alps/hdf5.hpp>
 
-#include "block_matrix/block_matrix.h"
-#include "block_matrix/block_matrix_algorithms.h"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/block_matrix_algorithms.h"
 
 typedef boost::mpl::list<double> test_types;
 typedef ambient::dim2 dim;
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
 {
     ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
     typedef U1 grp;
-    typedef blas::p_dense_matrix<double> Matrix;
+    typedef maquis::types::p_dense_matrix<double> Matrix;
 
     Matrix d(0,0);
     Matrix e(0,0);

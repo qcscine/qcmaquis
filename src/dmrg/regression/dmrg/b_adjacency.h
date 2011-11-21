@@ -1,7 +1,7 @@
 #ifndef B_ADJACENCY_H
 #define B_ADJACENCY_H
 
-#include "mpos/adjacency.h"
+#include "dmrg/deprecated/mpos/adjacency.h"
 
 namespace b_adj
 {

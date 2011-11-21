@@ -9,15 +9,15 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "dense_matrix/dense_matrix.h"
-#include "dense_matrix/matrix_interface.hpp"
-#include "dense_matrix/resizable_matrix_interface.hpp"
-#include "dense_matrix/dense_matrix_algorithms.h"
-#include "dense_matrix/matrix_algorithms.hpp"
-#include "dense_matrix/dense_matrix_blas.hpp"
-#include "dense_matrix/aligned_allocator.h"
-//typedef blas::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
-typedef blas::dense_matrix<std::complex<double> > Matrix;
+#include "types/dense_matrix/dense_matrix.h"
+#include "types/dense_matrix/matrix_interface.hpp"
+#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/dense_matrix_algorithms.h"
+#include "types/dense_matrix/matrix_algorithms.hpp"
+#include "types/dense_matrix/dense_matrix_blas.hpp"
+#include "types/dense_matrix/aligned_allocator.h"
+//typedef maquis::types::dense_matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
+typedef maquis::types::dense_matrix<std::complex<double> > Matrix;
 
 #include <alps/hdf5.hpp>
 //template<class T, class A>
@@ -46,21 +46,21 @@ typedef blas::dense_matrix<std::complex<double> > Matrix;
 //    std::copy(foo.begin(), foo.end(), v.begin());
 //}
 
-#include "block_matrix/indexing.h"
-#include "mp_tensors/mps.h"
-#include "mp_tensors/mpo.h"
-#include "mp_tensors/contractions.h"
-#include "mp_tensors/mps_mpo_ops.h"
-#include "mp_tensors/mpo_ops.h"
-#include "mp_tensors/mps_initializers.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mpo_ops.h"
+#include "dmrg/mp_tensors/mps_initializers.h"
 
-#include "utils/stream_storage.h"
-#include "utils/logger.h"
+#include "dmrg/utils/stream_storage.h"
+#include "dmrg/utils/logger.h"
 
-#include "mp_tensors/compression.h"
-#include "mp_tensors/evolve.h"
+#include "dmrg/mp_tensors/compression.h"
+#include "dmrg/mp_tensors/evolve.h"
 
-#include "mpos/alps_adjacency.h"
+#include "dmrg/deprecated/mpos/alps_adjacency.h"
 
 #include "b_measurements.h"
 #include "b_adjacency.h"
