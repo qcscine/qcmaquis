@@ -56,31 +56,16 @@ int main(int argc, char* argv[])
     int NUM=std::atoi(argv[1]);
     
     pMatrix pA(NUM,NUM);
-    pMatrix pV(NUM,NUM);
-    pdMatrix pE;
-
-    sMatrix sA(NUM,NUM);
-    sMatrix sV(NUM,NUM);
-    sdMatrix sE;
+    pMatrix pB(NUM,NUM);
+    pMatrix pC(NUM,NUM);
 
     pA.set_init(ambient::random_i<T>);
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-
-    pE.resize(NUM,NUM); 
-    sE.resize(NUM,NUM); 
+    pB.set_init(ambient::random_i<T>);
  
-    maquis::types::algorithms::heev(pA,pV,pE); // to modify the algo we need the reverse inside !
-    maquis::types::algorithms::heev(sA,sV,sE);
-     
-   zout << sE << std::endl;
-   std::cout << pE << std::endl;
-
-   zout << sV << std::endl;
-   std::cout << pV << std::endl;
-   
-   if(sE == pE) zout << " OK 0 " << std::endl;
-   if(sV == pV) zout << " OK 1 " << std::endl;
+    pC = pA + pB;
   
+    std::cout << pC << std::endl;
+   
     ambient::finalize();
 }
 

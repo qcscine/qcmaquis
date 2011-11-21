@@ -6,6 +6,15 @@ cmake_minimum_required (VERSION 2.8)
 #
 ########################################################################
 
+if(MACHINE_CONFIG)
+  if(EXISTS ${MACHINE_CONFIG})
+    message(STATUS "Loading config in " ${MACHINE_CONFIG})
+    include(${MACHINE_CONFIG})
+  else(EXISTS ${MACHINE_CONFIG})
+    message(ERROR " Machine config not found!")
+  endif(EXISTS ${MACHINE_CONFIG})
+endif(MACHINE_CONFIG)
+
 project (ambient)
 set (AMBIENT_VERSION_MAJOR 0)
 set (AMBIENT_VERSION_MINOR 1)
@@ -31,7 +40,7 @@ set (P_DENSE_MATRIX_DIR ${PROJECT_SOURCE_DIR}/../types/src)
 # Compilers mpi
 #
 ########################################################################
-if(NOT MPI_FOUND)
+if(NOT MPI_FOUND) # automatic
     find_package(MPI)
 #    include(CMakeForceCompiler)
 #    CMAKE_FORCE_C_COMPILER(mpiicc ${CMAKE_C_COMPILER_ID})
@@ -43,6 +52,20 @@ endif(NOT MPI_FOUND)
 # Options
 #
 ########################################################################
+
+if(MPI_FOUND) # we used a config file
+set(MPI_COMPILE_FLAGS ${MPI_COMPILE_FLAGS} CACHE STRINGS "")
+set(MPI_INCLUDE_PATH ${MPI_INCLUDE_PATH} CACHE STRINGS "" )
+set(MPI_LINK_FLAGS ${MPI_LINK_FLAGS} CACHE STRINGS "" )
+set(MPI_LIBRARY ${MPI_LIBRARY} CACHE STRINGS "")
+set(MPI_EXTRA_LIBRARY ${MPI_EXTRA_LIBRARY} CACHE STRINGS "")
+set(MPI_CXX_INCLUDE_PATH ${MPI_INCLUDE_PATH})
+set(MPI_CXX_LIBRARIES ${MPI_LIBRARY})
+set(MPIEXEC ${MPIEXEC})
+set(MPIEXEC_NUMPROC_FLAG ${PMPIEXEC_NUMPROC_FLAG} CACHE STRINGS "")
+set(MPIEXEC_PREFLAGS ${MPIEXEC_PREFLAGS} CACHE STRINGS "")
+set(MPIEXEC_POSTFLAGS ${MPIEXEC_POSTFLAGS} CACHE STRINGS "")
+endif(MPI_FOUND)
 
 set (BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (AMBIENT_DEBUG_COMPILE "Create a debug compile of AMBIENT" OFF)
