@@ -40,12 +40,18 @@ set (P_DENSE_MATRIX_DIR ${PROJECT_SOURCE_DIR}/../types/src)
 # Compilers mpi
 #
 ########################################################################
-if(NOT MPI_FOUND) # automatic
+if(NOT MPI_CXX_FOUND) # automatic
     find_package(MPI)
-#    include(CMakeForceCompiler)
-#    CMAKE_FORCE_C_COMPILER(mpiicc ${CMAKE_C_COMPILER_ID})
-#    CMAKE_FORCE_CXX_COMPILER(mpiicpc  ${CMAKE_CXX_COMPILER_ID})
-endif(NOT MPI_FOUND)
+else() # by hand, I only set up the new flags of FindMPI to respect the new norm
+    set(MPI_CXX_INCLUDE_PATH ${MPI_CXX_INCLUDE_PATH} CACHE STRINGS "MPI CXX include path")
+    set(MPI_CXX_LINK_FLAGS ${MPI_CXX_LINK_FLAGS} CACHE STRINGS "MPI CXX linking flags" )
+    set(MPI_CXX_LIBRARIES ${MPI_CXX_LIBRARIES} CACHE STRINGS "MPI CXX libraries to link against")
+    set(MPIEXEC ${MPIEXEC} CACHE STRINGS "Execute MPI applications")
+    set(MPIEXEC_NUMPROC_FLAG ${MPIEXEC_NUMPROC_FLAG} CACHE STRINGS "Flag used by MPI to specify the number of processes for MPIEXEC; the next option will be the number of processes.")
+    set(MPIEXEC_PREFLAGS ${MPIEXEC_PREFLAGS} CACHE STRINGS "These flags will be directly before the executable that is being run by MPIEXEC.")
+    set(MPIEXEC_POSTFLAGS ${MPIEXEC_POSTFLAGS} CACHE STRINGS "These flags will come after all flags given to MPIEXEC.")
+    set(MPIEXEC_MAX_NUMPROCS ${MPIEXEC_MAX_NUMPROCS} "2" CACHE STRING "Maximum number of processors available to run MPI applications.")
+endif(NOT MPI_CXX_FOUND)
 
 ########################################################################
 #
@@ -53,25 +59,12 @@ endif(NOT MPI_FOUND)
 #
 ########################################################################
 
-if(MPI_FOUND) # we used a config file
-set(MPI_COMPILE_FLAGS ${MPI_COMPILE_FLAGS} CACHE STRINGS "")
-set(MPI_INCLUDE_PATH ${MPI_INCLUDE_PATH} CACHE STRINGS "" )
-set(MPI_LINK_FLAGS ${MPI_LINK_FLAGS} CACHE STRINGS "" )
-set(MPI_LIBRARY ${MPI_LIBRARY} CACHE STRINGS "")
-set(MPI_EXTRA_LIBRARY ${MPI_EXTRA_LIBRARY} CACHE STRINGS "")
-set(MPI_CXX_INCLUDE_PATH ${MPI_INCLUDE_PATH})
-set(MPI_CXX_LIBRARIES ${MPI_LIBRARY})
-set(MPIEXEC ${MPIEXEC})
-set(MPIEXEC_NUMPROC_FLAG ${PMPIEXEC_NUMPROC_FLAG} CACHE STRINGS "")
-set(MPIEXEC_PREFLAGS ${MPIEXEC_PREFLAGS} CACHE STRINGS "")
-set(MPIEXEC_POSTFLAGS ${MPIEXEC_POSTFLAGS} CACHE STRINGS "")
-endif(MPI_FOUND)
 
 set (BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (AMBIENT_DEBUG_COMPILE "Create a debug compile of AMBIENT" OFF)
 option (AMBIENT_MAIN_COMPILE "Compile the sandbox " OFF)
 option (AMBIENT_TESTS "Build and execute the AMBIENT regression tests" OFF)
-option (BLAS_MULTITHREADED "Build and execute BLAS-Lapack multithreaded" ON)
+option (BLAS_MULTITHREADED "Build and execute BLAS-Lapack multithreaded" OFF)
 ######################################################################
 # CPU Freq.
 ######################################################################
@@ -102,8 +95,7 @@ endif()
 # Ambient compile 
 #
 ########################################################################
-#include_directories ("${PROJECT_SOURCE_DIR}")
-include_directories ("${MPI_INCLUDE_PATH}")
+include_directories ("${MPI_CXX_INCLUDE_PATH}")
 
 include_directories (src)
 add_subdirectory(src/ambient) 
@@ -117,23 +109,16 @@ add_subdirectory(src/ambient)
 #
 ########################################################################
 
-#set(BLA_VENDOR veclib CACHE STRING "BLAS VENDOR")
-
 if(NOT BLAS_FOUND)
    find_package(BLAS)
    find_package(LAPACK)
-
-#   if(${BLA_VENDOR} STREQUAL "Intel10_64lp")
-#       find_path(MKL_INCLUDE_DIR mkl.h $ENV{MKLROOT}/include)
-#       include_directories("${MKL_INCLUDE_DIR}")
-
-#Find SCaLAPACK and BLACS FOR OPENMPI
-#       find_library(SCALAPACK_LIBRARY mkl_scalapack_lp64  $ENV{MKLROOT}/lib/em64t)
-#       find_library(BLACS_LIBRARY mkl_blacs_openmpi_lp64 $ENV{MKLROOT}/lib/em64t)
-#       find_library(MKL_SEQUENTIAL mkl_sequential $ENV{MKLROOT}/lib/em64t)
-
-#   endif()
 endif(NOT BLAS_FOUND)
+
+if(BLAS_mkl_core_LIBRARY) #because find if does not find the serial
+    find_path(BLAS_mkl_INCLUDE_DIR mkl.h ${BLAS_mkl_core_LIBRARY}/../../../include)
+    find_library(BLAS_mkl_sequential_LIBRARY mkl_sequential ${BLAS_mkl_INCLUDE_DIR}/../lib/intel64/)
+endif()
+
 
 ########################################################################
 #
@@ -143,9 +128,6 @@ endif(NOT BLAS_FOUND)
 
 if(AMBIENT_MAIN_COMPILE)
     add_subdirectory(sandbox)
-#    if(${BLA_VENDOR} STREQUAL "Intel10_64lp")
-#        target_link_libraries(main.out ambient ${SCALAPACK_LIBRARY} ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLACS_LIBRARY} ${MKL_SEQUENTIAL} pthread)
-#    endif()
 endif()
 
 ########################################################################

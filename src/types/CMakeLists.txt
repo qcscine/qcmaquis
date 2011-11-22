@@ -103,7 +103,7 @@ endif(BUILD_MTM)
 if(ENABLE_PARALLEL)
   enable_testing() 
   # first we need BLAS/LAPAACK
-  find_package(MPI) 
+#  find_package(MPI) 
   # second we need Ambient
  
   if(BUILD_AMBIENT)
@@ -124,7 +124,6 @@ if(ENABLE_PARALLEL)
   macro(compile_with_ambient)
     message(ERROR Ambient not enabled!)
   endmacro(compile_with_ambient)
-  message(ERROR To be implemented!!)
 
   #find ambient
   #include_directories(${MAQUIS_AMBIENT_INCLUDE_DIRS})
@@ -170,7 +169,7 @@ add_subdirectory(src)
 
 
 # ALPS I need ALPS for Boost numeric
-set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps installation (or to the Alps source)")
+set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps include, need for boost numeric")
 
 
 if(ENABLE_TESTS)
