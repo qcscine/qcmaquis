@@ -20,6 +20,18 @@
 
 namespace meas_detail {
     
+    // forward declaration
+    template<class Matrix, class SymmGroup>
+	void measure_correlation_(MPS<Matrix, SymmGroup> const & mps,
+							  const Lattice & lat,
+							  block_matrix<Matrix, SymmGroup> const & identity,
+							  block_matrix<Matrix, SymmGroup> const & fill,
+							  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+							  std::vector<std::size_t> const & order,
+							  bool is_nn,
+							  std::vector<double>& dc,
+							  std::vector<std::string>& labels);
+    
 	inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<std::size_t> >& labels)
 	{
 		std::vector<std::string> ret(labels.size());

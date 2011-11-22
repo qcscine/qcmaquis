@@ -5,6 +5,8 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 
+#include "dmrg/utils/iterator_blas1.h"
+
 namespace detail {
 
     template<class Matrix, class SymmGroup>
