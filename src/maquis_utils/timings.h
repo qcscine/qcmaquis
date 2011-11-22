@@ -75,9 +75,7 @@ public:
     {
 		nCounter += 1;
         unsigned long long t1 = getcpuclocks();
-        if (t1 < t0)
-            1+1;
-        else
+        if (t1 > t0)
             val += (getcpuclocks()-t0)/freq;
     }
 
