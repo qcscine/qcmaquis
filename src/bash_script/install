@@ -1,0 +1,97 @@
+#!/bin/bash
+#some path
+PATH_TRUNK=~/MAQUIS/trunk/src/
+ALPS_DIR=/scratch/eiger/ewartt/ALPS/share/alps/
+ALPS_DIR_INCLUDE=/scratch/eiger/ewartt/ALPS/include/
+
+#some environement variable
+echo ${PATH_TRUNK}
+#some export 
+export BOOST_ROOT=/apps/eiger/boost_1_46_1/
+export CC=icc
+export CXX=icpc
+
+#some local variable
+#targer directory
+AMBIENT=ambient/
+DMRG=dmrg/
+TYPES=types/
+
+#compiler and boost
+COMPILER=iccxe/
+VERSION_COMPILER=2011
+
+BOOST=boost/
+VERSION_BOOST=1.46.1
+
+#intel MPI
+WRAPPER_INTEL_MPI=impi/
+VERSION_WRAPPER_INTEL_MPI=4.0
+#mvapich2 and more later 
+WRAPPER_MVAPICH2_MPI=mvapich2/
+VERSION_WRAPPER_MVAPICH2_MPI=1.6-intel
+
+#condfig_file
+EIGER_INTEL='eiger_intel.cmake'
+EIGER_MKL='eiger_mkl.cmake'
+#some functions
+print_construction_init(){
+    echo " ----------------------- "
+    echo " construction cmake      "
+    echo " ${COMPILER} ${WRAPPER}  "
+    echo " ----------------------- "
+}
+
+print_construction_over(){
+    echo " ----------------------- "
+    echo " construction cmake done "
+    echo " ${COMPILER} ${WRAPPER}  "
+    echo " ----------------------- "
+}
+
+create_directory(){
+    for i in ${AMBIENT} ${DMRG} ${TYPES}
+    do
+        cd ${PATH_TRUNK}${i}
+        mkdir build_${WRAPPER}
+    done
+}
+
+create_ambient(){
+    cd ${PATH_TRUNK}${AMBIENT}build_${WRAPPER}
+    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} ..
+}
+
+create_dmrg(){
+    cd ${PATH_TRUNK}${DMRG}build_${WRAPPER}
+    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} -DALPS_DIR=${ALPS_DIR} -DBUILD_REGRESSION=ON -DBUILD_AMBIENT=ON -DUSE_AMBIENT=ON .. 
+}
+
+create_types(){
+    cd ${PATH_TRUNK}${TYPES}build_${WRAPPER}
+    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} -DALPS_DIR=${ALPS_DIR_INCLUDE} -DENABLE_PARALLEL=ON -DENABLE_TESTS=ON -DBUILD_AMBIENT=ON ..
+}
+
+compil(){
+    cd ${PATH_TRUNK}${TYPES}build_${WRAPPER}
+}
+
+create_distrib(){
+    print_construction_init
+    create_directory 
+    create_ambient
+    create_dmrg
+    create_types
+    print_construction_over
+}
+
+module load ${COMPILER}${VERSION_COMPILER} ${BOOST}${VERSION_BOOST} ${WRAPPER_INTEL_MPI}${VERSION_WRAPPER_INTEL_MPI} 
+WRAPPER=${WRAPPER_INTEL_MPI}
+EIGER=${EIGER_INTEL}
+create_distrib
+
+module remove  ${WRAPPER_INTEL_MPI}${VERSION_WRAPPER_INTEL_MPI} 
+module load  ${BOOST}${VERSION_BOOST} ${WRAPPER_MVAPICH2_MPI}${VERSION_WRAPPER_MVAPICH2_MPI} 
+WRAPPER=${WRAPPER_MVAPICH2_MPI}
+EIGER=${EIGER_MKL}
+create_distrib
