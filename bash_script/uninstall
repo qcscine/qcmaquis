@@ -1,0 +1,27 @@
+#!/bin/bash
+
+PATH_TRUNK=~/MAQUIS/trunk/src/
+
+#targer directory
+TYPES=types
+DMRG=dmrg
+AMBIENT=ambient
+
+#wrapper 
+WRAPPER_INTEL_MPI=impi
+WRAPPER_MVAPICH2_MPI=mvapich2
+
+
+delete(){
+     for i in ${AMBIENT} ${DMRG} ${TYPES}
+     do
+         cd ${PATH_TRUNK}${i}
+         rm -rf build_${WRAPPER}
+     done
+}
+
+
+WRAPPER=${WRAPPER_INTEL_MPI}
+delete
+WRAPPER=${WRAPPER_MVAPICH2_MPI}
+delete
