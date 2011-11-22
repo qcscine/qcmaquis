@@ -83,22 +83,6 @@ namespace maquis {
             std::fill(elements(Q).first, elements(Q).second, 0);
             
         }
-        
-        template<typename T, class MemoryBlock>
-        dense_matrix<T, MemoryBlock> exp (dense_matrix<T, MemoryBlock> M, T const & alpha=1)
-        {
-            dense_matrix<T, MemoryBlock> N, tmp;
-            typename associated_real_vector<dense_matrix<T, MemoryBlock> >::type Sv(num_rows(M));
-            
-            heev(M, N, Sv);
-            
-            typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type S(Sv);
-            S = exp(alpha*S);
-            gemm(N, S, tmp);
-            gemm(tmp, maquis::types::conjugate(transpose(N)), M);
-            
-            return M;
-        }
   
         template<typename T, class MemoryBlock, class Generator>
         void generate(dense_matrix<T, MemoryBlock>& m, Generator g)
@@ -153,6 +137,25 @@ namespace maquis {
         * the algos are full rewritten or partly with subset specialization 
         * an alternative implementation is presented inside p_dense_matrix/algorithms/algorithms.hpp
         */
+            
+            
+            
+        template<typename T, class MemoryBlock>
+        dense_matrix<T, MemoryBlock> exp (dense_matrix<T, MemoryBlock> M, T const & alpha=1)
+        {
+            dense_matrix<T, MemoryBlock> N, tmp;
+            typename associated_real_vector<dense_matrix<T, MemoryBlock> >::type Sv(num_rows(M));
+            
+            heev(M, N, Sv);
+            
+            typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type S(Sv);
+            S = exp(alpha*S);
+            gemm(N, S, tmp);
+            gemm(tmp, maquis::types::conjugate(transpose(N)), M);
+            
+            return M;
+        }
+            
         } // end namespace algorithms
     } // end namspace types
 } //end namespace maquis

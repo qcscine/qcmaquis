@@ -60,9 +60,9 @@ namespace ietl
         
     private:
         void sysv(const char& uplo, fortran_int_t n, fortran_int_t nrhs, double a[], fortran_int_t lda, fortran_int_t ipiv[], double b[], fortran_int_t ldb, double work[], fortran_int_t lwork, fortran_int_t& info)
-        { LAPACK_DSYSV(uplo, n, nrhs, a, lda, ipiv, b, ldb, work, lwork, info); };
+        { LAPACK_DSYSV(&uplo, &n, &nrhs, a, &lda, ipiv, b, &ldb, work, &lwork, &info); };
         void sysv(const char& uplo, fortran_int_t n, fortran_int_t nrhs, std::complex<double> a[], fortran_int_t lda, fortran_int_t ipiv[], std::complex<double> b[], fortran_int_t ldb, std::complex<double> work[], fortran_int_t lwork, fortran_int_t& info)
-        { LAPACK_ZHESV(uplo, n, nrhs, a, lda, ipiv, b, ldb, work, lwork, info); };
+        { LAPACK_ZHESV(&uplo, &n, &nrhs, a, &lda, ipiv, b, &ldb, work, &lwork, &info); };
         MATRIX K;
         VS vecspace_;
         int n_;
@@ -258,15 +258,11 @@ namespace ietl
         fortran_int_t ldb=n;
         fortran_int_t lwork=n*n;
         fortran_int_t info;
-#ifndef __FCC__VERSION
-        fortran_int_t ipiv[n];
-        scalar_type work[lwork]; 
-#else
+        
         fortran_int_t *ipiv;
         ipiv = new fortran_int_t[n];
         scalar_type *work; 
         work = new scalar_type[lwork]; 
-#endif        
         // Solve u_hat from K*u_hat = u,  mu = u^star * u_hat
         ietl::copy(u,u_hat);
         sysv(uplo, n, nrhs, Ktmp.data(), lda, ipiv, u_hat.data(), ldb, work, lwork, info);
@@ -301,9 +297,9 @@ namespace ietl
             if ( ietl::two_norm(vec2) < rel_tol * std::abs(norm) )
                 break;
         }
-#ifdef __FCC_VERSION
-        delete [] ipiv, work;
-#endif        
+        
+        delete [] ipiv;
+        delete [] work;
     }
     
     // C L A S S :   J A C O B I _ D A V I D S O N ////////////////////////////////////
@@ -447,31 +443,24 @@ namespace ietl
         fortran_int_t info;
 
         double vl, vu;
-#ifndef __FCC_VERSION
-        double w[n];
-        double z[n];
-        double work[lwork];
-        fortran_int_t iwork[5*n];
-        fortran_int_t ifail[n];
-#else
-        double *w;
-        w = new double[n];
-        double *z;
-        z = new double[n];
-        double *work;
-        work = new double[lwork];
-        fortran_int_t *iwork;
-        iwork = new fortran_int_t[5*n];
-        fortran_int_t *ifail;
-        ifail = new fortran_int_t[n];
-#endif
+
+        double *w = new double[n];
+        double *z = new double[n];
+        double *work = new double[lwork];
+        fortran_int_t *iwork = new fortran_int_t[5*n];
+        fortran_int_t *ifail = new fortran_int_t[n];
+
         LAPACK_DSYEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
-#ifdef __FCC_VERSION
-        delete [] w, z, work, iwork, ifail;
-#endif
+        
         theta = w[0];
         for (int i=0;i<n;i++)
             s[i] = z[i];
+        
+        delete [] w;
+        delete [] z;
+        delete [] work;
+        delete [] iwork;
+        delete [] ifail;
     }
         
     template <class MATRIX, class VS>
@@ -494,34 +483,27 @@ namespace ietl
         fortran_int_t lwork=8*n;
         fortran_int_t info; 
         double vl, vu;
-#ifndef __FCC_VERSION
-        double w[n];
-        std::complex<double> z[n];
-        std::complex<double> work[lwork];
-        fortran_int_t iwork[5*n];
-        fortran_int_t ifail[n];
-        double rwork[7*n];
-#else
-        double *w;
-        w = new double[n];
-        std::complex<double> *z;
-        z = new std::complex<double>[n]
-        std::complex<double> *work;
-        work = new std::complex<double>[lwork];
-        fortran_int_t *iwork;
-        iwork = new fortran_int_t[5*n];
-        fortran_int_t *ifail;
-        ifail = new fortran_int_t[n];
-        double *rwork;
-        rwork = new double[7*n];
-#endif
+
+        double * w = new double[n];
+        std::complex<double> * z = new std::complex<double>[n];
+        std::complex<double> * work = new std::complex<double>[lwork];
+        fortran_int_t *iwork = new fortran_int_t[5*n];
+        fortran_int_t *ifail = new fortran_int_t[n];
+        double * rwork = new double[7*n];
+
         LAPACK_ZHEEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, rwork, iwork, ifail, &info);
-#ifdef __FCC_VERSION
-        delete [] w, z, work, iwork, ifail, rwork;
-#endif        
+            
         theta = w[0];
         for (int i=0;i<n;i++)
             s[i] = z[i];
+        
+        
+        delete [] w;
+        delete [] z;
+        delete [] work;
+        delete [] iwork;
+        delete [] ifail;
+        delete [] rwork;
     }
     
 }
