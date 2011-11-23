@@ -155,7 +155,7 @@ include(${PROJECT_SOURCE_DIR}/config/cpu_freq.cmake)
 # Parsing user options
 ######################################################################
 
-set(DMRG_LIBRARIES alps boost ${HDF5_LIBRARIES})
+set(DMRG_LIBRARIES alps ${MAQUIS_Boost_LIBRARIES} ${HDF5_LIBRARIES})
 
 
 # BLAS/LAPACK selector
