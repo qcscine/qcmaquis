@@ -323,7 +323,7 @@ polynomial<CoeffType>  inner_product(std::vector<polynomial<CoeffType> > const& 
 
 
 #ifdef _OPENMP
-    polynomial<CoeffType> result[omp_get_max_threads()];
+    std::vector < polynomial<CoeffType> > result(omp_get_max_threads());
     #pragma omp parallel for
     for(int i=0; i < a.size();++i){
         result[omp_get_thread_num()] += a[i]*b[i];
@@ -339,7 +339,7 @@ polynomial<CoeffType>  inner_product(std::vector<polynomial<CoeffType> > const& 
     typename std::vector<polynomial<CoeffType> >::const_iterator it = a.begin();
     typename std::vector<polynomial<CoeffType> >::const_iterator it_b = b.begin();
     while( it != a.end() )
-    {                         #endif
+    {
         result += *it * *it_b;
         ++it;
         ++it_b;
