@@ -290,6 +290,10 @@ large_int factorial(unsigned int i)
 
 int main(int argc, char** argv)
 {
+#ifdef VLI_USE_GPU
+    gpu::gpu_manager* GPU;
+    GPU->instance();
+#endif
     std::string name(argv[3]);
     Timer A(name);    
     A.begin();
