@@ -12,13 +12,13 @@
 #define VLI_NUMBER_CPU_HPP
 #include "vli/detail/bit_masks.hpp"
 #include "vli/function_hooks/vli_number_cpu_function_hooks.hpp"
-#include <boost/lexical_cast.hpp>
-#include <ostream>
+//#include <boost/lexical.h>
 #include <vector>
 #include <string>
 #include <cassert>
 #include <cstring>
 #include <ostream>
+#include <sstream>
 #include <boost/swap.hpp>
 
 
@@ -341,9 +341,9 @@ namespace vli
             value-= digit*dec;
 
             if(ten_exp <= 0)
-                return boost::lexical_cast<std::string>(digit);
+                return to_string(digit); //boost::lexical_cast<std::string>(digit);
             else
-                return boost::lexical_cast<std::string>(digit)+get_str_helper_inplace(value,ten_exp-1);
+                return to_string(digit)+get_str_helper_inplace(value,ten_exp-1);// boost::lexical_cast<std::string>(digit)+get_str_helper_inplace(value,ten_exp-1);
         }
 
 
@@ -355,6 +355,14 @@ namespace vli
         BaseInt data_[Size];
 
     };
+
+    template <class T>
+    inline std::string to_string (const T& t)
+    {
+        std::stringstream ss; 
+        ss << t;
+        return ss.str();
+    }
     
     /**
      multiply and addition operators, suite ...

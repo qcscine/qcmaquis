@@ -55,8 +55,16 @@ namespace detail
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         assert(v1.size() == v2.size());
         std::size_t size_v = v1.size();
-        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
-        
+    
+        /**
+        * the first version used an array:
+        * polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[omp_get_max_threads()];
+        * GCC and C99 allow an array's size to be determined at run time. This extension is not permitted in standard C++.
+        * so vector !
+        */
+
+        std::vector<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > res(omp_get_max_threads()); 
+       
         #pragma omp parallel for
         for(std::size_t i=0 ; i < size_v ; ++i){
             res[omp_get_thread_num()] += v1[i]*v2[i];
@@ -79,6 +87,25 @@ namespace detail
             res += v1[i]*v2[i];
         return res;
     }
+
+    template <class BaseInt, std::size_t Size, unsigned int Order>
+    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
+    inner_product_accp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
+                   vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+        assert(v1.size() == v2.size());
+        std::size_t size_v = v1.size();
+        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[size_v];
+        
+        #pragma acc for parallel independent 
+        for(std::size_t i=0 ; i < size_v ; ++i){
+            res[i] = v1[i]*v2[i];
+        }
+
+        //for(int i=1; i < omp_get_max_threads(); ++i)
+        for(int i=1; i < size_v; ++i)
+            res[0]+=res[i];
+        return res[0];
+    }
 } // end namespace detail
 
     template <class BaseInt, std::size_t Size, unsigned int Order>
@@ -86,7 +113,6 @@ namespace detail
     inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         // TODO this is a little dirty and could be done better
-        // C - Can we template on a function ???
 #ifdef _OPENMP
 #ifdef VLI_USE_GPU
         return detail::inner_product_openmp_gpu(v1,v2);
