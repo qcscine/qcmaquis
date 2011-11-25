@@ -76,7 +76,7 @@ class Timer
 {
 public:
     Timer(std::string name_)
-    : val(0), name(name_), freq(CPU_FREQ),nCounter(0)
+    : val(0), name(name_), freq((long long unsigned int)CPU_FREQ), nCounter(0)
     { }
     
     ~Timer() { zout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
