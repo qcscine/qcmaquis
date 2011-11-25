@@ -2,14 +2,15 @@
 
 PATH_TRUNK=~/MAQUIS/trunk/src/
 
-#targer directory
+#target directory
 TYPES=types
 DMRG=dmrg
 AMBIENT=ambient
 
 #wrapper 
-WRAPPER_INTEL_MPI=impi
-WRAPPER_MVAPICH2_MPI=mvapich2
+WRAPPER_INTEL_MPI=intel_impi
+WRAPPER_MVAPICH2_MPI=intel_mvapich2
+WRAPPER_OPENMPI_MPI=intel_openmpi
 
 
 delete(){
@@ -24,4 +25,6 @@ delete(){
 WRAPPER=${WRAPPER_INTEL_MPI}
 delete
 WRAPPER=${WRAPPER_MVAPICH2_MPI}
+delete
+WRAPPER=${WRAPPER_OPENMPI_MPI}
 delete
