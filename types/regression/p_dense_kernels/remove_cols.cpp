@@ -30,9 +30,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_cols, T, test_types)
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
-    int col =  Rd.IntRd()%(sA.num_rows());  
-    sA.remove_columns(col,1); // C - should be cols
-    pA.remove_cols(col,1);
+    int col =  Rd.IntRd()%(sA.num_cols());  
+    sA.remove_columns(1,col); // C - should be cols
+    pA.remove_cols(1,col);
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
