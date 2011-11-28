@@ -59,13 +59,40 @@ int main(int argc, char* argv[])
     pMatrix pB(NUM,NUM);
     pMatrix pC(NUM,NUM);
 
-    pA.set_init(ambient::random_i<T>);
-    pB.set_init(ambient::random_i<T>);
- 
-    pC = pA + pB;
-  
-    std::cout << pC << std::endl;
-   
-    ambient::finalize();
-}
+    sMatrix sA(NUM,NUM);
+    sMatrix sB(NUM,NUM);
+    sMatrix sC(NUM,NUM);
 
+    pA.set_init(ambient::random_i<double>);
+    pB.set_init(ambient::random_i<double>);
+    pC.set_init(ambient::null_i<double>);
+
+    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
+//    sC = maquis::traits::matrix_cast<sMatrix>(pC); // playout is inside the cast
+ 
+    sC = sA + sB; 
+    pC = pA + pB; 
+//    zout << sA << std::endl;  
+    zout << " --------sA------------ " << std::endl;
+    zout << sA << std::endl;  
+    zout << " --------sB------------ " << std::endl;
+    zout << sB << std::endl;  
+    zout << " --------sC------------ " << std::endl;
+    zout << sC << std::endl;  
+    zout << " ---------------------- " << std::endl;
+    zout << " --------pA------------ " << std::endl;
+    std::cout << pA << std::endl;  
+    zout << " --------pB------------ " << std::endl;
+    std::cout << pB << std::endl;  
+    zout << " --------pC------------ " << std::endl;
+    std::cout << pC << std::endl;  
+//    zout << " ---------------------- " << std::endl;
+//    std::cout << pC << std::endl;  
+/*   
+    if( pC == sC )
+        zout << " ok "   
+ */
+    ambient::finalize();
+
+}
