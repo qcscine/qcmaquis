@@ -424,6 +424,14 @@ template<class T> boost::array<T, 1> _(T const & a)
     return r;
 }
 
+template<class T> boost::array<T, 2> _(T const & a, T const & b)
+{ 
+    boost::array<T, 2> r;
+    r[0] = a;
+    r[1] = b;
+    return r;
+}
+
 #define IMPL_COMMA(tpl, type) \
 tpl boost::array<type, 2> operator^(type const & a, type const & b) { \
     boost::array<type, 2> ret; \
@@ -466,5 +474,6 @@ boost::array<T, L+1> operator^(T const & a, boost::array<T, L> const & b)
 		ret[i+1] = b[i];
 	return ret;
 }
+
 
 #endif
