@@ -19,7 +19,7 @@
 
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( remove_cols, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( remove_first_col, T, test_types)
 {
     ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
 
@@ -30,9 +30,62 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_cols, T, test_types)
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
+    sA.remove_columns(T::null,1);
+    pA.remove_cols(T::null,1);
+
+    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_col, T, test_types)
+{
+    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+
+    pMatrix pA(T::valuex,T::valuey);
+    sMatrix sA(T::valuex,T::valuey);
+
+    pA.set_init(ambient::random_i<typename T::dbl>);
+
+    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+
+    sA.remove_columns(T::valuex,1);
+    pA.remove_cols(T::valuex,1);
+
+    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( remove_one_col, T, test_types)
+{
+    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+
+    pMatrix pA(T::valuex,T::valuey);
+    sMatrix sA(T::valuex,T::valuey);
+
+    pA.set_init(ambient::random_i<typename T::dbl>);
+
+    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     int col =  Rd.IntRd()%(sA.num_cols());  
-    sA.remove_columns(1,col); // C - should be cols
-    pA.remove_cols(1,col);
+
+    sA.remove_columns(col,1);
+    pA.remove_cols(col,1);
+
+    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_cols, T, test_types)
+{
+    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+
+    pMatrix pA(T::valuex,T::valuey);
+    sMatrix sA(T::valuex,T::valuey);
+
+    pA.set_init(ambient::random_i<typename T::dbl>);
+
+    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    int col =  Rd.IntRd()%(sA.num_cols()); 
+    int numcols = T::valuey - col -1;   
+
+    sA.remove_columns(col,numcols);
+    pA.remove_cols(col,numcols);
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
