@@ -1,6 +1,10 @@
+// C - Note about the vectorization, the maximum of iteration  is calculated outside the for loop, to help the intel compiler to vectorize
+
 #include "numeric.h" // Blas/Lapack signature
 
 #define NODE_COUNT 1
+
+
 
 // C - w, alfa are not nested into dim2 because it is not 2D coordinates
 template <typename T, typename V>
@@ -205,14 +209,16 @@ void resize_c(p_dense_matrix<double>& a, const size_t& rows, const size_t& cols)
 void sqrt_diagonal_c(pinned p_dense_matrix<double>& a)
 {
     double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
-    for(int i=0; i < get_mem_t_dim(a).y; i++)
+    std::size_t size = get_mem_t_dim(a).y;
+    for(int i=0; i < size; i++)
         ad[i] = sqrt(ad[i]);
 }
 
 void exp_diagonal_c(pinned p_dense_matrix<double>& a)
 {
     double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
-    for(int i=0; i < get_mem_t_dim(a).y; i++)
+    std::size_t size = get_mem_t_dim(a).y;
+    for(int i=0; i < size; i++)
         ad[i] = exp(ad[i]);
 }
 
@@ -224,7 +230,8 @@ void copy_after_c(pinned p_dense_matrix<double>& ac, const size_t& pos, const p_
 void copy_after_std_c(std::vector<double>*& ac, const size_t& pos, pinned const p_dense_matrix<double>& a)
 { // C - bug if execution independant
     double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
-    for(int i=0; (pos+i) < std::min(ac->size(),pos+get_mem_t_dim(a).y); i++){
+    std::size_t size = std::min(ac->size(),pos+get_mem_t_dim(a).y);
+    for(int i=0; (pos+i) < size; i++){
         (*ac)[pos+i] = ad[i];
     }
 }
@@ -342,7 +349,8 @@ void scalar_norm_c(pinned const p_dense_matrix<double>& a, double*& norm)
     int i = get_block_id(a).y;
     int j = get_block_id(a).x;
     double* ad = current(a)(i,j);
-    for(size_t ii=0; ii < get_mem_t_dim(a).x*get_mem_t_dim(a).y; ii++)
+    std::size_t size = get_mem_t_dim(a).x*get_mem_t_dim(a).y;
+    for(size_t ii=0; ii < size; ii++)
         summ += ad[ii]*ad[ii];
 
     *norm += summ;
@@ -355,7 +363,8 @@ void scalar_overlap_c(pinned const p_dense_matrix<double>& a, const p_dense_matr
     int j = get_block_id(a).x;
     double* ad = current(a)(i,j);
     double* bd = current(b)(i,j);
-    for(size_t ii=0; ii < get_mem_t_dim(a).x*get_mem_t_dim(a).y; ii++)
+    std::size_t size = get_mem_t_dim(a).x*get_mem_t_dim(a).y;
+    for(size_t ii=0; ii < size; ii++)
         summ += ad[ii]*bd[ii];
     *overlap += summ;
 }
@@ -364,7 +373,8 @@ void add_c(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
 {
     double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
     double* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
-    for(int i=0; i < get_mem_t_dim(a).x*get_mem_t_dim(a).y; i++)
+    std::size_t size = get_mem_t_dim(a).x*get_mem_t_dim(a).y;
+    for(int i=0; i < size; i++)
         ad[i]+=bd[i];
 }
 
@@ -372,14 +382,16 @@ void sub_c(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
 {
     double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
     double* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
-    for(int i=0; i < get_mem_t_dim(a).x*get_mem_t_dim(a).y; i++)
+    std::size_t size = get_mem_t_dim(a).x*get_mem_t_dim(a).y;
+    for(int i=0; i < size; i++)
         ad[i] -= bd[i];
 }
 
 void scale_c(pinned p_dense_matrix<double>& m, const double& t)
 {
     double* md   = current(m)(get_block_id(m).y, get_block_id(m).x);
-    for(int i=0; i < get_mem_t_dim(m).x*get_mem_t_dim(m).y; i++)
+    std::size_t size = get_mem_t_dim(m).x*get_mem_t_dim(m).y;
+    for(int i=0; i < size; i++)
         md[i] *= t;
 }
 
