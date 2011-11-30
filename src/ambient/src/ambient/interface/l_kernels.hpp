@@ -135,7 +135,7 @@ void cast_to_dense_l(std::vector<double>*& ac, pinned const p_dense_matrix<doubl
 
 void cast_to_p_dense_l(const std::vector<double>*& ac, pinned p_dense_matrix<double>& a, const size_t& m, const size_t& n, const size_t& lda)
 {
-    scope_select("* from ambient as cast_to_p_dense where master is 0");
+    scope_select("1 from ambient as cast_to_p_dense where master is 0");
     if(!scope.involved()) return;
 
     block_2d_cycle_assign(a);
@@ -339,7 +339,7 @@ void transpose_l(pinned p_dense_matrix<double>& transposed, const p_dense_matrix
 
 void validation_l(pinned const p_dense_matrix<double>& a, const p_dense_matrix<double>& b, int*& bl) // C - bl <=> boolean 
 {
-    scope_select("* from ambient as validation where master is 0 and breakdown contains "+ get_id(a));
+    scope_select("2 from ambient as validation where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
     //gzout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; info(a_ambient); info(b_scalapack);
 
@@ -411,15 +411,6 @@ void associated_copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<d
     //gzout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; info(ac); info(a);
 
     block_outright_assign(ac);
-    block_outright_assign(a);
-}
-
-void associated_find_if_l(pinned const p_dense_matrix<double>& a, const double& value, size_t*& out_value)
-{
-    scope_select("* from ambient as associated_find_if where master is 0");
-    if(!scope.involved()) return;
-    //gzout << "2dbcd in associated_find_if ("<< ambient::rank() <<"):\n"; info(a);
-
     block_outright_assign(a);
 }
 
