@@ -210,7 +210,7 @@ struct contraction {
         }
         loop1_timer.end();
         
-        Index<SymmGroup> physical_i = mps.site_dim(), left_i, right_i = mps.col_dim();
+        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = mps.col_dim();
         
         Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.col_dim());
@@ -242,13 +242,9 @@ struct contraction {
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b1];
                     
-                    left_i = left.data_[b1].right_basis();
-                    
                     // note to self: I think these are always the same
                     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
                     ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
-                    
-                    Index<SymmGroup> out_left_i = physical_i * left_i;
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
@@ -283,7 +279,7 @@ struct contraction {
                                     continue;
                                 if (! mps.col_dim().has(right_i[r].first) )
                                     continue;
-                                if (! out_left_i.has(out_l_charge) )
+                                if (! mps.data().left_basis().has(out_l_charge) )
                                     continue;
                                 
                                 size_t in_left_offset = in_left_pb(physical_i[s1].first, left_i[l].first);
@@ -299,7 +295,7 @@ struct contraction {
                                 
                                 if (pretend)
                                     ret.data_[b2].reserve(out_l_charge, out_r_charge,
-                                                          out_left_i.size_of_block(out_l_charge),
+                                                          mps.data().left_basis().size_of_block(out_l_charge),
                                                           right_i[r].second);
                             }
                         }
@@ -337,7 +333,7 @@ struct contraction {
             swap(t[b], tmp);
         }
         
-        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i;
+        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = mps.col_dim();
         
         Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.row_dim());
@@ -367,16 +363,12 @@ struct contraction {
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b2];
                     
-                    right_i = right.data_[b2].right_basis();
-                    
                     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                              -boost::lambda::_1, boost::lambda::_2));
                     ProductBasis<SymmGroup> in_right_pb(physical_i, right.data_[b2].right_basis(),
                                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                             -boost::lambda::_1, boost::lambda::_2));
-                    
-                    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
@@ -409,7 +401,7 @@ struct contraction {
                                     continue;
                                 if (! mps.row_dim().has(left_i[l].first) )
                                     continue;
-                                if (! out_right_i.has(out_r_charge) )
+                                if (! mps.data().right_basis().has(out_r_charge) )
                                     continue;
                                 
                                 size_t in_right_offset = in_right_pb(physical_i[s1].first, right_i[r].first);
@@ -427,7 +419,7 @@ struct contraction {
                                 if (pretend)
                                     ret.data_[b1].reserve(out_l_charge, out_r_charge,
                                                           left_i[l].second,
-                                                          out_right_i.size_of_block(out_r_charge));
+                                                          mps.data().right_basis().size_of_block(out_r_charge));
                             }
                         }
                     }
