@@ -56,8 +56,9 @@ struct contraction {
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
         
-        assert(right.left_basis() == bra_tensor.right_i);
-        assert(right.right_basis() == ket_tensor.right_i);
+//        assert(right.left_basis() == bra_tensor.right_i);
+//        assert(right.right_basis() == ket_tensor.right_i);
+        assert(ket_tensor.phys_i == bra_tensor.phys_i);
         
         bra_tensor.make_right_paired();
         ket_tensor.make_left_paired();
@@ -336,7 +337,7 @@ struct contraction {
             swap(t[b], tmp);
         }
         
-        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = mps.col_dim();
+        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i;
         
         Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.row_dim());
@@ -366,12 +367,16 @@ struct contraction {
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b2];
                     
+                    right_i = right.data_[b2].right_basis();
+                    
                     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                              -boost::lambda::_1, boost::lambda::_2));
                     ProductBasis<SymmGroup> in_right_pb(physical_i, right.data_[b2].right_basis(),
                                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                             -boost::lambda::_1, boost::lambda::_2));
+                    
+                    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
@@ -404,7 +409,7 @@ struct contraction {
                                     continue;
                                 if (! mps.row_dim().has(left_i[l].first) )
                                     continue;
-                                if (! mps.data().right_basis().has(out_r_charge) )
+                                if (! out_right_i.has(out_r_charge) )
                                     continue;
                                 
                                 size_t in_right_offset = in_right_pb(physical_i[s1].first, right_i[r].first);
@@ -422,7 +427,7 @@ struct contraction {
                                 if (pretend)
                                     ret.data_[b1].reserve(out_l_charge, out_r_charge,
                                                           left_i[l].second,
-                                                          mps.data().right_basis().size_of_block(out_r_charge));
+                                                          out_right_i.size_of_block(out_r_charge));
                             }
                         }
                     }
