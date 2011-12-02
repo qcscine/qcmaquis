@@ -210,7 +210,6 @@ namespace generate_mpo
                 size_t first_use_b = (it->first == minp ? 0 : use_b);
                 size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert( it->first < prempo.size() );
-                prempo[it->first].push_back( make_tuple(first_use_b, second_use_b, it->second) );
                 if (minp != maxp) { // bond term
                     prempo[it->first].push_back( make_tuple(first_use_b, second_use_b, it->second) );
                     used_dims[it->first].insert(use_b);
