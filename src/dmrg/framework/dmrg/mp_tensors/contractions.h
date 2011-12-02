@@ -30,8 +30,6 @@ struct contraction {
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
         
-//        assert(left.left_basis() == bra_tensor.left_i);
-//        assert(left.right_basis() == ket_tensor.left_i);
         assert(ket_tensor.phys_i == bra_tensor.phys_i);
         
         bra_tensor.make_left_paired();
@@ -56,8 +54,6 @@ struct contraction {
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
         
-//        assert(right.left_basis() == bra_tensor.right_i);
-//        assert(right.right_basis() == ket_tensor.right_i);
         assert(ket_tensor.phys_i == bra_tensor.phys_i);
         
         bra_tensor.make_right_paired();
@@ -184,12 +180,16 @@ struct contraction {
     static Boundary<Matrix, SymmGroup>
     left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> const & mps,
                              Boundary<Matrix, SymmGroup> const & left,
-                             MPOTensor<Matrix, SymmGroup> const & mpo)
+                             MPOTensor<Matrix, SymmGroup> const & mpo,
+                             Index<SymmGroup> const * in_low = NULL)
     {
         static Timer
         reshape_timer("Reshape in lbtm"),
         loop_timer("Prod with MPO in lbtm"),
         loop1_timer("Prod of left and MPS in lbtm");
+        
+        if (in_low == NULL)
+            in_low = &mps.row_dim();
         
         mps.make_right_paired();
         
@@ -210,7 +210,7 @@ struct contraction {
         }
         loop1_timer.end();
         
-        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = mps.col_dim();
+        Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
         
         Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.col_dim());
@@ -246,6 +246,8 @@ struct contraction {
                     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
                     ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
                     
+                    Index<SymmGroup> out_left_i = physical_i * left_i;
+                    
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
                         assert( physical_i.has(W.left_basis()[w_block].first) );
@@ -279,7 +281,7 @@ struct contraction {
                                     continue;
                                 if (! mps.col_dim().has(right_i[r].first) )
                                     continue;
-                                if (! mps.data().left_basis().has(out_l_charge) )
+                                if (! out_left_i.has(out_l_charge) )
                                     continue;
                                 
                                 size_t in_left_offset = in_left_pb(physical_i[s1].first, left_i[l].first);
@@ -295,7 +297,7 @@ struct contraction {
                                 
                                 if (pretend)
                                     ret.data_[b2].reserve(out_l_charge, out_r_charge,
-                                                          mps.data().left_basis().size_of_block(out_l_charge),
+                                                          out_left_i.size_of_block(out_l_charge),
                                                           right_i[r].second);
                             }
                         }
@@ -312,10 +314,14 @@ struct contraction {
     static Boundary<Matrix, SymmGroup>
     right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> const & mps,
                               Boundary<Matrix, SymmGroup> const & right,
-                              MPOTensor<Matrix, SymmGroup> const & mpo)
+                              MPOTensor<Matrix, SymmGroup> const & mpo,
+                              Index<SymmGroup> const * in_low = NULL)
     {
         static Timer timer("right_boundary_tensor_mpo");
         timer.begin();
+        
+        if (in_low == NULL)
+            in_low = &mps.col_dim();
         
         mps.make_left_paired();
         
@@ -333,7 +339,7 @@ struct contraction {
             swap(t[b], tmp);
         }
         
-        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = mps.col_dim();
+        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low;
         
         Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.row_dim());
@@ -363,12 +369,16 @@ struct contraction {
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b2];
                     
+                    //right_i = right.data_[b2].right_basis();
+                    
                     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                              -boost::lambda::_1, boost::lambda::_2));
                     ProductBasis<SymmGroup> in_right_pb(physical_i, right.data_[b2].right_basis(),
                                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                             -boost::lambda::_1, boost::lambda::_2));
+                    
+                    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
@@ -401,7 +411,7 @@ struct contraction {
                                     continue;
                                 if (! mps.row_dim().has(left_i[l].first) )
                                     continue;
-                                if (! mps.data().right_basis().has(out_r_charge) )
+                                if (! out_right_i.has(out_r_charge) )
                                     continue;
                                 
                                 size_t in_right_offset = in_right_pb(physical_i[s1].first, right_i[r].first);
@@ -419,7 +429,7 @@ struct contraction {
                                 if (pretend)
                                     ret.data_[b1].reserve(out_l_charge, out_r_charge,
                                                           left_i[l].second,
-                                                          mps.data().right_basis().size_of_block(out_r_charge));
+                                                          out_right_i.size_of_block(out_r_charge));
                             }
                         }
                     }
@@ -442,7 +452,7 @@ struct contraction {
     {
         static Timer timer("overlap_mpo_left_step");
         timer.begin();
-        Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo);
+        Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
         
         bra_tensor.make_left_paired();
         Boundary<Matrix, SymmGroup> ret;
@@ -454,8 +464,11 @@ struct contraction {
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
+        {
+//            cout << "s*a (bou)" << lbtm.data_[b].left_basis() <<endl;
+//            cout << "s*a (bra)" << bra_tensor.data().left_basis() <<endl;
             gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
-        
+        }
         timer.end();
 
         return ret;
@@ -471,7 +484,7 @@ struct contraction {
         static Timer timer("overlap_mpo_right_step");
         timer.begin();
         
-        Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo);
+        Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
         
         bra_tensor.make_right_paired();
         Boundary<Matrix, SymmGroup> ret;
