@@ -39,7 +39,12 @@ namespace gpu {
         {
             printf ("cublas invalid value \n ");
         }	
-        
+
+        if (status == CUBLAS_STATUS_ARCH_MISMATCH) 
+        {
+            printf ("device does not support double-precision \n ");
+        }	
+
         if (status == CUBLAS_STATUS_EXECUTION_FAILED) 
         {
             printf ("cublas execution failed \n ");
