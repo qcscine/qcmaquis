@@ -18,7 +18,8 @@
 #include "types/dense_matrix/aligned_allocator.h"
 
 #ifdef USE_MTM
-#include "types/dense_matrix/mt_matrix.h"
+#include "types/mt_matrix/mt_matrix.h"
+#include "types/mt_matrix/algorithms.hpp"
 #endif
 
 #include "dmrg/models/factory.h"
@@ -41,8 +42,8 @@ namespace app {
 	
 	// MT Matrix
 #ifdef USE_MTM
-	typedef mt_matrix<double> mtmatrix1;
-	typedef mt_matrix<std::complex<double> > cmtmatrix1;
+	typedef maquis::types::mt_matrix<double> mtmatrix1;
+	typedef maquis::types::mt_matrix<std::complex<double> > cmtmatrix1;
 #endif
 
 	// Definition of init function

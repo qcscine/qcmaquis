@@ -16,10 +16,24 @@ using std::endl;
 #include "types/dense_matrix/dense_matrix_blas.hpp"
 #include "types/dense_matrix/aligned_allocator.h"
 
+#ifdef USE_MTM
+#include "types/mt_matrix/mt_matrix.h"
+#include "types/mt_matrix/algorithms.hpp"
+
+#ifdef IMG_ONLY
+typedef maquis::types::mt_matrix<double> Matrix;
+#else
+typedef maquis::types::mt_matrix<std::complex<double> > Matrix;
+#endif
+
+#else
+
 #ifdef IMG_ONLY
 typedef maquis::types::dense_matrix<double> Matrix;
 #else
 typedef maquis::types::dense_matrix<std::complex<double> > Matrix;
+#endif
+
 #endif
 
 #include <alps/hdf5.hpp>

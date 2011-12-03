@@ -35,7 +35,8 @@ using std::endl;
 
 #ifdef USE_MTM
 #define USE_MTM_MAIN
-#include "types/dense_matrix/mt_matrix.h"
+#include "types/mt_matrix/mt_matrix.h"
+#include "types/mt_matrix/algorithms.hpp"
 typedef maquis::types::mt_matrix<double> Matrix;
 #else
 typedef maquis::types::dense_matrix<double> Matrix;
