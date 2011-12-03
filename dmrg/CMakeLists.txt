@@ -33,6 +33,7 @@ option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
 option(ENABLE_OMP "Enable OpenMP" OFF)
 option(USE_AMBIENT "Enable ambient" OFF)
 option(USE_MTM "Use multi threads matrix class" OFF)
+option(USE_GPU "Use GPU in libmtm" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
 #option(BUILD_TESTS "Build regression tests" OFF)
@@ -195,7 +196,18 @@ endif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
 
 if(USE_MTM)
   add_definitions(-DUSE_MTM)
+  if(USE_GPU)
+    find_package(CUDA)
+    include_directories(${CUDA_INCLUDE_DIRS})
+    list(APPEND DMRG_LIBRARIES ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES})
+    add_definitions(-DUSE_GPU)
+  endif(USE_GPU)
+else(USE_MTM)
+  if(USE_GPU)
+    message(STATUS "USE_GPU only works if USE_MTM is enabled")
+  endif(USE_GPU)
 endif(USE_MTM)
+
 
 
 # OpenMP
