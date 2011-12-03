@@ -29,6 +29,29 @@ namespace maquis {
     }
 }
 
+namespace detail {
+    
+    template <class T>
+    void gpu_gemm(maquis::types::dense_matrix<T> const & A,
+                  maquis::types::dense_matrix<T> const & B,
+                  maquis::types::dense_matrix<T> & C)
+    {
+        if (A.num_cols() > GEMM_GPU_THRESHOLD)
+            gpu::matrix_matrix_multiply(A, B, C, 0.);
+        else
+            gemm(A, B, C);
+    }
+    
+    template <class T>
+    void gpu_gemm(maquis::types::dense_matrix<std::complex<T> > const & A,
+                  maquis::types::dense_matrix<std::complex<T> > const & B,
+                  maquis::types::dense_matrix<std::complex<T> > & C)
+    {
+        gemm(A, B, C);
+    }
+    
+}
+
 template<typename T>
 class MtmGemmRequest : public MtmRequest
 {
@@ -51,10 +74,7 @@ public:
         static Timer timer("gemm requested");
         timer.begin();
 #ifdef USE_GPU
-        if (A_.data_.num_cols() > GEMM_GPU_THRESHOLD)
-            gpu::matrix_matrix_multiply(A_.data_, B_.data_, C_.data_, 0.);
-        else
-            gemm(A_.data_, B_.data_, C_.data_);
+        detail::gpu_gemm(A_.data_, B_.data_, C_.data_);
 #else
         gemm(A_.data_, B_.data_, C_.data_);
 #endif
