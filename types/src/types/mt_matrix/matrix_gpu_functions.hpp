@@ -3,7 +3,7 @@
 #define M_MATRIX_GPU_FUNCTIONS
 
 #include <vector>
-#include "dense_matrix.h"
+#include "types/dense_matrix/dense_matrix.h"
 
 //#include "cuda_runtime_api.h" // needed for streams
 #include "cublas.h"
@@ -29,7 +29,7 @@ namespace gpu {
         {
             printf ("cublas  alloc failed \n ");
         }	
-
+        
         if (status == CUBLAS_STATUS_MAPPING_ERROR) 
         {
             printf ("cublas  mapping error \n ");
@@ -49,10 +49,10 @@ namespace gpu {
     }
     
     
-    inline void matrix_matrix_multiply(maquis::types::dense_matrix<double,std::vector<double, std::allocator<double> > > const & lhs,
-                                maquis::types::dense_matrix<double,std::vector<double, std::allocator<double> > > const & rhs,
-                                maquis::types::dense_matrix<double,std::vector<double, std::allocator<double> > >  & res,
-                                double ratio=0.)
+    inline void matrix_matrix_multiply(maquis::types::dense_matrix<double> const & lhs,
+                                       maquis::types::dense_matrix<double> const & rhs,
+                                       maquis::types::dense_matrix<double>  & res,
+                                       double ratio=0.)
     {
         /** ration value
          0.0 = full gpu
@@ -67,14 +67,14 @@ namespace gpu {
         timer.begin();
         
         cublasStatus status;
-//        cudaStream_t stream[3];
-//        for (int i = 0; i < 3; ++i)
-//            cudaStreamCreate(&stream[i]);
+        //        cudaStream_t stream[3];
+        //        for (int i = 0; i < 3; ++i)
+        //            cudaStreamCreate(&stream[i]);
         
         double * pDataA = 0;
         double * pDataB = 0;
         double * pDataC = 0;
-		        
+        
         int n = rhs.num_cols(); 
         int n_cpu = static_cast<int>(n * ratio);
         int n_gpu = n - n_cpu ;
@@ -87,7 +87,7 @@ namespace gpu {
         int lda = lhs.stride2();
         int ldb = rhs.stride2();
         int ldc = res.stride2();
-
+        
 #ifdef TIME_GEMM_GPU_INTERNAL
         static Timer tA("gpu gemm: A transfer");
         tA.begin();
@@ -96,7 +96,7 @@ namespace gpu {
         status = cublasAlloc(size_matrixA, sizeof(double), (void**)&pDataA );
         Check(status , "Set Alloc failed A");
         status = cublasSetMatrix(m, k, sizeof(double), &lhs(0,0), lda, pDataA, m);	
-//        status = cublasSetMatrixAsync(m, k, sizeof(double), &lhs(0,0), lda, pDataA, m, stream[0]);	
+        //        status = cublasSetMatrixAsync(m, k, sizeof(double), &lhs(0,0), lda, pDataA, m, stream[0]);	
         Check(status , "Set Matrix failed A");
         
 #ifdef TIME_GEMM_GPU_INTERNAL
@@ -107,7 +107,7 @@ namespace gpu {
         int size_matrixB = k*n_gpu;
         status = cublasAlloc(size_matrixB, sizeof(double), (void**)&pDataB );
         Check(status , "Set Alloc failed B");
-//        status = cublasSetMatrixAsync(k, n_gpu, sizeof(double), &rhs(0,0), ldb, pDataB, k, stream[1]);
+        //        status = cublasSetMatrixAsync(k, n_gpu, sizeof(double), &rhs(0,0), ldb, pDataB, k, stream[1]);
         status = cublasSetMatrix(k, n_gpu, sizeof(double), &rhs(0,0), ldb, pDataB, k);
         Check(status , "Set Matrix failed B");
         
@@ -119,9 +119,9 @@ namespace gpu {
         int size_matrixC = m*n_gpu;
         status = cublasAlloc(size_matrixC, sizeof(double), (void**)&pDataC);
         Check(status , "Set Alloc failed C");
-//        status = cublasSetMatrix(m, n_gpu, sizeof(double), &res(0,0), ldc, pDataC, m);	
-//        status = cublasSetMatrixAsync(m, n_gpu, sizeof(double), &res(0,0), ldc, pDataC, m, stream[2]);	
-//        Check(status , "Set Matrix failed C");
+        //        status = cublasSetMatrix(m, n_gpu, sizeof(double), &res(0,0), ldc, pDataC, m);	
+        //        status = cublasSetMatrixAsync(m, n_gpu, sizeof(double), &res(0,0), ldc, pDataC, m, stream[2]);	
+        //        Check(status , "Set Matrix failed C");
         
 #ifdef TIME_GEMM_GPU_INTERNAL
         tC.end();
@@ -129,9 +129,9 @@ namespace gpu {
         t1.begin();
 #endif
         
-//        for (int i = 0; i < 3; ++i) {
-//            cudaStreamDestroy(stream[i]);
-//        }
+        //        for (int i = 0; i < 3; ++i) {
+        //            cudaStreamDestroy(stream[i]);
+        //        }
         
         cublasDgemm('n', 'n', m, n_gpu, k, alpha, pDataA, m, pDataB, k, beta, pDataC, m); 
         status = cublasGetError();
