@@ -27,6 +27,10 @@ using std::endl;
 #include "types/dense_matrix/dense_matrix_blas.hpp"
 #include "types/dense_matrix/aligned_allocator.h"
 
+#ifdef USE_MTM
+#include "types/mt_matrix/algorithms.hpp"
+#endif
+
 #ifdef USE_GPU
 #include <cublas.h>
 #endif

@@ -13,6 +13,7 @@ namespace app {
 
 #ifdef USE_MTM
     impl_init_model(mtmatrix1, grp)
+    impl_init_model(cmtmatrix1, grp)
 #else
     impl_init_model(matrix1, grp)
     impl_init_model(cmatrix1, grp)

@@ -21,9 +21,15 @@ using std::endl;
 #endif
 
 #ifdef USE_MTM
-#define USE_MTM_MAIN
-#include "types/dense_matrix/mt_matrix.h"
-typedef mt_matrix<std::complex<double> > Matrix;
+#include "types/mt_matrix/mt_matrix.h"
+#include "types/mt_matrix/algorithms.hpp"
+
+#ifdef IMG_ONLY
+typedef maquis::types::mt_matrix<double> Matrix;
+#else
+typedef maquis::types::mt_matrix<std::complex<double> > Matrix;
+#endif
+
 #else
 
 #ifdef IMG_ONLY

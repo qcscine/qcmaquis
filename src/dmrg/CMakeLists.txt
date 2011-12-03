@@ -286,6 +286,9 @@ set(DMRG_FRAMEWORK_DIR ${PROJECT_SOURCE_DIR}/framework)
 ######################################################################
 
 # *** libraries / utilities
+if(USE_MTM)
+add_subdirectory(${MATRICES_DIR}/types/mt_matrix types/mt_matrix)
+endif(USE_MTM)
 add_subdirectory(framework/dmrg)
 
 # *** applications
