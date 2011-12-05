@@ -1,6 +1,6 @@
 if(VLI_COMPILE_GPU)
     include_directories(${CUDA_INCLUDE_DIRS})
-    add_definitions(-DVLI_USE_GPU )
+    add_definitions(-DVLI_USE_GPU -DVLI_SPLIT_PARAM=${VLI_SPLIT_PARAM} )
 endif(VLI_COMPILE_GPU)
 add_executable (a.out main.cpp)
 if(VLI_COMPILE_GPU)

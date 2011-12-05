@@ -70,7 +70,6 @@ protected:
     unsigned long long freq, nCounter;
 };
 
-#ifdef __CUBLAS__
 class TimerCuda : public Timer
 {
 public:
@@ -102,6 +101,29 @@ private:
 	cudaEvent_t start, stop;
 	
 };
-#endif //__CUBLAS__
 
+#ifdef _OPENMP
+class TimerOMP : public Timer
+{
+public:
+	TimerOMP(std::string name_) : Timer(name_), timer_start(0.0), timer_end(0.0){}
+
+	~TimerOMP(){}
+	
+	void begin()
+	{
+		timer_start = omp_get_wtime(); 
+	}
+	
+	void end()
+	{
+		timer_end = omp_get_wtime();
+		val += timer_end - timer_start;
+	}
+	
+private:
+	double timer_start, timer_end;
+	
+};
+#endif
 #endif

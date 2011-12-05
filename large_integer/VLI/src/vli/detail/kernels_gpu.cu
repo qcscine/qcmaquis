@@ -274,7 +274,7 @@ void minus_assign_poly_destructive(unsigned int max_order, BaseInt* A, BaseInt* 
 template <typename BaseInt, std::size_t Size>
 void poly_poly_multiply(unsigned int max_order, BaseInt const* A, BaseInt const* B, BaseInt* C)
 {
-  	dim3 dimgrid(1,1,1);
+    dim3 dimgrid(1,1,1);
     dim3 dimblock(1,1,1);
     //TODO size_poly
     polynome_polynome_multiplication<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, A, B, C); 
