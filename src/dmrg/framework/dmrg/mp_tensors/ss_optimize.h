@@ -161,11 +161,11 @@ public:
             storage::load(right_[site+1], right_stores_[site+1]);
             
             if (lr == +1) {
-                storage::prefetch(left_[site+1], left_stores_[site+1]);
+                //storage::prefetch(left_[site+1], left_stores_[site+1]);
                 if (site+2 < right_.size())
                     storage::prefetch(right_[site+2], right_stores_[site+2]);
             } else {
-                storage::prefetch(right_[site], right_stores_[site]);
+//                storage::prefetch(right_[site], right_stores_[site]);
                 if (site > 1)
                     storage::prefetch(left_[site-1], left_stores_[site-1]);
             }
@@ -278,15 +278,8 @@ public:
                 }
                 
                 
-                boundary_left_step(mpo, site);
-                // Please, check if removing this is correct.
-//                storage::load(left_[site+1], left_stores_[site+1]);
-//                MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-//                left_[site+1] = contraction::overlap_mpo_left_step(mps[site], bkp,
-//                                                                   left_[site], mpo[site]);
-//                storage::store(left_[site], left_stores_[site]);
-                
-                // storage::store(right_[site+1], right_stores_[site+1]); // why do you need this??
+                boundary_left_step(mpo, site); // creating left_[site+1]
+                storage::reset(left_stores_[site+1]); // left_stores_[site+1] is outdated
             } else if (lr == -1) {
                 if (site > 0) {
                     zout << "Growing, alpha = " << alpha << endl;
@@ -300,17 +293,14 @@ public:
                 }
                 
                 
-                boundary_right_step(mpo, site);
-                // Please, check if removing this is correct.
-//                storage::load(right_[site], right_stores_[site]);
-//                MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-//                right_[site] = contraction::overlap_mpo_right_step(mps[site], bkp,
-//                                                                   right_[site+1], mpo[site]);
-//                storage::store(right_[site+1], right_stores_[site+1]);
-                
-                // storage::store(left_[site], left_stores_[site]); // why do you need this?
+                boundary_right_step(mpo, site); // creating right_[site]
+                storage::reset(right_stores_[site]); // right_stores_[site] is outdated
             }
             
+            
+            storage::store(left_[site], left_stores_[site]); // store currently used boundary
+            storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary
+
             t_grow.end();
             
             iteration_t.end();
@@ -335,10 +325,7 @@ private:
     {
         MPSTensor<Matrix, SymmGroup> bkp = mps[site];
         Boundary<Matrix, SymmGroup> left = contraction::overlap_mpo_left_step(mps[site], bkp, left_[site], mpo[site]);
-        left_[site+1] = left;
-        
-        storage::reset(left_stores_[site+1]);
-        storage::store(left_[site+1], left_stores_[site+1]);
+        left_[site+1] = left;        
     }
     
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
@@ -346,9 +333,6 @@ private:
         MPSTensor<Matrix, SymmGroup> bkp = mps[site];
         Boundary<Matrix, SymmGroup> right = contraction::overlap_mpo_right_step(mps[site], bkp, right_[site+1], mpo[site]);
         right_[site] = right;
-        
-        storage::reset(right_stores_[site]);
-        storage::store(right_[site], right_stores_[site]);
     }
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
@@ -365,21 +349,29 @@ private:
         
         Boundary<Matrix, SymmGroup> left = mps.left_boundary();
         left_[0] = left;
-
-        storage::reset(left_stores_[0]);
-        storage::store(left_[0], left_stores_[0]);
         
-        for (int i = 0; i < site; ++i)
+        for (int i = 0; i < site; ++i) {
             boundary_left_step(mpo, i);
+            
+            storage::reset(left_stores_[i]);
+            storage::store(left_[i], left_stores_[i]);
+        }
+        storage::reset(left_stores_[site]);
+        storage::store(left_[site], left_stores_[site]);
+        
         
         Boundary<Matrix, SymmGroup> right = mps.right_boundary();
         right_[L] = right;
-
-        storage::reset(right_stores_[L]);
-        storage::store(right_[L], right_stores_[L]);
-        
-        for(int i = L-1; i >= site; --i)
+                
+        for(int i = L-1; i >= site; --i) {
             boundary_right_step(mpo, i);
+            
+            storage::reset(right_stores_[i+1]);
+            storage::store(right_[i+1], right_stores_[i+1]);
+        }
+        storage::reset(right_stores_[site]);
+        storage::store(right_[site], right_stores_[site]);
+        
         
         timer2.end();
     }
