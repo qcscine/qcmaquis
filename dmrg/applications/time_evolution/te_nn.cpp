@@ -111,7 +111,7 @@ get_U (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
     std::cout << expH.size() << " non overlapping Hamiltonians" << std::endl;
     for (int i=0; i<expH.size(); ++i)
     {
-        std::cout << "Hamiltonian " << i << std::endl;
+       // std::cout << "Hamiltonian " << i << std::endl; // C comment else crash gcc
         for (std::map<std::size_t, block_matrix<Matrix, grp> >::const_iterator it = expH[i].begin();
              it != expH[i].end();
              ++it)
