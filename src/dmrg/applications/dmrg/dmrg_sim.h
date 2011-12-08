@@ -83,8 +83,8 @@ using namespace app;
 template <class Matrix, class SymmGroup>
 class dmrg_sim {
         
-    typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
-    typedef Boundary<Matrix, grp> boundary_t;
+    typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
+    typedef Boundary<Matrix, SymmGroup> boundary_t;
     
 public:
     
@@ -165,7 +165,7 @@ public:
     {
         bool early_exit = false;
         
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps,
+        ss_optimize<Matrix, SymmGroup, StreamStorageMaster> optimizer(mps,
                                                                 parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
                                                                 parms, ssm);
         
@@ -275,7 +275,7 @@ public:
         
         if (parms.get<int>("calc_h2") > 0) {
             Timer tt1("square"), tt2("compress");
-            tt1.begin(); MPO<Matrix, grp> mpo2 = square_mpo(mpo); tt1.end();
+            tt1.begin(); MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpo); tt1.end();
             tt2.begin(); mpo2.compress(1e-12); tt2.end();
             
             Timer t3("expval mpo2"), t4("expval mpo2c");
@@ -308,16 +308,16 @@ public:
     
 private:
     
-    mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
+    mps_initializer<Matrix, SymmGroup> * initializer_factory(BaseParameters & params)
     {
         if (params.get<std::string>("init_state") == "default")
-            return new default_mps_init<Matrix, grp>();
+            return new default_mps_init<Matrix, SymmGroup>();
         else if (params.get<std::string>("init_state") == "const")
-            return new const_mps_init<Matrix, grp>();
+            return new const_mps_init<Matrix, SymmGroup>();
         else if (params.get<std::string>("init_state") == "thin")
-            return new thin_mps_init<Matrix, grp>();
+            return new thin_mps_init<Matrix, SymmGroup>();
         else if (params.get<std::string>("init_state") == "thin_const")
-            return new thin_const_mps_init<Matrix, grp>();
+            return new thin_const_mps_init<Matrix, SymmGroup>();
         else {
             throw std::runtime_error("Don't know this initial state.");
             return NULL;
@@ -337,7 +337,7 @@ private:
     
     Lattice * lat;
     Hamiltonian<Matrix, SymmGroup> H;
-    Index<grp> phys;
+    Index<SymmGroup> phys;
     MPS<Matrix, SymmGroup> mps;
     MPO<Matrix, SymmGroup> mpo, mpoc;
     Measurements<Matrix, SymmGroup> measurements;
