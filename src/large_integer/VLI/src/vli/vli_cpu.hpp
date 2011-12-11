@@ -227,11 +227,11 @@ namespace vli
         {
             os << "(" ;
             for(size_type i = size-1; i > 0; --i)
-				os << std::showbase << std::hex << data_[i]<<" ";
-//				os << std::showbase << data_[i]<<" ";
+//				os << std::showbase << std::hex << data_[i]<<" ";
+				os << std::showbase << data_[i]<<" ";
 
-		    os << std::showbase << std::hex << data_[0];
-//		    os << std::showbase  << data_[0];
+//		    os << std::showbase << std::hex << data_[0];
+		    os << std::showbase  << data_[0];
 
             os << ")"<<std::dec;
 		}
@@ -352,6 +352,7 @@ namespace vli
           */
 
 //        BaseInt data_[Size] __attribute__ ((aligned (16)));
+public:  // C - for the dirty programming
         BaseInt data_[Size];
 
     };
@@ -457,7 +458,7 @@ namespace vli
     template<typename BaseInt, std::size_t Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
-        vli.print(os);
+        vli.print_raw(os);
         return os;
     }
   
