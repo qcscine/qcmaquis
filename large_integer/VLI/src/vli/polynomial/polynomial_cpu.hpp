@@ -195,7 +195,7 @@ public:
         }
     }
      
-private:
+//private: // C - for the dirty programming
     Vli coeffs_[Order*Order];
 };
 

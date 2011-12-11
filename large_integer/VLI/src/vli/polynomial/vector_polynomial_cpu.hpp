@@ -11,6 +11,7 @@
 #include "vli/vli_config.h"
 #include "vli/polynomial/polynomial_cpu.hpp"
 #include "vli/vli_cpu.hpp"
+#include "vli/detail/kernels_cpu_gpu.hpp"
 #include <vector>
 #include <ostream>
 #include <cassert>
@@ -90,21 +91,67 @@ namespace detail
 
     template <class BaseInt, std::size_t Size, unsigned int Order>
     polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
-    inner_product_accp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
-                   vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+    inner_product_accp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  & v1, 
+                   vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  & v2){
         assert(v1.size() == v2.size());
+        typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::exponent_type exponent_type;
+
         std::size_t size_v = v1.size();
-        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res[size_v];
-        
-        #pragma acc for parallel independent 
-        for(std::size_t i=0 ; i < size_v ; ++i){
-            res[i] = v1[i]*v2[i];
+        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> res, res0;
+        vli_cpu<BaseInt, Size> resvli; 
+        bool result_is_negative;
+        int pencil1, pencil2, pencil3;
+        BaseInt r[2] = {0,0};	//for local block calculation
+
+
+        // want 
+        // for(std::size_t i=0 ; i < size_v ; ++i)
+        // res += v1[i]*v2[i];        
+        // we do the next following line, I tried to unroll/inline everything, but it came slower !
+
+        // C - Tim you're stupid ! RTFM !
+        #pragma omp acc_region
+        #pragma omp acc_loop
+        for(std::size_t i=0 ; i < size_v ; ++i)
+        {
+            for(exponent_type je1 = 0; je1 < Order; ++je1)
+            {
+                for(exponent_type je2 = 0; je2 < Order - je1; ++je2)
+                {
+                    for(exponent_type he1 = 0; he1 < Order; ++he1)
+                    {
+                        for(exponent_type he2 = 0; he2 < Order - he1; ++he2)
+                        {  
+                            // we want
+                            // res.coeffs_[(je1+je2)*Order + he1+he2 ] += v1[i].coeffs_[je1*Order+he1] * v2[i].coeffs_[je2*Order+he2];
+                            // we do resvli = v1[i].coeffs_[je1*Order+he1] * v2[i].coeffs_[je2*Order+he2]
+                            // and res.coeffs_[(je1+je2)*Order + he1+he2 ] += resvli
+                            // OK I can not do more for the cray compiler
+                            pencil1=je1*Order+he1;
+                            pencil2=je2*Order+he2;
+                            pencil3=(je1+je2)*Order + he1+he2;
+                            result_is_negative = static_cast<bool>((v1[i].coeffs_[pencil1].data_[Size-1] ^ v2[i].coeffs_[pencil2].data_[Size-1]) >> data_bits<BaseInt>::value);
+                            
+                            if(result_is_negative)// test if, for the negative case ...
+                            {
+                                v1[i].coeffs_[pencil1].negate(); // - to +
+                                kernels_multiplication_classic_truncate<BaseInt,Size>(&resvli[0],&v1[i].coeffs_[pencil1].data_[0], &v2[i].coeffs_[pencil2].data_[0]);
+                                v1[i].coeffs_[pencil1].negate(); // + to -
+                            }else{                          
+                                kernels_multiplication_classic_truncate<BaseInt,Size>(&resvli[0],&v1[i].coeffs_[pencil1].data_[0], &v2[i].coeffs_[pencil2].data_[0]);                            
+                            }
+                            res.coeffs_[(je1+je2)*Order + he1+he2 ] += resvli;
+                          
+                            resvli[0]=0;
+                            resvli[1]=0;
+                            resvli[2]=0;
+                        }
+                    }
+                }    
+            }
         }
 
-        //for(int i=1; i < omp_get_max_threads(); ++i)
-        for(int i=1; i < size_v; ++i)
-            res[0]+=res[i];
-        return res[0];
+        return res;
     }
 } // end namespace detail
 
