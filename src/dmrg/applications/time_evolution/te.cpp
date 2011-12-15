@@ -180,7 +180,7 @@ int main(int argc, char ** argv)
     Hamiltonian<Matrix, grp> H;
     grp::charge initc;
     Measurements<Matrix, grp> measurements;
-    model_parser(parms.get<std::string>("lattice_library"), parms.get<std::string>("lattice_library"), model, lat, H, initc, measurements);
+    model_parser(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, H, initc, measurements);
     Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
     

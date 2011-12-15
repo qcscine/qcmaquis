@@ -36,8 +36,11 @@ option(USE_MTM "Use multi threads matrix class" OFF)
 option(USE_GPU "Use GPU in libmtm" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
-#option(BUILD_TESTS "Build regression tests" OFF)
+option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
+
 option(BUILD_REGRESSION "Build regression tests" OFF)
+
+mark_as_advanced(ENABLE_COLLECTOR)
 
 set(BLAS_LAPACK_SELECTOR ${DEFAULT_BLAS_LAPACK} CACHE STRING "Choose the Blas/Lapack version to use, possible values 'alps', 'veclib', 'manual'")
 set(BLAS_LAPACK_MANUAL_LIBS ${BLAS_LAPACK_MANUAL_LIBS} CACHE STRINGS "")
@@ -276,12 +279,6 @@ endforeach(SYMM)
 
 
 
-######################################################################
-# Configure files
-######################################################################
-
-configure_file(framework/dmrg_version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg_version.h)
-
 
 ######################################################################
 # Include / link directories
@@ -293,9 +290,24 @@ include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framew
 link_directories(${ALPS_LIBRARY_DIRS})
 set(DMRG_FRAMEWORK_DIR ${PROJECT_SOURCE_DIR}/framework)
 
+
+######################################################################
+# Configure files
+######################################################################
+
+configure_file(framework/dmrg_version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg_version.h)
+
+
 ######################################################################
 # Targets
 ######################################################################
+
+# DataCollector
+if(ENABLE_COLLECTOR)
+  add_definitions(-DENABLE_DATACOLLECTORS)
+  add_library(maquis_collector framework/utils/data_collector.cpp)
+  list(APPEND DMRG_LIBRARIES maquis_collector)
+endif(ENABLE_COLLECTOR)
 
 # *** libraries / utilities
 if(USE_MTM)
@@ -325,6 +337,7 @@ else(BUILD_REGRESSION)
      add_subdirectory(regression/pdmrg EXCLUDE_FROM_ALL)
   endif(USE_AMBIENT)
 endif(BUILD_REGRESSION)
+
 
 
 ######################################################################
