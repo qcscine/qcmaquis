@@ -20,7 +20,10 @@ namespace maquis {
         template <typename MemoryBlock> \
         const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
         { \
+            assert( !(lhs.num_cols() > rhs.num_rows()) ); \
+            assert( !(lhs.num_cols() < rhs.num_rows()) ); \
             assert( lhs.num_cols() == rhs.num_rows() ); \
+            DCOLLECTOR_ADD(gemm_collector, lhs.num_cols()) \
             dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
             static Timer timer("GEMM"); \
             timer.begin(); \

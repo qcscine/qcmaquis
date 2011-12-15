@@ -2,6 +2,7 @@
 #define __ALPS_DENSE_MATRIX_ALGO_ALGORITHMS_HPP__
 #include <vector>
 #include <stdexcept>
+#include "utils/data_collector.hpp"
 #include "types/dense_matrix/matrix_concept_check.hpp"
 #include "types/dense_matrix/diagonal_matrix.h"
 #include "utils/function_objects.h"
@@ -46,6 +47,9 @@ namespace maquis {
                  DiagMatrix & S)
         {
             BOOST_CONCEPT_ASSERT((maquis::types::Matrix<dense_matrix<T, MemoryBlock> >));
+            DCOLLECTOR_ADD(svd_collector, M.num_cols())
+            static Timer timer("SVD");
+            timer.begin();
             typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));
@@ -55,6 +59,7 @@ namespace maquis {
                 throw std::runtime_error("Error in SVD!");
 
             S = DiagMatrix(S_);
+            timer.end();
         }
         
         template<typename T, class MemoryBlock>
