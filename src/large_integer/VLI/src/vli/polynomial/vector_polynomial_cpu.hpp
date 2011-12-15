@@ -95,8 +95,8 @@ namespace detail
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  & v2){
         assert(v1.size() == v2.size());
         typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::exponent_type exponent_type;
-
         std::size_t size_v = v1.size();
+        vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >   vres(size_v);
         polynomial_cpu<vli_cpu<BaseInt, Size>, Order> res, res0;
         vli_cpu<BaseInt, Size> resvli; 
         bool result_is_negative;
@@ -105,11 +105,10 @@ namespace detail
 
 
         // want 
-        // for(std::size_t i=0 ; i < size_v ; ++i)
-        // res += v1[i]*v2[i];        
         // we do the next following line, I tried to unroll/inline everything, but it came slower !
 
         // C - Tim you're stupid ! RTFM !
+
         #pragma omp acc_region
         #pragma omp acc_loop
         for(std::size_t i=0 ; i < size_v ; ++i)
@@ -130,18 +129,28 @@ namespace detail
                             pencil1=je1*Order+he1;
                             pencil2=je2*Order+he2;
                             pencil3=(je1+je2)*Order + he1+he2;
+
                             result_is_negative = static_cast<bool>((v1[i].coeffs_[pencil1].data_[Size-1] ^ v2[i].coeffs_[pencil2].data_[Size-1]) >> data_bits<BaseInt>::value);
-                            
+                          
                             if(result_is_negative)// test if, for the negative case ...
                             {
                                 v1[i].coeffs_[pencil1].negate(); // - to +
                                 kernels_multiplication_classic_truncate<BaseInt,Size>(&resvli[0],&v1[i].coeffs_[pencil1].data_[0], &v2[i].coeffs_[pencil2].data_[0]);
                                 v1[i].coeffs_[pencil1].negate(); // + to -
                             }else{                          
-                                kernels_multiplication_classic_truncate<BaseInt,Size>(&resvli[0],&v1[i].coeffs_[pencil1].data_[0], &v2[i].coeffs_[pencil2].data_[0]);                            
+                              kernels_multiplication_classic_truncate<BaseInt,Size>(&resvli[0],&v1[i].coeffs_[pencil1].data_[0], &v2[i].coeffs_[pencil2].data_[0]);                            
                             }
-                            res.coeffs_[(je1+je2)*Order + he1+he2 ] += resvli;
-                          
+    //                        res.coeffs_[(je1+je2)*Order + he1+he2 ] += resvli;
+                         
+                            for( std::size_t i = 0; i < Size-1 ; ++i){
+                                res.coeffs_[pencil3].data_[i]   += resvli[i]; 
+                                res.coeffs_[pencil3].data_[i+1] += res.coeffs_[pencil3].data_[i]  >> data_bits<BaseInt>::value; //carry bit
+                                res.coeffs_[pencil3].data_[i]   &= data_mask<BaseInt>::value; // Remove the carry bit
+                            }
+     
+                      	    res.coeffs_[pencil3].data_[Size-1 ] += resvli[Size-1];
+                            res.coeffs_[pencil3].data_[Size-1 ] &= base<BaseInt>::value + data_mask<BaseInt>::value;
+
                             resvli[0]=0;
                             resvli[1]=0;
                             resvli[2]=0;

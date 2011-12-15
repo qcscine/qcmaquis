@@ -70,6 +70,7 @@ protected:
     unsigned long long freq, nCounter;
 };
 
+#ifdef __CUBLAS__
 class TimerCuda : public Timer
 {
 public:
@@ -101,7 +102,7 @@ private:
 	cudaEvent_t start, stop;
 	
 };
-
+#endif
 #ifdef _OPENMP
 class TimerOMP : public Timer
 {
