@@ -1,5 +1,8 @@
-
+#define BOOST_FILESYSTEM_VERSION 3
+#include <boost/filesystem.hpp>
 #include "stream_storage.h"
+
+
 
 /********************
  * StreamStorage
@@ -27,6 +30,36 @@ StreamStorage::~StreamStorage()
     }
     master->notify();
 }
+
+
+/********************
+ * StreamStorageMaster
+ ********************/
+StreamStorageMaster::StreamStorageMaster(std::string fp, bool enable)
+: base_path(fp)
+, last_id(0)
+, active(true)
+, worker(this)
+, worker_thread(worker)
+{
+    
+    if (base_path.size() != 0 || enable) {
+        
+        boost::filesystem::path ph(base_path);
+        if (base_path.size() == 0)
+            ph = boost::filesystem::temp_directory_path();
+        ph = boost::filesystem::unique_path(ph.string() + std::string("/storage_temp_%%%%%%%%%%%%"));
+        try {
+            boost::filesystem::create_directories(ph);
+        } catch (...) {
+            std::cerr << "Error creating temp dir " << ph << ", try with a different 'storagedir' parameter." << std::endl;
+            throw;
+        }
+        base_path = ph.string();
+        std::cout << "Temporary storage enabled in " << base_path << std::endl;
+    }
+}
+
 
 
 /********************

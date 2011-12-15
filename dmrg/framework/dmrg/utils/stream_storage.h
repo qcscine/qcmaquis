@@ -106,13 +106,7 @@ class StreamStorageMaster
 public:
     typedef StreamStorage Storage;
     
-    StreamStorageMaster(std::string fp)
-    : base_path(fp)
-    , last_id(0)
-    , active(true)
-    , worker(this)
-    , worker_thread(worker)
-    { }
+    StreamStorageMaster(std::string fp, bool enable=false);
     
     ~StreamStorageMaster()
     {
