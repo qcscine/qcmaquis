@@ -6,11 +6,10 @@ cmake_minimum_required (VERSION 2.6)
 #
 ########################################################################
 
+
 project (se)
 set (SE_VERSION_MAJOR 0)
 set (SE_VERSION_MINOR 1)
-
-
 ########################################################################
 #
 # Options
@@ -39,10 +38,15 @@ add_definitions(-DPOLYNOMIAL_MAX_ORDER=21 -DNDEBUG)
 # Find dependencies
 #
 ########################################################################
-
+#CUDA
 if (SE_USE_GPU)
-   find_package (CUDA) 
+  find_package (CUDA) 
 endif (SE_USE_GPU)
+
+#OpenMP
+if(NOT OpenMP_FOUND)
+   find_package(OpenMP)
+endif(NOT OpenMP_FOUND)
 
 # The tests need the GMP library
 if (SE_USE_GMP)
@@ -72,6 +76,15 @@ if(Boost_FOUND)
 else()
     message(FATAL_ERROR "Boost libraries not found. Please specify location using the BOOST_DIR variable")
 endif()
+
+if(MACHINE_CONFIG)
+  if(EXISTS ${MACHINE_CONFIG})
+    message(STATUS "Loading config in " ${MACHINE_CONFIG})
+    include(${MACHINE_CONFIG})
+  else(EXISTS ${MACHINE_CONFIG})
+    message(ERROR " Machine config not found!")
+  endif(EXISTS ${MACHINE_CONFIG})
+endif(MACHINE_CONFIG)
 
 #VLI
 if(SE_USE_VLI)
@@ -108,25 +121,31 @@ include_directories ("${PROJECT_SOURCE_DIR}")
 #
 ########################################################################
 
+if(SE_USE_OMP)
+    set(OPENMP ${OpenMP_CXX_FLAGS})
+else()
+    set(OPENMP)
+endif(SE_USE_OMP)
+
 if(SE_USE_GMP)
    add_subdirectory(se_gmp)
 endif(SE_USE_GMP)
 
-if(SE_USE_VLI)
-   add_subdirectory(se_vli)
-endif(SE_USE_VLI)
+#if(SE_USE_VLI)
+#   add_subdirectory(se_vli)
+#endif(SE_USE_VLI)
 
 if(SE_USE_MIX)
    add_subdirectory(se_vli_mix)
 endif(SE_USE_MIX)
 
-if(SE_USE_OMP)
-   add_subdirectory(se_vli_omp)
-endif(SE_USE_OMP)
+#if(SE_USE_OMP)
+#   add_subdirectory(se_vli_omp)
+#endif(SE_USE_OMP)
 
-if(SE_USE_GPU)
-   add_subdirectory(se_vli_gpu)
-endif(SE_USE_GPU)
+#if(SE_USE_GPU)
+#   add_subdirectory(se_vli_gpu)
+#endif(SE_USE_GPU)
 
 
 ########################################################################
