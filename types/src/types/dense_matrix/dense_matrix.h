@@ -1,6 +1,7 @@
 #ifndef __ALPS_DENSE_MATRIX_HPP__
 #define __ALPS_DENSE_MATRIX_HPP__
 
+#include "utils/data_collector.hpp"
 #include "types/dense_matrix/strided_iterator.hpp"
 #include "types/dense_matrix/matrix_element_iterator.hpp"
 #include "types/dense_matrix/vector.hpp"
@@ -8,6 +9,7 @@
 #include "types/utils/matrix_vector_traits.h"
 
 //#include "utils/function_objects.h"
+#include <utils/timings.h>
 
 #include "types/dense_matrix/diagonal_matrix.h"
 
