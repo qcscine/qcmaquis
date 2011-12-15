@@ -30,7 +30,7 @@
  * We would like to calculate the contribution of each cluster up to at least
  * 20-th order for this model.
  * 
- *
+*
  *****************************************************************************/
 #include <cstdlib>
 #include <vector>
@@ -39,7 +39,7 @@
 #include <iostream>
 #include <cassert>
 #include <string>
-#include "timings.h"
+#include "utils/timings.h"
 // ------------------------------------------------------------------
 // Typedefs and includes for the different integer classes
 // ------------------------------------------------------------------
