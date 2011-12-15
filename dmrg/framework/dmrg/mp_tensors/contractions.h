@@ -464,11 +464,8 @@ struct contraction {
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
-        {
-//            cout << "s*a (bou)" << lbtm.data_[b].left_basis() <<endl;
-//            cout << "s*a (bra)" << bra_tensor.data().left_basis() <<endl;
             gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
-        }
+
         timer.end();
 
         return ret;

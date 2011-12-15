@@ -7,6 +7,8 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+#include "utils/data_collector.hpp"
+
 #include "dmrg/utils/DmrgParameters2.h"
 #include "dmrg.h"
 #include "utils/timings.h"
@@ -60,6 +62,9 @@ int main(int argc, char ** argv)
     }
     ModelParameters model(model_file);
     
+    DCOLLECTOR_SET_SIZE(gemm_collector, parms.get<int>("max_bond_dimension")+1)
+    DCOLLECTOR_SET_SIZE(svd_collector, parms.get<int>("max_bond_dimension")+1)
+    
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
     
@@ -73,6 +78,9 @@ int main(int argc, char ** argv)
     
     gettimeofday(&then, NULL);
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+    
+    DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")
+    DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
     
     cout << "Task took " << elapsed << " seconds." << endl;
 }

@@ -19,6 +19,10 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+#include <boost/filesystem.hpp>
+
+#include "utils/data_collector.hpp"
+
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -96,7 +100,9 @@ public:
     , rfile(parms.get<std::string>("resultfile"))
     , ssm(parms.get<std::string>("storagedir"))
     , dns( (parms.get<int>("donotsave") != 0) )
-    {    
+    { 
+        DCOLLECTOR_GROUP(gemm_collector, "init")
+        DCOLLECTOR_GROUP(svd_collector, "init")
 #ifdef USE_GPU
         cublasInit();
 #endif
@@ -119,7 +125,7 @@ public:
         dmrg_random::engine.seed(parms.get<int>("seed"));
         
         typename SymmGroup::charge initc;
-        model_parser(parms.get<std::string>("lattice_library"), parms.get<std::string>("lattice_library"), model, lat, H, initc, measurements);
+        model_parser(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, H, initc, measurements);
         phys = H.get_phys();
         
         /*
@@ -171,6 +177,8 @@ public:
         
         
         for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+            DCOLLECTOR_GROUP(gemm_collector, "sweep"+boost::lexical_cast<std::string>(sweep))
+            DCOLLECTOR_GROUP(svd_collector, "sweep"+boost::lexical_cast<std::string>(sweep))
             gettimeofday(&snow, NULL);
             
             Logger iteration_log;
