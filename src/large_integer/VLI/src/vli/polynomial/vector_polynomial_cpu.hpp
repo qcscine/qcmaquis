@@ -51,7 +51,7 @@ namespace detail
 {    
 #ifdef _OPENMP
     template <class BaseInt, std::size_t Size, unsigned int Order>
-    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
+    polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
     inner_product_openmp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         assert(v1.size() == v2.size());
@@ -64,7 +64,7 @@ namespace detail
         * so vector !
         */
 
-        std::vector<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> > res(omp_get_max_threads()); 
+        std::vector<polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> > res(omp_get_max_threads()); 
        
         #pragma omp parallel for
         for(std::size_t i=0 ; i < size_v ; ++i){
@@ -78,26 +78,26 @@ namespace detail
 #endif
     
     template <class BaseInt, std::size_t Size, unsigned int Order>
-    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
+    polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
     inner_product_plain( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         assert(v1.size() == v2.size());
         std::size_t size_v = v1.size();
-        polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  res;
+        polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order>  res;
         for(std::size_t i=0 ; i < size_v ; ++i)
             res += v1[i]*v2[i];
         return res;
     }
 
     template <class BaseInt, std::size_t Size, unsigned int Order>
-    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
+    polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
     inner_product_accp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  & v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  & v2){
         assert(v1.size() == v2.size());
         typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::exponent_type exponent_type;
         std::size_t size_v = v1.size();
-        vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >   vres(size_v);
-        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> res, res0;
+        vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> >   vres(size_v);
+        polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> res, res0;
         vli_cpu<BaseInt, Size> resvli; 
         bool result_is_negative;
         int pencil1, pencil2, pencil3;
@@ -115,11 +115,11 @@ namespace detail
         {
             for(exponent_type je1 = 0; je1 < Order; ++je1)
             {
-                for(exponent_type je2 = 0; je2 < Order - je1; ++je2)
+                for(exponent_type je2 = 0; je2 < Order; ++je2)
                 {
                     for(exponent_type he1 = 0; he1 < Order; ++he1)
                     {
-                        for(exponent_type he2 = 0; he2 < Order - he1; ++he2)
+                        for(exponent_type he2 = 0; he2 < Order; ++he2)
                         {  
                             // we want
                             // res.coeffs_[(je1+je2)*Order + he1+he2 ] += v1[i].coeffs_[je1*Order+he1] * v2[i].coeffs_[je2*Order+he2];
@@ -165,7 +165,7 @@ namespace detail
 } // end namespace detail
 
     template <class BaseInt, std::size_t Size, unsigned int Order>
-    inline polynomial_cpu<vli_cpu<BaseInt, Size>, Order> 
+    inline polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
     inner_product( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                    vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         // TODO this is a little dirty and could be done better
