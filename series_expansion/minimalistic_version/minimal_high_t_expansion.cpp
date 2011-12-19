@@ -15,9 +15,8 @@
  *
  *  Runtime:
  *
- *          ./a.out <expansion_order> <num_vertices>
+ *          ./a.out <num_vertices>
  *
- *      expansion_order: the maximal order of the series expansion.
  *      num_vertices:    the number of vertices/sites of the cluster to be
  *                       calculated. the program will generate a chain of
  *                       'num_vertices' sites.
@@ -52,8 +51,6 @@ namespace hp2c
 {
     typedef int64_t large_int;
     typedef hp2c::monomial<int> monomial_type;
-    typedef hp2c::polynomial<large_int> polynomial_type;
-    typedef std::vector<polynomial_type> polynomial_vector_type;
 }
 #endif //USE_INT64_INTEGERS
 
@@ -64,8 +61,6 @@ namespace hp2c
 {
     typedef mpz_class large_int;
     typedef hp2c::monomial<large_int> monomial_type;
-    typedef hp2c::polynomial<large_int> polynomial_type;
-    typedef std::vector<polynomial_type> polynomial_vector_type;
 }
 #endif //USE_GMP_INTEGERS
 
@@ -85,8 +80,6 @@ namespace hp2c
 {
     typedef vli::vli_cpu<unsigned long int,3> large_int;
     typedef vli::monomial<large_int> monomial_type;
-    typedef vli::polynomial_cpu<large_int, POLYNOMIAL_MAX_ORDER > polynomial_type;
-    typedef vli::vector_polynomial_cpu< polynomial_type > polynomial_vector_type;
 }
 #endif //USE_VLI_INTEGERS_CPU
 
@@ -121,12 +114,13 @@ class sparse_matrix
         /**
           * Does a matrix vector multiplication with the vector of polynomials.
           */
-        polynomial_vector_type apply(polynomial_vector_type const& v)
+        template <typename PolynomialVector>
+        PolynomialVector apply(PolynomialVector const& v)
         {
 
             // H =    -J * \sum_{<i,j>} \sigma^z_i \sigma^z_j     - h \sum_i \sigma^x_i
-            polynomial_vector_type result(v.size());
-            for(polynomial_vector_type::size_type  index = 0; index < v.size(); ++index)
+            PolynomialVector result(v.size());
+            for(typename PolynomialVector::size_type  index = 0; index < v.size(); ++index)
             {
                 // TODO check if v[index] == 0
                 // if(v[index] == 0)
@@ -231,6 +225,37 @@ class sparse_matrix
 
 };
 
+
+
+template <typename Polynomial>
+class polynomial_vector
+{
+};
+
+#ifdef USE_VLI_INTEGERS_CPU
+template <typename T, unsigned int Order>
+class polynomial_vector<vli::polynomial_cpu<T,Order> > : public vli::vector_polynomial_cpu<vli::polynomial_cpu<T,Order> >
+{
+    public:
+        polynomial_vector(std::size_t size)
+            : vli::vector_polynomial_cpu<vli::polynomial_cpu<T,Order> >(size)
+        {
+        }
+};
+#else //USE_VLI_INTEGERS_CPU
+template <typename T, unsigned int Order>
+class polynomial_vector<hp2c::polynomial<T,Order> > : public std::vector<hp2c::polynomial<T,Order> >
+{
+    public:
+        polynomial_vector(std::size_t size)
+            : std::vector<hp2c::polynomial<T,Order> >(size)
+        {
+        }
+};
+
+#endif //USE_VLI_INTEGERS_CPU
+
+template <unsigned int Order>
 class high_t_expansion
 {
     private:
@@ -239,29 +264,31 @@ class high_t_expansion
         typedef std::pair<vertex_type, vertex_type> edge_type;
     
     public:
-        high_t_expansion(unsigned int max_order,unsigned int num_vertices)
-            : max_order_(max_order), num_vertices_(num_vertices)
+        high_t_expansion(unsigned int num_vertices)
+            : num_vertices_(num_vertices)
         {
             // generate a simple graph as example
             for(vertex_type vtx = 1; vtx < num_vertices_; ++vtx)
                 edge_list_.push_back(edge_type(vtx-1,vtx));
         }
 
-        polynomial_type exec()
+        template <template <class,unsigned int> class Polynomial>
+        Polynomial<large_int,Order> exec()
         {
+            assert(Order % 2 == 0); //TODO compile time assert
             sparse_matrix sp_matrix(edge_list_,num_vertices_);
 
-            polynomial_type result;
+            Polynomial<large_int,Order> result;
             result += sp_matrix.get_dimension(); // 0th order contribution
             // Compute the trace of (sparse_matrix)^max_order
             for(std::size_t i = 0; i < sp_matrix.get_dimension(); ++i)
             {
                 // Create an initial vector with a single entry
-                polynomial_vector_type state(sp_matrix.get_dimension());
-                state[i] = (polynomial_type()+= 1);
-                for(unsigned int n=1; n < max_order_/2; ++n)
+                polynomial_vector<Polynomial<large_int,Order/2> > state(sp_matrix.get_dimension());
+                state[i] = (Polynomial<large_int,Order/2>() += 1);
+                for(unsigned int n=1; n < Order/2; ++n)
                 {
-                    polynomial_vector_type previous_state(state);
+                    polynomial_vector<Polynomial<large_int,Order/2> > previous_state(state);
 
                     state = sp_matrix.apply(state);
 
@@ -274,7 +301,6 @@ class high_t_expansion
 
     private:
         // The truncation order of the series expansion
-        const unsigned int max_order_;
         const unsigned int num_vertices_;
         std::vector<edge_type> edge_list_;
 };
@@ -290,28 +316,41 @@ large_int factorial(unsigned int i)
 
 int main(int argc, char** argv)
 {
+
+    // TODO
+    const unsigned int expansion_order = 20;
+
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* GPU;
     GPU->instance();
 #endif
-    std::string name(argv[3]);
-    Timer A(name);    
-    A.begin();
+   
     //
     // Runtime parameters
     //
-    unsigned int expansion_order = 20;
     unsigned int num_vertices = 8;
-    if(argc == 4)
+    std::string timer_name("default");
+    if(argc == 3)
     {
         // Default values may be overwritten by command line arguments.
-        expansion_order = atoi(argv[1]);
-        num_vertices = atoi(argv[2]);
+        num_vertices = atoi(argv[1]);
+        timer_name = std::string(argv[2]);
+    }
+    else
+    {
+        std::cout<<"Using default values..."<<std::endl;
     }
     
+    Timer A(timer_name);    
+    A.begin();
+    
     // Run expansion
-    high_t_expansion ht(expansion_order,num_vertices);
-    polynomial_type r = ht.exec();
+    high_t_expansion<expansion_order> ht(num_vertices);
+#ifdef USE_VLI_INTEGERS_CPU
+    vli::polynomial_cpu<large_int, expansion_order> r = ht.exec<vli::polynomial_cpu>();
+#else
+    hp2c::polynomial<large_int, expansion_order> r = ht.exec<hp2c::polynomial>();
+#endif
 
     A.end();
     A.save(); 
