@@ -1,6 +1,6 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
-#include "vli/vli_config.h"
+//#include "vli/vli_config.h"
 #include <string>
 #include <fstream>
 #ifdef _OPENMP

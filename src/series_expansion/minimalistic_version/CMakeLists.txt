@@ -31,7 +31,6 @@ set (SE_SPLIT_PARAM "0.1" CACHE STRING "Split param for cpu/gpu mix mode ")
 set (SE_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
 set (SE_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 
-add_definitions(-DPOLYNOMIAL_MAX_ORDER=21 -DNDEBUG)
 
 ########################################################################
 #
