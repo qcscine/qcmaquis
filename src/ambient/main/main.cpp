@@ -1,5 +1,5 @@
 #include <mpi.h>
-
+#include <complex>
 #include <iostream>
 #include <cmath>
 #include "utils/zout.hpp"
@@ -19,7 +19,8 @@ using namespace ambient;
 
 typedef ambient::dim2 dim;
 
-#define  T double
+//#define  T double
+#define  T std::complex<double
 
 int main(int argc, char* argv[])
 {
@@ -30,26 +31,8 @@ int main(int argc, char* argv[])
      int NUM=std::atoi(argv[1]);
     
      p_dense_matrix<T> pA(NUM,NUM);
-     p_dense_matrix<T> pB(NUM,NUM);
-     p_dense_matrix<T> pC(NUM,NUM);
-
-     std::cout << pA.num_rows() << std::endl;
-
-     dense_matrix<T> A(NUM,NUM);   
-     dense_matrix<T> B(NUM,NUM);   
-     dense_matrix<T> C(NUM,NUM);   
-     dense_matrix<T> D(NUM,NUM);   
-
-
      pA.set_init(ambient::random_i<T>);
-     pB.set_init(ambient::random_i<T>);
-
-  //   A = matrix_cast<ambient::dense_matrix<T> >(pA);
-     maquis::types::gemm(pA,pB,pC);
-     A = maquis::traits::matrix_cast<dense_matrix<T> >(pA);
-     ambient::playout();   
-     zout << A << std::endl;
-     zout << pA << std::endl;
+     std::cout << pA << std::endl;
   //   ambient::playout();   
   //   ambient::playout();   
 /*

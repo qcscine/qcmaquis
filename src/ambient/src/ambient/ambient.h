@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <limits> // C - for the validation test
 
+#include "ambient/traits.h"
 #include "ambient/groups/group.h"
 #include "ambient/groups/multirank.h"
 #include "ambient/auxiliary.h"
@@ -35,11 +36,6 @@ class Timer;
 
 namespace ambient
 {
-    struct traits
-    {
-        typedef double dbl;
-        enum {value=128}; // C - could be given by the preprocessor -D ? 
-    };
 
     class scheduler
     {
@@ -73,7 +69,7 @@ namespace ambient
         inline bool blank();
 
         int size;
-        block_packet_t* default_data_packet_t;
+        block_packet_t<typename traits::type>* default_data_packet_t;
         groups::group* ambient;
     private:
         dim2 work_dim;   // work-item size of distribution blocks

@@ -1,7 +1,10 @@
 #ifndef AMBIENT_PACKETS_TYPES_H
 #define AMBIENT_PACKETS_TYPES_H
 
+#include "ambient/traits.h"
+#include "datatype.hpp" 
 #include "ambient/packets/packet_t.h"
+
 
 // STANDARD AMBIENT FIELDS DEFINES
 #define A_TYPE_FIELD 0 // MANDATORY FIRST TYPE CODE FIELD
@@ -28,13 +31,12 @@
 #define A_CONTROL_P_SRC_FIELD  3
 #define A_CONTROL_P_CODE_FIELD 4
 #define A_CONTROL_P_INFO_FIELD 5
-
 namespace ambient{ namespace packets{
-
 // dest is mandatory first (in order to perform send operation
 // w/o explicitely setting destination in send method). even if the 
 // type is to be nested - dest is required to perform scatter op w/o 
 // copying the data (if to do it implicitely).
+
     struct standard_packet_t : public packet_t
     {
         __a_fields__ dest, op_type;
@@ -80,6 +82,7 @@ namespace ambient{ namespace packets{
         }
     };
 
+    template<typename T>
     struct block_packet_t : public standard_packet_t
     {
         __a_flex_fields__ profile_gid, profile_id, state, i, j, data;
@@ -91,7 +94,7 @@ namespace ambient{ namespace packets{
             state         = MPI_BYTE;
             i             = MPI_INT;
             j             = MPI_INT;
-            data          = MPI_DOUBLE;
+            data          =  boost::mpi::get_mpi_datatype<T> (); // converteur basic type to MPI_datatype
             __a_pack{ 1, 1, 1, 1, 1, size };
             __a_code('B'+size); // note: small size is dangerous (code overlap)
         }
