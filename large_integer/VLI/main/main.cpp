@@ -34,6 +34,7 @@ typedef vli_cpu<long unsigned int, 3> vli_type_cpu;
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 
 typedef vli::polynomial_cpu< vli_type_cpu, 21 > polynomial_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, 2*21 > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 /*
@@ -57,11 +58,11 @@ int main (int argc, char * const argv[])
     polynomial_vector_type v2gmp(1024);
 */
 
-    polynomial_type_cpu result;
-    polynomial_type_cpu result_acc;
-    polynomial_type_cpu result_plain;
-    polynomial_type_cpu result_pure_gpu;
-    polynomial_type_cpu result_pure_cpu; 
+    polynomial_result_type_cpu result;
+    polynomial_result_type_cpu result_acc;
+    polynomial_result_type_cpu result_plain;
+    polynomial_result_type_cpu result_pure_gpu;
+    polynomial_result_type_cpu result_pure_cpu; 
 
 
 

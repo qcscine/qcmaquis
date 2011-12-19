@@ -166,11 +166,11 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
 {
     for(std::size_t je1 = 0; je1 < max_order; ++je1)
     {
-        for(std::size_t je2 = 0; je2 < max_order - je1; ++je2)
+        for(std::size_t je2 = 0; je2 < max_order; ++je2)
         {
             for(std::size_t he1 = 0; he1 < max_order; ++he1)
             {
-                for(std::size_t he2 = 0; he2 < max_order - he1; ++he2)
+                for(std::size_t he2 = 0; he2 < max_order; ++he2)
                 {
                     BaseInt inter[Size];
                     #pragma unroll
@@ -202,12 +202,14 @@ template  <typename BaseInt, std::size_t Size>
 __global__ void inner_prod_vector(unsigned int max_order, std::size_t vector_size, BaseInt const* v1, BaseInt const* v2, BaseInt* res)
 {
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
-    std::size_t size_poly = Size*max_order*max_order;
+    const std::size_t size_multiplicant = Size*max_order*max_order;
+    const std::size_t size_product = Size*2*max_order*2*max_order;
     //multiplication between polynomial
     if(xIndex < vector_size)
     {
-        std::size_t offset = xIndex*size_poly;
-        polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset],&v2[offset],&res[offset]); 
+        std::size_t offset_m = xIndex*size_multiplicant;
+        std::size_t offset_p = xIndex*size_product;
+        polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
     }
 }
     

@@ -458,7 +458,7 @@ public:  // C - for the dirty programming
     template<typename BaseInt, std::size_t Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
-        vli.print_raw(os);
+        vli.print(os);
         return os;
     }
   
