@@ -36,7 +36,7 @@ namespace ambient
     scheduler & scheduler::operator>>(dim2 mem_dim) 
     {
         this->mem_dim  = mem_dim;
-        this->default_data_packet_t = new block_packet_t(this->mem_dim*this->item_dim); // to redo in future?
+        this->default_data_packet_t = new block_packet_t<typename traits::type>(this->mem_dim*this->item_dim); // to redo in future?
         this->default_data_packet_t->commit();
         if(!world()->get_manager()->subscribed(*this->default_data_packet_t)){
             world()->get_manager()->subscribe(*this->default_data_packet_t);

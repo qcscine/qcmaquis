@@ -4,9 +4,7 @@
 
 #define NODE_COUNT 1
 
-
-
-// C - w, alfa are not nested into dim2 because it is not 2D coordinates
+// C - w, alfa are not nested into dim2 because they are not 2D coordinates
 template <typename T, typename V>
 void __a_memcpy(T& dest, V* dd, T const& src, V *sd,  dim2 const& dpos, dim2 const& spos, std::size_t w, double alfa){
     std::size_t v = get_mem_t_dim(src).y-spos.x;
@@ -369,27 +367,30 @@ void scalar_overlap_c(pinned const p_dense_matrix<double>& a, const p_dense_matr
     *overlap += summ;
 }
 
-void add_c(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+template<typename T>
+void add_c(pinned p_dense_matrix<T>& a, const p_dense_matrix<T>& b)
 {
-    double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
-    double* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
+    T* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
+    T* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
     std::size_t size = get_mem_t_dim(a).x*get_mem_t_dim(a).y;
     for(int i=0; i < size; i++)
         ad[i]+=bd[i];
 }
 
-void sub_c(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+template<typename T>
+void sub_c(pinned p_dense_matrix<T>& a, const p_dense_matrix<T>& b)
 {
-    double* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
-    double* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
+    T* ad = current(a)(get_block_id(a).y, get_block_id(a).x);
+    T* bd = current(b)(get_block_id(a).y, get_block_id(a).x);
     std::size_t size = get_mem_t_dim(a).x*get_mem_t_dim(a).y;
     for(int i=0; i < size; i++)
         ad[i] -= bd[i];
 }
 
-void scale_c(pinned p_dense_matrix<double>& m, const double& t)
+template<typename T, typename T2>
+void scale_c(pinned p_dense_matrix<T>& m, const T2& t)
 {
-    double* md   = current(m)(get_block_id(m).y, get_block_id(m).x);
+    T* md   = current(m)(get_block_id(m).y, get_block_id(m).x);
     std::size_t size = get_mem_t_dim(m).x*get_mem_t_dim(m).y;
     for(int i=0; i < size; i++)
         md[i] *= t;
@@ -622,13 +623,14 @@ void heev_c(const p_dense_matrix<double>& a, int& m, p_dense_matrix<double>& w)
      free(work);
 }
 
-void print_c(const p_dense_matrix<double>& a, int& m, int& n)
+template<typename T>
+void print_c(const p_dense_matrix<T>& a, int& m, int& n)
 {
     int lda = get_grid_dim(a).y*get_mem_t_dim(a).y;
     assert(current(a).layout->get_list().size() != 0);
 
     current(a).solidify(current(a).layout->get_list());
-    double* pa = (double*)breakdown(a).data;
+    T* pa = (T*)breakdown(a).data;
     
     for(int i=0; i < m; ++i){
         for(int j=0; j < n; ++j){

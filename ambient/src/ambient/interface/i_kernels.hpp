@@ -1,4 +1,14 @@
 // nested inside ambient.hpp in ambient namespace
+
+void init(std::complex<double>* ad){
+    (*ad).real() = drand48();
+    (*ad).imag() = drand48();
+}
+
+void init(double *ad){
+    *ad = drand48();
+}
+
 template<typename T>
 void random_i(p_dense_matrix<T>& a)
 {
@@ -17,13 +27,17 @@ void random_i(p_dense_matrix<T>& a)
    
     if(m != ld || n != sd){
         for(size_t jj=0; jj<n; jj++){
-            for(size_t ii=0; ii<m; ii++) ad[jj*ld+ii] = drand48();
+            for(size_t ii=0; ii<m; ii++){
+                init((ad+(jj*ld+ii))); // pointer arithmetic
+            }
             if(m != ld) memset(&ad[jj*ld+m], 0, sizeof(T)*(ld-m));
         }
         if(n != sd) 
             memset(&ad[n*ld], 0, sizeof(T)*(sd-n)*ld);
-    }else
-        for(size_t ii=0; ii<n*m; ii++) ad[ii] = drand48();
+    }else{
+        for(size_t ii=0; ii<n*m; ii++)
+                init((ad+ii)); // pointer arithmetic
+    }
 }
 
 template<typename T>

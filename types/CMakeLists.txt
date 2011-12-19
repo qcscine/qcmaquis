@@ -103,7 +103,7 @@ endif(BUILD_MTM)
 if(ENABLE_PARALLEL)
   enable_testing() 
   # first we need BLAS/LAPAACK
-#  find_package(MPI) 
+  find_package(MPI) 
   # second we need Ambient
  
   if(BUILD_AMBIENT)

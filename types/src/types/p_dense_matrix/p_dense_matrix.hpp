@@ -175,12 +175,12 @@ namespace maquis {
     inline const T&      p_dense_matrix<T,P>::operator () (size_type i, size_type j) const { return this->get(i,j); }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator += (const p_dense_matrix& rhs){ 
-        ambient::push(ambient::mem_bound_l, ambient::add_c, *this, rhs);
+        ambient::push(ambient::mem_bound_l<T>, ambient::add_c<T>, *this, rhs);
         return *this; 
     }
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator -= (const p_dense_matrix& rhs){ 
-        ambient::push(ambient::mem_bound_l, ambient::sub_c, *this, rhs);
+        ambient::push(ambient::mem_bound_l<T>, ambient::sub_c<T>, *this, rhs);
         return *this; 
     }
 
@@ -193,7 +193,7 @@ namespace maquis {
     template <typename T, ambient::policy P>
     template <typename T2>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator *= (const T2& t){
-        ambient::push(ambient::scale_l, ambient::scale_c, *this, t);
+        ambient::push(ambient::scale_l<T,T2>, ambient::scale_c<T,T2>, *this, t);
         return *this;
     }
 
@@ -263,7 +263,7 @@ namespace maquis {
     {
         int m = a.num_rows();
         int n = a.num_cols();
-        ambient::push(ambient::print_l, ambient::print_c, a, m, n); // C - less synchro than previously
+        ambient::push(ambient::print_l<T>, ambient::print_c<T>, a, m, n); // C - less synchro than previously
         ambient::playout(); 
         return o;
     }

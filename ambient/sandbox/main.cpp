@@ -4,7 +4,9 @@
 #include <cmath>
 //#include "utils/zout.hpp"
 #include "ambient/ambient.h"
+#include "ambient/traits.h"
 #include "utils/zout.hpp"
+#include <complex>
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 #include "types/p_dense_matrix/concept/matrix_interface.hpp"
@@ -24,7 +26,8 @@
 
 #include "types/utils/matrix_cast.h"
 
-#define  T double
+//#define  T double
+#define  T typename traits::type
 
 //using namespace maquis::types::algorithms;
 using namespace maquis::types;
@@ -57,42 +60,15 @@ int main(int argc, char* argv[])
     
     pMatrix pA(NUM,NUM);
     pMatrix pB(NUM,NUM);
-    pMatrix pC(NUM,NUM);
-
-    sMatrix sA(NUM,NUM);
-    sMatrix sB(NUM,NUM);
-    sMatrix sC(NUM,NUM);
-
-    pA.set_init(ambient::random_i<double>);
-    pB.set_init(ambient::random_i<double>);
-    pC.set_init(ambient::null_i<double>);
-
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-    sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
-//    sC = maquis::traits::matrix_cast<sMatrix>(pC); // playout is inside the cast
- 
-    sC = sA + sB; 
-    pC = pA + pB; 
-//    zout << sA << std::endl;  
-    zout << " --------sA------------ " << std::endl;
-    zout << sA << std::endl;  
-    zout << " --------sB------------ " << std::endl;
-    zout << sB << std::endl;  
-    zout << " --------sC------------ " << std::endl;
-    zout << sC << std::endl;  
-    zout << " ---------------------- " << std::endl;
-    zout << " --------pA------------ " << std::endl;
+    pA.set_init(ambient::random_i<T>);
+    pB.set_init(ambient::random_i<T>);
     std::cout << pA << std::endl;  
-    zout << " --------pB------------ " << std::endl;
     std::cout << pB << std::endl;  
-    zout << " --------pC------------ " << std::endl;
-    std::cout << pC << std::endl;  
-//    zout << " ---------------------- " << std::endl;
-//    std::cout << pC << std::endl;  
-/*   
-    if( pC == sC )
-        zout << " ok "   
- */
+    pA+=pB;
+    pB+=pA;
+    std::cout << pB << std::endl;  
+    pB*=3;
+    std::cout << pB << std::endl;  
     ambient::finalize();
 
 }

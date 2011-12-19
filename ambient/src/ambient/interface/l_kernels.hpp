@@ -238,7 +238,8 @@ void scalar_overlap_l(pinned const p_dense_matrix<double>& a, const p_dense_matr
     block_outright_assign(b);
 }
 
-void mem_bound_l(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>& b)
+template<typename T>
+void mem_bound_l(pinned p_dense_matrix<T>& a, const p_dense_matrix<T>& b)
 {
     scope_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ get_id(a));
     if(!scope.involved()) return;
@@ -248,7 +249,8 @@ void mem_bound_l(pinned p_dense_matrix<double>& a, const p_dense_matrix<double>&
     block_2d_cycle_assign(b);
 }
 
-void scale_l(pinned p_dense_matrix<double>& m, const double& t)
+template<typename T, typename T2>
+void scale_l(pinned p_dense_matrix<T>& m, const T2& t)
 {
     scope_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ get_id(m));
     if(!scope.involved()) return;
@@ -443,7 +445,8 @@ void nullcut_l(pinned p_dense_matrix<double>& a, const size_t& num_rows, const s
     block_2d_cycle_assign(a); 
 }
 
-void print_l(const p_dense_matrix<double>& a, int& m, int& n)
+template<typename T>
+void print_l(const p_dense_matrix<T>& a, int& m, int& n)
 {
     int num = 1;
     scope_select(num+" from ambient as print where master is 0 and breakdown contains "+ get_id(a));

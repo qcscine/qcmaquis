@@ -162,7 +162,6 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     Index<SymmGroup> old_basis = S.left_basis();
     size_t* keeps = new size_t[S.n_blocks()];
     double truncated_weight, smallest_ev;
-  
     static Timer timer("Iteretable_diag_impl_svd_truncate");
     timer.begin();
     //  Given the full SVD in each block (above), remove all singular values and corresponding rows/cols

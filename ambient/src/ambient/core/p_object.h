@@ -46,8 +46,8 @@ namespace ambient {
 ////////////////////////////////////////////////
 
 // engine fields ///////////////////////////////
-        block_packet_t*     packet_type;      //
-        block_packet_t*     xpacket_type;     //
+        block_packet_t<typename traits::type>*     packet_type;      //
+        block_packet_t<typename traits::type>*     xpacket_type;     //
         memblock*           default_block;    //
 // lapack knobs ////////////////////////////////
         void*               data;             // 

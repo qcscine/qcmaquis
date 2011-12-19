@@ -5,8 +5,8 @@ using namespace maquis::types;
 #define MAX_NUM_CHAR_LEN 10
 #define scope_select(...) scope_select(std::string(std::string() + __VA_ARGS__).c_str());
 
-void copy_l(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a);
-void copy_c(p_dense_matrix<double>& ac, pinned const p_dense_matrix<double>& a);
+void copy_l(p_dense_matrix<typename traits::type>& ac, pinned const p_dense_matrix<typename traits::type>& a);
+void copy_c(p_dense_matrix<typename traits::type>& ac, pinned const p_dense_matrix<typename traits::type>& a);
 
 class parallel_t: public p_object 
 { 
