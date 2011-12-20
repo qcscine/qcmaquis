@@ -174,6 +174,9 @@ set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps include, need for boos
 
 if(ENABLE_TESTS)
  add_subdirectory(regression/p_dense_kernels)
+	if(ENABLE_MTM)
+		add_subdirectory(regression/mt_matrix)
+	endif(ENABLE_MTM)
 endif(ENABLE_TESTS)
 
 if(ENABLE_BENCHMARKS)
