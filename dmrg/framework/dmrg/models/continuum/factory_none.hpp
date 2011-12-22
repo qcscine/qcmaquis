@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/continuous/models_none.hpp"
+#include "dmrg/models/continuum/models_none.hpp"
 
 namespace app {
     

@@ -9,7 +9,7 @@
 #include "factory_impl.h"
 
 #include "dmrg/models/coded/factory_u1.hpp"
-#include "dmrg/models/continuous/factory_u1.hpp"
+#include "dmrg/models/continuum/factory_u1.hpp"
 
 namespace app {
 	typedef U1 grp;
