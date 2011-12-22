@@ -13,8 +13,7 @@
 #include "types/dense_matrix/dense_matrix_algorithms.h"
 #include "types/dense_matrix/algorithms.hpp"
 
-#include "dmrg/models/hamiltonian.h"
-#include "dmrg/models/measurements.h"
+#include "dmrg/models/model.h"
 
 #include <alps/parameter.h>
 #include <alps/lattice.h>
@@ -105,7 +104,7 @@ namespace app {
     };
     
     template <class Matrix, class SymmGroup>
-    class ALPSModel
+    class ALPSModel : public Model<Matrix, SymmGroup>
     {
         typedef alps::SiteOperator SiteOperator;
         typedef alps::BondOperator BondOperator;
@@ -125,9 +124,10 @@ namespace app {
         
         typedef typename SymmGroup::charge charge;
         
-        ALPSModel (const graph_type& lattice_, const alps::Parameters& parms) :
-		lattice(lattice_),
-		model(lattice, parms)
+        ALPSModel (const graph_type& lattice_, const alps::Parameters& parms_)
+        : parms(parms_)
+        , lattice(lattice_)
+        , model(lattice, parms)
         {
             
             // Parsing conserved quantum numbers
@@ -310,14 +310,14 @@ namespace app {
             return converter[0].phys_dim();
         }
         
-        Hamiltonian<Matrix, SymmGroup> get_hamiltonian () const
+        Hamiltonian<Matrix, SymmGroup> H () const
         {
             return ham(get_phys(), get_identity(), terms);
         }
         
-        typename SymmGroup::charge init_qn (const alps::Parameters& parms) const
+        typename SymmGroup::charge initc (const alps::Parameters& parms_) const
         {
-            return init_charge<SymmGroup>(parms, conserved_qn);
+            return init_charge<SymmGroup>(parms_, conserved_qn);
             /*        	typename SymmGroup::charge c = SymmGroup::IdentityCharge;
              for (int i=0; i<conserved_qn.size(); ++i) {
              if (conserved_qn.size() == 1)
@@ -328,7 +328,7 @@ namespace app {
              return c;*/
         }
         
-        Measurements<Matrix, SymmGroup> parse_measurements (alps::Parameters const & parms) const;
+        Measurements<Matrix, SymmGroup> measurements () const;
         
     private:
         
@@ -377,6 +377,7 @@ namespace app {
             return op;
         }
         
+        alps::Parameters const & parms;
         const graph_type& lattice;
         alps::model_helper<I> model;
         
@@ -401,7 +402,7 @@ namespace app {
 
     // Loading Measurements
     template <class Matrix, class SymmGroup>
-    Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::parse_measurements (alps::Parameters const & parms) const
+    Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () const
     {
         typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
         Measurements<Matrix, SymmGroup> meas;

@@ -8,6 +8,9 @@
 
 #include "factory_impl.h"
 
+#include "dmrg/models/coded/factory_2u1.hpp"
+#include "dmrg/models/continuous/factory_2u1.hpp"
+
 namespace app {
 	typedef TwoU1 grp;
 
@@ -19,19 +22,6 @@ namespace app {
     impl_init_model(cmatrix1, grp)
 #endif
 
-
-    template<class Matrix>
-    struct hamil_factory<Matrix, TwoU1> {
-        static Hamiltonian<Matrix, TwoU1> parse (BaseParameters & model, Lattice const & lattice)
-        {
-            if (model.get<std::string>("MODEL") == std::string("fermi_hubbard"))
-                return TwoU1_FermiHubbard<Matrix>(lattice, model)();
-            else {
-                throw std::runtime_error("Don't know this model!");
-                return Hamiltonian<Matrix, TwoU1>();
-            }
-        }
-    };
     
     template <>
     TwoU1::charge init_qn<TwoU1> (BaseParameters & model)

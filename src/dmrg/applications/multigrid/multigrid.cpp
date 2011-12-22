@@ -61,8 +61,17 @@ typedef maquis::types::dense_matrix<double> Matrix;
 
 #include "dmrg/mp_tensors/ss_optimize.h"
 
-#include "dmrg/models/continuous/lattice.h"
-#include "dmrg/models/continuous/model.h"
+#include "dmrg/models/factory.h"
+#include "dmrg/models/continuous/lattice.hpp"
+#ifdef UseTwoU1
+#include "dmrg/models/continuous/models_2u1.hpp"
+#else
+#ifdef UseNULL
+#include "dmrg/models/continuous/models_none.hpp"
+#else
+#include "dmrg/models/continuous/models_u1.hpp"
+#endif
+#endif
 
 using namespace app;
 
@@ -96,59 +105,18 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
     }
 }
 
-template <class Matrix>
-void cont_model_parser (BaseParameters & parms, boost::shared_ptr<Lattice> & lattice,
-                        Hamiltonian<Matrix, grp>& H, Measurements<Matrix, grp>& meas)
-{
-    if (parms.get<std::string>("lattice") == std::string("continuous_chain")
-        || parms.get<std::string>("lattice") == std::string("continuous_left_chain")
-        || parms.get<std::string>("lattice") == std::string("continuous_center_chain"))
-        lattice = boost::shared_ptr<Lattice>(new ContChain(parms, false));
-    else if (parms.get<std::string>("lattice") == std::string("periodic_continuous_chain"))
-        lattice = boost::shared_ptr<Lattice>(new ContChain(parms, true));
-    else
-        throw std::runtime_error("Don't know this lattice!");
-    
-#ifdef UseNULL
-    if (parms.get<std::string>("model") == std::string("optical_lattice"))
-    {
-        OpticalLatticeNull<Matrix> model(*lattice, parms);
-        H = model.H();
-        meas = model.measurements();
-    } else
-        throw std::runtime_error("Don't know this model!");
-#else
-#ifdef UseTwoU1
-    if (parms.get<std::string>("model") == std::string("fermi_optical_lattice"))
-    {
-        FermiOpticalLattice<Matrix> model(*lattice, parms);
-        H = model.H();
-        meas = model.measurements();
-    } else
-        throw std::runtime_error("Don't know this model!");
-#else
-    if (parms.get<std::string>("model") == std::string("optical_lattice"))
-    {
-        OpticalLattice<Matrix> model(*lattice, parms);
-        H = model.H();
-        meas = model.measurements();
-    } else
-        throw std::runtime_error("Don't know this model!");
-#endif
-#endif
-}
 
 MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & parms2, int L2)
 {
     assert( parms1.get<std::string>("lattice") == parms2.get<std::string>("lattice") );
     
     
-    Lattice * lat;
+    Lattice_ptr lat;
     if (parms1.get<std::string>("lattice") == "continuous_chain"
         || parms1.get<std::string>("lattice") == std::string("continuous_left_chain"))
-        lat = new MixedContChain(parms1, L1, parms2, L2);
+        lat = Lattice_ptr(new MixedContChain(parms1, L1, parms2, L2));
     else if (parms2.get<std::string>("lattice") == std::string("continuous_center_chain"))
-        lat = new MixedContChain_c(parms1, L1, parms2, L2);
+        lat = Lattice_ptr(new MixedContChain_c(parms1, L1, parms2, L2));
     else
         throw std::runtime_error("Don't know this lattice!");
     
@@ -157,7 +125,7 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
 //        std::cout << lat.get_prop<std::string>("label", p, p+1) << ": " << lat.get_prop<double>("dx", p, p+1) << std::endl;
 //        std::cout << lat.get_prop<std::string>("label", p, p-1) << ": " << lat.get_prop<double>("dx", p, p-1) << std::endl;
 //    }
-
+    
 #ifdef UseNULL
     OpticalLattice<Matrix> model(*lat, parms1);
     Hamiltonian<Matrix, grp> H = model.H();
@@ -258,7 +226,8 @@ int main(int argc, char ** argv)
     std::cout << "initc: " << initc << std::endl;
     
     
-    boost::shared_ptr<Lattice> lat;
+    Lattice_ptr lat;
+    model_traits<Matrix, grp>::model_ptr phys_model;
     Hamiltonian<Matrix, grp> H;
     Measurements<Matrix, grp> measurements;
     Index<grp> phys;
@@ -276,7 +245,7 @@ int main(int argc, char ** argv)
         
         old_model = model;
         
-        cont_model_parser(model, lat, H, measurements);
+        model_parser<Matrix, grp>("continuum", "continuum", model, lat, phys_model);
         phys = H.get_phys();
         
         mpo = make_mpo(lat->size(), H);
@@ -300,7 +269,7 @@ int main(int argc, char ** argv)
         BaseParameters parms = raw_parms.get_at_index("graining", graining);
         BaseParameters model = raw_model.get_at_index("graining", graining);
         
-        cont_model_parser(model, lat, H, measurements);
+        model_parser<Matrix, grp>("continuum", "continuum", model, lat, phys_model);
         phys = H.get_phys();
 
 #ifndef NDEBUG
