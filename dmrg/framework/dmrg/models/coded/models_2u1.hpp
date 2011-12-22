@@ -12,169 +12,13 @@
 
 #include <sstream>
 
-#include "dmrg/models/hamiltonian.h"
+#include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 
 namespace app {
-    /* ****************** HEISENBERG */
-    template<class Matrix>
-    Hamiltonian<Matrix, U1> Heisenberg (const Lattice& lat, double Jxy, double Jz)
-    {
-        typedef Hamiltonian<Matrix, U1> ham;        
-        typedef typename ham::hamterm_t hamterm_t;        
-        typedef typename ham::op_t op_t;
-        
-        op_t ident;    
-        op_t splus, sminus, sz;
-        
-        ident.insert_block(Matrix(1, 1, 1), -1, -1);
-        ident.insert_block(Matrix(1, 1, 1), 1, 1);
-        
-        splus.insert_block(Matrix(1, 1, 1), -1, 1);
-        
-        sminus.insert_block(Matrix(1, 1, 1), 1, -1);
-        
-        sz.insert_block(Matrix(1, 1, 0.5), 1, 1);
-        sz.insert_block(Matrix(1, 1, -0.5), -1, -1);
-        
-        Index<U1> phys;
-        phys.insert(std::make_pair(1, 1));
-        phys.insert(std::make_pair(-1, 1));
-        
-        std::vector<hamterm_t> terms;
-        for (int p=0; p<lat.size(); ++p) {
-            std::vector<int> neighs = lat.forward(p);
-            for (int n=0; n<neighs.size(); ++n) {
-                {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, Jz*sz) );
-                    term.operators.push_back( std::make_pair(neighs[n], sz) );
-                    terms.push_back(term);
-                }
-                {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, Jxy/2*splus) );
-                    term.operators.push_back( std::make_pair(neighs[n], sminus) );
-                    terms.push_back(term);
-                }
-                {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, Jxy/2*sminus) );
-                    term.operators.push_back( std::make_pair(neighs[n], splus) );
-                    terms.push_back(term);
-                }
-            }
-        }
-        
-        return ham(phys, ident, terms);
-    }
-    
-    
-    /* ****************** HARD CORE BOSONS */
-    template<class Matrix>
-    Hamiltonian<Matrix, U1> HCB (const Lattice& lat, double t=1.)
-    
-    {
-        typedef Hamiltonian<Matrix, U1> ham;        
-        typedef typename ham::hamterm_t hamterm_t;        
-        typedef typename ham::op_t op_t;
-        
-        op_t ident;
-        op_t create, destroy, count;
-        
-        ident.insert_block(Matrix(1, 1, 1), 0, 0);
-        ident.insert_block(Matrix(1, 1, 1), 1, 1);
-        
-        create.insert_block(Matrix(1, 1, 1), 0, 1);
-        destroy.insert_block(Matrix(1, 1, 1), 1, 0);
-        
-        count.insert_block(Matrix(1, 1, 1), 1, 1);
-        
-        Index<U1> phys;
-        phys.insert(std::make_pair(0, 1));
-        phys.insert(std::make_pair(1, 1));
-        
-        std::vector<hamterm_t> terms;
-        for (int p=0; p<lat.size(); ++p) {
-            std::vector<int> neighs = lat.forward(p);
-            for (int n=0; n<neighs.size(); ++n) {
-                {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, -t*create) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                    terms.push_back(term);
-                }
-                {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, -t*destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
-                    terms.push_back(term);
-                }
-            }
-        }
-        
-        return ham(phys, ident, terms);
-    }
-    
-    
-    /* ****************** FREE FERMIONS */
-    template<class Matrix>
-    Hamiltonian<Matrix, U1> FreeFermions (const Lattice& lat, double t=1.)
-    {
-        typedef Hamiltonian<Matrix, U1> ham;        
-        typedef typename ham::hamterm_t hamterm_t;        
-        typedef typename ham::op_t op_t;
-        
-        op_t ident;
-        op_t create, destroy, sign;
-        create.insert_block(Matrix(1, 1, 1), 0, 1);
-        destroy.insert_block(Matrix(1, 1, 1), 1, 0);
-        
-        ident.insert_block(Matrix(1, 1, 1), 0, 0);
-        ident.insert_block(Matrix(1, 1, 1), 1, 1);
-        sign.insert_block(Matrix(1, 1, 1), 0, 0);
-        sign.insert_block(Matrix(1, 1, -1), 1, 1);
-        
-        Index<U1> phys;
-        phys.insert(std::make_pair(0, 1));
-        phys.insert(std::make_pair(1, 1));
-        
-        std::vector<hamterm_t> terms;
-        for (int p=0; p<lat.size(); ++p) {
-            std::vector<int> neighs = lat.forward(p);
-            for (int n=0; n<neighs.size(); ++n) {
-                {
-                    hamterm_t term;
-                    term.with_sign = true;
-                    term.fill_operator = sign;
-                    term.operators.push_back( std::make_pair(p, -t*create) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                    terms.push_back(term);
-                }
-                {
-                    hamterm_t term;
-                    term.with_sign = true;
-                    term.fill_operator = sign;
-                    term.operators.push_back( std::make_pair(p, -t*destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
-                    terms.push_back(term);
-                }
-            }
-        }
-        
-        return ham(phys, ident, terms);
-    }
-    
-    
-    
     /* ****************** FERMI HUBBARD */
     template<class Matrix>
-    class TwoU1_FermiHubbard
+    class TwoU1_FermiHubbard : public Model<Matrix, TwoU1>
     {
     public:
         typedef Hamiltonian<Matrix, TwoU1> ham;        
@@ -282,9 +126,14 @@ namespace app {
         }
         
         
-        Hamiltonian<Matrix, TwoU1> operator() () const
+        Hamiltonian<Matrix, TwoU1> H () const
         {
             return ham(phys, ident, terms);
+        }
+        
+        Measurements<Matrix, TwoU1> measurements () const
+        {
+            return Measurements<Matrix, TwoU1>();
         }
         
     private:

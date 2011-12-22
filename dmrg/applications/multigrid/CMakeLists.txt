@@ -2,7 +2,7 @@
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 enable_omp_if_found()
 
-set(DMRG_APP_LIBRARIES dmrg_utils ${DMRG_LIBRARIES})
+set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})
 if(USE_MTM)
   list(INSERT DMRG_APP_LIBRARIES 0 mtm)
 endif(USE_MTM)

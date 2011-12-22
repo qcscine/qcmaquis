@@ -6,22 +6,26 @@
  *
  *****************************************************************************/
 
-#ifndef APP_MODELS_H
-#define APP_MODELS_H
+#ifndef MAQUIS_DMRG_MODELS_CODED_FACTORY_H
+#define MAQUIS_DMRG_MODELS_CODED_FACTORY_H
 
 #include "dmrg/utils/BaseParameters.h"
-
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"
 
 namespace app {
     
-    template <class Matrix, class SymmGroup>
-    void model_parser (std::string lattice_lib, std::string model_lib,
-                       BaseParameters & parms,
-                       Lattice_ptr & lattice,
-                       typename model_traits<Matrix, SymmGroup>::model_ptr & model);
+    inline Lattice_ptr lattice_factory (BaseParameters &);
+    
+    
+    template<class Matrix, class SymmGroup>
+    struct model_factory {
+        static typename model_traits<Matrix, SymmGroup>::model_ptr
+        parse (Lattice const &, BaseParameters &);
+    };
+    
 }
 
+#include "factory_lat.hpp"
 
 #endif

@@ -124,8 +124,11 @@ public:
 #endif
         dmrg_random::engine.seed(parms.get<int>("seed"));
         
-        typename SymmGroup::charge initc;
-        model_parser(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, H, initc, measurements);
+        
+        model_parser<Matrix, SymmGroup>(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, phys_model);
+        typename SymmGroup::charge initc = phys_model->initc(model);
+        H = phys_model->H();
+        measurements = phys_model->measurements();
         phys = H.get_phys();
         
         /*
@@ -343,7 +346,8 @@ private:
     std::string chkpfile;
     std::string rfile;
     
-    Lattice * lat;
+    Lattice_ptr lat;
+    typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
     Hamiltonian<Matrix, SymmGroup> H;
     Index<SymmGroup> phys;
     MPS<Matrix, SymmGroup> mps;

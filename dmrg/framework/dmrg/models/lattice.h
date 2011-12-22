@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
 
 class Lattice
@@ -50,6 +51,6 @@ public:
     virtual pos_t size() const = 0;
 };
 
+typedef boost::shared_ptr<Lattice> Lattice_ptr;
 
-Lattice * lattice_factory (std::string const & lattice, std::ifstream & ifs);
 #endif

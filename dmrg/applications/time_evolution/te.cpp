@@ -107,7 +107,7 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 }
 
 std::vector<MPO<Matrix, grp> >
-getU(std::vector<Hamiltonian<Matrix, grp> > const & split_H, Lattice * lat,
+getU(std::vector<Hamiltonian<Matrix, grp> > const & split_H, Lattice_ptr lat,
      double dt, bool img)
 {
 #ifdef IMG_ONLY
@@ -176,11 +176,12 @@ int main(int argc, char ** argv)
     }
 #endif
     
-    Lattice * lat;
-    Hamiltonian<Matrix, grp> H;
-    grp::charge initc;
-    Measurements<Matrix, grp> measurements;
-    model_parser(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, H, initc, measurements);
+    Lattice_ptr lat;
+    typename model_traits<Matrix, grp>::model_ptr phys_model;
+    model_parser<Matrix, grp>(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, phys_model);
+    Hamiltonian<Matrix, grp> H = phys_model->H();
+    grp::charge initc = phys_model->initc(model);
+    Measurements<Matrix, grp> measurements = phys_model->measurements();
     Index<grp> phys = H.get_phys();
     std::cout << "initc: " << initc << std::endl;
     
