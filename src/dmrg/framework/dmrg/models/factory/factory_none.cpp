@@ -9,7 +9,7 @@
 #include "factory_impl.h"
 
 #include "dmrg/models/coded/factory_none.hpp"
-#include "dmrg/models/continuous/factory_none.hpp"
+#include "dmrg/models/continuum/factory_none.hpp"
 
 namespace app {
 	typedef TrivialGroup grp;

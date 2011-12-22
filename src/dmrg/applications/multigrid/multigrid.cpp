@@ -62,14 +62,14 @@ typedef maquis::types::dense_matrix<double> Matrix;
 #include "dmrg/mp_tensors/ss_optimize.h"
 
 #include "dmrg/models/factory.h"
-#include "dmrg/models/continuous/lattice.hpp"
+#include "dmrg/models/continuum/lattice.hpp"
 #ifdef UseTwoU1
-#include "dmrg/models/continuous/models_2u1.hpp"
+#include "dmrg/models/continuum/models_2u1.hpp"
 #else
 #ifdef UseNULL
-#include "dmrg/models/continuous/models_none.hpp"
+#include "dmrg/models/continuum/models_none.hpp"
 #else
-#include "dmrg/models/continuous/models_u1.hpp"
+#include "dmrg/models/continuum/models_u1.hpp"
 #endif
 #endif
 

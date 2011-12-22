@@ -9,7 +9,7 @@
 #include "factory_impl.h"
 
 #include "dmrg/models/coded/factory_2u1.hpp"
-#include "dmrg/models/continuous/factory_2u1.hpp"
+#include "dmrg/models/continuum/factory_2u1.hpp"
 
 namespace app {
 	typedef TwoU1 grp;

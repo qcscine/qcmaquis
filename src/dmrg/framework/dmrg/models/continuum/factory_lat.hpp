@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/continuous/lattice.hpp"
+#include "dmrg/models/continuum/lattice.hpp"
 
 namespace app {
     

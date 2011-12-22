@@ -24,7 +24,7 @@
 
 #include "dmrg/models/factory.h"
 #include "dmrg/models/coded/factory.h"
-#include "dmrg/models/continuous/factory.h"
+#include "dmrg/models/continuum/factory.h"
 #ifdef ENABLE_ALPS_MODELS
 #include "dmrg/models/alps/lattice.hpp"
 #include "dmrg/models/alps/model.hpp"
