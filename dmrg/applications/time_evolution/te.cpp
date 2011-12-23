@@ -177,7 +177,7 @@ int main(int argc, char ** argv)
 #endif
     
     Lattice_ptr lat;
-    typename model_traits<Matrix, grp>::model_ptr phys_model;
+    model_traits<Matrix, grp>::model_ptr phys_model;
     model_parser<Matrix, grp>(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, phys_model);
     Hamiltonian<Matrix, grp> H = phys_model->H();
     grp::charge initc = phys_model->initc(model);
