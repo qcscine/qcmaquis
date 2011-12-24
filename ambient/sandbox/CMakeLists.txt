@@ -3,7 +3,8 @@ include_directories ("${AMBIENT_DIR}")
 #for boost numeric it is not an offical part of boost
 #so set up by hand !!!!!!!!
 #ok by hand but I do not want a new dependency into ambient
-include_directories ("/project/h07/ALPS_INTEL_EIGER/include/")
+#include_directories ("/project/h07/ALPS_INTEL_EIGER/include/")
+include_directories ("/opt/ALPS_INSTALL/include/")
 #Apple target
 if(BLAS_Accelerate_LIBRARY)
     add_definitions(-DAPPLE -DMPI_PARALLEL -framework Accelerate)

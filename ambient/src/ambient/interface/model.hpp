@@ -41,14 +41,13 @@ parallel_t& breakdown(T& obj){
 }
 
 template<>
-void plus_reduce< p_dense_matrix<double> >(memblock* grp, void* update){
-    double* a = (double*)grp->data;
-    double* u = (double*)update;
-
+void plus_reduce< p_dense_matrix<ambient::traits::value_type> >(memblock* grp, void* update){
+    ambient::traits::value_type* a = (ambient::traits::value_type*)grp->data;
+    ambient::traits::value_type* u = (ambient::traits::value_type*)update;
     int n = grp->get_mem_t_dim().x;
     int m = grp->get_mem_t_dim().y;
     int ld = m;
-
-    for(int i=0; i<m*n; i++) a[i] += u[i];
+    std::size_t num = m*n; // C - To vectorize
+    for(std::size_t i=0; i<num; ++i) a[i] += u[i];
 }
 

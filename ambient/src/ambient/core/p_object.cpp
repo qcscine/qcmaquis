@@ -68,7 +68,7 @@ namespace ambient {
     {
         this->mem_dim = mem_dim;
         this->xpacket_type = this->packet_type;
-        this->packet_type = new block_packet_t<typename traits::type>(this->mem_dim*this->item_dim);
+        this->packet_type = new block_packet_t<ambient::traits::value_type>(this->mem_dim*this->item_dim);
         this->packet_type->commit();
         this->reblock();
         this->work_dim = NULL;

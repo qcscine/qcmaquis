@@ -25,9 +25,10 @@
 #include "types/dense_matrix/aligned_allocator.h"
 
 #include "types/utils/matrix_cast.h"
+#include <complex>
 
 //#define  T double
-#define  T typename traits::type
+#define  T ambient::traits::value_type
 
 //using namespace maquis::types::algorithms;
 using namespace maquis::types;
@@ -56,19 +57,30 @@ int main(int argc, char* argv[])
 
     ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
 
-    int NUM=std::atoi(argv[1]);
-    
-    pMatrix pA(NUM,NUM);
-    pMatrix pB(NUM,NUM);
-    pA.set_init(ambient::random_i<T>);
-    pB.set_init(ambient::random_i<T>);
-    std::cout << pA << std::endl;  
-    std::cout << pB << std::endl;  
-    pA+=pB;
-    pB+=pA;
-    std::cout << pB << std::endl;  
-    pB*=3;
-    std::cout << pB << std::endl;  
-    ambient::finalize();
+    int NUM = std::atoi(argv[1]);
 
+    pMatrix pA(NUM,NUM);
+    pMatrix pU(NUM,NUM);
+    pMatrix pV(NUM,NUM);
+
+    sMatrix sA(NUM,NUM);
+    sMatrix sU(NUM,NUM);
+    sMatrix sV(NUM,NUM);
+
+    pA.set_init(ambient::random_i<T>);
+    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+ 
+    maquis::types::associated_diagonal_matrix<p_dense_matrix<double> >::type pS; 
+    maquis::types::associated_diagonal_matrix<dense_matrix<double> >::type sS; 
+ 
+    maquis::types::algorithms::svd(pA,pU,pV,pS);
+    maquis::types::algorithms::svd(sA,sU,sV,sS);
+  
+    if(sS == pS)   std::cout << " OK " ;
+    std::cout << pS << std::endl;
+    std::cout << " ----------- " << std::endl;
+    std::cout << sS << std::endl;
+
+    ambient::finalize();
 }
+

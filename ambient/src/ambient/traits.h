@@ -5,8 +5,8 @@
 namespace ambient{
     struct traits
     {
-        //typedef std::complex<double> type; 
-        typedef double type; 
+   //     typedef std::complex<double> value_type; 
+        typedef double value_type; 
         enum {value=128}; // C - could be given by the preprocessor -D ? 
     };
 }

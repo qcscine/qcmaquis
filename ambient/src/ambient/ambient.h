@@ -4,6 +4,7 @@
 #define _AMBIENT
 
 #include <mpi.h>
+#include <complex>
 #include <stdio.h>
 #include <stdlib.h>
 #include <queue>
@@ -69,7 +70,7 @@ namespace ambient
         inline bool blank();
 
         int size;
-        block_packet_t<typename traits::type>* default_data_packet_t;
+        block_packet_t<ambient::traits::value_type>* default_data_packet_t;
         groups::group* ambient;
     private:
         dim2 work_dim;   // work-item size of distribution blocks
