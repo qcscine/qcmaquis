@@ -77,7 +77,7 @@ namespace maquis {
     template<typename T>
     void p_diagonal_matrix<T>::exp()
     { 
-        ambient::push(ambient::exp_diagonal_l, ambient::exp_diagonal_c, this->get_data());
+        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, this->get_data());
     }
     template<typename T>
     p_diagonal_matrix<T> exp(p_diagonal_matrix<T> m)
@@ -88,7 +88,7 @@ namespace maquis {
     template<typename T>
     void p_diagonal_matrix<T>::sqrt()
     { 
-        ambient::push(ambient::sqrt_diagonal_l, ambient::sqrt_diagonal_c, this->get_data());
+        ambient::push(ambient::sqrt_diagonal_l<T>, ambient::sqrt_diagonal_c<T>, this->get_data());
     }
     template<typename T>
     p_diagonal_matrix<T> sqrt(p_diagonal_matrix<T> m)

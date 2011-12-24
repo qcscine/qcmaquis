@@ -20,6 +20,8 @@
 
 #include "types/utils/matrix_cast.h"
 
+#include "utils/Debug_mpi.h"
+
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_dense, T, test_types)
@@ -27,10 +29,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_dense, T, test_types)
     ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
-
     pA.set_init(ambient::random_i<typename T::dbl>);
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-  
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 
@@ -40,9 +40,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_dense, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
     maquis::types::algorithms::generate(sA,Rd); // Rd is rand generator static variable inside utilities
-
     pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
-  
     BOOST_CHECK(sA==pA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 
@@ -65,6 +63,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_diag, T, test_types)
    
     sA.generate(Rd); // Rd is rand generator static variable inside utilities
     pA = maquis::traits::matrix_cast<pDiagMatrix>(sA); // playout is inside the cast
-  
     BOOST_CHECK(sA==pA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
+

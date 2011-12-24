@@ -29,7 +29,7 @@ namespace detail {
             }
           iteretable_diag_impl<maquis::types::diagonal_matrix<T>, SymmGroup>::solver_truncate_impl_zero(serial_evals, Mmax, cutoff, keeps, truncated_weight, smallest_ev);
         }
-    };
+    }; // end structure
 
     //reshape algo
     template<class T, class SymmGroup>
@@ -46,7 +46,7 @@ namespace detail {
                                 maquis::types::p_dense_matrix<T> const & in_block,
                                 maquis::types::p_dense_matrix<T> & out_block)
          { 
-             ambient::push(ambient::reshape_r2l_l, ambient::reshape_r2l_c, out_block, in_block, 
+             ambient::push(ambient::reshape_r2l_l<T>, ambient::reshape_r2l_c<T>, out_block, in_block, 
                            out_left_offset, in_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
              ambient::playout();
          }
@@ -63,7 +63,7 @@ namespace detail {
                                 maquis::types::p_dense_matrix<T> const & in_block,
                                 maquis::types::p_dense_matrix<T> & out_block)
          {
-             ambient::push(ambient::reshape_l2r_l, ambient::reshape_l2r_c, in_block, out_block, 
+             ambient::push(ambient::reshape_l2r_l<T>, ambient::reshape_l2r_c<T>, in_block, out_block, 
                            in_left_offset, out_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
              ambient::playout();
          }
@@ -83,7 +83,7 @@ namespace detail {
                                                    maquis::types::p_dense_matrix<T> & oblock)
          {
 
-            ambient::push(ambient::lb_tensor_mpo_l<typename Matrix::value_type>, ambient::lb_tensor_mpo_c<typename Matrix::value_type>,
+            ambient::push(ambient::lb_tensor_mpo_l<T>, ambient::lb_tensor_mpo_c<T>,
                                                   oblock, iblock, wblock, out_left_offset, in_left_offset, 
                                                   physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                    ambient::playout(); 
@@ -104,7 +104,7 @@ namespace detail {
                                                     maquis::types::p_dense_matrix<T> const & iblock,
                                                     maquis::types::p_dense_matrix<T> & oblock)
          {
-             ambient::push(ambient::rb_tensor_mpo_l<typename Matrix::value_type>, ambient::rb_tensor_mpo_c<typename Matrix::value_type>,
+             ambient::push(ambient::rb_tensor_mpo_l<T>, ambient::rb_tensor_mpo_c<T>,
                            oblock, iblock, wblock, out_right_offset, in_right_offset, 
                            physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
             ambient::playout();
@@ -115,7 +115,7 @@ namespace detail {
         {
             M.nullcut(); // not counting redunant elements of workgroup
             typename Matrix::value_type* norm = &ret;
-            ambient::push(ambient::scalar_norm_l, ambient::scalar_norm_c, M, norm);
+            ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, M, norm);
             ambient::playout(); // execution weight: 452
         }
 
@@ -123,7 +123,7 @@ namespace detail {
         {
             M1.nullcut(); // not counting redunant elements of workgroup
             typename Matrix::value_type* overlap = &ret;
-            ambient::push(ambient::scalar_overlap_l, ambient::scalar_overlap_c, M1, M2, overlap);
+            ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, M1, M2, overlap);
             ambient::playout(); // execution weight: 452
         }
 
@@ -139,9 +139,9 @@ namespace detail {
         static void left_right_boundary_init_impl(maquis::types::p_dense_matrix<T> & M)
         {
             double one(1.0);
-            ambient::push(ambient::initv_l,ambient::initv_c, M, one);
+            ambient::push(ambient::initv_l<T>,ambient::initv_c<T>, M, one);
             ambient::playout();
         }
-     };
+     }; // end structure
 }
 #endif

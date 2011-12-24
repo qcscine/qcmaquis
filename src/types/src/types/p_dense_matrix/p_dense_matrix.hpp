@@ -63,7 +63,7 @@ namespace maquis {
 
     template <typename T, ambient::policy P>
     void p_dense_matrix<T,P>::nullcut(){
-        ambient::push(ambient::nullcut_l, ambient::nullcut_c, *this, self->rows, self->cols);
+        ambient::push(ambient::nullcut_l<T>, ambient::nullcut_c<T>, *this, self->rows, self->cols);
     }
 
     template <typename T, ambient::policy P>
@@ -87,7 +87,7 @@ namespace maquis {
         if(!this->is_abstract()){
             self->rows = rows; 
             self->cols = cols;
-            ambient::push(ambient::resize_l, ambient::resize_c, *this, self->rows, self->cols);
+            ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, *this, self->rows, self->cols);
             this->nullcut(); // maybe will remove
         }
     }
@@ -97,8 +97,10 @@ namespace maquis {
     {
         assert( i+k <= self->rows );
         if(this->is_abstract()) return this->resize(self->rows-k, self->cols);
-        ambient::push(ambient::remove_rows_l, ambient::remove_rows_c, *this, i, k);
-        this->resize(self->rows - k, self->cols);
+        ambient::push(ambient::remove_rows_l<T>, ambient::remove_rows_c<T>, *this, i, k);
+        self->rows = self->rows-k; 
+        this->nullcut(); // maybe will remove
+     //   this->resize(self->rows - k, self->cols);
     }
 
     template <typename T, ambient::policy P>
@@ -106,8 +108,10 @@ namespace maquis {
     {
         assert( j+k <= self->cols );
         if(this->is_abstract()) return this->resize(self->rows, self->cols-k);
-        ambient::push(ambient::remove_cols_l, ambient::remove_cols_c, *this, j, k);
-        this->resize(self->rows, self->cols - k);
+        ambient::push(ambient::remove_cols_l<T>, ambient::remove_cols_c<T>, *this, j, k);
+        self->cols = self->cols-k; 
+        this->nullcut(); // maybe will remove
+  //    this->resize(self->rows, self->cols - k);
     }
 
     template <typename T, ambient::policy P>
@@ -186,7 +190,7 @@ namespace maquis {
 
     template <typename T, ambient::policy P>
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator *= (const p_dense_matrix<T,P>& rhs){
-        ambient::push(ambient::gemm_inplace_l, ambient::gemm_inplace_c, *this, rhs);
+        ambient::push(ambient::gemm_inplace_l<T>, ambient::gemm_inplace_c<T>, *this, rhs);
         return *this;
     }
 
@@ -204,7 +208,7 @@ namespace maquis {
     p_dense_matrix<T,P>& p_dense_matrix<T,P>::operator  = (const p_dense_matrix<T>& rhs){
         if(this->num_rows() != rhs.num_rows() || this->num_cols() != rhs.num_cols()) 
             this->resize(rhs.num_rows(), rhs.num_cols());
-        ambient::push(ambient::copy_l, ambient::copy_c, *this, rhs);
+        ambient::push(ambient::copy_l<T>, ambient::copy_c<T>, *this, rhs);
         return *this;
     }
 
@@ -234,29 +238,6 @@ namespace maquis {
     {
         return num_rows(m)*num_cols(m)*sizeof(T);
     }
-
-//////////////////////////////////// AMBIENT PART ////////////////////////////////////////////////////
-
-    /*template <typename T>
-    std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m)
-    {
-        ambient::playout();
-        STRONG_BARRIER
-        for(typename p_dense_matrix<T>::size_type i=0; i< m.num_rows(); ++i)
-        {
-            STRONG_BARRIER
-            for(typename p_dense_matrix<T>::size_type j=0; j < m.num_cols(); ++j){
-                STRONG_BARRIER
-                try{
-                    m(i,j); printf("%.2f ", m(i,j)); // faster than cout
-                }catch(...){ usleep(10*1000); }      // 10 ms sleep
-                STRONG_BARRIER
-            }
-            if(ambient::is_master()) printf("\n");
-            STRONG_BARRIER
-        }
-        return o;
-    }*/
 
     template <typename T, ambient::policy P>
     std::ostream& operator << (std::ostream& o, p_dense_matrix<T,P> const& a)
