@@ -5,7 +5,7 @@
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
 
-#include "utils/timings.h"
+//#include "utils/timings.h"
 
 namespace ambient{ namespace core{
 using namespace ambient::groups;
@@ -91,7 +91,7 @@ namespace ambient{ namespace groups{
     }
 
     void packet_manager::subscribe(const packet_t& type){
-        this->add_typed_q(type, IN,  2); // OMG!
+        this->add_typed_q(type, IN,  60); // OMG!
         this->add_typed_q(type, LO);
     }
 
@@ -194,9 +194,9 @@ namespace ambient{ namespace groups{
         if(this->flow == IN){ // 16.7s
 
         for(it = this->reqs.begin(); it != this->reqs.end(); ++it){
-            timer.begin();
+          //  timer.begin();
             MPI_Test(&((*it)->mpi_request), &flag, MPI_STATUS_IGNORE);
-            timer.end();
+          //  timer.end();
             if(flag){
                 this->target_packet = unpack(this->type, (*it)->memory); 
                 this->packet_delivered();

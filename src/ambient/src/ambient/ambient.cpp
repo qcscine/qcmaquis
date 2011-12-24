@@ -7,7 +7,7 @@
 #include "ambient/core/layout.h"
 #include "ambient/auxiliary.hpp"
 
-#include "utils/timings.h"
+//#include "utils/timings.h"
 #include "ambient/core/operation/operation.h"
 #include "ambient/core/operation/operation.pp.sa.hpp"
 
@@ -30,13 +30,13 @@ namespace ambient
     comm_map&  scope_map     = comm_map::instance();
     scope_context& scope     = scope_context::instance();
     access_marker& access    = access_marker::instance();
-    Timer timer("AMBIENT TUNING TIMER");
+    //Timer timer("AMBIENT TUNING TIMER");
 // global objects accessible anywhere //
 
     scheduler & scheduler::operator>>(dim2 mem_dim) 
     {
         this->mem_dim  = mem_dim;
-        this->default_data_packet_t = new block_packet_t<typename traits::type>(this->mem_dim*this->item_dim); // to redo in future?
+        this->default_data_packet_t = new block_packet_t<ambient::traits::value_type>(this->mem_dim*this->item_dim); // to redo in future?
         this->default_data_packet_t->commit();
         if(!world()->get_manager()->subscribed(*this->default_data_packet_t)){
             world()->get_manager()->subscribe(*this->default_data_packet_t);

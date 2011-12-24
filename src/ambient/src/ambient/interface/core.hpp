@@ -4,9 +4,11 @@ using namespace maquis::types;
 #include "ambient/core/operation/operation.pp.hpp"
 #define MAX_NUM_CHAR_LEN 10
 #define scope_select(...) scope_select(std::string(std::string() + __VA_ARGS__).c_str());
-
-void copy_l(p_dense_matrix<typename traits::type>& ac, pinned const p_dense_matrix<typename traits::type>& a);
-void copy_c(p_dense_matrix<typename traits::type>& ac, pinned const p_dense_matrix<typename traits::type>& a);
+// C - Forward declarations
+template<typename T>
+void copy_l(p_dense_matrix<T>& ac, pinned const p_dense_matrix<T>& a);
+template<typename T>
+void copy_c(p_dense_matrix<T>& ac, pinned const p_dense_matrix<T>& a);
 
 class parallel_t: public p_object 
 { 
@@ -59,7 +61,7 @@ public:
             else if(P == MANUAL) handle.reset( self = o.snapshot(), null_deleter<T> );
             else if(P == WEAK) self = o.snapshot();
             copy_bind_model((T*)this);
-            ambient::push(ambient::copy_l, ambient::copy_c, *(T*)this, *(const T*)&o);
+            ambient::push(ambient::copy_l<ambient::traits::value_type>, ambient::copy_c<ambient::traits::value_type>, *(T*)this, *(const T*)&o);
         }else if(P == REPLICA){
             self = (T*)this;
         }
