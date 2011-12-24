@@ -17,7 +17,7 @@ namespace maquis {
     {   // TODO: perhaps this could return a prox object
         //printf("transpose: %d %d\n", m.num_rows(), m.num_cols());
         p_dense_matrix<T> mt(m.num_cols(), m.num_rows());
-        ambient::push(ambient::transpose_l, ambient::transpose_c, mt, m);
+        ambient::push(ambient::transpose_l<T>, ambient::transpose_c<T>, mt, m);
 
 ambient::playout();
         return mt;
@@ -30,7 +30,7 @@ ambient::playout();
         T trace;
         T* tr = (T*)calloc(1,sizeof(T));
         if(m.is_abstract()) m.touch();
-        ambient::push(ambient::trace_l, ambient::trace_c, m, tr);
+        ambient::push(ambient::trace_l<T>, ambient::trace_c<T>, m, tr);
         ambient::playout(); // execution weight: 4
         trace = *tr;
         free(tr);
@@ -50,8 +50,8 @@ ambient::playout();
         //c.resize(a.num_rows(), b.num_cols());
         c.set_init(ambient::null_i<T>);
         //printf("gemm: %d %d\n", c.num_rows(), c.num_cols());
-        ambient::push(ambient::gemm_l, ambient::gemm_c, a, b, c);
-ambient::playout();
+        ambient::push(ambient::gemm_l<T>, ambient::gemm_c<T>, a, b, c);
+        ambient::playout();
     }
 
     template<typename T>
@@ -60,7 +60,7 @@ ambient::playout();
         assert(num_cols(a) == num_rows(b));
         c.resize(a.num_rows(), b.num_cols());
         //printf("gemm: %d %d\n", c.num_rows(), c.num_cols());
-        ambient::push(ambient::gemm_diagonal_rhs_l, ambient::gemm_diagonal_rhs_c, a, b.get_data(), c);
+        ambient::push(ambient::gemm_diagonal_rhs_l<T>, ambient::gemm_diagonal_rhs_c<T>, a, b.get_data(), c);
 ambient::playout();
     }
     
@@ -70,14 +70,14 @@ ambient::playout();
         assert(num_cols(a) == num_rows(b));
         c.resize(a.num_rows(), b.num_cols());
         //printf("gemm: %d %d\n", c.num_rows(), c.num_cols());
-        ambient::push(ambient::gemm_diagonal_lhs_l,ambient::gemm_diagonal_lhs_c, a.get_data(), b, c);
+        ambient::push(ambient::gemm_diagonal_lhs_l<T>,ambient::gemm_diagonal_lhs_c<T>, a.get_data(), b, c);
 ambient::playout();
     }
 
     template<typename T>
     void validation(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b)
     {
-        ambient::push(ambient::validation_l, ambient::validation_c, a, b);
+        ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, a, b);
 ambient::playout();
     }
 

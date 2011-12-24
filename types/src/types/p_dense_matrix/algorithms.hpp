@@ -31,7 +31,7 @@ namespace maquis{
         void svd(const p_dense_matrix<T>& a,
                        p_dense_matrix<T>& u,
                        p_dense_matrix<T>& vt,
-                 typename associated_diagonal_matrix<p_dense_matrix<T> >::type& s)
+                 typename associated_diagonal_matrix<p_dense_matrix<double> >::type& s) // C - for complex and double S <double>
         {
             int m = num_rows(a);
             int n = num_cols(a);
@@ -39,7 +39,7 @@ namespace maquis{
             u.resize(m, k);
             vt.resize(k, n);
             s.resize(k, k);
-            ambient::push(ambient::svd_l, ambient::svd_c, a, m, n, u, vt, s.get_data());
+            ambient::push(ambient::svd_l<T>, ambient::svd_c<T>, a, m, n, u, vt, s.get_data());
 ambient::playout();
         }
     

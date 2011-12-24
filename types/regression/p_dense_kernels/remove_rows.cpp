@@ -47,8 +47,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_rows, T, test_types)
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
-    sA.remove_rows(T::valuey,1);
-    pA.remove_rows(T::valuey,1);
+    sA.remove_rows(T::valuex-1,1);
+    pA.remove_rows(T::valuex-1,1);
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows, T, test_types)
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_rows, T, test_types)
 {
     ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
@@ -82,11 +82,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_rows, T, test_types)
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
-    int row =  Rd.IntRd()%(sA.num_rows());  
-    int numrows = T::valuex - row -1;   
-
-    sA.remove_rows(row,1);
-    pA.remove_rows(row,1);
+    int row =  Rd.IntRd()%(T::valuex-1);  
+    int numrows = (int)(T::valuex-1 - row)/2;   
+    sA.remove_rows(row,numrows);
+    pA.remove_rows(row,numrows);
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
-}
+}*/
