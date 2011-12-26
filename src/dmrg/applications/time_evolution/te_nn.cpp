@@ -1,3 +1,6 @@
+
+#include "dmrg_version.h"
+
 #include <cmath>
 #include <iterator>
 #include <iostream>
@@ -127,6 +130,7 @@ get_U (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
 
 int main(int argc, char ** argv)
 {
+    cout << DMRG_VERSION_STRING << endl;
     if (argc != 3)
     {
         cout << "Usage: <parms> <model_parms>" << endl;
@@ -219,12 +223,14 @@ int main(int argc, char ** argv)
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
+        h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
     }
     
     if (!dns) {
         alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
+        h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
     }
     
 //    StreamStorageMaster ssm(parms.get<std::string>("storagedir"));

@@ -15,7 +15,8 @@ namespace app {
         static typename model_traits<Matrix, U1>::model_ptr parse
         (Lattice const & lattice, BaseParameters & model)
         {
-            if (model.get<std::string>("MODEL") == std::string("optical_lattice"))
+            std::string model_str = model.is_set("model") ? "model" : "MODEL";
+            if (model.get<std::string>(model_str) == std::string("optical_lattice"))
                 return typename model_traits<Matrix, U1>::model_ptr(
                             new OpticalLattice<Matrix>(lattice, model)
                        );
