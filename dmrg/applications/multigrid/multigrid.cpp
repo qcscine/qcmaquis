@@ -212,22 +212,9 @@ int main(int argc, char ** argv)
         h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
     }
     
-    grp::charge initc;
-#ifdef UseTwoU1
-    initc[0] = raw_model.get<int>("u1_total_charge1");
-    initc[1] = raw_model.get<int>("u1_total_charge2");
-#else
-#ifdef UseNULL
-    initc = grp::IdentityCharge;
-#else
-    initc = raw_model.get<int>("u1_total_charge");
-#endif
-#endif
-    std::cout << "initc: " << initc << std::endl;
-    
-    
     Lattice_ptr lat;
     model_traits<Matrix, grp>::model_ptr phys_model;
+    grp::charge initc;
     Hamiltonian<Matrix, grp> H;
     Measurements<Matrix, grp> measurements;
     Index<grp> phys;
@@ -246,7 +233,11 @@ int main(int argc, char ** argv)
         old_model = model;
         
         model_parser<Matrix, grp>("continuum", "continuum", model, lat, phys_model);
+        H = phys_model->H();
+        measurements = phys_model->measurements();
+        initc = phys_model->initc(model);
         phys = H.get_phys();
+        std::cout << "initc: " << initc << std::endl;
         
         mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
@@ -270,6 +261,8 @@ int main(int argc, char ** argv)
         BaseParameters model = raw_model.get_at_index("graining", graining);
         
         model_parser<Matrix, grp>("continuum", "continuum", model, lat, phys_model);
+        H = phys_model->H();
+        measurements = phys_model->measurements();
         phys = H.get_phys();
 
 #ifndef NDEBUG
