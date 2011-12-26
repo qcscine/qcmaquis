@@ -26,7 +26,7 @@ namespace app {
     public:
         virtual Hamiltonian<Matrix, SymmGroup> H () const=0;
         virtual Measurements<Matrix, SymmGroup> measurements () const=0;
-        virtual typename SymmGroup::charge initc(BaseParameters & parms)
+        virtual typename SymmGroup::charge initc(BaseParameters & parms) const
         {
             return init_qn<SymmGroup>(parms);
         }
