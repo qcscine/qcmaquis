@@ -4,6 +4,7 @@
 
 #include <alps/numeric/real.hpp>
 #include "utils/types.h"
+#include "dmrg/utils/utils.hpp"
 
 namespace detail {
     
