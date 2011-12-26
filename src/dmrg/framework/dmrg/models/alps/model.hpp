@@ -315,7 +315,7 @@ namespace app {
             return ham(get_phys(), get_identity(), terms);
         }
         
-        typename SymmGroup::charge initc (const alps::Parameters& parms_) const
+        typename SymmGroup::charge initc (BaseParameters& parms_) const
         {
             return init_charge<SymmGroup>(parms_, conserved_qn);
             /*        	typename SymmGroup::charge c = SymmGroup::IdentityCharge;
