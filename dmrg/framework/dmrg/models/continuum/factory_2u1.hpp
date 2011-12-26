@@ -15,7 +15,8 @@ namespace app {
         static typename model_traits<Matrix, TwoU1>::model_ptr parse
         (Lattice const & lattice, BaseParameters & model)
         {
-            if (model.get<std::string>("MODEL") == std::string("fermi_optical_lattice"))
+            std::string model_str = model.is_set("model") ? "model" : "MODEL";
+            if (model.get<std::string>(model_str) == std::string("fermi_optical_lattice"))
                 return typename model_traits<Matrix, TwoU1>::model_ptr(
                             new FermiOpticalLattice<Matrix>(lattice, model)
                        );
