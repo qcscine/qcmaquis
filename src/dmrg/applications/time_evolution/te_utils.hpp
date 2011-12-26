@@ -36,20 +36,22 @@ namespace app {
                 continue;
             }
             
+            Hamiltonian_Term<Matrix, SymmGroup> term = H[i];
+            term.canonical_order(); // TODO: check and fix for fermions!!
             bool used = false;
             for (int n=0; n<ret.size() && !used; ++n)
             {
                 bool overlap = false;
                 for (int j=0; j<ret[n].n_terms() && !overlap; ++j)
                 {
-                    if ( ret[n][j].site_match(H[i]) ) break;
-                    overlap = ret[n][j].overlap(H[i]);
+                    if ( ret[n][j].site_match(term) ) break;
+                    overlap = ret[n][j].overlap(term);
                 }
                 
                 if (!overlap) {
-                	ret[n].add_term(H[i]);
-                	for (int p=0; p<H[i].operators.size(); ++p)
-                		pos_where[H[i].operators[p].first].insert(n);
+                	ret[n].add_term(term);
+                	for (int p=0; p<term.operators.size(); ++p)
+                		pos_where[term.operators[p].first].insert(n);
                     used = true;
                 }
             }
@@ -58,11 +60,11 @@ namespace app {
                 Hamiltonian<Matrix, SymmGroup> tmp;
                 tmp.set_identity( H.get_identity() );
                 tmp.set_phys( H.get_phys() );
-                tmp.add_term(H[i]);
+                tmp.add_term(term);
                 ret.push_back(tmp);
                 
-            	for (int p=0; p<H[i].operators.size(); ++p)
-            		pos_where[H[i].operators[p].first].insert(ret.size()-1);
+            	for (int p=0; p<term.operators.size(); ++p)
+            		pos_where[term.operators[p].first].insert(ret.size()-1);
             }
         }
         
@@ -112,19 +114,23 @@ namespace app {
             int pos1 = H[n].operators[0].first;
             int pos2 = H[n].operators[1].first;
             assert(std::abs(pos1-pos2) == 1);
+            
             typename ham::op_t bond_op;
             op_kron(H.get_phys(), H[n].operators[0].second, H[n].operators[1].second, bond_op);
             
             int k = n+1;
-            for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
+            for (; k<H.n_terms(); ++k)
             {
+                Hamiltonian_Term<Matrix, SymmGroup> term = H[k];
+                if (! H[n].site_match(term))
+                    continue;
                 typename ham::op_t tmp;
-                if (H[k].operators.size() == 2)
-                    op_kron(H.get_phys(), H[k].operators[0].second, H[k].operators[1].second, tmp);
-                else if (H[k].operators[0].first == pos1)
-                    op_kron(H.get_phys(), H[k].operators[0].second, H.get_identity(), tmp);
-                else if (H[k].operators[0].first == pos2)
-                    op_kron(H.get_phys(), H.get_identity(), H[k].operators[0].second, tmp);
+                if (term.operators.size() == 2)
+                    op_kron(H.get_phys(), term.operators[0].second, term.operators[1].second, tmp);
+                else if (term.operators[0].first == pos1)
+                    op_kron(H.get_phys(), term.operators[0].second, H.get_identity(), tmp);
+                else if (term.operators[0].first == pos2)
+                    op_kron(H.get_phys(), H.get_identity(), term.operators[0].second, tmp);
                 else
                     throw std::runtime_error("Operator k not matching any valid position.");
                 bond_op += tmp;

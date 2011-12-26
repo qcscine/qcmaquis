@@ -20,6 +20,8 @@
 #include <string>
 #include <sstream>
 
+#include <boost/bind.hpp>
+
 namespace generate_mpo
 {
     
@@ -27,12 +29,21 @@ namespace generate_mpo
 	struct Operator_Term
 	{
 		typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename Lattice::pos_t pos_t;
+		typedef std::pair<pos_t, op_t> op_pair_t;
         
-		std::vector<std::pair<typename Lattice::pos_t, op_t> > operators;
+		std::vector<op_pair_t> operators;
 		op_t fill_operator;
         bool with_sign;
         
         Operator_Term() : with_sign(false) {}
+        
+        void canonical_order() // TODO: check and fix for fermions
+        {
+            std::sort(operators.begin(), operators.end(),
+                      boost::bind(&op_pair_t::first, _1) <
+                      boost::bind(&op_pair_t::first, _2));
+        }
         
         bool operator< (Operator_Term const & rhs) const
         {
@@ -60,7 +71,7 @@ namespace generate_mpo
             }
                 
         }
-
+        
         bool overlap (Operator_Term const & rhs) const
         {
         	return !( (operators.rbegin()->first < rhs.operators.begin()->first) || (rhs.operators.rbegin()->first < operators.begin()->first) );
