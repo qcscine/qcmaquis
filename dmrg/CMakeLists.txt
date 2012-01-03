@@ -36,8 +36,6 @@ option(USE_MTM "Use multi threads matrix class" OFF)
 option(USE_GPU "Use GPU in libmtm" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
-option(USE_IMGTE_ONLY "Use only imaginary time evolution" OFF)
-
 option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 
 option(BUILD_REGRESSION "Build regression tests" OFF)

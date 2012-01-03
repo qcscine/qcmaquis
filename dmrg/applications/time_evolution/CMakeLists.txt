@@ -1,6 +1,7 @@
 
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 enable_omp_if_found()
+include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
 set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})
 if(USE_MTM)
@@ -8,23 +9,16 @@ if(USE_MTM)
 endif(USE_MTM)
 
 
+# *** Configure symmetries
+configure_symm_file("tevol_symm/dmrg_tevol_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/tevol_symm/dmrg_tevol_{SYMM}.cpp" CMAKE_SYMM_GROUP)
+get_symm_files(APPEND DMRG_TEVOL_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/tevol_symm/dmrg_tevol_{SYMM}.cpp")
+
+
 # *** Targets
-add_executable(te_nn_u1 te_nn.cpp)
-target_link_libraries(te_nn_u1 ${DMRG_APP_LIBRARIES})
-
-add_executable(te_nn_2u1 te_nn.cpp)
-target_link_libraries(te_nn_2u1 ${DMRG_APP_LIBRARIES})
-
-add_executable(te_u1 te.cpp)
-target_link_libraries(te_u1 ${DMRG_APP_LIBRARIES})
-
-add_executable(te_2u1 te.cpp)
-target_link_libraries(te_2u1 ${DMRG_APP_LIBRARIES})
+add_executable(dmrg_tevol ${DMRG_TEVOL_SYMM_SOURCES} dmrg_tevol.cpp)
+target_link_libraries(dmrg_tevol ${DMRG_APP_LIBRARIES})
 
 
-set_target_properties(te_nn_2u1 te_2u1 PROPERTIES COMPILE_DEFINITIONS UseTwoU1)
-
-
-
-install(TARGETS te_nn_u1 te_nn_2u1 te_u1 te_2u1 RUNTIME DESTINATION bin COMPONENT applications)
+# *** Install
+install(TARGETS dmrg_tevol RUNTIME DESTINATION bin COMPONENT applications)
 

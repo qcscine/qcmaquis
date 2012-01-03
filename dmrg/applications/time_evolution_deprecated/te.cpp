@@ -55,7 +55,7 @@ typedef maquis::types::dense_matrix<std::complex<double> > Matrix;
 #include "dmrg/utils/logger.h"
 #include "dmrg/utils/random.hpp"
 
-#include "te_utils.hpp"
+#include "dmrg/sim/te_utils.hpp"
 #include "dmrg/mp_tensors/te.h"
 
 #include "dmrg/models/factory.h"

@@ -6,13 +6,7 @@
  *
  *****************************************************************************/
 
+#include "dmrg_tevol.h"
 
-#include "dmrg_sim.h"
-
-template <>
-void run_dmrg<grp>(DmrgParameters & parms, ModelParameters & model)
-{
-    dmrg_sim<Matrix, grp> sim(parms, model);
-    sim.run();
-}
-
+typedef @CMAKE_SYMM_GROUP@ grp;
+#include "tevol_symm/sim.h"
