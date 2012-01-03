@@ -21,8 +21,8 @@ MPO<Matrix, SymmGroup> block_to_mpo(Index<SymmGroup> const & phys_i,
     
     
     Index<SymmGroup> alpha_i, beta_i;
-    alpha_i.insert( std::make_pair(0,1) );
-    beta_i.insert( std::make_pair(0,1) );
+    alpha_i.insert( std::make_pair(SymmGroup::IdentityCharge,1) );
+    beta_i.insert( std::make_pair(SymmGroup::IdentityCharge,1) );
     
     
     MultiIndex<SymmGroup> midx;
