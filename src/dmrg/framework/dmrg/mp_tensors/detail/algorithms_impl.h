@@ -117,7 +117,7 @@ namespace detail {
                     ret += conj((M1(r,c)) * M2(r,c));
         }
 
-        static void caculate_bond_renyi_entropies_impl(maquis::types::diagonal_matrix<typename Matrix::value_type> & M, std::vector<typename Matrix::value_type>& sv) 
+        static void caculate_bond_renyi_entropies_impl(maquis::types::diagonal_matrix<typename Matrix::value_type> & M, typename maquis::types::associated_real_vector<Matrix>::type& sv) 
         {
             for (typename maquis::types::associated_diagonal_matrix<Matrix>::type::const_element_iterator it = elements(M).first;
                  it != elements(M).second; ++it)
