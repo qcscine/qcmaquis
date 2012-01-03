@@ -142,12 +142,6 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
     }
 } 
 
-
-template <typename BaseInt, std::size_t Size>
-__global__ void polynome_polynome_multiplication(unsigned int max_order, BaseInt const* x, BaseInt const* y, BaseInt* res)
-{
-    polynome_polynome_multiplication_device<BaseInt, Size>(max_order,x,y,res);
-}
 /**
 * VLI_GPU_VECTOR functions
 */
