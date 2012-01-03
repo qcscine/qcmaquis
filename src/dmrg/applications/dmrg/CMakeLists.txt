@@ -21,10 +21,19 @@ get_symm_files(APPEND MEASURE_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/measure_
 add_executable(dmrg ${DMRG_SYMM_SOURCES} dmrg.cpp)
 target_link_libraries(dmrg ${DMRG_APP_LIBRARIES})
 
-add_executable(measure ${MEASURE_SYMM_SOURCES} measure.cpp)
-target_link_libraries(measure ${DMRG_APP_LIBRARIES})
+add_executable(dmrg_meas ${MEASURE_SYMM_SOURCES} measure.cpp)
+target_link_libraries(dmrg_meas ${DMRG_APP_LIBRARIES})
+
+if(BUILD_OLD_TARGETS)
+  add_executable(measure ${MEASURE_SYMM_SOURCES} measure.cpp)
+  target_link_libraries(measure ${DMRG_APP_LIBRARIES})
+endif(BUILD_OLD_TARGETS)
 
 
 # *** Install
-install(TARGETS dmrg measure RUNTIME DESTINATION bin COMPONENT applications)
+install(TARGETS dmrg dmrg_meas RUNTIME DESTINATION bin COMPONENT applications)
+
+if(BUILD_OLD_TARGETS)
+  install(TARGETS measure RUNTIME DESTINATION bin COMPONENT applications)
+endif(BUILD_OLD_TARGETS)
 
