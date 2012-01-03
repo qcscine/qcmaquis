@@ -33,8 +33,8 @@ typedef vli_cpu<long unsigned int, 3> vli_type_cpu;
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 
-typedef vli::polynomial_cpu< vli_type_cpu, 21 > polynomial_type_cpu;
-typedef vli::polynomial_cpu< vli_type_cpu, 2*21 > polynomial_result_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, 2 > polynomial_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, 2*2 > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 /*
@@ -51,8 +51,8 @@ int main (int argc, char * const argv[])
     gpu->instance();
 #endif
 
-    vector_type_cpu v1(16384);
-    vector_type_cpu v2(16384);
+    vector_type_cpu v1(2);
+    vector_type_cpu v2(2);
 /*
     polynomial_vector_type v1gmp(1024);
     polynomial_vector_type v2gmp(1024);
@@ -80,6 +80,10 @@ int main (int argc, char * const argv[])
     t2.begin();
     result = inner_product(v1,v2);
     t2.end();
+
+    std::cout << result << std::endl;
+    std::cout << result_pure_cpu << std::endl;
+  
 /*
     TimerOMP t3("oldsyte");
     t3.begin();
