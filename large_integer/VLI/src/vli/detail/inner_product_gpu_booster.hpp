@@ -87,25 +87,22 @@ namespace detail
 
             // run/queue the inner product computation
             inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p(), num_threads);
-           gpu::cu_check_error(cudaGetLastError(),__LINE__);
+            gpu::cu_check_error(cudaGetLastError(),__LINE__);
 
         }
         
         operator polynomial_cpu<Vli,2*Order>() const
         {
             std::vector<polynomial_cpu<Vli,2*Order> > restmp(partsize_); 
-            std::vector<polynomial_cpu<Vli,2*Order> > poly(omp_get_max_threads()); 
+            polynomial_cpu<Vli,2*Order> poly; 
 
             gpu::cu_check_error(cudaMemcpy((void*)&restmp[0](0,0),(void*)tmp_.p(),partsize_*product_element_size*sizeof(base_int_type),cudaMemcpyDeviceToHost),__LINE__);
             // C - a reduction of 16384 poly  order 21*21 costs 0.1 s .... so CPU
             for(std::size_t i=0; i <partsize_;++i){
-               poly[omp_get_thread_num()] += restmp[i];
+               poly += restmp[i];
             }
  
-            for(int i=1; i < omp_get_max_threads(); ++i)
-               poly[0]+=poly[i];
-
-           return poly[0];
+           return poly;
         }
 
       private:
