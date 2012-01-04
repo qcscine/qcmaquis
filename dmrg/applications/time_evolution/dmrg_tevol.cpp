@@ -23,13 +23,22 @@ void dmrg_tevol(DmrgParameters & parms, ModelParameters & model)
     bool img_only = ( parms.get<int>("nsweeps") == parms.get<int>("nsweeps_img") );
     
 #ifdef HAVE_NONE
-    factory_map["none"] = (img_only) ? run_tevol<matrix, TrivialGroup> : run_tevol<cmatrix, TrivialGroup>;
+    if (img_only)
+        factory_map["none"] = run_tevol<matrix, TrivialGroup>;
+    else
+        factory_map["none"] = run_tevol<cmatrix, TrivialGroup>;
 #endif
 #ifdef HAVE_U1
-    factory_map["u1"] = (img_only) ? run_tevol<matrix, U1> : run_tevol<cmatrix, U1>;
+    if (img_only)
+        factory_map["u1"] = run_tevol<matrix, U1>;
+    else
+        factory_map["u1"] = run_tevol<cmatrix, U1>;
 #endif
 #ifdef HAVE_TwoU1
-    factory_map["2u1"] = (img_only) ? run_tevol<matrix, TwoU1> : run_tevol<cmatrix, TwoU1>;
+    if (img_only)
+        factory_map["2u1"] = run_tevol<matrix, TwoU1>;
+    else
+        factory_map["2u1"] = run_tevol<cmatrix, TwoU1>;
 #endif
     
     std::string symm_name = parms.get<std::string>("symmetry");
