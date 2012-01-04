@@ -123,7 +123,7 @@ namespace app {
             {
                 Hamiltonian_Term<Matrix, SymmGroup> term = H[k];
                 if (! H[n].site_match(term))
-                    continue;
+                    break;
                 typename ham::op_t tmp;
                 if (term.operators.size() == 2)
                     op_kron(H.get_phys(), term.operators[0].second, term.operators[1].second, tmp);
