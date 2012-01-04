@@ -73,8 +73,6 @@ public:
         base::model_init();
         base::mps_init();
         
-        // TODO: build new mpo here
-        
         split_H = separate_overlaps(base::H);
         std::cout << split_H.size() << " non overlapping Hamiltonians" << std::endl;
         
@@ -89,16 +87,31 @@ public:
     
     bool do_sweep (Logger& iteration_log)
     {        
-        base::parms = parms_orig.get_at_index("t", base::sweep);
-        base::model = model_orig.get_at_index("t", base::sweep);
+        int pc = 0, mc = 0;
+        base::parms = parms_orig.get_at_index("t", base::sweep, &pc);
+        base::model = model_orig.get_at_index("t", base::sweep, &mc);
         
-        
-        
-        if (base::sweep == base::parms.template get<int>("nsweeps_img"))
+        if (mc > 0)
+        {
+            base::model_init();
+            
+            split_H = separate_overlaps(base::H);
+            std::cout << split_H.size() << " non overlapping Hamiltonians" << std::endl;
+            
             if (te_type == te_nn)
-                Unn = getUnn(base::parms.template get<double>("dt"), false);
+                Unn = getUnn(base::parms.template get<double>("dt"),
+                             base::sweep < base::parms.template get<int>("nsweeps_img"));
             else if (te_type == te_mpo)
-                Umpo = getUmpo(base::parms.template get<double>("dt"), false);
+                Umpo = getUmpo(base::parms.template get<double>("dt"),
+                               base::sweep < base::parms.template get<int>("nsweeps_img"));
+        } else {
+            if (base::sweep == base::parms.template get<int>("nsweeps_img"))
+                if (te_type == te_nn)
+                    Unn = getUnn(base::parms.template get<double>("dt"), false);
+                else if (te_type == te_mpo)
+                    Umpo = getUmpo(base::parms.template get<double>("dt"), false);
+        }
+        
         
         if (te_type == te_nn)
             nn_time_evolve(iteration_log);
