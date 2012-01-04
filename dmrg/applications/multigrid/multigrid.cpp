@@ -108,14 +108,14 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 
 MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & parms2, int L2)
 {
-    assert( parms1.get<std::string>("lattice") == parms2.get<std::string>("lattice") );
+    assert( parms1.get<std::string>("LATTICE") == parms2.get<std::string>("LATTICE") );
     
     
     Lattice_ptr lat;
-    if (parms1.get<std::string>("lattice") == "continuous_chain"
-        || parms1.get<std::string>("lattice") == std::string("continuous_left_chain"))
+    if (parms1.get<std::string>("LATTICE") == "continuous_chain"
+        || parms1.get<std::string>("LATTICE") == std::string("continuous_left_chain"))
         lat = Lattice_ptr(new MixedContChain(parms1, L1, parms2, L2));
-    else if (parms2.get<std::string>("lattice") == std::string("continuous_center_chain"))
+    else if (parms2.get<std::string>("LATTICE") == std::string("continuous_center_chain"))
         lat = Lattice_ptr(new MixedContChain_c(parms1, L1, parms2, L2));
     else
         throw std::runtime_error("Don't know this lattice!");
