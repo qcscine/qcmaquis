@@ -11,7 +11,7 @@
 namespace app {
     
     template <class Matrix, class SymmGroup>
-    sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_, ModelParameters & model_)
+    sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const & model_, bool fullinit)
     : parms(parms_)
     , model(model_)
     , sweep(0)
@@ -25,7 +25,7 @@ namespace app {
 #ifdef USE_GPU
         cublasInit();
 #endif
-        bool restore = false;
+        restore = false;
         {
 			boost::filesystem::path p(chkpfile);
 			if (boost::filesystem::exists(p) && boost::filesystem::is_regular_file(p))
@@ -34,6 +34,10 @@ namespace app {
             {
                 std::cout << "Restoring state." << std::endl;
                 restore = true;
+                
+                alps::hdf5::archive h5ar_in(chkpfile);
+                h5ar_in >> alps::make_pvp("/status/sweep", sweep);
+                ++sweep;
             }
         }
         
@@ -43,9 +47,20 @@ namespace app {
 #endif
         dmrg_random::engine.seed(parms.get<int>("seed"));
         
+        if (fullinit) {
+            model_init();
+            mps_init();
+        }
         
+        gettimeofday(&now, NULL);
+        
+    }
+    
+    template <class Matrix, class SymmGroup>
+    void sim<Matrix, SymmGroup>::model_init()
+    {
         model_parser<Matrix, SymmGroup>(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, phys_model);
-        typename SymmGroup::charge initc = phys_model->initc(model);
+        initc = phys_model->initc(model);
         H = phys_model->H();
         measurements = phys_model->measurements();
         phys = H.get_phys();
@@ -68,6 +83,12 @@ namespace app {
         mpoc = mpo;
         if (parms.get<int>("use_compressed") > 0)
             mpoc.compress(1e-12);
+    }
+    
+    template <class Matrix, class SymmGroup>
+    void sim<Matrix, SymmGroup>::mps_init()
+    {
+        assert(lat.get() != NULL);
         
         mps = MPS<Matrix, SymmGroup>(lat->size(),
                                      parms.get<std::size_t>("init_bond_dimension"),
@@ -77,17 +98,12 @@ namespace app {
         if (restore) {
             alps::hdf5::archive h5ar_in(chkpfile);
             h5ar_in >> alps::make_pvp("/state", mps);
-            h5ar_in >> alps::make_pvp("/status/sweep", sweep);
-            ++sweep;
         } else if (parms.get<std::string>("initfile").size() > 0) {
             alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
             h5ar_in >> alps::make_pvp("/state", mps);
         }
-        
-        gettimeofday(&now, NULL);
-        
     }
-    
+
     
     template <class Matrix, class SymmGroup>
     sim<Matrix, SymmGroup>::~sim()

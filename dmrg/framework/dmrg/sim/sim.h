@@ -65,7 +65,7 @@ namespace app {
         
     public:
         
-        sim (DmrgParameters &, ModelParameters &);    
+        sim (DmrgParameters const &, ModelParameters const &, bool fullinit=true);    
         ~sim();
         
         virtual void run ();
@@ -74,14 +74,20 @@ namespace app {
         
         virtual void measure ();
         
+    protected:
+        
+        virtual void model_init ();
+        virtual void mps_init ();
+        
+        
     private:
         
         mps_initializer<Matrix, SymmGroup> * initializer_factory(BaseParameters & params);
         
         
     protected:
-        DmrgParameters & parms;
-        ModelParameters & model;
+        DmrgParameters parms;
+        ModelParameters model;
         
         timeval now, then, snow, sthen;
         
@@ -89,11 +95,13 @@ namespace app {
         int sweep;
         std::string chkpfile;
         std::string rfile;
+        bool restore;
         
         Lattice_ptr lat;
         typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
         Hamiltonian<Matrix, SymmGroup> H;
         Index<SymmGroup> phys;
+        typename SymmGroup::charge initc;
         MPS<Matrix, SymmGroup> mps;
         MPO<Matrix, SymmGroup> mpo, mpoc;
         Measurements<Matrix, SymmGroup> measurements;
