@@ -10,6 +10,8 @@
 #ifndef APP_SIM_H
 #define APP_SIM_H
 
+#include "dmrg_version.h"
+
 #include <cmath>
 #include <iterator>
 #include <iostream>

@@ -20,6 +20,8 @@ namespace app {
     , ssm(parms.get<std::string>("storagedir"))
     , dns( (parms.get<int>("donotsave") != 0) )
     { 
+        cout << DMRG_VERSION_STRING << endl;
+        
         DCOLLECTOR_GROUP(gemm_collector, "init")
         DCOLLECTOR_GROUP(svd_collector, "init")
 #ifdef USE_GPU
@@ -164,6 +166,7 @@ namespace app {
                     
                     h5ar << alps::make_pvp("/parameters", parms);
                     h5ar << alps::make_pvp("/parameters", model);
+                    h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
                     
                     std::ostringstream oss;
                     
@@ -188,6 +191,7 @@ namespace app {
                 
                 h5ar << alps::make_pvp("/parameters", parms);
                 h5ar << alps::make_pvp("/parameters", model);
+                h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
                 h5ar << alps::make_pvp("/state", mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
             }
@@ -235,6 +239,7 @@ namespace app {
             
             h5ar << alps::make_pvp("/parameters", parms);
             h5ar << alps::make_pvp("/parameters", model);
+            h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
         }
         
         cout << "Measurements." << endl;
