@@ -6,9 +6,9 @@ resultfile = results.h5
 chkpfile = results.h5
 donotsave = 1
 
-nsweeps_img = 1000
-nsweeps=1000
-dt = 0.1
+nsweeps_img = 100
+nsweeps=300
+dt = 0.01
 te_type = nn
 
 measure_each = 20
