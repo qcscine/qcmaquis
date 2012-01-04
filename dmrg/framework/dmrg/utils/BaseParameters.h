@@ -132,7 +132,7 @@ public:
         (*this)[key] = boost::lexical_cast<std::string>(value);
     }
     
-    BaseParameters get_at_index(std::string const & var, std::size_t val)
+    BaseParameters get_at_index(std::string const & var, std::size_t val, int* counter = NULL)
     {
         BaseParameters p(*this);
         
@@ -147,6 +147,9 @@ public:
                     p[what.str(1)] = v[val];
                 else
                     p[what.str(1)] = *(v.rbegin());
+                
+                if (counter)
+                    ++(*counter);
             }
         }
         
