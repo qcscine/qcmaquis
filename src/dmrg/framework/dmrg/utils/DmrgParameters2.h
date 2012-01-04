@@ -17,6 +17,19 @@ public:
     DmrgParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
     {
+        init_options();
+    }
+    DmrgParameters(BaseParameters const& p)
+    : BaseParameters(p)
+    {
+        init_options();
+    }
+    
+    
+private:
+    
+    void init_options()
+    {
         using parameters::value;
         
         add_option("truncation_initial", "Initial value for the truncation error", value(1e-16));
@@ -67,8 +80,8 @@ public:
         add_option("model_library", "", value("alps"));
         
         add_option("beta_mode", "", value(0));
-        
     }
+    
 };
 
 class ModelParameters : public BaseParameters
@@ -77,6 +90,19 @@ public:
     ModelParameters() : BaseParameters() {}
 	ModelParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
+    {
+        init_options();
+    }
+	ModelParameters(BaseParameters const& p)
+    : BaseParameters(p)
+    {
+        init_options();
+    }
+    
+    
+private:
+    
+    void init_options()
     {
         using parameters::value;
         
@@ -130,6 +156,7 @@ public:
         add_option("u1_total_charge1", "");
         add_option("u1_total_charge2", "");
     }
+
 };
 
 #endif

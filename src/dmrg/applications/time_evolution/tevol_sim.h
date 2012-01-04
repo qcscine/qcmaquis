@@ -37,17 +37,45 @@ class dmrg_tevol_sim : public sim<Matrix, SymmGroup> {
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
     typedef Boundary<Matrix, SymmGroup> boundary_t;
-    
+
     enum TEvol_t {te_uknown, te_nn, te_mpo};
-    
+
 public:
-    
-    dmrg_tevol_sim (DmrgParameters & parms_, ModelParameters & model_)
-    : base(parms_, model_)
-    , te_type( parse_te_type() )
-    , split_H( separate_overlaps(base::H) )
-    
+    friend
+    std::ostream& operator<< (std::ostream& os, TEvol_t const&  t)
     {
+        switch (t)
+        {
+            case te_nn:
+                os << "nearest neighbors time-evolve";
+                break;
+            case te_mpo:
+                os << "mpo time-evolve";
+                break;
+            default:
+                os << "uknown time-evolve";
+        }
+        return os;
+    }
+
+    
+    dmrg_tevol_sim (DmrgParameters const & parms_, ModelParameters const  & model_)
+    : base(parms_, model_, false)
+    , parms_orig(parms_)
+    , model_orig(model_)
+    , te_type( parse_te_type() )    
+    {        
+        std::cout << "Using " << te_type << std::endl;
+        
+        base::parms = parms_orig.get_at_index("t", base::sweep);
+        base::model = model_orig.get_at_index("t", base::sweep);
+        
+        base::model_init();
+        base::mps_init();
+        
+        // TODO: build new mpo here
+        
+        split_H = separate_overlaps(base::H);
         std::cout << split_H.size() << " non overlapping Hamiltonians" << std::endl;
         
         if (te_type == te_nn)
@@ -61,6 +89,16 @@ public:
     
     bool do_sweep (Logger& iteration_log)
     {        
+        base::parms = parms_orig.get_at_index("t", base::sweep);
+        base::model = model_orig.get_at_index("t", base::sweep);
+        
+        
+        
+        if (base::sweep == base::parms.template get<int>("nsweeps_img"))
+            if (te_type == te_nn)
+                Unn = getUnn(base::parms.template get<double>("dt"), false);
+            else if (te_type == te_mpo)
+                Umpo = getUmpo(base::parms.template get<double>("dt"), false);
         
         if (te_type == te_nn)
             nn_time_evolve(iteration_log);
@@ -149,7 +187,8 @@ private:
         
     }
     
-    
+    BaseParameters parms_orig;
+    BaseParameters model_orig;
     TEvol_t te_type;
     std::vector<Hamiltonian<Matrix, SymmGroup> > split_H;
     std::vector<std::map<std::size_t, block_matrix<Matrix, SymmGroup> > > Unn;
@@ -157,6 +196,7 @@ private:
     
     NoopStorageMaster nossm;
 };
+
 
 
 
