@@ -59,7 +59,7 @@ typedef maquis::types::dense_matrix<double> Matrix;
 #include "dmrg/utils/logger.h"
 #include "dmrg/utils/random.hpp"
 
-#include "dmrg/mp_tensors/ss_optimize.h"
+#include "dmrg/mp_tensors/ss_optimize.hpp"
 
 #include "dmrg/models/factory.h"
 #include "dmrg/models/continuum/lattice.hpp"

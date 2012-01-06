@@ -15,13 +15,15 @@
 #include <iostream>
 #include <sys/stat.h>
 
+#include <boost/shared_ptr.hpp>
+
 using std::cerr;
 using std::cout;
 using std::endl;
 
 #include "dmrg/sim/sim.h"
 
-#include "dmrg/mp_tensors/ss_optimize.h"
+#include "dmrg/mp_tensors/optimize.h"
 
 using namespace app;
 
@@ -51,6 +53,7 @@ template <class Matrix, class SymmGroup>
 class dmrg_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
+    typedef optimizer_base<Matrix, SymmGroup, StreamStorageMaster> opt_base_t;
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
     typedef Boundary<Matrix, SymmGroup> boundary_t;
@@ -59,28 +62,40 @@ public:
     
     dmrg_sim (DmrgParameters & parms_, ModelParameters & model_)
     : base(parms_, model_)
-    , optimizer(base::mps,
-                base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
-                base::parms, base::ssm)
-    { }
-    
+    {
+	if (parms_.get<std::string>("optimization") == "singlesite")
+	{
+	    optimizer = 
+	    boost::shared_ptr<opt_base_t> ( 
+		new ss_optimize<Matrix, SymmGroup, StreamStorageMaster>(base::mps,
+		base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
+		base::parms, base::ssm) );
+	} 
+
+	else 
+	{
+	    optimizer = 
+	    boost::shared_ptr<opt_base_t> (
+		new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>(base::mps,
+		base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
+		base::parms, base::ssm) );
+	}
+    }
     
     bool do_sweep (Logger& iteration_log)
     {        
-        int exit_site = optimizer.sweep(base::sweep, iteration_log);
+        int exit_site = optimizer->sweep(base::sweep, iteration_log);
         base::ssm.sync();
         
-        base::mps = optimizer.get_current_mps();
+        base::mps = optimizer->get_current_mps();
         
         return exit_site >= 0;
     }
     
 private:
     
-    ss_optimize<Matrix, SymmGroup, StreamStorageMaster> optimizer;
+    boost::shared_ptr<opt_base_t> optimizer;
     
 };
-
-
 
 #endif
