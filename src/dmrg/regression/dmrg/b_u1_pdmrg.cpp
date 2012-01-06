@@ -52,7 +52,7 @@ typedef maquis::types::p_dense_matrix<double> Matrix;
 #include "dmrg/utils/stream_storage.h"
 #include "dmrg/utils/logger.h"
 
-#include "dmrg/mp_tensors/ss_optimize.hpp"
+#include "dmrg/mp_tensors/optimize.h"
 
 #include "dmrg/deprecated/mpos/alps_adjacency.h"
 
