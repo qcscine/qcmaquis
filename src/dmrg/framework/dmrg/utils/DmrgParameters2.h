@@ -38,6 +38,8 @@ private:
         add_option("init_bond_dimension", "", value(5));
         add_option("max_bond_dimension", "");
         add_option("sweep_bond_dimensions", "");
+
+        add_option("optimization", "singlesite or twosite", value("singlesite"));
         
         add_option("alpha_initial","", value(1e-2));
         add_option("alpha_main", "", value(1e-4));
