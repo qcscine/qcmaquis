@@ -22,7 +22,7 @@ typedef maquis::types::dense_matrix<double> Matrix;
 
 #include "dmrg/mp_tensors/special_mpos.h"
 
-#include "dmrg/mp_tensors/ss_optimize.hpp"
+#include "dmrg/mp_tensors/optimize.h"
 
 typedef TrivialGroup grp;
 
