@@ -32,7 +32,7 @@ typedef maquis::types::dense_matrix<double > Matrix;
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 
-#include "dmrg/mp_tensors/ss_optimize.h"
+#include "dmrg/mp_tensors/ss_optimize.hpp"
 #include "dmrg/deprecated/mpos/measurements.h"
 
 #include "dmrg/deprecated/mpos/adjacency.h"

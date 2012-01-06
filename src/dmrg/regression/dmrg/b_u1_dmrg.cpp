@@ -56,7 +56,7 @@ typedef maquis::types::dense_matrix<double, std::vector<double, aligned_allocato
 #include "dmrg/utils/stream_storage.h"
 #include "dmrg/utils/logger.h"
 
-#include "dmrg/mp_tensors/ss_optimize.h"
+#include "dmrg/mp_tensors/ss_optimize.hpp"
 
 #include "dmrg/deprecated/mpos/alps_adjacency.h"
 
