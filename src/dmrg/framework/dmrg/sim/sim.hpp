@@ -31,15 +31,18 @@ namespace app {
         {
 			boost::filesystem::path p(chkpfile);
 			if (boost::filesystem::exists(p) && boost::filesystem::is_regular_file(p))
-            /* struct stat tmp;
-             if (stat(chkpfile.c_str(), &tmp) == 0 && S_ISREG(tmp.st_mode)) */
             {
-                std::cout << "Restoring state." << std::endl;
-                restore = true;
-                
                 alps::hdf5::archive h5ar_in(chkpfile);
-                h5ar_in >> alps::make_pvp("/status/sweep", sweep);
-                ++sweep;
+                if (h5ar_in.is_group("/state") && h5ar_in.is_scalar("/status/sweep"))
+                {
+                    h5ar_in >> alps::make_pvp("/status/sweep", sweep);
+                    ++sweep;
+                    
+                    std::cout << "Restoring state." << std::endl;
+                    restore = true;
+                } else {
+                    std::cout << "Invalid checkpoint, overwriting." << std::endl; 
+                }
             }
         }
         
@@ -52,6 +55,22 @@ namespace app {
         if (fullinit) {
             model_init();
             mps_init();
+        }
+
+        {
+            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            
+            h5ar << alps::make_pvp("/parameters", parms);
+            h5ar << alps::make_pvp("/parameters", model);
+            h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
+        }
+        if (!dns)
+        {
+            alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            
+            h5ar << alps::make_pvp("/parameters", parms);
+            h5ar << alps::make_pvp("/parameters", model);
+            h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
         }
         
         gettimeofday(&now, NULL);
@@ -131,6 +150,8 @@ namespace app {
             int rs = parms.get<int>("run_seconds");
             double elapsed;            
             
+            parms.set("sweep", sweep);
+            
             early_exit = do_sweep(iteration_log);
             
             gettimeofday(&sthen, NULL);
@@ -165,11 +186,13 @@ namespace app {
                 {
                     alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
                     
-                    h5ar << alps::make_pvp("/parameters", parms);
-                    h5ar << alps::make_pvp("/parameters", model);
-                    h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
-                    
                     std::ostringstream oss;
+
+                    oss.str("");
+                    oss << "/simulation/sweep" << sweep << "/parameters";
+                    h5ar << alps::make_pvp(oss.str().c_str(), parms);
+                    h5ar << alps::make_pvp(oss.str().c_str(), model);
+
                     
                     oss.str("");
                     oss << "/simulation/sweep" << sweep << "/results";
@@ -190,9 +213,6 @@ namespace app {
             {
                 alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
                 
-                h5ar << alps::make_pvp("/parameters", parms);
-                h5ar << alps::make_pvp("/parameters", model);
-                h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
                 h5ar << alps::make_pvp("/state", mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
             }
