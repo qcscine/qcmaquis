@@ -83,7 +83,13 @@ namespace app {
         {
         	terms.push_back(term);
         }
-        
+
+        void clear ()
+        {
+        	terms.clear();
+            ident = op_t();
+        }
+
     protected:
         std::vector<mterm_t> terms;
         op_t ident;

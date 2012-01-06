@@ -75,6 +75,7 @@ namespace app {
          */
         
         if (!parms.get<std::string>("always_measure").empty()) {
+            meas_always.clear();
             meas_always.set_identity(measurements.get_identity());
             std::vector<std::string> meas_list = parms.get<std::vector<std::string> >("always_measure");
             for (int i=0; i<meas_list.size(); ++i)
