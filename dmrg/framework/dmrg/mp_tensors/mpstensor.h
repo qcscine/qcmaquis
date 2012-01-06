@@ -23,6 +23,9 @@ enum Indicator { Unorm, Lnorm, Rnorm };
 enum DecompMethod { QR, SVD };
 
 template<class Matrix, class SymmGroup>
+class TwoSiteTensor;
+
+template<class Matrix, class SymmGroup>
 class MPSTensor
 {
 public:
@@ -80,6 +83,7 @@ public:
     friend struct contraction;
     friend struct compression;
     friend struct multigrid;
+    friend class  TwoSiteTensor<Matrix, SymmGroup>;
     
     // math functions: these are not part of the Python code, but required by IETL
     MPSTensor const & operator*=(scalar_type);

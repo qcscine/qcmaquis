@@ -9,82 +9,27 @@
 #ifndef SS_OPTIMIZE_H
 #define SS_OPTIMIZE_H
 
-#include <boost/random.hpp>
-#ifndef WIN32
-#include <sys/time.h>
-#define HAVE_GETTIMEOFDAY
-#endif
-
-#include "utils/zout.hpp"
-#include "utils/sizeof.h"
-
-#include "ietl_lanczos_solver.h"
-#include "ietl_jacobi_davidson.h"
-
-#include "dmrg/utils/BaseParameters.h"
-#include "dmrg/utils/logger.h"
-#include "dmrg/utils/stream_storage.h"
-
-template<class Matrix, class SymmGroup>
-struct SiteProblem
-{
-    SiteProblem(MPSTensor<Matrix, SymmGroup> const & ket_tensor_,
-                Boundary<Matrix, SymmGroup> const & left_,
-                Boundary<Matrix, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
-    : ket_tensor(ket_tensor_)
-    , left(left_)
-    , right(right_)
-    , mpo(mpo_) { }
-    
-    MPSTensor<Matrix, SymmGroup> const & ket_tensor;
-    Boundary<Matrix, SymmGroup> const & left;
-    Boundary<Matrix, SymmGroup> const & right;
-    MPOTensor<Matrix, SymmGroup> const & mpo;
-};
-
-#ifdef HAVE_GETTIMEOFDAY
-#define BEGIN_TIMING(name) \
-gettimeofday(&now, NULL);
-#define END_TIMING(name) \
-gettimeofday(&then, NULL); \
-zout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
-#else
-#define BEGIN_TIMING(name)
-#define END_TIMING(name)
-#endif
-
-inline double log_interpolate(double y0, double y1, int N, int i)
-{
-    if (N < 2)
-        return y1;
-    if (y0 == 0)
-        return 0;
-    double x = log(y1/y0)/(N-1);
-    return y0*exp(x*i);
-}
-
-enum OptimizeDirection { Both, LeftOnly, RightOnly };
 
 template<class Matrix, class SymmGroup, class StorageMaster>
-class ss_optimize
+class ss_optimize : public optimizer_base<Matrix, SymmGroup, StorageMaster>
 {
 public:
+
+    typedef optimizer_base<Matrix, SymmGroup, StorageMaster> base;
+    using base::mpo;
+    using base::mpo_orig;
+    using base::mps;
+    using base::left_;
+    using base::left_stores_;
+    using base::right_;
+    using base::right_stores_;
+    using base::parms;
+
     ss_optimize(MPS<Matrix, SymmGroup> const & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 StorageMaster & sm)
-    : mps(mps_)
-    , mpo(mpo_)
-    , mpo_orig(mpo_)
-    , parms(parms_)
-    , storage_master(sm)
-    {
-//        mps.normalize_right();
-        mps.canonize(0);
-        init_left_right(mpo, 0);
-        zout << "Done init_left_right" << endl;
-    }
+    : base(mps_, mpo_, parms_, sm) { }
     
     int sweep(int sweep, Logger & iteration_log,
                OptimizeDirection d = Both,
@@ -114,7 +59,7 @@ public:
             init_left_right(mpo, site);
         }
 
-//        if (parms.get<bool>("beta_mode") && sweep == 0 && resume_at < L) {
+//        if (parms.template <bool>("beta_mode") && sweep == 0 && resume_at < L) {
 //            int site = (resume_at == -1) ? 0 : resume_at;
 //            mpo = zero_after(mpo_orig, site+2);
 //            mps.canonize(site);
@@ -144,7 +89,7 @@ public:
             
 //            mps[site].make_left_paired();
             
-            if (parms.get<bool>("beta_mode")) {
+            if (parms.template get<bool>("beta_mode")) {
                 if (sweep == 0 && lr == 1) {
                     mpo = zero_after(mpo_orig, 0);
                     if (site == 0)
@@ -198,15 +143,15 @@ public:
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
             {
-                if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+                if (parms.template get<std::string>("eigensolver") == std::string("IETL")) {
                     BEGIN_TIMING("IETL")
                     res = solve_ietl_lanczos(sp, mps[site], parms);
                     END_TIMING("IETL")
-                } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                } else if (parms.template get<std::string>("eigensolver") == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, mps[site], parms);
                     END_TIMING("JCD")
-                } /* else if (parms.get<std::string>("eigensolver") == std::string("IETL_NEW_JCD")) {
+                } /* else if (parms.template <std::string>("eigensolver") == std::string("IETL_NEW_JCD")) {
                     BEGIN_TIMING("JD")
                     res = solve_ietl_new_jd(sp, mps[site], parms);
                     END_TIMING("JD")
@@ -231,36 +176,36 @@ public:
             iteration_log << make_log("Energy", res.first);
             
             double alpha;
-//            if (sweep < parms.get<int>("ngrowsweeps"))
-//                alpha = parms.get<double>("alpha_initial");
+//            if (sweep < parms.template <int>("ngrowsweeps"))
+//                alpha = parms.template <double>("alpha_initial");
 //            else
-//                alpha = log_interpolate(parms.get<double>("alpha_initial"), parms.get<double>("alpha_final"),
-//                                        parms.get<int>("nsweeps")-parms.get<int>("ngrowsweeps"),
-//                                        sweep-parms.get<int>("ngrowsweeps"));
-            int ngs = parms.get<int>("ngrowsweeps"), nms = parms.get<int>("nmainsweeps");
+//                alpha = log_interpolate(parms.template <double>("alpha_initial"), parms.template <double>("alpha_final"),
+//                                        parms.template <int>("nsweeps")-parms.template <int>("ngrowsweeps"),
+//                                        sweep-parms.template <int>("ngrowsweeps"));
+            int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
             if (sweep < ngs)
-                alpha = parms.get<double>("alpha_initial");
+                alpha = parms.template get<double>("alpha_initial");
             else if (sweep < ngs + nms)
-                alpha = parms.get<double>("alpha_main");
+                alpha = parms.template get<double>("alpha_main");
             else
-                alpha = parms.get<double>("alpha_final");
+                alpha = parms.template get<double>("alpha_final");
             
             
             double cutoff;
-            if (sweep >= parms.get<int>("ngrowsweeps"))
-                cutoff = parms.get<double>("truncation_final");
+            if (sweep >= parms.template get<int>("ngrowsweeps"))
+                cutoff = parms.template get<double>("truncation_final");
             else
-                cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
+                cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
             
             std::size_t Mmax;
             if (parms.is_set("sweep_bond_dimensions")) {
-                std::vector<std::size_t> ssizes = parms.get<std::vector<std::size_t> >("sweep_bond_dimensions");
+                std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
                 if (sweep >= ssizes.size())
                     Mmax = *ssizes.rbegin();
                 else
                     Mmax = ssizes[sweep];
             } else
-                Mmax = parms.get<std::size_t>("max_bond_dimension");
+                Mmax = parms.template get<std::size_t>("max_bond_dimension");
             
             std::pair<std::size_t, double> trunc;
             
@@ -318,71 +263,6 @@ public:
         return -1;
     }
     
-    MPS<Matrix, SymmGroup> get_current_mps() const { return mps; }
-    
-private:
-    inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
-    {
-        MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-        Boundary<Matrix, SymmGroup> left = contraction::overlap_mpo_left_step(mps[site], bkp, left_[site], mpo[site]);
-        left_[site+1] = left;        
-    }
-    
-    inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
-    {
-        MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-        Boundary<Matrix, SymmGroup> right = contraction::overlap_mpo_right_step(mps[site], bkp, right_[site+1], mpo[site]);
-        right_[site] = right;
-    }
-
-    void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
-    {
-        static Timer timer2("init_left_right");
-        timer2.begin();
-        std::size_t L = mps.length();
-        
-        left_.resize(mpo.length()+1);
-        right_.resize(mpo.length()+1);
-        
-        right_stores_.resize(L+1, storage_master.child());
-        left_stores_.resize(L+1, storage_master.child());
-        
-        Boundary<Matrix, SymmGroup> left = mps.left_boundary();
-        left_[0] = left;
-        
-        for (int i = 0; i < site; ++i) {
-            boundary_left_step(mpo, i);
-            
-            storage::reset(left_stores_[i]);
-            storage::store(left_[i], left_stores_[i]);
-        }
-        storage::reset(left_stores_[site]);
-        storage::store(left_[site], left_stores_[site]);
-        
-        
-        Boundary<Matrix, SymmGroup> right = mps.right_boundary();
-        right_[L] = right;
-                
-        for(int i = L-1; i >= site; --i) {
-            boundary_right_step(mpo, i);
-            
-            storage::reset(right_stores_[i+1]);
-            storage::store(right_[i+1], right_stores_[i+1]);
-        }
-        storage::reset(right_stores_[site]);
-        storage::store(right_[site], right_stores_[site]);
-        
-        
-        timer2.end();
-    }
-    
-    MPS<Matrix, SymmGroup> mps;
-    MPO<Matrix, SymmGroup> mpo, mpo_orig;
-    
-    BaseParameters & parms;
-    std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
-    std::vector<typename StorageMaster::Storage> left_stores_, right_stores_;
-    StorageMaster & storage_master;
 };
 
 #endif
