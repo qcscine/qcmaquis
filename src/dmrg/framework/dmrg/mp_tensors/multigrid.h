@@ -15,7 +15,7 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#include "dmrg/mp_tensors/ss_optimize.h"
+#include "dmrg/mp_tensors/ss_optimize.hpp"
 
 struct multigrid {
     
