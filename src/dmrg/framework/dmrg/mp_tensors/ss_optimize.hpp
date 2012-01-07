@@ -69,7 +69,9 @@ public:
         storage::prefetch(left_[0], left_stores_[0]);
         storage::prefetch(right_[1], right_stores_[1]);
         
+#ifndef NDEBUG
         zout << mps.description() << endl;
+#endif
         for (int _site = (resume_at == -1 ? 0 : resume_at);
              _site < 2*L; ++_site) {
             Timer iteration_t("Iteration took");
