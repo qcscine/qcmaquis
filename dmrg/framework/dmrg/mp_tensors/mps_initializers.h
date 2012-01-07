@@ -70,10 +70,15 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
                                      right_allowed[i].size_of_block(it->first));
         }
         
-        for (int i = 0; i < L; ++i)
+        for (int i = 0; i < L; ++i) {
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1], fillrand, val);
+            mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
+        }
         
+#ifndef NDEBUG
+        zout << "init norm: " << norm(mps) << std::endl;
         zout << mps.description() << endl;
+#endif
     }
 };
 

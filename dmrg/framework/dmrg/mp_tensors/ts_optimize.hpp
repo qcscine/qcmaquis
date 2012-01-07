@@ -65,7 +65,9 @@ public:
         storage::prefetch(left_[0], left_stores_[0]);
         storage::prefetch(right_[2], right_stores_[2]);
 
-	//zout << mps.description() << endl;
+#ifndef NDEBUG
+	zout << mps.description() << endl;
+#endif
         for (int _site = (resume_at == -1 ? 0 : resume_at); _site < 2*L-2; ++_site) {
 	/* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
 	    | |                        |
