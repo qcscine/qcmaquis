@@ -56,14 +56,14 @@ public:
             else
                 site = 2*L-resume_at-1;
             mps.canonize(site);
-            init_left_right(mpo, site);
+            this->init_left_right(mpo, site);
         }
 
 //        if (parms.template <bool>("beta_mode") && sweep == 0 && resume_at < L) {
 //            int site = (resume_at == -1) ? 0 : resume_at;
 //            mpo = zero_after(mpo_orig, site+2);
 //            mps.canonize(site);
-//            init_left_right(mpo, site);
+//            this->init_left_right(mpo, site);
 //        }
         
         storage::prefetch(left_[0], left_stores_[0]);
@@ -93,10 +93,10 @@ public:
                 if (sweep == 0 && lr == 1) {
                     mpo = zero_after(mpo_orig, 0);
                     if (site == 0)
-                        init_left_right(mpo, 0);
+                        this->init_left_right(mpo, 0);
                 } else if (sweep == 0 && lr == -1 && site == L-1) {
                     mpo = mpo_orig;
-                    init_left_right(mpo, site);
+                    this->init_left_right(mpo, site);
                 }
             }
             
@@ -223,7 +223,7 @@ public:
                 }
                 
                 
-                boundary_left_step(mpo, site); // creating left_[site+1]
+                this->boundary_left_step(mpo, site); // creating left_[site+1]
                 storage::reset(left_stores_[site+1]); // left_stores_[site+1] is outdated
             } else if (lr == -1) {
                 if (site > 0) {
@@ -238,7 +238,7 @@ public:
                 }
                 
                 
-                boundary_right_step(mpo, site); // creating right_[site]
+                this->boundary_right_step(mpo, site); // creating right_[site]
                 storage::reset(right_stores_[site]); // right_stores_[site] is outdated
             }
             

@@ -58,7 +58,7 @@ public:
             else
                 site = 2*L-resume_at-2;
             mps.canonize(site);
-            init_left_right(mpo, site);
+            this->init_left_right(mpo, site);
         }
 
 
@@ -95,10 +95,10 @@ public:
                 if (sweep == 0 && lr == 1) {
                     mpo = zero_after(mpo_orig, 0);
                     if (site == 0)
-                        init_left_right(mpo, 0);
+                        this->init_left_right(mpo, 0);
                 } else if (sweep == 0 && lr == -1 && site == L-1) {
                     mpo = mpo_orig;
-                    init_left_right(mpo, site);
+                    this->init_left_right(mpo, site);
                 }
             }
             
@@ -178,7 +178,7 @@ public:
 		t = mps[site2].normalize_left(SVD);
 		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
-                boundary_left_step(mpo, site1); // creating left_[site2]
+                this->boundary_left_step(mpo, site1); // creating left_[site2]
                 storage::reset(left_stores_[site2]); // left_stores_[site2] is outdated
 	    }
 	    if (lr == -1){
@@ -194,7 +194,7 @@ public:
 		t = mps[site1].normalize_right(SVD);
 		if (site1 > 0) mps[site1-1].multiply_from_right(t);
 
-                boundary_right_step(mpo, site2); // creating right_[site2]
+                this->boundary_right_step(mpo, site2); // creating right_[site2]
                 storage::reset(right_stores_[site2]); // right_stores_[site2] is outdated
 	    }
                 
