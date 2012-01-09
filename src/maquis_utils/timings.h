@@ -113,6 +113,12 @@ public:
        o.close();
     }
 
+    friend std::ostream& operator<< (std::ostream& os, Timer const& timer)
+    {
+        os << timer.name << " " << timer.val << ", nCounter : " << timer.nCounter;
+        return os;
+    }
+    
 protected:
     double val, t0;
     unsigned long long freq, nCounter;
