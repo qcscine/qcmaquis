@@ -60,9 +60,9 @@ public:
     
     MPSTensor<Matrix, SymmGroup> make_mps() const;
     std::pair<MPSTensor<Matrix, SymmGroup>,
-              MPSTensor<Matrix, SymmGroup> > split_mps_l2r(std::size_t Mmax, double cutoff) const;
+              MPSTensor<Matrix, SymmGroup> > split_mps_l2r(std::size_t Mmax, double cutoff, Logger * iter_log = NULL) const;
     std::pair<MPSTensor<Matrix, SymmGroup>,
-              MPSTensor<Matrix, SymmGroup> > split_mps_r2l(std::size_t Mmax, double cutoff) const;
+              MPSTensor<Matrix, SymmGroup> > split_mps_r2l(std::size_t Mmax, double cutoff, Logger * iter_log = NULL) const;
     
     void swap_with(TwoSiteTensor & b);
 
