@@ -220,8 +220,7 @@ int main(int argc, char ** argv)
     Index<grp> phys;
     
     MPO<Matrix, grp> mpo(0), mpoc(0);
-    mps_initializer<Matrix, grp> * initializer = new empty_mps_init<Matrix, grp>();
-    MPS<Matrix, grp> cur_mps(0, 0, phys, grp::IdentityCharge, *initializer);
+    MPS<Matrix, grp> cur_mps;
     
     BaseParameters old_model;
     {
@@ -289,19 +288,19 @@ int main(int argc, char ** argv)
         if (parms.get<int>("use_compressed") > 0)
             t_mpoc.compress(1e-12);
         
-        MPS<Matrix, grp> initial_mps(lat->size(),
-                                     parms.get<std::size_t>("init_bond_dimension"),
-                                     phys, initc,
-                                     *initializer_factory<Matrix>(parms));
+        
+        MPS<Matrix, grp> initial_mps;
 
         
         static Timer multigrid_t("Multigrid");
-        if (cur_mps.length() > 0 && cur_mps.length() != initial_mps.length())
+        if (cur_mps.length() > 0 && cur_mps.length() != lat->size())
         {
             multigrid_t.begin();
             std::cout << "*** Starting grainings ***" << std::endl;
             Logger iteration_log;
-                        
+            
+            initial_mps = MPS<Matrix, grp>(lat->size());
+            
             int oldL = old_model.get<double>("Ndiscr") * old_model.get<double>("L");
             std::vector<MPO<Matrix, grp> > mpo_mix(oldL, MPO<Matrix, grp>(0));
             double r = model.get<double>("Ndiscr")/old_model.get<double>("Ndiscr");
@@ -346,7 +345,13 @@ int main(int argc, char ** argv)
             }            
         } else if (cur_mps.length() > 0) {
             initial_mps = cur_mps;
+        } else {
+            initial_mps = MPS<Matrix, grp>(lat->size(),
+                                         parms.get<std::size_t>("init_bond_dimension"),
+                                         phys, initc,
+                                         *initializer_factory<Matrix>(parms));
         }
+        
         cur_mps = initial_mps;
         mpo = t_mpo;
         mpoc = t_mpoc;

@@ -31,6 +31,11 @@ std::string MPS<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup>::MPS(size_t L)
+: std::vector<MPSTensor<Matrix, SymmGroup> >(L)
+{ }
+
+template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L,
                             size_t Mmax,
                             Index<SymmGroup> phys,

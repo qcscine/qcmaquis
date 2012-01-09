@@ -112,17 +112,19 @@ namespace app {
     {
         assert(lat.get() != NULL);
         
-        mps = MPS<Matrix, SymmGroup>(lat->size(),
-                                     parms.get<std::size_t>("init_bond_dimension"),
-                                     phys, initc,
-                                     *initializer_factory(parms));
-        
         if (restore) {
+            mps = MPS<Matrix, SymmGroup>(lat->size());
             alps::hdf5::archive h5ar_in(chkpfile);
             h5ar_in >> alps::make_pvp("/state", mps);
         } else if (parms.get<std::string>("initfile").size() > 0) {
+            mps = MPS<Matrix, SymmGroup>(lat->size());
             alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
             h5ar_in >> alps::make_pvp("/state", mps);
+        } else {
+            mps = MPS<Matrix, SymmGroup>(lat->size(),
+                                         parms.get<std::size_t>("init_bond_dimension"),
+                                         phys, initc,
+                                         *initializer_factory(parms));
         }
     }
 

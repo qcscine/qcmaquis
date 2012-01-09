@@ -24,7 +24,7 @@ public:
     typedef std::size_t size_t;
 
     MPS() { }
-    
+    MPS(size_t L);  
     MPS(size_t L, size_t Mmax, Index<SymmGroup> phys,
         typename SymmGroup::charge right_end,
         mps_initializer<Matrix, SymmGroup> & init);
