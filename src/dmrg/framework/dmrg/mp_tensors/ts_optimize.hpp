@@ -169,7 +169,7 @@ public:
             
 	    if (lr == +1){
 		// Write back result from optimization
-		boost::tie(mps[site1], mps[site2]) = tst.split_mps_l2r(Mmax, cutoff);
+		boost::tie(mps[site1], mps[site2]) = tst.split_mps_l2r(Mmax, cutoff, &iteration_log);
 
 		block_matrix<Matrix, SymmGroup> t;
 		
@@ -185,7 +185,7 @@ public:
 	    }
 	    if (lr == -1){
 		// Write back result from optimization
-		boost::tie(mps[site1], mps[site2]) = tst.split_mps_r2l(Mmax, cutoff);
+		boost::tie(mps[site1], mps[site2]) = tst.split_mps_r2l(Mmax, cutoff, &iteration_log);
 
 		block_matrix<Matrix, SymmGroup> t;
 
