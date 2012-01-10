@@ -85,7 +85,7 @@ public:
     }
     
     
-    bool do_sweep (Logger& iteration_log)
+    int do_sweep (Logger& iteration_log)
     {        
         int pc = 0, mc = 0;
         base::parms = parms_orig.get_at_index("t", base::sweep, &pc);
@@ -122,7 +122,7 @@ public:
         std::cout << "Energy " << energy << std::endl;
         iteration_log << make_log("Energy", energy);
         
-        return false;
+        return -1; // no early exit
     }
     
 private:

@@ -82,14 +82,14 @@ public:
 	}
     }
     
-    bool do_sweep (Logger& iteration_log)
+    int do_sweep (Logger& iteration_log)
     {        
         int exit_site = optimizer->sweep(base::sweep, iteration_log);
         base::ssm.sync();
         
         base::mps = optimizer->get_current_mps();
         
-        return exit_site >= 0;
+        return exit_site;
     }
     
 private:
