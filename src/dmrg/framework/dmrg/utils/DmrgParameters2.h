@@ -69,6 +69,7 @@ private:
         add_option("chkp_each", "", value(1)); 
         
         add_option("te_type", "", value("nn"));
+		add_option("te_order", "second, fourth", value("fourth"));
         add_option("dt", "", value(1e-3));
         add_option("nsweeps_img", "", value(0));
         
