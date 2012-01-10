@@ -141,6 +141,7 @@ namespace app {
     template <class Matrix, class SymmGroup>
     void sim<Matrix, SymmGroup>::run ()
     {
+        int exit_site = -1;
         bool early_exit = false;
         
         for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
@@ -155,10 +156,11 @@ namespace app {
             parms.set("sweep", sweep);
             
             early_exit = do_sweep(iteration_log);
+            early_exit = (exit_site >= 0);
             
             gettimeofday(&sthen, NULL);
             double elapsed_sweep = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-            std::cout << "Sweep done after " << elapsed_sweep << " seconds." << std::endl;
+            std::cout << "Sweep " << sweep << " done after " << elapsed_sweep << " seconds." << std::endl;
             
             
             gettimeofday(&then, NULL);

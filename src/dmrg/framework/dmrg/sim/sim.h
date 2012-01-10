@@ -71,7 +71,7 @@ namespace app {
         ~sim();
         
         virtual void run ();
-        virtual bool do_sweep (Logger&) =0;
+        virtual int do_sweep (Logger&) =0;
         virtual void do_sweep_measure (Logger&);
         
         virtual void measure ();
