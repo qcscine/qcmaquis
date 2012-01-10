@@ -20,6 +20,7 @@
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/contractions.h"
 
+
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>
 evolve(MPS<Matrix, SymmGroup> mps,
@@ -67,8 +68,8 @@ evolve(MPS<Matrix, SymmGroup> mps,
 // Same function, but working with different matrix on each bond.
 // map_op should already contain non overlapping terms.
 template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup>
-evolve(MPS<Matrix, SymmGroup> mps,
+void
+evolve(MPS<Matrix, SymmGroup> & mps,
        std::map<std::size_t, block_matrix<Matrix, SymmGroup> > const & map_op,
        std::size_t Mmax, double cutoff)
 {
@@ -80,8 +81,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
     block_matrix<Matrix, SymmGroup> v0, v1, t;
     
     for (std::size_t p = i; p < L-1; p += 2)
-    {
-        
+    {        
         mps[p].make_left_paired();
         mps[p+1].make_right_paired();
         
@@ -109,7 +109,6 @@ evolve(MPS<Matrix, SymmGroup> mps,
     
     //        cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << endl;
     
-    return mps;
 }
 
 #endif
