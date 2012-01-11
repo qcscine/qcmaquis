@@ -15,6 +15,7 @@ namespace app {
     : parms(parms_)
     , model(model_)
     , sweep(0)
+    , site(-1)
     , chkpfile(parms.get<std::string>("chkpfile"))
     , rfile(parms.get<std::string>("resultfile"))
     , ssm(parms.get<std::string>("storagedir"))
@@ -24,6 +25,9 @@ namespace app {
         
         DCOLLECTOR_GROUP(gemm_collector, "init")
         DCOLLECTOR_GROUP(svd_collector, "init")
+        
+        gettimeofday(&now, NULL);
+
 #ifdef USE_GPU
         cublasInit();
 #endif
@@ -36,9 +40,15 @@ namespace app {
                 if (h5ar_in.is_group("/state") && h5ar_in.is_scalar("/status/sweep"))
                 {
                     h5ar_in >> alps::make_pvp("/status/sweep", sweep);
-                    ++sweep;
                     
+                    if (h5ar_in.is_scalar("/status/site"))
+                        h5ar_in >> alps::make_pvp("/status/site", site);
+                    
+                    if (site == -1)
+                        ++sweep;
+                        
                     std::cout << "Restoring state." << std::endl;
+                    std::cout << "Will start again at site " << site << " in sweep " << sweep << std::endl;
                     restore = true;
                 } else {
                     std::cout << "Invalid checkpoint, overwriting." << std::endl; 
@@ -72,8 +82,6 @@ namespace app {
             h5ar << alps::make_pvp("/parameters", model);
             h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
         }
-        
-        gettimeofday(&now, NULL);
         
     }
     
@@ -141,7 +149,6 @@ namespace app {
     template <class Matrix, class SymmGroup>
     void sim<Matrix, SymmGroup>::run ()
     {
-        int exit_site = -1;
         bool early_exit = false;
         
         for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
@@ -151,12 +158,14 @@ namespace app {
             
             Logger iteration_log;
             int rs = parms.get<int>("run_seconds");
-            double elapsed;            
+            
+            gettimeofday(&then, NULL);
+            double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
             
             parms.set("sweep", sweep);
             
-            early_exit = do_sweep(iteration_log);
-            early_exit = (exit_site >= 0);
+            site = do_sweep(iteration_log, rs > 0 ? rs-elapsed : -1);
+            early_exit = (site >= 0);
             
             gettimeofday(&sthen, NULL);
             double elapsed_sweep = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
@@ -219,6 +228,7 @@ namespace app {
                 
                 h5ar << alps::make_pvp("/state", mps);
                 h5ar << alps::make_pvp("/status/sweep", sweep);
+                h5ar << alps::make_pvp("/status/site", site);
             }
             
             

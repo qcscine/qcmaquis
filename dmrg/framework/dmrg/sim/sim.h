@@ -71,7 +71,7 @@ namespace app {
         ~sim();
         
         virtual void run ();
-        virtual int do_sweep (Logger&) =0;
+        virtual int do_sweep (Logger&, double=-1) =0;
         virtual void do_sweep_measure (Logger&);
         
         virtual void measure ();
@@ -95,6 +95,7 @@ namespace app {
         
         bool dns;
         int sweep;
+        int site;
         std::string chkpfile;
         std::string rfile;
         bool restore;
