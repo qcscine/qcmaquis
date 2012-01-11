@@ -140,6 +140,7 @@ namespace app {
     template <class Matrix, class SymmGroup>
     sim<Matrix, SymmGroup>::~sim()
     {
+        ssm.sync();
 #ifdef USE_GPU
         cublasShutdown();
 #endif
