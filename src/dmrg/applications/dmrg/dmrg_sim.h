@@ -63,28 +63,32 @@ public:
     dmrg_sim (DmrgParameters & parms_, ModelParameters & model_)
     : base(parms_, model_)
     {
-	if (parms_.get<std::string>("optimization") == "singlesite")
-	{
-	    optimizer = 
-	    boost::shared_ptr<opt_base_t> ( 
-		new ss_optimize<Matrix, SymmGroup, StreamStorageMaster>(base::mps,
-		base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
-		base::parms, base::ssm) );
-	} 
-
-	else 
-	{
-	    optimizer = 
-	    boost::shared_ptr<opt_base_t> (
-		new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>(base::mps,
-		base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
-		base::parms, base::ssm) );
-	}
+        if ( base::sweep < base::parms.template get<int>("nsweeps") )
+        {
+            if (parms_.get<std::string>("optimization") == "singlesite")
+            {
+                optimizer = 
+                boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, StreamStorageMaster>
+                                               (base::mps,
+                                                base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
+                                                base::parms, base::ssm) );
+            } 
+            
+            else 
+            {
+                optimizer = 
+                boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>
+                                               (base::mps,
+                                                base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
+                                                base::parms, base::ssm) );
+            }
+        }
     }
     
-    int do_sweep (Logger& iteration_log)
+    int do_sweep (Logger& iteration_log, double time_limit = -1)
     {        
-        int exit_site = optimizer->sweep(base::sweep, iteration_log);
+        int exit_site = optimizer->sweep(base::sweep, iteration_log, Both,
+                                         base::site, time_limit);
         base::ssm.sync();
         
         base::mps = optimizer->get_current_mps();

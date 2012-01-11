@@ -142,7 +142,7 @@ public:
     }
     
     
-    int do_sweep (Logger& iteration_log)
+    int do_sweep (Logger& iteration_log, double time_limit = -1)
     {        
         int pc = 0, mc = 0;
         base::parms = parms_orig.get_at_index("t", base::sweep, &pc);
