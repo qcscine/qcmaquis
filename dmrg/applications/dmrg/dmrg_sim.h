@@ -95,7 +95,11 @@ public:
         
         return exit_site;
     }
-    
+
+    ~dmrg_sim()
+    {
+        base::ssm.sync();
+    }    
 private:
     
     boost::shared_ptr<opt_base_t> optimizer;
