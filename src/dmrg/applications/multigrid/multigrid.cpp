@@ -299,8 +299,9 @@ int main(int argc, char ** argv)
             std::cout << "*** Starting grainings ***" << std::endl;
             Logger iteration_log;
             
-            initial_mps = MPS<Matrix, grp>(lat->size());
-            
+            boost::shared_ptr<mps_initializer<Matrix, grp> > initializer = boost::shared_ptr<mps_initializer<Matrix, grp> > (new empty_mps_init<Matrix, grp>());
+            initial_mps = MPS<Matrix, grp>(lat->size(), 1, phys, initc, *initializer);
+                        
             int oldL = old_model.get<double>("Ndiscr") * old_model.get<double>("L");
             std::vector<MPO<Matrix, grp> > mpo_mix(oldL, MPO<Matrix, grp>(0));
             double r = model.get<double>("Ndiscr")/old_model.get<double>("Ndiscr");
