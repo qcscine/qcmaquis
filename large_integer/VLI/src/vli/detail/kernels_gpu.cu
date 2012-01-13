@@ -9,6 +9,7 @@
 #include "vli/detail/kernels_cpu_gpu.hpp"
 #include "vli/detail/kernels_gpu.h"
 
+#include "utils/cuPrintf.cu"
 
 namespace vli {
 namespace detail {
@@ -158,20 +159,19 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
 template  <typename BaseInt, std::size_t Size>
 __global__ void inner_prod_vector(unsigned int max_order, std::size_t vector_size, BaseInt const* v1, BaseInt const* v2, BaseInt* res)
 {
-    unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+    //unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
+    unsigned int xIndex = blockIdx.x; // get poly one by one
     const std::size_t size_multiplicant = Size*max_order*max_order;
     const std::size_t size_product = Size*2*max_order*2*max_order;
+    cuPrintf("%u %u %u\n", blockIdx.x, blockDim.x, threadIdx.x);
     //multiplication between polynomial
-    if(xIndex < vector_size)
-    {
         std::size_t offset_m = xIndex*size_multiplicant;
         std::size_t offset_p = xIndex*size_product;
 //    for(std::size_t i=0 ; i < vector_size; ++i){ 
 //        std::size_t offset_m = i*size_multiplicant;
 //        std::size_t offset_p = i*size_product;
-        polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
-     }
-//    }
+  
+ //         polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
 }
     
     
@@ -202,15 +202,16 @@ void inner_product_vector(unsigned int max_order, std::size_t vector_size, BaseI
  */ 
 
 //    std::size_t blocks_per_grid = vector_size;
-    std::size_t blocks_per_grid = vector_size/threads_per_block+1;
-    dim3 dimgrid(blocks_per_grid, 1, 1);
-    dim3 dimblock(threads_per_block, max_order, max_order);
+  //  std::size_t blocks_per_grid = vector_size/threads_per_block+1;
+    dim3 dimgrid(vector_size, 1, 1);
+    dim3 dimblock(1,1,1);// max_order);
+    //dim3 dimblock(1, 2, 21 );// max_order);
 
-//    dim3 dimgrid(1, 1, 1);
-//    dim3 dimblock(1, 1, 1);
-
-    
+    cudaPrintfInit(); 
+    printf(" out %u %u %u \n", vector_size, max_order, max_order); 
     inner_prod_vector<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, vector_size, A, B, C);
+    cudaPrintfDisplay(stdout, true);
+    cudaPrintfEnd();
 } 
 
 template <typename BaseInt, std::size_t Size>

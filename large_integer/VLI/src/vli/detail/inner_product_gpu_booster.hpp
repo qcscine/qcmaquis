@@ -114,7 +114,7 @@ namespace detail
 
 namespace detail
 {
-#ifdef _OPENMP
+//#ifdef _OPENMP
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
 inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
@@ -138,7 +138,7 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     res[0] += polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order >(gpu_product);
     return res[0];
 }
-#endif
+//#endif
 
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
