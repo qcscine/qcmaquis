@@ -88,7 +88,6 @@ namespace detail
             // run/queue the inner product computation
             inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p(), num_threads);
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
-
         }
         
         operator polynomial_cpu<Vli,2*Order>() const

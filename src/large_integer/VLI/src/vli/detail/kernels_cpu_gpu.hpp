@@ -8,7 +8,10 @@
 
 #ifndef VLI_KERNELS_CPU_GPU_HPP 
 #define VLI_KERNELS_CPU_GPU_HPP 
-
+/*
+#include <emmintrin.h>
+#include <mmintrin.h>
+*/
 #include "vli/detail/bit_masks.hpp"
 #include <cassert>
 
@@ -142,22 +145,48 @@ namespace vli
     template <typename BaseInt>
     inline void kernels_multiplication_block(BaseInt const* x, BaseInt const * y, BaseInt* r)
     {
-        BaseInt a[2] = {0,0};
-        BaseInt b[2] = {0,0};
+        
+        BaseInt a[2] __attribute__ ((aligned (16))) = {0,0};
+        BaseInt b[2] __attribute__ ((aligned (16))) = {0,0};
         /**
          Divide and conquer algo (see my notes - for the euclidian division tips)
           X  <=> Xl Xr (half of the binary number)
           Y  <=> Yl Yr (half of the binary number)
          -------
-          = 2^n XlYl + 2^(n/2) (XlYr + XrYl) + XrYr (kernels_multiplication_block_down and kernels_multiplication_block_up)
+          = 2^n XlYl + 2^(n/2) (XlYr + XrYl) + XrYr (kernels_ multiplication_block_down and kernels_multiplication_block_up)
          ------- 
           = (q1+q2 + Xl*Yl)*BASE + r2  (multiplication_kernel_base_reshaping)
         */
+
         kernels_multiplication_block_down(x,y,a);
-        kernels_multiplication_block_up(x,y,b);
-        kernels_multiplication_base_reshaping(a,b, r);
+        kernels_multiplication_block_up(x,y,b);    
+        kernels_multiplication_base_reshaping(a,b,r);
+/*
+        kernels_multiplication_block_simd(x,y,a,b);
+        kernels_multiplication_base_reshaping_simd(a,b,r);
+*/
+ }
+/*        
+    template <typename  BaseInt>
+    inline void kernels_multiplication_block_simd(BaseInt const* x, BaseInt const*  y, BaseInt * a, BaseInt * b)
+    {
+        __m128i xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6;
+
+        BaseInt xt[2]  __attribute__ ((aligned (16))) = {( (*x & mask_down<BaseInt>::value)),( ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2)))};
+        BaseInt xt2[2] __attribute__ ((aligned (16))) = {( ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2))),((*x & mask_down<BaseInt>::value))};
+        BaseInt yt[2]  __attribute__ ((aligned (16))) = {( (*y & mask_down<BaseInt>::value)),(((*y & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2)))};
+
+        xmm0 = _mm_load_si128((__m128i*)xt); 
+        xmm2 = _mm_load_si128((__m128i*)xt2); 
+        xmm1 = _mm_load_si128((__m128i*)yt); 
+        
+        xmm0 = _mm_mul_epu32(xmm0, xmm1);
+        xmm3 = _mm_mul_epu32(xmm1, xmm2);
+
+        _mm_store_si128((__m128i*)a,xmm0);
+        _mm_store_si128((__m128i*)b,xmm3); 
     }
- 
+*/        
     template <typename BaseInt>
     inline void kernels_multiplication_block_down(BaseInt const* x, BaseInt const*  y, BaseInt * r)	
     { 
@@ -171,14 +200,26 @@ namespace vli
         *r     = ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2) ) * (*y & mask_down<BaseInt>::value);	
         *(r+1) = ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2) ) * ((*y & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2));
     }
-
+/*        
+    template <typename BaseInt>
+    inline void kernels_multiplication_base_reshaping_simd(BaseInt const* x2, BaseInt  const*  y2, BaseInt * r)	
+    {
+        BaseInt q11 = (*(y2) + *(y2+1)) >> (data_bits<BaseInt>::value/2);
+        BaseInt r11 = (*(y2) + *(y2+1)) & mask_down<BaseInt>::value;
+        r11 *= base_half<BaseInt>::value;
+        BaseInt q22 = (r11 + *x2) >> data_bits<BaseInt>::value;         
+        BaseInt r22 = (r11 + *x2) & data_mask<BaseInt>::value;
+        *r = r22;
+        *(r+1) = q11 + q22 + *(x2+1);
+    }
+  */      
     template <typename BaseInt>
     inline void kernels_multiplication_base_reshaping(BaseInt const* x, BaseInt  const*  y, BaseInt * r)	
-    {
+    { 
         BaseInt q1 = (*(x+1) + *y) >> (data_bits<BaseInt>::value/2);
         BaseInt r1 = (*(x+1) + *y) & mask_down<BaseInt>::value;
         r1 *= base_half<BaseInt>::value;
-        BaseInt q2 = (r1 + *x) >> data_bits<BaseInt>::value; 
+        BaseInt q2 = (r1 + *x) >> data_bits<BaseInt>::value;   
         BaseInt r2 = (r1 + *x) & data_mask<BaseInt>::value;
         *r = r2;
         *(r+1) = q1 + q2 + *(y+1);
