@@ -63,8 +63,8 @@ namespace detail
     class inner_product_gpu_booster
     {
       private:
-//        typedef typename VectorPolynomial::value_type   polynomial_type;
-//        typedef typename polynomial_type::value_type    vli_type;
+//      typedef typename VectorPolynomial::value_type   polynomial_type;
+//      typedef typename polynomial_type::value_type    vli_type;
         typedef typename Vli::value_type           base_int_type;
         enum {factor_element_size = Order * Order * Vli::size };
         enum {product_element_size = 2*Order * 2*Order * Vli::size };
@@ -114,7 +114,7 @@ namespace detail
 
 namespace detail
 {
-//#ifdef _OPENMP
+#ifdef _OPENMP
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
 inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
@@ -138,7 +138,7 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     res[0] += polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order >(gpu_product);
     return res[0];
 }
-//#endif
+#endif
 
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 

@@ -13,6 +13,10 @@ namespace gpu
 {
 	gpu_manager::gpu_manager(int device = 0):device_(device)
 	{
+#ifndef CUDA_NO_SM_11_ATOMIC_INTRINSICS
+        printf("WARNING! Not using atomics!\n");
+#endif
+
 		cuInit(device_);
 		cudaGetDeviceProperties(&deviceProp_, device_);
 	}

@@ -13,7 +13,7 @@
 
 namespace vli {
 namespace detail {
-
+    
 /**
 * local declaration of the commun kernels
 */
@@ -141,14 +141,16 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
             std::size_t offset2 = (je2*max_order+he2)*Size;
 
             single_multiplication_device<BaseInt,Size>(&p1[offset1],&p2[offset2],&inter[0]);
- 
+            lock = atomicOr(&MutexArray[n],1<<bit) & 1<<bit;
+
+            /*
             while(lock == 0){
                 n = offset0/Size;
                 bit = offset0%32;
                 lock = atomicOr(&MutexArray[n],1<<bit) & 1<<bit;
             }            
             kernels_addition_classic<BaseInt,Size>(&res[offset0],&inter[0]);
-            atomicAnd(&MutexArray[n],~1<<bit); 
+            atomicAnd(&MutexArray[n],~1<<bit); */
         } 
     }
 } 
@@ -163,15 +165,17 @@ __global__ void inner_prod_vector(unsigned int max_order, std::size_t vector_siz
     unsigned int xIndex = blockIdx.x; // get poly one by one
     const std::size_t size_multiplicant = Size*max_order*max_order;
     const std::size_t size_product = Size*2*max_order*2*max_order;
-    cuPrintf("%u %u %u\n", blockIdx.x, blockDim.x, threadIdx.x);
+ 
     //multiplication between polynomial
         std::size_t offset_m = xIndex*size_multiplicant;
         std::size_t offset_p = xIndex*size_product;
-//    for(std::size_t i=0 ; i < vector_size; ++i){ 
+    cuPrintf("%u %u %u %u %u\n",offset_m, offset_p, blockIdx.x, blockDim.x, threadIdx.x);
+
+    //    for(std::size_t i=0 ; i < vector_size; ++i){ 
 //        std::size_t offset_m = i*size_multiplicant;
 //        std::size_t offset_p = i*size_product;
   
- //         polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
+    polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
 }
     
     
@@ -195,6 +199,10 @@ __global__ void reduction_polynome(unsigned int max_order, std::size_t vector_si
 template <typename BaseInt, std::size_t Size>
 void inner_product_vector(unsigned int max_order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t threads_per_block) 
 {
+#ifndef CUDA_NO_SM_11_ATOMIC_INTRINSICS
+	printf("WARNING! Not using atomics!\n");
+#endif
+    
 /*
     std::size_t blocks_per_grid = vector_size/threads_per_block+1;
     dim3 dimgrid(blocks_per_grid,1,1);

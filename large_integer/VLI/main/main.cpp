@@ -18,7 +18,7 @@
 #include "regression/vli_test.hpp"
 
 
-#define SIZE 21
+#define SIZE 3
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -47,6 +47,7 @@ typedef std::vector<polynomial_type> polynomial_vector_type;
 */
 int main (int argc, char * const argv[]) 
 {
+    
    
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
@@ -61,8 +62,8 @@ int main (int argc, char * const argv[])
     
     std::cout << b << std::endl;
     */
-    vector_type_cpu v1(1024);
-    vector_type_cpu v2(1024);
+    vector_type_cpu v1(10);
+    vector_type_cpu v2(10);
 /*
     polynomial_vector_type v1gmp(1024);
     polynomial_vector_type v2gmp(1024);
@@ -71,7 +72,7 @@ int main (int argc, char * const argv[])
     polynomial_result_type_cpu result;
     polynomial_result_type_cpu result_acc;
     polynomial_result_type_cpu result_plain;
-    polynomial_result_type_cpu result_pure_gpu;
+    polynomial_result_type_cpu result_mix_cpu_gpu;
     polynomial_result_type_cpu result_pure_cpu; 
 
 
@@ -85,6 +86,15 @@ int main (int argc, char * const argv[])
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
+    
+
+    Timer t2("MIX CPU/GPU openmp");
+    t2.begin();    
+    result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
+    t2.end();
+    
+    
+    
 /*
     Timer t2("MIX CPU/GPU");
     t2.begin();
