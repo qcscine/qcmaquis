@@ -48,23 +48,7 @@ namespace vli
             coeff_ *= c;
             return (*this);
         }
-
-        /**
-        * For the GPU proxy 
-        * MEGA DANGEROUS
-        * Andreas one free drink, if you get a safer solution solution
-        * I tried to specify but my compilo is blind
-        */        
-//      template<class Order>
-//      monomial& operator *= (typename vector_polynomial_gpu<polynomial_gpu<Vli,Order> >::proxy const& p){
- /*
-        template <class T>                                    
-        monomial& operator *= (T const& p){
-            Vli Tmp = p.BuildProxyToVli();
-            coeff_ *= Tmp;
-            return (*this);
-        }
-       */     
+    
         void print(std::ostream& os) const
         {
             if(coeff_ > 0)

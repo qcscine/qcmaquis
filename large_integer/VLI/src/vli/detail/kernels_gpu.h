@@ -17,12 +17,6 @@ struct vli_size_tag
 
 
 #define VLI_DECLARE_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
-    void entrywise_multiplies(vli_size_tag<VLI_SIZE>, TYPE const* A, TYPE const*  B, TYPE* C); \
-    void poly_mono_multiply(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE const* A, TYPE const* B, TYPE* C, std::size_t j_exp, std::size_t h_exp); \
-    void plus_assign_poly_int(vli_size_tag<VLI_SIZE>, TYPE* A, int a); \
-    void plus_assign_poly(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE* A, TYPE const* B); \
-    void minus_assign_poly_destructive(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE* A, TYPE const* B); \
-    void poly_poly_multiply(vli_size_tag<VLI_SIZE>, unsigned int max_order, TYPE const* A, TYPE const* B, TYPE* C); \
     void inner_product_vector(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C, std::size_t threads_per_block); \
     void vector_reduction_inplace(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE* A); 
 

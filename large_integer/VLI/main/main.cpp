@@ -18,6 +18,8 @@
 #include "regression/vli_test.hpp"
 
 
+#define SIZE 21
+
 using vli::vli_cpu;
 using vli::max_int_value;
 using vli::monomial;
@@ -33,8 +35,8 @@ typedef vli_cpu<long unsigned int, 3> vli_type_cpu;
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 
-typedef vli::polynomial_cpu< vli_type_cpu, 2 > polynomial_type_cpu;
-typedef vli::polynomial_cpu< vli_type_cpu, 2*2 > polynomial_result_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, SIZE > polynomial_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, 2*SIZE > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 /*
@@ -50,9 +52,17 @@ int main (int argc, char * const argv[])
     gpu::gpu_manager* gpu;
     gpu->instance();
 #endif
-
-    vector_type_cpu v1(2);
-    vector_type_cpu v2(2);
+    /*
+    vli_type_cpu a,b;
+    vli::test::fill_random(a);
+    vli::test::fill_random(b);
+    
+    b*=a;
+    
+    std::cout << b << std::endl;
+    */
+    vector_type_cpu v1(1024);
+    vector_type_cpu v2(1024);
 /*
     polynomial_vector_type v1gmp(1024);
     polynomial_vector_type v2gmp(1024);
@@ -67,24 +77,26 @@ int main (int argc, char * const argv[])
 
 
 
-    fill_vector_random(v1,1);
-    fill_vector_random(v2,1);
+    fill_vector_random(v1,2);
+    fill_vector_random(v2,2);
 
 
-    TimerOMP t1("CPU openmp");
+    Timer t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
-
-    TimerOMP t2("MIX CPU/GPU");
+/*
+    Timer t2("MIX CPU/GPU");
     t2.begin();
     result = inner_product(v1,v2);
     t2.end();
 
-    std::cout << result << std::endl;
     std::cout << result_pure_cpu << std::endl;
-  
-/*
+
+    std::cout << result << std::endl;
+
+    
+
     TimerOMP t3("oldsyte");
     t3.begin();
     result_acc=  vli::detail::inner_product_accp(v1,v2);
@@ -109,12 +121,12 @@ int main (int argc, char * const argv[])
     std::cout << result_pure_gpu << std::endl << std::endl << std::endl;
 #endif //VLI_USE_GPU
     std::cout << result_pure_cpu << std::endl << std::endl << std::endl;
-    
+   
     if(
        result == result_pure_cpu
-#ifdef VLI_USE_GPU
-       && result == result_pure_gpu
-#endif //VLI_USE_GPU
+ #ifdef VLI_USE_GPU
+ && result == result_pure_gpu
+ #endif //VLI_USE_GPU
       )
         printf( "OK \n"); 
     else{
