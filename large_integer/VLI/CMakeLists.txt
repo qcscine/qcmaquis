@@ -44,7 +44,7 @@ endif(VLI_USE_OPENMP)
 
 if (VLI_COMPILE_GPU)
    find_package (CUDA)
-   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch=sm_11)
+   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}  "-arch=sm_12")
    include_directories(${CUDA_INCLUDE_DIRS})
 else (VLI_COMPILE_GPU)
    set (CUDA_LIBRARIES "")
