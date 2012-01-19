@@ -18,7 +18,7 @@
 #include "regression/vli_test.hpp"
 
 
-#define SIZE 3
+#define SIZE 21
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -62,12 +62,11 @@ int main (int argc, char * const argv[])
     
     std::cout << b << std::endl;
     */
-    vector_type_cpu v1(10);
-    vector_type_cpu v2(10);
+    vector_type_cpu v1(2);
+    vector_type_cpu v2(2);
 /*
     polynomial_vector_type v1gmp(1024);
     polynomial_vector_type v2gmp(1024);
-*/
 
     polynomial_result_type_cpu result;
     polynomial_result_type_cpu result_acc;
@@ -75,25 +74,45 @@ int main (int argc, char * const argv[])
     polynomial_result_type_cpu result_mix_cpu_gpu;
     polynomial_result_type_cpu result_pure_cpu; 
 
+    fill_vector_random(v1,1);
+    fill_vector_random(v2,1);
+*/
+    // b as block
+    polynomial_type_cpu p1,p2;
+    polynomial_result_type_cpu r1,rb1;
+    
+    vli::test::fill_poly_random(p1);
+    vli::test::fill_poly_random(p2);
 
+    polynomial_type_cpu pb1(p1),pb2(p2);
 
+    Timer A("classic");
+    A.begin();
+    poly_multiply(r1,p1,p2);
+    A.end();
 
-    fill_vector_random(v1,2);
-    fill_vector_random(v2,2);
+    Timer B("new");
+    B.begin();
+    poly_multiply_block(rb1,pb1,pb2);
+    B.end();
 
+    if(r1 == rb1) {std::cout << " ok " << std::endl;}
+    /*
 
     Timer t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
     
+    std::cout << result_pure_cpu << std::endl;
 
-    Timer t2("MIX CPU/GPU openmp");
+     Timer t2("MIX CPU/GPU openmp");
     t2.begin();    
     result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
     t2.end();
     
-    
+   std::cout << result_mix_cpu_gpu << std::endl;
+  */  
     
 /*
     Timer t2("MIX CPU/GPU");

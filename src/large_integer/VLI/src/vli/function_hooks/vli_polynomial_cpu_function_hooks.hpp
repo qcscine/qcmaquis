@@ -1,6 +1,8 @@
 #ifndef VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
 #define VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
 
+#include "vli/polynomial/algorithms_polynomial_cpu.hpp"
+
 namespace vli{
 
 template<class Vli, unsigned int Order>
@@ -28,12 +30,38 @@ void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result,
             {
                 for(exponent_type he2 = 0; he2 < Order; ++he2)
                 {
-                     result.coeffs_[(je1+je2)*Order + he1+he2 ] += p1.coeffs_[je1*Order+he1] * p2.coeffs_[je2*Order+he2];
+                     result.coeffs_[(je1+je2)*2*Order + he1+he2 ] += p1.coeffs_[je1*Order+he1] * p2.coeffs_[je2*Order+he2];
                 }
             }
         }    
     }
 }
+
+template <class BaseInt, std::size_t Size, unsigned int Order>
+void poly_multiply_block(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
+                        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
+                        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
+{
+    // first PASS, half top right corner, 
+    unsigned int n(0);
+    for(unsigned int i=0;i< Order;++i){ // i will be a thread here, independence loop
+        for(unsigned int j=0; j<=n; ++j){
+            block_algo(j,n-j,result,p1,p2);
+        }
+        n++; // thread num
+    }
+    
+    // second PASS, half bottom left corner, 
+    n=1;
+    for(unsigned int i=1; i<Order;++i){  // i will be a thread here, independence loop
+        for(unsigned int j=n; j<Order; ++j){
+            block_algo(j,Order-j+n-1,result,p1,p2);
+        }
+        n++; // thread num
+    }
+}
+    
+    
         
 }// end namespace 
 

@@ -114,23 +114,25 @@ __device__ void kernel_negate_device(BaseInt* x)
     kernels_addition_block(x,&one);
 }
 
-
+__device__ int MutexArray[100];
+    
 template <typename BaseInt, std::size_t Size>
 __device__ void polynome_polynome_multiplication_device(unsigned int max_order, BaseInt const* p1, BaseInt const* p2, BaseInt* res)
 {
     std::size_t je1 = threadIdx.y;
     std::size_t je2 = threadIdx.z;
+
+    #pragma unroll
+    for(std::size_t i=0 ; i < 100 ;++i)
+        MutexArray[i] = 0;
     
-    int MutexArray[10]; 
-    std::size_t n;
-    std::size_t bit;
-    
-    int lock(0);    
-    
+    bool needlock = true;
+
+
     for(std::size_t he1 = 0; he1 < max_order; ++he1)
     {               
         for(std::size_t he2 = 0; he2 < max_order; ++he2)
-        {
+        {            
             BaseInt inter[Size];
             #pragma unroll
             for(std::size_t i=0 ; i < Size ;++i)
@@ -139,19 +141,31 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
             std::size_t offset0 = ((je1+je2)*max_order + he1+he2)*Size;
             std::size_t offset1 = (je1*max_order+he1)*Size;
             std::size_t offset2 = (je2*max_order+he2)*Size;
-
             single_multiplication_device<BaseInt,Size>(&p1[offset1],&p2[offset2],&inter[0]);
-            lock = atomicOr(&MutexArray[n],1<<bit) & 1<<bit;
+            cuPrintf("he1 he2 %u \n", offset0/3 );             
+           //kernels_addition_classic<BaseInt,Size>(&res[offset0],&inter[0]);
 
-            /*
+            while (needlock) 
+            {
+                if(0 == atomicCAS(&MutexArray[offset0/3], 0, 1)) {
+                    //kernels_addition_classic<BaseInt,Size>(&res[offset0],&inter[0]);
+                    res[he1] = 99;
+                    cuPrintf("in mutex  n %u %u %u %u %u \n",  offset0, je1, je2, he1, he2 );
+                    atomicExch(&MutexArray[offset0/3], 0);
+                    needlock=false;
+                }
+            }
+/*
+            int n,bit,lock(0);    
             while(lock == 0){
-                n = offset0/Size;
-                bit = offset0%32;
-                lock = atomicOr(&MutexArray[n],1<<bit) & 1<<bit;
-            }            
-            kernels_addition_classic<BaseInt,Size>(&res[offset0],&inter[0]);
-            atomicAnd(&MutexArray[n],~1<<bit); */
-        } 
+                n = offset0/(Size);
+                bit = offset0/Size;
+                lock = atomicOr(&MutexArray[0],1<<bit) & (1<<bit);
+            }         
+            kernels_addition_classic<BaseInt,Size>(&res[offset0],&inter[0]);   
+            lock = atomicAnd(&MutexArray[0],~1<<bit);             
+*/
+         } 
     }
 } 
 
@@ -161,20 +175,13 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
 template  <typename BaseInt, std::size_t Size>
 __global__ void inner_prod_vector(unsigned int max_order, std::size_t vector_size, BaseInt const* v1, BaseInt const* v2, BaseInt* res)
 {
-    //unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x
     unsigned int xIndex = blockIdx.x; // get poly one by one
     const std::size_t size_multiplicant = Size*max_order*max_order;
     const std::size_t size_product = Size*2*max_order*2*max_order;
- 
     //multiplication between polynomial
-        std::size_t offset_m = xIndex*size_multiplicant;
-        std::size_t offset_p = xIndex*size_product;
-    cuPrintf("%u %u %u %u %u\n",offset_m, offset_p, blockIdx.x, blockDim.x, threadIdx.x);
-
-    //    for(std::size_t i=0 ; i < vector_size; ++i){ 
-//        std::size_t offset_m = i*size_multiplicant;
-//        std::size_t offset_p = i*size_product;
-  
+    std::size_t offset_m = xIndex*size_multiplicant;
+    std::size_t offset_p = xIndex*size_product;
+    cuPrintf("offset poly %u  \n",offset_m , offset_p );
     polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
 }
     
@@ -199,24 +206,11 @@ __global__ void reduction_polynome(unsigned int max_order, std::size_t vector_si
 template <typename BaseInt, std::size_t Size>
 void inner_product_vector(unsigned int max_order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt* C, std::size_t threads_per_block) 
 {
-#ifndef CUDA_NO_SM_11_ATOMIC_INTRINSICS
-	printf("WARNING! Not using atomics!\n");
-#endif
-    
-/*
-    std::size_t blocks_per_grid = vector_size/threads_per_block+1;
-    dim3 dimgrid(blocks_per_grid,1,1);
-    dim3 dimblock(threads_per_block,1,1);
- */ 
 
-//    std::size_t blocks_per_grid = vector_size;
-  //  std::size_t blocks_per_grid = vector_size/threads_per_block+1;
     dim3 dimgrid(vector_size, 1, 1);
-    dim3 dimblock(1,1,1);// max_order);
-    //dim3 dimblock(1, 2, 21 );// max_order);
+    dim3 dimblock(1,max_order,max_order);// max_order); en y et z ou max_order**2 en x
 
     cudaPrintfInit(); 
-    printf(" out %u %u %u \n", vector_size, max_order, max_order); 
     inner_prod_vector<BaseInt, Size> <<< dimgrid, dimblock >>>(max_order, vector_size, A, B, C);
     cudaPrintfDisplay(stdout, true);
     cudaPrintfEnd();
