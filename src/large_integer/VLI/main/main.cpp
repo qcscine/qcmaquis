@@ -18,7 +18,7 @@
 #include "regression/vli_test.hpp"
 
 
-#define SIZE 2
+#define SIZE 21
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -62,8 +62,8 @@ int main (int argc, char * const argv[])
     
     std::cout << b << std::endl;
     */
-    vector_type_cpu v1(1);
-    vector_type_cpu v2(1);
+    vector_type_cpu v1(256);
+    vector_type_cpu v2(256);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu;
     
 /*
@@ -108,15 +108,15 @@ int main (int argc, char * const argv[])
     t1.end();
     
         
-    std::cout << result_pure_cpu << std::endl;
+   //std::cout << result_pure_cpu << std::endl;
 
      Timer t2("MIX CPU/GPU openmp");
     t2.begin();    
     result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
     t2.end();
     
-    std::cout << result_mix_cpu_gpu << std::endl;
-    
+ //  std::cout << result_mix_cpu_gpu << std::endl;
+    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
     
 /*
     Timer t2("MIX CPU/GPU");

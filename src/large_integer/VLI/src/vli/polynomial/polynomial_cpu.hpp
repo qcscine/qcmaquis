@@ -30,7 +30,7 @@ polynomial_cpu<Vli, 2*Order> operator * (polynomial_cpu<Vli, Order> const& p1, p
 {
     polynomial_cpu<Vli, 2*Order> result;
     poly_multiply(result, p1, p2);
-//    poly_multiply_block(result,p1,p2);
+ //   poly_multiply_block(result,p1,p2);
     return result;
 }
 

@@ -68,7 +68,7 @@ namespace detail
         typedef typename Vli::value_type           base_int_type;
         enum {factor_element_size = Order * Order * Vli::size };
         enum {product_element_size = 2*Order * 2*Order * Vli::size };
-        enum {num_threads = 64}; // TODO change
+        enum {num_threads = 32}; // TODO change
       public:
         typedef std::size_t size_type;
    
@@ -87,6 +87,7 @@ namespace detail
 
             // run/queue the inner product computation
             inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p(), num_threads);
+//            inner_product_vector_blocks(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p());
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
         }
         
@@ -124,7 +125,7 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order>  res[omp_get_max_threads()];
-    std::size_t split = static_cast<std::size_t>(v1.size()*VLI_SPLIT_PARAM);
+    std::size_t split = static_cast<std::size_t>(v1.size()*1);
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
     #pragma omp parallel for
