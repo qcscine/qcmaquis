@@ -62,9 +62,9 @@ int main (int argc, char * const argv[])
     
     std::cout << b << std::endl;
     */
-    vector_type_cpu v1(256);
-    vector_type_cpu v2(256);
-    polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu;
+    vector_type_cpu v1(16384);
+    vector_type_cpu v2(16384);
+    polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
 /*
     polynomial_vector_type v1gmp(1024);
@@ -102,20 +102,23 @@ int main (int argc, char * const argv[])
  */
  
 
-    Timer t1("CPU openmp");
+    TimerOMP t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
-    
         
-   //std::cout << result_pure_cpu << std::endl;
-
-     Timer t2("MIX CPU/GPU openmp");
+ //  std::cout << result_pure_cpu << std::endl;
+/*
+    TimerOMP t2("CPU/GPU one thread");
     t2.begin();    
-    result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
+    result_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
     t2.end();
-    
- //  std::cout << result_mix_cpu_gpu << std::endl;
+  */  
+    TimerOMP t3("MIX CPU/GPU openmp");
+    t3.begin();    
+    result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
+    t3.end();
+//   std::cout << result_mix_cpu_gpu << std::endl;
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
     
 /*

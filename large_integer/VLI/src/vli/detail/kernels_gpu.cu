@@ -223,10 +223,12 @@ __global__ void inner_prod_vector(unsigned int max_order, std::size_t vector_siz
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x // get poly one by one
     const std::size_t size_multiplicant = Size*max_order*max_order;
     const std::size_t size_product = Size*2*max_order*2*max_order;
-    //multiplication between polynomial
-    std::size_t offset_m = xIndex*size_multiplicant;
-    std::size_t offset_p = xIndex*size_product;
-    polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
+    if(xIndex < vector_size){
+        //multiplication between polynomial
+        std::size_t offset_m = xIndex*size_multiplicant;
+        std::size_t offset_p = xIndex*size_product;
+        polynome_polynome_multiplication_device<BaseInt,Size>(max_order,&v1[offset_m],&v2[offset_m],&res[offset_p]); 
+    }
 }
     
     
@@ -251,20 +253,22 @@ template <typename BaseInt, std::size_t Size>
 __global__ void inner_prod_vector_blocks(unsigned int Order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt* C)
 {
     // remove the loops  
-    unsigned int xIndex = blockIdx.x; // get poly one by one
+    unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x // get poly one by one
     unsigned int yindex = threadIdx.y; // thread for the triangle/diag decomposition
     const std::size_t size_multiplicant = Size*Order*Order;
     const std::size_t size_product = Size*2*Order*2*Order;
     //multiplication between polynomial
     std::size_t offset_m = xIndex*size_multiplicant;
     std::size_t offset_p = xIndex*size_product;
-    // first pass, half top right corner, 
-    for(int j=0; j<=yindex; ++j)
-        algo_block_algo<BaseInt, Size>(j,yindex-j,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
+    if(xIndex < vector_size){
+        // first pass, half top right corner, 
+        for(int j=0; j<=yindex; ++j)
+            algo_block_algo<BaseInt, Size>(j,yindex-j,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
         
-    //second pass, half bottom left corner
-    for(int j=yindex+1; j<Order; ++j)
-        algo_block_algo<BaseInt, Size>(j,Order-j+yindex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);          
+        //second pass, half bottom left corner
+        for(int j=yindex+1; j<Order; ++j)
+            algo_block_algo<BaseInt, Size>(j,Order-j+yindex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);          
+    }
 }
             
      
@@ -284,11 +288,10 @@ void inner_product_vector(unsigned int Order, std::size_t vector_size, BaseInt c
 template <typename BaseInt, std::size_t Size>
 void inner_product_vector_blocks(unsigned int Order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt *C)
 {
-    std::size_t threads_per_block=32;
-    std::size_t blocks_per_grid = vector_size/threads_per_block+1;
+   // std::size_t threads_per_block=64;
     
     dim3 dimgrid(vector_size,1,1);
-    dim3 dimblock(threads_per_block,Order,1);
+    dim3 dimblock(1,Order,1);
     inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);       
 }
     
