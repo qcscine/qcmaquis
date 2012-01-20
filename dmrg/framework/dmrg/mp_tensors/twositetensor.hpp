@@ -69,13 +69,15 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_left_paired() const
     if (cur_storage == TSBothPaired) {
         ts_reshape::reshape_both_to_left<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
     } else {
-	// direct left to right reshape should not be needed
-	make_both_paired();
+	    // direct left to right reshape should not be needed
+	    make_both_paired();
         ts_reshape::reshape_both_to_left<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
     }
     
     swap(data_, tmp);
     cur_storage = TSLeftPaired;
+    
+    // assert( right_i == data_.right_basis() );
 }
 
 template<class Matrix, class SymmGroup>
@@ -113,6 +115,8 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
     
     swap(data_, tmp);
     cur_storage = TSRightPaired;
+    
+    // assert( left_i == data_.left_basis() );
 }
 
 template<class Matrix, class SymmGroup>
@@ -121,6 +125,7 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
     MPSTensor<Matrix, SymmGroup> tmp(phys_i, left_i, right_i, false, 0);
     make_left_paired();
     tmp.data() = data_;
+    
     return tmp;
 }
 
@@ -136,17 +141,17 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff,
     
     svd_truncate(data_, u, v, s, cutoff, Mmax, true, iter_log);
     
-    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, right_i, false, 0),
-                                 mps_tensor2(phys_i_orig, left_i, right_i, false, 0);
-    mps_tensor1.make_left_paired();
-    mps_tensor2.make_right_paired();
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, u.right_basis(), false, 0),
+                                 mps_tensor2(phys_i_orig, v.left_basis(), right_i, false, 0);
+    // mps_tensor1.make_left_paired();
+    // mps_tensor2.make_right_paired();
 
-    mps_tensor1.data() = u;
-    mps_tensor1.right_i = u.right_basis();
+    // mps_tensor1.data() = u;
+     mps_tensor1.replace_left_paired(u);
 
     gemm(s, v, u);
-    mps_tensor2.data() = u;
-    mps_tensor2.left_i = u.left_basis();
+    mps_tensor2.replace_right_paired(u);
+    // mps_tensor2.data() = u;
     
     return std::make_pair(mps_tensor1, mps_tensor2);
 }
@@ -163,17 +168,13 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff,
     
     svd_truncate(data_, u, v, s, cutoff, Mmax, true, iter_log);
     
-    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, right_i, false, 0),
-                                 mps_tensor2(phys_i_orig, left_i, right_i, false, 0);
-    mps_tensor1.make_left_paired();
-    mps_tensor2.make_right_paired();
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, /*right_i*/ u.right_basis(), false, 0),
+                                 mps_tensor2(phys_i_orig, /*left_i*/ v.left_basis(), right_i, false, 0);
 
-    mps_tensor2.data() = v;
-    mps_tensor2.left_i = v.left_basis();
+    mps_tensor2.replace_right_paired(v);
 
     gemm(u, s, v);
-    mps_tensor1.data() = v;
-    mps_tensor1.right_i = v.right_basis();
+    mps_tensor1.replace_left_paired(v);
     
     return std::make_pair(mps_tensor1, mps_tensor2);
 }
@@ -221,12 +222,14 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator <<
     rhs.make_left_paired();
 
     // Precondition: rhs.data() and this->data() have same shape if both are left_paired
-    assert( rhs.row_dim() == this->row_dim() &&
-		 rhs.col_dim() == this->col_dim() &&
-		 rhs.site_dim() == this->site_dim() );
-    assert( rhs.data().left_basis() == this->data().left_basis() &&
-		 rhs.data().right_basis() == this->data().right_basis() );
+         //     assert( rhs.row_dim() == this->row_dim() &&
+         // rhs.col_dim() == this->col_dim() &&
+         // rhs.site_dim() == this->site_dim() );
+         //     assert( rhs.data().left_basis() == this->data().left_basis() &&
+         // rhs.data().right_basis() == this->data().right_basis() );
     
+    left_i = rhs.row_dim();
+    right_i = rhs.col_dim();
     this->data() = rhs.data();
 
     return *this;

@@ -126,46 +126,46 @@ public:
 	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
 	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
 	    MPOTensor<Matrix, SymmGroup> twin_mpo_tensor = make_twosite_mpo(mpo[site1], mpo[site2], mps[site1].site_dim());
-            SiteProblem<Matrix, SymmGroup> sp(twin_mps, left_[site1], right_[site2+1], twin_mpo_tensor);
+        SiteProblem<Matrix, SymmGroup> sp(twin_mps, left_[site1], right_[site2+1], twin_mpo_tensor);
 
-            std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+        std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
-            if (d == Both ||
-                (d == LeftOnly && lr == -1) ||
-                (d == RightOnly && lr == +1))
-            {
-                if (parms.template get<std::string>("eigensolver") == std::string("IETL")) {
-		    BEGIN_TIMING("IETL")
-                    res = solve_ietl_lanczos(sp, twin_mps, parms);
-		    END_TIMING("IETL")
-                } else if (parms.template get<std::string>("eigensolver") == std::string("IETL_JCD")) {
-		    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms);
-		    END_TIMING("JCD")
-                } else {
-                    throw std::runtime_error("I don't know this eigensolver.");
-                }
+        if (d == Both ||
+            (d == LeftOnly && lr == -1) ||
+            (d == RightOnly && lr == +1))
+        {
+            if (parms.template get<std::string>("eigensolver") == std::string("IETL")) {
+        	    BEGIN_TIMING("IETL")
+                res = solve_ietl_lanczos(sp, twin_mps, parms);
+        	    END_TIMING("IETL")
+        } else if (parms.template get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+        	    BEGIN_TIMING("JCD")
+                res = solve_ietl_jcd(sp, twin_mps, parms);
+        	    END_TIMING("JCD")
+        } else {
+            throw std::runtime_error("I don't know this eigensolver.");
+        }
 
 		tst << res.second;
-            }
+        }
 
 	    t_solver.end();
 
-            zout << "Energy " << lr << " " << res.first << endl;
-            iteration_log << make_log("Energy", res.first);
-            
-            double cutoff;
-            cutoff = parms.template get<double>("truncation_final");
-            
-            std::size_t Mmax;
-            if (parms.is_set("sweep_bond_dimensions")) {
-                std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
-                if (sweep >= ssizes.size())
-                    Mmax = *ssizes.rbegin();
-                else
-                    Mmax = ssizes[sweep];
-            } else
-                Mmax = parms.template get<std::size_t>("max_bond_dimension");
+        zout << "Energy " << lr << " " << res.first << endl;
+        iteration_log << make_log("Energy", res.first);
+        
+        double cutoff;
+        cutoff = parms.template get<double>("truncation_final");
+        
+        std::size_t Mmax;
+        if (parms.is_set("sweep_bond_dimensions")) {
+            std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
+            if (sweep >= ssizes.size())
+                Mmax = *ssizes.rbegin();
+            else
+                Mmax = ssizes[sweep];
+        } else
+            Mmax = parms.template get<std::size_t>("max_bond_dimension");
             
 	    if (lr == +1){
 		// Write back result from optimization

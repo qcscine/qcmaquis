@@ -71,7 +71,7 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                     if (!pretend){
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
-
+                        
                         detail::iterable_matrix_impl<Matrix,SymmGroup>::reshape_left_to_right_impl(physical_i, left_i, right_i, in_left_offset, out_right_offset, s, r, l, in_block, out_block);
                     }
 
@@ -134,11 +134,12 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
     typedef std::size_t size_t;
     typedef typename SymmGroup::charge charge;
     
+    ProductBasis<SymmGroup> in_right(physical_i, right_i,
+                                     boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                         -boost::lambda::_1, boost::lambda::_2));
+    ProductBasis<SymmGroup> out_left(physical_i, left_i);
+    
     for (int run = 0; run < 2; ++run) {
-        ProductBasis<SymmGroup> in_right(physical_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
-        ProductBasis<SymmGroup> out_left(physical_i, left_i);
         
         if (run == 1)
             m2.allocate_blocks();
@@ -169,7 +170,6 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                     if (!pretend) {
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
-
                         detail::iterable_matrix_impl<Matrix,SymmGroup>::reshape_right_to_left_impl(physical_i, left_i, right_i, in_right_offset, out_left_offset, s, r, l, in_block, out_block);
                     }
 

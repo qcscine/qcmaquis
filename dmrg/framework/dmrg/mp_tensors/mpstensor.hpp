@@ -23,12 +23,18 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 : phys_i(sd)
 , left_i(ld)
 , right_i(rd)
-//, data_(sd*ld, rd)
 , cur_storage(LeftPaired)
 , cur_normalization(Unorm)
 {
     Index<SymmGroup> lb = sd*ld, rb = rd;
     common_subset(lb, rb);
+    
+    // remove blocks from the right index that may not be allowed by the left index
+    right_i = rb;
+    // remove blocks from the left index that may not be allowed by the right index
+    Index<SymmGroup> possible_rp = adjoin(phys_i)*right_i, ltemp = ld;
+    common_subset(ltemp, possible_rp);
+    left_i = ltemp;
     
     data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
     
@@ -36,6 +42,40 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
         data_.generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
     else
         data_.generate(utils::constant<typename Matrix::value_type>(val));
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::replace_left_paired(block_matrix<Matrix, SymmGroup> const & rhs)
+{
+    make_left_paired();
+    
+    Index<SymmGroup> new_right_i = rhs.right_basis();
+    Index<SymmGroup> possible_left_i = adjoin(phys_i)*new_right_i;
+    Index<SymmGroup> old_left_i = left_i;
+    
+    common_subset(old_left_i, possible_left_i);
+    
+    right_i = new_right_i;
+    left_i = old_left_i;
+    
+    data_ = rhs;
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::replace_right_paired(block_matrix<Matrix, SymmGroup> const & rhs)
+{
+    make_right_paired();
+    
+    Index<SymmGroup> new_left_i = rhs.left_basis();
+    Index<SymmGroup> possible_right_i = phys_i*new_left_i;
+    Index<SymmGroup> old_right_i = right_i;
+    
+    common_subset(old_right_i, possible_right_i);
+    
+    left_i = new_left_i;
+    right_i = old_right_i;
+    
+    data_ = rhs;
 }
 
 template<class Matrix, class SymmGroup>
@@ -73,6 +113,8 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
                                   data_, tmp);
     swap(data_, tmp);
     cur_storage = LeftPaired;
+    
+    assert( right_i == data_.right_basis() );
 }
 
 template<class Matrix, class SymmGroup>
@@ -86,6 +128,8 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
                                   data_, tmp);
     swap(data_, tmp);
     cur_storage = RightPaired;
+    
+    assert( left_i == data_.left_basis() );
 }
 
 template<class Matrix, class SymmGroup>
@@ -158,8 +202,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup
     block_matrix<Matrix, SymmGroup> tmp;
     make_left_paired();
     gemm(data_, N, tmp);
-    swap(data_, tmp);
-    right_i = N.right_basis();
+    replace_left_paired(tmp);
 }
 
 template<class Matrix, class SymmGroup>
@@ -170,8 +213,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup>
     block_matrix<Matrix, SymmGroup> tmp;
     make_right_paired();
     gemm(N, data_, tmp);
-    swap(data_, tmp);
-    left_i = N.left_basis();
+    replace_right_paired(tmp);
 }
 
 template<class Matrix, class SymmGroup>
