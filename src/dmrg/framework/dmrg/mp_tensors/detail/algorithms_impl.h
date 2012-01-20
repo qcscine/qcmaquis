@@ -24,14 +24,14 @@ namespace detail {
          {
              for (size_t ss = 0; ss < physical_i[s].second; ++ss)
                  for (size_t rr = 0; rr < right_i[r].second; ++rr)
-                     memcpy(&out_block(out_left_offset + ss*left_i[l].second, rr),
-                            &in_block(0, in_right_offset + ss*right_i[r].second+rr),
-                            sizeof(typename Matrix::value_type) * left_i[l].second);
+                     // memcpy(&out_block(out_left_offset + ss*left_i[l].second, rr),
+                     //        &in_block(0, in_right_offset + ss*right_i[r].second+rr),
+                     //        sizeof(typename Matrix::value_type) * left_i[l].second);
 
 //                     Original version,   
-//                     for(size_t ll = 0; ll < left_i[l].second; ++ll)
-//                           out_block(out_left_offset + ss*left_i[l].second+ll, rr) = 
-//                           in_block(ll, in_right_offset + ss*right_i[r].second+rr);
+                    for(size_t ll = 0; ll < left_i[l].second; ++ll)
+                          out_block(out_left_offset + ss*left_i[l].second+ll, rr) = 
+                          in_block(ll, in_right_offset + ss*right_i[r].second+rr);
          }
 
          static void reshape_left_to_right_impl(Index<SymmGroup> & physical_i,

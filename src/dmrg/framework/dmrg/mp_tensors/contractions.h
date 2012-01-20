@@ -587,8 +587,9 @@ struct contraction {
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
       
         MPSTensor<Matrix, SymmGroup> ret = mps;
-        ret.data_ = U;
-        ret.right_i = U.right_basis();
+        ret.replace_left_paired(U);
+        // ret.data_ = U;
+        // ret.right_i = U.right_basis();
         
         timer.end();
         return ret;
@@ -659,8 +660,9 @@ struct contraction {
         V = conjugate(transpose(U));
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
-        ret.data_ = V;
-        ret.left_i = V.left_basis();
+        ret.replace_right_paired(V);
+        // ret.data_ = V;
+        // ret.left_i = V.left_basis();
       
         timer.end();
         return ret; 

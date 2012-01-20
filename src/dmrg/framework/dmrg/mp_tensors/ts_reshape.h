@@ -72,6 +72,7 @@ namespace ts_reshape {
                         
                         if (! m1.has_block(in_l_charge, in_r_charge) ) continue;
                         
+                        // Why is this supposed to work?
                         if (! m2.has_block(out_l_charge, out_r_charge) )
                             m2.insert_block(Matrix(out_left.size(s_charge, left_i[l].first), right_i[r].second, 0),
                                             out_l_charge, out_r_charge);

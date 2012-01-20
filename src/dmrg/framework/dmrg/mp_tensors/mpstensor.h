@@ -46,6 +46,9 @@ public:
     Index<SymmGroup> const & col_dim() const;
     bool isobccompatible(Indicator) const;
     
+    void replace_right_paired(block_matrix<Matrix, SymmGroup> const &);
+    void replace_left_paired(block_matrix<Matrix, SymmGroup> const &);
+    
     // these are not const because after a numerical test
     // they may update the status
     bool isleftnormalized(bool test = false);
@@ -154,7 +157,7 @@ public:
     bool reasonable() const;
     
 private:
-    Index<SymmGroup> phys_i, left_i, right_i;
+    mutable Index<SymmGroup> phys_i, left_i, right_i;
     mutable block_matrix<Matrix, SymmGroup> data_;
     mutable MPSStorageLayout cur_storage;
     Indicator cur_normalization;
