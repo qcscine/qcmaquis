@@ -78,38 +78,50 @@ int main (int argc, char * const argv[])
 */
     fill_vector_random(v1,1);
     fill_vector_random(v2,1);
-/*
+
     // b as block
     polynomial_type_cpu p1,p2;
-    polynomial_result_type_cpu r1,rb1;
+    polynomial_result_type_cpu r1,rb1,rb2;
     
     vli::test::fill_poly_random(p1);
     vli::test::fill_poly_random(p2);
 
     polynomial_type_cpu pb1(p1),pb2(p2);
+    polynomial_type_cpu pb3(p1),pb4(p2);
 
+    
     Timer A("classic");
     A.begin();
     poly_multiply(r1,p1,p2);
     A.end();
 
-    Timer B("new");
+    Timer B("new algo block");
     B.begin();
-    poly_multiply_block(rb1,pb1,pb2);
+    poly_multiply_block_algo(rb1,pb1,pb2);
     B.end();
 
+    Timer C("new algo diag");
+    C.begin();
+    poly_multiply_diag_algo(rb2,pb3,pb4);
+    C.end();
+    
     if(r1 == rb1) {std::cout << " ok " << std::endl;}
- */
+    if(r1 == rb2) {std::cout << " ok " << std::endl;}
+    if(rb1 == rb2) {std::cout << " ok " << std::endl;}
+
+    
+    /*
  
 
     TimerOMP t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
+   */ 
         
- //  std::cout << result_pure_cpu << std::endl;
+   //std::cout << result_pure_cpu << std::endl;
 /*
-    TimerOMP t2("CPU/GPU one thread");
+     Timer t2("MIX CPU/GPU openmp");
     t2.begin();    
     result_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
     t2.end();
@@ -117,9 +129,10 @@ int main (int argc, char * const argv[])
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();    
     result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
-    t3.end();
-//   std::cout << result_mix_cpu_gpu << std::endl;
-    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
+    t2.end();
+  */  
+ //  std::cout << result_mix_cpu_gpu << std::endl;
+  //  if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
     
 /*
     Timer t2("MIX CPU/GPU");

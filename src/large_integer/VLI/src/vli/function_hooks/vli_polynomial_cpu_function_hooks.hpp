@@ -38,7 +38,7 @@ void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result,
 }
 
 template <class BaseInt, std::size_t Size, unsigned int Order>
-void poly_multiply_block(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
+void poly_multiply_block_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
                         polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
                         polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
 {
@@ -60,6 +60,22 @@ void poly_multiply_block(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & resul
         n++; // thread num
     }
 }
+    
+template <class BaseInt, std::size_t Size, unsigned int Order>
+void poly_multiply_diag_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
+                             polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
+                             polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
+{   
+    //first pass
+    for(unsigned int i(0); i < Order*Order ; ++i){
+        diagonal_up(i,result,p1,p2);
+    }
+    //second pass    
+    for(unsigned int i(0) ; i < Order*Order ; ++i){
+        diagonal_down(Order*Order - i,result,p1,p2); 
+    }    
+}
+    
     
     
         
