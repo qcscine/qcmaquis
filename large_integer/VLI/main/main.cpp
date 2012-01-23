@@ -78,8 +78,7 @@ int main (int argc, char * const argv[])
 */
     fill_vector_random(v1,1);
     fill_vector_random(v2,1);
-
-    // b as block
+/*
     polynomial_type_cpu p1,p2;
     polynomial_result_type_cpu r1,rb1,rb2;
     
@@ -108,32 +107,31 @@ int main (int argc, char * const argv[])
     if(r1 == rb1) {std::cout << " ok " << std::endl;}
     if(r1 == rb2) {std::cout << " ok " << std::endl;}
     if(rb1 == rb2) {std::cout << " ok " << std::endl;}
-
+*/
     
-    /*
- 
-
     TimerOMP t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
-   */ 
         
    //std::cout << result_pure_cpu << std::endl;
 /*
-     Timer t2("MIX CPU/GPU openmp");
+    Timer t2("pure gpu");
     t2.begin();    
     result_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
     t2.end();
-  */  
+*/
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();    
     result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
-    t2.end();
-  */  
+    t3.end();
+   
  //  std::cout << result_mix_cpu_gpu << std::endl;
-  //  if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
-    
+    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
+/*
+    std::cout << result_mix_cpu_gpu  << std::endl;   
+    std::cout << result_pure_cpu  << std::endl;   
+*/
 /*
     Timer t2("MIX CPU/GPU");
     t2.begin();

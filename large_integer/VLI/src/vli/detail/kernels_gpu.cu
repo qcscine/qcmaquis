@@ -62,6 +62,14 @@ namespace vli {
     
     template <typename BaseInt, std::size_t Size>
     __device__ void algo_block_algo(int i, int j,unsigned int Order, BaseInt const* a, BaseInt const* b, BaseInt* c);
+
+// functions for the diags algo
+
+    template <typename BaseInt, std::size_t Size>
+    __device__ void algo_diag_up(unsigned int i,unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt* c);
+
+    template <typename BaseInt, std::size_t Size>
+    __device__ void algo_diag_down(unsigned int i,unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt* c);
         
 /**
 * a kind of hook function with a little bit of arithmetic in case of signed int (multiplication)
@@ -131,6 +139,7 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
     }
 } 
         
+/** n threads block algo **/
         
 template <typename BaseInt, std::size_t Size>
 void algo_triangle_up(int block_ai, int block_bj, unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt *c){
@@ -213,6 +222,68 @@ void algo_block_algo(int i, int j, unsigned int Order, BaseInt const* a, BaseInt
     algo_triangle_down<BaseInt,Size>(i,j,Order,a,b,c);
 }
 
+/** n*n threads diag algo **/
+
+template <typename BaseInt, std::size_t Size>
+void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt const* b, BaseInt *c)
+{
+    int qa,ra,qb,rb,pos; // find all indexes
+    int offset_a, offset_b, offset_c;
+
+    for(int i(0); i <= n; i++){
+        BaseInt inter[Size];
+        #pragma unroll
+        for(std::size_t k=0 ; k < Size ;++k)
+            inter[k] = 0;
+
+        qa = i/Order;
+        ra = i%Order;
+        qb = (n-i)/Order;
+        rb = (n-i)%Order;
+        pos = 2*(qa+qb)*Order + (ra+rb);
+
+        offset_a = (n-i)*Size;
+        offset_b = i*Size;
+        offset_c = pos*Size;
+        
+        single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
+        kernels_addition_classic<BaseInt,Size>(&c[offset_c],&inter[0]);
+//     std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;  
+//        result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
+    }
+}
+
+template <typename BaseInt, std::size_t Size>
+void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt const* b, BaseInt *c)
+{
+    int qa,ra,qb,rb,pos; // find all indexes
+    int offset_a, offset_b, offset_c;
+
+    int j = Order*Order-1;
+ 
+    for(int i(Order*Order-n+1); i < Order*Order; i++){
+        BaseInt inter[Size];
+        #pragma unroll
+        for(std::size_t k=0 ; k < Size ;++k)
+            inter[k] = 0;
+
+        qa = i/Order;
+        ra = i%Order;
+        qb = j/Order;
+        rb = j%Order;
+        pos = 2*(qa+qb)*Order + (ra+rb);
+
+        offset_a = j*Size;
+        offset_b = i*Size;
+        offset_c = pos*Size;
+        
+        single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
+        kernels_addition_classic<BaseInt,Size>(&c[offset_c],&inter[0]);
+        //std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;   
+        //result.coeffs_[pos] += p1.coeffs_[j]*p2.coeffs_[i];  
+        j--;        
+    }    
+}
 
 /**
 * VLI_GPU_VECTOR functions
@@ -246,7 +317,7 @@ __global__ void reduction_polynome(unsigned int max_order, std::size_t vector_si
 }
     
 /**
-* New algo 
+* New algo based on block decomposition 
 */
     
 template <typename BaseInt, std::size_t Size>
@@ -270,8 +341,30 @@ __global__ void inner_prod_vector_blocks(unsigned int Order, std::size_t vector_
             algo_block_algo<BaseInt, Size>(j,Order-j+yindex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);          
     }
 }
-            
-     
+  
+
+/**
+* New algo based on diagonal decomposition 
+*/
+
+template <typename BaseInt, std::size_t Size>
+__global__ void inner_prod_vector_diag(unsigned int Order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt* C)
+{
+    // remove the loops  
+    unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x // get poly one by one
+    unsigned int yIndex = threadIdx.y; // thread for the triangle/diag decomposition
+    const std::size_t size_multiplicant = Size*Order*Order;
+    const std::size_t size_product = Size*2*Order*2*Order;
+    //multiplication between polynomial
+    std::size_t offset_m = xIndex*size_multiplicant;
+    std::size_t offset_p = xIndex*size_product;
+    if(xIndex < vector_size){
+        //first pass
+        algo_diag_up<BaseInt,Size>(yIndex                ,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
+        //second pass    
+        algo_diag_down<BaseInt,Size>(Order*Order - yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]); 
+    }
+}
 /**
   * The C++ functions that call the kernels
   */
@@ -288,11 +381,17 @@ void inner_product_vector(unsigned int Order, std::size_t vector_size, BaseInt c
 template <typename BaseInt, std::size_t Size>
 void inner_product_vector_blocks(unsigned int Order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt *C)
 {
-   // std::size_t threads_per_block=64;
-    
-    dim3 dimgrid(vector_size,1,1);
-    dim3 dimblock(1,Order,1);
-    inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);       
+/*
+    std::size_t threads_per_block=1;
+    std::size_t blocks_per_grid_x = vector_size/threads_per_block+1;
+    dim3 dimgrid(blocks_per_grid_x,1,1);
+    dim3 dimblock(threads_per_block,Order,1);
+*/
+  dim3 dimgrid(vector_size,1,1);
+  dim3 dimblock(1,Order*Order,1);
+
+   //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version 
+   inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads*nthreads version 
 }
     
 template <typename BaseInt, std::size_t Size>
