@@ -33,17 +33,12 @@ struct compression {
         block_matrix<dmt, SymmGroup> s;
         
         svd_truncate(t, u, v, s,
-                     cutoff, Mmax, false, logger);
+                     cutoff, Mmax, true, logger);
         
-        mps[p].make_left_paired();
-        mps[p+1].make_right_paired();
-        
-        mps[p].data() = u;
-        mps[p].right_i = u.right_basis();
+	mps[p].replace_left_paired(u);
         
         gemm(s, v, u);
-        mps[p+1].data() = u;
-        mps[p+1].left_i = u.left_basis();
+	mps[p+1].replace_right_paired(u);
     }
     
     template<class Matrix, class SymmGroup>
