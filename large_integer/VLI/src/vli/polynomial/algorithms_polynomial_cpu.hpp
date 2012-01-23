@@ -8,6 +8,8 @@ class polynomial_cpu;
     
 template<class BaseInt, std::size_t Size>
 class vli_cpu;
+  
+/** First Algo based on block : n threads possible **/    
     
 template <class BaseInt, std::size_t Size, unsigned int Order>
 void triangle_up(unsigned int block_ai, int block_bj,
@@ -70,6 +72,49 @@ void block_algo(int i, int j,
     triangle_down(i,j,result,p1,p2);
 }
 
+/** second Algo  based on diagonals n*n symetries **/    
+
+template <class BaseInt, std::size_t Size, unsigned int Order>
+void diagonal_up(unsigned int n,
+                polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result,    
+                polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
+                polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
+{
+    unsigned int qa,ra,qb,rb,pos; // find all indexes
+    
+    for(int i(0); i <= n; i++){
+        qa = i/Order;
+        ra = i%Order;
+        qb = (n-i)/Order;
+        rb = (n-i)%Order;
+        pos = 2*(qa+qb)*Order + (ra+rb);
+//     std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;  
+        result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
+    }
+}
+    
+template <class BaseInt, std::size_t Size, unsigned int Order>
+void diagonal_down(unsigned int n,
+                   polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result,    
+                   polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
+                   polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
+{    
+    int qa,ra,qb,rb,pos; // find all indexes
+
+    int j = Order*Order-1;
+ 
+    for(int i(Order*Order-n+1); i < Order*Order; i++){
+        qa = i/Order;
+        ra = i%Order;
+        qb = j/Order;
+        rb = j%Order;
+        pos = 2*(qa+qb)*Order + (ra+rb);
+        //      std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;   
+        result.coeffs_[pos] += p1.coeffs_[j]*p2.coeffs_[i];  
+        j--;        
+    }    
+}   
+    
 }
 
 #endif

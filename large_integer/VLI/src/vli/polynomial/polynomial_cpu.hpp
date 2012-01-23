@@ -29,8 +29,9 @@ template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, 2*Order> operator * (polynomial_cpu<Vli, Order> const& p1, polynomial_cpu<Vli, Order> const& p2)
 {
     polynomial_cpu<Vli, 2*Order> result;
-    poly_multiply(result, p1, p2);
- //   poly_multiply_block(result,p1,p2);
+//  poly_multiply(result, p1, p2);
+//  poly_multiply_block_algo(result,p1,p2);
+    poly_multiply_diag_algo(result,p1,p2);
     return result;
 }
 
