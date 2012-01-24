@@ -30,7 +30,7 @@ using vli::test::fill_vector_random;
 
 typedef vli::test::vli_cpu_type_list vli_types;
 
-enum { vector_size = 10000 };
+enum { vector_size = 100 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product, Vli, vli_types)
 {
