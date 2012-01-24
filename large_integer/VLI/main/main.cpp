@@ -47,139 +47,30 @@ typedef std::vector<polynomial_type> polynomial_vector_type;
 */
 int main (int argc, char * const argv[]) 
 {
-    
-   
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
     gpu->instance();
 #endif
-    /*
-    vli_type_cpu a,b;
-    vli::test::fill_random(a);
-    vli::test::fill_random(b);
-    
-    b*=a;
-    
-    std::cout << b << std::endl;
-    */
     vector_type_cpu v1(16384);
     vector_type_cpu v2(16384);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
-/*
-    polynomial_vector_type v1gmp(1024);
-    polynomial_vector_type v2gmp(1024);
-
-    polynomial_result_type_cpu result;
-    polynomial_result_type_cpu result_acc;
-    polynomial_result_type_cpu result_plain;
-    polynomial_result_type_cpu result_mix_cpu_gpu;
-    polynomial_result_type_cpu result_pure_cpu; 
-*/
     fill_vector_random(v1,1);
     fill_vector_random(v2,1);
-/*
-    polynomial_type_cpu p1,p2;
-    polynomial_result_type_cpu r1,rb1,rb2;
-    
-    vli::test::fill_poly_random(p1);
-    vli::test::fill_poly_random(p2);
-
-    polynomial_type_cpu pb1(p1),pb2(p2);
-    polynomial_type_cpu pb3(p1),pb4(p2);
-
-    
-    Timer A("classic");
-    A.begin();
-    poly_multiply(r1,p1,p2);
-    A.end();
-
-    Timer B("new algo block");
-    B.begin();
-    poly_multiply_block_algo(rb1,pb1,pb2);
-    B.end();
-
-    Timer C("new algo diag");
-    C.begin();
-    poly_multiply_diag_algo(rb2,pb3,pb4);
-    C.end();
-    
-    if(r1 == rb1) {std::cout << " ok " << std::endl;}
-    if(r1 == rb2) {std::cout << " ok " << std::endl;}
-    if(rb1 == rb2) {std::cout << " ok " << std::endl;}
-*/
     
     TimerOMP t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
-        
-   //std::cout << result_pure_cpu << std::endl;
-/*
-    Timer t2("pure gpu");
-    t2.begin();    
-    result_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
-    t2.end();
-*/
+       
+#ifdef VLI_USE_GPU
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();    
     result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
     t3.end();
-   
- //  std::cout << result_mix_cpu_gpu << std::endl;
-    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
-/*
-    std::cout << result_mix_cpu_gpu  << std::endl;   
-    std::cout << result_pure_cpu  << std::endl;   
-*/
-/*
-    Timer t2("MIX CPU/GPU");
-    t2.begin();
-    result = inner_product(v1,v2);
-    t2.end();
-
-    std::cout << result_pure_cpu << std::endl;
-
-    std::cout << result << std::endl;
-
     
-
-    TimerOMP t3("oldsyte");
-    t3.begin();
-    result_acc=  vli::detail::inner_product_accp(v1,v2);
-    t3.end();
-
-    TimerOMP t4("plain");
-    t4.begin();
-    result_plain=  vli::detail::inner_product_plain(v1,v2);
-    t4.end();
-
-#ifdef VLI_USE_GPU
-    TimerOMP t2("GPU");
-    t2.begin();
-    vli::detail::inner_product_gpu_booster<vector_type_cpu> gpu_boost(v1,v2,v1.size());
-    result_pure_gpu = polynomial_type_cpu(gpu_boost);
-    t2.end();
-#endif //VLI_USE_GPU
-
-
-    std::cout << result << std::endl << std::endl <<std::endl;
-#ifdef VLI_USE_GPU
-    std::cout << result_pure_gpu << std::endl << std::endl << std::endl;
-#endif //VLI_USE_GPU
-    std::cout << result_pure_cpu << std::endl << std::endl << std::endl;
-   
-    if(
-       result == result_pure_cpu
- #ifdef VLI_USE_GPU
- && result == result_pure_gpu
- #endif //VLI_USE_GPU
-      )
-        printf( "OK \n"); 
-    else{
-        printf( "NOT OK \n"); 
-    }
-*/
+    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
+#endif
     return 0;
 }
 
