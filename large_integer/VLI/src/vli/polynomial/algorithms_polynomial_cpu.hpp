@@ -8,6 +8,9 @@ class polynomial_cpu;
     
 template<class BaseInt, std::size_t Size>
 class vli_cpu;
+    
+    
+/** Very important ! All these algo used the truncation version **/
   
 /** First Algo based on block : n threads possible **/    
     
@@ -88,7 +91,6 @@ void diagonal_up(unsigned int n,
         qb = (n-i)/Order;
         rb = (n-i)%Order;
         pos = 2*(qa+qb)*Order + (ra+rb);
-//     std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;  
         result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
     }
 }
@@ -109,7 +111,6 @@ void diagonal_down(unsigned int n,
         qb = j/Order;
         rb = j%Order;
         pos = 2*(qa+qb)*Order + (ra+rb);
-        //      std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;   
         result.coeffs_[pos] += p1.coeffs_[j]*p2.coeffs_[i];  
         j--;        
     }    

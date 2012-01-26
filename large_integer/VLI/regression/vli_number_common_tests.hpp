@@ -1,4 +1,7 @@
 
+
+
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, Vli, vli_types )
 {
     Vli a;
@@ -217,10 +220,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
     
     Vli b = a+a+a;
     Vli c = a * 3; 
-    std::cout << Vli::size-1 << "  Vli::size-1  " << std::endl;     
-    std::cout << a << std::endl;
-    std::cout << b << std::endl;
-    std::cout << c << std::endl;
 
     BOOST_CHECK_EQUAL(c,b);
     
@@ -534,21 +533,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( pointer_range_overflows, Vli, vli_types )
 
     a *= b;
 
-//    a.print_raw(std::cout);
-//    std::cout<<std::endl;
-//    std::cout<<std::endl;
-//    b.print_raw(std::cout);
-//    std::cout<<std::endl;
-//    std::cout<<std::endl;
-//    c[0].print_raw(std::cout);
-//    std::cout<<std::endl;
-//    std::cout<<std::endl;
-//    c[1].print_raw(std::cout);
-//    std::cout<<std::endl;
-//    std::cout<<std::endl;
-//    c[2].print_raw(std::cout);
-//    std::cout<<std::endl;
-//    std::cout<<std::endl;
     BOOST_CHECK_EQUAL(c[0],Vli(0));
     BOOST_CHECK_EQUAL(c[1],a);
     BOOST_CHECK_EQUAL(c[2],Vli(0));
@@ -570,3 +554,64 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( two_times_not_equal_minus_one, Vli, vli_types )
     
     BOOST_CHECK_EQUAL((a == c), true);
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2positive, Vli, vli_types )
+{
+    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;    
+
+    Vli a,b;
+    vli_result_type_cpu c;
+    
+    vli::test::fill_random(a);
+    vli::test::fill_random(b);
+    
+    vli::detail::kernels_multiplication_classic<typename Vli::value_type,Vli::size>(&c[0],&a[0],&b[0]);
+    
+    mpz_class agmp(a.get_str()), bgmp(b.get_str());    
+    mpz_class cgmp = agmp * bgmp;
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_1positive_1negative, Vli, vli_types )
+{
+    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;    
+    
+    Vli a,b;
+    vli_result_type_cpu c;
+    
+    vli::test::fill_random(a);
+    vli::test::fill_random(b);
+    
+    a.negate();
+    multi_nt(c,a,b);
+    
+    mpz_class agmp(a.get_str()), bgmp(b.get_str());    
+    mpz_class cgmp = agmp * bgmp;
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2negative, Vli, vli_types )
+{
+    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;    
+    
+    Vli a,b;
+    vli_result_type_cpu c;
+    
+    vli::test::fill_random(a);
+    vli::test::fill_random(b);
+    
+    a.negate();
+    b.negate();
+
+    multi_nt(c,a,b);
+    
+    mpz_class agmp(a.get_str()), bgmp(b.get_str());    
+    mpz_class cgmp = agmp * bgmp;
+    
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+}
+
+
+

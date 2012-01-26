@@ -34,14 +34,16 @@ enum { vector_size = 100 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product, Vli, vli_types)
 {
-    typedef vli::polynomial_cpu<Vli, 13 > polynomial_type_cpu;
-    typedef vli::polynomial_cpu<Vli, 26 > polynomial_result_type_cpu;
+    typedef vli::polynomial_cpu<Vli, 11 > polynomial_type_cpu;
+    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;
+    typedef vli::polynomial_cpu<vli_result_type_cpu, 22 > polynomial_result_type_cpu;
     typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
+
 
     vector_type_cpu VaCPU(vector_size),VbCPU(vector_size);
     polynomial_result_type_cpu pcCPU0;
-    fill_vector_random(VaCPU);
-    fill_vector_random(VbCPU);
+    fill_vector_random(VaCPU,Vli::size);
+    fill_vector_random(VbCPU,Vli::size);
     pcCPU0 = inner_product(VaCPU,VbCPU);
 
     polynomial_result_type_cpu pcCPU1;

@@ -142,6 +142,29 @@ namespace vli
         }
     }
 
+    /**
+    * VLI * VLI = 2 VLI
+    **/
+        
+    template <typename BaseInt, std::size_t Size>
+    void kernels_multiplication_classic(BaseInt * res, BaseInt const* x, BaseInt const* y)	
+    {
+        
+        BaseInt r[2] __attribute__ ((aligned (16))) = {0,0};	//for local block calculation
+        std::size_t m(0);
+                
+        for(std::size_t i = 0 ; i < Size; ++i)
+        {
+            for(std::size_t k = 0 ; k < Size; ++k) // loop on numbers for multiplication the classical multiplication
+            {
+                m = k + i;
+                kernels_multiplication_block( &x[i], &y[k], &(r[0]));
+                kernels_addition_block(&res[m],&r[0]);
+                kernels_addition_block(&res[m+1],&r[1]);
+            }
+        }                           
+    }
+        
     template <typename BaseInt>
     inline void kernels_multiplication_block(BaseInt const* x, BaseInt const * y, BaseInt* r)
     {
