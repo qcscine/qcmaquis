@@ -31,6 +31,9 @@ namespace vli {
     template <typename BaseInt, std::size_t Size>
     __host__ __device__ void kernels_multiplication_classic_truncate(BaseInt * res, BaseInt const* x, BaseInt const* y);	
 
+    template <typename BaseInt, std::size_t Size>
+    __host__ __device__ void kernels_multiplication_classic(BaseInt * res, BaseInt const* x, BaseInt const* y);	
+        
     template <typename BaseInt>
     __host__ __device__ void kernels_multiplication_block(BaseInt const* x, BaseInt const* y, BaseInt* r);
  
@@ -82,8 +85,8 @@ namespace vli {
 template <typename BaseInt, std::size_t Size>
 __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y, BaseInt* z)  
 {
- //   int na(1),nb(1);
-
+    int na(1),nb(1);
+ /* truncate version 
     bool result_is_negative = static_cast<bool>((x[Size-1] ^ y[Size-1]) >> data_bits<BaseInt>::value);
     if(result_is_negative)// test if 
     {
@@ -94,6 +97,29 @@ __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y
     else
     {
         kernels_multiplication_classic_truncate<BaseInt,Size>(z,x,y); 
+    }
+ */   
+    if( static_cast<bool>((x[Size-1]) >> data_bits<BaseInt>::value)){
+            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(x));
+            na = -1;
+    }
+    
+    if( static_cast<bool>((y[Size-1]) >> data_bits<BaseInt>::value)){
+            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(y));
+            nb = -1;
+        }
+    
+    kernels_multiplication_classic<BaseInt,static_cast<std::size_t>(Size)>(z,x,y);
+
+    if(nb*na == -1)
+            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(z);
+    	       
+    if(na == -1){
+            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(x));
+    }
+    	
+    if(nb == -1){
+            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(y));
     }
 }
 /**

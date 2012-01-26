@@ -158,7 +158,7 @@ namespace vli
             }
             return *this;
         }
-
+        
         vli_cpu operator - () const
         {
             vli_cpu tmp(*this);
@@ -403,40 +403,39 @@ public:  // C - for the dirty programming
     }
 
     template <class BaseInt, std::size_t Size>
+    void multi_nt(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b)
+    {         
+        int na(1),nb(1);        
+         
+        if(vli_a.is_negative()){
+        const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
+        na = -1;
+        }
+         
+        if(vli_b.is_negative()){
+        const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();
+        nb = -1;
+        }
+         
+        multiplies<BaseInt, Size>(vli_res, vli_a, vli_b);
+         
+        if(nb*na == -1)
+        vli_res.negate();
+         
+        if(na == -1){
+        const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();   
+        }
+         
+        if(nb == -1){
+        const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
+        }
+    }
+    
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size>  vli_a, vli_cpu<BaseInt, Size> const& vli_b)
     {
         vli_a *= vli_b;
         return vli_a;
-    /*
-        vli_cpu<BaseInt, 2*Size> vli_res;
-        
-        int na(1),nb(1);        
-                
-        if(vli_a.is_negative()){
-            const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
-            na = -1;
-        }
-        
-        if(vli_b.is_negative()){
-            const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();
-            nb = -1;
-        }
-
-        multiplies<BaseInt, 2*Size, Size>(vli_res, vli_a, vli_b);
-        
-        if(nb*na == -1)
-            vli_res.negate();
-       
-        if(na == -1){
-           const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();   
-        }
-
-        if(nb == -1){
-           const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
-        }
-
-        return vli_res;
-    */
     }
 
     template <class BaseInt, std::size_t Size>

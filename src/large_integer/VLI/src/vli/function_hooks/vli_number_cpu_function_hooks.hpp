@@ -26,6 +26,13 @@ namespace vli
         detail::kernels_addition_block<BaseInt, Size>(&vli_a[0],&b);  
     }
     
+    
+    template <class BaseInt, std::size_t Size>
+    void multiplies(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b)
+    {
+        detail::kernels_multiplication_classic<BaseInt,Size>(&vli_res[0],&vli_a[0], &vli_b[0]);
+    }
+    
     template <class BaseInt, std::size_t Size>
     void multiplies_assign( vli_cpu<BaseInt, Size>& vli_a , vli_cpu<BaseInt,Size> const & vli_b)
     { 
@@ -33,7 +40,7 @@ namespace vli
         detail::kernels_multiplication_classic_truncate<BaseInt,Size>(&vli_res[0],&vli_a[0], &vli_b[0]);
         vli_a = vli_res;
     }
-    
+
     template <class BaseInt, std::size_t Size>
     void multiplies_assign(vli_cpu<BaseInt,Size> & vli_a, int n)
     {

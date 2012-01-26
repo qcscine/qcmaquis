@@ -25,13 +25,25 @@ class polynomial_cpu;
 /**
  * Multiplication of two polynomial_cpus
  */
+   /* 
 template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, 2*Order> operator * (polynomial_cpu<Vli, Order> const& p1, polynomial_cpu<Vli, Order> const& p2)
 {
     polynomial_cpu<Vli, 2*Order> result;
     poly_multiply(result, p1, p2);
 //  poly_multiply_block_algo(result,p1,p2);
-//    poly_multiply_diag_algo(result,p1,p2);
+//  poly_multiply_diag_algo(result,p1,p2);
+    return result;
+}
+    */
+
+template <class BaseInt, std::size_t Size, unsigned int Order> // C - the VliOut is twice larger
+polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p1, polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p2)
+{
+    polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> result;
+    poly_multiply(result, p1, p2);
+    //  poly_multiply_block_algo(result,p1,p2);
+    //  poly_multiply_diag_algo(result,p1,p2);
     return result;
 }
 
@@ -58,7 +70,7 @@ public:
     enum { max_order = Order};
     
     //   friend polynomial_cpu operator * <>(const polynomial_cpu& p, const monomial<Vli> & m);
-    friend void poly_multiply <>(polynomial_cpu<Vli,2*Order>& result ,const polynomial_cpu& p1, const polynomial_cpu& p2);
+    friend void poly_multiply<> (polynomial_cpu<Vli,2*Order>& result ,const polynomial_cpu& p1, const polynomial_cpu& p2);
     
     polynomial_cpu(){
         for(exponent_type i=0; i<Order*Order;++i)

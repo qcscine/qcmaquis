@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomi
         for(exponent_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j),a[i*Poly::max_order+j]);
 }
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_equal, Poly, polynomial_types )
 {
     BOOST_STATIC_ASSERT(Poly::max_order >= 2);
@@ -59,8 +59,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_equal, Poly, polynomial_type
 
     Poly pb(pa);
 
-    for(typename Poly::size_type i=0; i < Poly::max_order; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
+    for(typename Poly::value_type::size_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pb(i,j),pa(i,j));
 
     BOOST_CHECK_EQUAL(pa == pb, true);
@@ -152,8 +152,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign, Poly, polynomial_types )
 
     pa -= pb;
 
-    for(typename Poly::size_type i=0; i < Poly::max_order; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
+    for(typename Poly::value_type::size_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j), -pb(i,j));
 }
 
@@ -210,8 +210,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_constant, Poly, polynomial_type
 
     pa*=a;
 
-    for(typename Poly::size_type i=0; i < Poly::max_order; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
+    for(typename Poly::value_type::size_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j),pb(i,j)*a);
 }
 
@@ -229,8 +229,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_monomial, Poly, polynomial_types )
 
     BOOST_CHECK_EQUAL(pb(0,0),vli_zero);
     BOOST_CHECK_EQUAL(pb(0,1),vli_zero);
-    for(typename Poly::size_type i=0; i < Poly::max_order-1; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
+    for(typename Poly::value_type::size_type i=0; i < Poly::max_order-1; ++i)
+        for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pb(i+1,j), pa(i,j)*va);
 
     typename Poly::value_type vb(5);
@@ -241,28 +241,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_monomial, Poly, polynomial_types )
     BOOST_CHECK_EQUAL(pb(0,0),vli_zero);
     BOOST_CHECK_EQUAL(pb(0,1),vli_zero);
     BOOST_CHECK_EQUAL(pb(1,0),vli_zero);
-    for(typename Poly::size_type i=0; i < Poly::max_order-1; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order-1; ++j)
+    for(typename Poly::value_type::size_type i=0; i < Poly::max_order-1; ++i)
+        for(typename Poly::value_type::size_type j=0; j < Poly::max_order-1; ++j)
             BOOST_CHECK_EQUAL(pa(i,j)*va*vb, pb(i+1,j+1));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
-{
-    Poly pa;
+{    
+    typedef vli::vli_cpu<typename  Poly::value_type::size_type, 2*(Poly::value_type::size) > vli_result_type_cpu;
+    typedef vli::vli_cpu<typename  Poly::value_type::size_type, (Poly::value_type::size) > vli_type_cpu;    
+    typedef vli::polynomial_cpu<vli_result_type_cpu, 2*(Poly::max_order) > polynomial_result_type_cpu;
+    typedef vli::polynomial_cpu<vli_type_cpu, (Poly::max_order) > polynomial_type_cpu;
+    
+    polynomial_result_type_cpu pc;
+    polynomial_type_cpu pa;
     fill_poly_random(pa);
 
-    Poly pb;
+    polynomial_type_cpu pb;
     fill_poly_random(pb);
-
-    Poly pc = pa*pb;
-
-    Poly result;
-    for(typename Poly::size_type i=0; i < Poly::max_order; ++i)
-        for(typename Poly::size_type j=0; j < Poly::max_order; ++j)
-            for(typename Poly::size_type k=0; k < (Poly::max_order - i); ++k)
-                for(typename Poly::size_type l=0; l < (Poly::max_order - j); ++l)
+   // poly_multiply(pc,pa,pb);
+    pc = pa*pb;
+/*
+    polynomial_result_type_cpu result;
+    for(typename Poly::value_type::size_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
+            for(typename Poly::value_type::size_type k=0; k < (Poly::max_order - i); ++k)
+                for(typename Poly::value_type::size_type l=0; l < (Poly::max_order - j); ++l)
                     result(i+k,j+l) += pa(i,j)*pb(k,l);
 
     BOOST_CHECK_EQUAL(pc,result);    
-}
 */
+ }
+
