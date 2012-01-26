@@ -251,6 +251,16 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     return sqrt(alps::numeric::real(ret));
 }
 
+template<class T>
+void verbose_assert(T const & a, T const & b)
+{
+    if (!( a == b) ) {
+        std::cout << "a: " << a << std::endl;
+        std::cout << "b: " << b << std::endl;
+        assert( a == b );
+    }
+}
+
 template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::scalar_type
 MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs) const
@@ -262,8 +272,27 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     rhs.make_left_paired();
     scalar_type ret(0);
 
-    for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_[b],rhs.data_[b],ret);
+    // verbose_assert(left_i, rhs.left_i);
+    // verbose_assert(right_i, rhs.right_i);
+    // verbose_assert(phys_i, rhs.phys_i);
+    // verbose_assert(rhs.data_.left_basis(), data_.left_basis());
+    // verbose_assert(rhs.data_.right_basis(), data_.right_basis());
+    // verbose_assert(rhs.data_.n_blocks(), data_.n_blocks());
+    
+    // Bela says: this is a workaround for the very rare condition that site_hamil2 removes blocks
+    // This shouldn't be necessary, but as of Rev. 1702, is necessary in some cases
+    // If I haven't fixed this by the end of Feb 2012, remind me
+    Index<SymmGroup> i1 = data_.left_basis(), i2 = rhs.data_.left_basis();
+    common_subset(i1, i2);
+    for (std::size_t b = 0; b < i1.size(); ++b) {
+        typename SymmGroup::charge c = i1[b].first;
+        detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_(c,c),
+                                                                         rhs.data_(c,c),
+                                                                         ret);
+    }
+    
+    // for (std::size_t b = 0; b < data_.n_blocks(); ++b)
+        // detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_[b],rhs.data_[b],ret);
 
     timer.end();
     return ret;
