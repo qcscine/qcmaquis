@@ -16,8 +16,13 @@
 #include "types/mt_matrix/mt_matrix.h"
 typedef maquis::types::mt_matrix<double> Matrix;
 #else
+
+#ifndef USE_COMPLEX
 typedef maquis::types::dense_matrix<double> Matrix;
-//typedef maquis::types::dense_matrix<std::complex<double> > Matrix;
+#else
+typedef maquis::types::dense_matrix<std::complex<double> > Matrix;
+#endif
+
 #endif
 
 #include "dmrg/block_matrix/symmetry.h"
