@@ -257,9 +257,9 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
     int offset_a, offset_b, offset_c;
 
     for(int i(0); i <= n; i++){
-        BaseInt inter[Size];
+        BaseInt inter[2*Size]; // 2 because non truncated
         #pragma unroll
-        for(std::size_t k=0 ; k < Size ;++k)
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             inter[k] = 0;
 
         qa = i/Order;
@@ -270,10 +270,10 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
 
         offset_a = (n-i)*Size;
         offset_b = i*Size;
-        offset_c = pos*Size;
+        offset_c = pos*Size*2; // 2 because non truncated
         
         single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
-        kernels_addition_classic<BaseInt,Size>(&c[offset_c],&inter[0]);
+        kernels_addition_classic<BaseInt,2*Size>(&c[offset_c],&inter[0]); // 2 because non truncated
 //     std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;  
 //        result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
     }
@@ -288,9 +288,9 @@ void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseIn
     int j = Order*Order-1;
  
     for(int i(Order*Order-n+1); i < Order*Order; i++){
-        BaseInt inter[Size];
+        BaseInt inter[2*Size]; // 2 because non truncated
         #pragma unroll
-        for(std::size_t k=0 ; k < Size ;++k)
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             inter[k] = 0;
 
         qa = i/Order;
@@ -301,10 +301,10 @@ void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseIn
 
         offset_a = j*Size;
         offset_b = i*Size;
-        offset_c = pos*Size;
+        offset_c = pos*Size*2; // 2 because non truncated
         
         single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
-        kernels_addition_classic<BaseInt,Size>(&c[offset_c],&inter[0]);
+        kernels_addition_classic<BaseInt,2*Size>(&c[offset_c],&inter[0]);
         //std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;   
         //result.coeffs_[pos] += p1.coeffs_[j]*p2.coeffs_[i];  
         j--;        
@@ -380,7 +380,7 @@ __global__ void inner_prod_vector_diag(unsigned int Order, std::size_t vector_si
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x // get poly one by one
     unsigned int yIndex = threadIdx.y; // thread for the triangle/diag decomposition
     const std::size_t size_multiplicant = Size*Order*Order;
-    const std::size_t size_product = Size*2*Order*2*Order;
+    const std::size_t size_product = 2*Size*2*Order*2*Order;
     //multiplication between polynomial
     std::size_t offset_m = xIndex*size_multiplicant;
     std::size_t offset_p = xIndex*size_product;
@@ -408,10 +408,11 @@ template <typename BaseInt, std::size_t Size>
 void inner_product_vector_blocks(unsigned int Order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt *C)
 {
 /*
-    std::size_t threads_per_block=1;
+    std::size_t threads_per_block=4;
     std::size_t blocks_per_grid_x = vector_size/threads_per_block+1;
     dim3 dimgrid(blocks_per_grid_x,1,1);
-    dim3 dimblock(threads_per_block,Order,1);
+    dim3 dimblock(threads_per_block,Order*Order,1);
+
 */
   dim3 dimgrid(vector_size,1,1);
   dim3 dimblock(1,Order*Order,1);
