@@ -63,12 +63,9 @@ namespace detail
     class inner_product_gpu_booster
     {
       private:
-//      typedef typename VectorPolynomial::value_type   polynomial_type;
-//      typedef typename polynomial_type::value_type    vli_type;
         typedef typename Vli::value_type           base_int_type;
         enum {factor_element_size = Order * Order * Vli::size };
         enum {product_element_size = 2*Order * 2*Order * 2 * Vli::size }; // VLi are twice larger
- //       enum {num_threads = 32}; // TODO change
       public:
         typedef std::size_t size_type;
    
@@ -86,7 +83,7 @@ namespace detail
             gpu::cu_check_error(cudaMemset((void*)tmp_.p(),0,partsize*product_element_size*sizeof(base_int_type)),__LINE__);
 
             // run/queue the inner product computation
-//            inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p(), num_threads);
+//          inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p(), num_threads);
             inner_product_vector_blocks(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p());
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
         }

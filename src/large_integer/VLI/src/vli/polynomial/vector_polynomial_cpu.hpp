@@ -63,17 +63,18 @@ namespace detail
         * GCC and C99 allow an array's size to be determined at run time. This extension is not permitted in standard C++.
         * so vector !
         */
-
         std::vector<polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> > res(omp_get_max_threads()); 
        
-  //      #pragma omp parallel for
+        #pragma omp parallel for
         for(std::size_t i=0 ; i < size_v ; ++i){
             res[omp_get_thread_num()] += v1[i]*v2[i];
         }
 
         for(int i=1; i < omp_get_max_threads(); ++i)
             res[0]+=res[i];
+
         return res[0];
+
     }
 #endif
     
