@@ -1,0 +1,17 @@
+#gpustarttimestamp
+#gridsize3d
+#threadblocksize
+#dynsmemperblock
+#stasmemperblock
+#regperthread
+#memtransfersize
+#memtransferdir
+#streamid
+#countermodeaggregate
+#gld_64b
+#warp_serialize
+#gst_request
+divergent_branch
+instructions
+
+
