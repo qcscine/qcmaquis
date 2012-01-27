@@ -106,7 +106,7 @@ namespace detail {
             using utils::conj;
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
-                    ret += conj((M(r,c)) * M(r,c));
+                    ret += conj(M(r,c)) * M(r,c);
         }
 
         static void scalar_norm_impl(Matrix const& M1, Matrix const& M2, typename Matrix::value_type & ret)
@@ -114,7 +114,7 @@ namespace detail {
             using utils::conj;
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
-                    ret += conj((M1(r,c)) * M2(r,c));
+                    ret += conj(M1(r,c)) * M2(r,c);
         }
 
         static void caculate_bond_renyi_entropies_impl(maquis::types::diagonal_matrix<typename Matrix::value_type> & M, typename maquis::types::associated_real_vector<Matrix>::type& sv) 
