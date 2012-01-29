@@ -255,7 +255,6 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
 {
     int qa,ra,qb,rb,pos; // find all indexes
     int offset_a, offset_b, offset_c;
-    unsigned int zindex = threadIdx.z; // just for copy
 
     BaseInt inter[2*Size]; // 2 because non truncated 
     BaseInt a_inter[Size]; // 2 because non truncated
@@ -263,7 +262,6 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
     BaseInt c_inter[2*Size]; // 2 because non truncated
 
     for(int i(0); i <= n; i++){
- 
         #pragma unroll
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             inter[k] = 0;
@@ -277,25 +275,30 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
         offset_a = (n-i)*Size;
         offset_b = i*Size;
         offset_c = pos*Size*2; // 2 because non truncated
-        
+
         // we load in a faster memory 
-        a_inter[zindex] = a[offset_a+zindex];
-        b_inter[zindex] = b[offset_b+zindex];
-    
-        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
-            c_inter[zindex*k] = c[offset_c+zindex*k]; 
+
+        #pragma unroll 
+        for(std::size_t k=0 ; k < Size ;++k){ // 2 because non truncated
+            a_inter[k] = a[offset_a+k];
+            b_inter[k] = b[offset_b+k];
+        }
+
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
+            c_inter[k] = c[offset_c+k]; 
      
         single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
         kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
         
-        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
-            c[offset_c+zindex*k] = c_inter[zindex*k]; 
-    
-/*
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
+            c[offset_c+k] = c_inter[k]; 
+   /* 
         single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
         kernels_addition_classic<BaseInt,2*Size>(&c[offset_c],&inter[0]); // 2 because non truncated
 //      result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
-*/
+i   */
     }
 }
 
@@ -307,7 +310,7 @@ void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseIn
     int j = Order*Order-1;
     unsigned int zindex = threadIdx.z; // just for copy
 
-    BaseInt inter[2*Size]; // 2 because non truncated
+    BaseInt inter[2*Size]; // 2 because non truncated 
     BaseInt a_inter[Size]; // 2 because non truncated
     BaseInt b_inter[Size]; // 2 because non truncated
     BaseInt c_inter[2*Size]; // 2 because non truncated
@@ -328,23 +331,29 @@ void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseIn
         offset_c = pos*Size*2; // 2 because non truncated
     
         // we load in a faster memory 
-        a_inter[zindex] = a[offset_a+zindex];
-        b_inter[zindex] = b[offset_b+zindex];
-    
-        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
-            c_inter[zindex*k] = c[offset_c+zindex*k]; 
+        #pragma unroll 
+        for(std::size_t k=0 ; k < Size ;++k){ // 2 because non truncated
+            a_inter[k] = a[offset_a+k];
+            b_inter[k] = b[offset_b+k];
+        }
+
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
+            c_inter[k] = c[offset_c+k]; 
+
  
         single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);
         kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
 
-        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
-            c[offset_c+zindex*k] = c_inter[zindex*k]; 
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
+            c[offset_c+k] = c_inter[k]; 
         
-        /*
+/*
         single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
         kernels_addition_classic<BaseInt,2*Size>(&c[offset_c],&inter[0]);
         //result.coeffs_[pos] += p1.coeffs_[j]*p2.coeffs_[i];  
-        */
+*/      
         j--;        
     }    
 }
@@ -454,7 +463,7 @@ void inner_product_vector_blocks(unsigned int Order, std::size_t vector_size, Ba
 */
 
   dim3 dimgrid(vector_size,1,1);
-  dim3 dimblock(1,Order*Order,Size);
+  dim3 dimblock(1,Order*Order,1);
 
    //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version truncated multiplication 
    inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads*nthreads version non truncated 
