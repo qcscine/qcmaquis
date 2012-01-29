@@ -165,7 +165,7 @@ __device__ void polynome_polynome_multiplication_device(unsigned int max_order, 
     }
 } 
         
-/** n threads block algo **/
+/** n threads block algo, note still with truncated multiplication **/
         
 template <typename BaseInt, std::size_t Size>
 void algo_triangle_up(int block_ai, int block_bj, unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt *c){
@@ -255,9 +255,15 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
 {
     int qa,ra,qb,rb,pos; // find all indexes
     int offset_a, offset_b, offset_c;
+    unsigned int zindex = threadIdx.z; // just for copy
+
+    BaseInt inter[2*Size]; // 2 because non truncated 
+    BaseInt a_inter[Size]; // 2 because non truncated
+    BaseInt b_inter[Size]; // 2 because non truncated
+    BaseInt c_inter[2*Size]; // 2 because non truncated
 
     for(int i(0); i <= n; i++){
-        BaseInt inter[2*Size]; // 2 because non truncated
+ 
         #pragma unroll
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             inter[k] = 0;
@@ -272,10 +278,24 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
         offset_b = i*Size;
         offset_c = pos*Size*2; // 2 because non truncated
         
+        // we load in a faster memory 
+        a_inter[zindex] = a[offset_a+zindex];
+        b_inter[zindex] = b[offset_b+zindex];
+    
+        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
+            c_inter[zindex*k] = c[offset_c+zindex*k]; 
+     
+        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
+        kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+        
+        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
+            c[offset_c+zindex*k] = c_inter[zindex*k]; 
+    
+/*
         single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
         kernels_addition_classic<BaseInt,2*Size>(&c[offset_c],&inter[0]); // 2 because non truncated
-//     std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;  
-//        result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
+//      result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
+*/
     }
 }
 
@@ -284,11 +304,15 @@ void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseIn
 {
     int qa,ra,qb,rb,pos; // find all indexes
     int offset_a, offset_b, offset_c;
-
     int j = Order*Order-1;
- 
+    unsigned int zindex = threadIdx.z; // just for copy
+
+    BaseInt inter[2*Size]; // 2 because non truncated
+    BaseInt a_inter[Size]; // 2 because non truncated
+    BaseInt b_inter[Size]; // 2 because non truncated
+    BaseInt c_inter[2*Size]; // 2 because non truncated
+    
     for(int i(Order*Order-n+1); i < Order*Order; i++){
-        BaseInt inter[2*Size]; // 2 because non truncated
         #pragma unroll
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             inter[k] = 0;
@@ -302,11 +326,25 @@ void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseIn
         offset_a = j*Size;
         offset_b = i*Size;
         offset_c = pos*Size*2; // 2 because non truncated
+    
+        // we load in a faster memory 
+        a_inter[zindex] = a[offset_a+zindex];
+        b_inter[zindex] = b[offset_b+zindex];
+    
+        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
+            c_inter[zindex*k] = c[offset_c+zindex*k]; 
+ 
+        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);
+        kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+
+        for(std::size_t k=0 ; k < 2 ;++k) // 2 because non truncated
+            c[offset_c+zindex*k] = c_inter[zindex*k]; 
         
+        /*
         single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
         kernels_addition_classic<BaseInt,2*Size>(&c[offset_c],&inter[0]);
-        //std::cout << " qa " << qa << " ra " << ra << " qb " << qb << " rb " << rb << " pos " << pos << std::endl;   
         //result.coeffs_[pos] += p1.coeffs_[j]*p2.coeffs_[i];  
+        */
         j--;        
     }    
 }
@@ -359,6 +397,7 @@ __global__ void inner_prod_vector_blocks(unsigned int Order, std::size_t vector_
     std::size_t offset_p = xIndex*size_product;
     if(xIndex < vector_size){
         // first pass, half top right corner, 
+
         for(int j=0; j<=yindex; ++j)
             algo_block_algo<BaseInt, Size>(j,yindex-j,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
         
@@ -386,7 +425,7 @@ __global__ void inner_prod_vector_diag(unsigned int Order, std::size_t vector_si
     std::size_t offset_p = xIndex*size_product;
     if(xIndex < vector_size){
         //first pass
-        algo_diag_up<BaseInt,Size>(yIndex                ,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
+        algo_diag_up<BaseInt,Size>(yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
         //second pass    
         algo_diag_down<BaseInt,Size>(Order*Order - yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]); 
     }
@@ -408,17 +447,17 @@ template <typename BaseInt, std::size_t Size>
 void inner_product_vector_blocks(unsigned int Order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt *C)
 {
 /*
-    std::size_t threads_per_block=4;
+    std::size_t threads_per_block=2;
     std::size_t blocks_per_grid_x = vector_size/threads_per_block+1;
     dim3 dimgrid(blocks_per_grid_x,1,1);
     dim3 dimblock(threads_per_block,Order*Order,1);
-
 */
-  dim3 dimgrid(vector_size,1,1);
-  dim3 dimblock(1,Order*Order,1);
 
-   //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version 
-   inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads*nthreads version 
+  dim3 dimgrid(vector_size,1,1);
+  dim3 dimblock(1,Order*Order,Size);
+
+   //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version truncated multiplication 
+   inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads*nthreads version non truncated 
 }
     
 template <typename BaseInt, std::size_t Size>
