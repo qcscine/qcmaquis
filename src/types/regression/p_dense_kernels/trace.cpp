@@ -38,7 +38,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     b = trace(sA); 
  
     ambient::playout();
-    BOOST_CHECK_CLOSE( a, b,0.000000000001); 
+    BOOST_CHECK_EQUAL(a,b);
+//    BOOST_CHECK_CLOSE( a, b,0.000000000001); 
 }
 
 
