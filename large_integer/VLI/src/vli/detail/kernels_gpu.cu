@@ -99,6 +99,7 @@ __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y
         kernels_multiplication_classic_truncate<BaseInt,Size>(z,x,y); 
     }
  */   
+ 
     if( static_cast<bool>((x[Size-1]) >> data_bits<BaseInt>::value)){
             kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(x));
             na = -1;
@@ -108,7 +109,7 @@ __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y
             kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(y));
             nb = -1;
         }
-    
+  
     kernels_multiplication_classic<BaseInt,static_cast<std::size_t>(Size)>(z,x,y);
 
     if(nb*na == -1)
@@ -261,6 +262,10 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
     BaseInt b_inter[Size]; // 2 because non truncated
     BaseInt c_inter[2*Size]; // 2 because non truncated
 
+    __shared__ BaseInt sab_inter[2*Size*16];
+    __shared__ BaseInt s_inter[Size*64];
+
+  
     for(int i(0); i <= n; i++){
         #pragma unroll
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
@@ -276,17 +281,30 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
         offset_b = i*Size;
         offset_c = pos*Size*2; // 2 because non truncated
 
-        // we load in a faster memory 
-
+        // we load in a faster memory
         #pragma unroll 
         for(std::size_t k=0 ; k < Size ;++k){ // 2 because non truncated
             a_inter[k] = a[offset_a+k];
             b_inter[k] = b[offset_b+k];
+            sab_inter[offset_a+k] = a[offset_a+k];
+            sab_inter[offset_b+k+Size*16] = b[offset_b+k];
         }
-
+        
+        
+        
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             c_inter[k] = c[offset_c+k]; 
+
+        cuPrintf("%d \n", offset_c );
+
+        single_multiplication_device<BaseInt,Size>(&a_inter[offset_a],&b_inter[offset_b+Size*16],&s_inter[offset_c]);        
+        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
+
+   
+
+//        kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+
      
         single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
         kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
@@ -466,7 +484,10 @@ void inner_product_vector_blocks(unsigned int Order, std::size_t vector_size, Ba
   dim3 dimblock(1,Order*Order,1);
 
    //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version truncated multiplication 
+   cudaPrintfInit();
    inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads*nthreads version non truncated 
+   cudaPrintfDisplay(stdout, true);
+   cudaPrintfEnd();
 }
     
 template <typename BaseInt, std::size_t Size>
