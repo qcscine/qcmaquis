@@ -43,8 +43,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     pA.set_init(ambient::random_i<typename T::dbl>);
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
  
-    typename maquis::types::associated_diagonal_matrix<pMatrix>::type pS; 
-    typename maquis::types::associated_diagonal_matrix<sMatrix>::type sS; 
+    typename maquis::types::associated_diagonal_matrix<pDoubleMatrix>::type pS; 
+    typename maquis::types::associated_diagonal_matrix<sDoubleMatrix>::type sS; 
  
     maquis::types::algorithms::svd(pA,pU,pV,pS);
     maquis::types::algorithms::svd(sA,sU,sV,sS);

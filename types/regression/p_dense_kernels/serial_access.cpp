@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( write_access, T, test_types)
     x =  pA(accessx,accessy) ;
     y =  sA(accessx,accessy) ;
 
-    BOOST_CHECK_CLOSE( x,y, 0.0001 );
+//    BOOST_CHECK_CLOSE( x,y, 0.0001 );
     BOOST_CHECK(pA==sA); // we also check everything to verify we do not corrupt the memory
 }
 
@@ -71,7 +71,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
 
     x = sA(accessx,accessy);
     y = pA(accessx,accessy);
+    
+    BOOST_CHECK_EQUAL(x,y);
 
-    BOOST_CHECK_CLOSE( x,y, 0.0001 );
+//    BOOST_CHECK_CLOSE( x,y, 0.0001 );
 }
 

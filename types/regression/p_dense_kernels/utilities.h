@@ -23,7 +23,9 @@ struct size {
 
 typedef ambient::dim2 dim;
 typedef maquis::types::dense_matrix<ambient::traits::value_type> sMatrix;
+typedef maquis::types::dense_matrix<double> sDoubleMatrix;
 typedef maquis::types::p_dense_matrix<ambient::traits::value_type> pMatrix;
+typedef maquis::types::p_dense_matrix<double> pDoubleMatrix;
 typedef maquis::types::diagonal_matrix<ambient::traits::value_type> sDiagMatrix;
 typedef maquis::types::p_diagonal_matrix<ambient::traits::value_type> pDiagMatrix;
 typedef boost::mpl::list<size<2,0>,size<2,3>,size<3,0>,size<3,3>,size<3,-3>,size<5,7>,size<5,-7> > test_types; // prime numbers ...
