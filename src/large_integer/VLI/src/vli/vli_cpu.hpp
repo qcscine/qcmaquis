@@ -403,7 +403,7 @@ public:  // C - for the dirty programming
     }
 
     template <class BaseInt, std::size_t Size>
-    void multi_nt(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b)
+    void multi_nt(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) // C nt = non truncated
     {         
         int na(1),nb(1);        
          
