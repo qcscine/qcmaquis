@@ -20,7 +20,7 @@
 #include "vli/detail/kernels_cpu_gpu.hpp"
 
 
-#define SIZE 5
+#define SIZE 11
 #define Size 3
 
 using vli::vli_cpu;
@@ -80,8 +80,8 @@ int main (int argc, char * const argv[])
     gpu->instance();
 #endif
     
-    vector_type_cpu v1(1);
-    vector_type_cpu v2(1);
+    vector_type_cpu v1(128);
+    vector_type_cpu v2(128);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
     fill_vector_random(v1,2);

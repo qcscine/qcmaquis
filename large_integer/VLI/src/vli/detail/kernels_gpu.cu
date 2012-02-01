@@ -262,8 +262,8 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
     BaseInt b_inter[Size]; // 2 because non truncated
     BaseInt c_inter[2*Size]; // 2 because non truncated
 
-    __shared__ BaseInt sab_inter[2*Size*25];
-    __shared__ BaseInt s_inter[2*Size*25];
+    __shared__ BaseInt sab_inter[2*Size*121]; // 36 = ORDER*ORDER
+    __shared__ BaseInt s_inter[2*Size*121];
   
     for(int i(0); i <= n; i++){
 
@@ -281,61 +281,51 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
         offset_b = i*Size;
         offset_c = pos*Size*2; // 2 because non truncated
 
-
-        cuPrintf("%d %d %d \n",  offset_a, offset_b, n );
-
         // we load in a faster memory
         #pragma unroll 
         for(std::size_t k=0 ; k < Size ;++k){ // 2 because non truncated
- //           a_inter[k] = a[offset_a+k];
-  //          b_inter[k] = b[offset_b+k];
+//          a_inter[k] = a[offset_a+k];
+//          b_inter[k] = b[offset_b+k];
             sab_inter[n*Size+k] = a[offset_a+k];
-            sab_inter[n*Size+k+Size*25] = b[offset_b+k];
+            sab_inter[n*Size+k+Size*121] = b[offset_b+k];
         }
+        
         
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k){ // 2 because non truncated
-//            c_inter[k] = c[offset_c+k]; 
+//          c_inter[k] = c[offset_c+k]; 
             s_inter[n*2*Size+k] = 0;
         }
 
-        for(std::size_t k=0 ; k < Size ;++k)
-            cuPrintf("%d %d  %d %d %d \n",sab_inter[n*Size+k],a[offset_a+k] , sab_inter[n*Size+k+Size*25] ,  b[offset_b+k] , n );
+        __syncthreads();
         
-        single_multiplication_device<BaseInt,Size>(&sab_inter[n*Size],&sab_inter[n*Size+Size*25],&s_inter[2*n*Size]);        
-        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
- /*
-        for(std::size_t k=0 ; k < 2*Size ;++k)
-            cuPrintf("%d %d %d \n",  inter[k] ,  s_inter[2*offset_a+k] , n );
-*/
+        single_multiplication_device<BaseInt,Size>(&sab_inter[n*Size],&sab_inter[n*Size+Size*121],&s_inter[2*n*Size]);        
+//      single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
+//      kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+
         // C - I do not need a and b 
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             sab_inter[2*n*Size+k] = c[offset_c+k]; 
-/*
-        for(std::size_t k=0 ; k < 2*Size ;++k)
-            cuPrintf("%d %d %d \n",  c[offset_c+k],  sab_inter[2*offset_a+k] , n );
-*/
- //       kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
-        kernels_addition_classic<BaseInt,2*Size>(&sab_inter[2*n*Size],&s_inter[2*n*Size]); // 2 because non truncated
-/* 
-        for(std::size_t k=0 ; k < 2*Size ;++k)
-            cuPrintf("%d %d %d \n",  c_inter[k] ,  sab_inter[offset_c+k] , n );
-*/      
 
-/*        
-        #pragma unroll 
-        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
-            c[offset_c+k] = c_inter[k]; 
-*/
+        __syncthreads();
+        
+        kernels_addition_classic<BaseInt,2*Size>(&sab_inter[2*n*Size],&s_inter[2*n*Size]); // 2 because non truncated
+
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
            c[offset_c+k] = sab_inter[2*n*Size+k]; 
-   /* 
-        single_multiplication_device<BaseInt,Size>(&a[offset_a],&b[offset_b],&inter[0]);
-        kernels_addition_classic<BaseInt,2*Size>(&c[offset_c],&inter[0]); // 2 because non truncated
-//      result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
-i   */
+
+        __syncthreads();
+
+/*         
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
+             c[offset_c+k] = c_inter[k]; 
+*/       
+        
+// C - original      result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
+
     }
 }
 
