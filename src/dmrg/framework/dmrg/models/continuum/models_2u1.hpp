@@ -93,8 +93,7 @@ namespace app {
                 double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
                 
                 //              double dx = std::min(lat.get_prop<double>("dx", p, p+1), lat.get_prop<double>("dx", p-1, p));
-                double dx1 = lat.get_prop<double>("dx", p, neighs[0]);
-                double dx2;
+                double dx2, dx1 = lat.get_prop<double>("dx", p, neighs[0]);
                 if (neighs.size() == 1 && lat.get_prop<bool>("at_open_left_boundary", p))
                     dx2 = lat.get_prop<double>("dx", p, p-1);
                 else if (neighs.size() == 1 && lat.get_prop<bool>("at_open_right_boundary", p))
@@ -124,7 +123,7 @@ namespace app {
                     //                    coeff0 = -coeff1;
                 }
                 
-                double U = model.get<double>("c") / dx0;
+                double U = 2. * model.get<double>("c") / dx0;
                 double mu = -model.get<double>("mu") + exp_potential;
                 mu += -coeff0 * model.get<double>("h");
                 
@@ -142,7 +141,8 @@ namespace app {
                  */
                 
                 op_t site_op = mu*count_up;
-                site_op += mu*mu*count_down;
+                site_op += mu*count_down;
+                site_op += U*doubly_occ;
                 
                 { // site term
                     hamterm_t term;

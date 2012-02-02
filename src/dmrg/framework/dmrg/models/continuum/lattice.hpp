@@ -64,7 +64,7 @@ namespace app {
             else if (property == "type" && pos.size() == 2)
                 return boost::any( 0 );
             else if (property == "x" && pos.size() == 1)
-                return boost::any( a/N * pos[0] );
+                return boost::any( a/N/2. + a/N * pos[0] );
             else if (property == "dx" && pos.size() == 1)
                 return boost::any( a/N );
             else if (property == "dx" && pos.size() == 2)
@@ -94,14 +94,14 @@ namespace app {
         
         std::string site_label (int i) const
         {
-            return "( " + boost::lexical_cast<std::string>(a/N * i) + " )";
+            return "( " + boost::lexical_cast<std::string>(a/N/2. + a/N * i) + " )";
         }
         
         std::string bond_label (int i, int j) const
         {
-            return (  "( " + boost::lexical_cast<std::string>(a/N * i) + " )"
+            return (  "( " + boost::lexical_cast<std::string>(a/N/2. + a/N * i) + " )"
                     + " -- "
-                    + "( " + boost::lexical_cast<std::string>(a/N * j) + " )");
+                    + "( " + boost::lexical_cast<std::string>(a/N/2. + a/N * j) + " )");
         }
         
     private:
