@@ -74,6 +74,9 @@ namespace vli {
     template <typename BaseInt, std::size_t Size>
     __device__ void algo_diag_down(unsigned int i,unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt* c);
         
+    template <typename BaseInt, std::size_t Size>
+    __device__ void algo_diag_shared(unsigned int i,unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt* c);
+
 /**
 * a kind of hook function with a little bit of arithmetic in case of signed int (multiplication)
 */
@@ -261,10 +264,13 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
     BaseInt a_inter[Size]; // 2 because non truncated
     BaseInt b_inter[Size]; // 2 because non truncated
     BaseInt c_inter[2*Size]; // 2 because non truncated
-
-    __shared__ BaseInt sab_inter[2*Size*121]; // 36 = ORDER*ORDER
-    __shared__ BaseInt s_inter[2*Size*121];
-  
+/*
+    __shared__ BaseInt sc[2*Size*36];
+    __shared__ BaseInt s_inter[2*Size*36];
+    __shared__ BaseInt sa[Size*36]; // 121 = ORDER*ORDER
+    __shared__ BaseInt sb[Size*36]; // 121 = ORDER*ORDER
+ */
+ 
     for(int i(0); i <= n; i++){
 
         #pragma unroll
@@ -284,45 +290,37 @@ void algo_diag_up(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt 
         // we load in a faster memory
         #pragma unroll 
         for(std::size_t k=0 ; k < Size ;++k){ // 2 because non truncated
-//          a_inter[k] = a[offset_a+k];
-//          b_inter[k] = b[offset_b+k];
-            sab_inter[n*Size+k] = a[offset_a+k];
-            sab_inter[n*Size+k+Size*121] = b[offset_b+k];
+            a_inter[k] = a[offset_a+k];
+            b_inter[k] = b[offset_b+k];
+//            sa[n*Size+k] = a[offset_a+k];
+//            sb[n*Size+k] = b[offset_b+k];
         }
         
-        
+
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k){ // 2 because non truncated
-//          c_inter[k] = c[offset_c+k]; 
-            s_inter[n*2*Size+k] = 0;
+          c_inter[k] = c[offset_c+k]; 
+//            s_inter[2*n*Size+k] = 0;
+//            sc[2*n*Size+k] = c[offset_c+k]; 
         }
 
-        __syncthreads();
-        
-        single_multiplication_device<BaseInt,Size>(&sab_inter[n*Size],&sab_inter[n*Size+Size*121],&s_inter[2*n*Size]);        
-//      single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
-//      kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+//        single_multiplication_device<BaseInt,Size>(&sa[n*Size],&sb[n*Size],&s_inter[2*n*Size]);        
 
-        // C - I do not need a and b 
+        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
+        kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+
+//        kernels_addition_classic<BaseInt,2*Size>(&sc[2*n*Size],&s_inter[2*n*Size]); // 2 because non truncated
+/*
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
-            sab_inter[2*n*Size+k] = c[offset_c+k]; 
-
-        __syncthreads();
-        
-        kernels_addition_classic<BaseInt,2*Size>(&sab_inter[2*n*Size],&s_inter[2*n*Size]); // 2 because non truncated
-
-        #pragma unroll 
-        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
-           c[offset_c+k] = sab_inter[2*n*Size+k]; 
-
-        __syncthreads();
-
-/*         
+           c[offset_c+k] = sc[2*n*Size+k]; 
+*/
+      
+         
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
              c[offset_c+k] = c_inter[k]; 
-*/       
+     
         
 // C - original      result.coeffs_[pos] += p1.coeffs_[n-i]*p2.coeffs_[i];  
 
@@ -384,6 +382,85 @@ void algo_diag_down(unsigned int n, unsigned int Order, BaseInt const* a, BaseIn
     }    
 }
 
+template <typename BaseInt, std::size_t Size>
+void algo_diag_shared(unsigned int n, unsigned int Order, BaseInt const* a, BaseInt const* b, BaseInt *c)
+{
+    int j = Order*Order-1;
+    int qa,ra,qb,rb,pos; // find all indexes
+    int offset_a, offset_b, offset_c;
+
+    __shared__ BaseInt sc[2*Size*121];
+    __shared__ BaseInt s_inter[2*Size*121];
+    __shared__ BaseInt sa[Size*121]; // 121 = ORDER*ORDER
+    __shared__ BaseInt sb[Size*121]; // 121 = ORDER*ORDER
+ 
+ 
+    for(int i(0); i <= n; i++){
+        qa = i/Order;
+        ra = i%Order;
+        qb = (n-i)/Order;
+        rb = (n-i)%Order;
+        pos = 2*(qa+qb)*Order + (ra+rb);
+
+        offset_a = (n-i)*Size;
+        offset_b = i*Size;
+        offset_c = pos*Size*2; // 2 because non truncated
+
+        // we load in a faster memory
+        #pragma unroll 
+        for(std::size_t k=0 ; k < Size ;++k){ // 2 because non truncated
+            sa[n*Size+k] = a[offset_a+k];
+            sb[n*Size+k] = b[offset_b+k];
+        }
+
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k){ // 2 because non truncated
+            s_inter[2*n*Size+k] = 0;
+            sc[2*n*Size+k] = c[offset_c+k]; 
+        }
+
+        single_multiplication_device<BaseInt,Size>(&sa[n*Size],&sb[n*Size],&s_inter[2*n*Size]);        
+        kernels_addition_classic<BaseInt,2*Size>(&sc[2*n*Size],&s_inter[2*n*Size]); // 2 because non truncated
+
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
+           c[offset_c+k] = sc[2*n*Size+k]; 
+    }
+
+    //__syncthreads();
+ 
+    for(int i(Order*Order-n+1); i < Order*Order; i++){
+        qa = i/Order;
+        ra = i%Order;
+        qb = j/Order;
+        rb = j%Order;
+        pos = 2*(qa+qb)*Order + (ra+rb);
+
+        offset_a = j*Size;
+        offset_b = i*Size;
+        offset_c = pos*Size*2; // 2 because non truncated
+    
+        #pragma unroll 
+        for(std::size_t k=0 ; k < Size ;++k){ // 2 because non truncated
+            sa[n*Size+k] = a[offset_a+k];
+            sb[n*Size+k] = b[offset_b+k];
+        }
+
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k){ // 2 because non truncated
+            s_inter[2*n*Size+k] = 0;
+            sc[2*n*Size+k] = c[offset_c+k]; 
+        }
+ 
+        single_multiplication_device<BaseInt,Size>(&sa[n*Size],&sb[n*Size],&s_inter[2*n*Size]);        
+        kernels_addition_classic<BaseInt,2*Size>(&sc[2*n*Size],&s_inter[2*n*Size]); // 2 because non truncated
+
+        #pragma unroll 
+        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
+           c[offset_c+k] = sc[2*n*Size+k]; 
+        j--;        
+    }    
+}
 /**
 * VLI_GPU_VECTOR functions
 */    
@@ -459,6 +536,7 @@ __global__ void inner_prod_vector_diag(unsigned int Order, std::size_t vector_si
     std::size_t offset_m = xIndex*size_multiplicant;
     std::size_t offset_p = xIndex*size_product;
     if(xIndex < vector_size){
+        //algo_diag_shared<BaseInt,Size>(yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
         //first pass
         algo_diag_up<BaseInt,Size>(yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
         //second pass    
@@ -490,12 +568,11 @@ void inner_product_vector_blocks(unsigned int Order, std::size_t vector_size, Ba
 
   dim3 dimgrid(vector_size,1,1);
   dim3 dimblock(1,Order*Order,1);
-
    //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version truncated multiplication 
-   cudaPrintfInit();
+//   cudaPrintfInit();
    inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads*nthreads version non truncated 
-   cudaPrintfDisplay(stdout, true);
-   cudaPrintfEnd();
+ //  cudaPrintfDisplay(stdout, true);
+ //  cudaPrintfEnd();
 }
     
 template <typename BaseInt, std::size_t Size>
