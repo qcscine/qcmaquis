@@ -34,8 +34,8 @@ using vli::test::fill_poly_random;
 using vli::test::fill_vector_random;
 
 
-typedef vli_cpu<long unsigned int, 3> vli_type_cpu;
-typedef vli_cpu<long unsigned int, 6> vli_result_type_cpu;
+typedef vli_cpu< unsigned long int, 3> vli_type_cpu;
+typedef vli_cpu< unsigned long int, 6> vli_result_type_cpu;
 
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
@@ -80,12 +80,12 @@ int main (int argc, char * const argv[])
     gpu->instance();
 #endif
     
-    vector_type_cpu v1(128);
-    vector_type_cpu v2(128);
+    vector_type_cpu v1(16384);
+    vector_type_cpu v2(16384);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
-    fill_vector_random(v1,2);
-    fill_vector_random(v2,2);
+    fill_vector_random(v1,1);
+    fill_vector_random(v2,1);
     
     TimerOMP t1("CPU openmp");
     t1.begin();
@@ -100,7 +100,8 @@ int main (int argc, char * const argv[])
     
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
- 
+
+
     return 0;
 }
 

@@ -1,5 +1,5 @@
 /*
- *  vli.h
+ 6*  vli.h
  *  vli_cpu_gpu
  *
  *  Created by Tim Ewart on 18.03.11.
@@ -457,7 +457,7 @@ public:  // C - for the dirty programming
     template<typename BaseInt, std::size_t Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli)
     {
-        vli.print(os);
+        vli.print_raw(os);
         return os;
     }
   
