@@ -62,16 +62,17 @@ typedef maquis::types::dense_matrix<double> Matrix;
 #include "dmrg/mp_tensors/optimize.h"
 
 #include "dmrg/models/factory.h"
+#include "dmrg/models/continuum/factory.h"
 #include "dmrg/models/continuum/lattice.hpp"
-#ifdef UseTwoU1
-#include "dmrg/models/continuum/models_2u1.hpp"
-#else
-#ifdef UseNULL
-#include "dmrg/models/continuum/models_none.hpp"
-#else
-#include "dmrg/models/continuum/models_u1.hpp"
-#endif
-#endif
+//#ifdef UseTwoU1
+//#include "dmrg/models/continuum/models_2u1.hpp"
+//#else
+//#ifdef UseNULL
+//#include "dmrg/models/continuum/models_none.hpp"
+//#else
+//#include "dmrg/models/continuum/models_u1.hpp"
+//#endif
+//#endif
 
 using namespace app;
 
@@ -126,21 +127,10 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
 //        std::cout << lat.get_prop<std::string>("label", p, p-1) << ": " << lat.get_prop<double>("dx", p, p-1) << std::endl;
 //    }
     
-#ifdef UseNULL
-    OpticalLattice<Matrix> model(*lat, parms1);
-    Hamiltonian<Matrix, grp> H = model.H();
+    model_traits<Matrix, grp>::model_ptr model = cont_model_factory<Matrix, grp>::parse(*lat, parms1);
+    Hamiltonian<Matrix, grp> H = model->H();
     MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
-#else
-#ifdef UseTwoU1
-    throw std::runtime_error("No model with 2xU1 symmetries is yet implemented.");
-    MPO<Matrix, grp> mpo(0);
-#else
-    OpticalLattice<Matrix> model(*lat, parms1);
-    Hamiltonian<Matrix, grp> H = model.H();
-    MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
-#endif
-#endif
-
+    
     return mpo;
 }
 
