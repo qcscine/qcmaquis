@@ -100,8 +100,10 @@ int main (int argc, char * const argv[])
     
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
-
-
+/*
+    std::cout << result_pure_cpu << std::endl;
+    std::cout << result_mix_cpu_gpu << std::endl;
+*/
     return 0;
 }
 

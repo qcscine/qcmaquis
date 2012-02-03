@@ -17,14 +17,10 @@ struct vli_size_tag
 
 
 #define VLI_DECLARE_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
-    void inner_product_vector(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C, std::size_t threads_per_block); \
-    void vector_reduction_inplace(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE* A); \
-    void inner_product_vector_blocks(vli_size_tag<VLI_SIZE>, unsigned int Order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C);
+    void inner_product_vector(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C ); \
 
 #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
     VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )
-
-//#define VLI_COMPILE_BASEINT_SIZE_PAIRS_SEQ ((unsigned int,3)) ((unsigned long int,4)) ((unsigned long int,8))
 
 BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_BASEINT_SIZE_PAIRS_SEQ)
 
