@@ -70,7 +70,8 @@ public:
     enum { max_order = Order};
     
     //   friend polynomial_cpu operator * <>(const polynomial_cpu& p, const monomial<Vli> & m);
-    friend void poly_multiply (polynomial_cpu<Vli,2*Order>& result ,const polynomial_cpu& p1, const polynomial_cpu& p2);
+    friend void poly_multiply (polynomial_cpu<Vli,2*Order>& result ,const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);
+
     
     polynomial_cpu(){
         for(exponent_type i=0; i<Order*Order;++i)

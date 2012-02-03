@@ -78,28 +78,21 @@ namespace detail
         {
             assert(partsize <= v1.size());
             assert(partsize <= v2.size());
+
             gpu::cu_check_error(cudaMemcpyAsync((void*)v1_.p(),(void*)&v1[0],partsize*factor_element_size*sizeof(base_int_type),cudaMemcpyHostToDevice), __LINE__);
             gpu::cu_check_error(cudaMemcpyAsync((void*)v2_.p(),(void*)&v2[0],partsize*factor_element_size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
             gpu::cu_check_error(cudaMemset((void*)tmp_.p(),0,partsize*product_element_size*sizeof(base_int_type)),__LINE__);
 
             // run/queue the inner product computation
-//          inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p(), num_threads);
-            inner_product_vector_blocks(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p());
+            inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p());
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
         }
         
         operator polynomial_cpu<vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order>() const
         {
-            std::vector<polynomial_cpu<vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order> > restmp(partsize_); 
             polynomial_cpu< vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order> poly; 
-
-            gpu::cu_check_error(cudaMemcpy((void*)&restmp[0](0,0),(void*)tmp_.p(),partsize_*product_element_size*sizeof(base_int_type),cudaMemcpyDeviceToHost),__LINE__);
-            // C - a reduction of 16384 poly  order 21*21 costs 0.1 s .... so CPU
-            for(std::size_t i=0; i <partsize_;++i){
-               poly += restmp[i];
-            }
- 
-           return poly;
+            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)tmp_.p(),product_element_size*sizeof(base_int_type),cudaMemcpyDeviceToHost),__LINE__);
+            return poly;
         }
 
       private:
@@ -126,14 +119,13 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
     #pragma omp parallel for
-    for(std::size_t i=split ; i < size_v ; ++i){
+    for(std::size_t i=split ; i < size_v ; ++i)
         res[omp_get_thread_num()] += v1[i]*v2[i];
-    }
 
     for(std::size_t i=1; i < omp_get_max_threads(); ++i)
         res[0]+=res[i];
 
-    res[0] += polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product);
+    res[0] += polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product); // this thing synchronize
     return res[0];
 }
 #endif
