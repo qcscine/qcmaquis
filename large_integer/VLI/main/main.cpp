@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 
+#include <cassert>
 #include "use_gmp_integers.hpp"
 #include "minimal_polynomial.hpp"
 
@@ -18,7 +19,6 @@
 #include "regression/vli_test.hpp"
 
 #include "vli/detail/kernels_cpu_gpu.hpp"
-
 
 #define SIZE 11
 #define Size 3
@@ -46,52 +46,48 @@ typedef vli::polynomial_cpu< vli_result_type_cpu, 2*SIZE > polynomial_result_typ
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 
 typedef mpz_class large_int;
-
+typedef hp2c::monomial<large_int> monomial_type;
+typedef hp2c::polynomial<large_int,11> polynomial_type;
+typedef hp2c::polynomial<large_int,2*11> polynomial_typed;
+typedef std::vector<polynomial_type> polynomial_vector_type;
+#define SIZEV 16384
 int main (int argc, char * const argv[]) 
 {
-    /*
-    polynomial_type_cpu p1,p2,pres;
-    polynomial_result_type_cpu pres2;
-    vli::test::fill_poly_random(p1);
-    vli::test::fill_poly_random(p1);
-
-    pres2 = p1 * p2;
-    */
-/*
-    vli_type_cpu a,b;
-    vli_result_type_cpu c;
-    
-    vli::test::fill_random(a,3);
-    vli::test::fill_random(b,3);
-    
-    vli::detail::kernels_multiplication_classic<unsigned long int,Size>(&c[0],&a[0],&b[0]);
-
-//    c = a * b;
-    
-    mpz_class agmp(a.get_str()), bgmp(b.get_str());
-    
-    mpz_class cgmp = agmp * bgmp;
-
-    if(c.get_str() == cgmp.get_str()) {std::cout << " ok " << std::endl;}
-    */
+    polynomial_vector_type v1gmp(SIZEV);
+    polynomial_vector_type v2gmp(SIZEV);
+    polynomial_type pgmp;
+    polynomial_typed pgmpd;
     
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
     gpu->instance();
 #endif
     
-    vector_type_cpu v1(16384);
-    vector_type_cpu v2(16384);
+    vector_type_cpu v1(SIZEV);
+    vector_type_cpu v2(SIZEV);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
-    fill_vector_random(v1,1);
-    fill_vector_random(v2,1);
-    
+    fill_vector_random(v1,2);
+    fill_vector_random(v2,2);
+
+/*
+     for (int i =0 ; i < SIZEV; ++i)
+         for(int j = 0; j < 11; j++)
+             for(int k = 0; k < 11; k++){
+                 v1gmp[i](j,k) = v1[i](j,k).get_str();
+                 v2gmp[i](j,k) = v2[i](j,k).get_str();
+              }
+*/
     TimerOMP t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
-
+/*
+    TimerOMP t2("CPU gmp");
+    t2.begin();
+       pgmpd = inner_product(v1gmp,v2gmp);
+    t2.end();
+*/
 #ifdef VLI_USE_GPU
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();    
