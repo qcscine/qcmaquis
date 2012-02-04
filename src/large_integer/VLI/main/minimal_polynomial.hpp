@@ -75,46 +75,37 @@ monomial<CoeffType> operator * (T const& t, monomial<CoeffType> const& m)
   * A polynomial class
   */
 
-template <typename CoeffType>
+template <typename CoeffType, unsigned int Order>
 class polynomial;
 
 /**
   * Multiplication of two polynomials
   */
-template <typename CoeffType>
-polynomial<CoeffType> operator * (polynomial<CoeffType> const& p1, polynomial<CoeffType> const& p2)
+template <typename CoeffType, unsigned int Order>
+polynomial<CoeffType,2*Order> operator * (polynomial<CoeffType,Order> const& p1, polynomial<CoeffType,Order> const& p2)
 {
-    polynomial<CoeffType> result;
-//            bool overflow = false;
     std::size_t max_order = p1.max_order;
+    std::vector<CoeffType> result_coeffs(4*max_order*max_order);
     for(std::size_t je1 = 0; je1 < max_order; ++je1){
         for(std::size_t he1 = 0; he1 < max_order; ++he1){
-            for(std::size_t je2 = 0; je2 < max_order - je1; ++je2){
-               for(std::size_t he2 = 0; he2 < max_order - he1; ++he2){
-                     result.coeffs[ (je1+je2)*max_order + he1+he2 ] += p1.coeffs[je1*max_order+he1] * p2.coeffs[je2*max_order+he2];
+            for(std::size_t je2 = 0; je2 < max_order; ++je2){
+               for(std::size_t he2 = 0; he2 < max_order; ++he2){
+                     result_coeffs[ (je1+je2)*max_order + he1+he2 ] += p1.coeffs[je1*max_order+he1] * p2.coeffs[je2*max_order+he2];
                }
             }
 
-//                    // Overflow check
-//                    for(std::size_t je2 = max_order - je1; je2 < max_order; ++je2)
-//                        for(std::size_t he2 = max_order - he1; he2 < max_order; ++ he2)
-//                            if( coeffs[je2*max_order+he2] != CoeffType(0))
-//                                overflow = true;
         }
     }
-//            if (overflow)
-//                std::cerr<<"WARNING: polynomial overflow -> truncated!"<<std::endl;
-
-    return result;
+    return polynomial<CoeffType,2*Order>(result_coeffs);
 }
 
 /**
   * Multiplication of a polynomial with a monomial
   */
-template <typename CoeffType, typename T>
-polynomial<CoeffType> operator * (polynomial<CoeffType> const& p, monomial<T> const& m)
+template <typename CoeffType, unsigned int Order, typename T>
+polynomial<CoeffType,Order> operator * (polynomial<CoeffType,Order> const& p, monomial<T> const& m)
 {
-    polynomial<CoeffType> r;
+    polynomial<CoeffType,Order> r;
     std::size_t max_order = r.max_order;
     for(std::size_t je = 0; je < max_order-m.j_exp; ++je)
         for(std::size_t he = 0; he < max_order-m.h_exp; ++he)
@@ -122,15 +113,15 @@ polynomial<CoeffType> operator * (polynomial<CoeffType> const& p, monomial<T> co
     return r;
 }
 
-template <typename CoeffType>
+template <typename CoeffType, unsigned int Order>
 class polynomial
 {
     private:
         std::vector<CoeffType> coeffs;
     public:
-        enum {max_order = 21};
+        enum {max_order = Order};
 
-        friend polynomial operator *<> (polynomial const&, polynomial const&);
+        friend polynomial<CoeffType,2*Order> operator *<> (polynomial<CoeffType,Order> const&, polynomial<CoeffType,Order> const&);
 
         /**
           * Constructor: Creates a polynomial
@@ -149,6 +140,12 @@ class polynomial
         polynomial(polynomial const& p)
             :coeffs(p.coeffs)
         {
+        }
+
+        explicit polynomial(std::vector<CoeffType> const& v)
+            : coeffs(v)
+        {
+            assert(v.size() == max_order*max_order);
         }
 
         /**
@@ -201,8 +198,7 @@ class polynomial
           * Plus assign with a coefficient
           * Adds the coefficient to the 0th order element of the polynomial
           */
-        template <typename T>
-        polynomial& operator += (T const& c)
+        polynomial& operator += (CoeffType c)
         {
             coeffs[0] += c;
             return *this;
@@ -284,8 +280,8 @@ class polynomial
 /**
   * Stream operator
   */
-template <typename CoeffType>
-std::ostream& operator <<(std::ostream& o, polynomial<CoeffType> const& p)
+template <typename CoeffType, unsigned int Order>
+std::ostream& operator <<(std::ostream& o, polynomial<CoeffType,Order> const& p)
 {
     p.print(o);
     return o;
@@ -294,8 +290,8 @@ std::ostream& operator <<(std::ostream& o, polynomial<CoeffType> const& p)
 /**
   * Multiplication of a monomial with a polynomial
   */
-template <typename CoeffType, typename T>
-polynomial<CoeffType> operator * (monomial<T> const& m,polynomial<CoeffType> const& p)
+template <typename CoeffType, unsigned int Order, typename T>
+polynomial<CoeffType,Order> operator * (monomial<T> const& m,polynomial<CoeffType,Order> const& p)
 {
     return p * m;
 }
@@ -303,29 +299,29 @@ polynomial<CoeffType> operator * (monomial<T> const& m,polynomial<CoeffType> con
 /**
   * Multiplication of a polynomial with a factor
   */
-template <typename CoeffType, typename T>
-polynomial<CoeffType> operator * (polynomial<CoeffType> p, T const& c)
+template <typename CoeffType, unsigned int Order, typename T>
+polynomial<CoeffType,Order> operator * (polynomial<CoeffType,Order> p, T const& c)
 {
     p *= c;
     return p;
 }
 
-template <typename CoeffType, typename T>
-polynomial<CoeffType> operator * (T const& c, polynomial<CoeffType> const& p)
+template <typename CoeffType, unsigned int Order, typename T>
+polynomial<CoeffType,Order> operator * (T const& c, polynomial<CoeffType,Order> const& p)
 {
     return p * c;
 }
 
-template <typename CoeffType>
-polynomial<CoeffType>  inner_product(std::vector<polynomial<CoeffType> > const& a, std::vector<polynomial<CoeffType> >const& b)
+template <typename CoeffType, unsigned int Order>
+polynomial<CoeffType,2*Order>  inner_product(std::vector<polynomial<CoeffType,Order> > const& a, std::vector<polynomial<CoeffType,Order> >const& b)
 {
     assert( a.size() == b.size() );
 
 
 #ifdef _OPENMP
-    std::vector < polynomial<CoeffType> > result(omp_get_max_threads());
+    std::vector < polynomial<CoeffType,2*Order> > result(omp_get_max_threads());
     #pragma omp parallel for
-    for(int i=0; i < a.size();++i){
+    for(int i=0; i < static_cast<int>(a.size());++i){
         result[omp_get_thread_num()] += a[i]*b[i];
     }
     
@@ -335,9 +331,8 @@ polynomial<CoeffType>  inner_product(std::vector<polynomial<CoeffType> > const& 
     
     return result[0];
 #else
-    polynomial<CoeffType> result;
-    typename std::vector<polynomial<CoeffType> >::const_iterator it = a.begin();
-    typename std::vector<polynomial<CoeffType> >::const_iterator it_b = b.begin();
+    polynomial<CoeffType,2*Order> result;
+    typename std::vector<polynomial<CoeffType,Order> >::const_iterator it(a.begin()),  it_b(b.begin());
     while( it != a.end() )
     {
         result += *it * *it_b;

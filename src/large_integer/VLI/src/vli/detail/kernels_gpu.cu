@@ -9,7 +9,7 @@
 #include "vli/detail/kernels_cpu_gpu.hpp"
 #include "vli/detail/kernels_gpu.h"
 
-
+ #include <cstdio>
 //#include "utils/cuPrintf.cu"
 
 namespace vli {
@@ -502,24 +502,47 @@ __global__ void inner_prod_vector_diag(unsigned int Order, std::size_t vector_si
 template  <typename BaseInt, std::size_t Size, std::size_t ThreadsPerBlock>
 __global__ void reduction_polynome(unsigned int Order, std::size_t VectorSize, BaseInt* v)
 { 
+/*  later
+    unsigned int offset_poly  = 2*Size*2*Order*2*Order;
+    unsigned int offset_coeff = 2*Size; 
+
+    unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x // get poly one by one
+    unsigned int yIndex = blockIdx.y*blockDim.y + threadIdx.y; // all index on x // get poly one by one
+    
+    unsigned int yinter = offset_poly*threadIdx.y; // offset poly
+    unsigned int xInter = 2*Size*threadIdx.x;  // offset coeff
+
+    __shared__ BaseInt sv[2*Size*ThreadsPerBlock];
+
+    sv[xInter] = v[yIndex*offset_poly*blockDim.y + blockDim.x*offset_coeff + yIndex*offset_poly];
+    __syncthreads();
+
+    for (unsigned int s=blockDim.y/2; s>0; s>>=1){
+        if (xInter < s) {
+            kernels_addition_classic<BaseInt,2*Size>(&sv[xInter], &sv[xInter+s*offset_coeff]);
+        }
+     __syncthreads();
+    }
+*/
+
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x // get poly one by one
     unsigned int xInter = 2*Size*threadIdx.x;  
     unsigned int offset_poly  = 2*Size*2*Order*2*Order;
     unsigned int offset_coeff = 2*Size*xIndex; 
 
     __shared__ BaseInt sv[2*Size*ThreadsPerBlock];
- 
+
     if(xIndex < 2*Order*2*Order){
-        for(int j(0); j < ThreadsPerBlock; ++j)
-            sv[xInter] = v[offset_coeff];
+        for(int j(0); j < 2*Size ; ++j) 
+            sv[xInter+j] = v[offset_coeff+j];
 
         for(int i(1); i < VectorSize; ++i)
             kernels_addition_classic<BaseInt,2*Size>(&sv[xInter], &v[offset_coeff+i*offset_poly]);
-        
 
-        for(int j(0); j < ThreadsPerBlock; ++j)
-           v[offset_coeff] = sv[xInter];
+        for(int j(0); j < 2*Size ; ++j) 
+           v[offset_coeff+j] = sv[xInter+j];
     }
+
 }
 /**
   * The C++ functions that call the kernels
@@ -535,7 +558,7 @@ void inner_product_vector(unsigned int Order, std::size_t VectorSize, BaseInt co
   //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version truncated multiplication 
   inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,VectorSize,A,B,C);          // nthreads*nthreads version non truncated 
   //change the grid size
-  dimgrid.x  = 2*Order*2*Order/ThreadsPerBlock + 1;
+  dimgrid.x  = 2*Order*2*Order/ThreadsPerBlock+1;
   dimblock.x = ThreadsPerBlock;
   dimblock.y = 1;
   reduction_polynome<BaseInt,Size, 32> <<<dimgrid, dimblock>>>(Order, VectorSize, C);
