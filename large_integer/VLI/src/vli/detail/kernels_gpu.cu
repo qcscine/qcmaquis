@@ -108,20 +108,19 @@ __device__  void single_multiplication_device(BaseInt const* x, BaseInt const* y
     if( static_cast<bool>((y[Size-1]) >> data_bits<BaseInt>::value)){
             kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(y));
             nb = -1;
-        }
+    }
   
     kernels_multiplication_classic<BaseInt,static_cast<std::size_t>(Size)>(z,x,y);
 
     if(nb*na == -1)
-            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(z);
+         kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(z);
     	       
-    if(na == -1){
-            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(x));
-    }
+    if(na == -1)
+         kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(x));
     	
-    if(nb == -1){
-            kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(y));
-    }
+    if(nb == -1)
+         kernel_negate_device<BaseInt,static_cast<std::size_t>(Size)>(const_cast<BaseInt* >(y));
+    
 }
 /**
 I try to implement this stuff into the commun kernel impossible ... (3 days of trying)
@@ -353,10 +352,6 @@ void algo_diag_shared(unsigned int threadid, unsigned int Order, BaseInt const* 
  
     for(int i(0); i <= threadid; i++){
 
-        #pragma unroll
-        for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
-            s_inter[k] = 0;
-
         qa = i/Order;
         ra = i%Order;
         qb = (threadid-i)/Order;
@@ -494,8 +489,8 @@ __global__ void inner_prod_vector_diag(unsigned int Order, std::size_t vector_si
     std::size_t offset_m = xIndex*size_multiplicant;
     std::size_t offset_p = xIndex*size_product;
     if(xIndex < vector_size){
-        //algo_diag_shared<BaseInt,Size>(yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
-       algo_diag<BaseInt,Size>(yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
+      // algo_diag_shared<BaseInt,Size>(yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
+        algo_diag<BaseInt,Size>(yIndex,Order,&A[offset_m],&B[offset_m],&C[offset_p]);
     }
 }
 
@@ -524,7 +519,7 @@ __global__ void reduction_polynome(unsigned int Order, std::size_t VectorSize, B
      __syncthreads();
     }
 */
-
+// C - tody this kernel 0.02 s ....
     unsigned int xIndex = blockIdx.x*blockDim.x + threadIdx.x; // all index on x // get poly one by one
     unsigned int xInter = 2*Size*threadIdx.x;  
     unsigned int offset_poly  = 2*Size*2*Order*2*Order;
@@ -555,7 +550,7 @@ void inner_product_vector(unsigned int Order, std::size_t VectorSize, BaseInt co
 
   dim3 dimgrid(VectorSize,1,1);
   dim3 dimblock(1,Order*Order,1);
-  //inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,vector_size,A,B,C);      // nthreads version truncated multiplication 
+//  inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,VectorSize,A,B,C);      // nthreads version truncated multiplication 
   inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,VectorSize,A,B,C);          // nthreads*nthreads version non truncated 
   //change the grid size
   dimgrid.x  = 2*Order*2*Order/ThreadsPerBlock+1;

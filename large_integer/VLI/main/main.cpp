@@ -67,27 +67,26 @@ int main (int argc, char * const argv[])
     vector_type_cpu v2(SIZEV);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
-    fill_vector_random(v1,2);
-    fill_vector_random(v2,2);
-
-/*
+    fill_vector_random(v1,3);
+    fill_vector_random(v2,3);
+     #pragma omp parallel for
      for (int i =0 ; i < SIZEV; ++i)
          for(int j = 0; j < 11; j++)
              for(int k = 0; k < 11; k++){
                  v1gmp[i](j,k) = v1[i](j,k).get_str();
                  v2gmp[i](j,k) = v2[i](j,k).get_str();
               }
-*/
+
     TimerOMP t1("CPU openmp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
-/*
+
     TimerOMP t2("CPU gmp");
     t2.begin();
        pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
-*/
+
 #ifdef VLI_USE_GPU
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();    
@@ -97,10 +96,17 @@ int main (int argc, char * const argv[])
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
 /*
-    std::cout << result_pure_cpu << std::endl;
-    std::cout << result_mix_cpu_gpu << std::endl;
+         for(int j = 0; j < 11; j++)
+             for(int k = 0; k < 11; k++){
+                if( pgmpd(j,k).get_str() != result_mix_cpu_gpu(j,k).get_str()){
+                    std::cout << " PB " << std::endl;
+                  }
+              }
 */
     return 0;
 }
-
+/*
+template <typename PpolyVLI, typename Pgmrp>
+void InitPolyVLItoPolyGMP
+*/
 
