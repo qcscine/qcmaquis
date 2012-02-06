@@ -20,8 +20,10 @@
 
 #include "vli/detail/kernels_cpu_gpu.hpp"
 
-#define SIZE 11
-#define Size 3
+#define SizeVector 128
+#define Size1 3
+#define Size2 6
+#define Order 11
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -34,55 +36,79 @@ using vli::test::fill_poly_random;
 using vli::test::fill_vector_random;
 
 
-typedef vli_cpu< unsigned long int, 3> vli_type_cpu;
-typedef vli_cpu< unsigned long int, 6> vli_result_type_cpu;
+typedef vli_cpu< unsigned long int, Size1> vli_type_cpu;
+typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 
-typedef vli::polynomial_cpu< vli_type_cpu, SIZE > polynomial_type_cpu;
-typedef vli::polynomial_cpu< vli_result_type_cpu, 2*SIZE > polynomial_result_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, Order > polynomial_type_cpu;
+typedef vli::polynomial_cpu< vli_result_type_cpu, 2*Order > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 
 typedef mpz_class large_int;
 typedef hp2c::monomial<large_int> monomial_type;
-typedef hp2c::polynomial<large_int,11> polynomial_type;
-typedef hp2c::polynomial<large_int,2*11> polynomial_typed;
+typedef hp2c::polynomial<large_int,Order> polynomial_type;
+typedef hp2c::polynomial<large_int,2*Order> polynomial_typed;
 typedef std::vector<polynomial_type> polynomial_vector_type;
-#define SIZEV 16384
+
+
+template <typename VpolyVLI, typename VpolyGMP>
+void InitPolyVLItoPolyGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP)
+{
+    #pragma omp parallel for
+    for (int i =0 ; i < SizeVector; ++i)
+        for(int j = 0; j < Order; j++)
+            for(int k = 0; k < Order; k++){
+                VGMP[i](j,k) = VVLI[i](j,k).get_str();
+            }
+}
+
+template <typename PolyVLI, typename PolyGMP>
+bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
+{
+    bool b(true);
+    #pragma omp parallel for
+    for(std::size_t j = 0; j < PolyVLI::max_order; j++)
+        for(std::size_t k = 0; k < PolyVLI::max_order; k++){
+            if( PGMP(j,k).get_str() != PVLI(j,k).get_str()){
+                 b = false;
+            }
+        }   
+    return b;
+}
+
 int main (int argc, char * const argv[]) 
 {
-    polynomial_vector_type v1gmp(SIZEV);
-    polynomial_vector_type v2gmp(SIZEV);
+    polynomial_vector_type v1gmp(SizeVector);
+    polynomial_vector_type v2gmp(SizeVector);
     polynomial_type pgmp;
     polynomial_typed pgmpd;
+    
     
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
     gpu->instance();
 #endif
     
-    vector_type_cpu v1(SIZEV);
-    vector_type_cpu v2(SIZEV);
+    vector_type_cpu v1(SizeVector);
+    vector_type_cpu v2(SizeVector);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
     fill_vector_random(v1,3);
     fill_vector_random(v2,3);
-     #pragma omp parallel for
-     for (int i =0 ; i < SIZEV; ++i)
-         for(int j = 0; j < 11; j++)
-             for(int k = 0; k < 11; k++){
-                 v1gmp[i](j,k) = v1[i](j,k).get_str();
-                 v2gmp[i](j,k) = v2[i](j,k).get_str();
-              }
 
-    TimerOMP t1("CPU openmp");
+    InitPolyVLItoPolyGMP(v1,v1gmp);
+    InitPolyVLItoPolyGMP(v2,v2gmp);
+
+    
+    TimerOMP t1("CPU vli_omp");
     t1.begin();
     result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
 
-    TimerOMP t2("CPU gmp");
+    TimerOMP t2("CPU gmp_omp");
     t2.begin();
        pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
@@ -95,18 +121,11 @@ int main (int argc, char * const argv[])
     
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
-/*
-         for(int j = 0; j < 11; j++)
-             for(int k = 0; k < 11; k++){
-                if( pgmpd(j,k).get_str() != result_mix_cpu_gpu(j,k).get_str()){
-                    std::cout << " PB " << std::endl;
-                  }
-              }
-*/
+
+    if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
+        std::cout << "validation GMP OK " << std::endl;
+    
     return 0;
 }
-/*
-template <typename PpolyVLI, typename Pgmrp>
-void InitPolyVLItoPolyGMP
-*/
+
 
