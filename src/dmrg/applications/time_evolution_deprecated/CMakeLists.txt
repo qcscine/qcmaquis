@@ -22,7 +22,7 @@ add_executable(te_2u1 te.cpp)
 target_link_libraries(te_2u1 ${DMRG_APP_LIBRARIES})
 
 
-set_target_properties(te_nn_2u1 te_2u1 PROPERTIES COMPILE_DEFINITIONS UseTwoU1)
+set_property(TARGET te_nn_2u1 te_2u1 APPEND PROPERTY COMPILE_DEFINITIONS UseTwoU1)
 
 
 

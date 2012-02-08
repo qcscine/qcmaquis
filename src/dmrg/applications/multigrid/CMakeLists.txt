@@ -19,8 +19,8 @@ target_link_libraries(multigrid_measure_u1 ${DMRG_APP_LIBRARIES})
 add_executable(multigrid_measure_2u1 multigrid.cpp)
 target_link_libraries(multigrid_measure_2u1 ${DMRG_APP_LIBRARIES})
 
-set_target_properties(multigrid_measure_u1 multigrid_measure_2u1 PROPERTIES COMPILE_DEFINITIONS MEASURE_ONLY)
-set_target_properties(multigrid_dmrg_2u1 multigrid_measure_2u1 PROPERTIES COMPILE_DEFINITIONS UseTwoU1)
+set_property(TARGET multigrid_measure_u1 multigrid_measure_2u1 APPEND PROPERTY COMPILE_DEFINITIONS MEASURE_ONLY)
+set_property(TARGET multigrid_dmrg_2u1 multigrid_measure_2u1 APPEND PROPERTY COMPILE_DEFINITIONS UseTwoU1)
 
 
 
