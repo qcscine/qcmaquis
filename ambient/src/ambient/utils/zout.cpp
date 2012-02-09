@@ -4,8 +4,9 @@
 
 #include "ambient/utils/zout.hpp"
 
-namespace ambient {
-    // Init zout
+namespace ambient { // init zout
+
     master_cout zout;
     group_master_cout gzout;
+
 }

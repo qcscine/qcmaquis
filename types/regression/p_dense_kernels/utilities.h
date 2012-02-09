@@ -1,6 +1,9 @@
 
 #include <boost/static_assert.hpp> 
 
+#define M 0xF4240 
+#define ValueWG 128
+
 namespace Random{
    struct random {
        random(){};
@@ -10,36 +13,44 @@ namespace Random{
 }
 
 static Random::random Rd; //one generator is enough so static
+static double value = (double)1/M; // for boost check close
 
-template <int n, int m> // n # of workgroup, 
+template <int n, int m, typename T> // n # of workgroup, T double or std::complex<double> 
 struct size {
    BOOST_STATIC_ASSERT(n>0);
-   BOOST_STATIC_ASSERT(n*ambient::traits::value > m);
-   typedef ambient::traits::value_type dbl; // To template later
-   enum {valuex = n*ambient::traits::value+m};// n is the number or work group, m how we resize
-   enum {valuey = n*ambient::traits::value-m};// n is the number or work group, m how we resize
+   BOOST_STATIC_ASSERT(n*ValueWG > m);
+   typedef T dbl; // To template later
+   enum {valuex = n*ValueWG+m};// n is the number or work group, m how we resize
+   enum {valuey = n*ValueWG-m};// n is the number or work group, m how we resize
    enum {null = 0};// n is the number or work group, m how we resize
 };
 
 typedef ambient::dim2 dim;
-typedef maquis::types::dense_matrix<ambient::traits::value_type> sMatrix;
-typedef maquis::types::dense_matrix<double> sDoubleMatrix;
-typedef maquis::types::p_dense_matrix<ambient::traits::value_type> pMatrix;
-typedef maquis::types::p_dense_matrix<double> pDoubleMatrix;
-typedef maquis::types::diagonal_matrix<ambient::traits::value_type> sDiagMatrix;
-typedef maquis::types::p_diagonal_matrix<ambient::traits::value_type> pDiagMatrix;
-typedef boost::mpl::list<size<2,0>,size<2,3>,size<3,0>,size<3,3>,size<3,-3>,size<5,7>,size<5,-7> > test_types; // prime numbers ...
+// to do move all this typdef into the structure 
+typedef maquis::types::dense_matrix<double> sMatrix;
+typedef maquis::types::p_dense_matrix<double> pMatrix;
+typedef maquis::types::diagonal_matrix<double> sDiagMatrix;
+typedef maquis::types::p_diagonal_matrix<double> pDiagMatrix;
+//typedef boost::mpl::list<size<2,0>,size<2,3>,size<3,0>,size<3,3>,size<3,-3>,size<5,7>,size<5,-7> > test_types; // prime numbers ...
+typedef boost::mpl::list<size<2,0,double> > test_types; 
 
 struct caveats {
     caveats() {
-        ambient::init(); // init ambient
         srand48(1); //init random generator
         srand(1); //init random generator
     }
 
-    ~caveats() {   
-        ambient::finalize();
+    ~caveats() {
     }
+};
+
+void Boost_check_close_adapter(double a, double b){ 
+    BOOST_CHECK_CLOSE(a, b, value); 
+};
+
+void Boost_check_close_adapter(std::complex<double> a, std::complex<double> b){ 
+    BOOST_CHECK_CLOSE(a.real(), b.real(), value); 
+    BOOST_CHECK_CLOSE(a.imag(), b.imag(), value); 
 };
 
 BOOST_GLOBAL_FIXTURE( caveats );

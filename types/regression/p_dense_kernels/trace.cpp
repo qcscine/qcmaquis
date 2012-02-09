@@ -9,7 +9,6 @@
 #include <limits>
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
 #include "types/p_dense_matrix/algorithms.hpp"
 
 #include "types/dense_matrix/dense_matrix.h"
@@ -24,7 +23,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
 
     pMatrix pA(T::valuex,T::valuex);
     sMatrix sA(T::valuex,T::valuex);
@@ -38,8 +37,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     b = trace(sA); 
  
     ambient::playout();
-    BOOST_CHECK_EQUAL(a,b);
-//    BOOST_CHECK_CLOSE( a, b,0.000000000001); 
+    Boost_check_close_adapter(a,b);
 }
 
 

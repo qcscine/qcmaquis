@@ -1,14 +1,16 @@
-#ifndef __ALPS_P_DIAGONAL_MATRIX_H
-#define __ALPS_P_DIAGONAL_MATRIX_H
+#ifndef __MAQUIS_TYPES_P_DIAGONAL_MATRIX_H
+#define __MAQUIS_TYPES_P_DIAGONAL_MATRIX_H
 
-namespace maquis {
-    namespace types {
-    
+namespace maquis { namespace types {
+   
+    template<typename T>
+    class p_dense_matrix;
+
     template<typename T>
     class p_diagonal_matrix
     {
     public:
-        typedef typename ambient::p_dense_matrix<T> container; // can be ::dynamic
+        typedef typename maquis::types::p_dense_matrix<T> container; // can be ::dynamic
         typedef T                                   value_type;
         typedef T&                                  reference;
         typedef const T&                            const_reference;
@@ -26,7 +28,7 @@ namespace maquis {
         void remove_rows(size_t i, size_t k = 1);
         void remove_cols(size_t j, size_t k = 1);
         void resize(size_t rows, size_t cols, T v = T());
-	template< class T1 > 
+        template< class T1 > 
         friend std::ostream & operator <<(std::ostream& os, const p_diagonal_matrix<T1>& m);
         const container& get_data() const; 
         container & get_data();    
@@ -37,8 +39,7 @@ namespace maquis {
         container data_;
     };
 
-    } // namespace types
-} // namespace maquis
+} } // namespace maquis::types
 
 #include "types/p_dense_matrix/p_diagonal_matrix.hpp"
 #endif

@@ -10,10 +10,7 @@
 #include <algorithm>
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/concept/matrix_interface.hpp"
 #include "types/p_dense_matrix/algorithms.hpp"
-#include "types/p_dense_matrix/concept/resizable_matrix_interface.hpp"
-#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
 #include "types/p_dense_matrix/p_diagonal_matrix.h"
 
 #include "types/dense_matrix/dense_matrix.h"
@@ -30,7 +27,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
 
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pU(T::valuex,T::valuey);
