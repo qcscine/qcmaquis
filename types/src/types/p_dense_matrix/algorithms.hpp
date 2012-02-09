@@ -122,7 +122,7 @@ namespace maquis { namespace types { namespace algorithms {
 
     template<typename T>
     void svd(const p_dense_matrix<T>& a, p_dense_matrix<T>& u, p_dense_matrix<T>& vt,
-             typename associated_diagonal_matrix<p_dense_matrix<T> >::type& s)
+             typename associated_diagonal_matrix<p_dense_matrix<double> >::type& s)
     {
         int m = num_rows(a);
         int n = num_cols(a);
