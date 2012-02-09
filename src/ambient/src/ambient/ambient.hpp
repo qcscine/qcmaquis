@@ -1,29 +1,19 @@
 #ifndef AMBIENT_INTERFACE_H
 #define AMBIENT_INTERFACE_H
 #include "ambient/ambient.h"
-#include "ambient/utils/zout.hpp"
-
-namespace maquis { 
-    namespace types { 
-//  forward declarations if handy
-    template <typename T, ambient::policy P = ambient::ANY> 
-    class p_dense_matrix; 
-    }
-}
+#include "ambient/utils/memory.hpp"
+#include "ambient/utils/jstrings.hpp"
+#include "ambient/interface/forwarding.h"
+#include "ambient/utils/memory.hpp"
+#include "utils/zout.hpp"
 
 namespace ambient{ 
 
+    void playout();
 
-// synchronization primitives //
-    void memoryfence();
+    bool outlet();
 
-// kernels management //
-
-    template <typename FL, typename FC, class T0, class T1> // from push.pp.hpp
-    void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1);
-
-    template <typename FL, typename FC, class T0, class T1, class T2>
-    void push(FL l_kernel, FC c_kernel, T0& arg0, T1& arg1, T2& arg2);
+    bool goutlet();
 
     template<typename T>
     void assign(T& ref, int i, int j = 0);
@@ -31,9 +21,8 @@ namespace ambient{
     template<typename T>
     void assign(const T& ref, int i, int j = 0);
 
-// breakdown information //
     template<typename T>
-    inline std::pair<unsigned int*,size_t> get_id(T& ref);
+    inline std::pair<size_t*,size_t> id(T& ref);
 
     template<typename T>
     inline dim2 get_dim(T& ref);
@@ -42,28 +31,94 @@ namespace ambient{
     inline dim2 get_work_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_gpu_dim(T& ref);
+    inline dim2 get_grid_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_grid_dim(T& ref);
+    inline dim2 get_mem_grid_dim(T& ref);
 
     template<typename T>
     inline dim2 get_mem_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_mem_t_dim(T& ref);
-
-    template<typename T>
     inline dim2 get_item_dim(T& ref);
 
-    template<typename T>
-    inline dim2 get_block_id(T& ref);
+    // {{{ realization of interface functions
+    #include "ambient/interface/pp/push.pp.hpp" // all variants of push
 
-    #include "ambient/interface/core.hpp"
-    #include "ambient/interface/i_kernels.hpp"
-    #include "ambient/interface/l_kernels.hpp"
-    #include "ambient/interface/c_kernels.hpp"
-    #include "ambient/interface/model.hpp"
-    #include "ambient/interface/interface.hpp"
+    void playout(){ 
+        controller.flush(); 
+    }
+
+    bool outlet(){ 
+        return (rank()?false:true); 
+    }
+
+    bool goutlet(){ 
+        return (rank()?false:true); 
+    }
+
+    template<typename T>
+    void assign(T& ref, int i, int j){
+        ambient::models::imodel::layout& layout = current(ref).get_layout();
+        dim2 work_blocks(layout.get_work_dim().x / layout.get_mem_dim().x,
+                         layout.get_work_dim().y / layout.get_mem_dim().y);
+        size_t ii = i*work_blocks.y;
+        size_t jj = j*work_blocks.x;
+    
+        for(int i = ii; i < ii+work_blocks.y; i++)
+            for(int j = jj; j < jj+work_blocks.x; j++)
+                controller.fetch_block(current(ref), i, j);
+    }
+
+    template<typename T>
+    void assign(const T& ref, int i, int j){
+    ambient::models::imodel::layout& layout = current(ref).get_layout();
+        dim2 work_blocks(layout.get_work_dim().x / layout.get_mem_dim().x,
+                         layout.get_work_dim().y / layout.get_mem_dim().y);
+        size_t ii = i*work_blocks.y;
+        size_t jj = j*work_blocks.x;
+    
+        for(int i = ii; i < ii+work_blocks.y; i++)
+            for(int j = jj; j < jj+work_blocks.x; j++)
+                controller.fetch_block(current(ref), i, j);
+    }
+
+    template<typename T>
+    inline std::pair<size_t*,size_t> id(T& ref){
+        return current(ref).id();
+    }
+
+    template<typename T>
+    inline dim2 get_dim(T& ref){
+        return current(ref).get_layout().get_dim();
+    }
+
+    template<typename T>
+    inline dim2 get_grid_dim(T& ref){
+        return current(ref).get_layout().get_grid_dim();
+    }
+
+    template<typename T>
+    inline dim2 get_mem_grid_dim(T& ref){
+        return current(ref).get_layout().get_mem_grid_dim();
+    }
+
+    template<typename T>
+    inline dim2 get_mem_dim(T& ref){
+        return current(ref).get_layout().get_mem_dim();
+    }
+
+    template<typename T>
+    inline dim2 get_item_dim(T& ref){
+        return current(ref).get_layout().get_item_dim();
+    }
+
+    template<typename T>
+    inline dim2 get_work_dim(T& ref){
+        return current(ref).get_layout().get_work_dim();
+    }
+
+    // }}}
+    #include "ambient/interface/parallel_t.hpp"
 }
 #endif

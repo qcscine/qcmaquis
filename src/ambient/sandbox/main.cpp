@@ -2,17 +2,13 @@
 
 #include <iostream>
 #include <cmath>
-//#include "utils/zout.hpp"
 #include "ambient/ambient.h"
-#include "ambient/traits.h"
+#include "ambient/interface/traits.h"
 #include "utils/zout.hpp"
 #include <complex>
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/concept/matrix_interface.hpp"
 #include "types/p_dense_matrix/algorithms.hpp"
-#include "types/p_dense_matrix/concept/resizable_matrix_interface.hpp"
-#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
 #include "types/p_dense_matrix/p_diagonal_matrix.h"
 
 #include "types/dense_matrix/dense_matrix.h"
@@ -25,21 +21,20 @@
 #include "types/dense_matrix/aligned_allocator.h"
 
 #include "types/utils/matrix_cast.h"
-#include <complex>
 
 //#define  T double
-#define  T ambient::traits::value_type
+#define T ambient::traits::value_type
 
-//using namespace maquis::types::algorithms;
+using namespace maquis::types::algorithms;
 using namespace maquis::types;
 using namespace ambient;
 
-typedef maquis::types::dense_matrix<T> sMatrix;
-typedef maquis::types::diagonal_matrix<T> sdMatrix;
-typedef maquis::types::p_dense_matrix<T> pMatrix;
-typedef maquis::types::p_diagonal_matrix<T> pdMatrix;
+typedef typename maquis::types::dense_matrix<T> sMatrix;
+typedef typename maquis::types::diagonal_matrix<T> sdMatrix;
+typedef typename maquis::types::p_dense_matrix<T> pMatrix;
+typedef typename maquis::types::p_diagonal_matrix<T> pdMatrix;
 
-typedef ambient::dim2 dim;
+typedef typename ambient::dim2 dim;
 
 namespace Random{
    struct random {
@@ -53,9 +48,7 @@ static Random::random Rd; //one generator is enough so static
 
 int main(int argc, char* argv[])
 {
-    ambient::init();
-
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
 
     int NUM = std::atoi(argv[1]);
 
@@ -81,6 +74,6 @@ int main(int argc, char* argv[])
     std::cout << " ----------- " << std::endl;
     std::cout << sS << std::endl;
 
-    ambient::finalize();
+    return 0;
 }
 

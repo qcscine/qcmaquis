@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
+#include "types/p_dense_matrix/algorithms.hpp"
 
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
@@ -22,7 +22,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
 
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     pB = maquis::traits::matrix_cast<pMatrix>(sB); // playout is inside the cast
     pC = maquis::traits::matrix_cast<pDiagMatrix>(sC); // playout is inside the cast
  
-    gemm(pC,pB,pA);
-    gemm(sC,sB,sA);
+    maquis::types::algorithms::gemm(pC,pB,pA);
+    maquis::types::gemm(sC,sB,sA);
 
     
 

@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
+#include "types/p_dense_matrix/algorithms.hpp"
 
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
@@ -21,7 +21,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
 
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
  
-    gemm(pA,pB,pC);  
-    gemm(sA,sB,sC);  
+    maquis::types::algorithms::gemm(pA,pB,pC);  
+    maquis::types::gemm(sA,sB,sC); // to fix 
     BOOST_CHECK(pC==sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 

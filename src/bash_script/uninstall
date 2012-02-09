@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PATH_TRUNK=~/MAQUIS/trunk/src/
+PATH_TRUNK=~/maquis2012/src/
 
 #target directory
 TYPES=types

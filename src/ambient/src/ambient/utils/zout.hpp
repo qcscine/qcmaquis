@@ -9,31 +9,36 @@
 
 namespace ambient {
 
+    bool outlet();
+    bool goutlet(); 
+    // @ambient.hpp
+
     class master_cout {
     public:
-
         std::fstream nullio;
-        master_cout():nullio("/dev/null"){}
+        master_cout()
+        : nullio("/dev/null")
+        {
+        }
 
         template<class T>
-        master_cout& operator <<(T const & obj)
-        {
+        master_cout& operator <<(T const & obj){
 #ifdef MPI_PARALLEL
-            !ambient::is_master() ? this->nullio << obj :
+            !ambient::outlet() ? this->nullio << obj :
 #endif
             std::cout << obj;
             return *this;
         }
-        master_cout& operator <<(std::ostream& (*pf)(std::ostream&))
-        {
+
+        master_cout& operator <<(std::ostream& (*pf)(std::ostream&)){
 #ifdef MPI_PARALLEL
-            !ambient::is_master() ? this->nullio << pf :
+            !ambient::outlet() ? this->nullio << pf :
 #endif
             std::cout << pf;
             return *this;
         }
-        void precision(int p)
-        {
+
+        void precision(int p){
             std::cout.precision(p);
         }
     };
@@ -42,19 +47,17 @@ namespace ambient {
     {
     public:
         template<class T>
-        group_master_cout& operator <<(T const & obj)
-        {
+        group_master_cout& operator <<(T const & obj){
 #ifdef MPI_PARALLEL
-            !ambient::is_group_master() ? this->nullio << obj :
+            !ambient::goutlet() ? this->nullio << obj :
 #endif
             std::cout << obj;
             return *this;
         }
 
-        group_master_cout& operator <<(std::ostream& (*pf)(std::ostream&))
-        {
+        group_master_cout& operator <<(std::ostream& (*pf)(std::ostream&)){
 #ifdef MPI_PARALLEL
-            !ambient::is_group_master() ? this->nullio << pf :
+            !ambient::goutlet() ? this->nullio << pf :
 #endif
             std::cout << pf;
             return *this;

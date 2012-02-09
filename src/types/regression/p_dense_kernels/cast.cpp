@@ -10,7 +10,7 @@
 #include <cmath>
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
+#include "types/p_dense_matrix/algorithms.hpp"
 
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
@@ -26,7 +26,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_dense, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
     pA.set_init(ambient::random_i<typename T::dbl>);
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_dense, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_dense, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
     maquis::types::algorithms::generate(sA,Rd); // Rd is rand generator static variable inside utilities
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_dense, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_diag, T, test_types)
 {
-    ambient::layout >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
    
