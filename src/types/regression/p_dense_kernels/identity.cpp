@@ -23,7 +23,7 @@
 #include "types/utils/matrix_cast.h"
 
 #include "utilities.h"
-/* this test is useless now
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
 {
     ambient::model >> dim(1,1), dim(1,1), dim(1,1);
@@ -47,10 +47,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
     x =  pA(accessx,accessy) ;
     y =  sA(accessx,accessy) ;
 
-    BOOST_CHECK_CLOSE( x,y, 0.0001 );
+    Boost_check_close_adapter(x,y);
     BOOST_CHECK(pA==sA); // we also check everything to verify we do not corrupt the memory
 }
-*/
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
 {
     ambient::model >> dim(1,1), dim(1,1), dim(1,1);
@@ -62,7 +62,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
     y = trace(sA);
    
     ambient::playout();
-    //BOOST_CHECK_CLOSE(x, y, 0.0001); 
-    BOOST_CHECK_EQUAL(x, y); 
+    Boost_check_close_adapter(x,y);
 }
 

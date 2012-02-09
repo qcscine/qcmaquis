@@ -21,7 +21,7 @@
 
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
 {
     ambient::model >> dim(1,1), dim(1,1), dim(1,1);
 
