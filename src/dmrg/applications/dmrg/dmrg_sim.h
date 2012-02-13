@@ -86,7 +86,7 @@ public:
     }
     
     int do_sweep (Logger& iteration_log, double time_limit = -1)
-    {        
+    {
         int exit_site = optimizer->sweep(base::sweep, iteration_log, Both,
                                          base::site, time_limit);
         base::ssm.sync();

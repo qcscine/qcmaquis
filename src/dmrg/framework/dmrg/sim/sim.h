@@ -78,6 +78,8 @@ namespace app {
         
     protected:
         
+        virtual std::string sweep_archive_path ();
+        
         virtual void model_init ();
         virtual void mps_init ();
         
