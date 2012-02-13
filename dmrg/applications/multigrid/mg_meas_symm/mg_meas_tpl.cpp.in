@@ -1,0 +1,12 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
+#include "mg_meas.h"
+
+typedef @CMAKE_SYMM_GROUP@ grp;
+#include "mg_meas_symm/sim.h"

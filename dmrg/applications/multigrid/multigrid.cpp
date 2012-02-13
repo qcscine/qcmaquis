@@ -122,15 +122,15 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
         throw std::runtime_error("Don't know this lattice!");
     
 //    std::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
-//    for (int p=0; p<lat.size(); ++p) {
-//        std::cout << lat.get_prop<std::string>("label", p, p+1) << ": " << lat.get_prop<double>("dx", p, p+1) << std::endl;
-//        std::cout << lat.get_prop<std::string>("label", p, p-1) << ": " << lat.get_prop<double>("dx", p, p-1) << std::endl;
+//    for (int p=0; p<lat->size(); ++p) {
+//        std::cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
+//        std::cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
 //    }
     
     model_traits<Matrix, grp>::model_ptr model = cont_model_factory<Matrix, grp>::parse(*lat, parms1);
     Hamiltonian<Matrix, grp> H = model->H();
     MPO<Matrix, grp> mpo = make_mpo(lat->size(), H);
-    
+        
     return mpo;
 }
 
@@ -293,17 +293,15 @@ int main(int argc, char ** argv)
             initial_mps = MPS<Matrix, grp>(lat->size(), 1, phys, initc, *initializer);
                         
             int oldL = old_model.get<double>("Ndiscr") * old_model.get<double>("L");
-            std::vector<MPO<Matrix, grp> > mpo_mix(oldL, MPO<Matrix, grp>(0));
+            std::vector<MPO<Matrix, grp> > mpo_mix(oldL+1, MPO<Matrix, grp>(0));
             double r = model.get<double>("Ndiscr")/old_model.get<double>("Ndiscr");
-            for (int i=1; i<=oldL; ++i)
-                mpo_mix[i-1] = mixed_mpo(model, r*i, old_model, oldL-i);
+            for (int i=0; i<=oldL; ++i)
+                mpo_mix[i] = mixed_mpo(model, r*i, old_model, oldL-i);
             
 //            std::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
             if (cur_mps.length() < initial_mps.length())
                 multigrid::extension_optim(parms, iteration_log,
-                                           cur_mps, parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
-                                           initial_mps, parms.get<int>("use_compressed") == 0 ? t_mpo : t_mpoc,
-                                           mpo_mix);
+                                           cur_mps, initial_mps, mpo_mix);
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
 //            std::cout << "New MPS:" << std::endl << initial_mps.description();

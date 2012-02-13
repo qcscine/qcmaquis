@@ -328,8 +328,12 @@ namespace app {
         {
             int i1, i2;
             double middle = 0;
-            double left = (L1 > 0) ? a1/N1/2. : 0.;
-            if (i < L1) {
+            double left = (L1 > 0) ? a1/N1/2. : a2/N2/2.;
+            if (L1 == 0) {
+                i1 = 0;
+                i2 = i;
+                middle = 0.;
+            } else if (i < L1) {
                 i1 = i;
                 i2 = 0;
                 middle = 0.;
@@ -348,7 +352,9 @@ namespace app {
         
         double get_dx (int i, int j) const
         {
-            if (std::max(i, j) < L1 || L2 == 0)
+            if (L1 == 0)
+                return a2/N2 * (j-i);
+            else if (std::max(i, j) < L1 || L2 == 0)
                 return a1/N1 * (j-i);
             else if (std::min(i,j) >= L1)
                 return a2/N2 * (j-i);

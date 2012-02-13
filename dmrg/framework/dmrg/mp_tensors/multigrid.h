@@ -299,9 +299,7 @@ struct multigrid {
     static extension_optim (BaseParameters & parms,
                             Logger & iteration_log,
                             MPS<Matrix, SymmGroup> mps_small,
-                            MPO<Matrix, SymmGroup> const & mpo_small,
                             MPS<Matrix, SymmGroup> & mps_large,
-                            MPO<Matrix, SymmGroup> const & mpo_large,
                             std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
     {
         static Timer
@@ -359,7 +357,7 @@ struct multigrid {
             
             for(int i = L-1; i >= 0; --i) {
                 MPSTensor<Matrix, SymmGroup> bkp = mps_small[i];
-                right = contraction::overlap_mpo_right_step(mps_small[i], bkp, right, mpo_small[i]);
+                right = contraction::overlap_mpo_right_step(mps_small[i], bkp, right, mpos_mix[0][i]);
                 right_[i] = right;
             }
         }
@@ -395,7 +393,7 @@ struct multigrid {
             if (p<L-1) {
                 right_mixed = right_[p+2];
                 bkp = mps_small[p+1];
-                right_mixed = contraction::overlap_mpo_right_step(mps_small[p+1], bkp, right_mixed, mpos_mix[p][2*(p+1)]);
+                right_mixed = contraction::overlap_mpo_right_step(mps_small[p+1], bkp, right_mixed, mpos_mix[p+1][2*(p+1)]);
             }
 
             // Testing energy calculations
@@ -403,12 +401,7 @@ struct multigrid {
                 
                 MPS<Matrix, SymmGroup> mps_mixed = mps_small;
                 mps_mixed.resize(2*(p+1) + (L-1-p));
-                MPO<Matrix, SymmGroup> mpo_mixed(0);
-                mpo_mixed.resize(2*(p+1) + (L-1-p));
                 
-                std::copy(mpo_large.begin(), mpo_large.begin()+2*(p+1), mpo_mixed.begin());
-                std::copy(mpo_small.begin()+(p+1), mpo_small.end(), mpo_mixed.begin()+2*(p+1));
-                                
                 std::copy(mps_large.begin(), mps_large.begin()+2*(p+1), mps_mixed.begin());
                 std::copy(mps_small.begin()+(p+1), mps_small.end(), mps_mixed.begin()+2*(p+1));
                 
@@ -416,23 +409,22 @@ struct multigrid {
                 if (false && p == 0) {
                     for (int shift=0; shift<4; shift++) {
                         std::cout << "MPO(" << 2*p+shift << ")::" << std::endl;
-                        for (int i=0; i<mpos_mix[p][2*p+shift].row_dim(); ++i)
-                            for(int j=0; j<mpos_mix[p][2*p+shift].col_dim(); ++j)
-                                std::cout << "(" << i << " --> " << j << "):" << std::endl << mpos_mix[p][2*p+shift](i, j);
+                        for (int i=0; i<mpos_mix[p+1][2*p+shift].row_dim(); ++i)
+                            for(int j=0; j<mpos_mix[p+1][2*p+shift].col_dim(); ++j)
+                                std::cout << "(" << i << " --> " << j << "):" << std::endl << mpos_mix[p+1][2*p+shift](i, j);
                     }
                     
                     std::cout << "MPO_large(last)::" << std::endl;
-                    for (int i=0; i<mpo_large[LL-1].row_dim(); ++i)
-                        for(int j=0; j<mpo_large[LL-1].col_dim(); ++j)
-                            std::cout << "(" << i << " --> " << j << "):" << std::endl << mpo_large[LL-1](i, j);
+                    for (int i=0; i<mpos_mix[L][LL-1].row_dim(); ++i)
+                        for(int j=0; j<mpos_mix[L][LL-1].col_dim(); ++j)
+                            std::cout << "(" << i << " --> " << j << "):" << std::endl << mpos_mix[L][LL-1](i, j);
                     exit(-1);
                     
                 }
                 
                 {
                     std::cout << "Norm " << norm(mps_mixed) << endl;
-                    zout << "Energy " << "finegraining_joinmpo " << expval(mps_mixed, mpo_mixed) << endl;
-                    zout << "Energy " << "finegraining_fullmpomix " << expval(mps_mixed, mpos_mix[p]) << endl;
+                    zout << "Energy " << "finegraining_fullmpomix " << expval(mps_mixed, mpos_mix[p+1]) << endl;
                 }
                 
             }
@@ -443,11 +435,11 @@ struct multigrid {
             {
                 right = (p<L-1) ? right_mixed : right_[p+1];
                 bkp = mps_large[2*p+1];
-                right = contraction::overlap_mpo_right_step(mps_large[2*p+1], bkp, right, mpos_mix[p][2*p+1]);
+                right = contraction::overlap_mpo_right_step(mps_large[2*p+1], bkp, right, mpos_mix[p+1][2*p+1]);
                 if (p == 0)
                     left_[0] = mps_large.left_boundary();
                 
-                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p], left_[2*p], right, mpos_mix[p][2*p]);
+                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p], left_[2*p], right, mpos_mix[p+1][2*p]);
 
                 
                 // solver
@@ -490,7 +482,7 @@ struct multigrid {
                 t_grow.begin();
                 
                 zout << "Growing, alpha = " << alpha << endl;
-                mps_large.grow_l2r_sweep(mpo_large[2*p], left_[2*p], right,
+                mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right,
                                          2*p, alpha, cutoff, Mmax, iteration_log);                
                 t_grow.end();
                  */
@@ -507,9 +499,9 @@ struct multigrid {
                 right = (p<L-1) ? right_mixed : right_[p+1];
                 bkp = mps_large[2*p];
                 left_[2*p+1] = contraction::overlap_mpo_left_step(mps_large[2*p], bkp,
-                                                                  left_[2*p], mpo_large[2*p]);
+                                                                  left_[2*p], mpos_mix[L][2*p]);
                 
-                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p+1], left_[2*p+1], right, mpos_mix[p][2*p+1]);
+                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p+1], left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
 
                 // solver
                 if (parms.get<bool>("finegrain_optim"))
@@ -552,7 +544,7 @@ struct multigrid {
                 if (p < L-1) {
                     zout << "Growing, alpha = " << alpha << endl;
                     MPSTensor<Matrix, SymmGroup> new_mps =
-                    contraction::predict_new_state_l2r_sweep(mps_large[2*p+1], mpo_large[2*p+1], left_[2*p+1], right, alpha, cutoff, Mmax, iteration_log);
+                    contraction::predict_new_state_l2r_sweep(mps_large[2*p+1], mpos_mix[L][2*p+1], left_[2*p+1], right, alpha, cutoff, Mmax, iteration_log);
                     // New tensor for next iteration
                     Msmall = contraction::predict_lanczos_l2r_sweep(mps_small[p+1],
                                                                     mps_large[2*p+1], new_mps);
@@ -577,14 +569,14 @@ struct multigrid {
             if (p < L-1) {
                 bkp = mps_large[2*p+1];
                 left_[2*p+2] = contraction::overlap_mpo_left_step(mps_large[2*p+1], bkp,
-                                                                  left_[2*p+1], mpo_large[2*p+1]);
+                                                                  left_[2*p+1], mpos_mix[L][2*p+1]);
             }
             
             iteration_t.end();
         }
         
 #ifndef NDEBUG
-        double energy = expval(mps_large, mpo_large);
+        double energy = expval(mps_large, mpos_mix[L]);
         zout << "Energy " << "finegraining_final " << energy << endl;
 #endif
         

@@ -200,21 +200,17 @@ namespace app {
                 {
                     alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
                     
-                    std::ostringstream oss;
-
-                    oss.str("");
-                    oss << "/simulation/sweep" << sweep << "/parameters";
-                    h5ar << alps::make_pvp(oss.str().c_str(), parms);
-                    h5ar << alps::make_pvp(oss.str().c_str(), model);
+                    h5ar << alps::make_pvp(sweep_archive_path() + "/parameters",
+                                           parms);
+                    h5ar << alps::make_pvp(sweep_archive_path() + "/parameters",
+                                           model);
 
                     
-                    oss.str("");
-                    oss << "/simulation/sweep" << sweep << "/results";
-                    h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
+                    h5ar << alps::make_pvp(sweep_archive_path() + "/results",
+                                           iteration_log);
                     
-                    oss.str("");
-                    oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
-                    h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed_sweep + elapsed_measure));                
+                    h5ar << alps::make_pvp(sweep_archive_path() + "/results/Runtime/mean/value",
+                                           std::vector<double>(1, elapsed_sweep + elapsed_measure));                
                 }
             }
             
@@ -239,6 +235,15 @@ namespace app {
         }        
     }
     
+    template <class Matrix, class SymmGroup>
+    std::string sim<Matrix, SymmGroup>::sweep_archive_path ()
+    {
+        std::ostringstream oss;
+        oss.str("");
+        oss << "/simulation/sweep" << sweep;
+        return oss.str();
+    }
+
     
     template <class Matrix, class SymmGroup>
     void sim<Matrix, SymmGroup>::do_sweep_measure (Logger&)
@@ -248,19 +253,14 @@ namespace app {
         
         {
             alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            
-            std::ostringstream oss;
 
-            oss.str("");
-            oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
-            h5ar << alps::make_pvp(oss.str().c_str(), entropies);
+            h5ar << alps::make_pvp(sweep_archive_path() + "/results/Iteration Entropies/mean/value",
+                                   entropies);
         }
         
         {
-            std::ostringstream oss;
-            oss << "/simulation/sweep" << sweep << "/results/";
             if (meas_always.n_terms() > 0)
-                measure_on_mps(mps, *lat, meas_always, rfile, oss.str());
+                measure_on_mps(mps, *lat, meas_always, rfile, sweep_archive_path() + "/results/");
             
         }
     }
