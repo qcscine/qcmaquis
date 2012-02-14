@@ -85,8 +85,8 @@ namespace ambient {
         }
     }
 
-    template<typename T>
-    void copy_l(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
+    template<>
+    void copy_l(maquis::types::p_dense_matrix_impl<double>& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
         ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
