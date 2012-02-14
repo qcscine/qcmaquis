@@ -41,7 +41,7 @@ namespace ambient { namespace channels {
     public:
         mpi_channel();
         static void* stream(void* instance);
-        void ifetch(size_t holder, size_t gid, size_t sid, size_t i, size_t j); // exclude owner?
+        void ifetch(group* placement, size_t gid, size_t sid, size_t i, size_t j); // exclude owner?
 
         void  init();
         void  finalize();

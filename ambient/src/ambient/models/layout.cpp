@@ -18,7 +18,7 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::layout(dim2 dim, size_t t_size)
-    : master(0), t_size(t_size)
+    : master(0), t_size(t_size), mesh_dim(0,0)
     {
         this->dim = dim;
     }
@@ -27,23 +27,36 @@ namespace ambient { namespace models {
 
     }
 
-    void v_model::layout::add_path(size_t i, size_t j, size_t node){
-        this->paths[i][j]->add_node(node);
+    void v_model::layout::push_path(size_t i, size_t j, size_t node){
+        this->paths[i][j]->push_node(node);
+    }
+
+    size_t v_model::layout::pop_path(size_t i, size_t j){
+        return this->paths[i][j]->pop_node();
+    }
+
+    v_model::layout::path* v_model::layout::get_path(size_t i, size_t j){
+        return this->paths[i][j];
     }
 
     v_model::layout::entry* v_model::layout::get(size_t i, size_t j){
         printf("%d: Trying to access %d x %d of %d x %d\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
-        return this->entries[i][j]; // to correct
+        return this->entries[i][j];
     }
 
     void v_model::layout::mesh(){
         dim2 dim = this->get_mem_grid_dim();
         if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
         for(size_t i = 0; i < dim.y; i++){
-            if(i >= this->mesh_dim.y) entries.push_back(std::vector<entry*>());
+            if(i >= this->mesh_dim.y){ 
+                entries.push_back(std::vector<entry*>());
+                paths.push_back(std::vector<path*>());
+            }
             for(size_t j = 0; j < dim.x; j++){
-                if(j >= this->mesh_dim.x || i >= this->mesh_dim.y) 
+                if(j >= this->mesh_dim.x || i >= this->mesh_dim.y){
                     entries[i].push_back(new v_model::layout::entry());
+                    paths[i].push_back(new v_model::layout::path());
+                }
             }
         }
         if(dim.x > this->mesh_dim.x) this->mesh_dim.x = dim.x;
@@ -65,8 +78,12 @@ namespace ambient { namespace models {
     size_t v_model::layout::get_mem_size() const {
         return this->get_mem_dim().x *
                this->get_mem_dim().y *
-               this->t_size;
+               this->t_size; // returning in bytes
     }
+    size_t v_model::layout::get_mem_lda() const {
+        return this->get_mem_dim().y *
+               this->t_size; // returning lda in bytes
+    } 
 
     v_model::layout& v_model::layout::operator>>(dim2 dim){
         this->mem_dim = mem_dim;
@@ -82,10 +99,6 @@ namespace ambient { namespace models {
         else if(this->item_dim == NULL)
             this->item_dim = dim;
         return *this;
-    }
-
-    void v_model::layout::add_route(size_t node){
-    
     }
 
     void v_model::layout::set_dim(dim2 dim){
@@ -127,7 +140,24 @@ namespace ambient { namespace models {
 
     // }}}
 
-    // {{{ layout::entry + layout::marker //
+    // {{{ layout::path + layout::entry + layout::marker //
+
+    v_model::layout::path::path(){
+    }
+
+    void v_model::layout::path::push_node(size_t n){
+        this->route.push_back(n);
+    }
+
+    size_t v_model::layout::path::pop_node(){
+        size_t node = this->route.back();
+        this->route.pop_back();
+        return node;
+    }
+
+    bool v_model::layout::path::empty(){
+        return (this->route.size() ? true : false);
+    }
 
     v_model::layout::entry::entry()
     :header(NULL)

@@ -1,3 +1,4 @@
+#define pinned ambient::models::ambient_pin* ,
 #define ctxt_select(...) ctxt_select(std::string(std::string() + __VA_ARGS__).c_str());
 #define MAX_NUM_CHAR_LEN 10
 

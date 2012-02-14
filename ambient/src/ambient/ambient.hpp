@@ -119,6 +119,7 @@ namespace ambient{
     }
 
     // }}}
-    #include "ambient/interface/parallel_t.hpp"
 }
+    
+#include "ambient/interface/parallel_t.hpp"
 #endif

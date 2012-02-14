@@ -47,6 +47,7 @@ namespace ambient { namespace channels {
             pt = new channels::block_packet_t(len);
             pt->commit();
             map.insert(std::pair<size_t,channels::packet_t*>(len,pt));
+            this->add_handler(*pt, controllers::accept_block);
         }
         return *pt;
     }
@@ -107,13 +108,15 @@ namespace ambient { namespace channels {
         }
     }
 
-    void mpi_channel::ifetch(size_t holder, size_t gid, size_t sid, size_t i, size_t j){
-        this->emit(channels::pack<layout_packet_t>(alloc_t<layout_packet_t>(), // pack from auxiliary
-                                                   holder, "P2P", 
-                                                   "INFORM OWNER ABOUT REQUEST",
-                                                   gid, sid, "GENERIC",
-                                                   ambient::rank(), // forward target
-                                                   i, j));
+    void mpi_channel::ifetch(group* g, size_t gid, size_t sid, size_t i, size_t j){
+        for(int i = 0; i < g->get_size(); i++){
+            this->emit(channels::pack<layout_packet_t>(alloc_t<layout_packet_t>(), // pack from auxiliary
+                                                       g->get_member(i), "P2P", 
+                                                       "INFORM OWNER ABOUT REQUEST",
+                                                       gid, sid, "GENERIC",
+                                                       ambient::rank(), // forward target
+                                                       i, j));
+        }
     }
 
     // }}}

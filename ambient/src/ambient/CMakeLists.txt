@@ -12,7 +12,6 @@ add_library (ambient
              models/operation/select.cpp
              controllers/v_controller.cpp
              controllers/context.cpp
-             controllers/workgroup_context.cpp
              channels/mpi_channel.cpp
              channels/packets/packet_t.cpp
              channels/packets/packet.cpp
