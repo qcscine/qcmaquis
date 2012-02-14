@@ -190,7 +190,7 @@ private:
                                             base::parms, base::ssm) );
         } 
         
-        else if (base::parms.template get<std::string>("optimization") == "singlesite")
+        else if (base::parms.template get<std::string>("optimization") == "twosite")
         {
             optimizer = 
             boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>
