@@ -77,7 +77,7 @@ namespace maquis { namespace types { namespace algorithms {
 
     template <typename T>
     void cpy(p_dense_matrix_impl<T>& dst, const p_dense_matrix_impl<T>& src){
-        ambient::push(ambient::copy_l<T>, ambient::copy_c<T>, dst, src);
+        ambient::push(ambient::copy_l<p_dense_matrix_impl<T> >, ambient::copy_c<p_dense_matrix_impl<T> >, dst, src);
     }
 
 // }}} end of implementation specific type-nested algorithms //

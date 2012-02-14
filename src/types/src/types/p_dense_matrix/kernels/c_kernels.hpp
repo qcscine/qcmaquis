@@ -172,16 +172,15 @@ namespace ambient {
         }
     }
 
-    template<typename T>
-    void copy_c(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
+    template<>
+    void copy_c(maquis::types::p_dense_matrix_impl<double>& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         if(i >= get_mem_grid_dim(ac).y || j >= get_mem_grid_dim(ac).x) return;
-        T* a_elements  = current(a)(i,j);
-        T* ac_elements = current(ac)(i,j);
-        memcpy(ac_elements, a_elements, sizeof(T)*get_mem_dim(a).y*get_mem_dim(a).x);
+        double* a_elements  = current(a)(i,j);
+        double* ac_elements = current(ac)(i,j);
+        memcpy(ac_elements, a_elements, sizeof(double)*get_mem_dim(a).y*get_mem_dim(a).x);
     }
-
 
     void variable_free_c(void*& a){ free(a); }
 
