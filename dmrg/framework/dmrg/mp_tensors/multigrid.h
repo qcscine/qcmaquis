@@ -255,12 +255,12 @@ struct multigrid {
         svd(M, left, V, S);
         gemm(S, V, right);
         
-        M1.data() = left;
+        M1.data() = left; // replace_left_paired cannot be used here
         M1.left_i = alpha_basis;
         M1.right_i = left.right_basis();
         M1.cur_storage = LeftPaired;
         
-        M2.data() = right;
+        M2.data() = right; // replace_right_paired cannot be used here
         M2.right_i = beta_basis;
         M2.left_i = right.left_basis();
         M2.cur_storage = RightPaired;
@@ -378,11 +378,18 @@ struct multigrid {
             site_extension(Msmall, mps_large[2*p], mps_large[2*p+1]);
             t_extend.end();
             
+            assert( mps_large[2*p].num_check() );
+            assert( mps_large[2*p+1].num_check() );
             
             // Normalizing the MPS
+            mps_large[2*p+1].multiply_by_scalar(1./mps_large[2*p+1].scalar_norm());
+            assert( mps_large[2*p].num_check() );
+            assert( mps_large[2*p+1].num_check() );
             t_norm = mps_large[2*p+1].normalize_right(SVD);
             mps_large[2*p].multiply_from_right(t_norm);
             mps_large[2*p].multiply_by_scalar(1./mps_large[2*p].scalar_norm());
+            assert( mps_large[2*p].num_check() );
+            assert( mps_large[2*p+1].num_check() );
 
             
             MPSTensor<Matrix, SymmGroup> bkp;

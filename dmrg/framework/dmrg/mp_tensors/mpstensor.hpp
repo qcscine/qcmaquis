@@ -12,6 +12,8 @@
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
 #include "dmrg/utils/random.hpp"
+#include <alps/numeric/isnan.hpp>
+#include <alps/numeric/isinf.hpp>
 #include <alps/numeric/real.hpp>
 
 template<class Matrix, class SymmGroup>
@@ -462,10 +464,18 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
         if (right_i != data_.right_basis())
             throw std::runtime_error("right basis is wrong");
         
+//        std::cout << "** reasonable left_paired **" << std::endl;
+//        std::cout << "reasonable::left_i: " << left_i << std::endl;
+//        std::cout << "reasonable::right_i: " << right_i << std::endl;
+//        std::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
         make_right_paired();
         if (left_i != data_.left_basis())
             throw std::runtime_error("left basis is wrong");
         
+//        std::cout << "** reasonable right_paired **" << std::endl;
+//        std::cout << "reasonable::left_i: " << left_i << std::endl;
+//        std::cout << "reasonable::right_i: " << right_i << std::endl;
+//        std::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
     }
     
     {
@@ -475,6 +485,23 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
                 throw std::runtime_error("particle number is wrong");
         }
     }
+    return true;
+}
+
+template<class Matrix, class SymmGroup>
+bool MPSTensor<Matrix, SymmGroup>::num_check() const
+{
+        for (std::size_t k = 0; k < data_.n_blocks(); ++k)
+        {
+            for (size_t i = 0; i<num_rows(data_[k]); ++i)
+                for (size_t j = 0; j<num_cols(data_[k]); ++j)
+                {
+                    if ( alps::numeric::isnan(data_[k](i,j)) )
+                        throw std::runtime_error("NaN found!");
+                    if ( alps::numeric::isinf(data_[k](i,j)) )
+                        throw std::runtime_error("INF found!");
+                }
+        }
     return true;
 }
 

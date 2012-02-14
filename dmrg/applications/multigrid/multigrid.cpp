@@ -137,6 +137,19 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
 int main(int argc, char ** argv)
 {
     cout << DMRG_VERSION_STRING << endl;
+#ifdef MEASURE_ONLY
+    cout << "Only measuring." << endl;
+#endif
+#ifdef UseTwoU1
+    cout << "TwoU1 symmetry" << endl;
+#else
+#ifdef UseNULL
+    cout << "No symmetry" << endl;
+#else
+    cout << "U1 symmetry" << endl;
+#endif
+#endif
+
     if (argc != 3)
     {
         cout << "Usage: <parms> <model_parms>" << endl;
@@ -227,6 +240,7 @@ int main(int argc, char ** argv)
         initc = phys_model->initc(model);
         phys = H.get_phys();
         std::cout << "initc: " << initc << std::endl;
+//        std::cout << "Hamiltonian: " << H << std::endl;
         
         mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
