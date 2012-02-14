@@ -155,6 +155,7 @@ public:
     
     void check_equal(MPSTensor<Matrix, SymmGroup> const &) const;
     bool reasonable() const;
+    bool num_check() const; // checks for nan or inf
     
 private:
     mutable Index<SymmGroup> phys_i, left_i, right_i;
