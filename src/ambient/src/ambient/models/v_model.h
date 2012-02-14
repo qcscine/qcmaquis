@@ -32,7 +32,9 @@ namespace ambient { namespace models {
             class path : public imodel::layout::path {
             public:
                 path();
-                void add_node(size_t n);
+                void push_node(size_t n);
+                size_t pop_node();
+                bool empty();
                 std::list<size_t> route;
             };
             class marker {
@@ -48,18 +50,20 @@ namespace ambient { namespace models {
            ~layout();
             layout(dim2,size_t);
             void embed(void* memory, size_t i, size_t j); // fires controllers::unlock_revision if complete
-            void add_path(size_t i, size_t j, size_t node);
+            void push_path(size_t i, size_t j, size_t node);
+            size_t pop_path(size_t i, size_t j);
             entry* get(size_t i, size_t j);
+            path* get_path(size_t i, size_t j);
             void mesh();
             void set_revision(imodel::revision* r);
             std::pair<size_t*,size_t> id();
             size_t get_master();
             size_t get_mem_size() const;
+            size_t get_mem_lda() const;
 
             layout& operator>>(dim2);       // set mem_dim
             layout& operator, (dim2);       // set work_dim
         
-            void   add_route(size_t node);
             void   set_dim(dim2);
             dim2   get_dim() const;
             dim2   get_mem_dim() const;
@@ -102,11 +106,15 @@ namespace ambient { namespace models {
             std::pair<size_t*,size_t> id();
             imodel::layout& get_layout();
             channels::group* get_placement();
-            void   set_dim(dim2);
+            void reduce(void(*)(void*,void*));
+            void init(void(*)());
+            void set_dim(dim2);
             size_t number;
             imodel::layout* const layout;
             channels::group* placement;
             std::list<imodel::modifier*> modifiers;
+            void(*initialization)();
+            void(*reduction)(void*,void*);
         };
         class object: public imodel::object
         {            // revision tracking mechanism (target selector)
@@ -129,13 +137,10 @@ namespace ambient { namespace models {
     public: 
         v_model();
         void add_revision(imodel::object* obj);
-        void update_revision(channels::group* placement, imodel::revision* r);
+        void update_revision(imodel::revision* r, channels::group* placement);
         v_model::revision* get_revision(size_t* hash, size_t hash_len, size_t id) const;
         v_model& operator>>(dim2);
         v_model& operator, (dim2);
-        dim2 get_mem_dim() const;
-        dim2 get_work_dim() const;
-        dim2 get_item_dim() const;
        ~v_model();
     private:
         hashmap map;

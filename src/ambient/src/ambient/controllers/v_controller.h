@@ -18,6 +18,7 @@ namespace ambient { namespace controllers {
         }; 
         v_controller();
         static void* stream(void* list);
+        void   master_stream(void* list); // specialized version for the main thread
         void   acquire(channels::ichannel* channel);
         void   push(models::imodel::modifier* op);
 
@@ -28,16 +29,17 @@ namespace ambient { namespace controllers {
 
         void flush();
         void init_threads();
+        void atomic_complete();
        ~v_controller();
 
     private:
+        pthread_mutex_t mutex;
         models::imodel* model;
         channels::ichannel* channel;
         touchstack< models::imodel::modifier* > stack;
         pthread_t* pool;
         tasklist* tasks;
-        dim2 idx;
-        workgroup_context context;
+        size_t workload;
     };
 
 } }

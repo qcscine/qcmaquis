@@ -3,7 +3,6 @@
 #include <iostream>
 #include <cmath>
 #include "ambient/ambient.h"
-#include "ambient/interface/traits.h"
 #include "utils/zout.hpp"
 #include <complex>
 
@@ -22,8 +21,7 @@
 
 #include "types/utils/matrix_cast.h"
 
-//#define  T double
-#define T ambient::traits::value_type
+#define  T double
 
 using namespace maquis::types::algorithms;
 using namespace maquis::types;

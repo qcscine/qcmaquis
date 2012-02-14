@@ -375,6 +375,11 @@ namespace ambient { namespace channels {
         return this->name;
     }
 
+    size_t group::get_member(size_t i){
+        assert(i < this->get_size());
+        return this->members_g[i];
+    }
+
     group* group_map(const char* name, group* instance){ // timings: 0.36 seconds
         static std::map<std::string,group*> map;
         if(instance != NULL){

@@ -43,8 +43,9 @@ namespace ambient { namespace channels {
         int get_rank();
         size_t get_size();
         const char* get_name();
+        size_t get_member(size_t i); // returns global children
 
-        int master;                // master process in this group
+        int master;                 // master process in this group
         int vacant_level;
         int* vacations;
         group* parent;             // parent group of processes

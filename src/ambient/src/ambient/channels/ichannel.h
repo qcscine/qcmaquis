@@ -3,6 +3,7 @@
 
 namespace ambient { namespace channels {
 
+    class group;
     class packet_t;
     class ichannel {
     public:
@@ -20,7 +21,7 @@ namespace ambient { namespace channels {
         virtual void finalize() = 0;
         virtual void emit(packet* p) = 0;
         virtual void spin() = 0;
-        virtual void ifetch(size_t holder, size_t gid, size_t sid, size_t i, size_t j) = 0;
+        virtual void ifetch(channels::group* placement, size_t gid, size_t sid, size_t i, size_t j) = 0;
         virtual std::pair<size_t*,size_t> id() = 0;
         virtual channels::packet_t& get_block_packet_type(size_t) = 0;
     };

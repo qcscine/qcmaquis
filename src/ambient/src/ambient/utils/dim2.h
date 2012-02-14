@@ -10,6 +10,10 @@ namespace ambient{
         {
         }
 
+        size_t square(){
+            return this->x * this->y;
+        }
+
         dim2& operator=(int value){
             this->x = this->y = value;
             return *this;

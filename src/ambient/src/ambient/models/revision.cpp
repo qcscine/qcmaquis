@@ -6,7 +6,7 @@
 namespace ambient { namespace models {
 
     v_model::revision::revision(imodel::layout* l)
-    : layout(l)
+    : layout(l), initialization(NULL), reduction(NULL)
     {
         this->layout->set_revision(this);
     };
@@ -41,6 +41,14 @@ namespace ambient { namespace models {
 
     channels::group* v_model::revision::get_placement(){
         return this->placement;
+    }
+
+    void v_model::revision::reduce(void(*fp)(void*,void*)){
+       this->reduction = fp;
+    }
+
+    void v_model::revision::init(void(*fp)()){
+       this->initialization = fp;
     }
 
 } }

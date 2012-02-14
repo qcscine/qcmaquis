@@ -1,8 +1,6 @@
 #ifndef AMBIENT_PACKETS_TYPES_H
 #define AMBIENT_PACKETS_TYPES_H
 
-#include "ambient/interface/traits.h"
-#include "ambient/utils/datatype.hpp" 
 #include "ambient/channels/packets/packet_t.h"
 
 

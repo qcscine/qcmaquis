@@ -105,11 +105,13 @@ namespace ambient { namespace models {
         void(*op)();
         void** arguments;
         size_t count;
+        size_t workload;
+        pthread_mutex_t mutex;
     public:
         size_t credit;
         imodel::object* vellum;
         channels::group* grp;
-        void* pin;
+        imodel::object* pin;
     };
 } }
 
