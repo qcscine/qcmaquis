@@ -160,7 +160,7 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::entry::entry()
-    :header(NULL)
+    : header(NULL), request(false)
     {
     }
 
@@ -178,11 +178,17 @@ namespace ambient { namespace models {
         return false;
     }
 
+    bool v_model::layout::entry::requested(){
+        return this->request;
+    }
+
     v_model::layout::entry::operator double* (){
+        while(!this->valid()) pthread_yield(); // called inside kernels
         return (double*)this->data;
     }
 
     v_model::layout::entry::operator std::complex<double>* (){
+        while(!this->valid()) pthread_yield(); // called inside kernels
         return (std::complex<double>*)this->data;
     }
 

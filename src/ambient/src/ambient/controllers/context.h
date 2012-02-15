@@ -1,5 +1,5 @@
-#ifndef AMBIENT_CORE_SMP_H
-#define AMBIENT_CORE_SMP_H
+#ifndef AMBIENT_CONTROLLERS_CONTEXT_H
+#define AMBIENT_CONTROLLERS_CONTEXT_H
 
 #include "ambient/models/operation/operation.h"
 #include "ambient/models/v_model.h"

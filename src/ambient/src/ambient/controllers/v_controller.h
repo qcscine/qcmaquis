@@ -15,12 +15,13 @@ namespace ambient { namespace controllers {
             mod(models::imodel::modifier* m, dim2 pin);
             models::imodel::modifier* m;
             dim2 pin;
-        }; 
+        };
         v_controller();
         static void* stream(void* list);
         void   master_stream(void* list); // specialized version for the main thread
         void   acquire(channels::ichannel* channel);
         void   push(models::imodel::modifier* op);
+        void   push_mod(mod*);
 
         models::imodel::layout::entry& fetch_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& ifetch_block(models::imodel::revision& r, size_t i, size_t j);
@@ -30,6 +31,7 @@ namespace ambient { namespace controllers {
         void flush();
         void init_threads();
         void atomic_complete();
+        void atomic_receive(models::imodel::revision& r, size_t i, size_t j);
        ~v_controller();
 
     private:

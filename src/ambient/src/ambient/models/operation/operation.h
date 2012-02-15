@@ -69,7 +69,7 @@ namespace ambient { namespace models {
             T& obj = *(*(ptr_type*)ptr);
             if(obj.revisions.size() > m->get_weight()){
                 m->set_weight(obj.revisions.size());
-                m->set_vellum(obj);
+                m->set_vellum(current(obj));
             }
         }
         static bool constness(const T& obj){
@@ -93,8 +93,9 @@ namespace ambient { namespace models {
         void set_group(channels::group* grp);
         size_t get_weight();
         void set_weight(size_t credit);
-        void set_vellum(imodel::object& v);
-        imodel::object& get_vellum();
+        void set_vellum(imodel::revision& v);
+        imodel::revision& get_vellum();
+        imodel::revision& get_pin();
     private:
         enum { MARKUP, LOGISTICS, COMPUTING } state;
         void(operation::*prototype)();
@@ -109,9 +110,9 @@ namespace ambient { namespace models {
         pthread_mutex_t mutex;
     public:
         size_t credit;
-        imodel::object* vellum;
+        imodel::revision* vellum;
+        imodel::revision* pin;
         channels::group* grp;
-        imodel::object* pin;
     };
 } }
 

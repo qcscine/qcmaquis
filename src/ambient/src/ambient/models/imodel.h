@@ -4,11 +4,13 @@
 #include "ambient/utils/dim2.h"
 //#include "ambient/utils/delegate.hpp"
 
+#include <list>
+
 namespace ambient { namespace models {
 
     class imodel {
     public:
-        class object;
+        class revision;
         class modifier {
             public:
             virtual void invoke() = 0;
@@ -16,15 +18,16 @@ namespace ambient { namespace models {
             virtual size_t get_weight() = 0;
             virtual void set_weight(size_t) = 0;
             virtual void set_group(channels::group* grp) = 0;
-            virtual void set_vellum(object&) = 0;
-            virtual object& get_vellum() = 0;
+            virtual void set_vellum(revision&) = 0;
+            virtual revision& get_vellum() = 0;
+            virtual revision& get_pin() = 0;
         };
-        class revision;
         class layout {
             public:
             class entry {
             public:
                 virtual bool valid() = 0;
+                virtual bool requested() = 0;
                 virtual operator double* () = 0;
                 virtual operator std::complex<double>* () = 0;
                 virtual void* get_memory() = 0;
@@ -59,6 +62,7 @@ namespace ambient { namespace models {
             virtual std::pair<size_t*,size_t> id() = 0;
             virtual imodel::layout::entry& operator()(size_t i, size_t j) = 0;
             virtual void add_modifier(modifier* m) = 0;
+            virtual std::list<modifier*>& get_modifiers() = 0;
             virtual imodel::layout& get_layout() = 0;
             virtual channels::group* get_placement() = 0;
             virtual void reduce(void(*)(void*,void*)) = 0;
