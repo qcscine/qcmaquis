@@ -14,7 +14,7 @@ namespace ambient { namespace models {
         }else if(this->state == LOGISTICS){ 
             this->state = COMPUTING; 
             this->op = this->computing_ptr; 
-            this->workload = this->pin->revision(0).get_layout().
+            this->workload = this->pin->get_layout().
                              get_grid_dim().square();
             pthread_mutex_init(&this->mutex, NULL);
         }
@@ -40,11 +40,14 @@ namespace ambient { namespace models {
     void operation::set_weight(size_t credit){
         this->credit = credit;
     }
-    imodel::object& operation::get_vellum(){
+    imodel::revision& operation::get_vellum(){
         return *this->vellum;
     }
-    void operation::set_vellum(imodel::object& v){
+    void operation::set_vellum(imodel::revision& v){
         this->vellum = &v;
+    }
+    imodel::revision& operation::get_pin(){
+        return *this->pin;
     }
 
 } }

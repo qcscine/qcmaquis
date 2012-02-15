@@ -26,8 +26,10 @@ namespace ambient { namespace models {
                 void set_memory(void* memory, size_t bound);
                 void* get_memory();
                 bool valid();
+                bool requested();
                 void* header;
                 void* data;
+                bool request;
             };
             class path : public imodel::layout::path {
             public:
@@ -103,6 +105,7 @@ namespace ambient { namespace models {
             imodel::layout::entry* block(size_t i, size_t j = 0);
             imodel::layout::entry& operator()(size_t i, size_t j);
             void add_modifier(imodel::modifier* m);
+            std::list<imodel::modifier*>& get_modifiers();
             std::pair<size_t*,size_t> id();
             imodel::layout& get_layout();
             channels::group* get_placement();

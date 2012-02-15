@@ -28,7 +28,7 @@ namespace ambient { namespace controllers {
     }
 
     v_controller::~v_controller(){
-        for(int i=0; i < NUM_THREADS; i++){
+        for(int i = 1; i < NUM_THREADS; i++){
             this->tasks[i].active = false;
             pthread_join(this->pool[i], NULL);
         }
@@ -45,7 +45,7 @@ namespace ambient { namespace controllers {
     void v_controller::init_threads(){
         this->pool = (pthread_t*)malloc(sizeof(pthread_t)*NUM_THREADS);
         this->tasks = new tasklist[NUM_THREADS];
-        for(int i=0; i < NUM_THREADS; i++)
+        for(int i = 1; i < NUM_THREADS; i++)
             pthread_create(&this->pool[i], NULL, &v_controller::stream, &this->tasks[i]);
     }
 
@@ -100,14 +100,22 @@ namespace ambient { namespace controllers {
         this->workload++;
     }
 
+    void v_controller::push_mod(mod* m){
+        static size_t rrn = 0; // ok since accessing only from MPI thread
+        this->tasks[rrn].add_task(m);
+        ++rrn %= NUM_THREADS;
+    }
+
     models::imodel::layout::entry& v_controller::fetch_block(models::imodel::revision& r, size_t i, size_t j){
-        if(!r(i,j).valid()) ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
+        if(!r(i,j).valid() && !r(i,j).requested()) 
+            ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
         while(!r(i,j).valid()); // waiting for the receive to complete
         return r(i,j);
     }
 
     models::imodel::layout::entry& v_controller::ifetch_block(models::imodel::revision& r, size_t i, size_t j){
-        if(!r(i,j).valid()) ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
+        if(!r(i,j).valid() && !r(i,j).requested()) 
+            ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
         return r(i,j);
     }
 
@@ -130,6 +138,14 @@ namespace ambient { namespace controllers {
         }
         this->master_stream(this->tasks);  // using up the main thread
         this->stack.clean();               // reseting the stack
+    }
+    
+    void v_controller::atomic_receive(models::imodel::revision& r, size_t i, size_t j){
+        for(std::list<models::imodel::modifier*>::iterator it = r.get_modifiers().begin(); it != r.get_modifiers().end() ; ++it){
+            if(&(*it)->get_pin() == &r){
+                this->push_mod(new mod(*it, dim2(j,i)));
+            }
+        }
     }
 
     channels::ichannel::packet* package(models::imodel::revision& r, const char* state, int i, int j, int dest){
@@ -160,12 +176,15 @@ namespace ambient { namespace controllers {
         size_t i = c.get<int>(A_BLOCK_P_I_FIELD);
         size_t j = c.get<int>(A_BLOCK_P_J_FIELD);
         models::imodel::revision& r = *ambient::model.get_revision((size_t*)c.get(A_BLOCK_P_GID_FIELD), 1, c.get<size_t>(A_BLOCK_P_SID_FIELD));
+        if(r(i,j).valid()) return; // quick exit for redunant accepts
         r(i,j).set_memory(c.get_memory(), c.get_bound(A_BLOCK_P_DATA_FIELD));
 
-        while(!r.get_layout().get_path(i,j)->empty()){
+        while(!r.get_layout().get_path(i,j)->empty()){ // satisfying the path
             channel.emit(package(r, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), 
                                  i, j, r.get_layout().pop_path(i,j)));
         }
+
+        controller.atomic_receive(r, i, j); // calling controller event handlers
     }
 
 } }

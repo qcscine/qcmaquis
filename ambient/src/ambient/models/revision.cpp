@@ -39,6 +39,10 @@ namespace ambient { namespace models {
         this->modifiers.push_back(m);
     }
 
+    std::list<imodel::modifier*>& v_model::revision::get_modifiers(){
+        return this->modifiers;
+    }
+
     channels::group* v_model::revision::get_placement(){
         return this->placement;
     }

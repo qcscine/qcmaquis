@@ -67,12 +67,12 @@ namespace ambient{
     
         for(int i = ii; i < ii+work_blocks.y; i++)
             for(int j = jj; j < jj+work_blocks.x; j++)
-                controller.fetch_block(current(ref), i, j);
+                controller.ifetch_block(current(ref), i, j);
     }
 
     template<typename T>
     void assign(const T& ref, int i, int j){
-    ambient::models::imodel::layout& layout = current(ref).get_layout();
+        ambient::models::imodel::layout& layout = current(ref).get_layout();
         dim2 work_blocks(layout.get_work_dim().x / layout.get_mem_dim().x,
                          layout.get_work_dim().y / layout.get_mem_dim().y);
         size_t ii = i*work_blocks.y;
@@ -80,7 +80,7 @@ namespace ambient{
     
         for(int i = ii; i < ii+work_blocks.y; i++)
             for(int j = jj; j < jj+work_blocks.x; j++)
-                controller.fetch_block(current(ref), i, j);
+                controller.ifetch_block(current(ref), i, j);
     }
 
     template<typename T>
