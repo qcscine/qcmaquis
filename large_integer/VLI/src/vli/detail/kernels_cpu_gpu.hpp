@@ -11,6 +11,9 @@
 /*
 #include <emmintrin.h>
 #include <mmintrin.h>
+
+// get AVX intrinsics  
+#include <immintrin.h>  
 */
 #include "vli/detail/bit_masks.hpp"
 #include <cassert>
@@ -189,11 +192,13 @@ namespace vli
         kernels_multiplication_base_reshaping_simd(a,b,r);
 */
  }
-/*        
+ /*       
     template <typename  BaseInt>
     inline void kernels_multiplication_block_simd(BaseInt const* x, BaseInt const*  y, BaseInt * a, BaseInt * b)
     {
         __m128i xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6;
+
+        xmm4 =  _mm_maskload_epi64 (*x, xmm4 );
 
         BaseInt xt[2]  __attribute__ ((aligned (16))) = {( (*x & mask_down<BaseInt>::value)),( ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2)))};
         BaseInt xt2[2] __attribute__ ((aligned (16))) = {( ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2))),((*x & mask_down<BaseInt>::value))};
@@ -209,7 +214,7 @@ namespace vli
         _mm_store_si128((__m128i*)a,xmm0);
         _mm_store_si128((__m128i*)b,xmm3); 
     }
-*/        
+   */     
     template <typename BaseInt>
     inline void kernels_multiplication_block_down(BaseInt const* x, BaseInt const*  y, BaseInt * r)	
     { 
@@ -223,7 +228,7 @@ namespace vli
         *r     = ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2) ) * (*y & mask_down<BaseInt>::value);	
         *(r+1) = ((*x & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2) ) * ((*y & mask_up<BaseInt>::value) >> (data_bits<BaseInt>::value/2));
     }
-/*        
+    /*    
     template <typename BaseInt>
     inline void kernels_multiplication_base_reshaping_simd(BaseInt const* x2, BaseInt  const*  y2, BaseInt * r)	
     {
@@ -235,7 +240,7 @@ namespace vli
         *r = r22;
         *(r+1) = q11 + q22 + *(x2+1);
     }
-  */      
+      */ 
     template <typename BaseInt>
     inline void kernels_multiplication_base_reshaping(BaseInt const* x, BaseInt  const*  y, BaseInt * r)	
     { 

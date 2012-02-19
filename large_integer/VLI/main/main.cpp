@@ -20,7 +20,7 @@
 
 #include "vli/detail/kernels_cpu_gpu.hpp"
 
-#define SizeVector 128
+#define SizeVector 16384
 #define Size1 3
 #define Size2 6
 #define Order 11
@@ -96,8 +96,8 @@ int main (int argc, char * const argv[])
     vector_type_cpu v2(SizeVector);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
-    fill_vector_random(v1,3);
-    fill_vector_random(v2,3);
+    fill_vector_random(v1,Size1);
+    fill_vector_random(v2,Size1);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
