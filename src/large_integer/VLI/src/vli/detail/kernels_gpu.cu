@@ -264,11 +264,11 @@ void algo_diag(unsigned int threadid, unsigned int Order, BaseInt const* a, Base
  
     // top right corner
     for(int i(0); i <= threadid; i++){
-
+/*
         #pragma unroll
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             inter[k] = 0;
-
+*/
         qa = i/Order;
         ra = i%Order;
         qb = (threadid-i)/Order;
@@ -289,8 +289,8 @@ void algo_diag(unsigned int threadid, unsigned int Order, BaseInt const* a, Base
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
           c_inter[k] = c[offset_c+k]; 
         
-        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);        
-        kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,c_inter);        
+ //       kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
 
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
@@ -301,10 +301,11 @@ void algo_diag(unsigned int threadid, unsigned int Order, BaseInt const* a, Base
 
     // bottom letft corner
     for(int i(Order*Order-threadid+1); i < Order*Order; i++){
+/*
         #pragma unroll
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             inter[k] = 0;
-
+*/
         qa = i/Order;
         ra = i%Order;
         qb = j/Order;
@@ -325,10 +326,9 @@ void algo_diag(unsigned int threadid, unsigned int Order, BaseInt const* a, Base
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
             c_inter[k] = c[offset_c+k]; 
-
  
-        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,inter);
-        kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
+        single_multiplication_device<BaseInt,Size>(a_inter,b_inter,c_inter);
+//        kernels_addition_classic<BaseInt,2*Size>(c_inter,inter); // 2 because non truncated
 
         #pragma unroll 
         for(std::size_t k=0 ; k < 2*Size ;++k) // 2 because non truncated
