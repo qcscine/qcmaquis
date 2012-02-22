@@ -10,6 +10,7 @@ namespace ambient { namespace models {
 
     class imodel {
     public:
+        class object;
         class revision;
         class modifier {
             public:
@@ -32,6 +33,7 @@ namespace ambient { namespace models {
                 virtual operator std::complex<double>* () = 0;
                 virtual void* get_memory() = 0;
                 virtual void set_memory(void* memory, size_t bound) = 0;
+                virtual std::list<modifier*> get_assignments() = 0;
             };
             class path {
             public:
@@ -39,6 +41,8 @@ namespace ambient { namespace models {
                 virtual size_t pop_node() = 0;
                 virtual bool empty() = 0;
             };
+            virtual bool marked(size_t i, size_t j) = 0;
+            virtual void embed(void* memory, size_t i, size_t j, size_t bound) = 0;
             virtual void push_path(size_t i, size_t j, size_t node) = 0;
             virtual size_t pop_path(size_t i, size_t j) = 0;
             virtual path* get_path(size_t i, size_t j) = 0;
@@ -58,14 +62,19 @@ namespace ambient { namespace models {
         };
         class revision {
         public:
+            typedef void(*voidfp)();
             virtual void set_dim(dim2) = 0;
             virtual std::pair<size_t*,size_t> id() = 0;
             virtual imodel::layout::entry& operator()(size_t i, size_t j) = 0;
             virtual void add_modifier(modifier* m) = 0;
             virtual std::list<modifier*>& get_modifiers() = 0;
+            virtual imodel::object& get_object() = 0;
             virtual imodel::layout& get_layout() = 0;
             virtual channels::group* get_placement() = 0;
-            virtual void reduce(void(*)(void*,void*)) = 0;
+            virtual void reduce(voidfp) = 0;
+            virtual void init(voidfp) = 0;
+            virtual voidfp get_reduce() = 0;
+            virtual voidfp get_init() = 0;
         };
         class object {
         public:
@@ -74,6 +83,8 @@ namespace ambient { namespace models {
             virtual dim2 get_dim() const = 0;
             virtual size_t get_t_size() const = 0;
             virtual channels::group* get_placement() = 0;
+            virtual size_t get_revision_base() const = 0;
+            virtual void set_revision_base(size_t) = 0;
         };
         virtual void add_revision(object* obj) = 0;
         virtual void update_revision(revision* r, channels::group* placement) = 0;

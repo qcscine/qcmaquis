@@ -16,7 +16,7 @@ namespace ambient { namespace models {
         v_model::layout* l = new v_model::layout(obj->get_dim(), obj->get_t_size());
         *const_cast<size_t*>(&l->sid) = this->map.insert(channel.id().first, channel.id().second, l);
         *const_cast<const size_t **>(&l->gid) = channel.id().first;
-        *l >> this->mem_dim, this->work_dim, this->item_dim;
+        (*l) >> this->mem_dim, this->work_dim, this->item_dim;
         obj->add_revision(l);
     }
 
@@ -83,10 +83,6 @@ namespace ambient { namespace models {
     }
 
     void reduce(v_model::modifier* r){
-
-    }
-
-    void init(v_model::modifier* i){
 
     }
 

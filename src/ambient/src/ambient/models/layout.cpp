@@ -1,7 +1,6 @@
 #include "ambient/ambient.h"
 #include "ambient/models/v_model.h"
 
-#include "ambient/models/operation/operation.h"
 #include "ambient/utils/ceil.h"
 
 
@@ -18,13 +17,17 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::layout(dim2 dim, size_t t_size)
-    : master(0), t_size(t_size), mesh_dim(0,0)
+    : master(0), t_size(t_size), mesh_dim(0,0), entries(), paths()
     {
         this->dim = dim;
     }
 
-    void v_model::layout::embed(void* memory, size_t i, size_t j = 0){
+    bool v_model::layout::marked(size_t i, size_t j){
+        return this->marker.marked(i, j);
+    }
 
+    void v_model::layout::embed(void* memory, size_t i, size_t j, size_t bound){
+        this->get(i,j)->set_memory(memory, bound);
     }
 
     void v_model::layout::push_path(size_t i, size_t j, size_t node){
@@ -40,7 +43,7 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::entry* v_model::layout::get(size_t i, size_t j){
-        printf("%d: Trying to access %d x %d of %d x %d\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
+        //printf("%d: Trying to access %d x %d of %d x %d\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
         return this->entries[i][j];
     }
 
@@ -48,7 +51,7 @@ namespace ambient { namespace models {
         dim2 dim = this->get_mem_grid_dim();
         if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
         for(size_t i = 0; i < dim.y; i++){
-            if(i >= this->mesh_dim.y){ 
+            if(i >= this->mesh_dim.y){
                 entries.push_back(std::vector<entry*>());
                 paths.push_back(std::vector<path*>());
             }
@@ -86,22 +89,24 @@ namespace ambient { namespace models {
     } 
 
     v_model::layout& v_model::layout::operator>>(dim2 dim){
-        this->mem_dim = mem_dim;
+        this->mem_dim  = dim;
         this->work_dim = NULL;
         this->item_dim = NULL;
-        this->mesh();
         return *this;
     }
 
     v_model::layout& v_model::layout::operator,(dim2 dim){
         if(this->work_dim == NULL)
             this->work_dim = dim;
-        else if(this->item_dim == NULL)
+        else if(this->item_dim == NULL){
             this->item_dim = dim;
+            this->mesh();
+        }
         return *this;
     }
 
     void v_model::layout::set_dim(dim2 dim){
+        assert(false);
         if(this->get_mem_grid_dim().y < __a_ceil(dim.y / this->mem_dim.y) || 
            this->get_mem_grid_dim().x < __a_ceil(dim.x / this->mem_dim.x)){
             this->marker.mark(this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
@@ -133,6 +138,8 @@ namespace ambient { namespace models {
     }
 
     dim2 v_model::layout::get_mem_grid_dim() const {
+        assert(this->mem_dim.x > 0);
+        assert(this->mem_dim.y > 0);
         size_t n = __a_ceil(this->dim.x / this->mem_dim.x);
         size_t m = __a_ceil(this->dim.y / this->mem_dim.y);
         return dim2(n, m);
@@ -190,6 +197,10 @@ namespace ambient { namespace models {
     v_model::layout::entry::operator std::complex<double>* (){
         while(!this->valid()) pthread_yield(); // called inside kernels
         return (std::complex<double>*)this->data;
+    }
+
+    std::list<models::imodel::modifier*> v_model::layout::entry::get_assignments(){
+        return this->assignments;
     }
 
     v_model::layout::marker::marker(){

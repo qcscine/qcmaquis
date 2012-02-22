@@ -1,13 +1,18 @@
 #include "ambient/ambient.h"
 #include "ambient/models/v_model.h"
 
-#include "ambient/models/operation/operation.h"
-    
 namespace ambient { namespace models {
 
-    v_model::revision::revision(imodel::layout* l)
-    : layout(l), initialization(NULL), reduction(NULL)
+    void null_i(models::v_model::object& a){
+        dim2 idx = ctxt.get_block_id();
+        dim2 dim = a.revision(0).get_layout().get_mem_dim();
+        memset((double*)a.revision(0)(idx.y,idx.x), 0, dim.y*dim.x*a.get_t_size());
+    }
+
+    v_model::revision::revision(imodel::object* o, imodel::layout* l)
+    : object(o), layout(l), initialization((voidfp)null_i), reduction(NULL), placement(NULL)
     {
+        this->number = o->get_revision_base();
         this->layout->set_revision(this);
     };
 
@@ -21,6 +26,10 @@ namespace ambient { namespace models {
 
     std::pair<size_t*,size_t> v_model::revision::id(){
         return this->layout->id();
+    }
+
+    imodel::object& v_model::revision::get_object(){
+        return *this->object;
     }
 
     imodel::layout& v_model::revision::get_layout(){
@@ -47,12 +56,20 @@ namespace ambient { namespace models {
         return this->placement;
     }
 
-    void v_model::revision::reduce(void(*fp)(void*,void*)){
+    void v_model::revision::reduce(void(*fp)()){
        this->reduction = fp;
     }
 
     void v_model::revision::init(void(*fp)()){
        this->initialization = fp;
+    }
+
+    v_model::revision::voidfp v_model::revision::get_reduce(){
+        return this->reduction;
+    }
+
+     v_model::revision::voidfp v_model::revision::get_init(){
+        return this->initialization;
     }
 
 } }

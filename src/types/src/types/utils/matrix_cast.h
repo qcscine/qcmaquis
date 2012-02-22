@@ -21,7 +21,7 @@ namespace maquis
         size_t num_rows = m.num_rows();
         size_t num_cols = m.num_cols();
         size_t lda = m.stride2();
-        ambient::push(ambient::cast_to_p_dense_l<T>, ambient::cast_to_p_dense_c<T>,v_ptr ,pm, num_rows, num_cols, lda);
+        ambient::push(ambient::cast_to_p_dense_l<T>, ambient::cast_to_p_dense_c<T>, v_ptr, *pm.impl, num_rows, num_cols, lda);
         ambient::playout();
     }
 
@@ -31,7 +31,7 @@ namespace maquis
         std::vector<typename maquis::types::dense_matrix<T>::value_type>* v_ptr = &m.get_values();
         size_t num_rows = m.num_rows();
         size_t num_cols = m.num_cols();
-        ambient::push(ambient::cast_to_dense_l<T>, ambient::cast_to_dense_c<T>,v_ptr ,pm, num_rows, num_cols);
+        ambient::push(ambient::cast_to_dense_l<T>, ambient::cast_to_dense_c<T>, v_ptr, *pm.impl, num_rows, num_cols);
         ambient::playout();
     }
 
@@ -41,7 +41,7 @@ namespace maquis
         const std::vector<typename maquis::types::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
         size_t num_rows(m.num_rows());
         size_t num_cols(1);
-        ambient::push(ambient::cast_to_p_dense_l<T>, ambient::cast_to_p_dense_c<T>,v_ptr ,pm.get_data(), num_rows, num_cols, num_rows);
+        ambient::push(ambient::cast_to_p_dense_l<T>, ambient::cast_to_p_dense_c<T>, v_ptr, *pm.get_data().impl, num_rows, num_cols, num_rows);
         ambient::playout();
     }
 
@@ -51,7 +51,7 @@ namespace maquis
         std::vector<typename maquis::types::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
         size_t num_rows = m.num_rows();
         size_t num_cols(1);
-        ambient::push(ambient::cast_to_dense_l<T>, ambient::cast_to_dense_c<T>,v_ptr ,pm.get_data(), num_rows, num_cols);
+        ambient::push(ambient::cast_to_dense_l<T>, ambient::cast_to_dense_c<T>, v_ptr, *pm.get_data().impl, num_rows, num_cols);
         ambient::playout();
     }
 
@@ -104,8 +104,8 @@ namespace maquis{
     bool operator == (maquis::types::dense_matrix<T> const & m, maquis::types::p_dense_matrix<T> const & pm) 
     {
         int *n = new int(1); // C - default matrices are equals 
-        maquis::types::p_dense_matrix<T>  pma(maquis::traits::matrix_cast<maquis::types::p_dense_matrix<T> >(m));
-        ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pm, pma, n); 
+        maquis::types::p_dense_matrix<T> pma(maquis::traits::matrix_cast<maquis::types::p_dense_matrix<T> >(m));
+        ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, *pm.impl, *pma.impl, n); 
         ambient::playout();
         bool b(*n);
         delete n;            
@@ -117,7 +117,7 @@ namespace maquis{
     {
         int *n = new int(1); // C - default matrices are equals 
         maquis::types::p_diagonal_matrix<T>  pma(maquis::traits::matrix_cast<maquis::types::p_diagonal_matrix<T> >(m));
-        ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pm, pma, n); 
+        ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, *pm.get_data().impl, *pma.get_data().impl, n); 
         ambient::playout();
         bool b(*n);
         delete n;            

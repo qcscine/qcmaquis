@@ -76,7 +76,7 @@ namespace ambient{
     }
     template <char R, typename T>
     models::imodel::revision& reduced(T& obj){
-        if(R == '+') future(obj).reduce(plus_reduce<T>);
+        if(R == '+') future(obj).reduce((void(*)())plus_reduce<T>);
         return future(obj);
     }
     // }}}

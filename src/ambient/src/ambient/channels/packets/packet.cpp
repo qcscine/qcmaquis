@@ -52,7 +52,7 @@ namespace ambient { namespace channels {
     }
 
     size_t packet::get_bound(size_t field){
-        return this->get_t().displacements[field];
+        return this->get_t().get_bound(field);
     }
 
     void* packet::get_memory(){

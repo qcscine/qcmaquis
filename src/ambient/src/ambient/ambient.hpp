@@ -66,8 +66,9 @@ namespace ambient{
         size_t jj = j*work_blocks.x;
     
         for(int i = ii; i < ii+work_blocks.y; i++)
-            for(int j = jj; j < jj+work_blocks.x; j++)
+            for(int j = jj; j < jj+work_blocks.x; j++){
                 controller.ifetch_block(current(ref), i, j);
+            }
     }
 
     template<typename T>
@@ -79,8 +80,9 @@ namespace ambient{
         size_t jj = j*work_blocks.x;
     
         for(int i = ii; i < ii+work_blocks.y; i++)
-            for(int j = jj; j < jj+work_blocks.x; j++)
+            for(int j = jj; j < jj+work_blocks.x; j++){
                 controller.ifetch_block(current(ref), i, j);
+            }
     }
 
     template<typename T>

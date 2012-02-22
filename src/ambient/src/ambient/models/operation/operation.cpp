@@ -9,24 +9,7 @@ namespace ambient { namespace models {
         this->grp->idle();
     }
     void operation::invoke(){
-        if(this->state == MARKUP){ 
-            this->state = LOGISTICS;
-        }else if(this->state == LOGISTICS){ 
-            this->state = COMPUTING; 
-            this->op = this->computing_ptr; 
-            this->workload = this->pin->get_layout().
-                             get_grid_dim().square();
-            pthread_mutex_init(&this->mutex, NULL);
-        }
-
         (this->*prototype)();
-
-        if(this->state == COMPUTING){
-            pthread_mutex_lock(&this->mutex);
-            if(--this->workload == 0) 
-                controller.atomic_complete();
-            pthread_mutex_unlock(&this->mutex);
-        }
     }
     void operation::weight(){
         (this->*creditup)();

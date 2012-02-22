@@ -17,7 +17,6 @@ namespace ambient {
 }
 // }}} global objects accessible anywhere //
 
-pthread_once_t pthread_env_once = PTHREAD_ONCE_INIT; 
 pthread_key_t pthread_env;
 
 namespace ambient { namespace controllers {
@@ -38,8 +37,9 @@ namespace ambient { namespace controllers {
     : workload(0) 
     {
         this->acquire(&ambient::channel);
-        this->init_threads();
+        pthread_key_create(&pthread_env, free);
         pthread_mutex_init(&this->mutex, NULL);
+        this->init_threads();
     }
 
     void v_controller::init_threads(){
@@ -49,18 +49,9 @@ namespace ambient { namespace controllers {
             pthread_create(&this->pool[i], NULL, &v_controller::stream, &this->tasks[i]);
     }
 
-    void pthread_env_destroy(void* m){
-        free(m);
-    }
-
-    void pthread_env_bootstrap(){
-        pthread_key_create(&pthread_env, pthread_env_destroy);
-    }
-
     void* v_controller::stream(void* list){
         mod* instruction;
         tasklist* l = static_cast<tasklist*>(list);
-        pthread_once(&pthread_env_once, pthread_env_bootstrap);
 
         while(l->active){
             instruction = (mod*)l->get_task();
@@ -77,7 +68,6 @@ namespace ambient { namespace controllers {
     void v_controller::master_stream(void* list){
         mod* instruction;
         tasklist* l = static_cast<tasklist*>(list);
-        pthread_once(&pthread_env_once, pthread_env_bootstrap);
 
         while(this->workload){
             instruction = (mod*)l->get_task();
@@ -106,7 +96,17 @@ namespace ambient { namespace controllers {
         ++rrn %= NUM_THREADS;
     }
 
+    models::imodel::layout::entry& v_controller::init_block(models::imodel::revision& r, size_t i, size_t j){
+        channels::packet_t& type = ambient::channel.get_block_packet_type(r.get_layout().get_mem_size());
+        r.get_layout().embed(alloc_t(type), i, j, type.get_bound(A_BLOCK_P_DATA_FIELD));
+        
+        ctxt.set_block_id(dim2(j,i)); // setting context block
+        ((void(*)(models::v_model::object&))r.get_init())(static_cast<models::v_model::object&>(r.get_object()));
+        return r(i,j);
+    }
+
     models::imodel::layout::entry& v_controller::fetch_block(models::imodel::revision& r, size_t i, size_t j){
+        assert(r.get_placement() != NULL);
         if(!r(i,j).valid() && !r(i,j).requested()) 
             ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
         while(!r(i,j).valid()); // waiting for the receive to complete
@@ -114,9 +114,22 @@ namespace ambient { namespace controllers {
     }
 
     models::imodel::layout::entry& v_controller::ifetch_block(models::imodel::revision& r, size_t i, size_t j){
-        if(!r(i,j).valid() && !r(i,j).requested()) 
+        if(r.get_placement() == NULL){
+            this->init_block(r, i, j);
+            this->atomic_receive(r, i, j);
+        }else if(!r(i,j).valid() && !r(i,j).requested())
             ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
         return r(i,j);
+    }
+
+    void v_controller::atomic_receive(models::imodel::revision& r, size_t i, size_t j){
+        std::list<models::imodel::modifier*>::iterator it = r.get_modifiers().begin();
+        while(it != r.get_modifiers().end()){
+            if(&(*it)->get_pin() == &r)
+                this->push_mod(new mod(*it, dim2(j,i)));
+            it++;
+            //r(i,j).get_assignments().erase(it++);
+        }
     }
 
     void v_controller::atomic_complete(){
@@ -127,27 +140,21 @@ namespace ambient { namespace controllers {
 
     void v_controller::flush(){
         if(this->stack.empty()) return;
-        printf("R%d: playout...\n", ambient::rank());
+        printf("Playout!\n");
         while(!this->stack.end_reached())  // estimating operations credits 
             this->stack.pick()->weight();
         this->stack.sort();                // sorting operations using credit
         ctxt.state = context::EXECUTE;
+        printf("Executing logistics!\n");
         while(!this->stack.end_reached()){
             ctxt.set_op(this->stack.pick());
             ctxt.get_op()->invoke();       // sending requests for data
         }
+        printf("Finished with the logistics!\n");
         this->master_stream(this->tasks);  // using up the main thread
         this->stack.clean();               // reseting the stack
     }
     
-    void v_controller::atomic_receive(models::imodel::revision& r, size_t i, size_t j){
-        for(std::list<models::imodel::modifier*>::iterator it = r.get_modifiers().begin(); it != r.get_modifiers().end() ; ++it){
-            if(&(*it)->get_pin() == &r){
-                this->push_mod(new mod(*it, dim2(j,i)));
-            }
-        }
-    }
-
     channels::ichannel::packet* package(models::imodel::revision& r, const char* state, int i, int j, int dest){
         void* header = r(i,j).get_memory();
         channels::ichannel::packet* package = channels::pack(channel.get_block_packet_type(r.get_layout().get_mem_size()), 
@@ -159,16 +166,17 @@ namespace ambient { namespace controllers {
         channels::packet& c = static_cast<channels::packet&>(cmd);
         models::imodel::revision& r = *ambient::model.get_revision((size_t*)c.get(A_LAYOUT_P_GID_FIELD), 1, c.get<size_t>(A_LAYOUT_P_SID_FIELD));
         if(c.get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM OWNER ACTION
-        models::imodel::layout::entry& entry = r(c.get<int>(A_LAYOUT_P_I_FIELD), 
-                                                 c.get<int>(A_LAYOUT_P_J_FIELD));
-        if(entry.valid()) 
-            channel.emit(package(r, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), 
-                                    c.get<int>(A_LAYOUT_P_I_FIELD), c.get<int>(A_LAYOUT_P_J_FIELD), 
-                                    c.get<int>(A_LAYOUT_P_OWNER_FIELD)));
-        else
-            r.get_layout().push_path(c.get<int>(A_LAYOUT_P_I_FIELD), 
-                                     c.get<int>(A_LAYOUT_P_J_FIELD), 
-                                     c.get<int>(A_LAYOUT_P_OWNER_FIELD));
+        size_t i = c.get<int>(A_LAYOUT_P_I_FIELD);
+        size_t j = c.get<int>(A_LAYOUT_P_J_FIELD);
+        models::imodel::layout::entry& entry = r(i,j);
+        if(entry.valid()){
+            channel.emit(package(r, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), i, j, c.get<int>(A_LAYOUT_P_OWNER_FIELD)));
+        }else if(r.get_placement()->is_master() && r.get_layout().marked(i, j)){
+            controller.init_block(r, i, j); // generating block
+            forward_block(cmd);             // and forwarding
+        }else{
+            r.get_layout().push_path(i, j, c.get<int>(A_LAYOUT_P_OWNER_FIELD));
+        }
     }
 
     void accept_block(channels::ichannel::packet& cmd){
@@ -177,7 +185,7 @@ namespace ambient { namespace controllers {
         size_t j = c.get<int>(A_BLOCK_P_J_FIELD);
         models::imodel::revision& r = *ambient::model.get_revision((size_t*)c.get(A_BLOCK_P_GID_FIELD), 1, c.get<size_t>(A_BLOCK_P_SID_FIELD));
         if(r(i,j).valid()) return; // quick exit for redunant accepts
-        r(i,j).set_memory(c.get_memory(), c.get_bound(A_BLOCK_P_DATA_FIELD));
+        r.get_layout().embed(c.get_memory(), i, j, c.get_bound(A_BLOCK_P_DATA_FIELD));
 
         while(!r.get_layout().get_path(i,j)->empty()){ // satisfying the path
             channel.emit(package(r, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), 

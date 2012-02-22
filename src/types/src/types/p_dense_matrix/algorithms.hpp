@@ -103,21 +103,21 @@ namespace maquis { namespace types { namespace algorithms {
     void gemm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c){
         assert(num_cols(a) == num_rows(b));
         c.resize(a.num_rows(), b.num_cols());
-        ambient::push(ambient::gemm_l<T>, ambient::gemm_c<T>, a, b, c);
+        ambient::push(ambient::gemm_l<T>, ambient::gemm_c<T>, *a.impl, *b.impl, *c.impl);
     }
 
     template<typename T>
     void gemm(const p_dense_matrix<T>& a, const p_diagonal_matrix<T>& b, p_dense_matrix<T>& c){
         assert(num_cols(a) == num_rows(b));
         c.resize(a.num_rows(), b.num_cols());
-        ambient::push(ambient::gemm_diagonal_rhs_l<T>, ambient::gemm_diagonal_rhs_c<T>, a, b.get_data(), c);
+        ambient::push(ambient::gemm_diagonal_rhs_l<T>, ambient::gemm_diagonal_rhs_c<T>, *a.impl, *b.get_data().impl, *c.impl);
     }
 
     template<typename T>
     void gemm(const p_diagonal_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c){
         assert(num_cols(a) == num_rows(b));
         c.resize(a.num_rows(), b.num_cols());
-        ambient::push(ambient::gemm_diagonal_lhs_l<T>,ambient::gemm_diagonal_lhs_c<T>, a.get_data(), b, c);
+        ambient::push(ambient::gemm_diagonal_lhs_l<T>, ambient::gemm_diagonal_lhs_c<T>, *a.get_data().impl, *b.impl, *c.impl);
     }
 
     template<typename T>
@@ -130,7 +130,7 @@ namespace maquis { namespace types { namespace algorithms {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        ambient::push(ambient::svd_l<T>, ambient::svd_c<T>, a, m, n, u, vt, s.get_data());
+        ambient::push(ambient::svd_l<T>, ambient::svd_c<T>, *a.impl, m, n, *u.impl, *vt.impl, *s.get_data().impl);
     }
 
     template<typename T>
@@ -141,7 +141,7 @@ namespace maquis { namespace types { namespace algorithms {
         assert(num_rows(evals) == num_rows(a));
         int m = num_rows(a);
         evecs.resize(m, m);
-        ambient::push(ambient::heev_l, ambient::heev_c, a, m, evals.get_data()); // destoys U triangle of M
+        ambient::push(ambient::heev_l, ambient::heev_c, *a.impl, m, *evals.get_data().impl); // destoys U triangle of M
         evecs = a;
     }
 
@@ -166,27 +166,27 @@ namespace maquis { namespace types { namespace algorithms {
     template<typename T>
     void copy(typename associated_vector<T>::type& sc, typename associated_diagonal_matrix<T>::type& s){
     // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
-        ambient::push(ambient::associated_copy_l<T>, ambient::copy_c<T>, sc.get_data(), s.get_data());
+        ambient::push(ambient::associated_copy_l<T>, ambient::copy_c<T>, *sc.get_data().impl, *s.get_data().impl);
     }
 
     template<typename T>
     void copy_sqr_gt(std::vector<typename T::value_type>& sc, typename associated_diagonal_matrix<T>::type& s, const double& prec){
     // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector
         std::vector<typename T::value_type>* sc_ptr = &sc;
-        ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, s.get_data(), prec);
+        ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, *s.get_data().impl, prec);
     }
 
     template<typename T>
     void copy_after(std::vector<typename T::value_type>& sc, const size_type pos, typename associated_diagonal_matrix<T>::type& s){
     // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector
         std::vector<typename T::value_type>* sc_ptr = &sc;  
-        ambient::push(ambient::copy_after_std_l, ambient::copy_after_std_c, sc_ptr, pos, s.get_data());
+        ambient::push(ambient::copy_after_std_l, ambient::copy_after_std_c, sc_ptr, pos, *s.get_data().impl);
     }
 
     template<typename T>
     void copy_after(typename associated_vector<T>::type& sc, const size_type pos, typename associated_diagonal_matrix<T>::type& s){
     // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
-        ambient::push(ambient::copy_after_l<T>, ambient::copy_after_c<T>, sc.get_data(), pos, s.get_data());
+        ambient::push(ambient::copy_after_l<T>, ambient::copy_after_c<T>, *sc.get_data().impl, pos, *s.get_data().impl);
     }
 
     #undef size_type
