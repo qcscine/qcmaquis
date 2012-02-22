@@ -146,9 +146,8 @@ namespace app {
 #endif
     }
     
-    
     template <class Matrix, class SymmGroup>
-    void sim<Matrix, SymmGroup>::run ()
+    bool sim<Matrix, SymmGroup>::exec_sweeps ()
     {
         bool early_exit = false;
         
@@ -179,9 +178,9 @@ namespace app {
                 early_exit = true;
             
             
-            if (early_exit ||
-                sweep % parms.get<int>("measure_each") == 0 ||
-                sweep+1 == parms.get<int>("nsweeps"))
+            if (!early_exit &&
+                (   sweep % parms.get<int>("measure_each") == 0 
+                 || sweep+1 == parms.get<int>("nsweeps") ))
             {
                 
                 do_sweep_measure(iteration_log);
@@ -204,7 +203,7 @@ namespace app {
                                            parms);
                     h5ar << alps::make_pvp(sweep_archive_path() + "/parameters",
                                            model);
-
+                    
                     
                     h5ar << alps::make_pvp(sweep_archive_path() + "/results",
                                            iteration_log);
@@ -230,9 +229,16 @@ namespace app {
             
             
             if (early_exit)
-                break;
+                return true;
             
-        }        
+        }
+        return false;
+    }
+    
+    template <class Matrix, class SymmGroup>
+    void sim<Matrix, SymmGroup>::run ()
+    {
+        bool early_exit = exec_sweeps();
     }
     
     template <class Matrix, class SymmGroup>

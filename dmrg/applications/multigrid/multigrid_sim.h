@@ -93,6 +93,7 @@ public:
     
     void run ()
     {
+        bool early_exit = false;
         do {
             MPS<Matrix, SymmGroup> initial_mps;
             
@@ -164,7 +165,14 @@ public:
             // OPTIM
             m_type = sweep_measure;
             init_optimizer();
-            base::run();
+            early_exit = base::exec_sweeps();
+            if (!this->dns)
+            {
+                alps::hdf5::archive h5ar(this->chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                h5ar << alps::make_pvp("/status/graining", this->cur_graining);
+            }
+            if (early_exit)
+                break;
             
             ++graining;
             this->sweep = 0;
@@ -218,13 +226,15 @@ private:
         else
             throw std::runtime_error("Don't know this lattice!");
         
-        /*
+#ifndef NDEBUG
+        // debugging output, to be removed soon!
         std::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
-        for (int p=0; p<lat.size(); ++p) {
-            std::cout << lat.get_prop<std::string>("label", p, p+1) << ": " << lat.get_prop<double>("dx", p, p+1) << std::endl;
-            std::cout << lat.get_prop<std::string>("label", p, p-1) << ": " << lat.get_prop<double>("dx", p, p-1) << std::endl;
+        for (int p=0; p<lat->size(); ++p) {
+            std::cout << lat->get_prop<std::string>("label", p) << ": " << lat->get_prop<double>("dx", p) << std::endl;
+            std::cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
+            std::cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
         }
-        */
+#endif
          
         typename model_traits<Matrix, SymmGroup>::model_ptr tmpmodel;
         tmpmodel = cont_model_factory<Matrix, SymmGroup>::parse(*lat, parms1);
