@@ -2,7 +2,6 @@
 #include "ambient/models/operation/select.h"
 #include "ambient/controllers/context.h"
 #include "ambient/channels/groups/group.h"
-#include "ambient/models/operation/operation.h"
 #include "ambient/utils/sqlite3.c"
 
 namespace ambient {

@@ -10,6 +10,7 @@ namespace ambient { namespace controllers {
         virtual void acquire(channels::ichannel* channel) = 0;
         virtual models::imodel::layout::entry& fetch_block(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual models::imodel::layout::entry& ifetch_block(models::imodel::revision& r, size_t i, size_t j) = 0;
+        virtual models::imodel::layout::entry& init_block(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual void push(models::imodel::modifier* op) = 0;
         virtual void atomic_complete() = 0;
         virtual void atomic_receive(models::imodel::revision& r, size_t i, size_t j) = 0;

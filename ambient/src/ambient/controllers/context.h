@@ -1,7 +1,6 @@
 #ifndef AMBIENT_CONTROLLERS_CONTEXT_H
 #define AMBIENT_CONTROLLERS_CONTEXT_H
 
-#include "ambient/models/operation/operation.h"
 #include "ambient/models/v_model.h"
 #include "ambient/utils/singleton.hpp"
 

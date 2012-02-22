@@ -89,7 +89,7 @@ namespace maquis { namespace types {
 
     template<typename T>
     void p_diagonal_matrix<T>::exp(){ 
-        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, this->get_data());
+        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, *this->get_data().impl);
     }
 
     template<typename T>
@@ -100,7 +100,7 @@ namespace maquis { namespace types {
 
     template<typename T>
     void p_diagonal_matrix<T>::sqrt(){ 
-        ambient::push(ambient::sqrt_diagonal_l<T>, ambient::sqrt_diagonal_c<T>, this->get_data());
+        ambient::push(ambient::sqrt_diagonal_l<T>, ambient::sqrt_diagonal_c<T>, *this->get_data().impl);
     }
 
     template<typename T>

@@ -252,6 +252,7 @@ namespace ambient {
         int xj = get_mem_dim(a).x*j; 
         T* ad = current(a)(i,j);
        
+        printf("Executing kernel for %d %d (%.2f)\n", i, j, ad[0]);
         //operator ?, case 1 matrix is lower than one work group, case 2 several work groups or fit in x direction
         if(j+1 == get_mem_grid_dim(a).x)
             size_x = (get_mem_dim(a).x > n) ? n : (n - (get_mem_grid_dim(a).x-1)*get_mem_dim(a).x);

@@ -27,9 +27,11 @@ namespace ambient { namespace models {
                 void* get_memory();
                 bool valid();
                 bool requested();
+                std::list<models::imodel::modifier*> get_assignments();
                 void* header;
                 void* data;
                 bool request;
+                std::list<modifier*> assignments;
             };
             class path : public imodel::layout::path {
             public:
@@ -51,7 +53,8 @@ namespace ambient { namespace models {
         
            ~layout();
             layout(dim2,size_t);
-            void embed(void* memory, size_t i, size_t j); // fires controllers::unlock_revision if complete
+            bool marked(size_t i, size_t j);
+            void embed(void* memory, size_t i, size_t j, size_t bound); // fires controllers::unlock_revision if complete
             void push_path(size_t i, size_t j, size_t node);
             size_t pop_path(size_t i, size_t j);
             entry* get(size_t i, size_t j);
@@ -100,24 +103,29 @@ namespace ambient { namespace models {
         class revision : public imodel::revision
         {
         public:
-            revision(imodel::layout*);
+            typedef void(*voidfp)();
+            revision(imodel::object*, imodel::layout*);
            ~revision();
             imodel::layout::entry* block(size_t i, size_t j = 0);
             imodel::layout::entry& operator()(size_t i, size_t j);
             void add_modifier(imodel::modifier* m);
             std::list<imodel::modifier*>& get_modifiers();
             std::pair<size_t*,size_t> id();
+            imodel::object& get_object();
             imodel::layout& get_layout();
             channels::group* get_placement();
-            void reduce(void(*)(void*,void*));
-            void init(void(*)());
+            void reduce(voidfp);
+            void init(voidfp);
+            voidfp get_reduce();
+            voidfp get_init();
             void set_dim(dim2);
             size_t number;
+            imodel::object* const object;
             imodel::layout* const layout;
             channels::group* placement;
             std::list<imodel::modifier*> modifiers;
-            void(*initialization)();
-            void(*reduction)(void*,void*);
+            voidfp reduction;
+            voidfp initialization;
         };
         class object: public imodel::object
         {            // revision tracking mechanism (target selector)
@@ -130,10 +138,13 @@ namespace ambient { namespace models {
             dim2 get_dim() const;
             size_t get_t_size() const;
             channels::group* get_placement();
+            size_t* get_thread_revision_base() const;
+            size_t get_revision_base() const;
+            void set_revision_base(size_t r);
             std::vector<v_model::revision*> revisions;
             size_t t_size;
-            size_t base; // revision base ??
             channels::group* placement;
+            pthread_key_t thread_revision_base;
             dim2 dim;
         };
         // }}}
@@ -156,7 +167,6 @@ namespace ambient { namespace models {
     void* solidify(imodel::revision& instance);
     void  disperse(void* data, imodel::revision& instance);
     void  reduce(v_model::modifier* r);
-    void  init(v_model::modifier* i);
     // }}}
 } }
 #endif

@@ -40,6 +40,7 @@ namespace ambient { namespace channels {
         void change_field_size(int field, int size);
         void fill_packet(void* memory, int type, va_list& fields) const;
         size_t get_size() const;
+        size_t get_bound(size_t field) const;
         void commit();
     protected:
         void construct(int code, int count, const int* sizes, const MPI_Datatype* types);

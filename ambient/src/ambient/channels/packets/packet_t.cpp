@@ -65,6 +65,10 @@ namespace ambient { namespace channels {
         return this->t_size;
     }
 
+    size_t packet_t::get_bound(size_t field) const {
+        return this->displacements[field];
+    }
+
     void packet_t::commit(){
         MPI_Type_create_struct(this->count,            // count - number of types
                                this->sizes,            // number of instances of the same type (blocklengths)

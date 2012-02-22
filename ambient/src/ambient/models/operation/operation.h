@@ -9,6 +9,8 @@ namespace ambient { namespace models {
 
     // {{{ compile-time type information
 
+    template <typename T> struct info;
+
     // {{{ singular types or simple types //
     template <typename T> struct singular_t_info {
         typedef T* ptr_type;
@@ -16,7 +18,8 @@ namespace ambient { namespace models {
             return false;
         } 
         static ptr_type pointer(T& obj){
-            return ptr_type(new T(obj));
+            T* r = new T(obj);
+            return ptr_type(r);
         }
         static T& dereference(void* ptr){
             return *(ptr_type)ptr;
@@ -27,17 +30,16 @@ namespace ambient { namespace models {
         static bool constness(T& obj){
             return false;
         }
-        static void modify(T& obj, imodel::modifier* m){ 
+        static size_t modify(T& obj, imodel::modifier* m){ 
+            return 0; // empty for serial objects
+        }
+        static void revise(void* ptr, size_t revision){
             // empty for serial objects
         }
         static void weight(void* ptr, imodel::modifier* m){
             // empty for serial objects
         }
     };
-
-    // types are singular by defult (see forwarding.h)
-    template <typename T> struct info
-    { typedef singular_t_info<T> typed; };
     // }}}
 
     // {{{ parallel_t derived types //
@@ -58,12 +60,20 @@ namespace ambient { namespace models {
         static void deallocate(void* ptr){
             delete (ptr_type*)ptr;
         }
-        static void modify(const T& obj, imodel::modifier* m){
+        static size_t modify(T& obj, imodel::modifier* m){
+            size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
-        }
-        static void modify(T& obj, imodel::modifier* m){
             ambient::model.add_revision(&obj);
+            return base;
+        }
+        static size_t modify(const T& obj, imodel::modifier* m){
+            size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
+            return base;
+        }
+        static void revise(void* ptr, size_t revision){
+            T& obj = *(*(ptr_type*)ptr);
+            obj.set_revision_base(revision);
         }
         static void weight(void* ptr, imodel::modifier* m){
             T& obj = *(*(ptr_type*)ptr);
@@ -97,7 +107,7 @@ namespace ambient { namespace models {
         imodel::revision& get_vellum();
         imodel::revision& get_pin();
     private:
-        enum { MARKUP, LOGISTICS, COMPUTING } state;
+        enum { MARKUP, COMPUTING, COMPLETE } state;
         void(operation::*prototype)();
         void(operation::*cleanup)();
         void(operation::*creditup)();
@@ -105,8 +115,9 @@ namespace ambient { namespace models {
         void(*computing_ptr)();
         void(*op)();
         void** arguments;
+        size_t* revisions;
         size_t count;
-        size_t workload;
+        long int workload; // signed for thread-safety
         pthread_mutex_t mutex;
     public:
         size_t credit;

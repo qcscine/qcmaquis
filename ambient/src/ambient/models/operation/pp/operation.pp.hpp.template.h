@@ -4,6 +4,9 @@
 #define pin_object(z, n, pn)                                                                                         \
     BOOST_PP_IF(BOOST_PP_EQUAL(n,pn), this->pin = &current(info<T ## n>::typed::dereference(this->arguments[n]));,)  \
 
+#define revise_object(z, n, unused)                                                                                  \
+    info<T ## n>::typed::revise(this->arguments[n], this->revisions[n]);
+
 #define cleanup_object(z, n, unused)                                                                                 \
     info<T ## n>::typed::deallocate(this->arguments[n]);
 
@@ -11,14 +14,16 @@
     info<T ## n>::typed::weight(this->arguments[n], this);                                                           
 
 #define extract_arguments(z, n, unused)                                                                              \
-    this->arguments[n] = (void*)info<T ## n>::typed::pointer(arg ## n);                                              \
-    info<T ## n>::typed::modify(arg ## n, this);                                                                     \
-                                                                                                                     
+    this->arguments[n] = (void*)info<T ## n>::typed::pointer(arg ## n);
+
+#define latch_object_revision(z, n, unused)                                                                          \
+    this->revisions[n] = info<T ## n>::typed::modify(info<T ## n>::typed::dereference(this->arguments[n]), this);
+
 #define type_list(z, n, pn)                                                                                          \
     BOOST_PP_COMMA_IF(n)                                                                                             \
     BOOST_PP_IF(BOOST_PP_EQUAL(n,pn), pinned,)                                                                       \
     T ## n&                                                                                                          
-                                                                                                                     
+
 #define arg_list(z, n, pn)                                                                                           \
     BOOST_PP_COMMA_IF(n)                                                                                             \
     BOOST_PP_IF(BOOST_PP_EQUAL(n,pn), marked,)                                                                       \
@@ -28,8 +33,15 @@
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
 void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                     \
 {                                                                                                                    \
-    ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) )) this->op )                                           \
+    BOOST_PP_REPEAT(TYPES_NUMBER, revise_object, ~)                                                                  \
+    void(*fp)() = this->op; if(this->state == MARKUP){ this->state = COMPUTING; fp = this->logistics_ptr; }          \
+    ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) )) fp )                                                 \
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, n) );                                                                  \
+    pthread_mutex_lock(&this->mutex);                                                                                \
+    if(fp == this->logistics_ptr) this->workload += this->pin->get_layout().get_grid_dim().square();                 \
+    else this->workload--;                                                                                           \
+    if(this->workload == 0){ this->state = COMPLETE; controller.atomic_complete(); }                                                           \
+    pthread_mutex_unlock(&this->mutex);                                                                              \
 }                                                                                                                    \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
 void cleanup_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                       \
@@ -45,7 +57,13 @@ template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                     
 void mark_pin(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                               \
 {                                                                                                                    \
     BOOST_PP_REPEAT(TYPES_NUMBER, pin_object, n)                                                                     \
+}                                                                                                                    \
+template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
+void latch_revisions(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                        \
+{                                                                                                                    \
+    BOOST_PP_REPEAT(TYPES_NUMBER, latch_object_revision, ~)                                                          \
 }
+
 
 #ifndef BOOST_PP_IS_ITERATING
 #ifndef CONVERTOBJECTS_HPP
@@ -70,25 +88,36 @@ template< typename FP, BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 operation( FP logistics, FP computing, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER, T, &arg) ){
     this->logistics_ptr = (void(*)())logistics;
     this->computing_ptr = (void(*)())computing;
-    this->op            = this->logistics_ptr;
+    this->op = (void(*)())computing;
+    this->workload  = 0;
     this->credit    = 0;
-    this->state     = MARKUP;
     this->count     = TYPES_NUMBER;
+    this->state     = MARKUP;
     this->arguments = (void**)malloc(sizeof(void*)*this->count);
+    this->revisions = (size_t*)malloc(sizeof(size_t)*this->count);
     BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
+    this->mark_pin(logistics);
+    this->latch_revisions(logistics);
     void(operation::*ptr)(FP); ptr = &operation::prototype_template;
     this->prototype = (void(operation::*)())ptr;
     ptr = &operation::cleanup_template;
     this->cleanup = (void(operation::*)())ptr;
     ptr = &operation::creditup_template;
     this->creditup = (void(operation::*)())ptr;
-    this->mark_pin(logistics);
+    pthread_mutex_init(&this->mutex, NULL);
 }
 
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
-    ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )) this->op )
+    BOOST_PP_REPEAT(TYPES_NUMBER, revise_object, ~) 
+    void(*fp)() = this->op; if(this->state == MARKUP){ this->state = COMPUTING; fp = this->logistics_ptr; }
+    ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )) fp )
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
+    pthread_mutex_lock(&this->mutex);
+    if(fp == this->logistics_ptr) this->workload += this->pin->get_layout().get_grid_dim().square();
+    else this->workload--;
+    if(this->workload == 0){ this->state = COMPLETE; controller.atomic_complete(); }
+    pthread_mutex_unlock(&this->mutex);
 }
 
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
@@ -104,6 +133,11 @@ void creditup_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 void mark_pin(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
     this->pin = NULL;
+}
+
+template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
+void latch_revisions(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
+    BOOST_PP_REPEAT(TYPES_NUMBER, latch_object_revision, ~)
 }
 BOOST_PP_REPEAT(n, body_tn, ~) 
 

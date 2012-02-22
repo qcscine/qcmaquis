@@ -10,7 +10,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void random_i(maquis::types::p_dense_matrix_impl<T>& a){
+    void random_i(models::v_model::object& a){
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t m = get_mem_dim(a).y;
@@ -39,7 +39,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void null_i(maquis::types::p_dense_matrix_impl<T>& a){
+    void null_i(models::v_model::object& a){
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t m = get_mem_dim(a).y;
@@ -49,7 +49,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void identity_i(maquis::types::p_dense_matrix_impl<T>& a){
+    void identity_i(models::v_model::object& a){
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t m = get_mem_dim(a).y;
@@ -67,7 +67,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void value_i(maquis::types::p_dense_matrix_impl<T>& a){
+    void value_i(models::v_model::object& a){
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t m = get_mem_dim(a).y;
