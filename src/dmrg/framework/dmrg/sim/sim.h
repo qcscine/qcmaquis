@@ -83,6 +83,7 @@ namespace app {
         virtual void model_init ();
         virtual void mps_init ();
         
+        virtual bool exec_sweeps ();
         
     private:
         
