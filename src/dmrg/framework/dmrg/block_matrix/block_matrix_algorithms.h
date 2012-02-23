@@ -171,7 +171,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     detail::iteretable_diag_impl<DiagMatrix, SymmGroup>::solver_truncate_impl_zero(S, Mmax, rel_tol, keeps, truncated_weight, smallest_ev);
     timer.end(); 
      
-    for ( std::size_t k = S.n_blocks() - 1; k > 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
+    for ( int k = S.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {
        size_t keep = keeps[k];
   
