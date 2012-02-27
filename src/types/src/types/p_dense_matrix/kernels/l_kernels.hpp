@@ -87,6 +87,7 @@ namespace ambient {
 
     template<>
     void copy_l(maquis::types::p_dense_matrix_impl<double>& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
+        printf("In copy logistics! (revision of copy %d)\n", (int)static_cast<models::v_model::revision&>(current(ac)).number);
         ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
@@ -235,6 +236,7 @@ namespace ambient {
 
     template<typename T>
     void mem_bound_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        printf("In add logistics! (revisions %d + %d)\n", (int)static_cast<models::v_model::revision&>(current(a)).number, (int)static_cast<models::v_model::revision&>(current(b)).number);
         ctxt_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);

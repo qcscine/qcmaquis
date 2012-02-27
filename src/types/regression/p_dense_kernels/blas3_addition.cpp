@@ -39,14 +39,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
     sC = maquis::traits::matrix_cast<sMatrix>(pC); // playout is inside the cast
-    printf("Casted matrices\n"); 
 
     sC = sA + sB;
-    printf("Added serial matrices\n"); 
+    printf("\n-------------------------------------------------\n"); 
 
-//    pC = pA + pB; 
+    pA + pB; 
 
-//    ambient::playout();
+    ambient::playout();
 
     BOOST_CHECK(sA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

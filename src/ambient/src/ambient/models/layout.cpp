@@ -17,9 +17,13 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::layout(dim2 dim, size_t t_size)
-    : master(0), t_size(t_size), mesh_dim(0,0), entries(), paths()
+    : master(0), t_size(t_size), mesh_dim(0,0)
     {
         this->dim = dim;
+    }
+
+    void v_model::layout::mark(size_t i, size_t j){
+        this->marker.mark(i, j);
     }
 
     bool v_model::layout::marked(size_t i, size_t j){
@@ -28,18 +32,6 @@ namespace ambient { namespace models {
 
     void v_model::layout::embed(void* memory, size_t i, size_t j, size_t bound){
         this->get(i,j)->set_memory(memory, bound);
-    }
-
-    void v_model::layout::push_path(size_t i, size_t j, size_t node){
-        this->paths[i][j]->push_node(node);
-    }
-
-    size_t v_model::layout::pop_path(size_t i, size_t j){
-        return this->paths[i][j]->pop_node();
-    }
-
-    v_model::layout::path* v_model::layout::get_path(size_t i, size_t j){
-        return this->paths[i][j];
     }
 
     v_model::layout::entry* v_model::layout::get(size_t i, size_t j){
@@ -53,12 +45,10 @@ namespace ambient { namespace models {
         for(size_t i = 0; i < dim.y; i++){
             if(i >= this->mesh_dim.y){
                 entries.push_back(std::vector<entry*>());
-                paths.push_back(std::vector<path*>());
             }
             for(size_t j = 0; j < dim.x; j++){
                 if(j >= this->mesh_dim.x || i >= this->mesh_dim.y){
                     entries[i].push_back(new v_model::layout::entry());
-                    paths[i].push_back(new v_model::layout::path());
                 }
             }
         }
@@ -147,24 +137,7 @@ namespace ambient { namespace models {
 
     // }}}
 
-    // {{{ layout::path + layout::entry + layout::marker //
-
-    v_model::layout::path::path(){
-    }
-
-    void v_model::layout::path::push_node(size_t n){
-        this->route.push_back(n);
-    }
-
-    size_t v_model::layout::path::pop_node(){
-        size_t node = this->route.back();
-        this->route.pop_back();
-        return node;
-    }
-
-    bool v_model::layout::path::empty(){
-        return (this->route.size() ? true : false);
-    }
+    // {{{ layout::entry + layout::marker //
 
     v_model::layout::entry::entry()
     : header(NULL), request(false)
@@ -199,8 +172,12 @@ namespace ambient { namespace models {
         return (std::complex<double>*)this->data;
     }
 
-    std::list<models::imodel::modifier*> v_model::layout::entry::get_assignments(){
+    std::list<models::imodel::modifier*>& v_model::layout::entry::get_assignments(){
         return this->assignments;
+    }
+
+    std::list<size_t>& v_model::layout::entry::get_path(){
+        return this->path;
     }
 
     v_model::layout::marker::marker(){

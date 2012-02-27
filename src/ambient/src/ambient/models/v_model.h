@@ -27,19 +27,13 @@ namespace ambient { namespace models {
                 void* get_memory();
                 bool valid();
                 bool requested();
-                std::list<models::imodel::modifier*> get_assignments();
+                std::list<models::imodel::modifier*>& get_assignments();
+                std::list<size_t>& get_path();
                 void* header;
                 void* data;
                 bool request;
                 std::list<modifier*> assignments;
-            };
-            class path : public imodel::layout::path {
-            public:
-                path();
-                void push_node(size_t n);
-                size_t pop_node();
-                bool empty();
-                std::list<size_t> route;
+                std::list<size_t> path;
             };
             class marker {
             public:
@@ -53,12 +47,10 @@ namespace ambient { namespace models {
         
            ~layout();
             layout(dim2,size_t);
+            void mark(size_t i, size_t j);
             bool marked(size_t i, size_t j);
             void embed(void* memory, size_t i, size_t j, size_t bound); // fires controllers::unlock_revision if complete
-            void push_path(size_t i, size_t j, size_t node);
-            size_t pop_path(size_t i, size_t j);
             entry* get(size_t i, size_t j);
-            path* get_path(size_t i, size_t j);
             void mesh();
             void set_revision(imodel::revision* r);
             std::pair<size_t*,size_t> id();
@@ -82,7 +74,6 @@ namespace ambient { namespace models {
             dim2   mesh_dim;                // size of the grid (reserved) 
             dim2   dim;                     // total size of the revision (typed)
             std::vector< std::vector<v_model::layout::entry*> > entries;
-            std::vector< std::vector<v_model::layout::path*> > paths;
             v_model::layout::marker marker;
             v_model::revision* revision;
             size_t master;
@@ -114,6 +105,9 @@ namespace ambient { namespace models {
             imodel::object& get_object();
             imodel::layout& get_layout();
             channels::group* get_placement();
+            void set_placement(channels::group*);
+            imodel::modifier* get_generator();
+            void set_generator(imodel::modifier*);
             void reduce(voidfp);
             void init(voidfp);
             voidfp get_reduce();
@@ -123,6 +117,7 @@ namespace ambient { namespace models {
             imodel::object* const object;
             imodel::layout* const layout;
             channels::group* placement;
+            imodel::modifier* generator;
             std::list<imodel::modifier*> modifiers;
             voidfp reduction;
             voidfp initialization;
@@ -137,13 +132,11 @@ namespace ambient { namespace models {
             v_model::revision& revision(size_t offset) const;
             dim2 get_dim() const;
             size_t get_t_size() const;
-            channels::group* get_placement();
             size_t* get_thread_revision_base() const;
             size_t get_revision_base() const;
             void set_revision_base(size_t r);
             std::vector<v_model::revision*> revisions;
             size_t t_size;
-            channels::group* placement;
             pthread_key_t thread_revision_base;
             dim2 dim;
         };

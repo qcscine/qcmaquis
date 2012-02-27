@@ -7,16 +7,16 @@ namespace ambient {
 
     // C - w, alfa are not nested into dim2 because they are not 2D coordinates
     template <typename T>
-    void __a_memcpy(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, maquis::types::p_dense_matrix_impl<T> const& src, T *sd,  dim2 const& dpos, dim2 const& spos, std::size_t w, double alfa){
-        std::size_t v = get_mem_dim(src).y-spos.x;
+    void __a_memcpy(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, maquis::types::p_dense_matrix_impl<T> const& src, T *sd,  dim2 const& dpos, dim2 const& spos, size_t w, double alfa){
+        size_t v = get_mem_dim(src).y-spos.x;
         memcpy(&dd[dpos.y*get_mem_dim(dest).y+dpos.x],
                &sd[spos.y*get_mem_dim(src).y+spos.x],
                std::min(v, w)*sizeof(T));
     }
 
     template <typename T>
-    void __a_memscal(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, maquis::types::p_dense_matrix_impl<T> const& src, T *sd,  dim2 const& dpos, dim2 const& spos, std::size_t w, double alfa){
-        std::size_t v = get_mem_dim(src).y-spos.x;
+    void __a_memscal(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, maquis::types::p_dense_matrix_impl<T> const& src, T *sd,  dim2 const& dpos, dim2 const& spos, size_t w, double alfa){
+        size_t v = get_mem_dim(src).y-spos.x;
         for(int z = 0; z < std::min(v, w); z++)
             dd[dpos.y*get_mem_dim(dest).y+dpos.x+z] += sd[spos.y*get_mem_dim(src).y+spos.x + z]*alfa;
     }
@@ -25,7 +25,7 @@ namespace ambient {
     template<typename T>
     void __a_memptf(void (*ptf)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, 
                                 maquis::types::p_dense_matrix_impl<T> const& src, T *sd , 
-                                dim2 const& dpos, dim2 const& spos, std::size_t w, double alfa),
+                                dim2 const& dpos, dim2 const& spos, size_t w, double alfa),
                     maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
                     const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                     dim2 size, double alfa = 0.0)
@@ -178,8 +178,9 @@ namespace ambient {
         int j = ctxt.get_block_id().x;
         if(i >= get_mem_grid_dim(ac).y || j >= get_mem_grid_dim(ac).x) return;
         double* a_elements  = current(a)(i,j);
-        double* ac_elements = current(ac)(i,j);
+        double* ac_elements = updated(ac)(i,j);
         memcpy(ac_elements, a_elements, sizeof(double)*get_mem_dim(a).y*get_mem_dim(a).x);
+        printf("COPYED %d and %d!\n", i, j);
     }
 
     void variable_free_c(void*& a){ free(a); }
@@ -188,8 +189,8 @@ namespace ambient {
     void remove_rows_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
         // C - Presently I do not copy datas the between num_rows and the lda ....
         // i_mark marks (x position) to remove rows, k number of rows to remove (default 1) 
-        std::size_t numrows = get_dim(a).y;
-        std::size_t numcols = get_dim(a).x;
+        size_t numrows = get_dim(a).y;
+        size_t numcols = get_dim(a).x;
         __a_memptf(&__a_memcpy<T>, a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
     }
 
@@ -197,8 +198,8 @@ namespace ambient {
     void remove_cols_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
         // C - Presently I do not copy datas the between num_cols and the sda ....
         // j_mark marks (x position) to remove cols, k number of columns to remove (default 1) 
-        std::size_t numrows = get_dim(a).y;
-        std::size_t numcols = get_dim(a).x;
+        size_t numrows = get_dim(a).y;
+        size_t numcols = get_dim(a).x;
         __a_memptf(&__a_memcpy<T>,a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
     }
 
@@ -210,7 +211,7 @@ namespace ambient {
     template<typename T>
     void sqrt_diagonal_c(pinned maquis::types::p_dense_matrix_impl<T>& a){
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        std::size_t size = get_mem_dim(a).y;
+        size_t size = get_mem_dim(a).y;
         for(int i=0; i < size; i++)
             ad[i] = sqrt(ad[i]);
     }
@@ -218,7 +219,7 @@ namespace ambient {
     template<typename T>
     void exp_diagonal_c(pinned maquis::types::p_dense_matrix_impl<T>& a){
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        std::size_t size = get_mem_dim(a).y;
+        size_t size = get_mem_dim(a).y;
         for(int i=0; i < size; i++)
             ad[i] = exp(ad[i]);
     }
@@ -230,7 +231,7 @@ namespace ambient {
 
     void copy_after_std_c(std::vector<double>*& ac, const size_t& pos, pinned const maquis::types::p_dense_matrix_impl<double>& a){ // C - bug if execution independant
         double* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        std::size_t size = std::min(ac->size(),pos+get_mem_dim(a).y);
+        size_t size = std::min(ac->size(),pos+get_mem_dim(a).y);
         for(int i=0; (pos+i) < size; i++){
             (*ac)[pos+i] = ad[i];
         }
@@ -252,7 +253,6 @@ namespace ambient {
         int xj = get_mem_dim(a).x*j; 
         T* ad = current(a)(i,j);
        
-        printf("Executing kernel for %d %d (%.2f)\n", i, j, ad[0]);
         //operator ?, case 1 matrix is lower than one work group, case 2 several work groups or fit in x direction
         if(j+1 == get_mem_grid_dim(a).x)
             size_x = (get_mem_dim(a).x > n) ? n : (n - (get_mem_grid_dim(a).x-1)*get_mem_dim(a).x);
@@ -351,7 +351,7 @@ namespace ambient {
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i,j);
-        std::size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(size_t ii=0; ii < size; ii++)
             summ += ad[ii]*ad[ii];
     
@@ -365,7 +365,7 @@ namespace ambient {
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i,j);
         T* bd = current(b)(i,j);
-        std::size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(size_t ii=0; ii < size; ii++)
             summ += ad[ii]*bd[ii];
         *overlap += summ;
@@ -373,18 +373,22 @@ namespace ambient {
 
     template<typename T>
     void add_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-        T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        T* bd = current(b)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        std::size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
-        for(int i=0; i < size; i++)
-            ad[i] += bd[i];
+        int i = ctxt.get_block_id().y;
+        int j = ctxt.get_block_id().x;
+        T* ad = current(a)(i, j);
+        T* bd = current(b)(i, j);
+        T* ar = updated(a)(i, j);
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        for(int k = 0; k < size; k++)
+            ar[k] = ad[k] + bd[k];
+        printf("ADDED %d and %d! (%lu)\n", i, j, size);
     }
 
     template<typename T>
     void sub_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         T* bd = current(b)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        std::size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(int i=0; i < size; i++)
             ad[i] -= bd[i];
     }
@@ -392,7 +396,7 @@ namespace ambient {
     template<typename T, typename T2>
     void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& m, const T2& t){
         T* md   = current(m)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        std::size_t size = get_mem_dim(m).x*get_mem_dim(m).y;
+        size_t size = get_mem_dim(m).x*get_mem_dim(m).y;
         for(int i=0; i < size; i++)
             md[i] *= t;
     }
@@ -449,12 +453,12 @@ namespace ambient {
 
     template<typename T>
     void transpose_c(pinned maquis::types::p_dense_matrix_impl<T>& transposed, const maquis::types::p_dense_matrix_impl<T>& original){
-        std::size_t i = ctxt.get_block_id().y;
-        std::size_t j = ctxt.get_block_id().x;
+        size_t i = ctxt.get_block_id().y;
+        size_t j = ctxt.get_block_id().x;
         T* td = current(transposed)(i,j);
         T* od = current(original)(j,i);
     
-        for(std::size_t i = 0; i < get_mem_dim(original).y; ++i){
+        for(size_t i = 0; i < get_mem_dim(original).y; ++i){
             for(size_t j=0; j < get_mem_dim(original).x; ++j){
                 td[j+i*get_mem_dim(transposed).y] = od[i+j*get_mem_dim(original).y];
             }

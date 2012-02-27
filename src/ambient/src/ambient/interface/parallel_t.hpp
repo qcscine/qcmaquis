@@ -34,6 +34,7 @@ namespace ambient{
         :references(0)
         {
             this->t_size = sizeof(value_type);
+            this->pt_set_dim(o.get_dim().x, o.get_dim().y);
             ambient::push(ambient::copy_l<T>, ambient::copy_c<T>, 
                           *(T*)this, *(const T*)&o);
         }
@@ -56,7 +57,7 @@ namespace ambient{
         value_type& pt_fetch(size_t blocked_i, size_t blocked_j, 
                              size_t element_i, size_t element_j){
             ambient::playout();
-            return ((value_type*)ambient::controller.fetch_block(this->revision(0), blocked_i, blocked_j))
+            return ((value_type*)ambient::controller.ufetch_block(this->revision(0), blocked_i, blocked_j))
                    [ element_j*this->pt_mem_dim().y+element_i ];
         }
     };

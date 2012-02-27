@@ -3,7 +3,7 @@
 namespace ambient{
 
     tasklist::tasklist()
-    : seed(NULL), tail(NULL), active(true)
+    : seed(NULL), tail(NULL), active(true), idle(false)
     {
         pthread_mutex_init(&this->mutex, NULL);
     }
@@ -15,9 +15,9 @@ namespace ambient{
     void tasklist::add_task(void* content){ // delegate thread
         pthread_mutex_lock(&this->mutex);
 
-        if(this->tail == NULL){
-            this->tail = new task(content);
-            this->seed = this->tail;
+        if(this->seed == NULL){
+            this->seed = new task(content);
+            this->tail = this->seed;
         }else{
             this->tail->set_next(new task(content));
             this->tail = this->tail->next();
@@ -27,20 +27,21 @@ namespace ambient{
     }
 
     void* tasklist::get_task(){ // worker thread
-        if(this->seed == NULL) return NULL;
-        else if(this->seed == this->tail){
-            pthread_mutex_lock(&this->mutex);
-            void* data = this->seed->content;
-            delete this->seed;
-            this->seed = NULL;
-            this->tail = NULL;
-            pthread_mutex_unlock(&this->mutex);
-            return data;
+        void* data = NULL;
+        pthread_mutex_lock(&this->mutex);
+        if(this->seed != NULL){
+            data = this->seed->content;
+            if(this->seed == this->tail){
+                delete this->seed;
+                this->seed = NULL;
+                this->tail = NULL;
+            }else{
+                task* seed = this->seed;
+                this->seed = this->seed->next();
+                delete seed;
+            }
         }
-        task* seed = this->seed;
-        void* data = seed->content;
-        this->seed = seed->next();
-        delete seed;
+        pthread_mutex_unlock(&this->mutex);
         return data;
     }
 

@@ -39,6 +39,9 @@ namespace ambient { namespace models {
         static void weight(void* ptr, imodel::modifier* m){
             // empty for serial objects
         }
+        static void place(void* ptr, imodel::modifier* m){
+            // empty for serial objects
+        }
     };
     // }}}
 
@@ -63,12 +66,15 @@ namespace ambient { namespace models {
         static size_t modify(T& obj, imodel::modifier* m){
             size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
+            printf("Adding revision! (current is %d)\n", (int)base);
             ambient::model.add_revision(&obj);
+            current(obj).set_generator(m); // (updated obj)
             return base;
         }
         static size_t modify(const T& obj, imodel::modifier* m){
             size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
+            printf("Using revision! (current is %d)\n", (int)base);
             return base;
         }
         static void revise(void* ptr, size_t revision){
@@ -81,6 +87,11 @@ namespace ambient { namespace models {
                 m->set_weight(obj.revisions.size());
                 m->set_vellum(current(obj));
             }
+        }
+        static void place(void* ptr, imodel::modifier* m){
+            T& obj = *(*(ptr_type*)ptr);
+            if(current(obj).get_placement() == NULL)
+                current(obj).set_placement(m->get_group());
         }
         static bool constness(const T& obj){
             return true;
@@ -101,6 +112,7 @@ namespace ambient { namespace models {
         void invoke();   // executes operation (clean way)
         void weight();   // credits up the operation
         void set_group(channels::group* grp);
+        channels::group* get_group();
         size_t get_weight();
         void set_weight(size_t credit);
         void set_vellum(imodel::revision& v);
@@ -111,6 +123,7 @@ namespace ambient { namespace models {
         void(operation::*prototype)();
         void(operation::*cleanup)();
         void(operation::*creditup)();
+        void(operation::*place)();
         void(*logistics_ptr)();
         void(*computing_ptr)();
         void(*op)();
