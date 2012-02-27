@@ -4,7 +4,6 @@
 namespace ambient { namespace models {
 
     v_model::object::object()
-    : placement(NULL) 
     {
         pthread_key_create(&thread_revision_base, free);
     }
@@ -24,6 +23,7 @@ namespace ambient { namespace models {
     }
 
     void v_model::object::add_revision(imodel::layout* l){
+        if(this->revisions.size() == 0) l->mark(0, 0);
         this->set_revision_base(this->revisions.size());
         this->revisions.push_back(new v_model::revision(this, l));
     }
@@ -34,10 +34,6 @@ namespace ambient { namespace models {
 
     size_t v_model::object::get_t_size() const {
         return this->t_size;
-    }
-
-    channels::group* v_model::object::get_placement(){
-        return this->placement;
     }
 
     size_t* v_model::object::get_thread_revision_base() const {

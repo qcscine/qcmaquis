@@ -16,6 +16,10 @@ namespace ambient { namespace models {
     }
     void operation::set_group(channels::group* grp){
         this->grp = grp;
+        (this->*place)();
+    }
+    channels::group* operation::get_group(){
+        return this->grp;
     }
     size_t operation::get_weight(){
         return this->credit;

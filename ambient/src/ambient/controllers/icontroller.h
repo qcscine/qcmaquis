@@ -8,7 +8,7 @@ namespace ambient { namespace controllers {
     class icontroller {
     public:
         virtual void acquire(channels::ichannel* channel) = 0;
-        virtual models::imodel::layout::entry& fetch_block(models::imodel::revision& r, size_t i, size_t j) = 0;
+        virtual models::imodel::layout::entry& ufetch_block(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual models::imodel::layout::entry& ifetch_block(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual models::imodel::layout::entry& init_block(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual void push(models::imodel::modifier* op) = 0;

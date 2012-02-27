@@ -23,7 +23,6 @@ namespace maquis { namespace types {
     {
         this->cols = m.num_cols();
         this->rows = m.num_rows();
-        this->pt_set_dim(this->cols, this->rows);
     }
 
     template <typename T>

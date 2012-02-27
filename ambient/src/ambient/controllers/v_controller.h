@@ -23,8 +23,9 @@ namespace ambient { namespace controllers {
         void   push(models::imodel::modifier* op);
         void   push_mod(mod*);
 
-        models::imodel::layout::entry& fetch_block(models::imodel::revision& r, size_t i, size_t j);
+        models::imodel::layout::entry& ufetch_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& ifetch_block(models::imodel::revision& r, size_t i, size_t j);
+        models::imodel::layout::entry& alloc_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& init_block(models::imodel::revision& r, size_t i, size_t j);
         void unlock_revision(models::imodel::revision* arg);
         void unlink_revision(models::imodel::revision* arg);
@@ -43,6 +44,7 @@ namespace ambient { namespace controllers {
         pthread_t* pool;
         tasklist* tasks;
         size_t workload;
+        size_t rrn;
     };
 
 } }

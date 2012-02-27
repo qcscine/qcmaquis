@@ -53,10 +53,10 @@ namespace ambient { namespace models {
         for(size_t j=0; j < l.get_mem_grid_dim().x; j++)
             for(size_t jj=0; jj < l.get_mem_dim().x; jj++)
                 for(size_t i=0; i < l.get_mem_grid_dim().y; i++){
-                    if(r(i,j).valid()){
+                    if(r.block(i,j)->valid()){
                         memory = (char*)realloc(memory, (iterator+1)*l.get_mem_lda());
                         memcpy(memory+iterator*l.get_mem_lda(),                   // copy to
-                               &((char*)r(i,j).get_memory())[jj*l.get_mem_lda()], // copy from
+                               &((char*)r.block(i,j)->get_memory())[jj*l.get_mem_lda()], // copy from
                                l.get_mem_lda());                                  // of size
                         iterator++;
                     }
@@ -72,8 +72,8 @@ namespace ambient { namespace models {
         for(size_t j=0; j < l.get_mem_grid_dim().x; j++)
             for(size_t jj=0; jj < l.get_mem_dim().x; jj++)
                 for(size_t i=0; i < l.get_mem_grid_dim().y; i++){
-                    if(r(i,j).valid()){
-                        memcpy(&((char*)r(i,j).get_memory())[jj*l.get_mem_lda()], // copy from
+                    if(r.block(i,j)->valid()){
+                        memcpy(&((char*)r.block(i,j)->get_memory())[jj*l.get_mem_lda()], // copy from
                                memory+iterator*l.get_mem_lda(),                   // copy to
                                l.get_mem_lda());                                  // of size
                         iterator++;

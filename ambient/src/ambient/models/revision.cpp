@@ -10,7 +10,7 @@ namespace ambient { namespace models {
     }
 
     v_model::revision::revision(imodel::object* o, imodel::layout* l)
-    : object(o), layout(l), initialization((voidfp)null_i), reduction(NULL), placement(NULL)
+    : object(o), layout(l), initialization((voidfp)null_i), reduction(NULL), placement(NULL), generator(NULL)
     {
         this->number = o->get_revision_base();
         this->layout->set_revision(this);
@@ -41,7 +41,7 @@ namespace ambient { namespace models {
     }
 
     imodel::layout::entry& v_model::revision::operator()(size_t i, size_t j){
-        return *(imodel::layout::entry*)this->block(i,j);
+        return controller.ufetch_block(*this, i, j);
     }
 
     void v_model::revision::add_modifier(models::imodel::modifier* m){
@@ -54,6 +54,18 @@ namespace ambient { namespace models {
 
     channels::group* v_model::revision::get_placement(){
         return this->placement;
+    }
+
+    void v_model::revision::set_placement(channels::group* grp){
+        this->placement = grp;
+    }
+
+    void v_model::revision::set_generator(imodel::modifier* m){
+        this->generator = m;
+    }
+
+    imodel::modifier* v_model::revision::get_generator(){
+        return this->generator;
     }
 
     void v_model::revision::reduce(void(*fp)()){

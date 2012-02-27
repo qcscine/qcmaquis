@@ -26,6 +26,7 @@ namespace ambient{
         task* tail;
         pthread_mutex_t mutex;
         bool active;
+        bool idle;
     };
 
 }

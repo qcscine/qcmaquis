@@ -13,11 +13,14 @@
 #define creditup_object(z, n, unused)                                                                                \
     info<T ## n>::typed::weight(this->arguments[n], this);                                                           
 
+#define place_revision(z, n, unused)                                                                                \
+    info<T ## n>::typed::place(this->arguments[n], this);                                                           
+
 #define extract_arguments(z, n, unused)                                                                              \
     this->arguments[n] = (void*)info<T ## n>::typed::pointer(arg ## n);
 
 #define latch_object_revision(z, n, unused)                                                                          \
-    this->revisions[n] = info<T ## n>::typed::modify(info<T ## n>::typed::dereference(this->arguments[n]), this);
+    this->revisions[n] = info<T ## n>::typed::modify(const_cast<T ## n&>(info<T ## n>::typed::dereference(this->arguments[n])), this);
 
 #define type_list(z, n, pn)                                                                                          \
     BOOST_PP_COMMA_IF(n)                                                                                             \
@@ -31,16 +34,16 @@
                                                                                                                      
 #define body_tn(z, n, text)                                                                                          \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
-void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                     \
-{                                                                                                                    \
+void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) )){                                    \
     BOOST_PP_REPEAT(TYPES_NUMBER, revise_object, ~)                                                                  \
     void(*fp)() = this->op; if(this->state == MARKUP){ this->state = COMPUTING; fp = this->logistics_ptr; }          \
     ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) )) fp )                                                 \
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, n) );                                                                  \
     pthread_mutex_lock(&this->mutex);                                                                                \
+    assert(this->workload*this->workload <= this->pin->get_layout().get_grid_dim().square()*this->pin->get_layout().get_grid_dim().square() ); \
     if(fp == this->logistics_ptr) this->workload += this->pin->get_layout().get_grid_dim().square();                 \
     else this->workload--;                                                                                           \
-    if(this->workload == 0){ this->state = COMPLETE; controller.atomic_complete(); }                                                           \
+    if(this->workload == 0){ this->state = COMPLETE; controller.atomic_complete(); }                                 \
     pthread_mutex_unlock(&this->mutex);                                                                              \
 }                                                                                                                    \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
@@ -52,6 +55,11 @@ template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                     
 void creditup_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                      \
 {                                                                                                                    \
     BOOST_PP_REPEAT(TYPES_NUMBER, creditup_object, ~)                                                                \
+}                                                                                                                    \
+template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
+void place_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                         \
+{                                                                                                                    \
+    BOOST_PP_REPEAT(TYPES_NUMBER, place_revision, ~)                                                                 \
 }                                                                                                                    \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
 void mark_pin(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                               \
@@ -104,6 +112,8 @@ operation( FP logistics, FP computing, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER,
     this->cleanup = (void(operation::*)())ptr;
     ptr = &operation::creditup_template;
     this->creditup = (void(operation::*)())ptr;
+    ptr = &operation::place_template;
+    this->place = (void(operation::*)())ptr;
     pthread_mutex_init(&this->mutex, NULL);
 }
 
@@ -114,12 +124,12 @@ void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST
     ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )) fp )
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
     pthread_mutex_lock(&this->mutex);
+    assert(this->workload*this->workload <= this->pin->get_layout().get_grid_dim().square()*this->pin->get_layout().get_grid_dim().square() );
     if(fp == this->logistics_ptr) this->workload += this->pin->get_layout().get_grid_dim().square();
     else this->workload--;
     if(this->workload == 0){ this->state = COMPLETE; controller.atomic_complete(); }
     pthread_mutex_unlock(&this->mutex);
 }
-
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 void cleanup_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
     BOOST_PP_REPEAT(TYPES_NUMBER, cleanup_object, ~) 
@@ -128,6 +138,11 @@ void cleanup_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_P
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
 void creditup_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
     BOOST_PP_REPEAT(TYPES_NUMBER, creditup_object, ~) 
+}
+
+template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
+void place_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
+    BOOST_PP_REPEAT(TYPES_NUMBER, place_revision, ~) 
 }
 
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >

@@ -19,6 +19,7 @@ namespace ambient { namespace models {
             virtual size_t get_weight() = 0;
             virtual void set_weight(size_t) = 0;
             virtual void set_group(channels::group* grp) = 0;
+            virtual channels::group* get_group() = 0;
             virtual void set_vellum(revision&) = 0;
             virtual revision& get_vellum() = 0;
             virtual revision& get_pin() = 0;
@@ -33,19 +34,12 @@ namespace ambient { namespace models {
                 virtual operator std::complex<double>* () = 0;
                 virtual void* get_memory() = 0;
                 virtual void set_memory(void* memory, size_t bound) = 0;
-                virtual std::list<modifier*> get_assignments() = 0;
+                virtual std::list<modifier*>& get_assignments() = 0;
+                virtual std::list<size_t>& get_path() = 0;
             };
-            class path {
-            public:
-                virtual void push_node(size_t n) = 0;
-                virtual size_t pop_node() = 0;
-                virtual bool empty() = 0;
-            };
+            virtual void mark(size_t i, size_t j) = 0;
             virtual bool marked(size_t i, size_t j) = 0;
             virtual void embed(void* memory, size_t i, size_t j, size_t bound) = 0;
-            virtual void push_path(size_t i, size_t j, size_t node) = 0;
-            virtual size_t pop_path(size_t i, size_t j) = 0;
-            virtual path* get_path(size_t i, size_t j) = 0;
             virtual entry* get(size_t i, size_t j) = 0;
             virtual void set_dim(dim2) = 0;
             virtual dim2 get_dim() const = 0;
@@ -66,11 +60,15 @@ namespace ambient { namespace models {
             virtual void set_dim(dim2) = 0;
             virtual std::pair<size_t*,size_t> id() = 0;
             virtual imodel::layout::entry& operator()(size_t i, size_t j) = 0;
+            virtual imodel::layout::entry* block(size_t i, size_t j) = 0;
             virtual void add_modifier(modifier* m) = 0;
             virtual std::list<modifier*>& get_modifiers() = 0;
             virtual imodel::object& get_object() = 0;
             virtual imodel::layout& get_layout() = 0;
             virtual channels::group* get_placement() = 0;
+            virtual void set_placement(channels::group*) = 0;
+            virtual modifier* get_generator() = 0;
+            virtual void set_generator(modifier*) = 0;
             virtual void reduce(voidfp) = 0;
             virtual void init(voidfp) = 0;
             virtual voidfp get_reduce() = 0;
@@ -82,7 +80,6 @@ namespace ambient { namespace models {
             virtual imodel::revision& revision(size_t offset) const = 0;
             virtual dim2 get_dim() const = 0;
             virtual size_t get_t_size() const = 0;
-            virtual channels::group* get_placement() = 0;
             virtual size_t get_revision_base() const = 0;
             virtual void set_revision_base(size_t) = 0;
         };
