@@ -2,9 +2,10 @@
 #include "ambient/controllers/v_controller.h"
 #include "ambient/channels/mpi_channel.h"
 #include "ambient/channels/packets/auxiliary.hpp"
+#include "omp.h"
 
 #ifndef NUM_THREADS 
-#define NUM_THREADS 4
+#define NUM_THREADS 8
 #endif
 
 // {{{ global objects accessible anywhere //
@@ -168,20 +169,21 @@ namespace ambient { namespace controllers {
 
     void v_controller::flush(){
         if(this->stack.empty()) return;
+        double t1 = omp_get_wtime();
         printf("Playout!\n");
         while(!this->stack.end_reached())  // estimating operations credits 
             this->stack.pick()->weight();
         this->stack.sort();                // sorting operations using credit
         ctxt.state = context::EXECUTE;
         while(!this->stack.end_reached()){
-            printf("Executing logistics kernel!\n");
             ctxt.set_op(this->stack.pick());
             ctxt.get_op()->invoke();       // sending requests for data
         }
-        printf("Finished with the logistics!\n");
         this->master_stream(this->tasks);  // using up the main thread
-        printf("Exited master stream!\n");
+        ctxt.state = context::MARKUP;
         this->stack.clean();               // reseting the stack
+        double t2 = omp_get_wtime();
+        printf("Iterations took for %.10g\n", t2-t1);
     }
     
     channels::ichannel::packet* package(models::imodel::revision& r, const char* state, int i, int j, int dest){

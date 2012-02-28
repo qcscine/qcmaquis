@@ -6,7 +6,7 @@ extern pthread_key_t pthread_env;
 namespace ambient { namespace controllers {
 
     context::context()
-    :grp(NULL)
+    :grp(NULL), state(MARKUP)
     { 
     }
 
@@ -63,6 +63,16 @@ namespace ambient { namespace controllers {
 
     models::imodel::modifier* context::get_op(){
         return this->op;
+    }
+
+    size_t context::get_revision_base(const models::imodel::object* o){
+        if(this->state == MARKUP) return o->get_revision_base();
+        return o->get_thread_revision_base();
+    }
+
+    void context::set_revision_base(models::imodel::object* o, size_t base){
+        if(this->state == MARKUP) o->set_revision_base(base);
+        else o->set_thread_revision_base(base);
     }
 
     bool context::involved(){

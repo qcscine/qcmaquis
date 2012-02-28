@@ -17,6 +17,8 @@ namespace ambient { namespace controllers {
         channels::group* get_group();
         void set_op(models::imodel::modifier* op);
         models::imodel::modifier* get_op();
+        size_t get_revision_base(const models::imodel::object*);
+        void set_revision_base(models::imodel::object*, size_t);
     private:
         channels::group* grp;
         models::imodel::modifier* op;

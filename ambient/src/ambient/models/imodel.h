@@ -81,7 +81,9 @@ namespace ambient { namespace models {
             virtual dim2 get_dim() const = 0;
             virtual size_t get_t_size() const = 0;
             virtual size_t get_revision_base() const = 0;
+            virtual size_t get_thread_revision_base() const = 0;
             virtual void set_revision_base(size_t) = 0;
+            virtual void set_thread_revision_base(size_t) = 0;
         };
         virtual void add_revision(object* obj) = 0;
         virtual void update_revision(revision* r, channels::group* placement) = 0;

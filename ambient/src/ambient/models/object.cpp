@@ -4,6 +4,7 @@
 namespace ambient { namespace models {
 
     v_model::object::object()
+    : revision_base(0)
     {
         pthread_key_create(&thread_revision_base, free);
     }
@@ -15,11 +16,10 @@ namespace ambient { namespace models {
 
     v_model::revision& v_model::object::revision(size_t offset) const {
         if(this->revisions.size() == 0) ambient::model.add_revision(const_cast<v_model::object*>(this));
-        if(this->get_revision_base() + offset >= this->revisions.size()){
-            printf("Asked for revision %d\n", (int)(this->get_revision_base() + offset));
+        if(ctxt.get_revision_base(this) + offset >= this->revisions.size()){
             assert(false);
         }
-        return *this->revisions[this->get_revision_base() + offset];
+        return *this->revisions[ctxt.get_revision_base(this) + offset];
     }
 
     void v_model::object::add_revision(imodel::layout* l){
@@ -36,23 +36,31 @@ namespace ambient { namespace models {
         return this->t_size;
     }
 
-    size_t* v_model::object::get_thread_revision_base() const {
+    size_t v_model::object::get_revision_base() const {
+        return this->revision_base;
+    }
+
+    size_t v_model::object::get_thread_revision_base() const {
         void* base = pthread_getspecific(this->thread_revision_base);
         if(base == NULL){
             base = malloc(sizeof(size_t));
             *(size_t*)base = 0;
             pthread_setspecific(this->thread_revision_base, base);
         }
-        return (size_t*)base;
-    }
-
-    size_t v_model::object::get_revision_base() const {
-        return *(this->get_thread_revision_base());
+        return *(size_t*)base;
     }
 
     void v_model::object::set_revision_base(size_t r){
-        size_t* base = this->get_thread_revision_base();
-        *base = r;
+        this->revision_base = r;
+    }
+
+    void v_model::object::set_thread_revision_base(size_t r){
+        void* base = pthread_getspecific(this->thread_revision_base);
+        if(base == NULL){
+            base = malloc(sizeof(size_t));
+            pthread_setspecific(this->thread_revision_base, base);
+        }
+        *(size_t*)base = r;
     }
 
 } }
