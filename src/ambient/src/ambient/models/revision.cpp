@@ -12,7 +12,7 @@ namespace ambient { namespace models {
     v_model::revision::revision(imodel::object* o, imodel::layout* l)
     : object(o), layout(l), initialization((voidfp)null_i), reduction(NULL), placement(NULL), generator(NULL)
     {
-        this->number = o->get_revision_base();
+        this->number = o->get_revision_base(); // debug
         this->layout->set_revision(this);
     };
 

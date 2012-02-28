@@ -165,7 +165,7 @@ namespace ambient {
     // multiplying with column of a:
             for(int z = 0; z < get_mem_grid_dim(a).y; z++){
                 T* ad = current(a)(z,j);
-                T* cd = reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
+                T* cd = updated(c)(z,i); //reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
                 gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
             }
             i += get_mem_grid_dim(a).y;
@@ -180,7 +180,7 @@ namespace ambient {
         double* a_elements  = current(a)(i,j);
         double* ac_elements = updated(ac)(i,j);
         memcpy(ac_elements, a_elements, sizeof(double)*get_mem_dim(a).y*get_mem_dim(a).x);
-        printf("COPYED %d and %d!\n", i, j);
+        //printf("COPYED %d and %d!\n", i, j);
     }
 
     void variable_free_c(void*& a){ free(a); }
@@ -271,9 +271,9 @@ namespace ambient {
         int offset,size_y(get_mem_dim(a).y),size_x(get_mem_dim(a).x);
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
-        T* ad = current(a)(i,j);
         int yi = get_mem_dim(a).y*i; // conversion cartersia coordinates dense / p_dense
         int xj = get_mem_dim(a).x*j; 
+        T* ad = updated(a)(i,j);
     
         //operator ?, case 1 matrix is lower than one work group, case 2 several work groups or fit in x direction
         if(j+1 == get_mem_grid_dim(a).x)
@@ -381,7 +381,7 @@ namespace ambient {
         size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(int k = 0; k < size; k++)
             ar[k] = ad[k] + bd[k];
-        printf("ADDED %d and %d! (%lu)\n", i, j, size);
+        //printf("ADDED %d and %d! (%lu)\n", i, j, size);
     }
 
     template<typename T>

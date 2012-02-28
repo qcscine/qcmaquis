@@ -2,7 +2,7 @@
 #include <boost/static_assert.hpp> 
 
 #define M 0xF4240 
-#define ValueWG 128
+#define ValueWG 2048 // was 32
 
 namespace Random{
    struct random {

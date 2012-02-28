@@ -132,12 +132,14 @@ namespace ambient { namespace models {
             v_model::revision& revision(size_t offset) const;
             dim2 get_dim() const;
             size_t get_t_size() const;
-            size_t* get_thread_revision_base() const;
             size_t get_revision_base() const;
-            void set_revision_base(size_t r);
+            size_t get_thread_revision_base() const;
+            void set_revision_base(size_t);
+            void set_thread_revision_base(size_t);
             std::vector<v_model::revision*> revisions;
             size_t t_size;
             pthread_key_t thread_revision_base;
+            size_t revision_base;
             dim2 dim;
         };
         // }}}
