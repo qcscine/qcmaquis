@@ -41,7 +41,7 @@ namespace app {
                 {
                     h5ar_in >> alps::make_pvp("/status/sweep", sweep);
                     
-                    if (h5ar_in.is_scalar("/status/site"))
+                    if (h5ar_in.is_data("/status/site") && h5ar_in.is_scalar("/status/site"))
                         h5ar_in >> alps::make_pvp("/status/site", site);
                     
                     if (site == -1)
