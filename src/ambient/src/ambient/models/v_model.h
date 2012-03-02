@@ -16,22 +16,27 @@ namespace ambient { namespace models {
     public:
         // {{{ layout memory-specific model
         class revision;
+        class reduction;
         class layout : public imodel::layout {
         public:
             class entry : public imodel::layout::entry {
             public:
                 entry();
+                entry(void*, size_t);
                 operator double* ();
                 operator std::complex<double>* ();
                 void set_memory(void* memory, size_t bound);
                 void* get_memory();
                 bool valid();
                 bool requested();
+                bool trylock();
+                void unlock();
                 std::list<models::imodel::modifier*>& get_assignments();
                 std::list<size_t>& get_path();
                 void* header;
                 void* data;
                 bool request;
+                bool locked;
                 std::list<modifier*> assignments;
                 std::list<size_t> path;
             };
@@ -106,11 +111,11 @@ namespace ambient { namespace models {
             imodel::layout& get_layout();
             channels::group* get_placement();
             void set_placement(channels::group*);
+            imodel::reduction* get_reduction();
+            void set_reduction();
             imodel::modifier* get_generator();
             void set_generator(imodel::modifier*);
-            void reduce(voidfp);
             void init(voidfp);
-            voidfp get_reduce();
             voidfp get_init();
             void set_dim(dim2);
             size_t number;
@@ -118,11 +123,26 @@ namespace ambient { namespace models {
             imodel::layout* const layout;
             channels::group* placement;
             imodel::modifier* generator;
+            imodel::reduction* reduction;
             std::list<imodel::modifier*> modifiers;
-            voidfp reduction;
             voidfp initialization;
         };
-        class object: public imodel::object
+        class reduction : public imodel::reduction
+        {
+        public:
+            class reductionq {
+            public:
+                reductionq();
+                void push(imodel::layout::entry*);
+            };
+            reduction(imodel::revision*);
+           ~reduction();
+            imodel::layout::entry* block(size_t i, size_t j);
+            imodel::layout::entry& operator()(size_t i, size_t j);
+            std::vector< std::vector<reductionq*> > entries;
+            imodel::revision* revision;
+        };
+        class object : public imodel::object
         {            // revision tracking mechanism (target selector)
         protected:
             object();

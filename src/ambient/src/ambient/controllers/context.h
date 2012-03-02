@@ -32,6 +32,8 @@ namespace ambient { namespace controllers {
         int get_size();
         dim2 get_block_id();
         void set_block_id(dim2);
+        size_t get_tid();
+        void set_tid(size_t);
         const char* get_name();
         bool involved();
         bool is_master();

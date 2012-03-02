@@ -6,6 +6,7 @@ add_library (ambient
              models/v_model.cpp
              models/object.cpp
              models/revision.cpp
+             models/reduction.cpp
              models/layout.cpp
              models/modifier.cpp
              models/operation/operation.cpp

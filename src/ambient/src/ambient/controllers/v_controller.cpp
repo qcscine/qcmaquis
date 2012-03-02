@@ -5,7 +5,7 @@
 #include "omp.h"
 
 #ifndef NUM_THREADS 
-#define NUM_THREADS 8
+#define NUM_THREADS 12
 #endif
 
 // {{{ global objects accessible anywhere //
@@ -19,6 +19,7 @@ namespace ambient {
 // }}} global objects accessible anywhere //
 
 pthread_key_t pthread_env;
+pthread_key_t pthread_tid;
 
 namespace ambient { namespace controllers {
 
@@ -31,7 +32,10 @@ namespace ambient { namespace controllers {
         for(int i = 1; i < NUM_THREADS; i++){
             this->tasks[i].active = false;
             pthread_join(this->pool[i], NULL);
+            pthread_mutex_destroy(&this->mpool[i]);
         }
+        pthread_mutex_destroy(&this->mutex);
+        pthread_mutex_destroy(&this->pool_control_mutex);
     }
 
     v_controller::v_controller()
@@ -39,20 +43,31 @@ namespace ambient { namespace controllers {
     {
         this->acquire(&ambient::channel);
         pthread_key_create(&pthread_env, free);
+        pthread_key_create(&pthread_tid, free);
         pthread_mutex_init(&this->mutex, NULL);
+        pthread_mutex_init(&this->pool_control_mutex, NULL);
         this->init_threads();
+    }
+
+    pthread_mutex_t* v_controller::get_pool_control_mutex(){
+        return &this->pool_control_mutex;
     }
 
     void v_controller::init_threads(){
         this->pool = (pthread_t*)malloc(sizeof(pthread_t)*NUM_THREADS);
+        this->mpool = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t)*NUM_THREADS);
         this->tasks = new tasklist[NUM_THREADS];
-        for(int i = 1; i < NUM_THREADS; i++)
+        for(int i = 1; i < NUM_THREADS; i++){
+            this->tasks[i].id = i;
             pthread_create(&this->pool[i], NULL, &v_controller::stream, &this->tasks[i]);
+            pthread_mutex_init(&this->mpool[i], NULL);
+        }
     }
 
     void* v_controller::stream(void* list){
         mod* instruction;
         tasklist* l = static_cast<tasklist*>(list);
+        ctxt.set_tid(l->id);
 
         while(l->active){
             instruction = (mod*)l->get_task();
@@ -103,6 +118,11 @@ namespace ambient { namespace controllers {
         ++this->rrn %= NUM_THREADS;
     }
 
+    models::imodel::layout::entry* v_controller::alloc_block(models::imodel::revision& r){
+        channels::packet_t& type = ambient::channel.get_block_packet_type(r.get_layout().get_mem_size());
+        return new models::v_model::layout::entry(alloc_t(type), type.get_bound(A_BLOCK_P_DATA_FIELD));
+    }
+
     models::imodel::layout::entry& v_controller::alloc_block(models::imodel::revision& r, size_t i, size_t j){
         channels::packet_t& type = ambient::channel.get_block_packet_type(r.get_layout().get_mem_size());
         r.get_layout().embed(alloc_t(type), i, j, type.get_bound(A_BLOCK_P_DATA_FIELD));
@@ -110,9 +130,7 @@ namespace ambient { namespace controllers {
     }
 
     models::imodel::layout::entry& v_controller::init_block(models::imodel::revision& r, size_t i, size_t j){
-        channels::packet_t& type = ambient::channel.get_block_packet_type(r.get_layout().get_mem_size());
-        r.get_layout().embed(alloc_t(type), i, j, type.get_bound(A_BLOCK_P_DATA_FIELD));
-
+        this->alloc_block(r, i, j);
         ctxt.set_block_id(dim2(j,i)); // setting context block
         ((void(*)(models::v_model::object&))r.get_init())(static_cast<models::v_model::object&>(r.get_object()));
         return *r.block(i,j);
