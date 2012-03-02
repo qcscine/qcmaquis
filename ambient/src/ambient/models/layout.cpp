@@ -139,9 +139,31 @@ namespace ambient { namespace models {
 
     // {{{ layout::entry + layout::marker //
 
+
+    bool v_model::layout::entry::trylock(){
+        bool acquired = true;
+        pthread_mutex_lock(controller.get_pool_control_mutex());
+        if(this->locked == false) this->locked = true;
+        else acquired = false;
+        pthread_mutex_unlock(controller.get_pool_control_mutex());
+        return acquired;
+    }
+
+    void v_model::layout::entry::unlock(){
+        pthread_mutex_lock(controller.get_pool_control_mutex());
+        this->locked = false;
+        pthread_mutex_unlock(controller.get_pool_control_mutex());
+    }
+
     v_model::layout::entry::entry()
-    : header(NULL), request(false)
+    : header(NULL), request(false), locked(false)
     {
+    }
+
+    v_model::layout::entry::entry(void* memory, size_t bound)
+    : header(memory), request(false)
+    {
+        this->data = (void*)((size_t)memory + bound);
     }
 
     void v_model::layout::entry::set_memory(void* memory, size_t bound){

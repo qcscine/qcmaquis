@@ -27,6 +27,7 @@ namespace ambient{
         pthread_mutex_t mutex;
         bool active;
         bool idle;
+        size_t id;
     };
 
 }

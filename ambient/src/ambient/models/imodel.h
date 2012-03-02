@@ -12,6 +12,7 @@ namespace ambient { namespace models {
     public:
         class object;
         class revision;
+        class reduction;
         class modifier {
             public:
             virtual void invoke() = 0;
@@ -28,6 +29,8 @@ namespace ambient { namespace models {
             public:
             class entry {
             public:
+                virtual bool trylock() = 0;
+                virtual void unlock() = 0;
                 virtual bool valid() = 0;
                 virtual bool requested() = 0;
                 virtual operator double* () = 0;
@@ -69,10 +72,14 @@ namespace ambient { namespace models {
             virtual void set_placement(channels::group*) = 0;
             virtual modifier* get_generator() = 0;
             virtual void set_generator(modifier*) = 0;
-            virtual void reduce(voidfp) = 0;
             virtual void init(voidfp) = 0;
-            virtual voidfp get_reduce() = 0;
             virtual voidfp get_init() = 0;
+            virtual reduction* get_reduction() = 0;
+            virtual void set_reduction() = 0;
+        };
+        class reduction {
+        public:
+            virtual imodel::layout::entry& operator()(size_t i, size_t j) = 0;
         };
         class object {
         public:

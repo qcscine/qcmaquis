@@ -23,9 +23,10 @@ namespace ambient { namespace controllers {
         void   push(models::imodel::modifier* op);
         void   push_mod(mod*);
 
+        models::imodel::layout::entry* alloc_block(models::imodel::revision& r);
+        models::imodel::layout::entry& alloc_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& ufetch_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& ifetch_block(models::imodel::revision& r, size_t i, size_t j);
-        models::imodel::layout::entry& alloc_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& init_block(models::imodel::revision& r, size_t i, size_t j);
         void unlock_revision(models::imodel::revision* arg);
         void unlink_revision(models::imodel::revision* arg);
@@ -34,13 +35,17 @@ namespace ambient { namespace controllers {
         void init_threads();
         void atomic_complete();
         void atomic_receive(models::imodel::revision& r, size_t i, size_t j);
+
+        pthread_mutex_t* get_pool_control_mutex();
        ~v_controller();
 
     private:
+        pthread_mutex_t pool_control_mutex;
         pthread_mutex_t mutex;
         models::imodel* model;
         channels::ichannel* channel;
         touchstack< models::imodel::modifier* > stack;
+        pthread_mutex_t* mpool;
         pthread_t* pool;
         tasklist* tasks;
         size_t workload;

@@ -2,6 +2,7 @@
 #include "ambient/controllers/context.h"
 
 extern pthread_key_t pthread_env;
+extern pthread_key_t pthread_tid;
 
 namespace ambient { namespace controllers {
 
@@ -36,6 +37,21 @@ namespace ambient { namespace controllers {
 
     int context::get_size(){
         return this->grp->get_size();
+    }
+
+    void context::set_tid(size_t value){
+        void* tid = pthread_getspecific(pthread_tid);
+        if(tid == NULL){
+            tid = malloc(sizeof(size_t));
+            pthread_setspecific(pthread_tid, tid);
+        }
+        *(size_t*)tid = value;
+    }
+
+    size_t context::get_tid(){
+        void* tid = pthread_getspecific(pthread_tid);
+        assert(tid != NULL); 
+        return *(size_t*)tid;
     }
 
     dim2 context::get_block_id(){

@@ -2,18 +2,6 @@
 #define AMBIENT_INTERFACE_PARALLEL_T_H
 namespace ambient{ 
 
-    #define BOOST_SP_NO_SP_CONVERTIBLE
-    #include <boost/intrusive_ptr.hpp>
-
-    template <typename T>
-    void copy_l(T& ac, pinned const T& a);
-
-    template <typename T>
-    void copy_c(T& ac, pinned const T& a);
-
-    template <typename T>
-    void plus_reduce(void* dst, void* src);
-
     template <typename T>
     class parallel_t : public models::v_model::object 
     { 
@@ -25,13 +13,13 @@ namespace ambient{
         long references;
 
         parallel_t()
-        :references(0)
+        : references(0)
         {
             this->t_size = sizeof(value_type);
         }
 
         parallel_t(const T& o)
-        :references(0)
+        : references(0)
         {
             this->t_size = sizeof(value_type);
             this->pt_set_dim(o.get_dim().x, o.get_dim().y);
@@ -76,9 +64,11 @@ namespace ambient{
         return ((models::imodel::object*)&obj)->revision(n);
     }
     template <char R, typename T>
-    models::imodel::revision& reduced(T& obj){
-        if(R == '+') future(obj).reduce((void(*)())plus_reduce<T>);
-        return future(obj);
+    models::imodel::reduction& reduced(T& obj){
+        if(updated(obj).get_reduction() == NULL){
+            if(R == '+') updated(obj).set_reduction();
+        }
+        return *updated(obj).get_reduction();
     }
     // }}}
 }

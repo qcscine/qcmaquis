@@ -163,10 +163,18 @@ namespace ambient {
         if(get_mem_grid_dim(b).y > j) while(i < get_mem_grid_dim(b).x){
             T* bd = current(b)(j,i); // remote
     // multiplying with column of a:
-            for(int z = 0; z < get_mem_grid_dim(a).y; z++){
-                T* ad = current(a)(z,j);
-                T* cd = updated(c)(z,i); //reduced<'+'>(c)(z,i); // a(z,j) x b(j,i) => c(z,i)
-                gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            std::list<int> L;
+            for(int z = 0; z < get_mem_grid_dim(a).y; z++) L.push_back(z);
+            while(!L.empty()){
+                std::list<int>::iterator zi = L.begin();
+                while(zi != L.end()){
+                    if(!updated(c)(*zi,i).trylock()){ zi++; continue; }
+                    T* ad = current(a)(*zi,j);
+                    T* cd = updated(c)(*zi,i); // a(z,j) x b(j,i) => c(z,i)
+                    gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+                    updated(c)(*zi,i).unlock();
+                    L.erase(zi++);
+                }
             }
             i += get_mem_grid_dim(a).y;
         }

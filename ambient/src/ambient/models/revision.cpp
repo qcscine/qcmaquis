@@ -68,20 +68,20 @@ namespace ambient { namespace models {
         return this->generator;
     }
 
-    void v_model::revision::reduce(void(*fp)()){
-       this->reduction = fp;
-    }
-
     void v_model::revision::init(void(*fp)()){
        this->initialization = fp;
     }
 
-    v_model::revision::voidfp v_model::revision::get_reduce(){
-        return this->reduction;
+    v_model::revision::voidfp v_model::revision::get_init(){
+        return this->initialization;
     }
 
-     v_model::revision::voidfp v_model::revision::get_init(){
-        return this->initialization;
+    imodel::reduction* v_model::revision::get_reduction(){
+         return this->reduction;
+    }
+
+    void v_model::revision::set_reduction(){
+         this->reduction = new v_model::reduction(this);
     }
 
 } }
