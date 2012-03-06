@@ -98,7 +98,7 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    void p_dense_matrix_impl<T>::sub(const p_dense_matrix_impl& rhs){ 
+    void p_dense_matrix_impl<T>::sub(const p_dense_matrix_impl& rhs){
         algorithms::sub_inplace(*this, rhs);
     }
 

@@ -26,7 +26,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
 {
-    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(32,32), dim(32,32), dim(32,32);
     std::size_t accessx(T::valuex-1), accessy(T::valuey-1);
     typename T::dbl x;
     typename T::dbl y;
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
 {
-    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(32,32), dim(32,32), dim(32,32);
     typename T::dbl x,y;
     pMatrix pA = pMatrix::identity_matrix(T::valuex);
     sMatrix sA = sMatrix::identity_matrix(T::valuex);

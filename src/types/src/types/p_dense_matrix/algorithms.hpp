@@ -19,7 +19,7 @@ namespace maquis { namespace types { namespace algorithms {
 
     template<typename T>
     void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols){
-        if(m.num_rows() < rows || m.num_cols() < cols) 
+        if(m.num_rows() != rows && m.num_cols() != cols) 
             ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols);
     }
 
@@ -40,10 +40,7 @@ namespace maquis { namespace types { namespace algorithms {
 
     template<typename T>
     void inplace_transpose(p_dense_matrix_impl<T>& m){
-        // TODO: this should return a proxy object
-        p_dense_matrix_impl<T> mt(m.num_cols(), m.num_rows());
-        ambient::push(ambient::transpose_l<T>, ambient::transpose_c<T>, mt, m);
-        m = mt; // really uneffective for now // not inplace
+        ambient::push(ambient::transpose_l<T>, ambient::transpose_c<T>, m);
     }
 
     template <typename T>
@@ -92,11 +89,6 @@ namespace maquis { namespace types { namespace algorithms {
     p_dense_matrix<T> transpose(const p_dense_matrix<T> m){
         m.transpose();
         return m;
-    }
-
-    template<typename T>
-    T trace(const p_dense_matrix<T>& m){
-        return m.trace();
     }
 
     template<typename T>

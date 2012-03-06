@@ -43,10 +43,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     ambient::playout();
     printf("END OF GEMM!\n"); 
     printf("BEGIN OF SERIAL GEMM!\n"); 
-    double t1 = omp_get_wtime();
     maquis::types::gemm(sA,sB,sC); // to fix 
-    double t2 = omp_get_wtime();
-    printf("Iterations took for %.10g\n", t2-t1);
     printf("END OF SERIAL GEMM!\n"); 
     BOOST_CHECK(pC==sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

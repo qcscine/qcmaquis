@@ -96,7 +96,6 @@ namespace ambient { namespace models {
     }
 
     void v_model::layout::set_dim(dim2 dim){
-        assert(false);
         if(this->get_mem_grid_dim().y < __a_ceil(dim.y / this->mem_dim.y) || 
            this->get_mem_grid_dim().x < __a_ceil(dim.x / this->mem_dim.x)){
             this->marker.mark(this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);

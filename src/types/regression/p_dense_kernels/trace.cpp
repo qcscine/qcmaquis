@@ -23,7 +23,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
 {
-    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(32,32), dim(32,32), dim(32,32);
 
     pMatrix pA(T::valuex,T::valuex);
     sMatrix sA(T::valuex,T::valuex);
@@ -33,8 +33,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
     pA.set_init(ambient::random_i<typename T::dbl>);
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
-    a = trace(pA); 
     b = trace(sA); 
+    a = trace(pA); 
  
     ambient::playout();
     Boost_check_close_adapter(a,b);
