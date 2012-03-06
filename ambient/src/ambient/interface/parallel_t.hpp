@@ -32,8 +32,8 @@ namespace ambient{
         }
 
         void pt_set_dim(size_t x, size_t y = 1){
-            this->dim.x = x;
-            this->dim.y = y;
+            this->init_dim.x = x;
+            this->init_dim.y = y;
         }
 
     public:

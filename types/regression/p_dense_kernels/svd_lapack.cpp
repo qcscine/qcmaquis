@@ -27,7 +27,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 {
-    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(32,32), dim(32,32), dim(32,32);
 
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pU(T::valuex,T::valuey);

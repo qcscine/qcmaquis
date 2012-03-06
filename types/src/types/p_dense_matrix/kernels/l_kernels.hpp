@@ -138,17 +138,9 @@ namespace ambient {
         block_2d_cycle_assign(a);
     } 
 
-    void touch_l(maquis::types::p_dense_matrix_impl<double>& a){
-        ctxt_select("1 from ambient as touch where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
-        //gzout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; credentials(a);
-
-        block_2d_cycle_assign(a);
-    }
-
     template<typename T>
-    void resize_l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
-        current(a).set_dim(ambient::dim2(cols,rows));
+    void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
+        updated(a).set_dim(ambient::dim2(cols,rows));
         ctxt_select("1 from ambient as resize where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -158,6 +150,7 @@ namespace ambient {
 
     template<typename T>
     void remove_rows_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
+        updated(a).set_dim(dim2(a.get_dim().x, a.get_dim().y-k));
         ctxt_select("1 from ambient as remove_rows where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in remove_rows ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -167,6 +160,7 @@ namespace ambient {
 
     template<typename T>
     void remove_cols_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
+        updated(a).set_dim(dim2(a.get_dim().x-k, a.get_dim().y));
         ctxt_select("1 from ambient as remove_cols where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in remove_cols ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -318,18 +312,20 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in trace ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_diagonal_assign(a);
+        block_2d_cycle_assign(a); // in a nutshell we need only diagonal 
+                                  // but we have to track the diagonal separately afterward
+                                  // which is troublesome
     }
 
     template<typename T>
-    void transpose_l(pinned maquis::types::p_dense_matrix_impl<T>& transposed, const maquis::types::p_dense_matrix_impl<T>& original){
+    void transpose_l(pinned maquis::types::p_dense_matrix_impl<T>& m){
         int num = 1; //get_grid_dim(a_ambient).y; 
-        ctxt_select(num+" from ambient as transpose_l where master is 0 and breakdown contains "+ id(original));
+        ctxt_select(num+" from ambient as transpose_l where master is 0 and breakdown contains "+ id(m));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(transposed); credentials(original);
 
-        block_2d_cycle_assign(transposed); 
-        block_2d_cycle_transposed_assign(original);
+        //block_2d_cycle_assign(m); // to uncomment maybe - to watch intersections
+        block_2d_cycle_transposed_assign(m);
     }
 
     template<typename T>
@@ -419,26 +415,9 @@ namespace ambient {
     }
 
     template<typename T>
-    void nullcut_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& num_rows, const size_t& num_cols){
-        int num = 1; //get_grid_dim(a_ambient).y; 
-        ctxt_select(num+" from ambient as nullcut where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
-        //gzout << "2dbcd in touch ("<< ambient::rank() <<"):\n"; credentials(a);
-    }
-
-    template<typename T>
     void print_l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n){
         int num = 1;
         ctxt_select(num+" from ambient as print where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
-    
-        block_2d_cycle_assign(a); 
-    }
-
-    template<typename T>
-    void initv_l(pinned maquis::types::p_dense_matrix_impl<T>& a, T const& v){
-        int num = 1;
-        ctxt_select(num+" from ambient as initv where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
     
         block_2d_cycle_assign(a); 

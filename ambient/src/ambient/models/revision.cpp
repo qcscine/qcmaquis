@@ -24,6 +24,10 @@ namespace ambient { namespace models {
         this->layout->set_dim(dim);
     }
 
+    dim2 v_model::revision::get_dim(){
+        return this->layout->get_dim();
+    }
+
     std::pair<size_t*,size_t> v_model::revision::id(){
         return this->layout->id();
     }

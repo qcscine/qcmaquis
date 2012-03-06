@@ -84,7 +84,7 @@ namespace maquis { namespace types {
         }
 
         void remove_rows(size_type i, size_type k){
-            this->impl->resize(i, k);
+            this->impl->remove_rows(i, k);
         }
 
         void remove_cols(size_type j, size_type k){

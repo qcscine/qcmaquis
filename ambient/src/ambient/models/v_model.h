@@ -118,6 +118,7 @@ namespace ambient { namespace models {
             void init(voidfp);
             voidfp get_init();
             void set_dim(dim2);
+            dim2 get_dim();
             size_t number;
             imodel::object* const object;
             imodel::layout* const layout;
@@ -160,7 +161,7 @@ namespace ambient { namespace models {
             size_t t_size;
             pthread_key_t thread_revision_base;
             size_t revision_base;
-            dim2 dim;
+            dim2 init_dim;
         };
         // }}}
     public: 

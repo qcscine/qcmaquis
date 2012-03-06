@@ -61,6 +61,7 @@ namespace ambient { namespace models {
         public:
             typedef void(*voidfp)();
             virtual void set_dim(dim2) = 0;
+            virtual dim2 get_dim() = 0;
             virtual std::pair<size_t*,size_t> id() = 0;
             virtual imodel::layout::entry& operator()(size_t i, size_t j) = 0;
             virtual imodel::layout::entry* block(size_t i, size_t j) = 0;

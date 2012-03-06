@@ -22,7 +22,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( Transpose, T, test_types)
 {
-    ambient::model >> dim(1,1), dim(1,1), dim(1,1);
+    ambient::model >> dim(32,32), dim(32,32), dim(32,32);
 
     pMatrix pA(T::valuex,T::valuey);
     pMatrix ptA(T::valuex,T::valuey);

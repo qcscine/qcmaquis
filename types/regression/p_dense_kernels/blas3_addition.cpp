@@ -41,7 +41,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 
     sC = sA + sB;
     pC = pA + pB; 
-    ambient::playout();
 
     BOOST_CHECK(pC == sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

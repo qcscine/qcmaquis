@@ -29,7 +29,8 @@ namespace ambient { namespace models {
     }
 
     dim2 v_model::object::get_dim() const {
-        return this->dim;
+        if(this->revisions.size() == 0) return this->init_dim;
+        return this->revision(0).get_dim();
     }
 
     size_t v_model::object::get_t_size() const {

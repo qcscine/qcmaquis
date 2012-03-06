@@ -62,7 +62,7 @@ namespace ambient {
         int num_src_blocks = limi-starti-get_mem_dim(src).y+sii;
         if(num_src_blocks > 0) src_blocks_i = __a_ceil( num_src_blocks / get_mem_dim(src).y ) + 1;
     // let's exhaust first src block
-        T* dd = current(dest)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        T* dd = updated(dest)(ctxt.get_block_id().y, ctxt.get_block_id().x);
     
         dim2 dpos,spos;
         for(size_t j = startj; j < limj; j++){
@@ -126,10 +126,18 @@ namespace ambient {
         if(get_mem_grid_dim(b).y > j) while(i < get_mem_grid_dim(b).x){
             T* bd = current(b)(j,i); // remote
     // multiplying with column of a:
-            for(int z = 0; z < get_mem_grid_dim(a).y; z++){
-                T* ad = current(a)(z,j);
-                T* cd = reduced<'+'>(a)(z,i); // a(z,j) x b(j,i) => a(z,i)
-                gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            std::list<int> L;
+            for(int z = 0; z < get_mem_grid_dim(a).y; z++) L.push_back(z);
+            while(!L.empty()){
+                std::list<int>::iterator zi = L.begin();
+                while(zi != L.end()){
+                    if(!updated(c)(*zi,i).trylock()){ zi++; continue; }
+                    T* ad = current(a)(*zi,j);
+                    T* cd = updated(a)(*zi,i); // a(z,j) x b(j,i) => c(z,i)
+                    gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+                    updated(c)(*zi,i).unlock();
+                    L.erase(zi++);
+                }
             }
             i += get_mem_grid_dim(a).y;
         }
@@ -199,6 +207,7 @@ namespace ambient {
         // i_mark marks (x position) to remove rows, k number of rows to remove (default 1) 
         size_t numrows = get_dim(a).y;
         size_t numcols = get_dim(a).x;
+        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(numrows, i_mark));
         __a_memptf(&__a_memcpy<T>, a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
     }
 
@@ -208,12 +217,13 @@ namespace ambient {
         // j_mark marks (x position) to remove cols, k number of columns to remove (default 1) 
         size_t numrows = get_dim(a).y;
         size_t numcols = get_dim(a).x;
-        __a_memptf(&__a_memcpy<T>,a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
+        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
+        __a_memptf(&__a_memcpy<T>, a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
     }
 
     template<typename T>
-    void resize_c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
-        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(rows,cols));
+    void resize_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
+        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(cols,rows));
     }
 
     template<typename T>
@@ -387,26 +397,31 @@ namespace ambient {
         T* bd = current(b)(i, j);
         T* ar = updated(a)(i, j);
         size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
-        for(int k = 0; k < size; k++)
+        for(size_t k = 0; k < size; k++)
             ar[k] = ad[k] + bd[k];
-        //printf("ADDED %d and %d! (%lu)\n", i, j, size);
     }
 
     template<typename T>
     void sub_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-        T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        T* bd = current(b)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        int i = ctxt.get_block_id().y;
+        int j = ctxt.get_block_id().x;
+        double* ad = current(a)(i, j);
+        double* bd = current(b)(i, j);
+        double* ar = updated(a)(i, j);
         size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
-        for(int i=0; i < size; i++)
-            ad[i] -= bd[i];
+        for(size_t k = 0; k < size; k++)
+            ar[k] = ad[k] + (-1)*bd[k];
     }
 
     template<typename T, typename T2>
     void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& m, const T2& t){
-        T* md   = current(m)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        int i = ctxt.get_block_id().y;
+        int j = ctxt.get_block_id().x;
+        T* md = current(m)(i, j);
+        T* mr = updated(m)(i, j);
         size_t size = get_mem_dim(m).x*get_mem_dim(m).y;
-        for(int i=0; i < size; i++)
-            md[i] *= t;
+        for(size_t k=0; k < size; k++)
+            mr[k] = md[k] * t;
     }
 
     template<typename T>
@@ -416,7 +431,7 @@ namespace ambient {
         int lda  = get_mem_dim(b).y;
         int ONE  = 1;
         T* bd = current(b)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        T* cd = current(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        T* cd = updated(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
     
         memset(cd, 0, get_mem_dim(c).x*get_mem_dim(c).y*sizeof(T));
         for(int jj = 0 ; jj < get_mem_dim(b).y ; jj++){
@@ -432,7 +447,7 @@ namespace ambient {
         int size = get_mem_dim(a).y;
         int ONE = 1;
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        T* cd = current(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        T* cd = updated(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
     
         memset(cd, 0, get_mem_dim(c).x*get_mem_dim(c).y*sizeof(T));
         for(int jj = 0 ; jj < get_mem_dim(a).x ; jj++){
@@ -460,29 +475,16 @@ namespace ambient {
     }
 
     template<typename T>
-    void transpose_c(pinned maquis::types::p_dense_matrix_impl<T>& transposed, const maquis::types::p_dense_matrix_impl<T>& original){
+    void transpose_c(pinned maquis::types::p_dense_matrix_impl<T>& m){ // we need to reset dims also for non-square matrices
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
-        T* td = current(transposed)(i,j);
-        T* od = current(original)(j,i);
+        T* td = updated(m)(i,j);
+        T* od = current(m)(j,i);
     
-        for(size_t i = 0; i < get_mem_dim(original).y; ++i){
-            for(size_t j=0; j < get_mem_dim(original).x; ++j){
-                td[j+i*get_mem_dim(transposed).y] = od[i+j*get_mem_dim(original).y];
+        for(size_t i = 0; i < get_mem_dim(m).y; ++i){
+            for(size_t j=0; j < get_mem_dim(m).x; ++j){
+                td[j+i*get_mem_dim(m).y] = od[i+j*get_mem_dim(m).y];
             }
-        }
-    }
-
-    template<typename T>
-    void nullcut_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& num_rows, const size_t& num_cols){
-        size_t i = ctxt.get_block_id().y*get_mem_dim(a).y; 
-        size_t j = ctxt.get_block_id().x*get_mem_dim(a).x; 
-        if((i+get_mem_dim(a).y <= num_rows) && (j+get_mem_dim(a).x <= num_cols)) return;
-    
-        T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        for(size_t jj = 0; jj < get_mem_dim(a).x; jj++){
-            if(j+jj < num_cols && (i+get_mem_dim(a).y > num_rows)) memset(&ad[jj*get_mem_dim(a).y+num_rows%get_mem_dim(a).y], 0, (get_mem_dim(a).y-num_rows%get_mem_dim(a).y)*sizeof(T));
-            else if(j+jj >= num_cols) memset(&ad[jj*get_mem_dim(a).y], 0, get_mem_dim(a).y*sizeof(T));
         }
     }
 
@@ -495,13 +497,13 @@ namespace ambient {
         double res(0.0); 
         double epsilon = std::numeric_limits<double>::epsilon();
         int position_x(0),position_y(0),position_xy(0); 
-    
+   
         for(int ii=0; ii < get_mem_dim(a).x; ++ii){ // the std::resize + cast dense to p_dense can add ghost elements between lda + num_rows
             for(int jj=0; jj < get_mem_dim(a).y; ++jj){
                 position_x = j*get_mem_dim(a).x+jj;
                 position_y = i*get_mem_dim(a).x+ii;
                 if(position_x < get_dim(a).x && position_y < get_dim(a).y){
-                    position_xy = ii*get_mem_dim(a).y+jj;
+                    position_xy = jj*get_mem_dim(a).y+ii;
                     res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
                     if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
                         std::cout <<   ctxt.get_block_id().y << " " <<  ctxt.get_block_id().x << " " << res << " " << ad[i] << " " << bd[i] << std::endl; // C - cout because double or complex
@@ -624,13 +626,6 @@ namespace ambient {
             }
             printf("\n");
         }
-    }
-
-    template<typename T>
-    void initv_c(pinned maquis::types::p_dense_matrix_impl<T>&a, T const&v){ // for devs
-        T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        for(int i=0; i < get_mem_dim(a).x*get_mem_dim(a).y; ++i)
-            ad[i] = v;
     }
 
 }
