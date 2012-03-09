@@ -507,7 +507,7 @@ namespace ambient {
                     res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
                     if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
                         std::cout <<   ctxt.get_block_id().y << " " <<  ctxt.get_block_id().x << " " << res << " " << ad[i] << " " << bd[i] << std::endl; // C - cout because double or complex
-                    *bl = 0; // test failed return 0 (bool false)
+                        *bl = 0; // test failed return 0 (bool false)
                     }
                 }
             }
@@ -526,10 +526,10 @@ namespace ambient {
         T wkopt;
         T* work;
         double* rwork = new double[5*std::min(lda,ldu)]; // C - useless for double but need for complex 
-        T* ad = (T*)solidify(current(a));
-        T* ud = (T*)solidify(current(u));
-        T* vtd = (T*)solidify(current(vt));
-        double* sd = (T*)solidify(current(s));
+        T* ad = (T*)models::solidify(a);
+        T* ud = (T*)models::solidify(u);
+        T* vtd = (T*)models::solidify(vt);
+        double* sd = (T*)models::solidify(s);
     /* Query and allocate the optimal workspace */
         lwork = -1; // C - Alex, netlib said -1 for the best workspace
         gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, &wkopt, &lwork, rwork, &info );
@@ -542,20 +542,20 @@ namespace ambient {
             printf( "The algorithm computing SVD failed to converge.\n" );
             exit( 1 );
         }
-        disperse(ud, current(u));
-        disperse(vtd, current(vt));
-        disperse(sd, current(s));
+        models::disperse(ud, u);
+        models::disperse(vtd, vt);
+        models::disperse(sd, s);
         free(work);
     }
 
-    void syev_c(const maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
+    void syev_c(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
          int lda = get_grid_dim(a).y*get_work_dim(a).y;
          int info, lwork = -1;
     
          double wkopt;
          double* work;
-         double* ad = (double*)solidify(current(a));
-         double* wd = (double*)solidify(current(w));
+         double* ad = (double*)models::solidify(a);
+         double* wd = (double*)models::solidify(w);
          
          dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
          lwork = (int)wkopt;
@@ -567,19 +567,19 @@ namespace ambient {
              exit( 1 );
          }
     
-         disperse(ad, current(a));
-         disperse(wd, current(w));
+         models::disperse(ad, a);
+         models::disperse(wd, w);
          free(work); 
     }
 
-    void heev_c(const maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
+    void heev_c(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
          int lda = get_grid_dim(a).y*get_work_dim(a).y;
          int info, lwork = -1;
     
          double wkopt;
          double* work;
-         double* ad = (double*)solidify(current(a));
-         double* wd = (double*)solidify(current(w));
+         double* ad = (double*)models::solidify(a);
+         double* wd = (double*)models::solidify(w);
     
          dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
          lwork = (int)wkopt;
@@ -608,8 +608,8 @@ namespace ambient {
          }
          delete[] tempcol; 
      
-         disperse(ad, current(a));
-         disperse(wd, current(w));
+         models::disperse(ad, a);
+         models::disperse(wd, w);
          free(work);
     }
 
@@ -618,7 +618,7 @@ namespace ambient {
     template<typename T>
     void print_c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n){
         int lda = get_grid_dim(a).y*get_work_dim(a).y;
-        T* pa = (T*)solidify(current(a));
+        T* pa = (T*)models::solidify(a);
         
         for(int i=0; i < m; ++i){
             for(int j=0; j < n; ++j){

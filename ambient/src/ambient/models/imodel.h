@@ -23,7 +23,9 @@ namespace ambient { namespace models {
             virtual channels::group* get_group() = 0;
             virtual void set_vellum(revision&) = 0;
             virtual revision& get_vellum() = 0;
-            virtual revision& get_pin() = 0;
+            virtual revision* get_pin() = 0;
+            virtual bool pretend() = 0;
+            virtual void add_condition() = 0;
         };
         class layout {
             public:
@@ -33,6 +35,7 @@ namespace ambient { namespace models {
                 virtual void unlock() = 0;
                 virtual bool valid() = 0;
                 virtual bool requested() = 0;
+                virtual operator char* () = 0;
                 virtual operator double* () = 0;
                 virtual operator std::complex<double>* () = 0;
                 virtual void* get_memory() = 0;
@@ -87,6 +90,7 @@ namespace ambient { namespace models {
             virtual void add_revision(imodel::layout* l) = 0;
             virtual imodel::revision& revision(size_t offset) const = 0;
             virtual dim2 get_dim() const = 0;
+            virtual void set_dim(dim2) = 0;
             virtual size_t get_t_size() const = 0;
             virtual size_t get_revision_base() const = 0;
             virtual size_t get_thread_revision_base() const = 0;

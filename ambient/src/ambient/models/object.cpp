@@ -33,6 +33,11 @@ namespace ambient { namespace models {
         return this->revision(0).get_dim();
     }
 
+    void v_model::object::set_dim(dim2 dim){
+        if(this->revisions.size() == 0) this->init_dim = dim;
+        else this->revision(0).set_dim(dim); // used in pt_set_dim after pushes
+    }
+
     size_t v_model::object::get_t_size() const {
         return this->t_size;
     }

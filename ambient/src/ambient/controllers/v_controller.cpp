@@ -113,8 +113,14 @@ namespace ambient { namespace controllers {
         this->workload++; // should be done only in one thread
     }
 
-    void v_controller::push_mod(mod* m){
-        this->tasks[this->rrn].add_task(m);
+    void v_controller::execute_mod(models::imodel::modifier* op, dim2 pin){
+        if(op->pretend()) return;
+        this->tasks[this->rrn].add_task(new mod(op, pin));
+        ++this->rrn %= NUM_THREADS;
+    }
+
+    void v_controller::execute_free_mod(models::imodel::modifier* op){
+        this->tasks[this->rrn].add_task(new mod(op, dim2(0,0)));
         ++this->rrn %= NUM_THREADS;
     }
 
@@ -137,15 +143,16 @@ namespace ambient { namespace controllers {
     }
 
     models::imodel::layout::entry& v_controller::ufetch_block(models::imodel::revision& r, size_t i, size_t j){
-        if(r.block(i,j)->valid()) 
+        if(r.block(i,j)->valid()){
             return *r.block(i,j);
-        else if(r.get_placement() == NULL || r.get_placement()->is_master()){
+        }else if(r.get_placement() == NULL || r.get_placement()->is_master()){
             assert(r.get_generator()->get_group() != NULL);
             if(r.get_generator()->get_group()->is_master()){
                 this->alloc_block(r, i, j);
             }
-        }else if(!r.block(i,j)->requested())
+        }else if(!r.block(i,j)->requested()){
             ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
+        }
         return *r.block(i,j);
     }
 
@@ -173,7 +180,7 @@ namespace ambient { namespace controllers {
         // pthread_mutex_lock(&this->mutex); // will be needed in case of redunant accepts
         std::list<models::imodel::modifier*>::iterator it = r.block(i,j)->get_assignments().begin();
         while(it != r.block(i,j)->get_assignments().end()){
-            this->push_mod(new mod(*it, dim2(j,i)));
+            this->execute_mod(*it, dim2(j,i));
             r.block(i,j)->get_assignments().erase(it++);
         }
     }

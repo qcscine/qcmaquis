@@ -35,7 +35,8 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::entry* v_model::layout::get(size_t i, size_t j){
-        //printf("%d: Trying to access %d x %d of %d x %d\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
+        if(i >= this->get_mem_grid_dim().y || j >= this->get_mem_grid_dim().x)
+        printf("%d: Trying to access %d x %d of %d x %d\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
         return this->entries[i][j];
     }
 
@@ -181,6 +182,11 @@ namespace ambient { namespace models {
 
     bool v_model::layout::entry::requested(){
         return this->request;
+    }
+
+    v_model::layout::entry::operator char* (){
+        while(!this->valid()) pthread_yield(); // called inside kernels
+        return (char*)this->data;
     }
 
     v_model::layout::entry::operator double* (){

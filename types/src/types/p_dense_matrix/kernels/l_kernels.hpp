@@ -87,7 +87,6 @@ namespace ambient {
 
     template<>
     void copy_l(maquis::types::p_dense_matrix_impl<double>& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
-        printf("In copy logistics! (revision of copy %d)\n", (int)static_cast<models::v_model::revision&>(current(ac)).number);
         ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
@@ -140,7 +139,6 @@ namespace ambient {
 
     template<typename T>
     void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
-        updated(a).set_dim(ambient::dim2(cols,rows));
         ctxt_select("1 from ambient as resize where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -150,7 +148,6 @@ namespace ambient {
 
     template<typename T>
     void remove_rows_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
-        updated(a).set_dim(dim2(a.get_dim().x, a.get_dim().y-k));
         ctxt_select("1 from ambient as remove_rows where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in remove_rows ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -160,7 +157,6 @@ namespace ambient {
 
     template<typename T>
     void remove_cols_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
-        updated(a).set_dim(dim2(a.get_dim().x-k, a.get_dim().y));
         ctxt_select("1 from ambient as remove_cols where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in remove_cols ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -230,7 +226,6 @@ namespace ambient {
 
     template<typename T>
     void mem_bound_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-        printf("In add logistics! (revisions %d + %d)\n", (int)static_cast<models::v_model::revision&>(current(a)).number, (int)static_cast<models::v_model::revision&>(current(b)).number);
         ctxt_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
@@ -263,7 +258,7 @@ namespace ambient {
         block_2d_cycle_assign(vt);
     }
 
-    void syev_l(const maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
+    void syev_l(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
         int num = 1;
         ctxt_select(num+" from ambient as syev where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
@@ -273,7 +268,7 @@ namespace ambient {
         block_2d_cycle_assign(w);
     }
 
-    void heev_l(const maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
+    void heev_l(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
         int num = 1;
         ctxt_select(num+" from ambient as heev where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;

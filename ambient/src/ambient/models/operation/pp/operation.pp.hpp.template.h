@@ -40,10 +40,15 @@ void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))
     ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) )) fp )                                                 \
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, n) );                                                                  \
     pthread_mutex_lock(&this->mutex);                                                                                \
-    assert(this->workload*this->workload <= this->pin->get_layout().get_grid_dim().square()*this->pin->get_layout().get_grid_dim().square() ); \
-    if(fp == this->logistics_ptr) this->workload += this->pin->get_layout().get_grid_dim().square();                 \
-    else this->workload--;                                                                                           \
-    if(this->workload == 0){ this->state = COMPLETE; controller.atomic_complete(); }                                 \
+    if(--this->workload == 0){                                                                                       \
+        if(fp == this->logistics_ptr && this->pin == NULL){                                                          \
+            this->workload++;                                                                                        \
+            controller.execute_free_mod(this);                                                                       \
+        }else{                                                                                                       \
+            this->state = COMPLETE;                                                                                  \
+            controller.atomic_complete();                                                                            \
+        }                                                                                                            \
+    }                                                                                                                \
     pthread_mutex_unlock(&this->mutex);                                                                              \
 }                                                                                                                    \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
@@ -97,7 +102,7 @@ operation( FP logistics, FP computing, BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER,
     this->logistics_ptr = (void(*)())logistics;
     this->computing_ptr = (void(*)())computing;
     this->op = (void(*)())computing;
-    this->workload  = 0;
+    this->workload  = 1;
     this->credit    = 0;
     this->count     = TYPES_NUMBER;
     this->state     = MARKUP;
@@ -124,10 +129,15 @@ void prototype_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST
     ( (void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )) fp )
     ( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
     pthread_mutex_lock(&this->mutex);
-    assert(this->workload*this->workload <= this->pin->get_layout().get_grid_dim().square()*this->pin->get_layout().get_grid_dim().square() );
-    if(fp == this->logistics_ptr) this->workload += this->pin->get_layout().get_grid_dim().square();
-    else this->workload--;
-    if(this->workload == 0){ this->state = COMPLETE; controller.atomic_complete(); }
+    if(--this->workload == 0){ 
+        if(fp == this->logistics_ptr && this->pin == NULL){ // all assigns are inplace already
+            this->workload++;                               // false workload
+            controller.execute_free_mod(this);              // false mod execution
+        }else{
+            this->state = COMPLETE; 
+            controller.atomic_complete();
+        }
+    }
     pthread_mutex_unlock(&this->mutex);
 }
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
