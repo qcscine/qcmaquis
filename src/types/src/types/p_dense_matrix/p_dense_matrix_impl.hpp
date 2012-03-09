@@ -49,23 +49,28 @@ namespace maquis { namespace types {
     template <typename T>
     void p_dense_matrix_impl<T>::resize(size_type rows, size_type cols){
         assert(rows > 0); assert(cols > 0);
-        algorithms::resize(*this, rows, cols);
-        this->rows = rows; 
-        this->cols = cols;
+        if(this->rows != rows || this->cols != cols){
+            algorithms::resize(*this, rows, cols);
+            this->pt_set_dim(cols, rows);
+            this->rows = rows; 
+            this->cols = cols;
+        }
     }
 
     template <typename T>
     void p_dense_matrix_impl<T>::remove_rows(size_type i, size_type k = 1){
         assert( i+k <= this->rows );
         algorithms::remove_rows(*this, i, k);
-        this->rows -= k; // no storage shrink
+        this->pt_set_dim(this->cols, this->rows - k);
+        this->rows -= k;
     }
 
     template <typename T>
     void p_dense_matrix_impl<T>::remove_cols(size_type j, size_type k = 1){
         assert( j+k <= this->cols );
         algorithms::remove_cols(*this, j, k);
-        this->cols -= k; // no storage shrink
+        this->pt_set_dim(this->cols - k, this->rows);
+        this->cols -= k;
     }
 
     template <typename T>

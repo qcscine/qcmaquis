@@ -21,7 +21,8 @@ namespace ambient { namespace controllers {
         void   master_stream(void* list); // specialized version for the main thread
         void   acquire(channels::ichannel* channel);
         void   push(models::imodel::modifier* op);
-        void   push_mod(mod*);
+        void   execute_mod(models::imodel::modifier* op, dim2 pin);
+        void   execute_free_mod(models::imodel::modifier* op);
 
         models::imodel::layout::entry* alloc_block(models::imodel::revision& r);
         models::imodel::layout::entry& alloc_block(models::imodel::revision& r, size_t i, size_t j);

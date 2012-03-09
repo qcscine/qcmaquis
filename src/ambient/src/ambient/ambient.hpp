@@ -67,8 +67,10 @@ namespace ambient{
     
         for(int i = ii; i < ii+work_blocks.y; i++)
             for(int j = jj; j < jj+work_blocks.x; j++){
-                if(&ctxt.get_op()->get_pin() == &current(ref))
+                if(ctxt.get_op()->get_pin() == NULL || ctxt.get_op()->get_pin() == &current(ref)){
+                    ctxt.get_op()->add_condition();
                     current(ref).block(i,j)->get_assignments().push_back(ctxt.get_op());
+                }
                 controller.ifetch_block(current(ref), i, j);
             }
     }
@@ -83,8 +85,10 @@ namespace ambient{
     
         for(int i = ii; i < ii+work_blocks.y; i++)
             for(int j = jj; j < jj+work_blocks.x; j++){
-                if(&ctxt.get_op()->get_pin() == &current(ref))
+                if(ctxt.get_op()->get_pin() == NULL || ctxt.get_op()->get_pin() == &current(ref)){
+                    ctxt.get_op()->add_condition();
                     current(ref).block(i,j)->get_assignments().push_back(ctxt.get_op());
+                }
                 controller.ifetch_block(current(ref), i, j);
             }
     }

@@ -45,45 +45,44 @@ namespace ambient { namespace models {
 
     // {{{ free functions for mangling the data //
 
-    void* solidify(imodel::revision& r){
+    void* solidify(const imodel::object& o){
+        imodel::revision& r = o.revision(0);
         imodel::layout& l = r.get_layout();
         size_t iterator = 0;
         char* memory = NULL;
-         
+
         for(size_t j=0; j < l.get_mem_grid_dim().x; j++)
             for(size_t jj=0; jj < l.get_mem_dim().x; jj++)
                 for(size_t i=0; i < l.get_mem_grid_dim().y; i++){
                     if(r.block(i,j)->valid()){
                         memory = (char*)realloc(memory, (iterator+1)*l.get_mem_lda());
-                        memcpy(memory+iterator*l.get_mem_lda(),                   // copy to
-                               &((char*)r.block(i,j)->get_memory())[jj*l.get_mem_lda()], // copy from
-                               l.get_mem_lda());                                  // of size
+                        memcpy(memory+iterator*l.get_mem_lda(),                         // copy to
+                               &((char*)r(i,j))[jj*l.get_mem_lda()],                    // copy from
+                               l.get_mem_lda());                                        // of size
                         iterator++;
                     }
                 }
         return memory;
     }
 
-    void disperse(void* data, imodel::revision& r){
-        imodel::layout& l = r.get_layout();
+    void disperse(void* data, imodel::object& o){
+        imodel::revision& current = o.revision(0);
+        imodel::revision& updated = o.revision(1);
+        imodel::layout& l = current.get_layout();
         size_t iterator = 0;
         char* memory = (char*)data;
 
         for(size_t j=0; j < l.get_mem_grid_dim().x; j++)
             for(size_t jj=0; jj < l.get_mem_dim().x; jj++)
                 for(size_t i=0; i < l.get_mem_grid_dim().y; i++){
-                    if(r.block(i,j)->valid()){
-                        memcpy(&((char*)r.block(i,j)->get_memory())[jj*l.get_mem_lda()], // copy from
-                               memory+iterator*l.get_mem_lda(),                   // copy to
-                               l.get_mem_lda());                                  // of size
+                    if(current.block(i,j)->valid()){
+                        memcpy(&((char*)updated(i,j))[jj*l.get_mem_lda()],  // copy from
+                               memory+iterator*l.get_mem_lda(),             // copy to
+                               l.get_mem_lda());                            // of size
                         iterator++;
                     }
                 }
         free(data);
-    }
-
-    void reduce(v_model::modifier* r){
-
     }
 
     // }}}

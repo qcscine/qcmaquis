@@ -117,7 +117,9 @@ namespace ambient { namespace models {
         void set_weight(size_t credit);
         void set_vellum(imodel::revision& v);
         imodel::revision& get_vellum();
-        imodel::revision& get_pin();
+        imodel::revision* get_pin();
+        void add_condition();
+        bool pretend();
     private:
         enum { MARKUP, COMPUTING, COMPLETE } state;
         void(operation::*prototype)();

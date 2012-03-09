@@ -14,6 +14,8 @@ namespace ambient { namespace controllers {
         virtual models::imodel::layout::entry& ifetch_block(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual models::imodel::layout::entry& init_block(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual void push(models::imodel::modifier* op) = 0;
+        virtual void execute_mod(models::imodel::modifier* op, dim2) = 0;
+        virtual void execute_free_mod(models::imodel::modifier* op) = 0;
         virtual void atomic_complete() = 0;
         virtual void atomic_receive(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual void flush() = 0;

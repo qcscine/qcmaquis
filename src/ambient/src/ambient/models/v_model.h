@@ -23,6 +23,7 @@ namespace ambient { namespace models {
             public:
                 entry();
                 entry(void*, size_t);
+                operator char* ();
                 operator double* ();
                 operator std::complex<double>* ();
                 void set_memory(void* memory, size_t bound);
@@ -152,6 +153,7 @@ namespace ambient { namespace models {
             void add_revision(imodel::layout* l);
             v_model::revision& revision(size_t offset) const;
             dim2 get_dim() const;
+            void set_dim(dim2);
             size_t get_t_size() const;
             size_t get_revision_base() const;
             size_t get_thread_revision_base() const;
@@ -180,9 +182,8 @@ namespace ambient { namespace models {
     };
 
     // free functions for mangling the data {{{ 
-    void* solidify(imodel::revision& instance);
-    void  disperse(void* data, imodel::revision& instance);
-    void  reduce(v_model::modifier* r);
+    void* solidify(const imodel::object& o);
+    void  disperse(void* data, imodel::object& o);
     // }}}
 } }
 #endif

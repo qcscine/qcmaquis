@@ -19,8 +19,7 @@ namespace maquis { namespace types { namespace algorithms {
 
     template<typename T>
     void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols){
-        if(m.num_rows() != rows && m.num_cols() != cols) 
-            ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols);
+        ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols);
     }
 
     template<typename T>
