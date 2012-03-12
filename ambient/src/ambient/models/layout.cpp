@@ -36,7 +36,7 @@ namespace ambient { namespace models {
 
     v_model::layout::entry* v_model::layout::get(size_t i, size_t j){
         if(i >= this->get_mem_grid_dim().y || j >= this->get_mem_grid_dim().x)
-        printf("%d: Trying to access %d x %d of %d x %d\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
+        printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
         return this->entries[i][j];
     }
 
