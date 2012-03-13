@@ -25,7 +25,7 @@ template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>
 evolve(MPS<Matrix, SymmGroup> mps,
        block_matrix<Matrix, SymmGroup> const & op,
-       std::size_t Mmax, double cutoff)
+       std::size_t Mmax, double cutoff, Logger * logger = NULL)
 {
     std::size_t L = mps.length();
     
@@ -46,7 +46,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
                                                     mps[p].row_dim(), mps[p+1].col_dim(),
                                                     mps[p].site_dim());
             
-            compression::replace_two_sites(mps, Mmax, cutoff, v1, p);
+            compression::replace_two_sites(mps, Mmax, cutoff, v1, p, logger);
             
             // move two to the right, if possible
             t = mps[p+1].normalize_left(SVD);
@@ -71,7 +71,7 @@ template<class Matrix, class SymmGroup>
 void
 evolve(MPS<Matrix, SymmGroup> & mps,
        std::map<std::size_t, block_matrix<Matrix, SymmGroup> > const & map_op,
-       std::size_t Mmax, double cutoff)
+       std::size_t Mmax, double cutoff, Logger * logger = NULL)
 {
     std::size_t L = mps.length();
     
@@ -92,7 +92,7 @@ evolve(MPS<Matrix, SymmGroup> & mps,
                                                     mps[p].row_dim(), mps[p+1].col_dim(),
                                                     mps[p].site_dim());
             
-            compression::replace_two_sites(mps, Mmax, cutoff, v1, p);
+            compression::replace_two_sites(mps, Mmax, cutoff, v1, p, logger);
             
         }
         

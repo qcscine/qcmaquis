@@ -307,7 +307,7 @@ private:
     {
 		
 		for(typename Trotter_Steps<Matrix,SymmGroup>::diff_seqs_t::iterator seq_it=Unn.diff_seqs.begin();seq_it!=Unn.diff_seqs.end();seq_it++){
-			evolve(base::mps, *(*seq_it), base::parms.template get<std::size_t>("max_bond_dimension"), base::parms.template get<double>("truncation_final"));
+			evolve(base::mps, *(*seq_it), base::parms.template get<std::size_t>("max_bond_dimension"), base::parms.template get<double>("truncation_final"), &iteration_log);
 		}
 	}
     
