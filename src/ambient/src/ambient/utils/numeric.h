@@ -1,5 +1,5 @@
-#ifndef NUMERIC_H
-#define NUMERIC_H
+//#ifndef NUMERIC_H
+//#define NUMERIC_H // because needed into test
 
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/tuple/elem.hpp>
@@ -32,10 +32,11 @@
     inline int OptimalSize(std::complex<double> a){return (int)a.real();}
 
 extern "C" {
-// C - it should be useless, to do find the bug !
+// C - it should be useless, to do find the bug !, no pb with 12.02.3
+/*
     double sqrt(double);
     double fabs(double);
-
+*/
 // C - Fortran declaration : native compatibility all math libs (MKL, Goto, ACML, ESSLSMP, ...)
 #define BOOST_PP_DEF(z, I, _) \
     void BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_TYPE ## I),gemm_)(const char *transa, const char *transb, const int  *m, const int *n, const int *k, \
@@ -82,4 +83,4 @@ BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 #undef BOOST_PP_DEF
 
-#endif
+//#endif
