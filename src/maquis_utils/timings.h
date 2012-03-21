@@ -14,7 +14,7 @@
 #include "cuda_runtime_api.h" 
 #endif
 
-
+#define BILLION 0x3B9ACA00
 /*
 unsigned long long getcpuclocks() {
     unsigned long long clk;
@@ -76,45 +76,38 @@ class Timer
 {
 public:
     Timer(std::string name_)
-    : val(0), name(name_), freq((long long unsigned int)CPU_FREQ), nCounter(0)
-    { }
+    : val(0.0), name(name_), freq((long long unsigned int)CPU_FREQ), nCounter(0) { }
     
     ~Timer() { zout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
     
-    Timer & operator+=(double t)
-    {
+    Timer & operator+=(double t) {
         val += t;
         return *this;
     }
     
-    void begin()
-    {
+    void begin() {
         t0 = getcpuclocks();
     }
     
-    void end()
-    {
+    void end() {
 		nCounter += 1;
         unsigned long long t1 = getcpuclocks();
         if (t1 > t0)
             val += (getcpuclocks()-t0)/freq;
     }
 
-    double GetTime()
-    {
+    double GetTime() {
 	return  val;
     }    
-
-    friend void save(std::string name,int idproc, int num, Timer const & a, Timer const & b )
-    {
+   
+    friend void save(std::string name, Timer const & a, double gflops, int n, int m, int nthread){
        std::ofstream o; 
        o.open(name.c_str(),std::ios::app);
-           o << a.val << " "<< b.val << " "  << idproc << " " << num <<  std::endl;
+           o << a.val  << " " << gflops << " " << n << " " << m << " " << nthread << std::endl;
        o.close();
     }
 
-    friend std::ostream& operator<< (std::ostream& os, Timer const& timer)
-    {
+    friend std::ostream& operator<< (std::ostream& os, Timer const& timer) {
         os << timer.name << " " << timer.val << ", nCounter : " << timer.nCounter;
         return os;
     }
@@ -126,66 +119,45 @@ protected:
 };
 
 #ifdef _OPENMP
-class TimerOMP : public Timer
-{
+class TimerOMP : public Timer {
 public:
 	TimerOMP(std::string name_) : Timer(name_), timer_start(0.0), timer_end(0.0){}
 
 	~TimerOMP(){}
 	
-	void begin()
-	{
+	void begin() {
 		timer_start = omp_get_wtime(); 
 	}
 	
-	void end()
-	{
+	void end() {
 		timer_end = omp_get_wtime();
 		val += timer_end - timer_start;
 	}
-	
 private:
 	double timer_start, timer_end;
-	
 };
 #endif
 
-
-#ifdef __CUBLAS__
-
-class TimerCuda : public Timer
-{
+class TimerPTH : public Timer{
 public:
-	TimerCuda(std::string name_) : Timer(name_)
-	{}
-	
-	~TimerCuda(){}
-	
-	void begin()
-    {
-        cudaEventCreate(&start);
-		cudaEventCreate(&stop);
-		cudaEventRecord(start, 0);
-    }
-    
-    void end()
-    {
-		cudaEventRecord(stop, 0);
-		cudaEventSynchronize(stop);
-		float elapsedTime;
-		cudaEventElapsedTime(&elapsedTime, start, stop); // that's our time!
-		cudaEventDestroy(start);
-		cudaEventDestroy(stop);
-		val = static_cast<double>(elapsedTime)/1000 ; // because time is in microsecond
-    }
+    TimerPTH(std::string name, pthread_t thread): Timer(name),thread_(thread){}
+    TimerPTH(std::string name): Timer(name),thread_(pthread_self()){}
+    ~TimerPTH(){}
 
-	
-private:
-	cudaEvent_t start, stop;
-	
+    void begin(){
+         pthread_getcpuclockid(thread_,&cid_);
+    }    
+  
+    void end(){
+         struct timespec ts; //from time.h
+         clock_gettime(cid_, &ts);
+         val = ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
+//         printf("%4ld.%03ld\n", ts.tv_sec, ts.tv_nsec / 1000000);
+    }
+private:    
+    pthread_t thread_; 
+    clockid_t cid_;
 };
-
-#endif
 
 #ifndef WIN32
 #include <sys/time.h>
