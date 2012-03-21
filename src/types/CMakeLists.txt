@@ -23,11 +23,11 @@ set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient sour
 option(ENABLE_MTM "Enable multi threads matrix class" OFF)
 option(USE_GPU "Use GPU in libmtm" OFF)
 option(ENABLE_PARALLEL "Enable parallel matrix classes" OFF)
-option(ENABLE_TESTS "Build regression tests" OFF)
-option(ENABLE_BENCHMARKS "Build benchmarks" OFF)
+option(ENABLE_REGRESSION_VALIDATIONS "Build regression validation tests" OFF)
+option(ENABLE_REGRESSION_PERFORMANCES "Build regression performance tests" OFF)
 option(ENABLE_ALGEBRA "Enable algebra test " OFF)
+option(ENABLE_PLOT "Plot performance test " OFF)
 option(BUILD_AMBIENT "Build Ambient ? " OFF)
-
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
@@ -63,6 +63,10 @@ MESSAGE(STATUS "Maquis - Matrices version: ${PROJECT_VERSION}")
 # Libraries
 ######################################################################
 
+#gnuplot
+if(ENABLE_PLOT)
+    find_package(Gnuplot)
+endif(ENABLE_PLOT)
 # Boost
 include(${PROJECT_SOURCE_DIR}/config/boost.cmake)
 
@@ -172,16 +176,16 @@ add_subdirectory(src)
 set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps include, need for boost numeric")
 
 
-if(ENABLE_TESTS)
- add_subdirectory(regression/p_dense_kernels)
-	if(ENABLE_MTM)
-		add_subdirectory(regression/mt_matrix)
-	endif(ENABLE_MTM)
-endif(ENABLE_TESTS)
+if(ENABLE_REGRESSION_VALIDATIONS)
+     add_subdirectory(regression/validations)
+         if(ENABLE_MTM)
+             add_subdirectory(regression/mt_matrix)
+         endif(ENABLE_MTM)
+endif(ENABLE_REGRESSION_VALIDATIONS)
 
-if(ENABLE_BENCHMARKS)
- add_subdirectory(benchmarks)
-endif(ENABLE_BENCHMARKS)
+if(ENABLE_REGRESSION_PERFORMANCES)
+    add_subdirectory(regression/performances)
+endif(ENABLE_REGRESSION_PERFORMANCES)
 
 
 # Configure

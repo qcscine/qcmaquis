@@ -6,7 +6,6 @@ include_directories("${AMBIENT_SOURCES_DIR}")
 add_definitions (-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 add_definitions(-DMPI_PARALLEL)
 
-
 if(BLAS_mkl_core_LIBRARY) #intel
     include_directories("${MPI_CXX_INCLUDE_PATH}") #cluster path
     if(BLAS_MULTITHREADED)
