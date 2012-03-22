@@ -2,7 +2,7 @@
 #define VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
 
 #include "vli/polynomial/algorithms_polynomial_cpu.hpp"
-#include "vli/vli_cpu.hpp"
+#include "vli/vli_cpu.h"
 
 namespace vli{
 

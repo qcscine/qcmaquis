@@ -21,7 +21,7 @@ template <>
 struct data_bits<unsigned long int>
 {
    BOOST_STATIC_ASSERT( sizeof(long unsigned int) == 8 ); 
-    enum { value = 60 };
+    enum { value = 63 };
 };
 
 template <>
@@ -31,45 +31,16 @@ struct data_bits<unsigned int>
     enum { value = 30 };
 };
 
-/**
-  * traits/masks calculated based on data_bits<>
-  *
-  */
-
-// BASE
 template <typename T>
 struct base
 {
-    enum { value = static_cast<T>(1)<<data_bits<T>::value };
+    enum { value = static_cast<T>(1)<<(data_bits<T>::value)};
 };
 
-// BASE_HALF
-template <typename T>
-struct base_half
-{
-    BOOST_STATIC_ASSERT( data_bits<T>::value % 2 == 0 );
-    enum { value = static_cast<T>(1)<<(data_bits<T>::value/2) };
-};
-
-// BASE_MINUS
 template <typename T>
 struct data_mask
 {
-    enum { value = static_cast<T>(base<T>::value)-1 };
-};
-
-// MASK_DOWN
-template <typename T>
-struct mask_down
-{
-    enum { value = static_cast<T>(base_half<T>::value)-1 };
-};
-
-// MASK_UP
-template <typename T>
-struct mask_up
-{
-    enum { value = (static_cast<T>(data_mask<T>::value) ^ static_cast<T>(mask_down<T>::value)) };
+    enum { value = static_cast<T>(base<T>::value)-1};
 };
 
 template <typename T>

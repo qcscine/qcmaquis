@@ -10,8 +10,7 @@
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include "vli/vli_config.h"
 #include "vli/polynomial/polynomial_cpu.hpp"
-#include "vli/vli_cpu.hpp"
-#include "vli/detail/kernels_cpu_gpu.hpp"
+#include "vli/vli_cpu.h"
 #include <vector>
 #include <ostream>
 #include <cassert>
