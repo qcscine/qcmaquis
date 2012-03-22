@@ -27,7 +27,6 @@ namespace vli
         :j_exp_(j_exp), h_exp_(h_exp), coeff_(1){
         }
 
-        
         /*
         * These two functions are only called inside the vli_polynomial_gpu_function_hooks.hpp
         */

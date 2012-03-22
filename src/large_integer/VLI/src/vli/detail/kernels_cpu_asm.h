@@ -22,7 +22,7 @@ namespace vli{
 
 //multiplication
     void mul192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z);
-    void mul192t(unsigned long int * x,unsigned long int const* y);
+    void mul192(unsigned long int * x,unsigned long int const* y);
     void mul64(unsigned long int * x,unsigned long int const* y);    
     }
 }
