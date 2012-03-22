@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdio>
-
 #include <cassert>
+
 #include "use_gmp_integers.hpp"
 #include "minimal_polynomial.hpp"
 
@@ -13,12 +13,12 @@
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial_cpu.hpp"
 #include "vli/polynomial/monomial.hpp"
-#include "vli/vli_cpu.hpp"
+#include "vli/vli_cpu.h"
 #include "vli/vli_traits.hpp"
 #include "utils/timings.h"
 #include "regression/vli_test.hpp"
 
-#include "vli/detail/kernels_cpu_gpu.hpp"
+#include "vli/detail/bit_masks.hpp"
 
 #define SizeVector 16384
 #define Size1 3
@@ -54,6 +54,8 @@ typedef hp2c::polynomial<large_int,2*Order> polynomial_typed;
 typedef std::vector<polynomial_type> polynomial_vector_type;
 
 
+
+
 template <typename VpolyVLI, typename VpolyGMP>
 void InitPolyVLItoPolyGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP)
 {
@@ -81,10 +83,30 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
+      int A = (0xFFFFFFF);
+    
+    vli_type_cpu a(2);
+    vli_type_cpu b(5);
+     
+    
+    unsigned long int tata = vli::base<unsigned long int>::value;
+    unsigned long int toto = vli::data_mask<unsigned long int>::value;
+    a*=0xFFFFFFFFFFFFFFFF;
+    
+    std::cout << a << std::endl;
+    
+    /*
+    omp_set_num_threads(1);
     polynomial_vector_type v1gmp(SizeVector);
     polynomial_vector_type v2gmp(SizeVector);
     polynomial_type pgmp;
     polynomial_typed pgmpd;
+    
+    
+    
+    vli_type_cpu toto;
+    toto[0] = 1 ;
+    std::cout << toto << std::endl;
     
     
 #ifdef VLI_USE_GPU
@@ -124,6 +146,8 @@ int main (int argc, char * const argv[])
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
+    
+    */
     
     return 0;
 }
