@@ -138,6 +138,8 @@ private:
 };
 #endif
 
+// TODO: improve ifdef
+#ifdef MPI_PARALLEL 
 class TimerPTH : public Timer{
 public:
     TimerPTH(std::string name, pthread_t thread): Timer(name),thread_(thread){}
@@ -158,6 +160,7 @@ private:
     pthread_t thread_; 
     clockid_t cid_;
 };
+#endif
 
 #ifndef WIN32
 #include <sys/time.h>
