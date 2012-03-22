@@ -13,7 +13,6 @@ class vli_cpu;
 /** Very important ! All these algo used the truncation version **/
   
 /** First Algo based on block : n threads possible **/    
-    
 template <class BaseInt, std::size_t Size, unsigned int Order>
 void triangle_up(unsigned int block_ai, int block_bj,
                  polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result,    
