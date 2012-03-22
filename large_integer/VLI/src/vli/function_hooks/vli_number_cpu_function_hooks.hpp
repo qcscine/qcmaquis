@@ -38,8 +38,7 @@ namespace vli
 
     template <class BaseInt, std::size_t Size>
     void multiplies(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
-
-        //      detail::kernels_multiplication_classic<BaseInt,Size>(&vli_res[0],&vli_a[0], &vli_b[0]);
+      detail::mul192(&vli_res[0],&vli_a[0],&vli_b[0]);
     }
     
     template <class BaseInt, std::size_t Size>

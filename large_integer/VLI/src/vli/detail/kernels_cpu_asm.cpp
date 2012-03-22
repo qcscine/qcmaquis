@@ -33,7 +33,7 @@ void add192(unsigned long int* /* %%rdi */, unsigned long int const* /* %%rsi */
         "movq %%r8             , (%%rdi)           \n" /* save a0 */     \
         "movq %%r9             , "PPS(1,n)"(%%rdi) \n" /* save a1 */     \
         "movq %%rcx            , "PPS(2,n)"(%%rdi) \n" /* save a2 */     \
-        : : :"rdi","rsi","rcx","r8","r9","memory"                        \
+        : : :"rcx","r8","r9","memory"                        \
     ); \
 };
 
@@ -50,7 +50,7 @@ void add64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi *
         "movq %%r8             , (%%rdi)           \n" /* save a0 */     \
         "movq %%r9             , "PPS(1,n)"(%%rdi) \n" /* save a2 */     \
         "movq %%rcx            , "PPS(2,n)"(%%rdi) \n" /* save a2 */     \
-        : : :"rdi","rsi","rcx","r8","r9","memory"                        \
+        : : :"rcx","r8","r9","memory"                        \
     ); \
 };
 
@@ -67,7 +67,7 @@ void sub192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi 
         "movq %%r8             , (%%rdi)           \n" /* save a0 */     \
         "movq %%r9             , "PPS(1,n)"(%%rdi) \n" /* save a1 */     \
         "movq %%rcx            , "PPS(2,n)"(%%rdi) \n" /* save a2 */     \
-        : : :"rdi","rsi","rcx","r8","r9","memory"                        \
+        : : :"rcx","r8","r9","memory"                        \
     ); \
 };
 
@@ -84,7 +84,7 @@ void sub64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi *
         "movq %%r8             , (%%rdi)           \n" /* save a0 */     \
         "movq %%r9             , "PPS(1,n)"(%%rdi) \n" /* save a1 */     \
         "movq %%rcx            , "PPS(2,n)"(%%rdi) \n" /* save a2 */     \
-        : : :"rdi","rsi","rcx","r8","r9","memory"                        \
+        : : :"rcx","r8","r9","memory"                        \
     ); \
 };
 
@@ -105,17 +105,17 @@ void mul64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi *
         "movq %%rdx            ,%%rcx             \n" /* save the hi into rcx */          \
         "adcq $0               ,%%rcx             \n" /* perhaps carry */                 \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
-        "imulq "PPS(2,n)"(%%rdi),%%rax             \n" /* a0 * b2, we skip the the hi */  \
+        "imulq "PPS(2,n)"(%%rdi)                  \n" /* a0 * b2, we skip the the hi */   \
         "addq %%rax            ,%%rcx             \n" /* add hia0b1 + loa0b2 */           \
         "movq %%rcx            ,"PPS(2,n)"(%%rdi) \n" /* move into c2 */                  \
         "movq -0x8(%%rsp)      ,%%rbp             \n" /* stack clean up */                \
-        : "=r"(x) : "r"(y) : "rax","rcx","rdx","memory" \
+        : : :"rax","rdx","rcx","r8","r9","memory"                 \
     ); \
 }
 
 // Vli (384) = VLI (192) * VLI (192) 
 #define HELPER_ASM_MUL192T(n) \
-void mul192t(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
+void mul192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
      asm( \
 /*01*/  "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   \
 /*02*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
@@ -152,7 +152,7 @@ void mul192t(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi
 /*28*/  "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* r9 -> c1 */                      \
 /*28*/  "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* r10 -> c2 */                     \
 /*29*/  "movq -0x08(%%rsp)      ,%%rbp            \n" /* stack clean up */                \
-        : : :"rdi","rsi","rax","rdx","rbp","rsp","r8","r9","r10","memory" \
+        : : :"rax","rdx","r8","r9","r10","memory" \
     ); \
 };
 
@@ -221,7 +221,7 @@ void mul192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi 
 /*49*/  "movq %%r11            ,"PPS(4,n)"(%%rdi) \n" /* r8 -> c4 */                      \
 /*50*/  "movq %%r12            ,"PPS(5,n)"(%%rdi) \n" /* r8 -> c5 */                      \
 /*51*/  "movq -0x08(%%rsp)      ,%%rbp            \n" /* stack clean up */                \
-    : : : "rdi","rsi","rax","rdx","rbx","rbp","rsp","r8","r9","r10","r11","r12","memory" \
+    : : : "rax","rdx","rbx","r8","r9","r10","r11","r12","memory"  \
     ); \
 };
 

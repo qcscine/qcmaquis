@@ -50,57 +50,13 @@ namespace vli{
         vli_cpu& operator *= (BaseInt a); // 192 bits -> 192 bits
         vli_cpu& operator *= (vli_cpu const& a); // 192 bits -> 192 bits
         
-        vli_cpu operator - () const
-        {
-            vli_cpu tmp(*this);
-            tmp.negate();
-            return tmp;
-        }
-
-        bool operator == (vli_cpu const& vli) const
-        {
-			int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
-			return (0 == n);
-        }
-        
-        bool operator != (vli_cpu const& vli) const
-        {
-           for(size_type i(0); i < size-1 ; ++i)
-           {
-               if((*this)[i] != vli[i])
-                   return true;
-           }        
-           return false;
-        }
-        
-
-        bool operator < (vli_cpu const& vli) const
-        {
-            // TODO improve
-            vli_cpu tmp(*this);
-            return ( (tmp-=vli).is_negative() );
-        }
-
-        bool operator < (int i) const
-        {
-            //TODO improve
-            vli_cpu tmp(*this);
-            return ( (tmp-=i).is_negative() );
-        }
-      
-        bool operator > (vli_cpu vli) const
-        {
-            //TODO improve
-            return ( (vli-=*this).is_negative() );
-        }
-
-        bool operator > (int i) const
-        {
-            //TODO improve
-            vli_cpu tmp(i);
-            return ( (tmp-=*this).is_negative() );
-        }
-
+        vli_cpu operator - () const;
+        bool operator == (vli_cpu const& vli) const;
+        bool operator != (vli_cpu const& vli) const;
+        bool operator < (vli_cpu const& vli) const;
+        bool operator < (int i) const;
+        bool operator > (vli_cpu vli) const;
+        bool operator > (int i) const;
         void print_raw(std::ostream& os) const;
         void print(std::ostream& os) const;
         
@@ -115,87 +71,31 @@ namespace vli{
      multiply and addition operators, suite ...
      */
     template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
-    {
-        vli_a += vli_b;
-        return vli_a;
-    }
-    
-    template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, int b)
-    {
-        vli_a += b;
-        return vli_a;
-    }
-    
-    template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator + (int b, vli_cpu<BaseInt, Size> const& vli_a)
-    {
-        return vli_a+b;
-    }
-    
-    template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b)
-    {
-        vli_a -= vli_b;
-        return vli_a;
-    }
-    
-    template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, int b)
-    {
-        vli_a -= b;
-        return vli_a;
-    }
+    const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b);
 
     template <class BaseInt, std::size_t Size>
-    void multi_nt(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) // C nt = non truncated
-    {         
-        int na(1),nb(1);        
-         
-        if(vli_a.is_negative()){
-        const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();
-        na = -1;
-        }
-         
-        if(vli_b.is_negative()){
-        const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();
-        nb = -1;
-        }
-         
-        multiplies<BaseInt, Size>(vli_res, vli_a, vli_b);
-         
-        if(nb*na == -1)
-        vli_res.negate();
-         
-        if(na == -1){
-        const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();   
-        }
-         
-        if(nb == -1){
-        const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
-        }
-    }
+    const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, int b);
     
     template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size>  vli_a, vli_cpu<BaseInt, Size> const& vli_b)
-    {
-        vli_a *= vli_b;
-        return vli_a;
-    }
+    const vli_cpu<BaseInt, Size> operator + (int b, vli_cpu<BaseInt, Size> const& vli_a);
+    
+    template <class BaseInt, std::size_t Size>
+    const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b);
+    
+    template <class BaseInt, std::size_t Size>
+    const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, int b);
 
     template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, int b)
-    {
-        vli_a *= b;
-        return vli_a;
-    }
+    void multi_nt(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b); // C nt = non truncated
+    
+    template <class BaseInt, std::size_t Size>
+    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size>  vli_a, vli_cpu<BaseInt, Size> const& vli_b);
 
     template <class BaseInt, std::size_t Size>
-    const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
-    {
-        return a*b;
-    }
+    const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size> vli_a, int b);
+
+    template <class BaseInt, std::size_t Size>
+    const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a);
     
     /**
     stream 
@@ -203,8 +103,7 @@ namespace vli{
     template<typename BaseInt, std::size_t Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli);
   
-#include "vli/vli_cpu.hpp"
-    
+    #include "vli/vli_cpu.hpp"
 }
 
 #endif //VLI_NUMBER_CPU_HPP
