@@ -331,7 +331,7 @@ const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
 //stream
 template<typename BaseInt, std::size_t Size>
 std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli){
-    vli.print_raw(os);
+    vli.print(os);
     return os;
 }
 

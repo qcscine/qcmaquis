@@ -65,13 +65,13 @@ polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator += (monomial<T> c
     operator()(m.j_exp_,m.h_exp_) += m.coeff_; 
     return *this;
 }
-    
+    /*
 template<class Vli, unsigned int Order>    
 template <typename T>
 polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator += (T const& t){ 
     coeffs_[0]+=t;
     return *this;
-}
+}*/
    
 template<class Vli, unsigned int Order>    
 polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator -= (polynomial_cpu const& p){
@@ -86,13 +86,13 @@ polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator -= (monomial<Vli>
     return *this;
 }
 
-
+/*
 template<class Vli, unsigned int Order>    
 template <typename T>
 polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator -= (T const& t){
     coeffs_[0]-=t;
     return *this;
-}
+}*/
 
 template<class Vli, unsigned int Order>          
 bool polynomial_cpu<Vli,Order>::operator==(polynomial_cpu const& p) const{
