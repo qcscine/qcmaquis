@@ -35,7 +35,7 @@ void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> & result,
             {
                 for(exponent_type he2 = 0; he2 < Order; ++he2)
                 {
-                    multi_nt(result.coeffs_[(je1+je2)*2*Order + he1+he2 ],p1.coeffs_[je1*Order+he1],p2.coeffs_[je2*Order+he2]);
+                    multi_nt(inter,p1.coeffs_[je1*Order+he1],p2.coeffs_[je2*Order+he2]);
                     result.coeffs_[(je1+je2)*2*Order + he1+he2 ] += inter;
                     memset((void*)&inter[0],0,2*Size*sizeof(BaseInt));
                     // original version

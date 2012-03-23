@@ -173,7 +173,7 @@ class polynomial
             for(std::size_t je = 0; je < max_order; ++je)
                 for(std::size_t he = 0; he < max_order; ++he)
                     if( coeffs[je*max_order+he] != CoeffType(0))
-                        o<<"+"<<coeffs[je*max_order+he]<<"*J^"<<je<<"*h^"<<he;
+                        o<<"+"<<coeffs[je*max_order+he]<<"*J^"<<je<<"*h^"<<he<<std::endl;
         }
 
         /**

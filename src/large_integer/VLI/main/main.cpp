@@ -104,7 +104,7 @@ int main (int argc, char * const argv[])
     
     TimerOMP t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
 
     TimerOMP t2("CPU gmp_omp");
@@ -120,9 +120,10 @@ int main (int argc, char * const argv[])
     
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
-
-  //  std::cout << result_pure_cpu << std::endl;
-    
+/*
+    std::cout << result_pure_cpu << std::endl;
+    std::cout << pgmpd << std::endl;
+  */  
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
         

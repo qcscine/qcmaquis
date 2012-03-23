@@ -5,7 +5,6 @@
 #include "vli/vli_cpu.hpp"
 #include "vli/vli_traits.hpp"
 #include "regression/vli_test.hpp"
-#include "vli/detail/kernels_cpu_gpu.hpp"
 
 using vli::vli_cpu;
 using vli::max_int_value;

@@ -34,7 +34,7 @@ polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> operator * (polynomial_cpu<vli
     polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> result;
     poly_multiply(result, p1, p2);
     // poly_multiply_block_algo(result,p1,p2);
-    // poly_multiply_diag_algo(result,p1,p2);
+     //poly_multiply_diag_algo(result,p1,p2);
     return result;
 }
 
