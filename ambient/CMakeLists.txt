@@ -62,7 +62,7 @@ endif(NOT MPI_CXX_FOUND)
 
 set (BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (AMBIENT_DEBUG_COMPILE "Create a debug compile of AMBIENT" OFF)
-option (AMBIENT_MAIN_COMPILE "Compile the sandbox " ON)
+option (AMBIENT_MAIN_COMPILE "Compile the sandbox " OFF)
 option (AMBIENT_TESTS "Build and execute the AMBIENT regression tests" OFF)
 option (BLAS_MULTITHREADED "Build and execute BLAS-Lapack multithreaded" OFF)
 ######################################################################
@@ -95,7 +95,7 @@ endif()
 # Ambient compile 
 #
 ########################################################################
-include_directories ("${MPI_INCLUDE_PATH}")
+include_directories ("${MPI_CXX_INCLUDE_PATH}")
 
 
 include_directories (src)
