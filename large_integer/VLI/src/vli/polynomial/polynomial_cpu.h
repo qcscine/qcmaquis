@@ -19,7 +19,8 @@ public:
     typedef Vli value_type;
     enum { max_order = Order};
         
-    friend void poly_multiply (polynomial_cpu<Vli,2*Order>& result ,const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);
+   // friend void poly_multiply (polynomial_cpu<Vli,2*Order>& result ,const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);
+  //  friend void poly_multiply (polynomial_cpu<Vli,Order>& result ,const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);
     
     polynomial_cpu();    
     polynomial_cpu(const polynomial_cpu& p);    
@@ -30,15 +31,16 @@ public:
     template <typename T>
     polynomial_cpu& operator += (monomial<T> const& m);
 
+    /*
     template <typename T>
     polynomial_cpu& operator += (T const& t);
-    
+    */
     polynomial_cpu& operator -= (polynomial_cpu const& p);    
     polynomial_cpu& operator -= (monomial<Vli> const& m);
- 
+    /*
     template <typename T>
     polynomial_cpu& operator -= (T const& t);
-
+    */
     bool operator==(polynomial_cpu const& p) const;
     
     void swap(polynomial_cpu& p1, polynomial_cpu& p2);
@@ -54,9 +56,12 @@ public:
     Vli coeffs_[Order*Order];
 };
 
+template <class Vli, unsigned int Order> 
+void poly_multiply (polynomial_cpu<Vli,2*Order>& result, const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);   
+    
 template <class BaseInt, std::size_t Size, unsigned int Order> // C - the VliOut is twice larger
 polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p1, polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p2);
-
+    
 template <class BaseInt, std::size_t Size, unsigned int Order, class T>
 polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<T> const& m);
 

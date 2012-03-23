@@ -50,7 +50,7 @@ namespace detail
 {    
 #ifdef _OPENMP
     template <class BaseInt, std::size_t Size, unsigned int Order>
-    polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> 
+    polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
     inner_product_openmp( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                           vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
         assert(v1.size() == v2.size());
@@ -62,7 +62,7 @@ namespace detail
         * GCC and C99 allow an array's size to be determined at run time. This extension is not permitted in standard C++.
         * so vector !
         */
-        std::vector<polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> > res(omp_get_max_threads()); 
+        std::vector<polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> > res(omp_get_max_threads()); 
        
         #pragma omp parallel for
         for(std::size_t i=0 ; i < size_v ; ++i){
