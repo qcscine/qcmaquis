@@ -185,7 +185,7 @@ void sub384_384(unsigned long int* /* %%rdi */, unsigned long int const* /* %%rs
         "sbbq "PPS(2,n)"(%%rsi), %%r10             \n" /* add a2-b2-c */ \
         "sbbq "PPS(3,n)"(%%rsi), %%r11             \n" /* add a3-b3-c */ \
         "sbbq "PPS(4,n)"(%%rsi), %%r12             \n" /* add a4-b4-c */ \
-        "adcq "PPS(5,n)"(%%rsi), %%rcx             \n" /* add a5-b5-c */ \
+        "sbbq "PPS(5,n)"(%%rsi), %%rcx             \n" /* add a5-b5-c */ \
         "movq %%r8             , (%%rdi)           \n" /* save a0 */     \
         "movq %%r9             , "PPS(1,n)"(%%rdi) \n" /* save a1 */     \
         "movq %%r10            , "PPS(2,n)"(%%rdi) \n" /* save a2 */     \

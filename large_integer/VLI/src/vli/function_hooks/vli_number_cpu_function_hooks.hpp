@@ -91,22 +91,22 @@ namespace vli
     //specialization sub
     template<>
     void sub<unsigned long int,6>(unsigned long int * x,unsigned long int const* y){
-        detail::sub384_384(x,y); // 384 + 384 = 384
+        detail::sub384_384(x,y); // 384 - 384 = 384
     }; 
     
     template<>
     void sub<unsigned long int,3>(unsigned long int * x,unsigned long int const* y){
-        detail::sub192_192(x,y); // 384 + 192 = 192
+        detail::sub192_192(x,y); // 384 - 192 = 192
     };
     
     template<>
     void sub<unsigned long int,6>(unsigned long int * x,unsigned long int const y){
-        detail::sub384_64(x,&y); // 384 + 64 = 384
+        detail::sub384_64(x,&y); // 384 - 64 = 384
     }; 
     
     template<>
     void sub<unsigned long int,3>(unsigned long int * x,unsigned long int const y){
-        detail::sub192_64(x,&y); // 384 + 64 = 192
+        detail::sub192_64(x,&y); // 384 - 64 = 192
     };
     
     //specialization mul    
