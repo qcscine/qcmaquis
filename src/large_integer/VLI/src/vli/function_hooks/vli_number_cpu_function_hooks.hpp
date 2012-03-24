@@ -66,6 +66,11 @@ namespace vli
     void multiplies_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const b){
         mul<BaseInt,Size>(&vli_a[0],b);
     }
+    
+    template <class BaseInt, std::size_t Size>
+    void multiply_add_assign(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
+        detail::muladd384_192_192(&vli_res[0],&vli_a[0],&vli_b[0]);
+    }
 
     //specialization add
     template<>

@@ -32,6 +32,7 @@ namespace vli{
         void mul384_192_192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 192*192 = 384
         void mul192_192(unsigned long int * x,unsigned long int const* y); // 192 * 192 = 192
         void mul192_64(unsigned long int * x,unsigned long int const* y); // 192 * 64 = 192
+        void muladd384_192_192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 384 += 192*192
     }
 }
         

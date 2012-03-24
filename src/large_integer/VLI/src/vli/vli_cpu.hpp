@@ -278,8 +278,13 @@ std::string vli_cpu<BaseInt, Size>::get_str_helper_inplace(vli_cpu<BaseInt,size>
 // free function algebra 
 
 template <class BaseInt, std::size_t Size>
-void multi_nt(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) {         
+void mul(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) {         
         multiplies<BaseInt, Size>(vli_res, vli_a, vli_b);
+}
+
+template <class BaseInt, std::size_t Size>
+void muladd(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) {         
+        multiply_add_assign<BaseInt, Size>(vli_res, vli_a, vli_b);
 }
 
 template <class BaseInt, std::size_t Size>

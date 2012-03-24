@@ -96,10 +96,10 @@ void add384_64(unsigned long int* /* %%rdi */, unsigned long int const* /* %%rsi
         "movq "PPS(5,n)"(%%rdi), %%rcx             \n" /* load a5 */     \
         "addq (%%rsi)          , %%r8              \n" /* add a0+b0 */   \
         "adcq $0x0             , %%r9              \n" /* add a1+b1+c */ \
-        "adcq $0x0             , %%r10             \n" /* add a2++c */   \
-        "adcq $0x0             , %%r11             \n" /* add a3++c */   \
-        "adcq $0x0             , %%r12             \n" /* add a4++c */   \
-        "adcq $0x0             , %%rcx             \n" /* add a5++c */   \
+        "adcq $0x0             , %%r10             \n" /* add a2+0+c */  \
+        "adcq $0x0             , %%r11             \n" /* add a3+0+c */  \
+        "adcq $0x0             , %%r12             \n" /* add a4+0+c */  \
+        "adcq $0x0             , %%rcx             \n" /* add a5+0+c */  \
         "movq %%r8             , (%%rdi)           \n" /* save a0 */     \
         "movq %%r9             , "PPS(1,n)"(%%rdi) \n" /* save a1 */     \
         "movq %%r10            , "PPS(2,n)"(%%rdi) \n" /* save a2 */     \
@@ -266,7 +266,7 @@ void mul384_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
 
 // Vli (192) = VLI (192) * VLI (192) 
 #define HELPER_ASM_MUL192_192(n) \
-void mul192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
+void mul192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
      asm( \
 /*01*/  "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   \
 /*02*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
@@ -375,10 +375,91 @@ void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/
     : : : "rax","rdx","rbx","r8","r9","r10","r11","r12","memory"  \
     ); \
 };
+// Vli (384) = VLI (192) * VLI (192) 
+// c += a*b
+#define HELPER_ASM_MUL_ADD384_192_192(n) \
+void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){ \
+    asm( \
+/* ----------- * we alloc into the register for the intermediate result */                \
+/*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul  */              \
+/*01*/  "xorq %%r8             ,%%r8              \n" /* r8 = 0  */                       \
+/*02*/  "xorq %%r9             ,%%r9              \n" /* r9 = 0  */                       \
+/*03*/  "xorq %%r10            ,%%r10             \n" /* r10 = 0 */                       \
+/*04*/  "xorq %%r11            ,%%r11             \n" /* r11 = 0 */                       \
+/*05*/  "xorq %%r12            ,%%r12             \n" /* r12 = 0 */                       \
+/*06*/  "xorq %%r13            ,%%r13             \n" /* r12 = 0 */                       \
+/*07*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
+/*08*/  "movq %%rbp            ,-0x08(%%rsp)      \n" /* alloc the stack */               \
+/*09*/  "movq %%rax            ,%%rbp             \n" /* keep a stack copy of rax/a0 */   \
+/* --------------------------- a0 * b0, a0 * b1, a0 * b2 start ------------------------*/ \
+/*10*/  "mulq (%%rbx)                             \n" /* lo rax, hi rdx   a0*b0 */        \
+/*11*/  "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  \
+/*12*/  "movq %%rdx            ,%%r9              \n" /* a0b0hi into r9 */                \
+/*13*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+/*14*/  "mulq "PPS(1,n)"(%%rbx)                   \n" /* a0 * b1 */                       \
+/*15*/  "addq %%rax            ,%%r9              \n" /* add a0b0hi + a0b1lo */           \
+/*16*/  "adcq %%rdx            ,%%r10             \n" /* save the a0b1hi into r10 */      \
+/*17*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+/*18*/  "mulq "PPS(2,n)"(%%rbx)                   \n" /* a0 * b2 */                       \
+/*19*/  "addq %%rax            ,%%r10             \n" /* add l16 + a0b2lo + c */          \
+/*20*/  "adcq %%rdx            ,%%r11             \n" /* add l04 + a0b2hi + c, end */     \
+/* --------------------------- a0 * b0, a0 * b1, a0 * b2 end --------------------------*/ \
+/* --------------------------- a1 * b0, a1 * b1, a1 * b2 start ------------------------*/ \
+/*21*/  "movq "PPS(1,n)"(%%rsi),%%rax             \n" /* a1 into rax */                   \
+/*22*/  "movq %%rax            ,%%rbp             \n" /* keep a stack copy of rax/a1 */   \
+/*23*/  "mulq (%%rbx)                             \n" /* a1 * b0 */                       \
+/*24*/  "addq %%rax            ,%%r9              \n" /* l15 + a1b0lo */                  \
+/*25*/  "adcq %%rdx            ,%%r10             \n" /* l16 + a1b0hi + c */              \
+/*26*/  "adcq $0               ,%%r11             \n" /* possible carry */                \
+/*27*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a1) from the stack */ \
+/*28*/  "mulq "PPS(2,n)"(%%rbx)                   \n" /* a1*b2 */                         \
+/*29*/  "addq %%rax            ,%%r11             \n" /* l26 + a1b2lo + c */              \
+/*30*/  "adcq %%rdx            ,%%r12             \n" /* a1b2hi + c */                    \
+/*31*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a1) from the stack */ \
+/*32*/  "mulq "PPS(1,n)"(%%rbx)                   \n" /* a1*b1 */                         \
+/*33*/  "addq %%rax            ,%%r10             \n" /* a1b2lo to r10 */                 \
+/*34*/  "adcq %%rdx            ,%%r11             \n" /* a1b2hi + c  */                   \
+/*35*/  "adcq $0               ,%%r12             \n" /* r12 + c  */                      \
+/* --------------------------- a1 * b0, a1 * b1, a1 * b2 end --------------------------*/ \
+/* --------------------------- a2 * b0, a2 * b1, a2 * b2 start ------------------------*/ \
+/*36*/  "movq "PPS(2,n)"(%%rsi),%%rax             \n" /* a2 to rax */                     \
+/*37*/  "movq %%rax            ,%%rbp             \n" /* copy into the stack */           \
+/*38*/  "mulq (%%rbx)                             \n" /* a2*b0 */                         \
+/*39*/  "addq %%rax            ,%%r10             \n" /* l33 + a2b0lo */                  \
+/*40*/  "adcq %%rdx            ,%%r11             \n" /* l34 + a2b0hi + c */              \
+/*41*/  "adcq $0               ,%%r12             \n" /* possible carry */                \
+/*42*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a2) */                \
+/*43*/  "mulq "PPS(2,n)"(%%rbx)                   \n" /* a2*b2 */                         \
+/*44*/  "addq %%rax            ,%%r12             \n" /* a2b2lo + l41 + c*/               \
+/*45*/  "adcq %%rdx            ,%%r13             \n" /* a2b2hi + l13 + c*/               \
+/*46*/  "movq %%rbp            ,%%rax             \n" /* reload a2 */                     \
+/*47*/  "mulq "PPS(1,n)"(%%rbx)                   \n" /* a2*b1 */                         \
+/*48*/  "addq %%rax            ,%%r11             \n" /* a2b1lo + l40 */                  \
+/*49*/  "adcq %%rdx            ,%%r12             \n" /* a2b1hi + l44 */                  \
+/*50*/  "adcq $0               ,%%r13             \n" /* r12 + c */                       \
+/* --------------------------- a2 * b0, a2 * b1, a2 * b2 end --------------------------*/ \
+/* --------------------------- +=   final addition start     --------------------------*/ \
+/*51*/  "addq (%%rdi)          , %%r8             \n" /* add a0+b0 */                     \
+/*52*/  "adcq "PPS(1,n)"(%%rdi), %%r9             \n" /* add a1+b1+c */                   \
+/*53*/  "adcq "PPS(2,n)"(%%rdi), %%r10            \n" /* add a2+b2+c */                   \
+/*54*/  "adcq "PPS(3,n)"(%%rdi), %%r11            \n" /* add a3+b3+c */                   \
+/*55*/  "adcq "PPS(4,n)"(%%rdi), %%r12            \n" /* add a4+b4+c */                   \
+/*56*/  "adcq "PPS(5,n)"(%%rdi), %%r13            \n" /* add a5+b5+c */                   \
+/* --------------------------- +=   end   addition start     --------------------------*/ \
+/* ---------------------------  write the result             --------------------------*/ \
+/*57*/  "movq %%r8             ,(%%rdi)           \n" /* r8 -> c0 */                      \
+/*58*/  "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* r8 -> c1 */                      \
+/*59*/  "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* r9 -> c2 */                      \
+/*60*/  "movq %%r11            ,"PPS(3,n)"(%%rdi) \n" /* r10 -> c3 */                     \
+/*61*/  "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* r11 -> c4 */                     \
+/*62*/  "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* r12 -> c5 */                     \
+/*63*/  "movq -0x08(%%rsp)     ,%%rbp             \n" /* stack clean up */                \
+    : : : "rax","rdx","rbx","r8","r9","r10","r11","r12","r13","memory"  \
+    ); \
+};
 
     // c - 1 is the order = AoS, Order*Order = SoA
     // c - generate assembly function 
-    
     HELPER_ASM_ADD192_64(1) 
     HELPER_ASM_ADD192_192(1)
     HELPER_ASM_ADD384_64(1)
@@ -391,6 +472,7 @@ void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/
     HELPER_ASM_MUL192_192(1)
     HELPER_ASM_MUL384_64(1)
     HELPER_ASM_MUL384_192_192(1)
+    HELPER_ASM_MUL_ADD384_192_192(1)
         
     } //namespase detail
 } //namespace vli

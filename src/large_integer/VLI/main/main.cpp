@@ -21,7 +21,7 @@
 
 #include "vli/detail/bit_masks.hpp"
 
-#define SizeVector 1024
+#define SizeVector 4096
 #define Size1 3
 #define Size2 6
 #define Order 11
@@ -96,15 +96,15 @@ int main (int argc, char * const argv[])
     vector_type_cpu v2(SizeVector);
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
-    fill_vector_random(v1,1);
-    fill_vector_random(v2,1);
+    fill_vector_random(v1,2);
+    fill_vector_random(v2,3);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
     
     TimerOMP t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
 
     TimerOMP t2("CPU gmp_omp");
@@ -120,10 +120,10 @@ int main (int argc, char * const argv[])
     
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
-/*
-    std::cout << result_pure_cpu << std::endl;
-    std::cout << pgmpd << std::endl;
-  */  
+
+   // std::cout << result_pure_cpu << std::endl;
+  //  std::cout << pgmpd << std::endl;
+    
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
         

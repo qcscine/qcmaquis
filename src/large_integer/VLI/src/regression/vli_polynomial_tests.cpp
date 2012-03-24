@@ -4,8 +4,8 @@
 #include <boost/static_assert.hpp>
 
 #include "vli/polynomial/monomial.hpp"
-#include "vli/polynomial/polynomial_cpu.h"
-#include "vli/vli_cpu.h"
+#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/vli_cpu.hpp"
 
 #include "regression/vli_test.hpp"
 
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign, Poly, polynomial_types )
 
     BOOST_CHECK_EQUAL(pa,pb);
 }
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types )
 {
     Poly pa;
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types 
     pa(0,0) = pb(0,0);
     BOOST_CHECK_EQUAL(pa,pb);
 }
-*/
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_monomial, Poly, polynomial_types )
 {
     Poly pa;
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign, Poly, polynomial_types )
         for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j), -pb(i,j));
 }
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types )
 {
     Poly pa;
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types
     pa(0,0) = pb(0,0);
     BOOST_CHECK_EQUAL(pa,pb);
 }
-*/
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_monomial, Poly, polynomial_types )
 {
     Poly pa;

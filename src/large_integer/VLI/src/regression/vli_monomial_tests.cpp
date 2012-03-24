@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 #include <gmpxx.h>
 
-#include "vli/vli_cpu.h"
+#include "vli/vli_cpu.hpp"
 #include "vli/vli_traits.hpp"
 #include "vli/polynomial/monomial.hpp"
 
