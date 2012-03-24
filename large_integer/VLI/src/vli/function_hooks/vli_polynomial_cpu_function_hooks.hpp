@@ -22,24 +22,11 @@ void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> & result,
                    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
 {
     typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::exponent_type exponent_type;
- 
-    // horrible code muladd operator
-    // C - we can not still use the operator *, += still ok 
-    vli_cpu<BaseInt, 2*Size> inter;
-    
-    for(exponent_type je1 = 0; je1 < Order; ++je1)
-    {
-        for(exponent_type je2 = 0; je2 < Order; ++je2)
-        {
-            for(exponent_type he1 = 0; he1 < Order; ++he1)
-            {
-                for(exponent_type he2 = 0; he2 < Order; ++he2)
-                {
-                    multi_nt(inter,p1.coeffs_[je1*Order+he1],p2.coeffs_[je2*Order+he2]);
-                    result.coeffs_[(je1+je2)*2*Order + he1+he2 ] += inter;
-                    memset((void*)&inter[0],0,2*Size*sizeof(BaseInt));
-                    // original version
-  //                   result.coeffs_[(je1+je2)*2*Order + he1+he2 ] += p1.coeffs_[je1*Order+he1] * p2.coeffs_[je2*Order+he2];
+    for(exponent_type je1 = 0; je1 < Order; ++je1) {
+        for(exponent_type je2 = 0; je2 < Order; ++je2) {
+            for(exponent_type he1 = 0; he1 < Order; ++he1) {
+                for(exponent_type he2 = 0; he2 < Order; ++he2) {
+                    muladd(result.coeffs_[(je1+je2)*2*Order + he1+he2 ], p1.coeffs_[je1*Order+he1],p2.coeffs_[je2*Order+he2]);
                 }
             }
         }    

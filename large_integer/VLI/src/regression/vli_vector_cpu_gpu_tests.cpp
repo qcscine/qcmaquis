@@ -11,9 +11,9 @@
 #include <cstdio>
 
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
-#include "vli/polynomial/polynomial_cpu.h"
+#include "vli/polynomial/polynomial_cpu.hpp"
 #include "vli/polynomial/monomial.hpp"
-#include "vli/vli_cpu.h"
+#include "vli/vli_cpu.hpp"
 #include "vli/vli_traits.hpp"
 
 #include "regression/vli_test.hpp"

@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( negate_and_construct_from_negative_int, Vli, vli_types )
 {
-    Vli a(-2437);
-    Vli am(2437);
+    Vli a(2437284);
+    Vli am(-2437284);
     a.negate();
     BOOST_CHECK_EQUAL(a,am);
 }
@@ -564,8 +564,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2positive, Vli, vli_t
     
     vli::test::fill_random(a);
     vli::test::fill_random(b);
-
-    mul(c,a,b);
+    
+    vli::detail::kernels_multiplication_classic<typename Vli::value_type,Vli::size>(&c[0],&a[0],&b[0]);
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());    
     mpz_class cgmp = agmp * bgmp;
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_1positive_1negative, 
     vli::test::fill_random(b);
     
     a.negate();
-    mul(c,a,b);
+    multi_nt(c,a,b);
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());    
     mpz_class cgmp = agmp * bgmp;
@@ -605,7 +605,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2negative, Vli, vli_t
     a.negate();
     b.negate();
 
-    mul(c,a,b);
+    multi_nt(c,a,b);
     
     mpz_class agmp(a.get_str()), bgmp(b.get_str());    
     mpz_class cgmp = agmp * bgmp;

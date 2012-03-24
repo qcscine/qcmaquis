@@ -84,9 +84,6 @@ namespace vli{
     
     template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, int b);
-
-    template <class BaseInt, std::size_t Size>
-    void multi_nt(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b); // C nt = non truncated
     
     template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator * (vli_cpu<BaseInt, Size>  vli_a, vli_cpu<BaseInt, Size> const& vli_b);
@@ -96,6 +93,12 @@ namespace vli{
 
     template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a);
+
+    template <class BaseInt, std::size_t Size>
+    void mul(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b); // C nt = non truncated
+
+    template <class BaseInt, std::size_t Size>
+    void muladd(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b); // C
     
     /**
     stream 

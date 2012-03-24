@@ -9,6 +9,16 @@ configure_file (
         "${PROJECT_BINARY_DIR}/vli/vli_config.h"
         )
 
+
+########################################################################
+#
+# Configure Header File Template
+#
+########################################################################
+add_library(vli_cpu 
+            detail/kernels_cpu_asm.cpp)
+
+
 ########################################################################
 #
 # GPU Kernel Compile
