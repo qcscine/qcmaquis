@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign, Poly, polynomial_types )
 
     BOOST_CHECK_EQUAL(pa,pb);
 }
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types )
 {
     Poly pa;
@@ -109,8 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types 
 
     Poly pb(pa);
 
-    typename Poly::value_type a;
-    fill_random(a);
+    int a(3);
     pa += a;
 
     BOOST_CHECK_EQUAL(pa(0,0), pb(0,0)+a);
@@ -118,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types 
     pa(0,0) = pb(0,0);
     BOOST_CHECK_EQUAL(pa,pb);
 }
-*/
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_monomial, Poly, polynomial_types )
 {
     Poly pa;
@@ -156,7 +155,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign, Poly, polynomial_types )
         for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
             BOOST_CHECK_EQUAL(pa(i,j), -pb(i,j));
 }
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types )
 {
     Poly pa;
@@ -164,8 +163,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types
 
     Poly pb(pa);
 
-    typename Poly::value_type a;
-    fill_random(a);
+    int a=9;
     pa -= a;
 
     BOOST_CHECK_EQUAL(pa(0,0), pb(0,0)-a);
@@ -173,7 +171,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types
     pa(0,0) = pb(0,0);
     BOOST_CHECK_EQUAL(pa,pb);
 }
-*/
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_monomial, Poly, polynomial_types )
 {
     Poly pa;
@@ -261,15 +259,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
     fill_poly_random(pb);
    // poly_multiply(pc,pa,pb);
     pc = pa*pb;
-/*
+
     polynomial_result_type_cpu result;
     for(typename Poly::value_type::size_type i=0; i < Poly::max_order; ++i)
         for(typename Poly::value_type::size_type j=0; j < Poly::max_order; ++j)
-            for(typename Poly::value_type::size_type k=0; k < (Poly::max_order - i); ++k)
-                for(typename Poly::value_type::size_type l=0; l < (Poly::max_order - j); ++l)
-                    result(i+k,j+l) += pa(i,j)*pb(k,l);
+            for(typename Poly::value_type::size_type k=0; k < (Poly::max_order ); ++k)
+                for(typename Poly::value_type::size_type l=0; l < (Poly::max_order); ++l)
+                    muladd(result(i+k,j+l),pa(i,j),pb(k,l));
 
     BOOST_CHECK_EQUAL(pc,result);    
-*/
+
  }
 

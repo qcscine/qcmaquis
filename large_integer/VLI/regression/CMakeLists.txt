@@ -35,7 +35,7 @@ if(VLI_COMPILE_GPU)
     add_definitions(-DVLI_USE_GPU -DVLI_SPLIT_PARAM=${VLI_SPLIT_PARAM} )
     target_link_libraries( vli_vector_cpu_gpu_tests vli_gpu ${Boost_LIBRARIES} ${CUDA_LIBRARIES} ${OPENMP_LIBRARIES})
 else(VLI_COMPILE_GPU)
-    target_link_libraries( vli_vector_cpu_gpu_tests ${Boost_LIBRARIES} ${OPENMP_LIBRARIES} ${PROJECT_BINARY_DIR}/src/vli/libvli_cpu.a)
+    target_link_libraries( vli_vector_cpu_gpu_tests ${Boost_LIBRARIES}  ${GMP_LIBRARY_CXX}  ${OPENMP_LIBRARIES} ${PROJECT_BINARY_DIR}/src/vli/libvli_cpu.a)
 endif(VLI_COMPILE_GPU)
 
 add_test(vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests)

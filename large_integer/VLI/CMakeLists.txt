@@ -28,7 +28,7 @@ set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark time
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
 set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
 set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
-set (VLI_COMPILE_TYPES "((unsigned int,3)) ((unsigned int,4)) ((unsigned long int,3)) ((unsigned long int,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
+set (VLI_COMPILE_TYPES "((unsigned long int,3))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
 
 ########################################################################
@@ -123,7 +123,10 @@ endif()
 ########################################################################
 
 if(VLI_TESTS)
-    enable_testing ()
+    include(CTest)
+    enable_testing() 
+    set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
+      mark_as_advanced(BUILDNAME)
     add_subdirectory (regression/)
 endif(VLI_TESTS)
 

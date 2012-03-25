@@ -19,28 +19,18 @@ public:
     typedef Vli value_type;
     enum { max_order = Order};
         
-   // friend void poly_multiply (polynomial_cpu<Vli,2*Order>& result ,const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);
-  //  friend void poly_multiply (polynomial_cpu<Vli,Order>& result ,const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);
-    
     polynomial_cpu();    
     polynomial_cpu(const polynomial_cpu& p);    
     polynomial_cpu& operator = (polynomial_cpu p);
     
-    polynomial_cpu& operator += (polynomial_cpu const& p);
-    
-    template <typename T>
-    polynomial_cpu& operator += (monomial<T> const& m);
+    polynomial_cpu& operator += (polynomial_cpu const& p);    
+    polynomial_cpu& operator += (monomial<Vli> const& m);
+    polynomial_cpu& operator += (int a);
 
-    /*
-    template <typename T>
-    polynomial_cpu& operator += (T const& t);
-    */
     polynomial_cpu& operator -= (polynomial_cpu const& p);    
     polynomial_cpu& operator -= (monomial<Vli> const& m);
-    /*
-    template <typename T>
-    polynomial_cpu& operator -= (T const& t);
-    */
+    polynomial_cpu& operator -= (int a);
+
     bool operator==(polynomial_cpu const& p) const;
     
     void swap(polynomial_cpu& p1, polynomial_cpu& p2);

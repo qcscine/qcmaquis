@@ -30,6 +30,7 @@ namespace vli
     template<typename BaseInt, std::size_t Size>
     void mul(BaseInt * x,BaseInt const y);
 
+    //????_assign functions
     template <class BaseInt, std::size_t Size>
     void plus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b ){
         add<BaseInt,Size>(&vli_a[0],&vli_b[0]);
@@ -37,7 +38,6 @@ namespace vli
      
     template <class BaseInt, std::size_t Size>
     void plus_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const b ){  
-        assert(b < max_value<BaseInt>::value); //avoid overflow
         add<BaseInt,Size>(&vli_a[0],b);
     }
     
@@ -48,7 +48,6 @@ namespace vli
     
     template <class BaseInt, std::size_t Size>
     void minus_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const b ){  
-        assert(b < max_value<BaseInt>::value); //avoid overflow
         sub<BaseInt,Size>(&vli_a[0],b);
     }
 
