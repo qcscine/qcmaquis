@@ -100,34 +100,6 @@ void fill_vector_random(Vector& v, typename Vector::value_type::exponent_type si
         fill_poly_random(v[i], size);
 }
 
-template<typename PolynomialVLI, typename PolynomialGMP>
-void InitPolyVLItoPolyGMP(PolynomialVLI const& P1, PolynomialGMP& P2){
-    int max_order = PolynomialVLI::max_order;
-
-    for(long int j = 0; j < max_order; j++)
-        for(long int k = 0; k < max_order; k++)
-            P2(j,k) = P1(j,k).get_str();
-}
-
-template <typename VpolyVLI, typename VpolyGMP>
-void InitVecVLItoVecGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP){
-    #pragma omp parallel for 
-    for (long int i =0 ; i < (long int)VVLI.size(); ++i)
-        InitPolyVLItoPolyGMP(VVLI[i],VGMP[i]);
-}
-
-template <typename PolyVLI, typename PolyGMP>
-bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP & PGMP){
-    bool b(true);
-    #pragma omp parallel for
-    for(int j = 0; j < PolyVLI::max_order; j++)
-        for(int k = 0; k < PolyVLI::max_order; k++){
-            if( PGMP(j,k).get_str() != PVLI(j,k).get_str()){
-                b = false;
-                }   
-            }   
-    return b;
-}    
 
 
 } //namespace test

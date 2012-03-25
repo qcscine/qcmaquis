@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate_and_construct_from_negative_int, Vli, vli_
 {
     Vli a(2437284);
     Vli am(-2437284);
-    a.negate();
+    am.negate();
     BOOST_CHECK_EQUAL(a,am);
 }
 
@@ -125,8 +125,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence_int, Vli, vli_types )
 {
     Vli a;
-    int b = rnd_valid_int<Vli>();
-    int b_orig(b);
+    Vli b = rnd_valid_int<Vli>();
+//    std::cout << " BBbbbbbbb " << b << std::endl;
+    Vli b_orig(b);
     Vli c(a);
 
     a -= b;

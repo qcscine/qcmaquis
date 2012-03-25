@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
     Vli b(rnd_valid_int<Vli>());
     Vli b_orig(b);
     Vli c(a);
-
+std::cout << " sdjfghqobfqohebgvouebrvqve " ;
     a -= b;
     c += (-b);
 
@@ -552,7 +552,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( two_times_not_equal_minus_one, Vli, vli_types )
     a *= b;
     c -= 1;
     
-    BOOST_CHECK_EQUAL((a == c), false);
+    BOOST_CHECK_EQUAL((a == c), true);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2positive, Vli, vli_types )
@@ -589,7 +589,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_1positive_1negative, 
     mpz_class agmp(a.get_str()), bgmp(b.get_str());    
     mpz_class cgmp = agmp * bgmp;
     
-//    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2negative, Vli, vli_types )
@@ -610,7 +610,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2negative, Vli, vli_t
     mpz_class agmp(a.get_str()), bgmp(b.get_str());    
     mpz_class cgmp = agmp * bgmp;
     
-    //BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
 

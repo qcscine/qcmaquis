@@ -50,7 +50,7 @@ namespace vli{
         vli_cpu& operator *= (BaseInt a); // 192 bits -> 192 bits
         vli_cpu& operator *= (vli_cpu const& a); // 192 bits -> 192 bits
         
-        vli_cpu operator - () const;
+        vli_cpu operator -() const;
         bool operator == (vli_cpu const& vli) const;
         bool operator != (vli_cpu const& vli) const;
         bool operator < (vli_cpu const& vli) const;

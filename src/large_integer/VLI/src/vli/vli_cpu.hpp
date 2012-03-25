@@ -19,7 +19,7 @@ vli_cpu<BaseInt, Size>::vli_cpu(int num) {
     data_[0] = num; 
     int sign = 0x01 & (num>>(sizeof(int)*8-1));
     for(size_type i=1; i<size; ++i){
-        data_[i] = sign*data_mask<BaseInt>::value;
+        data_[i] = sign*(base<BaseInt>::value+data_mask<BaseInt>::value);
     }
 }
 
@@ -54,6 +54,14 @@ const BaseInt& vli_cpu<BaseInt, Size>::operator[](size_type i) const{
 // c equality operator
 
 template<typename BaseInt, std::size_t Size>
+vli_cpu<BaseInt, Size> vli_cpu<BaseInt, Size>::operator-() const{
+    vli_cpu tmp(*this);
+    tmp.negate();
+    return tmp;
+}
+
+
+template<typename BaseInt, std::size_t Size>
 bool vli_cpu<BaseInt, Size>::operator == (vli_cpu const& vli) const{
     int n = memcmp((void*)data_,(void*)vli.data_,Size*sizeof(BaseInt));
     return (0 == n);
@@ -69,13 +77,6 @@ bool vli_cpu<BaseInt, Size>::operator != (vli_cpu const& vli) const{
 }
 
 template<typename BaseInt, std::size_t Size>
-vli_cpu<BaseInt, Size> vli_cpu<BaseInt, Size>::operator - () const{
-    vli_cpu tmp(*this);
-    tmp.negate();
-    return tmp;
-}
-
-template<typename BaseInt, std::size_t Size>
 bool vli_cpu<BaseInt, Size>::operator < (vli_cpu const& vli) const{
     vli_cpu tmp(*this);
     return ( (tmp-=vli).is_negative() );
@@ -83,8 +84,9 @@ bool vli_cpu<BaseInt, Size>::operator < (vli_cpu const& vli) const{
 
 template<typename BaseInt, std::size_t Size>
 bool vli_cpu<BaseInt, Size>::operator < (int i) const{
-    vli_cpu tmp(*this);
-    return ( (tmp-=i).is_negative() );
+    vli_cpu tmp1(*this);
+    vli_cpu tmp2(i);    
+    return ( (tmp1-=tmp2).is_negative() );
 }
 
 template<typename BaseInt, std::size_t Size>      
@@ -103,9 +105,9 @@ bool vli_cpu<BaseInt, Size>::operator > (int i) const{
 template<typename BaseInt, std::size_t Size>
 void vli_cpu<BaseInt, Size>::negate(){
     for(size_type i=0; i < size-1; ++i)
-        data_[i] = (~data_[i])&data_mask<BaseInt>::value;
+        data_[i] = (~data_[i]);
     data_[size-1] = (~data_[size-1])&(base<BaseInt>::value+data_mask<BaseInt>::value);
-    (*this)+=vli_cpu(1);
+    (*this)+=1;
 }
 
 template<typename BaseInt, std::size_t Size>
@@ -122,6 +124,7 @@ vli_cpu<BaseInt, Size>& vli_cpu<BaseInt, Size>::operator += (vli_cpu<BaseInt, Si
 
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>& vli_cpu<BaseInt, Size>::operator += (BaseInt const a){
+//    assert(a > 0);
     using vli::plus_assign;
     plus_assign(*this,a);
     return *this;
@@ -278,8 +281,20 @@ std::string vli_cpu<BaseInt, Size>::get_str_helper_inplace(vli_cpu<BaseInt,size>
 // free function algebra 
 
 template <class BaseInt, std::size_t Size>
-void mul(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) {         
-        multiplies<BaseInt, Size>(vli_res, vli_a, vli_b);
+void mul(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) { 
+ /*
+       bool ba(true),bb(true);    
+    
+    if(vli_a.is_negative()){ const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();ba = false; }
+    if(vli_b.is_negative()){ const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();bb = false; }   
+   */  
+    multiplies<BaseInt, Size>(vli_res, vli_a, vli_b);
+    /*
+    if((bb^ba) == true) vli_res.negate();
+    
+    if(ba) const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();   
+    if(bb) const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
+    */
 }
 
 template <class BaseInt, std::size_t Size>
@@ -336,7 +351,7 @@ const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
 //stream
 template<typename BaseInt, std::size_t Size>
 std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli){
-    vli.print(os);
+    vli.print_raw(os);
     return os;
 }
 

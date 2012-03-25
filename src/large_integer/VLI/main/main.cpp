@@ -1,4 +1,5 @@
 
+
 #include <iostream>
 #include <cstdio>
 #include <cassert>
@@ -81,7 +82,18 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
+    vli_type_cpu a,b;
+    vli_result_type_cpu c;
     
+    vli::test::fill_random(a);
+    vli::test::fill_random(b);
+
+    a.negate();
+    
+    vli::mul(c,a,b);
+    
+   
+    /*
     polynomial_vector_type v1gmp(SizeVector);
     polynomial_vector_type v2gmp(SizeVector);
     polynomial_type pgmp;
@@ -126,6 +138,7 @@ int main (int argc, char * const argv[])
     
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
+        */
         
     return 0;
 }
