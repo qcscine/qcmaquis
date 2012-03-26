@@ -1,6 +1,5 @@
 compile_with_ambient()
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories("${ALPS_DIR}")
 include_directories("${AMBIENT_SOURCES_DIR}")
 
 add_definitions (-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
@@ -24,14 +23,14 @@ endif()
 add_executable (gemm_blas.out gemm_blas.cpp)
 add_executable (gemm_ambient.out gemm_ambient.cpp)
 
-target_link_libraries (gemm_ambient.out ambient ${BLAS_LAPACK_serial} ${MPI_CXX_LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
-target_link_libraries (gemm_blas.out ambient ${BLAS_LAPACK_multi} ${MPI_CXX_LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+target_link_libraries (gemm_ambient.out ambient ${BLAS_LAPACK_serial} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+target_link_libraries (gemm_blas.out ambient ${BLAS_LAPACK_multi} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
 
 add_test(gemm_blas.out gemm_blas.out)
 add_test(gemm_ambient.out gemm_ambient.out)
 
 if(ENABLE_PLOT)
 add_executable (plot.out plot.cpp)
-target_link_libraries (plot.out ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+target_link_libraries (plot.out ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
 add_test(plot.out plot.out)
 endif(ENABLE_PLOT)
