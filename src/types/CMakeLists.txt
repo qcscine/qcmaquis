@@ -45,7 +45,7 @@ set(PROJECT_VERSION_BUILD "")
 if(NOT PROJECT_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 
   FIND_PACKAGE(Subversion) 
   IF(Subversion_FOUND) 
-    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} DMRG) 
+    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} PROJECT) 
     set(PROJECT_VERSION_BUILD "r${PROJECT_WC_REVISION}")
   ENDIF(Subversion_FOUND) 
 endif(NOT PROJECT_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 
@@ -67,8 +67,29 @@ MESSAGE(STATUS "Maquis - Matrices version: ${PROJECT_VERSION}")
 if(ENABLE_PLOT)
     find_package(Gnuplot)
 endif(ENABLE_PLOT)
+
 # Boost
-include(${PROJECT_SOURCE_DIR}/config/boost.cmake)
+set(Boost_requirements bindings)
+if(BUILD_MTM)
+  list(APPEND Boost_requirements thread)
+endif(BUILD_MTM)
+if(ENABLE_REGRESSION_VALIDATIONS OR ENABLE_REGRESSION_PERFORMANCES)
+  list(APPEND Boost_requirements unit_test_framework)
+endif(ENABLE_REGRESSION_VALIDATIONS OR ENABLE_REGRESSION_PERFORMANCES)
+
+if(ALPS_ROOT_DIR)
+  set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
+  set(PREVENT_ALPS_COMPILERS ON)
+  find_package(ALPS NO_SYSTEM_ENVIRONMENT_PATH)
+endif(ALPS_ROOT_DIR)
+
+include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
+#find_maquis_boost(COMPONENTS date_time filesystem program_options python regex system serialization)
+find_maquis_boost(COMPONENTS ${Boost_requirements})
+
+message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
+message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
+message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
 
 include_directories(${MAQUIS_Boost_INCLUDE_DIRS})
 list(APPEND MAQUIS_TYPES_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS})
@@ -105,7 +126,6 @@ endif(BUILD_MTM)
 
 
 if(ENABLE_PARALLEL)
-  enable_testing() 
   # first we need BLAS/LAPAACK
   find_package(MPI) 
   # second we need Ambient
@@ -177,14 +197,21 @@ set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps include, need for boos
 
 
 if(ENABLE_REGRESSION_VALIDATIONS)
-     add_subdirectory(regression/validations)
-         if(ENABLE_MTM)
-             add_subdirectory(regression/mt_matrix)
-         endif(ENABLE_MTM)
+  include(CTest)
+  add_subdirectory(regression/dense_matrix)
+  if(ENABLE_PARALLEL)
+    add_subdirectory(regression/validations)
+    endif(ENABLE_PARALLEL)
+	if(ENABLE_MTM)
+		add_subdirectory(regression/mt_matrix)
+	endif(ENABLE_MTM)
 endif(ENABLE_REGRESSION_VALIDATIONS)
 
 if(ENABLE_REGRESSION_PERFORMANCES)
+  enable_testing()
+  if(ENABLE_PARALLEL)
     add_subdirectory(regression/performances)
+  endif(ENABLE_PARALLEL)
 endif(ENABLE_REGRESSION_PERFORMANCES)
 
 
