@@ -37,7 +37,7 @@ typedef hp2c::monomial<large_int> monomial_type;
 
 typedef vli::test::vli_cpu_type_list vli_types;
 
-enum { vector_size = 1024 };
+enum { vector_size = 128 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product, Vli, vli_types)
 {

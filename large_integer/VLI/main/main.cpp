@@ -22,7 +22,6 @@
 
 #include "vli/detail/bit_masks.hpp"
 
-#define SizeVector 4096
 #define Size1 3
 #define Size2 6
 #define Order 11
@@ -59,7 +58,7 @@ template <typename VpolyVLI, typename VpolyGMP>
 void InitPolyVLItoPolyGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP)
 {
     #pragma omp parallel for
-    for (int i =0 ; i < SizeVector; ++i)
+    for (int i =0 ; i <VVLI.size() ; ++i)
         for(int j = 0; j < Order; j++)
             for(int k = 0; k < Order; k++){
                 VGMP[i](j,k) = VVLI[i](j,k).get_str();
@@ -82,18 +81,56 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
-    vli_type_cpu a,b;
-    vli_result_type_cpu c;
     
-    vli::test::fill_random(a);
-    vli::test::fill_random(b);
+    {    
+    vli_result_type_cpu a(-1);
+        long int b = 1;
+        a*=b;
+        std::cout << a << std::endl;
 
-    a.negate();
+    }
+
+    {
+    vli_result_type_cpu a(1);
+    long int b =-1;
+        a*=b;
+        std::cout << a << std::endl;
+    }
     
-    vli::mul(c,a,b);
+    {
+        vli_result_type_cpu a(-1);
+        long int b =-1;
+        a*=b;
+        std::cout << a << std::endl;
+        
+    }
     
-   
+    {
+        vli_result_type_cpu a(1);
+        long int b =1 ;
+        a*=b;
+        std::cout << a << std::endl;        
+    }
+
+    vli_result_type_cpu t0;
+    
+    fill_random(t0,5);
+   // t0.negate();
+    
+    large_int tgmp(t0.get_str());
+    
+    t0*=-25368;
+    tgmp*=-25368;
+    
+    std::cout << t0 << std::endl;
+    std::cout << tgmp << std::endl;
+
+    //    int toto;
+    
+    
     /*
+    int SizeVector = atoi(argv[1]);  
+
     polynomial_vector_type v1gmp(SizeVector);
     polynomial_vector_type v2gmp(SizeVector);
     polynomial_type pgmp;
@@ -113,10 +150,10 @@ int main (int argc, char * const argv[])
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
-    
+   
     TimerOMP t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
 
     TimerOMP t2("CPU gmp_omp");
@@ -135,11 +172,10 @@ int main (int argc, char * const argv[])
 
    // std::cout << result_pure_cpu << std::endl;
   //  std::cout << pgmpd << std::endl;
-    
+
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-        */
-        
+    */    
     return 0;
 }
 

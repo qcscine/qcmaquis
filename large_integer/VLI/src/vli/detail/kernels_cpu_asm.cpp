@@ -202,20 +202,36 @@ void mul192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
     asm( \
         "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
         "movq %%rbp            ,-0x8(%%rsp)       \n" /* alloc the stack */               \
+        "xorq %%rcx            ,%%rcx             \n" /* rcx to 0 */                      \
+        "cmpq %%rax            ,%%rcx             \n" /* rax is negative ? */             \
+        "js   _IsNegative192_64                   \n" /* yes it is, SF = 1 */             \
+        "negq %%rax                               \n" /* negate the number */             \
+        "movq $0x1             ,%%rcx             \n" /* keep trace for final sign */     \
+        "_IsNegative192_64 :                      \n" /* end if structure */              \
         "movq %%rax            ,%%rbp             \n" /* keep a copy of rax/a0 inside */  \
         "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
-        "movq %%rax            ,(%%rdi)           \n" /* only one term, write into c0 */  \
-        "movq %%rdx            ,%%rcx             \n" /* hia0b0 into rcx */               \
+        "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  \
+        "movq %%rdx            ,%%r9              \n" /* hia0b0 into rcx */               \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(1,n)"(%%rdi)                   \n" /* a0 * b1 */                       \
-        "addq %%rax            ,%%rcx             \n" /* add hia0b0 + loa0b1 */           \
-        "movq %%rcx            ,"PPS(1,n)"(%%rdi) \n" /* move into c1 */                  \
-        "movq %%rdx            ,%%rcx             \n" /* save the hi into rcx */          \
-        "adcq $0               ,%%rcx             \n" /* perhaps carry */                 \
+        "addq %%rax            ,%%r9              \n" /* add hia0b0 + loa0b1 */           \
+        "movq %%rdx            ,%%r10             \n" /* save the hi into rcx */          \
+        "adcq $0               ,%%r10             \n" /* perhaps carry */                 \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "imulq "PPS(2,n)"(%%rdi)                  \n" /* a0 * b2, we skip the the hi */   \
-        "addq %%rax            ,%%rcx             \n" /* add hia0b1 + loa0b2 */           \
-        "movq %%rcx            ,"PPS(2,n)"(%%rdi) \n" /* move into c2 */                  \
+        "addq %%rax            ,%%r10             \n" /* add hia0b1 + loa0b2 */           \
+        "cmpq $0               ,%%rcx             \n" /* rcx = 1 we negate */             \
+        "je _IsNegativeResult192_64               \n" /* not equal ZF = 0, negate*/       \
+        "notq %%r8                                \n" /* start C2M negate */              \
+        "notq %%r9                                \n" /* 2ComplementMethod negate */      \
+        "notq %%r10                               \n" /* 2CM negate */                    \
+        "addq $0x1             ,%%r8              \n" /* 2CM add 1 */                     \
+        "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */              \
+        "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */              \
+        "_IsNegativeResult192_64 :                \n" /* end if*/                         \
+        "movq %%r8             ,(%%rdi)           \n" /* move into a0 */                  \
+        "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* move into a1 */                  \
+        "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq -0x8(%%rsp)      ,%%rbp             \n" /* stack clean up */                \
         : : :"rax","rdx","rcx","r8","r9","memory"                 \
     ); \
@@ -227,40 +243,62 @@ void mul384_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
     asm( \
         "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
         "movq %%rbp            ,-0x8(%%rsp)       \n" /* alloc the stack */               \
+        "xorq %%rcx            ,%%rcx             \n" /* rcx to 0 */                      \
+        "cmpq %%rax            ,%%rcx             \n" /* rax is negative ? */             \
+        "js   _IsNegative384_64                   \n" /* yes it is, SF = 1 */             \
+        "negq %%rax                               \n" /* negate the number */             \
+        "movq $0x1             ,%%rcx             \n" /* keep trace for final sign */     \
+        "_IsNegative384_64 :                      \n" /* end if structure */              \
         "movq %%rax            ,%%rbp             \n" /* keep a copy of rax/a0 inside */  \
         "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
-        "movq %%rax            ,(%%rdi)           \n" /* only one term, write into b0 */  \
-        "movq %%rdx            ,%%rcx             \n" /* hia0b0 into rcx */               \
+        "movq %%rax            ,%%r8              \n" /* only one term, write into b0 */  \
+        "movq %%rdx            ,%%r9              \n" /* hia0b0 into rcx */               \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(1,n)"(%%rdi)                   \n" /* a0 * b1 */                       \
-        "addq %%rax            ,%%rcx             \n" /* add hia0b1 + loa0b1 */           \
-        "movq %%rcx            ,"PPS(1,n)"(%%rdi) \n" /* move into b2 */                  \
-        "movq %%rdx            ,%%rcx             \n" /* save the hi into rcx */          \
-        "adcq $0               ,%%rcx             \n" /* perhaps carry */                 \
+        "addq %%rax            ,%%r9              \n" /* add hia0b1 + loa0b1 */           \
+        "movq %%rdx            ,%%r10             \n" /* save the hi into rcx */          \
+        "adcq $0               ,%%r10             \n" /* perhaps carry */                 \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(2,n)"(%%rdi)                   \n" /* a0 * b2 */                       \
-        "addq %%rax            ,%%rcx             \n" /* add hia0b2 + loa0b2 */           \
-        "movq %%rcx            ,"PPS(2,n)"(%%rdi) \n" /* move into b2 */                  \
-        "movq %%rdx            ,%%rcx             \n" /* save the hi into rcx */          \
-        "adcq $0               ,%%rcx             \n" /* perhaps carry */                 \
+        "addq %%rax            ,%%r10             \n" /* add hia0b2 + loa0b2 */           \
+        "movq %%rdx            ,%%r11             \n" /* save the hi into rcx */          \
+        "adcq $0               ,%%r11             \n" /* perhaps carry */                 \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(3,n)"(%%rdi)                   \n" /* a0 * b3 */                       \
-        "addq %%rax            ,%%rcx             \n" /* add hia0b3 + loa0b3 */           \
-        "movq %%rcx            ,"PPS(3,n)"(%%rdi) \n" /* move into b4 */                  \
-        "movq %%rdx            ,%%rcx             \n" /* save the hi into rcx */          \
-        "adcq $0               ,%%rcx             \n" /* perhaps carry */                 \
+        "addq %%rax            ,%%r11              \n" /* add hia0b3 + loa0b3 */          \
+        "movq %%rdx            ,%%r12              \n" /* save the hi into rcx */         \
+        "adcq $0               ,%%r12              \n" /* perhaps carry */                \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(4,n)"(%%rdi)                   \n" /* a0 * b4 */                       \
-        "addq %%rax            ,%%rcx             \n" /* add hia0b4 + loa0b4 */           \
-        "movq %%rcx            ,"PPS(4,n)"(%%rdi) \n" /* move into b4 */                  \
-        "movq %%rdx            ,%%rcx             \n" /* save the hi into rcx */          \
-        "adcq $0               ,%%rcx             \n" /* perhaps carry */                 \
+        "addq %%rax            ,%%r12             \n" /* add hia0b4 + loa0b4 */           \
+        "movq %%rdx            ,%%r13             \n" /* save the hi into rcx */          \
+        "adcq $0               ,%%r13             \n" /* perhaps carry */                 \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "imulq "PPS(5,n)"(%%rdi)                  \n" /* a0 * b5, we skip the the hi */   \
-        "addq %%rax            ,%%rcx             \n" /* add hia0b5 + loa0b5 */           \
-        "movq %%rcx            ,"PPS(5,n)"(%%rdi) \n" /* move into b5 */                  \
+        "addq %%rax            ,%%r13             \n" /* add hia0b5 + loa0b5 */           \
+        "cmpq $0               ,%%rcx             \n" /* rcx = 1 we negate */             \
+        "je _IsNegativeResult384_64               \n" /* not equal ZF = 0, negate*/       \
+        "notq %%r8                                \n" /* start2ComplementMethod negate */ \
+        "notq %%r9                                \n" /* 2CM negate */                    \
+        "notq %%r10                               \n" /* 2CM negate */                    \
+        "notq %%r11                               \n" /* 2CM negate */                    \
+        "notq %%r12                               \n" /* 2CM negate */                    \
+        "notq %%r13                               \n" /* 2CM negate */                    \
+        "addq $0x1             ,%%r8              \n" /* 2CM add 1 */                     \
+        "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */              \
+        "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */              \
+        "adcq $0x0             ,%%r11             \n" /* 2CM propagate CB */              \
+        "adcq $0x0             ,%%r12             \n" /* 2CM propagate CB */              \
+        "adcq $0x0             ,%%r13             \n" /* 2CM propagate CB */              \
+        "_IsNegativeResult384_64 :                \n" /* end if*/                         \
+        "movq %%r8             ,(%%rdi)           \n" /* move into a0 */                  \
+        "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* move into a1 */                  \
+        "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* move into a2 */                  \
+        "movq %%r11            ,"PPS(3,n)"(%%rdi) \n" /* move into a2 */                  \
+        "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* move into a2 */                  \
+        "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq -0x8(%%rsp)      ,%%rbp             \n" /* stack clean up */                \
-        : : :"rax","rdx","rcx","r8","memory"                 \
+        : : :"rax","rdx","rcx","r8","r10","r11","r12","r13","memory"                 \
     ); \
 }
 
