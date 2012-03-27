@@ -23,7 +23,13 @@ namespace vli{
 // PPS(5,n) = 0x28 hex = dec 40
 
 // TO DO + - and basic * could boost pp to until 512, to generate all variations
-        
+
+// Note : for the sign
+// 192 * 64  = 192 : necessitate to adapt (if), use for VLI *= long , VLI * long
+// 384 * 64  = 384 : necessitate to adapt (if), use for print
+// 192 * 192 = 192 : natively compatible VLI *= VLI, VLI*VLI
+// 192 * 192 = 384 : necessitate to adapt : mul and muladd
+
 // VLI += long
 #define HELPER_ASM_ADD192_64(n) \
 void add192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
@@ -265,9 +271,9 @@ void mul384_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
         "adcq $0               ,%%r11             \n" /* perhaps carry */                 \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(3,n)"(%%rdi)                   \n" /* a0 * b3 */                       \
-        "addq %%rax            ,%%r11              \n" /* add hia0b3 + loa0b3 */          \
-        "movq %%rdx            ,%%r12              \n" /* save the hi into rcx */         \
-        "adcq $0               ,%%r12              \n" /* perhaps carry */                \
+        "addq %%rax            ,%%r11             \n" /* add hia0b3 + loa0b3 */           \
+        "movq %%rdx            ,%%r12             \n" /* save the hi into rcx */          \
+        "adcq $0               ,%%r12             \n" /* perhaps carry */                 \
         "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(4,n)"(%%rdi)                   \n" /* a0 * b4 */                       \
         "addq %%rax            ,%%r12             \n" /* add hia0b4 + loa0b4 */           \
@@ -298,7 +304,7 @@ void mul384_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
         "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq -0x8(%%rsp)      ,%%rbp             \n" /* stack clean up */                \
-        : : :"rax","rdx","rcx","r8","r10","r11","r12","r13","memory"                 \
+        : : :"rax","rdx","rcx","r8","r9","r10","r11","r12","r13","memory"                 \
     ); \
 }
 
