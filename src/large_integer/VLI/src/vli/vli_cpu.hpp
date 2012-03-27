@@ -176,35 +176,27 @@ void vli_cpu<BaseInt, Size>::print(std::ostream& os) const{
  * Returns a string with a base10 represenation of the VLI
  */
 template<typename BaseInt, std::size_t Size>
-std::string vli_cpu<BaseInt, Size>::get_str() const
-{
-    
+std::string vli_cpu<BaseInt, Size>::get_str() const {
     vli_cpu<BaseInt, size> tmp;
     
-    if((*this).is_negative())
-    {
+    if((*this).is_negative()){
         const_cast<vli_cpu<BaseInt, Size> & >(*this).negate();
-        
+
         for(size_type i=0; i<size; ++i)
             tmp[i] = (*this)[i];
-        
+    
         tmp.negate();
         const_cast<vli_cpu<BaseInt, Size> & >(*this).negate();
     }else{
-        
         for(size_type i=0; i<size; ++i)
             tmp[i] = (*this)[i];
-        
     }
     
-    if(tmp.is_negative())
-    {
+    if(tmp.is_negative()){
         tmp.negate();
         size_type ten_exp = order_of_magnitude_base10(tmp);
         return std::string("-")+get_str_helper_inplace(tmp,ten_exp);
-    }
-    else
-    {
+    }else{
         size_type ten_exp = order_of_magnitude_base10(tmp);
         return get_str_helper_inplace(tmp,ten_exp);
     }
@@ -214,8 +206,7 @@ std::string vli_cpu<BaseInt, Size>::get_str() const
  * Returns the order of magnitude of 'value' in base10
  */
 template<typename BaseInt, std::size_t Size>
-typename vli_cpu<BaseInt, Size>::size_type vli_cpu<BaseInt, Size>::order_of_magnitude_base10(vli_cpu<BaseInt,size> const& value) const
-{
+typename vli_cpu<BaseInt, Size>::size_type vli_cpu<BaseInt, Size>::order_of_magnitude_base10(vli_cpu<BaseInt,size> const& value) const {
     assert(!value.is_negative());
     
     vli_cpu<BaseInt,size> value_cpy(value);
@@ -223,8 +214,7 @@ typename vli_cpu<BaseInt, Size>::size_type vli_cpu<BaseInt, Size>::order_of_magn
     size_type exp = 0;
     
     // Find correct order (10^exp) 
-    while(!value_cpy.is_negative())
-    {
+    while(!value_cpy.is_negative()){
         value_cpy=value; // reset
         vli_cpu<BaseInt,size> previous_decimal(decimal);
         decimal *= 10;
@@ -243,8 +233,7 @@ typename vli_cpu<BaseInt, Size>::size_type vli_cpu<BaseInt, Size>::order_of_magn
  * A helper function to generate the base10 representation for get_str().
  */
 template<typename BaseInt, std::size_t Size>
-std::string vli_cpu<BaseInt, Size>::get_str_helper_inplace(vli_cpu<BaseInt,size>& value, size_type ten_exp) const
-{
+std::string vli_cpu<BaseInt, Size>::get_str_helper_inplace(vli_cpu<BaseInt,size>& value, size_type ten_exp) const {
     assert(!value.is_negative());
     
     // Create a number 10^(exponent-1) sin
@@ -255,12 +244,10 @@ std::string vli_cpu<BaseInt, Size>::get_str_helper_inplace(vli_cpu<BaseInt,size>
     // Find the right digit for 10^ten_exp
     vli_cpu<BaseInt,size> value_cpy(value);
     int digit=0;
-    while((!value_cpy.is_negative()) && digit<=11)
-    {
+    while((!value_cpy.is_negative()) && digit<=11){
         value_cpy = value; // reset
         ++digit;
-        if(digit*dec < (digit-1)*dec) // Overflow (we can handle it.)
-        {
+        if(digit*dec < (digit-1)*dec){ // Overflow (we can handle it.)
             break;
         }
         value_cpy-= digit*dec;
@@ -282,19 +269,7 @@ std::string vli_cpu<BaseInt, Size>::get_str_helper_inplace(vli_cpu<BaseInt,size>
 
 template <class BaseInt, std::size_t Size>
 void mul(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) { 
- /*
-       bool ba(true),bb(true);    
-    
-    if(vli_a.is_negative()){ const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();ba = false; }
-    if(vli_b.is_negative()){ const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();bb = false; }   
-   */  
     multiplies<BaseInt, Size>(vli_res, vli_a, vli_b);
-    /*
-    if((bb^ba) == true) vli_res.negate();
-    
-    if(ba) const_cast<vli_cpu<BaseInt, Size> & >(vli_a).negate();   
-    if(bb) const_cast<vli_cpu<BaseInt, Size> & >(vli_b).negate();   
-    */
 }
 
 template <class BaseInt, std::size_t Size>
@@ -351,7 +326,7 @@ const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
 //stream
 template<typename BaseInt, std::size_t Size>
 std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli){
-    vli.print_raw(os);
+    vli.print(os);
     return os;
 }
 
