@@ -124,7 +124,6 @@ vli_cpu<BaseInt, Size>& vli_cpu<BaseInt, Size>::operator += (vli_cpu<BaseInt, Si
 
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>& vli_cpu<BaseInt, Size>::operator += (BaseInt const a){
-//    assert(a > 0);
     using vli::plus_assign;
     plus_assign(*this,a);
     return *this;
@@ -326,7 +325,7 @@ const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
 //stream
 template<typename BaseInt, std::size_t Size>
 std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli){
-    vli.print(os);
+    vli.print_raw(os);
     return os;
 }
 
