@@ -628,4 +628,142 @@ namespace ambient {
         }
     }
 
+    // {{{ strassen multiplication supplementary kernels
+
+    template<typename T>
+    void gemm_strassen_gad_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                             maquis::types::p_dense_matrix_impl<T>& r, const size_t& n)
+    {
+        size_t bi, bj;
+        size_t i = ctxt.get_block_id().y;
+        size_t j = ctxt.get_block_id().x;
+
+        size_t xi = i - (int)(ai / get_work_dim(a).y);
+        size_t xj = j - (int)(aj / get_work_dim(a).x);
+
+        int qr_grid_dim = (int)(n / get_work_dim(a).x)/2;
+        dim2 qr = dim2((int)(xj / qr_grid_dim),(int)(xi / qr_grid_dim));
+
+        // a11 + a12,  a12 - a22
+        // a21 - a11,  a22 + a21
+        if(qr.y == 0 && qr.x == 0){
+            bi = 0 * qr_grid_dim + xi % qr_grid_dim;
+            bj = 1 * qr_grid_dim + xj % qr_grid_dim;
+        }else if(qr.y == 0 && qr.x == 1){
+            bi = 1 * qr_grid_dim + xi % qr_grid_dim;
+            bj = 1 * qr_grid_dim + xj % qr_grid_dim;
+        }else if(qr.y == 1 && qr.x == 0){
+            bi = 0 * qr_grid_dim + xi % qr_grid_dim;
+            bj = 0 * qr_grid_dim + xj % qr_grid_dim;
+        }else if(qr.y == 1 && qr.x == 1){
+            bi = 1 * qr_grid_dim + xi % qr_grid_dim;
+            bj = 0 * qr_grid_dim + xj % qr_grid_dim;
+        }
+
+        T* ad = current(a)(i , j );
+        T* rr = updated(r)(xi, xj);
+        T* bd = current(a)(bi, bj);
+
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        if(qr.x == qr.y) for(size_t k = 0; k < size; k++)
+            rr[k] = ad[k] + bd[k];
+        else for(size_t k = 0; k < size; k++)
+            rr[k] = ad[k] - bd[k];
+    }
+
+    template<typename T>
+    void gemm_strassen_dad_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                                    const maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                                          maquis::types::p_dense_matrix_impl<T>& r, const size_t& n)
+    { // a11 + a22,  b11 + b22
+        int qr_grid_dim = (int)(n / get_work_dim(a).x)/2;
+        int ci = ctxt.get_block_id().y;
+        int cj = ctxt.get_block_id().x;
+        int i = ci - (int)(ai / get_work_dim(a).y);
+        int j = cj - (int)(aj / get_work_dim(a).x);
+
+        if((int)(i / qr_grid_dim) != 0 || 
+           (int)(j / qr_grid_dim) != 0) 
+            return; // quick exit
+
+        T* ad  = current(a)(ci, cj);
+        T* add = current(a)(ci + qr_grid_dim, 
+                            cj + qr_grid_dim);
+        T* bd  = current(b)( i + (int)(bi / get_work_dim(b).y), 
+                             j + (int)(bj / get_work_dim(b).x));
+        T* bdd = current(b)( i + (int)(bi / get_work_dim(b).y) + qr_grid_dim,
+                             j + (int)(bj / get_work_dim(b).x) + qr_grid_dim);
+        T* arr = updated(r)(i, j);
+        T* brr = updated(r)(i, j + qr_grid_dim);
+
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        for(size_t k = 0; k < size; k++) arr[k] = ad[k] + add[k];
+        for(size_t k = 0; k < size; k++) brr[k] = bd[k] + bdd[k];
+    }
+
+    template<typename T>
+    void add_sum_submx_c(const  maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                         const  maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                         pinned maquis::types::p_dense_matrix_impl<T>& c, const size_t& ci, const size_t& cj, 
+                         const size_t& n)
+    { // c +=  a + b
+        int i = ctxt.get_block_id().y - (int)(ci / get_work_dim(c).y);
+        int j = ctxt.get_block_id().x - (int)(cj / get_work_dim(c).x);
+
+        T* ad  = current(a)( i + (int)(ai / get_work_dim(a).y), 
+                             j + (int)(aj / get_work_dim(a).x));
+        T* bd  = current(b)( i + (int)(bi / get_work_dim(b).y), 
+                             j + (int)(bj / get_work_dim(b).x));
+        T* cd  = current(c)( i + (int)(ci / get_work_dim(c).y), 
+                             j + (int)(cj / get_work_dim(c).x));
+
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        for(size_t k = 0; k < size; k++) cd[k] += ad[k] + bd[k];
+    }
+
+    template<typename T>
+    void add_dif_submx_c(const  maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                         const  maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                         pinned maquis::types::p_dense_matrix_impl<T>& c, const size_t& ci, const size_t& cj, 
+                         const size_t& n)
+    { // c +=  a - b
+        int i = ctxt.get_block_id().y - (int)(ci / get_work_dim(c).y);
+        int j = ctxt.get_block_id().x - (int)(cj / get_work_dim(c).x);
+
+        T* ad  = current(a)( i + (int)(ai / get_work_dim(a).y), 
+                             j + (int)(aj / get_work_dim(a).x));
+        T* bd  = current(b)( i + (int)(bi / get_work_dim(b).y), 
+                             j + (int)(bj / get_work_dim(b).x));
+        T* cd  = current(c)( i + (int)(ci / get_work_dim(c).y), 
+                             j + (int)(cj / get_work_dim(c).x));
+
+        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
+        for(size_t k = 0; k < size; k++) cd[k] += ad[k] - bd[k];
+    }
+
+    template<typename T>
+    void gemm_submx_c(pinned const  maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                             const  maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                                    maquis::types::p_dense_matrix_impl<T>& c, const size_t& ci, const size_t& cj, 
+                                    const size_t& size)
+    { // atomic 1 block gemm
+        T alpha, beta;
+        int m, n, k, lda, ldb, ldc;
+        m = n = k = lda = ldb = ldc = size;
+        alpha = beta = 1.0; 
+
+        size_t i = ctxt.get_block_id().y - (int)(ai / get_work_dim(a).y);
+        size_t j = ctxt.get_block_id().x - (int)(aj / get_work_dim(a).x);
+
+        T* ad  = current(a)( i + (int)(ai / get_work_dim(a).y), 
+                             j + (int)(aj / get_work_dim(a).x));
+        T* bd  = current(b)( i + (int)(bi / get_work_dim(b).y), 
+                             j + (int)(bj / get_work_dim(b).x));
+        T* cd  = updated(c)( i + (int)(ci / get_work_dim(c).y), 
+                             j + (int)(cj / get_work_dim(c).x));
+        gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+    }
+
+    // }}}
+
 }

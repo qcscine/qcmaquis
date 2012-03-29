@@ -90,6 +90,110 @@ namespace maquis { namespace types { namespace algorithms {
         return m;
     }
 
+
+    // {{{ strassen multiplication supplementary functions
+
+    template<typename T>
+    void gemm_strassen_gad(const p_dense_matrix<T>& a, size_t ai, size_t aj, 
+                           p_dense_matrix<T>& r, size_t n)
+    {
+        ambient::push(ambient::gemm_strassen_gad_l<T>,  // output reduced matrix
+                      ambient::gemm_strassen_gad_c<T>,  // a11 + a12,  a12 - a22
+                      *a.impl, ai, aj, *r.impl, n);     // a21 - a11,  a22 + a21
+    }
+
+    template<typename T>
+    void gemm_strassen_dad(const p_dense_matrix<T>& a, size_t ai, size_t aj,
+                           const p_dense_matrix<T>& b, size_t bi, size_t bj, 
+                           p_dense_matrix<T>& r, size_t n)
+    {
+        ambient::push(ambient::gemm_strassen_dad_l<T>,  // output reduced matrix
+                      ambient::gemm_strassen_dad_c<T>,  // a11 + a22,  b11 + b22
+                      *a.impl, ai, aj, *b.impl, bi, bj, *r.impl, n);
+
+    }
+
+    template<typename T>
+    void gemm_strassen_pluseqs(const p_dense_matrix<T>& a, size_t ai, size_t aj,
+                               const p_dense_matrix<T>& b, size_t bi, size_t bj, 
+                                     p_dense_matrix<T>& c, size_t ci, size_t cj, 
+                                     size_t n)
+    {
+        ambient::push(ambient::add_sum_submx_l<T>, 
+                      ambient::add_sum_submx_c<T>, 
+                      *a.impl, ai, aj, *b.impl, bi, bj, *c.impl, ci, cj, n);
+    }
+
+    template<typename T>
+    void gemm_strassen_pluseqd(const p_dense_matrix<T>& a, size_t ai, size_t aj,
+                               const p_dense_matrix<T>& b, size_t bi, size_t bj, 
+                                     p_dense_matrix<T>& c, size_t ci, size_t cj, 
+                                     size_t n)
+    {
+        ambient::push(ambient::add_dif_submx_l<T>, 
+                      ambient::add_dif_submx_c<T>, 
+                      *a.impl, ai, aj, *b.impl, bi, bj, *c.impl, ci, cj, n);
+    }
+
+    // }}}
+
+    template<typename T>
+    void gemm_strassen(const p_dense_matrix<T>& a, size_t ai, size_t aj,
+                       const p_dense_matrix<T>& b, size_t bi, size_t bj,
+                             p_dense_matrix<T>& c, size_t ci, size_t cj, 
+                             size_t n)
+    {
+
+        if(n > 128){ 
+            //printf("Performing strassen with size %d\n", n);
+            // strassen algorithm recursion
+            p_dense_matrix<T> m1(n/2, n/2);
+            p_dense_matrix<T> m2(n/2, n/2);
+            p_dense_matrix<T> m3(n/2, n/2);
+            p_dense_matrix<T> m4(n/2, n/2);
+            p_dense_matrix<T> m5(n/2, n/2);
+            p_dense_matrix<T> m6(n/2, n/2);
+            p_dense_matrix<T> m7(n/2, n/2);
+
+            p_dense_matrix<T> ar(n,n);
+            p_dense_matrix<T> br(n,n);
+            p_dense_matrix<T> dr(n/2,n);
+
+            gemm_strassen_gad(a, ai, aj, ar, n);
+            gemm_strassen_gad(b, bi, bj, br, n);
+            gemm_strassen_dad(a, ai, aj, b, bi, bj, dr, n);
+
+            gemm_strassen( dr , 0      , 0      , dr , 0      , n/2    , m1, 0, 0, n/2 );
+            gemm_strassen( ar , n/2    , n/2    , b  , bi     , bj     , m2, 0, 0, n/2 );
+            gemm_strassen( a  , ai     , aj     , br , 0      , n/2    , m3, 0, 0, n/2 );
+            gemm_strassen( a  , ai+n/2 , aj+n/2 , br , n/2    , 0      , m4, 0, 0, n/2 );
+            gemm_strassen( ar , 0      , 0      , b  , bi+n/2 , bj+n/2 , m5, 0, 0, n/2 );
+            gemm_strassen( ar , n/2    , 0      , br , 0      , 0      , m6, 0, 0, n/2 );
+            gemm_strassen( ar , 0      , n/2    , br , n/2    , n/2    , m7, 0, 0, n/2 );
+
+            gemm_strassen_pluseqs( m2, 0, 0, m4, 0, 0, c , ci+n/2 , cj     , n/2 );
+            gemm_strassen_pluseqs( m3, 0, 0, m5, 0, 0, c , ci     , cj+n/2 , n/2 );
+            gemm_strassen_pluseqd( m1, 0, 0, m5, 0, 0, m4, 0      , 0      , n/2 );
+            gemm_strassen_pluseqd( m1, 0, 0, m2, 0, 0, m3, 0      , 0      , n/2 );
+            gemm_strassen_pluseqs( m4, 0, 0, m7, 0, 0, c , ci     , cj     , n/2 );
+            gemm_strassen_pluseqs( m3, 0, 0, m6, 0, 0, c , ci+n/2 , cj+n/2 , n/2 );
+        }else{
+            // standard gemm (submatrices)
+            ambient::push(ambient::gemm_submx_l<T>, ambient::gemm_submx_c<T>,
+                          *a.impl, ai, aj, *b.impl, bi, bj, *c.impl, ci, cj, n);
+        }
+    }
+
+    template<typename T>
+    void gemm_strassen(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c){
+        size_t n  = num_cols(a);
+        assert(n == num_rows(a));
+        assert(n == num_cols(b));
+        assert(n == num_rows(b));
+        c.resize(n, n);
+        gemm_strassen(a, 0, 0, b, 0, 0, c, 0, 0, n);
+    }
+
     template<typename T>
     void gemm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c){
         assert(num_cols(a) == num_rows(b));

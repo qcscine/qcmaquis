@@ -5,7 +5,7 @@
 //#include "omp.h"
 
 #ifndef NUM_THREADS 
-#define NUM_THREADS 1
+#define NUM_THREADS 2
 #endif
 
 // {{{ global objects accessible anywhere //

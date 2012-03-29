@@ -66,7 +66,7 @@ namespace ambient { namespace models {
         static size_t modify(T& obj, imodel::modifier* m){
             size_t base = ctxt.get_revision_base(&obj);
             current(obj).add_modifier(m);
-            printf("Adding revision! (current is %d)\n", (int)base);
+            //printf("Adding revision! (current is %d)\n", (int)base);
             ambient::model.add_revision(&obj);
             current(obj).set_generator(m); // (updated obj)
             return base;
@@ -74,7 +74,7 @@ namespace ambient { namespace models {
         static size_t modify(const T& obj, imodel::modifier* m){
             size_t base = ctxt.get_revision_base(&obj);
             current(obj).add_modifier(m);
-            printf("Using revision! (current is %d)\n", (int)base);
+            //printf("Using revision! (current is %d)\n", (int)base);
             return base;
         }
         static void revise(void* ptr, size_t revision){
