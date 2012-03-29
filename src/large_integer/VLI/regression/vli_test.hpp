@@ -42,64 +42,76 @@ BOOST_PP_SEQ_FOR_EACH(VLI_CPU_APPEND_TEST_TYPE, _, VLI_COMPILE_BASEINT_SIZE_PAIR
 boost::mt11213b rng;
 
 template <typename Vli>
-typename Vli::value_type rnd_digit()
-{
+typename Vli::value_type rnd_digit(){
     static boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
     return rnd(rng);
 }
 
 template <typename Vli>
-int rnd_valid_int()
-{
+int rnd_valid_int(){
     static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(max_int_value<Vli>::value)));
     return rnd(rng);
 }
 
 template <typename Vli>
-void fill_random(Vli& v)
-{
+void vli_negate(Vli& v, int random){
+    if(v[0]%random == 0)
+        v.negate();
+}
+
+template <typename Vli>
+void fill_random(Vli& v){
     for(typename Vli::size_type i=0; i < Vli::size; ++i)
         v[i] = rnd_digit<Vli>();
 }
 
 template <typename Vli>
-void fill_random(Vli& v, typename Vli::size_type size)
-{
+void fill_random(Vli& v, typename Vli::size_type size){
     assert(size <= Vli::size);
     for(typename Vli::size_type i=0; i < size; ++i)
         v[i] = rnd_digit<Vli>();
 }
 
 template <typename Polynomial>
-void fill_poly_random(Polynomial& p)
-{
+void fill_poly_random(Polynomial& p){
     for(typename Polynomial::exponent_type i=0; i < Polynomial::max_order; ++i)
         for(typename Polynomial::exponent_type j=0; j < Polynomial::max_order; ++j)
-            fill_random(p(i,j),1);
+            fill_random(p(i,j),2);
 }
 
 template <typename Polynomial>
-void fill_poly_random(Polynomial& p, typename Polynomial::exponent_type size)
-{
+void fill_poly_random(Polynomial& p, typename Polynomial::exponent_type size){
     for(typename Polynomial::exponent_type i=0; i < Polynomial::max_order; ++i)
         for(typename Polynomial::exponent_type j=0; j < Polynomial::max_order; ++j)
             fill_random(p(i,j),size);
 }
 
+template <typename Polynomial>
+void fill_poly_negate(Polynomial& p, int random){
+    for(typename Polynomial::exponent_type i=0; i < Polynomial::max_order; ++i)
+        for(typename Polynomial::exponent_type j=0; j < Polynomial::max_order; ++j)
+            vli_negate(p(i,j),random);
+}
+    
 template <typename Vector>
-void fill_vector_random(Vector& v)
-{
+void fill_vector_random(Vector& v){
     for(typename Vector::size_type i=0; i < v.size(); ++i)
         fill_poly_random(v[i]);
 }
 
 template <typename Vector>
-void fill_vector_random(Vector& v, typename Vector::value_type::exponent_type size)
-{
+void fill_vector_random(Vector& v, typename Vector::value_type::exponent_type size){
     for(typename Vector::size_type i=0; i < v.size(); ++i)
         fill_poly_random(v[i], size);
 }
 
+template <typename Vector>
+void fill_vector_negate(Vector& v,int random){
+    for(typename Vector::size_type i=0; i < v.size(); ++i)
+        fill_poly_negate(v[i], random);
+    
+}
+    
 template<typename PolynomialVLI, typename PolynomialGMP>
 void InitPolyVLItoPolyGMP(PolynomialVLI const& P1, PolynomialGMP& P2){
     int max_order = PolynomialVLI::max_order;

@@ -59,7 +59,7 @@ namespace detail
         std::vector<polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> > res(omp_get_max_threads()); 
        
         #pragma omp parallel for
-        for(std::size_t i=0 ; i < size_v ; ++i){
+        for(long i=0 ; i < size_v ; ++i){
             res[omp_get_thread_num()] += v1[i]*v2[i];
         }
 
