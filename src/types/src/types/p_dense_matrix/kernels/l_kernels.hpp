@@ -31,8 +31,8 @@ namespace ambient {
         }
     }
 
-    template<typename T>
-    void block_2d_cycle_assign(T& target){
+    template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
+    void block_2d_cycle(T& target){
     ///////////////////////////////////////////// 2D-block-cyclic decomposition
         int np = ctxt.np = 1; // can be a function arg   // process grid's num of rows 
         int nq = ctxt.nq = (int)(ctxt.get_size() / np); // process grid's num of cols 
@@ -41,13 +41,45 @@ namespace ambient {
     ///////////////////////////////////////////////////////////////////////////
         for(int i = rank_i; i < get_grid_dim(target).y; i += np){
             for(int j = rank_j; j < get_grid_dim(target).x; j += nq){
-                assign(target, i, j);
+                ASSIGN(target, i, j);
             }
         }
     }
 
-    template<typename T>
-    void block_2d_cycle_transposed_assign(T& target){
+    template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
+    void block_2d_cycle(T& target, size_t ti, size_t tj, size_t tn){
+    ///////////////////////////////////////////// 2D-block-cyclic decomposition
+        int np = ctxt.np = 1; // can be a function arg   // process grid's num of rows 
+        int nq = ctxt.nq = (int)(ctxt.get_size() / np); // process grid's num of cols 
+        int rank_i = (int)(ctxt.get_rank() / nq); // process row
+        int rank_j = (int)(ctxt.get_rank() % nq); // process col
+    ///////////////////////////////////////////////////////////////////////////
+        int is = np * (int)(((int)(ti / get_work_dim(target).y))/np);
+        int ie = (int)((ti+tn) / get_work_dim(target).y);
+        int js = nq * (int)(((int)(tj / get_work_dim(target).x))/nq);
+        int je = (int)((tj+tn) / get_work_dim(target).x);
+        for(int i = is + rank_i; i < ie; i += np){
+            for(int j = js + rank_j; j < je; j += nq){
+                ASSIGN(target, i, j);
+            }
+        }
+    }
+
+    template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
+    void block_diagonal(T& target){
+        size_t m = get_mem_dim(target).y;
+        size_t n = get_mem_dim(target).x;
+        for(int i = 0; i < get_grid_dim(target).y; i++){
+            for(int j = 0; j < get_grid_dim(target).x; j++){
+                if((i+1)*m <= j*n) continue;  // j*n < i*m+m && i*m < j*n+n
+                if(i*m >= (j+1)*n) continue;
+                ASSIGN(target, i, j);
+            }
+        }
+    }
+
+    template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
+    void block_2d_cycle_transposed(T& target){
     ///////////////////////////////////////////// 2D-block-cyclic decomposition
         int np = ctxt.np = 1; // can be a function arg   // process grid's num of rows 
         int nq = ctxt.nq = (int)(ctxt.get_size() / np); // process grid's num of cols 
@@ -56,31 +88,18 @@ namespace ambient {
     ///////////////////////////////////////////////////////////////////////////
         for(int i = rank_i; i < get_grid_dim(target).x; i += np){
             for(int j = rank_j; j < get_grid_dim(target).y; j += nq){
-                assign(target, j, i);
+                ASSIGN(target, j, i);
             }
         }
     }
 
-    template<typename T>
-    void block_outright_assign(T& target){
+    template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
+    void block_outright(T& target){
     // this no "distribution" is only needed where we need a contiguous array (no splitting between proc) for the output (schmidt values ...)
     ///////////////////////////////////////////////////////////////////////////
         for(int i = 0; i < get_grid_dim(target).y; i++){
             for(int j = 0; j < get_grid_dim(target).x; j++){
-                assign(target, i, j);
-            }
-        }
-    }
-
-    template<typename T>
-    void block_diagonal_assign(T& target){
-        size_t m = get_mem_dim(target).y;
-        size_t n = get_mem_dim(target).x;
-        for(int i = 0; i < get_grid_dim(target).y; i++){
-            for(int j = 0; j < get_grid_dim(target).x; j++){
-                if((i+1)*m <= j*n) continue;
-                if(i*m >= (j+1)*n) continue;
-                assign(target, i, j);
+                ASSIGN(target, i, j);
             }
         }
     }
@@ -91,8 +110,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
 
-        block_2d_cycle_assign(ac);
-        block_2d_cycle_assign(a);
+        block_2d_cycle<assign>(ac);
+        block_2d_cycle<pin>(a);
     }
 
     template<typename T>
@@ -101,8 +120,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
 
-        block_2d_cycle_assign(ac);
-        block_2d_cycle_assign(a);
+        block_2d_cycle<pin>(ac);
+        block_2d_cycle<assign>(a);
     }
 
     void copy_after_std_l(std::vector<double>*& ac, const size_t& pos, pinned const maquis::types::p_dense_matrix_impl<double>& a){
@@ -110,7 +129,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_outright_assign(a);
+        block_outright<pin>(a);
     }
 
     void push_back_sqr_gt_l(std::vector<double>*& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a, const double& prec){
@@ -118,7 +137,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_outright_assign(a);
+        block_outright<pin>(a);
     }
 
     template<typename T>
@@ -126,7 +145,7 @@ namespace ambient {
         ctxt_select("* from ambient as cast_to_dense where master is 0");
         if(!ctxt.involved()) return;
 
-        block_outright_assign(a); //because the dense matrix must be known by every procs
+        block_outright<pin>(a); //because the dense matrix must be known by every procs
     } 
 
     template<typename T>
@@ -134,7 +153,7 @@ namespace ambient {
         ctxt_select("1 from ambient as cast_to_p_dense where master is 0");
         if(!ctxt.involved()) return;
 
-        block_2d_cycle_assign(a);
+        block_2d_cycle<pin>(a);
     } 
 
     template<typename T>
@@ -143,7 +162,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_2d_cycle_assign(a);
+        block_2d_cycle<pin>(a);
     }
 
     template<typename T>
@@ -152,7 +171,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in remove_rows ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_2d_cycle_assign(a);
+        block_2d_cycle<pin>(a);
     }
 
     template<typename T>
@@ -161,7 +180,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in remove_cols ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_2d_cycle_assign(a);
+        block_2d_cycle<pin>(a);
     }
 
     template<typename T>
@@ -170,7 +189,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_2d_cycle_assign(a);
+        block_2d_cycle<pin>(a);
     }
 
     template<typename T>
@@ -179,7 +198,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_2d_cycle_assign(a);
+        block_2d_cycle<pin>(a);
     }
 
     template<typename T>
@@ -189,8 +208,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
-        block_2d_cycle_assign(a);
-        block_2d_cycle_assign(b);
+        block_2d_cycle<pin>(a);
+        block_2d_cycle<assign>(b);
     }
 
     template<typename T>
@@ -200,9 +219,9 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b); credentials(c);
 
-        block_2d_cycle_assign(a);
-        block_2d_cycle_assign(b);
-        block_2d_cycle_assign(c);
+        block_2d_cycle<pin>(a);
+        block_2d_cycle<assign>(b);
+        block_2d_cycle<assign>(c);
     }
 
     template<typename T>
@@ -211,7 +230,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in scalar_norm ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_outright_assign(a);
+        block_outright<pin>(a);
     }
 
     template<typename T>
@@ -220,8 +239,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in scalar_overlap ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
-        block_outright_assign(a);
-        block_outright_assign(b);
+        block_outright<pin>(a);
+        block_outright<assign>(b);
     }
 
     template<typename T>
@@ -230,8 +249,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
-        block_2d_cycle_assign(a);
-        block_2d_cycle_assign(b);
+        block_2d_cycle<pin>(a);
+        block_2d_cycle<assign>(b);
     }
 
     template<typename T, typename T2>
@@ -240,10 +259,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; credentials(m);
 
-        block_2d_cycle_assign(m);
+        block_2d_cycle<pin>(m);
     }
-    /////////////////////
-    // testing kernels // 
 
     template<typename T>
     void svd_l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<T>& s){
@@ -252,10 +269,10 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; credentials(a); credentials(u); credentials(vt); credentials(s);
 
-        block_outright_assign(s);
-        block_2d_cycle_assign(a);
-        block_2d_cycle_assign(u);
-        block_2d_cycle_assign(vt);
+        block_outright<assign>(s);
+        block_2d_cycle<assign>(a);
+        block_2d_cycle<assign>(u);
+        block_2d_cycle<assign>(vt);
     }
 
     void syev_l(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
@@ -264,8 +281,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; credentials(a); credentials(w);
 
-        block_2d_cycle_assign(a);
-        block_2d_cycle_assign(w);
+        block_2d_cycle<assign>(a);
+        block_2d_cycle<assign>(w);
     }
 
     void heev_l(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
@@ -274,8 +291,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; credentials(a); credentials(w);
 
-        block_2d_cycle_assign(a);
-        block_2d_cycle_assign(w); // C - block_outright_assign(w) is possible, if yes remove solidify and disperse for w 
+        block_2d_cycle<assign>(a);
+        block_2d_cycle<assign>(w); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
     }
 
     template<typename T>
@@ -284,9 +301,9 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; credentials(a_diag); credentials(b); credentials(c);
 
-        block_2d_cycle_assign(a_diag);
-        block_2d_cycle_assign(b);
-        block_2d_cycle_assign(c);
+        block_2d_cycle<assign>(a_diag);
+        block_2d_cycle<pin>(b);
+        block_2d_cycle<assign>(c);
     }
 
     template<typename T>
@@ -295,9 +312,9 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b_diag); credentials(c);
 
-        block_2d_cycle_assign(a);
-        block_2d_cycle_assign(b_diag);
-        block_2d_cycle_assign(c);
+        block_2d_cycle<pin>(a);
+        block_2d_cycle<assign>(b_diag);
+        block_2d_cycle<assign>(c);
     }
 
     template<typename T>
@@ -307,7 +324,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in trace ("<< ambient::rank() <<"):\n"; credentials(a);
 
-        block_2d_cycle_assign(a); // in a nutshell we need only diagonal 
+        block_2d_cycle<pin>(a); // in a nutshell we need only diagonal 
                                   // but we have to track the diagonal separately afterward
                                   // which is troublesome
     }
@@ -319,8 +336,7 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(transposed); credentials(original);
 
-        //block_2d_cycle_assign(m); // to uncomment maybe - to watch intersections
-        block_2d_cycle_transposed_assign(m);
+        block_2d_cycle_transposed<pin>(m);
     }
 
     template<typename T>
@@ -329,8 +345,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
-        block_2d_cycle_assign(a); 
-        block_2d_cycle_assign(b); 
+        block_2d_cycle<pin>(a); 
+        block_2d_cycle<assign>(b); 
     }
 
     template<typename T>
@@ -343,8 +359,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; credentials(left); credentials(right);
 
-        block_2d_cycle_assign(left); 
-        block_2d_cycle_assign(right); 
+        block_2d_cycle<assign>(left); 
+        block_2d_cycle<pin>(right); 
     }
 
     template<typename T>
@@ -357,8 +373,8 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in reshape_r2l ("<< ambient::rank() <<"):\n"; credentials(left); credentials(right);
 
-        block_2d_cycle_assign(left); 
-        block_2d_cycle_assign(right); 
+        block_2d_cycle<pin>(left); 
+        block_2d_cycle<assign>(right); 
     }
 
     template <typename T>
@@ -371,9 +387,9 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; credentials(out); credentials(in); credentials(alfa);
 
-        block_2d_cycle_assign(out); 
-        block_2d_cycle_assign(in); 
-        block_2d_cycle_assign(alfa); 
+        block_2d_cycle<pin>(out); 
+        block_2d_cycle<assign>(in); 
+        block_2d_cycle<assign>(alfa); 
     }
 
     template <typename T>
@@ -386,9 +402,9 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; credentials(out); credentials(in); credentials(alfa);
 
-        block_2d_cycle_assign(out); 
-        block_2d_cycle_assign(in); 
-        block_2d_cycle_assign(alfa); 
+        block_2d_cycle<pin>(out); 
+        block_2d_cycle<assign>(in); 
+        block_2d_cycle<assign>(alfa); 
     }
 
     template<typename T>
@@ -398,24 +414,95 @@ namespace ambient {
         if(!ctxt.involved()) return;
         //gzout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
 
-        block_outright_assign(ac);
-        block_outright_assign(a);
+        block_outright<assign>(ac);
+        block_outright<pin>(a);
     }
 
     void variable_free_l(void*& a){ // to modify
-        int num = 1;
-        ctxt_select(num+" from ambient as variable_free where master is 0");
+        ctxt_select(1+ " from ambient as variable_free where master is 0");
         //gzout << "null assign in variable_free ("<< ambient::rank() <<"):\n";
         if(!ctxt.involved()) return;
     }
 
     template<typename T>
     void print_l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n){
-        int num = 1;
-        ctxt_select(num+" from ambient as print where master is 0 and breakdown contains "+ id(a));
+        ctxt_select(1 +" from ambient as print where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
     
-        block_2d_cycle_assign(a); 
+        block_2d_cycle<assign>(a); 
     }
+
+
+    // {{{ strassen multiplication supplementary kernels
+
+    template<typename T>
+    void gemm_strassen_gad_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                             maquis::types::p_dense_matrix_impl<T>& r, const size_t& n)
+    {
+        ctxt_select(1 +" from ambient as gemm_strassen_gad where master is 0 and breakdown contains "+ id(a));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<pin>(a, ai, aj, n);
+        block_2d_cycle<assign>(r);
+    }
+
+    template<typename T>
+    void gemm_strassen_dad_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                                    const maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                                          maquis::types::p_dense_matrix_impl<T>& r, const size_t& n)
+    {
+        ctxt_select(1 +" from ambient as gemm_strassen_dad where master is 0 and breakdown contains "+ id(a));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<pin>(a, ai, aj, n/2);
+        block_2d_cycle<assign>(a, ai+n/2, aj+n/2, n/2);
+        block_2d_cycle<assign>(b, bi, bj, n/2);
+        block_2d_cycle<assign>(b, bi+n/2, bj+n/2, n/2);
+        block_2d_cycle<assign>(r);
+    }
+
+    template<typename T>
+    void add_sum_submx_l(const  maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                         const  maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                         pinned maquis::types::p_dense_matrix_impl<T>& c, const size_t& ci, const size_t& cj, 
+                         const size_t& n)
+    {
+        ctxt_select(1 +" from ambient as add_sum_submx where master is 0 and breakdown contains "+ id(c));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<assign>(a, ai, aj, n);
+        block_2d_cycle<assign>(b, bi, bj, n);
+        block_2d_cycle<pin>(c, ci, cj, n);
+    }
+
+    template<typename T>
+    void add_dif_submx_l(const  maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                         const  maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                         pinned maquis::types::p_dense_matrix_impl<T>& c, const size_t& ci, const size_t& cj, 
+                         const size_t& n)
+    {
+        ctxt_select(1 +" from ambient as add_dif_submx where master is 0 and breakdown contains "+ id(c));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<assign>(a, ai, aj, n);
+        block_2d_cycle<assign>(b, bi, bj, n);
+        block_2d_cycle<pin>(c, ci, cj, n);
+    }
+
+    template<typename T>
+    void gemm_submx_l(pinned const  maquis::types::p_dense_matrix_impl<T>& a, const size_t& ai, const size_t& aj, 
+                             const  maquis::types::p_dense_matrix_impl<T>& b, const size_t& bi, const size_t& bj, 
+                                    maquis::types::p_dense_matrix_impl<T>& c, const size_t& ci, const size_t& cj, 
+                                    const size_t& n)
+    {
+        ctxt_select(1 +" from ambient as gemm_submx where master is 0 and breakdown contains "+ id(a));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<pin>(a, ai, aj, n);
+        block_2d_cycle<assign>(b, bi, bj, n);
+        block_2d_cycle<assign>(c, ci, cj, n);
+    }
+
+    // }}}
 
 } 

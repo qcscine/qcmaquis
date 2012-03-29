@@ -1,8 +1,8 @@
 namespace ambient {
 
     void randomize(std::complex<double>* ad){
-        (*ad).real() = drand48();
-        (*ad).imag() = drand48();
+        //(*ad).real() = drand48();
+        //(*ad).imag() = drand48();
     }
 
     void randomize(double *ad){

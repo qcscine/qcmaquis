@@ -195,25 +195,26 @@ add_subdirectory(src)
 # ALPS I need ALPS for Boost numeric
 set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps include, need for boost numeric")
 
+if(ENABLE_REGRESSION_VALIDATIONS OR ENABLE_REGRESSION_PERFORMANCES)
+  include(CTest)
+  enable_testing() 
+endif(ENABLE_REGRESSION_VALIDATIONS OR ENABLE_REGRESSION_PERFORMANCES)
 
 if(ENABLE_REGRESSION_VALIDATIONS)
-  include(CTest)
   add_subdirectory(regression/dense_matrix)
   if(ENABLE_PARALLEL)
     add_subdirectory(regression/validations)
-    endif(ENABLE_PARALLEL)
-	if(ENABLE_MTM)
-		add_subdirectory(regression/mt_matrix)
-	endif(ENABLE_MTM)
+  endif(ENABLE_PARALLEL)
+  if(ENABLE_MTM)
+    add_subdirectory(regression/mt_matrix)
+  endif(ENABLE_MTM)
 endif(ENABLE_REGRESSION_VALIDATIONS)
 
 if(ENABLE_REGRESSION_PERFORMANCES)
-  enable_testing()
   if(ENABLE_PARALLEL)
     add_subdirectory(regression/performances)
   endif(ENABLE_PARALLEL)
 endif(ENABLE_REGRESSION_PERFORMANCES)
-
 
 # Configure
 configure_file(MaquisTypesConfig.cmake.in ${CMAKE_BINARY_DIR}/MaquisTypesConfig.cmake)
