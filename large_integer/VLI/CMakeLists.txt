@@ -137,6 +137,7 @@ endif(VLI_TESTS)
 ########################################################################
 
 install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
+install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_cpu.a DESTINATION lib)
 install(FILES ${PROJECT_BINARY_DIR}/vli/vli_config.h DESTINATION include/vli/)
 if(VLI_COMPILE_GPU)
 install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a DESTINATION lib)
