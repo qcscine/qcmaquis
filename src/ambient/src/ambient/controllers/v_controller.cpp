@@ -4,6 +4,11 @@
 #include "ambient/channels/packets/auxiliary.hpp"
 //#include "omp.h"
 
+#if __APPLE__ && __MACH__
+#include <sched.h>	// for sched_yield()
+#define pthread_yield() sched_yield()
+#endif
+
 #ifndef NUM_THREADS 
 #define NUM_THREADS 2
 #endif
