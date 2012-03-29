@@ -574,7 +574,7 @@ void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const*
 /*81*/  "xorq %%r14            ,%%r15             \n"                                     \
 /*82*/  "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             \
 /*83*/  "je _MulAddIsNegativeResult_384_192_      \n" /* not equal ZF = 0, negate*/       \
-/*84*/   "notq %%r8                               \n" /* start2ComplementMethod negate */ \
+/*84*/  "notq %%r8                               \n" /* start2ComplementMethod negate */ \
 /*85*/  "notq %%r9                                \n" /* 2CM negate */                    \
 /*86*/  "notq %%r10                               \n" /* 2CM negate */                    \
 /*87*/  "notq %%r11                               \n" /* 2CM negate */                    \
@@ -603,7 +603,7 @@ void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const*
 /*107*/ "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* r11 -> c4 */                     \
 /*108*/ "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* r12 -> c5 */                     \
 /*109*/ "movq -0x08(%%rsp)     ,%%rbp             \n" /* stack clean up */                \
-    : : : "rax","rdx","rbx","r8","r9","r10","r11","r12","r13","memory"  \
+    : : : "rax","rdx","rbx","r8","r9","r10","r11","r12","r13","r14","r15","memory"  \
     ); \
 };
 
