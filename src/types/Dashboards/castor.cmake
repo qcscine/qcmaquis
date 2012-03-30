@@ -7,7 +7,9 @@ set(CTEST_SOURCE_DIRECTORY "/users/maquis/maquis2012/src/types")
 set(CTEST_BINARY_DIRECTORY "/users/maquis/maquis2012/src/types/build_intel_mvapich2")
 #set(CTEST_CHECKOUT_COMMAND "svn up")
 set(CTEST_UPDATE_COMMAND "svn")
-set(CTEST_PROJECT_SUBPROJECTS ambient)
+set(CTEST_PROJECT_SUBPROJECTS types)
+
+set(ENABLE_REGRESSION_VALIDATIONS ON)
 
 set(subproject ${CTEST_PROJECT_SUBPROJECTS})
 set_property(GLOBAL PROPERTY SubProject ${subproject})
