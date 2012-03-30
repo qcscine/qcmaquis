@@ -74,7 +74,18 @@ create_dmrg(){
 
 create_types(){
     cd ${PATH_TRUNK}${TYPES}build_${COMPILER_NAME}_${WRAPPER}
-    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} -DALPS_DIR=${ALPS_DIR_INCLUDE} -DENABLE_PARALLEL=ON -DENABLE_TESTS=ON -DBUILD_AMBIENT=ON ..
+    create_dashboards
+    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} -DBOOST_BINDINGS_INCLUDE=${ALPS_DIR_INCLUDE} -DENABLE_PARALLEL=ON -DENABLE_TESTS=ON -DBUILD_AMBIENT=ON ..
+}
+
+create_dashboards(){
+    mkdir Dashboards
+    echo "set(PREDEFINED_CTEST_SITE \"`uname -n`\")"                                                         >  ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${COMPILER_NAME}_${WRAPPER%/}\")"                                >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${PATH_TRUNK}${TYPES}\")"                                  >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${PATH_TRUNK}${TYPES}build_${COMPILER_NAME}_${WRAPPER}\")" >> ./Dashboards/site.cmake
+    cat ../Dashboards/site.cmake >> ./Dashboards/site.cmake
+    cp ../Dashboards/cmake_common.cmake ./Dashboards/
 }
 
 compil(){
