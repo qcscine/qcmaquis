@@ -1,17 +1,15 @@
 #!/bin/bash
-#some path
-PATH_TRUNK=~/maquis2012/src/
-ALPS_DIR=/project/h07/ALPS_INTEL_EIGER/share/alps/
-ALPS_DIR_INCLUDE=/project/h07/ALPS_INTEL_EIGER/include/
 
-#some environement variable
-echo ${PATH_TRUNK}
-#some export 
+#global variables
+PATH_TRUNK=~/maquis2012/src/
+BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL_EIGER/include/
+ALPS_DIR=/project/h07/ALPS_INTEL_EIGER/share/alps/
+
 export BOOST_ROOT=/apps/eiger/boost_1_46_1/
 export CC=icc
 export CXX=icpc
 
-#some local variable
+#local variables
 #targer directory
 AMBIENT=ambient/
 DMRG=dmrg/
@@ -38,7 +36,7 @@ VERSION_WRAPPER_MVAPICH2_MPI=1.7-intel
 #condfig_file
 EIGER_INTEL='eiger_intel.cmake'
 EIGER_MKL='eiger_mkl.cmake'
-#some functions
+
 print_construction_init(){
     echo " ----------------------- "
     echo " construction cmake      "
@@ -64,18 +62,18 @@ create_directory(){
 create_ambient(){
     cd ${PATH_TRUNK}${AMBIENT}build_${COMPILER_NAME}_${WRAPPER}
 
-    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} ..
+    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${MACHINE_CONFIG} ..
 }
 
 create_dmrg(){
     cd ${PATH_TRUNK}${DMRG}build_${COMPILER_NAME}_${WRAPPER}
-    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} -DALPS_DIR=${ALPS_DIR} -DBUILD_REGRESSION=ON -DBUILD_AMBIENT=ON -DUSE_AMBIENT=ON .. 
+    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${MACHINE_CONFIG} -DALPS_DIR=${ALPS_DIR} -DBUILD_REGRESSION=ON -DBUILD_AMBIENT=ON -DUSE_AMBIENT=ON .. 
 }
 
 create_types(){
     cd ${PATH_TRUNK}${TYPES}build_${COMPILER_NAME}_${WRAPPER}
     create_dashboards
-    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${EIGER} -DBOOST_BINDINGS_INCLUDE=${ALPS_DIR_INCLUDE} -DENABLE_PARALLEL=ON -DENABLE_TESTS=ON -DBUILD_AMBIENT=ON ..
+    cmake -DMACHINE_CONFIG=${PATH_TRUNK}${DMRG}config_machines/${MACHINE_CONFIG} -DBOOST_BINDINGS_INCLUDE=${BOOST_BINDINGS_INCLUDE} -DENABLE_PARALLEL=ON -DENABLE_TESTS=ON -DBUILD_AMBIENT=ON ..
 }
 
 create_dashboards(){
@@ -103,17 +101,17 @@ create_distrib(){
 
 #module load ${COMPILER}${VERSION_COMPILER} ${BOOST}${VERSION_BOOST} ${WRAPPER_INTEL_MPI}${VERSION_WRAPPER_INTEL_MPI} 
 #WRAPPER=${WRAPPER_INTEL_MPI}
-#EIGER=${EIGER_INTEL}
+#MACHINE_CONFIG=${EIGER_INTEL}
 #create_distrib
 
 module remove  ${WRAPPER_INTEL_MPI}${VERSION_WRAPPER_INTEL_MPI} 
 module load  ${BOOST}${VERSION_BOOST} ${WRAPPER_MVAPICH2_MPI}${VERSION_WRAPPER_MVAPICH2_MPI} 
 WRAPPER=${WRAPPER_MVAPICH2_MPI}
-EIGER=${EIGER_MKL}
+MACHINE_CONFIG=${EIGER_MKL}
 create_distrib
 
 #module remove  ${WRAPPER_MVAPICH2_MPI}${VERSION_WRAPPER_MVAPICH2_MPI} 
 #module load  ${BOOST}${VERSION_BOOST} ${WRAPPER_OPENMPI_MPI}${VERSION_WRAPPER_OPENMPI_MPI} 
 #WRAPPER=${WRAPPER_OPENMPI_MPI}
-#EIGER=${EIGER_MKL}
+#MACHINE_CONFIG=${EIGER_MKL}
 #create_distrib

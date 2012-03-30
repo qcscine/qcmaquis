@@ -21,7 +21,6 @@ delete(){
      done
 }
 
-
 WRAPPER=${WRAPPER_INTEL_MPI}
 delete
 WRAPPER=${WRAPPER_MVAPICH2_MPI}
