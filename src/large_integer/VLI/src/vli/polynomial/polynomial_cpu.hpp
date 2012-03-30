@@ -134,8 +134,8 @@ template<class Vli, unsigned int Order>
 void polynomial_cpu<Vli,Order>::print(std::ostream& os) const{
         for(exponent_type i = 0; i < Order ; i++){
             for(exponent_type j = 0; j < Order ; j++){
-             //   os << "Coeff (j,h) = " << i <<" "<<j<< std::endl;
-                os <<coeffs_[i*Order+j] << std::endl;
+                if( coeffs_[i*Order+j] != Vli(0))
+                    os<<"+"<<coeffs_[i*Order+j]<<"*J^"<<i<<"*h^"<<j<<std::endl;
             }
         }
 }
