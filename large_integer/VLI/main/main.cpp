@@ -99,17 +99,17 @@ int main (int argc, char * const argv[])
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
     fill_vector_random(v1,2);
-    fill_vector_random(v2,3);
+    fill_vector_random(v2,2);
 
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
-  
+
     Timer t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
 
     Timer t2("CPU gmp_omp");
@@ -125,7 +125,7 @@ int main (int argc, char * const argv[])
     
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
-
+   
     std::cout << result_pure_cpu << std::endl;
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))

@@ -207,23 +207,22 @@ void sub384_384(unsigned long int* /* %%rdi */, unsigned long int const* /* %%rs
 void mul192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
     asm( \
         "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
-        "movq %%rbp            ,-0x8(%%rsp)       \n" /* alloc the stack */               \
         "xorq %%rcx            ,%%rcx             \n" /* rcx to 0 */                      \
         "cmpq %%rax            ,%%rcx             \n" /* rax is negative ? */             \
         "js   _IsNegative192_64                   \n" /* yes it is, SF = 1 */             \
         "negq %%rax                               \n" /* negate the number */             \
         "movq $0x1             ,%%rcx             \n" /* keep trace for final sign */     \
         "_IsNegative192_64 :                      \n" /* end if structure */              \
-        "movq %%rax            ,%%rbp             \n" /* keep a copy of rax/a0 inside */  \
+        "movq %%rax            ,%%r11             \n" /* keep a copy of rax/a0 inside */  \
         "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
         "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  \
         "movq %%rdx            ,%%r9              \n" /* hia0b0 into rcx */               \
-        "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+        "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(1,n)"(%%rdi)                   \n" /* a0 * b1 */                       \
         "addq %%rax            ,%%r9              \n" /* add hia0b0 + loa0b1 */           \
         "movq %%rdx            ,%%r10             \n" /* save the hi into rcx */          \
         "adcq $0               ,%%r10             \n" /* perhaps carry */                 \
-        "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+        "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "imulq "PPS(2,n)"(%%rdi)                  \n" /* a0 * b2, we skip the the hi */   \
         "addq %%rax            ,%%r10             \n" /* add hia0b1 + loa0b2 */           \
         "cmpq $0               ,%%rcx             \n" /* rcx = 1 we negate */             \
@@ -238,8 +237,7 @@ void mul192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
         "movq %%r8             ,(%%rdi)           \n" /* move into a0 */                  \
         "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* move into a1 */                  \
         "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* move into a2 */                  \
-        "movq -0x8(%%rsp)      ,%%rbp             \n" /* stack clean up */                \
-        : : :"rax","rdx","rcx","r8","r9","memory"                 \
+        : : :"rax","rdx","rcx","r8","r9","r10","r11","memory"                 \
     ); \
 }
 
@@ -248,38 +246,37 @@ void mul192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
 void mul384_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
     asm( \
         "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
-        "movq %%rbp            ,-0x8(%%rsp)       \n" /* alloc the stack */               \
         "xorq %%rcx            ,%%rcx             \n" /* rcx to 0 */                      \
         "cmpq %%rax            ,%%rcx             \n" /* rax is negative ? */             \
         "js   _IsNegative384_64                   \n" /* yes it is, SF = 1 */             \
         "negq %%rax                               \n" /* negate the number */             \
         "movq $0x1             ,%%rcx             \n" /* keep trace for final sign */     \
         "_IsNegative384_64 :                      \n" /* end if structure */              \
-        "movq %%rax            ,%%rbp             \n" /* keep a copy of rax/a0 inside */  \
+        "movq %%rax            ,%%r14             \n" /* keep a copy of rax/a0 inside */  \
         "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
         "movq %%rax            ,%%r8              \n" /* only one term, write into b0 */  \
         "movq %%rdx            ,%%r9              \n" /* hia0b0 into rcx */               \
-        "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+        "movq %%r14            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(1,n)"(%%rdi)                   \n" /* a0 * b1 */                       \
         "addq %%rax            ,%%r9              \n" /* add hia0b1 + loa0b1 */           \
         "movq %%rdx            ,%%r10             \n" /* save the hi into rcx */          \
         "adcq $0               ,%%r10             \n" /* perhaps carry */                 \
-        "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+        "movq %%r14            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(2,n)"(%%rdi)                   \n" /* a0 * b2 */                       \
         "addq %%rax            ,%%r10             \n" /* add hia0b2 + loa0b2 */           \
         "movq %%rdx            ,%%r11             \n" /* save the hi into rcx */          \
         "adcq $0               ,%%r11             \n" /* perhaps carry */                 \
-        "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+        "movq %%r14            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(3,n)"(%%rdi)                   \n" /* a0 * b3 */                       \
         "addq %%rax            ,%%r11             \n" /* add hia0b3 + loa0b3 */           \
         "movq %%rdx            ,%%r12             \n" /* save the hi into rcx */          \
         "adcq $0               ,%%r12             \n" /* perhaps carry */                 \
-        "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+        "movq %%r14            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "mulq "PPS(4,n)"(%%rdi)                   \n" /* a0 * b4 */                       \
         "addq %%rax            ,%%r12             \n" /* add hia0b4 + loa0b4 */           \
         "movq %%rdx            ,%%r13             \n" /* save the hi into rcx */          \
         "adcq $0               ,%%r13             \n" /* perhaps carry */                 \
-        "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+        "movq %%r14            ,%%rax             \n" /* reload rax(a0) from the stack */ \
         "imulq "PPS(5,n)"(%%rdi)                  \n" /* a0 * b5, we skip the the hi */   \
         "addq %%rax            ,%%r13             \n" /* add hia0b5 + loa0b5 */           \
         "cmpq $0               ,%%rcx             \n" /* rcx = 1 we negate */             \
@@ -303,8 +300,7 @@ void mul384_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
         "movq %%r11            ,"PPS(3,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* move into a2 */                  \
-        "movq -0x8(%%rsp)      ,%%rbp             \n" /* stack clean up */                \
-        : : :"rax","rdx","rcx","r8","r9","r10","r11","r12","r13","memory"                 \
+        : : :"rax","rdx","rcx","r8","r9","r10","r11","r12","r13","r14","memory"                 \
     ); \
 }
 
@@ -314,27 +310,26 @@ void mul192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%
      asm( \
 /*01*/  "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   \
 /*02*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
-/*03*/  "movq %%rbp            ,-0x08(%%rsp)      \n" /* alloc the stack */               \
-/*04*/  "movq %%rax            ,%%rbp             \n" /* keep a stack copy of rax/a0 */   \
+/*04*/  "movq %%rax            ,%%r11             \n" /* keep a stack copy of rax/a0 */   \
 /* --------------------------- a0 * b0, a0 * b1, a0 * b2 start ------------------------*/ \
 /*05*/  "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
 /*06*/  "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  \
 /*07*/  "movq %%rdx            ,%%r9              \n" /* a0b0hi into r8 */                \
-/*08*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+/*08*/  "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
 /*09*/  "mulq "PPS(1,n)"(%%rdi)                   \n" /* a0 * b1 */                       \
 /*10*/  "addq %%rax            ,%%r9              \n" /* add a0b0hi + a0b1lo */           \
 /*11*/  "adcq %%rdx            ,%%r10             \n" /* save the a0b1hi into r9 */       \
-/*12*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a0) from the stack */ \
+/*12*/  "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
 /*13*/  "imulq "PPS(2,n)"(%%rdi)                  \n" /* a0 * b2 */                       \
 /*14*/  "addq %%rax            ,%%r10             \n" /* add l11 + a0b2lo + c */          \
 /* --------------------------- a0 * b0, a0 * b1, a0 * b2 end --------------------------*/ \
 /* --------------------------- a1 * b0, a1 * b start ----------------------------------*/ \
 /*15*/  "movq "PPS(1,n)"(%%rsi),%%rax             \n" /* a1 into rax */                   \
-/*16*/  "movq %%rax            ,%%rbp             \n" /* keep a stack copy of rax/a1 */   \
+/*16*/  "movq %%rax            ,%%r11             \n" /* keep a stack copy of rax/a1 */   \
 /*17*/  "mulq (%%rdi)                             \n" /* a1 * b0 */                       \
 /*18*/  "addq %%rax            ,%%r9              \n" /* l13 + a1b0lo */                  \
 /*19*/  "adcq %%rdx            ,%%r10             \n" /* l17 + a1b0hi + c */              \
-/*20*/  "movq %%rbp            ,%%rax             \n" /* reload rax(a1) from the stack */ \
+/*20*/  "movq %%r11            ,%%rax             \n" /* reload rax(a1) from the stack */ \
 /*21*/  "imulq "PPS(1,n)"(%%rdi)                  \n" /* a1*b1 */                         \
 /*22*/  "addq %%rax            ,%%r10             \n" /* a1b2lo to r10 */                 \
 /* --------------------------- a1 * b0, a1 * b1, a1 * b2 end --------------------------*/ \
@@ -346,8 +341,7 @@ void mul192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%
 /*27*/  "movq %%r8             ,(%%rdi)           \n" /* r8 -> c0 */                      \
 /*28*/  "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* r9 -> c1 */                      \
 /*28*/  "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* r10 -> c2 */                     \
-/*29*/  "movq -0x08(%%rsp)      ,%%rbp            \n" /* stack clean up */                \
-        : : :"rax","rdx","r8","r9","r10","memory" \
+        : : :"rax","rdx","r8","r9","r10","r11","memory" \
     ); \
 };
 
@@ -376,7 +370,7 @@ void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/
 /*15*/  "movq %%r8             ,-0x18(%%rsp)      \n" /* a0 into the stack -24 rsp */     \
 /*16*/  "movq %%r9             ,-0x10(%%rsp)      \n" /* a1 into the stack -16 rsp */     \
 /*17*/  "movq %%rax            ,-0x08(%%rsp)      \n" /* a2 into the stack -8 rsp */      \
-/*18*/  "leaq  -0x18(%%rsp)      ,%%rsi           \n" /* rsi points to stack a0 > 0 */    \
+/*18*/  "leaq  -0x18(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    \
 /*19*/  "movq $1               ,%%r14             \n" /* r13 = 0 it is the sign 0+ 1-*/   \
 /*20*/  "_Negativea_384_192_ :                    \n" /* end if structure */              \
 /* negate a if negative and store into stack, in reverse order due to universal access */ \
@@ -499,7 +493,7 @@ void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const*
 /*15*/  "movq %%r8             ,-0x18(%%rsp)      \n" /* a0 into the stack -24 rsp */     \
 /*16*/  "movq %%r9             ,-0x10(%%rsp)      \n" /* a1 into the stack -16 rsp */     \
 /*17*/  "movq %%rax            ,-0x08(%%rsp)      \n" /* a2 into the stack -8 rsp */      \
-/*18*/  "leaq  -0x18(%%rsp)      ,%%rsi           \n" /* rsi points to stack a0 > 0 */    \
+/*18*/  "leaq  -0x18(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    \
 /*19*/  "movq $1               ,%%r14             \n" /* r13 = 0 it is the sign 0+ 1-*/   \
 /*20*/  "_MulAddNegativea_384_192_ :              \n" /* end if structure */              \
 /* negate a if negative and store into stack, in reverse order due to universal access */ \
@@ -602,7 +596,6 @@ void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const*
 /*106*/ "movq %%r11            ,"PPS(3,n)"(%%rdi) \n" /* r10 -> c3 */                     \
 /*107*/ "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* r11 -> c4 */                     \
 /*108*/ "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* r12 -> c5 */                     \
-/*109*/ "movq -0x08(%%rsp)     ,%%rbp             \n" /* stack clean up */                \
     : : : "rax","rdx","rbx","r8","r9","r10","r11","r12","r13","r14","r15","memory"  \
     ); \
 };
