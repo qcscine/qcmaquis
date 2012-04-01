@@ -30,7 +30,6 @@ set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O0 -funroll-loops -m64" CACHE STRING "C
 set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 set (VLI_COMPILE_TYPES "((unsigned long int,3))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
-
 ########################################################################
 #
 # Find dependencies
@@ -99,7 +98,6 @@ set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILER_FLAGS_DEBUG} CACHE STRING "Compiler fla
 #
 ########################################################################
 
-include_directories ("${PROJECT_BINARY_DIR}")
 include_directories ("${PROJECT_SOURCE_DIR}")
 include_directories ("${PROJECT_SOURCE_DIR}/src/")
 
