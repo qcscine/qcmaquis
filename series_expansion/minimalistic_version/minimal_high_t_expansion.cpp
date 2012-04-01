@@ -60,6 +60,7 @@ namespace hp2c
 namespace hp2c
 {
     typedef mpz_class large_int;
+    typedef mpz_class double_large_int;
     typedef hp2c::monomial<large_int> monomial_type;
 }
 #endif //USE_GMP_INTEGERS
@@ -72,13 +73,14 @@ namespace hp2c
 #endif //VLI_USE_GPU
 
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
-#include "vli/polynomial/polynomial_cpu.hpp"
+#include "vli/polynomial/polynomial_cpu.h"
 #include "vli/polynomial/monomial.hpp"
-#include "vli/vli_cpu.hpp"
+#include "vli/vli_cpu.h"
 #include "vli/vli_traits.hpp"
 namespace hp2c
 {
     typedef vli::vli_cpu<unsigned long int,3> large_int;
+    typedef vli::vli_cpu<unsigned long int,6> double_large_int;
     typedef vli::monomial<large_int> monomial_type;
 }
 #endif //USE_VLI_INTEGERS_CPU
@@ -273,12 +275,12 @@ class high_t_expansion
         }
 
         template <template <class,unsigned int> class Polynomial>
-        Polynomial<large_int,Order> exec()
+        Polynomial<double_large_int,Order> exec()
         {
             assert(Order % 2 == 0); //TODO compile time assert
             sparse_matrix sp_matrix(edge_list_,num_vertices_);
 
-            Polynomial<large_int,Order> result;
+            Polynomial<double_large_int,Order> result;
             result += sp_matrix.get_dimension(); // 0th order contribution
             // Compute the trace of (sparse_matrix)^max_order
             for(std::size_t i = 0; i < sp_matrix.get_dimension(); ++i)
@@ -291,7 +293,6 @@ class high_t_expansion
                     polynomial_vector<Polynomial<large_int,Order/2> > previous_state(state);
 
                     state = sp_matrix.apply(state);
-
                     result += inner_product(state,state);
                     result += inner_product(state,previous_state);
                 }
@@ -347,13 +348,13 @@ int main(int argc, char** argv)
     // Run expansion
     high_t_expansion<expansion_order> ht(num_vertices);
 #ifdef USE_VLI_INTEGERS_CPU
-    vli::polynomial_cpu<large_int, expansion_order> r = ht.exec<vli::polynomial_cpu>();
+    vli::polynomial_cpu<double_large_int, expansion_order> r = ht.exec<vli::polynomial_cpu>();
 #else
     hp2c::polynomial<large_int, expansion_order> r = ht.exec<hp2c::polynomial>();
 #endif
 
     A.end();
-    A.save(); 
+   // A.save(); 
 
     // Print out the result
     for(unsigned int j = 0; j < r.max_order; ++j)
@@ -361,9 +362,10 @@ int main(int argc, char** argv)
         for(unsigned int h = 0; h < r.max_order; ++h)
         {
             if(r(j,h) > 0)
-                std::cout <<" +"<< r(j,h) << "/"<< factorial(j+h)<<"*J^"<<j<<"*h^"<<h;
+                std::cout <<" +"<< r(j,h) << "/"<< factorial(j+h)<<"*J^"<<j<<"*h^"<<h << std::endl;
             else if(r(j,h) < 0)
                 std::cout <<" "<< r(j,h) << "/"<< factorial(j+h)<<"*J^"<<j<<"*h^"<<h << std::endl;
+
         }
     }
      
