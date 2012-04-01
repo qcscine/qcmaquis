@@ -90,7 +90,7 @@ polynomial<CoeffType,2*Order> operator * (polynomial<CoeffType,Order> const& p1,
         for(std::size_t he1 = 0; he1 < max_order; ++he1){
             for(std::size_t je2 = 0; je2 < max_order; ++je2){
                for(std::size_t he2 = 0; he2 < max_order; ++he2){
-                     result_coeffs[ (je1+je2)*max_order + he1+he2 ] += p1.coeffs[je1*max_order+he1] * p2.coeffs[je2*max_order+he2];
+                     result_coeffs[ 2*(je1+je2)*max_order + he1+he2 ] += p1.coeffs[je1*max_order+he1] * p2.coeffs[je2*max_order+he2];
                }
             }
 
@@ -173,7 +173,7 @@ class polynomial
             for(std::size_t je = 0; je < max_order; ++je)
                 for(std::size_t he = 0; he < max_order; ++he)
                     if( coeffs[je*max_order+he] != CoeffType(0))
-                        o<<"+"<<coeffs[je*max_order+he]<<"*J^"<<je<<"*h^"<<he;
+                        o<<"+"<<coeffs[je*max_order+he]<<"*J^"<<je<<"*h^"<<he<<std::endl;
         }
 
         /**
