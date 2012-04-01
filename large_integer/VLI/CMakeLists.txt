@@ -97,7 +97,7 @@ set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILER_FLAGS_DEBUG} CACHE STRING "Compiler fla
 # Compile and prepare library
 #
 ########################################################################
-
+include_directories ("${PROJECT_BINARY_DIR}") 	
 include_directories ("${PROJECT_SOURCE_DIR}")
 include_directories ("${PROJECT_SOURCE_DIR}/src/")
 
