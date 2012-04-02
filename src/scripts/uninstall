@@ -1,5 +1,6 @@
 #!/bin/bash
 
+SITE=eiger
 PATH_TRUNK=~/maquis2012/src/
 
 #target directory
@@ -8,16 +9,16 @@ DMRG=dmrg
 AMBIENT=ambient
 
 #wrapper 
-WRAPPER_INTEL_MPI=intel_impi
-WRAPPER_MVAPICH2_MPI=intel_mvapich2
-WRAPPER_OPENMPI_MPI=intel_openmpi
+WRAPPER_INTEL_MPI=iccxe_impi
+WRAPPER_MVAPICH2_MPI=iccxe_mvapich2
+WRAPPER_OPENMPI_MPI=iccxe_openmpi
 
 
 delete(){
      for i in ${AMBIENT} ${DMRG} ${TYPES}
      do
          cd ${PATH_TRUNK}${i}
-         rm -rf build_${WRAPPER}
+         rm -rf ${SITE}_${WRAPPER}
      done
 }
 
