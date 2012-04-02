@@ -22,7 +22,7 @@ create_dashboards(){
     echo "set(PREDEFINED_CTEST_SITE \"`uname -n`\")"                    >  ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BUILD_NAME \"${COMPILER_NAME}\")"        >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${PATH_SRC}\")"       >> ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${PATH_SRC}/build\")" >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${PATH_SRC}/build_${MACHINE_CONFIG}_${COMPILER_NAME}\")" >> ./Dashboards/site.cmake
     cat ../Dashboards/site.cmake >> ./Dashboards/site.cmake
     cp ../Dashboards/cmake_common.cmake ./Dashboards/
 }
