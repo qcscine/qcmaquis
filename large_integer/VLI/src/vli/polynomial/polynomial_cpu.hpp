@@ -6,6 +6,7 @@
  *
  */
 
+namespace vli {
 /**
  * Multiplication of two polynomial_cpus
  */
@@ -90,18 +91,27 @@ polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator -= (int a){
     return *this;
 }
 
+template <class Vli, unsigned int Order>
+polynomial_cpu<Vli,Order> polynomial_cpu<Vli,Order>::operator - () const
+{
+    polynomial_cpu<Vli,Order> r(*this);
+    r.negate();
+    return r;
+}
+
+template <class Vli, unsigned int Order>
+void polynomial_cpu<Vli,Order>::negate()
+{
+    for(std::size_t i=0; i != Order*Order; ++i)
+        coeffs_[i].negate();
+}
+
 template<class Vli, unsigned int Order>          
 bool polynomial_cpu<Vli,Order>::operator==(polynomial_cpu const& p) const{
     int n = memcmp((void*)&coeffs_[0],(void*)&p.coeffs_[0],Order*Order*Vli::size*sizeof(typename Vli::value_type));
     return (0 == n);
 }
 
-template<class Vli, unsigned int Order>          
-void polynomial_cpu<Vli,Order>::swap(polynomial_cpu& p1, polynomial_cpu& p2){
-    using boost::swap;
-    swap(p1.coeffs_,p2.coeffs_);
-}
-    
 template<class Vli, unsigned int Order>          
 polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator *= (Vli const& c){
     for(exponent_type i=0; i<Order*Order;++i)
@@ -173,3 +183,5 @@ std::ostream& operator<<(std::ostream& os, polynomial_cpu<Vli, Order> const& p){
     p.print(os);
     return os;
 }
+
+} //end namespace vli
