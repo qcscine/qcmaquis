@@ -10,7 +10,6 @@ project (vli)
 set (VLI_VERSION_MAJOR 0)
 set (VLI_VERSION_MINOR 1)
 
-
 ########################################################################
 #
 # Options

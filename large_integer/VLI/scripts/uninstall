@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #global variables
-PATH_SRC=$(PWD)/..
+PATH_SRC=${PWD}/..
 
 delete(){
     cd ${PATH_SRC}
-    rm -rf build
+    rm -rf build_*
 }
 
 echo "start cleaning"
