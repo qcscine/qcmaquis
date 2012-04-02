@@ -4,8 +4,8 @@ include_directories ("${P_DENSE_MATRIX_DIR}")
 include_directories ("${AMBIENT_DIR}")
 #for boost numeric it is not an offical part of boost
 #so set up by hand !!!!!!!!
-include_directories ("/opt/alps/include/")
-#include_directories ("/users/maquis/ALPS/include/")
+#include_directories ("/opt/alps/include/")
+include_directories ("/project/h07/ALPS_INTEL_EIGER/include/")
 
 
 if(BLAS_Accelerate_LIBRARY)
