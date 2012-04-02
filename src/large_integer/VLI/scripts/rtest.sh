@@ -5,7 +5,6 @@ MACHINE_CONFIG="castor"
 
 run_dashboad(){
     cd ${PATH_SRC}/build_${MACHINE_CONFIG}_${COMPILER_NAME}
-    make clean
     make
     ctest -S Dashboards/site.cmake
 }
