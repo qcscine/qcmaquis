@@ -1,19 +1,20 @@
-#!/bin/bash -l 
+#!/bin/bash -l
 
-#global variables
+#paths 
 PATH_SRC=${PWD}/..
+PATH_SCRIPT=${PWD}
+export BOOST_ROOT=/apps/eiger/boost_1_46_1/
 #some export compiler and boost
-export BOOST_ROOT=/apps/eiger/boost_1_46_1/ 
-
 create_directory(){
     cd ${PATH_SRC}
-    mkdir build_${COMPILER_NAME}
+    mkdir build_${MACHINE_CONFIG}_${COMPILER_NAME}
 }
 
 create_vli(){
-    cd ${PATH_SRC}/build_${COMPILER_NAME}
+    cd ${PATH_SRC}/build_${MACHINE_CONFIG}_${COMPILER_NAME}
     create_dashboards
-    cmake -DVLI_TESTS=ON ..
+    echo "Machine config \" ${PATH_SCRIPT}/${MACHINE_CONFIG}_${COMPILER_NAME}.cmake\" "
+    cmake -DMACHINE_CONFIG=${PATH_SCRIPT}/${MACHINE_CONFIG}_${COMPILER_NAME}.cmake -DVLI_TESTS=ON -DVLI_MAIN=OFF ..
 }
 
 create_dashboards(){
@@ -21,7 +22,7 @@ create_dashboards(){
     echo "set(PREDEFINED_CTEST_SITE \"`uname -n`\")"                    >  ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BUILD_NAME \"${COMPILER_NAME}\")"        >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${PATH_SRC}\")"       >> ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${PATH_SRC}/build_${COMPILER_NAME}\")" >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${PATH_SRC}/build\")" >> ./Dashboards/site.cmake
     cat ../Dashboards/site.cmake >> ./Dashboards/site.cmake
     cp ../Dashboards/cmake_common.cmake ./Dashboards/
 }
@@ -34,13 +35,13 @@ create_distrib(){
 }
 
 module load cmake
-COMPILER_NAME="intel"
+MACHINE_CONFIG="castor"
+COMPILER_NAME="icc"
 module load intel
-export CC=icc
-export CXX=icpc
 create_distrib
+
 COMPILER_NAME="gcc"
-export CC=gcc
-export CXX=g++
 module load gcc
 create_distrib
+
+
