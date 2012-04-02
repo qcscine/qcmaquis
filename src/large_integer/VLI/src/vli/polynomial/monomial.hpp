@@ -38,6 +38,12 @@ namespace vli
             return coeff_.p();
         }
 
+        monomial operator - () const
+        {
+            monomial r(*this);
+            r.coeff_ = -this->coeff_;
+            return r;
+        }
         monomial& operator *= (Vli const& c){
             coeff_ *= c;
             return (*this);

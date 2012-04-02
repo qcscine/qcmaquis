@@ -12,6 +12,12 @@
 namespace vli
 {	    
 
+template<class Vli, unsigned int Order>          
+void swap(polynomial_cpu<Vli,Order>& p1, polynomial_cpu<Vli,Order>& p2){
+    using boost::swap;
+    swap(p1.coeffs_,p2.coeffs_);
+}
+
 template<class Vli, unsigned int Order>
 class polynomial_cpu{
 public:
@@ -30,10 +36,13 @@ public:
     polynomial_cpu& operator -= (polynomial_cpu const& p);    
     polynomial_cpu& operator -= (monomial<Vli> const& m);
     polynomial_cpu& operator -= (int a);
+    
+    polynomial_cpu operator - () const;
+    void negate();
 
     bool operator==(polynomial_cpu const& p) const;
     
-    void swap(polynomial_cpu& p1, polynomial_cpu& p2);
+    friend void swap<>(polynomial_cpu<Vli,Order>& p1, polynomial_cpu<Vli,Order>& p2);
     
     polynomial_cpu& operator *= (Vli const& c);
     polynomial_cpu& operator *= (int c);
@@ -72,8 +81,7 @@ polynomial_cpu<Vli, Order> operator * (int c, polynomial_cpu<Vli, Order> const& 
 
 template<class Vli, unsigned int Order> 
 std::ostream& operator<<(std::ostream& os, polynomial_cpu<Vli, Order> const& p);
-
-   #include "vli/polynomial/polynomial_cpu.hpp"
-
 } //end namespace
+#include "vli/polynomial/polynomial_cpu.hpp"
+
 #endif
