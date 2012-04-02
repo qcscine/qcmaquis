@@ -1,5 +1,19 @@
 cmake_minimum_required (VERSION 2.6)
 
+######################################################################
+# Machine Config
+######################################################################
+set(DEFAULT_BLAS_LAPACK alps)
+
+if(MACHINE_CONFIG)
+  if(EXISTS ${MACHINE_CONFIG})
+    message(STATUS "Loading config in " ${MACHINE_CONFIG})
+    include(${MACHINE_CONFIG})
+  else(EXISTS ${MACHINE_CONFIG})
+    message(ERROR " Machine config not found!")
+  endif(EXISTS ${MACHINE_CONFIG})
+endif(MACHINE_CONFIG)
+
 ########################################################################
 #
 # Project and version information
