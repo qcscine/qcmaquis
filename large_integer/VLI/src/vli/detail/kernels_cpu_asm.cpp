@@ -29,6 +29,12 @@ namespace vli{
 // 384 * 64  = 384 : necessitate to adapt (if), use for print
 // 192 * 192 = 192 : natively compatible VLI *= VLI, VLI*VLI
 // 192 * 192 = 384 : necessitate to adapt : mul and muladd
+        
+        
+// Note, the ASM X86-64 allows a different managment of the stack
+// I am presently using the red zone there I do not have to allocate 
+// the stack pointer (the frame pointer is removed under x86-64)
+// the red zone is a zone of 128 bytes, enough for my arithmetic        
 
 // VLI += long
 #define HELPER_ASM_ADD192_64(n) \
@@ -237,7 +243,7 @@ void mul192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
         "movq %%r8             ,(%%rdi)           \n" /* move into a0 */                  \
         "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* move into a1 */                  \
         "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* move into a2 */                  \
-        : : :"rax","rdx","rcx","r8","r9","r10","r11","memory"                 \
+        : : :"rax","rdx","rcx","r8","r9","r10","r11","memory"                             \
     ); \
 }
 
@@ -300,7 +306,7 @@ void mul384_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
         "movq %%r11            ,"PPS(3,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* move into a2 */                  \
         "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* move into a2 */                  \
-        : : :"rax","rdx","rcx","r8","r9","r10","r11","r12","r13","r14","memory"                 \
+        : : :"rax","rdx","rcx","r8","r9","r10","r11","r12","r13","r14","memory" \
     ); \
 }
 
@@ -467,7 +473,7 @@ void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/
    : : : "rax","rdx","rcx","rbx","r8","r9","r10","r11","r12","r13","r14","r15","memory"   \
    ); \
 }
-// Vli (384) = VLI (192) * VLI (192) 
+// Vli (384) += VLI (192) * VLI (192) 
 // c += a*b
 #define HELPER_ASM_MUL_ADD384_192_192(n) \
 void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){ \
@@ -568,7 +574,7 @@ void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const*
 /*81*/  "xorq %%r14            ,%%r15             \n"                                     \
 /*82*/  "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             \
 /*83*/  "je _MulAddIsNegativeResult_384_192_      \n" /* not equal ZF = 0, negate*/       \
-/*84*/  "notq %%r8                               \n" /* start2ComplementMethod negate */ \
+/*84*/  "notq %%r8                                \n" /* start2ComplementMethod negate */ \
 /*85*/  "notq %%r9                                \n" /* 2CM negate */                    \
 /*86*/  "notq %%r10                               \n" /* 2CM negate */                    \
 /*87*/  "notq %%r11                               \n" /* 2CM negate */                    \
