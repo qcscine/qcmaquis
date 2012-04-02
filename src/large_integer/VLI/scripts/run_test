@@ -1,0 +1,19 @@
+#!/bin/bash -l
+
+PATH_SRC=${PWD}/..
+
+run_dashboad(){
+    cd ${PATH_SRC}
+    make clean
+    make 
+    ctest -S Dashboards/site.cmake
+}
+
+module load cmake
+COMPILER_NAME="intel"
+module load intel
+run_dashboad
+
+COMPILER_NAME="gcc"
+module load gcc
+run_dashboad
