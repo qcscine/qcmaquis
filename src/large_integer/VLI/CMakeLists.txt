@@ -12,8 +12,10 @@ if(MACHINE_CONFIG)
   else(EXISTS ${MACHINE_CONFIG})
     message(ERROR " Machine config not found!")
   endif(EXISTS ${MACHINE_CONFIG})
+else(MACHINE_CONFIG)
+    set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O0 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
+    set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 endif(MACHINE_CONFIG)
-
 ########################################################################
 #
 # Project and version information
