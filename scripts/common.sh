@@ -29,17 +29,29 @@ add_ambient(){
     cmake -DMACHINE_CONFIG=${ROOT_DIR}/${DMRG}/config_machines/${MACHINE_CMAKE_CONFIG} ..
 }
 
+remove_ambient(){
+    rm -rf ${ROOT_DIR}/${AMBIENT}/${BUILD_DIR}
+}
+
 add_dmrg(){
     mkdir ${ROOT_DIR}/${DMRG}/${BUILD_DIR}
     cd ${ROOT_DIR}/${DMRG}/${BUILD_DIR}
     cmake -DMACHINE_CONFIG=${ROOT_DIR}/${DMRG}/config_machines/${MACHINE_CMAKE_CONFIG} -DALPS_ROOT_DIR=${ALPS_ROOT_DIR} -DBUILD_REGRESSION=ON -DBUILD_AMBIENT=ON -DUSE_AMBIENT=ON .. 
 }
 
+remove_dmrg(){
+    rm -rf ${ROOT_DIR}/${DMRG}/${BUILD_DIR}
+}
+
 add_types(){
     mkdir ${ROOT_DIR}/${TYPES}/${BUILD_DIR}
     cd ${ROOT_DIR}/${TYPES}/${BUILD_DIR}
     use_dashboards
-    cmake -DMACHINE_CONFIG=${ROOT_DIR}/${DMRG}/config_machines/${MACHINE_CMAKE_CONFIG} -DBOOST_BINDINGS_INCLUDE=${BOOST_BINDINGS_INCLUDE} -DENABLE_PARALLEL=ON -DENABLE_TESTS=ON -DBUILD_AMBIENT=ON ..
+    cmake -DMACHINE_CONFIG=${ROOT_DIR}/${DMRG}/config_machines/${MACHINE_CMAKE_CONFIG} -DBOOST_BINDINGS_INCLUDE=${BOOST_BINDINGS_INCLUDE} -DENABLE_PARALLEL=ON -DBUILD_AMBIENT=ON -DENABLE_REGRESSION_FUNCTIONAL=ON ..
+}
+
+remove_types(){
+    rm -rf ${ROOT_DIR}/${TYPES}/${BUILD_DIR}
 }
 
 use_dashboards(){
@@ -60,3 +72,8 @@ create_build_tree(){
     print_configure_end
 }
 
+delete_buid_tree(){
+    remove_ambient
+    remove_dmrg
+    remove_types
+}
