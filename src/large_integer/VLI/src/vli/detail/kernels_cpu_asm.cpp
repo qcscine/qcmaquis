@@ -355,6 +355,7 @@ void mul192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%
 #define HELPER_ASM_MUL384_192_192(n) \
 void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){ \
    asm( \
+/*-01*/ "subq $0x30            ,%%rsp             \n" /* create stack frame */            \
 /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   \
 /*01*/  "xorq %%r11            ,%%r11             \n" /* r10 = 0 due to carry effect */   \
 /*02*/  "xorq %%r12            ,%%r12             \n" /* r11 = 0 due to carry effect */   \
@@ -470,6 +471,7 @@ void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/
 /*100*/ "movq %%r11            ,"PPS(3,n)"(%%rdi) \n" /* r11 -> c3 */                     \
 /*101*/ "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* r12 -> c4 */                     \
 /*102*/ "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* r13 -> c5 */                     \
+/*103*/ "addq $0x30            ,%%rsp             \n" /* destroy stack frame */           \
    : : : "rax","rdx","rcx","rbx","r8","r9","r10","r11","r12","r13","r14","r15","memory"   \
    ); \
 }
@@ -478,6 +480,7 @@ void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/
 #define HELPER_ASM_MUL_ADD384_192_192(n) \
 void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){ \
     asm( \
+/*-01*/ "subq $0x30            ,%%rsp             \n" /* create stack frame */            \
 /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   \
 /*01*/  "xorq %%r11            ,%%r11             \n" /* r10 = 0 due to carry effect */   \
 /*02*/  "xorq %%r12            ,%%r12             \n" /* r11 = 0 due to carry effect */   \
@@ -602,6 +605,7 @@ void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const*
 /*106*/ "movq %%r11            ,"PPS(3,n)"(%%rdi) \n" /* r10 -> c3 */                     \
 /*107*/ "movq %%r12            ,"PPS(4,n)"(%%rdi) \n" /* r11 -> c4 */                     \
 /*108*/ "movq %%r13            ,"PPS(5,n)"(%%rdi) \n" /* r12 -> c5 */                     \
+/*109*/ "addq $0x30            ,%%rsp             \n" /* destroy stack frame */           \
     : : : "rax","rdx","rbx","r8","r9","r10","r11","r12","r13","r14","r15","memory"  \
     ); \
 };
