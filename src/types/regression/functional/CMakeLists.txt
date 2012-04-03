@@ -35,7 +35,7 @@ add_executable (exp.out exp.cpp)
 add_executable (serial_access.out serial_access.cpp)
 #add_executable (identity.out identity.cpp)
 
-foreach(validation_test 
+foreach(functional_test 
        blas3_multiplication.out 
        blas3_multiplication_pdiag.out 
        blas3_addition.out 
@@ -54,6 +54,6 @@ foreach(validation_test
        serial_access.out
 #      identiry.out
        )
-       target_link_libraries (${validation_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
-       add_test(${validation_test} ${validation_test})
-endforeach(validation_test)
+       target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+       add_test(${functional_test} ${functional_test})
+endforeach(functional_test)
