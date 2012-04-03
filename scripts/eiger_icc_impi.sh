@@ -2,7 +2,7 @@
 
 SITE=eiger # the name of the site on the dashboard # or `uname -n`
 ROOT_DIR=~/maquis2012/src
-ALPS_DIR=/project/h07/ALPS_INTEL_EIGER/share/alps
+ALPS_ROOT_DIR=/project/h07/ALPS_INTEL_EIGER
 BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL_EIGER/include
 MACHINE_CMAKE_CONFIG='eiger_intel.cmake'
 

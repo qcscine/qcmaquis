@@ -23,7 +23,7 @@
 #define COMMA_(I) BOOST_PP_IF(I, BOOST_PP_COMMA, BOOST_PP_EMPTY)()
 #define ARG(I) BOOST_PP_EXPR_IF(I, double* rwork)
 
-// C - Two functions for the validation tests
+// C - Two functions for the functional tests
     inline double norm(double a){return sqrt(a*a);}
     inline double norm(std::complex<double> a){return sqrt(std::norm(a));}
 
