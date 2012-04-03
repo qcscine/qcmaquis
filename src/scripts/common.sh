@@ -65,15 +65,72 @@ use_dashboards(){
 }
 
 create_build_tree(){
+    pushd .
     print_configure_begin
     add_ambient
     add_dmrg
     add_types
     print_configure_end
+    popd
 }
 
-delete_buid_tree(){
+delete_build_tree(){
     remove_ambient
     remove_dmrg
     remove_types
+}
+
+update_state(){
+   ORIG="`basename $0`"
+   MOD=".`basename $0`.mod"
+
+   cp $ORIG $MOD # keeping permissions
+   echo "#!/bin/bash"          >  $MOD
+   echo "STATE=\"$1\""         >> $MOD
+   tail -n +3 $ORIG            >> $MOD
+   mv $MOD $ORIG
+}
+
+configure(){
+   create_build_tree
+   update_state configure
+}
+
+build(){
+   echo "Building..."
+   update_state build
+   #make
+}
+
+test(){
+   echo "Testing..."
+   #make test
+   update_state test
+}
+
+clean(){
+   echo "Cleaning..."
+   delete_build_tree
+   update_state void
+}
+
+execute(){
+    if [ "$1" == "clean" ]
+    then
+       clean
+    elif [ "$1" == "configure" ]
+    then
+       clean && configure
+    elif [ "$1" == "build" ]
+    then
+       [[ "$STATE" == "void" ]] && clean && configure
+       build
+    elif [ "$1" == "test" ]
+    then
+       [[ "$STATE" == "void" ]] && clean && configure
+       build
+       test
+    else
+        echo "Unknown knob"
+    fi
 }
