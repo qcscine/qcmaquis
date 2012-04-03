@@ -12,9 +12,6 @@ if(MACHINE_CONFIG)
   else(EXISTS ${MACHINE_CONFIG})
     message(ERROR " Machine config not found!")
   endif(EXISTS ${MACHINE_CONFIG})
-else(MACHINE_CONFIG)
-    set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O0 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
-    set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
 endif(MACHINE_CONFIG)
 ########################################################################
 #
@@ -38,6 +35,11 @@ option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" OFF)
 option (VLI_TESTS "Build the VLI regression tests" OFF)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
+
+if(NOT MACHINE_CONFIG)
+    set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
+    set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
+endif(NOT MACHINE_CONFIG)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
