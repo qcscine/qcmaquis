@@ -118,9 +118,9 @@ int main (int argc, char * const argv[])
     t2.end();
 
 #ifdef VLI_USE_GPU
-    TimerOMP t3("MIX CPU/GPU openmp");
+    Timer t3("MIX CPU/GPU openmp");
     t3.begin();    
-    result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
+    result_mix_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
     t3.end();
     
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
