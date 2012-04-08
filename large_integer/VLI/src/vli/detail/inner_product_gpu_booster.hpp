@@ -131,7 +131,7 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
 #endif
 
 template <class BaseInt, std::size_t Size, unsigned int Order>
-polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> 
+polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> 
 inner_product_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
                vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
     std::cout<<"inner_product: single thread + CUDA"<<std::endl;
@@ -147,7 +147,7 @@ inner_product_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, 
         res += v1[i]*v2[i];
     }
 
-    res += polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order >(gpu_product);
+    res += polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product);
     
     return res;
 }

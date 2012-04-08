@@ -57,7 +57,7 @@ endif(VLI_USE_OPENMP)
 
 if (VLI_COMPILE_GPU)
    find_package (CUDA)
-   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}  "-arch=sm_21")
+   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}  " -gencode=arch=compute_20,code=\"sm_20,compute_20\" --ptxas-options=-v ")
    include_directories(${CUDA_INCLUDE_DIRS})
 else (VLI_COMPILE_GPU)
    set (CUDA_LIBRARIES "")
