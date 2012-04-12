@@ -100,7 +100,12 @@ use_dashboards(){
     cp ../Dashboards/cmake_common.cmake ./Dashboards/
 }
 
-## states auxiliary functions ##
+## auxiliary functions ##
+
+die(){
+    echo " Error: ${1}" 2>&1;
+    kill -SIGINT $$
+}
 
 get_defines(){
     local input=`eval echo \\${!\${1}_*}`
@@ -110,6 +115,15 @@ get_defines(){
     done
 }
 
+check_state(){ # 1: target
+    if [ -n "${1}" ]
+    then
+        target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
+        value="`eval echo \$\`eval \"echo STATE_${target}\"\``"
+        [[ -n "$value" ]] || die "unknown target $1"
+    fi
+}
+
 get_state(){ # 1: target
     local value=$STATE
     local target="${1}"
@@ -117,7 +131,7 @@ get_state(){ # 1: target
     then
         target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
         value="`eval echo \$\`eval \"echo STATE_${target}\"\``"
-        [[ -n "$value" ]] || (echo "Unknown target (undefined state)..." && exit)
+        [[ -n "$value" ]] || die "unknown target"
     fi
     echo "$value"
 }
@@ -150,7 +164,7 @@ write_states(){
 ## target wrappers ##
 
 clean(){
-   local state=`get_state ${1}` # safe check
+   local state=`get_state ${1}`
    if [ -n "${1}" ] 
    then
       remove_target ${1} 
@@ -167,7 +181,7 @@ clean(){
 
 configure(){
     clean ${1} # cleaning every configuration
-    local state=`get_state ${1}` # safe check
+    local state=`get_state ${1}`
     if [ -n "${1}" ]
     then
         add_target ${1}
@@ -182,7 +196,7 @@ configure(){
 }
 
 build(){
-    local state=`get_state ${1}` # safe check
+    local state=`get_state ${1}`
     [[ "$state" == "void" ]] && configure ${1}
     if [ -n "${1}" ]
     then
@@ -198,7 +212,7 @@ build(){
 }
 
 run(){
-    local state=`get_state ${1}` # safe check
+    local state=`get_state ${1}`
     [[ "$state" != "build" ]] && build ${1}
     if [ -n "${1}" ]
     then
@@ -213,7 +227,7 @@ run(){
 }
 
 dash(){
-    local state=`get_state ${1}` # safe check
+    local state=`get_state ${1}`
     [[ "$state" != "build" ]] && build ${1}
     if [ -n "${1}" ]
     then
@@ -236,11 +250,12 @@ execute(){
         action=`echo $1 | sed "s/dashboard/dash/" | sed "s/test/run/"` &&
         [[ "$action" != "clean" ]] && [[ "$action" != "configure" ]]   && 
         [[ "$action" != "build" ]] && [[ "$action" != "run"       ]]   &&
-        [[ "$action" != "dash"  ]] && echo "  In order to set the environment use source <config>"   &&
-        echo "  For other usages please provide the key: <clean, configure, build, test, dashboard>" &&
-        echo && exit
+        [[ "$action" != "dash"  ]] && 
+        echo "  Usage: ./config {clean, configure, build, test, dashboard} [targets]"  &&
+        echo "  Note: in order to set the environment use \`source ./config\`" && echo && exit
 
         local i; for i in ${*:2}""; do
+            check_state ${i} # safe check
             eval $action ${i}
         done
     fi
