@@ -14,11 +14,17 @@
 #include "types/dense_matrix/dense_matrix_blas.hpp"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
-
 #include "types/utils/matrix_cast.h"
-#include "utils/timings.h"
 
+#include "utils/timings.h"
 #include "utilities.h"
+
+typedef ambient::dim2 dim;
+typedef maquis::types::dense_matrix<ValueType> sMatrix;
+typedef maquis::types::p_dense_matrix<ValueType> pMatrix;
+typedef maquis::types::diagonal_matrix<ValueType> sDiagMatrix;
+typedef maquis::types::p_diagonal_matrix<ValueType> pDiagMatrix;
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
 {
     ambient::model >> dim(256,256), dim(256,256), dim(256,256);
@@ -36,7 +42,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
     ambient::playout();
- 
 
     maquis::types::algorithms::gemm(pA,pB,pC); 
 

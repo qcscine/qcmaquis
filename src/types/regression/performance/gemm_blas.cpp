@@ -7,18 +7,9 @@
 
 #include <iostream>
 #include <cmath>
+#include <complex>
 
-#include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/algorithms.hpp"
-
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-
-#include "types/utils/matrix_cast.h"
 #include "utils/timings.h"
-
 #include "utilities.h"
 
 #include "ambient/utils/numeric.h" 

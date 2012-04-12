@@ -6,9 +6,9 @@
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/facilities/empty.hpp>
 
-#define MAX_ITERATION 4
+#define MAX_ITERATION 1
 #define WorkGroup 1024
-#define M 0xF4240 
+#define N 0xF4240 
 #define ValueType double
 
 #define TIM_PP_COMMA_IF(n) BOOST_PP_COMMA_IF( BOOST_PP_SUB(MAX_ITERATION,BOOST_PP_ADD(n,1))) 
@@ -22,7 +22,7 @@ namespace Random{
 }
 
 static Random::random Rd; //one generator is enough so static
-static double value = (double)1/M; // for boost check close
+static double value = (double)1/N; // for boost check close
 
 template <int n, int m, typename T, int nthreads> // n # of workgroup, T double or std::complex<double> 
 struct size {
@@ -33,12 +33,6 @@ struct size {
    enum {ValueThread = nthreads}; // number of threads for blas
    enum {null = 0};// n is the number or work group, m how we resize
 };
-
-typedef ambient::dim2 dim;
-typedef maquis::types::dense_matrix<ValueType> sMatrix;
-typedef maquis::types::p_dense_matrix<ValueType> pMatrix;
-typedef maquis::types::diagonal_matrix<ValueType> sDiagMatrix;
-typedef maquis::types::p_diagonal_matrix<ValueType> pDiagMatrix;
 
 /*
 * size<A,B,C>
