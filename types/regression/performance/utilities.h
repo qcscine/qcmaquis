@@ -6,7 +6,7 @@
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/facilities/empty.hpp>
 
-#define MAX_ITERATION 1
+#define MAX_ITERATION 2
 #define WorkGroup 1024
 #define N 0xF4240 
 #define ValueType double
