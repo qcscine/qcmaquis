@@ -1,11 +1,11 @@
 #!/bin/bash
-
-SITE=eiger # the name of the site on the dashboard # or `uname -n`
+STATE="void"
+STATE_AMBIENT="void"
+STATE_TYPES="void"
+STATE_DMRG="void"
+# end of target states #
+SITE=eiger # the dashboard name (uname -n)
 ROOT_DIR=~/maquis2012/src
-ALPS_ROOT_DIR=/project/h07/ALPS_INTEL_EIGER
-BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL_EIGER/include
-MACHINE_CMAKE_CONFIG='eiger_mkl.cmake'
-
 COMPILER=iccxe
 COMPILER_VERSION=2011
 MPI_WRAPPER=openmpi
@@ -17,7 +17,24 @@ export CXX=icpc
 export CC=icc
 export BOOST_ROOT=/apps/eiger/boost_1_46_1
 
-source common.sh 
+module load ${COMPILER}/${COMPILER_VERSION}
+module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load ${BOOST}/${BOOST_VERSION}
 
-module load ${COMPILER}/${COMPILER_VERSION} ${BOOST}/${BOOST_VERSION} ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION} 
-create_build_tree
+## common ##
+MAQUIS_COMMON_DEFAULT_BLAS_LAPACK=manual
+MAQUIS_COMMON_BLAS_LAPACK_MANUAL_INCLUDES=/apps/todi/intel/composerxe-2011.3.174/mkl/include
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wall -O2 -funroll-loops -std=c++0x -m64 -mkl=parallel"
+## types ##
+MAQUIS_TYPES_BUILD_AMBIENT=ON 
+MAQUIS_TYPES_ENABLE_PARALLEL=ON
+MAQUIS_TYPES_ENABLE_REGRESSION_FUNCTIONAL=ON
+MAQUIS_TYPES_BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL_EIGER/include
+## dmrg ##
+MAQUIS_DMRG_ALPS_ROOT_DIR=/project/h07/ALPS_INTEL_EIGER
+MAQUIS_DMRG_BUILD_REGRESSION=ON 
+MAQUIS_DMRG_BUILD_AMBIENT=ON 
+MAQUIS_DMRG_USE_AMBIENT=ON
+
+source common.sh 
+execute $*
