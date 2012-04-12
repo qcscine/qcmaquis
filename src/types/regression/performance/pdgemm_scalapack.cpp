@@ -17,8 +17,8 @@
 extern "C" void Cblacs_pinfo( int* mypnum, int* nprocs); 
 extern "C" void Cblacs_gridinfo( int nContxt, int* nRows, int* nCols, int* nMyRow, int* nMyCol);
 extern "C" void Cblacs_gridinit(  int* nContxt, char * order,  int np_row,  int np_col);
-extern "C" void Cblacs_gridexit( int* nContxt);
-extern "C" void Cblacs_exit( int* error_code);
+extern "C" void Cblacs_gridexit( int nContxt);
+extern "C" void Cblacs_exit( int nContxt);
 extern "C" void Cblacs_get(int Contxt, int what, int* val); 
 extern "C" int numroc_(int* nN, int* nB, int* nIProc, int* nISrcProc, int* nNProcs);
 extern "C" void descinit_(int *, int*, int* , int *, int *, int *, int *, int *, int *, int*);
@@ -31,7 +31,7 @@ extern "C" void pdgemm_(char *jobu, char *jobvt,
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
 { 
-   int argc;
+   int argc=0;
    char ** argv;
    int M(T::ValueX);
    srand(3);
@@ -87,7 +87,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
    pdgemm_("N","N",&M,&M,&M,&alpha,AA,&one,&one,descA,BB,&one,&one,descB,&beta,CC,&one,&one,descC);
    A.end();
 
+   if(myrank_mpi ==0){
+       double time = A.GetTime();
+       double gfl  = GFlopsGemm(T::ValueX,T::ValueX,T::ValueX,time);
+       save("TimePDGemmScalapack.txt",A,gfl,M,M,nprocs_mpi);
+   }
+   int in(0);
+   Cblacs_gridexit(ictxt);
    MPI_Finalize();
-   if(myrank_mpi ==0)
-       save("timebench.txt",A,0.0,M,M,nprocs_mpi);
 }
