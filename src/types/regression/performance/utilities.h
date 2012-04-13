@@ -44,7 +44,7 @@ struct size {
 typedef boost::mpl::list< 
                      //  size<1024,1042,double,4>  // basic example if you do it by hand
                         #define DECLARATION_test_cases(z, n, unused) \
-                            size< BOOST_PP_ADD(n,1)*WorkGroup, BOOST_PP_ADD(n,1)*WorkGroup ,double, 4> TIM_PP_COMMA_IF(n)  
+                            size< BOOST_PP_ADD(n,1)*WorkGroup, BOOST_PP_ADD(n,1)*WorkGroup ,double, 2> TIM_PP_COMMA_IF(n)  
                             BOOST_PP_REPEAT(MAX_ITERATION, DECLARATION_test_cases, ~)
                         #undef DECLARATION_test_cases
 
