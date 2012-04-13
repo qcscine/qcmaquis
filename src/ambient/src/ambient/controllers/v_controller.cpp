@@ -9,8 +9,11 @@
 #define pthread_yield() sched_yield()
 #endif
 
-#ifndef NUM_THREADS 
-#define NUM_THREADS 2
+#ifndef DEFAULT_NUM_THREADS 
+#define DEFAULT_NUM_THREADS 1
+#endif
+#ifndef MAX_NUM_THREADS 
+#define MAX_NUM_THREADS 8
 #endif
 
 // {{{ global objects accessible anywhere //
@@ -34,7 +37,7 @@ namespace ambient { namespace controllers {
     }
 
     v_controller::~v_controller(){
-        for(int i = 1; i < NUM_THREADS; i++){
+        for(size_t i = 1; i < this->num_threads; i++){
             this->tasks[i].active = false;
             pthread_join(this->pool[i], NULL);
             pthread_mutex_destroy(&this->mpool[i]);
@@ -44,27 +47,39 @@ namespace ambient { namespace controllers {
     }
 
     v_controller::v_controller()
-    : workload(0), rrn(0) 
+    : workload(0), rrn(0), num_threads(1) 
     {
         this->acquire(&ambient::channel);
         pthread_key_create(&pthread_env, free);
         pthread_key_create(&pthread_tid, free);
         pthread_mutex_init(&this->mutex, NULL);
         pthread_mutex_init(&this->pool_control_mutex, NULL);
-        this->init_threads();
+        this->allocate_threads();
+        this->set_num_threads(DEFAULT_NUM_THREADS);
     }
 
     pthread_mutex_t* v_controller::get_pool_control_mutex(){
         return &this->pool_control_mutex;
     }
 
-    void v_controller::init_threads(){
-        this->pool = (pthread_t*)malloc(sizeof(pthread_t)*NUM_THREADS);
-        this->mpool = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t)*NUM_THREADS);
-        this->tasks = new tasklist[NUM_THREADS];
-        for(int i = 1; i < NUM_THREADS; i++){
-            this->tasks[i].id = i;
+    size_t v_controller::get_num_threads() const {
+        return this->num_threads;
+    }
+
+    void v_controller::set_num_threads(size_t n){
+        if(this->num_threads >= n || n > MAX_NUM_THREADS) return;
+        for(size_t i = this->num_threads; i < n; i++){
             pthread_create(&this->pool[i], NULL, &v_controller::stream, &this->tasks[i]);
+        }
+        this->num_threads = n;
+    }
+
+    void v_controller::allocate_threads(){
+        this->pool = (pthread_t*)malloc(sizeof(pthread_t)*MAX_NUM_THREADS);
+        this->mpool = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t)*MAX_NUM_THREADS);
+        this->tasks = new tasklist[MAX_NUM_THREADS];
+        for(size_t i = 1; i < MAX_NUM_THREADS; i++){
+            this->tasks[i].id = i;
             pthread_mutex_init(&this->mpool[i], NULL);
         }
     }
@@ -121,12 +136,12 @@ namespace ambient { namespace controllers {
     void v_controller::execute_mod(models::imodel::modifier* op, dim2 pin){
         if(op->pretend()) return;
         this->tasks[this->rrn].add_task(new mod(op, pin));
-        ++this->rrn %= NUM_THREADS;
+        ++this->rrn %= this->num_threads;
     }
 
     void v_controller::execute_free_mod(models::imodel::modifier* op){
         this->tasks[this->rrn].add_task(new mod(op, dim2(0,0)));
-        ++this->rrn %= NUM_THREADS;
+        ++this->rrn %= this->num_threads;
     }
 
     models::imodel::layout::entry* v_controller::alloc_block(models::imodel::revision& r){
