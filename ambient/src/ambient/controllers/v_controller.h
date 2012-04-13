@@ -33,7 +33,9 @@ namespace ambient { namespace controllers {
         void unlink_revision(models::imodel::revision* arg);
 
         void flush();
-        void init_threads();
+        void allocate_threads();
+        void set_num_threads(size_t n);
+        size_t get_num_threads() const;
         void atomic_complete();
         void atomic_receive(models::imodel::revision& r, size_t i, size_t j);
 
@@ -50,6 +52,7 @@ namespace ambient { namespace controllers {
         pthread_t* pool;
         tasklist* tasks;
         size_t workload;
+        size_t num_threads;
         size_t rrn;
     };
 

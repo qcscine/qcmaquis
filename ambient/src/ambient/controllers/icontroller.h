@@ -19,6 +19,8 @@ namespace ambient { namespace controllers {
         virtual void atomic_complete() = 0;
         virtual void atomic_receive(models::imodel::revision& r, size_t i, size_t j) = 0;
         virtual void flush() = 0;
+        virtual void set_num_threads(size_t n) = 0;
+        virtual size_t get_num_threads() const = 0;
 
         virtual pthread_mutex_t* get_pool_control_mutex() = 0;
     };

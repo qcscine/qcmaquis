@@ -7,7 +7,11 @@
 #include "ambient/utils/memory.hpp"
 #include "utils/zout.hpp"
 
-namespace ambient{ 
+namespace ambient{
+
+    void set_num_threads(size_t n);
+
+    size_t get_num_threads();
 
     void playout();
 
@@ -44,6 +48,14 @@ namespace ambient{
 
     // {{{ realization of interface functions
     #include "ambient/interface/pp/push.pp.hpp" // all variants of push
+
+    void set_num_threads(size_t n){ 
+        controller.set_num_threads(n);
+    }
+
+    size_t get_num_threads(){
+        return controller.get_num_threads();
+    }
 
     void playout(){ 
         controller.flush(); 

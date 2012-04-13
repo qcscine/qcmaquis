@@ -28,6 +28,7 @@ typedef maquis::types::p_diagonal_matrix<ValueType> pDiagMatrix;
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
 {
     ambient::model >> dim(256,256), dim(256,256), dim(256,256);
+    ambient::set_num_threads(T::ValueThread);
 
     pMatrix pA(T::ValueX,T::ValueY);
     pMatrix pB(T::ValueX,T::ValueY);
