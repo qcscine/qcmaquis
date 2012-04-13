@@ -26,5 +26,5 @@ add_library(vli_cpu
 ########################################################################
 
 if(VLI_COMPILE_GPU)
-    CUDA_ADD_LIBRARY(vli_gpu detail/kernels_gpu.cu detail/kernels_gpu_asm.cu )
+    CUDA_ADD_LIBRARY(vli_gpu detail/kernels_gpu.cu)
 endif(VLI_COMPILE_GPU)
