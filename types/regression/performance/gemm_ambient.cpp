@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
     ambient::playout();
     t1.end();
 
-    double time = t1.GetTime();
-    double gfl  = GFlopsGemm(T::ValueX,T::ValueX,T::ValueX,time);
-    save("TimeGemmAmbient.txt",t1,gfl,T::ValueX,T::ValueY,T::ValueThread); 
+    double gfl = GFlopsGemm(T::ValueX, T::ValueX, T::ValueX, t1.get_time());
+    report(t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
+    save("TimeGemmAmbient.txt", t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
 }
 
