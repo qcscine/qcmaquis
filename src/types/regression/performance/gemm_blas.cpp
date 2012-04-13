@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types)
     gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     t1.end();
 
-    double time = t1.GetTime();
-    double gfl  = GFlopsGemm(n,m,k,time);
-    save("TimeGemmBlas.txt",t1,gfl,T::ValueX,T::ValueY,T::ValueThread); 
+    double gfl  = GFlopsGemm(n, m, k, t1.get_time());
+    report(t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
+    save("TimeGemmBlas.txt", t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
   
     delete [] ad;   
     delete [] bd;   

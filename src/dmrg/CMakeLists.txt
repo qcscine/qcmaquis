@@ -4,8 +4,6 @@ cmake_minimum_required(VERSION 2.8)
 ######################################################################
 # Machine Config
 ######################################################################
-set(DEFAULT_BLAS_LAPACK alps)
-
 if(MACHINE_CONFIG)
   if(EXISTS ${MACHINE_CONFIG})
     message(STATUS "Loading config in " ${MACHINE_CONFIG})
@@ -14,6 +12,10 @@ if(MACHINE_CONFIG)
     message(ERROR " Machine config not found!")
   endif(EXISTS ${MACHINE_CONFIG})
 endif(MACHINE_CONFIG)
+
+if(NOT DEFAULT_BLAS_LAPACK)
+    set(DEFAULT_BLAS_LAPACK alps)
+endif(NOT DEFAULT_BLAS_LAPACK)
 
 ######################################################################
 # Project START

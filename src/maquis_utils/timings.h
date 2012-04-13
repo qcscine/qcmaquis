@@ -96,8 +96,8 @@ public:
             val += (getcpuclocks()-t0)/freq;
     }
 
-    double GetTime() {
-	return  val;
+    double get_time() const {
+	    return  val;
     }    
    
     friend void save(std::string name, Timer const & a, double gflops, int n, int m, int nthread){

@@ -87,10 +87,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
    pdgemm_("N","N",&M,&M,&M,&alpha,AA,&one,&one,descA,BB,&one,&one,descB,&beta,CC,&one,&one,descC);
    A.end();
 
-   if(myrank_mpi ==0){
-       double time = A.GetTime();
-       double gfl  = GFlopsGemm(T::ValueX,T::ValueX,T::ValueX,time);
-       save("TimePDGemmScalapack.txt",A,gfl,M,M,nprocs_mpi);
+   if(myrank_mpi == 0){
+       double gfl  = GFlopsGemm(T::ValueX, T::ValueX, T::ValueX, A.get_time());
+       save("TimePDGemmScalapack.txt", A, gfl, M, M, nprocs_mpi);
    }
    int in(0);
    Cblacs_gridexit(ictxt);

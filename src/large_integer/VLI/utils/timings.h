@@ -60,10 +60,10 @@ public:
             val += (getcpuclocks()-t0)/freq; // to milliseconds
     }
 
-    double GetTime() const 
-    {
-	return  val;
-    }    
+    double get_time() const {
+	    return  val;
+    }
+
 protected:
     double val, t0;
     std::string name;
