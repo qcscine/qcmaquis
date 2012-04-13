@@ -97,7 +97,7 @@ public:
     }
 
     double get_time() const {
-	    return  val;
+	return  val;
     }    
   
     friend void report(Timer const & a, double gflops, int n, int m, int nthread){
@@ -108,7 +108,7 @@ public:
              << " Matrix:  " << m << "x" << n << "\n"
              << "-------------------------\n";
     }
-   
+
     friend void save(std::string name, Timer const & a, double gflops, int n, int m, int nthread){
        std::ofstream o; 
        o.open(name.c_str(),std::ios::app);
