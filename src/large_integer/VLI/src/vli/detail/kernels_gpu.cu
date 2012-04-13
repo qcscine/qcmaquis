@@ -6,23 +6,17 @@
 //  Copyright 2011 Université de Genève. All rights reserved.
 //
 
-#include "vli/detail/kernels_gpu_asm.h" 
+#include "vli/detail/kernels_gpu_asm.hpp" 
 #include "vli/detail/kernels_gpu.h"
 
-//#include <cstdio>
+#include <cstdio>
 //#include "utils/cuPrintf.cu"
 
 namespace vli {
     namespace detail {
     
-/**
-* local declaration of the commun kernels
-*/
-
- 
-
 // functions for the blocks algos
-
+/*
     template <typename BaseInt, std::size_t Size>
     __device__ void algo_triangle_up(int block_ai, int block_bj,unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt* c);
 
@@ -34,12 +28,12 @@ namespace vli {
     
     template <typename BaseInt, std::size_t Size>
     __device__ void algo_block_algo(int i, int j,unsigned int Order, BaseInt const* a, BaseInt const* b, BaseInt* c);
-
+*/
 // functions for the diags algo
-
+/*
     template <typename BaseInt, std::size_t Size>
     __device__ void algo_diag_shared(unsigned int i,unsigned int Order, BaseInt const* a,  BaseInt const* b, BaseInt* c);
-
+*/
 /**
 * a kind of hook function with a little bit of arithmetic in case of signed int (multiplication)
 */
@@ -131,6 +125,7 @@ void algo_block_algo(int i, int j, unsigned int Order, BaseInt const* a, BaseInt
 }
 
 /** n*n threads diag algo **/
+/*
 template <typename BaseInt, std::size_t Size>
 void algo_diag_shared(unsigned int threadid, unsigned int Order, BaseInt const* a, BaseInt const* b, BaseInt *c)
 {
@@ -221,10 +216,12 @@ void algo_diag_shared(unsigned int threadid, unsigned int Order, BaseInt const* 
     }    
 
 }
+*/
 /**
 * VLI_GPU_VECTOR functions
 */    
 
+  
     
 template <typename BaseInt, std::size_t Size>
 __global__ void inner_prod_vector_blocks(unsigned int Order, std::size_t vector_size, BaseInt const* A, BaseInt const* B, BaseInt* C)
@@ -271,6 +268,7 @@ __global__ void inner_prod_vector_diag(unsigned int Order, std::size_t vector_si
     }
 }
 
+// C - on cpu we use unsigned long int 
 template  <typename BaseInt, std::size_t Size, std::size_t ThreadsPerBlock>
 __global__ void reduction_polynome(unsigned int Order, std::size_t VectorSize, BaseInt* v)
 { 
@@ -280,44 +278,75 @@ __global__ void reduction_polynome(unsigned int Order, std::size_t VectorSize, B
     unsigned int offset_poly  = 2*Size*2*Order*2*Order;
     unsigned int offset_coeff = 2*Size*xIndex; 
 
-    __shared__ BaseInt sv[2*Size*ThreadsPerBlock];
+    __shared__ unsigned long int sv[2*Size*ThreadsPerBlock];
 
     if(xIndex < 2*Order*2*Order){
         for(int j(0); j < 2*Size ; ++j) 
             sv[xInter+j] = v[offset_coeff+j];
-
-  //      for(int i(1); i < VectorSize; ++i)
-   //         kernels_addition_classic<BaseInt,2*Size>(&sv[xInter], &v[offset_coeff+i*offset_poly]);
-
+/*
+        for(int i(1); i < VectorSize; ++i)
+            add384_384_gpu(&sv[xInter], &v[offset_coeff+i*offset_poly]);
+*/
         for(int j(0); j < 2*Size ; ++j) 
-           v[offset_coeff+j] = sv[xInter+j];
+            v[offset_coeff+j] = sv[xInter+j];
     }
-
 }
+
+template  <typename BaseInt, std::size_t Size>
+__global__ void addition(BaseInt* x, BaseInt const* y){ 
+    add384_384_gpu(x,y);
+}
+
+
+template  <typename BaseInt, std::size_t Size>
+__global__ void multiplication(BaseInt* x, BaseInt const* y, BaseInt const* z){ 
+    mul384_384_gpu(x,y,z);
+}
+
+
 /**
   * The C++ functions that call the kernels
 */
- 
 template <typename BaseInt, std::size_t Size>
-void inner_product_vector(unsigned int Order, std::size_t VectorSize, BaseInt const* A, BaseInt const* B, BaseInt *C)
-{
+void inner_product_vector(unsigned int Order, std::size_t VectorSize, BaseInt const* A, BaseInt const* B, BaseInt *C) {
+
   std::size_t ThreadsPerBlock = 32;
 
   dim3 dimgrid(VectorSize,1,1);
   dim3 dimblock(1,Order*Order,1);
 //  inner_prod_vector_blocks<BaseInt,Size><<<dimgrid,dimblock>>>(Order,VectorSize,A,B,C);      // nthreads version truncated multiplication 
-  inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,VectorSize,A,B,C);          // nthreads*nthreads version non truncated 
+//  inner_prod_vector_diag<BaseInt,Size><<<dimgrid,dimblock>>>(Order,VectorSize,A,B,C);          // nthreads*nthreads version non truncated 
   //change the grid size
   dimgrid.x  = 2*Order*2*Order/ThreadsPerBlock+1;
   dimblock.x = ThreadsPerBlock;
   dimblock.y = 1;
-  reduction_polynome<BaseInt,Size, 32> <<<dimgrid, dimblock>>>(Order, VectorSize, C);
+  reduction_polynome<BaseInt,Size, 32> <<<dimgrid, dimblock>>>(Order, VectorSize,C);
 }
 
+// just for testing my asm kernel
+// test addition
+template <typename BaseInt, std::size_t Size>
+void addition_gpu(BaseInt* A, BaseInt const* B) {
+  dim3 dimgrid(1,1,1);
+  dim3 dimblock(1,1,1);
+  addition<BaseInt,Size> <<<dimgrid, dimblock>>>(A, B);
+}
+//test multiplication
+template <typename BaseInt, std::size_t Size>
+void multiplication_gpu(BaseInt* A, BaseInt const* B, BaseInt const* C) {
+  dim3 dimgrid(1,1,1);
+  dim3 dimblock(1,1,1);
+  multiplication<BaseInt,Size> <<<dimgrid, dimblock>>>(A, B, C);
+}
+// the worst cast of my life
 #define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
     void inner_product_vector(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C) \
         {inner_product_vector<TYPE,VLI_SIZE>(max_order,vector_size,A,B,C);} \
-    
+    void addition_gpu(vli_size_tag<2*VLI_SIZE>, TYPE* A, TYPE const* B) \
+        {addition_gpu<unsigned int,2*VLI_SIZE>((unsigned int*)A,(unsigned int*)(void*)B);} \
+    void multiplication_gpu(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B, TYPE const* C) \
+        {multiplication_gpu<unsigned int,2*VLI_SIZE>((unsigned int*)A,(unsigned int*)(void*)B,(unsigned int*)(void*)C);} \
+
 #define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
     VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )
 

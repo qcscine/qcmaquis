@@ -18,6 +18,8 @@ struct vli_size_tag
 
 #define VLI_DECLARE_GPU_FUNCTIONS(TYPE, VLI_SIZE) \
     void inner_product_vector(vli_size_tag<VLI_SIZE>, unsigned int max_order, std::size_t vector_size, TYPE const* A, TYPE const* B, TYPE* C ); \
+    void addition_gpu(vli_size_tag<2*VLI_SIZE>, TYPE* A, TYPE const* B); \
+    void multiplication_gpu(vli_size_tag<VLI_SIZE>, TYPE* A, TYPE const* B, TYPE const* C); \
 
 #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_PAIR) \
     VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR), BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) )

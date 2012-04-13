@@ -82,6 +82,40 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
+    large_int x,y,z; 
+
+
+    vli_type_cpu c;
+    c[0] = 0xFFFFFFFFFFFFFFFF;
+    c[1] = 0xFFFFFFFFFFFFFFFF;
+    c[2] = 0x0FFFFFFFFFFFFFFF;
+    vli_type_cpu b;
+    b[0] = 0xFFFFFFFFFFFFFFFF;
+    b[1] = 0xFFFFFFFFFFFFFFFF;
+    b[2] = 0x0FFFFFFFFFFFFFFF;
+    vli_result_type_cpu a(0);
+    vli_result_type_cpu d(0);
+    vli_result_type_cpu e(0);
+    
+    x = b.get_str();
+    y = c.get_str();
+    z = x * y; 
+    vli::mul(e,b,c);
+    d = vli::detail::multiplication_gpu(a,b,c);
+   
+    std::cout << std::hex << d << std::endl;
+    std::cout << " -------------------------- " << std::endl;
+    std::cout << d << std::endl;
+    std::cout << e << std::endl;
+    std::cout << std::hex << z << std::endl;
+  
+    if((d.get_str() == e.get_str()) && (d.get_str() == z.get_str()))
+        printf("ok \n");
+
+    return 0;
+}
+
+/*
     int SizeVector = atoi(argv[1]);  
 
     polynomial_vector_type v1gmp(SizeVector);
@@ -99,7 +133,7 @@ int main (int argc, char * const argv[])
     polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
     
     fill_vector_random(v1,2);
-    fill_vector_random(v2,2);
+    fill_vector_random(v2,3);
 
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
@@ -109,7 +143,7 @@ int main (int argc, char * const argv[])
 
     Timer t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
 
     Timer t2("CPU gmp_omp");
@@ -126,12 +160,10 @@ int main (int argc, char * const argv[])
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
    
-//    std::cout << result_pure_cpu << std::endl;
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-    
-    return 0;
-}
 
-
+return  0;
+}  
+*/

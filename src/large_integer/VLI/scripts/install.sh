@@ -44,4 +44,8 @@ COMPILER_NAME="gcc"
 module load gcc
 create_distrib
 
+#MACHINE_CONFIG="todi"
+#COMPILER_NAME="gcc"
+#create_distrib
+
 
