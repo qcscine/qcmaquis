@@ -15,12 +15,11 @@ struct monomial;
 template<class BaseInt, std::size_t Size>
 class vli_cpu;
     
-    
 template <class BaseInt, std::size_t Size, unsigned int Order>
 void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> & result, 
                    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                   polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
-{
+                   polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2) {
+
     typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::exponent_type exponent_type;
     for(exponent_type je1 = 0; je1 < Order; ++je1) {
         for(exponent_type je2 = 0; je2 < Order; ++je2) {
@@ -37,8 +36,7 @@ void poly_multiply(polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> & result,
 template <class BaseInt, std::size_t Size, unsigned int Order>
 void poly_multiply_block_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
                         polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
-{
+                        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2) {
     // first PASS, half top right corner, 
     unsigned int n(0);
     for(unsigned int i=0;i< Order;++i){ // i will be a thread here, independence loop
@@ -62,16 +60,14 @@ void poly_multiply_block_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & 
 template <class BaseInt, std::size_t Size, unsigned int Order>
 void poly_multiply_diag_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
                              polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                             polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2)
-{   
+                             polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2) {   
     //first pass
-    for(unsigned int i(0); i < Order*Order ; ++i){
+    for(unsigned int i(0); i < Order*Order ; ++i)
         diagonal_up(i,result,p1,p2);
-    }
     //second pass    
-    for(unsigned int i(0); i < Order*Order ; ++i){
+    for(unsigned int i(0); i < Order*Order ; ++i)
         diagonal_down(Order*Order - i,result,p1,p2); 
-    }    
+        
 }
     
     
