@@ -56,11 +56,12 @@ namespace detail
       private:
         typedef typename Vli::value_type  base_int_type;
         enum {Size =Vli::size};
+        enum {Order =11};
       public:
         explicit asm_gpu_add(vli_cpu<base_int_type, Size> &a, vli_cpu<base_int_type, Size> const &b):v1_(Size),v2_(Size){
             gpu::cu_check_error(cudaMemcpyAsync((void*)v1_.p(),(void*)&a[0],Size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
             gpu::cu_check_error(cudaMemcpyAsync((void*)v2_.p(),(void*)&b[0],Size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
-            addition_gpu(vli_size_tag<Vli::size>(), v1_.p(), v2_.p());
+            addition_gpu(vli_size_tag<Vli::size,Order>(), v1_.p(), v2_.p());
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
         } 
         operator vli_cpu<typename Vli::value_type, Vli::size >() const {
@@ -78,12 +79,13 @@ namespace detail
       private:
         typedef typename Vli::value_type base_int_type;
         enum {Size = Vli::size};
+        enum {Order =11};
       public:
         explicit asm_gpu_mul(vli_cpu<base_int_type, 2*Size> &a, vli_cpu<base_int_type, Size> const &b, vli_cpu<base_int_type, Size> const &c):v1_(2*Size),v2_(Size),v3_(Size){
             gpu::cu_check_error(cudaMemcpyAsync((void*)v1_.p(),(void*)&a[0],2*Size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
             gpu::cu_check_error(cudaMemcpyAsync((void*)v2_.p(),(void*)&b[0],Size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
             gpu::cu_check_error(cudaMemcpyAsync((void*)v3_.p(),(void*)&c[0],Size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
-            multiplication_gpu(vli_size_tag<Size>(), v1_.p(), v2_.p(), v3_.p());
+            multiplication_gpu(vli_size_tag<Size,Order>(), v1_.p(), v2_.p(), v3_.p());
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
         } 
         operator vli_cpu<base_int_type, 2*Size >() const {
@@ -124,7 +126,7 @@ namespace detail
             gpu::cu_check_error(cudaMemset((void*)tmp_.p(),0,partsize*product_element_size*sizeof(base_int_type)),__LINE__);
 
             // run/queue the inner product computation
-            inner_product_vector(vli_size_tag<Vli::size>(), Order, partsize, v1_.p(), v2_.p(), tmp_.p());
+            inner_product_vector(vli_size_tag<Vli::size,Order>(), partsize, v1_.p(), v2_.p(), tmp_.p());
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
         }
         
@@ -154,7 +156,7 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order>  res[omp_get_max_threads()];
-    std::size_t split = (std::size_t)(v1.size()*VLI_SPLIT_PARAM);
+    std::size_t split = (std::size_t)(v1.size()*1);
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
     #pragma omp parallel for
@@ -178,14 +180,14 @@ inner_product_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, 
     std::size_t size_v = v1.size();
     
     polynomial_cpu<vli_cpu<BaseInt,2*Size>, 2*Order> res;
-   // std::size_t split = static_cast<std::size_t>(v1.size()*VLI_SPLIT_PARAM);
-    std::size_t split = static_cast<std::size_t>(v1.size());
+    std::size_t split = static_cast<std::size_t>(1*v1.size());
+     
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
     for(std::size_t i=split ; i < size_v ; ++i){
         res += v1[i]*v2[i];
     }
-
+   
     res += polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product);
     
     return res;

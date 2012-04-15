@@ -16,11 +16,6 @@ namespace vli{
      * therefore I have to work on 32 bits, twice more operations for the addition
      * 4 times more for the multuplication
      */    
-    
-    // declaration functions  
-    void __device__ add384_384_gpu(unsigned int* x /* shared */, unsigned int const* y /* global */);
-    void __device__ mul384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
- 
     inline void add384_384_gpu(unsigned int* x /* shared */, unsigned int const* y /* global */){
     /* this version 60 more ptx lines, so boost pp  
      *  
@@ -81,6 +76,10 @@ namespace vli{
            BOOST_PP_REPEAT(MAX_ITERATION_MUL, mul384_192_192_gpu, ~)
            #undef mul384_192_192_gpu
    } // end mul384_384_gpu
+
+   inline void muladd384_384_gpu(unsigned int* x/* res local*/, unsigned int const* y /* shared */, unsigned int const* z /* shared */){
+
+   }
 
    } //end namespace detail
 } //end namespace vli

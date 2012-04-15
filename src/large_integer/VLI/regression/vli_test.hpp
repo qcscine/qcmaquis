@@ -27,13 +27,13 @@ namespace test
 //  in vli_utils/vli_config.h)
 //
 
-#define VLI_CPU_APPEND_TEST_TYPE(r,data,BASEINT_SIZE_PAIR) \
-        , vli_cpu< BOOST_PP_TUPLE_ELEM(2,0,BASEINT_SIZE_PAIR) , BOOST_PP_TUPLE_ELEM(2,1,BASEINT_SIZE_PAIR) >
+#define VLI_CPU_APPEND_TEST_TYPE(r,data,BASEINT_SIZE_ORDER_TUPLE) \
+        , vli_cpu< BOOST_PP_TUPLE_ELEM(3,0,BASEINT_SIZE_ORDER_TUPLE ) , BOOST_PP_TUPLE_ELEM(3,1,BASEINT_SIZE_ORDER_TUPLE ) >
 
 typedef boost::mpl::pop_front<
     boost::mpl::list<
         boost::mpl::void_
-BOOST_PP_SEQ_FOR_EACH(VLI_CPU_APPEND_TEST_TYPE, _, VLI_COMPILE_BASEINT_SIZE_PAIRS_SEQ)
+BOOST_PP_SEQ_FOR_EACH(VLI_CPU_APPEND_TEST_TYPE, _, VLI_COMPILE_BASEINT_SIZE_ORDER_TUPLE_SEQ )
     >
 >::type vli_cpu_type_list;
 
@@ -69,7 +69,7 @@ template <typename Vli>
 void fill_random(Vli& v, typename Vli::size_type size){
     assert(size <= Vli::size);
     for(typename Vli::size_type i=0; i < size; ++i)
-        v[i] = rnd_digit<Vli>();
+        v[i] =  rnd_digit<Vli>();
 }
 
 template <typename Polynomial>
