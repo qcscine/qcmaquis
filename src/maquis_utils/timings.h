@@ -97,7 +97,7 @@ public:
     }
 
     double get_time() const {
-	return  val;
+	    return  val;
     }    
   
     friend std::ostream& operator<< (std::ostream& os, Timer const& timer) {
