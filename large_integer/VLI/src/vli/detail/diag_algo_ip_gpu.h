@@ -28,38 +28,23 @@ namespace vli {
                 
                      __syncthreads(); // we sync to be sure sa, sb and sc are loaded fully
                      
-                     for(int i(0); i <= threadid; i++){
+                     
+                     for(int i(0); i < Order*Order; ++i)
+                     {
                          #pragma unroll
                          for(int k=0;k<2*Size;++k)
                              sc[k] = 0;                      
 
                          qa = i/Order;
                          ra = i%Order;
-                         qb = (threadid-i)/Order;
-                         rb = (threadid-i)%Order;
+                         qb = ((i <= threadid) ? (threadid - i) : (Order*Order-1) - i) / Order;
+                         rb = ((i <= threadid) ? (threadid - i) : (Order*Order-1) - i) % Order;
+                         int offset = ((i <= threadid) ? (thradid - i) : (Order*Order-1) - i ) * Size; 
+
                          pos = 2*(qa+qb)*Order + (ra+rb);
-                                                  
-                         mul384_384_gpu(&sc[0],&sa[(threadid-i)*Size],&sb[i*Size]);
+                         mul384_384_gpu(&sc[0],&sa[offset],&sb[i*Size]);
                          add384_384_gpu(&scc[2*Size*pos],&sc[0]);
                      }
-                                         
-                     for(int i(threadid+1); i < Order*Order; i++){
-                         #pragma unroll
-                         for(int k=0;k<2*Size;++k)
-                             sc[k] = 0;                      
-
-                         qa = i/Order;
-                         ra = i%Order;
-                         qb = j/Order;
-                         rb = j%Order;
-                         pos = 2*(qa+qb)*Order + (ra+rb);
-  
-                         mul384_384_gpu(&sc[0],&sa[j*Size],&sb[i*Size]);
-                         add384_384_gpu(&scc[2*Size*pos],&sc[0]);
-
-                         --j;       
-                     }
-
                      __syncthreads(); // we sync to be sure sa, sb and sc are loaded fully
 
                      #pragma unroll
