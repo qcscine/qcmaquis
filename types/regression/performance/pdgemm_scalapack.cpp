@@ -59,8 +59,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
         BB[i*M+j]=rand();
         CC[i*M+j]=-1;
      }
-   Timer A("time");
-   A.begin();
+   Timer time("time");
+   time.begin();
 /************  BLACS ***************************/
    nprow=1; // 1-d = one row
    npcol= nprocs_mpi; // number of col for 1d cyclic distribution
@@ -85,12 +85,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
 
    double alpha = 1.0; double beta = 0.0;
    pdgemm_("N","N",&M,&M,&M,&alpha,AA,&one,&one,descA,BB,&one,&one,descB,&beta,CC,&one,&one,descC);
-   A.end();
+   time.end();
 
-   if(myrank_mpi == 0){
-       double gfl  = GFlopsGemm(T::ValueX, T::ValueX, T::ValueX, A.get_time());
-       save("TimePDGemmScalapack.txt", A, gfl, M, M, nprocs_mpi);
-   }
+   if(myrank_mpi == 0) report(time, GFlopsGemm, T::ValueX, T::ValueY, nprocs_mpi);
    int in(0);
    Cblacs_gridexit(ictxt);
    MPI_Finalize();
