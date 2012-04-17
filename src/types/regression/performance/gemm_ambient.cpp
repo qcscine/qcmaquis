@@ -19,23 +19,27 @@
 #include "utils/timings.h"
 #include "utilities.h"
 
-typedef ambient::dim2 dim;
-typedef maquis::types::dense_matrix<ValueType> sMatrix;
-typedef maquis::types::p_dense_matrix<ValueType> pMatrix;
-typedef maquis::types::diagonal_matrix<ValueType> sDiagMatrix;
-typedef maquis::types::p_diagonal_matrix<ValueType> pDiagMatrix;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
-{
+BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
+    typedef ambient::dim2 dim;
+    typedef maquis::types::dense_matrix<typename T::value_type> sMatrix;
+    typedef maquis::types::diagonal_matrix<typename T::value_type> sDiagMatrix;
+    typedef maquis::types::p_dense_matrix<typename T::value_type> pMatrix;
+    typedef maquis::types::p_diagonal_matrix<typename T::value_type> pDiagMatrix;
+
+    size_t x = get_input_x<T>();
+    size_t y = get_input_y<T>();
+    size_t nthreads = get_input_threads<T>();
+
     ambient::model >> dim(256,256), dim(256,256), dim(256,256);
-    ambient::set_num_threads(T::ValueThread);
+    ambient::set_num_threads(nthreads);
 
-    pMatrix pA(T::ValueX,T::ValueY);
-    pMatrix pB(T::ValueX,T::ValueY);
-    pMatrix pC(T::ValueX,T::ValueY);
+    pMatrix pA(x, y);
+    pMatrix pB(x, y);
+    pMatrix pC(x, y);
 
-    sMatrix sA(T::ValueX,T::ValueY);
-    sMatrix sB(T::ValueX,T::ValueY);
+    sMatrix sA(x, y);
+    sMatrix sB(x, y);
 
     pA.set_init(ambient::random_i<typename T::value_type>);
     pB.set_init(ambient::random_i<typename T::value_type>);
@@ -44,15 +48,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
     ambient::playout();
 
-    maquis::types::algorithms::gemm(pA,pB,pC); 
+    maquis::types::algorithms::gemm(pA, pB, pC); 
 
-    TimerPTH t1(" ambient");
-    t1.begin();
+    TimerPTH time("ambient");
+    time.begin();
     ambient::playout();
-    t1.end();
+    time.end();
 
-    double gfl = GFlopsGemm(T::ValueX, T::ValueX, T::ValueX, t1.get_time());
-    report(t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
-    save("TimeGemmAmbient.txt", t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
+    report(time, GFlopsGemm, x, y, nthreads);
 }
 

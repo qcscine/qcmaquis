@@ -14,8 +14,18 @@
 
 #include "ambient/utils/numeric.h" 
 
+
+namespace Random{
+   struct random {
+       random(){};
+       double operator()(){return drand48();} 
+       int IntRd(){return rand();}
+   };
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types)
 {
+    Random::random Rd;
     omp_set_num_threads(T::ValueThread);
     typename T::value_type*ad;
     typename T::value_type*bd;
@@ -42,14 +52,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types)
         bd[i] = Rd();
     }
        
-    TimerPTH t1("blas");
-    t1.begin();
+    TimerPTH time("blas");
+    time.begin();
     gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-    t1.end();
+    time.end();
 
-    double gfl  = GFlopsGemm(n, m, k, t1.get_time());
-    report(t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
-    save("TimeGemmBlas.txt", t1, gfl, T::ValueX, T::ValueY, T::ValueThread); 
+    report(time, GFlopsGemm, T::ValueX, T::ValueY, T::ValueThread); 
   
     delete [] ad;   
     delete [] bd;   

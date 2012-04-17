@@ -99,22 +99,6 @@ public:
     double get_time() const {
 	return  val;
     }    
-  
-    friend void report(Timer const & a, double gflops, int n, int m, int nthread){
-        zout << "-------------------------\n"
-             << " Time     " << a.get_time()  << "\n"
-             << " GFlops   " << gflops        << "\n" 
-             << " Threads: " << nthread       << "\n"
-             << " Matrix:  " << m << "x" << n << "\n"
-             << "-------------------------\n";
-    }
-
-    friend void save(std::string name, Timer const & a, double gflops, int n, int m, int nthread){
-       std::ofstream o; 
-       o.open(name.c_str(),std::ios::app);
-           o << a.val  << " " << gflops << " " << n << " " << m << " " << nthread << std::endl;
-       o.close();
-    }
 
     friend std::ostream& operator<< (std::ostream& os, Timer const& timer) {
         os << timer.name << " " << timer.val << ", nCounter : " << timer.nCounter;
