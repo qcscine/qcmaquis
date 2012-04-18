@@ -21,17 +21,17 @@ if(BLAS_Accelerate_LIBRARY) #apple
     set(BLAS_LAPACK ${BLAS_vecLib_LIBRARY}) 
 endif()
 
-add_executable (gemm_blas.out gemm_blas.cpp)
-add_executable (gemm_ambient.out gemm_ambient.cpp)
-add_executable (pdgemm_scalapack.out pdgemm_scalapack.cpp)
+add_executable (gemm.blas.out gemm.blas.cpp)
+add_executable (gemm.pblas.out gemm.pblas.cpp)
+add_executable (gemm.ambient.out gemm.ambient.cpp)
 
-target_link_libraries (gemm_ambient.out ambient ${BLAS_LAPACK_serial} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
-target_link_libraries (gemm_blas.out ambient ${BLAS_LAPACK_multi} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
-target_link_libraries (pdgemm_scalapack.out ${BLAS_SCALAPACK_serial} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+target_link_libraries (gemm.blas.out ${BLAS_LAPACK_multi} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+target_link_libraries (gemm.pblas.out ${BLAS_SCALAPACK_serial} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+target_link_libraries (gemm.ambient.out ambient ${BLAS_LAPACK_serial} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
 
-add_test(gemm_blas.out gemm_blas.out)
-add_test(gemm_ambient.out gemm_ambient.out)
-add_test(pdgemm_scalapack.out pdgemm_scalapack.out)
+add_test(gemm.blas.out gemm.blas.out)
+add_test(gemm.pblas.out gemm.pblas.out)
+add_test(gemm.ambient.out gemm.ambient.out)
 
 if(ENABLE_PLOT)
     add_executable (plot.out plot.cpp)
