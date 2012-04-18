@@ -17,7 +17,14 @@ polynomial_cpu<Vli,Order>::polynomial_cpu(){
     for(typename polynomial_cpu<Vli,Order>::exponent_type i=0; i<Order*Order;++i)
         coeffs_[i]=Vli();
 }
-    
+
+template<class Vli, unsigned int Order>
+polynomial_cpu<Vli,Order>::polynomial_cpu(int i) {
+    coeffs_[0] = Vli(i);
+    for(typename polynomial_cpu<Vli,Order>::exponent_type i=1; i<Order*Order;++i)
+        coeffs_[i]=Vli();
+}
+
 template<class Vli, unsigned int Order>
 polynomial_cpu<Vli,Order>::polynomial_cpu(const polynomial_cpu& p){
     for(exponent_type i=0; i<Order*Order;++i)
@@ -40,17 +47,10 @@ polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> operator * (polynomial_cpu<vli
 }
 
 template <class BaseInt, std::size_t Size, unsigned int Order, class T>
-polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<T> const& m)
+polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order> p, monomial<T> const& m)
 {
-    typedef typename polynomial_cpu<vli_cpu<BaseInt,Size>,Order>::exponent_type exponent_type;
-    
-    polynomial_cpu<vli_cpu<BaseInt, Size>, Order> r;
-    // TODO perhaps there is a better way to write these loops,
-    //      so that they can be unrolled.
-    for(exponent_type je = 0; je < Order-m.j_exp_; ++je)
-        for(exponent_type he = 0; he < Order-m.h_exp_; ++he)
-            r(je+m.j_exp_,he+m.h_exp_) = p(je,he) * m.coeff_;
-    return r;
+    p *= m;
+    return p;
 }
 
 template<class Vli, unsigned int Order>    
@@ -112,6 +112,27 @@ bool polynomial_cpu<Vli,Order>::operator==(polynomial_cpu const& p) const{
     return (0 == n);
 }
 
+template<class Vli, unsigned int Order>
+bool polynomial_cpu<Vli,Order>::is_zero() const {
+    for(exponent_type i=0; i<Order*Order; ++i)
+        if (!coeffs_[i].is_zero())
+            return false;
+    return true;
+}
+
+template <class Vli, unsigned int Order>
+polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator *= (monomial<Vli> const& m) {
+    std::ptrdiff_t offset = m.j_exp_*Order + m.h_exp_;
+    
+    for(std::ptrdiff_t i=Order*Order-offset-1; i >= 0; --i)
+        coeffs_[i+offset] = coeffs_[i] *m.coeff_;
+
+    for(std::ptrdiff_t i=offset-1; i >= 0; --i)
+        coeffs_[i] = value_type(0);
+    
+    return *this;
+}
+
 template<class Vli, unsigned int Order>          
 polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator *= (Vli const& c){
     for(exponent_type i=0; i<Order*Order;++i)
@@ -150,6 +171,13 @@ void polynomial_cpu<Vli,Order>::print(std::ostream& os) const{
         }
 }
      
+template<class Vli, unsigned int Order>
+polynomial_cpu<Vli, Order> operator + (polynomial_cpu<Vli,Order> a, polynomial_cpu<Vli,Order> const& b)
+{
+    a += b;
+    return a;
+}
+
 template<class T, class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (monomial<T> const& m,polynomial_cpu<Vli, Order> const& p)
 {

@@ -25,7 +25,8 @@ public:
     typedef Vli value_type;
     enum { max_order = Order};
         
-    polynomial_cpu();    
+    polynomial_cpu();
+    explicit polynomial_cpu(int i);
     polynomial_cpu(const polynomial_cpu& p);    
     polynomial_cpu& operator = (polynomial_cpu p);
     
@@ -41,9 +42,11 @@ public:
     void negate();
 
     bool operator==(polynomial_cpu const& p) const;
+    bool is_zero() const;
     
     friend void swap<>(polynomial_cpu<Vli,Order>& p1, polynomial_cpu<Vli,Order>& p2);
-    
+
+    polynomial_cpu& operator *= (monomial<Vli> const& m);
     polynomial_cpu& operator *= (Vli const& c);
     polynomial_cpu& operator *= (int c);
     
@@ -57,12 +60,7 @@ public:
 
 template <class Vli, unsigned int Order> 
 void poly_multiply (polynomial_cpu<Vli,2*Order>& result, const polynomial_cpu<Vli,Order>& p1, const polynomial_cpu<Vli,Order>& p2);   
-    
-template <class BaseInt, std::size_t Size, unsigned int Order> // C - the VliOut is twice larger
-polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p1, polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p2);
-    
-template <class BaseInt, std::size_t Size, unsigned int Order, class T>
-polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order>  const& p, monomial<T> const& m);
+
 
 template<class T, class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (monomial<T> const& m,polynomial_cpu<Vli, Order> const& p);
@@ -78,6 +76,12 @@ polynomial_cpu<Vli, Order> operator * (Vli const& c, polynomial_cpu<Vli, Order> 
 
 template<class Vli, unsigned int Order>
 polynomial_cpu<Vli, Order> operator * (int c, polynomial_cpu<Vli, Order> const& p);
+
+template <class BaseInt, std::size_t Size, unsigned int Order> // C - the VliOut is twice larger
+polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p1, polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const& p2);
+    
+template <class BaseInt, std::size_t Size, unsigned int Order, class T>
+polynomial_cpu<vli_cpu<BaseInt, Size>, Order> operator * (polynomial_cpu<vli_cpu<BaseInt, Size>, Order> p, monomial<T> const& m);
 
 template<class Vli, unsigned int Order> 
 std::ostream& operator<<(std::ostream& os, polynomial_cpu<Vli, Order> const& p);
