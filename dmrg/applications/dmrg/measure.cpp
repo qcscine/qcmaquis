@@ -17,15 +17,21 @@ void dmrg(DmrgParameters & parms, ModelParameters & model)
 {
     std::map<std::string, boost::function<void (DmrgParameters & p, ModelParameters & m)> > factory_map;
     
-#ifdef HAVE_NONE
+    std::cout << "This binary contains symmetries: ";
+#ifdef HAVE_TrivialGroup
     factory_map["none"] = run_dmrg<TrivialGroup>;
+    std::cout << "none ";
 #endif
 #ifdef HAVE_U1
     factory_map["u1"] = run_dmrg<U1>;
+    std::cout << "u1 ";
 #endif
 #ifdef HAVE_TwoU1
     factory_map["2u1"] = run_dmrg<TwoU1>;
+    std::cout << "2u1 ";
 #endif
+    std::cout << std::endl;
+
     
     std::string symm_name = parms.get<std::string>("symmetry");
     
@@ -63,8 +69,13 @@ int main(int argc, char ** argv)
     gettimeofday(&now, NULL);
     
     
-    dmrg(parms, model);
-    
+    try {
+        dmrg(parms, model);
+    } catch (std::exception & e) {
+        cerr << "Exception thrown!" << endl;
+        cerr << e.what() << endl;
+        exit(1);
+    }    
     
     gettimeofday(&then, NULL);
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);

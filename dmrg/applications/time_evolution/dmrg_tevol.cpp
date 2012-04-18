@@ -22,7 +22,7 @@ void dmrg_tevol(DmrgParameters & parms, ModelParameters & model)
     
     bool img_only = ( parms.get<int>("nsweeps") == parms.get<int>("nsweeps_img") );
     
-#ifdef HAVE_NONE
+#ifdef HAVE_TrivialGroup
     if (img_only)
         factory_map["none"] = run_tevol<matrix, TrivialGroup>;
     else

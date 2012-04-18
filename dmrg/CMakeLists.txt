@@ -277,6 +277,7 @@ endmacro(configure_symm_file)
 # Adding symmetries definitions
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
+  message(STATUS "Enabling ${SYMM_NAME} symmetry.")
   add_definitions(-DHAVE_${SYMM_NAME})
 endforeach(SYMM)
 

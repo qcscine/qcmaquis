@@ -17,7 +17,7 @@ void mg_meas(DmrgParameters & parms, ModelParameters & model)
 {
     std::map<std::string, boost::function<void (DmrgParameters & p, ModelParameters & m)> > factory_map;
     
-#ifdef HAVE_NONE
+#ifdef HAVE_TrivialGroup
     factory_map["none"] = run_mg_meas<TrivialGroup>;
 #endif
 #ifdef HAVE_U1
