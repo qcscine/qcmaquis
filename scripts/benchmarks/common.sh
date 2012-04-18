@@ -1,17 +1,15 @@
 #!/bin/bash
 
-## path to this script ##
-SCRIPT="$ROOT_DIR/$SCRIPTS_DIR/benchmarks/common.sh"
+## locations ##
+SCRIPT="$BENCHMARK_SCRIPTS_DIR/common.sh"
+BENCHMARK_DIR=$ROOT_DIR/$TARGET/$BUILD_NAME/regression/performance
+SCRATCH_DIR="$BENCHMARK_DIR/$NAME.`date +\"%m.%d.%H.%M\"`"
+OUTPUT_LOG="output.log"
+REPRODUCER="reproducer.sh"
 
 ## execution ##
 COMMAND="( mpiexec -np \$NP \$EXECUTABLE \$NT \$WL | grep GFlops | tr -d 'GFlops ' ) 2> /dev/null"
 [[ -n "$EXECUTABLE" ]] || EXECUTABLE="./$BENCHMARK.out"
-
-## locations ##
-SCRATCH="$ROOT_DIR/$TARGET/$BUILD_DIR/$BENCHMARK_DIR/$NAME.`date +\"%m.%d.%H.%M\"`"
-ORIGIN="$ROOT_DIR/$TARGET/$BUILD_DIR/$BENCHMARK_DIR"
-OUTPUT_LOG="output.log"
-REPRODUCER="reproducer.sh"
 
 ## Handle SIGINT (^C) ##
 ## Terminate all runs ##
@@ -20,11 +18,11 @@ trap control_c SIGINT
 
 ## prepare the environment ##
 pushd . &> /dev/null
-mkdir $SCRATCH
-touch $SCRATCH/$OUTPUT_LOG
-touch $SCRATCH/$REPRODUCER
-cp $ORIGIN/$EXECUTABLE $SCRATCH
-cd $SCRATCH
+mkdir $SCRATCH_DIR
+touch $SCRATCH_DIR/$OUTPUT_LOG
+touch $SCRATCH_DIR/$REPRODUCER
+cp $BENCHMARK_DIR/$EXECUTABLE $SCRATCH_DIR
+cd $SCRATCH_DIR
 
 ## generating reproducer ##
 head -n 1 $SCRIPT > $REPRODUCER

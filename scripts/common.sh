@@ -1,17 +1,14 @@
 #!/bin/bash
 
 ## targets ##
-
 AMBIENT=ambient
 DMRG=dmrg
 TYPES=types
 
 ## settings ##
-
-BUILD_DIR=${SITE}_${COMPILER}_${MPI_WRAPPER}
-BENCHMARK_DIR=regression/performance
-SCRIPTS_DIR=scripts
-SELF=${BUILD_DIR}
+BUILD_NAME=${SITE}_${COMPILER}_${MPI_WRAPPER}
+BENCHMARK_SCRIPTS_DIR=${ROOT_DIR}/scripts/benchmarks
+SELF=$BUILD_NAME
 
 add_ambient(){
     local defines_common=`get_defines MAQUIS_COMMON`
@@ -38,9 +35,9 @@ add_target(){
     echo " ------------------------------------------------------------------------------------------ "
     echo " $self: configuring"
     echo " ------------------------------------------------------------------------------------------ "
-    mkdir ${ROOT_DIR}/${!target}/${BUILD_DIR}
+    mkdir ${ROOT_DIR}/${!target}/${BUILD_NAME}
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_DIR}
+    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
     eval add_${1}
     popd &> /dev/null
     set_state ${1} configure
@@ -51,7 +48,7 @@ remove_target(){
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
     echo " $self: cleaning "
     set_state ${1} void
-    rm -rf ${ROOT_DIR}/${!target}/${BUILD_DIR}
+    rm -rf ${ROOT_DIR}/${!target}/${BUILD_NAME}
 }
 
 build_target(){
@@ -61,7 +58,7 @@ build_target(){
     echo " $self: building"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_DIR}
+    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
     make -j
     popd &> /dev/null
     set_state ${1} build
@@ -74,7 +71,7 @@ run_target(){
     echo " $self: testing"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_DIR}
+    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
     make test
     popd &> /dev/null
 }
@@ -86,7 +83,7 @@ dash_target(){
     echo " $self: testing (dashboard)"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_DIR}
+    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
     ctest -S Dashboards/site.cmake
     popd &> /dev/null
 }
@@ -97,7 +94,7 @@ use_dashboards(){
     echo "set(PREDEFINED_CTEST_SITE \"${SITE}\")"                                         >  ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BUILD_NAME \"${COMPILER}_${MPI_WRAPPER}\")"                >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/${!target}\")"              >> ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/${!target}/${BUILD_DIR}\")" >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
     cat ../Dashboards/site.cmake                                                          >> ./Dashboards/site.cmake
     cp ../Dashboards/cmake_common.cmake ./Dashboards/
 }
@@ -246,11 +243,11 @@ dash(){
 
 benchmark(){
     [[ -n "${1}" ]] || die "please supply the name of the benchmark"
-    source $ROOT_DIR/$SCRIPTS_DIR/benchmarks/${1}
+    source $BENCHMARK_SCRIPTS_DIR/${1}
     local state=`get_state ${TARGET}`
     [[ "$state" != "build" ]] && build ${1}
     pushd . &> /dev/null
-    source $ROOT_DIR/$SCRIPTS_DIR/benchmarks/common.sh
+    source $BENCHMARK_SCRIPTS_DIR/common.sh
     popd &> /dev/null
 }
 
@@ -264,7 +261,7 @@ execute(){
         [[ "$action" != "clean" ]] && [[ "$action" != "configure" ]]   && 
         [[ "$action" != "build" ]] && [[ "$action" != "run"       ]]   &&
         [[ "$action" != "dash"  ]] && [[ "$action" != "benchmark" ]]   &&
-        echo "  Usage: ./config {clean, configure, build, test, dashboard} [targets]"  &&
+        echo "  Usage: ./config {clean, configure, build, test, dashboard, benchmark} [targets]" &&
         echo "  Note: in order to set the environment use \`source ./config\`" && echo && exit
 
         local i; for i in ${*:2}""; do
