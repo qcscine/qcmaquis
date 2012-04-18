@@ -10,6 +10,27 @@
 
 namespace app {
     
+    
+    namespace detail {
+        
+        template <class Matrix, class SymmGroup>
+        struct call_linear_init {
+            static mps_initializer<Matrix, SymmGroup> * call()
+            {
+                throw std::runtime_error("Linear MPS init is available only for U1 symmetry group.");
+                return new default_mps_init<Matrix, SymmGroup>();
+            }
+        };
+        template <class Matrix>
+        struct call_linear_init<Matrix, U1> {
+            static mps_initializer<Matrix, U1> * call()
+            {
+                return new linear_mps_init<Matrix>();
+            }
+        };
+        
+    }
+    
     template <class Matrix, class SymmGroup>
     sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const & model_, bool fullinit)
     : parms(parms_)
@@ -339,6 +360,8 @@ namespace app {
     {
         if (params.get<std::string>("init_state") == "default")
             return new default_mps_init<Matrix, SymmGroup>();
+        else if (params.get<std::string>("init_state") == "linear")
+            return detail::call_linear_init<Matrix, SymmGroup>::call();
         else if (params.get<std::string>("init_state") == "const")
             return new const_mps_init<Matrix, SymmGroup>();
         else if (params.get<std::string>("init_state") == "thin")

@@ -184,5 +184,115 @@ struct empty_mps_init : public mps_initializer<Matrix, SymmGroup>
     }
 };
 
+template<class Matrix>
+struct linear_mps_init : public mps_initializer<Matrix, U1>
+{
+    
+    void operator()(MPS<Matrix, U1> & mps,
+                    std::size_t Mmax,
+                    Index<U1> const & phys,
+                    U1::charge right_end)
+    {
+        init_sectors(mps, Mmax, phys, right_end, true);
+    }
+    
+    void init_sectors(MPS<Matrix, U1> & mps,
+                      std::size_t Mmax,
+                      Index<U1> const & phys,
+                      U1::charge right_end,
+                      bool fillrand = true,
+                      typename Matrix::value_type val = 0)
+    {
+        static Timer timer("init_sectors");
+        timer.begin();
+        std::size_t L = mps.length();
+        int delta = 1;
+        
+        Index<U1> physc = phys;
+        physc.sort();
+        U1::charge cmax = physc.begin()->first;
+        U1::charge cmin = physc.rbegin()->first;
+        if (cmin > cmax) std::swap(cmin, cmax);
+        
+        U1::charge cmaxL=U1::IdentityCharge, cminL=U1::IdentityCharge;
+        for (int i = 1; i < L; ++i) {
+            cmaxL = U1::fuse(cmaxL, cmax);
+            cminL = U1::fuse(cminL, cmin);
+        }
+        
+        Index<U1> l_triv, r_triv;
+        l_triv.insert( std::make_pair(U1::IdentityCharge, 1) );
+        r_triv.insert( std::make_pair(right_end, 1) );
+        
+        std::vector<Index<U1> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
+        left_allowed[0] = l_triv;
+        right_allowed[L] = r_triv;
+        
+        for (int i = 1; i < L+1; ++i) {
+            U1::charge cell_end = ((i-1)*right_end) / L + 1;
+            int num_site_right = L/right_end - (i-1)%(L/right_end) - 1;
+            U1::charge cmaxi = num_site_right*cmax;
+            U1::charge cmini = num_site_right*cmin;
+            
+            left_allowed[i] = phys * left_allowed[i-1];
+            Index<U1>::iterator it = left_allowed[i].begin();
+            while ( it != left_allowed[i].end() )
+            {
+                if (U1::fuse(it->first, cmaxi) +delta < cell_end)
+                    it = left_allowed[i].erase(it);
+                else if (U1::fuse(it->first, cmini) -delta > cell_end)
+                    it = left_allowed[i].erase(it);
+                else {
+                    it->second = std::min(Mmax, it->second);
+                    ++it;
+                }
+            }
+        }
+        
+        for (int i = L-1; i >= 0; --i) {
+            U1::charge cell_end = (i*right_end) / L;
+            int num_site_left = i%(L/right_end);
+            U1::charge cmaxi = num_site_left*(cmax);
+            U1::charge cmini = num_site_left*(cmin);
+            
+            right_allowed[i] = adjoin(phys) * right_allowed[i+1];
+            Index<U1>::iterator it = right_allowed[i].begin();
+            while ( it != right_allowed[i].end() )
+            {
+                if (U1::fuse(it->first, -cmaxi) -delta > cell_end)
+                    it = right_allowed[i].erase(it);
+                else if (U1::fuse(it->first, -cmini) +delta < cell_end)
+                    it = right_allowed[i].erase(it);
+                else {
+                    it->second = std::min(Mmax, it->second);
+                    ++it;
+                }
+            }
+        }
+        
+        for (int i = 0; i < L+1; ++i) {
+            allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
+            for (Index<U1>::iterator it = allowed[i].begin();
+                 it != allowed[i].end(); ++it)
+                it->second = tri_min(Mmax,
+                                     left_allowed[i].size_of_block(it->first),
+                                     right_allowed[i].size_of_block(it->first));
+        }
+        
+        for (int i = 0; i < L; ++i) {
+            mps[i] = MPSTensor<Matrix, U1>(phys, allowed[i], allowed[i+1], fillrand, val);
+            mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
+        }
+        
+#ifndef NDEBUG
+        zout << "init norm: " << norm(mps) << std::endl;
+        zout << mps.description() << endl;
+#endif
+        timer.end();
+        std::cout << timer << std::endl;
+    }
+};
+
+
 
 #endif

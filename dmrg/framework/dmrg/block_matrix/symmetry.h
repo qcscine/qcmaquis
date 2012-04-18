@@ -312,6 +312,13 @@ struct tpl_ops_
         b[I] = -a[I];
         tpl_ops_<N, I+1>().operator_uminus(a, b);
     }
+
+    template<typename T>
+    void operator_div(T const * a, T * b, int n) const
+    {
+        b[I] = a[I]/n;
+        tpl_ops_<N, I+1>().operator_div(a, b, n);
+    }
 };
 
 template<int N>
@@ -331,6 +338,9 @@ struct tpl_ops_<N, N>
     
     template<typename T>
     void operator_uminus(T const *, T *) const { }
+
+    template<typename T>
+    void operator_div(T const *, T *, int) const { }
 };
 
 template<int N>
@@ -373,6 +383,17 @@ NU1Charge<N> operator-(NU1Charge<N> const & rhs)
     tpl_ops_<N, 0>().operator_uminus(rhs.begin(), ret.begin());
     return ret;
 }
+
+template<int N>
+NU1Charge<N> operator/(NU1Charge<N> const & a, int n)
+{
+    NU1Charge<N> ret;
+    tpl_ops_<N, 0>().operator_div(a.begin(), ret.begin(), n);
+    return ret;
+}
+template<int N>
+NU1Charge<N> operator/(int n, NU1Charge<N> const & a) { return a/n; }
+
 
 template<int N>
 class NU1

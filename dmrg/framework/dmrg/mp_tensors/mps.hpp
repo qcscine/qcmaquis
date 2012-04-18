@@ -45,8 +45,9 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
 {
     init(*this, Mmax, phys, right_end);
     
-    for (int i = 0; i < L; ++i)
-        (*this)[i].normalize_left(SVD);
+    // MD: I think it's better to remove this part
+//    for (int i = 0; i < L; ++i)
+//        (*this)[i].normalize_left(SVD);
 
     this->canonize_left();
 }
