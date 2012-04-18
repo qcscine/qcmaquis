@@ -9,6 +9,8 @@ TYPES=types
 ## settings ##
 
 BUILD_DIR=${SITE}_${COMPILER}_${MPI_WRAPPER}
+BENCHMARK_DIR=regression/performance
+SCRIPTS_DIR=scripts
 SELF=${BUILD_DIR}
 
 add_ambient(){
@@ -118,6 +120,7 @@ get_defines(){
 check_state(){ # 1: target
     if [ -n "${1}" ]
     then
+        [[ -f "benchmarks/${1}" ]] && return
         target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
         value="`eval echo \$\`eval \"echo STATE_${target}\"\``"
         [[ -n "$value" ]] || die "unknown target $1"
@@ -241,6 +244,16 @@ dash(){
     fi
 }
 
+benchmark(){
+    [[ -n "${1}" ]] || die "please supply the name of the benchmark"
+    source $ROOT_DIR/$SCRIPTS_DIR/benchmarks/${1}
+    local state=`get_state ${TARGET}`
+    [[ "$state" != "build" ]] && build ${1}
+    pushd . &> /dev/null
+    source $ROOT_DIR/$SCRIPTS_DIR/benchmarks/common.sh
+    popd &> /dev/null
+}
+
 execute(){
     echo
     if [ "$0" == "-bash" ]
@@ -250,7 +263,7 @@ execute(){
         action=`echo $1 | sed "s/dashboard/dash/" | sed "s/test/run/"` &&
         [[ "$action" != "clean" ]] && [[ "$action" != "configure" ]]   && 
         [[ "$action" != "build" ]] && [[ "$action" != "run"       ]]   &&
-        [[ "$action" != "dash"  ]] && 
+        [[ "$action" != "dash"  ]] && [[ "$action" != "benchmark" ]]   &&
         echo "  Usage: ./config {clean, configure, build, test, dashboard} [targets]"  &&
         echo "  Note: in order to set the environment use \`source ./config\`" && echo && exit
 
