@@ -3,7 +3,7 @@
 ## locations ##
 SCRIPT="$BENCHMARK_SCRIPTS_DIR/common.sh"
 BENCHMARK_DIR=$ROOT_DIR/$TARGET/$BUILD_NAME/regression/performance
-SCRATCH_DIR="$BENCHMARK_DIR/$NAME.`date +\"%m.%d.%H.%M\"`"
+SCRATCH_DIR="$BENCHMARK_DIR/$BENCHMARK.`date +\"%m.%d.%H.%M\"`"
 OUTPUT_LOG="output.log"
 REPRODUCER="reproducer.sh"
 

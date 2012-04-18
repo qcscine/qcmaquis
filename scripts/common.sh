@@ -245,7 +245,7 @@ benchmark(){
     [[ -n "${1}" ]] || die "please supply the name of the benchmark"
     source $BENCHMARK_SCRIPTS_DIR/${1}
     local state=`get_state ${TARGET}`
-    [[ "$state" != "build" ]] && build ${1}
+    [[ "$state" != "build" ]] && build ${TARGET}
     pushd . &> /dev/null
     source $BENCHMARK_SCRIPTS_DIR/common.sh
     popd &> /dev/null
