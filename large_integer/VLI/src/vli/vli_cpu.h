@@ -57,6 +57,7 @@ namespace vli{
         bool operator < (int i) const;
         bool operator > (vli_cpu vli) const;
         bool operator > (int i) const;
+        bool is_zero() const;
         void print_raw(std::ostream& os) const;
         void print(std::ostream& os) const;
         

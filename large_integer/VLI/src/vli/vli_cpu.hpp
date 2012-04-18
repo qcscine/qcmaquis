@@ -100,6 +100,13 @@ bool vli_cpu<BaseInt, Size>::operator > (int i) const{
     return ( (tmp-=*this).is_negative() );
 }
 
+template<typename BaseInt, std::size_t Size>
+bool vli_cpu<BaseInt, Size>::is_zero() const{
+    bool result = (data_[0] == 0);
+    for(std::size_t i=1; i < Size; ++i)
+        result &= (data_[i] == 0);
+    return result;
+}
 // c - negative number
 
 template<typename BaseInt, std::size_t Size>
