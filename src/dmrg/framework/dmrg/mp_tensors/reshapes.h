@@ -12,7 +12,6 @@
 #include <map>
 
 #include "dmrg/block_matrix/indexing.h"
-#include "utils/ambient_assert.h"
 #include "dmrg/mp_tensors/detail/algorithms_impl.h"
 
 template<class Matrix, class SymmGroup>
