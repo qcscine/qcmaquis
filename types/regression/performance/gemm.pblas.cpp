@@ -31,9 +31,11 @@ extern "C" void pdgemm_(char *jobu, char *jobvt,
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
 { 
+   size_t x = get_input_x<T>();
+   size_t y = get_input_y<T>(); // not used (square only)
    int argc=0;
    char ** argv;
-   int M(T::ValueX);
+   int M(x);
    srand(3);
    int i, j, k;
    int minusone(-1);
@@ -48,9 +50,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
    int info,itemp;
    int zero=0,one=1;
  // ok it is too large ...
-   double *AA = (double*) malloc(M*M*sizeof(double));
-   double *BB = (double*) malloc(M*M*sizeof(double));
-   double *CC = (double*) malloc(M*M*sizeof(double));
+   double* AA = (double*)malloc(M*M*sizeof(double));
+   double* BB = (double*)malloc(M*M*sizeof(double));
+   double* CC = (double*)malloc(M*M*sizeof(double));
 
    int descA[9],descB[9],descC[9];
    for(i=0;i<M;i++ )
@@ -87,7 +89,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
    pdgemm_("N","N",&M,&M,&M,&alpha,AA,&one,&one,descA,BB,&one,&one,descB,&beta,CC,&one,&one,descC);
    time.end();
 
-   if(myrank_mpi == 0) report(time, GFlopsGemm, T::ValueX, T::ValueY, nprocs_mpi);
+   if(myrank_mpi == 0) report(time, GFlopsGemm, x, x, nprocs_mpi);
    int in(0);
    Cblacs_gridexit(ictxt);
    MPI_Finalize();

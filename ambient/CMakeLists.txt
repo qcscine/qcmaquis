@@ -67,12 +67,6 @@ option (AMBIENT_TESTS "Build and execute the AMBIENT regression tests" OFF)
 ######################################################################
 # CPU Freq.
 ######################################################################
-
-# TODO: find a way to get this information during config
-# C - Dangerous the CPU frequence is sometimes between front and compute nodes
-# Mac: sysctl -a hw
-# Unix: cat /proc/cpuinfo
-set(CPU_FREQ 2.8e9 CACHE STRING "CPU Frequency")
 add_definitions(-DCPU_FREQ=${CPU_FREQ})
 
 ########################################################################

@@ -1,8 +1,8 @@
 #!/bin/bash
-STATE="void"
-STATE_AMBIENT="void"
+STATE="configure"
+STATE_AMBIENT="configure"
 STATE_TYPES="build"
-STATE_DMRG="void"
+STATE_DMRG="configure"
 # end of target states #
 SITE=eiger # the dashboard name (uname -n)
 ROOT_DIR=~/maquis2012/src
@@ -34,6 +34,7 @@ MAQUIS_COMMON_MPIEXEC=/apps/eiger/Intel-MPI-4.0/intel64/bin/mpirun
 MAQUIS_COMMON_MPIEXEC_NUMPROC_FLAG="-np"
 MAQUIS_COMMON_MPIEXEC_MAX_NUMPROCS="1"
 MAQUIS_COMMON_MPIEXEC_POSTFLAGS=""
+MAQUIS_COMMON_CPU_FREQ="2.2e9"
 ## types ##
 MAQUIS_TYPES_BUILD_AMBIENT=ON 
 MAQUIS_TYPES_ENABLE_PARALLEL=ON
