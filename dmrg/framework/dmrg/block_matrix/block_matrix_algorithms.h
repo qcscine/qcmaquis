@@ -12,7 +12,6 @@
 #include "utils/zout.hpp"
 #include "dmrg/utils/logger.h"
 #include "utils/timings.h"
-#include "utils/ambient_assert.h"
 #include "types/utils/matrix_vector_traits.h"
 
 #include "dmrg/block_matrix/block_matrix.h"
@@ -155,7 +154,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                   bool verbose = true,
                   Logger * logger = NULL)
 { 
-    ambient_assert(false); 
+    // AMBIENT: NOT_IMPLEMENTED
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     svd(M, U, V, S);
     
