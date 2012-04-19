@@ -4,6 +4,7 @@
 TARGET="types"
 BENCHMARK="gemm.pblas"
 NAME="${SELF}_${BENCHMARK}"
+TITLE="Intel MKL PDGEMM performance"
 
 ## workloads ##
 WL_LOWER_BOUND=1024
