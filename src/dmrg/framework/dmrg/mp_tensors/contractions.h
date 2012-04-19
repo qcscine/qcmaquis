@@ -197,7 +197,7 @@ struct contraction {
         
         loop1_timer.begin();
         size_t loop_max = left.aux_dim();
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b) {
@@ -223,7 +223,7 @@ struct contraction {
         mps.make_left_paired();
         
         loop_max = mpo.col_dim();
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for (size_t b2 = 0; b2 < loop_max; ++b2) {
@@ -328,7 +328,7 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         
         size_t loop_max = right.aux_dim();
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for(std::size_t b = 0; b < loop_max; ++b){
@@ -350,7 +350,7 @@ struct contraction {
         mps.make_right_paired();
         
         loop_max = mpo.row_dim();
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for(size_t b1 = 0; b1 < loop_max; ++b1) {
@@ -460,7 +460,7 @@ struct contraction {
         
         std::size_t loop_max = mpo.col_dim();
 
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
@@ -489,7 +489,7 @@ struct contraction {
         
         std::size_t loop_max = mpo.row_dim();
         block_matrix<Matrix, SymmGroup> tmp = conjugate(transpose(bra_tensor.data()));
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
@@ -523,7 +523,7 @@ struct contraction {
         size_t loop_max = mpo.col_dim();
         
         loop.begin();
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for (size_t b = 0; b < loop_max; ++b)
@@ -531,7 +531,7 @@ struct contraction {
             block_matrix<Matrix, SymmGroup> oblock;
             gemm(left_mpo_mps.data_[b], right.data_[b], oblock);
             for (size_t k = 0; k < oblock.n_blocks(); ++k)
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp critical
 #endif
                 ret.data_.match_and_add_block(oblock[k],

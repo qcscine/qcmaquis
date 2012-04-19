@@ -116,7 +116,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     
     std::size_t loop_max = M.n_blocks();
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
     for (std::size_t k = 0; k < loop_max; ++k)
@@ -136,7 +136,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
     evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
-#ifndef MPI_PARALLEL
+#ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
     for(std::size_t k = 0; k < loop_max; ++k)
