@@ -155,7 +155,7 @@ MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 ######################################################################
 # CPU Freq.
 ######################################################################
-include(${PROJECT_SOURCE_DIR}/config/cpu_freq.cmake)
+add_definitions(-DCPU_FREQ=${CPU_FREQ})
 
 
 ######################################################################
