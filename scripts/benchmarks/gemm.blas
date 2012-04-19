@@ -4,6 +4,7 @@
 TARGET="types"
 BENCHMARK="gemm.blas"
 NAME="${SELF}_${BENCHMARK}"
+TITLE="Intel MKL DGEMM performance"
 
 ## workloads ##
 WL_LOWER_BOUND=1024

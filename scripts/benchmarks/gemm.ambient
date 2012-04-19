@@ -4,6 +4,7 @@
 TARGET="types"
 BENCHMARK="gemm.ambient"
 NAME="${SELF}_${BENCHMARK}"
+TITLE="Ambient DGEMM performance"
 
 ## workloads ##
 WL_LOWER_BOUND=1024
