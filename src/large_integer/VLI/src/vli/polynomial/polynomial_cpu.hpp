@@ -123,16 +123,16 @@ bool polynomial_cpu<Vli,Order>::is_zero() const {
 template <class Vli, unsigned int Order>
 template <class T>
 polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator *= (monomial<T> const& m) {
-    for(std::ptrdiff_t je=Order-m.j_exp_-1; je >= 0; --je)
+    for(std::ptrdiff_t je=static_cast<std::ptrdiff_t>(Order)-1-m.j_exp_; je >= 0; --je)
     {
-        for(std::ptrdiff_t he=Order-m.h_exp_-1; he >= 0; --he)
+        for(std::ptrdiff_t he=static_cast<std::ptrdiff_t>(Order)-1-m.h_exp_; he >= 0; --he)
             operator()(je+m.j_exp_, he+m.h_exp_) = operator()(je,he)*m.coeff_;
-        for(std::ptrdiff_t he=m.h_exp_-1; he >=0; --he)
+        for(std::ptrdiff_t he=static_cast<std::ptrdiff_t>(m.h_exp_)-1; he >=0; --he)
             operator()(je+m.j_exp_,he) = value_type(0);
     }
 
-    for(std::ptrdiff_t je=m.j_exp_-1; je >=0; --je)
-        for(std::ptrdiff_t he=Order-1; he >=0; --he)
+    for(std::ptrdiff_t je=static_cast<std::ptrdiff_t>(m.j_exp_)-1; je >=0; --je)
+        for(std::ptrdiff_t he=static_cast<std::ptrdiff_t>(Order)-1; he >=0; --he)
             operator()(je,he) = value_type(0);
 
     return *this;
