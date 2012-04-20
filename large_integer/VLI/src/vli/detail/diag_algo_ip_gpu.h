@@ -45,6 +45,7 @@ namespace vli {
                          mul384_384_gpu(&sc[0],&sa[offset],&sb[i*Size]);
                          add384_384_gpu(&scc[2*Size*pos],&sc[0]);
                      }
+                     for(int i
                      __syncthreads(); // we sync to be sure sa, sb and sc are loaded fully
 
                      #pragma unroll
