@@ -82,13 +82,42 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
-    int SizeVector = atoi(argv[1]);  
+ //   int SizeVector = atoi(argv[1]);  
 
-    polynomial_vector_type v1gmp(SizeVector);
-    polynomial_vector_type v2gmp(SizeVector);
+//    polynomial_vector_type v1gmp(SizeVector);
+//    polynomial_vector_type v2gmp(SizeVector);
     polynomial_type pgmp;
     polynomial_typed pgmpd;
+
+    vli_type_cpu a;
+
+   unsigned long b(-1);
+    vli_type_cpu c(a);
+        a[0] = 0xFFFFFFFFFFFFFFFF;
+
+    std::cout << a << " *= "<< std::hex << b << std::endl;
     
+    Timer B("withoutif");
+    B.begin();
+    for(int i =0; i < 1; ++i){
+        c[0] = 0xFFFFFFFFFFFFFFFF;
+        vli::totob(&c[0],b);
+    }
+    B.end();
+
+    Timer A("withif");
+    A.begin();
+    for(int i=0; i < 1; ++i){
+        a[0] = 0xFFFFFFFFFFFFFFFF;
+        vli::totoa(&a[0],b);
+    }
+    A.end();
+
+    std::cout <<"With if    " << a << " " << std::endl;
+    std::cout <<"Without if " << std::hex << "(" << c[2]<< " " << c[1] << " " << c[0]  << ")" << std::endl;
+    
+    
+    /*
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
     gpu->instance();
@@ -100,41 +129,36 @@ int main (int argc, char * const argv[])
     
     fill_vector_random(v1,2);
     fill_vector_random(v2,3);
-/*
+
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
-*/
-    TimerOMP t1("CPU vli_omp");
+
+    Timer t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
-/*
-    TimerOMP t2("CPU gmp_omp");
+
+    Timer t2("CPU gmp_omp");
     t2.begin();
        pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
-*/
+
 #ifdef VLI_USE_GPU
-    TimerOMP t3("MIX CPU/GPU openmp");
+    Timer t3("MIX CPU/GPU openmp");
     std::cout << result_mix_cpu_gpu << std::endl   ; 
     t3.begin();    
     result_mix_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
     t3.end();
-/*
-    std::cout << result_mix_cpu_gpu << std::endl   ; 
-    std::cout << " --------------------------------------- " << std::endl;
-    std::cout << result_pure_cpu << std::endl   ; 
-*/
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
    
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-
+*/
 return  0;
 }  
 
