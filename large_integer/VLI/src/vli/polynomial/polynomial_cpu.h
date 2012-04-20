@@ -46,7 +46,8 @@ public:
     
     friend void swap<>(polynomial_cpu<Vli,Order>& p1, polynomial_cpu<Vli,Order>& p2);
 
-    polynomial_cpu& operator *= (monomial<Vli> const& m);
+    template <class T>
+    polynomial_cpu& operator *= (monomial<T> const& m);
     polynomial_cpu& operator *= (Vli const& c);
     polynomial_cpu& operator *= (int c);
     
