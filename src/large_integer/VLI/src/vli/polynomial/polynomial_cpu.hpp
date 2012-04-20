@@ -121,15 +121,20 @@ bool polynomial_cpu<Vli,Order>::is_zero() const {
 }
 
 template <class Vli, unsigned int Order>
-polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator *= (monomial<Vli> const& m) {
-    std::ptrdiff_t offset = m.j_exp_*Order + m.h_exp_;
-    
-    for(std::ptrdiff_t i=Order*Order-offset-1; i >= 0; --i)
-        coeffs_[i+offset] = coeffs_[i] *m.coeff_;
+template <class T>
+polynomial_cpu<Vli,Order>& polynomial_cpu<Vli,Order>::operator *= (monomial<T> const& m) {
+    for(std::ptrdiff_t je=Order-m.j_exp_-1; je >= 0; --je)
+    {
+        for(std::ptrdiff_t he=Order-m.h_exp_-1; he >= 0; --he)
+            r(je+m.j_exp_, he+m.h_exp_) = r(je,he)*m.coeff_;
+        for(std::ptrdiff_t he=m.h_exp_-1; he >=0; --he)
+            r(je+m.j_exp_,he) = value_type(0);
+    }
 
-    for(std::ptrdiff_t i=offset-1; i >= 0; --i)
-        coeffs_[i] = value_type(0);
-    
+    for(std::ptrdiff_t je=m.j_exp_-1; je >=0; --je)
+        for(std::ptrdiff_t he=Order-1; he >=0; --he)
+            r(je,he) = value_type(0);
+
     return *this;
 }
 
