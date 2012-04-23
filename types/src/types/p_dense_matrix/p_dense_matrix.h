@@ -2,7 +2,6 @@
 #define __MAQUIS_TYPES_P_DENSE_MATRIX_HPP__
 
 #include "ambient/ambient.hpp"
-#include "utils/zout.hpp"
 #include "types/utils/traits.hpp"
 
 #ifdef HDF5

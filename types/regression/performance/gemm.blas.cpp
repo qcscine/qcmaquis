@@ -9,6 +9,8 @@
 #include <cmath>
 #include <complex>
 
+using std::cout;
+
 #include "utils/timings.h"
 #include "utilities.h"
 

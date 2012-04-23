@@ -1,4 +1,3 @@
-
 #include <boost/static_assert.hpp> 
 
 #define M 0xF4240 
@@ -55,3 +54,4 @@ void Boost_check_close_adapter(std::complex<double> a, std::complex<double> b){
 };
 
 BOOST_GLOBAL_FIXTURE( caveats );
+

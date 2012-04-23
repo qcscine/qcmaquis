@@ -2,8 +2,8 @@ compile_with_ambient()
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories("${AMBIENT_SOURCES_DIR}")
 
-add_definitions (-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
-add_definitions(-DMPI_PARALLEL)
+add_definitions(-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
+add_definitions(-DAMBIENT)
 
 if(BLAS_mkl_core_LIBRARY) #intel
     include_directories("${MPI_CXX_INCLUDE_PATH}") #cluster path
@@ -13,7 +13,7 @@ endif()
 if(BLAS_Accelerate_LIBRARY) #apple
     include_directories("${MPI_INCLUDE_PATH}") #cluster path
     set(MPI_CXX_LIBRARIES ${MPI_LIBRARY} ${MPI_EXTRA_LIBRARY})
-    add_definitions(-DAPPLE -DMPI_PARALLEL -framework Accelerate)
+    add_definitions(-DAPPLE -DAMBIENT -framework Accelerate)
     set(BLAS_LAPACK ${BLAS_vecLib_LIBRARY}) 
 endif()
 

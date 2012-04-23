@@ -4,11 +4,10 @@
 #include <boost/test/test_case_template.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <iostream>
-#include <cmath>
-
 #include "types/p_dense_matrix/p_dense_matrix.h"
 #include "types/p_dense_matrix/algorithms.hpp"
+
+using ambient::cout;
 
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/dense_matrix_blas.hpp"

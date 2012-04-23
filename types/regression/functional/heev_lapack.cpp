@@ -5,13 +5,11 @@
 #include <boost/test/test_case_template.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <iostream>
-#include <cmath>
-#include <algorithm>
-
 #include "types/p_dense_matrix/p_dense_matrix.h"
 #include "types/p_dense_matrix/algorithms.hpp"
 #include "types/p_dense_matrix/p_diagonal_matrix.h"
+
+using ambient::cout;
 
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"

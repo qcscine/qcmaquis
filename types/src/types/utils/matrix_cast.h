@@ -5,7 +5,7 @@
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/diagonal_matrix.h"
 // C - This file must include into the shared memory version so ifdef
-#ifdef MPI_PARALLEL 
+#ifdef AMBIENT 
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 #include "types/p_dense_matrix/p_diagonal_matrix.h"
@@ -99,7 +99,7 @@ namespace maquis{
     } // name space traits
 } //end name space maquis
 
-#ifdef MPI_PARALLEL
+#ifdef AMBIENT
     template<typename T>
     bool operator == (maquis::types::dense_matrix<T> const & m, maquis::types::p_dense_matrix<T> const & pm) 
     {
