@@ -119,9 +119,9 @@ namespace app {
             if (p+W_ < L_*W_)
                 ret.push_back(p+W_);
             
-            //        std::cout << p << " -> ";
-            //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<int>(std::cout, " "));
-            //        std::cout << std::endl;
+            //        cout << p << " -> ";
+            //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<int>(cout, " "));
+            //        cout << std::endl;
             
             return ret;
         }

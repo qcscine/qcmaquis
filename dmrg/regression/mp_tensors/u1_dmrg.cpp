@@ -8,9 +8,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "utils/zout.hpp"
-
-
 #include "types/dense_matrix/aligned_allocator.h"
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
@@ -101,7 +98,7 @@ int main(int argc, char ** argv)
         exit(1);
     }
     
-    zout.precision(10);
+    cout.precision(10);
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
@@ -173,8 +170,8 @@ int main(int argc, char ** argv)
     H->push_extra_terms(mpom, *adj);
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     
-    zout << expval(mps, mpo, 0) << endl;
-    zout << expval(mps, mpo, 1) << endl;
+    cout << expval(mps, mpo, 0) << endl;
+    cout << expval(mps, mpo, 1) << endl;
     
     {   
         ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
@@ -239,7 +236,7 @@ int main(int argc, char ** argv)
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
-        zout << "Task took " << elapsed << " seconds." << endl;
+        cout << "Task took " << elapsed << " seconds." << endl;
         
         h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
         h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));

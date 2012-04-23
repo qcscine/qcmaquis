@@ -68,11 +68,11 @@ namespace app {
                     if (site == -1)
                         ++sweep;
                         
-                    std::cout << "Restoring state." << std::endl;
-                    std::cout << "Will start again at site " << site << " in sweep " << sweep << std::endl;
+                    cout << "Restoring state." << std::endl;
+                    cout << "Will start again at site " << site << " in sweep " << sweep << std::endl;
                     restore = true;
                 } else {
-                    std::cout << "Invalid checkpoint, overwriting." << std::endl; 
+                    cout << "Invalid checkpoint, overwriting." << std::endl; 
                 }
             }
         }
@@ -116,10 +116,10 @@ namespace app {
         phys = H.get_phys();
         
         /*
-         std::cout << "initc: " << initc << std::endl;
-         std::cout << "phys:" << std::endl << phys << std::endl;
-         std::cout << measurements << std::endl;
-         std::cout << "Hamiltonian:" << std::endl << H << std::endl;
+         cout << "initc: " << initc << std::endl;
+         cout << "phys:" << std::endl << phys << std::endl;
+         cout << measurements << std::endl;
+         cout << "Hamiltonian:" << std::endl << H << std::endl;
          */
         
         if (!parms.get<std::string>("always_measure").empty()) {
@@ -190,7 +190,7 @@ namespace app {
             
             gettimeofday(&sthen, NULL);
             double elapsed_sweep = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-            std::cout << "Sweep " << sweep << " done after " << elapsed_sweep << " seconds." << std::endl;
+            cout << "Sweep " << sweep << " done after " << elapsed_sweep << " seconds." << std::endl;
             
             
             gettimeofday(&then, NULL);
@@ -208,7 +208,7 @@ namespace app {
                 
                 gettimeofday(&sthen, NULL);
                 double elapsed_measure = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-                std::cout << "Sweep measure done after " << elapsed_measure << " seconds." << std::endl;
+                cout << "Sweep measure done after " << elapsed_measure << " seconds." << std::endl;
                 
                 gettimeofday(&then, NULL);
                 elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            

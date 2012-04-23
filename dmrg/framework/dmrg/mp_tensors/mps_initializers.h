@@ -116,11 +116,11 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         }
         
 #ifndef NDEBUG
-        zout << "init norm: " << norm(mps) << std::endl;
-        zout << mps.description() << endl;
+        cout << "init norm: " << norm(mps) << std::endl;
+        cout << mps.description() << endl;
 #endif
         timer.end();
-        std::cout << timer << std::endl;
+        cout << timer << std::endl;
     }
 };
 
@@ -285,11 +285,11 @@ struct linear_mps_init : public mps_initializer<Matrix, U1>
         }
         
 #ifndef NDEBUG
-        zout << "init norm: " << norm(mps) << std::endl;
-        zout << mps.description() << endl;
+        cout << "init norm: " << norm(mps) << std::endl;
+        cout << mps.description() << endl;
 #endif
         timer.end();
-        std::cout << timer << std::endl;
+        cout << timer << std::endl;
     }
 };
 

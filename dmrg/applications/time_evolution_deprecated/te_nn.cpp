@@ -111,16 +111,16 @@ get_U (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
     for (int i=0; i<split_H.size(); ++i)
         expH[i] = make_exp_nn(split_H[i], alpha);
     
-    std::cout << expH.size() << " non overlapping Hamiltonians" << std::endl;
+    cout << expH.size() << " non overlapping Hamiltonians" << std::endl;
     for (int i=0; i<expH.size(); ++i)
     {
-       // std::cout << "Hamiltonian " << i << std::endl; // C comment else crash gcc
+       // cout << "Hamiltonian " << i << std::endl; // C comment else crash gcc
         for (std::map<std::size_t, block_matrix<Matrix, grp> >::const_iterator it = expH[i].begin();
              it != expH[i].end();
              ++it)
         {
-            std::cout << " ** position " << it->first << std::endl;
-            std::cout << " ** matrix " << std::endl << it->second << std::endl;
+            cout << " ** position " << it->first << std::endl;
+            cout << " ** matrix " << std::endl << it->second << std::endl;
             
         }
     }
@@ -188,10 +188,10 @@ int main(int argc, char ** argv)
     grp::charge initc = phys_model->initc(model);
     Measurements<Matrix, grp> measurements = phys_model->measurements();
     Index<grp> phys = H.get_phys();
-    std::cout << "initc: " << initc << std::endl;
+    cout << "initc: " << initc << std::endl;
     
-//    std::cout << "Hamiltonian: " << std::endl << H << std::endl;
-//    std::cout << "Measurements: " << std::endl << measurements << std::endl;
+//    cout << "Hamiltonian: " << std::endl << H << std::endl;
+//    cout << "Measurements: " << std::endl << measurements << std::endl;
         
     Measurements<Matrix, grp> meas_always;
     if (!parms.get<std::string>("always_measure").empty()) {
@@ -268,10 +268,10 @@ int main(int argc, char ** argv)
 //            entropies = calculate_bond_entropies(mps);
             
 //            std::complex<double> mps_norm = norm(mps);
-//            std::cout << "Norm " << mps_norm << std::endl;
+//            cout << "Norm " << mps_norm << std::endl;
 
             double energy = expval(mps, mpo);
-            std::cout << "Energy " << energy << std::endl;
+            cout << "Energy " << energy << std::endl;
             
             gettimeofday(&sthen, NULL);
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);

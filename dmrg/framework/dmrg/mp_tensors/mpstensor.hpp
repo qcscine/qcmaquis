@@ -257,8 +257,8 @@ template<class T>
 void verbose_assert(T const & a, T const & b)
 {
     if (!( a == b) ) {
-        std::cout << "a: " << a << std::endl;
-        std::cout << "b: " << b << std::endl;
+        cout << "a: " << a << std::endl;
+        cout << "b: " << b << std::endl;
         assert( a == b );
     }
 }
@@ -299,7 +299,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     timer.end();
     return ret;
 }
-#ifdef MPI_PARALLEL
+#ifdef AMBIENT
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs, typename MPSTensor<Matrix, SymmGroup>::scalar_type* overlap) const
 {
@@ -464,18 +464,18 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
         if (right_i != data_.right_basis())
             throw std::runtime_error("right basis is wrong");
         
-//        std::cout << "** reasonable left_paired **" << std::endl;
-//        std::cout << "reasonable::left_i: " << left_i << std::endl;
-//        std::cout << "reasonable::right_i: " << right_i << std::endl;
-//        std::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
+//        cout << "** reasonable left_paired **" << std::endl;
+//        cout << "reasonable::left_i: " << left_i << std::endl;
+//        cout << "reasonable::right_i: " << right_i << std::endl;
+//        cout << "reasonable::data_:" << std::endl << data_ << std::endl;
         make_right_paired();
         if (left_i != data_.left_basis())
             throw std::runtime_error("left basis is wrong");
         
-//        std::cout << "** reasonable right_paired **" << std::endl;
-//        std::cout << "reasonable::left_i: " << left_i << std::endl;
-//        std::cout << "reasonable::right_i: " << right_i << std::endl;
-//        std::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
+//        cout << "** reasonable right_paired **" << std::endl;
+//        cout << "reasonable::left_i: " << left_i << std::endl;
+//        cout << "reasonable::right_i: " << right_i << std::endl;
+//        cout << "reasonable::data_:" << std::endl << data_ << std::endl;
     }
     
     {

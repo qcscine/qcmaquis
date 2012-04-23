@@ -3,7 +3,6 @@
 using std::cout;
 using std::cerr;
 using std::endl;
-#include "utils/zout.hpp"
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mpstensor.h"
@@ -34,5 +33,5 @@ int main()
     
     right = transpose(right);
     gemm(left, right, o);
-    zout << trace(o) << endl;
+    cout << trace(o) << endl;
 }

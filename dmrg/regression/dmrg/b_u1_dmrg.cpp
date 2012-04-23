@@ -8,7 +8,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "utils/zout.hpp"
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -252,9 +251,9 @@ int main(int argc, char ** argv)
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
-    std::cout << "eval1 " << expval(mps,mpo,0) << std::endl;
-//    std::cout << "eval2 " << expval(mps,mpo,1) << std::endl;
-//    std::cout << "eval3 " << expval(mps,mpo) << std::endl;
+    cout << "eval1 " << expval(mps,mpo,0) << std::endl;
+//    cout << "eval2 " << expval(mps,mpo,1) << std::endl;
+//    cout << "eval3 " << expval(mps,mpo) << std::endl;
 #ifndef MEASURE_ONLY
     
     bool early_exit = false;
@@ -269,10 +268,10 @@ int main(int argc, char ** argv)
             Logger iteration_log;
             //assert(false);
         for(int i=0 ; i < mps.length(); i ++){
-            std::cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
+            cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
         }
             optimizer.sweep(sweep, iteration_log);
-            std::cout << "Sweep is done \n";
+            cout << "Sweep is done \n";
             
             ssm.sync();
             

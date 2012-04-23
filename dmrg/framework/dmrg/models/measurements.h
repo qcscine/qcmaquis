@@ -113,7 +113,7 @@ namespace app {
         
         for (int i = 0; i < meas.n_terms(); ++i)
     	{
-    		std::cout << "Calculating " << meas[i].name << std::endl;
+    		cout << "Calculating " << meas[i].name << std::endl;
     		switch (meas[i].type)
     		{
                 case Measurement_Term<Matrix, SymmGroup>::Local:

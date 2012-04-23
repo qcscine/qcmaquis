@@ -3,7 +3,6 @@
 
 using namespace std;
 
-#include "utils/zout.hpp"
 #include "types/dense_matrix/vector_interface.hpp"
 
 #include "types/dense_matrix/dense_matrix.h"
@@ -28,16 +27,16 @@ int main()
         physical.push_back(std::make_pair(-2, 1));
         physical.push_back(std::make_pair(-1, 1));
         
-        zout << physical << endl;
+        cout << physical << endl;
         physical.sort();
-        zout << physical << endl;
+        cout << physical << endl;
         
-        zout << physical.position(0) << endl;
+        cout << physical.position(0) << endl;
         
         physical.insert(make_pair(0,3));
-        zout << physical << endl;
+        cout << physical << endl;
         
-        zout << physical.position(-1) << endl;
+        cout << physical.position(-1) << endl;
     }
     
     {
@@ -47,7 +46,7 @@ int main()
         block_matrix<Matrix, grp> test;
         test.insert_block(foo, 0, 0);
         
-        zout << test.description() << endl;
+        cout << test.description() << endl;
     }
     
     if (true)
@@ -61,8 +60,8 @@ int main()
         
         block_matrix<Matrix, grp> m1(rc, rc), m2(rc, rc), m3;
         
-        zout << m1.description() << endl << m2.description() << endl;
-        zout << m1.description() << endl << m2.description() << endl;
+        cout << m1.description() << endl << m2.description() << endl;
+        cout << m1.description() << endl << m2.description() << endl;
         gemm(m1, m2, m3);
         
         for (std::size_t k = 0; k < m3.n_blocks(); ++k)
@@ -70,20 +69,20 @@ int main()
                 for (std::size_t r = 0; r < num_cols(m3[k]); ++r)
                     m3[k](l,r) = drand48();
         
-        zout << m3 << endl;
+        cout << m3 << endl;
         
         block_matrix<Matrix, grp> U, V;
         block_matrix<DiagMatrix, grp> S;
         svd(m3, U, V, S);
         
-        //zout << S << endl;
-        //zout << U << endl;
+        //cout << S << endl;
+        //cout << U << endl;
         
         block_matrix<Matrix, grp> t;
         gemm(U, S, t);
         gemm(t, V, U);
         
-        zout << U << endl;
+        cout << U << endl;
         
         qr(m3, U, V);
     }

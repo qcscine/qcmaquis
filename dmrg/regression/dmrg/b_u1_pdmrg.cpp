@@ -1,4 +1,4 @@
-#ifdef MPI_PARALLEL
+#ifdef AMBIENT
 #include "ambient/ambient.h"
 typedef ambient::dim2 dim;
 #endif
@@ -155,11 +155,11 @@ int main(int argc, char ** argv)
 
     if (argc != 3)
     {
-        zout << "Usage: <parms> <model_parms>" << endl;
+        cout << "Usage: <parms> <model_parms>" << endl;
         exit(1);
     }
     
-    zout.precision(10);
+    cout.precision(10);
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
@@ -235,7 +235,7 @@ int main(int argc, char ** argv)
             //assert(false);
             optimizer.sweep(sweep, iteration_log);
 
-            zout << "\nSweep is done\n";
+            cout << "\nSweep is done\n";
             
             //ssm.sync();
             
@@ -262,14 +262,14 @@ int main(int argc, char ** argv)
     {
 
         Timer tvn("vN entropy"), tr2("Renyi n=2");
-        zout << "Calculating vN entropy." << endl;
+        cout << "Calculating vN entropy." << endl;
         tvn.begin(); entropies = calculate_bond_entropies(mps); tvn.end();
-        zout << "Calculating n=2 Renyi entropy." << endl;
+        cout << "Calculating n=2 Renyi entropy." << endl;
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         double energy = expval(mps, mpoc);
-        zout << "Energy before: " << expval(mps, mpo) << endl;
-        zout << "Energy after: " << expval(mps, mpoc) << endl;
+        cout << "Energy before: " << expval(mps, mpo) << endl;
+        cout << "Energy after: " << expval(mps, mpoc) << endl;
         h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         
         if (parms.get<int>("calc_h2") > 0) {
@@ -283,17 +283,17 @@ int main(int argc, char ** argv)
             double energy2 = expval(mps, mpo2, true);
             t4.end();
         
-            zout << "Energy^2: " << energy2 << endl;
-            zout << "Variance: " << energy2 - energy*energy << endl;
+            cout << "Energy^2: " << energy2 << endl;
+            cout << "Variance: " << energy2 - energy*energy << endl;
         }
 
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
-        zout << "Task took " << elapsed << " seconds." << endl;
+        cout << "Task took " << elapsed << " seconds." << endl;
     }
 #endif
-    zout << "Exiting... Finalize!\n";
+    cout << "Exiting... Finalize!\n";
     ambient::finalize();
     return 0;
 }

@@ -35,7 +35,7 @@ left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> con
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
         left_[i+1] = left;
-//        zout << "Left at " << i+1 << " " << left.data_[0] << endl;
+//        cout << "Left at " << i+1 << " " << left.data_[0] << endl;
     }
     return left_;
 }
@@ -55,7 +55,7 @@ right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> co
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
         right_[i] = right;
-//        zout << "right at " << i << " " << right.data_[0] << endl;
+//        cout << "right at " << i << " " << right.data_[0] << endl;
     }
     return right_;
 }
@@ -85,7 +85,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     
     for (int i = 0; i < L; ++i) {
         if (verbose)
-            zout << "expval site " << i << std::endl;
+            cout << "expval site " << i << std::endl;
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
@@ -242,7 +242,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
             
             MPSTensor<Matrix, SymmGroup> tmp = contraction::local_op(mps[p], dens_ops[j]);
             double cur_dens = mps[p].scalar_overlap(tmp);
-            zout << "Density[" << j << "] (before) = " << cur_dens << std::endl;
+            cout << "Density[" << j << "] (before) = " << cur_dens << std::endl;
         }
         
         double a = trace(rho(down, down)) * trace(rho(updown, updown));
@@ -258,9 +258,9 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
         t0 += k1*k2*trace( rho(updown, updown) );
         double k0 = (1.-t0) / trace(rho(empty, empty));
         
-        std::cout << "k0 = " << k0 << std::endl;
-        std::cout << "k1 = " << k1 << std::endl;
-        std::cout << "k2 = " << k2 << std::endl;
+        cout << "k0 = " << k0 << std::endl;
+        cout << "k1 = " << k1 << std::endl;
+        cout << "k2 = " << k2 << std::endl;
         assert( k0 > 0 ); // not always the case!!!
         
         block_matrix<Matrix, SymmGroup> rescale = identity_matrix<Matrix>(phys);
@@ -275,7 +275,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
             for (size_t j=0; j<dens.size(); ++j) {
                 MPSTensor<Matrix, SymmGroup> tmp = contraction::local_op(mps[p], dens_ops[j]);
                 double meas_dens = mps[p].scalar_overlap(tmp) / mps[p].scalar_norm();
-                std::cout << "Density[" << j << "] (after) = " << meas_dens << ", should be " << dens[j][p] << std::endl;
+                cout << "Density[" << j << "] (after) = " << meas_dens << ", should be " << dens[j][p] << std::endl;
             }
         }
         

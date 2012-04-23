@@ -4,8 +4,6 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "utils/zout.hpp"
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -30,23 +28,23 @@ void ng()
     aux2.insert(std::make_pair(TrivialGroup::Plus, 11));
     
     MPSTensor<Matrix, grp> mps(physical, aux1, aux1);
-    zout << mps.scalar_norm() << endl;
+    cout << mps.scalar_norm() << endl;
     mps.multiply_by_scalar(1/mps.scalar_norm());
-    zout << mps.scalar_norm() << endl;
+    cout << mps.scalar_norm() << endl;
     
     mps.normalize_left(SVD);
-    zout << "Norm after normalization: " << mps.scalar_norm() << endl;
+    cout << "Norm after normalization: " << mps.scalar_norm() << endl;
     
     MPSTensor<Matrix, grp> mps2 = mps;
     block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
     left = contraction::overlap_left_step(mps, mps2, left);
-    zout << left << endl;
+    cout << left << endl;
     
     mps.normalize_right(SVD);
     mps2 = mps;
     block_matrix<Matrix, grp> right = identity_matrix<Matrix, grp>(mps.row_dim());
     right = contraction::overlap_right_step(mps, mps2, right);
-    zout << right << endl;
+    cout << right << endl;
     
     mps = MPSTensor<Matrix, grp>(physical, aux1, aux1);
     mps2 = MPSTensor<Matrix, grp>(physical, aux2, aux2);
@@ -75,28 +73,28 @@ void u1()
     
     MPSTensor<Matrix, grp> mps(physical, aux1, aux2);
     
-    zout << mps.scalar_norm() << endl;
+    cout << mps.scalar_norm() << endl;
     mps.multiply_by_scalar(1/mps.scalar_norm());
-    zout << mps.scalar_norm() << endl;
+    cout << mps.scalar_norm() << endl;
     mps.normalize_left(SVD);
-    zout << mps.scalar_norm() << endl;
+    cout << mps.scalar_norm() << endl;
     
 //    mps.make_left_paired();
-//    zout << mps << endl;
+//    cout << mps << endl;
 //    
 //    mps.make_right_paired();
 //    mps.make_left_paired();
 //    
-//    zout << mps << endl;
+//    cout << mps << endl;
     
     MPSTensor<Matrix, grp> mps2 = mps;
 //    block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
 //    left = contraction::overlap_left_step(mps, mps2, left);
-//    zout << left << endl;
+//    cout << left << endl;
 //    mps.normalize_right(SVD);
 //    mps2 = mps;
 //    left = contraction::overlap_right_step(mps, mps2, left);
-//    zout << left << endl;
+//    cout << left << endl;
     
     MPOTensor<Matrix, U1> ident(1, 1);
     ident(0,0) = block_matrix<Matrix, U1>();
@@ -112,20 +110,20 @@ void u1()
     mps2 = mps;
     Boundary<Matrix, grp> mleft(mps.row_dim(), mps.row_dim(), 1);
     mleft.data_[0] = identity_matrix<Matrix, grp>(mps.row_dim());
-//    zout << mleft.data_[0] << endl;
+//    cout << mleft.data_[0] << endl;
 //    mleft = contraction::overlap_mpo_left_step(mps, mps2, mleft, splus);
-//    zout << mleft.data_[0] << endl;
+//    cout << mleft.data_[0] << endl;
     
     mps.normalize_right(SVD);
     mps2 = mps;
     
     mleft.data_[0] = identity_matrix<Matrix, grp>(mps.col_dim());
     mleft.data_[0] = contraction::overlap_right_step(mps, mps2, mleft.data_[0]);
-    zout << mleft.data_[0] << endl;
+    cout << mleft.data_[0] << endl;
     
     mleft.data_[0] = identity_matrix<Matrix, grp>(mps.col_dim());
     mleft = contraction::overlap_mpo_right_step(mps, mps2, mleft, ident);
-    zout << mleft.data_[0] << endl;
+    cout << mleft.data_[0] << endl;
 }
 
 int main()

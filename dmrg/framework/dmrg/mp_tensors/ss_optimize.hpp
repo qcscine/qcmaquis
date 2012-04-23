@@ -70,7 +70,7 @@ public:
         storage::prefetch(right_[1], right_stores_[1]);
         
 #ifndef NDEBUG
-        zout << mps.description() << endl;
+        cout << mps.description() << endl;
 #endif
         for (int _site = (resume_at == -1 ? 0 : resume_at);
              _site < 2*L; ++_site) {
@@ -86,7 +86,7 @@ public:
                 lr = -1;
             }
             
-            zout << "Sweep " << sweep << ", optimizing site " << site << endl;
+            cout << "Sweep " << sweep << ", optimizing site " << site << endl;
 //            storage_master.print_size();
             
 //            mps[site].make_left_paired();
@@ -172,8 +172,8 @@ public:
             
             t_solver.end();
             
-            zout << "Energy " << lr << " " << res.first << endl;
-//            zout << "Energy check " << expval(mps, mpo) << endl;
+            cout << "Energy " << lr << " " << res.first << endl;
+//            cout << "Energy check " << expval(mps, mpo) << endl;
             
             iteration_log << make_log("Energy", res.first);
             
@@ -215,7 +215,7 @@ public:
                 
             if (lr == +1) {
                 if (site < L-1) {
-                    zout << "Growing, alpha = " << alpha << endl;
+                    cout << "Growing, alpha = " << alpha << endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
                 } else {
@@ -229,7 +229,7 @@ public:
                 storage::reset(left_stores_[site+1]); // left_stores_[site+1] is outdated
             } else if (lr == -1) {
                 if (site > 0) {
-                    zout << "Growing, alpha = " << alpha << endl;
+                    cout << "Growing, alpha = " << alpha << endl;
                     // Invalid read occurs after this!\n
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
@@ -254,12 +254,12 @@ public:
             
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
-            zout << "Sweep has been running for " << elapsed << " seconds." << endl;
+            cout << "Sweep has been running for " << elapsed << " seconds." << endl;
             if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
                 return _site+1;
             }
             else
-                zout << max_secs - elapsed << " seconds left." << endl;
+                cout << max_secs - elapsed << " seconds left." << endl;
         }
         
         return -1;

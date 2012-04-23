@@ -17,20 +17,20 @@ void dmrg(DmrgParameters & parms, ModelParameters & model)
 {
     std::map<std::string, boost::function<void (DmrgParameters & p, ModelParameters & m)> > factory_map;
     
-    std::cout << "This binary contains symmetries: ";
+    cout << "This binary contains symmetries: ";
 #ifdef HAVE_TrivialGroup
     factory_map["none"] = run_dmrg<TrivialGroup>;
-    std::cout << "none ";
+    cout << "none ";
 #endif
 #ifdef HAVE_U1
     factory_map["u1"] = run_dmrg<U1>;
-    std::cout << "u1 ";
+    cout << "u1 ";
 #endif
 #ifdef HAVE_TwoU1
     factory_map["2u1"] = run_dmrg<TwoU1>;
-    std::cout << "2u1 ";
+    cout << "2u1 ";
 #endif
-    std::cout << std::endl;
+    cout << std::endl;
 
     
     std::string symm_name = parms.get<std::string>("symmetry");

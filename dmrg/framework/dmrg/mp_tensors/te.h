@@ -12,8 +12,6 @@
 #include <boost/random.hpp>
 #include <sys/time.h>
 
-#include "utils/zout.hpp"
-
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
 #ifdef HAVE_ARPACK
@@ -46,7 +44,7 @@ struct SiteProblem
 gettimeofday(&now, NULL);
 #define END_TIMING(name) \
 gettimeofday(&then, NULL); \
-zout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
+cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
 
 template<class Matrix, class SymmGroup, class StorageMaster>
 class time_evolve

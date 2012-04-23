@@ -93,8 +93,8 @@ namespace app {
         // Output
 //        for (int n=0; n<ret.size(); ++n)
 //        {
-//            std::cout << "Hamiltonian #" << n << std::endl;
-//            std::cout << ret[n];
+//            cout << "Hamiltonian #" << n << std::endl;
+//            cout << ret[n];
 //        }
         
         return ret;
