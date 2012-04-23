@@ -1,5 +1,5 @@
 /*
- *  Debug_mpi.h
+ *  debug_mpi.h
  *  ambient_xcode
  *
  *  Created by Tim Ewart on 14.03.11.
