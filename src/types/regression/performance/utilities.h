@@ -45,7 +45,7 @@ size_t get_input_y(){
 }
 
 void report(const Timer& a, double(*gflops)(size_t, size_t, double), size_t x, size_t y, size_t nthreads){
-        zout << "-------------------------\n"
+        cout << "-------------------------\n"
              << " Time     " << a.get_time()               << "\n"
              << " GFlops   " << gflops(x,y,a.get_time())   << "\n" 
              << " Threads: " << nthreads                   << "\n"

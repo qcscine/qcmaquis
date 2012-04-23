@@ -5,6 +5,9 @@
 #include <boost/lambda/lambda.hpp>
 #include <complex>
 #include <numeric>
+#include <iostream>
+
+using std::cout;
 
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
@@ -12,9 +15,6 @@
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
 
 #include "types/dense_matrix/vector.hpp"
-
-
-
 
 //
 // List of types T for which the maquis::types::dense_matrix<T> is tested
