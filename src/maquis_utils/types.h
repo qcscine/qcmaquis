@@ -1,4 +1,3 @@
-
 #ifndef MAQUIS_TYPES_TRAITS_H
 #define MAQUIS_TYPES_TRAITS_H
 

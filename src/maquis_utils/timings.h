@@ -1,7 +1,6 @@
 #ifndef MAQUIS_TIMINGS_H
 #define MAQUIS_TIMINGS_H
 
-#include "zout.hpp"
 #include <string>
 #include <fstream>
 
@@ -78,7 +77,7 @@ public:
     Timer(std::string name_)
     : val(0.0), name(name_), freq((long long unsigned int)CPU_FREQ), nCounter(0) { }
     
-    ~Timer() { zout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
+    ~Timer() { cout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
     
     Timer & operator+=(double t) {
         val += t;
@@ -132,7 +131,7 @@ private:
 #endif
 
 // TODO: improve ifdef
-#ifdef MPI_PARALLEL 
+#ifdef AMBIENT 
 class TimerPTH : public Timer{
 public:
     TimerPTH(std::string name, pthread_t thread): Timer(name),thread_(thread){}
