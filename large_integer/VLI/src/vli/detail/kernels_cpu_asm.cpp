@@ -48,7 +48,7 @@ void mul192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
         "movq $0x1             ,%%rcx             \n" /* keep trace for final sign */     \
         "_IsNegative192_64 :                      \n" /* end if structure */              \
         "movq %%rax            ,%%r11             \n" /* keep a copy of rax/a0 inside */  \
-        "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
+        "mulq "PPS(0,n)"(%%rdi)                   \n" /* lo rax, hi rdx   a0*b0 */        \
         "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  \
         "movq %%rdx            ,%%r9              \n" /* hia0b0 into rcx */               \
         "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
@@ -77,51 +77,51 @@ void mul192_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%r
  // = sign_bit*(0xFFFFFF) & two_complement | (!sign_bit)*(0xFFFFFFFF) & original_number
   // Vli *= long
 #define HELPER_ASM_MUL192_64b(n) \
-void mul192_64b(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
+void mul192_64b(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){  \
     asm( \
+/* first rsi */ \
         "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
-        "movq %%rax            ,%%r11             \n" /* keep a copy of rax/a0 inside */  \
- /*   begin multipliant = sign_bit*(0xFU) & two_complement*/ \
+        "movq %%rax            ,%%rdx             \n" /* cpy rax -> rdx  */               \
         "xorq "PPS(2,n)"(%%rdi),%%rax             \n" /* calculate the sign */            \
         "shrq $0x3f            ,%%rax             \n" /* get the sign bit shift */        \
-        "xorq %%r12            ,%%r12             \n" /* build part1 0xffffffffffffffff */\
-        "notq %%r12                               \n" /* build part2 0xffffffffffffffff */\
-        "movq %%r11            ,%%rax             \n" /* reload rax(a0) */                \
-        "notq %%rax                               \n" /* 2CM negate a0  */                \
-        "addq $0x1             ,%%rax             \n" /* 2CM add 1      */                \
-        "imulq %%r12                              \n" /* r12 * rax*/                      \
-        "andq %%r12            ,%%rax             \n"  \
-        "movq %%rax ,  "PPS(0,n)"(%%rdi) \n" \
-        /*    end   multipliant = sign_bit*(0xFU) & two_complement*/ \
-        "movq %%rax            ,%%r11             \n" /* keep a copy of rax/a0 inside */  \
-        "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
-        "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  \
-        "movq %%rdx            ,%%r9              \n"                                     \
-        "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
-        "mulq "PPS(1,n)"(%%rdi)                   \n" /* a0 * b1 */                       \
-        "addq %%rax            ,%%r9              \n" /* add hia0b0 + loa0b1 */           \
-        "movq %%rdx            ,%%r10             \n"                                     \
-        "adcq $0               ,%%r10             \n" /* perhaps carry */                 \
-        "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
-        "imulq "PPS(2,n)"(%%rdi)                  \n" /* a0 * b2, we skip the the hi */   \
-        "addq %%rax            ,%%r10             \n" /* add hia0b1 + loa0b2 */           \
-        "xorq "PPS(2,n)"(%%rdi),%%rax             \n" \
-        "movq (%%rsi)          ,%%rax             \n" /* calculate the sign */            \
-        "shrq $0x3f            ,%%rax             \n" /* get the CB sign*/                \
-        "notq %%rax                               \n" /* negate */                        \
-        "xorq %%r12            ,%%r12             \n" /* build part1 0xffffffffffffffff */\
-        "notq %%r12                               \n" /* build part2 0xffffffffffffffff */\
-        "imulq %%r12                              \n" \
-        "andq %%rax            ,%%r8              \n" \
-        "andq %%rax            ,%%r9              \n" \
-        "andq %%rax            ,%%r10             \n" \
-        "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* move into a1 */                  \
-        "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* move into a2 */                  \
-     : : :"rax","rdx","rcx","r8","r9","r10","r11","r12","memory"                             \
+        "subq $0x1             ,%%rax             \n" /* tips cal the !sign extention*/   \
+        "movq %%rax            ,%%rcx             \n" /* cpy !sign*0xffffffffffffffff, to keep */   \
+        "andq %%rdx            ,%%rax             \n" /* !sign*oxffff&original_number  */ \
+        "negq %%rdx                               \n" /* 2CM negate a0  */                \
+        "notq %%rcx                               \n" /* cpy sign*0xffffffffffffffff */   \
+        "andq %%rcx            ,%%rdx             \n" \
+        "orq  %%rdx            ,%%rax             \n" \
+/* first rdi */ \
+        "movq %%rax            ,(%%rdi)           \n" \
+     : : :"rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","memory"              \
     ); \
 }        
-        
-        
+       /* 
+        "movq %%rax            ,%%r11             \n" 
+        "mulq (%%rdi)                             \n" 
+        "movq %%rax            ,%%r8              \n" 
+        "movq %%rdx            ,%%r9              \n" 
+        "movq %%r11            ,%%rax             \n" 
+        "mulq "PPS(1,n)"(%%rdi)                   \n" 
+        "addq %%rax            ,%%r9              \n" 
+        "movq %%rdx            ,%%r10             \n" 
+        "adcq $0               ,%%r10             \n" 
+        "movq %%r11            ,%%rax             \n" 
+        "imulq "PPS(2,n)"(%%rdi)                  \n" 
+        "addq %%rax            ,%%r10             \n" 
+        "movq (%%rsi)          ,%%rax             \n" 
+        "xorq "PPS(2,n)"(%%rdi),%%rax             \n" 
+        "shrq $0x3f            ,%%rax             \n" 
+        "notq %%rax                               \n" 
+        "xorq %%r12            ,%%r12             \n" 
+        "notq %%r12                               \n" 
+        "imulq %%r12                              \n" 
+        "andq %%rax            ,%%r8              \n" 
+        "andq %%rax            ,%%r9              \n" 
+        "andq %%rax            ,%%r10             \n" 
+        "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" 
+        "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" 
+        */
         
 // 2*Vli *= long
 #define HELPER_ASM_MUL384_64(n) \
