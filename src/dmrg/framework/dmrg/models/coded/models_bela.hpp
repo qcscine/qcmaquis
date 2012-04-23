@@ -37,7 +37,7 @@ namespace app {
             phys.insert(std::make_pair(0, 1));
             phys.insert(std::make_pair(1, 1));
             
-            std::cout << "Wrong guy." << std::endl;
+            cout << "Wrong guy." << std::endl;
             exit(0);
         }
         

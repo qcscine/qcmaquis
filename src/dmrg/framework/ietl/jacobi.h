@@ -136,7 +136,7 @@ namespace ietl
             vector_type inh = -r;
             
             // initial guess for better convergence
-            #ifdef MPI_PARALLEL
+            #ifdef AMBIENT
             scalar_type dru, duu;
             ietl::dot(r,u,&dru);
             ietl::dot(r,u,&duu);
@@ -199,7 +199,7 @@ namespace ietl
     {
        //for (int i=0;i<n_;i++)
          //  t[i] = -r[i] / ( matrix_(i,i) - theta );
-        // std::cout << "Preconditioner, theta = " << theta << std::endl;
+        // cout << "Preconditioner, theta = " << theta << std::endl;
         // t = -1*r / (1-theta);
         t = -r + ietl::dot(r,u)/ietl::dot(u,u)*u;
     }
@@ -349,16 +349,16 @@ namespace ietl
         do
         {
             // Modified Gram-Schmidt Orthogonalization with Refinement
-            //std::cout << matrix_.right.data_[0];
+            //cout << matrix_.right.data_[0];
 
-            //std::cout << t;
+            //cout << t;
             tau = ietl::two_norm(t);
             for (i=1;i<=iter.iterations();i++)
                 t -= ietl::dot(V[i-1],t)*V[i-1];
             if (ietl::two_norm(t) < kappa * tau)
                 for (i=1;i<=iter.iterations();i++)
                     t -= ietl::dot(V[i-1],t) * V[i-1];
-            //std::cout << t;
+            //cout << t;
             
             
             // v_m = t / |t|_2,  v_m^A = A v_m
@@ -368,7 +368,7 @@ namespace ietl
             // for i=1, ..., iter
             //   M_{i,m} = v_i ^\star v_m ^A
             // end for
-            #ifdef MPI_PARALLEL
+            #ifdef AMBIENT
             for (i=1;i<=iter.iterations()+1;i++)
                 ietl::dot(V[i-1], VA[iter.iterations()], &M(i-1,iter.iterations()));
             ambient::playout();
@@ -387,25 +387,25 @@ namespace ietl
             
             // u^A = V^A s
             // ietl::mult(matrix_,u,uA);
-            //std::cout << VA[0];
-            //std::cout << s[0];
+            //cout << VA[0];
+            //cout << s[0];
             uA = VA[0] * s[0];
-            //std::cout << uA;
+            //cout << uA;
 
 
             for (j=1;j<=iter.iterations();++j)
                 uA += VA[j] * s[j];
             
             // r = u^A - \theta u
-            //std::cout << uA;
-            //std::cout << theta << "\n";
-            //std::cout << u;
+            //cout << uA;
+            //cout << theta << "\n";
+            //cout << u;
             r = uA-theta*u;
-            // std::cout << "Iteration " << iter.iterations() << ", resid = " << ietl::two_norm(r) << std::endl;
+            // cout << "Iteration " << iter.iterations() << ", resid = " << ietl::two_norm(r) << std::endl;
             
             // if (|r|_2 < \epsilon) stop
             ++iter;
-            //std::cout << r;
+            //cout << r;
             if (iter.finished(ietl::two_norm(r),theta))
                 break;
 

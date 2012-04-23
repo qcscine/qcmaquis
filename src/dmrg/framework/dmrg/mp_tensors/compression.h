@@ -9,8 +9,6 @@
 #ifndef COMPRESSION_H
 #define COMPRESSION_H
 
-#include "utils/zout.hpp"
-
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
@@ -86,7 +84,7 @@ struct compression {
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
             else
-                zout << "Norm reduction: " << trace(t) << endl;
+                cout << "Norm reduction: " << trace(t) << endl;
         }
         
         return mps;
@@ -121,7 +119,7 @@ struct compression {
             if (p > 1)
                 mps[p-2].multiply_from_right(t);
             else
-                zout << "Norm reduction: " << trace(t) << endl;
+                cout << "Norm reduction: " << trace(t) << endl;
         }
         
         return mps;

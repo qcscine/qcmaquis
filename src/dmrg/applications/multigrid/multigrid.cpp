@@ -121,10 +121,10 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
     else
         throw std::runtime_error("Don't know this lattice!");
     
-//    std::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
+//    cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
 //    for (int p=0; p<lat->size(); ++p) {
-//        std::cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
-//        std::cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
+//        cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
+//        cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
 //    }
     
     model_traits<Matrix, grp>::model_ptr model = cont_model_factory<Matrix, grp>::parse(*lat, parms1);
@@ -239,8 +239,8 @@ int main(int argc, char ** argv)
         measurements = phys_model->measurements();
         initc = phys_model->initc(model);
         phys = H.get_phys();
-        std::cout << "initc: " << initc << std::endl;
-//        std::cout << "Hamiltonian: " << H << std::endl;
+        cout << "initc: " << initc << std::endl;
+//        cout << "Hamiltonian: " << H << std::endl;
         
         mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
@@ -269,14 +269,14 @@ int main(int argc, char ** argv)
         phys = H.get_phys();
 
 #ifndef NDEBUG
-//        std::cout << parms << std::endl;
-//        std::cout << model << std::endl;
-//        std::cout << measurements << std::endl;
-//        std::cout << H << std::endl;
+//        cout << parms << std::endl;
+//        cout << model << std::endl;
+//        cout << measurements << std::endl;
+//        cout << H << std::endl;
 //
-//        std::cout << "LATTICE:" << std::endl;
+//        cout << "LATTICE:" << std::endl;
 //        for (int i=0; i<lat->size(); ++i)
-//            std::cout << i << ": " << lat->get_prop<double>("x", i) << std::endl;
+//            cout << i << ": " << lat->get_prop<double>("x", i) << std::endl;
 #endif
         
         Measurements<Matrix, grp> meas_always;
@@ -300,7 +300,7 @@ int main(int argc, char ** argv)
         if (cur_mps.length() > 0 && cur_mps.length() != lat->size())
         {
             multigrid_t.begin();
-            std::cout << "*** Starting grainings ***" << std::endl;
+            cout << "*** Starting grainings ***" << std::endl;
             Logger iteration_log;
             
             boost::shared_ptr<mps_initializer<Matrix, grp> > initializer = boost::shared_ptr<mps_initializer<Matrix, grp> > (new empty_mps_init<Matrix, grp>());
@@ -312,13 +312,13 @@ int main(int argc, char ** argv)
             for (int i=0; i<=oldL; ++i)
                 mpo_mix[i] = mixed_mpo(model, r*i, old_model, oldL-i);
             
-//            std::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
+//            cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
             if (cur_mps.length() < initial_mps.length())
                 multigrid::extension_optim(parms, iteration_log,
                                            cur_mps, initial_mps, mpo_mix);
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
-//            std::cout << "New MPS:" << std::endl << initial_mps.description();
+//            cout << "New MPS:" << std::endl << initial_mps.description();
             multigrid_t.end();
 
             std::vector<double> energies, entropies;            
@@ -368,7 +368,7 @@ int main(int argc, char ** argv)
         
         bool early_exit = false;
         {   
-            std::cout << "*** Starting optimization ***" << std::endl;
+            cout << "*** Starting optimization ***" << std::endl;
             ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(initial_mps,
                                                                     parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
                                                                     parms, ssm);

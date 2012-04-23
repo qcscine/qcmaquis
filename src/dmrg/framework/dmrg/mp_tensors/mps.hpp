@@ -6,7 +6,6 @@
  *
  *****************************************************************************/
 
-#include "utils/zout.hpp"
 #include "dmrg/utils/logger.h"
 
 #include "dmrg/mp_tensors/mps.h"

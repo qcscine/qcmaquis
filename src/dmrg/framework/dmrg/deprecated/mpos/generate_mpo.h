@@ -9,7 +9,6 @@
 #ifndef GENERATE_MPO_H
 #define GENERATE_MPO_H
 
-#include "utils/zout.hpp"
 #include "adjacency.h"
 #include "dmrg/mp_tensors/mpo.h"
 
@@ -346,7 +345,7 @@ namespace mpos {
                  it != ops.end(); ++it)
                 positions.push_back( it->first );
 //            std::copy(positions.begin(), positions.end(),
-//                      std::ostream_iterator<size_t>(cout, " ")); zout << " " << endl;
+//                      std::ostream_iterator<size_t>(cout, " ")); cout << " " << endl;
             int minp = *min_element(positions.begin(), positions.end());
             int maxp = *max_element(positions.begin(), positions.end());
             

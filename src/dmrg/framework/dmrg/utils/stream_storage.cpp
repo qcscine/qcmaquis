@@ -56,7 +56,7 @@ StreamStorageMaster::StreamStorageMaster(std::string fp, bool enable)
             throw;
         }
         base_path = ph.string();
-        std::cout << "Temporary storage enabled in " << base_path << std::endl;
+        cout << "Temporary storage enabled in " << base_path << std::endl;
     }
 }
 

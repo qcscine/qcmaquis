@@ -16,7 +16,6 @@
 #define HAVE_GETTIMEOFDAY
 #endif
 
-#include "utils/zout.hpp"
 #include "utils/sizeof.h"
 
 #include "ietl_lanczos_solver.h"
@@ -49,7 +48,7 @@ struct SiteProblem
 gettimeofday(&now, NULL);
 #define END_TIMING(name) \
 gettimeofday(&then, NULL); \
-zout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
+cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
 #else
 #define BEGIN_TIMING(name)
 #define END_TIMING(name)
@@ -84,7 +83,7 @@ public:
 //        mps.normalize_right();
         mps.canonize(0);
         init_left_right(mpo, 0);
-        zout << "Done init_left_right" << endl;
+        cout << "Done init_left_right" << endl;
     }
     
     virtual int sweep(int sweep, Logger & iteration_log,

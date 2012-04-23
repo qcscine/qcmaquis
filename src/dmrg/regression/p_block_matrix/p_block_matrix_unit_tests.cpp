@@ -1,4 +1,3 @@
-#include "utils/zout.hpp"
 #include <vector>
 #include "types/p_dense_matrix/p_dense_matrix.h"
 #include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
@@ -47,7 +46,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
     m1.insert_block(d, -1, 1);
     m1.insert_block(e, 0, 1);
     m1.generate(double());
-    std::cout << m1;
+    cout << m1;
     resize(d, 2, 2);
 
     printf("m2:\n");
@@ -55,12 +54,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
     m2.allocate_blocks();
     m2.generate(double());
 
-    std::cout << m2;
+    cout << m2;
     resize(d, 4, 4);
 
     block_matrix<Matrix, grp> m3;
     m3 = m2;
-    std::cout << m3;
+    cout << m3;
 
 }
 

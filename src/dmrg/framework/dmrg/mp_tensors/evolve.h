@@ -9,8 +9,6 @@
 #ifndef EVOLVE_H
 #define EVOLVE_H
 
-#include "utils/zout.hpp"
-
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 

@@ -64,7 +64,7 @@ public:
         storage::prefetch(right_[2], right_stores_[2]);
 
 #ifndef NDEBUG
-    	zout << mps.description() << endl;
+    	cout << mps.description() << endl;
 #endif
         for (int _site = (resume_at == -1 ? 0 : resume_at); _site < 2*L-2; ++_site) {
 	/* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
@@ -88,8 +88,8 @@ public:
         		site2 = site;
             }
             
-    	    std::cout << std::endl;
-            zout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
+    	    cout << std::endl;
+            cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
 
             if (parms.template get<bool>("beta_mode")) {
                 if (sweep == 0 && lr == 1) {
@@ -149,7 +149,7 @@ public:
 
     	    t_solver.end();
 
-            zout << "Energy " << lr << " " << res.first << endl;
+            cout << "Energy " << lr << " " << res.first << endl;
             iteration_log << make_log("Energy", res.first);
         
             double cutoff;
@@ -206,11 +206,11 @@ public:
 
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
-            zout << "Sweep has been running for " << elapsed << " seconds." << endl;
+            cout << "Sweep has been running for " << elapsed << " seconds." << endl;
             if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
                 return _site+1;
             } else
-                zout << max_secs - elapsed << " seconds left." << endl;
+                cout << max_secs - elapsed << " seconds left." << endl;
     	} // for sites
 
         return -1;

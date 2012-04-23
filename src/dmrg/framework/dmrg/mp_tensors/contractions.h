@@ -9,8 +9,6 @@
 #ifndef CONTRACTIONS_H
 #define CONTRACTIONS_H
 
-#include "utils/zout.hpp"
-
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
@@ -546,15 +544,15 @@ struct contraction {
         // If I haven't removed this by the end of February 2012, remind me to do so!
         
         // if ( (ret.data_.left_basis() != ket_tensor.data_.left_basis()) || (ret.data_.right_basis() != ket_tensor.data_.right_basis()) ) {
-        //     std::cout << "ret left: " << ret.data_.left_basis() << std::endl;
-        //     std::cout << "ket left: " << ket_tensor.data_.left_basis() << std::endl << std::endl;
+        //     cout << "ret left: " << ret.data_.left_basis() << std::endl;
+        //     cout << "ket left: " << ket_tensor.data_.left_basis() << std::endl << std::endl;
         //     
-        //     std::cout << "ret right: " << ret.data_.right_basis() << std::endl;
-        //     std::cout << "ket right: " << ket_tensor.data_.right_basis() << std::endl << std::endl;
+        //     cout << "ret right: " << ret.data_.right_basis() << std::endl;
+        //     cout << "ket right: " << ket_tensor.data_.right_basis() << std::endl << std::endl;
         //     
         //     for (size_t b = 0; b < loop_max; ++b) {
-        //         std::cout << "left_mpo_mps " << b << " right: " << left_mpo_mps[b].right_basis() << std::endl;
-        //         std::cout << "right " << b << " left: " << right[b].left_basis() << std::endl;
+        //         cout << "left_mpo_mps " << b << " right: " << left_mpo_mps[b].right_basis() << std::endl;
+        //         cout << "right " << b << " left: " << right[b].left_basis() << std::endl;
         //     }
         // }
         

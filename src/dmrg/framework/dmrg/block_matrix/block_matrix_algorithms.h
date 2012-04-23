@@ -9,7 +9,6 @@
 #ifndef BLOCK_MATRIX_ALGORITHMS_H
 #define BLOCK_MATRIX_ALGORITHMS_H
 
-#include "utils/zout.hpp"
 #include "dmrg/utils/logger.h"
 #include "utils/timings.h"
 #include "types/utils/matrix_vector_traits.h"
@@ -202,8 +201,8 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
         }
     } 
   
-    if (verbose ) {
-        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
+    if(verbose){
+        cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
     }
     
     if (logger != NULL) {
@@ -258,8 +257,8 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         }
     }
 
-    if (verbose ) {
-        zout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
+    if(verbose){
+        cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
     }
     
     logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());

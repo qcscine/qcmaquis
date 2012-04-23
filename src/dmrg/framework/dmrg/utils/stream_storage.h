@@ -132,7 +132,7 @@ public:
         if (base_path.size() == 0)
             return;
         
-        std::cout << "Storage directory size: "; std::cout.flush();
+        cout << "Storage directory size: "; cout.flush();
         std::ostringstream oss;
         oss << "du -skh " << base_path << " | awk '{print $1}'";
         system(oss.str().c_str());

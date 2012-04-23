@@ -187,9 +187,9 @@ int main(int argc, char ** argv)
     grp::charge initc = phys_model->initc(model);
     Measurements<Matrix, grp> measurements = phys_model->measurements();
     Index<grp> phys = H.get_phys();
-    std::cout << "initc: " << initc << std::endl;
-    
-    std::cout << measurements << std::endl;
+    cout << "initc: " << initc << std::endl;
+
+    cout << measurements << std::endl;
     
     std::vector<Hamiltonian<Matrix, grp> > split_H = separate_overlaps(H);
     std::vector<MPO<Matrix, grp> > expMPO = getU(split_H, lat, parms.get<double>("dt"), true);

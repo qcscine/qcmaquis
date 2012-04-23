@@ -340,7 +340,7 @@ namespace meas_detail {
 			}
 			std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
 
-			//std::cout << dcorr.description() << std::endl;
+			//cout << dcorr.description() << std::endl;
 
 
 			std::vector<std::string> lbt;

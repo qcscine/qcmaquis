@@ -220,7 +220,7 @@ struct measure_<Matrix, TwoU1>
         ar << alps:: make_pvp("/spectrum/results/Filling/mean/value", total_count);
         
         
-        std::cout << "Calculating z-z spin correlation." << std::endl;
+        cout << "Calculating z-z spin correlation." << std::endl;
         std::vector<block_matrix<Matrix, TwoU1> > zz_corr;
         zz_corr.push_back( count_up );
         zz_corr.push_back( count_up );
@@ -246,7 +246,7 @@ struct measure_<Matrix, TwoU1>
                                 ar, zz_corr,
                                 "/spectrum/results/ZZSpinCorrelation4");
         
-        std::cout << "Calculating one body density matrix." << std::endl;
+        cout << "Calculating one body density matrix." << std::endl;
         std::vector<block_matrix<Matrix, TwoU1> > onebody;
         onebody.push_back( create_up );
         onebody.push_back( destroy_up );
@@ -261,7 +261,7 @@ struct measure_<Matrix, TwoU1>
                                 "/spectrum/results/OneBodyDMDown");
        
         
-//        std::cout << "Calculating rung-rung pair field correlation." << std::endl;
+//        cout << "Calculating rung-rung pair field correlation." << std::endl;
 //        std::vector<block_matrix<Matrix, TwoU1> > rr_pairfield;
 //        rr_pairfield.push_back( destroy_down );
 //        rr_pairfield.push_back( destroy_up );

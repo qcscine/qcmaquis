@@ -9,7 +9,6 @@
 #ifndef IETL_JD_SOLVER_H
 #define IETL_JD_SOLVER_H
 
-#include "utils/zout.hpp"
 #include "dmrg/utils/BaseParameters.h"
 
 #include "ietl_lanczos_solver.h"
@@ -42,7 +41,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     
     std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
 
-    zout << "JCD used " << iter.iterations() << " iterations." << endl;
+    cout << "JCD used " << iter.iterations() << " iterations." << endl;
     
     return r0;
 }

@@ -161,7 +161,7 @@ namespace app {
                 for (int i=0; i<states.size(); ++i) {
                     charge c = converter[type].charge(i);
                     size_t bsize = converter[type].block_size(i);
-                    // std::cout << "Inserting " << c << " for " << states[i] << std::endl;
+                    // cout << "Inserting " << c << " for " << states[i] << std::endl;
                     if (!tident[type].has_block(c, c))
                         tident[type].insert_block(Matrix::identity_matrix(bsize), c, c);
                     int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
@@ -174,18 +174,18 @@ namespace app {
             
             /*
              {
-             std::cout << "BASIS:" << std::endl;
+             cout << "BASIS:" << std::endl;
              alps::SiteBasisDescriptor<I> b = model.site_basis(0);
              alps::site_basis<I> states(b);
              for (typename std::map<int, std::vector<typename SymmGroup::charge> >::iterator it=tphys.begin();
              it != tphys.end();
              it++) {
              
-             std::cout << "type " << it->first << ":" << std::endl;
+             cout << "type " << it->first << ":" << std::endl;
              alps::SiteBasisDescriptor<I> b = model.site_basis(it->first);
              alps::site_basis<I> states(b);
              for (int i=0; i<it->second.size(); ++i) {
-             std::cout << " " << i << ":" <<  " " << it->second[i] << " " << states[i] << std::endl;
+             cout << " " << i << ":" <<  " " << it->second[i] << " " << states[i] << std::endl;
              }
              
              }
