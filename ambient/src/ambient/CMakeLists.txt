@@ -19,9 +19,7 @@ add_library (ambient
              channels/groups/group.cpp
              channels/groups/multirank.cpp
              utils/hashmap.cpp
-             utils/tasklist.cpp
-             utils/zout.cpp)
-
+             utils/tasklist.cpp)
 
  install(TARGETS ambient COMPONENT libraries
                          DESTINATION lib

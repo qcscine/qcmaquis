@@ -5,7 +5,7 @@
 #include "ambient/utils/jstrings.hpp"
 #include "ambient/interface/forwarding.h"
 #include "ambient/utils/memory.hpp"
-#include "utils/zout.hpp"
+#include "utils/io.hpp"
 
 namespace ambient{
 
@@ -14,10 +14,6 @@ namespace ambient{
     size_t get_num_threads();
 
     void playout();
-
-    bool outlet();
-
-    bool goutlet();
 
     template<typename T>
     void assign(const T& ref, int i, int j = 0);
@@ -59,14 +55,6 @@ namespace ambient{
 
     void playout(){ 
         controller.flush(); 
-    }
-
-    bool outlet(){ 
-        return (rank()?false:true); 
-    }
-
-    bool goutlet(){ 
-        return (rank()?false:true); 
     }
 
     template<typename T>

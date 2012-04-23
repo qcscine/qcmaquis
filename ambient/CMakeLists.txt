@@ -16,7 +16,7 @@ if(MACHINE_CONFIG)
 endif(MACHINE_CONFIG)
 
 project (ambient)
-set (AMBIENT_VERSION_MAJOR 0)
+set (AMBIENT_VERSION_MAJOR 1)
 set (AMBIENT_VERSION_MINOR 1)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -62,7 +62,6 @@ endif(NOT MPI_CXX_FOUND)
 
 set (BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (AMBIENT_DEBUG_COMPILE "Create a debug compile of AMBIENT" OFF)
-option (AMBIENT_MAIN_COMPILE "Compile the sandbox " OFF)
 option (AMBIENT_TESTS "Build and execute the AMBIENT regression tests" OFF)
 ######################################################################
 # CPU Freq.
@@ -116,16 +115,6 @@ endif()
 
 ########################################################################
 #
-# Main Compile
-#
-########################################################################
-
-if(AMBIENT_MAIN_COMPILE)
-   add_subdirectory(sandbox/)
-endif()
-
-########################################################################
-#
 # Tests
 #
 ########################################################################
@@ -145,14 +134,14 @@ list(APPEND AMBIENT_CONFIG_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include ${MPI_CX
 list(APPEND AMBIENT_CONFIG_LIBRARY_DIRS ${CMAKE_INSTALL_PREFIX}/lib)
 list(APPEND AMBIENT_CONFIG_LIBRARIES ambient ${MPI_CXX_LIBRARIES})
 list(APPEND AMBIENT_CONFIG_COMPILE_FLAGS ${MPI_CXX_COMPILE_FLAGS})
-list(APPEND AMBIENT_CONFIG_EXE_FLAGS -DMPI_PARALLEL ${MPI_CXX_COMPILE_FLAGS})
+list(APPEND AMBIENT_CONFIG_EXE_FLAGS -DAMBIENT ${MPI_CXX_COMPILE_FLAGS})
 # list(APPEND AMBIENT_CONFIG_EXE_FLAGS ${MPI_CXX_LINK_FLAGS})
 
 list(APPEND AMBIENT_BUILD_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src ${MPI_CXX_INCLUDE_PATH})
 list(APPEND AMBIENT_BUILD_LIBRARY_DIRS "")
 list(APPEND AMBIENT_BUILD_LIBRARIES ambient ${MPI_CXX_LIBRARIES})
 list(APPEND AMBIENT_BUILD_COMPILE_FLAGS ${MPI_CXX_COMPILE_FLAGS})
-list(APPEND AMBIENT_BUILD_EXE_FLAGS -DMPI_PARALLEL ${MPI_CXX_COMPILE_FLAGS})
+list(APPEND AMBIENT_BUILD_EXE_FLAGS -DAMBIENT ${MPI_CXX_COMPILE_FLAGS})
 # list(APPEND AMBIENT_BUILD_EXE_FLAGS ${MPI_CXX_LINK_FLAGS})
 
 configure_file(MaquisAmbientConfig.cmake.in ${PROJECT_BINARY_DIR}/MaquisAmbientConfig.cmake)
