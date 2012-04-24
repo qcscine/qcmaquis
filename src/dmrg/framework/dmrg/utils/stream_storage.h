@@ -227,7 +227,7 @@ public:
         std::string fp = store->master->base_path + store->object_path;
         std::ifstream ifs(fp.c_str(), std::ifstream::binary);
         if (!ifs) {
-            std::cerr << "File not found in StreamReadRequest!" << std::endl;
+            maquis::cerr << "File not found in StreamReadRequest!" << std::endl;
             exit(1);
         }
         
@@ -282,7 +282,7 @@ public:
         std::string fp = store->master->base_path + store->object_path;
         std::ifstream ifs(fp.c_str(), std::ifstream::binary);
         if (!ifs) {
-            std::cerr << "File not found in StreamReadRequest!" << std::endl;
+            maquis::cerr << "File not found in StreamReadRequest!" << std::endl;
             exit(1);
         }
         

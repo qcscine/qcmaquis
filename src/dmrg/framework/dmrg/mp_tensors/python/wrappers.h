@@ -48,7 +48,7 @@ typename charge_wrapped_as<sgrp>::type wrapped_fuse(object o1, object o2)
     
     extract<wt> w1(o1), w2(o2);
     if (!(w1.check() && w2.check()))
-        std::cerr << "Conversion error!" << std::endl;
+        maquis::cerr << "Conversion error!" << std::endl;
     
     return sgrp::fuse(w1(), w2());
 }
@@ -70,7 +70,7 @@ struct wrapped_pair
      extract<std::size_t> w1(o1);
      extract<wrapped_charge> w2(o2);
      if (!(w1.check() && w2.check()))
-     std::cerr << "Conversion error!" << std::endl;
+     maquis::cerr << "Conversion error!" << std::endl;
      
      data_.first = w1();
      data_.second = w2();

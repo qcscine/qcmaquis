@@ -19,7 +19,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <alps/parameter.h>
-
+#include "utils/io.hpp"
 
 namespace conversion
 {
@@ -33,7 +33,7 @@ namespace conversion
             try {
                 return boost::lexical_cast<T>(val);
             } catch (std::exception &e) {
-                std::cerr << "Exception raised casting " << val << " to type " << typeid(T).name() << std::endl;
+                maquis::cerr << "Exception raised casting " << val << " to type " << typeid(T).name() << std::endl;
                 throw e;
             }
         }
@@ -54,7 +54,7 @@ namespace conversion
     {
         std::vector<T> operator()(std::string const & val)
         {
-            //            cerr << "reading " << key << std::endl;
+            //            maquis::cerr << "reading " << key << std::endl;
             std::string raw = val;
 			boost::trim_if(raw, boost::is_any_of("\"'"));
             std::vector<T> ret;
@@ -105,8 +105,8 @@ public:
             alps::Parameters temp(param_file);
             *static_cast<alps::Parameters*>(this) = temp;
         } catch (std::exception & e) {
-            std::cerr << "Exception thrown when parsing parameters:" << std::endl;
-            std::cerr << e.what() << std::endl;
+            maquis::cerr << "Exception thrown when parsing parameters:" << std::endl;
+            maquis::cerr << e.what() << std::endl;
             exit(1);
         }
     }
