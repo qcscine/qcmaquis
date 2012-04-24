@@ -82,41 +82,19 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
- //   int SizeVector = atoi(argv[1]);  
-
-//    polynomial_vector_type v1gmp(SizeVector);
-//    polynomial_vector_type v2gmp(SizeVector);
-    polynomial_type pgmp;
-    polynomial_typed pgmpd;
-
-    vli_type_cpu a;
-
-   unsigned long b(-1);
-    vli_type_cpu c(a);
-        a[0] = 0xFFFFFFFFFFFFFFFF;
-
-    std::cout << a << " *= "<< std::hex << b << std::endl;
     
-    Timer B("withoutif");
-    B.begin();
-    for(int i =0; i < 1; ++i){
-        c[0] = 0xFFFFFFFFFFFFFFFF;
-        vli::totob(&c[0],b);
-    }
-    B.end();
+   vli_type_cpu a; 
+   vli::vli_cpu<unsigned long int, 4> b;
 
-    Timer A("withif");
-    A.begin();
-    for(int i=0; i < 1; ++i){
-        a[0] = 0xFFFFFFFFFFFFFFFF;
-        vli::totoa(&a[0],b);
-    }
-    A.end();
+   std::cout << b << std::endl; 
 
-    std::cout <<"With if    " << a << " " << std::endl;
-    std::cout <<"Without if " << std::hex << "(" << c[2]<< " " << c[1] << " " << c[0]  << ")" << std::endl;
-    
-    
+   b[0]=0xffffffffffffffff;
+
+   a[0]=0xffffffffffffffff;
+   a*=-2;
+   b*=-2;
+   std::cout << a << std::endl; 
+   std::cout << b << std::endl; 
     /*
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
