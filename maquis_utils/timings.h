@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include "utils/io.hpp"
 
 #ifdef _OPENMP
 #include "omp.h"
