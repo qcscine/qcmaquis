@@ -18,7 +18,10 @@ configure_file (
 add_library(vli_cpu 
             detail/kernels_cpu_add_asm.cpp
             detail/kernels_cpu_sub_asm.cpp
-            detail/kernels_cpu_asm.cpp)
+            detail/kernels_cpu_mul_asm.cpp
+            detail/kernels_cpu_asm.cpp
+      )
+     
 
 
 ########################################################################

@@ -69,6 +69,8 @@ namespace vli
         detail::muladd384_192_192(&vli_res[0],&vli_a[0],&vli_b[0]);
     }
 
+    /* ---------------------------------------------------- Begin Addition specialization ---------------------------------------------------- */
+
     //specialization addnbits_nbits, until 512 bits
     #define FUNCTION_add_nbits_nbits(z, n, unused) \
         template<> \
@@ -89,8 +91,10 @@ namespace vli
     BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_64bits, ~)
     #undef FUNCTION_add_nbits_64bits
 
-    //specialization subnbits_nbits, until 512 bits
+    /* ---------------------------------------------------- End Addition specialization ---------------------------------------------------- */
 
+    /* ---------------------------------------------------- Begin Substraction specialization ---------------------------------------------------- */
+    //specialization subnbits_nbits, until 512 bits
     #define FUNCTION_sub_nbits_nbits(z, n, unused) \
         template<> \
         void sub<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y){ \
@@ -109,24 +113,21 @@ namespace vli
 
     BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_sub_nbits_64bits, ~)
     #undef FUNCTION_sub_nbits_64bits
+
+    /* ---------------------------------------------------- end Substraction specialization ---------------------------------------------------- */
+
+    /* ---------------------------------------------------- Begin Multipliation specialization ---------------------------------------------------- */
     //specialization mul    
-    template<>
-    void mul<unsigned long int,3>(unsigned long int * x,unsigned long int const y){
-        detail::mul192_64(x,&y); // 384 * 64 = 384
-    }; 
-    
-    void totoa(unsigned long int * x,unsigned long int const y){
-        detail::mul192_64(x,&y); // 384 * 64 = 384        
-    }    
-    void totob(unsigned long int * x,unsigned long int const y){
-        detail::mul192_64b(x,&y); // 384 * 64 = 384        
-    }
-    
-    template<>
-    void mul<unsigned long int,6>(unsigned long int * x,unsigned long int const y){
-        detail::mul384_64(x,&y); // 384 * 64 = 384
-    }; 
-        
+    //specialization mulnbits_64bits, until 512 bits
+    #define FUNCTION_mul_nbits_64bits(z, n, unused) \
+        template<> \
+        void mul<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const y){ \
+        detail::NAME_MUL_NBITS_64BITS(n)(x,&y); \
+        }; \
+
+    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
+    #undef FUNCTION_mul_nbits_64bits
+
     
 } //namespace vli
 

@@ -36,8 +36,14 @@ typedef boost::mpl::pop_front<
 BOOST_PP_SEQ_FOR_EACH(VLI_CPU_APPEND_TEST_TYPE, _, VLI_COMPILE_BASEINT_SIZE_ORDER_TUPLE_SEQ )
     >
 >::type vli_cpu_type_list;
-
-
+// I could boost pp
+typedef boost::mpl::list< vli::vli_cpu <unsigned long int, 2>,
+                          vli::vli_cpu <unsigned long int, 3>, 
+                          vli::vli_cpu <unsigned long int, 4>, 
+                          vli::vli_cpu <unsigned long int, 5>, 
+                          vli::vli_cpu <unsigned long int, 7>, 
+                          vli::vli_cpu <unsigned long int, 8> 
+                        > vli_cpu_type_extented_list;
 
 boost::mt11213b rng;
 
