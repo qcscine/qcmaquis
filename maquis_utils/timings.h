@@ -3,6 +3,13 @@
 
 #include <string>
 #include <fstream>
+#include <iostream>
+
+#ifdef AMBIENT
+using ambient::cout;
+#else
+using std::cout;
+#endif
 
 #ifdef _OPENMP
 #include "omp.h"
@@ -14,15 +21,6 @@
 #endif
 
 #define BILLION 0x3B9ACA00
-/*
-unsigned long long getcpuclocks() {
-    unsigned long long clk;
-    __asm__ ("rdtsc");
-    __asm__("shl %rdx,32");
-    __asm { add rax,rdx };
-    __asm { mov clk,rax };
-    return clk;
-}*/
 
 
 #if defined(__i386__)
@@ -130,7 +128,6 @@ private:
 };
 #endif
 
-// TODO: improve ifdef
 #ifdef AMBIENT 
 class TimerPTH : public Timer{
 public:
@@ -146,7 +143,6 @@ public:
          struct timespec ts; //from time.h
          clock_gettime(cid_, &ts);
          val = ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
-//         printf("%4ld.%03ld\n", ts.tv_sec, ts.tv_nsec / 1000000);
     }
 private:    
     pthread_t thread_; 
