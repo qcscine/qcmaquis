@@ -79,7 +79,7 @@ void gemm(matrix_gpu<float> const& A, matrix_gpu<float> const& B, matrix_gpu<flo
 	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, A.p(), A.ld(), B.p(), B.ld(), 0, C.p(), C.ld());	
 	if (s != CUBLAS_STATUS_SUCCESS )
 	{
-		std::cout << " Sgemm " <<cublasGetError() << std::endl;
+		maquis::cout << " Sgemm " <<cublasGetError() << std::endl;
 	}
 
 }
@@ -203,7 +203,7 @@ void matrix_matrix_multiply(maquis::types::dense_matrix<double,std::vector<doubl
 	cublasDgemm('n', 'n', m, n_gpu, k, 1.0, lhs_gpu.p(), m,rhs_gpu.p(), k, 0.0, result_gpu.p(), m); 
 	dgemm_(&TRANS_LEFT,&TRANS_RIGHT,&m, &n_cpu, &k, &alpha, &lhs(0,0), &lhs_stride2 ,&rhs(0,0)+rhs.stride2()*n_gpu, &rhs_stride2, &beta,&result_cpu(0,0)+result_cpu.stride2()*n_gpu, &result_cpu_stride2); 
 	cublasGetMatrix (m, n_gpu, sizeof(double), result_gpu.p(), m, &result_cpu(0,0), result_cpu.stride2()); 
-	cout << result_cpu << endl;
+    maquis::cout << result_cpu << std::endl;
 }
 	
 
@@ -442,8 +442,8 @@ void svd(matrix_gpu<float> & M, matrix_gpu<float> & U, matrix_gpu<float> & V, ve
 	s = culaDeviceSgesvd(jobu,jobvt,num_rows,num_columns,M.p(),M.ld(),S.p(),U.p(),U.ld(),V.p(),V.ld());
 	if(s != culaNoError)
 	{
-		std::cout << culaGetErrorInfo() << std::endl;
-		std::cout << culaGetStatusString(s) << std::endl;
+		maquis::cout << culaGetErrorInfo() << std::endl;
+		maquis::cout << culaGetStatusString(s) << std::endl;
 	}
 	
 };
@@ -469,8 +469,8 @@ void svd(matrix_gpu<double> & M, matrix_gpu<double> & U, matrix_gpu<double> & V)
 	s = culaDeviceDgesvd(jobu,jobvt,num_rows,num_columns,M.p(),M.ld(),S.p(),U.p(),U.ld(),V.p(),V.ld());
 	if(s != culaNoError)
 	{
-		std::cout << culaGetErrorInfo() << std::endl;
-		std::cout << culaGetStatusString(s) << std::endl;
+		maquis::cout << culaGetErrorInfo() << std::endl;
+		maquis::cout << culaGetStatusString(s) << std::endl;
 	}
 	
 };
@@ -490,8 +490,8 @@ void qr(matrix_gpu<float> & M,  matrix_gpu<float> & Q , matrix_gpu<float> & R)
 	s = culaDeviceSgeqrf(num_rows, num_columns, M.p(), M.ld(), TAU.p() );
 	if(s != culaNoError)
 	{
-		std::cout << culaGetErrorInfo() << std::endl;
-		std::cout << culaGetStatusString(s) << std::endl;
+		maquis::cout << culaGetErrorInfo() << std::endl;
+		maquis::cout << culaGetStatusString(s) << std::endl;
 	}
 
 };

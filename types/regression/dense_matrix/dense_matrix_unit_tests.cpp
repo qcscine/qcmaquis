@@ -7,8 +7,6 @@
 #include <numeric>
 #include <iostream>
 
-using std::cout;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
 #include "types/dense_matrix/matrix_interface.hpp"

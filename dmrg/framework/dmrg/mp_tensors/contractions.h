@@ -544,15 +544,15 @@ struct contraction {
         // If I haven't removed this by the end of February 2012, remind me to do so!
         
         // if ( (ret.data_.left_basis() != ket_tensor.data_.left_basis()) || (ret.data_.right_basis() != ket_tensor.data_.right_basis()) ) {
-        //     cout << "ret left: " << ret.data_.left_basis() << std::endl;
-        //     cout << "ket left: " << ket_tensor.data_.left_basis() << std::endl << std::endl;
+        //     maquis::cout << "ret left: " << ret.data_.left_basis() << std::endl;
+        //     maquis::cout << "ket left: " << ket_tensor.data_.left_basis() << std::endl << std::endl;
         //     
-        //     cout << "ret right: " << ret.data_.right_basis() << std::endl;
-        //     cout << "ket right: " << ket_tensor.data_.right_basis() << std::endl << std::endl;
+        //     maquis::cout << "ret right: " << ret.data_.right_basis() << std::endl;
+        //     maquis::cout << "ket right: " << ket_tensor.data_.right_basis() << std::endl << std::endl;
         //     
         //     for (size_t b = 0; b < loop_max; ++b) {
-        //         cout << "left_mpo_mps " << b << " right: " << left_mpo_mps[b].right_basis() << std::endl;
-        //         cout << "right " << b << " left: " << right[b].left_basis() << std::endl;
+        //         maquis::cout << "left_mpo_mps " << b << " right: " << left_mpo_mps[b].right_basis() << std::endl;
+        //         maquis::cout << "right " << b << " left: " << right[b].left_basis() << std::endl;
         //     }
         // }
         
@@ -710,7 +710,6 @@ struct contraction {
                           Index<SymmGroup> const & right_i,
                           Index<SymmGroup> const & phys_i)
     {
-        using std::size_t;
         typedef typename SymmGroup::charge charge;
         
         Index<SymmGroup> l_index = phys_i * left_i, r_index = adjoin(phys_i) * right_i;
@@ -795,7 +794,6 @@ struct contraction {
     local_op(MPSTensor<Matrix, SymmGroup> const & mps,
              block_matrix<Matrix, SymmGroup> const & op)
     {
-        using std::size_t;
         typedef typename SymmGroup::charge charge;
         
         mps.make_left_paired();
@@ -877,7 +875,6 @@ struct contraction {
     density_matrix(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                    MPSTensor<Matrix, SymmGroup> const & ket_tensor)
     {
-        using std::size_t;
         typedef typename SymmGroup::charge charge;
         
         assert( bra_tensor.row_dim() == ket_tensor.row_dim() );

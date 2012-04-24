@@ -37,15 +37,12 @@ namespace app {
             phys.insert(std::make_pair(0, 1));
             phys.insert(std::make_pair(1, 1));
             
-            cout << "Wrong guy." << std::endl;
+            maquis::cout << "Wrong guy." << std::endl;
             exit(0);
         }
         
         void do_init(const Lattice & lat, BaseParameters & parms, std::complex<double>)
         {
-            using std::cout;
-            using std::endl;
-            
             phys.insert(std::make_pair(-1, 1));
             phys.insert(std::make_pair(1, 1));
             
@@ -69,9 +66,9 @@ namespace app {
             std::vector<int> last_adj = lat.all(L-1);
             bool open = !(std::count(last_adj.begin(), last_adj.end(), 0) > 0);
             if (open)
-                cout << "OBC" << endl;
+                maquis::cout << "OBC" << std::endl;
             else
-                cout << "PBC" << endl;
+                maquis::cout << "PBC" << std::endl;
 
 #define NN(p,op1,q,op2) \
 { hamterm_t term; \
@@ -188,7 +185,7 @@ terms.push_back(term); }
 
 #define TERM(p1_,p2_,p3_) \
 if (true) { \
-cout << "Operator on " << p1_ << " " << p2_ << " " << p3_ << endl; \
+maquis::cout << "Operator on " << p1_ << " " << p2_ << " " << p3_ << std::endl; \
 int p1=(p1_)%L, p2=(p2_)%L, p3=(p3_)%L; \
 NNN(p1,  f*KK * splus, p2, sminus, p3, delta*sz); \
 NNN(p1, -f*KK * splus, p2, sz, p3, sminus); \

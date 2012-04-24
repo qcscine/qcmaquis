@@ -255,7 +255,7 @@ namespace mpos {
         
         void push_extra_terms(MPOMaker<Matrix, U1> & mm)
         {
-            cout << "Adding extra term." << endl;
+            maquis::cout << "Adding extra term." << std::endl;
             std::vector<std::pair<std::size_t, op_t> > terms;
             block_matrix<Matrix, U1> sz, szz;
             

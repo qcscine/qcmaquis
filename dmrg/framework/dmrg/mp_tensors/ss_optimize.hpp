@@ -70,7 +70,7 @@ public:
         storage::prefetch(right_[1], right_stores_[1]);
         
 #ifndef NDEBUG
-        cout << mps.description() << endl;
+        maquis::cout << mps.description() << std::endl;
 #endif
         for (int _site = (resume_at == -1 ? 0 : resume_at);
              _site < 2*L; ++_site) {
@@ -86,7 +86,7 @@ public:
                 lr = -1;
             }
             
-            cout << "Sweep " << sweep << ", optimizing site " << site << endl;
+            maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
 //            storage_master.print_size();
             
 //            mps[site].make_left_paired();
@@ -117,11 +117,11 @@ public:
                     storage::prefetch(left_[site-1], left_stores_[site-1]);
             }
             
-//            cout << "My size: " << endl;
-//            cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << endl;
-//            cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << endl;
-//            cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << endl;
-//            cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << endl;
+//            maquis::cout << "My size: " << std::endl;
+//            maquis::cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << std::endl;
+//            maquis::cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << std::endl;
+//            maquis::cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << std::endl;
+//            maquis::cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << std::endl;
             
             t_io.end();
             t_solver.begin();
@@ -132,11 +132,11 @@ public:
 //            { // LAUSANNE
 //                MPSTensor<Matrix, SymmGroup> vec1 = mps[site], vec2;
 //                vec1.make_left_paired(); vec2.make_left_paired();
-//                cout << vec1 << " " << vec2 << endl;
+//                maquis::cout << vec1 << " " << vec2 << std::endl;
 //                ietl::mult(sp, vec1, vec2);
 //                vec1.make_left_paired(); vec2.make_left_paired();
-//                cout << vec1 << " " << vec2 << endl;
-//                cout << "Initial energy guess " << ietl::dot(vec1, vec2) << endl;;
+//                maquis::cout << vec1 << " " << vec2 << std::endl;
+//                maquis::cout << "Initial energy guess " << ietl::dot(vec1, vec2) << std::endl;
 //            } // LAUSANNE
             
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
@@ -172,8 +172,8 @@ public:
             
             t_solver.end();
             
-            cout << "Energy " << lr << " " << res.first << endl;
-//            cout << "Energy check " << expval(mps, mpo) << endl;
+            maquis::cout << "Energy " << lr << " " << res.first << std::endl;
+//            maquis::cout << "Energy check " << expval(mps, mpo) << std::endl;
             
             iteration_log << make_log("Energy", res.first);
             
@@ -215,7 +215,7 @@ public:
                 
             if (lr == +1) {
                 if (site < L-1) {
-                    cout << "Growing, alpha = " << alpha << endl;
+                    maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
                 } else {
@@ -229,7 +229,7 @@ public:
                 storage::reset(left_stores_[site+1]); // left_stores_[site+1] is outdated
             } else if (lr == -1) {
                 if (site > 0) {
-                    cout << "Growing, alpha = " << alpha << endl;
+                    maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
@@ -254,12 +254,12 @@ public:
             
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
-            cout << "Sweep has been running for " << elapsed << " seconds." << endl;
+            maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
             if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
                 return _site+1;
             }
             else
-                cout << max_secs - elapsed << " seconds left." << endl;
+               maquis::cout << max_secs - elapsed << " seconds left." << std::endl;
         }
         
         return -1;

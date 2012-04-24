@@ -69,12 +69,12 @@ struct compression {
         
         mps.canonize(1);
         
-        if (verbose) cout << "Compressing @ ";
+        if (verbose) maquis::cout << "Compressing @ ";
         for (std::size_t p = 1; p < L; ++p)
         {
             if (verbose) {
-                cout << p << " ";
-                cout.flush();
+                maquis::cout << p << " ";
+                maquis::cout.flush();
             }
             
             compress_two_sites(mps, Mmax, cutoff, p-1, logger);
@@ -84,7 +84,7 @@ struct compression {
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
             else
-                cout << "Norm reduction: " << trace(t) << endl;
+                maquis::cout << "Norm reduction: " << trace(t) << std::endl;
         }
         
         return mps;
@@ -104,12 +104,12 @@ struct compression {
         
         mps.canonize(L-1);
         
-        if (verbose) cout << "Compressing @ ";
+        if (verbose) maquis::cout << "Compressing @ ";
         for (std::size_t p = L-1; p > 0; --p)
         {
             if (verbose) {
-                cout << p << " ";
-                cout.flush();
+                maquis::cout << p << " ";
+                maquis::cout.flush();
             }
             
             compress_two_sites(mps, Mmax, cutoff, p-1, logger);
@@ -119,7 +119,7 @@ struct compression {
             if (p > 1)
                 mps[p-2].multiply_from_right(t);
             else
-                cout << "Norm reduction: " << trace(t) << endl;
+                maquis::cout << "Norm reduction: " << trace(t) << std::endl;
         }
         
         return mps;

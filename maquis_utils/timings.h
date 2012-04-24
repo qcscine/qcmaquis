@@ -5,12 +5,6 @@
 #include <fstream>
 #include <iostream>
 
-#ifdef AMBIENT
-using ambient::cout;
-#else
-using std::cout;
-#endif
-
 #ifdef _OPENMP
 #include "omp.h"
 #endif
@@ -75,7 +69,7 @@ public:
     Timer(std::string name_)
     : val(0.0), name(name_), freq((long long unsigned int)CPU_FREQ), nCounter(0) { }
     
-    ~Timer() { cout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
+    ~Timer() { maquis::cout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
     
     Timer & operator+=(double t) {
         val += t;

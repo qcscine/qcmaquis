@@ -7,10 +7,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -111,16 +107,16 @@ get_U (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
     for (int i=0; i<split_H.size(); ++i)
         expH[i] = make_exp_nn(split_H[i], alpha);
     
-    cout << expH.size() << " non overlapping Hamiltonians" << std::endl;
+    maquis::cout << expH.size() << " non overlapping Hamiltonians" << std::endl;
     for (int i=0; i<expH.size(); ++i)
     {
-       // cout << "Hamiltonian " << i << std::endl; // C comment else crash gcc
+       // maquis::cout << "Hamiltonian " << i << std::endl; // C comment else crash gcc
         for (std::map<std::size_t, block_matrix<Matrix, grp> >::const_iterator it = expH[i].begin();
              it != expH[i].end();
              ++it)
         {
-            cout << " ** position " << it->first << std::endl;
-            cout << " ** matrix " << std::endl << it->second << std::endl;
+            maquis::cout << " ** position " << it->first << std::endl;
+            maquis::cout << " ** matrix " << std::endl << it->second << std::endl;
             
         }
     }
@@ -130,14 +126,14 @@ get_U (Hamiltonian<Matrix, grp> const & H, double dt, bool img)
 
 int main(int argc, char ** argv)
 {
-    cout << DMRG_VERSION_STRING << endl;
+    maquis::cout << DMRG_VERSION_STRING << std::endl;
     if (argc != 3)
     {
-        cout << "Usage: <parms> <model_parms>" << endl;
+        maquis::cout << "Usage: <parms> <model_parms>" << std::endl;
         exit(1);
     }
     
-    cout.precision(10);
+    maquis::cout.precision(10);
     
 #ifdef USE_GPU
 	cublasInit();
@@ -145,14 +141,14 @@ int main(int argc, char ** argv)
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
-        cerr << "Could not open parameter file." << endl;
+        cerr << "Could not open parameter file." << std::endl;
         exit(1);
     }
     DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
-        cerr << "Could not open model file." << endl;
+        cerr << "Could not open model file." << std::endl;
         exit(1);
     }
     ModelParameters model(model_file);
@@ -166,7 +162,7 @@ int main(int argc, char ** argv)
         struct stat tmp;
         if (stat(chkpfile.c_str(), &tmp) == 0 && S_ISREG(tmp.st_mode))
         {
-            cout << "Restoring state." << endl;
+            maquis::cout << "Restoring state." << std::endl;
             restore = true;
         }
     }
@@ -176,7 +172,7 @@ int main(int argc, char ** argv)
     
 #ifdef IMG_ONLY
     if (parms.get<int>("nsweeps_img") != parms.get<int>("nsweeps")) {
-        cerr << "IMG_ONLY code, make sure that nsweeps_img == nsweeps." << endl;
+        cerr << "IMG_ONLY code, make sure that nsweeps_img == nsweeps." << std::endl;
         exit(1);
     }
 #endif
@@ -188,10 +184,10 @@ int main(int argc, char ** argv)
     grp::charge initc = phys_model->initc(model);
     Measurements<Matrix, grp> measurements = phys_model->measurements();
     Index<grp> phys = H.get_phys();
-    cout << "initc: " << initc << std::endl;
+    maquis::cout << "initc: " << initc << std::endl;
     
-//    cout << "Hamiltonian: " << std::endl << H << std::endl;
-//    cout << "Measurements: " << std::endl << measurements << std::endl;
+//    maquis::cout << "Hamiltonian: " << std::endl << H << std::endl;
+//    maquis::cout << "Measurements: " << std::endl << measurements << std::endl;
         
     Measurements<Matrix, grp> meas_always;
     if (!parms.get<std::string>("always_measure").empty()) {
@@ -268,10 +264,10 @@ int main(int argc, char ** argv)
 //            entropies = calculate_bond_entropies(mps);
             
 //            std::complex<double> mps_norm = norm(mps);
-//            cout << "Norm " << mps_norm << std::endl;
+//            maquis::cout << "Norm " << mps_norm << std::endl;
 
             double energy = expval(mps, mpo);
-            cout << "Energy " << energy << std::endl;
+            maquis::cout << "Energy " << energy << std::endl;
             
             gettimeofday(&sthen, NULL);
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
@@ -294,7 +290,7 @@ int main(int argc, char ** argv)
                 oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), entropies);
                 
-                cout << "Sweep " << sweep << " done after " << elapsed << " seconds." << endl;
+                maquis::cout << "Sweep " << sweep << " done after " << elapsed << " seconds." << std::endl;
                 oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));                
@@ -330,7 +326,7 @@ int main(int argc, char ** argv)
     gettimeofday(&then, NULL);
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
     
-    cout << "Task took " << elapsed << " seconds." << endl;
+    maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     
 #ifdef USE_GPU
 	cublasShutdown();

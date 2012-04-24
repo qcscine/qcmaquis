@@ -257,8 +257,8 @@ template<class T>
 void verbose_assert(T const & a, T const & b)
 {
     if (!( a == b) ) {
-        cout << "a: " << a << std::endl;
-        cout << "b: " << b << std::endl;
+        maquis::cout << "a: " << a << std::endl;
+        maquis::cout << "b: " << b << std::endl;
         assert( a == b );
     }
 }
@@ -464,18 +464,18 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
         if (right_i != data_.right_basis())
             throw std::runtime_error("right basis is wrong");
         
-//        cout << "** reasonable left_paired **" << std::endl;
-//        cout << "reasonable::left_i: " << left_i << std::endl;
-//        cout << "reasonable::right_i: " << right_i << std::endl;
-//        cout << "reasonable::data_:" << std::endl << data_ << std::endl;
+//        maquis::cout << "** reasonable left_paired **" << std::endl;
+//        maquis::cout << "reasonable::left_i: " << left_i << std::endl;
+//        maquis::cout << "reasonable::right_i: " << right_i << std::endl;
+//        maquis::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
         make_right_paired();
         if (left_i != data_.left_basis())
             throw std::runtime_error("left basis is wrong");
         
-//        cout << "** reasonable right_paired **" << std::endl;
-//        cout << "reasonable::left_i: " << left_i << std::endl;
-//        cout << "reasonable::right_i: " << right_i << std::endl;
-//        cout << "reasonable::data_:" << std::endl << data_ << std::endl;
+//        maquis::cout << "** reasonable right_paired **" << std::endl;
+//        maquis::cout << "reasonable::left_i: " << left_i << std::endl;
+//        maquis::cout << "reasonable::right_i: " << right_i << std::endl;
+//        maquis::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
     }
     
     {

@@ -44,7 +44,7 @@ struct SiteProblem
 gettimeofday(&now, NULL);
 #define END_TIMING(name) \
 gettimeofday(&then, NULL); \
-cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << endl;
+maquis::cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << std::endl;
 
 template<class Matrix, class SymmGroup, class StorageMaster>
 class time_evolve

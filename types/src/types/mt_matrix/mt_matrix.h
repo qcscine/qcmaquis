@@ -298,9 +298,9 @@ namespace maquis
                                                                                                mta, mtb, mtc)));
                 }
                 
-                //        cerr << "Waiting..." << endl;
+                //        cerr << "Waiting..." << std::endl;
                 //        A.wait(); B.wait(); C.wait();
-                //        cerr << "Done waiting." << endl;
+                //        cerr << "Done waiting." << std::endl;
             }
             
             template <typename TT, class DiagMatrix>

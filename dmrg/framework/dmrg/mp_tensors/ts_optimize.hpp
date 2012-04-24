@@ -64,7 +64,7 @@ public:
         storage::prefetch(right_[2], right_stores_[2]);
 
 #ifndef NDEBUG
-    	cout << mps.description() << endl;
+    	maquis::cout << mps.description() << std::endl;
 #endif
         for (int _site = (resume_at == -1 ? 0 : resume_at); _site < 2*L-2; ++_site) {
 	/* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
@@ -88,8 +88,8 @@ public:
         		site2 = site;
             }
             
-    	    cout << std::endl;
-            cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
+    	    maquis::cout << std::endl;
+            maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
 
             if (parms.template get<bool>("beta_mode")) {
                 if (sweep == 0 && lr == 1) {
@@ -149,7 +149,7 @@ public:
 
     	    t_solver.end();
 
-            cout << "Energy " << lr << " " << res.first << endl;
+            maquis::cout << "Energy " << lr << " " << res.first << std::endl;
             iteration_log << make_log("Energy", res.first);
         
             double cutoff;
@@ -206,11 +206,11 @@ public:
 
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
-            cout << "Sweep has been running for " << elapsed << " seconds." << endl;
+            maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
             if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
                 return _site+1;
             } else
-                cout << max_secs - elapsed << " seconds left." << endl;
+                maquis::cout << max_secs - elapsed << " seconds left." << std::endl;
     	} // for sites
 
         return -1;

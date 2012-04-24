@@ -47,9 +47,9 @@ public:
             gemm(U, Sqrt, left);
             gemm(Sqrt, V, right);
             
-            cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
+            maquis::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
             replace_pair(left, right, p);
-            cout << bond_indices[p+1].sum_of_sizes() << std::endl;
+            maquis::cout << bond_indices[p+1].sum_of_sizes() << std::endl;
         }
     }
     
@@ -59,8 +59,6 @@ private:
     
     void calc_charges()
     {
-        using std::size_t;
-        
         size_t L = this->size();
         bond_index_charges.clear();
         bond_index_charges.resize(L+1);
@@ -79,20 +77,20 @@ private:
                         charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
                                                             SymmGroup::fuse((*this)[p-1](r,c).left_basis()[b].first,
                                                                             -(*this)[p-1](r,c).right_basis()[b].first)));
-//                        cout << r << " " << c << std::endl;
-//                        cout << bond_index_charges[p-1][r] << std::endl;
-//                        cout << (*this)[p-1](r,c).left_basis()[b].first << std::endl;
-//                        cout << (*this)[p-1](r,c).right_basis()[b].first << std::endl;
+//                        maquis::cout << r << " " << c << std::endl;
+//                        maquis::cout << bond_index_charges[p-1][r] << std::endl;
+//                        maquis::cout << (*this)[p-1](r,c).left_basis()[b].first << std::endl;
+//                        maquis::cout << (*this)[p-1](r,c).right_basis()[b].first << std::endl;
 //                        std::copy(charge_diffs.begin(), charge_diffs.end(),
-//                                  std::ostream_iterator<typename SymmGroup::charge>(cout, " "));
-//                        cout << std::endl << std::endl;
+//                                  std::ostream_iterator<typename SymmGroup::charge>(maquis::cout, " "));
+//                        maquis::cout << std::endl << std::endl;
                     }
                 }
 #ifndef NDEBUG
                 if (charge_diffs.size() > 1) {
                     std::copy(charge_diffs.begin(), charge_diffs.end(),
-                              std::ostream_iterator<typename SymmGroup::charge>(cout, " "));
-                    cout << std::endl;
+                              std::ostream_iterator<typename SymmGroup::charge>(maquis::cout, " "));
+                    maquis::cout << std::endl;
                 }
                 assert( charge_diffs.size() <= 1 );
 #endif
@@ -116,13 +114,12 @@ private:
                     index[index.position(it->second)] = std::make_pair(it->second, index.size_of_block(it->second)+1);
                 else
                     index.insert(std::make_pair(it->second, 1));
-            cout << index << std::endl;
+            maquis::cout << index << std::endl;
         }
     }
     
     block_matrix<Matrix, SymmGroup> make_left_matrix(std::size_t p)
     {
-        using std::size_t;
         typedef typename SymmGroup::charge charge;
         
         Index<SymmGroup> phys_i;
@@ -183,23 +180,22 @@ private:
                             std::make_pair(rc, visited_c_basis[rc])) =
                         (*this)[p](r,c)[cs](0,0);
                         
-//                        cout << (*this)[p](r,c)[cs](0,0) << " | ";
-//                        cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
-//                        cout << " -> ";
-//                        cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << std::endl;
+//                        maquis::cout << (*this)[p](r,c)[cs](0,0) << " | ";
+//                        maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
+//                        maquis::cout << " -> ";
+//                        maquis::cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << std::endl;
                     }
             visited_c_basis[bond_index_charges[p+1][c]]++;
         }
         
-//        cout << ret << std::endl;
-//        cout << "###" << std::endl;
+//        maquis::cout << ret << std::endl;
+//        maquis::cout << "###" << std::endl;
         
         return ret;
     }
     
     block_matrix<Matrix, SymmGroup> make_right_matrix(std::size_t p)
     {
-        using std::size_t;
         typedef typename SymmGroup::charge charge;
         
         Index<SymmGroup> phys_i;
@@ -257,16 +253,16 @@ private:
                             std::make_pair(rc, outc)) =
                         (*this)[p](r,c)[cs](0,0);
                         
-//                        cout << (*this)[p](r,c)[cs](0,0) << " | ";
-//                        cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
-//                        cout << " -> ";
-//                        cout << "(" << lc << "," << visited_r_basis[lc] << ") (" << rc << "," << outc << ")" << endl;
+//                        maquis::cout << (*this)[p](r,c)[cs](0,0) << " | ";
+//                        maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
+//                        maquis::cout << " -> ";
+//                        maquis::cout << "(" << lc << "," << visited_r_basis[lc] << ") (" << rc << "," << outc << ")" << std::endl;
                     }
             visited_r_basis[bond_index_charges[p][r]]++;
         }
         
-//        cout << ret << endl;
-//        cout << "###" << endl;
+//        maquis::cout << ret << std::endl;
+//        maquis::cout << "###" << std::endl;
         
         return ret;
     }
@@ -275,7 +271,6 @@ private:
                       block_matrix<Matrix, SymmGroup> & right,
                       std::size_t p)
     {
-        using std::size_t;
         typedef typename SymmGroup::charge charge;
         
         Index<SymmGroup> phys_i;
@@ -328,10 +323,10 @@ private:
                             
                             block.insert_block(Matrix(1, 1, val), blc, brc);
                             
-//                            cout << val << " | ";
-//                            cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
-//                            cout << " <- ";
-//                            cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << endl;
+//                            maquis::cout << val << " | ";
+//                            maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
+//                            maquis::cout << " <- ";
+//                            maquis::cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << std::endl;
                         }
                     }
             visited_c_basis[bond_index_charges[p+1][c]]++;
@@ -366,10 +361,10 @@ private:
                             
                             block.insert_block(Matrix(1, 1, val), blc, brc);
                             
-//                            cout << val << " | ";
-//                            cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
-//                            cout << " <- ";
-//                            cout << "(" << lc << "," << visited_r_basis[lc] << ") (" << rc << "," << outc << ")" << endl;
+//                            maquis::cout << val << " | ";
+//                            maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
+//                            maquis::cout << " <- ";
+//                            maquis::cout << "(" << lc << "," << visited_r_basis[lc] << ") (" << rc << "," << outc << ")" << std::endl;
                         }
                     }
             visited_r_basis[bond_index_charges[p+1][r]]++;

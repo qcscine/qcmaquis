@@ -1,9 +1,5 @@
 #include <iostream>
 
-using std::cout;
-using std::cerr;
-using std::endl;
-
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
@@ -33,5 +29,5 @@ int main()
     
     right = transpose(right);
     gemm(left, right, o);
-    cout << trace(o) << endl;
+    maquis::cout << trace(o) << std::endl;
 }

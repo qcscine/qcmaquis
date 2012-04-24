@@ -202,7 +202,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     } 
   
     if(verbose){
-        cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
+        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
     }
     
     if (logger != NULL) {
@@ -258,7 +258,7 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
 
     if(verbose){
-        cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
+        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
     }
     
     logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());

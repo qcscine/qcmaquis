@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
+#include <iostream>
 #include <fstream>
 #include <deque>
 
@@ -132,7 +133,7 @@ public:
         if (base_path.size() == 0)
             return;
         
-        cout << "Storage directory size: "; cout.flush();
+        maquis::cout << "Storage directory size: "; maquis::cout.flush();
         std::ostringstream oss;
         oss << "du -skh " << base_path << " | awk '{print $1}'";
         system(oss.str().c_str());

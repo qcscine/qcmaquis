@@ -4,10 +4,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -67,7 +63,7 @@ std::ostream& operator<< (std::ostream& os, MPO<Matrix, grp> const& mpo)
         for (size_t r=0; r<mpo[p].row_dim(); ++r)
             for (size_t c=0; c<mpo[p].col_dim(); ++c)
                 if (mpo[p].has(r, c))
-                    os << "** Position " << p << " [" << r << "," << c << "]:" << endl << mpo[p](r,c);
+                    os << "** Position " << p << " [" << r << "," << c << "]:" << std::endl << mpo[p](r,c);
     return os;
 }
 
@@ -138,19 +134,18 @@ int main(int argc, char ** argv)
     
     Hamiltonian<Matrix, grp> H = create_H(length);
     Hamiltonian<Matrix, grp> H_signed = create_H(length, true);
-//    cout << "** Hamiltonian **" << endl << H;
+//    maquis::cout << "** Hamiltonian **" << std::endl << H;
     
     std::vector<Hamiltonian<Matrix, grp> > split_H = separate_overlaps(H);
     std::vector<Hamiltonian<Matrix, grp> > split_H_signed = separate_overlaps(H_signed);
-    cout << "length split_H = " << split_H.size() << endl;
+    maquis::cout << "length split_H = " << split_H.size() << std::endl;
     split_H.erase(split_H.begin() + 1);
     MPO<Matrix, grp> mpo = make_mpo(length, split_H[0]);
     std::vector<MPO<Matrix, grp> > expMPO = getU(split_H, length);
     std::vector<MPO<Matrix, grp> > expMPO_gen = getU(split_H_signed, length);
     
-    cout << "** MPO **" << endl << mpo;
-    cout << "** expMPO **" << endl << expMPO[0];
-    cout << "** expMPO_gen **" << endl << expMPO_gen[0];
-    
-    
+    maquis::cout << "** MPO **" << std::endl << mpo;
+    maquis::cout << "** expMPO **" << std::endl << expMPO[0];
+    maquis::cout << "** expMPO_gen **" << std::endl << expMPO_gen[0];
 }
+

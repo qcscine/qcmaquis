@@ -4,10 +4,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "types/dense_matrix/aligned_allocator.h"
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
@@ -94,22 +90,22 @@ int main(int argc, char ** argv)
     
     if (argc != 3)
     {
-        cout << "Usage: <parms> <model_parms>" << endl;
+        maquis::cout << "Usage: <parms> <model_parms>" << std::endl;
         exit(1);
     }
     
-    cout.precision(10);
+    maquis::cout.precision(10);
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
-        cerr << "Could not open parameter file." << endl;
+        cerr << "Could not open parameter file." << std::endl;
         exit(1);
     }
     DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
-        cerr << "Could not open model file." << endl;
+        cerr << "Could not open model file." << std::endl;
         exit(1);
     }
     ModelParameters model(model_file);
@@ -123,7 +119,7 @@ int main(int argc, char ** argv)
         struct stat tmp;
         if (stat(chkpfile.c_str(), &tmp) == 0 && S_ISREG(tmp.st_mode))
         {
-            cout << "Restoring state." << endl;
+            maquis::cout << "Restoring state." << std::endl;
             restore = true;
         }
     }
@@ -170,9 +166,8 @@ int main(int argc, char ** argv)
     H->push_extra_terms(mpom, *adj);
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     
-    cout << expval(mps, mpo, 0) << endl;
-    cout << expval(mps, mpo, 1) << endl;
-    
+    maquis::cout << expval(mps, mpo, 0) << std::endl;
+    maquis::cout << expval(mps, mpo, 1) << std::endl;
     {   
         ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
         
@@ -200,7 +195,7 @@ int main(int argc, char ** argv)
                 oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), entropies);
                 
-                cout << "Sweep done after " << elapsed << " seconds." << endl;
+                maquis::cout << "Sweep done after " << elapsed << " seconds." << std::endl;
                 oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
@@ -236,7 +231,7 @@ int main(int argc, char ** argv)
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
-        cout << "Task took " << elapsed << " seconds." << endl;
+        maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
         
         h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
         h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));

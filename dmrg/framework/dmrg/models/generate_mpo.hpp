@@ -79,9 +79,6 @@ namespace generate_mpo
 
 	};
     
-	using namespace std;
-    using namespace boost::tuples;
-    
     inline size_t next_free(vector<size_t> const & out_taken,
                             vector<size_t> const & in_taken)
     {
@@ -104,8 +101,6 @@ namespace generate_mpo
     void compress_on_bond(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm1,
                           std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm2)
     {
-        using namespace std;
-        using namespace boost::tuples;
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;
         
@@ -117,8 +112,8 @@ namespace generate_mpo
             if (get<0>(*it) > 1)
                 bond_used_dims.insert(get<0>(*it));
         
-        //        cout << "Compression: " << *max_element(bond_used_dims.begin(),
-        //                                                bond_used_dims.end()) << " -> " << bond_used_dims.size() << endl;
+        //        maquis::cout << "Compression: " << *max_element(bond_used_dims.begin(),
+        //                                                bond_used_dims.end()) << " -> " << bond_used_dims.size() << std::endl;
         
         map<size_t, size_t> compression_map;
         size_t c = 2;
@@ -138,8 +133,6 @@ namespace generate_mpo
     std::pair<size_t, size_t>
     rcdim(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > const & pm)
     {
-        using namespace std;
-        using namespace boost::tuples;
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;
         
@@ -401,8 +394,8 @@ namespace generate_mpo
             prempo[p].push_back( make_tuple(u1, u2, op) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
-            //            cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << endl;
-            //            cout << op;
+            //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
+            //            maquis::cout << op;
             if (trivial)
                 tags[p].push_back( make_tuple(u1, u2, lab) );
             else
@@ -563,8 +556,8 @@ namespace generate_mpo
             prempo[p].push_back( make_tuple(u1, u2, op) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
-            //            cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << endl;
-            //            cout << op;
+            //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
+            //            maquis::cout << op;
             if (trivial)
                 tags[p].push_back( make_tuple(u1, u2, lab) );
             else

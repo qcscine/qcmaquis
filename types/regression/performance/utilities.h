@@ -45,12 +45,12 @@ size_t get_input_y(){
 }
 
 void report(const Timer& a, double(*gflops)(size_t, size_t, double), size_t x, size_t y, size_t nthreads){
-        cout << "-------------------------\n"
-             << " Time     " << a.get_time()               << "\n"
-             << " GFlops   " << gflops(x,y,a.get_time())   << "\n" 
-             << " Threads: " << nthreads                   << "\n"
-             << " Matrix:  " << y << "x" << x              << "\n"
-             << "-------------------------\n";
+    maquis::cout << "-------------------------\n"
+                 << " Time     " << a.get_time()               << "\n"
+                 << " GFlops   " << gflops(x,y,a.get_time())   << "\n" 
+                 << " Threads: " << nthreads                   << "\n"
+                 << " Matrix:  " << y << "x" << x              << "\n"
+                 << "-------------------------\n";
 }
 
 typedef boost::mpl::list< input<1024,1024,double,1> > test_types;

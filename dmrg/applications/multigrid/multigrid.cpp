@@ -16,10 +16,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -121,10 +117,10 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
     else
         throw std::runtime_error("Don't know this lattice!");
     
-//    cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
+//    maquis::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
 //    for (int p=0; p<lat->size(); ++p) {
-//        cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
-//        cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
+//        maquis::cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
+//        maquis::cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
 //    }
     
     model_traits<Matrix, grp>::model_ptr model = cont_model_factory<Matrix, grp>::parse(*lat, parms1);
@@ -136,27 +132,27 @@ MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & pa
 
 int main(int argc, char ** argv)
 {
-    cout << DMRG_VERSION_STRING << endl;
+    maquis::cout << DMRG_VERSION_STRING << std::endl;
 #ifdef MEASURE_ONLY
-    cout << "Only measuring." << endl;
+    maquis::cout << "Only measuring." << std::endl;
 #endif
 #ifdef UseTwoU1
-    cout << "TwoU1 symmetry" << endl;
+    maquis::cout << "TwoU1 symmetry" << std::endl;
 #else
 #ifdef UseNULL
-    cout << "No symmetry" << endl;
+    maquis::cout << "No symmetry" << std::endl;
 #else
-    cout << "U1 symmetry" << endl;
+    maquis::cout << "U1 symmetry" << std::endl;
 #endif
 #endif
 
     if (argc != 3)
     {
-        cout << "Usage: <parms> <model_parms>" << endl;
+        maquis::cout << "Usage: <parms> <model_parms>" << std::endl;
         exit(1);
     }
     
-    cout.precision(10);
+    maquis::cout.precision(10);
     
 #ifdef USE_GPU
 	cublasInit();
@@ -164,14 +160,14 @@ int main(int argc, char ** argv)
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
-        cerr << "Could not open parameter file. (" << argv[1] << ")" << endl;
+        cerr << "Could not open parameter file. (" << argv[1] << ")" << std::endl;
         exit(1);
     }
     DmrgParameters raw_parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
-        cerr << "Could not open model file. (" << argv[2] << ")" << endl;
+        cerr << "Could not open model file. (" << argv[2] << ")" << std::endl;
         exit(1);
     }
     ModelParameters raw_model(model_file);
@@ -190,7 +186,7 @@ int main(int argc, char ** argv)
         struct stat tmp;
         if (stat(chkpfile.c_str(), &tmp) == 0 && S_ISREG(tmp.st_mode))
         {
-            cout << "Restoring state." << endl;
+            maquis::cout << "Restoring state." << std::endl;
             restore = true;
             
             alps::hdf5::archive h5ar_in(chkpfile);
@@ -239,8 +235,8 @@ int main(int argc, char ** argv)
         measurements = phys_model->measurements();
         initc = phys_model->initc(model);
         phys = H.get_phys();
-        cout << "initc: " << initc << std::endl;
-//        cout << "Hamiltonian: " << H << std::endl;
+        maquis::cout << "initc: " << initc << std::endl;
+//        maquis::cout << "Hamiltonian: " << H << std::endl;
         
         mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
@@ -269,14 +265,14 @@ int main(int argc, char ** argv)
         phys = H.get_phys();
 
 #ifndef NDEBUG
-//        cout << parms << std::endl;
-//        cout << model << std::endl;
-//        cout << measurements << std::endl;
-//        cout << H << std::endl;
+//        maquis::cout << parms << std::endl;
+//        maquis::cout << model << std::endl;
+//        maquis::cout << measurements << std::endl;
+//        maquis::cout << H << std::endl;
 //
-//        cout << "LATTICE:" << std::endl;
+//        maquis::cout << "LATTICE:" << std::endl;
 //        for (int i=0; i<lat->size(); ++i)
-//            cout << i << ": " << lat->get_prop<double>("x", i) << std::endl;
+//            maquis::cout << i << ": " << lat->get_prop<double>("x", i) << std::endl;
 #endif
         
         Measurements<Matrix, grp> meas_always;
@@ -300,7 +296,7 @@ int main(int argc, char ** argv)
         if (cur_mps.length() > 0 && cur_mps.length() != lat->size())
         {
             multigrid_t.begin();
-            cout << "*** Starting grainings ***" << std::endl;
+            maquis::cout << "*** Starting grainings ***" << std::endl;
             Logger iteration_log;
             
             boost::shared_ptr<mps_initializer<Matrix, grp> > initializer = boost::shared_ptr<mps_initializer<Matrix, grp> > (new empty_mps_init<Matrix, grp>());
@@ -312,13 +308,13 @@ int main(int argc, char ** argv)
             for (int i=0; i<=oldL; ++i)
                 mpo_mix[i] = mixed_mpo(model, r*i, old_model, oldL-i);
             
-//            cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
+//            maquis::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
             if (cur_mps.length() < initial_mps.length())
                 multigrid::extension_optim(parms, iteration_log,
                                            cur_mps, initial_mps, mpo_mix);
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
-//            cout << "New MPS:" << std::endl << initial_mps.description();
+//            maquis::cout << "New MPS:" << std::endl << initial_mps.description();
             multigrid_t.end();
 
             std::vector<double> energies, entropies;            
@@ -368,7 +364,7 @@ int main(int argc, char ** argv)
         
         bool early_exit = false;
         {   
-            cout << "*** Starting optimization ***" << std::endl;
+            maquis::cout << "*** Starting optimization ***" << std::endl;
             ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(initial_mps,
                                                                     parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
                                                                     parms, ssm);
@@ -390,7 +386,7 @@ int main(int argc, char ** argv)
                 
                 gettimeofday(&sthen, NULL);
                 double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-                cout << "Sweep done after " << elapsed << " seconds." << endl;
+                maquis::cout << "Sweep done after " << elapsed << " seconds." << std::endl;
                 
                 {
                     alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
@@ -448,13 +444,13 @@ int main(int argc, char ** argv)
         std::vector<double> energies, entropies, renyi2;
         std::vector<std::size_t> truncations;
         
-        cout << "Measurements." << endl;
+        maquis::cout << "Measurements." << std::endl;
         measure_on_mps(mps, *lat, measurements, rfile);
         
         Timer tvn("vN entropy"), tr2("Renyi n=2");
-        cout << "Calculating vN entropy." << endl;
+        maquis::cout << "Calculating vN entropy." << std::endl;
         tvn.begin(); entropies = calculate_bond_entropies(mps); tvn.end();
-        cout << "Calculating n=2 Renyi entropy." << endl;
+        maquis::cout << "Calculating n=2 Renyi entropy." << std::endl;
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         {
@@ -466,8 +462,8 @@ int main(int argc, char ** argv)
         }
         
         double energy = expval(mps, mpoc);
-        cout << "Energy before: " << expval(mps, mpo) << endl;
-        cout << "Energy after: " << expval(mps, mpoc) << endl;
+        maquis::cout << "Energy before: " << expval(mps, mpo) << std::endl;
+        maquis::cout << "Energy after: " << expval(mps, mpoc) << std::endl;
         {
             alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
@@ -484,8 +480,8 @@ int main(int argc, char ** argv)
             double energy2 = expval(mps, mpo2, true);
             t4.end();
             
-            cout << "Energy^2: " << energy2 << endl;
-            cout << "Variance: " << energy2 - energy*energy << endl;
+            maquis::cout << "Energy^2: " << energy2 << std::endl;
+            maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
             
             {
                 alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
@@ -500,7 +496,7 @@ int main(int argc, char ** argv)
     gettimeofday(&then, NULL);
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
     
-    cout << "Task took " << elapsed << " seconds." << endl;
+    maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     
 #ifdef USE_GPU
 	cublasShutdown();

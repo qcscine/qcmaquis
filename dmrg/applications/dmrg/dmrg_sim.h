@@ -17,10 +17,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "dmrg/sim/sim.h"
 
 #include "dmrg/mp_tensors/optimize.h"

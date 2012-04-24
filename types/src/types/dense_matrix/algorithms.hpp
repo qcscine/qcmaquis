@@ -103,10 +103,9 @@ namespace maquis {
             assert(num_rows(M) == num_cols(M));
             assert(evals.size() == num_rows(M));
 #ifndef NDEBUG
-            using utils::conj;
             for (int i = 0; i < num_rows(M); ++i)
                 for (int j = 0; j < num_cols(M); ++j)
-                    assert( abs( M(i,j) - conj(M(j,i)) ) < 1e-10 );
+                    assert( abs( M(i,j) - utils::conj(M(j,i)) ) < 1e-10 );
 #endif
             
             boost::numeric::bindings::lapack::heevd('V', M, evals);

@@ -205,8 +205,6 @@ namespace b_mpos {
         void push_extra_terms(MPOMaker<Matrix, U1> & mm,
                               b_adj::Adjacency & adj)
         {
-            using namespace std;
-            
             for (int p = 0; p < adj.size(); ++p)
             {   
                 vector<pair<size_t, op_t> > term;
@@ -332,7 +330,7 @@ namespace b_mpos {
         
         void push_extra_terms(MPOMaker<Matrix, U1> & mm, b_adj::Adjacency& adj)
         {
-            cout << "Adding extra term." << endl;
+            maquis::cout << "Adding extra term." << std::endl;
             std::vector<std::pair<std::size_t, op_t> > terms;
             block_matrix<Matrix, U1> c[3];
             

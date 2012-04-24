@@ -41,7 +41,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     
     std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
 
-    cout << "JCD used " << iter.iterations() << " iterations." << endl;
+    maquis::cout << "JCD used " << iter.iterations() << " iterations." << std::endl;
     
     return r0;
 }

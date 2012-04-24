@@ -42,7 +42,7 @@ namespace app {
     , ssm(parms.get<std::string>("storagedir"))
     , dns( (parms.get<int>("donotsave") != 0) )
     { 
-        cout << DMRG_VERSION_STRING << endl;
+        maquis::cout << DMRG_VERSION_STRING << std::endl;
         
         DCOLLECTOR_GROUP(gemm_collector, "init")
         DCOLLECTOR_GROUP(svd_collector, "init")
@@ -68,11 +68,11 @@ namespace app {
                     if (site == -1)
                         ++sweep;
                         
-                    cout << "Restoring state." << std::endl;
-                    cout << "Will start again at site " << site << " in sweep " << sweep << std::endl;
+                    maquis::cout << "Restoring state." << std::endl;
+                    maquis::cout << "Will start again at site " << site << " in sweep " << sweep << std::endl;
                     restore = true;
                 } else {
-                    cout << "Invalid checkpoint, overwriting." << std::endl; 
+                    maquis::cout << "Invalid checkpoint, overwriting." << std::endl; 
                 }
             }
         }
@@ -116,10 +116,10 @@ namespace app {
         phys = H.get_phys();
         
         /*
-         cout << "initc: " << initc << std::endl;
-         cout << "phys:" << std::endl << phys << std::endl;
-         cout << measurements << std::endl;
-         cout << "Hamiltonian:" << std::endl << H << std::endl;
+         maquis::cout << "initc: " << initc << std::endl;
+         maquis::cout << "phys:" << std::endl << phys << std::endl;
+         maquis::cout << measurements << std::endl;
+         maquis::cout << "Hamiltonian:" << std::endl << H << std::endl;
          */
         
         if (!parms.get<std::string>("always_measure").empty()) {
@@ -190,7 +190,7 @@ namespace app {
             
             gettimeofday(&sthen, NULL);
             double elapsed_sweep = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-            cout << "Sweep " << sweep << " done after " << elapsed_sweep << " seconds." << std::endl;
+            maquis::cout << "Sweep " << sweep << " done after " << elapsed_sweep << " seconds." << std::endl;
             
             
             gettimeofday(&then, NULL);
@@ -208,7 +208,7 @@ namespace app {
                 
                 gettimeofday(&sthen, NULL);
                 double elapsed_measure = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-                cout << "Sweep measure done after " << elapsed_measure << " seconds." << std::endl;
+                maquis::cout << "Sweep measure done after " << elapsed_measure << " seconds." << std::endl;
                 
                 gettimeofday(&then, NULL);
                 elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
@@ -305,13 +305,13 @@ namespace app {
             h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
         }
         
-        cout << "Measurements." << endl;
+        maquis::cout << "Measurements." << std::endl;
         measure_on_mps(mps, *lat, measurements, rfile);
         
         Timer tvn("vN entropy"), tr2("Renyi n=2");
-        cout << "Calculating vN entropy." << endl;
+        maquis::cout << "Calculating vN entropy." << std::endl;
         tvn.begin(); std::vector<double> entropies = calculate_bond_entropies(mps); tvn.end();
-        cout << "Calculating n=2 Renyi entropy." << endl;
+        maquis::cout << "Calculating n=2 Renyi entropy." << std::endl;
         tr2.begin(); std::vector<double> renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         {
@@ -323,8 +323,8 @@ namespace app {
         }
         
         double energy = expval(mps, mpoc);
-        cout << "Energy before: " << expval(mps, mpo) << endl;
-        cout << "Energy after: " << expval(mps, mpoc) << endl;
+        maquis::cout << "Energy before: " << expval(mps, mpo) << std::endl;
+        maquis::cout << "Energy after: " << expval(mps, mpoc) << std::endl;
         {
             alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
@@ -341,8 +341,8 @@ namespace app {
             double energy2 = expval(mps, mpo2, true);
             t4.end();
             
-            cout << "Energy^2: " << energy2 << endl;
-            cout << "Variance: " << energy2 - energy*energy << endl;
+            maquis::cout << "Energy^2: " << energy2 << std::endl;
+            maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
             
             {
                 alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);

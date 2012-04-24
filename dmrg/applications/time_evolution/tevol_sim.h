@@ -14,10 +14,6 @@
 #include <iostream>
 #include <sys/stat.h>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "dmrg/sim/sim.h"
 
 #include "dmrg/sim/te_utils.hpp"
@@ -119,8 +115,8 @@ public:
             trotter_order=order_unknown;
         }
 		
-		cout << "Using " << te_type << std::endl;
-		cout << "Using " << trotter_order << std::endl;
+		maquis::cout << "Using " << te_type << std::endl;
+		maquis::cout << "Using " << trotter_order << std::endl;
         
 		
 		
@@ -131,7 +127,7 @@ public:
         base::mps_init();
         
         split_H = separate_overlaps(base::H);
-        cout << split_H.size() << " non overlapping Hamiltonians" << std::endl;
+        maquis::cout << split_H.size() << " non overlapping Hamiltonians" << std::endl;
         
         if (te_type == te_nn)
             getUnn(base::parms.template get<double>("dt"),
@@ -153,7 +149,7 @@ public:
             base::model_init();
             
             split_H = separate_overlaps(base::H);
-            cout << split_H.size() << " non overlapping Hamiltonians" << std::endl;
+            maquis::cout << split_H.size() << " non overlapping Hamiltonians" << std::endl;
             
             if (te_type == te_nn)
                 getUnn(base::parms.template get<double>("dt"),
@@ -176,7 +172,7 @@ public:
             mpo_time_evolve(iteration_log);
         
         double energy = expval(base::mps, base::mpo);
-        cout << "Energy " << energy << std::endl;
+        maquis::cout << "Energy " << energy << std::endl;
         iteration_log << make_log("Energy", energy);
         
         return -1; // no early exit

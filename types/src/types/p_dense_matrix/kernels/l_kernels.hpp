@@ -108,7 +108,7 @@ namespace ambient {
     void copy_l(maquis::types::p_dense_matrix_impl<double>& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
         ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
+        //ambient::cout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
 
         block_2d_cycle<assign>(ac);
         block_2d_cycle<pin>(a);
@@ -118,7 +118,7 @@ namespace ambient {
     void copy_after_l(pinned maquis::types::p_dense_matrix_impl<T>& ac, const size_t& pos, const maquis::types::p_dense_matrix_impl<T>& a){
         ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
+        //ambient::cout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
 
         block_2d_cycle<pin>(ac);
         block_2d_cycle<assign>(a);
@@ -127,7 +127,7 @@ namespace ambient {
     void copy_after_std_l(std::vector<double>*& ac, const size_t& pos, pinned const maquis::types::p_dense_matrix_impl<double>& a){
         ctxt_select("* from ambient as copy_std where master is 0");
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_outright<pin>(a);
     }
@@ -135,7 +135,7 @@ namespace ambient {
     void push_back_sqr_gt_l(std::vector<double>*& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a, const double& prec){
         ctxt_select("* from ambient as copy_std where master is 0");
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_outright<pin>(a);
     }
@@ -160,7 +160,7 @@ namespace ambient {
     void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
         ctxt_select("1 from ambient as resize where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_2d_cycle<pin>(a);
     }
@@ -169,7 +169,7 @@ namespace ambient {
     void remove_rows_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
         ctxt_select("1 from ambient as remove_rows where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in remove_rows ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in remove_rows ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_2d_cycle<pin>(a);
     }
@@ -178,7 +178,7 @@ namespace ambient {
     void remove_cols_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
         ctxt_select("1 from ambient as remove_cols where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in remove_cols ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in remove_cols ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_2d_cycle<pin>(a);
     }
@@ -187,7 +187,7 @@ namespace ambient {
     void sqrt_diagonal_l(pinned maquis::types::p_dense_matrix_impl<T>& a){
         ctxt_select("1 from ambient as sqrt_diagonal where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_2d_cycle<pin>(a);
     }
@@ -196,7 +196,7 @@ namespace ambient {
     void exp_diagonal_l(pinned maquis::types::p_dense_matrix_impl<T>& a){
         ctxt_select("1 from ambient as exp_diagonal where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_2d_cycle<pin>(a);
     }
@@ -206,7 +206,7 @@ namespace ambient {
         int num = 1;//get_grid_dim(a).y;
         ctxt_select(num+" from ambient as gemm where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
+        //ambient::cout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b);
@@ -217,7 +217,7 @@ namespace ambient {
         int num = 1;//get_grid_dim(a).y;
         ctxt_select(num+" from ambient as gemm where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b); credentials(c);
+        //ambient::cout << "2dbcd for "<< num <<" procs in gemm ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b); credentials(c);
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b);
@@ -228,7 +228,7 @@ namespace ambient {
     void scalar_norm_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, T*& norm){
         ctxt_select("* from ambient as scalar_norm where master is 0");
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in scalar_norm ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in scalar_norm ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_outright<pin>(a);
     }
@@ -237,7 +237,7 @@ namespace ambient {
     void scalar_overlap_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, T*& overlap){
         ctxt_select("* from ambient as scalar_overlap where master is 0");
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in scalar_overlap ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
+        //ambient::cout << "2dbcd in scalar_overlap ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
         block_outright<pin>(a);
         block_outright<assign>(b);
@@ -247,7 +247,7 @@ namespace ambient {
     void mem_bound_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
         ctxt_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
+        //ambient::cout << "2dbcd in membound ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b);
@@ -257,7 +257,7 @@ namespace ambient {
     void scale_l(pinned maquis::types::p_dense_matrix_impl<T>& m, const T2& t){
         ctxt_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ id(m));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; credentials(m);
+        //ambient::cout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; credentials(m);
 
         block_2d_cycle<pin>(m);
     }
@@ -267,7 +267,7 @@ namespace ambient {
         int num = 1;
         ctxt_select(num+" from ambient as svd where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; credentials(a); credentials(u); credentials(vt); credentials(s);
+        //ambient::cout << "2dbcd in svd ("<< ambient::rank() <<"):\n"; credentials(a); credentials(u); credentials(vt); credentials(s);
 
         block_outright<assign>(s);
         block_2d_cycle<assign>(a);
@@ -279,7 +279,7 @@ namespace ambient {
         int num = 1;
         ctxt_select(num+" from ambient as syev where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; credentials(a); credentials(w);
+        //ambient::cout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; credentials(a); credentials(w);
 
         block_2d_cycle<assign>(a);
         block_2d_cycle<assign>(w);
@@ -289,7 +289,7 @@ namespace ambient {
         int num = 1;
         ctxt_select(num+" from ambient as heev where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; credentials(a); credentials(w);
+        //ambient::cout << "2dbcd in syev ("<< ambient::rank() <<"):\n"; credentials(a); credentials(w);
 
         block_2d_cycle<assign>(a);
         block_2d_cycle<assign>(w); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
@@ -299,7 +299,7 @@ namespace ambient {
     void gemm_diagonal_lhs_l(const maquis::types::p_dense_matrix_impl<T>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
         ctxt_select("1 from ambient as gemm_diagonal_lhs where master is 0 and breakdown contains "+ id(b));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; credentials(a_diag); credentials(b); credentials(c);
+        //ambient::cout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; credentials(a_diag); credentials(b); credentials(c);
 
         block_2d_cycle<assign>(a_diag);
         block_2d_cycle<pin>(b);
@@ -310,7 +310,7 @@ namespace ambient {
     void gemm_diagonal_rhs_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
         ctxt_select("1 from ambient as gemm_diagonal_rhs where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b_diag); credentials(c);
+        //ambient::cout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b_diag); credentials(c);
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b_diag);
@@ -322,7 +322,7 @@ namespace ambient {
         int num = 1;
         ctxt_select("* from ambient as trace where master is 0");
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in trace ("<< ambient::rank() <<"):\n"; credentials(a);
+        //ambient::cout << "2dbcd in trace ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_2d_cycle<pin>(a); // in a nutshell we need only diagonal 
                                   // but we have to track the diagonal separately afterward
@@ -334,7 +334,7 @@ namespace ambient {
         int num = 1; //get_grid_dim(a_ambient).y; 
         ctxt_select(num+" from ambient as transpose_l where master is 0 and breakdown contains "+ id(m));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(transposed); credentials(original);
+        //ambient::cout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(transposed); credentials(original);
 
         block_2d_cycle_transposed<pin>(m);
     }
@@ -343,7 +343,7 @@ namespace ambient {
     void validation_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& bl){ // bl <=> boolean 
         ctxt_select("2 from ambient as validation where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
+        //ambient::cout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
 
         block_2d_cycle<pin>(a); 
         block_2d_cycle<assign>(b); 
@@ -357,7 +357,7 @@ namespace ambient {
         int num = 1; //get_grid_dim(a_ambient).y; 
         ctxt_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ id(right));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; credentials(left); credentials(right);
+        //ambient::cout << "2dbcd in reshape_l2r ("<< ambient::rank() <<"):\n"; credentials(left); credentials(right);
 
         block_2d_cycle<assign>(left); 
         block_2d_cycle<pin>(right); 
@@ -371,7 +371,7 @@ namespace ambient {
         int num = 1; //get_grid_dim(a_ambient).y; 
         ctxt_select(num+" from ambient as reshape_l2r where master is 0 and breakdown contains "+ id(left));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in reshape_r2l ("<< ambient::rank() <<"):\n"; credentials(left); credentials(right);
+        //ambient::cout << "2dbcd in reshape_r2l ("<< ambient::rank() <<"):\n"; credentials(left); credentials(right);
 
         block_2d_cycle<pin>(left); 
         block_2d_cycle<assign>(right); 
@@ -385,7 +385,7 @@ namespace ambient {
         int num = 1; //get_grid_dim(a_ambient).y; 
         ctxt_select(num+" from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ id(out));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; credentials(out); credentials(in); credentials(alfa);
+        //ambient::cout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; credentials(out); credentials(in); credentials(alfa);
 
         block_2d_cycle<pin>(out); 
         block_2d_cycle<assign>(in); 
@@ -400,7 +400,7 @@ namespace ambient {
         int num = 1; //get_grid_dim(a_ambient).y; 
         ctxt_select(num+" from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ id(out));
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; credentials(out); credentials(in); credentials(alfa);
+        //ambient::cout << "2dbcd in rb_tensor_mpo ("<< ambient::rank() <<"):\n"; credentials(out); credentials(in); credentials(alfa);
 
         block_2d_cycle<pin>(out); 
         block_2d_cycle<assign>(in); 
@@ -412,7 +412,7 @@ namespace ambient {
         int num = 1;
         ctxt_select(num+" from ambient as associated_copy where master is 0 and breakdown contains "+ id(a)); 
         if(!ctxt.involved()) return;
-        //cout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
+        //ambient::cout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
 
         block_outright<assign>(ac);
         block_outright<pin>(a);
@@ -420,7 +420,7 @@ namespace ambient {
 
     void variable_free_l(void*& a){ // to modify
         ctxt_select(1+ " from ambient as variable_free where master is 0");
-        //cout << "null assign in variable_free ("<< ambient::rank() <<"):\n";
+        //ambient::cout << "null assign in variable_free ("<< ambient::rank() <<"):\n";
         if(!ctxt.involved()) return;
     }
 

@@ -1,7 +1,4 @@
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include <vector>
 #include <iterator>
@@ -77,41 +74,41 @@ void test_reshape() {
     
     
     // fill block_matrix
-    cout << "* filling matrices" << endl;
+    maquis::cout << "* filling matrices" << std::endl;
     Index<symm> left_i = phys_i*alpha_i;
     Index<symm> right_i = adjoin(phys_i)*beta_i;
     
-    cout << " - allocating matrix" << endl;
+    maquis::cout << " - allocating matrix" << std::endl;
     block_matrix<Matrix, symm> m1; // left-paired
     size_t max_i = std::min(left_i.size(), beta_i.size());
     for(size_t i=0; i<max_i; ++i)
         m1.insert_block(Matrix(left_i[i].second, beta_i[i].second), left_i[i].first, beta_i[i].first);
     
     
-    cout << " - filling values" << endl;
+    maquis::cout << " - filling values" << std::endl;
     m1.generate(drand48);
 
-//    cout << "alpha basis: " << alpha_i << endl;
-//    cout << "beta basis: " << beta_i << endl;
-//    cout << "sigma basis: " << phys_i << endl;
-//    cout << "left_paired basis: " << left_i << endl;
-//    cout << "right_paired basis: " << right_i << endl;
+//    maquis::cout << "alpha basis: " << alpha_i << std::endl;
+//    maquis::cout << "beta basis: " << beta_i << std::endl;
+//    maquis::cout << "sigma basis: " << phys_i << std::endl;
+//    maquis::cout << "left_paired basis: " << left_i << std::endl;
+//    maquis::cout << "right_paired basis: " << right_i << std::endl;
 //    
-//    cout << "left basis: " << m1.left_basis() << endl;
-//    cout << "right basis: " << m1.right_basis() << endl;
+//    maquis::cout << "left basis: " << m1.left_basis() << std::endl;
+//    maquis::cout << "right basis: " << m1.right_basis() << std::endl;
 //    
 //    for(index_product_iterator<symm> it(midx.begin());
 //        it != midx.end();
 //        it++)
 //    {
-//        cout << *it << " = " << midx.get_coords(left_paired, *it)
+//        maquis::cout << *it << " = " << midx.get_coords(left_paired, *it)
 //        << " or " << midx.get_coords(right_paired, *it)
-//        << endl;
+//        << std::endl;
 //    }
 
     
     
-    cout << " - copying m1" << endl;
+    maquis::cout << " - copying m1" << std::endl;
     block_matrix<Matrix, symm> m2(m1); // left-paired
     size_t n_blocks = m2.n_blocks();
     while (m2.n_blocks() > n_blocks/2) {
@@ -122,17 +119,17 @@ void test_reshape() {
     // run reshape and reshape_left_to_right
     block_matrix<Matrix, symm> res1, res1_gen, res2, res2_gen;
     
-    cout << "* standard reshape" << endl;
+    maquis::cout << "* standard reshape" << std::endl;
     reshape_left_to_right(phys_i, alpha_i, beta_i, m1, res1);
     reshape_left_to_right(phys_i, alpha_i, beta_i, m2, res2);
 
-    cout << "* generic reshape" << endl;
+    maquis::cout << "* generic reshape" << std::endl;
     reshape(midx, left_paired, right_paired, m1, res1_gen);
     reshape(midx, left_paired, right_paired, m2, res2_gen);
 
     
     // compare results
-    cout << "* comparing" << endl;
+    maquis::cout << "* comparing" << std::endl;
     assert( res1.n_blocks() == res1_gen.n_blocks() );
     assert( res1.left_basis() == res1_gen.left_basis() );
     assert( res1.right_basis() == res1_gen.right_basis() );
@@ -150,7 +147,7 @@ void test_reshape() {
     
     
     // benchmarks
-    cout << "* benchmarks" << endl;
+    maquis::cout << "* benchmarks" << std::endl;
     for (int n=0; n<1000; ++n) {
         reshape_left_to_right(phys_i, alpha_i, beta_i, m1, res1);
         reshape(midx, left_paired, right_paired, m1, res1_gen);
@@ -160,7 +157,7 @@ void test_reshape() {
 
 
 int main () {
-    cout << "*** Generic reshape" << endl;
+    maquis::cout << "*** Generic reshape" << std::endl;
     test_reshape();
     
     

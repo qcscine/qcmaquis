@@ -89,8 +89,6 @@ namespace b_mpos
         void push_extra_terms(MPOMaker<Matrix, U1> & mm,
                               b_adj::Adjacency & adj)
         {
-            using namespace std;
-            
             double penalty = parms.get<double>("penalty");
             
             for (int p = 0; p < adj.size(); ++p)
@@ -233,8 +231,6 @@ namespace b_mpos
         void push_extra_terms(MPOMaker<Matrix, U1> & mm,
                               b_adj::Adjacency & adj)
         {
-            using namespace std;
-            
             double penalty = parms.get<double>("penalty");
             
             for (int p = 0; p < adj.size(); ++p)

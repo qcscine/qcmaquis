@@ -33,7 +33,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
         
         for (std::size_t p = i; p < L-1; p += 2)
         {
-//            cout << "Doing " << p << " " << p+1 << endl;
+//            maquis::cout << "Doing " << p << " " << p+1 << std::endl;
             
             mps[p].make_left_paired();
             mps[p+1].make_right_paired();
@@ -57,7 +57,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
             }
         }
         
-//        cout << "Norm loss " << i << ": " << trace(t)-1.0 << " " << -log(trace(t)) << endl;
+//        maquis::cout << "Norm loss " << i << ": " << trace(t)-1.0 << " " << -log(trace(t)) << std::endl;
     }
     
     return mps;
@@ -105,7 +105,7 @@ evolve(MPS<Matrix, SymmGroup> & mps,
         }
     }
     
-    //        cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << endl;
+    //        maquis::cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << std::endl;
     
 }
 

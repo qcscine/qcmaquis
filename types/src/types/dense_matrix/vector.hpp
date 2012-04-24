@@ -171,10 +171,9 @@ namespace maquis {
     template <typename T, typename MemoryBlock>
     inline vector<T,MemoryBlock> exp(T c, vector<T,MemoryBlock> v)
     {
-        using std::exp;
         vector<T,MemoryBlock> result(v.size());
         v*=c;
-        std::transform(v.begin(), v.end(), result.begin(), static_cast<T(*)(T)> (&exp));
+        std::transform(v.begin(), v.end(), result.begin(), static_cast<T(*)(T)> (&std::exp));
         return result;
     }
    
@@ -193,8 +192,7 @@ namespace maquis {
 #ifdef MKL
         mkl::vdExp(s,  &v[0], &result[0]);
 #else
-        using std::exp;
-        std::transform(v.begin(), v.end(), result.begin(), static_cast<double(*)(double)> (&exp));
+        std::transform(v.begin(), v.end(), result.begin(), static_cast<double(*)(double)> (&std::exp));
 #endif
 #endif
 #endif  

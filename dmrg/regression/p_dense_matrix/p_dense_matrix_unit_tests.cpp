@@ -15,7 +15,6 @@
 
 #define M_SIZE 128
 #define N_SIZE 256
-using namespace blas;
 
 typedef boost::mpl::list<double> test_types;
 typedef ambient::dim2 dim;
@@ -35,14 +34,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity_test, T, test_types )
     __ambient_wo_begin__
     A(1,0) = 3;
     __ambient_wo_end__
-    cout << A;
+    maquis::cout << A;
     p_dense_matrix<T> B(A);
     B.resize(10,10);
     __ambient_wo_begin__
     B(0,1) = 2;
     B(5,0) = 26;
     __ambient_wo_end__
-    cout << B;
+    maquis::cout << B;
 }
 BOOST_AUTO_TEST_CASE_TEMPLATE( scalar_norm_test, T, test_types ) 
 { 
@@ -81,17 +80,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bela_test, T, test_types )
 
    std::vector<MatrixT> foo(3, a);
    for (int i = 0; i < 3; ++i)
-       cout << foo[i](0,0) << std::endl;
+       maquis::cout << foo[i](0,0) << std::endl;
 
    foo[1](0,0) = 2;
    for (int i = 0; i < 3; ++i)
-       cout << foo[i](0,0) << std::endl;
+       maquis::cout << foo[i](0,0) << std::endl;
 
    foo.push_back(MatrixT(3,3));
    foo[3](0,0) = 3;
    foo[0](0,0) = -1;
    for (int i = 0; i < 4; ++i)
-       cout << foo[i](0,0) << std::endl;
+       maquis::cout << foo[i](0,0) << std::endl;
 
 }
 
