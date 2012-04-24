@@ -78,7 +78,10 @@ namespace generate_mpo
         }
 
 	};
-    
+   
+    using namespace std;
+    using namespace boost::tuples;
+
     inline size_t next_free(vector<size_t> const & out_taken,
                             vector<size_t> const & in_taken)
     {

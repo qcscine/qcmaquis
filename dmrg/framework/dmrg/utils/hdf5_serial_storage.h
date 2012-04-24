@@ -145,7 +145,7 @@ boost::shared_ptr<BaseStorage<Object> > Hdf5Storage<Object>::clone() const
 template<class Object>
 void Hdf5Storage<Object>::load(boost::weak_ptr<storage<Object> > ptr)
 {   
-//    cerr << "Accessing " << object_path << std::endl;
+//    maquis::cerr << "Accessing " << object_path << std::endl;
     static Timer timer("hdf5_load");
     timer.begin();
     
@@ -163,7 +163,7 @@ void Hdf5Storage<Object>::load(boost::weak_ptr<storage<Object> > ptr)
 template<class Object>
 void Hdf5Storage<Object>::store(boost::weak_ptr<storage<Object> > ptr)
 {
-//    cerr << "Storing " << object_path << std::endl;
+//    maquis::cerr << "Storing " << object_path << std::endl;
     
     static Timer timer("hdf5_store");
     timer.begin();
@@ -187,7 +187,7 @@ Hdf5Storage<Object>::~Hdf5Storage()
     if (ever_stored && oa->is_group(object_path))
         oa->delete_group(object_path);
     
-//    cerr << "Deleted " << object_path << std::endl;
+//    maquis::cerr << "Deleted " << object_path << std::endl;
 }
 
 #endif

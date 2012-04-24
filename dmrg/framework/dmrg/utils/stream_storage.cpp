@@ -52,7 +52,7 @@ StreamStorageMaster::StreamStorageMaster(std::string fp, bool enable)
         try {
             boost::filesystem::create_directories(ph);
         } catch (...) {
-            std::cerr << "Error creating temp dir " << ph << ", try with a different 'storagedir' parameter." << std::endl;
+            maquis::cerr << "Error creating temp dir " << ph << ", try with a different 'storagedir' parameter." << std::endl;
             throw;
         }
         base_path = ph.string();

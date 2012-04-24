@@ -207,7 +207,7 @@ void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup
         try {
             mps1[i].check_equal(mps2[i]);
         } catch (std::exception & e) {
-            std::cerr << "Problem on site " << i << ":" << e.what() << std::endl;
+            maquis::cerr << "Problem on site " << i << ":" << e.what() << std::endl;
             exit(1);
         }
 }
