@@ -60,8 +60,6 @@ typedef maquis::types::dense_matrix<std::complex<double> > Matrix;
 
 #include "dmrg/models/factory.h"
 
-using namespace app;
-
 #ifdef UseTwoU1
 typedef TwoU1 grp;
 #else

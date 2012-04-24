@@ -70,8 +70,6 @@ typedef maquis::types::dense_matrix<double> Matrix;
 //#endif
 //#endif
 
-using namespace app;
-
 #ifdef UseTwoU1
 typedef TwoU1 grp;
 #else

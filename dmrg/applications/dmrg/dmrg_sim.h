@@ -21,9 +21,6 @@
 
 #include "dmrg/mp_tensors/optimize.h"
 
-using namespace app;
-
-
 //template <class Matrix, class SymmGroup>
 //struct do_fix_density {
 //    

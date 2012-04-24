@@ -23,8 +23,6 @@
 #include "utils/types.h"
 //#include "dmrg/utils/noop_storage.h"
 
-using namespace app;
-
 template<class Matrix, class SymmGroup>
 struct Trotter_Steps{
 	

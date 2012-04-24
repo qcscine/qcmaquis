@@ -15,8 +15,4 @@
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 
-namespace app {
-    
-} // namespace
-
 #endif
