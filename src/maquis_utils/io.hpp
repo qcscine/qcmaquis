@@ -7,8 +7,8 @@ namespace maquis {
     extern ambient::io cout;
     extern ambient::io cerr;
 #else
-    std::ostream& cout = std::cout;
-    std::ostream& cerr = std::cerr;
+    using std::cout;
+    using std::cerr;
 #endif
 
 }
