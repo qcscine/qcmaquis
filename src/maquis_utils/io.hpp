@@ -3,10 +3,10 @@
 
 namespace maquis {
 
-#ifdef AMBIENT
-    extern ambient::cout cout;
+#ifdef AMBIENT_IO
+    extern ambient::io cout;
 #else
-    extern std::cout cout;
+    std::ostream& cout = std::cout;
 #endif
 
 }
