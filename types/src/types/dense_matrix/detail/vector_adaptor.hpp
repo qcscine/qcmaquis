@@ -15,7 +15,7 @@ namespace maquis { namespace types {
 namespace boost { namespace numeric { namespace bindings { namespace detail {
 
     template< typename T, typename MemoryBlock, typename Id, typename Enable >
-    struct adaptor<::maquis::types::vector<T,MemoryBlock>, Id, Enable>
+    struct adaptor< ::maquis::types::vector<T,MemoryBlock>, Id, Enable>
     {
         typedef typename copy_const< Id, T >::type value_type;
         typedef std::ptrdiff_t  size_type;
