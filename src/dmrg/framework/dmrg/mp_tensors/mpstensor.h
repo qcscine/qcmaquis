@@ -12,8 +12,6 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 
-//#include "types/dense_matrix/matrix_algorithms.hpp"
-
 #include <iostream>
 #include <algorithm>
 
