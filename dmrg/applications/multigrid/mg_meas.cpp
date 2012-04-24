@@ -43,14 +43,14 @@ int main(int argc, char ** argv)
 
     std::ifstream param_file(argv[1]);
     if (!param_file) {
-        cerr << "Could not open parameter file." << std::endl;
+        maquis::cerr << "Could not open parameter file." << std::endl;
         exit(1);
     }
     DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
-        cerr << "Could not open model file." << std::endl;
+        maquis::cerr << "Could not open model file." << std::endl;
         exit(1);
     }
     ModelParameters model(model_file);
@@ -62,8 +62,8 @@ int main(int argc, char ** argv)
     try {
         mg_meas(parms, model);
     } catch (std::exception & e) {
-        cerr << "Exception thrown!" << std::endl;
-        cerr << e.what() << std::endl;
+        maquis::cerr << "Exception thrown!" << std::endl;
+        maquis::cerr << e.what() << std::endl;
         exit(1);
     }
     
