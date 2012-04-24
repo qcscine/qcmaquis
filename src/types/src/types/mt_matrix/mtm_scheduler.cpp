@@ -58,7 +58,7 @@ void MtmWorker::execute()
             boost::lock_guard<boost::mutex> lock(master->queue_mutex);
             if (master->queue.empty())
                 break;
-            //            cerr << "Queue size: " << master->queue.size() << std::endl;
+            //            maquis::cerr << "Queue size: " << master->queue.size() << std::endl;
             req = master->queue.front();
             master->queue.pop_front();
         }

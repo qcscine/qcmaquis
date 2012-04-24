@@ -45,15 +45,15 @@ int main(int argc, char ** argv)
     maquis::cout.precision(10);
 
     std::ifstream param_file(argv[1]);
-    if (!param_file) {
-        cerr << "Could not open parameter file." << std::endl;
+    if(!param_file){
+        maquis::cerr << "Could not open parameter file." << std::endl;
         exit(1);
     }
     DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
-    if (!model_file) {
-        cerr << "Could not open model file." << std::endl;
+    if(!model_file){
+        maquis::cerr << "Could not open model file." << std::endl;
         exit(1);
     }
     ModelParameters model(model_file);
@@ -64,11 +64,11 @@ int main(int argc, char ** argv)
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
     
-    try {
+    try{
         mg_dmrg(parms, model);
-    } catch (std::exception & e) {
-        cerr << "Exception thrown!" << std::endl;
-        cerr << e.what() << std::endl;
+    }catch(std::exception & e){
+        maquis::cerr << "Exception thrown!" << std::endl;
+        maquis::cerr << e.what() << std::endl;
         exit(1);
     }
     

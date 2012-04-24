@@ -31,7 +31,7 @@ namespace ambient {
         void precision(int p){
             if(verbose()) std::cout.precision(p);
         }
-    } cout;
+    } cout, cerr;
 }
 
 #endif

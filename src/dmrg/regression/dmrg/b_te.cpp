@@ -128,14 +128,14 @@ int main(int argc, char ** argv)
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
-        cerr << "Could not open parameter file." << std::endl;
+        maquis::cerr << "Could not open parameter file." << std::endl;
         exit(1);
     }
     b_DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
-        cerr << "Could not open model file." << std::endl;
+        maquis::cerr << "Could not open model file." << std::endl;
         exit(1);
     }
     b_ModelParameters model(model_file);
