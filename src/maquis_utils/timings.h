@@ -10,13 +10,11 @@
 #include "omp.h"
 #endif
 
-
 #ifdef __CUBLAS__
 #include "cuda_runtime_api.h" 
 #endif
 
 #define BILLION 0x3B9ACA00
-
 
 #if defined(__i386__)
  
@@ -62,7 +60,6 @@ inline unsigned long getcpuclocks()
 inline unsigned long getcpuclocks() { return 0; }
 
 #endif
-
 
 class Timer
 {
