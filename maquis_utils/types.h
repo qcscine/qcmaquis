@@ -2,6 +2,7 @@
 #define MAQUIS_TYPES_TRAITS_H
 
 namespace utils {
+
     template<class T> struct real_type { typedef T type; };
     template<class T> struct real_type<std::complex<T> > { typedef T type; };
     
@@ -10,7 +11,6 @@ namespace utils {
     
     template<class T> struct real_identity<std::complex<T> > { static const std::complex<T> value; };
     template<class T> struct imag_identity<std::complex<T> > { static const std::complex<T> value; };
-    
     
     // complex identities
     
@@ -27,3 +27,4 @@ namespace utils {
 }
 
 #endif
+
