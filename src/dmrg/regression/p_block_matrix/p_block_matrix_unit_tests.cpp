@@ -13,7 +13,7 @@
 
 #define M_SIZE 6
 typedef maquis::types::p_dense_matrix<double> Matrix;
-using namespace blas;
+
 #include <alps/hdf5.hpp>
 
 #include "dmrg/block_matrix/block_matrix.h"
@@ -33,7 +33,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
 {
     ambient::layout >> dim(1,1), dim(1,1), dim(10,1);
     typedef U1 grp;
-    typedef maquis::types::p_dense_matrix<double> Matrix;
 
     Matrix d(0,0);
     Matrix e(0,0);
@@ -46,7 +45,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
     m1.insert_block(d, -1, 1);
     m1.insert_block(e, 0, 1);
     m1.generate(double());
-    cout << m1;
+    maquis::cout << m1;
     resize(d, 2, 2);
 
     printf("m2:\n");
@@ -54,12 +53,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
     m2.allocate_blocks();
     m2.generate(double());
 
-    cout << m2;
+    maquis::cout << m2;
     resize(d, 4, 4);
 
     block_matrix<Matrix, grp> m3;
     m3 = m2;
-    cout << m3;
+    maquis::cout << m3;
 
 }
 

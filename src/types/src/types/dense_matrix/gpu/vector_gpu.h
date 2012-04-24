@@ -130,7 +130,7 @@ public:
 				break;	
 				
 			default:
-				//std::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
+				//maquis::cout << "CUBLAS_STATUS_SUCCESS" + error << std::endl;
                 break;
 		}
 		

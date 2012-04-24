@@ -93,8 +93,8 @@ namespace app {
         // Output
 //        for (int n=0; n<ret.size(); ++n)
 //        {
-//            cout << "Hamiltonian #" << n << std::endl;
-//            cout << ret[n];
+//            maquis::cout << "Hamiltonian #" << n << std::endl;
+//            maquis::cout << ret[n];
 //        }
         
         return ret;

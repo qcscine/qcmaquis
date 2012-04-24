@@ -87,16 +87,14 @@ namespace maquis {
     template <typename T, typename MemoryBlock>
     dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator += (dense_matrix const& rhs) 
     {
-        using maquis::types::plus_assign;
-        plus_assign(*this,rhs);
+        maquis::types::plus_assign(*this,rhs);
         return *this;
     }
     
     template <typename T, typename MemoryBlock>
     dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator -= (dense_matrix const& rhs) 
     {
-        using maquis::types::minus_assign;
-        minus_assign(*this,rhs);
+        maquis::types::minus_assign(*this,rhs);
         return *this;
     }
     
@@ -104,8 +102,7 @@ namespace maquis {
     template <typename T2>
     dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator *= (T2 const& t)
     {
-        using maquis::types::multiplies_assign;
-        multiplies_assign(*this, t);
+        maquis::types::multiplies_assign(*this, t);
         return *this;
     }
     
@@ -113,8 +110,7 @@ namespace maquis {
     template <typename T2>
     dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator /= (T2 const& t)
     {
-        using maquis::types::multiplies_assign;
-        multiplies_assign(*this, T(1)/t);
+        maquis::types::multiplies_assign(*this, T(1)/t);
         return *this;
     }
 

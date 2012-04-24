@@ -270,7 +270,7 @@ std::ostream& operator<<(std::ostream & os, mt_matrix<T> const & m)
     for (std::size_t r = 0; r < num_rows(m); ++r) {
         for (std::size_t c = 0; c < num_columns(m); ++c)
             os << m(r, c);
-        os << endl;
+        os << std::endl;
     }
     return os;
 }

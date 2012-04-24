@@ -141,9 +141,9 @@ namespace adj {
             if (p+W_ < L_*W_)
                 ret.push_back(p+W_);
             
-            //        cout << p << " -> ";
-            //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<int>(cout, " "));
-            //        cout << std::endl;
+            //        maquis::cout << p << " -> ";
+            //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<int>(maquis::cout, " "));
+            //        maquis::cout << std::endl;
             
             return ret;
         }
@@ -193,9 +193,9 @@ namespace adj {
                         }
 #undef wrap
             
-            //        cout << p << " -> ";
-            //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<int>(cout, " "));
-            //        cout << std::endl;
+            //        maquis::cout << p << " -> ";
+            //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<int>(maquis::cout, " "));
+            //        maquis::cout << std::endl;
             
             return ret;
         }

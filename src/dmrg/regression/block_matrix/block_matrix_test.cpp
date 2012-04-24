@@ -1,10 +1,7 @@
 #include <iostream>
 #include <vector>
 
-using namespace std;
-
 #include "types/dense_matrix/vector_interface.hpp"
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -27,16 +24,16 @@ int main()
         physical.push_back(std::make_pair(-2, 1));
         physical.push_back(std::make_pair(-1, 1));
         
-        cout << physical << endl;
+        maquis::cout << physical << std::endl;
         physical.sort();
-        cout << physical << endl;
+        maquis::cout << physical << std::endl;
         
-        cout << physical.position(0) << endl;
+        maquis::cout << physical.position(0) << std::endl;
         
         physical.insert(make_pair(0,3));
-        cout << physical << endl;
+        maquis::cout << physical << std::endl;
         
-        cout << physical.position(-1) << endl;
+        maquis::cout << physical.position(-1) << std::endl;
     }
     
     {
@@ -46,7 +43,7 @@ int main()
         block_matrix<Matrix, grp> test;
         test.insert_block(foo, 0, 0);
         
-        cout << test.description() << endl;
+        maquis::cout << test.description() << std::endl;
     }
     
     if (true)
@@ -60,8 +57,8 @@ int main()
         
         block_matrix<Matrix, grp> m1(rc, rc), m2(rc, rc), m3;
         
-        cout << m1.description() << endl << m2.description() << endl;
-        cout << m1.description() << endl << m2.description() << endl;
+        maquis::cout << m1.description() << std::endl << m2.description() << std::endl;
+        maquis::cout << m1.description() << std::endl << m2.description() << std::endl;
         gemm(m1, m2, m3);
         
         for (std::size_t k = 0; k < m3.n_blocks(); ++k)
@@ -69,20 +66,20 @@ int main()
                 for (std::size_t r = 0; r < num_cols(m3[k]); ++r)
                     m3[k](l,r) = drand48();
         
-        cout << m3 << endl;
+        maquis::cout << m3 << std::endl;
         
         block_matrix<Matrix, grp> U, V;
         block_matrix<DiagMatrix, grp> S;
         svd(m3, U, V, S);
         
-        //cout << S << endl;
-        //cout << U << endl;
+        //maquis::cout << S << std::endl;
+        //maquis::cout << U << std::endl;
         
         block_matrix<Matrix, grp> t;
         gemm(U, S, t);
         gemm(t, V, U);
         
-        cout << U << endl;
+        maquis::cout << U << std::endl;
         
         qr(m3, U, V);
     }

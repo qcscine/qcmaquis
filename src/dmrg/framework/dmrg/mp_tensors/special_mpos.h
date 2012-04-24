@@ -58,8 +58,6 @@ MPO<Matrix, TrivialGroup> s12_ising(std::size_t L, double J, double h)
     J *= 0.25;
     h *= 0.5;
     
-    using std::make_pair;
-    
     Index<TrivialGroup> phys_i; phys_i.insert(std::make_pair(TrivialGroup::Plus, 2));
     Index<TrivialGroup> triv; triv.insert(std::make_pair(TrivialGroup::Plus, 1));
     Index<TrivialGroup> aux; aux.insert(std::make_pair(TrivialGroup::Plus, 4));
@@ -82,7 +80,7 @@ MPO<Matrix, TrivialGroup> s12_ising(std::size_t L, double J, double h)
     right(2, 0) = make_mpo_identity_block<Matrix>(phys_i);
     right(3, 0) = make_mpo_identity_block<Matrix>(phys_i);
     
-#define NGI(v) make_pair(TrivialGroup::Plus, v)
+#define NGI(v) std::make_pair(TrivialGroup::Plus, v)
     
     for (int k = 0; k < 2; ++k) {
         bulk(0, 0, NGI(k), NGI(k)) = 1;

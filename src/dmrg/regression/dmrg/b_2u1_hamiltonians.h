@@ -107,7 +107,7 @@ namespace b_mpos {
                     if (K == 0)
                         continue;
                     
-                    cout << p << " " << *neigh << " K=" << K << endl;
+                    maquis::cout << p << " " << *neigh << " K=" << K << std::endl;
                     
                     for (int i = 0; i < ops.size()-1; ++i)
                     {
@@ -144,7 +144,7 @@ namespace b_mpos {
             if (parms.get<int>("pin") < 0) {
                 for (int i = 0; i < adj.size(); ++i) {
                     if (adj.site_type(i) > 0) {
-                        cout << "Pinning on site " << i << " to color " << adj.site_type(i)-1 << endl;
+                        maquis::cout << "Pinning on site " << i << " to color " << adj.site_type(i)-1 << std::endl;
                         
                         terms.clear();
                         terms.push_back(std::make_pair(i, h0*c[adj.site_type(i)-1]));
@@ -208,7 +208,6 @@ namespace b_mpos {
         
         void push_extra_terms(MPOMaker<Matrix, TwoU1> & mm, b_adj::Adjacency& adj)
         {
-            using namespace std;
             vector<pair<size_t, op_t> > term;
             
             // U term

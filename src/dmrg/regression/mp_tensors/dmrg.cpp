@@ -2,10 +2,6 @@
 #include <iterator>
 #include <iostream>
 
-using std::cout;
-using std::cerr;
-using std::endl;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"

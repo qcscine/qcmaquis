@@ -35,7 +35,7 @@ left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> con
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
         left_[i+1] = left;
-//        cout << "Left at " << i+1 << " " << left.data_[0] << endl;
+//        maquis::cout << "Left at " << i+1 << " " << left.data_[0] << std::endl;
     }
     return left_;
 }
@@ -55,7 +55,7 @@ right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> co
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
         right_[i] = right;
-//        cout << "right at " << i << " " << right.data_[0] << endl;
+//        maquis::cout << "right at " << i << " " << right.data_[0] << std::endl;
     }
     return right_;
 }
@@ -85,7 +85,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     
     for (int i = 0; i < L; ++i) {
         if (verbose)
-            cout << "expval site " << i << std::endl;
+            maquis::cout << "expval site " << i << std::endl;
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
@@ -174,15 +174,15 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
         
         for (std::size_t k = 0; k < s.n_blocks(); ++k)
             detail::iterable_matrix_impl<Matrix,SymmGroup>::caculate_bond_renyi_entropies_impl(s[k],sv);
-//        cout << p << " " << sv[0] << " " << sv[1] << endl;
+//        maquis::cout << p << " " << sv[0] << " " << sv[1] << std::endl;
         
         double r = std::accumulate(sv.begin(), sv.end(), double(0));
 //        std::transform(sv.begin(), sv.end(), sv.begin(),
 //                       boost::lambda::_1 / r);
         
-//        cout << r << " " << sv.size() << endl;
+//        maquis::cout << r << " " << sv.size() << std::endl;
 //        if (fabs(1-r) < 0.01)
-//            std::copy(sv.begin(), sv.end(), std::ostream_iterator<double>(cout, " ")); cout << endl;
+//            std::copy(sv.begin(), sv.end(), std::ostream_iterator<double>(maquis::cout, " ")); maquis::cout << std::endl;
         
         double S = 0;
         if (n == 1) {
@@ -197,7 +197,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
             ret.push_back(1/(1-n)*log(S));
         }
         
-//        cout << ret.back() << endl;
+//        maquis::cout << ret.back() << std::endl;
         
         t = mps[p-1].normalize_left(SVD);
         mps[p].multiply_from_left(t);
@@ -242,7 +242,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
             
             MPSTensor<Matrix, SymmGroup> tmp = contraction::local_op(mps[p], dens_ops[j]);
             double cur_dens = mps[p].scalar_overlap(tmp);
-            cout << "Density[" << j << "] (before) = " << cur_dens << std::endl;
+            maquis::cout << "Density[" << j << "] (before) = " << cur_dens << std::endl;
         }
         
         double a = trace(rho(down, down)) * trace(rho(updown, updown));
@@ -258,9 +258,9 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
         t0 += k1*k2*trace( rho(updown, updown) );
         double k0 = (1.-t0) / trace(rho(empty, empty));
         
-        cout << "k0 = " << k0 << std::endl;
-        cout << "k1 = " << k1 << std::endl;
-        cout << "k2 = " << k2 << std::endl;
+        maquis::cout << "k0 = " << k0 << std::endl;
+        maquis::cout << "k1 = " << k1 << std::endl;
+        maquis::cout << "k2 = " << k2 << std::endl;
         assert( k0 > 0 ); // not always the case!!!
         
         block_matrix<Matrix, SymmGroup> rescale = identity_matrix<Matrix>(phys);
@@ -275,7 +275,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
             for (size_t j=0; j<dens.size(); ++j) {
                 MPSTensor<Matrix, SymmGroup> tmp = contraction::local_op(mps[p], dens_ops[j]);
                 double meas_dens = mps[p].scalar_overlap(tmp) / mps[p].scalar_norm();
-                cout << "Density[" << j << "] (after) = " << meas_dens << ", should be " << dens[j][p] << std::endl;
+                maquis::cout << "Density[" << j << "] (after) = " << meas_dens << ", should be " << dens[j][p] << std::endl;
             }
         }
         

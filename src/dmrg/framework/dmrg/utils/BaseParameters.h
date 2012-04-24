@@ -54,7 +54,7 @@ namespace conversion
     {
         std::vector<T> operator()(std::string const & val)
         {
-            //            cerr << "reading " << key << endl;
+            //            cerr << "reading " << key << std::endl;
             std::string raw = val;
 			boost::trim_if(raw, boost::is_any_of("\"'"));
             std::vector<T> ret;

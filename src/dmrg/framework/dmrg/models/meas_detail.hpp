@@ -340,7 +340,7 @@ namespace meas_detail {
 			}
 			std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
 
-			//cout << dcorr.description() << std::endl;
+			//maquis::cout << dcorr.description() << std::endl;
 
 
 			std::vector<std::string> lbt;

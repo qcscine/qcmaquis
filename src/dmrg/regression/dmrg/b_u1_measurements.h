@@ -136,7 +136,7 @@ struct measure_<Matrix, U1>
                 }
             }
             
-            cout << "Bond energy sum: " << sum << endl;
+            maquis::cout << "Bond energy sum: " << sum << std::endl;
             
             ar << alps::make_pvp("/spectrum/results/BondEnergies/mean/value", bond_e);
             ar << alps::make_pvp("/spectrum/results/BondEnergies/labels", bond_names);

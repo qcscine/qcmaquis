@@ -4,10 +4,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -67,7 +63,7 @@ std::ostream& operator<< (std::ostream& os, MPO<Matrix, grp> const& mpo)
         for (size_t r=0; r<mpo[p].row_dim(); ++r)
             for (size_t c=0; c<mpo[p].col_dim(); ++c)
                 if (mpo[p].has(r, c))
-                    os << "** Position " << p << " [" << r << "," << c << "]:" << endl << mpo[p](r,c);
+                    os << "** Position " << p << " [" << r << "," << c << "]:" << std::endl << mpo[p](r,c);
     return os;
 }
 
@@ -143,8 +139,8 @@ int main(int argc, char ** argv)
     sign.insert_block(Matrix(1, 1, 1), 0, 0);
     sign.insert_block(Matrix(1, 1, -1), 1, 1);
 
-    cout << "op 0:" << endl << create;
-    cout << "op 1:" << endl << destroy;
+    maquis::cout << "op 0:" << std::endl << create;
+    maquis::cout << "op 1:" << std::endl << destroy;
     
     size_t dist = 2;
     
@@ -181,9 +177,9 @@ int main(int argc, char ** argv)
     
     
     MPO<Matrix, grp> block_mpo_easy = block_to_mpo(phys, ident, bond_op2, dist, dist+1);
-    cout << "MPO (easy):" << endl << block_mpo_easy;
+    maquis::cout << "MPO (easy):" << std::endl << block_mpo_easy;
     
     MPO<Matrix, grp> block_mpo = block_to_mpo(phys, bond_op, dist+1);
-    cout << "MPO:" << endl << block_mpo;
+    maquis::cout << "MPO:" << std::endl << block_mpo;
     
 }

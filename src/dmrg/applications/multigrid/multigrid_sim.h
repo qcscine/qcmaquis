@@ -17,10 +17,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "dmrg/sim/sim.h"
 #include "dmrg/models/continuum/factory.h"
 
@@ -104,7 +100,7 @@ public:
             if (cur_graining != graining)
             {
                 multigrid_t.begin();
-                cout << "*** Starting grainings ***" << std::endl;
+                maquis::cout << "*** Starting grainings ***" << std::endl;
                 Logger iteration_log;
                 
                 base::parms = parms_orig.get_at_index("graining", graining);
@@ -122,13 +118,13 @@ public:
                 for (int i=0; i<=curL; ++i)
                     mpo_mix[i] = mixed_mpo(base::model, r*i, oldmodel, curL-i);
                 
-                //            cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
+                //            maquis::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
                 if (curL < initial_mps.length())
                     multigrid::extension_optim(base::parms, iteration_log,
                                                this->mps, initial_mps, mpo_mix);
                 else if (this->mps.length() > initial_mps.length())
                     multigrid::restriction(this->mps, initial_mps);
-                //            cout << "New MPS:" << std::endl << initial_mps.description();
+                //            maquis::cout << "New MPS:" << std::endl << initial_mps.description();
                 multigrid_t.end();
                 
                 this->mps = initial_mps;
@@ -228,11 +224,11 @@ private:
         
 #ifndef NDEBUG
         // debugging output, to be removed soon!
-        cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
+        maquis::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
         for (int p=0; p<lat->size(); ++p) {
-            cout << lat->get_prop<std::string>("label", p) << ": " << lat->get_prop<double>("dx", p) << std::endl;
-            cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
-            cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
+            maquis::cout << lat->get_prop<std::string>("label", p) << ": " << lat->get_prop<double>("dx", p) << std::endl;
+            maquis::cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
+            maquis::cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
         }
 #endif
          

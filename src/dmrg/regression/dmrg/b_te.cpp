@@ -5,10 +5,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -115,7 +111,7 @@ block_matrix<Matrix, grp> get_hb(double dt, bool img)
     m0(0, 1) = m0(1, 0) = -0.5*exp(-i*dt/4.0)*(exp(i*dt)-1.0);
     ret.insert_block(m0, 0, 0);
     
-    cout << ret << endl;
+    maquis::cout << ret << std::endl;
     
     return ret;
 }
@@ -124,22 +120,22 @@ int main(int argc, char ** argv)
 {
     if (argc != 3)
     {
-        cout << "Usage: <parms> <model_parms>" << endl;
+        maquis::cout << "Usage: <parms> <model_parms>" << std::endl;
         exit(1);
     }
     
-    cout.precision(10);
+    maquis::cout.precision(10);
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
-        cerr << "Could not open parameter file." << endl;
+        cerr << "Could not open parameter file." << std::endl;
         exit(1);
     }
     b_DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
-        cerr << "Could not open model file." << endl;
+        cerr << "Could not open model file." << std::endl;
         exit(1);
     }
     b_ModelParameters model(model_file);
@@ -165,7 +161,7 @@ int main(int argc, char ** argv)
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
-    cout << norm(mps) << endl;
+    maquis::cout << norm(mps) << std::endl;
     
     double dt = 0.01;
     block_matrix<Matrix, grp> op = get_hb(dt, true);
@@ -174,11 +170,11 @@ int main(int argc, char ** argv)
     {
         if (i == 100)
             op = get_hb(dt, false);
-        cout << expval(mps, mpo) << endl;
+        maquis::cout << expval(mps, mpo) << std::endl;
         mps = evolve(mps, op, 100, 1e-10);
-//        cout << norm(mps) << endl;
+//        maquis::cout << norm(mps) << std::endl;
     }
     
 //    mps = compression::l2r_compress(mps, 100, 1e-8);
-//    cout << norm(mps) << endl;
+//    maquis::cout << norm(mps) << std::endl;
 }

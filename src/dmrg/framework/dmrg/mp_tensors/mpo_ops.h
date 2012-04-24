@@ -37,21 +37,19 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
                 std::string s = std::string(),
                 int p = 0, int start = 0)
 {
-    using std::size_t;
-    
     for (size_t k = 0; k < mpo[p].col_dim(); ++k)
     {
         if (mpo[p](start,k).n_blocks() == 0)
             continue;
         
         std::ostringstream oss;
-//        oss << mpo[p](start, k) << endl;
+//        oss << mpo[p](start, k) << std::endl;
 //        oss << "(" << start << "," << k << ") ";
         oss << " " << identify_op(mpo[p](start, k)) << " ";
         if (p+1 < mpo.length())
             follow_mpo(mpo, s+oss.str(), p+1, k);
         else
-            cout << s+oss.str() << endl;
+            maquis::cout << s+oss.str() << std::endl;
     }
 }
 
@@ -102,7 +100,6 @@ template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup>
 square_mpo(MPO<Matrix, SymmGroup> const & mpo)
 {
-    using std::size_t;
     typedef typename SymmGroup::charge charge;
     
     size_t L = mpo.length();
@@ -112,7 +109,7 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
     for (size_t p = 0; p < L; ++p)
     {
         MPOTensor<Matrix, SymmGroup> const & inp = mpo[p];
-        cout << "MPOTensor " << inp.row_dim()*inp.row_dim() << " " << inp.col_dim()*inp.col_dim() << endl;
+        maquis::cout << "MPOTensor " << inp.row_dim()*inp.row_dim() << " " << inp.col_dim()*inp.col_dim() << std::endl;
         MPOTensor<Matrix, SymmGroup> ret(inp.row_dim()*inp.row_dim(),
                                          inp.col_dim()*inp.col_dim());
         
@@ -135,10 +132,10 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
         sq[p] = ret;
     }
     
-    cout << "Done squaring." << endl;
+    maquis::cout << "Done squaring." << std::endl;
     
     sq = cleanup_mpo(sq);
-    cout << "Done cleaning up." << endl;
+    maquis::cout << "Done cleaning up." << std::endl;
 
     return sq;
 }
@@ -147,7 +144,7 @@ template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup>
 zero_after(MPO<Matrix, SymmGroup> mpo, int p0)
 {
-    cout << "Zeroing out MPO after site " << p0 << endl;
+    maquis::cout << "Zeroing out MPO after site " << p0 << std::endl;
     for (int p = p0+1; p < mpo.size(); ++p) {
         for (int k = 2; k < mpo[p].row_dim(); ++k)
             for (int l = 2; l < mpo[p].col_dim(); ++l)

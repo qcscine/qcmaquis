@@ -44,9 +44,6 @@ namespace mpos {
         virtual void push_extra_terms(MPOMaker<Matrix, SymmGroup>&, adj::Adjacency&) { }
     };
     
-    using namespace std;
-    using namespace boost::tuples;
-    
     size_t next_free(vector<size_t> const & out_taken,
                      vector<size_t> const & in_taken)
     {
@@ -69,8 +66,6 @@ namespace mpos {
     void compress_on_bond(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm1,
                           std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm2)
     {
-        using namespace std;
-        using namespace boost::tuples;
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;
         
@@ -80,8 +75,8 @@ namespace mpos {
         for (typename vector<block>::iterator it = pm2.begin(); it != pm2.end(); ++it)
             bond_used_dims.insert(get<0>(*it));
         
-//        cout << "Compression: " << *max_element(bond_used_dims.begin(),
-//                                                bond_used_dims.end()) << " -> " << bond_used_dims.size() << endl;
+//        maquis::cout << "Compression: " << *max_element(bond_used_dims.begin(),
+//                                                bond_used_dims.end()) << " -> " << bond_used_dims.size() << std::endl;
         
         map<size_t, size_t> compression_map;
         size_t c = 0;
@@ -99,8 +94,6 @@ namespace mpos {
     std::pair<size_t, size_t>
     rcdim(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > const & pm)
     {
-        using namespace std;
-        using namespace boost::tuples;
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;
         
@@ -161,16 +154,16 @@ namespace mpos {
 //            for (vector<vector<size_t> >::iterator it = labels.begin();
 //                 it != labels.end(); ++it)
 //            {
-//                cout << "Correlator ";
-//                std::copy(it->begin(), it->end(), std::ostream_iterator<size_t>(cout, " "));
-//                cout << " at " << it-labels.begin() << endl;
+//                maquis::cout << "Correlator ";
+//                std::copy(it->begin(), it->end(), std::ostream_iterator<size_t>(maquis::cout, " "));
+//                maquis::cout << " at " << it-labels.begin() << std::endl;
 //            }
             
 //            for (size_t p = 0; p < prempo.size(); ++p)
 //            {
-//                cout << "Site: " << p << endl;
+//                maquis::cout << "Site: " << p << std::endl;
 //                for (typename vector<tag>::const_iterator it = tags[p].begin(); it != tags[p].end(); ++it)
-//                    cout << "    " << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << endl;
+//                    maquis::cout << "    " << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << std::endl;
 //            }
             
             MPO<Matrix, SymmGroup> r(prempo.size());
@@ -221,7 +214,7 @@ namespace mpos {
             while (used[p].count(u2) > 0) ++u2;
             prempo[p].push_back( make_tuple(u1, u2, op) );
             used[p].insert(u2);
-//            cout << "Adding a " << (trivial ? "trivial " : "") << "term at " << p << ", " << u1 << " -> " << u2 << endl;
+//            maquis::cout << "Adding a " << (trivial ? "trivial " : "") << "term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             if (trivial)
                 tags[p].push_back( make_tuple(u1, u2, "trivial") );
             else
@@ -345,7 +338,7 @@ namespace mpos {
                  it != ops.end(); ++it)
                 positions.push_back( it->first );
 //            std::copy(positions.begin(), positions.end(),
-//                      std::ostream_iterator<size_t>(cout, " ")); cout << " " << endl;
+//                      std::ostream_iterator<size_t>(maquis::cout, " ")); maquis::cout << " " << std::endl;
             int minp = *min_element(positions.begin(), positions.end());
             int maxp = *max_element(positions.begin(), positions.end());
             

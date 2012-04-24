@@ -9,8 +9,6 @@
 #include "types/p_dense_matrix/algorithms.hpp"
 #include "types/p_dense_matrix/p_diagonal_matrix.h"
 
-using ambient::cout;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"

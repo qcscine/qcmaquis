@@ -32,8 +32,6 @@ namespace ts_reshape {
         static Timer timer("reshape_both_to_left");
         timer.begin();
         
-        using std::size_t;
-        
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
@@ -123,8 +121,6 @@ namespace ts_reshape {
         static Timer timer("reshape_left_to_both");
         timer.begin();
         
-        using std::size_t;
-        
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
@@ -197,8 +193,6 @@ namespace ts_reshape {
     {
         static Timer timer("reshape_right_to_both");
         timer.begin();
-        
-        using std::size_t;
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
@@ -284,8 +278,6 @@ namespace ts_reshape {
     {   
         static Timer timer("reshape_both_to_right");
         timer.begin();
-        
-        using std::size_t;
         
         m2 = block_matrix<Matrix, SymmGroup>();
         

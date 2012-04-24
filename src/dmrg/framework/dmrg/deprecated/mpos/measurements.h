@@ -53,7 +53,7 @@ void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
         std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
     }
     
-    //std::copy(labels.begin(), labels.end(), std::ostream_iterator<std::string>(cout, " ")); cout << endl;
+    //std::copy(labels.begin(), labels.end(), std::ostream_iterator<std::string>(maquis::cout, " ")); maquis::cout << std::endl;
     //ar << alps::make_pvp(base_path + std::string("/labels"), labels);
     ar << alps::make_pvp(base_path + std::string("/mean/value"), dc);
     ar << alps::make_pvp(base_path + std::string("/labels"), labels);

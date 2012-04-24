@@ -4,10 +4,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
@@ -156,22 +152,22 @@ int main(int argc, char ** argv)
 
     if (argc != 3)
     {
-        cout << "Usage: <parms> <model_parms>" << endl;
+        maquis::cout << "Usage: <parms> <model_parms>" << std::endl;
         exit(1);
     }
     
-    cout.precision(10);
+    maquis::cout.precision(10);
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
-        cerr << "Could not open parameter file." << endl;
+        cerr << "Could not open parameter file." << std::endl;
         exit(1);
     }
     DmrgParameters parms(param_file);
     
     std::ifstream model_file(argv[2]);
     if (!model_file) {
-        cerr << "Could not open model file." << endl;
+        cerr << "Could not open model file." << std::endl;
         exit(1);
     }
     ModelParameters model(model_file);
@@ -186,7 +182,7 @@ int main(int argc, char ** argv)
         struct stat tmp;
         if (stat(chkpfile.c_str(), &tmp) == 0 && S_ISREG(tmp.st_mode))
         {
-            cout << "Restoring state." << endl;
+            maquis::cout << "Restoring state." << std::endl;
             restore = true;
         }
     }
@@ -251,9 +247,9 @@ int main(int argc, char ** argv)
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
-    cout << "eval1 " << expval(mps,mpo,0) << std::endl;
-//    cout << "eval2 " << expval(mps,mpo,1) << std::endl;
-//    cout << "eval3 " << expval(mps,mpo) << std::endl;
+    maquis::cout << "eval1 " << expval(mps,mpo,0) << std::endl;
+//    maquis::cout << "eval2 " << expval(mps,mpo,1) << std::endl;
+//    maquis::cout << "eval3 " << expval(mps,mpo) << std::endl;
 #ifndef MEASURE_ONLY
     
     bool early_exit = false;
@@ -268,10 +264,10 @@ int main(int argc, char ** argv)
             Logger iteration_log;
             //assert(false);
         for(int i=0 ; i < mps.length(); i ++){
-            cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
+            maquis::cout << "NORM: " << mps[i].scalar_norm() << "<- OK\n";
         }
             optimizer.sweep(sweep, iteration_log);
-            cout << "Sweep is done \n";
+            maquis::cout << "Sweep is done \n";
             
             ssm.sync();
             
@@ -294,7 +290,7 @@ int main(int argc, char ** argv)
                 oss << "/simulation/results/sweep" << sweep << "/Iteration Entropies/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), entropies);
                 
-                cout << "Sweep done after " << elapsed << " seconds." << endl;
+                maquis::cout << "Sweep done after " << elapsed << " seconds." << std::endl;
                 oss.str("");
                 oss << "/simulation/results/sweep" << sweep << "/Runtime/mean/value";
                 h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
@@ -324,13 +320,13 @@ int main(int argc, char ** argv)
 
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         
-        cout << "Measurements." << endl;
+        maquis::cout << "Measurements." << std::endl;
         measure(mps, *adj, *H, model, h5ar);
         
         Timer tvn("vN entropy"), tr2("Renyi n=2");
-        cout << "Calculating vN entropy." << endl;
+        maquis::cout << "Calculating vN entropy." << std::endl;
         tvn.begin(); entropies = calculate_bond_entropies(mps); tvn.end();
-        cout << "Calculating n=2 Renyi entropy." << endl;
+        maquis::cout << "Calculating n=2 Renyi entropy." << std::endl;
         tr2.begin(); renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
         
         if (entropies.size() > 0)
@@ -339,8 +335,8 @@ int main(int argc, char ** argv)
             h5ar << alps::make_pvp("/spectrum/results/Renyi2/mean/value", renyi2);
 
         double energy = expval(mps, mpoc);
-        cout << "Energy before: " << expval(mps, mpo) << endl;
-        cout << "Energy after: " << expval(mps, mpoc) << endl;
+        maquis::cout << "Energy before: " << expval(mps, mpo) << std::endl;
+        maquis::cout << "Energy after: " << expval(mps, mpoc) << std::endl;
         h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         
         if (parms.get<int>("calc_h2") > 0) {
@@ -354,8 +350,8 @@ int main(int argc, char ** argv)
             double energy2 = expval(mps, mpo2, true);
             t4.end();
         
-            cout << "Energy^2: " << energy2 << endl;
-            cout << "Variance: " << energy2 - energy*energy << endl;
+            maquis::cout << "Energy^2: " << energy2 << std::endl;
+            maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
         
             h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
             h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
@@ -365,7 +361,7 @@ int main(int argc, char ** argv)
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
-        cout << "Task took " << elapsed << " seconds." << endl;
+        maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
 #endif
 

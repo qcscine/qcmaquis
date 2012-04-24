@@ -199,7 +199,7 @@ namespace ietl
     {
        //for (int i=0;i<n_;i++)
          //  t[i] = -r[i] / ( matrix_(i,i) - theta );
-        // cout << "Preconditioner, theta = " << theta << std::endl;
+        // maquis::cout << "Preconditioner, theta = " << theta << std::endl;
         // t = -1*r / (1-theta);
         t = -r + ietl::dot(r,u)/ietl::dot(u,u)*u;
     }
@@ -349,16 +349,16 @@ namespace ietl
         do
         {
             // Modified Gram-Schmidt Orthogonalization with Refinement
-            //cout << matrix_.right.data_[0];
+            //maquis::cout << matrix_.right.data_[0];
 
-            //cout << t;
+            //maquis::cout << t;
             tau = ietl::two_norm(t);
             for (i=1;i<=iter.iterations();i++)
                 t -= ietl::dot(V[i-1],t)*V[i-1];
             if (ietl::two_norm(t) < kappa * tau)
                 for (i=1;i<=iter.iterations();i++)
                     t -= ietl::dot(V[i-1],t) * V[i-1];
-            //cout << t;
+            //maquis::cout << t;
             
             
             // v_m = t / |t|_2,  v_m^A = A v_m
@@ -387,25 +387,25 @@ namespace ietl
             
             // u^A = V^A s
             // ietl::mult(matrix_,u,uA);
-            //cout << VA[0];
-            //cout << s[0];
+            //maquis::cout << VA[0];
+            //maquis::cout << s[0];
             uA = VA[0] * s[0];
-            //cout << uA;
+            //maquis::cout << uA;
 
 
             for (j=1;j<=iter.iterations();++j)
                 uA += VA[j] * s[j];
             
             // r = u^A - \theta u
-            //cout << uA;
-            //cout << theta << "\n";
-            //cout << u;
+            //maquis::cout << uA;
+            //maquis::cout << theta << "\n";
+            //maquis::cout << u;
             r = uA-theta*u;
-            // cout << "Iteration " << iter.iterations() << ", resid = " << ietl::two_norm(r) << std::endl;
+            //maquis::cout << "Iteration " << iter.iterations() << ", resid = " << ietl::two_norm(r) << std::endl;
             
             // if (|r|_2 < \epsilon) stop
             ++iter;
-            //cout << r;
+            //maquis::cout << r;
             if (iter.finished(ietl::two_norm(r),theta))
                 break;
 
