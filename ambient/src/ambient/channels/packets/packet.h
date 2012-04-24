@@ -1,5 +1,5 @@
-#ifndef AMBIENT_PACKETS_PACKET_H
-#define AMBIENT_PACKETS_PACKET_H
+#ifndef AMBIENT_CHANNELS_PACKETS
+#define AMBIENT_CHANNELS_PACKETS
 #include <mpi.h>
 #include "ambient/channels/ichannel.h"
 #include "ambient/channels/packets/packet_t.h"
@@ -38,4 +38,5 @@ namespace ambient { namespace channels {
     packet* unpack(const packet_t& type, void* memory);
 
 } }
+
 #endif

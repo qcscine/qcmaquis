@@ -1,5 +1,5 @@
-#ifndef AMBIENT_INTERFACE_CHANNEL_H
-#define AMBIENT_INTERFACE_CHANNEL_H
+#ifndef AMBIENT_INTERFACE_CHANNEL
+#define AMBIENT_INTERFACE_CHANNEL
 
 namespace ambient { namespace channels {
 

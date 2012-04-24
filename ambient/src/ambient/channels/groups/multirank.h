@@ -1,5 +1,5 @@
-#ifndef AMBIENT_GROUPS_MULTIRANK_H
-#define AMBIENT_GROUPS_MULTIRANK_H
+#ifndef AMBIENT_CHANNELS_GROUPS_MULTIRANK
+#define AMBIENT_CHANNELS_GROUPS_MULTIRANK
 #include "ambient/channels/groups/group.h"
 #include "ambient/utils/singleton.hpp"
 #include <map>
@@ -25,4 +25,5 @@ namespace ambient { namespace channels {
 namespace ambient {
     extern channels::multirank& rank;
 }
+
 #endif

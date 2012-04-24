@@ -79,8 +79,8 @@ void latch_revisions(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))   
 
 
 #ifndef BOOST_PP_IS_ITERATING
-#ifndef CONVERTOBJECTS_HPP
-#define CONVERTOBJECTS_HPP
+#ifndef AMBIENT_MODELS_OPERATION_PP
+#define AMBIENT_MODELS_OPERATION_PP
 
 #define DEFINE_MARKED #define marked NULL,
 #define DEFINE_PINNED #define pinned ambient::models::ambient_pin* ,

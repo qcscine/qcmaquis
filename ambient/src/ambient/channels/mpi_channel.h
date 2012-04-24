@@ -1,5 +1,5 @@
-#ifndef AMBIENT_MPI_CHANNEL_H
-#define AMBIENT_MPI_CHANNEL_H
+#ifndef AMBIENT_CHANNELS_MPI_CHANNEL
+#define AMBIENT_CHANNELS_MPI_CHANNEL
 #include "ambient/ambient.h"
 #include "ambient/channels/ichannel.h"
 #include "ambient/channels/packets/types.h"
@@ -63,4 +63,5 @@ namespace ambient { namespace channels {
     };
 
 } }
+
 #endif

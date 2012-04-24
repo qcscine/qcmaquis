@@ -1,6 +1,5 @@
-#ifndef AMBIENT_CORE_SELECT_H
-#define AMBIENT_CORE_SELECT_H
-
+#ifndef AMBIENT_MODELS_OPERATION_SELECT
+#define AMBIENT_MODELS_OPERATION_SELECT
 #include <memory.h>
 #include "ambient/ambient.h"
 

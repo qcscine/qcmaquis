@@ -1,9 +1,8 @@
-#ifndef AMBIENT_INTERFACE_MODEL_H
-#define AMBIENT_INTERFACE_MODEL_H
+#ifndef AMBIENT_INTERFACE_MODEL
+#define AMBIENT_INTERFACE_MODEL
 #include "ambient/ambient.h"
 #include "ambient/utils/dim2.h"
 //#include "ambient/utils/delegate.hpp"
-
 #include <list>
 
 namespace ambient { namespace models {
@@ -112,4 +111,5 @@ namespace ambient { namespace models {
 namespace ambient {
     extern models::imodel&  model;
 }
+
 #endif

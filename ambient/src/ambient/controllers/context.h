@@ -1,6 +1,5 @@
-#ifndef AMBIENT_CONTROLLERS_CONTEXT_H
-#define AMBIENT_CONTROLLERS_CONTEXT_H
-
+#ifndef AMBIENT_CONTROLLERS_CONTEXT
+#define AMBIENT_CONTROLLERS_CONTEXT
 #include "ambient/models/v_model.h"
 #include "ambient/utils/singleton.hpp"
 

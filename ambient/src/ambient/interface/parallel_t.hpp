@@ -1,5 +1,6 @@
-#ifndef AMBIENT_INTERFACE_PARALLEL_T_H
-#define AMBIENT_INTERFACE_PARALLEL_T_H
+#ifndef AMBIENT_INTERFACE_PARALLEL_T
+#define AMBIENT_INTERFACE_PARALLEL_T
+
 namespace ambient{ 
 
     template <typename T>

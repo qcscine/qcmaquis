@@ -1,9 +1,8 @@
-#ifndef AMBIENT_TASKLIST_H
-#define AMBIENT_TASKLIST_H
-
+#ifndef AMBIENT_UTILS_TASKLIST
+#define AMBIENT_UTILS_TASKLIST
+#define STACK_CONTENT_RESERVATION 10
 #include <pthread.h>
 
-#define STACK_CONTENT_RESERVATION 10
 namespace ambient{
 
     class tasklist {

@@ -2,8 +2,8 @@
 #define ARGS_MAX_LEN 10
 
 #ifndef BOOST_PP_IS_ITERATING
-#ifndef CONVERTOBJECTS_HPP
-#define CONVERTOBJECTS_HPP
+#ifndef AMBIENT_INTERFACE_PUSH_PP
+#define AMBIENT_INTERFACE_PUSH_PP
 
 template <typename FP, class T0>
 void push(FP l_kernel, FP c_kernel, T0& arg0){

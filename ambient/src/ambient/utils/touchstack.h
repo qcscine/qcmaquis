@@ -1,7 +1,7 @@
-#ifndef AMBIENT_TOUCHSTACK_H
-#define AMBIENT_TOUCHSTACK_H
-
+#ifndef AMBIENT_UTILS_TOUCHSTACK
+#define AMBIENT_UTILS_TOUCHSTACK
 #define STACK_CONTENT_RESERVATION 10
+
 namespace ambient{
 
     template<typename T>
@@ -29,7 +29,7 @@ namespace ambient{
         size_t reserved;
     };
 
-} // namespace ambient
+}
 
 #include "ambient/utils/touchstack.hpp"
 #endif

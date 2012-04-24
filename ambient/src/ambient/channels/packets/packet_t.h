@@ -1,5 +1,5 @@
-#ifndef AMBIENT_PACKETS_PACKET_TYPE_H
-#define AMBIENT_PACKETS_PACKET_TYPE_H
+#ifndef AMBIENT_CHANNELS_PACKETS_BASETYPE
+#define AMBIENT_CHANNELS_PACKETS_BASETYPE
 #include <memory.h>
 #include <mpi.h>
 #include <stdlib.h>
@@ -64,4 +64,5 @@ namespace ambient { namespace channels {
     void unuse(void* memory);
 
 } }
+
 #endif

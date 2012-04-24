@@ -1,13 +1,12 @@
-#ifndef AMBIENT_IO_HPP
-#define AMBIENT_IO_HPP
-
+#ifndef AMBIENT_IO
+#define AMBIENT_IO
 #include <iostream>
 #include <fstream>
 
 namespace ambient {
 
     bool verbose(){
-        return (rank()?false:true); 
+        return (rank() ? false : true); 
     }
 
     class io {

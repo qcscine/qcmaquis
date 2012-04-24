@@ -58,5 +58,4 @@ namespace ambient{
         return this->pair;
     }
 
-
-} // namespace ambient
+}

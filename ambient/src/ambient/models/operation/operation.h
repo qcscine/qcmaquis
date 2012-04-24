@@ -1,5 +1,5 @@
-#ifndef AMBIENT_CORE_OPERATION_H
-#define AMBIENT_CORE_OPERATION_H
+#ifndef AMBIENT_MODELS_OPERATION
+#define AMBIENT_MODELS_OPERATION
 #include <stdlib.h>
 #include <boost/shared_ptr.hpp>
 #include "ambient/ambient.h"
@@ -140,6 +140,7 @@ namespace ambient { namespace models {
         imodel::revision* pin;
         channels::group* grp;
     };
+
 } }
 
 #endif

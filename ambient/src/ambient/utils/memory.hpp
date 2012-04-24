@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_MEMORY_HPP__
-#define __AMBIENT_MEMORY_HPP__
+#ifndef AMBIENT_UTILS_MEMORY
+#define AMBIENT_UTILS_MEMORY
 
 namespace ambient {
 //    class memory {
@@ -16,7 +16,7 @@ namespace ambient {
 //    void memory::dealloc(void* p){
 //        free(p);
 //    }
-//} // namespace ambient
+//}
 
     template<typename T>
     inline void intrusive_ptr_add_ref(T* p){
@@ -30,8 +30,8 @@ namespace ambient {
 
 //inline void* operator new(size_t nbytes, ambient::memory& pool){
 //    return pool.alloc(nbytes);
-//} // namespace global
+//}
 
-} // namespace ambient
+}
 
 #endif

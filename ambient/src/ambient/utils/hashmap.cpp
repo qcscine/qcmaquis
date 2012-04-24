@@ -68,4 +68,4 @@ namespace ambient{
         return &this->content[hash_w].second;
     }
 
-} // namespace ambient
+}

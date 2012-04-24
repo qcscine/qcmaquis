@@ -1,6 +1,5 @@
-#ifndef AMBIENT_DELEGATE_HPP
-#define AMBIENT_DELEGATE_HPP
-
+#ifndef AMBIENT_UTILS_DELEGATE
+#define AMBIENT_UTILS_DELEGATE
 #include <stdlib.h>
 
 namespace ambient {
@@ -31,4 +30,5 @@ namespace ambient {
     };
 
 }
+
 #endif
