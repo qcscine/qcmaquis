@@ -56,73 +56,65 @@
 
 #include "dmrg/models/factory.h"
 
-
-namespace app {
+template <class Matrix, class SymmGroup>
+class sim {
     
-    template <class Matrix, class SymmGroup>
-    class sim {
-        
-        typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-        typedef Boundary<Matrix, SymmGroup> boundary_t;
-        
-    public:
-        
-        sim (DmrgParameters const &, ModelParameters const &, bool fullinit=true);    
-        ~sim();
-        
-        virtual void run ();
-        virtual int do_sweep (Logger&, double=-1) =0;
-        virtual void do_sweep_measure (Logger&);
-        
-        virtual void measure ();
-        
-    protected:
-        
-        virtual std::string sweep_archive_path ();
-        
-        virtual void model_init ();
-        virtual void mps_init ();
-        
-        virtual bool exec_sweeps ();
-        
-    private:
-        
-        mps_initializer<Matrix, SymmGroup> * initializer_factory(BaseParameters & params);
-        
-        
-    protected:
-        DmrgParameters parms;
-        ModelParameters model;
-        
-        timeval now, then, snow, sthen;
-        
-        bool dns;
-        int sweep;
-        int site;
-        std::string chkpfile;
-        std::string rfile;
-        bool restore;
-        
-        Lattice_ptr lat;
-        typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
-        Hamiltonian<Matrix, SymmGroup> H;
-        Index<SymmGroup> phys;
-        typename SymmGroup::charge initc;
-        MPS<Matrix, SymmGroup> mps;
-        MPO<Matrix, SymmGroup> mpo, mpoc;
-        Measurements<Matrix, SymmGroup> measurements;
-        Measurements<Matrix, SymmGroup> meas_always;
-        
-        StreamStorageMaster ssm;
-        
-    private:
-        
-    };
+    typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
+    typedef Boundary<Matrix, SymmGroup> boundary_t;
     
-} //namespace app
-
+public:
+    
+    sim (DmrgParameters const &, ModelParameters const &, bool fullinit=true);    
+    ~sim();
+    
+    virtual void run ();
+    virtual int do_sweep (Logger&, double=-1) =0;
+    virtual void do_sweep_measure (Logger&);
+    
+    virtual void measure ();
+    
+protected:
+    
+    virtual std::string sweep_archive_path ();
+    
+    virtual void model_init ();
+    virtual void mps_init ();
+    
+    virtual bool exec_sweeps ();
+    
+private:
+    
+    mps_initializer<Matrix, SymmGroup> * initializer_factory(BaseParameters & params);
+    
+    
+protected:
+    DmrgParameters parms;
+    ModelParameters model;
+    
+    timeval now, then, snow, sthen;
+    
+    bool dns;
+    int sweep;
+    int site;
+    std::string chkpfile;
+    std::string rfile;
+    bool restore;
+    
+    Lattice_ptr lat;
+    typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
+    Hamiltonian<Matrix, SymmGroup> H;
+    Index<SymmGroup> phys;
+    typename SymmGroup::charge initc;
+    MPS<Matrix, SymmGroup> mps;
+    MPO<Matrix, SymmGroup> mpo, mpoc;
+    Measurements<Matrix, SymmGroup> measurements;
+    Measurements<Matrix, SymmGroup> meas_always;
+    
+    StreamStorageMaster ssm;
+    
+private:
+    
+};
 
 #include "sim.hpp"
-
-
 #endif

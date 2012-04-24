@@ -4,22 +4,19 @@
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 #include <boost/numeric/bindings/detail/if_row_major.hpp>
 
-namespace maquis {
-    namespace types {
-    template <typename T, typename MemoryBlock>
-        class dense_matrix;
-    }
-}
+namespace maquis { namespace types {
+    template <typename T, typename MemoryBlock> 
+    class dense_matrix;
+} }
 
 //
 // An adaptor for the matrix to the boost::numeric::bindings
 //
+
 namespace boost { namespace numeric { namespace bindings { namespace detail {
     
-    using ::maquis::types::dense_matrix;
-
     template <typename T, typename MemoryBlock, typename Id, typename Enable>
-    struct adaptor< dense_matrix<T,MemoryBlock>, Id, Enable>
+    struct adaptor<::maquis::types::dense_matrix<T,MemoryBlock>, Id, Enable>
     {
         typedef typename copy_const< Id, T >::type              value_type;
         // TODO: fix the types of size and stride -> currently it's a workaround, since std::size_t causes problems with boost::numeric::bindings
@@ -65,8 +62,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
         }
 
     };
-    
-    
+
 }}}}
 
 #endif //__ALPS_DENSE_MATRIX_ADAPTOR_HPP__

@@ -246,7 +246,7 @@ namespace maquis {
         
         void inplace_conjugate();
 		
-		// Serialize functions to save dense_matrix using alps::hdf5
+		// Serialize functions to save dense_matrix with alps::hdf5
 #ifdef HAVE_ALPS_HDF5
         void load_impl(alps::hdf5::archive & ar, boost::mpl::true_);
         void load_impl(alps::hdf5::archive & ar, boost::mpl::false_);

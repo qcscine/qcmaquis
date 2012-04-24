@@ -23,7 +23,6 @@
 #include "dmrg/mp_tensors/optimize.h"
 #include "dmrg/mp_tensors/multigrid.h"
 
-using namespace app;
 template <class Matrix, class SymmGroup>
 class multigrid_sim : public sim<Matrix, SymmGroup> {
     

@@ -29,9 +29,6 @@ typedef maquis::types::dense_matrix<double> Matrix;
 #include "dmrg/mp_tensors/te.h"
 #include "te_utils.hpp"
 
-
-using namespace app;
-
 typedef U1 grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;

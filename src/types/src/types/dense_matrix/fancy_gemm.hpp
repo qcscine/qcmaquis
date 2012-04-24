@@ -102,9 +102,9 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     template <typename T, typename MemoryBlock, typename Tag, typename Id, typename Enable>
     struct adaptor< TransConjWrapper<T,MemoryBlock,Tag>, Id, Enable>
     {
-        typedef typename copy_const< Id, T >::type              value_type;
-        typedef std::ptrdiff_t  size_type;
-        typedef std::ptrdiff_t  difference_type;
+        typedef typename copy_const< Id, T >::type value_type;
+        typedef std::ptrdiff_t size_type;
+        typedef std::ptrdiff_t difference_type;
         
         typedef mpl::map<
         mpl::pair< tag::value_type,      value_type >,

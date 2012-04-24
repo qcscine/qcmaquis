@@ -14,14 +14,10 @@
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"
 
-namespace app {
-    
-    template <class Matrix, class SymmGroup>
-    void model_parser (std::string lattice_lib, std::string model_lib,
-                       BaseParameters & parms,
-                       Lattice_ptr & lattice,
-                       typename model_traits<Matrix, SymmGroup>::model_ptr & model);
-}
-
+template <class Matrix, class SymmGroup>
+void model_parser (std::string lattice_lib, std::string model_lib,
+                   BaseParameters & parms,
+                   Lattice_ptr & lattice,
+                   typename model_traits<Matrix, SymmGroup>::model_ptr & model);
 
 #endif

@@ -28,175 +28,165 @@
 
 #include <stdexcept>
 
-namespace app {
+template<class Matrix, class SymmGroup>
+struct Measurement_Term
+{
+    typedef block_matrix<Matrix, SymmGroup> op_t;
+    enum type_t {Local, MPSBonds, Average, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN};
     
-    template<class Matrix, class SymmGroup>
-    struct Measurement_Term
+    std::string name;
+    type_t type;
+    std::vector<std::pair<op_t, bool> > operators;
+    op_t fill_operator;
+};
+
+// implement me for your purpose!
+template<class Matrix, class SymmGroup>
+class Measurements
+{
+public:
+    typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
+    typedef typename mterm_t::type_t meas_type_t;
+    typedef typename mterm_t::op_t op_t;
+            
+    int n_terms() const
     {
-        typedef block_matrix<Matrix, SymmGroup> op_t;
-        enum type_t {Local, MPSBonds, Average, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN};
-        
-        std::string name;
-        type_t type;
-        std::vector<std::pair<op_t, bool> > operators;
-        op_t fill_operator;
-    };
+    	return terms.size();
+    }
+    const mterm_t& operator[](int i) const
+    {
+    	return terms[i];
+    }
+    const mterm_t& get(std::string const & name) const
+    {
+        for (int i=0; i<terms.size(); ++i) {
+            if (terms[i].name == name)
+                return terms[i];
+        }
+        throw std::runtime_error("Measurement "+name+" not found!");
+        return *(terms.end());
+    }
     
-    // implement me for your purpose!
-    template<class Matrix, class SymmGroup>
-    class Measurements
+    const op_t& get_identity() const
     {
-    public:
-        typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
-        typedef typename mterm_t::type_t meas_type_t;
-        typedef typename mterm_t::op_t op_t;
-                
-        int n_terms() const
-        {
-        	return terms.size();
-        }
-        const mterm_t& operator[](int i) const
-        {
-        	return terms[i];
-        }
-        const mterm_t& get(std::string const & name) const
-        {
-            for (int i=0; i<terms.size(); ++i) {
-                if (terms[i].name == name)
-                    return terms[i];
-            }
-            throw std::runtime_error("Measurement "+name+" not found!");
-            return *(terms.end());
-        }
-        
-        const op_t& get_identity() const
-        {
-        	return ident;
-        }
-        
-        void set_identity(const op_t& ident_)
-        {
-        	ident = ident_;
-        }
-        
-        void add_term (mterm_t const & term)
-        {
-        	terms.push_back(term);
-        }
+    	return ident;
+    }
+    
+    void set_identity(const op_t& ident_)
+    {
+    	ident = ident_;
+    }
+    
+    void add_term (mterm_t const & term)
+    {
+    	terms.push_back(term);
+    }
 
-        void clear ()
-        {
-        	terms.clear();
-            ident = op_t();
-        }
+    void clear ()
+    {
+    	terms.clear();
+        ident = op_t();
+    }
 
-    protected:
-        std::vector<mterm_t> terms;
-        op_t ident;
-    };
-}
+protected:
+    std::vector<mterm_t> terms;
+    op_t ident;
+};
+
 
 #include "meas_detail.hpp"
 
-// call me to do something!
-
-namespace app {
+template<class Matrix, class SymmGroup>
+void measure_on_mps(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
+			 Measurements<Matrix, SymmGroup> const & meas,
+             std::string const & h5name, std::string basepath = std::string("/spectrum/results/"))
+{
+	
+    meas_detail::LocalMPSMeasurement<Matrix, SymmGroup> local_measurement(mps, lat);
     
-    
-    template<class Matrix, class SymmGroup>
-    void measure_on_mps(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
-    			 Measurements<Matrix, SymmGroup> const & meas,
-                 std::string const & h5name, std::string basepath = std::string("/spectrum/results/"))
-    {
-    	
-        meas_detail::LocalMPSMeasurement<Matrix, SymmGroup> local_measurement(mps, lat);
-        
-        for (int i = 0; i < meas.n_terms(); ++i)
-    	{
-    		maquis::cout << "Calculating " << meas[i].name << std::endl;
-    		switch (meas[i].type)
-    		{
-                case Measurement_Term<Matrix, SymmGroup>::Local:
-                    assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
-                    if (meas[i].operators.size() == 1) // Local measurements are fast and efficient!
-                        local_measurement.site_term(meas[i].operators[0],
-                                                    h5name, basepath + alps::hdf5_name_encode(meas[i].name));
-                    else
-                        meas_detail::measure_local(mps, lat,
-                                                   meas.get_identity(), meas[i].fill_operator,
-                                                   meas[i].operators,
-                                                   h5name, basepath + alps::hdf5_name_encode(meas[i].name));
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::MPSBonds:
-                    assert(meas[i].operators.size() == 2);
-                    local_measurement.bond_term(meas[i].operators,
+    for (int i = 0; i < meas.n_terms(); ++i)
+	{
+		maquis::cout << "Calculating " << meas[i].name << std::endl;
+		switch (meas[i].type)
+		{
+            case Measurement_Term<Matrix, SymmGroup>::Local:
+                assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
+                if (meas[i].operators.size() == 1) // Local measurements are fast and efficient!
+                    local_measurement.site_term(meas[i].operators[0],
                                                 h5name, basepath + alps::hdf5_name_encode(meas[i].name));
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::Average:
-                    assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
-                    meas_detail::measure_average(mps, lat,
-                                                 meas.get_identity(), meas[i].fill_operator,
-                                                 meas[i].operators,
-                                                 h5name, basepath + alps::hdf5_name_encode(meas[i].name));
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::Correlation:
-                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
-							  	  	  	  	  	  	 meas[i].fill_operator, meas[i].operators,
-												  	 h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, false);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
-                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
-													  meas[i].fill_operator, meas[i].operators,
-													  h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, false);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
+                else
+                    meas_detail::measure_local(mps, lat,
+                                               meas.get_identity(), meas[i].fill_operator,
+                                               meas[i].operators,
+                                               h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                break;
+            case Measurement_Term<Matrix, SymmGroup>::MPSBonds:
+                assert(meas[i].operators.size() == 2);
+                local_measurement.bond_term(meas[i].operators,
+                                            h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                break;
+            case Measurement_Term<Matrix, SymmGroup>::Average:
+                assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
+                meas_detail::measure_average(mps, lat,
+                                             meas.get_identity(), meas[i].fill_operator,
+                                             meas[i].operators,
+                                             h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                break;
+            case Measurement_Term<Matrix, SymmGroup>::Correlation:
+                meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+						  	  	  	  	  	  	 meas[i].fill_operator, meas[i].operators,
+											  	 h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, false);
+                break;
+            case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
+                meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+												  meas[i].fill_operator, meas[i].operators,
+												  h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, false);
+                break;
+            case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
 #ifndef NDEBUG
-                    if (meas[i].operators.size() % 2 != 0)
-                        throw std::runtime_error("Next neighbors correlators have to have even number of operators");
+                if (meas[i].operators.size() % 2 != 0)
+                    throw std::runtime_error("Next neighbors correlators have to have even number of operators");
 #endif
-                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
-													meas[i].fill_operator, meas[i].operators,
-													h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, true);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
+                meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+												meas[i].fill_operator, meas[i].operators,
+												h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, true);
+                break;
+            case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
 #ifndef NDEBUG
-                    if (meas[i].operators.size() % 2 != 0)
-                        throw std::runtime_error("Next neighbors correlators have to have even number of operators");
+                if (meas[i].operators.size() % 2 != 0)
+                    throw std::runtime_error("Next neighbors correlators have to have even number of operators");
 #endif
-                    meas_detail::measure_correlation(mps, lat, meas.get_identity(),
-													meas[i].fill_operator, meas[i].operators,
-													h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, true);
-                    break;
-    		}
-    	}
-    }
-    
-} // namespace
+                meas_detail::measure_correlation(mps, lat, meas.get_identity(),
+												meas[i].fill_operator, meas[i].operators,
+												h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, true);
+                break;
+		}
+	}
+}
 
-
-// Outout operators
+// Output operators
 
 template<class Matrix, class SymmGroup>
-std::ostream& operator<<(std::ostream& os, typename app::Measurement_Term<Matrix, SymmGroup>::type_t const & t)
+std::ostream& operator<<(std::ostream& os, typename Measurement_Term<Matrix, SymmGroup>::type_t const & t)
 {
 	switch (t)
 	{
-        case app::Measurement_Term<Matrix, SymmGroup>::Local:
+        case Measurement_Term<Matrix, SymmGroup>::Local:
             os << "Local";
             break;
-        case app::Measurement_Term<Matrix, SymmGroup>::Average:
+        case Measurement_Term<Matrix, SymmGroup>::Average:
             os << "Average";
             break;
-        case app::Measurement_Term<Matrix, SymmGroup>::Correlation:
+        case Measurement_Term<Matrix, SymmGroup>::Correlation:
             os << "Correlation";
             break;
-        case app::Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
+        case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
             os << "HalfCorrelation";
             break;
-        case app::Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
+        case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
             os << "CorrelationNN";
             break;
-        case app::Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
+        case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
             os << "HalfCorrelationNN";
             break;
 	}
@@ -215,15 +205,16 @@ std::ostream& operator<<(std::ostream& os, std::vector<std::pair<block_matrix<Ma
 }
 
 template<class Matrix, class SymmGroup>
-std::ostream& operator<<(std::ostream& os, app::Measurement_Term<Matrix, SymmGroup> const & term)
+std::ostream& operator<<(std::ostream& os, Measurement_Term<Matrix, SymmGroup> const & term)
 {
 	os << "** MEASUREMENT: " << term.name << " **" << std::endl;
 	os << " - type: " << term.type << std::endl;
 	os << " - Fill operator:" << std::endl << term.operators;
 	return os;
 }
+
 template<class Matrix, class SymmGroup>
-std::ostream& operator<<(std::ostream& os, app::Measurements<Matrix, SymmGroup> const & meas)
+std::ostream& operator<<(std::ostream& os, Measurements<Matrix, SymmGroup> const & meas)
 {
 	os << "** IDENTIY **" << std::endl;
 	os << meas.get_identity();
@@ -232,7 +223,5 @@ std::ostream& operator<<(std::ostream& os, app::Measurements<Matrix, SymmGroup> 
 	}
 	return os;
 }
-
-
 
 #endif

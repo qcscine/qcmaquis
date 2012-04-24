@@ -3,15 +3,10 @@
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 
-namespace maquis {
-    namespace types {
-
+namespace maquis { namespace types {
     template <typename T, typename MemoryBlock>
     class vector;
-
-    }
-}
-
+} }
 
 //
 // An adaptor for the vector to the boost::numeric::bindings
@@ -19,10 +14,8 @@ namespace maquis {
 
 namespace boost { namespace numeric { namespace bindings { namespace detail {
 
-    using ::maquis::types::vector;
-
     template< typename T, typename MemoryBlock, typename Id, typename Enable >
-    struct adaptor< vector<T,MemoryBlock>, Id, Enable>
+    struct adaptor<::maquis::types::vector<T,MemoryBlock>, Id, Enable>
     {
         typedef typename copy_const< Id, T >::type value_type;
         typedef std::ptrdiff_t  size_type;
