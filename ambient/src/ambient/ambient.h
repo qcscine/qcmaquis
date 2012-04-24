@@ -1,5 +1,5 @@
-#ifndef AMBIENT
-#define AMBIENT
+#ifndef AMBIENT_HEADERS
+#define AMBIENT_HEADERS
 #include <mpi.h>
 #include <complex>
 #include <stdio.h>
