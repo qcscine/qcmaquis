@@ -1,5 +1,5 @@
-#ifndef AMBIENT_GROUPS_GROUP_H
-#define AMBIENT_GROUPS_GROUP_H
+#ifndef AMBIENT_CHANNELS_GROUPS
+#define AMBIENT_CHANNELS_GROUPS
 #include "ambient/utils/singleton.hpp"
 #include <stdlib.h>
 #include <vector>
@@ -66,4 +66,5 @@ namespace ambient { namespace channels {
     group* group_id_map(std::pair<size_t*,size_t> id, group* instance = NULL);
 
 } }
+
 #endif

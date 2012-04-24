@@ -1,5 +1,5 @@
-#ifndef AMBIENT_INTERFACE_H
-#define AMBIENT_INTERFACE_H
+#ifndef AMBIENT_INTERFACE
+#define AMBIENT_INTERFACE
 #include "ambient/ambient.h"
 #include "ambient/utils/memory.hpp"
 #include "ambient/utils/jstrings.hpp"

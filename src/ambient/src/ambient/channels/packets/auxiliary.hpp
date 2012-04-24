@@ -1,6 +1,5 @@
-#ifndef AMBIENT_PACKETS_AUX_HPP
-#define AMBIENT_PACKETS_AUX_HPP
-
+#ifndef AMBIENT_CHANNELS_PACKETS_AUX
+#define AMBIENT_CHANNELS_PACKETS_AUX
 #include "ambient/channels/packets/packet.h"
 #include <stdarg.h>
 
@@ -55,4 +54,5 @@ namespace ambient { namespace channels {
     }
 
 } }
+
 #endif

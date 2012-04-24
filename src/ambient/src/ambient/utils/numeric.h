@@ -1,6 +1,5 @@
-//#ifndef NUMERIC_H
-//#define NUMERIC_H // because needed into test
-
+#ifndef AMBIENT_UTILS_NUMERIC
+#define AMBIENT_UTILS_NUMERIC
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
@@ -83,4 +82,4 @@ BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 #undef BOOST_PP_DEF
 
-//#endif
+#endif

@@ -1,13 +1,11 @@
 #include "ambient/ambient.h"
 #include "ambient/models/v_model.h"
-
 #include "ambient/utils/ceil.h"
 
 #if __APPLE__ && __MACH__
 #include <sched.h>	// for sched_yield()
 #define pthread_yield() sched_yield()
 #endif
-
 
 namespace ambient { namespace models {
 

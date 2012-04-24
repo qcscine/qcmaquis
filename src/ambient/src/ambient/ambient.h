@@ -1,7 +1,5 @@
-#ifndef AMBIENT_H
-#define AMBIENT_H
-#define _AMBIENT
-
+#ifndef AMBIENT
+#define AMBIENT
 #include <mpi.h>
 #include <complex>
 #include <stdio.h>
@@ -18,5 +16,4 @@
 #include "ambient/models/operation/operation.h"
 #include "ambient/models/v_model.h"
 #include "ambient/models/operation/select.h"
-
 #endif

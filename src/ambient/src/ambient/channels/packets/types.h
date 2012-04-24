@@ -1,8 +1,6 @@
-#ifndef AMBIENT_PACKETS_TYPES_H
-#define AMBIENT_PACKETS_TYPES_H
-
+#ifndef AMBIENT_CHANNELS_PACKETS_TYPES
+#define AMBIENT_CHANNELS_PACKETS_TYPES
 #include "ambient/channels/packets/packet_t.h"
-
 
 // STANDARD AMBIENT FIELDS DEFINES
 #define A_TYPE_FIELD 0 // MANDATORY FIRST TYPE CODE FIELD
@@ -98,4 +96,5 @@ namespace ambient { namespace channels {
     };
 
 } }
+
 #endif

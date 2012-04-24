@@ -1,5 +1,3 @@
-#include "ambient/utils/touchstack.h"
-
 namespace ambient{
 
     template<typename T>
@@ -98,4 +96,4 @@ namespace ambient{
         return this->content[this->length-(++this->read_iterator)];
     }
 
-} // namespace ambient
+}

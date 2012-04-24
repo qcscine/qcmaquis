@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_TYPES_FORWARDING_HPP__
-#define __AMBIENT_TYPES_FORWARDING_HPP__
+#ifndef AMBIENT_TYPES_FORWARDING
+#define AMBIENT_TYPES_FORWARDING
 
 namespace maquis { namespace types {
 

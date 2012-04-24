@@ -1,10 +1,8 @@
-#ifndef AMBIENT_HASHMAP_H
-#define AMBIENT_HASHMAP_H
-
+#ifndef AMBIENT_UTILS_HASHMAP
+#define AMBIENT_UTILS_HASHMAP
 #define HASHMAP_PARTITION_BIT_SIZE 8
 #define HASHMAP_PARTITION_SIZE 256 // 2^HAH_MAP_PARTITION_BIT_SIZE
 #define HASHMAP_VECTOR_RESERVATION 10
-
 #include <stdlib.h>
 #include <vector>
 
@@ -26,5 +24,6 @@ namespace ambient{
         mutable std::vector< std::pair<fhashmap*, void*> > content;
     };
 
-} // namespace ambient
+}
+
 #endif

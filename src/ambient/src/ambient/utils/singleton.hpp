@@ -1,5 +1,5 @@
-#ifndef AMBIENT_SINGLETON_HPP
-#define AMBIENT_SINGLETON_HPP
+#ifndef AMBIENT_UTILS_SINGLETON
+#define AMBIENT_UTILS_SINGLETON
 
 namespace ambient {
 
@@ -20,7 +20,6 @@ namespace ambient {
         static T singleton;                     // not thread-safe
         return singleton;
     }
-
 }
 
 #endif

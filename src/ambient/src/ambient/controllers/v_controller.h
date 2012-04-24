@@ -1,5 +1,5 @@
-#ifndef AMBIENT_V_CONTROLLER_H
-#define AMBIENT_V_CONTROLLER_H
+#ifndef AMBIENT_CONTROLLERS_V_CONTROLLER
+#define AMBIENT_CONTROLLERS_V_CONTROLLER
 #include "ambient/controllers/icontroller.h"
 #include "ambient/utils/singleton.hpp"
 #include "ambient/utils/touchstack.h"
@@ -57,4 +57,5 @@ namespace ambient { namespace controllers {
     };
 
 } }
+
 #endif

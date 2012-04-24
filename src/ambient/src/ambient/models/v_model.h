@@ -1,5 +1,5 @@
-#ifndef AMBIENT_VELVET_MODEL_H
-#define AMBIENT_VELVET_MODEL_H
+#ifndef AMBIENT_MODELS_V_MODEL_H
+#define AMBIENT_MODELS_V_MODEL_H
 #include "ambient/ambient.h"
 #include "ambient/models/imodel.h"
 #include "ambient/utils/singleton.hpp"
@@ -186,4 +186,5 @@ namespace ambient { namespace models {
     void  disperse(void* data, imodel::object& o);
     // }}}
 } }
+
 #endif

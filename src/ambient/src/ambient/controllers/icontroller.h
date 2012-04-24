@@ -1,5 +1,5 @@
-#ifndef AMBIENT_INTERFACE_CONTROLLER_H
-#define AMBIENT_INTERFACE_CONTROLLER_H
+#ifndef AMBIENT_INTERFACE_CONTROLLER
+#define AMBIENT_INTERFACE_CONTROLLER
 #include "ambient/models/imodel.h"
 #include "ambient/channels/ichannel.h"
 

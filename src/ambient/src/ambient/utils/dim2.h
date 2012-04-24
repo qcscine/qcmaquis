@@ -1,5 +1,6 @@
-#ifndef AMBIENT_DIM2_H
-#define AMBIENT_DIM2_H
+#ifndef AMBIENT_UTILS_DIM2
+#define AMBIENT_UTILS_DIM2
+
 namespace ambient{
 
     class dim2 {
@@ -44,4 +45,5 @@ namespace ambient{
     };
 
 }
+
 #endif
