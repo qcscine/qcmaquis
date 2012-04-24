@@ -46,7 +46,7 @@ namespace detail {
                                                maquis::types::p_dense_matrix<T> const & in_block,
                                                maquis::types::p_dense_matrix<T> & out_block)
         {
-            ambient::push(ambient::reshape_r2l_l<T>, ambient::reshape_r2l_c<T>, *out_block.impl, *in_block.impl, 
+            ambient::push(ambient::reshape_r2l_l<T>, ambient::reshape_r2l_c<T>, out_block, in_block, 
                           out_left_offset, in_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
             ambient::playout();
         }
@@ -63,7 +63,7 @@ namespace detail {
                                                maquis::types::p_dense_matrix<T> const & in_block,
                                                maquis::types::p_dense_matrix<T> & out_block)
         {
-            ambient::push(ambient::reshape_l2r_l<T>, ambient::reshape_l2r_c<T>, *in_block.impl, *out_block.impl, 
+            ambient::push(ambient::reshape_l2r_l<T>, ambient::reshape_l2r_c<T>, in_block, out_block, 
                           in_left_offset, out_right_offset, physical_i[s].second, left_i[l].second, right_i[r].second);
             ambient::playout();
         }
@@ -83,7 +83,7 @@ namespace detail {
                                                   maquis::types::p_dense_matrix<T> & oblock)
         {
             ambient::push(ambient::lb_tensor_mpo_l<T>, ambient::lb_tensor_mpo_c<T>,
-                          *oblock.impl, *iblock.impl, *wblock.impl, out_left_offset, in_left_offset, 
+                          oblock, iblock, wblock, out_left_offset, in_left_offset, 
                           physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
             ambient::playout(); 
         }
@@ -103,22 +103,22 @@ namespace detail {
                                                    maquis::types::p_dense_matrix<T> & oblock)
         {
             ambient::push(ambient::rb_tensor_mpo_l<T>, ambient::rb_tensor_mpo_c<T>,
-                         *oblock.impl, *iblock.impl, *wblock.impl, out_right_offset, in_right_offset, 
-                         physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                          oblock, iblock, wblock, out_right_offset, in_right_offset, 
+                          physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
             ambient::playout();
         }
 
         static void scalar_norm_impl(Matrix& M, typename Matrix::value_type & ret){ // not const due to nullcut 
             M.nullcut(); // not counting redunant elements of workgroup
             typename Matrix::value_type* norm = &ret;
-            ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, *M.impl, norm);
+            ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, M, norm);
             ambient::playout(); // execution weight: 452
         }
 
         static void scalar_norm_impl(maquis::types::p_dense_matrix<T> & M1, maquis::types::p_dense_matrix<T> & M2, typename Matrix::value_type & ret){ // not const due to nullcut
             M1.nullcut(); // not counting redunant elements of workgroup
             typename Matrix::value_type* overlap = &ret;
-            ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, *M1.impl, *M2.impl, overlap);
+            ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, M1, M2, overlap);
             ambient::playout(); // execution weight: 452
         }
 
@@ -126,13 +126,13 @@ namespace detail {
 //          maquis::types::algorithms::copy_sqr_gt<Matrix>(sv, M, 1e-10);
             std::vector<typename Matrix::value_type>* sc_ptr = &sv;
             double prec(1e-10); 
-            ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, *M.get_data().impl, prec);
+            ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, M, prec);
             ambient::playout();
         }
 
         static void left_right_boundary_init_impl(maquis::types::p_dense_matrix<T> & M){
             double one(1.0);
-            ambient::push(ambient::initv_l<T>,ambient::initv_c<T>, *M.impl, one);
+            ambient::push(ambient::initv_l<T>,ambient::initv_c<T>, M, one);
             ambient::playout();
         }
     }; // end structure
