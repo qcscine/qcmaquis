@@ -61,7 +61,7 @@ namespace ambient {
         for(size_t jj = j*n; jj < (j+1)*n; jj++){
             if(i*m > jj) continue;
             if((i+1)*m <= jj) continue;
-            if(jj < a.num_cols() && jj < a.num_rows()) 
+            if(jj < get_dim(a).x && jj < get_dim(a).y) 
                 ad[jj % m + (jj%n)*m] = 1;
         }
     }

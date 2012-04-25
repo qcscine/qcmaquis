@@ -14,7 +14,6 @@
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
 
 #include "types/utils/matrix_cast.h"
-
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
@@ -24,16 +23,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
     pMatrix pA(T::valuex,T::valuex);
     sMatrix sA(T::valuex,T::valuex);
 
-    typename T::dbl a,b;
+    typename T::dbl sa, pa;
 
     pA.set_init(ambient::random_i<typename T::dbl>);
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::traits::matrix_cast<sMatrix>(pA);
 
-    b = trace(sA); 
-    a = trace(pA); 
- 
-    ambient::playout();
-    Boost_check_close_adapter(a,b);
+    sa = trace(sA); 
+    pa = trace(pA); 
+
+    maquis::cout << "Trace of sA " << sa << "; trace of pA " << pa << std::endl;
+    Boost_check_close_adapter(sa,pa);
 }
 
 
