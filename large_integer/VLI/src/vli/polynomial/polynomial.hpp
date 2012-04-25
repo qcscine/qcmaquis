@@ -5,6 +5,7 @@
 #include "vli/vli_cpu.h"
 
 #include <boost/swap.hpp>
+#include <boost/type_traits/is_fundamental.hpp>
 #include <ostream>
 //#include <cmath>
 #include <cassert>
@@ -50,7 +51,20 @@ namespace detail {
             t-=t2;
         }
     };
+
+
+    template <class Coeff, unsigned int Order>
+    void init(polynomial<Coeff,Order>& p, boost::false_type dummy) {
+        // This is a non fundamental type -> it will be default constructed
+    }
     
+    template <class Coeff, unsigned int Order>
+    void init(polynomial<Coeff,Order>& p, boost::true_type dummy) {
+        // This is a fundamental type (e.g. unsigned int, double,...) -> we have to initalize
+        for(typename polynomial<Coeff,Order>::exponent_type i=0; i<Order*Order;++i)
+            p.coeffs_[i]=Coeff();
+    }
+
     template <class Operation, class Coeff, unsigned int Order>
     void op_assign(polynomial<Coeff,Order>& p, polynomial<Coeff,Order> const& p2, Operation op) {
         for(typename polynomial<Coeff,Order>::exponent_type i=0; i<Order*Order; ++i)
@@ -153,16 +167,14 @@ public:
     typedef unsigned int exponent_type;      // Type of the exponents (has to be the same type as Vli::size_type)
     typedef Coeff      value_type;
     typedef value_type coeff_type;
-    enum { max_order = Order};
+    static exponent_type const max_order = Order;
         
     polynomial() {
-        for(exponent_type i=0; i<Order*Order;++i)
-            coeffs_[i]=Coeff();
+        detail::init(*this, typename boost::is_fundamental<Coeff>::type());
     }
     explicit polynomial(int i) {
-        coeffs_[0] = Coeff(i);
-        for(exponent_type i=1; i<Order*Order;++i)
-            coeffs_[i]=Coeff();
+        detail::init(*this, typename boost::is_fundamental<Coeff>::type());
+        coeffs_[0] = i;
     }
     polynomial(polynomial const& p) { 
         for(exponent_type i=0; i<Order*Order;++i)
