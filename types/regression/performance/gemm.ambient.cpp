@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
     ambient::playout();
 
-    maquis::types::algorithms::gemm(pA, pB, pC); 
+    maquis::types::gemm(pA, pB, pC); 
 
     TimerPTH time("ambient");
     time.begin();

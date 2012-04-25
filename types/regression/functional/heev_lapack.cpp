@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( heev, T, test_types)
     pE.resize(T::valuex,T::valuex); 
     sE.resize(T::valuex,T::valuex); 
  
-    maquis::types::algorithms::heev(pA,pV,pE); // to modify the algo we need the reverse inside !
+    maquis::types::heev(pA,pV,pE); // to modify the algo we need the reverse inside !
     maquis::types::algorithms::heev(sA,sV,sE);
      
     maquis::types::diagonal_matrix<typename T::dbl> sE2(maquis::traits::matrix_cast<maquis::types::diagonal_matrix<typename T::dbl> >(pE));

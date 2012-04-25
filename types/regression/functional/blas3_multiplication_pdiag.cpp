@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     pB = maquis::traits::matrix_cast<pMatrix>(sB); // playout is inside the cast
     pC = maquis::traits::matrix_cast<pDiagMatrix>(sC); // playout is inside the cast
  
-    maquis::types::algorithms::gemm(pC,pB,pA);
+    maquis::types::gemm(pC,pB,pA);
     maquis::types::gemm(sC,sB,sA);
 
     

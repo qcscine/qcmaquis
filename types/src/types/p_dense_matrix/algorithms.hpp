@@ -5,78 +5,74 @@
 #include "types/p_dense_matrix/kernels/l_kernels.hpp"
 #include "types/p_dense_matrix/kernels/c_kernels.hpp"
 
-namespace maquis { namespace types { namespace algorithms {
+#define size_type       typename p_dense_matrix<T>::size_type
+#define scalar_type     typename p_dense_matrix<T>::scalar_type
+#define difference_type typename p_dense_matrix<T>::difference_type
 
-    #define size_type typename p_dense_matrix_impl<T>::size_type
-    #define difference_type typename p_dense_matrix_impl<T>::difference_type
+namespace maquis { namespace types {
 
-// {{{ implementation-specific type-nested algorithms //
-
-    template<typename T>
-    void clear(p_dense_matrix_impl<T>& m){
-        ambient::push(ambient::clear_l, ambient::clear_c, m);
-    }
-
-    template<typename T>
-    void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols){
-        ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols);
-    }
-
-    template<typename T>
-    void remove_rows(p_dense_matrix_impl<T>& m, size_type i, difference_type k){
-        ambient::push(ambient::remove_rows_l<T>, ambient::remove_rows_c<T>, m, i, k);
-    }
-
-    template<typename T>
-    void remove_cols(p_dense_matrix_impl<T>& m, size_type j, difference_type k){
-        ambient::push(ambient::remove_cols_l<T>, ambient::remove_cols_c<T>, m, j, k);
-    }
-
-    template<typename T>
-    void inplace_conjugate(p_dense_matrix_impl<T>& m){
-        // TODO: does nothing for now
-    }
-
-    template<typename T>
-    void inplace_transpose(p_dense_matrix_impl<T>& m){
-        ambient::push(ambient::transpose_l<T>, ambient::transpose_c<T>, m);
+    // {{{ p_dense_matrix operators (free functions)
+    template <typename T>
+    const p_dense_matrix<T>& operator + (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){
+        return (lhs += rhs); 
     }
 
     template <typename T>
-    T trace(p_dense_matrix_impl<T>& m) {
-        T trace; // stack memory
-        T* out = &trace;
-        ambient::push(ambient::trace_l<T>, ambient::trace_c<T>, m, out);
-        ambient::playout();
-        return trace;
+    const p_dense_matrix<T>& operator - (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
+        return (lhs -= rhs); 
+    }
+
+    template<typename T>
+    const p_dense_matrix<T>& operator * (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
+        return (lhs *= rhs); 
+    }
+
+    template<typename T, typename T2>
+    const p_dense_matrix<T>& operator * (p_dense_matrix<T> lhs, const T2& rhs){ 
+        return (lhs *= rhs); 
+    }
+
+    template<typename T, typename T2>
+    const p_dense_matrix<T>& operator * (const T2& lhs, p_dense_matrix<T> rhs){ 
+        return (rhs *= lhs); 
     }
 
     template <typename T>
-    void add_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
-        ambient::push(ambient::mem_bound_l<T>, ambient::add_c<T>, m, rhs);
+    std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m){
+        if(ambient::outlet())
+        for(size_type i=0; i< m.num_rows(); ++i){
+            for(size_type j=0; j < m.num_cols(); ++j)
+                printf("%.4f	", m(i,j));
+            printf("\n");
+        }
+        return o;
     }
 
-    template <typename T>
-    void sub_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
-        ambient::push(ambient::mem_bound_l<T>, ambient::sub_c<T>, m, rhs);
+    template<typename T>
+    size_type num_rows(const p_dense_matrix<T>& m){
+        return m.num_rows();
     }
 
-    template <typename T>
-    void gemm_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
-        ambient::push(ambient::gemm_inplace_l<T>, ambient::gemm_inplace_c<T>, m, rhs);
+    template<typename T>
+    size_type num_cols(const p_dense_matrix<T>& m){
+        return m.num_cols();
     }
 
-    template <typename T, typename S>
-    void scale_inplace(p_dense_matrix_impl<T>& m, const S& rhs) {
-        ambient::push(ambient::scale_l<T>, ambient::scale_c<T>, m, rhs);
+    template<typename T>
+    void resize(p_dense_matrix<T>& m, size_t rows, size_t cols){
+        m.resize(rows, cols);
     }
 
-    template <typename T>
-    void cpy(p_dense_matrix_impl<T>& dst, const p_dense_matrix_impl<T>& src){
-        ambient::push(ambient::copy_l<p_dense_matrix_impl<T> >, ambient::copy_c<p_dense_matrix_impl<T> >, dst, src);
+    template<typename T>
+    scalar_type trace(p_dense_matrix<T>& m){
+        return m.trace();
     }
 
-// }}} end of implementation specific type-nested algorithms //
+    template<typename T>
+    p_dense_matrix<T> transpose(p_dense_matrix<T> m){
+        m.transpose();
+        return m;
+    }
 
     template<typename T>
     p_dense_matrix<T> conjugate(p_dense_matrix<T> m){
@@ -84,14 +80,9 @@ namespace maquis { namespace types { namespace algorithms {
         return m;
     }
 
-    template<typename T>
-    p_dense_matrix<T> transpose(const p_dense_matrix<T> m){
-        m.transpose();
-        return m;
-    }
+    // {{{ strassen matrix multiplication algorithm
 
     // {{{ strassen multiplication supplementary functions
-
     template<typename T>
     void gemm_strassen_gad(const p_dense_matrix<T>& a, size_t ai, size_t aj, 
                            p_dense_matrix<T>& r, size_t n)
@@ -133,7 +124,6 @@ namespace maquis { namespace types { namespace algorithms {
                       ambient::add_dif_submx_c<T>, 
                       a, ai, aj, b, bi, bj, c, ci, cj, n);
     }
-
     // }}}
 
     template<typename T>
@@ -144,7 +134,6 @@ namespace maquis { namespace types { namespace algorithms {
     {
 
         if(n > 128){ 
-            //printf("Performing strassen with size %d\n", n);
             // strassen algorithm recursion
             p_dense_matrix<T> m1(n/2, n/2);
             p_dense_matrix<T> m2(n/2, n/2);
@@ -192,6 +181,7 @@ namespace maquis { namespace types { namespace algorithms {
         c.resize(n, n);
         gemm_strassen(a, 0, 0, b, 0, 0, c, 0, 0, n);
     }
+    // }}}
 
     template<typename T>
     void gemm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c){
@@ -282,10 +272,78 @@ namespace maquis { namespace types { namespace algorithms {
     // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
         ambient::push(ambient::copy_after_l<T>, ambient::copy_after_c<T>, sc, pos, s);
     }
+    // }}}
 
-    #undef size_type
-    #undef difference_type 
+// {{{ implementation-specific type-nested algorithms //
+namespace algorithms {
 
-} } } // namespace maquis::types::algorithms
+    template<typename T>
+    void clear(p_dense_matrix_impl<T>& m){
+        ambient::push(ambient::clear_l, ambient::clear_c, m);
+    }
 
+    template<typename T>
+    void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols){
+        ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols);
+    }
+
+    template<typename T>
+    void remove_rows(p_dense_matrix_impl<T>& m, size_type i, difference_type k){
+        ambient::push(ambient::remove_rows_l<T>, ambient::remove_rows_c<T>, m, i, k);
+    }
+
+    template<typename T>
+    void remove_cols(p_dense_matrix_impl<T>& m, size_type j, difference_type k){
+        ambient::push(ambient::remove_cols_l<T>, ambient::remove_cols_c<T>, m, j, k);
+    }
+
+    template<typename T>
+    void inplace_conjugate(p_dense_matrix_impl<T>& m){
+        // TODO: does nothing for now
+    }
+
+    template<typename T>
+    void inplace_transpose(p_dense_matrix_impl<T>& m){
+        ambient::push(ambient::transpose_l<T>, ambient::transpose_c<T>, m);
+    }
+
+    template <typename T>
+    scalar_type trace(p_dense_matrix_impl<T>& m) {
+        scalar_type trace;
+        ambient::push(ambient::trace_l<T>, ambient::trace_c<T>, m, trace);
+        return trace;
+    }
+
+    template <typename T>
+    void add_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
+        ambient::push(ambient::mem_bound_l<T>, ambient::add_c<T>, m, rhs);
+    }
+
+    template <typename T>
+    void sub_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
+        ambient::push(ambient::mem_bound_l<T>, ambient::sub_c<T>, m, rhs);
+    }
+
+    template <typename T>
+    void gemm_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
+        ambient::push(ambient::gemm_inplace_l<T>, ambient::gemm_inplace_c<T>, m, rhs);
+    }
+
+    template <typename T, typename S>
+    void scale_inplace(p_dense_matrix_impl<T>& m, const S& rhs) {
+        ambient::push(ambient::scale_l<T>, ambient::scale_c<T>, m, rhs);
+    }
+
+    template <typename T>
+    void cpy(p_dense_matrix_impl<T>& dst, const p_dense_matrix_impl<T>& src){
+        ambient::push(ambient::copy_l<p_dense_matrix_impl<T> >, ambient::copy_c<p_dense_matrix_impl<T> >, dst, src);
+    }
+} 
+// }}} end of implementation specific type-nested algorithms //
+
+} } // namespace maquis::types
+
+#undef size_type
+#undef scalar_type 
+#undef difference_type 
 #endif
