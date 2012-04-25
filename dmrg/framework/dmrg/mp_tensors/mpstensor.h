@@ -67,7 +67,6 @@ public:
     void multiply_by_scalar(scalar_type);
     
     scalar_type scalar_overlap(MPSTensor const &) const;
-    void scalar_overlap(MPSTensor const &, scalar_type*) const; // for ambient
     real_type scalar_norm() const;
     
     // this is completely useless in C++, only exists for consistency with Python

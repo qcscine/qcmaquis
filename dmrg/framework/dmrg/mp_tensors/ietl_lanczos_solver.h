@@ -36,12 +36,6 @@ namespace ietl
     }
 
     template<class Matrix, class SymmGroup>
-    void dot(MPSTensor<Matrix, SymmGroup> const & x, MPSTensor<Matrix, SymmGroup> const & y, typename MPSTensor<Matrix, SymmGroup>::scalar_type* out)
-    {
-        return x.scalar_overlap(y, out);
-    }
-    
-    template<class Matrix, class SymmGroup>
     typename MPSTensor<Matrix, SymmGroup>::real_type
     two_norm(MPSTensor<Matrix, SymmGroup> const & x)
     {

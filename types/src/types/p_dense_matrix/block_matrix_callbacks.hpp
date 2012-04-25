@@ -108,32 +108,31 @@ namespace detail {
             ambient::playout();
         }
 
-        static void scalar_norm_impl(Matrix& M, typename Matrix::value_type & ret){ // not const due to nullcut 
+        static void scalar_norm_impl(maquis::types::p_dense_matrix<T> & M, typename Matrix::scalar_type & ret){ // not const due to nullcut 
             M.nullcut(); // not counting redunant elements of workgroup
-            typename Matrix::value_type* norm = &ret;
-            ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, M, norm);
+            ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, M, ret);
             ambient::playout(); // execution weight: 452
         }
 
-        static void scalar_norm_impl(maquis::types::p_dense_matrix<T> & M1, maquis::types::p_dense_matrix<T> & M2, typename Matrix::value_type & ret){ // not const due to nullcut
+        static void scalar_norm_impl(maquis::types::p_dense_matrix<T> & M1, maquis::types::p_dense_matrix<T> & M2, typename Matrix::scalar_type & ret){ // not const due to nullcut
             M1.nullcut(); // not counting redunant elements of workgroup
-            typename Matrix::value_type* overlap = &ret;
-            ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, M1, M2, overlap);
+            ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, M1, M2, ret);
             ambient::playout(); // execution weight: 452
         }
 
         static void caculate_bond_renyi_entropies_impl(maquis::types::p_diagonal_matrix<typename Matrix::value_type> const& M, std::vector<typename Matrix::value_type>& sv){
 //          maquis::types::algorithms::copy_sqr_gt<Matrix>(sv, M, 1e-10);
-            std::vector<typename Matrix::value_type>* sc_ptr = &sv;
-            double prec(1e-10); 
-            ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, M, prec);
-            ambient::playout();
+            assert(false); // if fires - need to fix
+            // std::vector<typename Matrix::value_type>* sc_ptr = &sv;
+            // ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, M);
+            // ambient::playout();
         }
 
         static void left_right_boundary_init_impl(maquis::types::p_dense_matrix<T> & M){
-            double one(1.0);
-            ambient::push(ambient::initv_l<T>,ambient::initv_c<T>, M, one);
-            ambient::playout();
+            assert(false); // if fires - need to fix
+            // double one(1.0);
+            // ambient::push(ambient::initv_l<T>,ambient::initv_c<T>, M, one);
+            // ambient::playout();
         }
     }; // end structure
 }

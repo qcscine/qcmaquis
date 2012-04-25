@@ -255,10 +255,11 @@ namespace ambient {
         }
     }
 
-    void push_back_sqr_gt_c(std::vector<double>*& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a, const double& prec){
-    double* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-    for(int i=0; i < get_mem_dim(a).y; i++)
-        if(ad[i] > prec) ac->push_back(ad[i]*ad[i]);
+    void push_back_sqr_gt_c(std::vector<double>*& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
+        double prec(1e-10); 
+        double* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        for(int i=0; i < get_mem_dim(a).y; i++)
+            if(ad[i] > prec) ac->push_back(ad[i]*ad[i]);
     }
 
     template<typename T>
