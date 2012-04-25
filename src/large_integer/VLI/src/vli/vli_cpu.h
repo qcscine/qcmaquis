@@ -72,6 +72,9 @@ namespace vli{
      multiply and addition operators, suite ...
      */
     template <class BaseInt, std::size_t Size>
+    bool is_zero(vli_cpu<BaseInt, Size> const& v);
+    
+    template <class BaseInt, std::size_t Size>
     void negate_inplace(vli_cpu<BaseInt, Size>& v);
 
     template <class BaseInt, std::size_t Size>

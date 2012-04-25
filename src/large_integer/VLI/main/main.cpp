@@ -30,7 +30,7 @@ using vli::vli_cpu;
 using vli::max_int_value;
 using vli::monomial;
 using vli::polynomial_cpu;
-using vli::vector_polynomial_cpu;
+using vli::vector_polynomial;
 
 using vli::test::fill_random;
 using vli::test::fill_poly_random;
@@ -47,7 +47,7 @@ typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 typedef vli::polynomial_cpu< vli_type_cpu, Order > polynomial_type_cpu;
 typedef vli::polynomial_cpu< vli_result_type_cpu, 2*Order > polynomial_result_type_cpu;
 
-typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
+typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
 
 typedef mpz_class large_int;
 typedef hp2c::monomial<large_int> monomial_type;
