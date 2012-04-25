@@ -94,7 +94,9 @@ int main (int argc, char * const argv[])
    a*=-2;
    b*=-2;
    std::cout << a << std::endl; 
+   std::cout << std::hex << a << std::endl; 
    std::cout << b << std::endl; 
+   std::cout << std::hex << b << std::endl; 
     /*
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
