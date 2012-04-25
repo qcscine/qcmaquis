@@ -287,10 +287,15 @@ public:
     }
     
     void print(std::ostream& os) const {
-        for(exponent_type i = 0; i < Order ; i++)
-            for(exponent_type j = 0; j < Order ; j++)
-                if( coeffs_[i*Order+j] != Coeff(0))
-                    os<<"+"<<coeffs_[i*Order+j]<<"*J^"<<i<<"*h^"<<j<<std::endl;
+        for(exponent_type i = 0; i < Order ; i++) {
+            for(exponent_type j = 0; j < Order ; j++) {
+                if( coeffs_[i*Order+j] != Coeff(0)) {
+                    if( !(coeffs_[i*Order+j] < Coeff(0)) )
+                        os << "+";
+                    os << coeffs_[i*Order+j]<<"*J^"<<i<<"*h^"<<j<<std::endl;
+                }
+            }
+        }
     }
 
     coeff_type coeffs_[Order*Order];
