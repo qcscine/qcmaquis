@@ -90,7 +90,6 @@ namespace maquis { namespace types { namespace algorithms {
         return m;
     }
 
-
     // {{{ strassen multiplication supplementary functions
 
     template<typename T>
