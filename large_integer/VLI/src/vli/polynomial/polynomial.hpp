@@ -7,7 +7,6 @@
 #include <boost/swap.hpp>
 #include <boost/type_traits/is_fundamental.hpp>
 #include <ostream>
-//#include <cmath>
 #include <cassert>
 
 namespace vli
@@ -34,6 +33,26 @@ template <typename BaseInt, std::size_t Size, unsigned int Order>
 struct polynomial_multiply_result_type<polynomial<vli_cpu<BaseInt,Size>,Order> > {
     typedef polynomial<vli_cpu<BaseInt,2*Size>,2*Order> type;
 };
+
+template <typename Polynomial>
+struct exponent_type{
+    typedef typename Polynomial::exponent_type type;
+};
+
+template <typename T>
+bool is_zero(T t) {
+    return t == 0;
+}
+
+template <typename T>
+void negate_inplace(T& t) {
+    t = -t;
+}
+
+template <typename T, typename T2, typename T3>
+void muladd(T& t, T2 const& t2, T3 const& t3) {
+    t += t2 * t3;
+}
 
 
 namespace detail {
@@ -119,6 +138,15 @@ namespace detail {
         for(typename polynomial<Coeff,Order>::exponent_type i = 0; i < Order*Order; ++i)
             negate_inplace(p.coeffs_[i]);
     }
+    
+    template <class Coeff, unsigned int Order>
+    bool is_zero_helper(polynomial<Coeff,Order> const& p)
+    {
+        for(typename polynomial<Coeff,Order>::exponent_type i=0; i<Order*Order; ++i)
+            if (!is_zero(p.coeffs_[i]))
+                return false;
+        return true;
+    }
 
     template <class Polynomial>
     struct equal_helper {
@@ -174,7 +202,7 @@ public:
     }
     explicit polynomial(int i) {
         detail::init(*this, typename boost::is_fundamental<Coeff>::type());
-        coeffs_[0] = i;
+        coeffs_[0] = value_type(i);
     }
     polynomial(polynomial const& p) { 
         for(exponent_type i=0; i<Order*Order;++i)
@@ -241,10 +269,7 @@ public:
         return detail::equal_helper<polynomial>()(*this,p);
     }
     bool is_zero() const {
-        for(exponent_type i=0; i<Order*Order; ++i)
-            if (!is_zero(coeffs_[i]))
-                return false;
-        return true;
+        return detail::is_zero_helper(*this);
     }
     
     friend void swap<>(polynomial<Coeff,Order>& p1, polynomial<Coeff,Order>& p2);
@@ -267,9 +292,14 @@ public:
                 if( coeffs_[i*Order+j] != Coeff(0))
                     os<<"+"<<coeffs_[i*Order+j]<<"*J^"<<i<<"*h^"<<j<<std::endl;
     }
-     
+
     coeff_type coeffs_[Order*Order];
 };
+
+template <class Coeff, unsigned int Order>
+bool is_zero(polynomial<Coeff,Order> const& p) {
+    return p.is_zero();
+}
 
 template <class Coeff, unsigned int Order>
 void negate_inplace(polynomial<Coeff, Order>& p) {

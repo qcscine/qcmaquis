@@ -286,6 +286,11 @@ void muladd(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vl
 }
 
 template <class BaseInt, std::size_t Size>
+bool is_zero(vli_cpu<BaseInt,Size> const& v) {
+    return v.is_zero();
+}
+
+template <class BaseInt, std::size_t Size>
 void negate_inplace(vli_cpu<BaseInt,Size>& v) {
     v.negate();
 }
@@ -339,7 +344,10 @@ const vli_cpu<BaseInt, Size> operator * (int b, vli_cpu<BaseInt, Size> const& a)
 //stream
 template<typename BaseInt, std::size_t Size>
 std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli){
-    vli.print_raw(os);
+    if(os.flags() & std::ios_base::hex)
+        vli.print_raw(os);
+    else
+        vli.print(os);
     return os;
 }
 
