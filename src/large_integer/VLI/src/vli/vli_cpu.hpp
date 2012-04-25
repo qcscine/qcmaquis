@@ -6,6 +6,8 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
+namespace vli {
+
 // C - constructors, copy-swap, access operators
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>::vli_cpu(){
@@ -284,6 +286,11 @@ void muladd(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vl
 }
 
 template <class BaseInt, std::size_t Size>
+void negate_inplace(vli_cpu<BaseInt,Size>& v) {
+    v.negate();
+}
+
+template <class BaseInt, std::size_t Size>
 const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b){
     vli_a += vli_b;
     return vli_a;
@@ -336,7 +343,4 @@ std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli){
     return os;
 }
 
-
-
-
-
+} // end namespace vli
