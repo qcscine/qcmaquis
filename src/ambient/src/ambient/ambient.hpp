@@ -4,7 +4,6 @@
 #include "ambient/utils/memory.hpp"
 #include "ambient/utils/jstrings.hpp"
 #include "ambient/interface/forwarding.h"
-#include "ambient/utils/memory.hpp"
 #include "utils/io.hpp"
 
 namespace ambient{
@@ -130,4 +129,5 @@ namespace ambient{
 }
     
 #include "ambient/interface/parallel_t.hpp"
+#include "ambient/interface/future_t.hpp"
 #endif

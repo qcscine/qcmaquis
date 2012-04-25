@@ -2,19 +2,22 @@
 
 namespace maquis { namespace types {
 
+    #define size_type   typename p_diagonal_matrix<T>::size_type
+    #define value_type  typename p_diagonal_matrix<T>::value_type
+
     template<typename T>
-    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, const T& init)
+    p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, const value_type& init)
     : data_(rows,1)
     { 
     }
 
     template<typename T>
-    size_t p_diagonal_matrix<T>::num_rows() const {
+    size_type p_diagonal_matrix<T>::num_rows() const {
        return this->data_.num_rows();
     }
 
     template<typename T>
-    size_t p_diagonal_matrix<T>::num_cols() const {
+    size_type p_diagonal_matrix<T>::num_cols() const {
         return this->num_rows();
     }
 
@@ -25,29 +28,29 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    const T& p_diagonal_matrix<T>::operator[](size_t i) const {
+    const value_type& p_diagonal_matrix<T>::operator[](size_t i) const {
         return this->data_(i,0);
     }
 
     template<typename T>
-    T & p_diagonal_matrix<T>::operator[](size_t i){
+    value_type& p_diagonal_matrix<T>::operator[](size_t i){
         return this->data_(i,0);
     }
 
     template<typename T>
-    const T& p_diagonal_matrix<T>::operator()(size_t i, size_t j) const {
+    const value_type& p_diagonal_matrix<T>::operator()(size_t i, size_t j) const {
         assert(i == j);
         return this->data_(i,0);
     }
 
     template<typename T>
-    T & p_diagonal_matrix<T>:: operator()(size_t i, size_t j){
+    value_type& p_diagonal_matrix<T>:: operator()(size_t i, size_t j){
         assert(i == j);
         return this->data_(i,0);
     }
 
     template<typename T>
-    std::size_t p_diagonal_matrix<T>::size() const {
+    size_type p_diagonal_matrix<T>::size() const {
         return this->data_.num_rows();
     }
 
@@ -62,7 +65,7 @@ namespace maquis { namespace types {
     }
 
     template<typename T> 
-    void p_diagonal_matrix<T>::resize(size_t rows, size_t cols, T v){
+    void p_diagonal_matrix<T>::resize(size_t rows, size_t cols, value_type v){
         assert(rows == cols);
         this->data_.resize(rows, 1);
     }
@@ -78,29 +81,30 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    typename p_diagonal_matrix<T>::size_type num_rows(const p_diagonal_matrix<T>& m){
+    void p_diagonal_matrix<T>::exp(){ 
+        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, *this);
+    }
+
+    template<typename T>
+    void p_diagonal_matrix<T>::sqrt(){ 
+        ambient::push(ambient::sqrt_diagonal_l<T>, ambient::sqrt_diagonal_c<T>, *this);
+    }
+
+    // {{{ p_diagonal_matrix free functions
+    template<typename T>
+    size_type num_rows(const p_diagonal_matrix<T>& m){
         return m.num_rows();
     }
 
     template<typename T>
-    typename p_diagonal_matrix<T>::size_type num_cols(const p_diagonal_matrix<T>& m){
+    size_type num_cols(const p_diagonal_matrix<T>& m){
         return m.num_cols();
-    }
-
-    template<typename T>
-    void p_diagonal_matrix<T>::exp(){ 
-        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, *this);
     }
 
     template<typename T>
     p_diagonal_matrix<T> exp(p_diagonal_matrix<T> m){
         m.exp();
         return m;
-    }
-
-    template<typename T>
-    void p_diagonal_matrix<T>::sqrt(){ 
-        ambient::push(ambient::sqrt_diagonal_l<T>, ambient::sqrt_diagonal_c<T>, *this);
     }
 
     template<typename T>
@@ -126,9 +130,13 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    void resize(p_diagonal_matrix<T> & m, size_t rows, size_t cols, T v = T()){
+    void resize(p_diagonal_matrix<T> & m, size_t rows, size_t cols, value_type v = value_type()){
         m.resize(rows, cols, v);
     }
+    // }}}
+
+    #undef value_type
+    #undef size_type
 
 } } // namespace maquis::types
 

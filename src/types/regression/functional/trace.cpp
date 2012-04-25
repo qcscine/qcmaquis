@@ -23,13 +23,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
     pMatrix pA(T::valuex,T::valuex);
     sMatrix sA(T::valuex,T::valuex);
 
-    typename T::dbl sa, pa;
-
     pA.set_init(ambient::random_i<typename T::dbl>);
     sA = maquis::traits::matrix_cast<sMatrix>(pA);
 
-    sa = trace(sA); 
-    pa = trace(pA); 
+    typename T::dbl sa = trace(sA);
+    typename T::dbl pa = trace(pA);
 
     maquis::cout << "Trace of sA " << sa << "; trace of pA " << pa << std::endl;
     Boost_check_close_adapter(sa,pa);

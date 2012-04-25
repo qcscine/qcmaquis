@@ -59,10 +59,10 @@ namespace ambient{
     models::imodel::revision& updated(T& obj){
         return ((models::imodel::object*)&obj)->revision(1);
     }
-    template <typename T>
-    models::imodel::revision& future(T& obj, int n = 2){
-        return ((models::imodel::object*)&obj)->revision(n);
-    }
+//    template <typename T>
+//    models::imodel::revision& future(T& obj, int n = 2){
+//        return ((models::imodel::object*)&obj)->revision(n);
+//    }
     template <char R, typename T>
     models::imodel::reduction& reduced(T& obj){
         if(updated(obj).get_reduction() == NULL){

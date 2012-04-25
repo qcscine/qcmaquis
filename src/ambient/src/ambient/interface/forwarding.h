@@ -16,6 +16,9 @@ namespace maquis { namespace types {
 
 namespace ambient { 
 
+    template <typename T>
+    class future;
+
     #define BOOST_SP_NO_SP_CONVERTIBLE
     #include <boost/intrusive_ptr.hpp>
  
@@ -39,6 +42,23 @@ namespace models {
 
     template <typename T>
     struct info < const boost::intrusive_ptr<T> > { 
+    };
+
+    template <typename S>
+    struct info < ambient::future<S> > { 
+        typedef ambient::future<S> T;
+        static S*& unfold(T& folded){
+            return folded.unfold();
+        }
+    };
+
+    template <typename S>
+    struct info < const ambient::future<S> > { 
+        typedef const ambient::future<S> T;
+        static const S*& unfold(T& folded){
+            assert(false); // remove if believe in const future
+            return folded.unfold();
+        }
     };
 
     template <typename S>

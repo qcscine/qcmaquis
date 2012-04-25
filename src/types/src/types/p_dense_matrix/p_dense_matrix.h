@@ -8,8 +8,6 @@
 #include <alps/hdf5.hpp>
 #endif
 
-#include <ostream>
-
 #include "types/p_dense_matrix/kernels/i_kernels.hpp"
 
 namespace maquis { namespace types {
@@ -22,6 +20,7 @@ namespace maquis { namespace types {
         typedef typename I::value_type value_type;
         typedef typename I::size_type size_type; 
         typedef typename I::difference_type difference_type;
+        typedef typename I::scalar_type scalar_type;
         // {{{ p_dense_matrix_impl forwarding
         p_dense_matrix(){ 
             this->impl = new I(); 
@@ -54,7 +53,7 @@ namespace maquis { namespace types {
             return this->impl->get(i,j);
         }
 
-        value_type trace(){
+        scalar_type trace(){
             return this->impl->trace();
         }
 
@@ -141,90 +140,24 @@ namespace maquis { namespace types {
         ptr impl;
     };
 
-    // {{{ p_dense_matrix operators (free functions)
-    #define size_type typename ::maquis::types::p_dense_matrix_impl<T>::size_type
-    template <typename T>
-    const p_dense_matrix<T>& operator + (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){
-        return (lhs += rhs); 
-    }
-
-    template <typename T>
-    const p_dense_matrix<T>& operator - (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
-        return (lhs -= rhs); 
-    }
-
-    template<typename T>
-    const p_dense_matrix<T>& operator * (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
-        return (lhs *= rhs); 
-    }
-
-    template<typename T, typename T2>
-    const p_dense_matrix<T>& operator * (p_dense_matrix<T> lhs, const T2& rhs){ 
-        return (lhs *= rhs); 
-    }
-
-    template<typename T, typename T2>
-    const p_dense_matrix<T>& operator * (const T2& lhs, p_dense_matrix<T> rhs){ 
-        return (rhs *= lhs); 
-    }
-
-    template <typename T>
-    std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m){
-        if(ambient::outlet())
-        for(size_type i=0; i< m.num_rows(); ++i){
-            for(size_type j=0; j < m.num_cols(); ++j)
-                printf("%.4f	", m(i,j));
-            printf("\n");
-        }
-        return o;
-    }
-
-    template<typename T>
-    size_type num_rows(const p_dense_matrix<T>& m){
-        return m.num_rows();
-    }
-
-    template<typename T>
-    size_type num_cols(const p_dense_matrix<T>& m){
-        return m.num_cols();
-    }
-
-    template<typename T>
-    void resize(p_dense_matrix<T>& m, size_t rows, size_t cols){
-        m.resize(rows, cols);
-    }
-
-    template<typename T>
-    T trace(p_dense_matrix<T>& m){
-        return m.trace();
-    }
-
-    template<typename T>
-    p_dense_matrix<T> transpose(p_dense_matrix<T> m){
-        m.transpose();
-        return m;
-    }
-    #undef size_type
-    // }}}
-
-    // p_dense_matrix realization (derives from parallel_t) //
     template <typename T>
     class p_dense_matrix_impl :
     public ambient::parallel_t< p_dense_matrix_impl<T> >
     {
     private:
-        p_dense_matrix_impl();                            // avoiding implicit conversions
+        p_dense_matrix_impl();             // avoiding implicit conversions
     public:
-        typedef T         value_type;                     // The type T of the elements of the matrix
-        typedef size_t    size_type;                      // Unsigned integer type that represents the dimensions of the matrix
-        typedef ptrdiff_t difference_type;                // Signed integer type to represent the distance of two elements in the memory
+        typedef T         value_type;      // The type T of the elements of the matrix
+        typedef size_t    size_type;       // Unsigned integer type that represents the dimensions of the matrix
+        typedef ptrdiff_t difference_type; // Signed integer type to represent the distance of two elements in the memory
         typedef typename ambient::parallel_t< p_dense_matrix_impl<T> >::ptr ptr;
+        typedef typename ambient::future<T> scalar_type;
 
        ~p_dense_matrix_impl();
         p_dense_matrix_impl(size_type rows, size_type cols, T init_value);
         p_dense_matrix_impl(p_dense_matrix_impl const& m);
         value_type& get(size_type i, size_type j);
-        value_type trace();
+        scalar_type trace();
   
         void conjugate();
         void transpose();
@@ -247,10 +180,10 @@ namespace maquis { namespace types {
         size_type cols;
     };
 
+    // {{{ matrix-specific associated types
     template<class T>
     class p_diagonal_matrix;
 
-    // {{{ matrix-specific associated types
     template<typename T>
     struct associated_diagonal_matrix< p_dense_matrix<T> > {
         typedef p_diagonal_matrix<T> type;
@@ -271,6 +204,7 @@ namespace maquis { namespace types {
         typedef p_diagonal_matrix<typename detail::real_type<T>::type> type;
     };
     // }}}
+
 } } // namespace maquis::types
 #include "types/p_dense_matrix/p_dense_matrix_impl.hpp"
 #endif

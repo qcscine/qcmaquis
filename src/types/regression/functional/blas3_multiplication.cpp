@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
 
     printf("BEGIN OF GEMM!\n"); 
-    maquis::types::algorithms::gemm(pA,pB,pC);
+    maquis::types::gemm(pA,pB,pC);
     ambient::playout();
     printf("END OF GEMM!\n"); 
     printf("BEGIN OF SERIAL GEMM!\n"); 
