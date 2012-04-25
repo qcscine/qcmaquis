@@ -1,4 +1,3 @@
-#include "types/p_dense_matrix/p_dense_matrix.h"
 #include "types/p_dense_matrix/algorithms.hpp"
 
 namespace maquis { namespace types {

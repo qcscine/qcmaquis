@@ -36,23 +36,23 @@ add_executable( serial_access.out              serial_access.cpp              )
 add_executable( identity.out                   identity.cpp                   )
 
 foreach( functional_test 
+         blas3_addition.out 
          blas3_multiplication.out 
          blas3_multiplication_pdiag.out 
-         blas3_addition.out 
          blas3_substraction.out 
          cast.out
-         transpose.out 
-         remove_rows.out 
-         remove_cols.out 
-         trace.out 
-         resize.out 
-         svd_lapack.out 
-         heev_lapack.out 
-         syev_lapack.out
-         sqrt.out
          exp.out
+         heev_lapack.out 
+         identity.out
+         remove_cols.out 
+         remove_rows.out 
+         resize.out 
          serial_access.out
-         identity.out )
+         sqrt.out
+         svd_lapack.out 
+         syev_lapack.out
+         trace.out 
+         transpose.out )
     target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
     add_test(${functional_test} ${functional_test})
 endforeach(functional_test)
