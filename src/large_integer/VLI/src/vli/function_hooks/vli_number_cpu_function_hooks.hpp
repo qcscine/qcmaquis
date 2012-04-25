@@ -84,11 +84,11 @@ namespace vli
     //specialization addnbits_64bits, until 512 bits
     #define FUNCTION_add_nbits_64bits(z, n, unused) \
         template<> \
-        void add<unsigned long int,BOOST_PP_ADD(n,3)>(unsigned long int* x,unsigned long int const y){ \
+        void add<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const y){ \
         detail::NAME_ADD_NBITS_PLUS_64BITS(n)(x,&y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_64bits, ~)
+    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
     #undef FUNCTION_add_nbits_64bits
 
     /* ---------------------------------------------------- End Addition specialization ---------------------------------------------------- */
@@ -107,11 +107,11 @@ namespace vli
     //specialization subnbits_64bits, until 512 bits
     #define FUNCTION_sub_nbits_64bits(z, n, unused) \
         template<> \
-        void sub<unsigned long int,BOOST_PP_ADD(n,3)>(unsigned long int* x,unsigned long int const y){ \
+        void sub<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const y){ \
         detail::NAME_SUB_NBITS_MINUS_64BITS(n)(x,&y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_sub_nbits_64bits, ~)
+    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
     #undef FUNCTION_sub_nbits_64bits
 
     /* ---------------------------------------------------- end Substraction specialization ---------------------------------------------------- */
