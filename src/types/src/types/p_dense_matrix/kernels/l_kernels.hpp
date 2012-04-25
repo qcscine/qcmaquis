@@ -132,7 +132,7 @@ namespace ambient {
         block_outright<pin>(a);
     }
 
-    void push_back_sqr_gt_l(std::vector<double>*& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a, const double& prec){
+    void push_back_sqr_gt_l(std::vector<double>*& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
         ctxt_select("* from ambient as copy_std where master is 0");
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);

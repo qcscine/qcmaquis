@@ -246,7 +246,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 
     scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_[b],ret);
+        detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_[b], ret);
     timer.end();
     assert( ret == ret );
     assert( alps::numeric::real(ret) >= 0);
@@ -299,25 +299,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     timer.end();
     return ret;
 }
-#ifdef AMBIENT
-template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs, typename MPSTensor<Matrix, SymmGroup>::scalar_type* overlap) const
-{
-    static Timer timer("scalar_overlap_ambient");
-    timer.begin();
-
-    make_left_paired();
-    rhs.make_left_paired();
-
-    *overlap = 0;
-    for(size_t i = 0 ; i < data_.n_blocks(); i++){
-        data_[i].nullcut(); // not counting redundant elements of workgroup
-        ambient::push(ambient::scalar_overlap_l, ambient::scalar_overlap_c, data_[i], rhs.data_[i], overlap);
-        ambient::playout();
-    }
-    timer.end();
-}
-#endif
 
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, MPSTensor<Matrix, SymmGroup> const & mps)

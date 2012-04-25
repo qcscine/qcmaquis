@@ -136,15 +136,9 @@ namespace ietl
             vector_type inh = -r;
             
             // initial guess for better convergence
-            #ifdef AMBIENT
-            scalar_type dru, duu;
-            ietl::dot(r,u,&dru);
-            ietl::dot(r,u,&duu);
-            ambient::playout();
+            scalar_type dru = ietl::dot(r,u);
+            scalar_type duu = ietl::dot(r,u);
             t = -r + dru/duu*u;
-            #else
-            t = -r + ietl::dot(r,u)/ietl::dot(u,u)*u;
-            #endif
             if (max_iter_ > 0)
                 t = ietl_gmres(op, inh, t, max_iter_, rel_tol, verbose_);
         }
@@ -368,14 +362,8 @@ namespace ietl
             // for i=1, ..., iter
             //   M_{i,m} = v_i ^\star v_m ^A
             // end for
-            #ifdef AMBIENT
-            for (i=1;i<=iter.iterations()+1;i++)
-                ietl::dot(V[i-1], VA[iter.iterations()], &M(i-1,iter.iterations()));
-            ambient::playout();
-            #else
             for (i=1;i<=iter.iterations()+1;i++)
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
-            #endif
 
             // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
             get_extremal_eigenvalue(theta,s,iter.iterations()+1);

@@ -153,7 +153,9 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                   bool verbose = true,
                   Logger * logger = NULL)
 { 
-    // AMBIENT: NOT_IMPLEMENTED
+    #ifdef AMBIENT // AMBIENT: NOT IMPLEMENTED
+      assert(false);
+    #endif
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     svd(M, U, V, S);
     
