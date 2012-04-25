@@ -206,5 +206,5 @@ namespace maquis { namespace types {
     // }}}
 
 } } // namespace maquis::types
-#include "types/p_dense_matrix/p_dense_matrix_impl.hpp"
+#include "types/p_dense_matrix/p_dense_matrix.hpp"
 #endif
