@@ -9,7 +9,7 @@
 #ifndef VLI_VECTOR_POLYNOME_CPU_H
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include "vli/vli_config.h"
-#include "vli/polynomial/polynomial_cpu.h"
+#include "vli/polynomial/polynomial.hpp"
 #include "vli/vli_cpu.h"
 #include <vector>
 #include <ostream>

@@ -4,7 +4,7 @@
 #include <boost/static_assert.hpp>
 
 #include "vli/polynomial/monomial.hpp"
-#include "vli/polynomial/polynomial_cpu.h"
+#include "vli/polynomial/polynomial.hpp"
 #include "vli/vli_cpu.h"
 
 #include "regression/vli_test.hpp"
@@ -13,12 +13,12 @@ using vli::test::fill_random;
 using vli::test::fill_poly_random;
 using vli::vli_cpu;
 using vli::monomial;
-using vli::polynomial_cpu;
+using vli::polynomial;
 
 template <typename Vli>
 struct polynomial_from_vli_cpu
 {
-    typedef polynomial_cpu<Vli, 10> type;
+    typedef polynomial<Vli, 10> type;
 };
 
 typedef boost::mpl::transform<
@@ -249,8 +249,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
     //TODO fix types
     typedef vli::vli_cpu<typename Poly::value_type::size_type, 2*(Poly::value_type::size) > vli_result_type_cpu;
     typedef vli::vli_cpu<typename Poly::value_type::size_type, (Poly::value_type::size) > vli_type_cpu;    
-    typedef vli::polynomial_cpu<vli_result_type_cpu, 2*(Poly::max_order) > polynomial_result_type_cpu;
-    typedef vli::polynomial_cpu<vli_type_cpu, (Poly::max_order) > polynomial_type_cpu;
+    typedef vli::polynomial<vli_result_type_cpu, 2*(Poly::max_order) > polynomial_result_type_cpu;
+    typedef vli::polynomial<vli_type_cpu, (Poly::max_order) > polynomial_type_cpu;
     
     polynomial_result_type_cpu pc;
     polynomial_type_cpu pa;
@@ -272,3 +272,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
 
  }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Poly, polynomial_types )
+{
+    Poly pa;
+    fill_poly_random(pa);
+    Poly pb(pa);
+
+    negate_inplace(pa);
+
+    for(typename Poly::exponent_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::exponent_type j=0; j < Poly::max_order; ++j)
+            BOOST_CHECK_EQUAL(pa(i,j),-pb(i,j));
+    
+    for(typename Poly::exponent_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::exponent_type j=0; j < Poly::max_order; ++j)
+            BOOST_CHECK_EQUAL(pa(i,j),typename Poly::value_type(0)-pb(i,j));
+
+    Poly pc = -pa;
+
+    for(typename Poly::exponent_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::exponent_type j=0; j < Poly::max_order; ++j)
+            BOOST_CHECK_EQUAL(pc(i,j),pb(i,j));
+}

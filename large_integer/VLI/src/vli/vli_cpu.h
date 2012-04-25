@@ -72,6 +72,9 @@ namespace vli{
      multiply and addition operators, suite ...
      */
     template <class BaseInt, std::size_t Size>
+    void negate_inplace(vli_cpu<BaseInt, Size>& v);
+
+    template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator + (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b);
 
     template <class BaseInt, std::size_t Size>
@@ -105,8 +108,8 @@ namespace vli{
     */
     template<typename BaseInt, std::size_t Size>
     std::ostream& operator<< (std::ostream& os,  vli_cpu<BaseInt, Size> const& vli);
-  
-    #include "vli/vli_cpu.hpp"
 }
+
+#include "vli/vli_cpu.hpp"
 
 #endif //VLI_NUMBER_CPU_HPP
