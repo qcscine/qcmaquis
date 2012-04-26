@@ -12,7 +12,7 @@
 template <>
 void run_dmrg<grp>(DmrgParameters & parms, ModelParameters & model)
 {
-    dmrg_sim<Matrix, grp> sim(parms, model);
+    dmrg_sim<matrix, grp> sim(parms, model);
     sim.run();
 }
 
