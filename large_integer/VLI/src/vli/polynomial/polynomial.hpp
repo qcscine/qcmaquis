@@ -35,6 +35,20 @@ struct polynomial_multiply_result_type<polynomial<vli_cpu<BaseInt,Size>,Order> >
 };
 
 template <typename Polynomial>
+struct polynomial_multiply_keep_order_result_type {
+};
+
+template <typename Coeff, unsigned int Order>
+struct polynomial_multiply_keep_order_result_type<polynomial<Coeff,Order> > {
+    typedef polynomial<Coeff,Order> type;
+};
+
+template <typename BaseInt, std::size_t Size, unsigned int Order>
+struct polynomial_multiply_keep_order_result_type<polynomial<vli_cpu<BaseInt,Size>,Order> > {
+    typedef polynomial<vli_cpu<BaseInt,2*Size>,Order> type;
+};
+
+template <typename Polynomial>
 struct exponent_type{
     typedef typename Polynomial::exponent_type type;
 };
@@ -186,6 +200,24 @@ namespace detail {
                     for(exponent_type he1 = 0; he1 < Order; ++he1)
                         for(exponent_type he2 = 0; he2 < Order; ++he2)
                             muladd(result.coeffs_[(je1+je2)*2*Order + he1+he2 ], p1.coeffs_[je1*Order+he1],p2.coeffs_[je2*Order+he2]);
+            return result;
+        }
+    };
+    
+    template <class Polynomial>
+    struct polynomial_multiply_keep_order_helper {
+    };
+    
+    template <class Coeff, unsigned int Order>
+    struct polynomial_multiply_keep_order_helper<polynomial<Coeff,Order> > {
+        typename polynomial_multiply_keep_order_result_type<polynomial<Coeff,Order> >::type operator()(polynomial<Coeff,Order> const& p1, polynomial<Coeff,Order> const& p2) {
+            typedef typename polynomial<Coeff,Order>::exponent_type exponent_type;
+            typename polynomial_multiply_keep_order_result_type<polynomial<Coeff,Order> >::type result;
+            for(exponent_type je1 = 0; je1 < Order; ++je1)
+                for(exponent_type je2 = 0; je2 < Order-je1; ++je2)
+                    for(exponent_type he1 = 0; he1 < Order; ++he1)
+                        for(exponent_type he2 = 0; he2 < Order-he1; ++he2)
+                            muladd(result.coeffs_[(je1+je2)*Order + he1+he2 ], p1.coeffs_[je1*Order+he1],p2.coeffs_[je2*Order+he2]);
             return result;
         }
     };
@@ -393,6 +425,11 @@ polynomial<Coeff, Order> operator / (polynomial<Coeff,Order> p, Coeff const& c) 
 template <class Coeff, unsigned int Order>
 typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type operator * (polynomial<Coeff,Order> const& p1, polynomial<Coeff,Order> const& p2) {
     return detail::polynomial_multiply_helper<polynomial<Coeff,Order> >()(p1,p2);
+}
+
+template <class Coeff, unsigned int Order>
+typename polynomial_multiply_keep_order_result_type<polynomial<Coeff,Order> >::type multiply_keep_order(polynomial<Coeff,Order> const& p1, polynomial<Coeff,Order> const& p2) {
+    return detail::polynomial_multiply_keep_order_helper<polynomial<Coeff,Order> >()(p1,p2);
 }
 
 template <class Coeff, unsigned int Order> 

@@ -31,16 +31,24 @@ vli_cpu<BaseInt, Size>::vli_cpu(vli_cpu const& r){
         data_[i] = r.data_[i];
 }
 
+#if defined __GNU_MP_VERSION
 template<typename BaseInt, std::size_t Size>
-void vli_cpu<BaseInt, Size>::swap(vli_cpu& a, vli_cpu& b){
-    boost::swap(a.data_,b.data_); // gcc 4.2, std::swap does not work with static array
+vli_cpu<BaseInt, Size>::operator mpz_class() const{
+    return mpz_class(get_str());
 }
+
+template<typename BaseInt, std::size_t Size>
+vli_cpu<BaseInt, Size>::operator mpq_class() const{
+    return mpq_class(get_str());
+}
+#endif //__GNU_MP_VERSION
 
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>& vli_cpu<BaseInt, Size>::operator= (vli_cpu r){
     swap(*this,r);
     return *this;
 }
+
 
 template<typename BaseInt, std::size_t Size>
 BaseInt& vli_cpu<BaseInt, Size>::operator[](size_type i){
