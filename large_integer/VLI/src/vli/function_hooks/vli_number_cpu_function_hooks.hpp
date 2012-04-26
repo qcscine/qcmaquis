@@ -26,7 +26,10 @@ namespace vli
 
     //multiplication
     template<typename BaseInt, std::size_t Size>
-    void mul(BaseInt * x,BaseInt const y);
+    void mul(BaseInt * x,BaseInt const b);
+
+    template<typename BaseInt, std::size_t Size>
+    void mul(BaseInt * x,BaseInt const* y);
 
     //????_assign functions
     template <class BaseInt, std::size_t Size>
@@ -50,19 +53,20 @@ namespace vli
     }
 
     template <class BaseInt, std::size_t Size>
-    void multiplies(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
-        detail::mul384_192_192(&vli_res[0],&vli_a[0],&vli_b[0]);
-    }
-    
-    template <class BaseInt, std::size_t Size>
     void multiplies_assign( vli_cpu<BaseInt, Size>& vli_a , vli_cpu<BaseInt,Size> const & vli_b){ 
-        detail::mul192_192(&vli_a[0],&vli_b[0]);
+        mul<BaseInt,Size>(&vli_a[0],&vli_b[0]);
     }
 
     template <class BaseInt, std::size_t Size>
     void multiplies_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const b){
         mul<BaseInt,Size>(&vli_a[0],b);
     }
+
+    template <class BaseInt, std::size_t Size>
+    void multiplies(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
+        detail::mul384_192_192(&vli_res[0],&vli_a[0],&vli_b[0]);
+    }
+    
     
     template <class BaseInt, std::size_t Size>
     void multiply_add_assign(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
@@ -127,6 +131,16 @@ namespace vli
 
     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
     #undef FUNCTION_mul_nbits_64bits
+    //specialization mulnbits_nbits, until 512 bits
+    #define FUNCTION_mul_nbits_nbits(z, n, unused) \
+        template<> \
+        void mul<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y){ \
+        detail::NAME_MUL_NBITS_NBITS(n)(x,y); \
+        }; \
+
+    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
+    #undef FUNCTION_mul_nbits_nbits
+    /* ---------------------------------------------------- end Multiplicatio specialization ---------------------------------------------------- */
 
     
 } //namespace vli

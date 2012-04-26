@@ -21,6 +21,7 @@
 #include "regression/vli_test.hpp"
 
 #include "vli/detail/bit_masks.hpp"
+#include "vli/detail/kernels_cpu_asm.h"
 
 #define Size1 3
 #define Size2 6
@@ -82,21 +83,54 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
+    typedef vli_cpu< unsigned long int, 2> vli_type_d;
+    typedef vli_cpu< unsigned long int, 3> vli_type_t;
+    typedef vli_cpu< unsigned long int, 4> vli_type_q;
+    typedef vli_cpu< unsigned long int, 5> vli_type_c;
+    typedef vli_cpu< unsigned long int, 6> vli_type_s;
+    typedef vli_cpu< unsigned long int, 7> vli_type_p;
+    vli_type_d  da,db(-2);
+    vli_type_t  ta,tb(-2);
+    vli_type_q  qa,qb(-2);
+    vli_type_c  ca,cb(-2);
+    vli_type_s  sa,sb(-2);
+    vli_type_p  pa,pb(-2);
+    vli_type_cpu a,b;
+
+    a[0] = 0xffff;  
+    a[1] = 0xffffffffffffffff;  
+    a[2] = 0xffffffffffffffff;  
+    b[0] = 0xffff;  
+    b[1] = 0xffffffffffffffff;  
+    b[2] = 0xffffffffffffffff;  
     
-   vli_type_cpu a; 
-   vli::vli_cpu<unsigned long int, 4> b;
+    qa[0] = 0xffff;  
+    qa[1] = 0xffffffffffffffff;  
+    qa[2] = 0xffffffffffffffff;  
+    qa[3] = 0xffffffffffffffff;  
 
-   std::cout << b << std::endl; 
+    qb[0] = 0xffff;  
+    qb[1] = 0xffffffffffffffff;  
+    qb[2] = 0xffffffffffffffff;  
+    qb[3] = 0xffffffffffffffff;  
 
-   b[0]=0xffffffffffffffff;
+    vli_type_cpu c(a),d(b);
+    vli::detail::mul192_192(&c[0],&d[0]); 
+    vli::detail::mul256_256(&qa[0],&qb[0]); 
+    a*=b;
 
-   a[0]=0xffffffffffffffff;
-   a*=-2;
-   b*=-2;
-   std::cout << a << std::endl; 
-   std::cout << std::hex << a << std::endl; 
-   std::cout << b << std::endl; 
-   std::cout << std::hex << b << std::endl; 
+    large_int ga; ga = a.get_str();
+    large_int gb; gb = b.get_str();
+
+//    mul(c,a,b);
+
+     da[0] = 0xffffffffffffffff;
+     da[1] = 0xffff;
+
+     std::cout << std::hex << a << std::endl; 
+     std::cout << std::hex << c << std::endl; 
+     std::cout << std::hex << qa << std::endl; 
+//   large_int gc = ga*gb; 
     /*
 #ifdef VLI_USE_GPU
     gpu::gpu_manager* gpu;
