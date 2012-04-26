@@ -24,6 +24,11 @@
 
 namespace vli{
     
+    template<typename BaseInt, std::size_t Size>
+    void swap(vli_cpu<BaseInt,Size>& a, vli_cpu<BaseInt,Size>& b){
+        boost::swap(a.data_,b.data_);
+    }
+    
     template<class BaseInt, std::size_t Size>
     class vli_cpu 
     {
@@ -35,7 +40,12 @@ namespace vli{
         vli_cpu();
         explicit vli_cpu(int num);
         vli_cpu(vli_cpu const& r);
-        void swap(vli_cpu& a, vli_cpu& b);
+#if defined __GNU_MP_VERSION
+        // TODO find a better solution for this.
+        operator mpz_class() const;
+        operator mpq_class() const;
+#endif //__GNU_MP_VERSION
+        friend void swap<> (vli_cpu& a, vli_cpu& b);
         vli_cpu& operator= (vli_cpu r);
         BaseInt& operator[](size_type i);
         const BaseInt& operator[](size_type i) const;

@@ -272,6 +272,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
 
  }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_keep_order, Poly, polynomial_types )
+{   
+    //TODO fix types
+    typedef vli::vli_cpu<typename Poly::value_type::size_type, 2*(Poly::value_type::size) > vli_result_type_cpu;
+    typedef vli::vli_cpu<typename Poly::value_type::size_type, (Poly::value_type::size) > vli_type_cpu;    
+    typedef vli::polynomial<vli_result_type_cpu, (Poly::max_order) > polynomial_result_type_cpu;
+    typedef vli::polynomial<vli_type_cpu, (Poly::max_order) > polynomial_type_cpu;
+    
+    polynomial_result_type_cpu pc;
+    polynomial_type_cpu pa;
+    fill_poly_random(pa);
+
+    polynomial_type_cpu pb;
+    fill_poly_random(pb);
+    pc = multiply_keep_order(pa,pb);
+
+    polynomial_result_type_cpu result;
+    for(typename Poly::exponent_type i=0; i < Poly::max_order; ++i)
+        for(typename Poly::exponent_type j=0; j < Poly::max_order; ++j)
+            for(typename Poly::exponent_type k=0; k < (Poly::max_order)-i; ++k)
+                for(typename Poly::exponent_type l=0; l < (Poly::max_order)-j; ++l)
+                    muladd(result(i+k,j+l),pa(i,j),pb(k,l));
+
+    BOOST_CHECK_EQUAL(pc,result);    
+
+ }
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Poly, polynomial_types )
 {
     Poly pa;
