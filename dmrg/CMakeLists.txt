@@ -33,7 +33,7 @@ set(BUILD_SYMMETRIES "U1;TwoU1;NONE" CACHE STRINGS "List of symmetry to include 
 
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
 option(ENABLE_OMP "Enable OpenMP" OFF)
-option(USE_AMBIENT "Enable ambient" OFF)
+option(USE_AMBIENT "Enable Ambient" OFF)
 option(USE_MTM "Use multi threads matrix class" OFF)
 option(USE_GPU "Use GPU in libmtm" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
@@ -108,6 +108,7 @@ link_directories(${MAQUIS_Boost_LIBRARY_DIRS})
 
 # Ambient
 if(USE_AMBIENT)
+  add_definitions(-DUSE_AMBIENT)
   if(BUILD_AMBIENT)
     add_subdirectory(${AMBIENT_SOURCES_DIR} ambient-build)
     include(${CMAKE_BINARY_DIR}/ambient-build/MaquisAmbientBuildTree.cmake)
@@ -339,14 +340,8 @@ if(BUILD_REGRESSION)
   add_subdirectory(regression/mp_tensors)
   add_subdirectory(regression/dmrg)
   add_subdirectory(regression/te)
-  if(USE_AMBIENT)
-     add_subdirectory(regression/pdmrg)
-  endif(USE_AMBIENT)
 else(BUILD_REGRESSION)
   add_subdirectory(regression/dmrg EXCLUDE_FROM_ALL)
-  if(USE_AMBIENT)
-     add_subdirectory(regression/pdmrg EXCLUDE_FROM_ALL)
-  endif(USE_AMBIENT)
 endif(BUILD_REGRESSION)
 
 
