@@ -19,6 +19,7 @@
 #define NAME_SUB_NBITS_MINUS_64BITS(n)               BOOST_PP_CAT(BOOST_PP_CAT(sub,BOOST_PP_CAT(BOOST_PP_ADD(n,3),x64)),BOOST_PP_CAT(_,64))  /* addnx64_64 starts from 192_64 */
 //give the name of the multiplication VLI<64*n> *= long
 #define NAME_MUL_NBITS_64BITS(n)                     BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64)) /* mulnx64_64*/
+#define NAME_MUL_NBITS_NBITS(n)                      BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64))) /* mulnx64_nx64*/
 //give the name of the if statement for the multiplication VLI<64*n> *= long 
 #define NAME_CONDITIONAL_MUL_NBITS_64BITS(n)         BOOST_PP_STRINGIZE(BOOST_PP_CAT(BOOST_PP_CAT(_IsNegative   ,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))) /* _IsNegativenx64_64, for the input sign */
 #define NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)     BOOST_PP_STRINGIZE(BOOST_PP_CAT(BOOST_PP_CAT(_IsNegativeRes,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))) /* _IsNegativeResnx64_64, for the output sign */
@@ -80,6 +81,14 @@
 #define sub8x64_7x64 sub512_448
 
 //Multiplication 
+#define mul2x64_2x64 mul128_128
+#define mul3x64_3x64 mul192_192
+#define mul4x64_4x64 mul256_256
+#define mul5x64_5x64 mul320_320
+#define mul6x64_6x64 mul384_384
+#define mul7x64_7x64 mul448_448
+#define mul8x64_8x64 mul512_512
+
 #define mul2x64_64 mul128_64
 #define mul3x64_64 mul192_64
 #define mul4x64_64 mul256_64

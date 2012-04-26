@@ -84,3 +84,60 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negative_multiply_64bits_assign_extented_BB, Vli,
 
     BOOST_CHECK_EQUAL(a,c);
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiply_nbits_assign_extented_BB, Vli, vli_extented_type)
+{
+    Vli a,c,b;
+      
+    b[0]=2;    
+
+    std::size_t size (Vli::size);   
+
+    for(std::size_t i(0); i < size-1; ++i) 
+        a[i] = 0xffffffffffffffff;
+
+    a*=b; 
+
+    c[0] = 0xfffffffffffffffe;
+ 
+    for(std::size_t i(1); i < size-1; ++i) 
+        c[i] = 0xffffffffffffffff;  
+     
+    c[size-1] = 1;
+
+
+    BOOST_CHECK_EQUAL(a,c);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(ext_multiplies_positive_negative_int_gmp, Vli,vli_extented_type  )
+{
+    Vli a;
+    fill_random(a,Vli::size/2);
+    int b = rnd_valid_int<Vli>();
+    
+    b =-b;
+    
+    mpz_class agmp(a.get_str());
+    
+    a*=b;
+    agmp *= b;
+    
+    BOOST_CHECK_EQUAL(a.get_str(),agmp.get_str());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp_192_192_192_ex, Vli, vli_extented_type )
+{
+    Vli a;
+    Vli b;
+    fill_random(a,Vli::size/2);
+    fill_random(b,Vli::size/2); 
+    b.negate();
+    
+    mpz_class agmp(a.get_str()), bgmp(b.get_str());
+    
+    a*=b;
+    mpz_class cgmp = agmp * bgmp;
+    
+    
+    BOOST_CHECK_EQUAL(a.get_str(),cgmp.get_str());
+}

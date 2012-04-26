@@ -35,51 +35,7 @@ namespace vli{
 // I am presently using the red zone there I do not have to allocate 
 // the stack pointer (the frame pointer is removed under x86-64)
 // the red zone is a zone of 128 bytes, enough for my arithmetic        
-
-// Vli *= long
-
-// Vli (192) = VLI (192) * VLI (192) 
-#define HELPER_ASM_MUL192_192(n) \
-void mul192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */){ \
-     asm( \
-/*01*/  "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   \
-/*02*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   \
-/*04*/  "movq %%rax            ,%%r11             \n" /* keep a stack copy of rax/a0 */   \
-/* --------------------------- a0 * b0, a0 * b1, a0 * b2 start ------------------------*/ \
-/*05*/  "mulq (%%rdi)                             \n" /* lo rax, hi rdx   a0*b0 */        \
-/*06*/  "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  \
-/*07*/  "movq %%rdx            ,%%r9              \n" /* a0b0hi into r8 */                \
-/*08*/  "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
-/*09*/  "mulq "PPS(1,n)"(%%rdi)                   \n" /* a0 * b1 */                       \
-/*10*/  "addq %%rax            ,%%r9              \n" /* add a0b0hi + a0b1lo */           \
-/*11*/  "adcq %%rdx            ,%%r10             \n" /* save the a0b1hi into r9 */       \
-/*12*/  "movq %%r11            ,%%rax             \n" /* reload rax(a0) from the stack */ \
-/*13*/  "imulq "PPS(2,n)"(%%rdi)                  \n" /* a0 * b2 */                       \
-/*14*/  "addq %%rax            ,%%r10             \n" /* add l11 + a0b2lo + c */          \
-/* --------------------------- a0 * b0, a0 * b1, a0 * b2 end --------------------------*/ \
-/* --------------------------- a1 * b0, a1 * b start ----------------------------------*/ \
-/*15*/  "movq "PPS(1,n)"(%%rsi),%%rax             \n" /* a1 into rax */                   \
-/*16*/  "movq %%rax            ,%%r11             \n" /* keep a stack copy of rax/a1 */   \
-/*17*/  "mulq (%%rdi)                             \n" /* a1 * b0 */                       \
-/*18*/  "addq %%rax            ,%%r9              \n" /* l13 + a1b0lo */                  \
-/*19*/  "adcq %%rdx            ,%%r10             \n" /* l17 + a1b0hi + c */              \
-/*20*/  "movq %%r11            ,%%rax             \n" /* reload rax(a1) from the stack */ \
-/*21*/  "imulq "PPS(1,n)"(%%rdi)                  \n" /* a1*b1 */                         \
-/*22*/  "addq %%rax            ,%%r10             \n" /* a1b2lo to r10 */                 \
-/* --------------------------- a1 * b0, a1 * b1, a1 * b2 end --------------------------*/ \
-/* --------------------------- a2 * b0                   start ------------------------*/ \
-/*23*/  "movq "PPS(2,n)"(%%rsi),%%rax             \n" /* a2 to rax */                     \
-/*25*/  "imulq (%%rdi)                            \n" /* a2*b0 */                         \
-/*26*/  "addq %%rax            ,%%r10             \n" /* l30 + a2b0lo */                  \
-/* --------------------------- a2 * b0                   end --------------------------*/ \
-/*27*/  "movq %%r8             ,(%%rdi)           \n" /* r8 -> c0 */                      \
-/*28*/  "movq %%r9             ,"PPS(1,n)"(%%rdi) \n" /* r9 -> c1 */                      \
-/*28*/  "movq %%r10            ,"PPS(2,n)"(%%rdi) \n" /* r10 -> c2 */                     \
-        : : :"rax","rdx","r8","r9","r10","r11","memory" \
-    ); \
-};
-
-// Vli (384) = VLI (192) * VLI (192) 
+//
 #define HELPER_ASM_MUL384_192_192(n) \
 void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){ \
    asm( \
@@ -148,7 +104,7 @@ void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/
 /*54*/  "mulq (%%rbx)                             \n" /* a1 * b0 */                       \
 /*55*/  "addq %%rax            ,%%r9              \n" /* l46 + a1b0lo */                  \
 /*56*/  "adcq %%rdx            ,%%r10             \n" /* l47 + a1b0hi + c */              \
-/*57*/  "adcq $0               ,%%r11             \n" /* possible carry */                \
+/*57*/  "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq 0, 256 two adcq, 320 tree adcq .... */                \
 /*58*/  "movq %%rcx            ,%%rax             \n" /* reload rax(a1) from the stack */ \
 /*59*/  "mulq "PPS(2,n)"(%%rbx)                   \n" /* a1*b2 */                         \
 /*60*/  "addq %%rax            ,%%r11             \n" /* l57 + a1b2lo + c */              \
@@ -340,7 +296,6 @@ void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const*
 
     // c - 1 is the order = AoS, Order*Order = SoA
     // c - generate assembly function 
-    HELPER_ASM_MUL192_192(1)
     HELPER_ASM_MUL384_192_192(1)
     HELPER_ASM_MUL_ADD384_192_192(1)
         
