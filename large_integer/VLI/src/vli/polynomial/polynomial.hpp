@@ -60,17 +60,30 @@ namespace detail {
     struct plus_assign {
         template <class T, class T2>
         void operator()(T& t, T2 const& t2) {
-            t+=t2;
+            t += t2;
         }
     };
 
     struct minus_assign {
         template <class T, class T2>
         void operator()(T& t, T2 const& t2) {
-            t-=t2;
+            t -= t2;
         }
     };
 
+    struct multiply_assign {
+        template <class T, class T2>
+        void operator()(T& t, T2 const& t2) {
+            t *= t2;
+        }
+    };
+
+    struct devide_assign {
+        template <class T, class T2>
+        void operator()(T& t, T2 const& t2) {
+            t /= t2;
+        }
+    };
 
     template <class Coeff, unsigned int Order>
     void init(polynomial<Coeff,Order>& p, boost::false_type dummy) {
@@ -85,38 +98,38 @@ namespace detail {
     }
 
     template <class Operation, class Coeff, unsigned int Order>
-    void op_assign(polynomial<Coeff,Order>& p, polynomial<Coeff,Order> const& p2, Operation op) {
+    void additive_op_assign(polynomial<Coeff,Order>& p, polynomial<Coeff,Order> const& p2, Operation op) {
         for(typename polynomial<Coeff,Order>::exponent_type i=0; i<Order*Order; ++i)
             op(p.coeffs_[i],p2.coeffs_[i]);
     }
 
     template <class Operation, class Coeff, unsigned int Order>
-    void op_assign(polynomial<Coeff,Order>& p, monomial<Coeff> const& m, Operation op) {
+    void additive_op_assign(polynomial<Coeff,Order>& p, monomial<Coeff> const& m, Operation op) {
         op(p(m.j_exp_,m.h_exp_), m.coeff_);
     }
     
     template <class Operation, class Coeff, unsigned int Order>
-    void op_assign(polynomial<Coeff,Order>& p, Coeff const& c, Operation op) {
+    void additive_op_assign(polynomial<Coeff,Order>& p, Coeff const& c, Operation op) {
         op(p(0,0),c);
     }
 
     template <class Operation, class Coeff, unsigned int Order>
-    void op_assign(polynomial<Coeff,Order>& p, int a, Operation op) {
+    void additive_op_assign(polynomial<Coeff,Order>& p, int a, Operation op) {
         op(p(0,0),a);
     }
     
-    template <class Coeff, unsigned int Order>
-    void multiply_assign(polynomial<Coeff,Order>& p, Coeff const& c) {
+    template <class Operation, class Coeff, unsigned int Order>
+    void multiplicative_op_assign(polynomial<Coeff,Order>& p, int a, Operation op) {
         for(typename polynomial<Coeff,Order>::exponent_type i=0; i< Order*Order; ++i)
-            p.coeffs_[i] *= c;
+            op(p.coeffs_[i], a);
     }
     
-    template <class Coeff, unsigned int Order>
-    void multiply_assign(polynomial<Coeff,Order>& p, int c) {
+    template <class Operation, class Coeff, unsigned int Order>
+    void multiplicative_op_assign(polynomial<Coeff,Order>& p, Coeff const& c, Operation op) {
         for(typename polynomial<Coeff,Order>::exponent_type i=0; i< Order*Order; ++i)
-            p.coeffs_[i] *= c;
+            op(p.coeffs_[i], c);
     }
-
+    
     template <class Coeff, unsigned int Order, class T>
     void multiply_assign_monomial(polynomial<Coeff,Order>& p, monomial<T> const& m) {
         typedef typename polynomial<Coeff,Order>::value_type value_type;
@@ -208,35 +221,40 @@ public:
         for(exponent_type i=0; i<Order*Order;++i)
             coeffs_[i]=p.coeffs_[i];
     }
+    template <class Coeff2>
+    explicit polynomial(polynomial<Coeff2,Order> const& p) {
+        for(exponent_type i=0; i<Order*Order; ++i)
+            coeffs_[i] = static_cast<Coeff>(p.coeffs_[i]);
+    }
     polynomial& operator = (polynomial p) {
         swap(*this,p);
         return *this;
     }
     
     polynomial& operator += (polynomial const& p) { 
-        detail::op_assign(*this, p, detail::plus_assign());
+        detail::additive_op_assign(*this, p, detail::plus_assign());
         return *this;
     }
     polynomial& operator += (monomial<Coeff> const& m) {
-        detail::op_assign(*this, m, detail::plus_assign());
+        detail::additive_op_assign(*this, m, detail::plus_assign());
         return *this;
     }
     polynomial& operator += (int a) {
-        detail::op_assign(*this, a, detail::plus_assign());
+        detail::additive_op_assign(*this, a, detail::plus_assign());
         return *this;
     }
 
 
     polynomial& operator -= (polynomial const& p) {
-        detail::op_assign(*this, p, detail::minus_assign());
+        detail::additive_op_assign(*this, p, detail::minus_assign());
         return *this;
     }
     polynomial& operator -= (monomial<Coeff> const& m) {
-        detail::op_assign(*this, m, detail::minus_assign());
+        detail::additive_op_assign(*this, m, detail::minus_assign());
         return *this;
     }
     polynomial& operator -= (int a) {
-        detail::op_assign(*this, a, detail::minus_assign());
+        detail::additive_op_assign(*this, a, detail::minus_assign());
         return *this;
     }
    
@@ -247,11 +265,20 @@ public:
         return *this;
     }
     polynomial& operator *= (Coeff const& c) {
-        detail::multiply_assign(*this, c);
+        detail::multiplicative_op_assign(*this, c, detail::multiply_assign());
         return *this;
     }
     polynomial& operator *= (int a) {
-        detail::multiply_assign(*this, a);
+        detail::multiplicative_op_assign(*this, a, detail::multiply_assign());
+        return *this;
+    }
+
+    polynomial& operator /= (Coeff const& c) {
+        detail::multiplicative_op_assign(*this, c, detail::devide_assign());
+        return *this;
+    }
+    polynomial& operator /= (int a) {
+        detail::multiplicative_op_assign(*this, a, detail::devide_assign());
         return *this;
     }
 
@@ -349,6 +376,19 @@ template <class Coeff, unsigned int Order>
 polynomial<Coeff, Order> operator * (int c, polynomial<Coeff, Order> const& p) {
     return p * c;
 }
+
+template <class Coeff, unsigned int Order>
+polynomial<Coeff, Order> operator / (polynomial<Coeff,Order> p, int c) {
+    p /= c;
+    return p;
+}
+
+template <class Coeff, unsigned int Order>
+polynomial<Coeff, Order> operator / (polynomial<Coeff,Order> p, Coeff const& c) {
+    p /= c;
+    return p;
+}
+
 
 template <class Coeff, unsigned int Order>
 typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type operator * (polynomial<Coeff,Order> const& p1, polynomial<Coeff,Order> const& p2) {
