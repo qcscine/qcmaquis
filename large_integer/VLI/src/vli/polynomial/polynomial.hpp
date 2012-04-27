@@ -1,5 +1,5 @@
-#ifndef VLI_POLYNOME_CPU_H
-#define VLI_POLYNOME_CPU_H
+#ifndef VLI_POLYNOMIAL_HPP
+#define VLI_POLYNOMIAL_HPP
 #include "vli/function_hooks/vli_polynomial_cpu_function_hooks.hpp"
 #include "vli/polynomial/monomial.hpp"
 #include "vli/vli_cpu.h"
@@ -147,8 +147,7 @@ namespace detail {
     template <class Coeff, unsigned int Order, class T>
     void multiply_assign_monomial(polynomial<Coeff,Order>& p, monomial<T> const& m) {
         typedef typename polynomial<Coeff,Order>::value_type value_type;
-        for(std::ptrdiff_t je=static_cast<std::ptrdiff_t>(Order)-1-m.j_exp_; je >= 0; --je)
-        {
+        for(std::ptrdiff_t je=static_cast<std::ptrdiff_t>(Order)-1-m.j_exp_; je >= 0; --je) {
             for(std::ptrdiff_t he=static_cast<std::ptrdiff_t>(Order)-1-m.h_exp_; he >= 0; --he)
                 p(je+m.j_exp_, he+m.h_exp_) = p(je,he)*m.coeff_;
             for(std::ptrdiff_t he=static_cast<std::ptrdiff_t>(m.h_exp_)-1; he >=0; --he)
@@ -167,8 +166,7 @@ namespace detail {
     }
     
     template <class Coeff, unsigned int Order>
-    bool is_zero_helper(polynomial<Coeff,Order> const& p)
-    {
+    bool is_zero_helper(polynomial<Coeff,Order> const& p) {
         for(typename polynomial<Coeff,Order>::exponent_type i=0; i<Order*Order; ++i)
             if (!is_zero(p.coeffs_[i]))
                 return false;
@@ -424,6 +422,7 @@ polynomial<Coeff, Order> operator / (polynomial<Coeff,Order> p, Coeff const& c) 
 
 template <class Coeff, unsigned int Order>
 typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type operator * (polynomial<Coeff,Order> const& p1, polynomial<Coeff,Order> const& p2) {
+    // TODO we may use a more parallel version from vli/function_hooks/vli_polynomial_cpu_function_hooks.hpp
     return detail::polynomial_multiply_helper<polynomial<Coeff,Order> >()(p1,p2);
 }
 
