@@ -39,13 +39,13 @@ namespace vli {
                          ra = i%Order;
                          qb = ((i <= threadid) ? (threadid - i) : (Order*Order-1) - i) / Order;
                          rb = ((i <= threadid) ? (threadid - i) : (Order*Order-1) - i) % Order;
-                         int offset = ((i <= threadid) ? (thradid - i) : (Order*Order-1) - i ) * Size; 
+                         int offset = ((i <= threadid) ? (threadid - i) : (Order*Order-1) - i ) * Size; 
 
                          pos = 2*(qa+qb)*Order + (ra+rb);
                          mul384_384_gpu(&sc[0],&sa[offset],&sb[i*Size]);
                          add384_384_gpu(&scc[2*Size*pos],&sc[0]);
                      }
-                     for(int i
+                     
                      __syncthreads(); // we sync to be sure sa, sb and sc are loaded fully
 
                      #pragma unroll
