@@ -83,66 +83,28 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
-    typedef vli_cpu< unsigned long int, 2> vli_type_d;
-    typedef vli_cpu< unsigned long int, 3> vli_type_t;
-    typedef vli_cpu< unsigned long int, 4> vli_type_q;
-    typedef vli_cpu< unsigned long int, 5> vli_type_c;
-    typedef vli_cpu< unsigned long int, 6> vli_type_s;
-    typedef vli_cpu< unsigned long int, 7> vli_type_p;
-    vli_type_d  da,db(-2);
-    vli_type_t  ta,tb(-2);
-    vli_type_q  qa,qb(-2);
-    vli_type_c  ca,cb(-2);
-    vli_type_s  sa,sb(-2);
-    vli_type_p  pa,pb(-2);
-    vli_type_cpu a,b;
 
-    a[0] = 0xffff;  
-    a[1] = 0xffffffffffffffff;  
-    a[2] = 0xffffffffffffffff;  
-    b[0] = 0xffff;  
-    b[1] = 0xffffffffffffffff;  
-    b[2] = 0xffffffffffffffff;  
-    
-    qa[0] = 0xffff;  
-    qa[1] = 0xffffffffffffffff;  
-    qa[2] = 0xffffffffffffffff;  
-    qa[3] = 0xffffffffffffffff;  
+int SizeVector = atoi(argv[1]); 
+     
+ polynomial_vector_type v1gmp(SizeVector);
+ polynomial_vector_type v2gmp(SizeVector);
+ polynomial_type pgmp;
+ polynomial_typed pgmpd;
 
-    qb[0] = 0xffff;  
-    qb[1] = 0xffffffffffffffff;  
-    qb[2] = 0xffffffffffffffff;  
-    qb[3] = 0xffffffffffffffff;  
-
-    vli_type_cpu c(a),d(b);
-    vli::detail::mul192_192(&c[0],&d[0]); 
-    vli::detail::mul256_256(&qa[0],&qb[0]); 
-    a*=b;
-
-    large_int ga; ga = a.get_str();
-    large_int gb; gb = b.get_str();
-
-//    mul(c,a,b);
-
-     da[0] = 0xffffffffffffffff;
-     da[1] = 0xffff;
-
-     std::cout << std::hex << a << std::endl; 
-     std::cout << std::hex << c << std::endl; 
-     std::cout << std::hex << qa << std::endl; 
-//   large_int gc = ga*gb; 
-    /*
 #ifdef VLI_USE_GPU
-    gpu::gpu_manager* gpu;
-    gpu->instance();
-#endif
-    
-    vector_type_cpu v1(SizeVector);
-    vector_type_cpu v2(SizeVector);
-    polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
-    
+ gpu::gpu_manager* gpu;
+ gpu->instance();
+ #endif
+
+ vector_type_cpu v1(SizeVector);
+ vector_type_cpu v2(SizeVector);
+
+ polynomial_result_type_cpu result_pure_cpu  ;
+ polynomial_result_type_cpu result_mix_cpu_gpu  ;
+ polynomial_result_type_cpu result_cpu_gpu  ;
+   
     fill_vector_random(v1,2);
-    fill_vector_random(v2,3);
+    fill_vector_random(v2,2);
 
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
@@ -161,18 +123,21 @@ int main (int argc, char * const argv[])
     t2.end();
 
 #ifdef VLI_USE_GPU
-    Timer t3("MIX CPU/GPU openmp");
-    std::cout << result_mix_cpu_gpu << std::endl   ; 
-    t3.begin();    
-    result_mix_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
+    TimerOMP t3("MIX CPU/GPU openmp");
+    t3.begin();   
+    result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
     t3.end();
-    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
+   
+    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); } 
 #endif
    
+//    std::cout << result_pure_cpu << std::endl;
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-*/
-return  0;
-}  
+ 
+    return 0;
+}
+
+
 
