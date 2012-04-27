@@ -41,6 +41,7 @@ namespace vli{
                                  "addq (%%rsi), "R(0)" \n"                                                          \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC_register, ~)                                \
                                  "adcq $0x0, "R(BOOST_PP_ADD(n,2))" \n"                                             \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,3), SAVE_register, ~)                          \
                                  : : :BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"              \
                             );                                                                                      \
                         }                                                                                           \

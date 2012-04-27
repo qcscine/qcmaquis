@@ -14,10 +14,10 @@ template <class BaseInt, std::size_t Size>
 class vli_cpu;
 
 template <class Vli, unsigned int Order>
-class polynomial_cpu;
+class polynomial;
 
 template <class Polynomial>
-class vector_polynomial_cpu;
+class vector_polynomial;
 
 namespace detail
 {
@@ -112,8 +112,8 @@ namespace detail
         typedef std::size_t size_type;
    
         explicit inner_product_gpu_booster(
-                  vector_polynomial_cpu<polynomial_cpu<Vli,Order> > const& v1
-                , vector_polynomial_cpu<polynomial_cpu<Vli,Order> > const& v2
+                  vector_polynomial<polynomial<Vli,Order> > const& v1
+                , vector_polynomial<polynomial<Vli,Order> > const& v2
                 , size_type partsize
                 )
         : v1_(partsize*factor_element_size), v2_(partsize*factor_element_size), tmp_(partsize*product_element_size), partsize_(partsize)
@@ -130,8 +130,8 @@ namespace detail
             gpu::cu_check_error(cudaGetLastError(),__LINE__);
         }
         
-        operator polynomial_cpu<vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order>() const {
-            polynomial_cpu< vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order> poly; 
+        operator polynomial<vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order>() const {
+            polynomial< vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order> poly; 
             gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)tmp_.p(),product_element_size*sizeof(base_int_type),cudaMemcpyDeviceToHost),__LINE__);
             return poly;
         }
@@ -148,14 +148,14 @@ namespace detail
 {
 #ifdef _OPENMP
 template <class BaseInt, std::size_t Size, unsigned int Order>
-polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> 
-inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
-               vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> 
+inner_product_openmp_gpu( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
+               vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v2){
 
     std::cout<<"inner_product: OpenMP +CUDA"<<std::endl;
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
-    polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order>  res[omp_get_max_threads()];
+    polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order>  res[omp_get_max_threads()];
     std::size_t split = (std::size_t)(v1.size()*1);
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
@@ -166,20 +166,20 @@ inner_product_openmp_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, 
     for(std::size_t i=1; i < omp_get_max_threads(); ++i)
         res[0]+=res[i];
 
-    res[0] += polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product); // this thing synchronize
+    res[0] += polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product); // this thing synchronize
     return res[0];
 }
 #endif
 
 template <class BaseInt, std::size_t Size, unsigned int Order>
-polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order> 
-inner_product_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
-               vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> 
+inner_product_gpu( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
+               vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v2){
     std::cout<<"inner_product: single thread + CUDA"<<std::endl;
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     
-    polynomial_cpu<vli_cpu<BaseInt,2*Size>, 2*Order> res;
+    polynomial<vli_cpu<BaseInt,2*Size>, 2*Order> res;
     std::size_t split = static_cast<std::size_t>(1*v1.size());
      
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
@@ -188,7 +188,7 @@ inner_product_gpu( vector_polynomial_cpu<polynomial_cpu<vli_cpu<BaseInt, Size>, 
         res += v1[i]*v2[i];
     }
    
-    res += polynomial_cpu<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product);
+    res += polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product);
     
     return res;
 }
