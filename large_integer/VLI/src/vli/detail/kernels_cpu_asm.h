@@ -30,9 +30,9 @@ namespace vli{
         BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
         #undef FUNCTION_add_nbits_64bits
         /* ------------------------------------------------------- */
-        //new functions type : VLI<n*64> + VLI<64> : add128_64, add128_64 ...
+        //new functions type : VLI<n*64> + VLI<64> : add128_64, add256_128 ...
         #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
-            void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(unsigned long int* x, unsigned long int const* y);
+            void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(unsigned long int* x, unsigned long int const* y, unsigned long int const* w);
 
         BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
         #undef FUNCTION_add_nbits_nminus1bits

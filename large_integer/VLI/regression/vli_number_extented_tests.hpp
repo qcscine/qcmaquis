@@ -1,4 +1,5 @@
 
+#include <boost/preprocessor/arithmetic/add.hpp>
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_extented_CB, Vli, vli_extented_type)
 {
     Vli a,b,c;

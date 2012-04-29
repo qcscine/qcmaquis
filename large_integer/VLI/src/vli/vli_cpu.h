@@ -96,6 +96,9 @@ namespace vli{
     template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator + (int b, vli_cpu<BaseInt, Size> const& vli_a);
     
+    template <class BaseInt, std::size_t Size1, std::size_t Size2> //extented arithmetic
+    const vli_cpu<BaseInt, Size2> operator + (vli_cpu<BaseInt, Size1> const& vli_a, vli_cpu<BaseInt, Size1> const& vli_b);
+
     template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b);
     
