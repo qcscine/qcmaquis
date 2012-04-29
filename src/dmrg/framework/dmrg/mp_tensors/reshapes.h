@@ -10,9 +10,7 @@
 #define RESHAPE_H
 
 #include <map>
-
 #include "dmrg/block_matrix/indexing.h"
-#include "dmrg/mp_tensors/detail/algorithms_impl.h"
 
 template<class Matrix, class SymmGroup>
 void reshape_left_to_right(Index<SymmGroup> physical_i,
@@ -69,7 +67,8 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
                         
-                        detail::iterable_matrix_impl<Matrix,SymmGroup>::reshape_left_to_right_impl(physical_i, left_i, right_i, in_left_offset, out_right_offset, s, r, l, in_block, out_block);
+                        maquis::types::reshape_l2r(in_block, out_block, in_left_offset, out_right_offset,
+                                                   physical_i[s].second, left_i[l].second, right_i[r].second);
                     }
 
                     if (pretend)
@@ -165,7 +164,8 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                     if (!pretend) {
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
-                        detail::iterable_matrix_impl<Matrix,SymmGroup>::reshape_right_to_left_impl(physical_i, left_i, right_i, in_right_offset, out_left_offset, s, r, l, in_block, out_block);
+                        maquis::types::reshape_r2l(out_block, in_block, out_left_offset, in_right_offset, 
+                                                   physical_i[s].second, left_i[l].second, right_i[r].second);
                     }
 
                     if (pretend)

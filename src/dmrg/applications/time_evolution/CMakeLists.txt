@@ -8,6 +8,9 @@ if(USE_MTM)
   list(INSERT DMRG_APP_LIBRARIES 0 mtm)
 endif(USE_MTM)
 
+if(USE_AMBIENT)
+  compile_with_ambient()
+endif(USE_AMBIENT)  
 
 # *** Configure symmetries
 configure_symm_file("tevol_symm/dmrg_tevol_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/tevol_symm/dmrg_tevol_{SYMM}.cpp" CMAKE_SYMM_GROUP)

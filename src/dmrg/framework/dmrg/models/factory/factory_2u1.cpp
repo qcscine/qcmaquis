@@ -13,12 +13,15 @@
 
 typedef TwoU1 grp;
 
-#ifdef USE_MTM
-impl_init_model(mtmatrix1, grp)
-impl_init_model(cmtmatrix1, grp)
+#if defined USE_MTM
+impl_init_model(mtmatrix, grp)
+impl_init_model(cmtmatrix, grp)
+#elif defined USE_AMBIENT
+impl_init_model(pmatrix, grp)
+impl_init_model(cpmatrix, grp)
 #else
-impl_init_model(matrix1, grp)
-impl_init_model(cmatrix1, grp)
+impl_init_model(matrix, grp)
+impl_init_model(cmatrix, grp)
 #endif
 
 

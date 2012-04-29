@@ -1,6 +1,6 @@
 #!/bin/bash
 STATE="void"
-STATE_AMBIENT="build"
+STATE_AMBIENT="void"
 STATE_TYPES="build"
 STATE_DMRG="build"
 # end of target states #

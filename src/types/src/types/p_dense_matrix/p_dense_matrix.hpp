@@ -131,3 +131,4 @@ namespace maquis { namespace types {
 
 } } // namespace maquis::types
 
+#include "types/p_dense_matrix/p_diagonal_matrix.h" // redunant

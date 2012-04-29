@@ -39,6 +39,7 @@ namespace maquis {
     class dense_matrix {
     public:
         // typedefs required for a std::container concept
+        typedef T                       scalar_type;       // The type T of the elements of the matrix
         typedef T                       value_type;       // The type T of the elements of the matrix
         typedef T&                      reference;        // Reference to value_type
         typedef T const&                const_reference;  // Const reference to value_type

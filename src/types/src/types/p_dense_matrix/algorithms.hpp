@@ -11,6 +11,81 @@
 
 namespace maquis { namespace types {
 
+    // {{{ p_dense_matrix advanced algorithms
+
+    template <typename T>
+    void reshape_r2l(p_dense_matrix<T>& left, const p_dense_matrix<T>& right,
+                     size_t left_offset, size_t right_offset, 
+                     size_t sdim, size_t ldim, size_t rdim)
+    {
+        ambient::push(ambient::reshape_r2l_l<T>, ambient::reshape_r2l_c<T>, left, right, 
+                      left_offset, right_offset, sdim, ldim, rdim);
+        ambient::playout();
+    }
+
+    template <typename T>
+    void reshape_l2r(const p_dense_matrix<T>& left, p_dense_matrix<T>& right,
+                     size_t left_offset, size_t right_offset, 
+                     size_t sdim, size_t ldim, size_t rdim)
+    {
+        ambient::push(ambient::reshape_l2r_l<T>, ambient::reshape_l2r_c<T>, left, right, 
+                      left_offset, right_offset, sdim, ldim, rdim);
+        ambient::playout();
+    }
+
+    template <typename T>
+    void lb_tensor_mpo(p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
+                       size_t out_offset, size_t in_offset, 
+                       size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        ambient::push(ambient::lb_tensor_mpo_l<T>, ambient::lb_tensor_mpo_c<T>,
+                      out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+        ambient::playout(); 
+    }
+
+    template <typename T>
+    void rb_tensor_mpo(p_dense_matrix<T>& out, const p_dense_matrix<T>& in, const p_dense_matrix<T>& alfa,
+                       size_t out_offset, size_t in_offset, 
+                       size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        ambient::push(ambient::rb_tensor_mpo_l<T>, ambient::rb_tensor_mpo_c<T>,
+                      out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+        ambient::playout();
+    }
+     
+    template <typename T>
+    void scalar_norm(const p_dense_matrix<T>& M, scalar_type& ret){
+        M.nullcut(); // not counting redunant elements of workgroup
+        ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, M, ret);
+        ambient::playout(); // execution weight: 452
+    }
+
+    template <typename T>
+    void scalar_norm(p_dense_matrix<T> & M1, p_dense_matrix<T> & M2, scalar_type & ret){ // not const due to nullcut
+        M1.nullcut(); // not counting redunant elements of workgroup
+        ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, M1, M2, ret);
+        ambient::playout(); // execution weight: 452
+    }
+
+    template <typename T>
+    void bond_renyi_entropies(const p_diagonal_matrix<T> & M, typename associated_real_vector<p_dense_matrix<T> >::type& sv){
+//      copy_sqr_gt<Matrix>(sv, M, 1e-10);
+        assert(false); // if fires - need to fix
+        // std::vector<T>* sc_ptr = &sv;
+        // ambient::push(ambient::push_back_sqr_gt_l, ambient::push_back_sqr_gt_c, sc_ptr, M);
+        // ambient::playout();
+    }
+
+    template <typename T>
+    void left_right_boundary_init(p_dense_matrix<T> & M){
+        assert(false); // if fires - need to fix
+        // double one(1.0);
+        // ambient::push(ambient::initv_l<T>,ambient::initv_c<T>, M, one);
+        // ambient::playout();
+    }
+
+    // }}}
+
     // {{{ p_dense_matrix operators (free functions)
     template <typename T>
     const p_dense_matrix<T>& operator + (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){

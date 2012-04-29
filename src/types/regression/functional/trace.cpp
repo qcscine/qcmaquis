@@ -12,7 +12,7 @@
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
 
-#include "types/utils/matrix_cast.h"
+#include "types/utils/bindings.hpp"
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)

@@ -12,15 +12,15 @@
 #include "dmrg/utils/logger.h"
 #include "utils/timings.h"
 #include "types/utils/matrix_vector_traits.h"
+#include "types/utils/bindings.hpp"
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
-#include "dmrg/block_matrix/detail/algorithms_impl.h"
 #include "dmrg/block_matrix/multi_index.h"
-
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/imag.hpp>
 
+#include "utils/types.h"
 
 namespace detail {
     template<class T> struct real_type { typedef T type; };
@@ -142,7 +142,94 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
 
     timer.end();
 }
-//this function could return a void presently, check with Bela 
+    
+template <class T>
+typename utils::real_type<T>::type gather_real_pred(T const & val)
+{
+    assert( check_real(val) );
+    assert( alps::numeric::real(val) > -1e-10 );
+    return alps::numeric::real(val);
+}
+
+template<class DiagMatrix, class SymmGroup>
+void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals, 
+                         size_t Mmax, double cutoff, size_t* keeps, 
+                         double & truncated_weight, double & smallest_ev)
+{
+    size_t length = 0;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        length += num_rows(evals[k]);
+    }
+
+    std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type > allevals(length);
+
+    std::vector< std::vector<typename DiagMatrix::value_type> > evals_vector; // can be done with associated futures vector
+    for(size_t k=0; k<evals.n_blocks(); ++k){
+        evals_vector.push_back(maquis::traits::matrix_cast< std::vector<typename DiagMatrix::value_type> >(evals[k]));
+    }
+
+    std::size_t position = 0;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        std::transform(evals_vector[k].begin(), evals_vector[k].end(), allevals.begin()+position, gather_real_pred<typename DiagMatrix::value_type>);
+        position += num_rows(evals[k]);
+    }
+
+    assert( allevals.size() > 0 );
+    std::sort(allevals.begin(), allevals.end());
+    std::reverse(allevals.begin(), allevals.end());
+
+    double evalscut = cutoff * allevals[0];
+
+    if (allevals.size() > Mmax)
+        evalscut = std::max(evalscut, allevals[Mmax]);
+    smallest_ev = evalscut / allevals[0];
+   
+    truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
+    truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
+   
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type> evals_k;
+        for (typename std::vector<typename DiagMatrix::value_type>::const_iterator it = evals_vector[k].begin(); it != evals_vector[k].end(); ++it)
+            evals_k.push_back(alps::numeric::real(*it));
+        keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
+    }
+    /* working:
+
+            size_t length = 0;
+            for(std::size_t k = 0; k < evals.n_blocks(); ++k){ 
+                length += num_rows(evals[k]);
+            }
+
+            std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type > allevals(length);
+
+            std::size_t position = 0;
+            for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+                std::transform(evals[k].elements().first, evals[k].elements().second, allevals.begin()+position, gather_real_pred<typename DiagMatrix::value_type>);
+                position += num_rows(evals[k]);
+            }
+
+            assert( allevals.size() > 0 );
+            std::sort(allevals.begin(), allevals.end());
+            std::reverse(allevals.begin(), allevals.end());
+
+            double evalscut = cutoff * allevals[0];
+
+            if (allevals.size() > Mmax)
+                evalscut = std::max(evalscut, allevals[Mmax]);
+            smallest_ev = evalscut / allevals[0];
+           
+            truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
+            truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
+           
+            for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+                std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type> evals_k;
+                for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
+                    evals_k.push_back(alps::numeric::real(*it));
+                keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
+            }
+            */
+}
+
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
@@ -168,7 +255,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     //  where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
     //  Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
     //  (remove_rows/remove_columns methods for that)
-    detail::iteretable_diag_impl<DiagMatrix, SymmGroup>::solver_truncate_impl_zero(S, Mmax, rel_tol, keeps, truncated_weight, smallest_ev);
+    estimate_truncation(S, Mmax, rel_tol, keeps, truncated_weight, smallest_ev);
     timer.end(); 
      
     for ( int k = S.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
@@ -232,7 +319,7 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
     static Timer timer("Iteretable_diag_impl_heev_truncate");
     timer.begin();
-    detail::iteretable_diag_impl<DiagMatrix, SymmGroup>::solver_truncate_impl_zero(evals, Mmax, cutoff, keeps, truncated_weight, smallest_ev);
+    estimate_truncation(evals, Mmax, cutoff, keeps, truncated_weight, smallest_ev);
     timer.end();
 
     for ( int k = evals.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0

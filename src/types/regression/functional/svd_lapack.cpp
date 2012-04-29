@@ -10,13 +10,12 @@
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/dense_matrix_algorithms.h"
 #include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/algorithms/algorithms.hpp"
+#include "types/dense_matrix/algorithms.hpp"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
 #include "types/dense_matrix/aligned_allocator.h"
 
-#include "types/utils/matrix_cast.h"
+#include "types/utils/bindings.hpp"
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)

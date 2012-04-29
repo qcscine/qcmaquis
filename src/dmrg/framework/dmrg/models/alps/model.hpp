@@ -9,9 +9,8 @@
 #ifndef APP_ALPS_MODEL_H
 #define APP_ALPS_MODEL_H
 
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/dense_matrix_algorithms.h"
-#include "types/dense_matrix/algorithms.hpp"
+//#include "types/dense_matrix/matrix_interface.hpp"
+//#include "types/dense_matrix/algorithms.hpp"
 
 #include "dmrg/models/model.h"
 

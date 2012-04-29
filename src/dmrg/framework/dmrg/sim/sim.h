@@ -21,17 +21,17 @@
 
 #include "utils/data_collector.hpp"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
+//#include "types/dense_matrix/dense_matrix.h"
+//#include "types/dense_matrix/matrix_interface.hpp"
+//#include "types/dense_matrix/resizable_matrix_interface.hpp"
+//#include "types/dense_matrix/algorithms.hpp"
+//#include "types/dense_matrix/matrix_algorithms.hpp"
+//#include "types/dense_matrix/dense_matrix_blas.hpp"
+//#include "types/dense_matrix/aligned_allocator.h"
 
-#ifdef USE_MTM
-#include "types/mt_matrix/algorithms.hpp"
-#endif
+//#ifdef USE_MTM
+//#include "types/mt_matrix/algorithms.hpp"
+//#endif
 
 #ifdef USE_GPU
 #include <cublas.h>

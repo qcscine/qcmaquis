@@ -7,7 +7,7 @@
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
 #include "types/dense_matrix/matrix_algorithms.hpp"
 #include "types/dense_matrix/diagonal_matrix.h"
-#include "types/dense_matrix/dense_matrix_algorithms.h"
+#include "types/dense_matrix/algorithms.hpp"
 typedef maquis::types::dense_matrix<double> Matrix;
 typedef maquis::types::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
 

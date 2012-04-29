@@ -2,6 +2,10 @@
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 enable_omp_if_found()
 
+if(USE_AMBIENT)
+  compile_with_ambient()
+endif(USE_AMBIENT)  
+
 get_symm_files(APPEND DMRG_MODELS_SOURCES "models/factory/factory_{SYMM}.cpp")
 
 if(ENABLE_ALPS_MODELS)
