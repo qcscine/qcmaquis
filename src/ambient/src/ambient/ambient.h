@@ -1,12 +1,14 @@
 #ifndef AMBIENT_HEADERS
 #define AMBIENT_HEADERS
+#ifndef AMBIENT
+#define AMBIENT
+#endif
 #include <mpi.h>
 #include <complex>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <assert.h>
-
 #include "ambient/channels/ichannel.h"
 #include "ambient/channels/groups/group.h"
 #include "ambient/channels/groups/multirank.h"
