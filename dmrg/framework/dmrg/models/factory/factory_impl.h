@@ -6,12 +6,15 @@
  *
  *****************************************************************************/
 
+#ifdef USE_AMBIENT
+#include "types/p_dense_matrix/p_dense_matrix.h"
+#endif
+
 #include <complex>
 #include <vector>
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/dense_matrix_algorithms.h"
 #include "types/dense_matrix/matrix_algorithms.hpp"
 #include "types/dense_matrix/algorithms.hpp"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
@@ -33,14 +36,20 @@
 #include <fstream>
 #include <boost/tokenizer.hpp>
 
-// BLAS Matrix
-typedef maquis::types::dense_matrix<double> matrix1;
-typedef maquis::types::dense_matrix<std::complex<double> > cmatrix1;
+// BLAS matrix
+typedef maquis::types::dense_matrix<double> matrix;
+typedef maquis::types::dense_matrix<std::complex<double> > cmatrix;
 
-// MT Matrix
+// MT matrix
 #ifdef USE_MTM
-typedef maquis::types::mt_matrix<double> mtmatrix1;
-typedef maquis::types::mt_matrix<std::complex<double> > cmtmatrix1;
+typedef maquis::types::mt_matrix<double> mtmatrix;
+typedef maquis::types::mt_matrix<std::complex<double> > cmtmatrix;
+#endif
+
+// parallel matrix
+#ifdef USE_AMBIENT
+typedef maquis::types::p_dense_matrix<double> pmatrix;
+typedef maquis::types::p_dense_matrix<std::complex<double> > cpmatrix;
 #endif
 
 // Definition of init function

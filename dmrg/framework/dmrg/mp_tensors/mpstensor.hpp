@@ -246,7 +246,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 
     scalar_type ret = 0;
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_[b], ret);
+        maquis::types::scalar_norm(data_[b], ret);
     timer.end();
     assert( ret == ret );
     assert( alps::numeric::real(ret) >= 0);
@@ -288,13 +288,13 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
-        detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_(c,c),
-                                                                         rhs.data_(c,c),
-                                                                         ret);
+        maquis::types::scalar_norm(data_(c,c),
+                                   rhs.data_(c,c),
+                                   ret);
     }
     
     // for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        // detail::iterable_matrix_impl<Matrix,SymmGroup>::scalar_norm_impl(data_[b],rhs.data_[b],ret);
+        // maquis::types::scalar_norm(data_[b],rhs.data_[b],ret);
 
     timer.end();
     return ret;

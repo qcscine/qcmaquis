@@ -132,8 +132,8 @@ namespace maquis { namespace types {
         }
 
 #ifdef HAVE_ALPS_HDF5
-        void load(alps::hdf5::archive & ar) { maquis::cerr << "I don't do much." << std::endl; }
-        void save(alps::hdf5::archive & ar) const { maquis::cerr << "I don't do much either." << std::endl; }
+//        void load(alps::hdf5::archive & ar) { maquis::cerr << "I don't do much." << std::endl; }
+//        void save(alps::hdf5::archive & ar) const { maquis::cerr << "I don't do much either." << std::endl; }
 #endif
         // }}}
     public:
@@ -196,12 +196,14 @@ namespace maquis { namespace types {
 
     template<typename T>
     struct associated_vector<p_dense_matrix<T> > {
-        typedef p_diagonal_matrix<T> type;
+        //typedef p_diagonal_matrix<T> type;
+        typedef std::vector<T> type;
     };
     
     template<typename T>
     struct associated_real_vector<p_dense_matrix<T> > {
-        typedef p_diagonal_matrix<typename detail::real_type<T>::type> type;
+        //typedef p_diagonal_matrix<typename detail::real_type<T>::type> type;
+        typedef std::vector<typename detail::real_type<T>::type> type;
     };
     // }}}
 

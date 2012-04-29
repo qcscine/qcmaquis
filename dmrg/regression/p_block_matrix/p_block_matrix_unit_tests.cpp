@@ -1,6 +1,5 @@
 #include <vector>
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
 #include "types/p_dense_matrix/concept/matrix_interface.hpp"
 #include "types/p_dense_matrix/concept/resizable_matrix_interface.hpp"
 

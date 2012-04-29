@@ -16,7 +16,7 @@
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
 
-#include "types/utils/matrix_cast.h"
+#include "types/utils/bindings.hpp"
 
 #include "utilities.h"
 

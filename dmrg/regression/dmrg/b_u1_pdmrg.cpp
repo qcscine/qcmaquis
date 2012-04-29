@@ -11,16 +11,11 @@ typedef ambient::dim2 dim;
 
 #include "dmrg/utils/utils.hpp"
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "types/p_dense_matrix/concept/matrix_interface.hpp"
-#include "types/p_dense_matrix/concept/resizable_matrix_interface.hpp"
-//#include "types/p_dense_matrix/p_dense_matrix_algorithms.hpp"
-#include "types/p_dense_matrix/algorithms.hpp"
 #include "types/p_dense_matrix/p_diagonal_matrix.h"
 
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/dense_matrix_algorithms.h"
 #include "types/dense_matrix/matrix_algorithms.hpp"
 #include "types/dense_matrix/algorithms.hpp"
 #include "types/dense_matrix/dense_matrix_blas.hpp"
@@ -42,8 +37,6 @@ typedef maquis::types::p_dense_matrix<double> Matrix;
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
-
-#include "types/p_dense_matrix/block_matrix_callbacks.hpp"
 
 #include "dmrg/utils/stream_storage.h"
 #include "dmrg/utils/logger.h"

@@ -7,11 +7,8 @@
  *****************************************************************************/
 
 #include "dmrg/utils/logger.h"
-
 #include "dmrg/mp_tensors/mps.h"
-
 #include "contractions.h"
-#include "dmrg/mp_tensors/detail/algorithms_impl.h"
 #include <boost/math/special_functions/binomial.hpp>
 
 template<class Matrix, class SymmGroup>
@@ -155,7 +152,7 @@ MPS<Matrix, SymmGroup>::left_boundary() const
 //        ret(0,*it,*it) = 1;
 
    for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
-       detail::iterable_matrix_impl<Matrix, SymmGroup>::left_right_boundary_init_impl(ret[0][k]);       
+       maquis::types::left_right_boundary_init(ret[0][k]);
 
     return ret;
 }
@@ -172,8 +169,8 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 //        ret(0,*it,*it) = 1;
 
     for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
-        detail::iterable_matrix_impl<Matrix, SymmGroup>::left_right_boundary_init_impl(ret[0][k]);       
-    
+        maquis::types::left_right_boundary_init(ret[0][k]);
+
     return ret;
 }
 
