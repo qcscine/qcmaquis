@@ -17,6 +17,9 @@ namespace vli
     template<typename BaseInt, std::size_t Size>
     void add(BaseInt * x, BaseInt const* y); 
 
+    template<typename BaseInt, std::size_t Size1, std::size_t Size2>
+    void add(BaseInt * x, BaseInt const* y, BaseInt const* z); 
+
     //substraction
     template<typename BaseInt, std::size_t Size>
     void sub(BaseInt * x, BaseInt const b);
@@ -42,6 +45,11 @@ namespace vli
         add<BaseInt,Size>(&vli_a[0],b);
     }
     
+    template <class BaseInt, std::size_t Size1, std::size_t Size2>
+    void addition_extension(vli_cpu<BaseInt,Size2> & vli_a, vli_cpu<BaseInt,Size1> const& vli_b, vli_cpu<BaseInt,Size1> const& vli_c){
+        add<BaseInt, Size1, Size2>(&vli_a[0],&vli_b[0],&vli_c[0]);
+    }
+
     template <class BaseInt, std::size_t Size>
     void minus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b ){
         sub<BaseInt,Size>(&vli_a[0],&vli_b[0]);
@@ -94,7 +102,15 @@ namespace vli
 
     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
     #undef FUNCTION_add_nbits_64bits
+    // specialization extention addition 
+    #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
+        template<> \
+        void add<unsigned long int,BOOST_PP_ADD(n,1),BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
+        detail::NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(x,y,w); \
+        }; \
 
+    BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
+    #undef FUNCTION_add_nbits_mninus1bits
     /* ---------------------------------------------------- End Addition specialization ---------------------------------------------------- */
 
     /* ---------------------------------------------------- Begin Substraction specialization ---------------------------------------------------- */

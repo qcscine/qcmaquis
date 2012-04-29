@@ -45,8 +45,8 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 
-typedef vli::polynomial_cpu< vli_type_cpu, Order > polynomial_type_cpu;
-typedef vli::polynomial_cpu< vli_result_type_cpu, 2*Order > polynomial_result_type_cpu;
+typedef vli::polynomial< vli_type_cpu, Order > polynomial_type_cpu;
+typedef vli::polynomial< vli_result_type_cpu, 2*Order > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
 
@@ -83,9 +83,24 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
+ vli_cpu< unsigned long int, 4> c;
+ vli_type_cpu a,b,d;
+a[0]=0xffffffffffffffff;
+a[1]=0xffffffffffffffff;
+a[2]=0xffffffffffffffff;
+b[0]=1;
+std::cout << std::hex  << a << std::endl;
+std::cout << std::hex  << b << std::endl;
+std::cout << std::hex  << c << std::endl;
+d = a + b;
+vli::addition_extension<unsigned long int, 3 ,4> (c,b,a);
+std::cout << std::hex  << c << std::endl;
+std::cout << std::hex  << d << std::endl;
 
-int SizeVector = atoi(argv[1]); 
-     
+//c = a +b;
+
+//int SizeVector = atoi(argv[1]); 
+/*     
  polynomial_vector_type v1gmp(SizeVector);
  polynomial_vector_type v2gmp(SizeVector);
  polynomial_type pgmp;
@@ -106,15 +121,15 @@ int SizeVector = atoi(argv[1]);
     fill_vector_random(v1,2);
     fill_vector_random(v2,2);
 
-    fill_vector_negate(v1,2);
-    fill_vector_negate(v2,3);
+//    fill_vector_negate(v1,2);
+//    fill_vector_negate(v2,3);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
 
     Timer t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t1.end();
 
     Timer t2("CPU gmp_omp");
@@ -135,7 +150,7 @@ int SizeVector = atoi(argv[1]);
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
- 
+*/
     return 0;
 }
 

@@ -27,6 +27,7 @@
 //The pp is limited to 256 for arithmetic therefore I calculated intermediate value, close your eyes
 //Addition
 #define add2x64_2x64 add128_128
+#define add2x64_2x64 add128_128
 #define add3x64_3x64 add192_192
 #define add4x64_4x64 add256_256
 #define add5x64_5x64 add320_320
@@ -103,7 +104,8 @@
 #define PPS(m,n)    BOOST_PP_STRINGIZE(BOOST_PP_MUL(BOOST_PP_MUL(m,n),8)) // m*n*8, 8 because long int, if one day SoA today AoS
 
 // move ASM operator to get the data from the mem
-#define LOAD_register(z, n, unused) "movq "PPS(AOS,n)"(%%rdi)                 ,"R(n)"                 \n" /* load 0x??(%%rdi) */     
+#define LOAD_register(z, n, unused)     "movq "PPS(AOS,n)"(%%rdi)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
+#define LOAD_register_rdx(z, n, unused) "movq "PPS(AOS,n)"(%%rdx)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
 // addition ASM operators
 #define  ADC_register(z, n, unused) "adcq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rsi) ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
 #define ADC0_register(z, n, unused) "adcq $0x0                                ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
