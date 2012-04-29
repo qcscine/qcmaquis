@@ -414,8 +414,8 @@ namespace ambient {
             ar[k] = ad[k] + (-1)*bd[k];
     }
 
-    template<typename T, typename T2>
-    void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& m, const T2& t){
+    template<typename T>
+    void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& m, const double& t){
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* md = current(m)(i, j);
