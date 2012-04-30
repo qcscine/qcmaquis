@@ -91,7 +91,7 @@ namespace maquis{ namespace traits{
     template <typename T>
     struct binding< std::vector<T>, maquis::types::p_diagonal_matrix<T> > {
         static std::vector<T> convert(const maquis::types::p_diagonal_matrix<T>& pm){
-            return binding<maquis::types::diagonal_matrix<T>, maquis::types::p_diagonal_matrix<T> >::convert(pm).get_value();
+            return binding<maquis::types::diagonal_matrix<T>, maquis::types::p_diagonal_matrix<T> >::convert(pm).get_values();
         }
     };
 

@@ -94,7 +94,7 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    scalar_type p_dense_matrix_impl<T>::trace() {
+    scalar_type p_dense_matrix_impl<T>::trace() const {
         return algorithms::trace(*this);
     }
 

@@ -197,7 +197,7 @@ template<class Matrix, class SymmGroup>
 template<class Generator>
 void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 {
-    for(std::size_t k = 0; k < n_blocks(); ++k) maquis::types::algorithms::generate(data_[k], g);
+    for(std::size_t k = 0; k < n_blocks(); ++k) maquis::types::generate(data_[k], g);
 }
 
 template<class Matrix, class SymmGroup>

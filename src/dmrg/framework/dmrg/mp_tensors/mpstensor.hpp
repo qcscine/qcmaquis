@@ -244,7 +244,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 //    pgemm(conjugate_transpose(data_), data_, t);
 //    real_type r = sqrt(trace(t));
 
-    scalar_type ret = 0;
+    scalar_type ret(0);
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
         maquis::types::scalar_norm(data_[b], ret);
     timer.end();

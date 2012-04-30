@@ -13,6 +13,7 @@ namespace maquis { namespace types {
         typedef typename maquis::types::p_dense_matrix<T> container;
         typedef typename container::difference_type difference_type;
         typedef typename container::value_type value_type;
+        typedef typename container::scalar_type scalar_type;
         typedef typename container::size_type size_type;
         //typedef T&                                  reference;
         //typedef const T&                            const_reference;

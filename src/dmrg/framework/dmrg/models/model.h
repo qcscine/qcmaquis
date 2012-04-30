@@ -9,6 +9,10 @@
 #ifndef MAQUIS_DMRG_MODELS_MODELS_H
 #define MAQUIS_DMRG_MODELS_MODELS_H
 
+#ifdef USE_AMBIENT
+#include "types/p_dense_matrix/p_dense_matrix.h"
+#endif
+
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/hamiltonian.h"
 #include "dmrg/models/measurements.h"

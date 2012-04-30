@@ -19,6 +19,7 @@ namespace maquis {
     {
     public:
         typedef T                       value_type;
+        typedef T                       scalar_type;
         typedef T&                      reference;
         typedef T const&                const_reference;
         typedef std::size_t             size_type;
