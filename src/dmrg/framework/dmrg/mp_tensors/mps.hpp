@@ -57,7 +57,7 @@ MPS<Matrix, SymmGroup>::canonize_left()
         t = (*this)[i].normalize_left(SVD);
         if(i < length()-1) {
             (*this)[i+1].multiply_from_left(t);
-            (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm());
+            (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm()); // may playout here
         }
     }
     return trace(t);
@@ -72,7 +72,7 @@ MPS<Matrix, SymmGroup>::canonize_right()
         t = (*this)[i].normalize_right(SVD);
         if (i > 0) {
             (*this)[i-1].multiply_from_right(t);
-            (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm());
+            (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm()); // may playout
         }
     }
     return trace(t);
@@ -97,14 +97,14 @@ void MPS<Matrix, SymmGroup>::canonize(std::size_t center)
     {
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(SVD);
         (*this)[i+1].multiply_from_left(t);
-        (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm());
+        (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm()); // may playout
     }
     
     for (int i = length()-1; i > center; --i)
     {
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
         (*this)[i-1].multiply_from_right(t);
-        (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm());
+        (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm()); // may playout
     }
 }
 

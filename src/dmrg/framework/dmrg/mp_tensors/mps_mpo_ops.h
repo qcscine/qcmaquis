@@ -89,9 +89,9 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    std::vector<typename Matrix::value_type> traces = left.traces();
+    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> traces = left.traces(); // overkill
     assert( check_real(traces[0]) );
-    return alps::numeric::real(traces[0]);
+    return alps::numeric::real(traces[0]); // real function for future
 }
 
 template<class Matrix, class SymmGroup>
@@ -112,7 +112,7 @@ std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
 }
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type norm(MPS<Matrix, SymmGroup> const & mps)
+typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const & mps)
 {
     std::size_t L = mps.length();
     
@@ -121,15 +121,15 @@ typename Matrix::value_type norm(MPS<Matrix, SymmGroup> const & mps)
     
     for (int i = 0; i < L; ++i) {
         MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-        left = contraction::overlap_left_step(mps[i], cpy, left);
+        left = contraction::overlap_left_step(mps[i], cpy, left); // serial
     }
     
     return trace(left);
 }
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type overlap(MPS<Matrix, SymmGroup> const & mps1,
-                                    MPS<Matrix, SymmGroup> const & mps2)
+typename MPS<Matrix, SymmGroup>::scalar_type overlap(MPS<Matrix, SymmGroup> const & mps1,
+                                                     MPS<Matrix, SymmGroup> const & mps2)
 {
     assert(mps1.length() == mps2.length());
     
@@ -147,7 +147,7 @@ typename Matrix::value_type overlap(MPS<Matrix, SymmGroup> const & mps1,
 
 template<class Matrix, class SymmGroup>
 std::vector<double>
-calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n)
+calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be optimized later
 {
     std::size_t L = mps.length();
     std::vector<double> ret;

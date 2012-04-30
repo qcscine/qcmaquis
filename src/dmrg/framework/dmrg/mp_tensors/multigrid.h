@@ -380,7 +380,7 @@ struct multigrid {
             assert( mps_large[2*p+1].num_check() );
             
             // Normalizing the MPS
-            mps_large[2*p+1].multiply_by_scalar(1./mps_large[2*p+1].scalar_norm());
+            mps_large[2*p+1].multiply_by_scalar(1./mps_large[2*p+1].scalar_norm()); // that may playout
             assert( mps_large[2*p].num_check() );
             assert( mps_large[2*p+1].num_check() );
             t_norm = mps_large[2*p+1].normalize_right(SVD);
