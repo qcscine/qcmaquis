@@ -28,7 +28,6 @@ private:
 public:
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
-    typedef typename Matrix::scalar_type scalar_type;
     
     block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(),
                  Index<SymmGroup> cols = Index<SymmGroup>());

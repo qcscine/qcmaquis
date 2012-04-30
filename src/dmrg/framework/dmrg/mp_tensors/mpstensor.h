@@ -27,7 +27,7 @@ template<class Matrix, class SymmGroup>
 class MPSTensor
 {
 public:
-    typedef typename Matrix::scalar_type scalar_type;
+    typedef typename Matrix::value_type scalar_type;
     typedef typename Matrix::value_type value_type;
     typedef double real_type;
     typedef double magnitude_type;

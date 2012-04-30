@@ -20,7 +20,7 @@ template<class Matrix, class SymmGroup>
 class Boundary
 {
 public:
-    typedef typename Matrix::scalar_type scalar_type;
+    typedef typename Matrix::value_type scalar_type;
     typedef typename Matrix::value_type value_type;
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
     
@@ -93,7 +93,7 @@ class MPOTensor
     typedef std::set<std::size_t> used_set_t;
     
 public:
-    typedef typename Matrix::scalar_type scalar_type;
+    typedef typename Matrix::value_type scalar_type;
     typedef double real_type;
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
     

@@ -94,7 +94,7 @@ namespace maquis {
         }
          
         template <typename T>
-        void scalar_norm(const dense_matrix<T>& M, typename dense_matrix<T>::scalar_type& ret){
+        void scalar_norm(const dense_matrix<T>& M, typename dense_matrix<T>::value_type& ret){
             using utils::conj; 
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
@@ -102,7 +102,7 @@ namespace maquis {
         }
         
         template <typename T>
-        void scalar_norm(dense_matrix<T> & M1, dense_matrix<T> & M2, typename dense_matrix<T>::scalar_type & ret){ // not const due to nullcut
+        void scalar_norm(dense_matrix<T> & M1, dense_matrix<T> & M2, typename dense_matrix<T>::value_type & ret){ // not const due to nullcut
             using utils::conj; 
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
