@@ -83,21 +83,26 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
+ vli_cpu< unsigned long int, 2> a,b;
  vli_cpu< unsigned long int, 4> c;
- vli_type_cpu a,b,d;
-a[0]=0xffffffffffffffff;
-a[1]=0xffffffffffffffff;
-a[2]=0xffffffffffffffff;
-b[0]=1;
-std::cout << std::hex  << a << std::endl;
-std::cout << std::hex  << b << std::endl;
-std::cout << std::hex  << c << std::endl;
-d = a + b;
-vli::addition_extension<unsigned long int, 3 ,4> (c,b,a);
-std::cout << std::hex  << c << std::endl;
-std::cout << std::hex  << d << std::endl;
 
-//c = a +b;
+ a[0]=0xffffffffffffffff;
+ a[1]=0xfffffffffffffff;
+ b[0]=0xffffffffffffffff;
+
+ vli_type_cpu d,e;
+ vli_result_type_cpu r;
+ d[0]=0xffffffffffffffff;
+ d[1]=0xfffffffffffffff;
+ e[0]=0xffffffffffffffff;
+
+vli::detail::mul256_128_128(&c[0],&a[0],&b[0]);
+vli::detail::mul384_192_192(&r[0],&d[0],&e[0]);
+
+ std::cout << std::hex  << c << std::endl;
+ std::cout << std::hex  << r << std::endl;
+
+
 
 //int SizeVector = atoi(argv[1]); 
 /*     

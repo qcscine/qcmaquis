@@ -70,6 +70,8 @@ namespace vli{
         #undef FUNCTION_mul_nbits_nbits
 
         void mul384_192_192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 192*192 = 384
+        void mul256_128_128(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 192*192 = 384
+        void mul128_64_64(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 192*192 = 384
         void muladd384_192_192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 384 += 192*192
     }
 }

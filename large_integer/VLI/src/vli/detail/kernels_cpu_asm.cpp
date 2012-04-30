@@ -36,6 +36,107 @@ namespace vli{
 // the stack pointer (the frame pointer is removed under x86-64)
 // the red zone is a zone of 128 bytes, enough for my arithmetic        
 //
+
+
+void mul128_64_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+   asm( 
+       "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
+       "movq %%rdx            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
+       "imulq (%%rcx)                            \n" /* lo rax, hi rdx   a0*b0 */        
+       "movq %%rax            ,(%%rdi)           \n" /* lo part save */
+       "movq %%rdx            ,8(%%rdi)          \n" /* hi part sve */
+       : : :"rax","rdx","rcx","memory"
+       );
+}
+
+void mul256_128_128(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+   asm( 
+/*-01*/ "subq $0x20            ,%%rsp             \n" /* create stack frame */            
+/*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
+/*01*/  "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   
+/*02*/  "xorq %%r11            ,%%r11             \n" /* r11 = 0 due to carry effect */   
+/*03*/  "xorq %%r14            ,%%r14             \n" /* r13 = 0 it is the sign 0+ 1-*/   \
+/*03*/  "xorq %%r15            ,%%r15             \n" /* r13 = 0 it is the sign 0+ 1-*/   \
+/* negate a if negative and store into stack, in reverse order due to universal access */ 
+/*04*/  "movq 8(%%rsi)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
+/*05*/  "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
+/*06*/  "jns _Negativea_256_128_                  \n" /* number is negative, we negate */ 
+/*07*/  "movq (%%rsi)          ,%%r8              \n" /* load a0 */                       
+/*09*/  "notq %%r8                                \n" /* C2M, ~a0 */                      
+/*11*/  "notq %%rax                               \n" /* C2M, ~a1 */                      
+/*12*/  "addq $0x1             ,%%r8              \n" /* C2M, ~a0+1 */                    
+/*14*/  "adcq $0x0             ,%%rax             \n" /* C2M, ~a1+CB */                   
+/*16*/  "movq %%r8             ,-0x10(%%rsp)      \n" /* a0 into the stack -16 rsp */     
+/*17*/  "movq %%rax            ,-0x08(%%rsp)      \n" /* a1 into the stack -8 rsp */      
+/*18*/  "leaq  -0x10(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    
+/*19*/  "movq $1               ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   
+/*20*/  "_Negativea_256_128_ :                    \n" /* end if structure */              
+/* negate a if negative and store into stack, in reverse order due to universal access */ 
+/*04*/  "movq 8(%%rbx)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
+/*05*/  "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
+/*06*/  "jns _Negativeb_256_128_                  \n" /* number is negative, we negate */ 
+/*07*/  "movq (%%rbx)          ,%%r8              \n" /* load b0 */                       
+/*09*/  "notq %%r8                                \n" /* C2M, ~b0 */                      
+/*11*/  "notq %%rax                               \n" /* C2M, ~b1 */                      
+/*12*/  "addq $0x1             ,%%r8              \n" /* C2M, ~b0+1 */                    
+/*14*/  "adcq $0x0             ,%%rax             \n" /* C2M, ~b1+CB */                   
+/*16*/  "movq %%r8             ,-0x20(%%rsp)      \n" /* b0 into the stack -16 rsp */     
+/*17*/  "movq %%rax            ,-0x18(%%rsp)      \n" /* b1 into the stack -8 rsp */      
+/*18*/  "leaq  -0x20(%%rsp)    ,%%rsi             \n" /* rsi points to stack b0 > 0 */    
+/*19*/  "movq $1               ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   
+/*20*/  "_Negativeb_256_128_ :                    \n" /* end if structure */              
+/* --------------------------- a0 * b0, a0 * b1 start ------------------------*/ 
+/*39*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
+/*40*/  "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
+/*41*/  "mulq (%%rbx)                             \n" /* lo rax, hi rdx   a0*b0 */        
+/*42*/  "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */  
+/*43*/  "movq %%rdx            ,%%r9              \n" /* a0b0hi into r8 */                
+/*44*/  "movq %%rcx            ,%%rax             \n" /* reload rax(a0) from the stack */ 
+/*45*/  "mulq 8(%%rbx)                            \n" /* a0 * b1 */                       
+/*46*/  "addq %%rax            ,%%r9              \n" /* add a0b0hi + a0b1lo */           
+/*47*/  "adcq %%rdx            ,%%r10             \n" /* save the a0b1hi into r9 */       
+/* --------------------------- a0 * b0, a0 * b1 end --------------------------*/ 
+/* --------------------------- a1 * b0, a1 * b1 start ------------------------*/ 
+/*52*/  "movq 8(%%rsi)         ,%%rax             \n" /* a1 into rax */                   
+/*53*/  "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
+/*54*/  "mulq (%%rbx)                             \n" /* a1 * b0 */                       
+/*55*/  "addq %%rax            ,%%r9              \n" /* l46 + a1b0lo */                  
+/*56*/  "adcq %%rdx            ,%%r10             \n" /* l47 + a1b0hi + c */              
+/*57*/  "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq */ 
+/*58*/  "movq %%rcx            ,%%rax             \n" /* reload rax(a1) from the stack */ 
+/*63*/  "mulq 8(%%rbx)                            \n" /* a1*b1 */                         
+/*64*/  "addq %%rax            ,%%r10             \n" /* a1b2lo to r9 */                  
+/*65*/  "adcq %%rdx            ,%%r11             \n" /* a1b2hi + c  */                   
+/* --------------------------- a1 * b0, a1 * b1 end --------------------------*/ 
+/*81*/  "xorq %%r14            ,%%r15             \n"                                     
+/*82*/  "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             
+/*83*/  "je _IsNegativeResult_256_128_            \n" /* not equal ZF = 0, negate*/       
+/*84*/  "notq %%r8                                \n" /* start2ComplementMethod negate */ 
+/*85*/  "notq %%r9                                \n" /* 2CM negate */                    
+/*86*/  "notq %%r10                               \n" /* 2CM negate */                    
+/*87*/  "notq %%r11                               \n" /* 2CM negate */                    
+/*90*/  "addq $0x1             ,%%r8              \n" /* 2CM add 1 */                     
+/*91*/  "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */              
+/*92*/  "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */              
+/*93*/  "adcq $0x0             ,%%r11             \n" /* 2CM propagate CB */              
+/*96*/  "_IsNegativeResult_256_128_ :             \n" /* end if negative result */        
+/*97*/  "movq %%r8             ,(%%rdi)           \n" /* r8 -> c1 */                      
+/*98*/  "movq %%r9             ,8(%%rdi)          \n" /* r9 -> c1 */                      
+/*99*/  "movq %%r10            ,16(%%rdi)         \n" /* r10 -> c2 */                     
+/*100*/ "movq %%r11            ,24(%%rdi)         \n" /* r11 -> c3 */                     
+/*103*/ "addq $0x20            ,%%rsp             \n" /* destroy stack frame */           
+        : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r14","r15","memory"   
+       );
+}
+
+
+//void mul512_256_256(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+//   asm( 
+//
+//        : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r14","r15","memory"   
+//   ); 
+//}
+
 #define HELPER_ASM_MUL384_192_192(n) \
 void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){ \
    asm( \
