@@ -99,8 +99,8 @@ std::vector<Hamiltonian<Matrix, SymmGroup> > separate_overlaps (Hamiltonian<Matr
 }
 
 // Precondition: Hamiltonian has to be sorted with bond terms coming before site terms (default behaviour of Operator_Term::operator<())
-template <class Matrix, class SymmGroup>
-std::map<std::size_t, block_matrix<Matrix, SymmGroup> > make_exp_nn (Hamiltonian<Matrix, SymmGroup> const & H, typename Matrix::value_type const & alpha = 1)
+template <class Matrix, class SymmGroup>                                                                                                // (todo: 30.04.12 / Matthias scalar/value types discussion)
+std::map<std::size_t, block_matrix<Matrix, SymmGroup> > make_exp_nn (Hamiltonian<Matrix, SymmGroup> const & H, typename Matrix::value_type const & alpha = 1.) // type of the time step // template
 {
     typedef Hamiltonian<Matrix, SymmGroup> ham;
     
@@ -189,7 +189,7 @@ public:
 
     }
     
-    inline MPO<Matrix, SymmGroup> get_exp_mpo(typename Matrix::value_type const & alpha = 1) const
+    inline MPO<Matrix, SymmGroup> get_exp_mpo(typename Matrix::value_type const & alpha = 1.) const
     {
         if (simple)
             return get_simple_mpo(alpha);
