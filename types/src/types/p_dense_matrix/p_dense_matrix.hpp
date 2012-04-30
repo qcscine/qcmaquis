@@ -4,7 +4,6 @@ namespace maquis { namespace types {
 
     #define size_type   typename p_dense_matrix_impl<T>::size_type
     #define value_type  typename p_dense_matrix_impl<T>::value_type
-    #define scalar_type typename p_dense_matrix_impl<T>::scalar_type
 
     template <typename T>
     p_dense_matrix_impl<T>::~p_dense_matrix_impl(){ } // #destructor // 
@@ -127,7 +126,6 @@ namespace maquis { namespace types {
 
     #undef size_type
     #undef value_type
-    #undef scalar_type
 
 } } // namespace maquis::types
 

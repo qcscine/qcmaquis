@@ -6,7 +6,6 @@
 #include "types/p_dense_matrix/kernels/c_kernels.hpp"
 
 #define size_type       typename p_dense_matrix<T>::size_type
-#define scalar_type     typename p_dense_matrix<T>::scalar_type
 #define difference_type typename p_dense_matrix<T>::difference_type
 
 namespace maquis { namespace types {
@@ -417,6 +416,5 @@ namespace algorithms {
 } } // namespace maquis::types
 
 #undef size_type
-#undef scalar_type 
 #undef difference_type 
 #endif

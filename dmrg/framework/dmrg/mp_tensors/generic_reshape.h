@@ -64,7 +64,7 @@ void reshape(MultiIndex<SymmGroup> const & midx,
         bool empty = true;
         for (int i=0; i<num_rows(m2[n]) && empty; ++i)
             for (int j=0; j<num_cols(m2[n]) && empty; ++j)
-                if (m2[n](i,j) != typename Matrix::value_type(0))
+                if (m2[n](i,j) != 0)
                     empty=false;
         
         if (empty)
