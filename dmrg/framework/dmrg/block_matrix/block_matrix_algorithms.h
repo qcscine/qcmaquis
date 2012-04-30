@@ -118,7 +118,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 #pragma omp parallel for schedule(dynamic)
 #endif
     for (std::size_t k = 0; k < loop_max; ++k)
-        maquis::types::algorithms::svd(M[k], U[k], V[k], S[k]);
+        maquis::types::svd(M[k], U[k], V[k], S[k]);
     
     timer.end();
 }
@@ -138,7 +138,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
 #pragma omp parallel for schedule(dynamic)
 #endif
     for(std::size_t k = 0; k < loop_max; ++k)
-        maquis::types::algorithms::heev(M[k], evecs[k], evals[k]);
+        maquis::types::heev(M[k], evecs[k], evals[k]);
 
     timer.end();
 }
@@ -193,41 +193,42 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
             evals_k.push_back(alps::numeric::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     }
-    /* working:
+    /* original version:
 
-            size_t length = 0;
-            for(std::size_t k = 0; k < evals.n_blocks(); ++k){ 
-                length += num_rows(evals[k]);
-            }
+    size_t length = 0;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){ 
+        length += num_rows(evals[k]);
+    }
 
-            std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type > allevals(length);
+    std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type > allevals(length);
 
-            std::size_t position = 0;
-            for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-                std::transform(evals[k].elements().first, evals[k].elements().second, allevals.begin()+position, gather_real_pred<typename DiagMatrix::value_type>);
-                position += num_rows(evals[k]);
-            }
+    std::size_t position = 0;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        std::transform(evals[k].elements().first, evals[k].elements().second, allevals.begin()+position, gather_real_pred<typename DiagMatrix::value_type>);
+        position += num_rows(evals[k]);
+    }
 
-            assert( allevals.size() > 0 );
-            std::sort(allevals.begin(), allevals.end());
-            std::reverse(allevals.begin(), allevals.end());
+    assert( allevals.size() > 0 );
+    std::sort(allevals.begin(), allevals.end());
+    std::reverse(allevals.begin(), allevals.end());
 
-            double evalscut = cutoff * allevals[0];
+    double evalscut = cutoff * allevals[0];
 
-            if (allevals.size() > Mmax)
-                evalscut = std::max(evalscut, allevals[Mmax]);
-            smallest_ev = evalscut / allevals[0];
-           
-            truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
-            truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
-           
-            for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-                std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type> evals_k;
-                for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
-                    evals_k.push_back(alps::numeric::real(*it));
-                keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
-            }
-            */
+    if (allevals.size() > Mmax)
+        evalscut = std::max(evalscut, allevals[Mmax]);
+    smallest_ev = evalscut / allevals[0];
+    
+    truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
+    truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
+    
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type> evals_k;
+        for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
+            evals_k.push_back(alps::numeric::real(*it));
+        keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
+    }
+
+    */
 }
 
 
@@ -369,7 +370,7 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
     R = block_matrix<Matrix, SymmGroup>(n,n);
     
     for (std::size_t k = 0; k < M.n_blocks(); ++k)
-        maquis::types::algorithms::qr(M[k], Q[k], R[k]);
+        maquis::types::qr(M[k], Q[k], R[k]);
 }
 
 template<class Matrix, class SymmGroup>
@@ -458,7 +459,7 @@ block_matrix<Matrix, SymmGroup> op_exp (Index<SymmGroup> const & phys,
 {
     for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
         if (M.has_block(it_c->first, it_c->first))
-            M(it_c->first, it_c->first) = maquis::types::algorithms::exp(M(it_c->first, it_c->first), alpha);
+            M(it_c->first, it_c->first) = maquis::types::exp(M(it_c->first, it_c->first), alpha);
         else
             M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
                            it_c->first, it_c->first);

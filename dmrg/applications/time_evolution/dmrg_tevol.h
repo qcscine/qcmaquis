@@ -11,7 +11,8 @@
 
 #if defined USE_AMBIENT
     #include "types/p_dense_matrix/p_dense_matrix.h"
-    typedef maquis::types::p_dense_matrix<dmrg_value_type> matrix;
+    typedef maquis::types::p_dense_matrix<double> matrix;
+    typedef maquis::types::p_dense_matrix<std::complex<double> > cmatrix;
 #elif defined USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
     typedef maquis::types::mt_matrix<double> matrix;

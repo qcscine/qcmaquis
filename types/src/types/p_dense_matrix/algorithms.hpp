@@ -55,14 +55,12 @@ namespace maquis { namespace types {
      
     template <typename T>
     void scalar_norm(const p_dense_matrix<T>& M, scalar_type& ret){
-        M.nullcut(); // not counting redunant elements of workgroup
         ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, M, ret);
         ambient::playout(); // execution weight: 452
     }
 
     template <typename T>
-    void scalar_norm(p_dense_matrix<T> & M1, p_dense_matrix<T> & M2, scalar_type & ret){ // not const due to nullcut
-        M1.nullcut(); // not counting redunant elements of workgroup
+    void scalar_norm(p_dense_matrix<T> & M1, p_dense_matrix<T> & M2, scalar_type & ret){
         ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, M1, M2, ret);
         ambient::playout(); // execution weight: 452
     }
@@ -139,7 +137,7 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    scalar_type trace(p_dense_matrix<T>& m){
+    scalar_type trace(const p_dense_matrix<T>& m){
         return m.trace();
     }
 
@@ -383,7 +381,7 @@ namespace algorithms {
     }
 
     template <typename T>
-    scalar_type trace(p_dense_matrix_impl<T>& m) {
+    scalar_type trace(const p_dense_matrix_impl<T>& m) {
         scalar_type trace;
         ambient::push(ambient::trace_l<T>, ambient::trace_c<T>, m, trace);
         return trace;

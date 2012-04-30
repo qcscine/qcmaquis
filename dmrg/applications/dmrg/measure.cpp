@@ -1,3 +1,5 @@
+#include "measure.h"
+
 #include <cmath>
 #include <iterator>
 #include <iostream>
@@ -5,7 +7,6 @@
 #include <sys/stat.h>
 
 #include "dmrg/utils/DmrgParameters2.h"
-#include "measure.h"
 
 
 // factory

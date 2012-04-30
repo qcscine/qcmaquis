@@ -126,9 +126,6 @@ namespace maquis {
             for_each(elements(M).first,elements(M).second, boost::lambda::_1 = 1); // boost::lambda ^^' because iterable matrix concept 
         }
 
-
-        namespace algorithms {
-      
         namespace detail {
             template<typename T> struct sv_type { typedef T type; };
             template<typename T>
@@ -250,9 +247,8 @@ namespace maquis {
         /*
         * Some block_matrix algorithms necessitate nested specialization due to ambient scheduler
         * the algos are full rewritten or partly with subset specialization 
-        * an alternative implementation is presented inside p_dense_matrix/algorithms/algorithms.hpp
+        * an alternative implementation is presented inside p_dense_matrix/algorithms.hpp
         */
-        } // end namespace algorithms
     } // end namspace types
 } //end namespace maquis
 

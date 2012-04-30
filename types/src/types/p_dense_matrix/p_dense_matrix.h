@@ -53,7 +53,7 @@ namespace maquis { namespace types {
             return this->impl->get(i,j);
         }
 
-        scalar_type trace(){
+        scalar_type trace() const {
             return this->impl->trace();
         }
 
@@ -157,7 +157,7 @@ namespace maquis { namespace types {
         p_dense_matrix_impl(size_type rows, size_type cols, T init_value);
         p_dense_matrix_impl(p_dense_matrix_impl const& m);
         value_type& get(size_type i, size_type j);
-        scalar_type trace();
+        scalar_type trace() const;
   
         void conjugate();
         void transpose();
