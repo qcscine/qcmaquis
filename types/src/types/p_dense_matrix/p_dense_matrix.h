@@ -18,6 +18,7 @@ namespace maquis { namespace types {
         typedef p_dense_matrix_impl<T> I;
         typedef typename I::ptr ptr;
         typedef typename I::value_type value_type;
+        typedef typename I::scalar_type scalar_type;
         typedef typename I::size_type size_type; 
         typedef typename I::difference_type difference_type;
         // {{{ p_dense_matrix_impl forwarding
@@ -150,7 +151,7 @@ namespace maquis { namespace types {
         typedef size_t    size_type;       // Unsigned integer type that represents the dimensions of the matrix
         typedef ptrdiff_t difference_type; // Signed integer type to represent the distance of two elements in the memory
         typedef typename ambient::parallel_t< p_dense_matrix_impl<T> >::ptr ptr;
-        //typedef typename ambient::future<T> scalar_type;
+        typedef typename ambient::future<T> scalar_type;
 
        ~p_dense_matrix_impl();
         p_dense_matrix_impl(size_type rows, size_type cols, T init_value);
