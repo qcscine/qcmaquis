@@ -33,8 +33,8 @@ public:
 
     std::size_t aux_dim() const { return data_.size(); }
     
-    scalar_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); }
-    scalar_type const & operator()(std::size_t i, access_type j, access_type k) const { return data_[i](j, k); }
+    value_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); }
+    value_type const & operator()(std::size_t i, access_type j, access_type k) const { return data_[i](j, k); }
     
     friend struct contraction;
     
@@ -93,6 +93,7 @@ class MPOTensor
     typedef std::set<std::size_t> used_set_t;
     
 public:
+    typedef typename Matrix::value_type value_type;
     typedef typename Matrix::value_type scalar_type;
     typedef double real_type;
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
@@ -104,14 +105,14 @@ public:
     std::size_t row_dim() const;
     std::size_t col_dim() const;
     
-    scalar_type & operator()(std::size_t left_index,
-                             std::size_t right_index,
-                             access_type const & ket_index,
-                             access_type const & bra_index);
-    scalar_type const & operator()(std::size_t left_index,
-                                   std::size_t right_index,
-                                   access_type const & ket_index,
-                                   access_type const & bra_index) const;
+    value_type & operator()(std::size_t left_index,
+                            std::size_t right_index,
+                            access_type const & ket_index,
+                            access_type const & bra_index);
+    value_type const & operator()(std::size_t left_index,
+                                  std::size_t right_index,
+                                  access_type const & ket_index,
+                                  access_type const & bra_index) const;
     
     block_matrix<Matrix, SymmGroup> const & operator()(std::size_t left_index,
                                                        std::size_t right_index) const;
