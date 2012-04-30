@@ -65,7 +65,7 @@ struct contraction {
         gemm(t3, t2, t1);
         return transpose(t1);
     }
-    
+   /* 
     template<class Matrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
     site_hamil(MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -144,7 +144,6 @@ struct contraction {
                                 Matrix oblock(out_left_offset + physical_i[s2].second * left_i[l].second, right_i[r].second);
                                 oblock *= 0;
                                 
-                                /* optimize me */ 
                                 for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
                                     for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2) {
                                         typename Matrix::value_type wblock_t = wblock(ss1, ss2);
@@ -170,7 +169,7 @@ struct contraction {
 #endif
         
         return ret;
-    }
+    }*/
     
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed

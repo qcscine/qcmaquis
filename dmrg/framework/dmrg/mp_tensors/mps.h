@@ -22,6 +22,7 @@ class MPS : public std::vector<MPSTensor<Matrix, SymmGroup> >
 {
 public:
     typedef std::size_t size_t;
+    typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type;
 
     MPS() { }
     MPS(size_t L);  
@@ -65,8 +66,8 @@ public:
 #endif
     
 private:
-    typename Matrix::value_type canonize_left();
-    typename Matrix::value_type canonize_right();
+    scalar_type canonize_left();
+    scalar_type canonize_right();
     
 };
 

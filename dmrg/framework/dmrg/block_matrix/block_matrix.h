@@ -28,6 +28,7 @@ private:
 public:
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
+    typedef typename Matrix::value_type scalar_type;
     
     block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(),
                  Index<SymmGroup> cols = Index<SymmGroup>());
@@ -52,8 +53,8 @@ public:
                                     std::pair<charge, size_type> const & c) const;
     block_matrix &       operator+=(block_matrix const & rhs);
     block_matrix &       operator-=(block_matrix const & rhs);
-    block_matrix const & operator*=(value_type v);
-    block_matrix const & operator/=(value_type v);
+    block_matrix const & operator*=(scalar_type v);
+    block_matrix const & operator/=(scalar_type v);
 
     size_type n_blocks() const;
     bool has_block(charge r, charge c) const;
@@ -67,7 +68,7 @@ public:
     void remove_rows_from_block(size_type block, size_type r, size_type k = 1);
     void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
     
-    value_type trace() const;
+    scalar_type trace() const;
     void inplace_transpose();
     void inplace_conjugate();
     void clear();
@@ -117,7 +118,7 @@ private:
 
 #include "dmrg/block_matrix/block_matrix.hpp"
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> operator*(typename Matrix::value_type v,
+block_matrix<Matrix, SymmGroup> operator*(typename block_matrix<Matrix,SymmGroup>::scalar_type v,
                                           block_matrix<Matrix, SymmGroup> bm)
 {
     bm *= v;
@@ -126,7 +127,7 @@ block_matrix<Matrix, SymmGroup> operator*(typename Matrix::value_type v,
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
-                                          typename Matrix::value_type v)
+                                          typename block_matrix<Matrix,SymmGroup>::scalar_type v)
 {
     bm *= v;
     return bm;

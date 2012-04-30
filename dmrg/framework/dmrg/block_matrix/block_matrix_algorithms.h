@@ -155,7 +155,7 @@ template<class DiagMatrix, class SymmGroup>
 void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals, 
                          size_t Mmax, double cutoff, size_t* keeps, 
                          double & truncated_weight, double & smallest_ev)
-{
+{ // to be parallelized later (30.04.2012) 
     size_t length = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         length += num_rows(evals[k]);
@@ -396,7 +396,7 @@ block_matrix<Matrix, SymmGroup> conjugate_transpose(block_matrix<Matrix, SymmGro
 }
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type trace(block_matrix<Matrix, SymmGroup> const & m)
+typename block_matrix<Matrix, SymmGroup>::scalar_type trace(block_matrix<Matrix, SymmGroup> const & m)
 {
     return m.trace();
 }
@@ -455,7 +455,7 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 template <class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> op_exp (Index<SymmGroup> const & phys,
                                         block_matrix<Matrix, SymmGroup> M,
-                                        typename Matrix::value_type const & alpha = 1)
+                                        typename Matrix::value_type const & alpha = 1) // time step propagation (todo 30.04.2012)
 {
     for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
         if (M.has_block(it_c->first, it_c->first))

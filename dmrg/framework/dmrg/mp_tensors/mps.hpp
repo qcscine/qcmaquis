@@ -49,8 +49,7 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
 }
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type
-MPS<Matrix, SymmGroup>::canonize_left()
+typename MPS<Matrix, SymmGroup>::scalar_type MPS<Matrix, SymmGroup>::canonize_left()
 {
     block_matrix<Matrix, SymmGroup> t;
     for(int i = 0; i < length(); ++i){
@@ -64,8 +63,7 @@ MPS<Matrix, SymmGroup>::canonize_left()
 }
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type
-MPS<Matrix, SymmGroup>::canonize_right()
+typename MPS<Matrix, SymmGroup>::scalar_type MPS<Matrix, SymmGroup>::canonize_right()
 {
     block_matrix<Matrix, SymmGroup> t;
     for (int i = length()-1; i >= 0; --i) {
