@@ -122,30 +122,27 @@ protected:
         left_stores_.resize(L+1, storage_master.child());
         
         Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+        storage::reset(left_stores_[0]);
         left_[0] = left;
         
         for (int i = 0; i < site; ++i) {
+            storage::reset(left_stores_[i+1]);
             boundary_left_step(mpo, i);
-            
-            storage::reset(left_stores_[i]);
             storage::store(left_[i], left_stores_[i]);
         }
-        storage::reset(left_stores_[site]);
         storage::store(left_[site], left_stores_[site]);
         
         
         Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+        storage::reset(right_stores_[L]);
         right_[L] = right;
                 
         for(int i = L-1; i >= site; --i) {
+            storage::reset(right_stores_[i]);
             boundary_right_step(mpo, i);
-            
-            storage::reset(right_stores_[i+1]);
             storage::store(right_[i+1], right_stores_[i+1]);
         }
-        storage::reset(right_stores_[site]);
         storage::store(right_[site], right_stores_[site]);
-        
         
         timer2.end();
     }

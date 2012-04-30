@@ -484,6 +484,7 @@ struct storage {
     
     static void reset(StreamStorage & ss)
     {
+        ss.wait();
         ss.status_ = StreamStorage::Complete;
     }
 
