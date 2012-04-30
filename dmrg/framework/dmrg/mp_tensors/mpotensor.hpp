@@ -17,7 +17,7 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(std::size_t ld,
 { }
 
 template<class Matrix, class SymmGroup>
-typename MPOTensor<Matrix, SymmGroup>::scalar_type & 
+typename MPOTensor<Matrix, SymmGroup>::value_type & 
 MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          std::size_t right_index,
                                          typename MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
@@ -27,7 +27,7 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
 }
 
 template<class Matrix, class SymmGroup>
-typename MPOTensor<Matrix, SymmGroup>::scalar_type const & 
+typename MPOTensor<Matrix, SymmGroup>::value_type const & 
 MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          std::size_t right_index,
                                          typename MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
