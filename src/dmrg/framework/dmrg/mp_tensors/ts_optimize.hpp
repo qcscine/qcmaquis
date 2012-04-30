@@ -98,7 +98,9 @@ public:
                         this->init_left_right(mpo, 0);
                 } else if (sweep == 0 && lr == -1 && site == L-1) {
                     mpo = mpo_orig;
-                    this->init_left_right(mpo, site);
+                    // this is not needed, but when enabled is showing a bug in StreamStorage
+                    // todo: need more investigation
+                    //this->init_left_right(mpo, site);
                 }
             }
         
@@ -106,7 +108,7 @@ public:
         
             storage::load(left_[site1], left_stores_[site1]);
             storage::load(right_[site2+1], right_stores_[site2+1]);
-     
+
             if (lr == +1) {
                 if (site2+2 < right_.size())
                     storage::prefetch(right_[site2+2], right_stores_[site2+2]);
@@ -179,8 +181,8 @@ public:
         		t = mps[site2].normalize_left(SVD);
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
-                this->boundary_left_step(mpo, site1); // creating left_[site2]
                 storage::reset(left_stores_[site2]); // left_stores_[site2] is outdated
+                this->boundary_left_step(mpo, site1); // creating left_[site2]
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
@@ -195,13 +197,16 @@ public:
         		t = mps[site1].normalize_right(SVD);
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
 
-                this->boundary_right_step(mpo, site2); // creating right_[site2]
                 storage::reset(right_stores_[site2]); // right_stores_[site2] is outdated
+                this->boundary_right_step(mpo, site2); // creating right_[site2]
     	    }
-                
-            storage::store(left_[site1], left_stores_[site1]); // store currently used boundary
-            storage::store(right_[site2+1], right_stores_[site2+1]); // store currently used boundary
-
+            
+            if (_site != L-1)
+            { 
+                storage::store(left_[site1], left_stores_[site1]); // store currently used boundary
+                storage::store(right_[site2+1], right_stores_[site2+1]); // store currently used boundary
+            }
+            
     	    iteration_t.end();
 
             gettimeofday(&sweep_then, NULL);

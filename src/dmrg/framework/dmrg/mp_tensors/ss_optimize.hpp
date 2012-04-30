@@ -98,7 +98,7 @@ public:
                         this->init_left_right(mpo, 0);
                 } else if (sweep == 0 && lr == -1 && site == L-1) {
                     mpo = mpo_orig;
-                    this->init_left_right(mpo, site);
+                    //this->init_left_right(mpo, site);
                 }
             }
             
@@ -225,8 +225,8 @@ public:
                 }
                 
                 
-                this->boundary_left_step(mpo, site); // creating left_[site+1]
                 storage::reset(left_stores_[site+1]); // left_stores_[site+1] is outdated
+                this->boundary_left_step(mpo, site); // creating left_[site+1]
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
@@ -240,13 +240,15 @@ public:
                 }
                 
                 
-                this->boundary_right_step(mpo, site); // creating right_[site]
                 storage::reset(right_stores_[site]); // right_stores_[site] is outdated
+                this->boundary_right_step(mpo, site); // creating right_[site]
             }
             
-            
-            storage::store(left_[site], left_stores_[site]); // store currently used boundary
-            storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary
+            if (lr != +1 && site != L-1)
+            {
+            	storage::store(left_[site], left_stores_[site]); // store currently used boundary
+            	storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary
+            }
 
             t_grow.end();
             
