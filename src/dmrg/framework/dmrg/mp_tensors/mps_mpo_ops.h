@@ -89,7 +89,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> traces = left.traces(); // overkill
+    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> traces = left.traces(); // overkill
     assert( check_real(traces[0]) );
     return alps::numeric::real(traces[0]); // real function for future
 }
@@ -112,7 +112,7 @@ std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
 }
 
 template<class Matrix, class SymmGroup>
-typename MPSTensor<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const & mps)
+typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const & mps)
 {
     std::size_t L = mps.length();
     
@@ -128,8 +128,8 @@ typename MPSTensor<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> c
 }
 
 template<class Matrix, class SymmGroup>
-typename MPSTensor<Matrix, SymmGroup>::scalar_type overlap(MPS<Matrix, SymmGroup> const & mps1,
-                                                           MPS<Matrix, SymmGroup> const & mps2)
+typename MPS<Matrix, SymmGroup>::scalar_type overlap(MPS<Matrix, SymmGroup> const & mps1,
+                                                     MPS<Matrix, SymmGroup> const & mps2)
 {
     assert(mps1.length() == mps2.length());
     

@@ -133,7 +133,7 @@ struct const_mps_init : public mps_initializer<Matrix, SymmGroup>
                     typename SymmGroup::charge right_end)
     {
         default_mps_init<Matrix, SymmGroup> di;
-        di.init_sectors(mps, Mmax, phys, right_end, false, 1);
+        di.init_sectors(mps, Mmax, phys, right_end, false, 1.);
     }
 };
 
@@ -201,7 +201,7 @@ struct linear_mps_init : public mps_initializer<Matrix, U1>
                       Index<U1> const & phys,
                       U1::charge right_end,
                       bool fillrand = true,
-                      typename Matrix::value_type val = 0)
+                      typename Matrix::value_type val = 1.)
     {
         static Timer timer("init_sectors");
         timer.begin();

@@ -185,7 +185,8 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
                                                   block_matrix<Matrix, SymmGroup> const & A)
-{
+{ // only for the dense matrices in MPO (30.04.2012 / scalar / value types discussion)
+  // TODO: (scatter dense_matrix during building of MPO)
     typedef typename SymmGroup::charge charge;
     block_matrix<Matrix, SymmGroup> ret;
     

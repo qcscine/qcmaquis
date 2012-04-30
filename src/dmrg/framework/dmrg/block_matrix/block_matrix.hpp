@@ -158,14 +158,14 @@ void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, si
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator*=(value_type v)
+block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator*=(scalar_type v)
 {
     std::for_each(data_.begin(), data_.end(), boost::lambda::_1 *= v);
     return *this;
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator/=(value_type v)
+block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator/=(scalar_type v)
 {
     std::for_each(data_.begin(), data_.end(), boost::lambda::_1 /= v);
     return *this;
@@ -173,11 +173,11 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 
 
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type block_matrix<Matrix, SymmGroup>::trace() const
+typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmGroup>::trace() const
 {
-    std::vector<value_type> vt(n_blocks());
+    std::vector<scalar_type> vt(n_blocks());
     std::transform(data_.begin(), data_.end(), vt.begin(), utils::functor_trace());
-    return std::accumulate(vt.begin(), vt.end(), value_type());
+    return std::accumulate(vt.begin(), vt.end(), scalar_type()); // reduction
 }
 
 template<class Matrix, class SymmGroup>

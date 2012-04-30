@@ -33,7 +33,7 @@ public:
 
     std::size_t aux_dim() const { return data_.size(); }
     
-    value_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); }
+    value_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); } // I hope this is never used (30.04.2012 / scalar/value discussion)
     value_type const & operator()(std::size_t i, access_type j, access_type k) const { return data_[i](j, k); }
     
     friend struct contraction;
