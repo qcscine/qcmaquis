@@ -34,6 +34,9 @@ namespace vli
     template<typename BaseInt, std::size_t Size>
     void mul(BaseInt * x,BaseInt const* y);
 
+    template<typename BaseInt, std::size_t Size>
+    void mul(BaseInt * x,BaseInt const* y,BaseInt const* z);
+
     //????_assign functions
     template <class BaseInt, std::size_t Size>
     void plus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b ){
@@ -72,9 +75,8 @@ namespace vli
 
     template <class BaseInt, std::size_t Size>
     void multiplies(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
-        detail::mul384_192_192(&vli_res[0],&vli_a[0],&vli_b[0]);
+        mul<BaseInt,Size>(&vli_res[0],&vli_a[0],&vli_b[0]);
     }
-    
     
     template <class BaseInt, std::size_t Size>
     void multiply_add_assign(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
@@ -123,7 +125,6 @@ namespace vli
 
     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
     #undef FUNCTION_sub_nbits_nbits
-
     //specialization subnbits_64bits, until 512 bits
     #define FUNCTION_sub_nbits_64bits(z, n, unused) \
         template<> \
@@ -156,6 +157,15 @@ namespace vli
 
     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
     #undef FUNCTION_mul_nbits_nbits
+    //specialization mul2nbits_nbits_nbits, until 512 bits
+    #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
+        template<> \
+        void mul<unsigned long int,BOOST_PP_ADD(n,1)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
+        detail::NAME_MUL_TWONBITS_NBITS_NBITS(n)(x,y,w); \
+        }; \
+
+    BOOST_PP_REPEAT(FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
+    #undef FUNCTION_mul_twonbits_nbits_nbits
     /* ---------------------------------------------------- end Multiplicatio specialization ---------------------------------------------------- */
 
     

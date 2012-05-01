@@ -68,10 +68,14 @@ namespace vli{
 
         BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
         #undef FUNCTION_mul_nbits_nbits
+        /* ------------------------------------------------------- */
+        #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
+            void NAME_MUL_TWONBITS_NBITS_NBITS(n)(unsigned long int* x, unsigned long int const* y,unsigned long int const* w);
 
-        void mul384_192_192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 192*192 = 384
-        void mul256_128_128(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 192*192 = 384
-        void mul128_64_64(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 192*192 = 384
+        BOOST_PP_REPEAT(FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
+        #undef FUNCTION_mul_twonbits_nbits_nbits
+        /* ------------------------------------------------------- */
+
         void muladd384_192_192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 384 += 192*192
     }
 }

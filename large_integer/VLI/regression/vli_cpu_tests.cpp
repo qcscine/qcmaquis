@@ -14,6 +14,7 @@ using vli::test::fill_random;
 
 typedef vli::test::vli_cpu_type_list vli_types;
 typedef vli::test::vli_cpu_type_extented_list vli_extented_type;
+typedef vli::test::vli_cpu_type_extented_list_two vli_extented_type_two;
 
 //
 //  load all tests

@@ -2,7 +2,7 @@
 
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, Vli, vli_extented_type )
 {
     Vli a;
     Vli b(0);
@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, Vli, vli_types )
     BOOST_CHECK_EQUAL(a,b);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( equal_operator, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( equal_operator, Vli, vli_extented_type  )
 {
     Vli a(0);
     Vli b;
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( equal_operator, Vli, vli_types )
     BOOST_CHECK_EQUAL(a,b);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_assignment, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_assignment, Vli, vli_extented_type )
 { 
     Vli a;
     fill_random(a); 
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_assignment, Vli, vli_types )
     BOOST_CHECK_EQUAL(c == b, false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a);    
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Vli, vli_types )
     BOOST_CHECK_EQUAL(a,b);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( negate_and_construct_from_negative_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( negate_and_construct_from_negative_int, Vli, vli_extented_type )
 {
     Vli a(-2437);
     Vli am(2437);
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate_and_construct_from_negative_int, Vli, vli_
     BOOST_CHECK_EQUAL(a,am);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence, Vli, vli_types )
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a);
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types 
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equivalence_int, Vli, vli_extented_type )
 {
     Vli a;
     Vli b(rnd_valid_int<Vli>());
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_by_negative_number_minus_assign_equiv
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_extented_type)
 {
     Vli a;
     Vli b;
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a);
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1);
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Vli, vli_types )
     BOOST_CHECK_EQUAL(a,a_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1); 
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int_nega
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1);
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative, Vli, vli_types )
     BOOST_CHECK_EQUAL(a,a_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int_negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int_negative, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1); 
@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int_negative, Vli, vli_types )
     BOOST_CHECK_EQUAL(a,a_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_int_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_int_gmp, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size);
@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_int_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minus_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_gmp, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minus_int_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_int_gmp, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size);
@@ -375,7 +375,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_int_gmp, Vli, vli_types )
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_positive_positive_int_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_positive_positive_int_gmp, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size/2);
@@ -389,7 +389,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_positive_positive_int_gmp, Vli, vli_ty
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_positive_negative_int_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_positive_negative_int_gmp, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size/2);
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_positive_negative_int_gmp, Vli, vli_ty
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_positive_int_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_positive_int_gmp, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size/2);
@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_positive_int_gmp, Vli, vli_ty
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_negative_int_gmp, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_negative_int_gmp, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size/2);
@@ -438,7 +438,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_negative_int_gmp, Vli, vli_ty
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, Vli, vli_extented_type )
 {
     BOOST_STATIC_ASSERT(Vli::size > 1);
 
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, Vli, vli_types )
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, Vli, vli_extented_type )
 {
     BOOST_STATIC_ASSERT(Vli::size > 1);
     
@@ -552,7 +552,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_int, Vli, vli_types )
     BOOST_CHECK_EQUAL(b,b_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_positive_positive, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_n64bits_64_positive_positive, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1);
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_positive_positive, Vli, vli
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_negative_positive, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_n64bits_64_negative_positive, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1);
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_negative_positive, Vli, vli
     BOOST_CHECK_EQUAL(a.get_str(),agmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_positive_negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_n64bits_64_positive_negative, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1);
@@ -597,7 +597,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_positive_negative, Vli, vli
     BOOST_CHECK_EQUAL(a.get_str(),agmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_negative_negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_n64bits_64_negative_negative, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a,Vli::size-1);
@@ -613,71 +613,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_64_negative_negative, Vli, vli
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_384_64_positive_positive, Vli, vli_types )
-{
-    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;  
-    vli_result_type_cpu a;
-    fill_random(a,2*Vli::size-1);
-    int b = rnd_valid_int<Vli>();
-    
-    mpz_class agmp(a.get_str());
-    
-    a*=b;
-    agmp*=b;
-    
-    BOOST_CHECK_EQUAL(a.get_str(),agmp.get_str());
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_384_64_positive_negative, Vli, vli_types )
-{
-    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;  
-    vli_result_type_cpu a;
-    fill_random(a,2*Vli::size-1);
-    int b = -rnd_valid_int<Vli>();
-    
-    mpz_class agmp(a.get_str());
-    
-    a*=b;
-    agmp*=b;
-    
-    BOOST_CHECK_EQUAL(a.get_str(),agmp.get_str());
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_384_64_negative_positive, Vli, vli_types )
-{
-    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;  
-    vli_result_type_cpu a;
-    fill_random(a,2*Vli::size-1);
-    int b = rnd_valid_int<Vli>();
-    a.negate();
-    
-    mpz_class agmp(a.get_str());
-    
-    a*=b;
-    agmp*=b;
-    
-    BOOST_CHECK_EQUAL(a.get_str(),agmp.get_str());
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_384_64_negative_negative, Vli, vli_types )
-{
-    typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;  
-    vli_result_type_cpu a;
-    fill_random(a,2*Vli::size-1);
-    int b = -rnd_valid_int<Vli>();
-    
-    a.negate();
-    
-    mpz_class agmp(a.get_str());
-    
-    a*=b;
-    agmp*=b;
-    
-    BOOST_CHECK_EQUAL(a.get_str(),agmp.get_str());
-}
-
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_192_192_384, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_nbits_nbits_2nbits,Vli , vli_extented_type_two)
 {
     Vli a;
     Vli b;
@@ -761,7 +697,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp_192_192_19
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( pointer_range_overflows, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( pointer_range_overflows, Vli, vli_extented_type )
 {
     Vli a;
     for(std::size_t i=0; i<Vli::size;++i)
@@ -790,7 +726,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( pointer_range_overflows, Vli, vli_types )
     delete[] c;
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( two_times_not_equal_minus_one, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( two_times_not_equal_minus_one, Vli, vli_extented_type )
 {
     Vli a;
     for(std::size_t i=0; i<Vli::size;++i)
