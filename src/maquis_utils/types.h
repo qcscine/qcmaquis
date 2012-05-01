@@ -3,6 +3,11 @@
 
 namespace utils {
 
+    template<class T> struct scalar_type { typedef typename T::value_type type; }
+    template<class T> struct scalar_type <maquis::types::p_dense_matrix<T> > { typedef typename maquis::types::p_dense_matrix<T>::scalar_type type; }
+    template<class T> struct scalar_type <maquis::types::p_diagonal_matrix<T> > { typedef typename maquis::types::p_dense_matrix<T>::scalar_type type; }
+
+
     template<class T> struct real_type { typedef T type; };
     template<class T> struct real_type<std::complex<T> > { typedef T type; };
     
