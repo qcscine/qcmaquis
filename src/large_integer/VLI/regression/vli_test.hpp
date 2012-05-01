@@ -41,10 +41,15 @@ typedef boost::mpl::list< vli::vli_cpu <unsigned long int, 2>,
                           vli::vli_cpu <unsigned long int, 3>, 
                           vli::vli_cpu <unsigned long int, 4>, 
                           vli::vli_cpu <unsigned long int, 5>, 
+                          vli::vli_cpu <unsigned long int, 6>, 
                           vli::vli_cpu <unsigned long int, 7>, 
                           vli::vli_cpu <unsigned long int, 8> 
                         > vli_cpu_type_extented_list;
 
+typedef boost::mpl::list< vli::vli_cpu <unsigned long int, 2>,
+                          vli::vli_cpu <unsigned long int, 3>, 
+                          vli::vli_cpu <unsigned long int, 4> 
+                        > vli_cpu_type_extented_list_two;
 boost::mt11213b rng;
 
 template <typename Vli>

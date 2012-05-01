@@ -83,26 +83,31 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
- vli_cpu< unsigned long int, 2> a,b;
- vli_cpu< unsigned long int, 4> c;
+ vli_cpu< unsigned long int, 4> a,b;
+ vli_cpu< unsigned long int, 8> c;
+ a[1]=0xffffffffffffffff;
+ a[2]=0xffffffffffffffff;
+ a[3]=0xffffffffffffffff;
+ b[1]=0xffffffffffffffff;
+ b[2]=0xffffffffffffff;
+ b[3]=0xfffffffffffffff;
 
- a[0]=0xffffffffffffffff;
- a[1]=0xfffffffffffffff;
- b[0]=0xffffffffffffffff;
+large_int ga,gb,gc;
+ga = a.get_str();
+gb = b.get_str();
+gc = ga * gb;
 
- vli_type_cpu d,e;
- vli_result_type_cpu r;
- d[0]=0xffffffffffffffff;
- d[1]=0xfffffffffffffff;
- e[0]=0xffffffffffffffff;
+vli::detail::mul512_256_256(&c[0],&a[0],&b[0]);
+//vli::detail::mul384_192_192(&r[0],&d[0],&e[0]);
 
-vli::detail::mul256_128_128(&c[0],&a[0],&b[0]);
-vli::detail::mul384_192_192(&r[0],&d[0],&e[0]);
-
- std::cout << std::hex  << c << std::endl;
- std::cout << std::hex  << r << std::endl;
-
-
+ std::cout <<  a << std::endl;
+ std::cout <<  ga << std::endl;
+ std::cout <<  b << std::endl;
+ std::cout <<  gb << std::endl;
+ std::cout << c << std::endl;
+ std::cout << gc << std::endl;
+ 
+if(c.get_str() == gc.get_str() ) printf("----------- ok--------------------- \n ");
 
 //int SizeVector = atoi(argv[1]); 
 /*     

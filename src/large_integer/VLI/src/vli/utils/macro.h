@@ -8,6 +8,8 @@
 //g++ -DNUM=1 -E -P -I /opt/boost/include/ main.cpp | sed  "s/n/; \\`echo -e '\n\r      '`/g"
 #define MAX_ITERATION 7
 #define MAX_ITERATION_MINUS_ONE 6
+#define THREE 3
+#define FOUR 4
 #define AOS 1 // if you change this value you move to the SOA structure be carefull 
 //give the name of the function addition
 #define NAME_ADD_NBITS_PLUS_NBITS(n)                 BOOST_PP_CAT(BOOST_PP_CAT(add,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)))  /* addnx64_nx64 */
@@ -20,6 +22,8 @@
 //give the name of the multiplication VLI<64*n> *= long
 #define NAME_MUL_NBITS_64BITS(n)                     BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64)) /* mulnx64_64*/
 #define NAME_MUL_NBITS_NBITS(n)                      BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64))) /* mulnx64_nx64*/
+//give the name of the multiplication VLI<2*n> = VLI<n>*VLI<n> 
+#define NAME_MUL_TWONBITS_NBITS_NBITS(n)             BOOST_PP_CAT(BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_MUL(BOOST_PP_ADD(n,1),2),xx64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64))),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64)))  /* mul2nxx64_nx64_nx64*/
 //give the name of the if statement for the multiplication VLI<64*n> *= long 
 #define NAME_CONDITIONAL_MUL_NBITS_64BITS(n)         BOOST_PP_STRINGIZE(BOOST_PP_CAT(BOOST_PP_CAT(_IsNegative   ,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))) /* _IsNegativenx64_64, for the input sign */
 #define NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)     BOOST_PP_STRINGIZE(BOOST_PP_CAT(BOOST_PP_CAT(_IsNegativeRes,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))) /* _IsNegativeResnx64_64, for the output sign */
@@ -97,6 +101,11 @@
 #define mul6x64_64 mul384_64
 #define mul7x64_64 mul448_64
 #define mul8x64_64 mul512_64
+
+#define mul2xx64_1x64_1x64 mul128_64_64
+#define mul4xx64_2x64_2x64 mul256_128_128
+#define mul6xx64_3x64_3x64 mul384_192_192
+#define mul8xx64_4x64_4x64 mul512_256_256
 
 //macro to get the correct name of the register
 #define R(n)        BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_ADD(8,n))) // give register starts from r8 
