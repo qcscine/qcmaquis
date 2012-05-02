@@ -154,12 +154,14 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1){
+    p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1.){
         typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
         p_dense_matrix<T> evecs;
         heev(m, evecs, evals);
-        // evals = exp(alpha*evals); // todo
-        p_dense_matrix<T> e = evecs * evals;
+
+        typename associated_diagonal_matrix< p_dense_matrix<T> >::type s(10); // need to implement conversion (evals)
+        s.exp(alfa);
+        p_dense_matrix<T> e = evecs * s;
         e *= conjugate(transpose(evecs));
         return e;
     }

@@ -178,7 +178,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void exp_diagonal_l(pinned maquis::types::p_dense_matrix_impl<T>& a){
+    void exp_diagonal_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
         ctxt_select("1 from ambient as exp_diagonal where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);

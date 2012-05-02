@@ -234,11 +234,11 @@ namespace ambient {
     }
 
     template<typename T>
-    void exp_diagonal_c(pinned maquis::types::p_dense_matrix_impl<T>& a){
+    void exp_diagonal_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         size_t size = get_mem_dim(a).y;
         for(int i=0; i < size; i++)
-            ad[i] = exp(ad[i]);
+            ad[i] = exp(ad[i]*alfa);
     }
 
     template<typename T>
