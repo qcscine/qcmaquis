@@ -4,6 +4,15 @@
 #include <boost/preprocessor/arithmetic/mul.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/preprocessor/config/limits.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
+#include <boost/preprocessor/stringize.hpp>
+#include <boost/preprocessor/config/limits.hpp>
+#include <boost/preprocessor/comparison/greater_equal.hpp>
+#include <boost/preprocessor/comparison/equal.hpp>
+#include <boost/preprocessor/config/limits.hpp>
+#include <boost/preprocessor/iteration/local.hpp>
+
+
 
 //g++ -DNUM=1 -E -P -I /opt/boost/include/ main.cpp | sed  "s/n/; \\`echo -e '\n\r      '`/g"
 #define MAX_ITERATION 7
@@ -133,3 +142,26 @@
 #define SAVE_register(z, n, unused) "movq "R(n)"           ,"PPS(AOS,n)"(%%rdi)         \n" /* save 0x??(%%rdi) */     
 // generate the list of registers clother
 #define CLOTHER_register(z, n, unused) RCLOTHER(n), /* "r8","r9", ... */
+// for the multiplication
+#define Rax(MAX,n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_SUB(15,BOOST_PP_SUB(MAX,n)))) // give register start at r15, r12, .... reverse order  
+#define Rdx(MAX,n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_SUB(15,BOOST_PP_SUB(BOOST_PP_SUB(MAX,1),n)))) // give register start at r15, r12, .... reverse order  
+#define NUM1(MAX,n) BOOST_PP_SUB(15,BOOST_PP_SUB(BOOST_PP_SUB(MAX,2),n))
+#define Radc0(MAX,n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_ADD(MAX,n))) // give register start at r15, r12, .... reverse order  
+#define ADC0_register_mulnton(z, n, nbegin) "adcq $0x0, "Radc0(nbegin,n)"      \n" /* adcq 0 + rdi + CB    */     
+#define Rr(Max,n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_ADD(BOOST_PP_SUB(15,Max),n))) // give register start at r8  
+#define SAVEr_register(z, n, MAX) "movq "Rr(MAX,BOOST_PP_ADD(n,1))", "PPS(AOS,n)"(%%rdi)    \n" /* save 0x??(%%rdi) */     
+#define PPSr1(Max,n) BOOST_PP_STRINGIZE( BOOST_PP_MUL(BOOST_PP_SUB(Max,n),8)) // m*n*8, 8 because long int
+
+#define Rr2(z, n, unused)  BOOST_PP_STRINGIZE(BOOST_PP_CAT(r, BOOST_PP_SUB(15,n))), // give register start at r8  
+
+#define MULNTON1(z, n, niteration) \
+                BOOST_PP_IF(n,"movq %%rbx, %%rax \n",) \
+                "mulq "PPS(1,n)"(%%rdi) \n" \
+                BOOST_PP_IF(n,"addq %%rax, "Rax(niteration,n)" \n","movq %%rax, "Rax(niteration,n)" \n") \
+                BOOST_PP_IF(n,BOOST_PP_IF(BOOST_PP_EQUAL(niteration,n), ,"adcq %%rdx,"Rdx(niteration,n)" \n"), BOOST_PP_IF(BOOST_PP_EQUAL(niteration,n), ,"addq %%rdx,"Rdx(niteration,n)" \n")) \
+                BOOST_PP_REPEAT(BOOST_PP_SUB(niteration,BOOST_PP_ADD(n,1)), ADC0_register_mulnton, NUM1(niteration,n)) 
+
+#define MULNTON0(z, n, MAX) \
+                "movq "PPSr1(MAX,n)"(%%rsi), %%rax \n" \
+                BOOST_PP_IF(n,"movq %%rax, %%rbx \n", ) \
+                BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), MULNTON1, n) \

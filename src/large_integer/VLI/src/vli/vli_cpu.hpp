@@ -302,6 +302,17 @@ void negate_inplace(vli_cpu<BaseInt,Size>& v) {
     v.negate();
 }
 
+template <class BaseInt, std::size_t Size>
+class extend_helper {
+};
+/*
+c = extend(a) + b;
+vli c = 5;
+c = plus_extend(a,b);
+
+vli c = 5;
+plus_extend_inplace(c,a,b);
+*/
 template <class BaseInt, std::size_t Size1, std::size_t Size2>
 const vli_cpu<BaseInt, Size2> operator + (vli_cpu<BaseInt, Size1> const &vli_a, vli_cpu<BaseInt, Size1> const& vli_b){
       vli_cpu<BaseInt, Size2> vli_res;
