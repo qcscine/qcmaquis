@@ -145,10 +145,10 @@ namespace maquis {
             typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));
+            resize(S, k, k);
             int info = boost::numeric::bindings::lapack::gesvd('S', 'S', M, S.get_values(), U, V);
             if (info != 0)
                 throw std::runtime_error("Error in SVD!");
-
             timer.end();
         }
         
