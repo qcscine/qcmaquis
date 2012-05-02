@@ -2,7 +2,7 @@
 #include "ambient/controllers/v_controller.h"
 #include "ambient/channels/mpi_channel.h"
 #include "ambient/channels/packets/auxiliary.hpp"
-//#include "omp.h"
+#include "ambient/utils/io.hpp"
 
 #if __APPLE__ && __MACH__
 #include <sched.h>	// for sched_yield()
@@ -23,6 +23,8 @@ namespace ambient {
     channels::ichannel& channel = channels::mpi_channel::instance();
     controllers::icontroller& controller = controllers::v_controller::instance();
     controllers::context& ctxt = controllers::context::instance();
+    io cout;
+    io cerr;
 }
 // }}} global objects accessible anywhere //
 
@@ -273,3 +275,25 @@ namespace ambient { namespace controllers {
     }
 
 } }
+
+// {{{ controller free functions 
+namespace ambient {
+
+    void set_num_threads(size_t n){ 
+        controller.set_num_threads(n);
+    }
+
+    size_t get_num_threads(){
+        return controller.get_num_threads();
+    }
+
+    void playout(){ 
+        controller.flush(); 
+    }
+
+    bool verbose(){
+        return (rank() ? false : true); 
+    }
+
+}
+// }}}

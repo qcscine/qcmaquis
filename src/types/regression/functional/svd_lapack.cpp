@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     typename maquis::types::associated_diagonal_matrix<sMatrix>::type sS; 
  
     maquis::types::svd(pA,pU,pV,pS);
-    maquis::types::algorithms::svd(sA,sU,sV,sS);
+    maquis::types::svd(sA,sU,sV,sS);
   
     BOOST_CHECK(sS == pS); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

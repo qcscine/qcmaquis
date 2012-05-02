@@ -6,6 +6,8 @@ namespace ambient{
     template <typename T>
     class parallel_t : public models::v_model::object 
     { 
+    public:
+        typedef void(*copy_t)(T&, pinned const T&);
     protected:
         typedef typename boost::intrusive_ptr<T> ptr;
         typedef typename ambient::models::info<T>::value_type value_type;
@@ -24,7 +26,8 @@ namespace ambient{
         {
             this->t_size = sizeof(value_type);
             this->pt_set_dim(o.get_dim().x, o.get_dim().y);
-            ambient::push(ambient::copy_l<T>, ambient::copy_c<T>, 
+            ambient::push(static_cast<copy_t>(&ambient::copy_l), 
+                          static_cast<copy_t>(&ambient::copy_c), 
                           *(T*)this, *(const T*)&o);
         }
 

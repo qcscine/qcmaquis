@@ -177,7 +177,7 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmG
 {
     std::vector<scalar_type> vt(n_blocks());
     std::transform(data_.begin(), data_.end(), vt.begin(), utils::functor_trace());
-    return std::accumulate(vt.begin(), vt.end(), scalar_type()); // reduction
+    return std::accumulate(vt.begin(), vt.end(), scalar_type(0)); // reduction
 }
 
 template<class Matrix, class SymmGroup>

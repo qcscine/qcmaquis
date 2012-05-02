@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( syev, T, test_types)
     sE.resize(T::valuex,T::valuex); 
  
     maquis::types::syev(pA,pV,pE); // to modify the algo we need the reverse inside !
-    maquis::types::algorithms::syev(sA,sV,sE);
+    maquis::types::syev(sA,sV,sE);
      
     maquis::types::diagonal_matrix<typename T::dbl> sE2(maquis::traits::matrix_cast<maquis::types::diagonal_matrix<typename T::dbl> >(pE));
     BOOST_CHECK(sE == pE);

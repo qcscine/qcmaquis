@@ -5,9 +5,10 @@
 
 namespace ambient {
 
-    bool verbose(){
-        return (rank() ? false : true); 
-    }
+    template<typename T>
+    class future;
+
+    bool verbose();
 
     class io {
     public:
@@ -42,7 +43,9 @@ namespace ambient {
         void flush(){
             if(verbose()) std::cout.flush();
         }
-    } cout, cerr;
+    };
+
+    extern io cout, cerr;
 }
 
 #endif

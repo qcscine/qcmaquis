@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    maquis::types::algorithms::generate(sA,Rd); // Rd is rand generator static variable inside utilities
+    maquis::types::generate(sA,Rd); // Rd is rand generator static variable inside utilities
     pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
 
     pA(accessx,accessy) = 3;

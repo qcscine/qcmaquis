@@ -40,6 +40,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     pA.set_init(ambient::random_i<typename T::value_type>);
     pB.set_init(ambient::random_i<typename T::value_type>);
 
+    maquis::cout << "Hey there!\n";
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
     ambient::playout();

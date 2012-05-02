@@ -19,6 +19,7 @@ add_library (ambient
              channels/groups/group.cpp
              channels/groups/multirank.cpp
              utils/hashmap.cpp
+             utils/jstrings.cpp
              utils/tasklist.cpp)
 
  install(TARGETS ambient COMPONENT libraries

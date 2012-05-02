@@ -1,3 +1,5 @@
+#ifndef __MAQUIS_TYPES_L_KERNELS_HPP__
+#define __MAQUIS_TYPES_L_KERNELS_HPP__
 // AMBIENT USAGE TIPS //
 //
 // Arguments locality:
@@ -104,8 +106,8 @@ namespace ambient {
         }
     }
 
-    template<>
-    void copy_l(maquis::types::p_dense_matrix_impl<double>& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
+    template<typename T>
+    void copy_l(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
         ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
@@ -115,24 +117,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void copy_after_l(pinned maquis::types::p_dense_matrix_impl<T>& ac, const size_t& pos, const maquis::types::p_dense_matrix_impl<T>& a){
-        ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
-        //ambient::cout << "2dbcd in copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
-
-        block_2d_cycle<pin>(ac);
-        block_2d_cycle<assign>(a);
-    }
-
-    void copy_after_std_l(std::vector<double>*& ac, const size_t& pos, pinned const maquis::types::p_dense_matrix_impl<double>& a){
-        ctxt_select("* from ambient as copy_std where master is 0");
-        if(!ctxt.involved()) return;
-        //ambient::cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
-
-        block_outright<pin>(a);
-    }
-
-    void push_back_sqr_gt_l(std::vector<double>*& ac, pinned const maquis::types::p_dense_matrix_impl<double>& a){
+    void push_back_sqr_gt_l(std::vector<T>*& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
         ctxt_select("* from ambient as copy_std where master is 0");
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -263,7 +248,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void svd_l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<T>& s){
+    void svd_l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s){
         int num = 1;
         ctxt_select(num+" from ambient as svd where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
@@ -275,7 +260,8 @@ namespace ambient {
         block_2d_cycle<assign>(vt);
     }
 
-    void syev_l(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
+    template<typename T>
+    void syev_l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
         int num = 1;
         ctxt_select(num+" from ambient as syev where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
@@ -285,7 +271,8 @@ namespace ambient {
         block_2d_cycle<assign>(w);
     }
 
-    void heev_l(maquis::types::p_dense_matrix_impl<double>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
+    template<typename T>
+    void heev_l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
         int num = 1;
         ctxt_select(num+" from ambient as heev where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
@@ -295,8 +282,8 @@ namespace ambient {
         block_2d_cycle<assign>(w); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
     }
 
-    template<typename T>
-    void gemm_diagonal_lhs_l(const maquis::types::p_dense_matrix_impl<T>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+    template<typename T, typename D>
+    void gemm_diagonal_lhs_l(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
         ctxt_select("1 from ambient as gemm_diagonal_lhs where master is 0 and breakdown contains "+ id(b));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; credentials(a_diag); credentials(b); credentials(c);
@@ -306,8 +293,8 @@ namespace ambient {
         block_2d_cycle<assign>(c);
     }
 
-    template<typename T>
-    void gemm_diagonal_rhs_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
+    template<typename T, typename D>
+    void gemm_diagonal_rhs_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
         ctxt_select("1 from ambient as gemm_diagonal_rhs where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b_diag); credentials(c);
@@ -418,20 +405,6 @@ namespace ambient {
         block_outright<pin>(a);
     }
 
-    void variable_free_l(void*& a){ // to modify
-        ctxt_select(1+ " from ambient as variable_free where master is 0");
-        //ambient::cout << "null assign in variable_free ("<< ambient::rank() <<"):\n";
-        if(!ctxt.involved()) return;
-    }
-
-    template<typename T>
-    void print_l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n){
-        ctxt_select(1 +" from ambient as print where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
-    
-        block_2d_cycle<assign>(a); 
-    }
-
 
     // {{{ strassen multiplication supplementary kernels
 
@@ -506,3 +479,4 @@ namespace ambient {
     // }}}
 
 } 
+#endif

@@ -10,6 +10,9 @@ namespace maquis { namespace types {
     p_dense_matrix_impl<T>::~p_dense_matrix_impl(){ } // #destructor // 
 
     template <typename T>
+    p_dense_matrix_impl<T>::p_dense_matrix_impl(){ } // be cautious (implicit)
+
+    template <typename T>
     p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols = 0, T init_value = T() ){
         this->cols = cols;
         this->rows = rows;
