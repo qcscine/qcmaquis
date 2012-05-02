@@ -125,6 +125,10 @@ public:
             double mu = -model.get<double>("mu") + exp_potential;
             mu += -coeff0 * model.get<double>("h");
             
+#ifndef NDEBUG
+            std::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model.get<double>("h") << std::endl;
+#endif
+            
             /*
              if (!lat.get_prop<bool>("at_open_boundary", p) && equal_grid)
              mu += 2 * model.get<double>("h") / (dx*dx);
