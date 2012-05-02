@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence_int, Vli, vli_exte
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence, Vli, vl
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a);
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int, Vli, vli_extented_type )
     BOOST_CHECK_EQUAL(a,a_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_negative, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_negative
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int_negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int_negative, Vli, vli_extented_type )
 {
     Vli a;
     fill_random(a);
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_gmp_nbits_nbits_2nbits,Vli , vli_exten
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp_192_192_192, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp_192_192_192, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -652,7 +652,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_negative_numbers_gmp_192_192_192, Vli,
     BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_reverse_negative_numbers_gmp_192_192_192, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_reverse_negative_numbers_gmp_192_192_192, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;    
@@ -674,7 +674,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_reverse_negative_numbers_gmp_192_192_1
     BOOST_CHECK_EQUAL(d.get_str(),dgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp_192_192_192, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_double_negative_numbers_gmp_192_192_192, Vli, vli_extented_type )
 {
     Vli a;
     Vli b;
@@ -741,7 +741,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( two_times_not_equal_minus_one, Vli, vli_extented_
     BOOST_CHECK_EQUAL((a == c), false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2positive, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2positive, Vli, vli_extented_type_two )
 {
     typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;    
 
@@ -759,7 +759,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2positive, Vli, vli_t
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_positive_negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_positive_negative, Vli, vli_extented_type_two )
 {
     typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;    
     
@@ -778,7 +778,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_positive_negative, Vl
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_negative_positive, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_negative_positive, Vli, vli_extented_type_two )
 {
     typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;    
     
@@ -797,7 +797,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_negative_positive, Vl
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2negative, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( no_truncated_multiplication_2negative, Vli, vli_extented_type_two )
 {
     typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;    
     

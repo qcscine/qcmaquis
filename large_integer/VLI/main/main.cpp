@@ -85,20 +85,25 @@ int main (int argc, char * const argv[])
 {
  vli_cpu< unsigned long int, 4> a,b;
  vli_cpu< unsigned long int, 8> c;
+ a[0]=0xffffffffffffffff;
  a[1]=0xffffffffffffffff;
- a[2]=0xffffffffffffffff;
- a[3]=0xffffffffffffffff;
+ a[2]=0xffffffffffffff;
+ a[3]=0xfffffffffffffff;
+
+ 
+ b[0]=0xffffffffffffffff;
  b[1]=0xffffffffffffffff;
- b[2]=0xffffffffffffff;
- b[3]=0xfffffffffffffff;
+ b[2]=0xffffffffffffffff;
+ b[3]=0xffffffffffffffff;
+
 
 large_int ga,gb,gc;
 ga = a.get_str();
 gb = b.get_str();
 gc = ga * gb;
 
+//vli::detail::mul256_128_128(&c[0],&a[0],&b[0]);
 vli::detail::mul512_256_256(&c[0],&a[0],&b[0]);
-//vli::detail::mul384_192_192(&r[0],&d[0],&e[0]);
 
  std::cout <<  a << std::endl;
  std::cout <<  ga << std::endl;
