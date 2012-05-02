@@ -242,6 +242,17 @@ namespace ambient {
     }
 
     template<typename T>
+    void exp_diagonal_rc_c(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, pinned const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
+        int i = ctxt.get_block_id().y;
+        int j = ctxt.get_block_id().x;
+        std::complex<T>* ed = current(e)(i, j);
+        T* ad = current(a)(i, j);
+        size_t size = get_mem_dim(e).y;
+        for(int i=0; i < size; i++)
+            ed[i] = exp(ad[i]*alfa);
+    }
+
+    template<typename T>
     void push_back_sqr_gt_c(std::vector<T>*& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
         double prec(1e-10); 
         double* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);

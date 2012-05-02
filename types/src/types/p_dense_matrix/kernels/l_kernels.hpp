@@ -187,6 +187,16 @@ namespace ambient {
     }
 
     template<typename T>
+    void exp_diagonal_rc_l(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, pinned const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
+        ctxt_select("1 from ambient as exp_diagonal where master is 0 and breakdown contains "+id(a));
+        if(!ctxt.involved()) return;
+        //ambient::cout << "2dbcd in sqrt_diagonal ("<< ambient::rank() <<"):\n"; credentials(a);
+
+        block_2d_cycle<pin>(e);
+        block_2d_cycle<assign>(a);
+    }
+
+    template<typename T>
     void gemm_inplace_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
         int num = 1;//get_grid_dim(a).y;
         ctxt_select(num+" from ambient as gemm where master is 0 and breakdown contains "+id(a));
