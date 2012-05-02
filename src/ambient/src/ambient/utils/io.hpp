@@ -18,6 +18,13 @@ namespace ambient {
         }
 
         template<class T>
+        io& operator<<(future<T> const & obj){
+            if(verbose()) std::cout << (T)obj;
+            else nullio << (T)obj; // for symmetry ,)
+            return *this;
+        }
+
+        template<class T>
         io& operator<<(T const & obj){
             if(verbose()) std::cout << obj;
             return *this;
@@ -30,6 +37,10 @@ namespace ambient {
 
         void precision(int p){
             if(verbose()) std::cout.precision(p);
+        }
+
+        void flush(){
+            if(verbose()) std::cout.flush();
         }
     } cout, cerr;
 }

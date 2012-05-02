@@ -17,23 +17,21 @@ namespace ambient {
             this->ghost = (container<sizeof(T)>*)this->naked;
         }
 
-        future(double value)
-        {
+        future(double value){
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
             this->value = (T*)this->naked;
             *this->value = value;
         }
 
-        future(std::complex<double> value)
-        {
+        future(std::complex<double> value){
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
             this->value = (T*)this->naked;
             *this->value = value;
         }
 
-        operator T (){
+        operator T () const {
             if(this->value == NULL){
                 ambient::playout();
                 this->value = (T*)&(*this->ghost);
@@ -41,7 +39,7 @@ namespace ambient {
             return *this->value;
         }
 
-        T*& unfold() {
+        T*& unfold(){
             return (T*&)this->naked;
         }
 
@@ -50,7 +48,7 @@ namespace ambient {
         }
     private:
         ptr    ghost;
-        T*     value;
+        mutable T* value;
         void*  naked;
     };
 

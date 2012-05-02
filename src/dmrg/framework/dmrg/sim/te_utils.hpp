@@ -213,7 +213,7 @@ private:
         bond_exp = op_exp(phys*phys, bond_op, alpha);
         bond_exp = reshape_2site_op(phys, bond_exp);
         block_matrix<Matrix, SymmGroup> U, V, left, right;
-        block_matrix<typename maquis::types::associated_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
+        block_matrix<typename maquis::types::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
         svd(bond_exp, U, V, S);
         Ssqrt = sqrt(S);
         gemm(U, Ssqrt, left);

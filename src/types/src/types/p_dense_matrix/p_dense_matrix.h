@@ -3,8 +3,9 @@
 
 #include "ambient/ambient.hpp"
 #include "types/utils/traits.hpp"
+#include "utils/io.hpp"
 
-#ifdef HDF5
+#ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
 #endif
 
@@ -132,8 +133,8 @@ namespace maquis { namespace types {
         }
 
 #ifdef HAVE_ALPS_HDF5
-//        void load(alps::hdf5::archive & ar) { maquis::cerr << "I don't do much." << std::endl; }
-//        void save(alps::hdf5::archive & ar) const { maquis::cerr << "I don't do much either." << std::endl; }
+        void load(alps::hdf5::archive & ar) { maquis::cerr << "I don't do much." << std::endl; }
+        void save(alps::hdf5::archive & ar) const { maquis::cerr << "I don't do much either." << std::endl; }
 #endif
         // }}}
     public:
@@ -144,8 +145,6 @@ namespace maquis { namespace types {
     class p_dense_matrix_impl :
     public ambient::parallel_t< p_dense_matrix_impl<T> >
     {
-    private:
-        p_dense_matrix_impl();             // avoiding implicit conversions
     public:
         typedef T         value_type;      // The type T of the elements of the matrix
         typedef size_t    size_type;       // Unsigned integer type that represents the dimensions of the matrix
@@ -154,6 +153,7 @@ namespace maquis { namespace types {
         typedef typename ambient::future<T> scalar_type;
 
        ~p_dense_matrix_impl();
+        p_dense_matrix_impl();             // please avoid implicit conversions
         p_dense_matrix_impl(size_type rows, size_type cols, T init_value);
         p_dense_matrix_impl(p_dense_matrix_impl const& m);
         value_type& get(size_type i, size_type j);

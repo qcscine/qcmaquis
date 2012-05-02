@@ -153,6 +153,17 @@ namespace maquis { namespace types {
         return m;
     }
 
+    template<typename T>
+    p_dense_matrix<T> exp(const p_dense_matrix<T>& m, T const & alfa = 1){
+        typename associated_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
+        p_dense_matrix<T> evecs;
+        heev(m, evecs, evals);
+        // evals = exp(alpha*evals); // todo
+        p_dense_matrix<T> e = evecs * evals;
+        e *= conjugate(transpose(evecs));
+        return e;
+    }
+
     // {{{ strassen matrix multiplication algorithm
 
     // {{{ strassen multiplication supplementary functions
@@ -279,7 +290,7 @@ namespace maquis { namespace types {
 
     template<typename T>
     void svd(const p_dense_matrix<T>& a, p_dense_matrix<T>& u, p_dense_matrix<T>& vt,
-             typename associated_diagonal_matrix<p_dense_matrix<double> >::type& s)
+             typename associated_real_diagonal_matrix<p_dense_matrix<T> >::type& s)
     {
         int m = num_rows(a);
         int n = num_cols(a);

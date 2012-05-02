@@ -159,7 +159,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
     for (std::size_t p = 1; p < L; ++p)
     {
         block_matrix<Matrix, SymmGroup> t, u, v;
-        block_matrix<typename maquis::types::associated_diagonal_matrix<Matrix>::type, SymmGroup> s;
+        block_matrix<typename maquis::types::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> s;
         
         mps[p-1].make_left_paired();
         mps[p].make_right_paired();
