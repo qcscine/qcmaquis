@@ -4,8 +4,8 @@
 namespace maquis {
 
 #ifdef AMBIENT_IO
-    extern ambient::io cout;
-    extern ambient::io cerr;
+    using ambient::cout;
+    using ambient::cerr;
 #else
     using std::cout;
     using std::cerr;
