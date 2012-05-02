@@ -17,6 +17,7 @@
 #include "dmrg/block_matrix/symmetry.h"
 
 #include "utils/timings.h"
+#include "types/utils/traits.hpp"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
@@ -28,7 +29,7 @@ private:
 public:
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
-    typedef typename Matrix::value_type scalar_type;
+    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     
     block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(),
                  Index<SymmGroup> cols = Index<SymmGroup>());

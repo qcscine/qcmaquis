@@ -13,7 +13,7 @@
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 #include <boost/numeric/bindings/detail/if_row_major.hpp>
 
-#include "types/utils/matrix_vector_traits.h"
+#include "types/utils/traits.hpp"
 
 namespace blas {
     template <typename T, typename MemoryBlock>

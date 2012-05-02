@@ -14,7 +14,8 @@
 #include "dmrg/utils/random.hpp"
 #include <alps/numeric/isnan.hpp>
 #include <alps/numeric/isinf.hpp>
-#include <alps/numeric/real.hpp>
+
+#include "types/utils/traits.hpp"
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
@@ -249,8 +250,8 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
         maquis::types::scalar_norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
     timer.end();
     assert( ret == ret );
-    assert( alps::numeric::real(ret) >= 0);
-    return sqrt(alps::numeric::real(ret));
+    assert( maquis::traits::real(ret) >= 0);
+    return sqrt(maquis::traits::real(ret));
 }
 
 template<class T>

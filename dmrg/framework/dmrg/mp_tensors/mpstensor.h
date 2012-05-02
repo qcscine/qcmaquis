@@ -27,7 +27,7 @@ template<class Matrix, class SymmGroup>
 class MPSTensor
 {
 public:
-    typedef typename Matrix::value_type scalar_type;
+    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef typename Matrix::value_type value_type;
     typedef double magnitude_type; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
     typedef std::size_t size_type;

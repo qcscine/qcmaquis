@@ -104,6 +104,7 @@ class ALPSModel : public Model<Matrix, SymmGroup>
     typedef alps::BondOperator BondOperator;
     
     typedef typename Matrix::value_type value_type;
+    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef boost::multi_array<value_type,2> alps_matrix;
     
     typedef typename basis_converter<SymmGroup>::I I;
@@ -202,7 +203,7 @@ public:
                         SiteOperator op = ops[n].get<1>();
                         alps_matrix m = alps::get_matrix(value_type(), op, model.site_basis(type), parms, true);
                         
-                        value_type coeff = ops[n].get<0>().value();
+                        scalar_type coeff = ops[n].get<0>().value();
                         site_terms[type].push_back( coeff*convert_matrix(m, type) );
                     }
                     
