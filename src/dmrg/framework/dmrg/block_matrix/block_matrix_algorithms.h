@@ -11,21 +11,14 @@
 
 #include "dmrg/utils/logger.h"
 #include "utils/timings.h"
-#include "types/utils/matrix_vector_traits.h"
+#include "types/utils/traits.hpp"
 #include "types/utils/bindings.hpp"
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
-#include <alps/numeric/real.hpp>
-#include <alps/numeric/imag.hpp>
 
-#include "utils/types.h"
-
-namespace detail {
-    template<class T> struct real_type { typedef T type; };
-    template<class T> struct real_type<std::complex<T> > { typedef T type; };
-}
+#include "types/utils/traits.hpp"
 
 
 // some example functions
@@ -147,8 +140,8 @@ template <class T>
 typename utils::real_type<T>::type gather_real_pred(T const & val)
 {
     assert( check_real(val) );
-    assert( alps::numeric::real(val) > -1e-10 );
-    return alps::numeric::real(val);
+    assert( maquis::traits::real(val) > -1e-10 );
+    return maquis::traits::real(val);
 }
 
 template<class DiagMatrix, class SymmGroup>
@@ -190,7 +183,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type> evals_k;
         for (typename std::vector<typename DiagMatrix::value_type>::const_iterator it = evals_vector[k].begin(); it != evals_vector[k].end(); ++it)
-            evals_k.push_back(alps::numeric::real(*it));
+            evals_k.push_back(maquis::traits::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     }
     /* original version:
@@ -224,7 +217,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type> evals_k;
         for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
-            evals_k.push_back(alps::numeric::real(*it));
+            evals_k.push_back(maquis::traits::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     }
 

@@ -6,7 +6,7 @@
 #include "types/dense_matrix/matrix_element_iterator.hpp"
 #include "types/dense_matrix/vector.hpp"
 #include "types/dense_matrix/detail/dense_matrix_adaptor.hpp"
-#include "types/utils/matrix_vector_traits.h"
+#include "types/utils/traits.hpp"
 
 //#include "utils/function_objects.h"
 #include <utils/timings.h>

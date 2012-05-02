@@ -90,7 +90,7 @@ namespace ietl
     struct vectorspace_traits<SingleSiteVS<Matrix, SymmGroup> >
     {
         typedef MPSTensor<Matrix, SymmGroup> vector_type;
-        typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type;
+        typedef typename MPSTensor<Matrix, SymmGroup>::value_type scalar_type;
         typedef typename MPSTensor<Matrix, SymmGroup>::magnitude_type magnitude_type;
         typedef std::size_t size_type;
     };

@@ -9,8 +9,6 @@
 #ifndef MPS_MPO_OPS_H
 #define MPS_MPO_OPS_H
 
-#include <alps/numeric/real.hpp>
-
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 
@@ -18,6 +16,7 @@
 #include "dmrg/mp_tensors/contractions.h"
 
 #include "dmrg/utils/utils.hpp"
+#include "types/utils/traits.hpp"
 
 template<class Matrix, class SymmGroup>
 std::vector<Boundary<Matrix, SymmGroup> >
@@ -65,11 +64,11 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     if (d == 0) {
         std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
         assert( check_real(left_[mps.length()].traces()[0]) );
-        return alps::numeric::real(left_[mps.length()].traces()[0]);
+        return maquis::traits::real(left_[mps.length()].traces()[0]);
     } else {
         std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
         assert( check_real(right_[0].traces()[0]) );
-        return alps::numeric::real(right_[0].traces()[0]);
+        return maquis::traits::real(right_[0].traces()[0]);
     }
 }
 
@@ -91,7 +90,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     
     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> traces = left.traces(); // overkill
     assert( check_real(traces[0]) );
-    return alps::numeric::real(traces[0]); // real function for future
+    return maquis::traits::real(traces[0]); // real function for future
 }
 
 template<class Matrix, class SymmGroup>
@@ -108,7 +107,7 @@ std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    return alps::numeric::real(left.traces());
+    return maquis::traits::real(left.traces());
 }
 
 template<class Matrix, class SymmGroup>
