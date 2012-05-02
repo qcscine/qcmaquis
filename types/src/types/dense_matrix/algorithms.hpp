@@ -132,11 +132,11 @@ namespace maquis {
             struct sv_type<std::complex<T> > { typedef T type; };
         }
 
-        template<typename T, class MemoryBlock, class DiagMatrix>
+        template<typename T, class MemoryBlock>
         void svd(dense_matrix<T, MemoryBlock> M,
                  dense_matrix<T, MemoryBlock> & U,
                  dense_matrix<T, MemoryBlock>& V,
-                 DiagMatrix & S)
+                 typename associated_real_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type& S)
         {
             BOOST_CONCEPT_ASSERT((maquis::types::Matrix<dense_matrix<T, MemoryBlock> >));
             DCOLLECTOR_ADD(svd_collector, M.num_cols())
@@ -145,12 +145,10 @@ namespace maquis {
             typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));
-            typename associated_vector<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type S_(k);
-            int info = boost::numeric::bindings::lapack::gesvd('S', 'S', M, S_, U, V);
+            int info = boost::numeric::bindings::lapack::gesvd('S', 'S', M, S.get_values(), U, V);
             if (info != 0)
                 throw std::runtime_error("Error in SVD!");
 
-            S = DiagMatrix(S_);
             timer.end();
         }
         

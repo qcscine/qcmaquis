@@ -135,7 +135,7 @@ private:
 template<class Matrix, class SymmGroup>
 Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
 {
-    typedef typename maquis::types::associated_diagonal_matrix<Matrix>::type dmt;
+    typedef typename maquis::types::associated_real_diagonal_matrix<Matrix>::type dmt;
     
     for (std::size_t k = 0; k < b.aux_dim(); ++k)
     {

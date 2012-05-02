@@ -131,11 +131,11 @@ namespace ambient {
             while(!L.empty()){
                 std::list<int>::iterator zi = L.begin();
                 while(zi != L.end()){
-                    if(!updated(c)(*zi,i).trylock()){ zi++; continue; }
+                    if(!updated(a)(*zi,i).trylock()){ zi++; continue; }
                     T* ad = current(a)(*zi,j);
                     T* cd = updated(a)(*zi,i); // a(z,j) x b(j,i) => c(z,i)
                     gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                    updated(c)(*zi,i).unlock();
+                    updated(a)(*zi,i).unlock();
                     L.erase(zi++);
                 }
             }
