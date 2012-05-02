@@ -81,8 +81,8 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    void p_diagonal_matrix<T>::exp(){ 
-        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, *this);
+    void p_diagonal_matrix<T>::exp(const T& alfa){ 
+        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, *this, alfa);
     }
 
     template<typename T>
@@ -102,8 +102,8 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    p_diagonal_matrix<T> exp(p_diagonal_matrix<T> m){
-        m.exp();
+    p_diagonal_matrix<T> exp(p_diagonal_matrix<T> m, const T& alfa = 1.){
+        m.exp(alfa);
         return m;
     }
 
