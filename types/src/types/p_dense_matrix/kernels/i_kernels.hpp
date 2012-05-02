@@ -1,12 +1,11 @@
+#ifndef __MAQUIS_TYPES_I_KERNELS_HPP__
+#define __MAQUIS_TYPES_I_KERNELS_HPP__
 namespace ambient {
 
-    void randomize(std::complex<double>* ad){
-        //(*ad).real() = drand48();
-        //(*ad).imag() = drand48();
-    }
-
-    void randomize(double *ad){
-        *ad = drand48();
+    template<typename T> void randomize(T* ad){ *ad = drand48(); }
+    template<typename T> void randomize(std::complex<T>* ad){
+        (*ad).real() = drand48();
+        (*ad).imag() = drand48();
     }
 
     template<typename T>
@@ -77,3 +76,4 @@ namespace ambient {
     }
 
 }
+#endif

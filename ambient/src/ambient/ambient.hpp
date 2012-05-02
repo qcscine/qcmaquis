@@ -2,9 +2,9 @@
 #define AMBIENT_INTERFACE
 #include "ambient/ambient.h"
 #include "ambient/utils/memory.hpp"
-#include "ambient/utils/jstrings.hpp"
+#include "ambient/utils/jstrings.h"
 #include "ambient/interface/forwarding.h"
-#include "utils/io.hpp"
+#include "ambient/utils/io.hpp"
 
 namespace ambient{
 
@@ -43,18 +43,6 @@ namespace ambient{
 
     // {{{ realization of interface functions
     #include "ambient/interface/pp/push.pp.hpp" // all variants of push
-
-    void set_num_threads(size_t n){ 
-        controller.set_num_threads(n);
-    }
-
-    size_t get_num_threads(){
-        return controller.get_num_threads();
-    }
-
-    void playout(){ 
-        controller.flush(); 
-    }
 
     template<typename T>
     void assign(const T& ref, int i, int j){

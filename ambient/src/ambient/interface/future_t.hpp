@@ -52,6 +52,16 @@ namespace ambient {
         void*  naked;
     };
 
+    template<typename T1, typename T2>
+    const T2 operator / (T1 lhs, future<T2> rhs){ 
+        return (lhs / (T2)rhs); 
+    }
+
+    template<typename T>
+    const future<T> operator + (future<T> lhs, future<T> rhs){ 
+        return future<T>((T)lhs + (T)rhs); // explicit
+    }
+
 }
 
 #endif

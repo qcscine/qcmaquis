@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_dense, T, test_types)
     ambient::model >> dim(32,32), dim(32,32), dim(32,32);
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
-    maquis::types::algorithms::generate(sA,Rd); // Rd is rand generator static variable inside utilities
+    maquis::types::generate(sA,Rd); // Rd is rand generator static variable inside utilities
     pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
     BOOST_CHECK(sA==pA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
