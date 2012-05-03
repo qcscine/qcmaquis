@@ -75,8 +75,13 @@ namespace vli{
         BOOST_PP_REPEAT(FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
         #undef FUNCTION_mul_twonbits_nbits_nbits
         /* ------------------------------------------------------- */
+        //multiplication Addition
+        #define FUNCTION_muladd_twonbits_nbits_nbits(z, n, unused) \
+            void NAME_MULADD_TWONBITS_NBITS_NBITS(n)(unsigned long int* x, unsigned long int const* y,unsigned long int const* w);
 
-        void muladd384_192_192(unsigned long int * x,unsigned long int const* y,unsigned long int const* z); // 384 += 192*192
+        BOOST_PP_REPEAT(FOUR, FUNCTION_muladd_twonbits_nbits_nbits, ~)
+        #undef FUNCTION_muladd_twonbits_nbits_nbits
+        /* ------------------------------------------------------- */
     }
 }
         

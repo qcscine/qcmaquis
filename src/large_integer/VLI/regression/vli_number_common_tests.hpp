@@ -68,6 +68,130 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate_and_construct_from_negative_int, Vli, vli_
     BOOST_CHECK_EQUAL(a,am);
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_extend, Vli, vli_extented_type_two )
+{
+    Vli a,b;
+    typedef vli::vli_cpu<typename Vli::value_type,  Vli::size+1 > vli_result_type_cpu;    
+    vli::test::fill_random(a);
+    vli::test::fill_random(b);
+    mpz_class agmp(a.get_str()), bgmp(b.get_str());    
+
+    vli_result_type_cpu c = plus_extend(a,b);
+    mpz_class cgmp = agmp + bgmp;    
+
+    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_extented_CB, Vli, vli_extented_type)
+{
+    Vli a,b,c;
+
+    std::size_t size (Vli::size);   
+
+    for(std::size_t i(0); i < size-1; ++i) 
+        a[i] = 0xffffffffffffffff;  
+    b[0] = 1; 
+    a+=b; 
+    
+    c[size-1] = 1;  
+   
+    BOOST_CHECK_EQUAL(a,c);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_extented_BB, Vli, vli_extented_type)
+{
+    Vli a,b,c;
+
+    std::size_t size (Vli::size);   
+    a[size-1] = 0x1;  
+    b[0] = 0x1; 
+    a-=b; 
+    
+    for(std::size_t i(0); i < size-1; ++i) 
+        c[i] = 0xffffffffffffffff;  
+   
+    BOOST_CHECK_EQUAL(a,c);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( positive_multiply_64bits_assign_extented_BB, Vli, vli_extented_type)
+{
+    Vli a,c;
+    unsigned long int b=2;
+
+    std::size_t size (Vli::size);   
+
+    for(std::size_t i(0); i < size-1; ++i) 
+        a[i] = 0xffffffffffffffff;
+
+    a*=b; 
+    
+    c[0] = 0xfffffffffffffffe;
+ 
+    for(std::size_t i(1); i < size-1; ++i) 
+        c[i] = 0xffffffffffffffff;  
+     
+    c[size-1] = 1;
+   
+    BOOST_CHECK_EQUAL(a,c);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( negative_multiply_64bits_assign_extented_BB, Vli, vli_extented_type)
+{
+    Vli a,c;
+    long int b=-2;
+    long int d=-1;
+
+    std::size_t size (Vli::size);   
+
+    for(std::size_t i(0); i < size-1; ++i) 
+        a[i] = 0xffffffffffffffff;
+
+    a*=b; 
+    
+    c[0] = 0x2;
+ 
+    for(std::size_t i(1); i < size; ++i) 
+        c[i] = 0;  
+     
+    c[size-1] = 0xfffffffffffffffe;  
+    BOOST_CHECK_EQUAL(a,c);
+
+    a*=d;
+
+    c[0] = 0xfffffffffffffffe;
+ 
+    for(std::size_t i(1); i < size-1; ++i) 
+        c[i] = 0xffffffffffffffff;  
+     
+    c[size-1] = 1;
+
+    BOOST_CHECK_EQUAL(a,c);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiply_nbits_assign_extented_BB, Vli, vli_extented_type)
+{
+    Vli a,c,b;
+      
+    b[0]=2;    
+
+    std::size_t size (Vli::size);   
+
+    for(std::size_t i(0); i < size-1; ++i) 
+        a[i] = 0xffffffffffffffff;
+
+    a*=b; 
+
+    c[0] = 0xfffffffffffffffe;
+ 
+    for(std::size_t i(1); i < size-1; ++i) 
+        c[i] = 0xffffffffffffffff;  
+     
+    c[size-1] = 1;
+
+
+    BOOST_CHECK_EQUAL(a,c);
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence, Vli, vli_extented_type )
 {
     Vli a;

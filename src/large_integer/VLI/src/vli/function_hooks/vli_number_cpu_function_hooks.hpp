@@ -37,6 +37,10 @@ namespace vli
     template<typename BaseInt, std::size_t Size>
     void mul(BaseInt * x,BaseInt const* y,BaseInt const* z);
 
+    //multiplication Addition (only for the inner product)
+    template<typename BaseInt, std::size_t Size>
+    void muladd(BaseInt * x,BaseInt const* y,BaseInt const* z);
+
     //????_assign functions
     template <class BaseInt, std::size_t Size>
     void plus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b ){
@@ -49,7 +53,7 @@ namespace vli
     }
     
     template <class BaseInt, std::size_t Size>
-    void addition_extension(vli_cpu<BaseInt,Size+1> & vli_a, vli_cpu<BaseInt,Size> const& vli_b, vli_cpu<BaseInt,Size> const& vli_c){
+    void plus_extend_assign(vli_cpu<BaseInt,Size+1> & vli_a, vli_cpu<BaseInt,Size> const& vli_b, vli_cpu<BaseInt,Size> const& vli_c){
         add_extension<BaseInt, Size>(&vli_a[0],&vli_b[0],&vli_c[0]);
     }
 
@@ -80,7 +84,7 @@ namespace vli
     
     template <class BaseInt, std::size_t Size>
     void multiply_add_assign(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
-        detail::muladd384_192_192(&vli_res[0],&vli_a[0],&vli_b[0]);
+        muladd<BaseInt,Size>(&vli_res[0],&vli_a[0],&vli_b[0]);
     }
 
     /* ---------------------------------------------------- Begin Addition specialization ---------------------------------------------------- */
@@ -167,7 +171,18 @@ namespace vli
     BOOST_PP_REPEAT(FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
     #undef FUNCTION_mul_twonbits_nbits_nbits
     /* ---------------------------------------------------- end Multiplicatio specialization ---------------------------------------------------- */
+    /* ---------------------------------------------------- Begin Multiplication Addition specialization ---------------------------------------------------- */
+    //specialization muladd2nbits_nbits_nbits, until 512 bits
+    #define FUNCTION_muladd_twonbits_nbits_nbits(z, n, unused) \
+        template<> \
+        void muladd<unsigned long int,BOOST_PP_ADD(n,1)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
+        detail::NAME_MULADD_TWONBITS_NBITS_NBITS(n)(x,y,w); \
+        }; \
 
+    BOOST_PP_REPEAT(FOUR, FUNCTION_muladd_twonbits_nbits_nbits, ~)
+    #undef FUNCTION_muladd_twonbits_nbits_nbits
+
+    /* ---------------------------------------------------- End Multiplication Addition specialization ---------------------------------------------------- */
     
 } //namespace vli
 

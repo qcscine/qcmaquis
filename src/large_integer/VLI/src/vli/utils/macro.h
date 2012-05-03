@@ -31,8 +31,10 @@
 //give the name of the multiplication VLI<64*n> *= long
 #define NAME_MUL_NBITS_64BITS(n)                     BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64)) /* mulnx64_64*/
 #define NAME_MUL_NBITS_NBITS(n)                      BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64))) /* mulnx64_nx64*/
-//give the name of the multiplication VLI<2*n> = VLI<n>*VLI<n> 
-#define NAME_MUL_TWONBITS_NBITS_NBITS(n)             BOOST_PP_CAT(BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_MUL(BOOST_PP_ADD(n,1),2),xx64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64))),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64)))  /* mul2nxx64_nx64_nx64*/
+//give the name of the multiplication VLI<2*n> = VLI<n>*VLI<n> -  mul2nxx64_nx64_nx64
+#define NAME_MUL_TWONBITS_NBITS_NBITS(n) BOOST_PP_CAT(BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_MUL(BOOST_PP_ADD(n,1),2),xx64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64))),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64)))  
+//give the name of the multiplication VLI<2*n> += VLI<n>*VLI<n> -  muladd2nxx64_nx64_nx64
+#define NAME_MULADD_TWONBITS_NBITS_NBITS(n) BOOST_PP_CAT(BOOST_PP_CAT(BOOST_PP_CAT(muladd,BOOST_PP_CAT(BOOST_PP_MUL(BOOST_PP_ADD(n,1),2),xx64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64))),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64)))  
 //give the name of the if statement for the multiplication VLI<64*n> *= long 
 #define NAME_CONDITIONAL_MUL_NBITS_64BITS(n)         BOOST_PP_STRINGIZE(BOOST_PP_CAT(BOOST_PP_CAT(_IsNegative   ,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))) /* _IsNegativenx64_64, for the input sign */
 #define NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)     BOOST_PP_STRINGIZE(BOOST_PP_CAT(BOOST_PP_CAT(_IsNegativeRes,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))) /* _IsNegativeResnx64_64, for the output sign */
@@ -116,6 +118,13 @@
 #define mul6xx64_3x64_3x64 mul384_192_192
 #define mul8xx64_4x64_4x64 mul512_256_256
 
+//MultiplicationAdd
+#define muladd2xx64_1x64_1x64 muladd128_64_64
+#define muladd4xx64_2x64_2x64 muladd256_128_128
+#define muladd6xx64_3x64_3x64 muladd384_192_192
+#define muladd8xx64_4x64_4x64 muladd512_256_256
+
+
 //macro to get the correct name of the register
 #define R(n)        BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_ADD(8,n))) // give register starts from r8 
 #define RCLOTHER(n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(r, BOOST_PP_ADD(8,n)))  // for clother
@@ -164,4 +173,4 @@
 #define MULNTON0(z, n, MAX) \
                 "movq "PPSr1(MAX,n)"(%%rsi), %%rax \n" \
                 BOOST_PP_IF(n,"movq %%rax, %%rbx \n", ) \
-                BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), MULNTON1, n) \
+                BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), MULNTON1, n) 

@@ -77,6 +77,19 @@ namespace vli{
     private:
         BaseInt data_[Size];
     };
+
+    template <class BaseInt, std::size_t Size>
+    class extend_helper {
+
+    };
+/*
+c = extend(a) + b;
+vli c = 5;
+c = plus_extend(a,b);
+
+vli c = 5;
+plus_extend_inplace(c,a,b);
+*/
     
     /**
      multiply and addition operators, suite ...
@@ -96,8 +109,8 @@ namespace vli{
     template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator + (int b, vli_cpu<BaseInt, Size> const& vli_a);
     
-    template <class BaseInt, std::size_t Size1, std::size_t Size2> //extented arithmetic
-    const vli_cpu<BaseInt, Size2> operator + (vli_cpu<BaseInt, Size1> const& vli_a, vli_cpu<BaseInt, Size1> const& vli_b);
+    template <class BaseInt, std::size_t Size> //extented arithmetic
+    const vli_cpu<BaseInt, Size+1> plus_extend(vli_cpu<BaseInt, Size> const& vli_a, vli_cpu<BaseInt, Size> const& vli_b);
 
     template <class BaseInt, std::size_t Size>
     const vli_cpu<BaseInt, Size> operator - (vli_cpu<BaseInt, Size> vli_a, vli_cpu<BaseInt, Size> const& vli_b);
