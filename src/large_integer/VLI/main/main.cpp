@@ -83,39 +83,9 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
- vli_cpu< unsigned long int, 4> a,b;
- vli_cpu< unsigned long int, 8> c;
- a[0]=0xffffffffffffffff;
- a[1]=0xffffffffffffffff;
- a[2]=0xffffffffffffff;
- a[3]=0xfffffffffffffff;
 
- 
- b[0]=0xffffffffffffffff;
- b[1]=0xffffffffffffffff;
- b[2]=0xffffffffffffffff;
- b[3]=0xffffffffffffffff;
-
-
-large_int ga,gb,gc;
-ga = a.get_str();
-gb = b.get_str();
-gc = ga * gb;
-
-//vli::detail::mul256_128_128(&c[0],&a[0],&b[0]);
-vli::detail::mul512_256_256(&c[0],&a[0],&b[0]);
-
- std::cout <<  a << std::endl;
- std::cout <<  ga << std::endl;
- std::cout <<  b << std::endl;
- std::cout <<  gb << std::endl;
- std::cout << c << std::endl;
- std::cout << gc << std::endl;
- 
-if(c.get_str() == gc.get_str() ) printf("----------- ok--------------------- \n ");
-
-//int SizeVector = atoi(argv[1]); 
-/*     
+    int SizeVector = 128;// atoi(argv[1]); 
+     
  polynomial_vector_type v1gmp(SizeVector);
  polynomial_vector_type v2gmp(SizeVector);
  polynomial_type pgmp;
@@ -134,22 +104,22 @@ if(c.get_str() == gc.get_str() ) printf("----------- ok--------------------- \n 
  polynomial_result_type_cpu result_cpu_gpu  ;
    
     fill_vector_random(v1,2);
-    fill_vector_random(v2,2);
+    fill_vector_random(v2,3);
 
-//    fill_vector_negate(v1,2);
-//    fill_vector_negate(v2,3);
-
+    fill_vector_negate(v1,2);
+    fill_vector_negate(v2,3);
+/*
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
-
+*/
     Timer t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
 
     Timer t2("CPU gmp_omp");
     t2.begin();
-       pgmpd = inner_product(v1gmp,v2gmp);
+  //     pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
 
 #ifdef VLI_USE_GPU
@@ -163,9 +133,9 @@ if(c.get_str() == gc.get_str() ) printf("----------- ok--------------------- \n 
    
 //    std::cout << result_pure_cpu << std::endl;
 
-    if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
+    //if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-*/
+
     return 0;
 }
 
