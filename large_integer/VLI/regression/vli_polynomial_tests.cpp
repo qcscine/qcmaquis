@@ -22,12 +22,16 @@ struct polynomial_from_vli_cpu
 };
 
 typedef boost::mpl::transform<
-      vli::test::vli_cpu_type_list
+      vli::test::vli_cpu_type_extented_list
     , polynomial_from_vli_cpu<boost::mpl::_1>
-    >::type polynomial_types;
+    >::type polynomial_types_extented;
         
+typedef boost::mpl::transform<
+      vli::test::vli_cpu_type_extented_list_two
+    , polynomial_from_vli_cpu<boost::mpl::_1>
+    >::type polynomial_types_extented_two;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomial_types_extented )
 {
     Poly pa;
     typedef typename Poly::exponent_type exponent_type;
@@ -51,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( construction_and_coeff_assignment, Poly, polynomi
             BOOST_CHECK_EQUAL(pa(i,j),a[i*Poly::max_order+j]);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_equal, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_equal, Poly, polynomial_types_extented )
 {
     BOOST_STATIC_ASSERT(Poly::max_order >= 2);
     Poly pa;
@@ -70,7 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copy_constructor_and_equal, Poly, polynomial_type
     BOOST_CHECK_EQUAL(pa == pb, false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( assignement_operator, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignement_operator, Poly, polynomial_types_extented )
 {
     BOOST_STATIC_ASSERT(Poly::max_order >= 2);
     Poly pa;
@@ -91,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignement_operator, Poly, polynomial_types )
     BOOST_CHECK_EQUAL(pb == pa, false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign, Poly, polynomial_types_extented )
 {
     Poly pa;
     Poly pb;
@@ -102,7 +106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign, Poly, polynomial_types )
     BOOST_CHECK_EQUAL(pa,pb);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types_extented )
 {
     Poly pa;
     fill_poly_random(pa);
@@ -118,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_zeroth_order, Poly, polynomial_types 
     BOOST_CHECK_EQUAL(pa,pb);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_monomial, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_monomial, Poly, polynomial_types_extented )
 {
     Poly pa;
     fill_poly_random(pa);
@@ -142,7 +146,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_monomial, Poly, polynomial_types )
     BOOST_CHECK_EQUAL(pa,pb);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign, Poly, polynomial_types_extented )
 {
     Poly pa;
     Poly pb;
@@ -156,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign, Poly, polynomial_types )
             BOOST_CHECK_EQUAL(pa(i,j), -pb(i,j));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types_extented )
 {
     Poly pa;
     fill_poly_random(pa);
@@ -172,7 +176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_zeroth_order, Poly, polynomial_types
     BOOST_CHECK_EQUAL(pa,pb);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_monomial, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_monomial, Poly, polynomial_types_extented )
 {
     Poly pa;
     fill_poly_random(pa);
@@ -197,7 +201,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_monomial, Poly, polynomial_types )
     BOOST_CHECK_EQUAL(pa,pb);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_constant, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_constant, Poly, polynomial_types_extented )
 {
     Poly pa;
     fill_poly_random(pa);
@@ -213,7 +217,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_constant, Poly, polynomial_type
             BOOST_CHECK_EQUAL(pa(i,j),pb(i,j)*a);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_monomial, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_monomial, Poly, polynomial_types_extented )
 {
     Poly pa;
     fill_poly_random(pa);
@@ -244,7 +248,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_monomial, Poly, polynomial_types )
             BOOST_CHECK_EQUAL(pa(i,j)*va*vb, pb(i+1,j+1));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types_extented_two )
 {   
     //TODO fix types
     typedef vli::vli_cpu<typename Poly::value_type::size_type, 2*(Poly::value_type::size) > vli_result_type_cpu;
@@ -272,7 +276,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies, Poly, polynomial_types )
 
  }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_keep_order, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_keep_order, Poly, polynomial_types_extented_two )
 {   
     //TODO fix types
     typedef vli::vli_cpu<typename Poly::value_type::size_type, 2*(Poly::value_type::size) > vli_result_type_cpu;
@@ -299,7 +303,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_keep_order, Poly, polynomial_types )
 
  }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Poly, polynomial_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Poly, polynomial_types_extented )
 {
     Poly pa;
     fill_poly_random(pa);
