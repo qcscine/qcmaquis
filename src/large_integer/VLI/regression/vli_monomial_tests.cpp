@@ -15,8 +15,9 @@ using vli::monomial;
 using vli::test::fill_random;
 
 typedef vli::test::vli_cpu_type_list vli_types;
+typedef vli::test::vli_cpu_type_extented_list vli_extented_type;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE ( constructor, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( constructor, Vli, vli_extented_type )
 {
     monomial<Vli> ma;
     monomial<Vli> mb(0,0);
@@ -28,7 +29,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( constructor, Vli, vli_types )
     BOOST_CHECK_EQUAL(mc == md, false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE ( copy_constructor, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( copy_constructor, Vli, vli_extented_type )
 {
     monomial<Vli> ma;
     monomial<Vli> mb(8,5);
@@ -40,7 +41,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( copy_constructor, Vli, vli_types )
     BOOST_CHECK_EQUAL(mb == mc,false);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_vli, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_vli, Vli, vli_extented_type)
 {
     Vli a;
     fill_random(a,Vli::size-1);
@@ -62,7 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_vli, Vli, vli_types )
     BOOST_CHECK_EQUAL(a, a_orig);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_int, Vli, vli_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_int, Vli, vli_extented_type)
 {
     int a = 10;
     int a_orig(a);
