@@ -84,7 +84,7 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 int main (int argc, char * const argv[]) 
 {
 
-    int SizeVector = 128;// atoi(argv[1]); 
+    int SizeVector = 1024;// atoi(argv[1]); 
      
  polynomial_vector_type v1gmp(SizeVector);
  polynomial_vector_type v2gmp(SizeVector);
@@ -116,12 +116,12 @@ int main (int argc, char * const argv[])
     t1.begin();
       result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
-
+/*
     Timer t2("CPU gmp_omp");
     t2.begin();
-  //     pgmpd = inner_product(v1gmp,v2gmp);
+       pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
-
+*/
 #ifdef VLI_USE_GPU
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();   
