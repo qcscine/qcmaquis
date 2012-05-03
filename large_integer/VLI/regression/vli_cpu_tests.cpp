@@ -20,5 +20,4 @@ typedef vli::test::vli_cpu_type_extented_list_two vli_extented_type_two;
 //  load all tests
 //
 #include "regression/vli_number_common_tests.hpp"
-#include "regression/vli_number_extented_tests.hpp"
 

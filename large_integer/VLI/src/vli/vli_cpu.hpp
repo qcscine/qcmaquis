@@ -289,7 +289,7 @@ void mul(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a
 
 template <class BaseInt, std::size_t Size>
 void muladd(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) {         
-     multiply_add_assign<BaseInt, Size>(vli_res, vli_a, vli_b);
+    multiply_add_assign<BaseInt, Size>(vli_res, vli_a, vli_b);
 }
 
 template <class BaseInt, std::size_t Size>
@@ -303,20 +303,9 @@ void negate_inplace(vli_cpu<BaseInt,Size>& v) {
 }
 
 template <class BaseInt, std::size_t Size>
-class extend_helper {
-};
-/*
-c = extend(a) + b;
-vli c = 5;
-c = plus_extend(a,b);
-
-vli c = 5;
-plus_extend_inplace(c,a,b);
-*/
-template <class BaseInt, std::size_t Size1, std::size_t Size2>
-const vli_cpu<BaseInt, Size2> operator + (vli_cpu<BaseInt, Size1> const &vli_a, vli_cpu<BaseInt, Size1> const& vli_b){
-      vli_cpu<BaseInt, Size2> vli_res;
-      addition_extension<BaseInt, Size1, Size2>(vli_res,vli_a,vli_b);      
+const vli_cpu<BaseInt, Size+1> plus_extend (vli_cpu<BaseInt, Size> const &vli_a, vli_cpu<BaseInt, Size> const& vli_b){
+      vli_cpu<BaseInt, Size+1> vli_res;
+      plus_extend_assign<BaseInt, Size>(vli_res,vli_a,vli_b);      
       return vli_res;
 }
 

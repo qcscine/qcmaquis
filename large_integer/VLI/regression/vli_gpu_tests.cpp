@@ -8,7 +8,7 @@
 #include "minimal_polynomial.hpp"
 
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
-#include "vli/polynomial/polynomial_cpu.h"
+#include "vli/polynomial/polynomial.hpp"
 #include "vli/polynomial/monomial.hpp"
 
 #include "vli/detail/bit_masks.hpp"

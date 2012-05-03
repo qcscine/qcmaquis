@@ -1,5 +1,25 @@
 #include "vli/utils/macro.h"
-// to check :  g++ -DNUM=1 -E -P -I /apps/eiger/boost_1_46_1/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
+
+// This assembly code support both data layout SoA and AoS
+// clear the syntax
+//#define PPS(m,n) BOOST_PP_STRINGIZE( BOOST_PP_MUL(BOOST_PP_MUL(m,n),8)) // m*n*8, 8 because long int
+// PPS(1,n) = 0x08 hex = dec 8
+// PPS(2,n) = 0x10 hex = dec 16
+// PPS(3,n) = 0x18 hex = dec 24
+// PPS(4,n) = 0x20 hex = dec 32
+// PPS(5,n) = 0x28 hex = dec 40
+
+// Note : for the sign
+// n64 * 64  = n64 : necessitate to adapt (if), use for VLI *= long , VLI * long
+// n64 * n64 = n64 : natively compatible VLI *= VLI, VLI*VLI
+// n64 * n64 = 2n64 : necessitate to adapt : mul and muladd
+        
+// Note, the ASM X86-64 allows a different managment of the stack
+// I am presently using the red zone there I do not have to allocate 
+// the stack pointer (the frame pointer is removed under x86-64)
+// the red zone is a zone of 128 bytes, enough for my arithmetic        
+
+// to check :  g++ -E -P -I /BOOST_PATH/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
 namespace vli{
     namespace detail{
                      //new functions type : VLI<n*64> *= long int;
@@ -57,10 +77,43 @@ namespace vli{
                           } \
                      
                        #define BOOST_PP_LOCAL_LIMITS (2, 8)
-                     
-                       #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
 
-                    
+                       #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
+// the expansion gives
+//                      void mul192_192(unsigned long int* x, unsigned long int const * y){
+//                          asm( 
+//                              "movq 16(%%rsi)         ,%%rax    \n" // 0 
+//                              "mulq 0(%%rdi)                    \n"
+//                              "movq %%rax             ,%%r15    \n" 
+//                              "movq 8(%%rsi)          ,%%rax    \n" // 1
+//                              "movq %%rax             ,%%rbx    \n"
+//                              "mulq 0(%%rdi)                    \n"
+//                              "movq %%rax             ,%%r14    \n"
+//                              "addq %%rdx             ,%%r15    \n"        
+//                              "movq %%rbx             ,%%rax    \n"
+//                              "mulq 8(%%rdi)                    \n"
+//                              "addq %%rax             ,%%r15    \n"        
+//                              "movq 0(%%rsi)          ,%%rax    \n" // 2
+//                              "movq %%rax             ,%%rbx    \n"
+//                              "mulq 0(%%rdi)                    \n"
+//                              "movq %%rax             ,%%r13    \n"
+//                              "addq %%rdx             ,%%r14    \n"        
+//                              "adcq $0x0              ,%%r15    \n"        
+//                              "movq %%rbx             ,%%rax    \n"
+//                              "mulq 8(%%rdi)                    \n"
+//                              "addq %%rax             ,%%r14    \n"        
+//                              "adcq %%rdx             ,%%r15    \n"        
+//                              "movq %%rbx             ,%%rax    \n"
+//                              "mulq 16(%%rdi)                   \n"
+//                              "addq %%rax             ,%%r15    \n"        
+//                              "movq %%r13             ,0(%%rdi) \n"
+//                              "movq %%r14             ,8(%%rdi) \n"
+//                              "movq %%r15             ,16(%%rdi)\n"
+//                             : : :"rax","rbx","rdx","r15","r14","r13","memory" 
+//                         ); 
+//                      };
+                     
+
                        void mul128_64_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rcx */){
                           asm( 
                               "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
