@@ -101,14 +101,6 @@ namespace vli{
     class extend_helper {
 
     };
-/*
-c = extend(a) + b;
-vli c = 5;
-c = plus_extend(a,b);
-
-vli c = 5;
-plus_extend_inplace(c,a,b);
-*/
     
     /**
      multiply and addition operators, suite ...

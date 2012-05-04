@@ -170,7 +170,7 @@ namespace vli
 
     /* ---------------------------------------------------- end Substraction specialization ---------------------------------------------------- */
 
-    /* ---------------------------------------------------- Begin Multipliation specialization ---------------------------------------------------- */
+    /* ---------------------------------------------------- Begin Multiplication specialization ---------------------------------------------------- */
     //specialization mul    
     //specialization mulnbits_64bits, until 512 bits
     #define FUNCTION_mul_nbits_64bits(z, n, unused) \
