@@ -53,13 +53,6 @@ struct data_bits<unsigned long int>
     enum { value = 63 };
 };
 
-template <>
-struct data_bits<unsigned int>
-{
-    BOOST_STATIC_ASSERT( sizeof(unsigned int) == 4 );
-    enum { value = 30 };
-};
-
 template <typename T>
 struct base
 {
