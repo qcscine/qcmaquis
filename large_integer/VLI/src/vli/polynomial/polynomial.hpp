@@ -2,7 +2,7 @@
 *Very Large Integer Library, License - Version 1.0 - May 3rd, 2012
 *
 *Timothee Ewart - University of Geneva, 
-*Andreas Hehn - Swiss Federal Institute of technology Zurich 
+*Andreas Hehn - Swiss Federal Institute of technology Zurich.
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -488,8 +488,8 @@ polynomial<Coeff, Order> operator / (polynomial<Coeff,Order> p, Coeff const& c) 
 template <class Coeff, unsigned int Order>
 typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type operator * (polynomial<Coeff,Order> const& p1, polynomial<Coeff,Order> const& p2) {
 //      return detail::polynomial_multiply_block_algorithm_helper<polynomial<Coeff,Order> >()(p1,p2);
-        return detail::polynomial_multiply_diagonal_algorithm_helper<polynomial<Coeff,Order> >()(p1,p2);
-//      return detail::polynomial_multiply_helper<polynomial<Coeff,Order> >()(p1,p2);
+//      return detail::polynomial_multiply_diagonal_algorithm_helper<polynomial<Coeff,Order> >()(p1,p2);
+        return detail::polynomial_multiply_helper<polynomial<Coeff,Order> >()(p1,p2);
 }
 
 template <class Coeff, unsigned int Order>
