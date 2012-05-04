@@ -30,7 +30,7 @@
 using vli::vli_cpu;
 using vli::max_int_value;
 using vli::monomial;
-using vli::polynomial_cpu;
+using vli::polynomial;
 using vli::vector_polynomial;
 
 using vli::test::fill_random;

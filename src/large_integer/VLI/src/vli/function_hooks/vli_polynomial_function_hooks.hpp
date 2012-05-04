@@ -27,16 +27,16 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
-#define VLI_POLYNOMIAL_CPU_FUNCTION_HOOKS_HPP
+#ifndef VLI_polynomial_FUNCTION_HOOKS_HPP
+#define VLI_polynomial_FUNCTION_HOOKS_HPP
 
-#include "vli/polynomial/algorithms_polynomial_cpu.hpp"
+#include "vli/polynomial/algorithms_polynomial.hpp"
 #include "vli/vli_cpu.h"
 
 namespace vli{
 
 template<class Vli, unsigned int Order>
-class polynomial_cpu;
+class polynomial;
    
 template<class Vli>
 struct monomial;
@@ -46,9 +46,9 @@ class vli_cpu;
     
 /** Algo based on triangle + diagnoal decomposition, nthreads maximum **/
 template <class BaseInt, std::size_t Size, unsigned int Order>
-void poly_multiply_block_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
-                        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                        polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2) {
+void poly_multiply_block_algo(polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> & result, 
+                        polynomial<vli_cpu<BaseInt, Size>, Order> const & p1, 
+                        polynomial<vli_cpu<BaseInt, Size>, Order> const & p2) {
     // first PASS, half top right corner, 
     unsigned int n(0);
     for(unsigned int i=0;i< Order;++i){ // i will be a thread here, independence loop
@@ -70,9 +70,9 @@ void poly_multiply_block_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & 
     
 /** Algo based on diagonal decomposition, nthreads*nthreads maximum **/    
 template <class BaseInt, std::size_t Size, unsigned int Order>
-void poly_multiply_diag_algo(polynomial_cpu<vli_cpu<BaseInt, Size>, 2*Order> & result, 
-                             polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                             polynomial_cpu<vli_cpu<BaseInt, Size>, Order> const & p2) {   
+void poly_multiply_diag_algo(polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> & result, 
+                             polynomial<vli_cpu<BaseInt, Size>, Order> const & p1, 
+                             polynomial<vli_cpu<BaseInt, Size>, Order> const & p2) {   
     //first pass
     for(unsigned int i(0); i < Order*Order ; ++i)
         diagonal_up(i,result,p1,p2);

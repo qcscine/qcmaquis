@@ -29,8 +29,7 @@
 
 #ifndef VLI_POLYNOMIAL_HPP
 #define VLI_POLYNOMIAL_HPP
-#include "vli/function_hooks/vli_polynomial_cpu_function_hooks.hpp"
-#include "vli/polynomial/algorithms_polynomial_cpu.hpp"
+#include "vli/function_hooks/vli_polynomial_function_hooks.hpp"
 #include "vli/polynomial/monomial.hpp"
 #include "vli/vli_cpu.h"
 
@@ -261,7 +260,7 @@ namespace detail {
             typedef typename polynomial<Coeff,Order>::exponent_type exponent_type;
             typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type result;
 
-            multiply_assign_diagonal(result,p1,p2);
+            poly_multiply_diag_algo(result,p1,p2);
             
             return result;
         
@@ -280,7 +279,7 @@ namespace detail {
             typedef typename polynomial<Coeff,Order>::exponent_type exponent_type;
             typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type result;
             
-            multiply_assign_block(result,p1,p2);
+            poly_multiply_block_algo(result,p1,p2);
             
             return result;
             
@@ -489,8 +488,8 @@ polynomial<Coeff, Order> operator / (polynomial<Coeff,Order> p, Coeff const& c) 
 template <class Coeff, unsigned int Order>
 typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type operator * (polynomial<Coeff,Order> const& p1, polynomial<Coeff,Order> const& p2) {
 //      return detail::polynomial_multiply_block_algorithm_helper<polynomial<Coeff,Order> >()(p1,p2);
-//    return detail::polynomial_multiply_diagonal_algorithm_helper<polynomial<Coeff,Order> >()(p1,p2);
-      return detail::polynomial_multiply_helper<polynomial<Coeff,Order> >()(p1,p2);
+        return detail::polynomial_multiply_diagonal_algorithm_helper<polynomial<Coeff,Order> >()(p1,p2);
+//      return detail::polynomial_multiply_helper<polynomial<Coeff,Order> >()(p1,p2);
 }
 
 template <class Coeff, unsigned int Order>

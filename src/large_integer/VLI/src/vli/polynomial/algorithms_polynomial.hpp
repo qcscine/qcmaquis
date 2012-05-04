@@ -30,6 +30,7 @@
 #ifndef VLI_ALGORITHMS_POLYNOMIAL
 #define VLI_ALGORITHMS_POLYNOMIAL
 
+
 namespace vli{ 
 
 template<class Vli, unsigned int Order>
@@ -101,30 +102,6 @@ void block_algo(int i, int j,
     triangle_down(i,j,result,p1,p2);
 }
     
-//pass block algo function
-template <class BaseInt, std::size_t Size, unsigned int Order>
-void multiply_assign_block(polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> & result,
-                           polynomial<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                           polynomial<vli_cpu<BaseInt, Size>, Order> const & p2){
-    // first PASS, half top right corner, 
-    unsigned int n(0);
-    for(unsigned int i=0;i< Order;++i){ // i will be a thread here, independence loop
-        for(unsigned int j=0; j<=n; ++j){
-            block_algo(j,n-j,result,p1,p2);
-        }   
-        n++; // thread num
-    }   
-        
-    // second PASS, half bottom left corner, 
-    n=1;
-    for(unsigned int i=1; i<Order;++i){  // i will be a thread here, independence loop
-        for(unsigned int j=n; j<Order; ++j){
-            block_algo(j,Order-j+n-1,result,p1,p2);
-        }   
-        n++; // thread num
-    }   
-}
-    
 /** second Algo  based on diagonals n*n symetries **/    
 template <class BaseInt, std::size_t Size, unsigned int Order>
 void diagonal_up(unsigned int n,
@@ -167,18 +144,6 @@ void diagonal_down(unsigned int n,
     }    
 }   
 
-//pass diag algo function    
-template <typename BaseInt, std::size_t Size, unsigned int Order>
-void multiply_assign_diagonal(polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> & result,
-                                polynomial<vli_cpu<BaseInt, Size>, Order> const & p1,
-                                polynomial<vli_cpu<BaseInt, Size>, Order> const & p2){
-    
-    for( int i(0); i < Order*Order ; ++i){
-        diagonal_up<BaseInt,Size,Order>(i,result,p1,p2);     //first pass
-        diagonal_down<BaseInt,Size,Order>(Order*Order - i,result,p1,p2);   //second pass    
-    }
-    
-    }
 } // end namespace
 
 #endif
