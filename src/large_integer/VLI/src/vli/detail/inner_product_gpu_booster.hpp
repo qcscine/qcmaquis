@@ -188,7 +188,7 @@ inner_product_openmp_gpu( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, O
     std::size_t split = (std::size_t)(v1.size()*1);
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic)
     for(std::size_t i=split ; i < size_v ; ++i)
         res[omp_get_thread_num()] += v1[i]*v2[i];
 
