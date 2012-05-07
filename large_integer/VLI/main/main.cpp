@@ -25,7 +25,7 @@
 
 #define Size1 3
 #define Size2 6
-#define Order 11
+#define Order 2
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -104,8 +104,8 @@ int main (int argc, char * const argv[])
  polynomial_result_type_cpu result_mix_cpu_gpu  ;
  polynomial_result_type_cpu result_cpu_gpu  ;
    
-    fill_vector_random(v1,2);
-    fill_vector_random(v2,3);
+    fill_vector_random(v1,1);
+    fill_vector_random(v2,2);
 /*
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
@@ -140,6 +140,9 @@ int main (int argc, char * const argv[])
 #endif
     if(result_pure_cpu_nvidia ==result_pure_cpu ) {printf("OK nvidia\n"); } else{printf("NO OK nvidia \n"); } 
    
+     std::cout << std::hex << result_pure_cpu_nvidia << std::endl;
+     std::cout << " -------------------------------------------------------- " << std::endl;
+     std::cout << std::hex << result_pure_cpu << std::endl;
 /*
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
