@@ -199,8 +199,8 @@ template<typename BaseInt, std::size_t Size>
 void vli_cpu<BaseInt, Size>::print_raw(std::ostream& os) const{
     os << "(" ;
     for(size_type i = size-1; i > 0; --i)
-        os << std::showbase << std::hex << data_[i]<<" ";
-    os << std::showbase << std::hex << data_[0];
+        os << data_[i]<<" ";
+    os << data_[0];
     os << ")";
 }    
 
