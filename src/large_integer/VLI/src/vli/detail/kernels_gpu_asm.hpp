@@ -37,6 +37,15 @@
 // macro for calculating the indices of the addition
 #define I(i,N) BOOST_PP_ADD(i,BOOST_PP_MUL(6,N)) 
 
+#define MUL_BLOCK_SIZE (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U >= 256U) ? 256U : (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U+32U-1U)/32U*32U)) // 32U is the warp size here
+#define MAX_ITERATION_COUNT ((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y+31U)/32U)
+#define INT_DEGREE ((MAX_NUMBER_OF_BITS_THE_LARGE_INTEGER_OCCUPIES+32-1)/32)
+#define INT_DEGREE_PADDED (((INT_DEGREE>>1)<<1)+1)
+#define SLICE (DEGREE_BOUND_X)
+#define SLICE_PADDED (((SLICE>>1)<<1)+1)
+#define SUM_BLOCK_SIZE 256
+
+
 namespace vli{
     namespace detail{
     /* note : ptx is not pure GPU assembly, it is an intermediate,
@@ -105,9 +114,29 @@ namespace vli{
            #undef mul384_192_192_gpu
    } // end mul384_384_gpu
 
-   inline void muladd384_384_gpu(unsigned int* x/* res local*/, unsigned int const* y /* shared */, unsigned int const* z /* shared */){
-
-   }
+    inline void mul384_192_192_gpu(unsigned int* x/* res local*/, unsigned int const* y /* shared */, unsigned int const* z /* shared */){
+           #define mul384_192_gpu(w, n, unused) \
+               asm( \
+                  "mad.lo.cc.u32  %0, %8,  %7, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+                  "madc.lo.cc.u32 %1, %9,  %7, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
+                  "madc.lo.cc.u32 %2, %10, %7, %2; \n\t" /* c[i+2] = a[2] * b[i] (low)  + c[i+1] + CB                                       */ \
+                  "madc.lo.cc.u32 %3, %11, %7, %3; \n\t" /* c[i+3] = a[3] * b[i] (low)  + c[i+3] + CB                                       */ \
+                  "madc.lo.cc.u32 %4, %12, %7, %4; \n\t" /* c[i+4] = a[4] * b[i] (low)  + c[i+4] + CB                                       */ \
+                  "madc.lo.cc.u32 %5, %13, %7, %5; \n\t" /* c[i+5] = a[5] * b[i] (low)  + c[i+5] + CB                                       */ \
+                  BOOST_PP_IF(n,"addc.cc.u32 %6, 0, 0; \n\t",/* no extention n=0 */) /* c[i+6] += CB, n = 0 CB impossible                   */ \
+                  "mad.hi.cc.u32  %1, %8,  %7, %1; \n\t" /* c[i+1] = a[0] * b[i] (high) + c[i+1] + CB (c[i]=0 for i=0)                      */ \
+                  "madc.hi.cc.u32 %2, %9,  %7, %2; \n\t" /* c[i+2] = a[1] * b[i] (high) + c[i+2] + CB                                       */ \
+                  "madc.hi.cc.u32 %3, %10, %7, %3; \n\t" /* c[i+3] = a[2] * b[i] (high) + c[i+3] + CB                                       */ \
+                  "madc.hi.cc.u32 %4, %11, %7, %4; \n\t" /* c[i+4] = a[3] * b[i] (high) + c[i+4] + CB                                       */ \
+                  "madc.hi.cc.u32 %5, %12, %7, %5; \n\t" /* c[i+5] = a[4] * b[i] (high) + c[i+5] + CB                                       */ \
+                  "madc.hi.cc.u32 %6, %13, %7, %6; \n\t" /* c[i+6] = a[5] * b[i] (high) + c[i+6]                                            */ \
+                  :"+r"(x[BOOST_PP_ADD(0,n)]),"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),                                           \
+                   "+r"(x[BOOST_PP_ADD(3,n)]),"+r"(x[BOOST_PP_ADD(4,n)]),"+r"(x[BOOST_PP_ADD(5,n)]),"+r"(x[BOOST_PP_ADD(6,n)])                 \
+                  :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3]),"r"(y[4]),"r"(y[5])                                                       \
+                 );                                                                                                                            \
+           BOOST_PP_REPEAT(MAX_ITERATION_MUL, mul384_192_gpu, ~)
+           #undef mul384_192_gpu
+    }
 
    } //end namespace detail
 } //end namespace vli

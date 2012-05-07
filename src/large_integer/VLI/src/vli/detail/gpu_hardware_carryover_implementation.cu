@@ -4,14 +4,8 @@
 #include "gpu_hardware_carryover_implementation.h"
 #include "single_coefficient_task.h"
 #include "compile_time_constants.h"
+#include "kernels_gpu_asm.hpp"
 
-#define MUL_BLOCK_SIZE (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U >= 256U) ? 256U : (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U+32U-1U)/32U*32U)) // 32U is the warp size here
-#define MAX_ITERATION_COUNT ((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y+31U)/32U)
-#define INT_DEGREE ((MAX_NUMBER_OF_BITS_THE_LARGE_INTEGER_OCCUPIES+32-1)/32)
-#define INT_DEGREE_PADDED (((INT_DEGREE>>1)<<1)+1)
-#define SLICE (DEGREE_BOUND_X)
-#define SLICE_PADDED (((SLICE>>1)<<1)+1)
-#define SUM_BLOCK_SIZE 256
 
 __device__ vli::detail::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
 __device__ unsigned int workblock_count_by_warp[MUL_BLOCK_SIZE / 32];
@@ -76,9 +70,9 @@ polynomial_mul_full(
 			const unsigned int output_degree_y = task.output_degree_y;
 			const unsigned int output_degree_x = task.output_degree_x;
 
-			unsigned int res[INT_DEGREE];
+			unsigned int res[2*INT_DEGREE];
 			#pragma unroll
-			for(unsigned int i = 0; i < INT_DEGREE; ++i)
+			for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
 				res[i] = 0;
 
 			const unsigned int start_degree_x_inclusive = output_degree_x > (DEGREE_BOUND_X - 1) ? output_degree_x - (DEGREE_BOUND_X - 1) : 0;
@@ -89,6 +83,10 @@ polynomial_mul_full(
 			{
 				unsigned int * in_polynomial1 = in_buffer1 + current_degree_x + (current_degree_y * SLICE_PADDED);
 				unsigned int * in_polynomial2 = in_buffer2 + (output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * SLICE_PADDED);
+
+
+//                                 mul384_384_gpu(&sc[0],&sa[(threadid-i)*Size],&sb[i*Size]);
+
 
 				#pragma unroll
 				for(unsigned int degree1 = 0; degree1 < INT_DEGREE; ++degree1)
@@ -105,14 +103,10 @@ polynomial_mul_full(
 						{
 							const unsigned int coefficient2 = in_polynomial2[(degree2 - degree1) * (SLICE_PADDED * DEGREE_BOUND_Y)];
 
-							if (degree2 == INT_DEGREE - 1)
-							{
+							if (degree2 == INT_DEGREE - 1) {
 								res[degree2] += coefficient1 * coefficient2 + carry_over;
-							}
-							else
-							{
-								if (degree2 == degree1)
-								{
+							} else {
+								if (degree2 == degree1) {
 									__wide_mad(res[degree2],carry_over,coefficient1,coefficient2);
 								}
 								else
@@ -124,6 +118,7 @@ polynomial_mul_full(
 					}
 				}
 
+
 				// Calculate the next pair of input coefficients to be multiplied and added to the result
 				current_degree_x++;
 				if (current_degree_x > end_degree_x_inclusive)
@@ -134,9 +129,9 @@ polynomial_mul_full(
 			}
 
 			unsigned int coefficient_id = output_degree_y * MULT_RESULT_DEGREE_BOUND_X + output_degree_x;
-			unsigned int * out2 = out + (coefficient_id * element_count * INT_DEGREE) + element_id; // coefficient->int_degree->element_id
+			unsigned int * out2 = out + (coefficient_id * element_count *2* INT_DEGREE) + element_id; // coefficient->int_degree->element_id
 			#pragma unroll
-			for(unsigned int i = 0; i < INT_DEGREE; ++i)
+			for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
 			{
 				// This is a strongly compute-bound kernel,
 				// so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
@@ -155,22 +150,22 @@ polynomial_sum_intermediate_full(
 	const unsigned int element_count,
 	unsigned int * __restrict__ out)
 {
-	__shared__ unsigned int buf[SUM_BLOCK_SIZE * INT_DEGREE_PADDED];
+	__shared__ unsigned int buf[SUM_BLOCK_SIZE * 2*INT_DEGREE_PADDED];
 
 	unsigned int local_thread_id = threadIdx.x;
 	unsigned int coefficient_id = blockIdx.x;
 
-	unsigned int * t1 = buf + (local_thread_id * INT_DEGREE_PADDED);
+	unsigned int * t1 = buf + (local_thread_id * 2*INT_DEGREE_PADDED);
 	#pragma unroll
-	for(unsigned int i = 0; i < INT_DEGREE; ++i)
+	for(unsigned int i = 0; i <2* INT_DEGREE; ++i)
 		t1[i] = 0;
 
-	const unsigned int * in2 = intermediate + (coefficient_id * element_count * INT_DEGREE) + local_thread_id;
+	const unsigned int * in2 = intermediate + (coefficient_id * element_count *2* INT_DEGREE) + local_thread_id;
 	for(unsigned int element_id = local_thread_id; element_id < element_count; element_id += SUM_BLOCK_SIZE)
 	{
 		unsigned int carry_over = 0;
 		#pragma unroll
-		for(unsigned int degree = 0; degree < INT_DEGREE; ++degree)
+		for(unsigned int degree = 0; degree < 2*INT_DEGREE; ++degree)
 		{
 			unsigned long long res_wide = (unsigned long long)t1[degree] + in2[degree * element_count] + carry_over;
 			t1[degree] = res_wide;
@@ -186,11 +181,11 @@ polynomial_sum_intermediate_full(
 
 		if (local_thread_id < stride)
 		{
-			unsigned int * t2 = buf + ((local_thread_id + stride) * INT_DEGREE_PADDED);
+			unsigned int * t2 = buf + ((local_thread_id + stride) *2* INT_DEGREE_PADDED);
 
 			unsigned int carry_over = 0;
 			#pragma unroll
-			for(unsigned int degree = 0; degree < INT_DEGREE; ++degree)
+			for(unsigned int degree = 0; degree < 2*INT_DEGREE; ++degree)
 			{
 				unsigned long long res_wide = (unsigned long long)t1[degree] + t2[degree] + carry_over;
 				t1[degree] = res_wide;
@@ -201,9 +196,9 @@ polynomial_sum_intermediate_full(
 
 	if (local_thread_id == 0)
 	{
-		unsigned int * out2 = out + (coefficient_id * INT_DEGREE);
+		unsigned int * out2 = out + (coefficient_id * 2*INT_DEGREE);
 		#pragma unroll
-		for(unsigned int i = 0; i < INT_DEGREE; ++i)
+		for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
 			out2[i] = buf[i];
 	}
 }
@@ -259,8 +254,8 @@ namespace vli {
 			work_total_by_size[warp_id] += max_step_count;
 		}
 
-		cudaMemcpyToSymbol(workblock_count_by_warp, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size());
-		cudaMemcpyToSymbol(execution_plan, &(*tasks_reordered.begin()), sizeof(vli::detail::single_coefficient_task) * tasks_reordered.size());
+		cudaMemcpyToSymbolAsync(workblock_count_by_warp, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size());
+		cudaMemcpyToSymbolAsync(execution_plan, &(*tasks_reordered.begin()), sizeof(vli::detail::single_coefficient_task) * tasks_reordered.size());
 	}
 
 	gpu_hardware_carryover_implementation::~gpu_hardware_carryover_implementation()
