@@ -34,6 +34,7 @@
 #include "utils/timings.h"
 
 #include "vli/detail/kernels_gpu.h"
+#include "vli/detail/gpu_hardware_carryover_implementation.h"
 #include <iostream>
 
 namespace vli
@@ -171,7 +172,50 @@ namespace detail
         gpu_memblock<base_int_type> tmp_;
         std::size_t partsize_;
     };
-}
+
+    template <typename Vli, unsigned int Order>
+    class inner_product_gpu_booster_nvidia
+    {
+      private:
+        typedef typename Vli::value_type           base_int_type;
+        enum {factor_element_size = Order * Order * Vli::size };
+        enum {product_element_size = 2*Order * 2*Order * 2 * Vli::size }; // VLi are twice larger
+      public:
+        typedef std::size_t size_type;
+   
+        explicit inner_product_gpu_booster_nvidia(
+                  vector_polynomial<polynomial<Vli,Order> > const& v1
+                , vector_polynomial<polynomial<Vli,Order> > const& v2
+                , size_type partsize
+                )
+        : v1_(partsize*factor_element_size), v2_(partsize*factor_element_size), tmp_(partsize*product_element_size), partsize_(partsize)
+        {
+            assert(partsize <= v1.size());
+            assert(partsize <= v2.size());
+
+            gpu::cu_check_error(cudaMemcpyAsync((void*)v1_.p(),(void*)&v1[0],partsize*factor_element_size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
+            gpu::cu_check_error(cudaMemcpyAsync((void*)v2_.p(),(void*)&v2[0],partsize*factor_element_size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
+            gpu::cu_check_error(cudaMemset((void*)tmp_.p(),0,partsize*product_element_size*sizeof(base_int_type)),__LINE__);
+
+            vli::detail::gpu_hardware_carryover_implementation imp;
+	    imp.run((unsigned int*)v1_.p(), (unsigned int*)v2_.p(),(unsigned int*)tmp_.p(),(unsigned int)partsize_);
+
+            gpu::cu_check_error(cudaGetLastError(),__LINE__);
+        }
+        
+        operator polynomial<vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order>() const {
+            polynomial< vli_cpu<typename Vli::value_type,  2*Vli::size >,2*Order> poly; 
+            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)tmp_.p(),product_element_size*sizeof(base_int_type),cudaMemcpyDeviceToHost),__LINE__);
+            return poly;
+        }
+
+      private:
+        gpu_memblock<base_int_type> v1_;
+        gpu_memblock<base_int_type> v2_;
+        gpu_memblock<base_int_type> tmp_;
+        std::size_t partsize_;
+    };
+} // end namespace detail
 
 namespace detail
 {
@@ -222,6 +266,34 @@ inner_product_gpu( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >
     return res;
 }
 
+template <class BaseInt, std::size_t Size, unsigned int Order>
+polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> 
+inner_product_gpu_nvidia( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
+                           vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+    std::cout<<"inner_product: single thread + nvidia"<<std::endl;
+    assert(v1.size() == v2.size());
+    std::size_t size_v = v1.size();
+    
+    polynomial<vli_cpu<BaseInt,2*Size>, 2*Order> res;
+    std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
+
+  
+    detail::inner_product_gpu_booster_nvidia<vli_cpu<BaseInt,Size>,Order> gpu_product_nvidia(v1,v2,split);
+
+    for(std::size_t i=split ; i < size_v ; ++i){
+        res += v1[i]*v2[i];
+    }
+   
+    res += polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product_nvidia);
+
+ 
+    
+    return res;
+}
+
+
+
+// to test my gpu asm kernels
 template<class BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size> addition_gpu(vli_cpu<BaseInt, Size> & a, vli_cpu<BaseInt, Size> const&b){
     asm_gpu_add<vli_cpu<BaseInt,Size> > addition(a,b); 

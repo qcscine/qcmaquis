@@ -2,10 +2,10 @@
 
 #include <cuda_runtime.h>
 
-namespace maquis
-{
-	class gpu_hardware_carryover_implementation
-	{
+namespace vli {
+    namespace detail {
+
+	class gpu_hardware_carryover_implementation {
 	public:
 		gpu_hardware_carryover_implementation();
 
@@ -14,11 +14,7 @@ namespace maquis
 		void prepare(unsigned int max_element_count);
 
 		// All buffers should be in device memory
-		cudaError_t run(
-			unsigned int * d_input_vector1,
-			unsigned int * d_input_vector2,
-			unsigned int * d_output_polynomial,
-			unsigned int element_count);
+		void run( unsigned int * d_input_vector1, unsigned int * d_input_vector2, unsigned int * d_output_polynomial, unsigned int element_count);
 
 	private:
 		// Disable copying
@@ -28,4 +24,6 @@ namespace maquis
 		unsigned int element_count_prepared;
 		unsigned int * d_intermediate_result;
 	};
-}
+    } // end namespace detail
+ }//end namespace vli
+
