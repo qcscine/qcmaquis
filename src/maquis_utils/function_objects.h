@@ -16,7 +16,7 @@ namespace utils {
 #define DEFINE_FUNCTION_OBJECT(name, return_type, arg_type) \
 struct functor_##name { template<class T> return_type operator() (arg_type t) { return name(t); } };
     
-    DEFINE_FUNCTION_OBJECT(trace, typename T::value_type, T const &)
+    DEFINE_FUNCTION_OBJECT(trace, typename maquis::traits::scalar_type<T>::type, T const &)
     DEFINE_FUNCTION_OBJECT(transpose, T, T const &)
     DEFINE_FUNCTION_OBJECT(conj, T, T)
     DEFINE_FUNCTION_OBJECT(conjugate, T, T const &)
