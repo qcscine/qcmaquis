@@ -161,7 +161,7 @@ namespace ambient { namespace models {
             void set_thread_revision_base(size_t);
             std::vector<v_model::revision*> revisions;
             size_t t_size;
-            pthread_key_t thread_revision_base;
+            size_t* thread_revision_base;
             size_t revision_base;
             dim2 init_dim;
         };

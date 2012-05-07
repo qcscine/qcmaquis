@@ -15,15 +15,15 @@ namespace ambient{
         friend void intrusive_ptr_release<>(T* p);
         long references;
 
-        parallel_t()
-        : references(0)
-        {
+        parallel_t(){
+            this->references = 0;
             this->t_size = sizeof(value_type);
         }
 
         parallel_t(const T& o)
-        : references(0)
+        : models::v_model::object()
         {
+            this->references = 0;
             this->t_size = sizeof(value_type);
             this->pt_set_dim(o.get_dim().x, o.get_dim().y);
             ambient::push(static_cast<copy_t>(&ambient::copy_l), 

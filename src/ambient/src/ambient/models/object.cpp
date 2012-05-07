@@ -6,7 +6,7 @@ namespace ambient { namespace models {
     v_model::object::object()
     : revision_base(0)
     {
-        pthread_key_create(&thread_revision_base, free);
+        this->thread_revision_base = (size_t*)calloc(controller.get_num_threads(), sizeof(size_t));
     }
 
     v_model::object::~object(){
@@ -46,13 +46,7 @@ namespace ambient { namespace models {
     }
 
     size_t v_model::object::get_thread_revision_base() const {
-        void* base = pthread_getspecific(this->thread_revision_base);
-        if(base == NULL){
-            base = malloc(sizeof(size_t));
-            *(size_t*)base = 0;
-            pthread_setspecific(this->thread_revision_base, base);
-        }
-        return *(size_t*)base;
+        return this->thread_revision_base[ctxt.get_tid()];
     }
 
     void v_model::object::set_revision_base(size_t r){
@@ -60,12 +54,7 @@ namespace ambient { namespace models {
     }
 
     void v_model::object::set_thread_revision_base(size_t r){
-        void* base = pthread_getspecific(this->thread_revision_base);
-        if(base == NULL){
-            base = malloc(sizeof(size_t));
-            pthread_setspecific(this->thread_revision_base, base);
-        }
-        *(size_t*)base = r;
+        this->thread_revision_base[ctxt.get_tid()] = r;
     }
 
 } }
