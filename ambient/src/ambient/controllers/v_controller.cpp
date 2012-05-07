@@ -84,6 +84,7 @@ namespace ambient { namespace controllers {
             this->tasks[i].id = i;
             pthread_mutex_init(&this->mpool[i], NULL);
         }
+        ctxt.set_tid(0); // master thread id is 0
     }
 
     void* v_controller::stream(void* list){
@@ -217,7 +218,6 @@ namespace ambient { namespace controllers {
     void v_controller::flush(){
         if(this->stack.empty()) return;
         //double t1 = omp_get_wtime();
-        //printf("Playout!\n");
         while(!this->stack.end_reached())  // estimating operations credits 
             this->stack.pick()->weight();
         this->stack.sort();                // sorting operations using credit

@@ -5,7 +5,7 @@
 namespace ambient { namespace models {
 
     v_model::v_model()
-    : item_dim(dim2(16,16)) // to revert to 128,128
+    : mem_dim(dim2(16,16)), work_dim(dim2(16,16)), item_dim(dim2(16,16)) // to revert to 128,128
     {
     }
 
