@@ -4,7 +4,6 @@
 #include "gpu_hardware_carryover_implementation.h"
 #include "single_coefficient_task.h"
 #include "compile_time_constants.h"
-#include "cuda_util.cuh"
 
 #define MUL_BLOCK_SIZE (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U >= 256U) ? 256U : (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U+32U-1U)/32U*32U)) // 32U is the warp size here
 #define MAX_ITERATION_COUNT ((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y+31U)/32U)
@@ -14,7 +13,7 @@
 #define SLICE_PADDED (((SLICE>>1)<<1)+1)
 #define SUM_BLOCK_SIZE 256
 
-__device__ maquis::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
+__device__ vli::detail::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
 __device__ unsigned int workblock_count_by_warp[MUL_BLOCK_SIZE / 32];
 
 // (low_32_bits : acc, high_32_bits : co) = acc + c1 * c2
@@ -70,7 +69,7 @@ polynomial_mul_full(
 	unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
 	for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id)
 	{
-		maquis::single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MUL_BLOCK_SIZE)];
+		vli::detail::single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MUL_BLOCK_SIZE)];
 		const unsigned int step_count = task.step_count;
 		if (step_count > 0)
 		{
@@ -209,8 +208,8 @@ polynomial_sum_intermediate_full(
 	}
 }
 
-namespace maquis
-{
+namespace vli {
+    namespace detail {
 	gpu_hardware_carryover_implementation::gpu_hardware_carryover_implementation()
 		: d_intermediate_result(0), element_count_prepared(0)
 	{
@@ -221,12 +220,12 @@ namespace maquis
 		for(unsigned int i = 0; i < work_total_by_size.size(); ++i)
 			work_total_by_size[i] = 0;
 
-		std::vector<maquis::single_coefficient_task> tasks(((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y + 32 - 1) / 32) * 32);
+		std::vector<vli::detail::single_coefficient_task> tasks(((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y + 32 - 1) / 32) * 32);
 		for(unsigned int degree_y = 0; degree_y < MULT_RESULT_DEGREE_BOUND_Y; ++degree_y)
 		{
 			for(unsigned int degree_x = 0; degree_x < MULT_RESULT_DEGREE_BOUND_X; ++degree_x)
 			{
-				maquis::single_coefficient_task& task = tasks[degree_y * MULT_RESULT_DEGREE_BOUND_X + degree_x];
+				vli::detail::single_coefficient_task& task = tasks[degree_y * MULT_RESULT_DEGREE_BOUND_X + degree_x];
 				task.output_degree_x = degree_x;
 				task.output_degree_y = degree_y;
 
@@ -236,7 +235,7 @@ namespace maquis
 		// Fill the task list up to the multiple of the warp size
 		for(unsigned int i = MULT_RESULT_DEGREE_BOUND_X * MULT_RESULT_DEGREE_BOUND_Y; i < tasks.size(); ++i)
 		{
-			maquis::single_coefficient_task& task = tasks[i];
+			vli::detail::single_coefficient_task& task = tasks[i];
 			task.output_degree_x = 0;
 			task.output_degree_y = 0;
 			task.step_count = 0;
@@ -244,9 +243,9 @@ namespace maquis
 		// Sort the tasks in step_count descending order
 		std::sort(tasks.begin(), tasks.end(), single_coefficient_task_sort);
 
-		maquis::single_coefficient_task empty_task;
+		vli::detail::single_coefficient_task empty_task;
 		empty_task.step_count = 0;
-		std::vector<maquis::single_coefficient_task> tasks_reordered(MUL_BLOCK_SIZE * MAX_ITERATION_COUNT, empty_task);
+		std::vector<vli::detail::single_coefficient_task> tasks_reordered(MUL_BLOCK_SIZE * MAX_ITERATION_COUNT, empty_task);
 		for(unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id)
 		{
 			unsigned int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin();
@@ -261,7 +260,7 @@ namespace maquis
 		}
 
 		cudaMemcpyToSymbol(workblock_count_by_warp, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size());
-		cudaMemcpyToSymbol(execution_plan, &(*tasks_reordered.begin()), sizeof(maquis::single_coefficient_task) * tasks_reordered.size());
+		cudaMemcpyToSymbol(execution_plan, &(*tasks_reordered.begin()), sizeof(vli::detail::single_coefficient_task) * tasks_reordered.size());
 	}
 
 	gpu_hardware_carryover_implementation::~gpu_hardware_carryover_implementation()
@@ -270,7 +269,7 @@ namespace maquis
 			cudaFree(d_intermediate_result);
 	}
 
-	cudaError_t gpu_hardware_carryover_implementation::run(
+	void  gpu_hardware_carryover_implementation::run(
 		unsigned int * d_input_vector1,
 		unsigned int * d_input_vector2,
 		unsigned int * d_output_polynomial,
@@ -288,7 +287,7 @@ namespace maquis
 				element_count,
 				d_intermediate_result);
 
-			getLastCudaError("CUDA polynomial_mul Kernel execution failed");
+//			getLastCudaError("CUDA polynomial_mul Kernel execution failed");
 		}
 
 		{
@@ -300,10 +299,10 @@ namespace maquis
 				element_count,
 				d_output_polynomial);
 
-			getLastCudaError("CUDA polynomial_sum_intermediate Kernel execution failed");
+//			getLastCudaError("CUDA polynomial_sum_intermediate Kernel execution failed");
 		}
 
-		return cudaSuccess;
+//		return cudaSuccess;
 	}
 
 	void gpu_hardware_carryover_implementation::prepare(unsigned int max_element_count)
@@ -311,8 +310,9 @@ namespace maquis
 		if (max_element_count > element_count_prepared)
 		{
 			if (d_intermediate_result)
-			    checkCudaErrors(cudaFree(d_intermediate_result));
-			checkCudaErrors(cudaMalloc((void **)&d_intermediate_result, SINGLE_MULT_RESULT_POLYNOMIAL_UINT_COUNT * sizeof(unsigned int) * max_element_count));
+			    (cudaFree(d_intermediate_result));
+			(cudaMalloc((void **)&d_intermediate_result, SINGLE_MULT_RESULT_POLYNOMIAL_UINT_COUNT * sizeof(unsigned int) * max_element_count));
 		}
 	}
+    }
 }

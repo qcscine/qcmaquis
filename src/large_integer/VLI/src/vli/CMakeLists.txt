@@ -31,5 +31,5 @@ add_library(vli_cpu
 ########################################################################
 
 if(VLI_COMPILE_GPU)
-    CUDA_ADD_LIBRARY(vli_gpu detail/kernels_gpu.cu)
+    CUDA_ADD_LIBRARY(vli_gpu detail/kernels_gpu.cu detail/gpu_hardware_carryover_implementation.cu)
 endif(VLI_COMPILE_GPU)
