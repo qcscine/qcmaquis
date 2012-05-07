@@ -185,7 +185,7 @@ inner_product_openmp_gpu( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, O
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order>  res[omp_get_max_threads()];
-    std::size_t split = (std::size_t)(v1.size()*1);
+    std::size_t split = (std::size_t)(v1.size()*VLI_SPLIT_PARAM);
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
     #pragma omp parallel for schedule(dynamic)
@@ -209,7 +209,7 @@ inner_product_gpu( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >
     std::size_t size_v = v1.size();
     
     polynomial<vli_cpu<BaseInt,2*Size>, 2*Order> res;
-    std::size_t split = static_cast<std::size_t>(1*v1.size());
+    std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
      
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 

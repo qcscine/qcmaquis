@@ -78,7 +78,7 @@ inner_product_openmp( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order
 
     std::vector<polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> > res(omp_get_max_threads()); 
    
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic)
     for(long i=0 ; i < size_v ; ++i){
         res[omp_get_thread_num()] += v1[i]*v2[i];
     }
