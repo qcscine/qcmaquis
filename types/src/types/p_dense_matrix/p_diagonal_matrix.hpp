@@ -81,12 +81,14 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    void p_diagonal_matrix<T>::exp(const T& alfa){ 
+    void p_diagonal_matrix<T>::exp(const T& alfa){
+        assert(false);
         ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, *this, alfa);
     }
 
     template<typename T>
     void p_diagonal_matrix<T>::sqrt(){ 
+        assert(false);
         ambient::push(ambient::sqrt_diagonal_l<T>, ambient::sqrt_diagonal_c<T>, *this);
     }
 
@@ -109,6 +111,7 @@ namespace maquis { namespace types {
 
     template<typename T>
     p_diagonal_matrix< std::complex<T> > exp(const p_diagonal_matrix<T>& m, const std::complex<T>& alfa){
+        assert(false);
         p_diagonal_matrix< std::complex<T> > e(num_rows(m), num_rows(m));
         ambient::push(ambient::exp_diagonal_rc_l<T>, ambient::exp_diagonal_rc_c<T>, e, m, alfa);
         return e;
