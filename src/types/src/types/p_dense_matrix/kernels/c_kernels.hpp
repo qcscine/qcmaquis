@@ -488,6 +488,20 @@ namespace ambient {
         }
     }
 
+    template<typename T>
+    void transpose_out_c(pinned const maquis::types::p_dense_matrix_impl<T>& m, maquis::types::p_dense_matrix_impl<T>& t){
+        size_t i = ctxt.get_block_id().y;
+        size_t j = ctxt.get_block_id().x;
+        T* od = current(m)(i,j);
+        T* td = updated(t)(j,i);
+    
+        for(size_t i = 0; i < get_mem_dim(m).y; ++i){
+            for(size_t j=0; j < get_mem_dim(m).x; ++j){
+                td[j+i*get_mem_dim(m).y] = od[i+j*get_mem_dim(m).y];
+            }
+        }
+    }
+
     template <typename T> 
     void validation_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& bl){ // see paper for Reference Dongara 
         int i = ctxt.get_block_id().y;
