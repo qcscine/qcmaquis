@@ -33,6 +33,9 @@ namespace vli {
                      // declaration ASM functions  
                      __device__ void add384_384_gpu(unsigned int* x /* shared */, unsigned int const* y /* global */);
                      __device__ void mul384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
+                     __device__ void muladd384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
+                     __device__ void negate192_gpu(unsigned int* x);
+                     __device__ void negate384_gpu(unsigned int* x);
                     
                      // Algo order*order threads, based on full diagonals
                      template <typename BaseInt, std::size_t Size, unsigned int Order>
