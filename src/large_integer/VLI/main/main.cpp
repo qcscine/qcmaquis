@@ -25,7 +25,7 @@
 
 #define Size1 3
 #define Size2 6
-#define Order 2
+#define Order 4
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -104,32 +104,32 @@ int main (int argc, char * const argv[])
  polynomial_result_type_cpu result_mix_cpu_gpu  ;
  polynomial_result_type_cpu result_cpu_gpu  ;
    
-    fill_vector_random(v1,1);
-    fill_vector_random(v2,2);
-/*
+    fill_vector_random(v1,2);
+    fill_vector_random(v2,3);
+
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
-*/
+
     Timer t1("CPU vli_omp");
     t1.begin();
-      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
-//      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+//      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
 
-    TimerOMP t2("GPU nvidia");
-    t2.begin();   
+    TimerOMP t("GPU nvidia");
+    t.begin();   
       result_pure_cpu_nvidia = vli::detail::inner_product_gpu_nvidia(v1,v2);
-    t2.end();
+    t.end();
 
-/*
+
     Timer t2("CPU gmp_omp");
     t2.begin();
        pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
-*/
+
 #ifdef VLI_USE_GPU
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();   
@@ -143,10 +143,10 @@ int main (int argc, char * const argv[])
      std::cout << std::hex << result_pure_cpu_nvidia << std::endl;
      std::cout << " -------------------------------------------------------- " << std::endl;
      std::cout << std::hex << result_pure_cpu << std::endl;
-/*
+
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-*/
+
     return 0;
 }
 

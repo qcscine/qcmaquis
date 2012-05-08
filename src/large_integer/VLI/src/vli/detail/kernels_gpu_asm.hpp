@@ -30,6 +30,8 @@
 #include <boost/preprocessor/repetition.hpp>
 #include <boost/preprocessor/arithmetic/add.hpp>
 #include <boost/preprocessor/arithmetic/mul.hpp>
+#include <boost/preprocessor/stringize.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
 
 // number of iteration for pp add and mul
 #define MAX_ITERATION_ADD 2
@@ -83,13 +85,13 @@ namespace vli{
     } //end add384_384_gpu 
 
     inline void mul384_384_gpu(unsigned int* x/* res local*/, unsigned int const* y /* shared */, unsigned int const* z /* shared */){
-    /*                   y[5] y[4] y[3] y[2] y[1] y[0]  %13 %12 %11 %10 %9 %8  
-     *                 X                          z[i], %7  i = 0 in my example
-     * _________________________________________________
-     * x[i+6] x[i+5] x[i+4] x[i+3] x[i+2] x[i+1] x[i+0], %6 %5 %4 %3 %2 %1 %0
-     * I multiply first low part and then high part, I avoid all carry bit propagation pbs
-     * The pp_if CB only possible when n!=0 because z is init to 0 by default
-     */
+	    /*                   y[5] y[4] y[3] y[2] y[1] y[0]  %13 %12 %11 %10 %9 %8 
+	     *                 X                          z[i], %7  i = 0 in my example
+	     * _________________________________________________
+	     * x[i+6] x[i+5] x[i+4] x[i+3] x[i+2] x[i+1] x[i+0], %6 %5 %4 %3 %2 %1 %0
+	     * I multiply first low part and then high part, I avoid all carry bit propagation pbs
+	     * The pp_if CB only possible when n!=0 because z is init to 0 by default
+	     */
            #define mul384_192_192_gpu(w, n, unused) \
                asm( \
                   "mad.lo.cc.u32  %0, %8,  %7, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
@@ -112,31 +114,122 @@ namespace vli{
 
            BOOST_PP_REPEAT(MAX_ITERATION_MUL, mul384_192_192_gpu, ~)
            #undef mul384_192_192_gpu
-   } // end mul384_384_gpu
+	   } // end mul384_384_gpu
 
-    inline void mul384_192_192_gpu(unsigned int* x/* res local*/, unsigned int const* y /* shared */, unsigned int const* z /* shared */){
-           #define mul384_192_gpu(w, n, unused) \
+   #define ADC0_GPU(z, n, unused ) "addc.cc.u32 "BOOST_PP_STRINGIZE(BOOST_PP_CAT(pc,n))", 0, "BOOST_PP_STRINGIZE(BOOST_PP_CAT(pc,n))"; \n\t " 
+   #define R_GPU(z, n, MAX) BOOST_PP_COMMA_IF(n)"+r"(x[BOOST_PP_ADD(n,MAX)])  
+
+   #define pc0 %0
+   #define pc1 %1
+   #define pc2 %2
+   #define pc3 %3
+   #define pc4 %4
+   #define pc5 %5
+  
+  // #define R_GPU(z,n, MAX) "x["BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,n
+//
+
+
+    inline void muladd384_384_gpu(unsigned int* x/* res local*/, unsigned int const* y /* shared */, unsigned int const* z /* shared */){
+    /*                   y[5] y[4] y[3] y[2] y[1] y[0]  %13 %12 %11 %10 %9 %8  
+     *                 X                          z[i], %7  i = 0 in my example
+     * _________________________________________________
+     * x[i+6] x[i+5] x[i+4] x[i+3] x[i+2] x[i+1] x[i+0], %6 %5 %4 %3 %2 %1 %0
+     * I multiply first low part and then high part, I avoid all carry bit propagation pbs
+     * The pp_if CB only possible when n!=0 because z is init to 0 by default
+     * as the res local is used several time, I have to propagate carry bit after every series of multiplication
+     */
+           #define mul384_192_192_gpu(w, n, unused) \
                asm( \
-                  "mad.lo.cc.u32  %0, %8,  %7, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
-                  "madc.lo.cc.u32 %1, %9,  %7, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
-                  "madc.lo.cc.u32 %2, %10, %7, %2; \n\t" /* c[i+2] = a[2] * b[i] (low)  + c[i+1] + CB                                       */ \
-                  "madc.lo.cc.u32 %3, %11, %7, %3; \n\t" /* c[i+3] = a[3] * b[i] (low)  + c[i+3] + CB                                       */ \
-                  "madc.lo.cc.u32 %4, %12, %7, %4; \n\t" /* c[i+4] = a[4] * b[i] (low)  + c[i+4] + CB                                       */ \
-                  "madc.lo.cc.u32 %5, %13, %7, %5; \n\t" /* c[i+5] = a[5] * b[i] (low)  + c[i+5] + CB                                       */ \
-                  BOOST_PP_IF(n,"addc.cc.u32 %6, 0, 0; \n\t",/* no extention n=0 */) /* c[i+6] += CB, n = 0 CB impossible                   */ \
-                  "mad.hi.cc.u32  %1, %8,  %7, %1; \n\t" /* c[i+1] = a[0] * b[i] (high) + c[i+1] + CB (c[i]=0 for i=0)                      */ \
-                  "madc.hi.cc.u32 %2, %9,  %7, %2; \n\t" /* c[i+2] = a[1] * b[i] (high) + c[i+2] + CB                                       */ \
-                  "madc.hi.cc.u32 %3, %10, %7, %3; \n\t" /* c[i+3] = a[2] * b[i] (high) + c[i+3] + CB                                       */ \
-                  "madc.hi.cc.u32 %4, %11, %7, %4; \n\t" /* c[i+4] = a[3] * b[i] (high) + c[i+4] + CB                                       */ \
-                  "madc.hi.cc.u32 %5, %12, %7, %5; \n\t" /* c[i+5] = a[4] * b[i] (high) + c[i+5] + CB                                       */ \
-                  "madc.hi.cc.u32 %6, %13, %7, %6; \n\t" /* c[i+6] = a[5] * b[i] (high) + c[i+6]                                            */ \
+                  "mad.lo.cc.u32  %0, %7,  %6, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+                  "madc.lo.cc.u32 %1, %8,  %6, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
+                  "madc.lo.cc.u32 %2, %9,  %6, %2; \n\t" /* c[i+2] = a[2] * b[i] (low)  + c[i+1] + CB                                       */ \
+                  "madc.lo.cc.u32 %3, %10, %6, %3; \n\t" /* c[i+3] = a[3] * b[i] (low)  + c[i+3] + CB                                       */ \
+                  "madc.lo.cc.u32 %4, %11, %6, %4; \n\t" /* c[i+4] = a[4] * b[i] (low)  + c[i+4] + CB                                       */ \
+                  "madc.lo.cc.u32 %5, %12, %6, %5; \n\t" /* c[i+5] = a[5] * b[i] (low)  + c[i+5] + CB                                       */ \
                   :"+r"(x[BOOST_PP_ADD(0,n)]),"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),                                           \
-                   "+r"(x[BOOST_PP_ADD(3,n)]),"+r"(x[BOOST_PP_ADD(4,n)]),"+r"(x[BOOST_PP_ADD(5,n)]),"+r"(x[BOOST_PP_ADD(6,n)])                 \
+                   "+r"(x[BOOST_PP_ADD(3,n)]),"+r"(x[BOOST_PP_ADD(4,n)]),"+r"(x[BOOST_PP_ADD(5,n)])                                            \
                   :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3]),"r"(y[4]),"r"(y[5])                                                       \
                  );                                                                                                                            \
-           BOOST_PP_REPEAT(MAX_ITERATION_MUL, mul384_192_gpu, ~)
-           #undef mul384_192_gpu
-    }
+               asm( /*propation of the CB */                                                                                                   \
+                  BOOST_PP_REPEAT(BOOST_PP_SUB(6,n), ADC0_GPU,~)                                                                               \
+                  :BOOST_PP_REPEAT(BOOST_PP_SUB(6,n), R_GPU,BOOST_PP_ADD(6,n))                                                                 \
+                  :                                                                                                                            \
+                 );                                                                                                                            \
+               asm(                                                                                                                            \
+                  "mad.hi.cc.u32  %0, %7,  %6, %0; \n\t" /* c[i]   = a[0] * b[i]  (hi)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+                  "madc.hi.cc.u32 %1, %8,  %6, %1; \n\t" /* c[i+1] = a[1] * b[i]  (hi)  + c[i+1] + CB                                       */ \
+                  "madc.hi.cc.u32 %2, %9,  %6, %2; \n\t" /* c[i+2] = a[2] * b[i]  (hi)  + c[i+1] + CB                                       */ \
+                  "madc.hi.cc.u32 %3, %10, %6, %3; \n\t" /* c[i+3] = a[3] * b[i]  (hi)  + c[i+3] + CB                                       */ \
+                  "madc.hi.cc.u32 %4, %11, %6, %4; \n\t" /* c[i+4] = a[4] * b[i]  (hi)  + c[i+4] + CB                                       */ \
+                  "madc.hi.cc.u32 %5, %12, %6, %5; \n\t" /* c[i+5] = a[5] * b[i]  (hi)  + c[i+5] + CB                                       */ \
+                  :"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),"+r"(x[BOOST_PP_ADD(3,n)]),                                           \
+                   "+r"(x[BOOST_PP_ADD(4,n)]),"+r"(x[BOOST_PP_ADD(5,n)]),"+r"(x[BOOST_PP_ADD(6,n)])                                            \
+                  :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3]),"r"(y[4]),"r"(y[5])                                                       \
+                 );                                                                                                                            \
+               BOOST_PP_IF(BOOST_PP_SUB(5,n),  /* last iteration no CB propagation so no if */                                                 \
+               asm( /*propagation of the CB */                                                                                                 \
+                  BOOST_PP_REPEAT(BOOST_PP_SUB(5,n), ADC0_GPU,~)                                                                               \
+                  :BOOST_PP_REPEAT(BOOST_PP_SUB(5,n), R_GPU,BOOST_PP_ADD(7,n))                                                                 \
+                  :                                                                                                                            \
+                 ); , \
+                   )                                                                                                                            
+
+            BOOST_PP_REPEAT(MAX_ITERATION_MUL, mul384_192_192_gpu, ~)
+           #undef mul384_192_192_lo_gpu
+   } // end mul384_384_gpu
+
+   inline void negate192_gpu(unsigned int* x){
+       unsigned int one(1);
+       asm( 
+           "not.b32 %0, %0; \n\t"
+           "not.b32 %1, %1; \n\t"
+           "not.b32 %2, %2; \n\t"
+           "not.b32 %3, %3; \n\t"
+           "not.b32 %4, %4; \n\t"
+           "not.b32 %5, %5; \n\t"
+           "add.cc.u32  %0, %0, %6; \n\t"
+           "addc.cc.u32 %1, %1, %0; \n\t"
+           "addc.cc.u32 %2, %2, %0; \n\t"
+           "addc.cc.u32 %3, %3, %0; \n\t"
+           "addc.cc.u32 %4, %4, %0; \n\t"
+           "addc.cc.u32 %5, %5, %0; \n\t"
+           :"+r"(x[0]),"+r"(x[1]),"+r"(x[2]),"+r"(x[3]),"+r"(x[4]),"+r"(x[5])
+           :"r"(one)
+       ); 
+   }
+
+   inline void negate384_gpu(unsigned int* x){
+       unsigned int one(1);
+       asm( 
+           "not.b32 %0, %0; \n\t"
+           "not.b32 %1, %1; \n\t"
+           "not.b32 %2, %2; \n\t"
+           "not.b32 %3, %3; \n\t"
+           "not.b32 %4, %4; \n\t"
+           "not.b32 %5, %5; \n\t"
+           "not.b32 %6, %6; \n\t"
+           "not.b32 %7, %7; \n\t"
+           "not.b32 %8, %8; \n\t"
+           "not.b32 %9, %9; \n\t"
+           "not.b32 %10, %10; \n\t"
+           "not.b32 %11, %11; \n\t"
+           "add.cc.u32  %0, %0, %12; \n\t"
+           "addc.cc.u32 %1, %1, %0; \n\t"
+           "addc.cc.u32 %2, %2, %0; \n\t"
+           "addc.cc.u32 %3, %3, %0; \n\t"
+           "addc.cc.u32 %4, %4, %0; \n\t"
+           "addc.cc.u32 %5, %5, %0; \n\t"
+           "addc.cc.u32 %6, %6, %0; \n\t"
+           "addc.cc.u32 %7, %7, %0; \n\t"
+           "addc.cc.u32 %8, %8, %0; \n\t"
+           "addc.cc.u32 %9, %9, %0; \n\t"
+           "addc.cc.u32 %10, %10, %0; \n\t"
+           "addc.cc.u32 %11, %11, %0; \n\t"
+           :"+r"(x[0]),"+r"(x[1]),"+r"(x[2]),"+r"(x[3]),"+r"(x[4]),"+r"(x[5]),"+r"(x[6]),"+r"(x[7]),"+r"(x[8]),"+r"(x[9]),"+r"(x[10]),"+r"(x[11])
+           :"r"(one)
+       ); 
+   }
 
    } //end namespace detail
 } //end namespace vli

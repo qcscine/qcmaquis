@@ -4,8 +4,8 @@
 #define MAX_NUMBER_OF_BITS_THE_LARGE_INTEGER_OCCUPIES 192U
 
 // Polynomial configuration
-#define DEGREE_BOUND_X 2U
-#define DEGREE_BOUND_Y 2U
+#define DEGREE_BOUND_X 4U
+#define DEGREE_BOUND_Y 4U
 
 // The size of vectors to be used in inner product
 #define ELEMENTS_IN_VECTOR 16384U

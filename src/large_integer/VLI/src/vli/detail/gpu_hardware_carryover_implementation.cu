@@ -4,7 +4,9 @@
 #include "gpu_hardware_carryover_implementation.h"
 #include "single_coefficient_task.h"
 #include "compile_time_constants.h"
+#include "numeric.h"
 #include "kernels_gpu_asm.hpp"
+
 
 
 __device__ vli::detail::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
@@ -60,6 +62,8 @@ polynomial_mul_full(
 		__syncthreads();
 	}
 
+        unsigned int p1[INT_DEGREE],p2[INT_DEGREE];
+
 	unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
 	for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id)
 	{
@@ -71,6 +75,7 @@ polynomial_mul_full(
 			const unsigned int output_degree_x = task.output_degree_x;
 
 			unsigned int res[2*INT_DEGREE];
+			unsigned int res1[2*INT_DEGREE];
 			#pragma unroll
 			for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
 				res[i] = 0;
@@ -79,15 +84,38 @@ polynomial_mul_full(
 			const unsigned int end_degree_x_inclusive = output_degree_x < DEGREE_BOUND_X ? output_degree_x : (DEGREE_BOUND_X - 1);
 			unsigned int current_degree_x = start_degree_x_inclusive;
 			unsigned int current_degree_y = output_degree_y > (DEGREE_BOUND_Y - 1) ? output_degree_y - (DEGREE_BOUND_Y - 1) : 0;
-			for(unsigned int step_id = 0; step_id < step_count; ++step_id)
-			{
-				unsigned int * in_polynomial1 = in_buffer1 + current_degree_x + (current_degree_y * SLICE_PADDED);
-				unsigned int * in_polynomial2 = in_buffer2 + (output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * SLICE_PADDED);
+			for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
+                            unsigned int * in_polynomial1 = in_buffer1 + current_degree_x + (current_degree_y * SLICE_PADDED);
+                            unsigned int * in_polynomial2 = in_buffer2 + (output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * SLICE_PADDED);
 
+                            #pragma unroll
+                            for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
+                               res1[i] = 0;
 
-//                                 mul384_384_gpu(&sc[0],&sa[(threadid-i)*Size],&sb[i*Size]);
+                            #pragma unroll
+                            for(unsigned int degree1 = 0; degree1 < INT_DEGREE; ++degree1)
+                                p1[degree1] = in_polynomial1[degree1 * (SLICE_PADDED * DEGREE_BOUND_Y)];
+ 
+                            #pragma unroll
+                            for(unsigned int degree2 = 0; degree2 < INT_DEGREE; ++degree2)
+                                p2[degree2] = in_polynomial2[degree2  * (SLICE_PADDED * DEGREE_BOUND_Y)];
+ 
+                            unsigned int sign = (p1[INT_DEGREE-1]>>31) ^ (p2[INT_DEGREE-1]>>31);
 
+                            if(p1[INT_DEGREE-1] >> 31 != 0)
+                                vli::detail::negate192_gpu(p1); 
 
+                            if(p2[INT_DEGREE-1] >> 31 != 0)
+                                vli::detail::negate192_gpu(p2); 
+
+                            vli::detail::mul384_384_gpu(res1,p1,p2);
+
+			    if(sign != 0)
+                                vli::detail::negate384_gpu(res1);
+
+                            vli::detail::add384_384_gpu(res,res1);
+                                   
+/*
 				#pragma unroll
 				for(unsigned int degree1 = 0; degree1 < INT_DEGREE; ++degree1)
 				{
@@ -117,7 +145,7 @@ polynomial_mul_full(
 						}
 					}
 				}
-
+*/
 
 				// Calculate the next pair of input coefficients to be multiplied and added to the result
 				current_degree_x++;
@@ -131,8 +159,7 @@ polynomial_mul_full(
 			unsigned int coefficient_id = output_degree_y * MULT_RESULT_DEGREE_BOUND_X + output_degree_x;
 			unsigned int * out2 = out + (coefficient_id * element_count *2* INT_DEGREE) + element_id; // coefficient->int_degree->element_id
 			#pragma unroll
-			for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
-			{
+			for(unsigned int i = 0; i < 2*INT_DEGREE; ++i) {
 				// This is a strongly compute-bound kernel,
 				// so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
 				//     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
