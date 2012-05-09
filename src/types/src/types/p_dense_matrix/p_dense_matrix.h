@@ -13,6 +13,9 @@
 
 namespace maquis { namespace types {
 
+    template<class T>
+    class p_diagonal_matrix;
+
     template <class T>
     class p_dense_matrix {
     public:
@@ -122,6 +125,11 @@ namespace maquis { namespace types {
             return *this;
         }
 
+        p_dense_matrix& operator *= (const p_diagonal_matrix<T>& rhs){
+            this->impl->mul(rhs);
+            return *this;
+        }
+
         template <typename T2> p_dense_matrix& operator *= (const T2& t){
             this->impl->mul(t);
             return *this;
@@ -173,6 +181,7 @@ namespace maquis { namespace types {
         void add(const p_dense_matrix_impl& rhs); 
         void sub(const p_dense_matrix_impl& rhs);
         void mul(const p_dense_matrix_impl& rhs);
+        void mul(const p_diagonal_matrix<T>& rhs);
         template <typename T2> void mul(const T2& t);
     private:
         value_type init_value;
@@ -181,9 +190,6 @@ namespace maquis { namespace types {
     };
 
     // {{{ matrix-specific associated types
-    template<class T>
-    class p_diagonal_matrix;
-
     template<typename T>
     struct associated_diagonal_matrix< p_dense_matrix<T> > {
         typedef p_diagonal_matrix<T> type;

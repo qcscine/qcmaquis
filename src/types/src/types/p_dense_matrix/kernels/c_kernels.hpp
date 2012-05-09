@@ -7,27 +7,37 @@ namespace ambient {
     #include "ambient/utils/numeric.h" // Blas/Lapack signature
     #include "ambient/utils/ceil.h"
 
+    template<typename T>
+    size_t __a_get_limit_x(const T& a, size_t n = 0){
+        if(n == 0) n = get_dim(a).x;
+        return std::min(get_mem_dim(a).x, n-ctxt.get_block_id().x*get_mem_dim(a).x);
+    }
+
+    template<typename T>
+    size_t __a_get_limit_y(const T& a, size_t m = 0){
+        if(m == 0) m = get_dim(a).y;
+        return std::min(get_mem_dim(a).y, m-ctxt.get_block_id().y*get_mem_dim(a).y);
+    }
+
     // C - w, alfa are not nested into dim2 because they are not 2D coordinates
     template <typename T>
-    void __a_memcpy(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, maquis::types::p_dense_matrix_impl<T> const& src, T *sd,  dim2 const& dpos, dim2 const& spos, size_t w, T alfa){
-        size_t v = get_mem_dim(src).y-spos.x;
-        memcpy(&dd[dpos.y*get_mem_dim(dest).y+dpos.x],
-               &sd[spos.y*get_mem_dim(src).y+spos.x],
-               std::min(v, w)*sizeof(T));
+    void __a_memcpy(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 const& dpos, maquis::types::p_dense_matrix_impl<T> const& src, T *sd, dim2 const& spos, size_t w, T alfa){
+        memcpy(&dd[dpos.x*get_mem_dim(dest).y+dpos.y],
+               &sd[spos.x*get_mem_dim(src).y+spos.y],
+               w*sizeof(T));
     }
 
     template <typename T>
-    void __a_memscal(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, maquis::types::p_dense_matrix_impl<T> const& src, T *sd,  dim2 const& dpos, dim2 const& spos, size_t w, T alfa){
-        size_t v = get_mem_dim(src).y-spos.x;
-        for(int z = 0; z < std::min(v, w); z++)
-            dd[dpos.y*get_mem_dim(dest).y+dpos.x+z] += sd[spos.y*get_mem_dim(src).y+spos.x + z]*alfa;
+    void __a_memscal(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 const& dpos, maquis::types::p_dense_matrix_impl<T> const& src, T *sd, dim2 const& spos, size_t w, T alfa){
+        for(int z = 0; z < w; z++)
+            dd[dpos.x*get_mem_dim(dest).y+dpos.y+z] += sd[spos.x*get_mem_dim(src).y+spos.y + z]*alfa;
     }
 
     // V = double, S = size_t
     template<typename T>
-    void __a_memptf(void (*ptf)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, 
-                                maquis::types::p_dense_matrix_impl<T> const& src, T *sd , 
-                                dim2 const& dpos, dim2 const& spos, size_t w, T alfa),
+    void __a_memptf(void (*ptf)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 const& dpos, 
+                                maquis::types::p_dense_matrix_impl<T> const& src, T *sd, dim2 const& spos, 
+                                size_t w, T alfa),
                     maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
                     const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                     dim2 size, T alfa = 0.0)
@@ -70,18 +80,25 @@ namespace ambient {
         for(size_t j = startj; j < limj; j++){
             size_t sj = dj + j - dest_p.x + src_p.x;
             size_t w = limi - starti;
-            dpos.x = starti;
-            dpos.y = j;
-            spos.x = si % get_mem_dim(src).y;
-            spos.y = sj % get_mem_dim(src).x;
+            dpos.y = starti;
+            dpos.x = j;
+            spos.y = si % get_mem_dim(src).y;
+            spos.x = sj % get_mem_dim(src).x;
             for(int k = 0; k < src_blocks_i; k++){
                 T* sd = current(src)(si / get_mem_dim(src).y + k, sj / get_mem_dim(src).x);
-                ptf(dest,dd,src,sd,dpos,spos,w,alfa);            
-                w -= get_mem_dim(src).y-spos.x;
-                dpos.x += get_mem_dim(src).y-spos.x;
-                spos.x = 0;
+                size_t v = std::min(w, get_mem_dim(src).y-spos.y);
+                v = std::min(v, (get_dim(src).y-(si/get_mem_dim(src).y+k)*get_mem_dim(src).y-spos.y));
+                ptf(dest,dd,dpos,src,sd,spos,v,alfa);            
+                w -= v;
+                dpos.y += v;
+                spos.y = 0;
             }
         }
+    }
+
+    template<typename T>
+    void __a_add_scaled(T& dest, dim2 dest_p, const T& src, dim2 src_p, typename T::value_type alfa, dim2 size){
+        __a_memptf(&__a_memscal<typename T::value_type>, dest, dest_p, src, src_p, size, alfa);
     }
 
     template<typename T>
@@ -157,6 +174,12 @@ namespace ambient {
     //
     // partial reduce?..
     /////////////////////////////////////////////////////////////////////////
+        if(ctxt.get_block_id().x >= get_mem_grid_dim(a).x || // early out (out of scope)
+           ctxt.get_block_id().y >= get_mem_grid_dim(a).y) return;
+        if(a.get_dim() == 1 && b.get_dim().x == 1){          // early out (a and b are scalars)
+            (*(T*)updated(c)(0,0)) = (*(T*)current(a)(0,0))*(*(T*)current(b)(0,0));
+            return;
+        }
         int m   = get_mem_dim(a).y;
         int n   = get_mem_dim(b).x;
         int k   = get_mem_dim(b).y;
@@ -206,7 +229,7 @@ namespace ambient {
         // i_mark marks (x position) to remove rows, k number of rows to remove (default 1) 
         size_t numrows = get_dim(a).y;
         size_t numcols = get_dim(a).x;
-        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(numrows, i_mark));
+        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
         __a_memptf(&__a_memcpy<T>, a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
     }
 
@@ -253,11 +276,13 @@ namespace ambient {
     }
 
     template<typename T>
-    void push_back_sqr_gt_c(std::vector<T>*& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
-        double prec(1e-10); 
+    void push_back_sqr_gt_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
         double* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-        for(int i=0; i < get_mem_dim(a).y; i++)
-            if(ad[i] > prec) ac->push_back(ad[i]*ad[i]);
+        size_t sizey = __a_get_limit_y(a);
+        for(int i=0; i < sizey; i++){
+            double v = std::abs(ad[i]);
+            if(v > 1e-10) ac->push_back(v*v);
+        }
     }
 
     template<typename T>
@@ -327,11 +352,6 @@ namespace ambient {
                        dim2( rdim, ldim ));
     }
 
-    template<typename T>
-    void __a_add_scaled(T& dest, dim2 dest_p, const T& src, dim2 src_p, typename T::value_type alfa, dim2 size){
-        __a_memptf(&__a_memscal<typename T::value_type>, dest, dest_p, src, src_p, size, alfa);
-    }
-
     template <typename T>
     void rb_tensor_mpo_c(pinned maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                          const size_t& out_offset, const size_t& in_offset, 
@@ -363,28 +383,34 @@ namespace ambient {
     }
 
     template<typename T>
-    void scalar_norm_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, T*& norm){
+    void scalar_norm_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
         T summ = 0;
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i,j);
-        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
-        for(size_t ii=0; ii < size; ii++)
-            summ += ad[ii]*ad[ii];
+        size_t lda = get_mem_dim(a).y;
+        size_t sizey = __a_get_limit_y(a, m);
+        size_t sizex = __a_get_limit_x(a, n);
+        for(size_t ii=0; ii < sizey; ii++)
+            for(size_t jj=0; jj < sizex; jj++)
+                summ += ad[ii+jj*lda]*ad[ii+jj*lda];
     
         *norm += summ;
     }
 
     template<typename T>
-    void scalar_overlap_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, T*& overlap){
+    void scalar_overlap_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
         T summ = 0;
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i,j);
         T* bd = current(b)(i,j);
-        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
-        for(size_t ii=0; ii < size; ii++)
-            summ += ad[ii]*bd[ii];
+        size_t lda = get_mem_dim(a).y;
+        size_t sizey = __a_get_limit_y(a);
+        size_t sizex = __a_get_limit_x(a);
+        for(size_t ii=0; ii < sizey; ii++)
+            for(size_t jj=0; jj < sizex; jj++)
+                summ += ad[ii+jj*lda]*bd[ii+jj*lda];
         *overlap += summ;
     }
 
@@ -424,7 +450,11 @@ namespace ambient {
     }
 
     template<typename T, typename D>
-    void gemm_diagonal_lhs_c(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+    void gemm_diagonal_lhs_c(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
+            const size_t& m, const size_t& n, const size_t& k){
+
+        size_t sizey = std::min((ctxt.get_block_id().y+1)*get_mem_dim(a_diag).y, m)-ctxt.get_block_id().y*get_mem_dim(a_diag).y;
+
         int j = ctxt.get_block_id().y*get_mem_dim(b).y;
         int size = get_mem_dim(b).x;
         int lda  = sizeof(T)/sizeof(D)*get_mem_dim(b).y;
@@ -433,7 +463,7 @@ namespace ambient {
         D* cd = updated(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
     
         memset(cd, 0, get_mem_dim(c).x*get_mem_dim(c).y*sizeof(T));
-        for(int jj = 0 ; jj < get_mem_dim(b).y ; jj++){
+        for(int jj = 0 ; jj < sizey; jj++){
              D* alpha = current(a_diag)((j+jj)/get_mem_dim(a_diag).y,0);
     	     axpy(&size, &alpha[(j+jj)%get_mem_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
     	     if(sizeof(T) != sizeof(D)) axpy(&size, &alpha[(j+jj)%get_mem_dim(a_diag).y], &bd[jj+1], &lda, &cd[jj], &lda); // for complex
@@ -441,8 +471,11 @@ namespace ambient {
     }
 
     template<typename T, typename D>
-    void gemm_diagonal_rhs_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
-        //printf("gemm_diagonal_rhs_c\n");
+    void gemm_diagonal_rhs_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
+            const size_t& m, const size_t& n, const size_t& k){
+
+        size_t sizex = std::min((ctxt.get_block_id().x+1)*get_mem_dim(b_diag).y, n)-ctxt.get_block_id().x*get_mem_dim(b_diag).y;
+
         int j = ctxt.get_block_id().x*get_mem_dim(a).x;
         int size = sizeof(T)/sizeof(D)*get_mem_dim(a).y; // for the case of complex
         int ONE = 1;
@@ -450,7 +483,7 @@ namespace ambient {
         D* cd = updated(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
     
         memset(cd, 0, get_mem_dim(c).x*get_mem_dim(c).y*sizeof(T));
-        for(int jj = 0 ; jj < get_mem_dim(a).x ; jj++){
+        for(int jj = 0 ; jj < sizex; jj++){
     	    D* alpha = current(b_diag)((j+jj)/get_mem_dim(b_diag).y,0);
     	    axpy(&size, &alpha[(j+jj)%get_mem_dim(b_diag).y], &ad[jj*get_mem_dim(a).y], &ONE, &cd[jj*get_mem_dim(c).y], &ONE);
         }
@@ -502,6 +535,22 @@ namespace ambient {
         }
     }
 
+    template<typename T>
+    void one_init_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        size_t i = ctxt.get_block_id().y;
+        size_t j = ctxt.get_block_id().x;
+
+        T* ad = updated(a)(i,j);
+        size_t sizey = __a_get_limit_y(a, m);
+        size_t sizex = __a_get_limit_x(a, n);
+    
+        for(size_t j=0; j < sizex; ++j){
+            for(size_t i = 0; i < sizey; ++i){
+                ad[i+j*get_mem_dim(a).y] = 1.0; // not a memset due to complex
+            }
+        }
+    }
+
     template <typename T> 
     void validation_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& bl){ // see paper for Reference Dongara 
         int i = ctxt.get_block_id().y;
@@ -511,16 +560,18 @@ namespace ambient {
         double res(0.0); 
         double epsilon = std::numeric_limits<double>::epsilon();
         int position_x(0),position_y(0),position_xy(0); 
+       *bl = 1; // test passes by default
    
-        for(int ii=0; ii < get_mem_dim(a).x; ++ii){ // the std::resize + cast dense to p_dense can add ghost elements between lda + num_rows
-            for(int jj=0; jj < get_mem_dim(a).y; ++jj){
+        for(int ii=0; ii < get_mem_dim(a).y; ++ii){ // the std::resize + cast dense to p_dense can add ghost elements between lda + num_rows
+            for(int jj=0; jj < get_mem_dim(a).x; ++jj){
                 position_x = j*get_mem_dim(a).x+jj;
-                position_y = i*get_mem_dim(a).x+ii;
+                position_y = i*get_mem_dim(a).y+ii;
                 if(position_x < get_dim(a).x && position_y < get_dim(a).y){
                     position_xy = jj*get_mem_dim(a).y+ii;
                     res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
                     if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
-                        std::cout <<   ctxt.get_block_id().y << " " <<  ctxt.get_block_id().x << " " << res << " " << ad[i] << " " << bd[i] << std::endl; // C - cout because double or complex
+                        std::cout << ctxt.get_block_id().y << " " << ctxt.get_block_id().x << " " << res 
+                                  << " " << ad[position_xy] << " " << bd[position_xy] << std::endl;
                         *bl = 0; // test failed return 0 (bool false)
                     }
                 }
@@ -588,7 +639,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void heev_c(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
+    void heev_c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<T>& w){
          int lda = get_grid_dim(a).y*get_work_dim(a).y;
          int info, lwork = -1;
     
@@ -596,11 +647,12 @@ namespace ambient {
          double* work;
          double* ad = (double*)models::solidify(a);
          double* wd = (double*)models::solidify(w);
+         int am = (int)m; // for mkl (int*)
     
-         dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
+         dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
          lwork = (int)wkopt;
          work = (double*)malloc( lwork*sizeof(double) );
-         dsyev_("V","U",&m,ad,&lda,wd,work,&lwork,&info);
+         dsyev_("V","U",&am,ad,&lda,wd,work,&lwork,&info);
     
          if( info > 0 ) {
              printf( "The algorithm computing SYEV failed to converge.\n" );

@@ -54,10 +54,12 @@ namespace maquis { namespace types {
     void p_dense_matrix_impl<T>::resize(size_type rows, size_type cols){
         assert(rows > 0); assert(cols > 0);
         if(this->rows != rows || this->cols != cols){
+            ambient::playout(); 
             algorithms::resize(*this, rows, cols);
             this->pt_set_dim(cols, rows);
             this->rows = rows; 
             this->cols = cols;
+            ambient::playout(); 
         }
     }
 
@@ -109,6 +111,11 @@ namespace maquis { namespace types {
     template <typename T>
     void p_dense_matrix_impl<T>::sub(const p_dense_matrix_impl& rhs){
         algorithms::sub_inplace(*this, rhs);
+    }
+
+    template <typename T>
+    void p_dense_matrix_impl<T>::mul(const p_diagonal_matrix<T>& rhs){
+        algorithms::gemm_diag_inplace(*this, *rhs.get_data().impl);
     }
 
     template <typename T>
