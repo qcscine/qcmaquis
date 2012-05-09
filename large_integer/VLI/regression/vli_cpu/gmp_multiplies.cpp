@@ -6,8 +6,8 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_multiplies_negative )
 {
-    vli_type a(5);
-    vli_type b(100);
+    vli_type a;
+    vli_type b;
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);
 
