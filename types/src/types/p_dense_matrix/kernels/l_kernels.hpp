@@ -117,10 +117,9 @@ namespace ambient {
     }
 
     template<typename T>
-    void push_back_sqr_gt_l(std::vector<T>*& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
-        ctxt_select("* from ambient as copy_std where master is 0");
+    void push_back_sqr_gt_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
+        ctxt_select("* from ambient as push_back_sqr_gt where master is 0");
         if(!ctxt.involved()) return;
-        //ambient::cout << "2dbcd in copy_std ("<< ambient::rank() <<"):\n"; credentials(a);
 
         block_outright<pin>(a);
     }
@@ -220,7 +219,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void scalar_norm_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, T*& norm){
+    void scalar_norm_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
         ctxt_select("* from ambient as scalar_norm where master is 0");
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in scalar_norm ("<< ambient::rank() <<"):\n"; credentials(a);
@@ -229,7 +228,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void scalar_overlap_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, T*& overlap){
+    void scalar_overlap_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
         ctxt_select("* from ambient as scalar_overlap where master is 0");
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in scalar_overlap ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);
@@ -282,7 +281,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void heev_l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
+    void heev_l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<T>& w){
         int num = 1;
         ctxt_select(num+" from ambient as heev where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
@@ -293,7 +292,8 @@ namespace ambient {
     }
 
     template<typename T, typename D>
-    void gemm_diagonal_lhs_l(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+    void gemm_diagonal_lhs_l(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c, 
+            const size_t& m, const size_t& n, const size_t& k){
         ctxt_select("1 from ambient as gemm_diagonal_lhs where master is 0 and breakdown contains "+ id(b));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in gemm_diagonal_lhs ("<< ambient::rank() <<"):\n"; credentials(a_diag); credentials(b); credentials(c);
@@ -304,7 +304,8 @@ namespace ambient {
     }
 
     template<typename T, typename D>
-    void gemm_diagonal_rhs_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
+    void gemm_diagonal_rhs_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
+            const size_t& m, const size_t& n, const size_t& k){
         ctxt_select("1 from ambient as gemm_diagonal_rhs where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in gemm_diagonal_rhs ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b_diag); credentials(c);
@@ -426,6 +427,13 @@ namespace ambient {
         block_outright<pin>(a);
     }
 
+    template<typename T>
+    void one_init_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        ctxt_select(1 +" from ambient as one_init where master is 0 and breakdown contains "+ id(a));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<pin>(a);
+    }
 
     // {{{ strassen multiplication supplementary kernels
 
