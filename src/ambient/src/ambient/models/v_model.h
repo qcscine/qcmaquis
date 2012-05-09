@@ -116,8 +116,6 @@ namespace ambient { namespace models {
             void set_reduction();
             imodel::modifier* get_generator();
             void set_generator(imodel::modifier*);
-            void init(voidfp);
-            voidfp get_init();
             void set_dim(dim2);
             dim2 get_dim();
             size_t number;
@@ -127,7 +125,6 @@ namespace ambient { namespace models {
             imodel::modifier* generator;
             imodel::reduction* reduction;
             std::list<imodel::modifier*> modifiers;
-            voidfp initialization;
         };
         class reduction : public imodel::reduction
         {

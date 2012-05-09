@@ -10,7 +10,7 @@ namespace ambient { namespace models {
     }
 
     v_model::revision::revision(imodel::object* o, imodel::layout* l)
-    : object(o), layout(l), initialization((voidfp)null_i), reduction(NULL), placement(NULL), generator(NULL)
+    : object(o), layout(l), reduction(NULL), placement(NULL), generator(NULL)
     {
         this->number = o->get_revision_base(); // debug
         this->layout->set_revision(this);
@@ -70,14 +70,6 @@ namespace ambient { namespace models {
 
     imodel::modifier* v_model::revision::get_generator(){
         return this->generator;
-    }
-
-    void v_model::revision::init(void(*fp)()){
-       this->initialization = fp;
-    }
-
-    v_model::revision::voidfp v_model::revision::get_init(){
-        return this->initialization;
     }
 
     imodel::reduction* v_model::revision::get_reduction(){

@@ -75,8 +75,6 @@ namespace ambient { namespace models {
             virtual void set_placement(channels::group*) = 0;
             virtual modifier* get_generator() = 0;
             virtual void set_generator(modifier*) = 0;
-            virtual void init(voidfp) = 0;
-            virtual voidfp get_init() = 0;
             virtual reduction* get_reduction() = 0;
             virtual void set_reduction() = 0;
         };
