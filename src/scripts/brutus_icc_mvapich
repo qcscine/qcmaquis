@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
 STATE_TYPES="void"
@@ -12,7 +12,7 @@ MPI_WRAPPER=mvapich2
 MPI_WRAPPER_VERSION=1.7-intel
 BOOST=boost
 BOOST_VERSION=1.47
- 
+
 export CXX=icpc
 export CC=icc
 export BOOST_ROOT=/cluster/apps/boost/1_47_0_nompi/x86_64/gcc_4.1.2
