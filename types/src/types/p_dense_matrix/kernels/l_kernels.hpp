@@ -417,17 +417,6 @@ namespace ambient {
     }
 
     template<typename T>
-    void associated_copy_l(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
-        int num = 1;
-        ctxt_select(num+" from ambient as associated_copy where master is 0 and breakdown contains "+ id(a)); 
-        if(!ctxt.involved()) return;
-        //ambient::cout << "2dbcd in associated_copy ("<< ambient::rank() <<"):\n"; credentials(ac); credentials(a);
-
-        block_outright<assign>(ac);
-        block_outright<pin>(a);
-    }
-
-    template<typename T>
     void one_init_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
         ctxt_select(1 +" from ambient as one_init where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
