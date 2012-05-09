@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 
 ## targets ##
 AMBIENT=ambient
@@ -152,7 +152,7 @@ write_states(){
     ORIG="`basename $0`"
     MOD=".`basename $0`.mod"
     cp $ORIG $MOD # keeping permissions
-    echo "#!/bin/bash"                      >  $MOD
+    echo "#!/bin/bash -l"                   >  $MOD
     echo "STATE=\"$STATE\""                 >> $MOD
     echo "STATE_AMBIENT=\"$STATE_AMBIENT\"" >> $MOD
     echo "STATE_TYPES=\"$STATE_TYPES\""     >> $MOD

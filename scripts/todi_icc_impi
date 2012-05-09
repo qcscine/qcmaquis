@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="build"
 STATE_TYPES="build"
