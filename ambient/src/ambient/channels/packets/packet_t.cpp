@@ -83,7 +83,8 @@ namespace ambient { namespace channels {
 
     void* alloc_t(const packet_t& type){
         void* memory = malloc(type.get_size());
-        *(int*)((size_t)memory + type.displacements[1]) = 0; // usage
+        memset(memory, 0, type.get_size());
+        // *(int*)((size_t)memory + type.displacements[1]) = 0; // usage
         return memory;
     }
 

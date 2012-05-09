@@ -34,6 +34,7 @@ namespace ambient {
         container()
         : references(0)
         {
+            memset(memory, 0, size);
         }
     private:
         char memory[size];
