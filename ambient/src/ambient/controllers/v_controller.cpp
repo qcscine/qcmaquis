@@ -160,8 +160,6 @@ namespace ambient { namespace controllers {
 
     models::imodel::layout::entry& v_controller::init_block(models::imodel::revision& r, size_t i, size_t j){
         this->alloc_block(r, i, j);
-        ctxt.set_block_id(dim2(j,i)); // setting context block
-        ((void(*)(models::v_model::object&))r.get_init())(static_cast<models::v_model::object&>(r.get_object()));
         return *r.block(i,j);
     }
 

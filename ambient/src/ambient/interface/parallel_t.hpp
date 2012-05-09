@@ -40,11 +40,6 @@ namespace ambient{
         }
 
     public:
-        template<typename O>
-        void pt_set_init(void(*fp)(O&)){
-            this->revision(0).init((void(*)())fp);
-        }
-
         value_type& pt_fetch(size_t blocked_i, size_t blocked_j, 
                              size_t element_i, size_t element_j){
             ambient::playout();
