@@ -442,33 +442,16 @@ namespace maquis { namespace types {
     template<typename T>
     void qr(p_dense_matrix<T> m, p_dense_matrix<T> & q, p_dense_matrix<T> & r){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- QR");
-        assert(false);
     }
 
     template<typename T, class G>
     void generate(p_dense_matrix<T>& m, G g){ // warning: G isn't used
         m.generate();
     }
-
-    // garbage: std replacements //
-    template<typename T>
-    void copy(typename associated_vector<T>::type& sc, typename associated_diagonal_matrix<T>::type& s){
-    // this kernel copies only the first cols of the work group, only used with associated_diagonal_matrix and associated_vector 
-        assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- COPY");
-        assert(false);
-        ambient::push(ambient::associated_copy_l<T>, ambient::copy_c<T>, sc, s);
-    }
     // }}}
 
 // {{{ implementation-specific type-nested algorithms //
 namespace algorithms {
-
-    template<typename T>
-    void clear(p_dense_matrix_impl<T>& m){
-        assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- CLEAR");
-        assert(false);
-        ambient::push(ambient::clear_l, ambient::clear_c, m);
-    }
 
     template<typename T>
     void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols){ 
@@ -480,14 +463,12 @@ namespace algorithms {
     template<typename T>
     void remove_rows(p_dense_matrix_impl<T>& m, size_type i, difference_type k){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- REMOVE ROWS");
-        assert(false);
         ambient::push(ambient::remove_rows_l<T>, ambient::remove_rows_c<T>, m, i, k);
     }
 
     template<typename T>
     void remove_cols(p_dense_matrix_impl<T>& m, size_type j, difference_type k){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- REMOVE COLS");
-        assert(false);
         ambient::push(ambient::remove_cols_l<T>, ambient::remove_cols_c<T>, m, j, k);
     }
 
@@ -501,7 +482,6 @@ namespace algorithms {
     template<typename T>
     void inplace_transpose(p_dense_matrix_impl<T>& m){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- INPLACE TRANSPOSE");
-        assert(false);
         assert(m.num_rows() == m.num_cols()); // current limitation
         ambient::push(ambient::transpose_l<T>, ambient::transpose_c<T>, m);
     }
@@ -548,15 +528,13 @@ namespace algorithms {
     template <typename T>
     void gemm_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- GEMM INPLACE");
-        assert(false);
         ambient::push(ambient::gemm_inplace_l<T>, ambient::gemm_inplace_c<T>, m, rhs);
     }
 
     template <typename T>
     void gemm_diag_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs_diag) {
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- GEMM DIAG INPLACE");
-        assert(false);
-        //ambient::push(ambient::gemm_inplace_l<T>, ambient::gemm_inplace_c<T>, m, rhs);
+        //ambient::push(ambient::gemm_diag_inplace_l<T>, ambient::gemm_diag_inplace_c<T>, m, rhs);
     }
 
     template <typename T, typename S>
