@@ -6,7 +6,6 @@ add_definitions (-DBOOST_TEST_DYN_LINK)
 foreach(test_vli
         vli_monomial_tests
         vli_polynomial_tests
-        flexible_polynomial_tests
         vli_vector_cpu_gpu_tests
        )
            add_executable(${test_vli} ${test_vli}.cpp)
