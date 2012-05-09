@@ -334,7 +334,6 @@ namespace ambient {
                        const size_t& left_offset, const size_t& right_offset, 
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     {
-        //printf("reshape_l2r_c\n");
         for(size_t ss = 0; ss < sdim; ++ss)
             __a_memptf(&__a_memcpy<T>, right, dim2(ss*rdim + right_offset,0), 
                        left,  dim2(0, ss*ldim + left_offset), 
@@ -490,20 +489,21 @@ namespace ambient {
     }
 
     template<typename T>
-    void trace_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, T*& trace){ // originated from identity_i
+    void trace_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){ // originated from identity_i
       // TO DO : O think this trace kernel only works if the a fits into one workgroup
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
-        size_t m = get_mem_dim(a).y;
-        size_t n = get_mem_dim(a).x;
+        size_t ld = get_mem_dim(a).y;
+        size_t sd = get_mem_dim(a).x;
         T* ad = current(a)(i,j);
     
-        if((i+1)*m <= j*n) return;
-        if(i*m >= (j+1)*n) return;
-        for(size_t jj = j*n; jj < std::min((j+1)*n,(size_t)get_dim(a).x); jj++){
-            if(i*m > jj) continue;
-            if((i+1)*m <= jj) continue;
-           *trace += ad[jj % m + (jj%n)*m];
+        if((i+1)*ld <= j*sd) return;
+        if(i*ld >= (j+1)*sd) return;
+        size_t sizex = std::min(n,(j+1)*sd);
+        for(size_t jj = j*sd; jj < sizex; jj++){
+            if(i*ld > jj) continue;
+            if((i+1)*ld <= jj) continue;
+           *trace += ad[jj % ld + (jj%sd)*ld];
         }
     }
 
@@ -536,7 +536,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void one_init_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+    void init_value_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
 
@@ -546,8 +546,48 @@ namespace ambient {
     
         for(size_t j=0; j < sizex; ++j){
             for(size_t i = 0; i < sizey; ++i){
-                ad[i+j*get_mem_dim(a).y] = 1.0; // not a memset due to complex
+                ad[i+j*get_mem_dim(a).y] = value; // not a memset due to complex
             }
+        }
+    }
+
+    template<typename T> void randomize(T* ad){ *ad = drand48(); }
+    template<typename T> void randomize(std::complex<T>* ad){
+        (*ad).real() = drand48();
+        (*ad).imag() = drand48();
+    }
+
+    template<typename T>
+    void init_random_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        size_t i = ctxt.get_block_id().y;
+        size_t j = ctxt.get_block_id().x;
+        size_t ld = get_mem_dim(a).y;
+        size_t sd = get_mem_dim(a).x;
+        T* ad = updated(a)(i,j);
+        size_t sizey = __a_get_limit_y(a, m);
+        size_t sizex = __a_get_limit_x(a, n);
+       
+        for(size_t jj = 0; jj < sizex; jj++){
+            for(size_t ii = 0; ii < sizey; ii++)
+                randomize((ad+(jj*ld+ii)));
+        }
+    }
+
+    template<typename T>
+    void init_identity_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        size_t i = ctxt.get_block_id().y;
+        size_t j = ctxt.get_block_id().x;
+        size_t ld = get_mem_dim(a).y;
+        size_t sd = get_mem_dim(a).x;
+        T* ad = updated(a)(i,j);
+        if((i+1)*ld <= j*sd) return;
+        if(i*ld >= (j+1)*sd) return;
+        size_t sizex = std::min(m,n); // respecting borders
+        sizex = std::min(sizex,(j+1)*sd);
+        for(size_t jj = j*sd; jj < sizex; jj++){
+            if(i*ld > jj) continue;
+            if((i+1)*ld <= jj) continue;
+            ad[jj % ld + (jj%sd)*ld] = 1.;
         }
     }
 

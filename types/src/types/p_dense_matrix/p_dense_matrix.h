@@ -9,8 +9,6 @@
 #include <alps/hdf5.hpp>
 #endif
 
-#include "types/p_dense_matrix/kernels/i_kernels.hpp"
-
 namespace maquis { namespace types {
 
     template<class T>
@@ -39,18 +37,9 @@ namespace maquis { namespace types {
         }
 
         static p_dense_matrix<T> identity_matrix(size_type size){
-            p_dense_matrix m(size, size);
-            m.impl->pt_set_init(ambient::identity_i<T>);
+            p_dense_matrix<T> m(size, size);
+            m.fill_identity();
             return m;
-        }
-
-        void generate(){
-            this->impl->pt_set_init(ambient::random_i<T>);
-        }
-
-        template<typename O>
-        void set_init(void(*fp)(O&)){
-            this->impl->pt_set_init(fp);
         }
 
         value_type& get(size_type i, size_type j) const {
@@ -59,6 +48,18 @@ namespace maquis { namespace types {
 
         scalar_type trace() const {
             return this->impl->trace();
+        }
+
+        void fill_identity(){
+            this->impl->fill_identity();
+        }
+
+        void fill_value(value_type v){
+            this->impl->fill_value(v);
+        }
+
+        void fill_random(){
+            this->impl->fill_random();
         }
 
         void conjugate(){
@@ -91,10 +92,6 @@ namespace maquis { namespace types {
 
         void remove_cols(size_type j, size_type k){
             this->impl->remove_cols(j, k); 
-        }
-
-        void clear(){
-            this->impl->clear();
         }
 
         inline value_type& operator() (size_type i, size_type j){
@@ -166,7 +163,9 @@ namespace maquis { namespace types {
         p_dense_matrix_impl(p_dense_matrix_impl const& m);
         value_type& get(size_type i, size_type j);
         scalar_type trace() const;
-  
+        void fill_identity();
+        void fill_random();
+        void fill_value(value_type v);
         void conjugate();
         void transpose();
         inline bool empty() const;
@@ -175,8 +174,6 @@ namespace maquis { namespace types {
         void resize(size_type rows, size_type cols);
         void remove_rows(size_type i, size_type k);
         void remove_cols(size_type j, size_type k);
-        void clear();
-
         void cpy(const p_dense_matrix_impl& rhs);
         void add(const p_dense_matrix_impl& rhs); 
         void sub(const p_dense_matrix_impl& rhs);
@@ -184,7 +181,6 @@ namespace maquis { namespace types {
         void mul(const p_diagonal_matrix<T>& rhs);
         template <typename T2> void mul(const T2& t);
     private:
-        value_type init_value;
         size_type rows;
         size_type cols;
     };

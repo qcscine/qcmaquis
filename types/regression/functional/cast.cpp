@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_dense, T, test_types)
     ambient::model >> dim(32,32), dim(32,32), dim(32,32);
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
-    pA.set_init(ambient::random_i<typename T::dbl>);
+    pA.fill_random();
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
 
-    pA.get_data().set_init(ambient::random_i<typename T::dbl>);
+    pA.get_data().fill_random();
     sA = maquis::traits::matrix_cast<sDiagMatrix>(pA); // playout is inside the cast
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

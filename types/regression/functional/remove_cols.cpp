@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_first_col, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    pA.set_init(ambient::random_i<typename T::dbl>);
+    pA.fill_random();
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_col, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    pA.set_init(ambient::random_i<typename T::dbl>);
+    pA.fill_random();
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_one_col, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    pA.set_init(ambient::random_i<typename T::dbl>);
+    pA.fill_random();
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     int col =  Rd.IntRd()%(sA.num_cols());  
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_cols, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    pA.set_init(ambient::random_i<typename T::dbl>);
+    pA.fill_random();
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     int col =  Rd.IntRd()%(sA.num_cols()); 

@@ -28,8 +28,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     sMatrix sB(T::valuex,T::valuex);
     sMatrix sC(T::valuex,T::valuex);
 
-    pA.set_init(ambient::random_i<typename T::dbl>);
-    pB.set_init(ambient::random_i<typename T::dbl>);
+    pA.fill_random();
+    pB.fill_random();
 
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast

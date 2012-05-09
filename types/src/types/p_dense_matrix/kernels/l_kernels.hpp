@@ -316,7 +316,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void trace_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, T*& trace){
+    void trace_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
         int num = 1;
         ctxt_select("* from ambient as trace where master is 0");
         if(!ctxt.involved()) return;
@@ -417,8 +417,24 @@ namespace ambient {
     }
 
     template<typename T>
-    void one_init_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-        ctxt_select(1 +" from ambient as one_init where master is 0 and breakdown contains "+ id(a));
+    void init_value_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
+        ctxt_select(1 +" from ambient as init_value where master is 0 and breakdown contains "+ id(a));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<pin>(a);
+    }
+
+    template<typename T>
+    void init_random_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        ctxt_select(1 +" from ambient as init_random where master is 0 and breakdown contains "+ id(a));
+        if(!ctxt.involved()) return;
+
+        block_2d_cycle<pin>(a);
+    }
+
+    template<typename T>
+    void init_identity_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        ctxt_select(1 +" from ambient as init_identity where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
