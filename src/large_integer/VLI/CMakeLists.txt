@@ -85,7 +85,7 @@ endif (VLI_COMPILE_GPU)
 #endif (VLI_TESTS)
 
 set(BOOST_ROOT ${BOOST_DIR})
-find_package (Boost COMPONENTS unit_test_framework)
+find_package (Boost COMPONENTS unit_test_framework random)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 else()
@@ -140,7 +140,8 @@ if(VLI_TESTS)
     enable_testing() 
     set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
       mark_as_advanced(BUILDNAME)
-    add_subdirectory (regression/)
+    add_subdirectory (regression)
+    add_subdirectory (regression/vli_cpu)
 endif(VLI_TESTS)
 
 
