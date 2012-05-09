@@ -66,6 +66,7 @@ struct initializer {
                 v[vli_type::size-1] = 0x7fffffffffffffff;
                 break;
             case multiplies_overflow_safe:
+                v[vli_type::size/2-1] = 0x7fffffffffffffff;
                 for(std::size_t i=vli_type::size/2; i != vli_type::size; ++i)
                     v[i] = 0;
                 break;
@@ -108,6 +109,7 @@ struct fuzz_initializer {
                 v[vli_type::size-1] = 1;
                 break;
             case multiplies_overflow_safe:
+                v[vli_type::size/2-1] = v[vli_type::size/2-1] & 0x7fffffffffffffff;
                 for(std::size_t i=vli_type::size/2; i != vli_type::size; ++i)
                     v[i] = 0;
                 break;
