@@ -8,7 +8,8 @@ namespace maquis { namespace types {
     template<typename T>
     p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, const value_type& init)
     : data_(rows,1)
-    { 
+    {
+       this->data_.fill_value(init);
     }
 
     template<typename T>

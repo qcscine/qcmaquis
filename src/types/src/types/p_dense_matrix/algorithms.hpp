@@ -1,7 +1,6 @@
 #ifndef __MAQUIS_TYPES_P_DENSE_MATRIX_ALGORITHMS_HPP__
 #define __MAQUIS_TYPES_P_DENSE_MATRIX_ALGORITHMS_HPP__
 
-#include "types/p_dense_matrix/kernels/r_kernels.hpp"
 #include "types/p_dense_matrix/kernels/l_kernels.hpp"
 #include "types/p_dense_matrix/kernels/c_kernels.hpp"
 
@@ -135,10 +134,7 @@ namespace maquis { namespace types {
         printf("left right boundary init\n");
         dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         left_right_boundary_init(sa);
-        size_t m = a.num_rows();
-        size_t n = a.num_cols();
-        ambient::push(ambient::one_init_l<T>, ambient::one_init_c<T>, a, m, n);
-        ambient::playout();
+        a.fill_value(1.0);
         if(sa == a){}else printf("--------------------- INCORRECT LEFT RIGHT BOUNDARY INIT!\n");
     }
 
@@ -446,7 +442,7 @@ namespace maquis { namespace types {
 
     template<typename T, class G>
     void generate(p_dense_matrix<T>& m, G g){ // warning: G isn't used
-        m.generate();
+        m.fill_random();
     }
     // }}}
 
@@ -473,6 +469,34 @@ namespace algorithms {
     }
 
     template<typename T>
+    void fill_identity(p_dense_matrix_impl<T>& a){
+        ambient::playout();
+        size_t m = a.num_rows();
+        size_t n = a.num_cols();
+        ambient::push(ambient::init_identity_l<T>, ambient::init_identity_c<T>, a, m, n);
+        ambient::playout();
+    }
+
+    template<typename T>
+    void fill_random(p_dense_matrix_impl<T>& a){
+        ambient::playout();
+        size_t m = a.num_rows();
+        size_t n = a.num_cols();
+        ambient::push(ambient::init_random_l<T>, ambient::init_random_c<T>, a, m, n);
+        ambient::playout();
+    }
+
+    template<typename T>
+    void fill_value(p_dense_matrix_impl<T>& a, T value){
+        if(value == 0.) return; // matrices are 0s by default
+        ambient::playout();
+        size_t m = a.num_rows();
+        size_t n = a.num_cols();
+        ambient::push(ambient::init_value_l<T>, ambient::init_value_c<T>, a, m, n, value);
+        ambient::playout();
+    }
+
+    template<typename T>
     void inplace_conjugate(p_dense_matrix_impl<T>& m){
         // gs (doubles)
         printf("inplace conjugate\n");
@@ -487,13 +511,14 @@ namespace algorithms {
     }
 
     template <typename T>
-    scalar_type trace(const p_dense_matrix_impl<T>& m) {
+    scalar_type trace(const p_dense_matrix_impl<T>& a) {
         // gs
         ambient::playout();
         printf("trace\n");
-        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(m);
+        size_t n = std::min(a.num_rows(), a.num_cols());
+        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         scalar_type trace;
-        ambient::push(ambient::trace_l<T>, ambient::trace_c<T>, m, trace);
+        ambient::push(ambient::trace_l<T>, ambient::trace_c<T>, a, n, trace);
         ambient::playout();
         if(maquis::types::trace(sm) != (T)trace) printf("--------------------- TRACE IS INCORRECT!\n");
         return trace;

@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Exp, T, test_types)
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
 
-    pA.get_data().set_init(ambient::random_i<typename T::dbl>);
+    pA.get_data().fill_random();
     sA = maquis::traits::matrix_cast<sDiagMatrix>(pA); // playout is inside the cast
 
     sA = exp(sA);

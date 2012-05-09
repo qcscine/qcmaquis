@@ -37,7 +37,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
     pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
 
     pA(accessx,accessy) = 3;
-    ambient::playout();
     sA(accessx,accessy) = 3;
 
     x =  pA(accessx,accessy) ;
@@ -53,11 +52,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
     typename T::dbl x,y;
     pMatrix pA = pMatrix::identity_matrix(T::valuex);
     sMatrix sA = sMatrix::identity_matrix(T::valuex);
+    ambient::playout();
    
     x = trace(pA);
     y = trace(sA);
    
-    ambient::playout();
     Boost_check_close_adapter(x,y);
 }
 

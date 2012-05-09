@@ -16,9 +16,8 @@ namespace maquis { namespace types {
     p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols = 0, T init_value = T() ){
         this->cols = cols;
         this->rows = rows;
-        this->init_value = init_value;
         this->pt_set_dim(cols, rows);
-        this->pt_set_init(ambient::value_i<T>);
+        this->fill_value(init_value);
     }
 
     template <typename T>
@@ -42,12 +41,6 @@ namespace maquis { namespace types {
     template <typename T>
     inline size_type p_dense_matrix_impl<T>::num_cols() const {
         return this->cols;   
-    }
-
-    template <typename T>
-    void p_dense_matrix_impl<T>::clear(){
-        algorithms::clear(*this);
-        this->rows = this->cols = 0;
     }
 
     template <typename T>
@@ -77,6 +70,21 @@ namespace maquis { namespace types {
         algorithms::remove_cols(*this, j, k);
         this->pt_set_dim(this->cols - k, this->rows);
         this->cols -= k;
+    }
+
+    template <typename T>
+    void p_dense_matrix_impl<T>::fill_identity(){ 
+        algorithms::fill_identity(*this);
+    }
+
+    template <typename T>
+    void p_dense_matrix_impl<T>::fill_random(){ 
+        algorithms::fill_random(*this);
+    }
+
+    template <typename T>
+    void p_dense_matrix_impl<T>::fill_value(value_type v){ 
+        algorithms::fill_value(*this, v);
     }
 
     template <typename T>

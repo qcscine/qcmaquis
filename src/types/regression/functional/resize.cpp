@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    pA.set_init(ambient::random_i<typename T::dbl>);
+    pA.fill_random();
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
     sA.resize(2,2);
