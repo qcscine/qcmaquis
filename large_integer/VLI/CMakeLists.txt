@@ -32,7 +32,7 @@ set (VLI_VERSION_MINOR 1)
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" OFF)
-option (VLI_TESTS "Build the VLI regression tests" OFF)
+option (VLI_TESTS "Build the VLI regression tests" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
 

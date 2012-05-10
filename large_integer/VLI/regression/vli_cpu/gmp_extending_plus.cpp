@@ -16,7 +16,7 @@ VLI_FUZZABLE_TEST( plus_assign_extend_positive )
 
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
-
+/*
 VLI_FUZZABLE_TEST( plus_assign_extend_negative )
 {
     vli_type a,b;
@@ -47,3 +47,4 @@ VLI_FUZZABLE_TEST( plus_assign_extend_mixed_sign )
     BOOST_CHECK_EQUAL(c,d);
     BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
 }
+*/

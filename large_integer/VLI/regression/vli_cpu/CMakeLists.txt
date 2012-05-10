@@ -5,7 +5,7 @@ set(VLI_FUZZ_TEST_ITERATIONS "10000" CACHE STRING "Number of fuzz iterations for
 set(tests constructors equal negate plus plus_negative gmp_plus minus gmp_minus multiplies multiplies_negative gmp_multiplies_int gmp_multiplies comparison misc_tests )
 set(fuzz_tests constructors negate plus plus_negative gmp_plus minus gmp_minus multiplies multiplies_negative gmp_multiplies_int gmp_multiplies)
 set(extending_plus_tests gmp_extending_plus)
-set(extending_multiplies_test gmp_extending_multiplies gmp_extending_multiplies_negative)
+set(extending_multiplies_tests gmp_extending_multiplies gmp_extending_multiplies_negative gmp_extending_multiplie_add)
 
 set(test_sizes 2 3 4 5 6 7 8)
 set(extending_plus_sizes 2 3 4 5 6)
