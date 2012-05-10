@@ -25,7 +25,7 @@
 
 #define Size1 3
 #define Size2 6
-#define Order 4
+#define Order 11
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -84,24 +84,6 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 int main (int argc, char * const argv[]) 
 {
     
-    
-    vli_type_cpu a;
-    vli_type_cpu b(1);
-    a[0]=0xffffffffffffffff;
-    a[1]=0xffffffffffffffff;
-    a[2]=0xffffffffffffffff;
-    vli_type_cpu c(a);
-    std::cout << std::hex <<  c << std::endl;
-    negate_inplace(c); 
-    std::cout << std::hex <<  c << std::endl;
-    
-    a+=b;
-    
-    
-    std::cout  <<  a << std::endl;
-    std::cout << std::hex <<  c << std::endl;
-    
-/*
     int SizeVector =  atoi(argv[1]); 
      
  polynomial_vector_type v1gmp(SizeVector);
@@ -124,17 +106,17 @@ int main (int argc, char * const argv[])
    
     fill_vector_random(v1,2);
     fill_vector_random(v2,3);
-
+/*
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
 
-    InitPolyVLItoPolyGMP(v1,v1gmp);
+  InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
-
+*/
     Timer t1("CPU vli_omp");
     t1.begin();
-//      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
-      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
+//      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
 
     TimerOMP t("GPU nvidia");
@@ -142,29 +124,31 @@ int main (int argc, char * const argv[])
       result_pure_cpu_nvidia = vli::detail::inner_product_gpu_nvidia(v1,v2);
     t.end();
 
-
+/*
     Timer t2("CPU gmp_omp");
     t2.begin();
        pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
-
+*/
 #ifdef VLI_USE_GPU
+/*
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();   
     result_mix_cpu_gpu = vli::detail::inner_product_openmp_gpu(v1,v2);
     t3.end();
    
     if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); } 
+*/
 #endif
     if(result_pure_cpu_nvidia ==result_pure_cpu ) {printf("OK nvidia\n"); } else{printf("NO OK nvidia \n"); } 
-   
+ 
      std::cout << std::hex << result_pure_cpu_nvidia << std::endl;
      std::cout << " -------------------------------------------------------- " << std::endl;
      std::cout << std::hex << result_pure_cpu << std::endl;
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-*/
+
     return 0;
 }
 

@@ -30,7 +30,7 @@ polynomial_mul_full(
 	__shared__ unsigned int in_buffer2[SLICE_PADDED * DEGREE_BOUND_Y * INT_DEGREE];
 
 	const unsigned int local_thread_id = threadIdx.x;
-    const unsigned int element_id = blockIdx.x;
+        const unsigned int element_id = blockIdx.x;
 
 	// Copy both input polynomials into the shared memory
 	{
@@ -62,20 +62,21 @@ polynomial_mul_full(
 		__syncthreads();
 	}
 
-        unsigned int p1[INT_DEGREE],p2[INT_DEGREE];
+        unsigned int c1[INT_DEGREE],c2[INT_DEGREE];
+	unsigned int res[2*INT_DEGREE];
+	unsigned int res1[2*INT_DEGREE];
 
 	unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
 	for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id)
 	{
 		vli::detail::single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MUL_BLOCK_SIZE)];
 		const unsigned int step_count = task.step_count;
+
 		if (step_count > 0)
 		{
 			const unsigned int output_degree_y = task.output_degree_y;
 			const unsigned int output_degree_x = task.output_degree_x;
 
-			unsigned int res[2*INT_DEGREE];
-			unsigned int res1[2*INT_DEGREE];
 			#pragma unroll
 			for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
 				res[i] = 0;
@@ -94,66 +95,33 @@ polynomial_mul_full(
 
                             #pragma unroll
                             for(unsigned int degree1 = 0; degree1 < INT_DEGREE; ++degree1)
-                                p1[degree1] = in_polynomial1[degree1 * (SLICE_PADDED * DEGREE_BOUND_Y)];
+                                c1[degree1] = in_polynomial1[degree1 * (SLICE_PADDED * DEGREE_BOUND_Y)];
  
                             #pragma unroll
                             for(unsigned int degree2 = 0; degree2 < INT_DEGREE; ++degree2)
-                                p2[degree2] = in_polynomial2[degree2  * (SLICE_PADDED * DEGREE_BOUND_Y)];
+                                c2[degree2] = in_polynomial2[degree2  * (SLICE_PADDED * DEGREE_BOUND_Y)];
  
-                            unsigned int sign = (p1[INT_DEGREE-1]>>31) ^ (p2[INT_DEGREE-1]>>31);
+                            unsigned int sign = (c1[INT_DEGREE-1]>>31) ^ (c2[INT_DEGREE-1]>>31);
 
-                            if(p1[INT_DEGREE-1] >> 31 != 0)
-                                vli::detail::negate192_gpu(p1); 
+                            if(c1[INT_DEGREE-1] >> 31 != 0)
+                                vli::detail::negate192_gpu(c1); 
 
-                            if(p2[INT_DEGREE-1] >> 31 != 0)
-                                vli::detail::negate192_gpu(p2); 
+                            if(c2[INT_DEGREE-1] >> 31 != 0)
+                                vli::detail::negate192_gpu(c2); 
 
-                            vli::detail::mul384_384_gpu(res1,p1,p2);
+                            vli::detail::mul384_384_gpu(res1,c1,c2);
 
-			                if(sign != 0)
-                                vli::detail::negate384_gpu(res1);
+                            if(sign != 0)
+                               vli::detail::negate384_gpu(res1);
 
                             vli::detail::add384_384_gpu(res,res1);
                                    
-/*
-				#pragma unroll
-				for(unsigned int degree1 = 0; degree1 < INT_DEGREE; ++degree1)
-				{
-					const unsigned int coefficient1 = in_polynomial1[degree1 * (SLICE_PADDED * DEGREE_BOUND_Y)];
-
-					unsigned int carry_over = 0;
-					#pragma unroll
-					for(unsigned int degree2 = 0; degree2 < INT_DEGREE; ++degree2)
-					{
-						// This trick (starting loop from zero and checking for variable to be not less than degree1) is for the only purpose:
-						// To make pragma unroll working to keep res[] array in registers.
-						if (degree2 >= degree1)
-						{
-							const unsigned int coefficient2 = in_polynomial2[(degree2 - degree1) * (SLICE_PADDED * DEGREE_BOUND_Y)];
-
-							if (degree2 == INT_DEGREE - 1) {
-								res[degree2] += coefficient1 * coefficient2 + carry_over;
-							} else {
-								if (degree2 == degree1) {
-									__wide_mad(res[degree2],carry_over,coefficient1,coefficient2);
-								}
-								else
-								{
-									__wide_mad_with_carry_in(res[degree2],carry_over,coefficient1,coefficient2);
-								}
-							}
-						}
-					}
-				}
-*/
-
 				// Calculate the next pair of input coefficients to be multiplied and added to the result
-				current_degree_x++;
-				if (current_degree_x > end_degree_x_inclusive)
-				{
-					current_degree_x = start_degree_x_inclusive;
-					current_degree_y++;
-				}
+                             current_degree_x++;
+                             if (current_degree_x > end_degree_x_inclusive) {
+                                 current_degree_x = start_degree_x_inclusive;
+                                 current_degree_y++;
+                             }
 			}
 
 			unsigned int coefficient_id = output_degree_y * MULT_RESULT_DEGREE_BOUND_X + output_degree_x;
@@ -287,8 +255,8 @@ namespace vli {
 
 	gpu_hardware_carryover_implementation::~gpu_hardware_carryover_implementation()
 	{
-		if (d_intermediate_result)
-			cudaFree(d_intermediate_result);
+//		if (d_intermediate_result)
+//			cudaFree(d_intermediate_result);
 	}
 
 	void  gpu_hardware_carryover_implementation::run(
@@ -333,7 +301,7 @@ namespace vli {
 		{
 			if (d_intermediate_result)
 			    (cudaFree(d_intermediate_result));
-			(cudaMalloc((void **)&d_intermediate_result, SINGLE_MULT_RESULT_POLYNOMIAL_UINT_COUNT * sizeof(unsigned int) * max_element_count));
+			(cudaMalloc((void **)&d_intermediate_result, 2*SINGLE_MULT_RESULT_POLYNOMIAL_UINT_COUNT * sizeof(unsigned int) * max_element_count));
 		}
 	}
     }
