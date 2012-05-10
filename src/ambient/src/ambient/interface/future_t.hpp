@@ -17,18 +17,25 @@ namespace ambient {
             this->ghost = (container<sizeof(T)>*)this->naked;
         }
 
+        future(const future& f){
+            this->naked = new container<sizeof(T)>();
+            *(T*)this->naked = (T)f; // unfolding f (can be more optimal / wo playout)
+            this->ghost = (container<sizeof(T)>*)this->naked;
+            this->value = NULL; // let's playout again for copy
+        }
+
         future(double value){
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
-            this->value = (T*)this->naked;
-            *this->value = value;
+            *(T*)this->naked = value;
+            this->value = NULL; //(T*)this->naked; // let's playout
         }
 
         future(std::complex<double> value){
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
-            this->value = (T*)this->naked;
-            *this->value = value;
+            *(T*)this->naked = value;
+            this->value = NULL; //(T*)this->naked; // let's playout
         }
 
         operator T () const {
