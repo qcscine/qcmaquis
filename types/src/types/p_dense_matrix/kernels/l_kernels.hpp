@@ -248,12 +248,11 @@ namespace ambient {
     }
 
     template<typename T>
-    void scale_l(pinned maquis::types::p_dense_matrix_impl<T>& m, const double& t){
-        ctxt_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ id(m));
+    void scale_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const double*& t){
+        ctxt_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
-        //ambient::cout << "2dbcd in scale ("<< ambient::rank() <<"):\n"; credentials(m);
 
-        block_2d_cycle<pin>(m);
+        block_2d_cycle<pin>(a);
     }
 
     template<typename T>

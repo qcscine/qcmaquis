@@ -251,24 +251,26 @@ namespace ambient {
     template<typename T>
     void sqrt_diagonal_c(pinned maquis::types::p_dense_matrix_impl<T>& a){
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        T* sd = updated(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         size_t size = get_mem_dim(a).y;
         for(int i=0; i < size; i++)
-            ad[i] = sqrt(ad[i]);
+            sd[i] = sqrt(ad[i]);
     }
 
     template<typename T>
     void exp_diagonal_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        T* sd = updated(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         size_t size = get_mem_dim(a).y;
         for(int i=0; i < size; i++)
-            ad[i] = exp(ad[i]*alfa);
+            sd[i] = exp(ad[i]*alfa);
     }
 
     template<typename T>
     void exp_diagonal_rc_c(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, pinned const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
-        std::complex<T>* ed = current(e)(i, j);
+        std::complex<T>* ed = updated(e)(i, j);
         T* ad = current(a)(i, j);
         size_t size = get_mem_dim(e).y;
         for(int i=0; i < size; i++)
@@ -438,14 +440,17 @@ namespace ambient {
     }
 
     template<typename T>
-    void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& m, const double& t){
+    void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const double*& t){
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
-        T* md = current(m)(i, j);
-        T* mr = updated(m)(i, j);
-        size_t size = get_mem_dim(m).x*get_mem_dim(m).y;
-        for(size_t k=0; k < size; k++)
-            mr[k] = md[k] * t;
+        T* ad = current(a)(i, j);
+        T* ar = updated(a)(i, j);
+        size_t sizey = __a_get_limit_y(a, m);
+        size_t sizex = __a_get_limit_x(a, n);
+        size_t lda = get_mem_dim(a).y;
+        for(size_t jj=0; jj < sizex; jj++)
+            for(size_t ii=0; ii < sizey; ii++)
+                ar[jj*lda+ii] = ad[jj*lda+ii] * (*t);
     }
 
     template<typename T, typename D>
