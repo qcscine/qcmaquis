@@ -195,7 +195,7 @@ namespace detail
 
             gpu::cu_check_error(cudaMemcpyAsync((void*)v1_.p(),(void*)&v1[0],partsize*factor_element_size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
             gpu::cu_check_error(cudaMemcpyAsync((void*)v2_.p(),(void*)&v2[0],partsize*factor_element_size*sizeof(base_int_type),cudaMemcpyHostToDevice),__LINE__);
-            gpu::cu_check_error(cudaMemset((void*)tmp_.p(),0,partsize*product_element_size*sizeof(base_int_type)),__LINE__);
+            gpu::cu_check_error(cudaMemset((void*)tmp_.p(),0,product_element_size*sizeof(base_int_type)),__LINE__);
 
             vli::detail::gpu_hardware_carryover_implementation imp;
 	    imp.run((unsigned int*)v1_.p(), (unsigned int*)v2_.p(),(unsigned int*)tmp_.p(),(unsigned int)partsize_);
@@ -254,7 +254,6 @@ inner_product_gpu( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >
     
     polynomial<vli_cpu<BaseInt,2*Size>, 2*Order> res;
     std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
-     
     detail::inner_product_gpu_booster<vli_cpu<BaseInt,Size>,Order> gpu_product(v1,v2,split);
 
     for(std::size_t i=split ; i < size_v ; ++i){
@@ -274,21 +273,19 @@ inner_product_gpu_nvidia( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, O
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
     
-    polynomial<vli_cpu<BaseInt,2*Size>, 2*Order> res;
+    polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order>  res[omp_get_max_threads()];
     std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
-
-  
     detail::inner_product_gpu_booster_nvidia<vli_cpu<BaseInt,Size>,Order> gpu_product_nvidia(v1,v2,split);
 
-    for(std::size_t i=split ; i < size_v ; ++i){
-        res += v1[i]*v2[i];
-    }
-   
-    res += polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product_nvidia);
+    #pragma omp parallel for schedule(dynamic)
+    for(std::size_t i=split ; i < size_v ; ++i)
+        res[omp_get_thread_num()] += v1[i]*v2[i];
 
- 
-    
-    return res;
+    for(std::size_t i=1; i < omp_get_max_threads(); ++i)
+        res[0]+=res[i];
+
+    res[0] += polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order >(gpu_product_nvidia); // this thing synchronize
+    return res[0];
 }
 
 
