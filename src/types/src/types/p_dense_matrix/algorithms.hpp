@@ -25,7 +25,7 @@ namespace maquis { namespace types {
                      size_t sdim, size_t ldim, size_t rdim)
     { // gs
         ambient::playout();
-        printf("reshape_r2l\n");
+        //printf("reshape_r2l\n");
         dense_matrix<T> sl = maquis::traits::matrix_cast<dense_matrix<T> >(left);
         dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
         reshape_r2l(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
@@ -41,7 +41,7 @@ namespace maquis { namespace types {
                      size_t sdim, size_t ldim, size_t rdim)
     { // gs
         ambient::playout();
-        printf("reshape_l2r (%lu x %lu by %lu x %lu) -- sdim: %lu, %lu x %lu\n", left.num_rows(), left.num_cols(), right.num_rows(), right.num_cols(), sdim, rdim, ldim);
+        //printf("reshape_l2r (%lu x %lu by %lu x %lu) -- sdim: %lu, %lu x %lu\n", left.num_rows(), left.num_cols(), right.num_rows(), right.num_cols(), sdim, rdim, ldim);
         dense_matrix<T> sl = maquis::traits::matrix_cast<dense_matrix<T> >(left);
         dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
         reshape_l2r(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
@@ -57,7 +57,7 @@ namespace maquis { namespace types {
                        size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     { // gs
         ambient::playout();
-        printf("lb_tensor_mpo\n");
+        //printf("lb_tensor_mpo\n");
         dense_matrix<T> sout = maquis::traits::matrix_cast<dense_matrix<T> >(out);
         dense_matrix<T> sin = maquis::traits::matrix_cast<dense_matrix<T> >(in);
         dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
@@ -74,7 +74,7 @@ namespace maquis { namespace types {
                        size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     { // gs
         ambient::playout();
-        printf("rb_tensor_mpo\n");
+        //printf("rb_tensor_mpo\n");
         dense_matrix<T> sout = maquis::traits::matrix_cast<dense_matrix<T> >(out);
         dense_matrix<T> sin = maquis::traits::matrix_cast<dense_matrix<T> >(in);
         dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
@@ -100,7 +100,7 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    void scalar_norm(p_dense_matrix<T> & a, p_dense_matrix<T> & b, scalar_type & ret){
+    void scalar_norm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, scalar_type& ret){
         // gs
         ambient::playout(); 
         size_t m = num_rows(a);
@@ -117,7 +117,7 @@ namespace maquis { namespace types {
     void bond_renyi_entropies(const p_diagonal_matrix<T>& m, typename associated_real_vector<p_dense_matrix<T> >::type& sv){
         // gs
         ambient::playout();
-        printf("bond renyi entropies\n");
+        //printf("bond renyi entropies\n");
         diagonal_matrix<T> sm = maquis::traits::matrix_cast<diagonal_matrix<T> >(m);
         typename associated_real_vector<p_dense_matrix<T> >::type ssv(sv);
         bond_renyi_entropies(sm, ssv);
@@ -131,7 +131,7 @@ namespace maquis { namespace types {
     void left_right_boundary_init(p_dense_matrix<T> & a){
         // gs
         ambient::playout(); 
-        printf("left right boundary init\n");
+        //printf("left right boundary init\n");
         dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         left_right_boundary_init(sa);
         a.fill_value(1.0);
@@ -201,7 +201,7 @@ namespace maquis { namespace types {
     p_dense_matrix<T> transpose(const p_dense_matrix<T>& m){
         // gs
         ambient::playout();
-        printf("transpose\n");
+        //printf("transpose\n");
         dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(m);
         p_dense_matrix<T> t(m.num_cols(), m.num_rows());
         ambient::push(ambient::transpose_out_l<T>, ambient::transpose_out_c<T>, m, t);
@@ -220,7 +220,7 @@ namespace maquis { namespace types {
 
     template<typename T>
     p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1.){
-        printf("exp\n");
+        //printf("exp\n");
         typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
         p_dense_matrix<T> evecs;
         heev(m, evecs, evals);
@@ -338,7 +338,7 @@ namespace maquis { namespace types {
         if(num_cols(a) != num_rows(b)) maquis::cout << "Incorrect GEMM operation\n";
         c.resize(a.num_rows(), b.num_cols());
         ambient::playout();
-        printf("gemm ppp (%lu x %lu by %lu x %lu)\n", a.num_rows(), a.num_cols(), b.num_rows(), b.num_cols());
+        //printf("gemm ppp (%lu x %lu by %lu x %lu)\n", a.num_rows(), a.num_cols(), b.num_rows(), b.num_cols());
         dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         dense_matrix<T> sb = maquis::traits::matrix_cast<dense_matrix<T> >(b);
         dense_matrix<T> sc = maquis::traits::matrix_cast<dense_matrix<T> >(c);
@@ -353,7 +353,7 @@ namespace maquis { namespace types {
         // gs
         ambient::playout();
         if(num_cols(a) != num_rows(b)) maquis::cout << "Incorrect GEMM operation\n";
-        printf("gemm pdp\n");
+        //printf("gemm pdp\n");
         size_t m = a.num_rows();
         size_t n = b.num_cols();
         size_t k = a.num_cols();
@@ -372,7 +372,7 @@ namespace maquis { namespace types {
         // gs
         ambient::playout();
         if(num_cols(a) != num_rows(b)) maquis::cout << "Incorrect GEMM operation\n";
-        printf("gemm dpp\n");
+        //printf("gemm dpp\n");
         size_t m = a.num_rows();
         size_t n = b.num_cols();
         size_t k = a.num_cols();
@@ -391,7 +391,7 @@ namespace maquis { namespace types {
              typename associated_real_diagonal_matrix<p_dense_matrix<T> >::type& s)
     { // gs
         ambient::playout(); 
-        printf("svd\n");
+        //printf("svd\n");
         int m = num_rows(a);
         int n = num_cols(a);
         int k = std::min(m,n);
@@ -452,7 +452,7 @@ namespace algorithms {
     template<typename T>
     void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols){ 
         // gs
-        printf("resize to %lu x %lu\n", rows, cols);
+        //printf("resize to %lu x %lu\n", rows, cols);
         ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols); // playout is impossible
     }
 
@@ -499,7 +499,7 @@ namespace algorithms {
     template<typename T>
     void inplace_conjugate(p_dense_matrix_impl<T>& m){
         // gs (doubles)
-        printf("inplace conjugate\n");
+        //printf("inplace conjugate\n");
         // TODO: does nothing for now
     }
 
@@ -514,7 +514,7 @@ namespace algorithms {
     scalar_type trace(const p_dense_matrix_impl<T>& a) {
         // gs
         ambient::playout();
-        printf("trace\n");
+        //printf("trace\n");
         size_t n = std::min(a.num_rows(), a.num_cols());
         dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         scalar_type trace;
@@ -528,7 +528,7 @@ namespace algorithms {
     void add_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
         // gs
         ambient::playout();
-        printf("add inplace\n");
+        //printf("add inplace\n");
         dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(m);
         dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
         sm += srhs;
@@ -541,7 +541,7 @@ namespace algorithms {
     void sub_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
         // gs
         ambient::playout();
-        printf("sub inplace\n");
+        //printf("sub inplace\n");
         dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(m);
         dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
         sm -= srhs;
@@ -562,16 +562,19 @@ namespace algorithms {
         //ambient::push(ambient::gemm_diag_inplace_l<T>, ambient::gemm_diag_inplace_c<T>, m, rhs);
     }
 
-    template <typename T, typename S>
-    void scale_inplace(p_dense_matrix_impl<T>& m, const S& rhs) {
+    template <typename T>
+    void scale_inplace(p_dense_matrix_impl<T>& a, const scalar_type& rhs) {
         // gs
+        static_cast<std::complex<double> >(rhs);
         ambient::playout(); 
-//        dense_matrix<T> s = maquis::traits::matrix_cast<dense_matrix<T> >(m);
-//        s *= (T)rhs;
-        ambient::push(ambient::scale_l<T>, ambient::scale_c<T>, m, rhs);
+        dense_matrix<T> s = maquis::traits::matrix_cast<dense_matrix<T> >(a);
+        s *= (T)rhs;
+        size_t m = a.num_rows();
+        size_t n = a.num_cols();
+        ambient::push(ambient::scale_l<T>, ambient::scale_c<T>, a, m, n, rhs);
         ambient::playout(); 
-//
-//        if(s == m){}else{ printf("Something is wrong...\n");  }
+
+        if(s == a){} else printf("--------------------- SCALE WAS INCORRECT!\n");
     }
 
     template <typename T>
