@@ -42,5 +42,5 @@ VLI_STATIC_TEST( multiplies_by_two_not_equal_minus_assign_one )
     a *= b;
     c -= 1;
     
-    BOOST_CHECK_EQUAL((a == c), false);
+    BOOST_CHECK_EQUAL((a == c), true);
 }

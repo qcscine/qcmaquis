@@ -83,7 +83,25 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
-
+    
+    
+    vli_type_cpu a;
+    vli_type_cpu b(1);
+    a[0]=0xffffffffffffffff;
+    a[1]=0xffffffffffffffff;
+    a[2]=0xffffffffffffffff;
+    vli_type_cpu c(a);
+    std::cout << std::hex <<  c << std::endl;
+    negate_inplace(c); 
+    std::cout << std::hex <<  c << std::endl;
+    
+    a+=b;
+    
+    
+    std::cout  <<  a << std::endl;
+    std::cout << std::hex <<  c << std::endl;
+    
+/*
     int SizeVector =  atoi(argv[1]); 
      
  polynomial_vector_type v1gmp(SizeVector);
@@ -146,7 +164,7 @@ int main (int argc, char * const argv[])
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-
+*/
     return 0;
 }
 

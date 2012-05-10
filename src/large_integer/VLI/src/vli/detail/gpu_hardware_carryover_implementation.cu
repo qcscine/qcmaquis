@@ -110,7 +110,7 @@ polynomial_mul_full(
 
                             vli::detail::mul384_384_gpu(res1,p1,p2);
 
-			    if(sign != 0)
+			                if(sign != 0)
                                 vli::detail::negate384_gpu(res1);
 
                             vli::detail::add384_384_gpu(res,res1);

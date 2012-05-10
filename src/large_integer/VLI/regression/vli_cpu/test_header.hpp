@@ -46,7 +46,9 @@ namespace vli {
 namespace test {
 
 typedef vli::vli_cpu<unsigned long int, VLI_SIZE> vli_type;
+typedef vli::vli_cpu<unsigned long int, 2*VLI_SIZE> vli_type_double;
 
+    
 enum variant_enum {
       max_positive = 0      // fill with the max positive number
     , overflow_safe = 1     // fill such that x+x doesn't cause an overflow
@@ -75,6 +77,25 @@ struct initializer {
             default:
                 throw(std::runtime_error("init variant not implemented"));
         }
+    }
+    void operator()(vli_type_double& v, variant_enum variant = overflow_safe) {
+        for(std::size_t i=0; i != vli_type_double::size; ++i)
+            v[i] = std::numeric_limits<vli_type::value_type>::max();
+        switch(variant) {
+            case max_positive:
+                v[vli_type_double::size-1] = v[vli_type_double::size-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
+                break;
+            case overflow_safe:
+                v[vli_type_double::size-1] = 1;
+                break;
+            case multiplies_overflow_safe:
+                v[vli_type_double::size/2-1] = v[vli_type_double::size/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=vli_type_double::size/2; i != vli_type_double::size; ++i)
+                    v[i] = 0;
+                break;
+            default:
+                throw(std::runtime_error("init variant not implemented"));
+       }
     }
     void operator()(int& i, variant_enum variant = overflow_safe) {
         switch(variant) {
@@ -111,6 +132,25 @@ struct fuzz_initializer {
             case multiplies_overflow_safe:
                 v[vli_type::size/2-1] = v[vli_type::size/2-1] & 0x7fffffffffffffff;
                 for(std::size_t i=vli_type::size/2; i != vli_type::size; ++i)
+                    v[i] = 0;
+                break;
+            default:
+                throw(std::runtime_error("init variant not implemented"));
+        }
+    }
+    void operator()(vli_type_double& v, variant_enum variant = overflow_safe) {
+        for(std::size_t i=0; i != vli_type_double::size; ++i)
+            v[i] = vli_value_type_max_rnd(rng);
+        switch(variant) {
+            case max_positive:
+                v[vli_type_double::size-1] = v[vli_type_double::size-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
+                break;
+            case overflow_safe:
+                v[vli_type_double::size-1] = 1;
+                break;
+            case multiplies_overflow_safe:
+                v[vli_type_double::size/2-1] = v[vli_type_double::size/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=vli_type_double::size/2; i != vli_type_double::size; ++i)
                     v[i] = 0;
                 break;
             default:
