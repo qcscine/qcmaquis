@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/alps/model.hpp"
+#include "dmrg/models/alps/model_symm.hpp"
 
 	
 // Symmetry dependent implementation
@@ -19,7 +19,7 @@ U1::charge init_charge<U1> (const alps::Parameters& parms, std::vector<std::pair
     U1::charge c = U1::IdentityCharge;
     if (parms.defined(qn[0].second+"_total")) {
         alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]), parms);
-        c = details::to_integer(tmp);
+        c = detail::to_integer(tmp);
     }
     return c;
 }
@@ -28,7 +28,7 @@ template <>
 U1::charge convert_alps<U1> (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn)
 {
     assert(qn.size() == 1);
-    return details::to_integer( get_quantumnumber(state, qn[0].first) );
+    return detail::to_integer( get_quantumnumber(state, qn[0].first) );
 }
 
 template <>

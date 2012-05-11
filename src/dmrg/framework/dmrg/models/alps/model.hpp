@@ -20,20 +20,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 
-template <class SymmGroup>
-typename SymmGroup::charge convert_alps (alps::site_state<short> const & state, std::vector<std::pair<std::size_t, std::string> > const& qn);
-
-template <class SymmGroup>
-typename SymmGroup::charge init_charge (const alps::Parameters& parms, std::vector<std::pair<std::size_t, std::string> > const& qn);
-
-template <class SymmGroup>
-std::map<typename SymmGroup::charge,std::size_t> init_qn_charges
-(std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states);
-
-template <class SymmGroup>
-std::map<alps::site_state<short>, std::pair<typename SymmGroup::charge, std::size_t> > init_coords
-(std::vector<std::pair<std::size_t, std::string> > const & conserved_qn, alps::site_basis<short> const & states);
-
+#include "model_symm.hpp"
 
 template <class SymmGroup>
 class basis_converter {
@@ -386,14 +373,6 @@ private:
     std::vector<std::pair<std::size_t, std::string> > conserved_qn;
     
 };
-
-namespace details {
-    template <class T>
-    int to_integer (alps::half_integer<T> const & qn_value)
-    {
-        return (qn_value.get_twice() % 2 == 0) ? alps::to_integer(qn_value) : qn_value.get_twice();
-    }
-}
 
 // Loading Measurements
 template <class Matrix, class SymmGroup>

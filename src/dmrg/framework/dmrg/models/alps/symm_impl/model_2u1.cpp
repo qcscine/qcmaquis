@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/alps/model.hpp"
+#include "dmrg/models/alps/model_symm.hpp"
 
 // Symmetry dependent implementation
 
@@ -16,8 +16,8 @@ TwoU1::charge convert_alps<TwoU1> (alps::site_state<short> const & state, std::v
 {
     assert(qn.size() == 2);
     TwoU1::charge ret;
-    ret[0] = details::to_integer (get_quantumnumber(state, qn[0].first) );
-    ret[1] = details::to_integer( get_quantumnumber(state, qn[1].first) );
+    ret[0] = detail::to_integer (get_quantumnumber(state, qn[0].first) );
+    ret[1] = detail::to_integer( get_quantumnumber(state, qn[1].first) );
     return ret;
 }
 
@@ -28,11 +28,11 @@ TwoU1::charge init_charge<TwoU1> (const alps::Parameters& parms, std::vector<std
     TwoU1::charge c = TwoU1::IdentityCharge;
     if (parms.defined(qn[0].second+"_total")) {
         alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[0].second+"_total"]), parms);
-        c[0] = details::to_integer(tmp);
+        c[0] = detail::to_integer(tmp);
     }
     if (parms.defined(qn[1].second+"_total")) {
         alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[qn[1].second+"_total"]), parms);
-        c[1] = details::to_integer(tmp);
+        c[1] = detail::to_integer(tmp);
     }
     return c;
 }
