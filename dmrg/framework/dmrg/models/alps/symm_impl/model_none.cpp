@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/alps/model.hpp"
+#include "dmrg/models/alps/model_symm.hpp"
 
 // Symmetry dependent implementation
 
