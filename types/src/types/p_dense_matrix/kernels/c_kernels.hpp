@@ -42,52 +42,46 @@ namespace ambient {
                     const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                     dim2 size, T alfa = 0.0)
     {
-        // C - memcopy implementation for ambient - p_dense_matrix representation
-        // C - The ouput (dest) must be a pinned p_dense_matrix
-        size_t starti, startj, limi, limj;
+        // the ouput (dest) must be a pinned p_dense_matrix
+
+        T* dd = updated(dest)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         size_t di = ctxt.get_block_id().y * get_mem_dim(dest).y;
         size_t dj = ctxt.get_block_id().x * get_mem_dim(dest).x;
     
-        assert(get_grid_dim(dest).x*get_work_dim(dest).x - dest_p.x >= size.x);
-        assert(get_grid_dim(dest).y*get_work_dim(dest).y - dest_p.y >= size.y);
-        assert(get_grid_dim(src).x*get_work_dim(src).x - src_p.x >= size.x);
-        assert(get_grid_dim(src).y*get_work_dim(src).y - src_p.y >= size.y);
+        if(get_dim(dest).x - dest_p.x < size.x || get_dim(dest).y - dest_p.y < size.y ||
+           get_dim(src).x - src_p.x   < size.x || get_dim(src).y - src_p.y   < size.y) 
+            maquis::cout << "Error: invalid memory movement" << std::endl;
     
-        if(size.x == 0 || size.y == 0) return;
-        if((di + get_mem_dim(dest).y <= dest_p.y) || (dj + get_mem_dim(src).x  <= dest_p.x)) return;
-        if((di >= dest_p.y + size.y) || (dj >= dest_p.x + size.x)) return;
-    // lets find dest-block copy limits
-        if(di + get_mem_dim(dest).y > dest_p.y + size.y) limi = (dest_p.y + size.y) % get_mem_dim(dest).y;
-        else limi = get_mem_dim(dest).y;
-        if(dj + get_mem_dim(dest).x > dest_p.x + size.x) limj = (dest_p.x + size.x) % get_mem_dim(dest).x;
-        else limj = get_mem_dim(dest).x;
+        if( size.x == 0 || size.y == 0            ||
+            di + get_mem_dim(dest).y <= dest_p.y  || 
+            dj + get_mem_dim(dest).x <= dest_p.x  ||
+            di >= dest_p.y + size.y               || 
+            dj >= dest_p.x + size.x               ) return;
+
     // lets find dest-block starting point
-        if(di < dest_p.y) starti = dest_p.y % get_mem_dim(dest).y;
-        else starti = 0;
-        if(dj < dest_p.x) startj = dest_p.x % get_mem_dim(dest).x;
-        else startj = 0;
-    
-        size_t si = di + starti - dest_p.y + src_p.y;
-        size_t sii = si % get_mem_dim(src).y;
-    // let's find how many blocks do we need for this one
-        size_t src_blocks_i = 1;
-        int num_src_blocks = limi-starti-get_mem_dim(src).y+sii;
-        if(num_src_blocks > 0) src_blocks_i = __a_ceil( num_src_blocks / get_mem_dim(src).y ) + 1;
-    // let's exhaust first src block
-        T* dd = updated(dest)(ctxt.get_block_id().y, ctxt.get_block_id().x);
-    
-        dim2 dpos,spos;
-        for(size_t j = startj; j < limj; j++){
-            size_t sj = dj + j - dest_p.x + src_p.x;
-            size_t w = limi - starti;
-            dpos.y = starti;
-            dpos.x = j;
+        size_t offseti = (di < dest_p.y) ? dest_p.y % get_mem_dim(dest).y : 0; di += offseti;
+        size_t offsetj = (dj < dest_p.x) ? dest_p.x % get_mem_dim(dest).x : 0; dj += offsetj;
+
+        size_t si = di - dest_p.y + src_p.y;
+        size_t sj = dj - dest_p.x + src_p.x;
+    // lets find dest-block copy limits
+        size_t sizey = __a_get_limit_y(dest, (dest_p.y + size.y)) - offseti;
+        size_t sizex = __a_get_limit_x(dest, (dest_p.x + size.x)) - offsetj;
+
+    // how many blocks do we need for this one
+        int remaining = (int)sizey - (int)(get_mem_dim(src).y - si % get_mem_dim(src).y);
+        size_t num_src_blocks = remaining > 0 ? __a_ceil( remaining / get_mem_dim(src).y ) + 1 : 1;
+
+        dim2 dpos,spos; size_t v, w;
+        for(size_t j = 0; j < sizex; j++){
+            w = sizey;
+            dpos.y = offseti;
+            dpos.x = offsetj + j;
             spos.y = si % get_mem_dim(src).y;
-            spos.x = sj % get_mem_dim(src).x;
-            for(int k = 0; k < src_blocks_i; k++){
-                T* sd = current(src)(si / get_mem_dim(src).y + k, sj / get_mem_dim(src).x);
-                size_t v = std::min(w, get_mem_dim(src).y-spos.y);
-                v = std::min(v, (get_dim(src).y-(si/get_mem_dim(src).y+k)*get_mem_dim(src).y-spos.y));
+            spos.x = (sj+j) % get_mem_dim(src).x;
+            for(int k = 0; k < num_src_blocks; k++){
+                T* sd = current(src)(si / get_mem_dim(src).y + k, (sj+j) / get_mem_dim(src).x);
+                v = std::min(w, get_mem_dim(src).y-spos.y);
                 ptf(dest,dd,dpos,src,sd,spos,v,alfa);            
                 w -= v;
                 dpos.y += v;
@@ -337,7 +331,7 @@ namespace ambient {
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     {
         for(size_t ss = 0; ss < sdim; ++ss)
-            __a_memptf(&__a_memcpy<T>, right, dim2(ss*rdim + right_offset,0), 
+            __a_memptf(&__a_memcpy<T>, right, dim2(ss*rdim + right_offset, 0), 
                        left,  dim2(0, ss*ldim + left_offset), 
                        dim2( rdim, ldim ));
     }
@@ -597,31 +591,29 @@ namespace ambient {
     }
 
     template <typename T> 
-    void validation_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& bl){ // see paper for Reference Dongara 
-        int i = ctxt.get_block_id().y;
-        int j = ctxt.get_block_id().x;
+    void validation_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){ // see paper for Reference Dongara 
+        size_t i = ctxt.get_block_id().y;
+        size_t j = ctxt.get_block_id().x;
         T* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x); 
         T* bd = current(b)(ctxt.get_block_id().y, ctxt.get_block_id().x); 
         double res(0.0); 
         double epsilon = std::numeric_limits<double>::epsilon();
-        int position_x(0),position_y(0),position_xy(0); 
-       *bl = 1; // test passes by default
+        size_t position_x(0),position_y(0),position_xy(0); 
    
-        for(int ii=0; ii < get_mem_dim(a).y; ++ii){ // the std::resize + cast dense to p_dense can add ghost elements between lda + num_rows
-            for(int jj=0; jj < get_mem_dim(a).x; ++jj){
+        for(size_t ii=0; ii < get_mem_dim(a).y; ++ii){
+            for(size_t jj=0; jj < get_mem_dim(a).x; ++jj){
                 position_x = j*get_mem_dim(a).x+jj;
                 position_y = i*get_mem_dim(a).y+ii;
                 if(position_x < get_dim(a).x && position_y < get_dim(a).y){
                     position_xy = jj*get_mem_dim(a).y+ii;
                     res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
                     if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
-                        std::cout << ctxt.get_block_id().y << " " << ctxt.get_block_id().x << " " << res 
-                                  << " " << ad[position_xy] << " " << bd[position_xy] << std::endl;
-                        *bl = 0; // test failed return 0 (bool false)
+                        std::cout << position_y << " " << position_x << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
+                        *ret = 0; // test failed return 0 (bool false)
                     }
                 }
             }
-        } 
+        }
     }
 
     // {{{ MKL LAPACK kernels
