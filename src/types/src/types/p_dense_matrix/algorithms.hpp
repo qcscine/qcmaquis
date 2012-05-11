@@ -49,6 +49,7 @@ namespace maquis { namespace types {
                       left_offset, right_offset, sdim, ldim, rdim);
         ambient::playout();
         if(sr == right){} else printf("--------------------- RESHAPE L2R WAS INCORRECT!\n");
+        right = maquis::traits::matrix_cast<p_dense_matrix<T> >(sr);
     }
 
     template <typename T>
@@ -168,11 +169,10 @@ namespace maquis { namespace types {
 
     template <typename T>
     std::ostream& operator << (std::ostream& o, p_dense_matrix<T> const& m){
-        if(ambient::outlet())
         for(size_type i=0; i< m.num_rows(); ++i){
             for(size_type j=0; j < m.num_cols(); ++j)
-                printf("%.4f	", m(i,j));
-            printf("\n");
+                maquis::cout << m(i,j) << " ";
+            maquis::cout << std::endl;
         }
         return o;
     }

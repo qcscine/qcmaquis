@@ -348,7 +348,7 @@ namespace ambient {
     }
 
     template<typename T>
-    void validation_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& bl){ // bl <=> boolean 
+    void validation_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){ // ret -> boolean 
         ctxt_select("2 from ambient as validation where master is 0 and breakdown contains "+ id(a));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in validation ("<< ambient::rank() <<"):\n"; credentials(a); credentials(b);

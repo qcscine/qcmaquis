@@ -111,48 +111,47 @@ namespace maquis{ namespace traits{
 } }
 
 template<typename T>
-bool operator == (maquis::types::dense_matrix<T> const & m, maquis::types::p_dense_matrix<T> const & pm) 
+bool operator == (maquis::types::dense_matrix<T> const & a, maquis::types::p_dense_matrix_impl<T> const & b) 
 {
-    int *n = new int(1); // default matrices are equal 
-    maquis::types::p_dense_matrix<T> pma(maquis::traits::matrix_cast<maquis::types::p_dense_matrix<T> >(m));
-    ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pm, pma, n); 
-    ambient::playout();
-    bool b(*n);
-    delete n;            
-    return b;
+    ambient::future<int> ret(1);
+    maquis::types::p_dense_matrix<T> pa = maquis::traits::matrix_cast<maquis::types::p_dense_matrix<T> >(a);
+    ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pa, b, ret); 
+    return ((int)ret > 0);
 }
 
 template<typename T>
-bool operator == (maquis::types::dense_matrix<T> const & m, maquis::types::p_dense_matrix_impl<T> const & pm) 
+bool operator == (maquis::types::dense_matrix<T> const & a, maquis::types::p_dense_matrix<T> const & b) 
 {
-    int *n = new int(1); // default matrices are equal 
-    maquis::types::p_dense_matrix<T> pma(maquis::traits::matrix_cast<maquis::types::p_dense_matrix<T> >(m));
-    ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pm, pma, n); 
-    ambient::playout();
-    bool b(*n);
-    delete n;            
-    return b;
+    ambient::future<int> ret(1);
+    maquis::types::p_dense_matrix<T> pa = maquis::traits::matrix_cast<maquis::types::p_dense_matrix<T> >(a);
+    ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pa, b, ret); 
+    return ((int)ret > 0);
 }
 
 template<typename T>
-bool operator == (maquis::types::diagonal_matrix<T> const & m, maquis::types::p_diagonal_matrix<T> const & pm) 
+bool operator == (maquis::types::diagonal_matrix<T> const & a, maquis::types::p_diagonal_matrix<T> const & b) 
 {
-    int *n = new int(1); // default matrices are equal
-    maquis::types::p_diagonal_matrix<T>  pma(maquis::traits::matrix_cast<maquis::types::p_diagonal_matrix<T> >(m));
-    ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pm, pma, n); 
-    ambient::playout();
-    bool b(*n);
-    delete n;            
-    return b;
+    ambient::future<int> ret(1);
+    maquis::types::p_diagonal_matrix<T> pa = maquis::traits::matrix_cast<maquis::types::p_diagonal_matrix<T> >(a);
+    ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, pa, b, ret); 
+    return ((int)ret > 0);
 }
 
 template<typename T>
-bool operator == (maquis::types::p_dense_matrix<T> const & pm, maquis::types::dense_matrix<T> const & m){
-    return (m == pm);
+bool operator == (maquis::types::p_dense_matrix<T> const & a, maquis::types::p_dense_matrix<T> const & b) 
+{
+    ambient::future<int> ret(1);
+    ambient::push(ambient::validation_l<T>, ambient::validation_c<T>, a, b, ret); 
+    return ((int)ret > 0);
 }
 
 template<typename T>
 bool operator == (maquis::types::p_dense_matrix_impl<T> const & pm, maquis::types::dense_matrix<T> const & m){
+    return (m == pm);
+}
+
+template<typename T>
+bool operator == (maquis::types::p_dense_matrix<T> const & pm, maquis::types::dense_matrix<T> const & m){
     return (m == pm);
 }
 
