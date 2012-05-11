@@ -181,6 +181,7 @@ namespace vli{
 
    inline void negate192_gpu(unsigned int* x){
        unsigned int one(1);
+       unsigned int zero(0);
        asm( 
            "not.b32 %0, %0; \n\t"
            "not.b32 %1, %1; \n\t"
@@ -189,18 +190,19 @@ namespace vli{
            "not.b32 %4, %4; \n\t"
            "not.b32 %5, %5; \n\t"
            "add.cc.u32  %0, %0, %6; \n\t"
-           "addc.cc.u32 %1, %1, %0; \n\t"
-           "addc.cc.u32 %2, %2, %0; \n\t"
-           "addc.cc.u32 %3, %3, %0; \n\t"
-           "addc.cc.u32 %4, %4, %0; \n\t"
-           "addc.cc.u32 %5, %5, %0; \n\t"
+           "addc.cc.u32 %1, %1, %7; \n\t"
+           "addc.cc.u32 %2, %2, %7; \n\t"
+           "addc.cc.u32 %3, %3, %7; \n\t"
+           "addc.cc.u32 %4, %4, %7; \n\t"
+           "addc.cc.u32 %5, %5, %7; \n\t"
            :"+r"(x[0]),"+r"(x[1]),"+r"(x[2]),"+r"(x[3]),"+r"(x[4]),"+r"(x[5])
-           :"r"(one)
+           :"r"(one),"r"(zero)
        ); 
    }
 
    inline void negate384_gpu(unsigned int* x){
        unsigned int one(1);
+       unsigned int zero(0);
        asm( 
            "not.b32 %0, %0; \n\t"
            "not.b32 %1, %1; \n\t"
@@ -214,20 +216,20 @@ namespace vli{
            "not.b32 %9, %9; \n\t"
            "not.b32 %10, %10; \n\t"
            "not.b32 %11, %11; \n\t"
-           "add.cc.u32  %0, %0, %12; \n\t"
-           "addc.cc.u32 %1, %1, %0; \n\t"
-           "addc.cc.u32 %2, %2, %0; \n\t"
-           "addc.cc.u32 %3, %3, %0; \n\t"
-           "addc.cc.u32 %4, %4, %0; \n\t"
-           "addc.cc.u32 %5, %5, %0; \n\t"
-           "addc.cc.u32 %6, %6, %0; \n\t"
-           "addc.cc.u32 %7, %7, %0; \n\t"
-           "addc.cc.u32 %8, %8, %0; \n\t"
-           "addc.cc.u32 %9, %9, %0; \n\t"
-           "addc.cc.u32 %10, %10, %0; \n\t"
-           "addc.cc.u32 %11, %11, %0; \n\t"
+           "add.cc.u32  %0, %0,   %12; \n\t"
+           "addc.cc.u32 %1, %1,   %13; \n\t"
+           "addc.cc.u32 %2, %2,   %13; \n\t"
+           "addc.cc.u32 %3, %3,   %13; \n\t"
+           "addc.cc.u32 %4, %4,   %13; \n\t"
+           "addc.cc.u32 %5, %5,   %13; \n\t"
+           "addc.cc.u32 %6, %6,   %13; \n\t"
+           "addc.cc.u32 %7, %7,   %13; \n\t"
+           "addc.cc.u32 %8, %8,   %13; \n\t"
+           "addc.cc.u32 %9, %9,   %13; \n\t"
+           "addc.cc.u32 %10, %10, %13; \n\t"
+           "addc.cc.u32 %11, %11, %13; \n\t"
            :"+r"(x[0]),"+r"(x[1]),"+r"(x[2]),"+r"(x[3]),"+r"(x[4]),"+r"(x[5]),"+r"(x[6]),"+r"(x[7]),"+r"(x[8]),"+r"(x[9]),"+r"(x[10]),"+r"(x[11])
-           :"r"(one)
+           :"r"(one),"r"(zero)
        ); 
    }
 
