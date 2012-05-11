@@ -106,10 +106,10 @@ int main (int argc, char * const argv[])
    
     fill_vector_random(v1,2);
     fill_vector_random(v2,3);
-/*
+
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
-
+/*
   InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
 */
@@ -119,6 +119,7 @@ int main (int argc, char * const argv[])
 //      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
 
+#ifdef VLI_USE_GPU
     TimerOMP t("GPU nvidia");
     t.begin();   
       result_pure_cpu_nvidia = vli::detail::inner_product_gpu_nvidia(v1,v2);
@@ -130,7 +131,6 @@ int main (int argc, char * const argv[])
        pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
 */
-#ifdef VLI_USE_GPU
 /*
     TimerOMP t3("MIX CPU/GPU openmp");
     t3.begin();   
@@ -141,14 +141,15 @@ int main (int argc, char * const argv[])
 */
 #endif
     if(result_pure_cpu_nvidia ==result_pure_cpu ) {printf("OK nvidia\n"); } else{printf("NO OK nvidia \n"); } 
- 
-     std::cout << std::hex << result_pure_cpu_nvidia << std::endl;
-     std::cout << " -------------------------------------------------------- " << std::endl;
-     std::cout << std::hex << result_pure_cpu << std::endl;
+/*
+     std::cout << " GPU----------------------------------------------------- " << std::endl;
+     std::cout << result_pure_cpu_nvidia << std::endl;
+     std::cout << " CPU----------------------------------------------------- " << std::endl;
+     std::cout << result_pure_cpu << std::endl;
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-
+*/
     return 0;
 }
 

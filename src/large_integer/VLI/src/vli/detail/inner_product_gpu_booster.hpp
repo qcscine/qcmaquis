@@ -288,8 +288,6 @@ inner_product_gpu_nvidia( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, O
     return res[0];
 }
 
-
-
 // to test my gpu asm kernels
 template<class BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size> addition_gpu(vli_cpu<BaseInt, Size> & a, vli_cpu<BaseInt, Size> const&b){

@@ -108,7 +108,7 @@ template <typename Vli>
 void fill_random(Vli& v, typename Vli::size_type size){
     assert(size <= Vli::size);
     for(typename Vli::size_type i=0; i < size; ++i)
-        v[i] =  rnd_digit<Vli>();
+        v[i] = rnd_digit<Vli>();
 }
 
 template <typename Polynomial>

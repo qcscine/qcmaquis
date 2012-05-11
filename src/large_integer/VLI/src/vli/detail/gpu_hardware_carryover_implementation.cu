@@ -6,17 +6,10 @@
 #include "compile_time_constants.h"
 #include "numeric.h"
 #include "kernels_gpu_asm.hpp"
-
-
+#include "vli/detail/gpu_mem_block.h"
 
 __device__ vli::detail::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
 __device__ unsigned int workblock_count_by_warp[MUL_BLOCK_SIZE / 32];
-
-// (low_32_bits : acc, high_32_bits : co) = acc + c1 * c2
-#define __wide_mad(acc,co,c1,c2) asm("{mad.lo.cc.u32 %0, %2, %3, %0;\n	madc.hi.u32 %1, %2, %3, 0;}" : "+r"(acc), "=r"(co) : "r"(c1), "r"(c2));
-
-// (low_32_bits : acc, high_32_bits : co) = acc + c1 * c2 + co
-#define __wide_mad_with_carry_in(acc,co,c1,c2) asm("{\n	.reg .u32 nv;\n	mad.lo.cc.u32 nv, %2, %3, %1;\n	madc.hi.u32 %1, %2, %3, 0;\n	add.cc.u32 %0, nv, %0;\n	addc.u32 %1, %1, 0;}" : "+r"(acc), "+r"(co) : "r"(c1), "r"(c2));
 
 __global__ void
 __launch_bounds__(MUL_BLOCK_SIZE, 2)
@@ -112,16 +105,15 @@ polynomial_mul_full(
                             vli::detail::mul384_384_gpu(res1,c1,c2);
 
                             if(sign != 0)
-                               vli::detail::negate384_gpu(res1);
+                                vli::detail::negate384_gpu(res1);
 
                             vli::detail::add384_384_gpu(res,res1);
-                                   
 				// Calculate the next pair of input coefficients to be multiplied and added to the result
-                             current_degree_x++;
-                             if (current_degree_x > end_degree_x_inclusive) {
-                                 current_degree_x = start_degree_x_inclusive;
-                                 current_degree_y++;
-                             }
+                            current_degree_x++;
+                            if (current_degree_x > end_degree_x_inclusive) {
+                                current_degree_x = start_degree_x_inclusive;
+                                current_degree_y++;
+                            }
 			}
 
 			unsigned int coefficient_id = output_degree_y * MULT_RESULT_DEGREE_BOUND_X + output_degree_x;
@@ -191,10 +183,11 @@ polynomial_sum_intermediate_full(
 
 	if (local_thread_id == 0)
 	{
-		unsigned int * out2 = out + (coefficient_id * 2*INT_DEGREE);
+		unsigned int * out2 = out + (coefficient_id * 2*INT_DEGREE) /* ---> offset there ------> */ + coefficient_id/(2*DEGREE_BOUND_Y-1)*(2*INT_DEGREE); // I add an offset to fit with vli, to do find a way to remove ghost element into VLI
 		#pragma unroll
 		for(unsigned int i = 0; i < 2*INT_DEGREE; ++i)
 			out2[i] = buf[i];
+
 	}
 }
 
@@ -203,14 +196,10 @@ namespace vli {
 	gpu_hardware_carryover_implementation::gpu_hardware_carryover_implementation()
 		: d_intermediate_result(0), element_count_prepared(0)
 	{
-		std::vector<unsigned int> workblock_count_by_warp_local(MUL_BLOCK_SIZE / 32);
-		for(unsigned int i = 0; i < workblock_count_by_warp_local.size(); ++i)
-			workblock_count_by_warp_local[i] = 0;
-		std::vector<unsigned int> work_total_by_size(MUL_BLOCK_SIZE / 32);
-		for(unsigned int i = 0; i < work_total_by_size.size(); ++i)
-			work_total_by_size[i] = 0;
-
+		std::vector<unsigned int> workblock_count_by_warp_local(MUL_BLOCK_SIZE / 32,0);
+		std::vector<unsigned int> work_total_by_size(MUL_BLOCK_SIZE / 32,0);
 		std::vector<vli::detail::single_coefficient_task> tasks(((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y + 32 - 1) / 32) * 32);
+
 		for(unsigned int degree_y = 0; degree_y < MULT_RESULT_DEGREE_BOUND_Y; ++degree_y)
 		{
 			for(unsigned int degree_x = 0; degree_x < MULT_RESULT_DEGREE_BOUND_X; ++degree_x)
@@ -266,6 +255,9 @@ namespace vli {
 		unsigned int element_count)
 	{
 		prepare(element_count);
+
+           //     gpu_memblock<unsigned int, 3, 11>* p;
+           //     p->instance(); 
 
 		{
 			dim3 grid(element_count);
