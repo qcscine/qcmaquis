@@ -2,6 +2,7 @@
 #define __MAQUIS_TYPES_C_KERNELS_HPP__
 // C - Note about the vectorization, the maximum of iteration is calculated outside the loop, to help at least the intel compiler to vectorize
 #include <limits> // for the validation test
+#include "utils/timings.h"
 namespace ambient {
 
     #include "ambient/utils/numeric.h" // Blas/Lapack signature
@@ -42,6 +43,7 @@ namespace ambient {
                     const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                     dim2 size, T alfa = 0.0)
     {
+        static TimerPTH time("ambient_memptf_f_kernel"); time.begin();
         // the ouput (dest) must be a pinned p_dense_matrix
 
         T* dd = updated(dest)(ctxt.get_block_id().y, ctxt.get_block_id().x);
@@ -88,6 +90,7 @@ namespace ambient {
                 spos.y = 0;
             }
         }
+        time.end();
     }
 
     template<typename T>
@@ -158,16 +161,18 @@ namespace ambient {
 
     template<typename T>
     void gemm_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
-    //  --- --- ---       --- --- ---       --- --- ---
-    // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
-    //  --- --- ---       --- --- ---       --- --- ---
-    // | 0 | 1 | 2 |  x  | 0 | 1 | 2 |  =  | 0 | 1 | 2 |
-    //  --- --- ---       --- --- ---       --- --- ---
-    // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
-    //  --- --- ---       --- --- ---       --- --- ---
-    //
-    // partial reduce?..
-    /////////////////////////////////////////////////////////////////////////
+        // gs
+        static TimerPTH time("ambient_gemm_c_kernel"); time.begin();
+        //  --- --- ---       --- --- ---       --- --- ---
+        // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
+        //  --- --- ---       --- --- ---       --- --- ---
+        // | 0 | 1 | 2 |  x  | 0 | 1 | 2 |  =  | 0 | 1 | 2 |
+        //  --- --- ---       --- --- ---       --- --- ---
+        // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
+        //  --- --- ---       --- --- ---       --- --- ---
+        //
+        // partial reduce?..
+        /////////////////////////////////////////////////////////////////////////
         if(ctxt.get_block_id().x >= get_mem_grid_dim(a).x || // early out (out of scope)
            ctxt.get_block_id().y >= get_mem_grid_dim(a).y) return;
         if(a.get_dim() == 1 && b.get_dim().x == 1){          // early out (a and b are scalars)
@@ -205,22 +210,24 @@ namespace ambient {
             }
             i += get_mem_grid_dim(a).y;
         }
+        time.end();
     }
 
     template<typename T>
     void copy_c(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
+        // gs
+        static TimerPTH time("ambient_copy_c_kernel"); time.begin();
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         if(i >= get_mem_grid_dim(ac).y || j >= get_mem_grid_dim(ac).x) return;
         T* a_elements  = current(a)(i,j);
         T* ac_elements = updated(ac)(i,j);
         memcpy(ac_elements, a_elements, sizeof(T)*get_mem_dim(a).y*get_mem_dim(a).x);
+        time.end();
     }
 
     template<typename T>
     void remove_rows_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
-        // C - Presently I do not copy datas the between num_rows and the lda ....
-        // i_mark marks (x position) to remove rows, k number of rows to remove (default 1) 
         size_t numrows = get_dim(a).y;
         size_t numcols = get_dim(a).x;
         __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
@@ -229,8 +236,6 @@ namespace ambient {
 
     template<typename T>
     void remove_cols_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
-        // C - Presently I do not copy datas the between num_cols and the sda ....
-        // j_mark marks (x position) to remove cols, k number of columns to remove (default 1) 
         size_t numrows = get_dim(a).y;
         size_t numcols = get_dim(a).x;
         __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
@@ -273,12 +278,15 @@ namespace ambient {
 
     template<typename T>
     void push_back_sqr_gt_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
+        // gs
+        static TimerPTH time("ambient_push_back_sqr_gt_c_kernel"); time.begin();
         double* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         size_t sizey = __a_get_limit_y(a);
         for(int i=0; i < sizey; i++){
             double v = std::abs(ad[i]);
             if(v > 1e-10) ac->push_back(v*v);
         }
+        time.end();
     }
 
     template<typename T>
@@ -329,32 +337,37 @@ namespace ambient {
     void reshape_l2r_c(const maquis::types::p_dense_matrix_impl<T>& left, pinned maquis::types::p_dense_matrix_impl<T>& right,
                        const size_t& left_offset, const size_t& right_offset, 
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
-    {
+    { // gs
+        static TimerPTH time("ambient_reshape_l2r_c_kernel"); time.begin();
         __a_memptf(&__a_memcpy<T>, right, dim2(0,0), right, dim2(0,0), dim2(get_dim(right).x,get_dim(right).y)); // refreshing updated memory
         for(size_t ss = 0; ss < sdim; ++ss){
             __a_memptf(&__a_memcpy<T>, right, dim2(ss*rdim + right_offset, 0), 
                        left,  dim2(0, ss*ldim + left_offset), 
                        dim2( rdim, ldim ));
         }
+        time.end();
     }
 
     template <typename T>
     void reshape_r2l_c(pinned maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
                        const size_t& left_offset, const size_t& right_offset, 
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
-    {
+    { // gs
+        static TimerPTH time("ambient_reshape_r2l_c_kernel"); time.begin();
         __a_memptf(&__a_memcpy<T>, left, dim2(0,0), left, dim2(0,0), dim2(get_dim(left).x,get_dim(left).y)); // refreshing updated memory
         for(size_t ss = 0; ss < sdim; ++ss)
             __a_memptf(&__a_memcpy<T>, left,  dim2(0, ss*ldim + left_offset), 
                        right, dim2(ss*rdim + right_offset,0), 
                        dim2( rdim, ldim ));
+        time.end();
     }
 
     template <typename T>
     void rb_tensor_mpo_c(pinned maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                          const size_t& out_offset, const size_t& in_offset, 
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
-    {
+    { // gs
+        static TimerPTH time("ambient_rb_tensor_mpo_c_kernel"); time.begin();
         __a_memptf(&__a_memcpy<T>, out, dim2(0,0), out, dim2(0,0), dim2(get_dim(out).x,get_dim(out).y)); // refreshing updated memory
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -364,13 +377,15 @@ namespace ambient {
                                in,  dim2(in_offset + ss1*rdim, 0),
                                alfa_t, dim2(rdim, ldim));
             }
+        time.end();
     }
 
     template <typename T>
     void lb_tensor_mpo_c(pinned maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                          const size_t& out_offset, const size_t& in_offset, 
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
-    {
+    { // gs
+        static TimerPTH time("ambient_lb_tensor_mpo_c_kernel"); time.begin();
         __a_memptf(&__a_memcpy<T>, out, dim2(0,0), out, dim2(0,0), dim2(get_dim(out).x,get_dim(out).y)); // refreshing updated memory
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -380,10 +395,13 @@ namespace ambient {
                                in,  dim2(0, in_offset + ss1*ldim),
                                alfa_t, dim2(rdim, ldim));
             }
+        time.end();
     }
 
     template<typename T>
     void scalar_norm_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+        // gs
+        static TimerPTH time("ambient_scalar_norm_c_kernel"); time.begin();
         T summ = 0;
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
@@ -396,10 +414,13 @@ namespace ambient {
                 summ += ad[ii+jj*lda]*ad[ii+jj*lda];
     
         *norm += summ;
+        time.end();
     }
 
     template<typename T>
     void scalar_overlap_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
+        // gs
+        static TimerPTH time("ambient_scalar_overlap_c_kernel"); time.begin();
         T summ = 0;
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
@@ -412,10 +433,13 @@ namespace ambient {
             for(size_t jj=0; jj < sizex; jj++)
                 summ += ad[ii+jj*lda]*bd[ii+jj*lda];
         *overlap += summ;
+        time.end();
     }
 
     template<typename T>
     void add_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        // gs
+        static TimerPTH time("ambient_add_c_kernel"); time.begin();
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i, j);
@@ -424,10 +448,13 @@ namespace ambient {
         size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(size_t k = 0; k < size; k++)
             ar[k] = ad[k] + bd[k];
+        time.end();
     }
 
     template<typename T>
     void sub_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        // gs
+        static TimerPTH time("ambient_sub_c_kernel"); time.begin();
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         double* ad = current(a)(i, j);
@@ -436,10 +463,13 @@ namespace ambient {
         size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(size_t k = 0; k < size; k++)
             ar[k] = ad[k] + (-1)*bd[k];
+        time.end();
     }
 
     template<typename T>
     void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const double*& t){
+        // gs
+        static TimerPTH time("ambient_scale_c_kernel"); time.begin();
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i, j);
@@ -450,11 +480,14 @@ namespace ambient {
         for(size_t jj=0; jj < sizex; jj++)
             for(size_t ii=0; ii < sizey; ii++)
                 ar[jj*lda+ii] = ad[jj*lda+ii] * (*t);
+        time.end();
     }
 
     template<typename T, typename D>
     void gemm_diagonal_lhs_c(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
             const size_t& m, const size_t& n, const size_t& k){
+        // gs
+        static TimerPTH time("ambient_gemm_diagonal_lhs_c_kernel"); time.begin();
 
         size_t sizey = std::min((ctxt.get_block_id().y+1)*get_mem_dim(a_diag).y, m)-ctxt.get_block_id().y*get_mem_dim(a_diag).y;
 
@@ -471,11 +504,14 @@ namespace ambient {
     	     axpy(&size, &alpha[(j+jj)%get_mem_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
     	     if(sizeof(T) != sizeof(D)) axpy(&size, &alpha[(j+jj)%get_mem_dim(a_diag).y], &bd[jj+1], &lda, &cd[jj], &lda); // for complex
         }
+        time.end();
     }
 
     template<typename T, typename D>
     void gemm_diagonal_rhs_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
             const size_t& m, const size_t& n, const size_t& k){
+        // gs
+        static TimerPTH time("ambient_gemm_diagonal_rhs_c_kernel"); time.begin();
 
         size_t sizex = std::min((ctxt.get_block_id().x+1)*get_mem_dim(b_diag).y, n)-ctxt.get_block_id().x*get_mem_dim(b_diag).y;
 
@@ -490,11 +526,13 @@ namespace ambient {
     	    D* alpha = current(b_diag)((j+jj)/get_mem_dim(b_diag).y,0);
     	    axpy(&size, &alpha[(j+jj)%get_mem_dim(b_diag).y], &ad[jj*get_mem_dim(a).y], &ONE, &cd[jj*get_mem_dim(c).y], &ONE);
         }
+        time.end();
     }
 
     template<typename T>
-    void trace_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){ // originated from identity_i
-      // TO DO : O think this trace kernel only works if the a fits into one workgroup
+    void trace_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
+        // gs
+        static TimerPTH time("ambient_trace_c_kernel"); time.begin();
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t ld = get_mem_dim(a).y;
@@ -509,6 +547,7 @@ namespace ambient {
             if((i+1)*ld <= jj) continue;
            *trace += ad[jj % ld + (jj%sd)*ld];
         }
+        time.end();
     }
 
     template<typename T>
@@ -527,6 +566,8 @@ namespace ambient {
 
     template<typename T>
     void transpose_out_c(pinned const maquis::types::p_dense_matrix_impl<T>& m, maquis::types::p_dense_matrix_impl<T>& t){
+        // gs
+        static TimerPTH time("ambient_transpose_out_c_kernel"); time.begin();
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         T* od = current(m)(i,j);
@@ -537,10 +578,12 @@ namespace ambient {
                 td[j+i*get_mem_dim(m).y] = od[i+j*get_mem_dim(m).y];
             }
         }
+        time.end();
     }
 
     template<typename T>
     void init_value_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
+        static TimerPTH time("ambient_init_value_c_kernel"); time.begin();
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
 
@@ -553,6 +596,7 @@ namespace ambient {
                 ad[i+j*get_mem_dim(a).y] = value; // not a memset due to complex
             }
         }
+        time.end();
     }
 
     template<typename T> void randomize(T* ad){ *ad = drand48(); }
@@ -563,6 +607,7 @@ namespace ambient {
 
     template<typename T>
     void init_random_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        static TimerPTH time("ambient_init_random_c_kernel"); time.begin();
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t ld = get_mem_dim(a).y;
@@ -575,10 +620,12 @@ namespace ambient {
             for(size_t ii = 0; ii < sizey; ii++)
                 randomize((ad+(jj*ld+ii)));
         }
+        time.end();
     }
 
     template<typename T>
     void init_identity_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        static TimerPTH time("ambient_init_identity_c_kernel"); time.begin();
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t ld = get_mem_dim(a).y;
@@ -593,6 +640,7 @@ namespace ambient {
             if((i+1)*ld <= jj) continue;
             ad[jj % ld + (jj%sd)*ld] = 1.;
         }
+        time.end();
     }
 
     template <typename T> 
@@ -625,6 +673,8 @@ namespace ambient {
 
     template<typename T>
     void svd_c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s){
+        // gs
+        static TimerPTH time("ambient_svd_c_kernel"); time.begin();
     /* Locals */
         int lda = get_grid_dim(a).y*get_work_dim(a).y;
         int ldu = get_grid_dim(u).y*get_work_dim(u).y;
@@ -653,6 +703,7 @@ namespace ambient {
         models::disperse(vtd, vt);
         models::disperse(sd, s);
         free(work);
+        time.end();
     }
 
     template<typename T>
@@ -682,45 +733,48 @@ namespace ambient {
 
     template<typename T>
     void heev_c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<T>& w){
-         int lda = get_grid_dim(a).y*get_work_dim(a).y;
-         int info, lwork = -1;
+        // gs
+        static TimerPTH time("ambient_heev_c_kernel"); time.begin();
+        int lda = get_grid_dim(a).y*get_work_dim(a).y;
+        int info, lwork = -1;
     
-         double wkopt;
-         double* work;
-         double* ad = (double*)models::solidify(a);
-         double* wd = (double*)models::solidify(w);
-         int am = (int)m; // for mkl (int*)
+        double wkopt;
+        double* work;
+        double* ad = (double*)models::solidify(a);
+        double* wd = (double*)models::solidify(w);
+        int am = (int)m; // for mkl (int*)
     
-         dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
-         lwork = (int)wkopt;
-         work = (double*)malloc( lwork*sizeof(double) );
-         dsyev_("V","U",&am,ad,&lda,wd,work,&lwork,&info);
+        dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
+        lwork = (int)wkopt;
+        work = (double*)malloc( lwork*sizeof(double) );
+        dsyev_("V","U",&am,ad,&lda,wd,work,&lwork,&info);
     
-         if( info > 0 ) {
-             printf( "The algorithm computing SYEV failed to converge.\n" );
-             exit( 1 );
-         }
+        if( info > 0 ) {
+            printf( "The algorithm computing SYEV failed to converge.\n" );
+            exit( 1 );
+        }
         
-         // First we reverse the eigenvalues, to be in agreement with the serial version ! 
-         // The matrix is solidified, so we do not care on the workgroup representation
-         double tempdbl;
-         for (int i=0; i< static_cast<int>(m/2); i++){ 
-             tempdbl = wd[i];
-             wd[i] = wd[m-i-1];
-             wd[m-i-1] = tempdbl;
-         } 
-         // Second we reverse the eigenvectors
-         double* tempcol = new double[lda]; 
-         for (int i=0; i< static_cast<int>(m/2); ++i){ 
-             memmove((void*)tempcol,(void*)&ad[i*lda],lda*sizeof(double));
-             memmove((void*)&ad[i*lda],(void*)&ad[(m-1-i)*lda],lda*sizeof(double));
-             memmove((void*)&ad[(m-1-i)*lda],(void*)tempcol,lda*sizeof(double));
-         }
-         delete[] tempcol; 
+        // First we reverse the eigenvalues, to be in agreement with the serial version ! 
+        // The matrix is solidified, so we do not care on the workgroup representation
+        double tempdbl;
+        for (int i=0; i< static_cast<int>(m/2); i++){ 
+            tempdbl = wd[i];
+            wd[i] = wd[m-i-1];
+            wd[m-i-1] = tempdbl;
+        } 
+        // Second we reverse the eigenvectors
+        double* tempcol = new double[lda]; 
+        for (int i=0; i< static_cast<int>(m/2); ++i){ 
+            memmove((void*)tempcol,(void*)&ad[i*lda],lda*sizeof(double));
+            memmove((void*)&ad[i*lda],(void*)&ad[(m-1-i)*lda],lda*sizeof(double));
+            memmove((void*)&ad[(m-1-i)*lda],(void*)tempcol,lda*sizeof(double));
+        }
+        delete[] tempcol; 
      
-         models::disperse(ad, a);
-         models::disperse(wd, w);
-         free(work);
+        models::disperse(ad, a);
+        models::disperse(wd, w);
+        free(work);
+        time.end();
     }
 
     // }}}
