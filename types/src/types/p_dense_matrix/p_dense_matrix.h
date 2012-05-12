@@ -138,8 +138,8 @@ namespace maquis { namespace types {
         }
 
 #ifdef HAVE_ALPS_HDF5
-        void load(alps::hdf5::archive & ar) { maquis::cerr << "I don't do much." << std::endl; }
-        void save(alps::hdf5::archive & ar) const { maquis::cerr << "I don't do much either." << std::endl; }
+        void load(alps::hdf5::archive & ar) { /*maquis::cerr << "I don't do much." << std::endl;*/ }
+        void save(alps::hdf5::archive & ar) const { /*maquis::cerr << "I don't do much either." << std::endl;*/ }
 #endif
         // }}}
     public:

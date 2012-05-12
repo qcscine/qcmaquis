@@ -66,7 +66,7 @@ namespace maquis { namespace types {
     }
 
     template<typename T> 
-    void p_diagonal_matrix<T>::resize(size_t rows, size_t cols, value_type v){
+    void p_diagonal_matrix<T>::resize(size_t rows, size_t cols){
         assert(rows == cols);
         this->data_.resize(rows, 1);
     }
@@ -142,8 +142,8 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    void resize(p_diagonal_matrix<T> & m, size_t rows, size_t cols, value_type v = value_type()){
-        m.resize(rows, cols, v);
+    void resize(p_diagonal_matrix<T> & m, size_t rows, size_t cols){
+        m.resize(rows, cols);
     }
     // }}}
 

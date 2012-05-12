@@ -238,8 +238,8 @@ namespace ambient {
     }
 
     template<typename T>
-    void resize_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
-        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(cols,rows));
+    void resize_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(std::min(get_dim(a).x,n),std::min(get_dim(a).y,m)));
     }
 
     template<typename T>
@@ -330,10 +330,12 @@ namespace ambient {
                        const size_t& left_offset, const size_t& right_offset, 
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     {
-        for(size_t ss = 0; ss < sdim; ++ss)
+        __a_memptf(&__a_memcpy<T>, right, dim2(0,0), right, dim2(0,0), dim2(get_dim(right).x,get_dim(right).y)); // refreshing updated memory
+        for(size_t ss = 0; ss < sdim; ++ss){
             __a_memptf(&__a_memcpy<T>, right, dim2(ss*rdim + right_offset, 0), 
                        left,  dim2(0, ss*ldim + left_offset), 
                        dim2( rdim, ldim ));
+        }
     }
 
     template <typename T>
@@ -341,6 +343,7 @@ namespace ambient {
                        const size_t& left_offset, const size_t& right_offset, 
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     {
+        __a_memptf(&__a_memcpy<T>, left, dim2(0,0), left, dim2(0,0), dim2(get_dim(left).x,get_dim(left).y)); // refreshing updated memory
         for(size_t ss = 0; ss < sdim; ++ss)
             __a_memptf(&__a_memcpy<T>, left,  dim2(0, ss*ldim + left_offset), 
                        right, dim2(ss*rdim + right_offset,0), 
@@ -352,6 +355,7 @@ namespace ambient {
                          const size_t& out_offset, const size_t& in_offset, 
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
     {
+        __a_memptf(&__a_memcpy<T>, out, dim2(0,0), out, dim2(0,0), dim2(get_dim(out).x,get_dim(out).y)); // refreshing updated memory
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                 T* alfad = current(alfa)(ss1/get_mem_dim(alfa).y, ss2/get_mem_dim(alfa).x);
@@ -367,6 +371,7 @@ namespace ambient {
                          const size_t& out_offset, const size_t& in_offset, 
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
     {
+        __a_memptf(&__a_memcpy<T>, out, dim2(0,0), out, dim2(0,0), dim2(get_dim(out).x,get_dim(out).y)); // refreshing updated memory
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                 T* alfad = current(alfa)(ss1/get_mem_dim(alfa).y, ss2/get_mem_dim(alfa).x);
