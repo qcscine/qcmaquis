@@ -141,7 +141,7 @@ namespace ambient {
     } 
 
     template<typename T>
-    void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& rows, const size_t& cols){
+    void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
         ctxt_select("1 from ambient as resize where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
         //ambient::cout << "2dbcd in resize ("<< ambient::rank() <<"):\n"; credentials(a);

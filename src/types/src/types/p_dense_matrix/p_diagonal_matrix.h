@@ -27,7 +27,7 @@ namespace maquis { namespace types {
         value_type& operator()(size_t i, size_t j);
         void remove_rows(size_t i, size_t k = 1);
         void remove_cols(size_t j, size_t k = 1);
-        void resize(size_t rows, size_t cols, value_type v = value_type());
+        void resize(size_t rows, size_t cols);
         template< class T1 > 
         friend std::ostream & operator <<(std::ostream& os, const p_diagonal_matrix<T1>& m);
         const container& get_data() const; 
