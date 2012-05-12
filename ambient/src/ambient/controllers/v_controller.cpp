@@ -3,6 +3,7 @@
 #include "ambient/channels/mpi_channel.h"
 #include "ambient/channels/packets/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
+#include "ambient/utils/timings.h"
 
 #if __APPLE__ && __MACH__
 #include <sched.h>	// for sched_yield()
@@ -214,6 +215,7 @@ namespace ambient { namespace controllers {
     }
 
     void v_controller::flush(){
+        static __a_timer time("ambient_total_compute_playout");
         if(this->stack.empty()) return;
         //double t1 = omp_get_wtime();
         while(!this->stack.end_reached())  // estimating operations credits 
@@ -224,7 +226,9 @@ namespace ambient { namespace controllers {
             ctxt.set_op(this->stack.pick());
             ctxt.get_op()->invoke();       // sending requests for data
         }
+        time.begin();
         this->master_stream(this->tasks);  // using up the main thread
+        time.end();
         ctxt.state = context::MARKUP;
         this->stack.clean();               // reseting the stack
         //double t2 = omp_get_wtime();
@@ -286,7 +290,9 @@ namespace ambient {
     }
 
     void playout(){ 
+        static __a_timer time("ambient_total_playout"); time.begin();
         controller.flush(); 
+        time.end();
     }
 
     bool verbose(){

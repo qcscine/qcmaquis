@@ -5,6 +5,7 @@
 #include "ambient/utils/jstrings.h"
 #include "ambient/interface/forwarding.h"
 #include "ambient/utils/io.hpp"
+#include "ambient/utils/timings.h"
 
 namespace ambient{
 
