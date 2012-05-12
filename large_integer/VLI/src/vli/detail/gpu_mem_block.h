@@ -27,34 +27,38 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
+#include "vli/detail/singleton.h"
+
 #ifndef GPU_MEM_BLOCK_H
 #define GPU_MEM_BLOCK_H
 
 namespace vli {
 namespace detail {
+
     // we allocate the mem only one time so pattern of this class singleton
     template <typename BaseInt, std::size_t Size, unsigned int Order>
-    class gpu_memblock {
+    class gpu_memblock : public Singleton<gpu_memblock<BaseInt, Size, Order> >  {
+        friend class Singleton<gpu_memblock>; // to have access to the Instance, Destroy functions into the singleton class
         public:
         typedef BaseInt value_type;
         enum { size  = Size};
         enum { order = Order};
-        enum { SizeVector = 16384}; // allocate a big chuck of mem, vector or 16384 entry
+        enum { MaxSizeVector = 16384}; // allocate a big chuck of mem, vector or 16384 entry
         private:
         gpu_memblock();
-        gpu_memblock(gpu_memblock const& gpu_memblock);
-        gpu_memblock& operator=(gpu_memblock const& gpu_memblock);
+        gpu_memblock(gpu_memblock const& );
+        gpu_memblock& operator=(gpu_memblock const& );
         public:
-	static gpu_memblock* instance();
         ~gpu_memblock();
-        static gpu_memblock* Instance_;
         BaseInt* V1Data_; // input vector 1
         BaseInt* V2Data_; // input vector 2
         BaseInt* VinterData_; // inter value before the final reduction
         BaseInt* PoutData_; // final output
     };
-} //end namespace detail
-} 
+
+    } //end namespace detail
+} //end namespce vli  
+
 #include "vli/detail/gpu_mem_block.hpp"
 
 #endif //INNER_PRODUCT_GPU_BOOSTER_HPP

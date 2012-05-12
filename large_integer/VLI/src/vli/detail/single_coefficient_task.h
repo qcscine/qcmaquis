@@ -1,4 +1,6 @@
-#pragma once
+ #ifndef COEFF_TASK_H
+ #define COEFF_TASK_H
+
 
 namespace vli {
     namespace detail {
@@ -9,14 +11,8 @@ namespace vli {
 		unsigned char output_degree_y;
 	};
 
-	bool single_coefficient_task_sort(single_coefficient_task i, single_coefficient_task j) {
-		if (i.step_count != j.step_count)
-			return (i.step_count > j.step_count);
+        bool single_coefficient_task_sort(single_coefficient_task i, single_coefficient_task j);
 
-		if (i.output_degree_y != j.output_degree_y)
-			return (i.output_degree_y < j.output_degree_y);
-
-		return (i.output_degree_x < j.output_degree_x);
-	}
     } // end namespace detail
 } // end name space vli
+#endif

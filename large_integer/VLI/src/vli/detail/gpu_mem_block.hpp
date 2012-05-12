@@ -26,31 +26,25 @@
 *ARISING FROM, OUBaseInt OF OR IN CONNECBaseIntION WIBaseIntH BaseIntHE SOFBaseIntWARE OR BaseIntHE USE OR OBaseIntHER
 *DEALINGS IN BaseIntHE SOFBaseIntWARE.
 */
+
 namespace vli{
 namespace detail
 {
     template <typename BaseInt, std::size_t Size, unsigned int Order>
     gpu_memblock<BaseInt, Size, Order>::gpu_memblock(){
-        cudaMalloc((void**)&(this->V1Data_), SizeVector*Order*Order*sizeof(BaseInt));
-        cudaMalloc((void**)&(this->V2Data_), SizeVector*Order*Order*sizeof(BaseInt));
-        cudaMalloc((void**)&(this->VinterData_), SizeVector*2*Order*2*Order*2*sizeof(BaseInt));
+        cudaMalloc((void**)&(this->V1Data_), MaxSizeVector*Size*Order*Order*sizeof(BaseInt));
+        cudaMalloc((void**)&(this->V2Data_), MaxSizeVector*Size*Order*Order*sizeof(BaseInt));
+        cudaMalloc((void**)&(this->VinterData_), MaxSizeVector*2*Size*2*Order*2*Order*sizeof(BaseInt));
         cudaMalloc((void**)&(this->PoutData_), 2*size*2*Order*2*Order*sizeof(BaseInt));
-    }
-
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
-    gpu_memblock<BaseInt, Size, Order>* gpu_memblock<BaseInt, Size, Order>::instance(){
-        if (!Instance_) {
-            Instance_  = new gpu_memblock<BaseInt, Size, Order>();
-        }
-        return Instance_;
+        cudaMemset((void*)this->PoutData_,0,2*Size*2*Order*2*Order*sizeof(unsigned int)); /* due to ghost element, to remove one day !*/
     }
 
     template <typename BaseInt, std::size_t Size, unsigned int Order>
     gpu_memblock<BaseInt, Size, Order>::~gpu_memblock() {
-        cudaFree(this->V1Data_);
-        cudaFree(this->V2Data_);
-        cudaFree(this->VinterData_);
-        cudaFree(this->PoutData_);
+        cudaFree((void*)this->V1Data_);
+        cudaFree((void*)this->V2Data_);
+        cudaFree((void*)this->VinterData_);
+        cudaFree((void*)this->PoutData_);
     }
 }
 }
