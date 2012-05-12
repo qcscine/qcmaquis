@@ -27,7 +27,7 @@ namespace maquis {
     }
 
     template <>
-    inline typename utils::real_type<double>::type real(double x){
+    inline utils::real_type<double>::type real(double x){
         return x;
     }
 

@@ -18,7 +18,6 @@
     typedef maquis::types::mt_matrix<double> matrix;
     typedef maquis::types::mt_matrix<std::complex<double> > cmatrix;
 #else
-    #include "dmrg/utils/DmrgParameters2.h"
     #include "types/dense_matrix/dense_matrix.h"
     #include "types/dense_matrix/matrix_interface.hpp"
     #include "types/dense_matrix/resizable_matrix_interface.hpp"

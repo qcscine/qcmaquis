@@ -19,12 +19,11 @@
 #include "utils.hpp"
 #include "utils/timings.h"
 
-//#include "types/dense_matrix/dense_matrix.h"
-//#include "types/dense_matrix/matrix_interface.hpp"
-//#include "types/dense_matrix/algorithms.hpp"
-#include "dmrg/block_matrix/block_matrix.h"
+template<class Matrix, class SymmGroup>
+class block_matrix; 
+template<class Matrix, class SymmGroup>
+class Boundary; 
 
-#include "dmrg/mp_tensors/mpo.h"
 
 class NoopStorage { };
   
