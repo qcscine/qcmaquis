@@ -128,14 +128,17 @@ public:
     ~TimerPTH(){}
 
     void begin(){
-         pthread_getcpuclockid(thread_,&cid_);
+         pthread_getcpuclockid(this->thread_,&this->cid_);
+         struct timespec ts; //from time.h
+         clock_gettime(this->cid_, &ts);
+         this->t0 = ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
     }    
-  
+    
     void end(){
         nCounter ++;
         struct timespec ts; //from time.h
-        clock_gettime(cid_, &ts);
-        val += ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
+        clock_gettime(this->cid_, &ts);
+        this->val += (ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION))) - this->t0);
     }
 private:    
     pthread_t thread_; 
