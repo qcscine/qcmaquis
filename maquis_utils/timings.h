@@ -132,9 +132,10 @@ public:
     }    
   
     void end(){
-         struct timespec ts; //from time.h
-         clock_gettime(cid_, &ts);
-         val = ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
+        nCounter ++;
+        struct timespec ts; //from time.h
+        clock_gettime(cid_, &ts);
+        val += ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
     }
 private:    
     pthread_t thread_; 
