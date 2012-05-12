@@ -99,11 +99,14 @@ namespace maquis { namespace types {
 
     template <typename T>
     value_type& p_dense_matrix_impl<T>::get(size_type i, size_type j){
+        static TimerPTH time("ambient_serial_element_access"); time.begin();
         assert(i < this->rows); assert(j < this->cols);
-        return this->pt_fetch(i / this->pt_mem_dim().y,  // blocked_i
+        value_type& ref = this->pt_fetch(i / this->pt_mem_dim().y,  // blocked_i
                               j / this->pt_mem_dim().x,  // blocked_j 
                               i % this->pt_mem_dim().y,  // element_i 
                               j % this->pt_mem_dim().x); // element_j
+        time.end();
+        return ref;
     }
 
     template <typename T>
