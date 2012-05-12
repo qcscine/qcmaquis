@@ -32,21 +32,11 @@
 #include <boost/preprocessor/arithmetic/mul.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
-
 // number of iteration for pp add and mul
 #define MAX_ITERATION_ADD 2
 #define MAX_ITERATION_MUL 6
 // macro for calculating the indices of the addition
 #define I(i,N) BOOST_PP_ADD(i,BOOST_PP_MUL(6,N)) 
-
-#define MUL_BLOCK_SIZE (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U >= 256U) ? 256U : (((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y)/2U+32U-1U)/32U*32U)) // 32U is the warp size here
-#define MAX_ITERATION_COUNT ((MULT_RESULT_DEGREE_BOUND_X*MULT_RESULT_DEGREE_BOUND_Y+31U)/32U)
-#define INT_DEGREE ((MAX_NUMBER_OF_BITS_THE_LARGE_INTEGER_OCCUPIES+32-1)/32)
-#define INT_DEGREE_PADDED (((INT_DEGREE>>1)<<1)+1)
-#define SLICE (DEGREE_BOUND_X)
-#define SLICE_PADDED (((SLICE>>1)<<1)+1)
-#define SUM_BLOCK_SIZE 256
-
 
 namespace vli{
     namespace detail{

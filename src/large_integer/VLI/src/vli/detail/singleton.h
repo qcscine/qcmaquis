@@ -26,29 +26,42 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include "single_coefficient_task.h"
-#include "compile_time_constants.h"
 
- __device__  vli::detail::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
- __device__  unsigned int workblock_count_by_warp[MUL_BLOCK_SIZE / 32];
+#ifndef SINGLETON_H
+#define SINGLETON_H
 
 namespace vli {
     namespace detail {
 
-                     // declaration ASM functions  
-                     __device__ void add384_384_gpu(unsigned int* x /* shared */, unsigned int const* y /* global */);
-                     __device__ void mul384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
-                     __device__ void muladd384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
-                     __device__ void negate192_gpu(unsigned int* x);
-                     __device__ void negate384_gpu(unsigned int* x);
-                    
-                     // Algo order*order threads, based on full diagonals
-                     template <typename BaseInt, std::size_t Size, unsigned int Order>
-                     __device__ void diag_algo(unsigned int ThreadId, BaseInt const* a,  BaseInt const* b, BaseInt* c);
+    template <typename T>
+    class Singleton {
+    protected:
+        Singleton () { }
+        ~Singleton () {} 
+    public:
+        static T* Instance () {
+            if (NULL == _singleton)
+                _singleton = new T;
+           
+           return (static_cast<T*> (_singleton));
+        }
+        
+        static void Destroy() {
+          if (NULL != _singleton)
+            {
+              delete _singleton;
+              _singleton = NULL;
+            }
+        }
 
+    private:
+        static T *_singleton;
+    };
 
-     } // end namespace detail
-} // end namespace vli
+    template <typename T>
+    T *Singleton<T>::_singleton = NULL;
 
+    } // end detail
+} // end vli
 
-
+#endif
