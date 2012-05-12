@@ -15,8 +15,6 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#include "dmrg/utils/iterator_blas1.h"
-
 struct contraction {
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>

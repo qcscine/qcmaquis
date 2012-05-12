@@ -7,7 +7,7 @@
 #include "types/dense_matrix/diagonal_matrix.h"
 #include "utils/function_objects.h"
 #include "types/dense_matrix/matrix_algorithms.hpp"
-
+#include "types/utils/iterator_blas1.h"
 
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
