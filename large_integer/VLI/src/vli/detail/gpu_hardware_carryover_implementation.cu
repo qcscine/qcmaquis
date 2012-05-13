@@ -32,9 +32,9 @@
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu
 #include "vli/detail/gpu_hardware_carryover_implementation.h" 
 #include "vli/detail/gpu_mem_block.h"
-#include "vli/detail/kernels_gpu_asm.hpp"
 #include "vli/detail/kernels_gpu_neg_asm.hpp"
 #include "vli/detail/kernels_gpu_add_asm.hpp"
+#include "vli/detail/kernels_gpu_mul_asm.hpp"
 #include "vli/detail/vli_number_gpu_function_hooks.hpp"
 
 /*

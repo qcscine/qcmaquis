@@ -39,7 +39,7 @@ namespace vli {
 
     //multiplication
     template<typename BaseInt, std::size_t Size>
-    void mul(BaseInt * x,BaseInt const* y,BaseInt const* z);
+    __device__ void mul(BaseInt * x,BaseInt const* y,BaseInt const* z);
 
     template <typename BaseInt, std::size_t Size>
     __device__ void neg(BaseInt* x); 
@@ -55,13 +55,12 @@ namespace vli {
 	if(c2[Size-1] >> 31 != 0)
              neg<BaseInt, Size>(c2);
 
-	vli::detail::mul384_384_gpu(res1,c1,c2);
+        mul<BaseInt, 2*Size>(res1,c1,c2);
 
 	if(sign != 0)
              neg<BaseInt, 2*Size>(res1);
 
-	//vli::detail::add384_384_gpu(res,res1);
-        add<BaseInt, 12>(res,res1);
+        add<BaseInt, 2*Size>(res,res1);
     }
     
     /* ---------------------------------------------------- Begin Addition specialization ---------------------------------------------------- */
@@ -79,17 +78,17 @@ namespace vli {
 
     /* ---------------------------------------------------- Begin Multiplication specialization ---------------------------------------------------- */
     //specialization mul    
-/*
+
     //specialization mul2nbits_nbits_nbits, until 512 bits
     #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
         template<> \
-        void mul<unsigned int,BOOST_PP_ADD(n,1)>(unsigned int* x,unsigned int const* y, unsigned int const* w){ \
-        detail::NAME_MUL_TWONBITS_NBITS_NBITS(n)(x,y,w); \
+        void mul<unsigned int,BOOST_PP_ADD(BOOST_PP_MUL(n,4),8)>(unsigned int* x,unsigned int const* y, unsigned int const* w){ \
+        NAME_MUL_TWONBITS_NBITS_NBITS(BOOST_PP_ADD(n,1))(x,y,w); \
         }; \
 
-    BOOST_PP_REPEAT(FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
+    BOOST_PP_REPEAT(3, FUNCTION_mul_twonbits_nbits_nbits, ~)
     #undef FUNCTION_mul_twonbits_nbits_nbits
-   */ 
+    
     /* ---------------------------------------------------- Begin Negation specialization ---------------------------------------------------- */
     //specialization mul    
 

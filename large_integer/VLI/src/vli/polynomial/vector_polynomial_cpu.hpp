@@ -79,7 +79,7 @@ inner_product_openmp( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order
     std::vector<polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> > res(omp_get_max_threads()); 
    
     #pragma omp parallel for schedule(dynamic)
-    for(long i=0 ; i < size_v ; ++i){
+    for(std::size_t i=0 ; i < size_v ; ++i){
         res[omp_get_thread_num()] += v1[i]*v2[i];
     }
 
@@ -124,7 +124,7 @@ inner_product(
     // TODO this is a little dirty and could be done better
 #ifdef _OPENMP
 #ifdef VLI_USE_GPU
-    return detail::inner_product_openmp_gpu(v1,v2);
+    return detail::inner_product_gpu_omp(v1,v2);
 #else //VLI_USE_GPU
     return detail::inner_product_openmp(v1,v2);
 #endif //VLI_USE_GPU
