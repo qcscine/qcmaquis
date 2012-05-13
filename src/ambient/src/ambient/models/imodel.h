@@ -46,6 +46,7 @@ namespace ambient { namespace models {
             virtual bool marked(size_t i, size_t j) = 0;
             virtual void embed(void* memory, size_t i, size_t j, size_t bound) = 0;
             virtual entry* get(size_t i, size_t j) = 0;
+            virtual void set_dimensions(dim2,dim2,dim2) = 0;
             virtual void set_dim(dim2) = 0;
             virtual dim2 get_dim() const = 0;
             virtual dim2 get_grid_dim() const = 0;

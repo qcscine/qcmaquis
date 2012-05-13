@@ -216,23 +216,23 @@ namespace ambient { namespace controllers {
 
     void v_controller::flush(){
         static __a_timer time("ambient_total_compute_playout");
+        static __a_timer time2("ambient_total_logistic_playout");
         if(this->stack.empty()) return;
-        //double t1 = omp_get_wtime();
         while(!this->stack.end_reached())  // estimating operations credits 
             this->stack.pick()->weight();
         this->stack.sort();                // sorting operations using credit
         ctxt.state = context::EXECUTE;
+        time2.begin();
         while(!this->stack.end_reached()){
             ctxt.set_op(this->stack.pick());
             ctxt.get_op()->invoke();       // sending requests for data
         }
+        time2.end();
         time.begin();
         this->master_stream(this->tasks);  // using up the main thread
         time.end();
         ctxt.state = context::MARKUP;
         this->stack.clean();               // reseting the stack
-        //double t2 = omp_get_wtime();
-        //printf("Iterations took for %.10g\n", t2-t1);
     }
     
     channels::ichannel::packet* package(models::imodel::revision& r, const char* state, int i, int j, int dest){
@@ -277,27 +277,3 @@ namespace ambient { namespace controllers {
     }
 
 } }
-
-// {{{ controller free functions 
-namespace ambient {
-
-    void set_num_threads(size_t n){ 
-        controller.set_num_threads(n);
-    }
-
-    size_t get_num_threads(){
-        return controller.get_num_threads();
-    }
-
-    void playout(){ 
-        static __a_timer time("ambient_total_playout"); time.begin();
-        controller.flush(); 
-        time.end();
-    }
-
-    bool verbose(){
-        return (rank() ? false : true); 
-    }
-
-}
-// }}}

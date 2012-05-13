@@ -66,7 +66,8 @@ namespace ambient { namespace models {
 
             layout& operator>>(dim2);       // set mem_dim
             layout& operator, (dim2);       // set work_dim
-        
+       
+            void   set_dimensions(dim2,dim2,dim2);
             void   set_dim(dim2);
             dim2   get_dim() const;
             dim2   get_mem_dim() const;

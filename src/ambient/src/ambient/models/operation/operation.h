@@ -65,17 +65,15 @@ namespace ambient { namespace models {
             delete (ptr_type*)ptr;
         }
         static inline size_t modify(T& obj, imodel::modifier* m){
-            size_t base = ctxt.get_revision_base(&obj);
+            size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
-            //printf("Adding revision! (current is %d)\n", (int)base);
             ambient::model.add_revision(&obj);
             current(obj).set_generator(m); // (updated obj)
             return base;
         }
         static inline size_t modify(const T& obj, imodel::modifier* m){
-            size_t base = ctxt.get_revision_base(&obj);
+            size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
-            //printf("Using revision! (current is %d)\n", (int)base);
             return base;
         }
         static inline void revise(void* ptr, size_t revision){
