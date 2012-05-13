@@ -11,10 +11,10 @@ namespace ambient{
     class hashmap {
     public:
         hashmap();
-        size_t insert(size_t* hash, size_t hash_len, void* value, size_t shift = 0);
-        void* find(size_t* hash, size_t hash_len, size_t id, size_t shift = 0) const;
+        size_t insert(void* value);
+        inline void* find(size_t id) const { return this->content[id-1]; };
     private:
-        std::vector< std::pair<hashmap*,std::vector<void*>* > > content;
+        std::vector<void*> content;
     };
 
     class fhashmap {

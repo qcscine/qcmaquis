@@ -67,12 +67,12 @@ void place_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))    
     BOOST_PP_REPEAT(TYPES_NUMBER, place_revision, ~)                                                                 \
 }                                                                                                                    \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
-void mark_pin(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                               \
+inline void mark_pin(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                               \
 {                                                                                                                    \
     BOOST_PP_REPEAT(TYPES_NUMBER, pin_object, n)                                                                     \
 }                                                                                                                    \
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >                                                          \
-void latch_revisions(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                        \
+inline void latch_revisions(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ))                                        \
 {                                                                                                                    \
     BOOST_PP_REPEAT(TYPES_NUMBER, latch_object_revision, ~)                                                          \
 }
@@ -156,12 +156,12 @@ void place_template(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_
 }
 
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
-void mark_pin(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
+inline void mark_pin(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
     this->pin = NULL;
 }
 
 template < BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) >
-void latch_revisions(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
+inline void latch_revisions(void (*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )){
     BOOST_PP_REPEAT(TYPES_NUMBER, latch_object_revision, ~)
 }
 BOOST_PP_REPEAT(n, body_tn, ~) 

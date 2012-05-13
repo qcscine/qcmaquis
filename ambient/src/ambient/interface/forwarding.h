@@ -33,7 +33,7 @@ namespace models {
     template <typename T> 
     struct info { 
         typedef singular_t_info<T> typed; 
-        static T& unfold(T& naked){ return naked; }
+        static inline T& unfold(T& naked){ return naked; }
     };
 
     template <typename T>
@@ -47,7 +47,7 @@ namespace models {
     template <typename S>
     struct info < ambient::future<S> > { 
         typedef ambient::future<S> T;
-        static S*& unfold(T& folded){
+        static inline S*& unfold(T& folded){
             return folded.unfold();
         }
     };
@@ -55,7 +55,7 @@ namespace models {
     template <typename S>
     struct info < const ambient::future<S> > { 
         typedef const ambient::future<S> T;
-        static const S*& unfold(T& folded){
+        static inline const S*& unfold(T& folded){
             assert(false); // remove if believe in const future
             return folded.unfold();
         }
@@ -64,7 +64,7 @@ namespace models {
     template <typename S>
     struct info < maquis::types::p_diagonal_matrix<S> > { 
         typedef maquis::types::p_diagonal_matrix<S> T;
-        static maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+        static inline maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
             return *folded.get_data().impl;
         }
     };
@@ -72,7 +72,7 @@ namespace models {
     template <typename S>
     struct info < const maquis::types::p_diagonal_matrix<S> > { 
         typedef const maquis::types::p_diagonal_matrix<S> T;
-        static const maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+        static inline const maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
             return *folded.get_data().impl;
         }
     };
@@ -80,7 +80,7 @@ namespace models {
     template <typename S>
     struct info < maquis::types::p_dense_matrix<S> > { 
         typedef maquis::types::p_dense_matrix<S> T;
-        static maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+        static inline maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
             return *folded.impl;
         }
     };
@@ -88,7 +88,7 @@ namespace models {
     template <typename S>
     struct info < const maquis::types::p_dense_matrix<S> > { 
         typedef const maquis::types::p_dense_matrix<S> T;
-        static const maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+        static inline const maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
             return *folded.impl;
         }
     };
@@ -96,7 +96,7 @@ namespace models {
     template <typename S>
     struct info < maquis::types::p_dense_matrix_impl<S> > {
         typedef maquis::types::p_dense_matrix_impl<S> T;
-        static T& unfold(T& naked){ return naked; }
+        static inline T& unfold(T& naked){ return naked; }
         typedef parallel_t_info< T > typed; 
         typedef S value_type;
     };
@@ -104,7 +104,7 @@ namespace models {
     template <typename S>
     struct info < const maquis::types::p_dense_matrix_impl<S> > { 
         typedef maquis::types::p_dense_matrix_impl<S> T;
-        static const T& unfold(const T& naked){ return naked; }
+        static inline const T& unfold(const T& naked){ return naked; }
         typedef parallel_t_info< T > typed; 
         typedef S value_type;
     };

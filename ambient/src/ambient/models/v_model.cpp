@@ -13,11 +13,23 @@ namespace ambient { namespace models {
     }
 
     void v_model::add_revision(imodel::object* obj){
+        static __a_timer time("add_revision");
+        static __a_timer time2("new_layout");
+        static __a_timer time3("map insert");
+        static __a_timer time4(">> operator for layout");
+        time2.begin();
         v_model::layout* l = new v_model::layout(obj->get_dim(), obj->get_t_size());
-        *const_cast<size_t*>(&l->sid) = this->map.insert(channel.id().first, channel.id().second, l);
+        time2.end();
+        time3.begin();
+        *const_cast<size_t*>(&l->sid) = this->map.insert(l);
         *const_cast<const size_t **>(&l->gid) = channel.id().first;
+        time3.end();
+        time4.begin();
         (*l) >> this->mem_dim, this->work_dim, this->item_dim;
+        time4.end();
+        time.begin();
         obj->add_revision(l);
+        time.end();
     }
 
     void v_model::update_revision(imodel::revision* r, channels::group* placement){
@@ -25,7 +37,7 @@ namespace ambient { namespace models {
     }
 
     v_model::revision* v_model::get_revision(size_t* hash, size_t hash_len, size_t id) const {
-        return ((layout*)this->map.find(hash, hash_len, id))->revision;
+        return ((layout*)this->map.find(id))->revision;
     }
 
     v_model& v_model::operator>>(dim2 mem_dim){
