@@ -47,14 +47,20 @@ namespace vli {
                      
                     BOOST_PP_REPEAT(3, FUNCTION_add_nbits_nbits, ~)
                     #undef FUNCTION_add_nbits_nbits
-                   
+
+                    //multiplication 128*128, 129*129, 256*256
+                    #define FUNCTION_mul_twobits_nbits_nbits(z, n, unused) \
+                         __device__ void NAME_MUL_TWONBITS_NBITS_NBITS(BOOST_PP_ADD(n,1))(unsigned int* x, unsigned int const* y, unsigned int const* w); \
+                     
+                    BOOST_PP_REPEAT(3, FUNCTION_mul_twobits_nbits_nbits, ~)
+                    #undef FUNCTION_mul_twobits_nbits_nbits
+
                     //negation 128 to 384, 64 stride 
                     #define FUNCTION_negate_nbits(z, n, unused) \
                          __device__ void NAME_NEGATE_NBITS(n)(unsigned int* x); \
                      
                     BOOST_PP_REPEAT(5, FUNCTION_negate_nbits, ~)
                     #undef FUNCTION_negate_nbits
-
 
      } // end namespace detail
 } // end namespace vli

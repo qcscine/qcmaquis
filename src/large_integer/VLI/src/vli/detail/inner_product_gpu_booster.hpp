@@ -91,7 +91,7 @@ class vector_polynomial;
         for(std::size_t i=split ; i < size_v ; ++i)
             res[omp_get_thread_num()] += v1[i]*v2[i];
       
-        for(std::size_t i=1; i < omp_get_max_threads(); ++i)
+        for(int i=1; i < omp_get_max_threads(); ++i)
             res[0]+=res[i];
       
         polynomial<vli_cpu<BaseInt, 2*Size >, 2*Order> poly; 
