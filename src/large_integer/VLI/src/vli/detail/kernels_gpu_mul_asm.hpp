@@ -34,7 +34,27 @@
 
 namespace vli{
     namespace detail{
-    #define mul128bits_64bits_64bits(w, n, unused) \
+    #define mul256bits_128bits_128bits(w, n, unused) \
+        asm( \
+              "mad.lo.cc.u32  %0, %6,  %5, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+              "madc.lo.cc.u32 %1, %7,  %5, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
+              "madc.lo.cc.u32 %2, %8,  %5, %2; \n\t" /* c[i+2] = a[2] * b[i] (low)  + c[i+1] + CB                                       */ \
+              "madc.lo.cc.u32 %3, %9,  %5, %3; \n\t" /* c[i+3] = a[3] * b[i] (low)  + c[i+3] + CB                                       */ \
+              BOOST_PP_IF(n,"addc.cc.u32 %4, 0, 0; \n\t",/* no extention n=0 */) /* c[i+6] += CB, n = 0 CB impossible                   */ \
+              "mad.hi.cc.u32  %1, %6,  %5, %1; \n\t" /* c[i+1] = a[0] * b[i] (high) + c[i+1] + CB (c[i]=0 for i=0)                      */ \
+              "madc.hi.cc.u32 %2, %7,  %5, %2; \n\t" /* c[i+2] = a[1] * b[i] (high) + c[i+2] + CB                                       */ \
+              "madc.hi.cc.u32 %3, %8,  %5, %3; \n\t" /* c[i+3] = a[2] * b[i] (high) + c[i+3] + CB                                       */ \
+              "madc.hi.cc.u32 %4, %9,  %5, %4; \n\t" /* c[i+3] = a[2] * b[i] (high) + c[i+3] + CB                                       */ \
+              :"+r"(x[BOOST_PP_ADD(0,n)]),"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),"+r"(x[BOOST_PP_ADD(3,n)]),"+r"(x[BOOST_PP_ADD(4,n)])   \
+              :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3])                                                                         \
+          );                                                                                                                               \
+
+    inline void mul256_128_128(unsigned int* x, unsigned int const* y, unsigned int const* z){
+           BOOST_PP_REPEAT(4, mul256bits_128bits_128bits, ~)                                                                              \
+    }
+    #undef mul384bits_192bits_192bits
+
+    #define mul384bits_192bits_192bits(w, n, unused) \
         asm( \
               "mad.lo.cc.u32  %0, %8,  %7, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
               "madc.lo.cc.u32 %1, %9,  %7, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
@@ -54,14 +74,14 @@ namespace vli{
               :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3]),"r"(y[4]),"r"(y[5])                                                       \
           );                                                                                                                            \
 
-    #define FUNCTION_mul_twobits_nbits_nbits(w, n, unused) \
-       inline void NAME_MUL_TWONBITS_NBITS_NBITS(BOOST_PP_ADD(n,1))(unsigned int* x, unsigned  int const* y, unsigned int const* z){ \
-           BOOST_PP_REPEAT(BOOST_PP_ADD(2,BOOST_PP_MUL(n,4)), mul128bits_64bits_64bits, ~)                                                                              \
-       }                                                                                                         
+    inline void mul384_192_192(unsigned int* x, unsigned int const* y, unsigned int const* z){
+           BOOST_PP_REPEAT(6, mul384bits_192bits_192bits, ~)                                                                              \
+    }
+    #undef mul384bits_192bits_192bits
 
-    BOOST_PP_REPEAT(3, FUNCTION_mul_twobits_nbits_nbits, ~)
-    #undef FUNCTION_mul_twobits_nbits_nbits
-    #undef mul128bits_64bits_64bits
+    inline void mul512_256_256(unsigned int* x, unsigned int const* y, unsigned int const* z){
+     
+    }
 
     }
 }
