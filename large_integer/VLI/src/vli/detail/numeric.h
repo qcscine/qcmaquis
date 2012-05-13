@@ -28,6 +28,7 @@
 */
 #include "single_coefficient_task.h"
 #include "compile_time_constants.h"
+#include "vli/utils/macro_gpu.h"
 
  __device__  vli::detail::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
  __device__  unsigned int workblock_count_by_warp[MUL_BLOCK_SIZE / 32];
@@ -36,15 +37,23 @@ namespace vli {
     namespace detail {
 
                      // declaration ASM functions  
-                     __device__ void add384_384_gpu(unsigned int* x /* shared */, unsigned int const* y /* global */);
                      __device__ void mul384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
-                     __device__ void muladd384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
-                     __device__ void negate192_gpu(unsigned int* x);
-                     __device__ void negate384_gpu(unsigned int* x);
-                    
-                     // Algo order*order threads, based on full diagonals
-                     template <typename BaseInt, std::size_t Size, unsigned int Order>
-                     __device__ void diag_algo(unsigned int ThreadId, BaseInt const* a,  BaseInt const* b, BaseInt* c);
+
+                     template <class BaseInt, std::size_t Size>
+                     __device__ void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2);
+                    //addition 256+256, 384+384, 512+512
+                    #define FUNCTION_add_nbits_nbits(z, n, unused) \
+                         __device__ void NAME_ADD_NBITS_PLUS_NBITS(BOOST_PP_MUL(2,BOOST_PP_ADD(n,1)))(unsigned int* x, unsigned int const* y); \
+                     
+                    BOOST_PP_REPEAT(3, FUNCTION_add_nbits_nbits, ~)
+                    #undef FUNCTION_add_nbits_nbits
+                   
+                    //negation 128 to 384, 64 stride 
+                    #define FUNCTION_negate_nbits(z, n, unused) \
+                         __device__ void NAME_NEGATE_NBITS(n)(unsigned int* x); \
+                     
+                    BOOST_PP_REPEAT(5, FUNCTION_negate_nbits, ~)
+                    #undef FUNCTION_negate_nbits
 
 
      } // end namespace detail
