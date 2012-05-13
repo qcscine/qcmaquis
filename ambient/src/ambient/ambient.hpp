@@ -9,11 +9,21 @@
 
 namespace ambient{
 
-    void set_num_threads(size_t n);
+    inline void set_num_threads(size_t n){ 
+        ambient::controller.set_num_threads(n);
+    }
 
-    size_t get_num_threads();
+    inline size_t get_num_threads(){
+        return ambient::controller.get_num_threads();
+    }
 
-    void playout();
+    inline void playout(){
+        ambient::controller.flush(); 
+    }
+
+    inline bool verbose(){
+        return (rank() ? false : true); 
+    }
 
     template<typename T>
     void assign(const T& ref, int i, int j = 0);

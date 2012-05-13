@@ -108,6 +108,13 @@ namespace ambient { namespace models {
         this->mesh();
     }
 
+    void v_model::layout::set_dimensions(dim2 mem_dim, dim2 work_dim, dim2 item_dim){
+        this->mem_dim = mem_dim;
+        this->work_dim = work_dim;
+        this->item_dim = item_dim;
+        this->mesh();
+    }
+
     dim2 v_model::layout::get_dim() const {
         return this->dim;
     }
