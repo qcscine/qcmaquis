@@ -36,7 +36,7 @@
 #define MAX_ITERATION_ADD 2
 #define MAX_ITERATION_MUL 6
 // macro for calculating the indices of the addition
-#define I(i,N) BOOST_PP_ADD(i,BOOST_PP_MUL(6,N)) 
+//#define I(i,N) BOOST_PP_ADD(i,BOOST_PP_MUL(6,N)) 
 
 namespace vli{
     namespace detail{
@@ -46,16 +46,6 @@ namespace vli{
      * 4 times more for the multuplication
      */    
     inline void add384_384_gpu(unsigned int* x /* shared */, unsigned int const* y /* global */){
-    /* this version 60 more ptx lines, so boost pp  
-     *  
-     * asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(y[0])); 
-     * #pragma unroll
-     * for(int i=1; i < 11; ++i)
-     *     asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
-     *
-     * I have to break up into 2 parts because I can not have more than 30 input/output          
-     * load/write operation are done by the compiler (!= ASM x80-86) 
-     */
            #define add384_384_384_gpu(w, n, unused) \
                asm( \
                     BOOST_PP_IF(n,"addc.cc.u32 %0, %0, %6; \n\t","add.cc.u32  %0, %0, %6 ; \n\t") /* n=0 no CB,  n!=0, second pass needs CB */ \
