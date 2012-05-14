@@ -17,7 +17,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
 {
-    ambient::model >> dim(128,128), dim(128,128), dim(128,128);
+    ambient::model >> dim(128,128), dim(128,128);
 
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
