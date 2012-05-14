@@ -147,6 +147,7 @@ public:
 	
 	void end()
 	{
+		nCounter += 1;
 		timer_end = omp_get_wtime();
 		val += timer_end - timer_start;
 	}
