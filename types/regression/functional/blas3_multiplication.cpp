@@ -17,12 +17,9 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
 {
-    ambient::model >> dim(128,128), dim(128,128);
-
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
     pMatrix pC(T::valuex,T::valuex);
-
 
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sB(T::valuex,T::valuex);
@@ -31,16 +28,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     pA.fill_random();
     pB.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-    sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
+    sA = maquis::traits::matrix_cast<sMatrix>(pA);
+    sB = maquis::traits::matrix_cast<sMatrix>(pB);
 
-    printf("BEGIN OF GEMM!\n"); 
     maquis::types::gemm(pA,pB,pC);
     ambient::playout();
-    printf("END OF GEMM!\n"); 
-    printf("BEGIN OF SERIAL GEMM!\n"); 
-    maquis::types::gemm(sA,sB,sC); // to fix 
-    printf("END OF SERIAL GEMM!\n"); 
+    maquis::types::gemm(sA,sB,sC);
     BOOST_CHECK(pC==sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 

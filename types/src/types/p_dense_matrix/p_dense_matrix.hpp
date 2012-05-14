@@ -48,8 +48,8 @@ namespace maquis { namespace types {
         assert(rows > 0); assert(cols > 0);
         if(this->rows != rows || this->cols != cols){
             ambient::playout(); 
-            algorithms::resize(*this, rows, cols);
             this->pt_set_dim(cols, rows);
+            algorithms::resize(*this, rows, cols, this->rows, this->cols);
             this->rows = rows; 
             this->cols = cols;
             ambient::playout(); 

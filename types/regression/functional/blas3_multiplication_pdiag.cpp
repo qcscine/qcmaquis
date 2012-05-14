@@ -18,8 +18,6 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 {
-    ambient::model >> dim(32,32), dim(32,32);
-
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
     pDiagMatrix pC(T::valuex,T::valuex);
@@ -36,8 +34,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
  
     maquis::types::gemm(pC,pB,pA);
     maquis::types::gemm(sC,sB,sA);
-
-    
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

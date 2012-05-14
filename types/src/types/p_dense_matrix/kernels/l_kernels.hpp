@@ -149,7 +149,7 @@ namespace ambient {
     } 
 
     template<typename T>
-    void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+    void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
         ctxt_select("1 from ambient as resize where master is 0 and breakdown contains "+id(a));
         if(!ctxt.involved()) return;
 
