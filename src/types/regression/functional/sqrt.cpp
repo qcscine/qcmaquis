@@ -19,7 +19,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( Sqrt, T, test_types)
 {
-    ambient::model >> dim(32,32), dim(32,32), dim(32,32);
+    ambient::model >> dim(32,32), dim(32,32);
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
 
