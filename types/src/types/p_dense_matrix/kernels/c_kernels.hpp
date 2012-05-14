@@ -529,9 +529,13 @@ namespace ambient {
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i, j);
         T* ar = updated(a)(i, j);
-        size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
-        for(size_t k=0; k < size; k++)
-            ar[k] = ad[k] * (*t);
+
+        size_t sizey = __a_get_limit_y(a, m);
+        size_t sizex = __a_get_limit_x(a, n);
+        size_t lda = get_mem_dim(a).y;
+        for(size_t jj=0; jj < sizex; jj++)
+        for(size_t ii=0; ii < sizey; ii++)
+        ar[jj*lda+ii] = ad[jj*lda+ii] * (*t);
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         time.end();
 #endif
