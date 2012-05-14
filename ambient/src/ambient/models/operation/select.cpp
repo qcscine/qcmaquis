@@ -3,11 +3,13 @@
 #include "ambient/controllers/context.h"
 #include "ambient/channels/groups/group.h"
 #include "ambient/utils/sqlite3.c"
+#include "ambient/utils/timings.h"
 
 namespace ambient {
 
     void ctxt_select(const char* sql)
     {
+        /*
         channels::group* parent_grp;
         channels::group* grp;
         channels::group* vellum = NULL;
@@ -84,9 +86,9 @@ namespace ambient {
             delete grp;
             free(as);
             grp = original;
-        }
+        }*/
 
-        ctxt.set_group(grp);
+        ctxt.set_group(channel.world());
     }
 
     void ctxt_retain(const char* sql)

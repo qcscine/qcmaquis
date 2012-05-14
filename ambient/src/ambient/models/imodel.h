@@ -46,13 +46,12 @@ namespace ambient { namespace models {
             virtual bool marked(size_t i, size_t j) = 0;
             virtual void embed(void* memory, size_t i, size_t j, size_t bound) = 0;
             virtual entry* get(size_t i, size_t j) = 0;
-            virtual void set_dimensions(dim2,dim2,dim2) = 0;
+            virtual void set_dimensions(dim2,dim2) = 0;
             virtual void set_dim(dim2) = 0;
             virtual dim2 get_dim() const = 0;
             virtual dim2 get_grid_dim() const = 0;
             virtual dim2 get_mem_grid_dim() const = 0;
             virtual dim2 get_mem_dim() const = 0;
-            virtual dim2 get_work_dim() const = 0;
             virtual dim2 get_item_dim() const = 0;
             virtual void set_revision(revision* r) = 0;
             virtual std::pair<size_t*,size_t> id() = 0;

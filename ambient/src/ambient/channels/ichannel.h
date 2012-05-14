@@ -24,6 +24,7 @@ namespace ambient { namespace channels {
         virtual void ifetch(channels::group* placement, size_t gid, size_t sid, size_t i, size_t j) = 0;
         virtual std::pair<size_t*,size_t> id() = 0;
         virtual channels::packet_t& get_block_packet_type(size_t) = 0;
+        virtual group* world() = 0;
     };
     
 } }

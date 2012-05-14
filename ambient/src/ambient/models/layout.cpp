@@ -7,6 +7,8 @@
 #define pthread_yield() sched_yield()
 #endif
 
+//#define LAYOUT_ACCESS_CHECK
+
 namespace ambient { namespace models {
 
     // {{{ layout model
@@ -38,24 +40,28 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::entry* v_model::layout::get(size_t i, size_t j){
+#ifdef LAYOUT_ACCESS_CHECK
         if(i >= this->get_mem_grid_dim().y || j >= this->get_mem_grid_dim().x)
         printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
+#endif
         return this->entries[i][j];
     }
 
     void v_model::layout::mesh(){
         dim2 dim = this->get_mem_grid_dim();
         if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
-        for(size_t i = 0; i < dim.y; i++){
-            if(i >= this->mesh_dim.y){
-                entries.push_back(std::vector<entry*>());
-            }
-            for(size_t j = 0; j < dim.x; j++){
-                if(j >= this->mesh_dim.x || i >= this->mesh_dim.y){
-                    entries[i].push_back(new v_model::layout::entry());
-                }
-            }
-        }
+
+        for(size_t i = this->mesh_dim.y; i < dim.y; i++)
+            entries.push_back(std::vector<entry*>());
+        
+        for(size_t i = 0; i < this->mesh_dim.y; i++)
+            for(size_t j = this->mesh_dim.x; j < dim.x; j++)
+                entries[i].push_back(new v_model::layout::entry());
+
+        for(size_t i = this->mesh_dim.y; i < dim.y; i++)
+            for(size_t j = 0; j < dim.x; j++)
+                entries[i].push_back(new v_model::layout::entry());
+
         if(dim.x > this->mesh_dim.x) this->mesh_dim.x = dim.x;
         if(dim.y > this->mesh_dim.y) this->mesh_dim.y = dim.y;
     }
@@ -84,15 +90,12 @@ namespace ambient { namespace models {
 
     v_model::layout& v_model::layout::operator>>(dim2 dim){
         this->mem_dim  = dim;
-        this->work_dim = NULL;
         this->item_dim = NULL;
         return *this;
     }
 
     v_model::layout& v_model::layout::operator,(dim2 dim){
-        if(this->work_dim == NULL)
-            this->work_dim = dim;
-        else if(this->item_dim == NULL){
+        if(this->item_dim == NULL){
             this->item_dim = dim;
             this->mesh();
         }
@@ -108,9 +111,8 @@ namespace ambient { namespace models {
         this->mesh();
     }
 
-    void v_model::layout::set_dimensions(dim2 mem_dim, dim2 work_dim, dim2 item_dim){
+    void v_model::layout::set_dimensions(dim2 mem_dim, dim2 item_dim){
         this->mem_dim = mem_dim;
-        this->work_dim = work_dim;
         this->item_dim = item_dim;
         this->mesh();
     }
@@ -123,23 +125,17 @@ namespace ambient { namespace models {
         return this->mem_dim;
     }
 
-    dim2 v_model::layout::get_work_dim() const {
-        return this->work_dim;
-    }
-
     dim2 v_model::layout::get_item_dim() const { 
         return this->item_dim; 
     }
 
     dim2 v_model::layout::get_grid_dim() const {
-        size_t n = __a_ceil(this->dim.x / this->work_dim.x);
-        size_t m = __a_ceil(this->dim.y / this->work_dim.y);
+        size_t n = __a_ceil(this->dim.x / this->mem_dim.x);
+        size_t m = __a_ceil(this->dim.y / this->mem_dim.y);
         return dim2(n, m);
     }
 
     dim2 v_model::layout::get_mem_grid_dim() const {
-        assert(this->mem_dim.x > 0);
-        assert(this->mem_dim.y > 0);
         size_t n = __a_ceil(this->dim.x / this->mem_dim.x);
         size_t m = __a_ceil(this->dim.y / this->mem_dim.y);
         return dim2(n, m);

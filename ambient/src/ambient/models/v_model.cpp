@@ -5,7 +5,7 @@
 namespace ambient { namespace models {
 
     v_model::v_model()
-    : mem_dim(dim2(16,16)), work_dim(dim2(16,16)), item_dim(dim2(16,16)) // to revert to 128,128
+    : mem_dim(dim2(8,8)), item_dim(dim2(8,8)) // to revert to 128,128
     {
     }
 
@@ -14,7 +14,7 @@ namespace ambient { namespace models {
 
     void v_model::add_revision(imodel::object* obj){
         v_model::layout* l = new v_model::layout(obj->get_dim(), obj->get_t_size());
-        l->set_dimensions(this->mem_dim, this->work_dim, this->item_dim);
+        l->set_dimensions(this->mem_dim, this->item_dim);
         *const_cast<size_t*>(&l->sid) = this->map.insert(l);
         *const_cast<const size_t **>(&l->gid) = channel.id().first;
         obj->add_revision(l);
@@ -30,15 +30,12 @@ namespace ambient { namespace models {
 
     v_model& v_model::operator>>(dim2 mem_dim){
         this->mem_dim  = mem_dim;
-        this->work_dim = NULL;
         this->item_dim = NULL;
         return *this;
     }
 
     v_model& v_model::operator,(dim2 dim){
-        if(this->work_dim == NULL)
-            this->work_dim = dim;
-        else if(this->item_dim == NULL)
+        if(this->item_dim == NULL)
             this->item_dim = dim;
         return *this;
     }

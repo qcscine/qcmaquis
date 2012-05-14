@@ -65,18 +65,16 @@ namespace ambient { namespace models {
             size_t get_mem_lda() const;
 
             layout& operator>>(dim2);       // set mem_dim
-            layout& operator, (dim2);       // set work_dim
+            layout& operator, (dim2);       // set item_dim
        
-            void   set_dimensions(dim2,dim2,dim2);
+            void   set_dimensions(dim2,dim2);
             void   set_dim(dim2);
             dim2   get_dim() const;
             dim2   get_mem_dim() const;
-            dim2   get_work_dim() const;
             dim2   get_item_dim() const;
             dim2   get_grid_dim() const;
             dim2   get_mem_grid_dim() const;
             dim2   mem_dim;                 // size of distribution blocks
-            dim2   work_dim;                // size of csmp workload groups
             dim2   item_dim;                // size of work-item inside workgroup
             dim2   mesh_dim;                // size of the grid (reserved) 
             dim2   dim;                     // total size of the revision (typed)
@@ -175,7 +173,6 @@ namespace ambient { namespace models {
     private:
         hashmap map;
         dim2 mem_dim;
-        dim2 work_dim;
         dim2 item_dim;
     };
 

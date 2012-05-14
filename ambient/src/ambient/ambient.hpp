@@ -9,36 +9,25 @@
 
 namespace ambient{
 
-    inline void set_num_threads(size_t n){ 
-        ambient::controller.set_num_threads(n);
-    }
+    inline void set_num_threads(size_t n); 
 
-    inline size_t get_num_threads(){
-        return ambient::controller.get_num_threads();
-    }
+    inline size_t get_num_threads();
 
-    inline void playout(){
-        ambient::controller.flush(); 
-    }
+    inline void playout();
 
-    inline bool verbose(){
-        return (rank() ? false : true); 
-    }
+    inline bool verbose();
 
     template<typename T>
-    void assign(const T& ref, int i, int j = 0);
+    inline void assign(const T& ref, int i, int j = 0);
 
     template<typename T>
-    void pin(const T& ref, int i, int j = 0);
+    inline void pin(const T& ref, int i, int j = 0);
 
     template<typename T>
     inline std::pair<size_t*,size_t> id(T& ref);
 
     template<typename T>
     inline dim2 get_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_work_dim(T& ref);
 
     template<typename T>
     inline dim2 get_grid_dim(T& ref);
@@ -56,37 +45,39 @@ namespace ambient{
     #include "ambient/interface/pp/push.pp.hpp" // all variants of push
 
     template<typename T>
-    void assign(const T& ref, int i, int j){
-        ambient::models::imodel::layout& layout = current(ref).get_layout();
-        dim2 work_blocks(layout.get_work_dim().x / layout.get_mem_dim().x,
-                         layout.get_work_dim().y / layout.get_mem_dim().y);
-        size_t ii = i*work_blocks.y;
-        size_t jj = j*work_blocks.x;
-    
-        for(int i = ii; i < ii+work_blocks.y; i++)
-            for(int j = jj; j < jj+work_blocks.x; j++){
-                if(ctxt.get_op()->get_pin() == NULL){
-                    ctxt.get_op()->add_condition();
-                    current(ref).block(i,j)->get_assignments().push_back(ctxt.get_op());
-                }
-                controller.ifetch_block(current(ref), i, j);
-            }
+    inline void assign(const T& ref, int i, int j){ // work_dim = mem_dim
+        ambient::models::imodel::revision& revision = current(ref);
+        ambient::models::imodel::modifier* op = ctxt.get_op();
+        if(op->get_pin() == NULL){
+            op->add_condition();
+            revision.block(i,j)->get_assignments().push_back(op);
+        }
+        controller.ifetch_block(revision, i, j);
     }
 
     template<typename T>
-    void pin(const T& ref, int i, int j){
-        ambient::models::imodel::layout& layout = current(ref).get_layout();
-        dim2 work_blocks(layout.get_work_dim().x / layout.get_mem_dim().x,
-                         layout.get_work_dim().y / layout.get_mem_dim().y);
-        size_t ii = i*work_blocks.y;
-        size_t jj = j*work_blocks.x;
-    
-        for(int i = ii; i < ii+work_blocks.y; i++)
-            for(int j = jj; j < jj+work_blocks.x; j++){
-                ctxt.get_op()->add_condition();
-                current(ref).block(i,j)->get_assignments().push_back(ctxt.get_op());
-                controller.ifetch_block(current(ref), i, j);
-            }
+    inline void pin(const T& ref, int i, int j){ // work_dim = mem_dim
+        ambient::models::imodel::revision& revision = current(ref);
+        ambient::models::imodel::modifier* op = ctxt.get_op();
+        op->add_condition();
+        revision.block(i,j)->get_assignments().push_back(op);
+        controller.ifetch_block(revision, i, j);
+    }
+
+    inline void set_num_threads(size_t n){ 
+        ambient::controller.set_num_threads(n);
+    }
+
+    inline size_t get_num_threads(){
+        return ambient::controller.get_num_threads();
+    }
+
+    inline void playout(){
+        ambient::controller.flush(); 
+    }
+
+    inline bool verbose(){
+        return (rank() ? false : true); 
     }
 
     template<typename T>
@@ -117,11 +108,6 @@ namespace ambient{
     template<typename T>
     inline dim2 get_item_dim(T& ref){
         return current(ref).get_layout().get_item_dim();
-    }
-
-    template<typename T>
-    inline dim2 get_work_dim(T& ref){
-        return current(ref).get_layout().get_work_dim();
     }
 
     // }}}

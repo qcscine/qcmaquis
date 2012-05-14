@@ -19,6 +19,10 @@ namespace ambient { namespace channels {
         pthread_mutex_destroy(&this->mutex);
     }
 
+    group* mpi_channel::world(){
+        return this->ambient;
+    }
+
     void mpi_channel::init(){
         int threading_level;
         MPI_Init_thread(0, NULL, MPI_THREAD_MULTIPLE, &threading_level);

@@ -58,7 +58,7 @@ namespace ambient { namespace models {
 
     void operation::add_condition(){
         pthread_mutex_lock(&this->mutex);
-        this->workload++;
+        this->workload ++;
         pthread_mutex_unlock(&this->mutex);
     }
 
