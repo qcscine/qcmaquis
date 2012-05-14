@@ -17,8 +17,6 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
 {
-    ambient::model >> dim(32,32), dim(32,32);
-
     pMatrix pA(T::valuex,T::valuex);
     sMatrix sA(T::valuex,T::valuex);
 

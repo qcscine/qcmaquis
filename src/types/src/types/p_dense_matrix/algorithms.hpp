@@ -485,9 +485,9 @@ namespace maquis { namespace types {
 namespace algorithms {
 
     template<typename T>
-    void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols){ 
+    void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols, size_type orows, size_type ocols){ 
         // gs
-        ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols);
+        ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols, orows, ocols);
     }
 
     template<typename T>

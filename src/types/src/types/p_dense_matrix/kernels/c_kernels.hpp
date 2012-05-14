@@ -16,16 +16,28 @@ namespace ambient {
         return std::min(get_mem_dim(a).x, n-ctxt.get_block_id().x*get_mem_dim(a).x);
     }
 
+    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    inline size_t __a_get_limit_x(const T& a, size_t n = 0){
+        if(n == 0) n = get_dim(a).x;
+        return std::min(get_mem_dim<STATE>(a).x, n-ctxt.get_block_id().x*get_mem_dim<STATE>(a).x);
+    }
+
     template<typename T>
     inline size_t __a_get_limit_y(const T& a, size_t m = 0){
         if(m == 0) m = get_dim(a).y;
         return std::min(get_mem_dim(a).y, m-ctxt.get_block_id().y*get_mem_dim(a).y);
     }
 
+    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    inline size_t __a_get_limit_y(const T& a, size_t m = 0){
+        if(m == 0) m = get_dim<STATE>(a).y;
+        return std::min(get_mem_dim<STATE>(a).y, m-ctxt.get_block_id().y*get_mem_dim<STATE>(a).y);
+    }
+
     // C - w, alfa are not nested into dim2 because they are not 2D coordinates
     template <typename T>
     void __a_memcpy(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 const& dpos, maquis::types::p_dense_matrix_impl<T> const& src, T *sd, dim2 const& spos, size_t w, T alfa){
-        memcpy(&dd[dpos.x*get_mem_dim(dest).y+dpos.y],
+        memcpy(&dd[dpos.x*get_mem_dim<updated>(dest).y+dpos.y],
                &sd[spos.x*get_mem_dim(src).y+spos.y],
                w*sizeof(T));
     }
@@ -92,6 +104,68 @@ namespace ambient {
                 w -= v;
                 dpos.y += v;
                 spos.y = 0;
+            }
+        }
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        time.end();
+#endif
+    }
+
+    template<typename T>
+    inline void __a_memptf_reverse(void (*ptf)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 const& dpos, 
+                                               maquis::types::p_dense_matrix_impl<T> const& src, T *sd, dim2 const& spos, 
+                                               size_t w, T alfa),
+                                   maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
+                                   const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
+                                   dim2 size, T alfa = 0.0)
+    {
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        static TimerPTH time("ambient_memptf_f_kernel"); time.begin();
+#endif
+        // the input (src) must be a pinned p_dense_matrix
+
+        T* sd = current(src)(ctxt.get_block_id().y, ctxt.get_block_id().x);
+        size_t si = ctxt.get_block_id().y * get_mem_dim(src).y;
+        size_t sj = ctxt.get_block_id().x * get_mem_dim(src).x;
+    
+        if(get_dim<updated>(dest).x - dest_p.x < size.x || get_dim<updated>(dest).y - dest_p.y < size.y ||
+           get_dim(src).x - src_p.x   < size.x || get_dim(src).y - src_p.y   < size.y) 
+            maquis::cout << "Error: invalid memory movement" << std::endl;
+    
+        if( size.x == 0 || size.y == 0          ||
+            si + get_mem_dim(src).y <= src_p.y  || 
+            sj + get_mem_dim(src).x <= src_p.x  ||
+            si >= src_p.y + size.y              || 
+            sj >= src_p.x + size.x               ) return;
+
+    // lets find src-block starting point
+        size_t offseti = (si < src_p.y) ? src_p.y % get_mem_dim(src).y : 0; si += offseti;
+        size_t offsetj = (sj < src_p.x) ? src_p.x % get_mem_dim(src).x : 0; sj += offsetj;
+
+        size_t di = si - src_p.y + dest_p.y;
+        size_t dj = sj - src_p.x + dest_p.x;
+    // lets find src-block copy limits
+        size_t sizey = __a_get_limit_y(src, (src_p.y + size.y)) - offseti;
+        size_t sizex = __a_get_limit_x(src, (src_p.x + size.x)) - offsetj;
+
+    // how many blocks do we need for this one
+        int remaining = (int)sizey - (int)(get_mem_dim<updated>(dest).y - di % get_mem_dim<updated>(dest).y);
+        size_t num_dest_blocks = remaining > 0 ? __a_ceil( remaining / get_mem_dim<updated>(dest).y ) + 1 : 1;
+
+        dim2 dpos,spos; size_t v, w;
+        for(size_t j = 0; j < sizex; j++){
+            w = sizey;
+            spos.y = offseti;
+            spos.x = offsetj + j;
+            dpos.y = di % get_mem_dim<updated>(dest).y;
+            dpos.x = (dj+j) % get_mem_dim<updated>(dest).x;
+            for(int k = 0; k < num_dest_blocks; k++){
+                T* dd = updated(dest)(di / get_mem_dim<updated>(dest).y + k, (dj+j) / get_mem_dim<updated>(dest).x);
+                v = std::min(w, get_mem_dim<updated>(dest).y-dpos.y);
+                ptf(dest,dd,dpos,src,sd,spos,v,alfa);            
+                w -= v;
+                spos.y += v;
+                dpos.y = 0;
             }
         }
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
@@ -247,21 +321,21 @@ namespace ambient {
     void remove_rows_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
         size_t numrows = get_dim(a).y;
         size_t numcols = get_dim(a).x;
-        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
-        __a_memptf(&__a_memcpy<T>, a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
+        __a_memptf_reverse(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
+        __a_memptf_reverse(&__a_memcpy<T>, a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
     }
 
     template<typename T>
     void remove_cols_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
         size_t numrows = get_dim(a).y;
         size_t numcols = get_dim(a).x;
-        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
-        __a_memptf(&__a_memcpy<T>, a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
+        __a_memptf_reverse(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
+        __a_memptf_reverse(&__a_memcpy<T>, a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
     }
 
     template<typename T>
-    void resize_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-        __a_memptf(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(std::min(get_dim(a).x,n),std::min(get_dim(a).y,m)));
+    void resize_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
+        __a_memptf_reverse(&__a_memcpy<T>, a, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
     }
 
     template<typename T>
@@ -312,25 +386,28 @@ namespace ambient {
 
     template<typename T>
     void cast_to_dense_c(std::vector<T>*& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-        // note as we cast to dense matrix, l_kernel on 1 proc, thus half work done
-        int offset,size_y(get_mem_dim(a).y),size_x(get_mem_dim(a).x);
+        // gs
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        static TimerPTH time("ambient_cast_to_dense_c_kernel"); time.begin();
+#endif
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         int yi = get_mem_dim(a).y*i; // conversion cartersia coordinates dense / p_dense
         int xj = get_mem_dim(a).x*j; 
+        size_t offset;
         T* ad = current(a)(i,j);
        
-        //operator ?, case 1 matrix is lower than one work group, case 2 several work groups or fit in x direction
-        if(j+1 == get_mem_grid_dim(a).x)
-            size_x = (get_mem_dim(a).x > n) ? n : (n - (get_mem_grid_dim(a).x-1)*get_mem_dim(a).x);
+        size_t sizex = __a_get_limit_x(a, n);
+        size_t sizey = __a_get_limit_y(a, m);
+        size_t lda = get_mem_dim(a).y;
     
-        for(int ii=0; ii < size_x; ++ii){
-            offset = yi + (xj+ii)*m;
-            if(i+1 == get_mem_grid_dim(a).y)
-                size_y = (get_mem_dim(a).y > m) ? m : (m - (get_mem_grid_dim(a).y-1)*get_mem_dim(a).y); // y direction
-    
-            memcpy((void*)&(*ac)[offset],(void*)&ad[ii*get_mem_dim(a).x], size_y*sizeof(T));  
+        for(int jj=0; jj < sizex; ++jj){
+            offset = yi + (xj+jj)*m;
+            memcpy((void*)&(*ac)[offset],(void*)&ad[jj*lda], sizey*sizeof(T));  
         }
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        time.end();
+#endif
     }
 
     template <typename T>
