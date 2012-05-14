@@ -320,10 +320,6 @@ namespace ambient { namespace channels {
     }
 
     void group::commit(){
-        if(this->parent == NULL){ 
-            printf("Warning: attempting to commit ambient group.\n");
-            return;
-        }
         this->id = hash_gid();
         group* grp = group_id_map(this->id);
         if(grp != NULL) throw grp;

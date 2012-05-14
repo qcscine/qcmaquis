@@ -43,6 +43,7 @@ namespace ambient { namespace channels {
         static void* stream(void* instance);
         void ifetch(group* placement, size_t gid, size_t sid, size_t i, size_t j); // exclude owner?
 
+        group* world();
         void  init();
         void  finalize();
         std::pair<size_t*,size_t> id();

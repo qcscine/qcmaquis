@@ -65,10 +65,7 @@ inline void latch_revisions(void (*)( T0& )){
 template < typename T0 > void prototype_template(void (*)( pinned T0& )){ info<T0>::typed::revise(this->arguments[0], this->revisions[0]); void(*fp)() = this->op; if(this->state == MARKUP){ this->state = COMPUTING; fp = this->logistics_ptr; } ( (void (*)( pinned T0& )) fp ) ( marked info<T0>::typed::dereference(this->arguments[0]) ); pthread_mutex_lock(&this->mutex); if(--this->workload == 0){ if(fp == this->logistics_ptr && this->pin == NULL){ this->workload++; controller.execute_free_mod(this); }else{ this->state = COMPLETE; controller.atomic_complete(); } } pthread_mutex_unlock(&this->mutex); } template < typename T0 > void cleanup_template(void (*)( pinned T0& )) { info<T0>::typed::deallocate(this->arguments[0]); } template < typename T0 > void creditup_template(void (*)( pinned T0& )) { info<T0>::typed::weight(this->arguments[0], this); } template < typename T0 > void place_template(void (*)( pinned T0& )) { info<T0>::typed::place(this->arguments[0], this); } template < typename T0 > inline void mark_pin(void (*)( pinned T0& )) { this->pin = &current(info<T0>::typed::dereference(this->arguments[0])); } template < typename T0 > inline void latch_revisions(void (*)( pinned T0& )) { this->revisions[0] = info<T0>::typed::modify(const_cast<T0&>(info<T0>::typed::dereference(this->arguments[0])), this); }
 
 template< typename FP, typename T0 , typename T1 >
-operation( FP logistics, FP computing, T0 &arg0 , T1 &arg1 ){
-    static __a_timer time("ambient_operation_2"); time.begin();
-    static __a_timer time3("ambient_operation_2_arguments");
-    static __a_timer time5("ambient_operation_2_latch");
+operation( FP logistics, FP computing, T0 &arg0 , T1 &arg1 ){ // 1.3
     this->logistics_ptr = (void(*)())logistics;
     this->computing_ptr = (void(*)())computing;
     this->op = (void(*)())computing;
@@ -76,22 +73,21 @@ operation( FP logistics, FP computing, T0 &arg0 , T1 &arg1 ){
     this->credit = 0;
     this->count = 2;
     this->state = MARKUP;
-    time3.begin();
+    // { // 0.2
     this->arguments = (void**)malloc(sizeof(void*)*this->count);
     this->revisions = (size_t*)malloc(sizeof(size_t)*this->count);
     this->arguments[0] = (void*)info<T0>::typed::pointer(arg0); this->arguments[1] = (void*)info<T1>::typed::pointer(arg1);
-    time3.end();
+    // }
     this->mark_pin(logistics);
-    time5.begin();
+    // { // 0.7
     this->latch_revisions(logistics);
-    time5.end();
+    // }
     void(operation::*ptr)(FP); ptr = &operation::prototype_template; this->prototype = (void(operation::*)())ptr;
     ptr = &operation::cleanup_template;                              this->cleanup = (void(operation::*)())ptr;
     ptr = &operation::creditup_template;                             this->creditup = (void(operation::*)())ptr;
     ptr = &operation::place_template;                                this->place = (void(operation::*)())ptr;
 
     pthread_mutex_init(&this->mutex, NULL);
-    time.end();
 }
 template < typename T0 , typename T1 >
 void prototype_template(void (*)( T0& , T1& )){
