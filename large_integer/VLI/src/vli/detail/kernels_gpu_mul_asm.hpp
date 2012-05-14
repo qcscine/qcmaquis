@@ -80,7 +80,7 @@ namespace vli{
     #undef mul384bits_192bits_192bits
 
     inline void mul512_256_256(unsigned int* x, unsigned int const* y, unsigned int const* z){
-     
+    
     }
 
     }
