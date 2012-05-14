@@ -1,0 +1,20 @@
+== DMRG TESTING ==
+
+In DMRG we provide three types of testing.
+1. unit_testing for the main objects
+2. comparison of main objects when executed with different Matrix type
+3. applications testing against some parameter files with known result
+
+
+=== 1. unit_testing ===
+NOT YET IMPLEMENTED
+
+=== 2. Matrix comparison ===
+Located in comparison subdir.
+Option XX in CMake.
+
+=== 3. application testing ===
+Located in applications subdir, using the new tool apptest.py in ALPS.
+Note: this requires a minimal installation of ALPS r6148 with Python.
+Option YY in CMake.
+
