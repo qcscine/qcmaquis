@@ -11,6 +11,10 @@ namespace ambient{
         {
         }
 
+        size_t max(){
+            return std::max(this->x, this->y);
+        }
+
         size_t square(){
             return this->x * this->y;
         }
@@ -37,6 +41,14 @@ namespace ambient{
 
         bool operator==(dim2 m) const {
             return (x == m.x && y == m.y);
+        }
+
+        bool operator<(dim2 m) const {
+            return (x < m.x && y < m.y);
+        }
+
+        bool operator<(size_t m) const {
+            return (x < m && y < m);
         }
 
         bool operator!=(dim2 m) const {

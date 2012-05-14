@@ -28,7 +28,6 @@ namespace ambient { namespace controllers {
         models::imodel::layout::entry& alloc_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& ufetch_block(models::imodel::revision& r, size_t i, size_t j);
         models::imodel::layout::entry& ifetch_block(models::imodel::revision& r, size_t i, size_t j);
-        models::imodel::layout::entry& init_block(models::imodel::revision& r, size_t i, size_t j);
         void unlock_revision(models::imodel::revision* arg);
         void unlink_revision(models::imodel::revision* arg);
 

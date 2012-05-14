@@ -159,11 +159,6 @@ namespace ambient { namespace controllers {
         return *r.block(i,j);
     }
 
-    models::imodel::layout::entry& v_controller::init_block(models::imodel::revision& r, size_t i, size_t j){
-        this->alloc_block(r, i, j);
-        return *r.block(i,j);
-    }
-
     models::imodel::layout::entry& v_controller::ufetch_block(models::imodel::revision& r, size_t i, size_t j){
         if(r.block(i,j)->valid()){
             return *r.block(i,j);
@@ -184,7 +179,7 @@ namespace ambient { namespace controllers {
             this->atomic_receive(r, i, j); // check the stacked operations for the block
         else if(r.get_placement()->is_master()){
             if(r.get_layout().marked(i, j)){
-                this->init_block(r, i, j);
+                this->alloc_block(r, i, j);
                 this->atomic_receive(r, i, j);
             }else{
                 if(r.get_generator()->get_group() != NULL) // we already know the generation place
@@ -252,7 +247,7 @@ namespace ambient { namespace controllers {
         if(entry.valid()){
             channel.emit(package(r, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), i, j, c.get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }else if(r.get_placement()->is_master() && r.get_layout().marked(i, j)){
-            controller.init_block(r, i, j); // generating block
+            controller.alloc_block(r, i, j); // generating block
             forward_block(cmd);             // and forwarding
         }else{
             r.block(i,j)->get_path().push_back(c.get<int>(A_LAYOUT_P_OWNER_FIELD));
