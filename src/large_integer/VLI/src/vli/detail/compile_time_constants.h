@@ -1,5 +1,5 @@
 // Polynomial configuration
-#define DEGREE_BOUND 11U // get the order from the tupple
+#define DEGREE_BOUND 15U // get the order from the tupple
 
 #define MULT_RESULT_DEGREE_BOUND (DEGREE_BOUND*2-1)
 #define MUL_BLOCK_SIZE (((MULT_RESULT_DEGREE_BOUND*MULT_RESULT_DEGREE_BOUND)/2U >= 256U) ? 256U : (((MULT_RESULT_DEGREE_BOUND*MULT_RESULT_DEGREE_BOUND)/2U+32U-1U)/32U*32U)) // 32U is the warp size here
