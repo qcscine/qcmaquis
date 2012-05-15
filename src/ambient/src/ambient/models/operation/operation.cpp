@@ -6,6 +6,7 @@ namespace ambient { namespace models {
     operation::~operation(){
         (this->*cleanup)();
         free(this->arguments);
+        free(this->revisions);
         this->grp->idle();
     }
 

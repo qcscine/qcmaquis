@@ -100,7 +100,7 @@ namespace ambient { namespace channels {
         group_id_map(this->id, this);
     }
 
-    std::pair<size_t*,size_t> group::hash_gid(){
+    std::pair<size_t*,size_t> group::hash_gid(){ // now we don't really need this
         int index;
         int old_id_len;
         int id_len = 0;
