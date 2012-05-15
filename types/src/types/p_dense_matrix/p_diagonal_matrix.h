@@ -14,8 +14,6 @@ namespace maquis { namespace types {
         typedef typename container::difference_type difference_type;
         typedef typename container::value_type value_type;
         typedef typename container::size_type size_type;
-        //typedef T&                                  reference;
-        //typedef const T&                            const_reference;
         
         p_diagonal_matrix(size_t rows = 0, const value_type& init = value_type());
         size_type num_rows() const;

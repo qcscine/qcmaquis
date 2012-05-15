@@ -45,7 +45,7 @@ namespace ambient {
     template <typename T>
     void __a_memscal(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 const& dpos, maquis::types::p_dense_matrix_impl<T> const& src, T *sd, dim2 const& spos, size_t w, T alfa){
         for(int z = 0; z < w; z++)
-            dd[dpos.x*get_mem_dim(dest).y+dpos.y+z] += sd[spos.x*get_mem_dim(src).y+spos.y + z]*alfa;
+            dd[dpos.x*get_mem_dim<updated>(dest).y+dpos.y+z] += sd[spos.x*get_mem_dim(src).y+spos.y + z]*alfa;
     }
 
     // V = double, S = size_t
@@ -174,11 +174,6 @@ namespace ambient {
     }
 
     template<typename T>
-    inline void __a_add_scaled(T& dest, dim2 dest_p, const T& src, dim2 src_p, typename T::value_type alfa, dim2 size){
-        __a_memptf(&__a_memscal<typename T::value_type>, dest, dest_p, src, src_p, size, alfa);
-    }
-
-    template<typename T>
     void print_pinned_block(T& a){
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
@@ -219,11 +214,11 @@ namespace ambient {
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
     // taking (j,i) of b:
-        if(get_mem_grid_dim(b).y > j) while(i < get_mem_grid_dim(b).x){
+        if(get_grid_dim(b).y > j) while(i < get_grid_dim(b).x){
             T* bd = current(b)(j,i); // remote
     // multiplying with column of a:
             std::list<int> L;
-            for(int z = 0; z < get_mem_grid_dim(a).y; z++) L.push_back(z);
+            for(int z = 0; z < get_grid_dim(a).y; z++) L.push_back(z);
             while(!L.empty()){
                 std::list<int>::iterator zi = L.begin();
                 while(zi != L.end()){
@@ -235,7 +230,7 @@ namespace ambient {
                     L.erase(zi++);
                 }
             }
-            i += get_mem_grid_dim(a).y;
+            i += get_grid_dim(a).y;
         }
     }
 
@@ -245,6 +240,41 @@ namespace ambient {
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         static TimerPTH time("ambient_gemm_c_kernel"); time.begin();
 #endif
+        if(ctxt.get_block_id().x >= get_grid_dim(a).x || // early out (out of scope)
+           ctxt.get_block_id().y >= get_grid_dim(a).y) return;
+        if(a.get_dim() == 1 && b.get_dim().x == 1){          // early out (a and b are scalars)
+            (*(T*)updated(c)(0,0)) = (*(T*)current(a)(0,0))*(*(T*)current(b)(0,0));
+            return;
+        }else if(get_grid_dim(a) == 1 && get_grid_dim(b) == 1){
+            T* bd = current(b)(0,0);
+            T* ad = current(a)(0,0);
+            T* cd = updated(c)(0,0);
+            int m   = get_dim(a).y;
+            int n   = get_dim(b).x;
+            int k   = get_dim(b).y;
+            int lda = get_mem_dim(a).y;
+            int ldb = get_mem_dim(b).y;
+            int ldc = get_mem_dim(c).y;
+            T alpha(1.0); 
+            T beta(1.0);
+            gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            return;
+        }else if(get_mem_dim(a) != get_mem_dim(b) || get_mem_dim(a) != get_mem_dim(c)){
+            T* ad = (T*)models::solidify(a);
+            T* bd = (T*)models::solidify(b);
+            T* cd = (T*)models::solidify(c);
+            int m   = get_dim(a).y;
+            int n   = get_dim(b).x;
+            int k   = get_dim(b).y;
+            int lda = get_mem_dim(a).y*get_grid_dim(a).y;
+            int ldb = get_mem_dim(b).y*get_grid_dim(b).y;
+            int ldc = get_mem_dim(c).y*get_grid_dim(c).y;
+            T alpha(1.0); 
+            T beta(1.0);
+            gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            models::disperse(cd, c);
+            return;
+        }
         //  --- --- ---       --- --- ---       --- --- ---
         // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
         //  --- --- ---       --- --- ---       --- --- ---
@@ -255,12 +285,7 @@ namespace ambient {
         //
         // partial reduce?..
         /////////////////////////////////////////////////////////////////////////
-        if(ctxt.get_block_id().x >= get_mem_grid_dim(a).x || // early out (out of scope)
-           ctxt.get_block_id().y >= get_mem_grid_dim(a).y) return;
-        if(a.get_dim() == 1 && b.get_dim().x == 1){          // early out (a and b are scalars)
-            (*(T*)updated(c)(0,0)) = (*(T*)current(a)(0,0))*(*(T*)current(b)(0,0));
-            return;
-        }
+
         int m   = get_mem_dim(a).y;
         int n   = get_mem_dim(b).x;
         int k   = get_mem_dim(b).y;
@@ -274,8 +299,8 @@ namespace ambient {
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
 
-        dim2 a_grid_dim = get_mem_grid_dim(a);
-        dim2 b_grid_dim = get_mem_grid_dim(b);
+        dim2 a_grid_dim = get_grid_dim(a);
+        dim2 b_grid_dim = get_grid_dim(b);
     // taking (j,i) of b:
         if(b_grid_dim.y > j) while(i < b_grid_dim.x){
             T* bd = current(b)(j,i); // remote
@@ -308,7 +333,7 @@ namespace ambient {
 #endif
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
-        if(i >= get_mem_grid_dim(ac).y || j >= get_mem_grid_dim(ac).x) return;
+        if(i >= get_grid_dim(ac).y || j >= get_grid_dim(ac).x) return;
         T* a_elements  = current(a)(i,j);
         T* ac_elements = updated(ac)(i,j);
         memcpy(ac_elements, a_elements, sizeof(T)*get_mem_dim(a).y*get_mem_dim(a).x);
@@ -420,13 +445,13 @@ namespace ambient {
         T* ad = updated(a)(i,j);
     
         //operator ?, case 1 matrix is lower than one work group, case 2 several work groups or fit in x direction
-        if(j+1 == get_mem_grid_dim(a).x)
-            size_x = (get_mem_dim(a).x > n) ? n : (n - (get_mem_grid_dim(a).x-1)*get_mem_dim(a).x);
+        if(j+1 == get_grid_dim(a).x)
+            size_x = (get_mem_dim(a).x > n) ? n : (n - (get_grid_dim(a).x-1)*get_mem_dim(a).x);
     
         for(int ii=0; ii < size_x; ++ii){
             offset = yi + (xj+ii)*lda; //lda because possible resize;
-            if(i+1 == get_mem_grid_dim(a).y)
-               size_y = (get_mem_dim(a).y > m) ? m : (m - (get_mem_grid_dim(a).y-1)*get_mem_dim(a).y);
+            if(i+1 == get_grid_dim(a).y)
+               size_y = (get_mem_dim(a).y > m) ? m : (m - (get_grid_dim(a).y-1)*get_mem_dim(a).y);
             memcpy((void*)&ad[ii*get_mem_dim(a).x],(void*)&(*ac)[offset], size_y*sizeof(T)); // y direction 
         }
     }
@@ -481,9 +506,9 @@ namespace ambient {
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                 T* alfad = current(alfa)(ss1/get_mem_dim(alfa).y, ss2/get_mem_dim(alfa).x);
                 T  alfa_t = alfad[ss1%get_mem_dim(alfa).y + get_mem_dim(alfa).y*(ss2%get_mem_dim(alfa).x)];
-                __a_add_scaled(out, dim2(out_offset + ss2*rdim, 0),
-                               in,  dim2(in_offset + ss1*rdim, 0),
-                               alfa_t, dim2(rdim, ldim));
+                __a_memptf(&__a_memscal<T>, out, dim2(out_offset + ss2*rdim, 0),
+                                            in,  dim2(in_offset + ss1*rdim, 0),
+                                            dim2(rdim, ldim), alfa_t);
             }
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         time.end();
@@ -503,9 +528,9 @@ namespace ambient {
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                 T* alfad = current(alfa)(ss1/get_mem_dim(alfa).y, ss2/get_mem_dim(alfa).x);
                 T  alfa_t = alfad[ss1%get_mem_dim(alfa).y + get_mem_dim(alfa).y*(ss2%get_mem_dim(alfa).x)];
-                __a_add_scaled(out, dim2(0, out_offset + ss2*ldim),
-                               in,  dim2(0, in_offset + ss1*ldim),
-                               alfa_t, dim2(rdim, ldim));
+                __a_memptf(&__a_memscal<T>, out, dim2(0, out_offset + ss2*ldim),
+                                            in,  dim2(0, in_offset + ss1*ldim),
+                                            dim2(rdim, ldim), alfa_t);
             }
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         time.end();
@@ -625,9 +650,7 @@ namespace ambient {
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         static TimerPTH time("ambient_gemm_diagonal_lhs_c_kernel"); time.begin();
 #endif
-
-        size_t sizey = std::min((ctxt.get_block_id().y+1)*get_mem_dim(a_diag).y, m)-ctxt.get_block_id().y*get_mem_dim(a_diag).y;
-
+        size_t sizey = __a_get_limit_y(a_diag, m);
         int j = ctxt.get_block_id().y*get_mem_dim(b).y;
         int size = get_mem_dim(b).x;
         int lda  = sizeof(T)/sizeof(D)*get_mem_dim(b).y;
@@ -635,7 +658,6 @@ namespace ambient {
         D* bd = current(b)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         D* cd = updated(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
     
-        memset(cd, 0, get_mem_dim(c).x*get_mem_dim(c).y*sizeof(T));
         for(int jj = 0 ; jj < sizey; jj++){
              D* alpha = current(a_diag)((j+jj)/get_mem_dim(a_diag).y,0);
     	     axpy(&size, &alpha[(j+jj)%get_mem_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
@@ -662,7 +684,6 @@ namespace ambient {
         D* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         D* cd = updated(c)(ctxt.get_block_id().y, ctxt.get_block_id().x);
     
-        memset(cd, 0, get_mem_dim(c).x*get_mem_dim(c).y*sizeof(T));
         for(int jj = 0 ; jj < sizex; jj++){
     	    D* alpha = current(b_diag)((j+jj)/get_mem_dim(b_diag).y,0);
     	    axpy(&size, &alpha[(j+jj)%get_mem_dim(b_diag).y], &ad[jj*get_mem_dim(a).y], &ONE, &cd[jj*get_mem_dim(c).y], &ONE);
@@ -850,10 +871,22 @@ namespace ambient {
         T wkopt;
         T* work;
         double* rwork = new double[5*std::min(lda,ldu)]; // C - useless for double but need for complex 
-        T* ad = (T*)models::solidify(a);
-        T* ud = (T*)models::solidify(u);
-        T* vtd = (T*)models::solidify(vt);
-        double* sd = (double*)models::solidify(s);
+        T* ad;
+        T* ud;
+        T* vtd;
+        double* sd;
+
+        if(get_grid_dim(a) == 1){
+            ad  = current(a) (0,0);
+            ud  = updated(u) (0,0);
+            vtd = updated(vt)(0,0);
+            sd  = updated(s) (0,0);
+        }else{
+            ad  = (T*)models::solidify(a);
+            ud  = (T*)models::solidify(u);
+            vtd = (T*)models::solidify(vt);
+            sd  = (double*)models::solidify(s);
+        }
     /* Query and allocate the optimal workspace */
         lwork = -1; // C - Alex, netlib said -1 for the best workspace
         gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, &wkopt, &lwork, rwork, &info );
@@ -866,9 +899,11 @@ namespace ambient {
             printf( "The algorithm computing SVD failed to converge.\n" );
             exit( 1 );
         }
-        models::disperse(ud, u);
-        models::disperse(vtd, vt);
-        models::disperse(sd, s);
+        if(get_grid_dim(a) != 1){
+            models::disperse(ud, u);
+            models::disperse(vtd, vt);
+            models::disperse(sd, s);
+        }
         free(work);
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         time.end();
@@ -877,27 +912,27 @@ namespace ambient {
 
     template<typename T>
     void syev_c(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
-         int lda = get_grid_dim(a).y*get_mem_dim(a).y;
-         int info, lwork = -1;
-    
-         double wkopt;
-         double* work;
-         double* ad = (double*)models::solidify(a);
-         double* wd = (double*)models::solidify(w);
+        int lda = get_grid_dim(a).y*get_mem_dim(a).y;
+        int info, lwork = -1;
+        double wkopt;
+        double* work;
+        double* ad = (double*)models::solidify(a);
+        double* wd = get_grid_dim(a) == 1 ? updated(w)(0,0) : (double*)models::solidify(w);
          
-         dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
-         lwork = (int)wkopt;
-         work = (double*)malloc( lwork*sizeof(double) );
-         dsyev_("V","U",&m,ad,&lda,wd,work,&lwork,&info);
+        dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
+        lwork = (int)wkopt;
+        work = (double*)malloc( lwork*sizeof(double) );
+        dsyev_("V","U",&m,ad,&lda,wd,work,&lwork,&info);
     
-         if( info > 0 ) {
-             printf( "The algorithm computing SYEV failed to converge.\n" );
-             exit( 1 );
-         }
+        if( info > 0 ) {
+            printf( "The algorithm computing SYEV failed to converge.\n" );
+            exit( 1 );
+        }
     
-         models::disperse(ad, a);
-         models::disperse(wd, w);
-         free(work); 
+        models::disperse(ad, a);
+        if(get_grid_dim(a) != 1) 
+            models::disperse(wd, w);
+        free(work); 
     }
 
     template<typename T>
@@ -911,9 +946,10 @@ namespace ambient {
     
         double wkopt;
         double* work;
-        double* ad = (double*)models::solidify(a);
-        double* wd = (double*)models::solidify(w);
         int am = (int)m; // for mkl (int*)
+
+        double* ad = (double*)models::solidify(a);
+        double* wd = get_grid_dim(a) == 1 ? updated(w)(0,0) : (double*)models::solidify(w);
     
         dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
         lwork = (int)wkopt;
@@ -943,7 +979,8 @@ namespace ambient {
         delete[] tempcol; 
      
         models::disperse(ad, a);
-        models::disperse(wd, w);
+        if(get_grid_dim(a) != 1) 
+            models::disperse(wd, w);
         free(work);
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         time.end();
