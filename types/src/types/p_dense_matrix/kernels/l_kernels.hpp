@@ -27,13 +27,13 @@ namespace ambient {
     template<typename T> 
     inline void credentials(T& obj){
         if(rank.is_master(ctxt.get_group())){
-            models::imodel::object& p = current(obj);
+            models::v_model::object& p = current(obj);
             printf("M%d:%d / %d x %d groups (each %d x %d items of %d x %d els)\n", 
                    *p.group_id, p.id, p.get_grid_dim().y, p.get_grid_dim().x, p.get_mem_dim().y, p.get_mem_dim().x, p.get_item_dim().x, p.get_item_dim().y);
         }
     }
 
-    template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
+    /*template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
     inline void block_2d_cycle(T& target){
     ///////////////////////////////////////////// 2D-block-cyclic decomposition
         int np = ctxt.np = 1; // can be a function arg   // process grid's num of rows 
@@ -48,8 +48,20 @@ namespace ambient {
                 ASSIGN(target, i, j);
             }
         }
+    }*/
+
+    template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
+    inline void block_2d_cycle(T& target){ // serial
+        size_t sizey = get_grid_dim(target).y;
+        size_t sizex = get_grid_dim(target).x;
+        for(int i = 0; i < sizey; i ++){
+            for(int j = 0; j < sizex; j ++){
+                ASSIGN(target, i, j);
+            }
+        }
     }
 
+    /* for strassen multiplication */
     template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
     inline void block_2d_cycle(T& target, size_t ti, size_t tj, size_t tn){
     ///////////////////////////////////////////// 2D-block-cyclic decomposition
@@ -85,6 +97,7 @@ namespace ambient {
         }
     }*/
 
+    /* used only for transpose inplace */
     template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
     inline void block_2d_cycle_transposed(T& target){
     ///////////////////////////////////////////// 2D-block-cyclic decomposition
@@ -118,7 +131,7 @@ namespace ambient {
     template<typename T>
     void copy_l(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
         ctxt_select("1 from ambient as copy where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<assign>(ac);
         block_2d_cycle<pin>(a);
@@ -127,7 +140,7 @@ namespace ambient {
     template<typename T>
     void push_back_sqr_gt_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
         ctxt_select("* from ambient as push_back_sqr_gt where master is 0");
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_outright<pin>(a);
     }
@@ -135,7 +148,7 @@ namespace ambient {
     template<typename T>
     void cast_to_dense_l(std::vector<T>*& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
         ctxt_select("* from ambient as cast_to_dense where master is 0");
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_outright<pin>(a); //because the dense matrix must be known by every procs
     } 
@@ -143,7 +156,7 @@ namespace ambient {
     template<typename T>
     void cast_to_p_dense_l(const std::vector<T>*& ac, pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
         ctxt_select("1 from ambient as cast_to_p_dense where master is 0");
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     } 
@@ -151,7 +164,7 @@ namespace ambient {
     template<typename T>
     void resize_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
         ctxt_select("1 from ambient as resize where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -159,7 +172,7 @@ namespace ambient {
     template<typename T>
     void remove_rows_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
         ctxt_select("1 from ambient as remove_rows where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -167,7 +180,7 @@ namespace ambient {
     template<typename T>
     void remove_cols_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
         ctxt_select("1 from ambient as remove_cols where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -175,7 +188,7 @@ namespace ambient {
     template<typename T>
     void sqrt_diagonal_l(pinned maquis::types::p_dense_matrix_impl<T>& a){
         ctxt_select("1 from ambient as sqrt_diagonal where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -183,7 +196,7 @@ namespace ambient {
     template<typename T>
     void exp_diagonal_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
         ctxt_select("1 from ambient as exp_diagonal where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -191,7 +204,7 @@ namespace ambient {
     template<typename T>
     void exp_diagonal_rc_l(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, pinned const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
         ctxt_select("1 from ambient as exp_diagonal where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(e);
         block_2d_cycle<assign>(a);
@@ -200,7 +213,7 @@ namespace ambient {
     template<typename T>
     void gemm_inplace_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
         ctxt_select("1 from ambient as gemm where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b);
@@ -209,7 +222,7 @@ namespace ambient {
     template<typename T>
     void gemm_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
         ctxt_select("1 from ambient as gemm where master is 0 and breakdown contains "+id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b);
@@ -219,7 +232,7 @@ namespace ambient {
     template<typename T>
     void scalar_norm_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
         ctxt_select("* from ambient as scalar_norm where master is 0");
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_outright<pin>(a);
     }
@@ -227,7 +240,7 @@ namespace ambient {
     template<typename T>
     void scalar_overlap_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
         ctxt_select("* from ambient as scalar_overlap where master is 0");
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_outright<pin>(a);
         block_outright<assign>(b);
@@ -236,7 +249,7 @@ namespace ambient {
     template<typename T>
     void mem_bound_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
         ctxt_select(1 +" from ambient as mem_bound where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b);
@@ -245,7 +258,7 @@ namespace ambient {
     template<typename T>
     void scale_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const double*& t){
         ctxt_select(1 +" from ambient as scale where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -253,7 +266,7 @@ namespace ambient {
     template<typename T>
     void svd_l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s){
         ctxt_select("1 from ambient as svd where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_outright<assign>(s);
         block_2d_cycle<assign>(a);
@@ -264,7 +277,7 @@ namespace ambient {
     template<typename T>
     void syev_l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
         ctxt_select("1 from ambient as syev where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<assign>(a);
         block_2d_cycle<assign>(w);
@@ -273,7 +286,7 @@ namespace ambient {
     template<typename T>
     void heev_l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<T>& w){
         ctxt_select("1 from ambient as heev where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<assign>(a);
         block_2d_cycle<assign>(w); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
@@ -283,7 +296,7 @@ namespace ambient {
     void gemm_diagonal_lhs_l(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c, 
             const size_t& m, const size_t& n, const size_t& k){
         ctxt_select("1 from ambient as gemm_diagonal_lhs where master is 0 and breakdown contains "+ id(b));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<assign>(a_diag);
         block_2d_cycle<pin>(b);
@@ -294,7 +307,7 @@ namespace ambient {
     void gemm_diagonal_rhs_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
             const size_t& m, const size_t& n, const size_t& k){
         ctxt_select("1 from ambient as gemm_diagonal_rhs where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
         block_2d_cycle<assign>(b_diag);
@@ -304,7 +317,7 @@ namespace ambient {
     template<typename T>
     void trace_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
         ctxt_select("* from ambient as trace where master is 0");
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a); // in a nutshell we need only diagonal 
                                 // but we have to track the diagonal separately afterward
@@ -314,7 +327,7 @@ namespace ambient {
     template<typename T>
     void transpose_l(pinned maquis::types::p_dense_matrix_impl<T>& m){
         ctxt_select("1 from ambient as transpose_l where master is 0 and breakdown contains "+ id(m));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle_transposed<pin>(m);
     }
@@ -322,7 +335,7 @@ namespace ambient {
     template<typename T>
     void transpose_out_l(pinned const maquis::types::p_dense_matrix_impl<T>& m, maquis::types::p_dense_matrix_impl<T>& t){
         ctxt_select("1 from ambient as transpose_out_l where master is 0 and breakdown contains "+ id(m));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(m);
         block_2d_cycle<assign>(t);
@@ -331,7 +344,7 @@ namespace ambient {
     template<typename T>
     void validation_l(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){ // ret -> boolean 
         ctxt_select("1 from ambient as validation where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a); 
         block_2d_cycle<assign>(b); 
@@ -343,7 +356,7 @@ namespace ambient {
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     {
         ctxt_select("1 from ambient as reshape_l2r where master is 0 and breakdown contains "+ id(right));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<assign>(left); 
         block_2d_cycle<pin>(right); 
@@ -355,7 +368,7 @@ namespace ambient {
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     {
         ctxt_select("1 from ambient as reshape_l2r where master is 0 and breakdown contains "+ id(left));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(left); 
         block_2d_cycle<assign>(right); 
@@ -367,7 +380,7 @@ namespace ambient {
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
     {
         ctxt_select("1 from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ id(out));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(out); 
         block_2d_cycle<assign>(in); 
@@ -380,7 +393,7 @@ namespace ambient {
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
     {
         ctxt_select("1 from ambient as rb_tensor_mpo where master is 0 and breakdown contains "+ id(out));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(out); 
         block_2d_cycle<assign>(in); 
@@ -390,7 +403,7 @@ namespace ambient {
     template<typename T>
     void init_value_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
         ctxt_select(1 +" from ambient as init_value where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -398,7 +411,7 @@ namespace ambient {
     template<typename T>
     void init_random_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
         ctxt_select(1 +" from ambient as init_random where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
@@ -406,7 +419,7 @@ namespace ambient {
     template<typename T>
     void init_identity_l(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
         ctxt_select(1 +" from ambient as init_identity where master is 0 and breakdown contains "+ id(a));
-        if(!ctxt.involved()) return;
+        //if(!ctxt.involved()) return;
 
         block_2d_cycle<pin>(a);
     }
