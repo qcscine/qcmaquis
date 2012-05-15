@@ -93,6 +93,7 @@ namespace ambient { namespace models {
         class modifier {
         protected:
             public:
+            virtual ~modifier(){};
             virtual void invoke() = 0;
             virtual void weight() = 0;
             virtual size_t get_weight() = 0;

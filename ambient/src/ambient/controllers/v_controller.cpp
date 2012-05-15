@@ -229,6 +229,8 @@ namespace ambient { namespace controllers {
         this->master_stream(this->tasks);  // using up the main thread
         //time.end();
         ctxt.state = context::MARKUP;
+        while(!this->stack.end_reached())
+            delete this->stack.pick();     // deleting operations
         this->stack.clean();               // reseting the stack
     }
     
