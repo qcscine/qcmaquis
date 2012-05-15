@@ -21,8 +21,8 @@
 namespace ambient {
     channels::multirank& rank = channels::multirank::instance();
     models::v_model& model = models::v_model::instance();
-    channels::ichannel& channel = channels::mpi_channel::instance();
-    controllers::icontroller& controller = controllers::v_controller::instance();
+    channels::mpi_channel& channel = channels::mpi_channel::instance();
+    controllers::v_controller& controller = controllers::v_controller::instance();
     controllers::context& ctxt = controllers::context::instance();
     io cout;
     io cerr;
@@ -127,7 +127,7 @@ namespace ambient { namespace controllers {
         }
     }
 
-    void v_controller::acquire(channels::ichannel* channel){
+    void v_controller::acquire(channels::mpi_channel* channel){
         this->channel = channel;
         this->channel->init();
     }
@@ -230,14 +230,14 @@ namespace ambient { namespace controllers {
         this->stack.clean();               // reseting the stack
     }
     
-    channels::ichannel::packet* package(models::v_model::revision& r, const char* state, int i, int j, int dest){
+    channels::packet* package(models::v_model::revision& r, const char* state, int i, int j, int dest){
         void* header = r.block(i,j)->get_memory();
-        channels::ichannel::packet* package = channels::pack(channel.get_block_packet_type(r.get_layout().get_mem_size()), 
+        channels::packet* package = channels::pack(channel.get_block_packet_type(r.get_layout().get_mem_size()), 
                                                              header, dest, "P2P", r.id().first, r.id().second, state, i, j, NULL);
         return package;
     }
 
-    void forward_block(channels::ichannel::packet& cmd){
+    void forward_block(channels::packet& cmd){
         channels::packet& c = static_cast<channels::packet&>(cmd);
         models::v_model::revision& r = *ambient::model.get_revision((size_t*)c.get(A_LAYOUT_P_GID_FIELD), 1, c.get<size_t>(A_LAYOUT_P_SID_FIELD));
         if(c.get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM OWNER ACTION
@@ -254,7 +254,7 @@ namespace ambient { namespace controllers {
         }
     }
 
-    void accept_block(channels::ichannel::packet& cmd){
+    void accept_block(channels::packet& cmd){
         channels::packet& c = static_cast<channels::packet&>(cmd);
         size_t i = c.get<int>(A_BLOCK_P_I_FIELD);
         size_t j = c.get<int>(A_BLOCK_P_J_FIELD);

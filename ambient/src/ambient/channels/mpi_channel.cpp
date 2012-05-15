@@ -1,7 +1,7 @@
 #include "ambient/ambient.h"
 #include "ambient/channels/mpi_channel.h"
 #include "ambient/channels/packets/auxiliary.hpp"
-#include "ambient/controllers/icontroller.h"
+#include "ambient/controllers/v_controller.h"
 #include "ambient/utils/timings.h"
 
 #define AMBIENT_MASTER_RANK 0
@@ -75,7 +75,7 @@ namespace ambient { namespace channels {
         return (size_t)size;
     }
 
-    void mpi_channel::add_handler(const packet_t& type, void(*callback)(channels::ichannel::packet&)){
+    void mpi_channel::add_handler(const packet_t& type, void(*callback)(channels::packet&)){
         this->get_pipe(type, pipe::IN)->packet_delivered += callback;
     }
 
@@ -93,7 +93,7 @@ namespace ambient { namespace channels {
         return this->qs.back();
     }
 
-    void mpi_channel::emit(channels::ichannel::packet* p){
+    void mpi_channel::emit(channels::packet* p){
         channels::packet* pk = static_cast<channels::packet*>(p);
         if(pk->get<int>(A_DEST_FIELD) == ambient::rank()){
             this->get_pipe(pk->get_t(), pipe::IN)->packet_delivered(p);
