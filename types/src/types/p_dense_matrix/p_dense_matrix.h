@@ -24,6 +24,7 @@ namespace maquis { namespace types {
         typedef typename I::size_type size_type; 
         typedef typename I::difference_type difference_type;
         // {{{ p_dense_matrix_impl forwarding
+
         inline p_dense_matrix(){ 
             this->impl = new I(); 
         }
