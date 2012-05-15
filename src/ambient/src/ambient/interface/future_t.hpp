@@ -46,11 +46,11 @@ namespace ambient {
             return *this->value;
         }
 
-        T*& unfold(){
+        inline T*& unfold(){
             return (T*&)this->naked;
         }
 
-        const T*& unfold() const {
+        inline const T*& unfold() const {
             return (const T*&)this->naked;
         }
     private:
@@ -60,12 +60,12 @@ namespace ambient {
     };
 
     template<typename T1, typename T2>
-    const T2 operator / (T1 lhs, future<T2> rhs){ 
+    inline const T2 operator / (T1 lhs, future<T2> rhs){ 
         return (lhs / (T2)rhs); 
     }
 
     template<typename T>
-    const future<T> operator + (future<T> lhs, future<T> rhs){ 
+    inline const future<T> operator + (future<T> lhs, future<T> rhs){ 
         return future<T>((T)lhs + (T)rhs); // explicit
     }
 
