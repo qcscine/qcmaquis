@@ -1,7 +1,7 @@
 #ifndef AMBIENT_MODELS_V_MODEL_H
 #define AMBIENT_MODELS_V_MODEL_H
 #include "ambient/ambient.h"
-#include "ambient/models/imodel.h"
+#include "ambient/models/v_model.h"
 #include "ambient/utils/singleton.hpp"
 #include "ambient/utils/hashmap.h"
 #include "ambient/utils/dim2.h"
@@ -12,14 +12,16 @@ namespace ambient { namespace models {
 // object revision ready
 // (to controller)
 
-    class v_model : public imodel, public singleton< v_model > {
+    class v_model : public singleton< v_model > {
     public:
         // {{{ layout memory-specific model
         class revision;
+        class object;
         class reduction;
-        class layout : public imodel::layout {
+        class modifier;
+        class layout {
         public:
-            class entry : public imodel::layout::entry {
+            class entry {
             public:
                 entry();
                 entry(void*, size_t);
@@ -32,7 +34,7 @@ namespace ambient { namespace models {
                 bool requested();
                 bool trylock();
                 void unlock();
-                std::list<models::imodel::modifier*>& get_assignments();
+                std::list<models::v_model::modifier*>& get_assignments();
                 std::list<size_t>& get_path();
                 void* header;
                 void* data;
@@ -58,7 +60,7 @@ namespace ambient { namespace models {
             void embed(void* memory, size_t i, size_t j, size_t bound); // fires controllers::unlock_revision if complete
             entry* get(size_t i, size_t j);
             void mesh();
-            void set_revision(imodel::revision* r);
+            void set_revision(v_model::revision* r);
             std::pair<size_t*,size_t> id();
             size_t get_master();
             size_t get_mem_size() const;
@@ -87,65 +89,74 @@ namespace ambient { namespace models {
         }; 
         // }}}
         // {{{ revision property (modifier)
-        class modifier : public imodel::modifier {
+        class modifier {
         protected:
-            modifier();
-            size_t locks;
-            size_t workload;
+            public:
+            virtual void invoke() = 0;
+            virtual void weight() = 0;
+            virtual size_t get_weight() = 0;
+            virtual void set_weight(size_t) = 0;
+            virtual void set_group(channels::group* grp) = 0;
+            virtual channels::group* get_group() = 0;
+            virtual void set_vellum(revision&) = 0;
+            virtual revision& get_vellum() = 0;
+            virtual revision* get_pin() = 0;
+            virtual bool pretend() = 0;
+            virtual void add_condition() = 0;
         };
         // }}}
         // {{{ revisioned object impl-specific model
-        class revision : public imodel::revision
+        class revision
         {
         public:
             typedef void(*voidfp)();
-            revision(imodel::object*, imodel::layout*);
+            revision(v_model::object*, v_model::layout*);
            ~revision();
-            imodel::layout::entry* block(size_t i, size_t j = 0);
-            imodel::layout::entry& operator()(size_t i, size_t j);
-            void add_modifier(imodel::modifier* m);
-            std::list<imodel::modifier*>& get_modifiers();
+            v_model::layout::entry* block(size_t i, size_t j = 0);
+            v_model::layout::entry& operator()(size_t i, size_t j);
+            void add_modifier(v_model::modifier* m);
+            std::list<v_model::modifier*>& get_modifiers();
             std::pair<size_t*,size_t> id();
-            imodel::object& get_object();
-            imodel::layout& get_layout();
+            v_model::object& get_object();
+            v_model::layout& get_layout();
             channels::group* get_placement();
             void set_placement(channels::group*);
-            imodel::reduction* get_reduction();
+            v_model::reduction* get_reduction();
             void set_reduction();
-            imodel::modifier* get_generator();
-            void set_generator(imodel::modifier*);
+            v_model::modifier* get_generator();
+            void set_generator(v_model::modifier*);
             void set_dim(dim2);
             dim2 get_dim();
             size_t number;
-            imodel::object* const object;
-            imodel::layout* const layout;
+            v_model::object* const object;
+            v_model::layout* const layout;
             channels::group* placement;
-            imodel::modifier* generator;
-            imodel::reduction* reduction;
-            std::list<imodel::modifier*> modifiers;
+            v_model::modifier* generator;
+            v_model::reduction* reduction;
+            std::list<v_model::modifier*> modifiers;
         };
-        class reduction : public imodel::reduction
+        class reduction
         {
         public:
             class reductionq {
             public:
                 reductionq();
-                void push(imodel::layout::entry*);
+                void push(v_model::layout::entry*);
             };
-            reduction(imodel::revision*);
+            reduction(v_model::revision*);
            ~reduction();
-            imodel::layout::entry* block(size_t i, size_t j);
-            imodel::layout::entry& operator()(size_t i, size_t j);
+            v_model::layout::entry* block(size_t i, size_t j);
+            v_model::layout::entry& operator()(size_t i, size_t j);
             std::vector< std::vector<reductionq*> > entries;
-            imodel::revision* revision;
+            v_model::revision* revision;
         };
-        class object : public imodel::object
+        class object 
         {            // revision tracking mechanism (target selector)
         protected:
             object();
         public:
            ~object();
-            void add_revision(imodel::layout* l);
+            void add_revision(v_model::layout* l);
             v_model::revision& revision(size_t offset) const;
             dim2 get_dim() const;
             void set_dim(dim2);
@@ -163,8 +174,8 @@ namespace ambient { namespace models {
         // }}}
     public: 
         v_model();
-        void add_revision(imodel::object* obj);
-        void update_revision(imodel::revision* r, channels::group* placement);
+        void add_revision(v_model::object* obj);
+        void update_revision(v_model::revision* r, channels::group* placement);
         v_model::revision* get_revision(size_t* hash, size_t hash_len, size_t id) const;
         v_model& operator>>(dim2);
         v_model& operator, (dim2);
@@ -176,9 +187,13 @@ namespace ambient { namespace models {
     };
 
     // free functions for mangling the data {{{ 
-    void* solidify(const imodel::object& o);
-    void  disperse(void* data, imodel::object& o);
+    void* solidify(const v_model::object& o);
+    void  disperse(void* data, v_model::object& o);
     // }}}
 } }
+
+namespace ambient {
+    extern models::v_model& model;
+}
 
 #endif

@@ -9,7 +9,7 @@ namespace ambient { namespace models {
         memset((double*)a.revision(0)(idx.y,idx.x), 0, dim.y*dim.x*a.get_t_size());
     }
 
-    v_model::revision::revision(imodel::object* o, imodel::layout* l)
+    v_model::revision::revision(v_model::object* o, v_model::layout* l)
     : object(o), layout(l), reduction(NULL), placement(NULL), generator(NULL)
     {
         this->number = o->get_revision_base(); // debug
@@ -32,27 +32,27 @@ namespace ambient { namespace models {
         return this->layout->id();
     }
 
-    imodel::object& v_model::revision::get_object(){
+    v_model::object& v_model::revision::get_object(){
         return *this->object;
     }
 
-    imodel::layout& v_model::revision::get_layout(){
+    v_model::layout& v_model::revision::get_layout(){
         return *this->layout;
     }
 
-    imodel::layout::entry* v_model::revision::block(size_t i, size_t j){
+    v_model::layout::entry* v_model::revision::block(size_t i, size_t j){
         return this->layout->get(i, j);
     }
 
-    imodel::layout::entry& v_model::revision::operator()(size_t i, size_t j){
+    v_model::layout::entry& v_model::revision::operator()(size_t i, size_t j){
         return controller.ufetch_block(*this, i, j);
     }
 
-    void v_model::revision::add_modifier(models::imodel::modifier* m){
+    void v_model::revision::add_modifier(models::v_model::modifier* m){
         this->modifiers.push_back(m);
     }
 
-    std::list<imodel::modifier*>& v_model::revision::get_modifiers(){
+    std::list<v_model::modifier*>& v_model::revision::get_modifiers(){
         return this->modifiers;
     }
 
@@ -64,15 +64,15 @@ namespace ambient { namespace models {
         this->placement = grp;
     }
 
-    void v_model::revision::set_generator(imodel::modifier* m){
+    void v_model::revision::set_generator(v_model::modifier* m){
         this->generator = m;
     }
 
-    imodel::modifier* v_model::revision::get_generator(){
+    v_model::modifier* v_model::revision::get_generator(){
         return this->generator;
     }
 
-    imodel::reduction* v_model::revision::get_reduction(){
+    v_model::reduction* v_model::revision::get_reduction(){
          return this->reduction;
     }
 

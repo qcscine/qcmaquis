@@ -21,7 +21,7 @@ namespace ambient { namespace models {
         return *this->revisions[ctxt.get_revision_base(this) + offset];
     }
 
-    void v_model::object::add_revision(imodel::layout* l){
+    void v_model::object::add_revision(v_model::layout* l){
         if(this->revisions.size() == 0) l->mark(0, 0);
         this->set_revision_base(this->revisions.size());
         this->revisions.push_back(new v_model::revision(this, l));

@@ -34,12 +34,12 @@ namespace ambient { namespace controllers {
         *(dim2*)id = value;
     }
 
-    size_t context::get_revision_base(const models::imodel::object* o){
+    size_t context::get_revision_base(const models::v_model::object* o){
         if(this->state == MARKUP) return o->get_revision_base();
         return o->get_thread_revision_base();
     }
 
-    void context::set_revision_base(models::imodel::object* o, size_t base){
+    void context::set_revision_base(models::v_model::object* o, size_t base){
         if(this->state == MARKUP) o->set_revision_base(base);
         else o->set_thread_revision_base(base);
     }

@@ -50,19 +50,19 @@ namespace ambient{
 
     // {{{ aliases for use inside kernels
     template <typename T>
-    inline models::imodel::revision& current(T& obj){
-        return ((models::imodel::object*)&obj)->revision(0);
+    inline models::v_model::revision& current(T& obj){
+        return ((models::v_model::object*)&obj)->revision(0);
     }
     template <typename T>
-    inline models::imodel::revision& updated(T& obj){
-        return ((models::imodel::object*)&obj)->revision(1);
+    inline models::v_model::revision& updated(T& obj){
+        return ((models::v_model::object*)&obj)->revision(1);
     }
 //    template <typename T>
-//    models::imodel::revision& future(T& obj, int n = 2){
-//        return ((models::imodel::object*)&obj)->revision(n);
+//    models::v_model::revision& future(T& obj, int n = 2){
+//        return ((models::v_model::object*)&obj)->revision(n);
 //    }
     template <char R, typename T>
-    inline models::imodel::reduction& reduced(T& obj){
+    inline models::v_model::reduction& reduced(T& obj){
         if(updated(obj).get_reduction() == NULL){
             if(R == '+') updated(obj).set_reduction();
         }

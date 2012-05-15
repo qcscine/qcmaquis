@@ -17,13 +17,13 @@ namespace ambient { namespace controllers {
         inline context& operator()(const int rank){ return *this; } // ??
         void set_group(channels::group* grp);
         inline channels::group* get_group(){ return this->grp; }
-        inline void set_op(models::imodel::modifier* op){ this->op = op; }
-        inline models::imodel::modifier* get_op(){ return this->op; }
-        size_t get_revision_base(const models::imodel::object*);
-        void set_revision_base(models::imodel::object*, size_t);
+        inline void set_op(models::v_model::modifier* op){ this->op = op; }
+        inline models::v_model::modifier* get_op(){ return this->op; }
+        size_t get_revision_base(const models::v_model::object*);
+        void set_revision_base(models::v_model::object*, size_t);
     private:
         channels::group* grp;
-        models::imodel::modifier* op;
+        models::v_model::modifier* op;
 // proxy functionality //
 // group class method duplicates
     public:
