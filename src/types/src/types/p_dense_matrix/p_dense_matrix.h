@@ -24,49 +24,49 @@ namespace maquis { namespace types {
         typedef typename I::size_type size_type; 
         typedef typename I::difference_type difference_type;
         // {{{ p_dense_matrix_impl forwarding
-        p_dense_matrix(){ 
+        inline p_dense_matrix(){ 
             this->impl = new I(); 
         }
 
-        p_dense_matrix(size_type rows, size_type cols = 0, value_type init_value = value_type()){
+        inline p_dense_matrix(size_type rows, size_type cols = 0, value_type init_value = value_type()){
             this->impl = new I(rows, cols, init_value); 
         }
 
-        p_dense_matrix(p_dense_matrix const& m){
+        inline p_dense_matrix(p_dense_matrix const& m){
             this->impl = new I(*m.impl);
         }
 
-        static p_dense_matrix<T> identity_matrix(size_type size){
+        static inline p_dense_matrix<T> identity_matrix(size_type size){
             p_dense_matrix<T> m(size, size);
             m.fill_identity();
             return m;
         }
 
-        value_type& get(size_type i, size_type j) const {
+        inline value_type& get(size_type i, size_type j) const {
             return this->impl->get(i,j);
         }
 
-        scalar_type trace() const {
+        inline scalar_type trace() const {
             return this->impl->trace();
         }
 
-        void fill_identity(){
+        inline void fill_identity(){
             this->impl->fill_identity();
         }
 
-        void fill_value(value_type v){
+        inline void fill_value(value_type v){
             this->impl->fill_value(v);
         }
 
-        void fill_random(){
+        inline void fill_random(){
             this->impl->fill_random();
         }
 
-        void conjugate(){
+        inline void conjugate(){
             this->impl->conjugate();
         }
 
-        void transpose(){
+        inline void transpose(){
             this->impl->transpose();
         }
 
@@ -82,15 +82,15 @@ namespace maquis { namespace types {
             return this->impl->num_cols();
         }
 
-        void resize(size_type rows, size_type cols){
+        inline void resize(size_type rows, size_type cols){
             this->impl->resize(rows, cols); 
         }
 
-        void remove_rows(size_type i, size_type k){
+        inline void remove_rows(size_type i, size_type k){
             this->impl->remove_rows(i, k);
         }
 
-        void remove_cols(size_type j, size_type k){
+        inline void remove_cols(size_type j, size_type k){
             this->impl->remove_cols(j, k); 
         }
 
@@ -102,44 +102,44 @@ namespace maquis { namespace types {
             return this->impl->get(i,j);
         }
 
-        p_dense_matrix& operator = (const p_dense_matrix& rhs){
+        inline p_dense_matrix& operator = (const p_dense_matrix& rhs){
             this->impl->cpy(*rhs.impl);
             return *this;
         }
 
-        p_dense_matrix& operator += (const p_dense_matrix& rhs){
+        inline p_dense_matrix& operator += (const p_dense_matrix& rhs){
             this->impl->add(*rhs.impl);
             return *this;
         }
 
-        p_dense_matrix& operator -= (const p_dense_matrix& rhs){
+        inline p_dense_matrix& operator -= (const p_dense_matrix& rhs){
             this->impl->sub(*rhs.impl);
             return *this;
         }
 
-        p_dense_matrix& operator *= (const p_dense_matrix& rhs){
+        inline p_dense_matrix& operator *= (const p_dense_matrix& rhs){
             this->impl->mul(*rhs.impl);
             return *this;
         }
 
-        p_dense_matrix& operator *= (const p_diagonal_matrix<T>& rhs){
+        inline p_dense_matrix& operator *= (const p_diagonal_matrix<T>& rhs){
             this->impl->mul(rhs);
             return *this;
         }
 
-        template <typename T2> p_dense_matrix& operator *= (const T2& t){
+        template <typename T2> inline p_dense_matrix& operator *= (const T2& t){
             this->impl->mul(t);
             return *this;
         }
 
-        template <typename T2> p_dense_matrix& operator /= (const T2& t){
+        template <typename T2> inline p_dense_matrix& operator /= (const T2& t){
             this->impl->mul(1/t);
             return *this;
         }
 
 #ifdef HAVE_ALPS_HDF5
-        void load(alps::hdf5::archive & ar) { /*maquis::cerr << "I don't do much." << std::endl;*/ }
-        void save(alps::hdf5::archive & ar) const { /*maquis::cerr << "I don't do much either." << std::endl;*/ }
+        inline void load(alps::hdf5::archive & ar) { /*maquis::cerr << "I don't do much." << std::endl;*/ }
+        inline void save(alps::hdf5::archive & ar) const { /*maquis::cerr << "I don't do much either." << std::endl;*/ }
 #endif
         // }}}
     public:
