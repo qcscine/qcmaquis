@@ -73,7 +73,6 @@ namespace ambient { namespace models {
             dim2   get_mem_dim() const;
             dim2   get_item_dim() const;
             dim2   get_grid_dim() const;
-            dim2   get_mem_grid_dim() const;
             dim2   mem_dim;                 // size of distribution blocks
             dim2   item_dim;                // size of work-item inside workgroup
             dim2   mesh_dim;                // size of the grid (reserved) 

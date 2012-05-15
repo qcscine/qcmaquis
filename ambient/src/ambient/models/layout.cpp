@@ -41,14 +41,14 @@ namespace ambient { namespace models {
 
     v_model::layout::entry* v_model::layout::get(size_t i, size_t j){
 #ifdef LAYOUT_ACCESS_CHECK
-        if(i >= this->get_mem_grid_dim().y || j >= this->get_mem_grid_dim().x)
-        printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, i, j, this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
+        if(i >= this->get_grid_dim().y || j >= this->get_grid_dim().x)
+        printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, i, j, this->get_grid_dim().y, this->get_grid_dim().x);
 #endif
         return this->entries[i][j];
     }
 
     void v_model::layout::mesh(){
-        dim2 dim = this->get_mem_grid_dim();
+        dim2 dim = this->get_grid_dim();
         if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
 
         for(size_t i = this->mesh_dim.y; i < dim.y; i++)
@@ -103,9 +103,9 @@ namespace ambient { namespace models {
     }
 
     void v_model::layout::set_dim(dim2 dim){
-        if(this->get_mem_grid_dim().y < __a_ceil(dim.y / this->mem_dim.y) || 
-           this->get_mem_grid_dim().x < __a_ceil(dim.x / this->mem_dim.x)){
-            this->marker.mark(this->get_mem_grid_dim().y, this->get_mem_grid_dim().x);
+        if(this->get_grid_dim().y < __a_ceil(dim.y / this->mem_dim.y) || 
+           this->get_grid_dim().x < __a_ceil(dim.x / this->mem_dim.x)){
+            this->marker.mark(this->get_grid_dim().y, this->get_grid_dim().x);
         }
         this->dim = dim;
         this->mesh();
@@ -130,12 +130,6 @@ namespace ambient { namespace models {
     }
 
     dim2 v_model::layout::get_grid_dim() const {
-        size_t n = __a_ceil(this->dim.x / this->mem_dim.x);
-        size_t m = __a_ceil(this->dim.y / this->mem_dim.y);
-        return dim2(n, m);
-    }
-
-    dim2 v_model::layout::get_mem_grid_dim() const {
         size_t n = __a_ceil(this->dim.x / this->mem_dim.x);
         size_t m = __a_ceil(this->dim.y / this->mem_dim.y);
         return dim2(n, m);

@@ -14,7 +14,7 @@ namespace ambient { namespace models {
     v_model::reduction::reduction(imodel::revision* r)
     : revision(r)
     {
-        dim2 dim = this->revision->get_layout().get_mem_grid_dim();
+        dim2 dim = this->revision->get_layout().get_grid_dim();
         for(size_t i = 0; i < dim.y; i++){
             entries.push_back(std::vector<reductionq*>());
             for(size_t j = 0; j < dim.x; j++){

@@ -33,9 +33,6 @@ namespace ambient{
     inline dim2 get_grid_dim(T& ref);
 
     template<typename T>
-    inline dim2 get_mem_grid_dim(T& ref);
-
-    template<typename T>
     inline dim2 get_mem_dim(T& ref);
 
     template<typename T>
@@ -109,15 +106,6 @@ namespace ambient{
     template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline dim2 get_grid_dim(T& ref){
         return STATE(ref).get_layout().get_grid_dim();
-    }
-
-    template<typename T>
-    inline dim2 get_mem_grid_dim(T& ref){
-        return current(ref).get_layout().get_mem_grid_dim();
-    }
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
-    inline dim2 get_mem_grid_dim(T& ref){
-        return STATE(ref).get_layout().get_mem_grid_dim();
     }
 
     template<typename T>
