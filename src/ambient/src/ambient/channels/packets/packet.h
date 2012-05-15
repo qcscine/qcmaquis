@@ -1,12 +1,11 @@
 #ifndef AMBIENT_CHANNELS_PACKETS
 #define AMBIENT_CHANNELS_PACKETS
 #include <mpi.h>
-#include "ambient/channels/ichannel.h"
 #include "ambient/channels/packets/packet_t.h"
 
 namespace ambient { namespace channels {
 
-    class packet : public ichannel::packet
+    class packet
     {
     public:
         void* data;

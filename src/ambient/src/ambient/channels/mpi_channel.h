@@ -1,7 +1,6 @@
 #ifndef AMBIENT_CHANNELS_MPI_CHANNEL
 #define AMBIENT_CHANNELS_MPI_CHANNEL
 #include "ambient/ambient.h"
-#include "ambient/channels/ichannel.h"
 #include "ambient/channels/packets/types.h"
 #include "ambient/channels/packets/packet.h"
 #include "ambient/channels/groups/group.h"
@@ -11,7 +10,7 @@
 
 namespace ambient { namespace channels {
 
-    class mpi_channel : public ichannel, public singleton< mpi_channel > 
+    class mpi_channel : public singleton< mpi_channel > 
     {
         class pipe {
             class request {
@@ -50,9 +49,9 @@ namespace ambient { namespace channels {
         channels::packet_t& get_block_packet_type(size_t len);
         pipe* add_pipe(const channels::packet_t& type, pipe::direction flow);
         pipe* get_pipe(const channels::packet_t& type, pipe::direction flow);
-        void  add_handler(const channels::packet_t& type, void(*callback)(channels::ichannel::packet&));
+        void  add_handler(const channels::packet_t& type, void(*callback)(channels::packet&));
         size_t get_volume() const;
-        void  emit(channels::ichannel::packet* pack);
+        void  emit(channels::packet* pack);
         void  spin();
        ~mpi_channel();
 
@@ -64,5 +63,9 @@ namespace ambient { namespace channels {
     };
 
 } }
+
+namespace ambient {
+    extern channels::mpi_channel& channel;
+}
 
 #endif

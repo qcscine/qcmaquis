@@ -9,10 +9,10 @@
 #include <stdlib.h>
 #include <string>
 #include <assert.h>
-#include "ambient/channels/ichannel.h"
+#include "ambient/channels/mpi_channel.h"
 #include "ambient/channels/groups/group.h"
 #include "ambient/channels/groups/multirank.h"
-#include "ambient/controllers/icontroller.h"
+#include "ambient/controllers/v_controller.h"
 #include "ambient/controllers/context.h"
 #include "ambient/models/operation/operation.h"
 #include "ambient/models/v_model.h"

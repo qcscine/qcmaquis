@@ -1,13 +1,14 @@
 #ifndef AMBIENT_CONTROLLERS_V_CONTROLLER
 #define AMBIENT_CONTROLLERS_V_CONTROLLER
-#include "ambient/controllers/icontroller.h"
+#include "ambient/models/v_model.h"
+#include "ambient/channels/mpi_channel.h"
 #include "ambient/utils/singleton.hpp"
 #include "ambient/utils/touchstack.h"
 #include "ambient/utils/tasklist.h"
 
 namespace ambient { namespace controllers {
 
-    class v_controller : public icontroller, public singleton< v_controller >
+    class v_controller : public singleton< v_controller >
     {
     public: 
         class mod {
@@ -19,7 +20,7 @@ namespace ambient { namespace controllers {
         v_controller();
         static void* stream(void* list);
         void   master_stream(void* list); // specialized version for the main thread
-        void   acquire(channels::ichannel* channel);
+        void   acquire(channels::mpi_channel* channel);
         void   push(models::v_model::modifier* op);
         void   execute_mod(models::v_model::modifier* op, dim2 pin);
         void   execute_free_mod(models::v_model::modifier* op);
@@ -45,7 +46,7 @@ namespace ambient { namespace controllers {
         pthread_mutex_t pool_control_mutex;
         pthread_mutex_t mutex;
         models::v_model* model;
-        channels::ichannel* channel;
+        channels::mpi_channel* channel;
         touchstack< models::v_model::modifier* > stack;
         pthread_mutex_t* mpool;
         pthread_t* pool;
@@ -54,7 +55,14 @@ namespace ambient { namespace controllers {
         size_t num_threads;
         size_t rrn;
     };
+    
+    void forward_block(channels::packet&);
+    void accept_block(channels::packet&);
 
 } }
+
+namespace ambient {
+    extern controllers::v_controller& controller;
+}
 
 #endif
