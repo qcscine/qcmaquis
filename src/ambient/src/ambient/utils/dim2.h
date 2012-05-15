@@ -39,8 +39,16 @@ namespace ambient{
             return (x == value && y == value);
         }
 
+        bool operator!=(int value) const {
+            return !(x == value && y == value);
+        }
+
         bool operator==(dim2 m) const {
             return (x == m.x && y == m.y);
+        }
+
+        bool operator!=(dim2 m) const {
+            return !(x == m.x && y == m.y);
         }
 
         bool operator<(dim2 m) const {
@@ -49,10 +57,6 @@ namespace ambient{
 
         bool operator<(size_t m) const {
             return (x < m && y < m);
-        }
-
-        bool operator!=(dim2 m) const {
-            return !(x == m.x && y == m.y);
         }
     };
 

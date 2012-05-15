@@ -50,7 +50,6 @@ namespace ambient { namespace models {
             virtual void set_dim(dim2) = 0;
             virtual dim2 get_dim() const = 0;
             virtual dim2 get_grid_dim() const = 0;
-            virtual dim2 get_mem_grid_dim() const = 0;
             virtual dim2 get_mem_dim() const = 0;
             virtual dim2 get_item_dim() const = 0;
             virtual void set_revision(revision* r) = 0;
