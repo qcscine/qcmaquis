@@ -47,6 +47,8 @@ namespace ambient { namespace controllers {
         }
         pthread_mutex_destroy(&this->mutex);
         pthread_mutex_destroy(&this->pool_control_mutex);
+        free(this->pool);
+        free(this->mpool);
     }
 
     v_controller::v_controller()

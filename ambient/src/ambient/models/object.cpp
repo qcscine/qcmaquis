@@ -12,6 +12,7 @@ namespace ambient { namespace models {
     v_model::object::~object(){
         for(size_t i=0; i < this->revisions.size(); i++)
             delete this->revisions[i];
+        free(this->thread_revision_base);
     }
 
     v_model::revision& v_model::object::revision(size_t offset) const {

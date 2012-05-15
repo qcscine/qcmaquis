@@ -155,6 +155,9 @@ namespace ambient { namespace models {
         pthread_mutex_unlock(controller.get_pool_control_mutex());
     }
 
+    v_model::layout::entry::~entry(){
+    }
+
     v_model::layout::entry::entry()
     : header(NULL), request(false), locked(false)
     {

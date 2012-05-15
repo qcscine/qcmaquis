@@ -24,6 +24,7 @@ namespace ambient { namespace models {
             class entry {
             public:
                 entry();
+               ~entry();
                 entry(void*, size_t);
                 operator char* ();
                 operator double* ();
