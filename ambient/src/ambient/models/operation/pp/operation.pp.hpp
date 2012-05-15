@@ -66,6 +66,7 @@ template < typename T0 > void prototype_template(void (*)( pinned T0& )){ info<T
 
 template< typename FP, typename T0 , typename T1 >
 operation( FP logistics, FP computing, T0 &arg0 , T1 &arg1 ){ // 1.3
+    //static __a_timer time("push_2_args"); time.begin();
     this->logistics_ptr = (void(*)())logistics;
     this->computing_ptr = (void(*)())computing;
     this->op = (void(*)())computing;
@@ -88,6 +89,7 @@ operation( FP logistics, FP computing, T0 &arg0 , T1 &arg1 ){ // 1.3
     ptr = &operation::place_template;                                this->place = (void(operation::*)())ptr;
 
     pthread_mutex_init(&this->mutex, NULL);
+    //time.end();
 }
 template < typename T0 , typename T1 >
 void prototype_template(void (*)( T0& , T1& )){

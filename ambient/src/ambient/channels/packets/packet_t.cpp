@@ -1,4 +1,5 @@
 #include "ambient/channels/packets/packet_t.h"
+#include "ambient/utils/timings.h"
 #include <stdarg.h>
 
 namespace ambient { namespace channels {

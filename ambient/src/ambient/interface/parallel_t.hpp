@@ -15,7 +15,7 @@ namespace ambient{
         friend void intrusive_ptr_release<>(T* p);
         long references;
 
-        parallel_t(){
+        inline parallel_t(){
             this->references = 0;
             this->t_size = sizeof(value_type);
         }
@@ -31,17 +31,17 @@ namespace ambient{
                           *(T*)this, *(const T*)&o);
         }
 
-        dim2 pt_mem_dim() const {
+        inline dim2 pt_mem_dim() const {
             return this->revision(0).get_layout().get_mem_dim();
         }
 
-        void pt_set_dim(size_t x, size_t y = 1){
+        inline void pt_set_dim(size_t x, size_t y = 1){
             this->set_dim(dim2(x, y));
         }
 
     public:
-        value_type& pt_fetch(size_t blocked_i, size_t blocked_j, 
-                             size_t element_i, size_t element_j){
+        inline value_type& pt_fetch(size_t blocked_i, size_t blocked_j, 
+                                    size_t element_i, size_t element_j){
             ambient::playout();
             return ((value_type*)ambient::controller.ufetch_block(this->revision(0), blocked_i, blocked_j))
                    [ element_j*this->pt_mem_dim().y+element_i ];
@@ -50,11 +50,11 @@ namespace ambient{
 
     // {{{ aliases for use inside kernels
     template <typename T>
-    models::imodel::revision& current(T& obj){
+    inline models::imodel::revision& current(T& obj){
         return ((models::imodel::object*)&obj)->revision(0);
     }
     template <typename T>
-    models::imodel::revision& updated(T& obj){
+    inline models::imodel::revision& updated(T& obj){
         return ((models::imodel::object*)&obj)->revision(1);
     }
 //    template <typename T>
@@ -62,7 +62,7 @@ namespace ambient{
 //        return ((models::imodel::object*)&obj)->revision(n);
 //    }
     template <char R, typename T>
-    models::imodel::reduction& reduced(T& obj){
+    inline models::imodel::reduction& reduced(T& obj){
         if(updated(obj).get_reduction() == NULL){
             if(R == '+') updated(obj).set_reduction();
         }

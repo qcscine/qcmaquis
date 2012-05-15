@@ -2,6 +2,7 @@
 #include "ambient/channels/mpi_channel.h"
 #include "ambient/channels/packets/auxiliary.hpp"
 #include "ambient/controllers/icontroller.h"
+#include "ambient/utils/timings.h"
 
 #define AMBIENT_MASTER_RANK 0
 #define RESERVATION 2
@@ -33,7 +34,7 @@ namespace ambient { namespace channels {
         this->add_handler( get_t<layout_packet_t>() , controllers::forward_block );
 
         this->active = true;
-        pthread_create(&this->thread, NULL, &mpi_channel::stream, this);
+        //pthread_create(&this->thread, NULL, &mpi_channel::stream, this);
     }
 
     std::pair<size_t*,size_t> mpi_channel::id(){
@@ -49,16 +50,16 @@ namespace ambient { namespace channels {
             pt = (*value).second;
         else{
             pt = new channels::block_packet_t(len);
-            pt->commit();
+            //pt->commit(); // serial
             map.insert(std::pair<size_t,channels::packet_t*>(len,pt));
-            this->add_handler(*pt, controllers::accept_block);
+            //this->add_handler(*pt, controllers::accept_block);
         }
         return *pt;
     }
 
     void mpi_channel::finalize(){
         this->active = false;
-        pthread_join(this->thread, NULL);
+        //pthread_join(this->thread, NULL);
         MPI_Finalize();
     }
 
