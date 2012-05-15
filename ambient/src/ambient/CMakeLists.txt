@@ -8,7 +8,6 @@ add_library (ambient
              models/revision.cpp
              models/reduction.cpp
              models/layout.cpp
-             models/modifier.cpp
              models/operation/operation.cpp
              models/operation/select.cpp
              controllers/v_controller.cpp
