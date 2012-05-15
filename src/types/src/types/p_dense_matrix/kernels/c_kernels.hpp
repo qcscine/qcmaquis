@@ -16,7 +16,7 @@ namespace ambient {
         return std::min(get_mem_dim(a).x, n-ctxt.get_block_id().x*get_mem_dim(a).x);
     }
 
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline size_t __a_get_limit_x(const T& a, size_t n = 0){
         if(n == 0) n = get_dim(a).x;
         return std::min(get_mem_dim<STATE>(a).x, n-ctxt.get_block_id().x*get_mem_dim<STATE>(a).x);
@@ -28,7 +28,7 @@ namespace ambient {
         return std::min(get_mem_dim(a).y, m-ctxt.get_block_id().y*get_mem_dim(a).y);
     }
 
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline size_t __a_get_limit_y(const T& a, size_t m = 0){
         if(m == 0) m = get_dim<STATE>(a).y;
         return std::min(get_mem_dim<STATE>(a).y, m-ctxt.get_block_id().y*get_mem_dim<STATE>(a).y);
