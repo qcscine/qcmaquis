@@ -236,14 +236,17 @@ namespace ambient {
 
     template<typename T>
     void gemm_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
-        // gs
+        // gs // 0.2
+        if(ctxt.get_block_id().x >= get_grid_dim(a).x || // early out (out of scope)
+           ctxt.get_block_id().y >= get_grid_dim(a).y) return;
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         static TimerPTH time("ambient_gemm_c_kernel"); time.begin();
 #endif
-        if(ctxt.get_block_id().x >= get_grid_dim(a).x || // early out (out of scope)
-           ctxt.get_block_id().y >= get_grid_dim(a).y) return;
         if(a.get_dim() == 1 && b.get_dim().x == 1){          // early out (a and b are scalars)
             (*(T*)updated(c)(0,0)) = (*(T*)current(a)(0,0))*(*(T*)current(b)(0,0));
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        time.end();
+#endif
             return;
         }else if(get_grid_dim(a) == 1 && get_grid_dim(b) == 1){
             T* bd = current(b)(0,0);
@@ -258,6 +261,9 @@ namespace ambient {
             T alpha(1.0); 
             T beta(1.0);
             gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        time.end();
+#endif
             return;
         }else if(get_mem_dim(a) != get_mem_dim(b) || get_mem_dim(a) != get_mem_dim(c)){
             T* ad = (T*)models::solidify(a);
@@ -273,6 +279,9 @@ namespace ambient {
             T beta(1.0);
             gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
             models::disperse(cd, c);
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        time.end();
+#endif
             return;
         }
         //  --- --- ---       --- --- ---       --- --- ---
@@ -327,13 +336,12 @@ namespace ambient {
 
     template<typename T>
     void copy_c(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
-        // gs
+        // gs // 0.65
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         static TimerPTH time("ambient_copy_c_kernel"); time.begin();
 #endif
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
-        if(i >= get_grid_dim(ac).y || j >= get_grid_dim(ac).x) return;
         T* a_elements  = current(a)(i,j);
         T* ac_elements = updated(ac)(i,j);
         memcpy(ac_elements, a_elements, sizeof(T)*get_mem_dim(a).y*get_mem_dim(a).x);
