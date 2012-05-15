@@ -157,27 +157,27 @@ namespace maquis { namespace types {
 
     // {{{ p_dense_matrix operators (free functions)
     template <typename T>
-    inline const p_dense_matrix<T>& operator + (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){
+    inline p_dense_matrix<T> operator + (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){
         return (lhs += rhs); 
     }
 
     template <typename T>
-    inline const p_dense_matrix<T>& operator - (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
+    inline p_dense_matrix<T> operator - (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
         return (lhs -= rhs); 
     }
 
     template<typename T>
-    inline const p_dense_matrix<T>& operator * (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
+    inline const p_dense_matrix<T> operator * (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
         return (lhs *= rhs); 
     }
 
     template<typename T, typename T2>
-    inline const p_dense_matrix<T>& operator * (p_dense_matrix<T> lhs, const T2& rhs){ 
+    inline const p_dense_matrix<T> operator * (p_dense_matrix<T> lhs, const T2& rhs){ 
         return (lhs *= rhs); 
     }
 
     template<typename T, typename T2>
-    inline const p_dense_matrix<T>& operator * (const T2& lhs, p_dense_matrix<T> rhs){ 
+    inline const p_dense_matrix<T> operator * (const T2& lhs, p_dense_matrix<T> rhs){ 
         return (rhs *= lhs); 
     }
 
