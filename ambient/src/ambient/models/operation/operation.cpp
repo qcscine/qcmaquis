@@ -34,15 +34,15 @@ namespace ambient { namespace models {
         this->credit = credit;
     }
 
-    imodel::revision& operation::get_vellum(){
+    v_model::revision& operation::get_vellum(){
         return *this->vellum;
     }
 
-    void operation::set_vellum(imodel::revision& v){
+    void operation::set_vellum(v_model::revision& v){
         this->vellum = &v;
     }
 
-    imodel::revision* operation::get_pin(){
+    v_model::revision* operation::get_pin(){
         return this->pin;
     }
 

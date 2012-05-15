@@ -31,16 +31,16 @@ namespace ambient { namespace models {
         static inline bool constness(T& obj){
             return false;
         }
-        static inline size_t modify(T& obj, imodel::modifier* m){ 
+        static inline size_t modify(T& obj, v_model::modifier* m){ 
             return 0; // empty for serial objects
         }
         static inline void revise(void* ptr, size_t revision){
             // empty for serial objects
         }
-        static inline void weight(void* ptr, imodel::modifier* m){
+        static inline void weight(void* ptr, v_model::modifier* m){
             // empty for serial objects
         }
-        static inline void place(void* ptr, imodel::modifier* m){
+        static inline void place(void* ptr, v_model::modifier* m){
             // empty for serial objects
         }
     };
@@ -64,14 +64,14 @@ namespace ambient { namespace models {
         static inline void deallocate(void* ptr){
             delete (ptr_type*)ptr;
         }
-        static inline size_t modify(T& obj, imodel::modifier* m){
+        static inline size_t modify(T& obj, v_model::modifier* m){
             size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
             ambient::model.add_revision(&obj);
             current(obj).set_generator(m); // (updated obj)
             return base;
         }
-        static inline size_t modify(const T& obj, imodel::modifier* m){
+        static inline size_t modify(const T& obj, v_model::modifier* m){
             size_t base = obj.get_revision_base();
             current(obj).add_modifier(m);
             return base;
@@ -80,14 +80,14 @@ namespace ambient { namespace models {
             T& obj = *(*(ptr_type*)ptr);
             ctxt.set_revision_base(&obj, revision);
         }
-        static inline void weight(void* ptr, imodel::modifier* m){
+        static inline void weight(void* ptr, v_model::modifier* m){
             T& obj = *(*(ptr_type*)ptr);
             if(obj.revisions.size() > m->get_weight()){
                 m->set_weight(obj.revisions.size());
                 m->set_vellum(current(obj));
             }
         }
-        static inline void place(void* ptr, imodel::modifier* m){
+        static inline void place(void* ptr, v_model::modifier* m){
             T& obj = *(*(ptr_type*)ptr);
             if(current(obj).get_placement() == NULL)
                 current(obj).set_placement(m->get_group());
@@ -104,7 +104,7 @@ namespace ambient { namespace models {
     // }}}
 
     class ambient_pin {}; // empty class for args marking
-    class operation : public imodel::modifier {
+    class operation : public v_model::modifier {
     public:
         ~operation();
         #include "ambient/models/operation/pp/operation.pp.hpp"
@@ -114,9 +114,9 @@ namespace ambient { namespace models {
         channels::group* get_group();
         size_t get_weight();
         void set_weight(size_t credit);
-        void set_vellum(imodel::revision& v);
-        imodel::revision& get_vellum();
-        imodel::revision* get_pin();
+        void set_vellum(v_model::revision& v);
+        v_model::revision& get_vellum();
+        v_model::revision* get_pin();
         void add_condition();
         bool pretend();
     private:
@@ -135,8 +135,8 @@ namespace ambient { namespace models {
         pthread_mutex_t mutex;
     public:
         size_t credit;
-        imodel::revision* vellum;
-        imodel::revision* pin;
+        v_model::revision* vellum;
+        v_model::revision* pin;
         channels::group* grp;
     };
 

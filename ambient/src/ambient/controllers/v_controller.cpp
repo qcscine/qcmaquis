@@ -20,7 +20,7 @@
 // {{{ global objects accessible anywhere //
 namespace ambient {
     channels::multirank& rank = channels::multirank::instance();
-    models::imodel& model = models::v_model::instance();
+    models::v_model& model = models::v_model::instance();
     channels::ichannel& channel = channels::mpi_channel::instance();
     controllers::icontroller& controller = controllers::v_controller::instance();
     controllers::context& ctxt = controllers::context::instance();
@@ -34,7 +34,7 @@ pthread_key_t pthread_tid;
 
 namespace ambient { namespace controllers {
 
-    v_controller::mod::mod(models::imodel::modifier* m, dim2 pin)
+    v_controller::mod::mod(models::v_model::modifier* m, dim2 pin)
     : m(m), pin(pin) 
     {
     }
@@ -132,34 +132,34 @@ namespace ambient { namespace controllers {
         this->channel->init();
     }
 
-    void v_controller::push(models::imodel::modifier* op){
+    void v_controller::push(models::v_model::modifier* op){
         this->stack.push_back(op);
         this->workload++; // should be done only in one thread
     }
 
-    void v_controller::execute_mod(models::imodel::modifier* op, dim2 pin){
+    void v_controller::execute_mod(models::v_model::modifier* op, dim2 pin){
         if(op->pretend()) return;
         this->tasks[this->rrn].add_task(new mod(op, pin));
         ++this->rrn %= this->num_threads;
     }
 
-    void v_controller::execute_free_mod(models::imodel::modifier* op){
+    void v_controller::execute_free_mod(models::v_model::modifier* op){
         this->tasks[this->rrn].add_task(new mod(op, dim2(0,0)));
         ++this->rrn %= this->num_threads;
     }
 
-    models::imodel::layout::entry* v_controller::alloc_block(models::imodel::revision& r){
+    models::v_model::layout::entry* v_controller::alloc_block(models::v_model::revision& r){
         channels::packet_t& type = ambient::channel.get_block_packet_type(r.get_layout().get_mem_size());
         return new models::v_model::layout::entry(alloc_t(type), type.get_bound(A_BLOCK_P_DATA_FIELD));
     }
 
-    models::imodel::layout::entry& v_controller::alloc_block(models::imodel::revision& r, size_t i, size_t j){
+    models::v_model::layout::entry& v_controller::alloc_block(models::v_model::revision& r, size_t i, size_t j){
         channels::packet_t& type = ambient::channel.get_block_packet_type(r.get_layout().get_mem_size());
         r.get_layout().embed(alloc_t(type), i, j, type.get_bound(A_BLOCK_P_DATA_FIELD));
         return *r.block(i,j);
     }
 
-    models::imodel::layout::entry& v_controller::ufetch_block(models::imodel::revision& r, size_t i, size_t j){
+    models::v_model::layout::entry& v_controller::ufetch_block(models::v_model::revision& r, size_t i, size_t j){
         if(r.block(i,j)->valid()){
             return *r.block(i,j);
         }else if(r.get_placement() == NULL || r.get_placement()->is_master()){
@@ -173,7 +173,7 @@ namespace ambient { namespace controllers {
         return *r.block(i,j);
     }
 
-    models::imodel::layout::entry& v_controller::ifetch_block(models::imodel::revision& r, size_t i, size_t j){
+    models::v_model::layout::entry& v_controller::ifetch_block(models::v_model::revision& r, size_t i, size_t j){
         assert(r.get_placement() != NULL);
         if(r.block(i,j)->valid())
             this->atomic_receive(r, i, j); // check the stacked operations for the block
@@ -193,9 +193,9 @@ namespace ambient { namespace controllers {
         return *r.block(i,j);
     }
 
-    void v_controller::atomic_receive(models::imodel::revision& r, size_t i, size_t j){
+    void v_controller::atomic_receive(models::v_model::revision& r, size_t i, size_t j){
         // pthread_mutex_lock(&this->mutex); // will be needed in case of redunant accepts
-        std::list<models::imodel::modifier*>::iterator it = r.block(i,j)->get_assignments().begin();
+        std::list<models::v_model::modifier*>::iterator it = r.block(i,j)->get_assignments().begin();
         while(it != r.block(i,j)->get_assignments().end()){
             this->execute_mod(*it, dim2(j,i));
             r.block(i,j)->get_assignments().erase(it++);
@@ -230,7 +230,7 @@ namespace ambient { namespace controllers {
         this->stack.clean();               // reseting the stack
     }
     
-    channels::ichannel::packet* package(models::imodel::revision& r, const char* state, int i, int j, int dest){
+    channels::ichannel::packet* package(models::v_model::revision& r, const char* state, int i, int j, int dest){
         void* header = r.block(i,j)->get_memory();
         channels::ichannel::packet* package = channels::pack(channel.get_block_packet_type(r.get_layout().get_mem_size()), 
                                                              header, dest, "P2P", r.id().first, r.id().second, state, i, j, NULL);
@@ -239,11 +239,11 @@ namespace ambient { namespace controllers {
 
     void forward_block(channels::ichannel::packet& cmd){
         channels::packet& c = static_cast<channels::packet&>(cmd);
-        models::imodel::revision& r = *ambient::model.get_revision((size_t*)c.get(A_LAYOUT_P_GID_FIELD), 1, c.get<size_t>(A_LAYOUT_P_SID_FIELD));
+        models::v_model::revision& r = *ambient::model.get_revision((size_t*)c.get(A_LAYOUT_P_GID_FIELD), 1, c.get<size_t>(A_LAYOUT_P_SID_FIELD));
         if(c.get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM OWNER ACTION
         size_t i = c.get<int>(A_LAYOUT_P_I_FIELD);
         size_t j = c.get<int>(A_LAYOUT_P_J_FIELD);
-        models::imodel::layout::entry& entry = *r.block(i,j);
+        models::v_model::layout::entry& entry = *r.block(i,j);
         if(entry.valid()){
             channel.emit(package(r, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), i, j, c.get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }else if(r.get_placement()->is_master() && r.get_layout().marked(i, j)){
@@ -258,7 +258,7 @@ namespace ambient { namespace controllers {
         channels::packet& c = static_cast<channels::packet&>(cmd);
         size_t i = c.get<int>(A_BLOCK_P_I_FIELD);
         size_t j = c.get<int>(A_BLOCK_P_J_FIELD);
-        models::imodel::revision& r = *ambient::model.get_revision((size_t*)c.get(A_BLOCK_P_GID_FIELD), 1, c.get<size_t>(A_BLOCK_P_SID_FIELD));
+        models::v_model::revision& r = *ambient::model.get_revision((size_t*)c.get(A_BLOCK_P_GID_FIELD), 1, c.get<size_t>(A_BLOCK_P_SID_FIELD));
         if(r.block(i,j)->valid()) return; // quick exit for redunant accepts
         r.get_layout().embed(c.get_memory(), i, j, c.get_bound(A_BLOCK_P_DATA_FIELD));
 

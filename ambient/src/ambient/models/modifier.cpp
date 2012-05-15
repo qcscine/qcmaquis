@@ -3,10 +3,5 @@
 
 namespace ambient { namespace models {
 
-    v_model::modifier::modifier() 
-    :locks(0), workload(0) 
-    {
-    
-    }
 
 } }

@@ -43,8 +43,8 @@ namespace ambient{
 
     template<typename T>
     inline void assign(const T& ref, int i, int j){ // work_dim = mem_dim
-        ambient::models::imodel::revision& revision = current(ref);
-        ambient::models::imodel::modifier* op = ctxt.get_op();
+        ambient::models::v_model::revision& revision = current(ref);
+        ambient::models::v_model::modifier* op = ctxt.get_op();
         if(op->get_pin() == NULL){
             op->add_condition();
             revision.block(i,j)->get_assignments().push_back(op);
@@ -54,16 +54,16 @@ namespace ambient{
 
     template<typename T>
     inline void pin(const T& ref, int i, int j){ // work_dim = mem_dim
-        ambient::models::imodel::revision& revision = current(ref);
-        ambient::models::imodel::modifier* op = ctxt.get_op();
+        ambient::models::v_model::revision& revision = current(ref);
+        ambient::models::v_model::modifier* op = ctxt.get_op();
         op->add_condition();
         revision.block(i,j)->get_assignments().push_back(op);
         controller.ifetch_block(revision, i, j);
     }
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline void pin(const T& ref, int i, int j){ // work_dim = mem_dim
-        ambient::models::imodel::revision& revision = STATE(ref);
-        ambient::models::imodel::modifier* op = ctxt.get_op();
+        ambient::models::v_model::revision& revision = STATE(ref);
+        ambient::models::v_model::modifier* op = ctxt.get_op();
         op->add_condition();
         revision.block(i,j)->get_assignments().push_back(op);
         controller.ifetch_block(revision, i, j);
@@ -94,7 +94,7 @@ namespace ambient{
     inline dim2 get_dim(T& ref){
         return current(ref).get_layout().get_dim();
     }
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline dim2 get_dim(T& ref){
         return STATE(ref).get_layout().get_dim();
     }
@@ -103,7 +103,7 @@ namespace ambient{
     inline dim2 get_grid_dim(T& ref){
         return current(ref).get_layout().get_grid_dim();
     }
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline dim2 get_grid_dim(T& ref){
         return STATE(ref).get_layout().get_grid_dim();
     }
@@ -112,7 +112,7 @@ namespace ambient{
     inline dim2 get_mem_dim(T& ref){
         return current(ref).get_layout().get_mem_dim();
     }
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline dim2 get_mem_dim(T& ref){
         return STATE(ref).get_layout().get_mem_dim();
     }
@@ -121,7 +121,7 @@ namespace ambient{
     inline dim2 get_item_dim(T& ref){
         return current(ref).get_layout().get_item_dim();
     }
-    template<ambient::models::imodel::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
+    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
     inline dim2 get_item_dim(T& ref){
         return STATE(ref).get_layout().get_item_dim();
     }

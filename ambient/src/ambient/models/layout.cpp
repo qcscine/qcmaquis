@@ -66,7 +66,7 @@ namespace ambient { namespace models {
         if(dim.y > this->mesh_dim.y) this->mesh_dim.y = dim.y;
     }
 
-    void v_model::layout::set_revision(imodel::revision* r){
+    void v_model::layout::set_revision(v_model::revision* r){
         this->revision = static_cast<v_model::revision*>(r);
     }
 
@@ -199,7 +199,7 @@ namespace ambient { namespace models {
         return (std::complex<double>*)this->data;
     }
 
-    std::list<models::imodel::modifier*>& v_model::layout::entry::get_assignments(){
+    std::list<models::v_model::modifier*>& v_model::layout::entry::get_assignments(){
         return this->assignments;
     }
 

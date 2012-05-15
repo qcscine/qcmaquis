@@ -14,7 +14,6 @@
 #include "ambient/channels/groups/multirank.h"
 #include "ambient/controllers/icontroller.h"
 #include "ambient/controllers/context.h"
-#include "ambient/models/imodel.h"
 #include "ambient/models/operation/operation.h"
 #include "ambient/models/v_model.h"
 #include "ambient/models/operation/select.h"

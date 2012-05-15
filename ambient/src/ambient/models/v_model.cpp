@@ -12,7 +12,7 @@ namespace ambient { namespace models {
     v_model::~v_model(){
     }
 
-    void v_model::add_revision(imodel::object* obj){
+    void v_model::add_revision(v_model::object* obj){
         v_model::layout* l = new v_model::layout(obj->get_dim(), obj->get_t_size());
         size_t size = obj->get_dim().max();
         if(this->mem_dim < size) l->set_dimensions(this->mem_dim, this->item_dim);
@@ -22,7 +22,7 @@ namespace ambient { namespace models {
         obj->add_revision(l);
     }
 
-    void v_model::update_revision(imodel::revision* r, channels::group* placement){
+    void v_model::update_revision(v_model::revision* r, channels::group* placement){
 
     }
 
@@ -44,9 +44,9 @@ namespace ambient { namespace models {
 
     // {{{ free functions for mangling the data //
 
-    void* solidify(const imodel::object& o){
-        imodel::revision& r = o.revision(0);
-        imodel::layout& l = r.get_layout();
+    void* solidify(const v_model::object& o){
+        v_model::revision& r = o.revision(0);
+        v_model::layout& l = r.get_layout();
         size_t iterator = 0;
         char* memory = NULL;
 
@@ -62,11 +62,11 @@ namespace ambient { namespace models {
         return memory;
     }
 
-    void disperse(void* data, imodel::object& o){
-        imodel::revision& current = o.revision(0);
-        imodel::revision& updated = o.revision(1);
-        imodel::layout& lc = current.get_layout();
-        imodel::layout& lu = updated.get_layout();
+    void disperse(void* data, v_model::object& o){
+        v_model::revision& current = o.revision(0);
+        v_model::revision& updated = o.revision(1);
+        v_model::layout& lc = current.get_layout();
+        v_model::layout& lu = updated.get_layout();
         size_t iterator = 0;
         char* memory = (char*)data;
 
