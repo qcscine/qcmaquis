@@ -15,20 +15,21 @@ namespace ambient{
         friend void intrusive_ptr_release<>(T* p);
         long references;
 
-        inline parallel_t(){
-            this->references = 0;
+        inline parallel_t()
+        : references(0) 
+        {
             this->t_size = sizeof(value_type);
         }
 
         parallel_t(const T& o)
-        : models::v_model::object()
+        : models::v_model::object(), references(1) // avoiding auto-deallocation
         {
-            this->references = 0;
             this->t_size = sizeof(value_type);
             this->pt_set_dim(o.get_dim().x, o.get_dim().y);
             ambient::push(static_cast<copy_t>(&ambient::copy_l), 
                           static_cast<copy_t>(&ambient::copy_c), 
                           *(T*)this, *(const T*)&o);
+            this->references--; // push is done, can revert it back
         }
 
         inline dim2 pt_mem_dim() const {

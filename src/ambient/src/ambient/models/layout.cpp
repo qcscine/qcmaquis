@@ -156,6 +156,7 @@ namespace ambient { namespace models {
     }
 
     v_model::layout::entry::~entry(){
+        free(this->header);
     }
 
     v_model::layout::entry::entry()
