@@ -9,6 +9,14 @@ namespace ambient {
     #include "ambient/utils/ceil.h"
 
     //#define AMBIENT_COMPUTATIONAL_TIMINGS
+   
+    #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+        #define __A_TIME(name) static TimerPTH time(name); time.begin();
+        #define __A_TIME_STOP time.end();
+    #else
+        #define __A_TIME(name) 
+        #define __A_TIME_STOP 
+    #endif
 
     template<typename T>
     inline size_t __a_get_limit_x(const T& a, size_t n = 0){
@@ -57,9 +65,7 @@ namespace ambient {
                            const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                            dim2 size, T alfa = 0.0)
     {
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_memptf_f_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_memptf_f_kernel");
         // the ouput (dest) must be a pinned p_dense_matrix
 
         T* dd = updated(dest)(ctxt.get_block_id().y, ctxt.get_block_id().x);
@@ -106,9 +112,7 @@ namespace ambient {
                 spos.y = 0;
             }
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
@@ -119,9 +123,7 @@ namespace ambient {
                                    const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                                    dim2 size, T alfa = 0.0)
     {
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_memptf_f_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_memptf_revers_f_kernel");
         // the input (src) must be a pinned p_dense_matrix
 
         T* sd = current(src)(ctxt.get_block_id().y, ctxt.get_block_id().x);
@@ -168,9 +170,7 @@ namespace ambient {
                 dpos.y = 0;
             }
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
@@ -235,20 +235,18 @@ namespace ambient {
     }
 
     template<typename T>
+    void gemm_one_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+        // gs // 0.2
+        __A_TIME("ambient_gemm_one_c_kernel");
+        (*(T*)updated(c)(0,0)) = (*(T*)current(a)(0,0))*(*(T*)current(b)(0,0));
+        __A_TIME_STOP
+    }
+
+    template<typename T>
     void gemm_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
         // gs // 0.2
-        if(ctxt.get_block_id().x >= get_grid_dim(a).x || // early out (out of scope)
-           ctxt.get_block_id().y >= get_grid_dim(a).y) return;
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_gemm_c_kernel"); time.begin();
-#endif
-        if(a.get_dim() == 1 && b.get_dim().x == 1){          // early out (a and b are scalars)
-            (*(T*)updated(c)(0,0)) = (*(T*)current(a)(0,0))*(*(T*)current(b)(0,0));
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
-            return;
-        }else if(get_grid_dim(a) == 1 && get_grid_dim(b) == 1){
+        __A_TIME("ambient_gemm_c_kernel");
+        if(get_grid_dim(a) == 1 && get_grid_dim(b) == 1){
             T* bd = current(b)(0,0);
             T* ad = current(a)(0,0);
             T* cd = updated(c)(0,0);
@@ -261,9 +259,7 @@ namespace ambient {
             T alpha(1.0); 
             T beta(1.0);
             gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+            __A_TIME_STOP
             return;
         }else if(get_mem_dim(a) != get_mem_dim(b) || get_mem_dim(a) != get_mem_dim(c)){
             T* ad = (T*)models::solidify(a);
@@ -279,22 +275,9 @@ namespace ambient {
             T beta(1.0);
             gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
             models::disperse(cd, c);
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+            __A_TIME_STOP
             return;
         }
-        //  --- --- ---       --- --- ---       --- --- ---
-        // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
-        //  --- --- ---       --- --- ---       --- --- ---
-        // | 0 | 1 | 2 |  x  | 0 | 1 | 2 |  =  | 0 | 1 | 2 |
-        //  --- --- ---       --- --- ---       --- --- ---
-        // | 0 | 1 | 2 |     | 0 | 1 | 2 |     | 0 | 1 | 2 |
-        //  --- --- ---       --- --- ---       --- --- ---
-        //
-        // partial reduce?..
-        /////////////////////////////////////////////////////////////////////////
-
         int m   = get_mem_dim(a).y;
         int n   = get_mem_dim(b).x;
         int k   = get_mem_dim(b).y;
@@ -329,25 +312,19 @@ namespace ambient {
             }
             i += a_grid_dim.y;
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void copy_c(maquis::types::p_dense_matrix_impl<T>& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a){
         // gs // 0.65
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_copy_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_copy_c_kernel"); 
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         T* a_elements  = current(a)(i,j);
         T* ac_elements = updated(ac)(i,j);
         memcpy(ac_elements, a_elements, sizeof(T)*get_mem_dim(a).y*get_mem_dim(a).x);
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
@@ -403,26 +380,20 @@ namespace ambient {
     template<typename T>
     void push_back_sqr_gt_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_push_back_sqr_gt_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_push_back_sqr_gt_c_kernel"); 
         double* ad = current(a)(ctxt.get_block_id().y, ctxt.get_block_id().x);
         size_t sizey = __a_get_limit_y(a);
         for(int i=0; i < sizey; i++){
             double v = std::abs(ad[i]);
             if(v > 1e-10) ac->push_back(v*v);
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void cast_to_dense_c(std::vector<T>*& ac, pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_cast_to_dense_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_cast_to_dense_c_kernel"); 
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         int yi = get_mem_dim(a).y*i; // conversion cartersia coordinates dense / p_dense
@@ -438,9 +409,7 @@ namespace ambient {
             offset = yi + (xj+jj)*m;
             memcpy((void*)&(*ac)[offset],(void*)&ad[jj*lda], sizey*sizeof(T));  
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template <typename T>
@@ -469,18 +438,14 @@ namespace ambient {
                        const size_t& left_offset, const size_t& right_offset, 
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     { // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_reshape_l2r_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_reshape_l2r_c_kernel"); 
         __a_memptf(&__a_memcpy<T>, right, dim2(0,0), right, dim2(0,0), dim2(get_dim(right).x,get_dim(right).y)); // refreshing updated memory
         for(size_t ss = 0; ss < sdim; ++ss){
             __a_memptf(&__a_memcpy<T>, right, dim2(ss*rdim + right_offset, 0), 
                        left,  dim2(0, ss*ldim + left_offset), 
                        dim2( rdim, ldim ));
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template <typename T>
@@ -488,17 +453,13 @@ namespace ambient {
                        const size_t& left_offset, const size_t& right_offset, 
                        const size_t& sdim, const size_t& ldim, const size_t& rdim)
     { // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_reshape_r2l_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_reshape_r2l_c_kernel"); 
         __a_memptf(&__a_memcpy<T>, left, dim2(0,0), left, dim2(0,0), dim2(get_dim(left).x,get_dim(left).y)); // refreshing updated memory
         for(size_t ss = 0; ss < sdim; ++ss)
             __a_memptf(&__a_memcpy<T>, left,  dim2(0, ss*ldim + left_offset), 
                        right, dim2(ss*rdim + right_offset,0), 
                        dim2( rdim, ldim ));
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template <typename T>
@@ -506,9 +467,7 @@ namespace ambient {
                          const size_t& out_offset, const size_t& in_offset, 
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
     { // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_rb_tensor_mpo_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_rb_tensor_mpo_c_kernel"); 
         __a_memptf(&__a_memcpy<T>, out, dim2(0,0), out, dim2(0,0), dim2(get_dim(out).x,get_dim(out).y)); // refreshing updated memory
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -518,9 +477,7 @@ namespace ambient {
                                             in,  dim2(in_offset + ss1*rdim, 0),
                                             dim2(rdim, ldim), alfa_t);
             }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template <typename T>
@@ -528,9 +485,7 @@ namespace ambient {
                          const size_t& out_offset, const size_t& in_offset, 
                          const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
     { // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_lb_tensor_mpo_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_lb_tensor_mpo_c_kernel"); 
         __a_memptf(&__a_memcpy<T>, out, dim2(0,0), out, dim2(0,0), dim2(get_dim(out).x,get_dim(out).y)); // refreshing updated memory
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -540,17 +495,13 @@ namespace ambient {
                                             in,  dim2(0, in_offset + ss1*ldim),
                                             dim2(rdim, ldim), alfa_t);
             }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void scalar_norm_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_scalar_norm_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_scalar_norm_c_kernel"); 
         T summ = 0;
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
@@ -563,17 +514,13 @@ namespace ambient {
                 summ += ad[ii+jj*lda]*ad[ii+jj*lda];
     
         *norm += summ;
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void scalar_overlap_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_scalar_overlap_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_scalar_overlap_c_kernel"); 
         T summ = 0;
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
@@ -586,17 +533,13 @@ namespace ambient {
             for(size_t jj=0; jj < sizex; jj++)
                 summ += ad[ii+jj*lda]*bd[ii+jj*lda];
         *overlap += summ;
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void add_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_add_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_add_c_kernel"); 
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i, j);
@@ -605,17 +548,13 @@ namespace ambient {
         size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(size_t k = 0; k < size; k++)
             ar[k] = ad[k] + bd[k];
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void sub_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_sub_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_sub_c_kernel"); 
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         double* ad = current(a)(i, j);
@@ -624,17 +563,13 @@ namespace ambient {
         size_t size = get_mem_dim(a).x*get_mem_dim(a).y;
         for(size_t k = 0; k < size; k++)
             ar[k] = ad[k] + (-1)*bd[k];
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void scale_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const double*& t){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_scale_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_scale_c_kernel"); 
         int i = ctxt.get_block_id().y;
         int j = ctxt.get_block_id().x;
         T* ad = current(a)(i, j);
@@ -646,18 +581,14 @@ namespace ambient {
         for(size_t jj=0; jj < sizex; jj++)
         for(size_t ii=0; ii < sizey; ii++)
         ar[jj*lda+ii] = ad[jj*lda+ii] * (*t);
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T, typename D>
     void gemm_diagonal_lhs_c(const maquis::types::p_dense_matrix_impl<D>& a_diag, pinned const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
             const size_t& m, const size_t& n, const size_t& k){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_gemm_diagonal_lhs_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_gemm_diagonal_lhs_c_kernel"); 
         size_t sizey = __a_get_limit_y(a_diag, m);
         int j = ctxt.get_block_id().y*get_mem_dim(b).y;
         int size = get_mem_dim(b).x;
@@ -671,19 +602,14 @@ namespace ambient {
     	     axpy(&size, &alpha[(j+jj)%get_mem_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
     	     if(sizeof(T) != sizeof(D)) axpy(&size, &alpha[(j+jj)%get_mem_dim(a_diag).y], &bd[jj+1], &lda, &cd[jj], &lda); // for complex
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T, typename D>
     void gemm_diagonal_rhs_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
             const size_t& m, const size_t& n, const size_t& k){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_gemm_diagonal_rhs_c_kernel"); time.begin();
-#endif
-
+        __A_TIME("ambient_gemm_diagonal_rhs_c_kernel"); 
         size_t sizex = std::min((ctxt.get_block_id().x+1)*get_mem_dim(b_diag).y, n)-ctxt.get_block_id().x*get_mem_dim(b_diag).y;
 
         int j = ctxt.get_block_id().x*get_mem_dim(a).x;
@@ -696,17 +622,13 @@ namespace ambient {
     	    D* alpha = current(b_diag)((j+jj)/get_mem_dim(b_diag).y,0);
     	    axpy(&size, &alpha[(j+jj)%get_mem_dim(b_diag).y], &ad[jj*get_mem_dim(a).y], &ONE, &cd[jj*get_mem_dim(c).y], &ONE);
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void trace_c(pinned const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_trace_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_trace_c_kernel"); 
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t ld = get_mem_dim(a).y;
@@ -721,9 +643,7 @@ namespace ambient {
             if((i+1)*ld <= jj) continue;
            *trace += ad[jj % ld + (jj%sd)*ld];
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
@@ -743,9 +663,7 @@ namespace ambient {
     template<typename T>
     void transpose_out_c(pinned const maquis::types::p_dense_matrix_impl<T>& m, maquis::types::p_dense_matrix_impl<T>& t){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_transpose_out_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_transpose_out_c_kernel"); 
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         T* od = current(m)(i,j);
@@ -758,16 +676,12 @@ namespace ambient {
                 td[j+i*sizey] = od[i+j*sizey];
             }
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void init_value_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_init_value_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_init_value_c_kernel"); 
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
 
@@ -780,9 +694,7 @@ namespace ambient {
                 ad[i+j*get_mem_dim(a).y] = value; // not a memset due to complex
             }
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T> void randomize(T* ad){ *ad = drand48(); }
@@ -793,9 +705,7 @@ namespace ambient {
 
     template<typename T>
     void init_random_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_init_random_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_init_random_c_kernel"); 
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t ld = get_mem_dim(a).y;
@@ -808,16 +718,12 @@ namespace ambient {
             for(size_t ii = 0; ii < sizey; ii++)
                 randomize((ad+(jj*ld+ii)));
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
     void init_identity_c(pinned maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_init_identity_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_init_identity_c_kernel"); 
         size_t i = ctxt.get_block_id().y;
         size_t j = ctxt.get_block_id().x;
         size_t ld = get_mem_dim(a).y;
@@ -832,9 +738,7 @@ namespace ambient {
             if((i+1)*ld <= jj) continue;
             ad[jj % ld + (jj%sd)*ld] = 1.;
         }
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template <typename T> 
@@ -868,9 +772,7 @@ namespace ambient {
     template<typename T>
     void svd_c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_svd_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_svd_c_kernel"); 
     /* Locals */
         int lda = get_grid_dim(a).y*get_mem_dim(a).y;
         int ldu = get_grid_dim(u).y*get_mem_dim(u).y;
@@ -913,9 +815,7 @@ namespace ambient {
             models::disperse(sd, s);
         }
         free(work);
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     template<typename T>
@@ -946,9 +846,7 @@ namespace ambient {
     template<typename T>
     void heev_c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<T>& w){
         // gs
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        static TimerPTH time("ambient_heev_c_kernel"); time.begin();
-#endif
+        __A_TIME("ambient_heev_c_kernel"); 
         int lda = get_grid_dim(a).y*get_mem_dim(a).y;
         int info, lwork = -1;
     
@@ -990,9 +888,7 @@ namespace ambient {
         if(get_grid_dim(a) != 1) 
             models::disperse(wd, w);
         free(work);
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        time.end();
-#endif
+        __A_TIME_STOP
     }
 
     // }}}
