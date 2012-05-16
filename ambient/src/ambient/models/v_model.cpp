@@ -5,7 +5,7 @@
 namespace ambient { namespace models {
 
     v_model::v_model()
-    : mem_dim(dim2(128,128)), item_dim(dim2(128,128))
+    : mem_dim(dim2(256,256)), item_dim(dim2(256,256))
     {
     }
 
