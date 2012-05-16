@@ -27,7 +27,7 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/utils/macro.h"
+#include "vli/detail/kernel_implementation_macros.h"
 
 namespace vli{
     namespace detail{
