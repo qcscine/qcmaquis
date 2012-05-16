@@ -27,10 +27,6 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "kernels_cpu_asm.h"
-#include "vli/utils/macro.h"
-#include <boost/preprocessor/arithmetic/mul.hpp>
-#include <boost/preprocessor/stringize.hpp>
 
 namespace vli{
     namespace detail{

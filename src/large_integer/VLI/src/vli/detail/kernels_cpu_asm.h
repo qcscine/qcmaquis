@@ -29,8 +29,8 @@
 
 #ifndef VLI_ASM_KERNELS_CPU_ASM_H
 #define VLI_ASM_KERNELS_CPU_ASM_H 
-
-#include "vli/utils/macro.h" 
+#include "vli/detail/kernel_macros.h"
+#include <boost/preprocessor/repetition.hpp>
 
 namespace vli{
     namespace detail{
