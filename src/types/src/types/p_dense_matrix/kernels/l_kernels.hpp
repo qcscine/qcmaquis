@@ -24,15 +24,6 @@
 
 namespace ambient {
 
-    template<typename T> 
-    inline void credentials(T& obj){
-        if(rank.is_master(ctxt.get_group())){
-            models::v_model::object& p = current(obj);
-            printf("M%d:%d / %d x %d groups (each %d x %d items of %d x %d els)\n", 
-                   *p.group_id, p.id, p.get_grid_dim().y, p.get_grid_dim().x, p.get_mem_dim().y, p.get_mem_dim().x, p.get_item_dim().x, p.get_item_dim().y);
-        }
-    }
-
     /*template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
     inline void block_2d_cycle(T& target){
     ///////////////////////////////////////////// 2D-block-cyclic decomposition
@@ -52,8 +43,8 @@ namespace ambient {
 
     template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>
     inline void block_2d_cycle(T& target){ // serial
-        size_t sizey = get_grid_dim(target).y;
-        size_t sizex = get_grid_dim(target).x;
+        size_t sizey = ui_l_get_grid_dim(target).y;
+        size_t sizex = ui_l_get_grid_dim(target).x;
         for(int i = 0; i < sizey; i ++){
             for(int j = 0; j < sizex; j ++){
                 ASSIGN(target, i, j);
@@ -70,10 +61,10 @@ namespace ambient {
         int rank_i = (int)(ctxt.get_rank() / nq); // process row
         int rank_j = (int)(ctxt.get_rank() % nq); // process col
     ///////////////////////////////////////////////////////////////////////////
-        int is = np * (int)(((int)(ti / get_mem_dim(target).y))/np);
-        int ie = (int)((ti+tn) / get_mem_dim(target).y);
-        int js = nq * (int)(((int)(tj / get_mem_dim(target).x))/nq);
-        int je = (int)((tj+tn) / get_mem_dim(target).x);
+        int is = np * (int)(((int)(ti / ui_l_get_mem_dim(target).y))/np);
+        int ie = (int)((ti+tn) / ui_l_get_mem_dim(target).y);
+        int js = nq * (int)(((int)(tj / ui_l_get_mem_dim(target).x))/nq);
+        int je = (int)((tj+tn) / ui_l_get_mem_dim(target).x);
         for(int i = is + rank_i; i < ie; i += np){
             for(int j = js + rank_j; j < je; j += nq){
                 ASSIGN(target, i, j);
@@ -105,8 +96,8 @@ namespace ambient {
         int nq = ctxt.nq = (int)(ctxt.get_size() / np); // process grid's num of cols 
         int rank_i = (int)(ctxt.get_rank() / nq); // process row
         int rank_j = (int)(ctxt.get_rank() % nq); // process col
-        size_t sizey = get_grid_dim(target).y;
-        size_t sizex = get_grid_dim(target).x;
+        size_t sizey = ui_l_get_grid_dim(target).y;
+        size_t sizex = ui_l_get_grid_dim(target).x;
     ///////////////////////////////////////////////////////////////////////////
         for(int i = rank_i; i < sizex; i += np){
             for(int j = rank_j; j < sizey; j += nq){
@@ -119,8 +110,8 @@ namespace ambient {
     inline void block_outright(T& target){
     // this no "distribution" is only needed where we need a contiguous array (no splitting between proc) for the output (schmidt values ...)
     ///////////////////////////////////////////////////////////////////////////
-        size_t sizey = get_grid_dim(target).y;
-        size_t sizex = get_grid_dim(target).x;
+        size_t sizey = ui_l_get_grid_dim(target).y;
+        size_t sizex = ui_l_get_grid_dim(target).x;
         for(int i = 0; i < sizey; i++){
             for(int j = 0; j < sizex; j++){
                 ASSIGN(target, i, j);
