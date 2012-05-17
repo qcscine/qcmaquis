@@ -9,34 +9,21 @@
 
 namespace ambient{
 
-    inline void set_num_threads(size_t n); 
+    inline void playout(){
+        ambient::controller.flush(); 
+    }
 
-    inline size_t get_num_threads();
+    inline void set_num_threads(size_t n){ 
+        ambient::controller.set_num_threads(n);
+    }
 
-    inline void playout();
+    inline size_t get_num_threads(){
+        return ambient::controller.get_num_threads();
+    }
 
-    inline bool verbose();
-
-    template<typename T>
-    inline void assign(const T& ref, int i, int j = 0);
-
-    template<typename T>
-    inline void pin(const T& ref, int i, int j = 0);
-
-    template<typename T>
-    inline std::pair<size_t*,size_t> id(T& ref);
-
-    template<typename T>
-    inline dim2 get_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_grid_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_mem_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_item_dim(T& ref);
+    inline bool verbose(){
+        return (rank() ? false : true); 
+    }
 
     // {{{ realization of interface functions
     #include "ambient/interface/pp/push.pp.hpp" // all variants of push
@@ -69,61 +56,48 @@ namespace ambient{
         controller.ifetch_block(revision, i, j);
     }
 
-    inline void set_num_threads(size_t n){ 
-        ambient::controller.set_num_threads(n);
-    }
-
-    inline size_t get_num_threads(){
-        return ambient::controller.get_num_threads();
-    }
-
-    inline void playout(){
-        ambient::controller.flush(); 
-    }
-
-    inline bool verbose(){
-        return (rank() ? false : true); 
-    }
-
     template<typename T>
     inline std::pair<size_t*,size_t> id(T& ref){
         return current(ref).id();
     }
 
     template<typename T>
-    inline dim2 get_dim(T& ref){
-        return current(ref).get_layout().get_dim();
+    inline dim2 ui_l_get_dim(T& ref){
+        return current(ref).layout->dim; // slow?
+    }
+    template<typename T>
+    inline dim2 ui_c_get_dim(T& ref){
+        return ui_c_current(ref).get_layout().dim;
     }
     template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
-    inline dim2 get_dim(T& ref){
-        return STATE(ref).get_layout().get_dim();
+    inline dim2 ui_c_get_dim(T& ref){
+        return STATE(ref).layout->dim;
     }
 
     template<typename T>
-    inline dim2 get_grid_dim(T& ref){
-        return current(ref).get_layout().get_grid_dim();
+    inline dim2 ui_l_get_grid_dim(T& ref){
+        return current(ref).layout->grid_dim;
+    }
+    template<typename T>
+    inline dim2 ui_c_get_grid_dim(T& ref){
+        return ui_c_current(ref).get_layout().grid_dim;
     }
     template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
-    inline dim2 get_grid_dim(T& ref){
-        return STATE(ref).get_layout().get_grid_dim();
+    inline dim2 ui_c_get_grid_dim(T& ref){
+        return STATE(ref).layout->grid_dim;
     }
 
     template<typename T>
-    inline dim2 get_mem_dim(T& ref){
-        return current(ref).get_layout().get_mem_dim();
+    inline dim2 ui_l_get_mem_dim(T& ref){
+        return current(ref).layout->mem_dim;
     }
-    template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
-    inline dim2 get_mem_dim(T& ref){
-        return STATE(ref).get_layout().get_mem_dim();
-    }
-
     template<typename T>
-    inline dim2 get_item_dim(T& ref){
-        return current(ref).get_layout().get_item_dim();
+    inline dim2 ui_c_get_mem_dim(T& ref){
+        return ui_c_current(ref).get_layout().mem_dim;
     }
     template<ambient::models::v_model::revision&(*STATE)(const ambient::models::v_model::object&), typename T>
-    inline dim2 get_item_dim(T& ref){
-        return STATE(ref).get_layout().get_item_dim();
+    inline dim2 ui_c_get_mem_dim(T& ref){
+        return STATE(ref).layout->mem_dim;
     }
     // }}}
 }

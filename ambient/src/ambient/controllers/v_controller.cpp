@@ -29,7 +29,6 @@ namespace ambient {
 }
 // }}} global objects accessible anywhere //
 
-pthread_key_t pthread_env;
 pthread_key_t pthread_tid;
 
 namespace ambient { namespace controllers {
@@ -55,7 +54,6 @@ namespace ambient { namespace controllers {
     : workload(0), rrn(0), num_threads(1) 
     {
         this->acquire(&ambient::channel);
-        pthread_key_create(&pthread_env, free);
         pthread_key_create(&pthread_tid, free);
         pthread_mutex_init(&this->mutex, NULL);
         pthread_mutex_init(&this->pool_control_mutex, NULL);
@@ -164,15 +162,16 @@ namespace ambient { namespace controllers {
     models::v_model::layout::entry& v_controller::ufetch_block(models::v_model::revision& r, size_t i, size_t j){
         if(r.block(i,j)->valid()){
             return *r.block(i,j);
-        }else if(r.get_placement() == NULL || r.get_placement()->is_master()){
-            assert(r.get_generator()->get_group() != NULL);
-            if(r.get_generator()->get_group()->is_master()){
-                this->alloc_block(r, i, j);
-            }
-        }else if(!r.block(i,j)->requested()){
-            ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
-        }
-        return *r.block(i,j);
+        }//else if(r.get_placement() == NULL || r.get_placement()->is_master()){
+            //assert(r.get_generator()->get_group() != NULL);
+            //if(r.get_generator()->get_group()->is_master()){
+              return this->alloc_block(r, i, j);
+            //}
+        //}
+        //else if(!r.block(i,j)->requested()){
+         //   ambient::channel.ifetch(r.get_placement(), *r.get_layout().id().first, r.get_layout().id().second, i, j);
+         //} // blocks should be already requested
+        //return *r.block(i,j);
     }
 
     models::v_model::layout::entry& v_controller::ifetch_block(models::v_model::revision& r, size_t i, size_t j){

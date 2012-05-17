@@ -1,7 +1,6 @@
 #include "ambient/ambient.h"
 #include "ambient/controllers/context.h"
 
-extern pthread_key_t pthread_env;
 extern pthread_key_t pthread_tid;
 
 namespace ambient { namespace controllers {
@@ -9,6 +8,7 @@ namespace ambient { namespace controllers {
     context::context()
     :grp(NULL), state(MARKUP)
     { 
+        this->thread_block_id = (dim2*)calloc(controller.get_num_threads(), sizeof(dim2));
     }
 
     void context::set_group(channels::group* grp){
@@ -23,15 +23,6 @@ namespace ambient { namespace controllers {
             pthread_setspecific(pthread_tid, tid);
         }
         *(size_t*)tid = value;
-    }
-
-    void context::set_block_id(dim2 value){
-        void* id = pthread_getspecific(pthread_env);
-        if(id == NULL){
-            id = malloc(sizeof(dim2));
-            pthread_setspecific(pthread_env, id);
-        }
-        *(dim2*)id = value;
     }
 
     size_t context::get_revision_base(const models::v_model::object* o){

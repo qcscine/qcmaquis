@@ -7,6 +7,10 @@
 #include "ambient/utils/dim2.h"
 #include <list>
 
+extern pthread_key_t pthread_tid;
+
+#define GET_TID 0 //*(size_t*)pthread_getspecific(pthread_tid)
+
 namespace ambient { namespace models {
 // fires:
 // object revision ready
@@ -26,9 +30,9 @@ namespace ambient { namespace models {
                 entry();
                ~entry();
                 entry(void*, size_t);
-                operator char* ();
-                operator double* ();
-                operator std::complex<double>* ();
+                inline operator char* (){ return (char*)this->data; }
+                inline operator double* (){ return (double*)this->data; }
+                inline operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
                 void set_memory(void* memory, size_t bound);
                 void* get_memory();
                 bool valid();
@@ -76,10 +80,6 @@ namespace ambient { namespace models {
             dim2   get_mem_dim() const;
             dim2   get_item_dim() const;
             dim2   get_grid_dim() const;
-            dim2   mem_dim;                 // size of distribution blocks
-            dim2   item_dim;                // size of work-item inside workgroup
-            dim2   mesh_dim;                // size of the grid (reserved) 
-            dim2   dim;                     // total size of the revision (typed)
             std::vector< std::vector<v_model::layout::entry*> > entries;
             v_model::layout::marker marker;
             v_model::revision* revision;
@@ -87,6 +87,11 @@ namespace ambient { namespace models {
             size_t * gid;
             size_t sid;
             size_t t_size;
+            dim2   mem_dim;                 // size of distribution blocks
+            dim2   item_dim;                // size of work-item inside workgroup
+            dim2   mesh_dim;                // size of the grid (reserved) 
+            dim2   grid_dim;                // size of the grid 
+            dim2   dim;                     // total size of the revision (typed)
         }; 
         // }}}
         // {{{ revision property (modifier)
@@ -111,16 +116,22 @@ namespace ambient { namespace models {
         class revision
         {
         public:
-            typedef void(*voidfp)();
+            inline v_model::layout::entry& operator()(size_t i, size_t j){
+                v_model::layout::entry* e = this->layout->entries[i][j];
+                if(e->header == NULL) return this->alloc_block(i, j); // serial
+                return *e;
+            } 
+            inline v_model::layout& get_layout(){
+                return *this->layout;
+            }
+            v_model::layout::entry& alloc_block(size_t i, size_t j);
             revision(v_model::object*, v_model::layout*);
            ~revision();
             v_model::layout::entry* block(size_t i, size_t j = 0);
-            v_model::layout::entry& operator()(size_t i, size_t j);
             void add_modifier(v_model::modifier* m);
             std::list<v_model::modifier*>& get_modifiers();
             std::pair<size_t*,size_t> id();
             v_model::object& get_object();
-            v_model::layout& get_layout();
             channels::group* get_placement();
             void set_placement(channels::group*);
             v_model::reduction* get_reduction();
@@ -136,6 +147,17 @@ namespace ambient { namespace models {
             v_model::modifier* generator;
             v_model::reduction* reduction;
             std::list<v_model::modifier*> modifiers;
+        };
+        class fast_revision // evil... that's evil
+        {
+        public:
+            inline v_model::layout::entry& operator()(size_t i, size_t j){
+                // while(!this->valid()) pthread_yield(); // can be done if MPI enabled
+                return *((revision*)this)->layout->entries[i][j];
+            }
+            inline v_model::layout& get_layout(){
+                return *((revision*)this)->layout;
+            }
         };
         class reduction
         {
@@ -160,6 +182,16 @@ namespace ambient { namespace models {
            ~object();
             void add_revision(v_model::layout* l);
             v_model::revision& revision(size_t offset) const;
+
+            // light-weight user-interface //
+            inline v_model::fast_revision& ui_c_revision_0() const { 
+                return *(fast_revision*)this->revisions[this->thread_revision_base[GET_TID]]; 
+            }
+            inline v_model::revision& ui_c_revision_1() const { 
+                return *this->revisions[this->thread_revision_base[GET_TID] + 1]; 
+            }
+            // light-weight user-interface //
+
             dim2 get_dim() const;
             void set_dim(dim2);
             size_t get_t_size() const;
