@@ -48,7 +48,9 @@ namespace ambient { namespace models {
     }
 
     void v_model::layout::mesh(){
-        dim2 dim = this->get_grid_dim();
+        this->grid_dim = dim2(__a_ceil(this->dim.x / this->mem_dim.x), 
+                              __a_ceil(this->dim.y / this->mem_dim.y));
+        dim2 dim = this->grid_dim;
         if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
 
         for(size_t i = this->mesh_dim.y; i < dim.y; i++)
@@ -130,9 +132,7 @@ namespace ambient { namespace models {
     }
 
     dim2 v_model::layout::get_grid_dim() const {
-        size_t n = __a_ceil(this->dim.x / this->mem_dim.x);
-        size_t m = __a_ceil(this->dim.y / this->mem_dim.y);
-        return dim2(n, m);
+        return this->grid_dim;
     }
 
     // }}}
@@ -186,21 +186,6 @@ namespace ambient { namespace models {
 
     bool v_model::layout::entry::requested(){
         return this->request;
-    }
-
-    v_model::layout::entry::operator char* (){
-        while(!this->valid()) pthread_yield(); // called inside kernels
-        return (char*)this->data;
-    }
-
-    v_model::layout::entry::operator double* (){
-        while(!this->valid()) pthread_yield(); // called inside kernels
-        return (double*)this->data;
-    }
-
-    v_model::layout::entry::operator std::complex<double>* (){
-        while(!this->valid()) pthread_yield(); // called inside kernels
-        return (std::complex<double>*)this->data;
     }
 
     std::list<models::v_model::modifier*>& v_model::layout::entry::get_assignments(){

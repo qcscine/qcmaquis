@@ -51,6 +51,14 @@ namespace ambient{
 
     // {{{ aliases for use inside kernels
     template <typename T>
+    inline models::v_model::fast_revision& ui_c_current(T& obj){
+        return ((models::v_model::object*)&obj)->ui_c_revision_0();
+    }
+    template <typename T>
+    inline models::v_model::revision& ui_c_updated(T& obj){
+        return ((models::v_model::object*)&obj)->ui_c_revision_1();
+    }
+    template <typename T>
     inline models::v_model::revision& current(T& obj){
         return ((models::v_model::object*)&obj)->revision(0);
     }

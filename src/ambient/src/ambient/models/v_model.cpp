@@ -45,7 +45,7 @@ namespace ambient { namespace models {
     // {{{ free functions for mangling the data //
 
     void* solidify(const v_model::object& o){
-        v_model::revision& r = o.revision(0);
+        v_model::fast_revision& r = o.ui_c_revision_0();
         v_model::layout& l = r.get_layout();
         size_t iterator = 0;
         char* memory = NULL;
@@ -63,8 +63,8 @@ namespace ambient { namespace models {
     }
 
     void disperse(void* data, v_model::object& o){
-        v_model::revision& current = o.revision(0);
-        v_model::revision& updated = o.revision(1);
+        v_model::fast_revision& current = o.ui_c_revision_0();
+        v_model::revision& updated = o.ui_c_revision_1();
         v_model::layout& lc = current.get_layout();
         v_model::layout& lu = updated.get_layout();
         size_t iterator = 0;

@@ -17,7 +17,7 @@ namespace ambient { namespace models {
 
     v_model::revision& v_model::object::revision(size_t offset) const {
         if(this->revisions.size() == 0) ambient::model.add_revision(const_cast<v_model::object*>(this));
-        assert(ctxt.get_revision_base(this) + offset < this->revisions.size());
+        //assert(ctxt.get_revision_base(this) + offset < this->revisions.size());
 
         return *this->revisions[ctxt.get_revision_base(this) + offset];
     }
