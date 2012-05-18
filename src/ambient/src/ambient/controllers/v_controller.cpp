@@ -211,22 +211,22 @@ namespace ambient { namespace controllers {
     }
 
     void v_controller::flush(){
-        static __a_timer time("ambient_total_compute_playout");
-        static __a_timer time2("ambient_total_logistic_playout");
+        //static __a_timer time("ambient_total_compute_playout");
+        //static __a_timer time2("ambient_total_logistic_playout");
         if(this->stack.empty()) return;
         while(!this->stack.end_reached())  // estimating operations credits 
             this->stack.pick()->weight();
         this->stack.sort();                // sorting operations using credit
         ctxt.state = context::EXECUTE;
-        time2.begin();
+        //time2.begin();
         while(!this->stack.end_reached()){
             ctxt.set_op(this->stack.pick());
             ctxt.get_op()->invoke();       // sending requests for data
         }
-        time2.end();
-        time.begin();
+        //time2.end();
+        //time.begin();
         this->master_stream(this->tasks);  // using up the main thread
-        time.end();
+        //time.end();
         ctxt.state = context::MARKUP;
         while(!this->stack.end_reached())
             delete this->stack.pick();     // deleting operations
