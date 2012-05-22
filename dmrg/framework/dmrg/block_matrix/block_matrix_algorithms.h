@@ -95,9 +95,6 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & V,
          block_matrix<DiagMatrix, SymmGroup> & S)
 {
-    static Timer timer("block_matrix SVD");
-    timer.begin();
-    
     Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
     for (std::size_t i = 0; i < M.n_blocks(); ++i)
         m[i].second = std::min(r[i].second, c[i].second);
@@ -113,7 +110,6 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     for (std::size_t k = 0; k < loop_max; ++k)
         maquis::types::svd(M[k], U[k], V[k], S[k]);
     
-    timer.end();
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -121,8 +117,6 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
           block_matrix<Matrix, SymmGroup> & evecs,
           block_matrix<DiagMatrix, SymmGroup> & evals)
 {
-    static Timer timer("block_matrix EVD");
-    timer.begin();
 
     evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
@@ -133,7 +127,6 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
     for(std::size_t k = 0; k < loop_max; ++k)
         maquis::types::heev(M[k], evecs[k], evals[k]);
 
-    timer.end();
 }
     
 template <class T>
@@ -243,14 +236,11 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     Index<SymmGroup> old_basis = S.left_basis();
     size_t* keeps = new size_t[S.n_blocks()];
     double truncated_weight, smallest_ev;
-    static Timer timer("Iteretable_diag_impl_svd_truncate");
-    timer.begin();
     //  Given the full SVD in each block (above), remove all singular values and corresponding rows/cols
     //  where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
     //  Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
     //  (remove_rows/remove_columns methods for that)
     estimate_truncation(S, Mmax, rel_tol, keeps, truncated_weight, smallest_ev);
-    timer.end(); 
      
     for ( int k = S.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {
@@ -311,10 +301,7 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     size_t* keeps = new size_t[evals.n_blocks()];
     double truncated_weight, smallest_ev;
 
-    static Timer timer("Iteretable_diag_impl_heev_truncate");
-    timer.begin();
     estimate_truncation(evals, Mmax, cutoff, keeps, truncated_weight, smallest_ev);
-    timer.end();
 
     for ( int k = evals.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {

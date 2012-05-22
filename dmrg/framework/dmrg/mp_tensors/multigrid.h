@@ -300,10 +300,6 @@ struct multigrid {
                             MPS<Matrix, SymmGroup> & mps_large,
                             std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
     {
-        static Timer
-        t_extend("fine-graining_extension"),
-        t_solver("fine-graining_solver"),
-        t_grow("fine-graining_grow");
                 
         std::size_t L = mps_small.length();
         std::size_t LL = mps_large.length();
@@ -369,12 +365,8 @@ struct multigrid {
         
         for (std::size_t p = 0; p < L; ++p)
         {
-            Timer iteration_t("Iteration took");
-            iteration_t.begin();
             
-            t_extend.begin();
             site_extension(Msmall, mps_large[2*p], mps_large[2*p+1]);
-            t_extend.end();
             
             assert( mps_large[2*p].num_check() );
             assert( mps_large[2*p+1].num_check() );
@@ -450,7 +442,6 @@ struct multigrid {
                 // solver
                 if (parms.get<bool>("finegrain_optim"))
                 {
-                    t_solver.begin();
                     
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
                     timeval now, then;
@@ -467,7 +458,6 @@ struct multigrid {
                     }
                     
                     mps_large[2*p] = res.second;
-                    t_solver.end();
                     
                     maquis::cout << "Energy " << "finegraining_1 " << res.first << std::endl;
                     iteration_log << make_log("Energy", res.first);
@@ -484,12 +474,10 @@ struct multigrid {
                 
                 // growing
                 /*
-                t_grow.begin();
                 
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
                 mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right,
                                          2*p, alpha, cutoff, Mmax, iteration_log);                
-                t_grow.end();
                  */
                  
                 t_norm = mps_large[2*p].normalize_left(SVD);
@@ -511,7 +499,6 @@ struct multigrid {
                 // solver
                 if (parms.get<bool>("finegrain_optim"))
                 {
-                    t_solver.begin();
                     
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
                     timeval now, then;
@@ -528,7 +515,6 @@ struct multigrid {
                     }
                     
                     mps_large[2*p+1] = res.second;
-                    t_solver.end();
                     
                     maquis::cout << "Energy " << "finegraining_2 " << res.first << std::endl;
                     iteration_log << make_log("Energy", res.first);
@@ -544,7 +530,6 @@ struct multigrid {
                 
                 // growing
                 /*
-                t_grow.begin();
                 
                 if (p < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
@@ -558,7 +543,6 @@ struct multigrid {
                     block_matrix<Matrix, SymmGroup> t = mps_large[2*p+1].normalize_left(SVD);
                 }
 
-                t_grow.end();
                 */
 
                 
@@ -577,7 +561,6 @@ struct multigrid {
                                                                   left_[2*p+1], mpos_mix[L][2*p+1]);
             }
             
-            iteration_t.end();
         }
         
 #ifndef NDEBUG

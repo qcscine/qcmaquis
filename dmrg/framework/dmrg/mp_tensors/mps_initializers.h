@@ -38,8 +38,6 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
                       bool fillrand = true,
                       typename Matrix::value_type val = 0)
     {
-        static Timer timer("init_sectors");
-        timer.begin();
         std::size_t L = mps.length();
         
         Index<SymmGroup> physc = phys;
@@ -119,8 +117,6 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         maquis::cout << "init norm: " << norm(mps) << std::endl;
         maquis::cout << mps.description() << std::endl;
 #endif
-        timer.end();
-        maquis::cout << timer << std::endl;
     }
 };
 
@@ -203,8 +199,6 @@ struct linear_mps_init : public mps_initializer<Matrix, U1>
                       bool fillrand = true,
                       typename Matrix::value_type val = 1.)
     {
-        static Timer timer("init_sectors");
-        timer.begin();
         std::size_t L = mps.length();
         int delta = 1;
         
@@ -288,8 +282,6 @@ struct linear_mps_init : public mps_initializer<Matrix, U1>
         maquis::cout << "init norm: " << norm(mps) << std::endl;
         maquis::cout << mps.description() << std::endl;
 #endif
-        timer.end();
-        maquis::cout << timer << std::endl;
     }
 };
 

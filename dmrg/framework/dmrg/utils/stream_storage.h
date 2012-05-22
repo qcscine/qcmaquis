@@ -70,14 +70,11 @@ protected:
     
     void wait()
     {
-        static Timer timer("wait_timer");
-        timer.begin();
         for (std::deque<boost::shared_ptr<boost::mutex> >::iterator it = mutexes.begin();
              it != mutexes.end(); ++it)
             boost::lock_guard<boost::mutex> lock(**it);
         mutexes.clear();
         status_ = Complete;
-        timer.end();
     }
     
     status_t status_;
@@ -216,9 +213,6 @@ public:
     
     void operator()()
     {
-        static Timer timer("read_timer");
-        timer.begin();
-        
         if (store->master->base_path.size() == 0)
             return;
         
@@ -242,8 +236,6 @@ public:
             }
         
         ifs.close();
-        
-        timer.end();
     }
     
 private:
@@ -271,9 +263,6 @@ public:
     
     void operator()()
     {
-        static Timer timer("read_timer");
-        timer.begin();
-        
         if (store->master->base_path.size() == 0)
             return;
         
@@ -296,8 +285,6 @@ public:
         }
         
         ifs.close();
-        
-        timer.end();
     }
     
 private:
@@ -332,9 +319,6 @@ public:
     
     void operator()()
     {
-        static Timer timer("write_timer");
-        timer.begin();
-        
         if (store->master->base_path.size() == 0)
             return;
         
@@ -354,7 +338,6 @@ public:
             }
         
         of.close();
-        timer.end();
     }
     
 private:
@@ -376,8 +359,6 @@ public:
     
     void operator()()
     {
-        static Timer timer("write_timer");
-        timer.begin();
         
         if (store->master->base_path.size() == 0)
             return;
@@ -397,7 +378,6 @@ public:
         }
         
         of.close();
-        timer.end();
     }
     
 private:

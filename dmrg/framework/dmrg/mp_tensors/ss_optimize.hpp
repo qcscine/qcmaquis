@@ -41,11 +41,6 @@ public:
         timeval sweep_now, sweep_then;
         gettimeofday(&sweep_now, NULL);
         
-        static Timer
-        t_io("sweep_io"),
-        t_solver("sweep_solver"),
-        t_grow("sweep_grow");
-        
         std::size_t L = mps.length();
         
         if (resume_at != -1)
@@ -74,8 +69,6 @@ public:
 #endif
         for (int _site = (resume_at == -1 ? 0 : resume_at);
              _site < 2*L; ++_site) {
-            Timer iteration_t("Iteration took");
-            iteration_t.begin();
             
             int site, lr;
             if (_site < L) {
@@ -102,7 +95,6 @@ public:
                 }
             }
             
-            t_io.begin();
             
             storage::load(left_[site], left_stores_[site]);
             storage::load(right_[site+1], right_stores_[site+1]);
@@ -123,8 +115,6 @@ public:
 //            maquis::cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << std::endl;
 //            maquis::cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << std::endl;
             
-            t_io.end();
-            t_solver.begin();
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
             timeval now, then;
@@ -170,7 +160,6 @@ public:
                 mps[site] = res.second;
             }
             
-            t_solver.end();
             
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
 //            maquis::cout << "Energy check " << expval(mps, mpo) << std::endl;
@@ -211,7 +200,6 @@ public:
             
             std::pair<std::size_t, double> trunc;
             
-            t_grow.begin();
                 
             if (lr == +1) {
                 if (site < L-1) {
@@ -250,9 +238,7 @@ public:
             	storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary
             }
 
-            t_grow.end();
             
-            iteration_t.end();
             
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);

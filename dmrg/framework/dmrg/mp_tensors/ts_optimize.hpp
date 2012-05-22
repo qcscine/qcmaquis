@@ -45,7 +45,6 @@ public:
     	timeval sweep_now, sweep_then;
     	gettimeofday(&sweep_now, NULL);
 
-    	static Timer t_solver("sweep_solver"), t_io("sweep_io");
         
         std::size_t L = mps.length();
 
@@ -104,7 +103,6 @@ public:
                 }
             }
         
-            t_io.begin();
         
             storage::load(left_[site1], left_stores_[site1]);
             storage::load(right_[site2+1], right_stores_[site2+1]);
@@ -117,9 +115,7 @@ public:
                     storage::prefetch(left_[site1-1], left_stores_[site1-1]);
             }
 
-    	    t_io.end();
 
-    	    t_solver.begin();
     	    timeval now, then;
 
     	    // Create TwoSite objects
@@ -149,7 +145,6 @@ public:
         		tst << res.second;
             }
 
-    	    t_solver.end();
 
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
             iteration_log << make_log("Energy", res.first);

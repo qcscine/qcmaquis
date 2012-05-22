@@ -13,9 +13,6 @@ void reshape(MultiIndex<SymmGroup> const & midx,
              block_matrix<Matrix, SymmGroup> const & m1,
              block_matrix<Matrix, SymmGroup> & m2)
 {   
-    static Timer timer("generic reshape");
-    timer.begin();
-    
     
     m2 = block_matrix<Matrix, SymmGroup>();
     
@@ -72,8 +69,6 @@ void reshape(MultiIndex<SymmGroup> const & midx,
     }
      */
      
-    timer.end();
-    
 }
 
 // easier code, but slower
@@ -84,10 +79,6 @@ void reshape2(MultiIndex<SymmGroup> const & midx,
               block_matrix<Matrix, SymmGroup> const & m1,
               block_matrix<Matrix, SymmGroup> & m2)
 {   
-    static Timer timer("generic reshape2");
-    timer.begin();
-    
-    
     m2 = block_matrix<Matrix, SymmGroup>();
     
     typedef std::size_t size_t;
@@ -122,7 +113,6 @@ void reshape2(MultiIndex<SymmGroup> const & midx,
         }
     }
     
-    timer.end();
 }
 
 

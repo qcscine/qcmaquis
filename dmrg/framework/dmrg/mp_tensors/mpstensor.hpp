@@ -237,8 +237,6 @@ template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::scalar_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 {
-    static Timer timer("scalar_norm");
-    timer.begin();
 
 //    make_left_paired();
 //    block_matrix<Matrix, SymmGroup> t;
@@ -248,7 +246,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
     scalar_type ret(0);
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
         maquis::types::scalar_norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
-    timer.end();
     assert( ret == ret );
     assert( maquis::traits::real(ret) >= 0);
     return sqrt(maquis::traits::real(ret));
@@ -268,8 +265,6 @@ template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::scalar_type
 MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs) const
 {
-    static Timer timer("scalar_overlap");
-    timer.begin();
 
     make_left_paired();
     rhs.make_left_paired();
@@ -297,7 +292,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     // for (std::size_t b = 0; b < data_.n_blocks(); ++b)
         // maquis::types::scalar_norm(data_[b],rhs.data_[b],ret);
 
-    timer.end();
     return ret;
 }
 

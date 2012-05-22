@@ -178,10 +178,6 @@ struct contraction {
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              Index<SymmGroup> const * in_low = NULL)
     {
-        static Timer
-        reshape_timer("Reshape in lbtm"),
-        loop_timer("Prod with MPO in lbtm"),
-        loop1_timer("Prod of left and MPS in lbtm");
         
         if (in_low == NULL)
             in_low = &mps.row_dim();
@@ -190,7 +186,6 @@ struct contraction {
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         
-        loop1_timer.begin();
         size_t loop_max = left.aux_dim();
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
@@ -198,12 +193,9 @@ struct contraction {
         for (std::size_t b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left.data_[b]), mps.data_, tmp);
-            reshape_timer.begin();
             reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
                                           tmp, t[b]);
-            reshape_timer.end();
         }
-        loop1_timer.end();
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
         
@@ -213,7 +205,6 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        loop_timer.begin();
         
         mps.make_left_paired();
         
@@ -301,7 +292,6 @@ struct contraction {
                 }
             }
         }
-        loop_timer.end();
         
         return ret;
     }
@@ -313,8 +303,6 @@ struct contraction {
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const * in_low = NULL)
     {
-        static Timer timer("right_boundary_tensor_mpo");
-        timer.begin();
         
         if (in_low == NULL)
             in_low = &mps.col_dim();
@@ -434,7 +422,6 @@ struct contraction {
             }
         }
         
-        timer.end();
         return ret;
     }
     
@@ -447,8 +434,6 @@ struct contraction {
                           Boundary<Matrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        static Timer timer("overlap_mpo_left_step");
-        timer.begin();
         Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
         
         bra_tensor.make_left_paired();
@@ -463,8 +448,6 @@ struct contraction {
         for (std::size_t b = 0; b < loop_max; ++b)
             gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
 
-        timer.end();
-
         return ret;
     }
     
@@ -475,8 +458,6 @@ struct contraction {
                            Boundary<Matrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        static Timer timer("overlap_mpo_right_step");
-        timer.begin();
         
         Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
         
@@ -492,7 +473,6 @@ struct contraction {
         for (std::size_t b = 0; b < loop_max; ++b)
             gemm(rbtm.data_[b], tmp, ret.data_[b]);
         
-        timer.end();
         
         return ret;
     }
@@ -504,12 +484,8 @@ struct contraction {
                 Boundary<Matrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        static Timer lbtm("lbtm in site_hamil2"), loop("loop in site_hamil2"), all("site_hamil all");
-        all.begin();
         
-        lbtm.begin();
         Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
-        lbtm.end();
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
         ret.make_left_paired();
@@ -519,7 +495,6 @@ struct contraction {
         
         size_t loop_max = mpo.col_dim();
         
-        loop.begin();
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
@@ -536,8 +511,6 @@ struct contraction {
                                               oblock.right_basis()[k].first);
             
         }
-        loop.end();
-        all.end();
 
         // Bela's debugging output
         // If I haven't removed this by the end of February 2012, remind me to do so!
@@ -567,8 +540,6 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 Logger & logger)
     {
-        static Timer timer("predict_new_state_l2r_sweep");
-        timer.begin();
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
@@ -603,7 +574,6 @@ struct contraction {
         // ret.data_ = U;
         // ret.right_i = U.right_basis();
         
-        timer.end();
         return ret;
     }
     
@@ -613,8 +583,6 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
-        static Timer timer("predict_lanczos_l2r_sweep");
-        timer.begin();
         
         psi.make_left_paired();
         A.make_left_paired();
@@ -625,7 +593,6 @@ struct contraction {
         
         B.multiply_from_left(tmp);
         
-        timer.end();
         return B;
     }
     
@@ -638,8 +605,6 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 Logger & logger)
     {
-        static Timer timer("predict_new_state_r2l_sweep");
-        timer.begin();
         
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
@@ -676,7 +641,6 @@ struct contraction {
         // ret.data_ = V;
         // ret.left_i = V.left_basis();
       
-        timer.end();
         return ret; 
     }
     
@@ -686,8 +650,6 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
-        static Timer timer("predict_lanczos_r2l_sweep");
-        timer.begin();
         
         psi.make_right_paired();
         A.make_right_paired();
@@ -697,7 +659,6 @@ struct contraction {
         
         B.multiply_from_right(tmp);
         
-        timer.end();
         return B;
     }
     

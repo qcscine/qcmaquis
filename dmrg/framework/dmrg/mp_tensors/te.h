@@ -69,7 +69,6 @@ public:
         timeval sweep_now, sweep_then;
         gettimeofday(&sweep_now, NULL);
         
-        static Timer t_solver("sweep_solver");
         
         std::size_t L = mps.length();
         
@@ -86,7 +85,6 @@ public:
                 lr = -1;
             }
             
-            t_solver.begin();
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
             ietl::mult(sp, mps[site], mpsp[site]);
@@ -111,7 +109,6 @@ public:
                                                                    right_[site+1], mpo[site]);
             }
             
-            t_solver.end(); 
             
         }
         
@@ -129,8 +126,6 @@ public:
 private:
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo)
     {
-        static Timer timer2("init_left_right");
-        timer2.begin();
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);
@@ -167,7 +162,6 @@ private:
             storage::reset(right_stores_[i]);
             storage::store(right_[i], right_stores_[i]);
         }
-        timer2.end();
     }
     
     MPS<Matrix, SymmGroup> mps, mpsp;
