@@ -111,8 +111,6 @@ protected:
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        static Timer timer2("init_left_right");
-        timer2.begin();
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);
@@ -144,7 +142,6 @@ protected:
         }
         storage::store(right_[site], right_stores_[site]);
         
-        timer2.end();
     }
     
     MPS<Matrix, SymmGroup> mps;

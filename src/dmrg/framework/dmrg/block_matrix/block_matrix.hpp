@@ -104,8 +104,6 @@ template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 {
     bool ret;
-    static Timer hb("has_block");
-    hb.begin();
     std::size_t p1 = rows_.position(r);
     if (p1 == rows_.size())
         ret = false;
@@ -116,7 +114,6 @@ bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
         else
             ret = (p1 == p2);
     }
-    hb.end();
     return ret;
 }
 
@@ -223,8 +220,6 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
 {
     
-    static Timer timer("match_and_add_block");
-    timer.begin();
     if (this->has_block(c1, c2))
     {
         if (num_rows(mtx) == num_rows((*this)(c1, c2)) &&
@@ -250,7 +245,6 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
         }
     } else
         insert_block(mtx, c1, c2);
-    timer.end();
 }
 
 template<class Matrix, class SymmGroup>

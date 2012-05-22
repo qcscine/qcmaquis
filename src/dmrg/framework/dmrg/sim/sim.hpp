@@ -304,11 +304,10 @@ void sim<Matrix, SymmGroup>::measure ()
     maquis::cout << "Measurements." << std::endl;
     measure_on_mps(mps, *lat, measurements, rfile);
     
-    Timer tvn("vN entropy"), tr2("Renyi n=2");
     maquis::cout << "Calculating vN entropy." << std::endl;
-    tvn.begin(); std::vector<double> entropies = calculate_bond_entropies(mps); tvn.end();
+    std::vector<double> entropies = calculate_bond_entropies(mps);
     maquis::cout << "Calculating n=2 Renyi entropy." << std::endl;
-    tr2.begin(); std::vector<double> renyi2 = calculate_bond_renyi_entropies(mps, 2); tr2.end();
+    std::vector<double> renyi2 = calculate_bond_renyi_entropies(mps, 2);
     
     {
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
@@ -327,15 +326,10 @@ void sim<Matrix, SymmGroup>::measure ()
     }
     
     if (parms.get<int>("calc_h2") > 0) {
-        Timer tt1("square"), tt2("compress");
-        tt1.begin(); MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpo); tt1.end();
-        tt2.begin(); mpo2.compress(1e-12); tt2.end();
+        MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpo);
+        mpo2.compress(1e-12);
         
-        Timer t3("expval mpo2"), t4("expval mpo2c");
-        
-        t4.begin();
         double energy2 = expval(mps, mpo2, true);
-        t4.end();
         
         maquis::cout << "Energy^2: " << energy2 << std::endl;
         maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;

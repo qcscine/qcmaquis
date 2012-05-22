@@ -29,8 +29,6 @@ namespace ts_reshape {
                               block_matrix<Matrix, SymmGroup> const & m1,
                               block_matrix<Matrix, SymmGroup> & m2)
     {   
-        static Timer timer("reshape_both_to_left");
-        timer.begin();
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
@@ -98,7 +96,6 @@ namespace ts_reshape {
                 }
         }
         
-        timer.end();
     }
     
     /* 
@@ -118,8 +115,6 @@ namespace ts_reshape {
                               block_matrix<Matrix, SymmGroup> const & m1,
                               block_matrix<Matrix, SymmGroup> & m2)
     {   
-        static Timer timer("reshape_left_to_both");
-        timer.begin();
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
@@ -181,7 +176,6 @@ namespace ts_reshape {
                 }
         }
         
-        timer.end();
     }
     
     template<class Matrix, class SymmGroup>
@@ -191,8 +185,6 @@ namespace ts_reshape {
                                block_matrix<Matrix, SymmGroup> const & m1,
                                block_matrix<Matrix, SymmGroup> & m2)
     {
-        static Timer timer("reshape_right_to_both");
-        timer.begin();
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
@@ -256,7 +248,6 @@ namespace ts_reshape {
                     }
                 }
         }
-        timer.end();
     }
     
     /*
@@ -276,8 +267,6 @@ namespace ts_reshape {
                                block_matrix<Matrix, SymmGroup> const & m1,
                                block_matrix<Matrix, SymmGroup> & m2)
     {   
-        static Timer timer("reshape_both_to_right");
-        timer.begin();
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
@@ -342,7 +331,6 @@ namespace ts_reshape {
                 }
         }
         
-        timer.end();
     }
     
 } // namespace ts_reshape

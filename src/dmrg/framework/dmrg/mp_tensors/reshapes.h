@@ -19,8 +19,6 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                            block_matrix<Matrix, SymmGroup> const & m1,
                            block_matrix<Matrix, SymmGroup> & m2)
 {   
-    static Timer timer("reshape_left_to_right");
-    timer.begin();
     
     m2 = block_matrix<Matrix, SymmGroup>();
     
@@ -79,7 +77,6 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
         }
     }
     
-    timer.end();
     
 //    assert(m2.left_basis() == left_i);
 }
@@ -120,8 +117,6 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
 {
 //    assert(m1.left_basis() == left_i);
     
-    static Timer timer("reshape_right_to_left");
-    timer.begin();
     
     m2 = block_matrix<Matrix, SymmGroup>();
     
@@ -176,7 +171,6 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
         }
     }
     
-    timer.end();
     
 //    assert(m2.right_basis() == right_i);
 }

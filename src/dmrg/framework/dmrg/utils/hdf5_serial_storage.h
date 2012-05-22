@@ -146,9 +146,6 @@ template<class Object>
 void Hdf5Storage<Object>::load(boost::weak_ptr<storage<Object> > ptr)
 {   
 //    maquis::cerr << "Accessing " << object_path << std::endl;
-    static Timer timer("hdf5_load");
-    timer.begin();
-    
     if (ptr.expired())
         return;
     boost::shared_ptr<storage<Object> > workspace(ptr);
@@ -157,16 +154,12 @@ void Hdf5Storage<Object>::load(boost::weak_ptr<storage<Object> > ptr)
     locking_ptr<alps::hdf5::archive, boost::mutex> ia = master->get_ia_ptr();
     *ia >> alps::make_pvp(object_path, *workspace->object_);
     
-    timer.end();
 }
 
 template<class Object>
 void Hdf5Storage<Object>::store(boost::weak_ptr<storage<Object> > ptr)
 {
 //    maquis::cerr << "Storing " << object_path << std::endl;
-    
-    static Timer timer("hdf5_store");
-    timer.begin();
     
     if (ptr.expired())
         return;
@@ -177,7 +170,6 @@ void Hdf5Storage<Object>::store(boost::weak_ptr<storage<Object> > ptr)
     ptr.reset();
     ever_stored = true;
     
-    timer.end();
 }
 
 template<class Object>
