@@ -477,9 +477,6 @@ namespace maquis {
         assert( !(lhs.num_cols() < rhs.num_rows()) );
         assert( lhs.num_cols() == rhs.num_rows() );
         
-        static Timer t("GEMM-slow");
-        t.begin();
-        
         // Simple matrix matrix multiplication
         dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols());
         for(std::size_t i=0; i < lhs.num_rows(); ++i)
@@ -493,7 +490,6 @@ namespace maquis {
             }
         }
         
-        t.end();
         return result;
     } 
 

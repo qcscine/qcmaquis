@@ -18,8 +18,6 @@ namespace maquis {
     template <typename Matrix>
     Matrix transpose(Matrix const& m) 
     {
-        static Timer timer("transpose");
-        timer.begin();
         
         BOOST_CONCEPT_ASSERT((maquis::types::Matrix<Matrix>)); 
         // TODO: perhaps this could return a proxy object
@@ -29,8 +27,6 @@ namespace maquis {
                 tmp(j,i) = m(i,j);
             }
         }
-        
-        timer.end();
         
         return tmp;
     }
