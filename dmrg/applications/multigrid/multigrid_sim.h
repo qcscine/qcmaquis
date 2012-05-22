@@ -93,12 +93,10 @@ public:
             MPS<Matrix, SymmGroup> initial_mps;
             
             
-            static Timer multigrid_t("Multigrid");
             m_type = mg_measure;
 
             if (cur_graining != graining)
             {
-                multigrid_t.begin();
                 maquis::cout << "*** Starting grainings ***" << std::endl;
                 Logger iteration_log;
                 
@@ -124,7 +122,6 @@ public:
                 else if (this->mps.length() > initial_mps.length())
                     multigrid::restriction(this->mps, initial_mps);
                 //            maquis::cout << "New MPS:" << std::endl << initial_mps.description();
-                multigrid_t.end();
                 
                 this->mps = initial_mps;
                 cur_graining = graining;
