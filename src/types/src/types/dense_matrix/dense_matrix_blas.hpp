@@ -25,8 +25,6 @@ namespace maquis {
             assert( lhs.num_cols() == rhs.num_rows() ); \
             DCOLLECTOR_ADD(gemm_collector, lhs.num_cols()) \
             dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
-            static Timer timer("GEMM"); \
-            timer.begin(); \
             boost::numeric::bindings::blas::gemm \
                 ( \
                    typename dense_matrix<T,MemoryBlock>::value_type(1), \
@@ -35,7 +33,6 @@ namespace maquis {
                    typename dense_matrix<T,MemoryBlock>::value_type(0), \
                    result \
                 ); \
-            timer.end(); \
             return result; \
         }
     IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
@@ -65,8 +62,6 @@ namespace maquis {
         template <typename MemoryBlock> \
         void plus_and_minus_assign_impl(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs, typename dense_matrix<T,MemoryBlock>::value_type const& sign) \
         { \
-            static Timer timer("plus_minus_assign"); \
-            timer.begin(); \
             assert( m.num_cols() == rhs.num_cols() && m.num_rows() == rhs.num_rows() ); \
             if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
             { \
@@ -77,7 +72,6 @@ namespace maquis {
                 for(std::size_t j=0; j < m.num_cols(); ++j) \
                     boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.column(j).first), 1, &(*m.column(j).first), 1); \
             } \
-            timer.end(); \
         } \
         template <typename MemoryBlock> \
         void plus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs) \

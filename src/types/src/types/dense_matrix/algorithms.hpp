@@ -140,8 +140,6 @@ namespace maquis {
         {
             BOOST_CONCEPT_ASSERT((maquis::types::Matrix<dense_matrix<T, MemoryBlock> >));
             DCOLLECTOR_ADD(svd_collector, M.num_cols())
-            static Timer timer("SVD");
-            timer.begin();
             typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));
@@ -149,7 +147,6 @@ namespace maquis {
             int info = boost::numeric::bindings::lapack::gesvd('S', 'S', M, S.get_values(), U, V);
             if (info != 0)
                 throw std::runtime_error("Error in SVD!");
-            timer.end();
         }
         
         template<typename T, class MemoryBlock>
