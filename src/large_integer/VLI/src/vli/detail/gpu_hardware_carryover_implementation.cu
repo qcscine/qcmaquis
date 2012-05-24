@@ -63,9 +63,8 @@ namespace vli {
 		    const unsigned int * in_shifted1 = in1 + (element_id * (Order * Order * Size));
 		    const unsigned int * in_shifted2 = in2 + (element_id * (Order * Order * Size));
 		    unsigned int index_id = local_thread_id;
-#pragma unroll
-		    for(unsigned int i = 0; i < (Order * Order * Size) / MUL_BLOCK_SIZE; ++i)
-		    {
+                    #pragma unroll
+		    for(unsigned int i = 0; i < (Order * Order * Size) / MUL_BLOCK_SIZE; ++i) {
 			    unsigned int coefficient_id = index_id / Size;
 			    unsigned int degree_id = index_id % Size;
 			    unsigned int current_degree_y = coefficient_id / Order;
@@ -76,8 +75,7 @@ namespace vli {
 			    index_id += MUL_BLOCK_SIZE;
 		    }
 
-		    if (index_id < (Order * Order * Size))
-		    {
+		    if (index_id < (Order * Order * Size)) {
 			    unsigned int coefficient_id = index_id / Size;
 			    unsigned int degree_id = index_id % Size;
 			    unsigned int current_degree_y = coefficient_id / Order;
@@ -141,7 +139,7 @@ namespace vli {
 
 			    unsigned int coefficient_id = output_degree_y * (Order*2-1) + output_degree_x;
 			    unsigned int * out2 = out + (coefficient_id * element_count *2* Size) + element_id; // coefficient->int_degree->element_id
-#pragma unroll
+                            #pragma unroll
 			    for(unsigned int i = 0; i < 2*Size; ++i) {
 				    // This is a strongly compute-bound kernel,
 				    // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
@@ -154,88 +152,89 @@ namespace vli {
     }
 
     template <typename BaseInt, std::size_t Size, unsigned int Order>
-	    __global__ void
-	    __launch_bounds__(SUM_BLOCK_SIZE, 2)
-	    polynomial_sum_intermediate_full(
-			    const unsigned int * __restrict__ intermediate,
-			    const unsigned int element_count,
-			    unsigned int * __restrict__ out)
+    __global__ void
+    __launch_bounds__(SUM_BLOCK_SIZE, 2)
+    polynomial_sum_intermediate_full(
+		    const unsigned int * __restrict__ intermediate,
+		    const unsigned int element_count,
+		    unsigned int * __restrict__ out)
+    {
+	    __shared__ unsigned int buf[SUM_BLOCK_SIZE * 2*(((Order>>1)<<1)+1)];
+
+	    unsigned int local_thread_id = threadIdx.x;
+	    unsigned int coefficient_id = blockIdx.x;
+
+	    unsigned int * t1 = buf + (local_thread_id * 2*(((Order>>1)<<1)+1));
+            #pragma unroll
+	    for(unsigned int i = 0; i < 2*Size; ++i)
+		    t1[i] = 0;
+
+	    const unsigned int * in2 = intermediate + (coefficient_id * element_count *2*Size) + local_thread_id;
+	    for(unsigned int element_id = local_thread_id; element_id < element_count; element_id += SUM_BLOCK_SIZE)
 	    {
-		    __shared__ unsigned int buf[SUM_BLOCK_SIZE * 2*(((Order>>1)<<1)+1)];
-
-		    unsigned int local_thread_id = threadIdx.x;
-		    unsigned int coefficient_id = blockIdx.x;
-
-		    unsigned int * t1 = buf + (local_thread_id * 2*(((Order>>1)<<1)+1));
-#pragma unroll
-		    for(unsigned int i = 0; i < 2*Size; ++i)
-			    t1[i] = 0;
-
-		    const unsigned int * in2 = intermediate + (coefficient_id * element_count *2*Size) + local_thread_id;
-		    for(unsigned int element_id = local_thread_id; element_id < element_count; element_id += SUM_BLOCK_SIZE)
+		    unsigned int carry_over = 0;
+                    #pragma unroll
+		    for(unsigned int degree = 0; degree < 2*Size; ++degree)
 		    {
+			    unsigned long long res_wide = (unsigned long long)t1[degree] + in2[degree * element_count] + carry_over;
+			    t1[degree] = res_wide;
+			    carry_over = res_wide >> 32;
+		    }
+		    in2 += SUM_BLOCK_SIZE;
+	    }
+
+            #pragma unroll
+	    for(unsigned int stride = SUM_BLOCK_SIZE >> 1; stride > 0; stride >>= 1) {
+		    __syncthreads();
+		    if (local_thread_id < stride) {
+
+			    unsigned int * t2 = buf + ((local_thread_id + stride) * 2 *(((Order>>1)<<1)+1));
+
 			    unsigned int carry_over = 0;
-#pragma unroll
-			    for(unsigned int degree = 0; degree < 2*Size; ++degree)
-			    {
-				    unsigned long long res_wide = (unsigned long long)t1[degree] + in2[degree * element_count] + carry_over;
+                            #pragma unroll
+			    for(unsigned int degree = 0; degree < 2*Size; ++degree) {
+				    unsigned long long res_wide = (unsigned long long)t1[degree] + t2[degree] + carry_over;
 				    t1[degree] = res_wide;
 				    carry_over = res_wide >> 32;
 			    }
-			    in2 += SUM_BLOCK_SIZE;
-		    }
-
-#pragma unroll
-		    for(unsigned int stride = SUM_BLOCK_SIZE >> 1; stride > 0; stride >>= 1) {
-			    __syncthreads();
-			    if (local_thread_id < stride) {
-
-				    unsigned int * t2 = buf + ((local_thread_id + stride) * 2 *(((Order>>1)<<1)+1));
-
-				    unsigned int carry_over = 0;
-#pragma unroll
-				    for(unsigned int degree = 0; degree < 2*Size; ++degree) {
-					    unsigned long long res_wide = (unsigned long long)t1[degree] + t2[degree] + carry_over;
-					    t1[degree] = res_wide;
-					    carry_over = res_wide >> 32;
-				    }
-			    }
-		    }
-
-		    if (local_thread_id == 0) {
-			    unsigned int * out2 = out+(coefficient_id*2*Size) /* ---> offset there ------> */ + coefficient_id/(2*Order-1)*(2*Size); // I add an offset to fit with vli, to do find a way to remove ghost element into VLI
-#pragma unroll
-			    for(unsigned int i=0; i<2*Size; ++i)
-				    out2[i] = buf[i];
 		    }
 	    }
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
-	    void inner_product_vector_nvidia(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
-		    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(Size,Order,VectorSize); // allocate memory for vector input, intermediate and output, singleton only one time 
-		    gpu_hardware_carryover_implementation<BaseInt, Size, Order>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order>::Instance(); // calculate the different packet, singleton only one time 
-
-		    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*Order*Order*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
-		    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*Order*Order*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
-
-		    {
-			    dim3 grid(VectorSize) ;
-			    dim3 threads(MUL_BLOCK_SIZE);
-			    polynomial_mul_full<BaseInt, Size, Order><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_);
-		    }
-
-		    {
-			    dim3 grid((Order*2-1)*(Order*2-1));
-			    dim3 threads(SUM_BLOCK_SIZE);
-			    polynomial_sum_intermediate_full<BaseInt, Size, Order><<<grid,threads>>>(gm->VinterData_, VectorSize, gm->PoutData_);
-		    }
-	    } 
-
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
-	    BaseInt* get_polynomial(){
-		    gpu_memblock<BaseInt, Size, Order>* gm = gpu_memblock<BaseInt, Size, Order>::Instance(); // I just get the mem pointer
-		    return gm->PoutData_;
+	    if (local_thread_id == 0) {
+		    unsigned int * out2 = out+(coefficient_id*2*Size) /* ---> offset there ------> */ + coefficient_id/(2*Order-1)*(2*Size); // I add an offset to fit with vli, to do find a way to remove ghost element into VLI
+                    #pragma unroll
+		    for(unsigned int i=0; i<2*Size; ++i)
+			    out2[i] = buf[i];
 	    }
+    }
+
+    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    void inner_product_vector_nvidia(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
+	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time 
+            gm->resize(Size,Order,VectorSize);
+	    gpu_hardware_carryover_implementation<BaseInt, Size, Order>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order>::Instance(); // calculate the different packet, singleton only one time 
+
+	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*Order*Order*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
+	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*Order*Order*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
+
+	    {
+		    dim3 grid(VectorSize) ;
+		    dim3 threads(MUL_BLOCK_SIZE);
+		    polynomial_mul_full<BaseInt, Size, Order><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_);
+	    }
+
+	    {
+		    dim3 grid((Order*2-1)*(Order*2-1));
+		    dim3 threads(SUM_BLOCK_SIZE);
+		    polynomial_sum_intermediate_full<BaseInt, Size, Order><<<grid,threads>>>(gm->VinterData_, VectorSize, gm->PoutData_);
+	    }
+    } 
+
+    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    BaseInt* get_polynomial(){
+	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // I just get the mem pointer
+	    return gm->PoutData_;
+    }
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE, POLY_ORDER) \
     void inner_product_vector_nvidia(vli_size_tag<VLI_SIZE, POLY_ORDER>, std::size_t vector_size, TYPE const* A, TYPE const* B) \

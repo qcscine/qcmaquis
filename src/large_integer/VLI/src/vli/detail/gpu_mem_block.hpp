@@ -46,6 +46,30 @@ namespace detail
         if(PoutData_ != 0)
             cudaFree((void*)this->PoutData_);
     }
-}
-}
 
+    template <typename BaseInt>
+    void gpu_memblock<BaseInt>::resize(std::size_t vli_size, unsigned int order, std::size_t vectorsize) {
+        std::size_t req_size = vectorsize * vli_size * order * order;
+        if( req_size > block_size_) {
+            if (V1Data_ != 0 )
+                cudaFree((void*)this->V1Data_);
+            if (V2Data_ != 0 )
+                cudaFree((void*)this->V2Data_);
+            if(VinterData_ != 0)
+                cudaFree((void*)this->VinterData_);
+            if(PoutData_ != 0)
+                cudaFree((void*)this->PoutData_);
+            cudaMalloc((void**)&(this->V1Data_), req_size*sizeof(BaseInt));
+            cudaMalloc((void**)&(this->V2Data_), req_size*sizeof(BaseInt));
+            cudaMalloc((void**)&(this->VinterData_), vectorsize * 2*vli_size * 2*order * 2*order * sizeof(BaseInt));
+            cudaMalloc((void**)&(this->PoutData_), 2*vli_size*2*order*2*order*sizeof(BaseInt));
+        }
+
+        // TODO due to ghost element, to remove one day!
+        if( req_size != block_size_){
+            block_size_ = req_size;
+            cudaMemset((void*)this->PoutData_,0,2*vli_size*2*order*2*order*sizeof(BaseInt));
+        }
+    }
+}
+}
