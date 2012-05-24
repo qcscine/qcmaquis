@@ -212,7 +212,7 @@ namespace vli {
 
     template <typename BaseInt, std::size_t Size, unsigned int Order>
 	    void inner_product_vector_nvidia(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
-		    gpu_memblock<BaseInt, Size, Order>* gm = gpu_memblock<BaseInt, Size, Order>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time 
+		    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(Size,Order,VectorSize); // allocate memory for vector input, intermediate and output, singleton only one time 
 		    gpu_hardware_carryover_implementation<BaseInt, Size, Order>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order>::Instance(); // calculate the different packet, singleton only one time 
 
 		    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*Order*Order*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);

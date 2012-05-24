@@ -30,21 +30,21 @@
 namespace vli{
 namespace detail
 {
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
-    gpu_memblock<BaseInt, Size, Order>::gpu_memblock(){
-        cudaMalloc((void**)&(this->V1Data_), MaxSizeVector*Size*Order*Order*sizeof(BaseInt));
-        cudaMalloc((void**)&(this->V2Data_), MaxSizeVector*Size*Order*Order*sizeof(BaseInt));
-        cudaMalloc((void**)&(this->VinterData_), MaxSizeVector*2*Size*2*Order*2*Order*sizeof(BaseInt));
-        cudaMalloc((void**)&(this->PoutData_), 2*size*2*Order*2*Order*sizeof(BaseInt));
-        cudaMemset((void*)this->PoutData_,0,2*Size*2*Order*2*Order*sizeof(unsigned int)); /* due to ghost element, to remove one day !*/
+    template <typename BaseInt>
+    gpu_memblock<BaseInt>::gpu_memblock()
+    : block_size_(0), V1Data_(0), V2Data_(0), VinterData_(0), PoutData_(0) {
     }
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
-    gpu_memblock<BaseInt, Size, Order>::~gpu_memblock() {
-        cudaFree((void*)this->V1Data_);
-        cudaFree((void*)this->V2Data_);
-        cudaFree((void*)this->VinterData_);
-        cudaFree((void*)this->PoutData_);
+    template <typename BaseInt>
+    gpu_memblock<BaseInt>::~gpu_memblock() {
+        if (V1Data_ != 0 )
+            cudaFree((void*)this->V1Data_);
+        if (V2Data_ != 0 )
+            cudaFree((void*)this->V2Data_);
+        if(VinterData_ != 0)
+            cudaFree((void*)this->VinterData_);
+        if(PoutData_ != 0)
+            cudaFree((void*)this->PoutData_);
     }
 }
 }
