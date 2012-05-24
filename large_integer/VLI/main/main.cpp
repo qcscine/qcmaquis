@@ -25,7 +25,7 @@
 
 #define Size1 3
 #define Size2 6
-#define Order 15
+#define Order 11
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -109,15 +109,15 @@ int main (int argc, char * const argv[])
 
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
-/*
+
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
-*/
+
     Timer t3("CPU vli_omp");
     t3.begin();
       result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t3.end();
-/*
+
 #ifdef VLI_USE_GPU
 std::cout << " --------------------------- " << std::endl;
     TimerOMP t("GPU omp 1" );
@@ -142,7 +142,7 @@ std::cout << " --------------------------- " << std::endl;
        pgmpd = inner_product(v1gmp,v2gmp);
     t4.end();
 #endif
-*/
+
 /*
      std::cout << " GPU----------------------------------------------------- " << std::endl;
      std::cout << result_pure_cpu_omp << std::endl;
