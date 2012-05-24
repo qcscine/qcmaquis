@@ -36,20 +36,47 @@ namespace vli {
 namespace detail {
 
     // we allocate the mem only one time so pattern of this class singleton
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
-    class gpu_memblock : public Singleton<gpu_memblock<BaseInt, Size, Order> >  {
+    template <typename BaseInt>
+    class gpu_memblock : public Singleton<gpu_memblock>  {
         friend class Singleton<gpu_memblock>; // to have access to the Instance, Destroy functions into the singleton class
         public:
         typedef BaseInt value_type;
-        enum { size  = Size};
-        enum { order = Order};
-        enum { MaxSizeVector = 16384}; // allocate a big chuck of mem, vector or 16384 entry
         private:
         gpu_memblock();
         gpu_memblock(gpu_memblock const& );
         gpu_memblock& operator=(gpu_memblock const& );
+        void resize(std::size_t vli_size, unsigned int order, std::size_t vectorsize) {
+            std::size_t req_size = vectorsize * size * order * order;
+            if( req_size > block_size_) {
+                if (V1Data_ != 0 )
+                    cudaFree((void*)this->V1Data_);
+                if (V2Data_ != 0 )
+                    cudaFree((void*)this->V2Data_);
+                if(VinterData_ != 0)
+                    cudaFree((void*)this->VinterData_);
+                if(PoutData_ != 0)
+                    cudaFree((void*)this->PoutData_);
+                cudaMalloc((void**)&(this->V1Data_), req_size*sizeof(BaseInt));
+                cudaMalloc((void**)&(this->V2Data_), req_size*sizeof(BaseInt));
+                cudaMalloc((void**)&(this->VinterData_), vectorsize * 2*size * 2*order * 2*order * sizeof(BaseInt));
+                cudaMalloc((void**)&(this->PoutData_), 2*size*2*order*2*order*sizeof(BaseInt));
+                block_size_ = req_size;
+            }
+
+            // TODO due to ghost element, to remove one day!
+            if( req_size != block_size_)
+                cudaMemset((void*)this->PoutData_,0,2*size*2*order*2*order*sizeof(BaseInt));
+        }
+
+        std::size_t block_size_;
+
         public:
         ~gpu_memblock();
+        static gpu_memblock* Instance(std::size_t vli_size, unsigned int order, std::size_t vectorsize) {
+            gpu_memblock* instance = Singleton<gpu_memblock>::Instance();
+            instance->resize(size,order,vectorsize);
+            return instance;
+        }
         BaseInt* V1Data_; // input vector 1
         BaseInt* V2Data_; // input vector 2
         BaseInt* VinterData_; // inter value before the final reduction
