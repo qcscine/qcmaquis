@@ -27,7 +27,7 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/kernel_implementation_macros.h"
+#include "vli/detail/cpu_x86/kernel_implementation_macros.h"
 
 // This assembly code support both data layout SoA and AoS
 // clear the syntax

@@ -30,12 +30,12 @@
 #include <vector>
 #include <algorithm>
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu
-#include "vli/detail/gpu_hardware_carryover_implementation.h" 
-#include "vli/detail/gpu_mem_block.h"
-#include "vli/detail/kernels_gpu_neg_asm.hpp"
-#include "vli/detail/kernels_gpu_add_asm.hpp"
-#include "vli/detail/kernels_gpu_mul_asm.hpp"
-#include "vli/detail/vli_number_gpu_function_hooks.hpp"
+#include "vli/detail/gpu/gpu_hardware_carryover_implementation.h" 
+#include "vli/detail/gpu/gpu_mem_block.h"
+#include "vli/detail/gpu/kernels_gpu_neg_asm.hpp"
+#include "vli/detail/gpu/kernels_gpu_add_asm.hpp"
+#include "vli/detail/gpu/kernels_gpu_mul_asm.hpp"
+#include "vli/detail/gpu/vli_number_gpu_function_hooks.hpp"
 
 /*
 *  (((X>>1)<<1)+1) == X if odd, X+1 if even
