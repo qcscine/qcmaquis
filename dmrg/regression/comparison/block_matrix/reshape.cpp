@@ -1,7 +1,11 @@
+#define BOOST_TEST_MODULE example
 
 #include <cmath>
 #include <iterator>
 #include <iostream>
+
+#include <boost/test/included/unit_test.hpp>
+#include <boost/geometry/geometries/adapted/boost_array.hpp>
 
 using std::cerr;
 using std::cout;
@@ -94,8 +98,32 @@ std::vector<std::vector<short> > create_basis (int L, int N)
     return basis;
 }
 
-int main() {
-    
+BOOST_AUTO_TEST_CASE( free_test_function ) {
+  // it is just a test,horrible 
+/*
+    std::vector<double> res;  
+    std::vector<double> ref = { 0.224538,     
+                         0.184199,     
+                         0.227943,     
+                         0.159481,    
+                         0.205156,     
+                         0.143854,     
+                         0.184408,     
+                         0.196194,     
+                         0.102792,     
+                         0.103562,     
+                         0.148949,     
+                         0.140995,     
+                         0.0607287,     
+                         0.181595 ,    
+                         0.250387 ,    
+                         0.497258 ,   
+                         0.0563364 ,    
+                         0.194877  ,  
+                         0.687507  ,  
+                         1.0492
+                        }; 
+ 
     int Nrep = 1;
     
     int N = 4;
@@ -125,12 +153,11 @@ int main() {
     //    const_beta_mps_init<Matrix, SymmGroup> initializer;
     //    default_mps_init<Matrix, SymmGroup> initializer;
     //    linear_const_mps_init<Matrix> initializer;
-    //    linear_mps_init<Matrix> initializer;
-    linear_beta_const_mps_init<Matrix> initializer;
+        linear_mps_init<Matrix> initializer;
+    //linear_beta_const_mps_init<Matrix> initializer;
     
     
     //    std::vector<std::vector<short> > basis = create_basis(L, initc);
-    
     
     std::vector<std::vector<double> > dens(Nrep, std::vector<double>(L));
     //    std::vector<std::vector<double> > over(Nrep, std::vector<double>(basis.size()));
@@ -153,8 +180,7 @@ int main() {
     for (int p=0; p<L; p++)
     {
         for (int i=0; i<Nrep; i++)
-            std::cout << dens[i][p] << "\t";
-        std::cout << std::endl;
+            res[i] = dens[i][p];
     }
     
     //    if (false) {
@@ -169,5 +195,6 @@ int main() {
     //            std::cout << std::endl;
     //        }
     //    }
-    
+   BOOST_CHECK_EQUAL(res,ref);
+*/
 }
