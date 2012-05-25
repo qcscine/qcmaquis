@@ -41,7 +41,7 @@
 #endif //_OPENMP
 
 #ifdef VLI_COMPILE_GPU
-#include "vli/detail/inner_product_gpu_booster.hpp"
+#include "vli/detail/gpu/inner_product_gpu_booster.hpp"
 #endif //VLI_COMPILE_GPU
 
 namespace vli

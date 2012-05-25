@@ -27,7 +27,7 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/singleton.h"
+#include "vli/detail/gpu/singleton.h"
 
 #ifndef GPU_MEM_BLOCK_H
 #define GPU_MEM_BLOCK_H
@@ -61,6 +61,6 @@ namespace detail {
     } //end namespace detail
 } //end namespce vli  
 
-#include "vli/detail/gpu_mem_block.hpp"
+#include "vli/detail/gpu/gpu_mem_block.hpp"
 
 #endif //INNER_PRODUCT_GPU_BOOSTER_HPP

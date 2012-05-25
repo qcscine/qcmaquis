@@ -30,7 +30,7 @@
 #ifndef VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP
 #define VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP
 
-#include "vli/detail/kernels_cpu_asm.h"
+#include "vli/detail/kernels_cpu.h"
 
 namespace vli 
 {

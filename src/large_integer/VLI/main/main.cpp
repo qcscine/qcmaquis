@@ -21,7 +21,6 @@
 #include "regression/vli_test.hpp"
 
 #include "vli/detail/bit_masks.hpp"
-#include "vli/detail/kernels_cpu_asm.h"
 
 #define Size1 3
 #define Size2 6
