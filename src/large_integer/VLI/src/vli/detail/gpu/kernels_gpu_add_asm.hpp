@@ -30,7 +30,7 @@
 #ifndef KERNELS_GPU_ADD_HPP
 #define KERNELS_GPU_ADD_HPP
 
-#include "vli/utils/macro_gpu.h"
+#include "vli/detail/gpu/kernel_macros.h"
 
 namespace vli{
     namespace detail{
@@ -46,7 +46,7 @@ namespace vli{
      * load/write operation are done by the compiler (!= ASM x80-86) 
      */
 
-    #define add384_384_gpu(w, n, unused) \
+    #define addn128_n128_gpu(w, n, unused) \
         asm( \
              BOOST_PP_IF(n,"addc.cc.u32 %0, %0, %4; \n\t","add.cc.u32  %0, %0, %4 ; \n\t") /* n=0 no CB,  n!=0, second pass needs CB */ \
             "addc.cc.u32 %1, %1, %5 ; \n\t" /* x[1] += y[1] + CB                                                                     */ \
@@ -58,12 +58,12 @@ namespace vli{
 
     #define FUNCTION_add_nbits_nbits(z, n, unused) \
        inline void NAME_ADD_NBITS_PLUS_NBITS(BOOST_PP_MUL(2,BOOST_PP_ADD(n,1)))(unsigned int* x, unsigned int const* y){                \
-           BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), add384_384_gpu, ~)                                                        \
+           BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), addn128_n128_gpu, ~)                                                        \
        }                                                                                                                                \
 
     BOOST_PP_REPEAT(3, FUNCTION_add_nbits_nbits, ~) /* expend until 512 */
     #undef FUNCTION_add_nbits_nbits 
-    #undef add384_384_384_gpu
+    #undef add_m128_n128_gpu
 
     }
 }

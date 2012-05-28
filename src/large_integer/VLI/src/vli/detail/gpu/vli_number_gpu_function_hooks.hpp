@@ -29,7 +29,7 @@
 
 #ifndef VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
 #define VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
-#include "vli/utils/macro_gpu.h"
+#include "vli/detail/gpu/kernel_macros.h"
 namespace vli {
     namespace detail {
 
@@ -90,7 +90,7 @@ namespace vli {
     #undef FUNCTION_mul_twonbits_nbits_nbits
     
     /* ---------------------------------------------------- Begin Negation specialization ---------------------------------------------------- */
-    //specialization mul    
+    //specialization neg 128 to 512 step of 64 (useless kernels are also generated)
 
     #define FUNCTION_negate_nbits(z, n, unused) \
         template<> \
@@ -98,7 +98,7 @@ namespace vli {
             NAME_NEGATE_NBITS(n)(x); \
         }; \
 
-    BOOST_PP_REPEAT(5, FUNCTION_negate_nbits, ~)
+    BOOST_PP_REPEAT(7, FUNCTION_negate_nbits, ~)
     #undef FUNCTION_negate_nbits
 
     } //namespace detail

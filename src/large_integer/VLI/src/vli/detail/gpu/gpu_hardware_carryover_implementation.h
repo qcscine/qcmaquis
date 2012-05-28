@@ -47,6 +47,10 @@ namespace vli {
         gpu_hardware_carryover_implementation& operator =(gpu_hardware_carryover_implementation const &);
     public:
         ~gpu_hardware_carryover_implementation();
+        void plan();
+        void resize();
+        single_coefficient_task* execution_plan_;// we do not care the type
+        unsigned int* workblock_count_by_warp_; // we do not care the type
     private:
         unsigned int  element_count_prepared;
     };

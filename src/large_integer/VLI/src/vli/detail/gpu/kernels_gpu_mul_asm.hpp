@@ -30,7 +30,7 @@
 #ifndef KERNELS_GPU_MUL_HPP
 #define KERNELS_GPU_MUL_HPP
 
-#include "vli/utils/macro_gpu.h"
+#include "vli/detail/gpu/kernel_macros.h"
 
 namespace vli{
     namespace detail{
@@ -72,16 +72,72 @@ namespace vli{
               :"+r"(x[BOOST_PP_ADD(0,n)]),"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),                                           \
                "+r"(x[BOOST_PP_ADD(3,n)]),"+r"(x[BOOST_PP_ADD(4,n)]),"+r"(x[BOOST_PP_ADD(5,n)]),"+r"(x[BOOST_PP_ADD(6,n)])                 \
               :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3]),"r"(y[4]),"r"(y[5])                                                       \
-          );                                                                                                                            \
+          );                                                                                                                               \
 
     inline void mul384_192_192(unsigned int* x, unsigned int const* y, unsigned int const* z){
-           BOOST_PP_REPEAT(6, mul384bits_192bits_192bits, ~)                                                                              \
+           BOOST_PP_REPEAT(6, mul384bits_192bits_192bits, ~)                                                      
     }
     #undef mul384bits_192bits_192bits
+    // I could merge all these lines, butI understand like this
+    #define mullow1_512bits_256bits_256bits(n) \
+        asm( \
+              "mad.lo.cc.u32  %0, %5, %4, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+              "madc.lo.cc.u32 %1, %6, %4, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
+              "madc.lo.cc.u32 %2, %7, %4, %2; \n\t" /* c[i+2] = a[2] * b[i] (low)  + c[i+1] + CB                                       */ \
+              "madc.lo.cc.u32 %3, %8, %4, %3; \n\t" /* c[i+3] = a[3] * b[i] (low)  + c[i+3] + CB                                       */ \
+              :"+r"(x[BOOST_PP_ADD(0,n)]),"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),"+r"(x[BOOST_PP_ADD(3,n)])                \
+              :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3])                                                                          \
+          );                                                                                                                              \
+
+    // c - line 97 I have a madc it is a bug hypothesis ! I suppose the CB is concerve between line 87 et 97, under x86 is is work, seem ok on gpu-ptx
+
+    #define mullow2_512bits_256bits_256bits(n) \
+        asm( \
+              "madc.lo.cc.u32 %0, %6, %5, %0; \n\t" /* c[i+4] = a[4] * b[i] (low)  + c[i+4] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+              "madc.lo.cc.u32 %1, %7, %5, %1; \n\t" /* c[i+5] = a[5] * b[i] (low)  + c[i+5] + CB                                       */ \
+              "madc.lo.cc.u32 %2, %8, %5, %2; \n\t" /* c[i+6] = a[6] * b[i] (low)  + c[i+6] + CB                                       */ \
+              "madc.lo.cc.u32 %3, %9, %5, %3; \n\t" /* c[i+7] = a[7] * b[i] (low)  + c[i+7] + CB                                       */ \
+              BOOST_PP_IF(n,"addc.cc.u32 %4, 0, 0; \n\t","\n\t") /* c[i+8] += CB, n = 0 CB impossible                  */ \
+              :"+r"(x[BOOST_PP_ADD(4,n)]),"+r"(x[BOOST_PP_ADD(5,n)]),"+r"(x[BOOST_PP_ADD(6,n)]),"+r"(x[BOOST_PP_ADD(7,n)]),               \
+               "+r"(x[BOOST_PP_ADD(8,n)])                                                                                                 \
+              :"r"(z[n]),"r"(y[4]),"r"(y[5]),"r"(y[6]),"r"(y[7])                                                                          \
+          );                                                                                                                              \
+
+    #define mulhig1_512bits_256bits_256bits(n) \
+        asm( \
+              "mad.hi.cc.u32  %0, %5, %4, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+              "madc.hi.cc.u32 %1, %6, %4, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
+              "madc.hi.cc.u32 %2, %7, %4, %2; \n\t" /* c[i+2] = a[2] * b[i] (low)  + c[i+1] + CB                                       */ \
+              "madc.hi.cc.u32 %3, %8, %4, %3; \n\t" /* c[i+3] = a[3] * b[i] (low)  + c[i+3] + CB                                       */ \
+              :"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),"+r"(x[BOOST_PP_ADD(3,n)]),"+r"(x[BOOST_PP_ADD(4,n)])                \
+              :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3])                                                                          \
+          );                                                                                                                              \
+
+    #define mulhig2_512bits_256bits_256bits(n) \
+        asm( \
+              "madc.hi.cc.u32 %0, %5, %4, %0; \n\t" /* c[i+4] = a[4] * b[i] (low)  + c[i+4] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+              "madc.hi.cc.u32 %1, %6, %4, %1; \n\t" /* c[i+5] = a[5] * b[i] (low)  + c[i+5] + CB                                       */ \
+              "madc.hi.cc.u32 %2, %7, %4, %2; \n\t" /* c[i+6] = a[6] * b[i] (low)  + c[i+6] + CB                                       */ \
+              "madc.hi.cc.u32 %3, %8, %4, %3; \n\t" /* c[i+7] = a[7] * b[i] (low)  + c[i+7] + CB                                       */ \
+              :"+r"(x[BOOST_PP_ADD(5,n)]),"+r"(x[BOOST_PP_ADD(6,n)]),"+r"(x[BOOST_PP_ADD(7,n)]),"+r"(x[BOOST_PP_ADD(8,n)])                \
+              :"r"(z[n]),"r"(y[4]),"r"(y[5]),"r"(y[6]),"r"(y[7])                                                                          \
+          );                                                                                                                              \
+
+    #define mul512bits_256bits_256bits(w, n, unused) \
+            mullow1_512bits_256bits_256bits(n) \
+            mullow2_512bits_256bits_256bits(n) \
+            mulhig1_512bits_256bits_256bits(n) \
+            mulhig2_512bits_256bits_256bits(n) 
 
     inline void mul512_256_256(unsigned int* x, unsigned int const* y, unsigned int const* z){
-    
+           BOOST_PP_REPEAT(8, mul512bits_256bits_256bits, ~)
     }
+
+    #undef mullow1_512bits_256bits_256bits
+    #undef mullow2_512bits_256bits_256bits
+    #undef mulhig1_512bits_256bits_256bits
+    #undef mulhig2_512bits_256bits_256bits
+    #undef mul512bits_256bits_256bits
 
     }
 }

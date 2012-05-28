@@ -30,28 +30,31 @@
 #ifndef KERNELS_GPU_NEG_HPP
 #define KERNELS_GPU_NEG_HPP
 
-#include "vli/utils/macro_gpu.h"
+#include "vli/detail/gpu/kernel_macros.h"
 
 namespace vli{
     namespace detail{
 
+    #define negn64_n64_gpu(z, n, unused) \
+        asm( \
+            "not.b32  %0, %0 ; \n\t"                                                        \
+            "not.b32  %1, %1 ; \n\t"                                                        \
+             BOOST_PP_IF(n,"addc.cc.u32 %0, %0, %3; \n\t","add.cc.u32  %0, %0, %2 ; \n\t")  \
+            "addc.cc.u32 %1, %1, %3 ; \n\t" /* x[i+1] += y[i+1] + CB                     */ \
+            :"+r"(x[BOOST_PP_MUL(2,n)]),"+r"(x[BOOST_PP_ADD(BOOST_PP_MUL(2,n),1)])          \
+            :"r"(one),"r"(zero)                                                             \
+           ); \
+
     #define FUNCTION_negate_nbits(z, n, unused) \
-       inline void NAME_NEGATE_NBITS(n)(unsigned int* x){                                                        \
-           unsigned int one(1);                                                                                      \
-           unsigned int zero(0);                                                                                     \
-           asm(                                                                                                      \
-               BOOST_PP_REPEAT(BOOST_PP_ADD(4,BOOST_PP_MUL(2,n)), NOT_register, ~)                                   \
-               "add.cc.u32  %0, %0, "BOOST_PP_STRINGIZE(BOOST_PP_CAT(pc,BOOST_PP_ADD(4,BOOST_PP_MUL(2,n))))"; \n\t " \
-               BOOST_PP_REPEAT(BOOST_PP_ADD(4,BOOST_PP_MUL(2,n)), ADC0_register, BOOST_PP_ADD(5,BOOST_PP_MUL(2,n)))  \
-               :BOOST_PP_REPEAT(BOOST_PP_ADD(4,BOOST_PP_MUL(2,n)),CLOTHER_register_rw,~)                             \
-               :"r"(one),"r"(zero)                                                                                   \
-           );                                                                                                        \
-       }                                                                                                             \
+       inline void NAME_NEGATE_NBITS(n)(unsigned int* x){         \
+           unsigned int one(1);                                   \
+           unsigned int zero(0);                                  \
+           BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), negn64_n64_gpu , ~) \
+     }  \
 
-       BOOST_PP_REPEAT(5, FUNCTION_negate_nbits, ~)
-    #undef FUNCTION_negate_nbits
-
-    }
-}
-
+     BOOST_PP_REPEAT(7, FUNCTION_negate_nbits, ~)
+     
+     #undef FUNCTION_negate_nbits
+     #undef negn64_n64_gpu
+}}
 #endif
