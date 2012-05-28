@@ -26,41 +26,35 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include "single_coefficient_task.h"
-#include "compile_time_constants.h"
-#include "vli/utils/macro_gpu.h"
-
- __device__  vli::detail::single_coefficient_task execution_plan[MUL_BLOCK_SIZE * MAX_ITERATION_COUNT];
- __device__  unsigned int workblock_count_by_warp[MUL_BLOCK_SIZE / 32];
+#include "vli/detail/gpu/single_coefficient_task.h"
+#include "vli/detail/gpu/compile_time_constants.h"
+#include "vli/detail/gpu/kernel_macros.h"
 
 namespace vli {
-    namespace detail {
+    namespace detail  {
 
-                     // declaration ASM functions  
-                     __device__ void mul384_384_gpu(unsigned int* x /* local */, unsigned int const* y /* shared */, unsigned int const* z /* shared */);
-
-                     template <class BaseInt, std::size_t Size>
-                     __device__ void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2);
-                    //addition 256+256, 384+384, 512+512
-                    #define FUNCTION_add_nbits_nbits(z, n, unused) \
-                         __device__ void NAME_ADD_NBITS_PLUS_NBITS(BOOST_PP_MUL(2,BOOST_PP_ADD(n,1)))(unsigned int* x, unsigned int const* y); \
-                     
-                    BOOST_PP_REPEAT(3, FUNCTION_add_nbits_nbits, ~)
-                    #undef FUNCTION_add_nbits_nbits
-
-                    //multiplication 128*128, 129*129, 256*256
-                    #define FUNCTION_mul_twobits_nbits_nbits(z, n, unused) \
-                         __device__ void NAME_MUL_TWONBITS_NBITS_NBITS(BOOST_PP_ADD(n,1))(unsigned int* x, unsigned int const* y, unsigned int const* w); \
-                     
-                    BOOST_PP_REPEAT(3, FUNCTION_mul_twobits_nbits_nbits, ~)
-                    #undef FUNCTION_mul_twobits_nbits_nbits
-
-                    //negation 128 to 384, 64 stride 
-                    #define FUNCTION_negate_nbits(z, n, unused) \
-                         __device__ void NAME_NEGATE_NBITS(n)(unsigned int* x); \
-                     
-                    BOOST_PP_REPEAT(5, FUNCTION_negate_nbits, ~)
-                    #undef FUNCTION_negate_nbits
+                      template <class BaseInt, std::size_t Size>
+                      __device__ void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2);
+                      //addition 256+256, 384+384, 512+512
+                      #define FUNCTION_add_nbits_nbits(z, n, unused) \
+                           __device__ void NAME_ADD_NBITS_PLUS_NBITS(BOOST_PP_MUL(2,BOOST_PP_ADD(n,1)))(unsigned int* x, unsigned int const* y); \
+                       
+                      BOOST_PP_REPEAT(3, FUNCTION_add_nbits_nbits, ~)
+                      #undef FUNCTION_add_nbits_nbits
+                      
+                      //multiplication 128*128, 129*129, 256*256
+                      #define FUNCTION_mul_twobits_nbits_nbits(z, n, unused) \
+                           __device__ void NAME_MUL_TWONBITS_NBITS_NBITS(BOOST_PP_ADD(n,1))(unsigned int* x, unsigned int const* y, unsigned int const* w); \
+                       
+                      BOOST_PP_REPEAT(3, FUNCTION_mul_twobits_nbits_nbits, ~)
+                      #undef FUNCTION_mul_twobits_nbits_nbits
+                      
+                      //negation 128 to 384, 64 stride 
+                      #define FUNCTION_negate_nbits(z, n, unused) \
+                           __device__ void NAME_NEGATE_NBITS(n)(unsigned int* x); \
+                      
+                     BOOST_PP_REPEAT(7, FUNCTION_negate_nbits, ~)
+                     #undef FUNCTION_negate_nbits
 
      } // end namespace detail
 } // end namespace vli

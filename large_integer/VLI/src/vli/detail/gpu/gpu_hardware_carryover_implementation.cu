@@ -37,23 +37,22 @@
 #include "vli/detail/gpu/kernels_gpu_mul_asm.hpp"
 #include "vli/detail/gpu/vli_number_gpu_function_hooks.hpp"
 
-/*
-*  (((X>>1)<<1)+1) == X if odd, X+1 if even
-*/
 namespace vli {
     namespace detail {
 
     template <typename BaseInt, std::size_t Size, unsigned int Order>
     __global__ void
-    __launch_bounds__(MUL_BLOCK_SIZE, 2)
+    __launch_bounds__(MulBlockSize<Order>::value , 2)
     polynomial_mul_full(
     	const unsigned int * __restrict__ in1,
     	const unsigned int * __restrict__ in2,
-           const unsigned int element_count,
-           unsigned int * __restrict__ out)
+        const unsigned int element_count,
+        unsigned int* __restrict__ out,
+        unsigned int* __restrict__ workblock_count_by_warp,
+        single_coefficient_task* __restrict__ execution_plan)
     {
-	    __shared__ unsigned int in_buffer1[(((Order>>1)<<1)+1) * Order * Size];
-	    __shared__ unsigned int in_buffer2[(((Order>>1)<<1)+1) * Order * Size];
+	    __shared__ unsigned int in_buffer1[OrderPadded<Order>::value * Order * Size];
+	    __shared__ unsigned int in_buffer2[OrderPadded<Order>::value * Order * Size];
 
 	    const unsigned int local_thread_id = threadIdx.x;
 	    const unsigned int element_id = blockIdx.x;
@@ -64,15 +63,15 @@ namespace vli {
 		    const unsigned int * in_shifted2 = in2 + (element_id * (Order * Order * Size));
 		    unsigned int index_id = local_thread_id;
                     #pragma unroll
-		    for(unsigned int i = 0; i < (Order * Order * Size) / MUL_BLOCK_SIZE; ++i) {
+		    for(unsigned int i = 0; i < (Order * Order * Size) / MulBlockSize<Order>::value; ++i) {
 			    unsigned int coefficient_id = index_id / Size;
 			    unsigned int degree_id = index_id % Size;
 			    unsigned int current_degree_y = coefficient_id / Order;
 			    unsigned int current_degree_x = coefficient_id % Order;
-			    unsigned int local_index_id = current_degree_x + (current_degree_y * (((Order>>1)<<1)+1)) + (degree_id * ((((Order>>1)<<1)+1) * Order));
+			    unsigned int local_index_id = current_degree_x + (current_degree_y * OrderPadded<Order>::value) + (degree_id * (OrderPadded<Order>::value * Order));
 			    in_buffer1[local_index_id] = in_shifted1[index_id];
 			    in_buffer2[local_index_id] = in_shifted2[index_id];
-			    index_id += MUL_BLOCK_SIZE;
+			    index_id += MulBlockSize<Order>::value ;
 		    }
 
 		    if (index_id < (Order * Order * Size)) {
@@ -80,7 +79,7 @@ namespace vli {
 			    unsigned int degree_id = index_id % Size;
 			    unsigned int current_degree_y = coefficient_id / Order;
 			    unsigned int current_degree_x = coefficient_id % Order;
-			    unsigned int local_index_id = current_degree_x + (current_degree_y * (((Order>>1)<<1)+1)) + (degree_id * ((((Order>>1)<<1)+1) * Order));
+			    unsigned int local_index_id = current_degree_x + (current_degree_y * OrderPadded<Order>::value) + (degree_id * (OrderPadded<Order>::value * Order));
 			    in_buffer1[local_index_id] = in_shifted1[index_id];
 			    in_buffer2[local_index_id] = in_shifted2[index_id];
 		    }
@@ -92,9 +91,10 @@ namespace vli {
 	    unsigned int res1[2*Size];
 
 	    unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
+
 	    for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id)
 	    {
-		    vli::detail::single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MUL_BLOCK_SIZE)];
+		    single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<Order>::value)];
 		    const unsigned int step_count = task.step_count;
 
 		    if (step_count > 0)
@@ -112,8 +112,8 @@ namespace vli {
 			    unsigned int current_degree_y = output_degree_y > (Order - 1) ? output_degree_y - (Order - 1) : 0;
 
 			    for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
-				    unsigned int * in_polynomial1 = in_buffer1 + current_degree_x + (current_degree_y * (((Order>>1)<<1)+1));
-				    unsigned int * in_polynomial2 = in_buffer2 + (output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * (((Order>>1)<<1)+1));
+				    unsigned int * in_polynomial1 = in_buffer1 + current_degree_x + (current_degree_y * OrderPadded<Order>::value);
+				    unsigned int * in_polynomial2 = in_buffer2 + (output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * OrderPadded<Order>::value);
 
                                     #pragma unroll
 				    for(unsigned int i = 0; i < 2*Size; ++i)
@@ -121,11 +121,11 @@ namespace vli {
 
                                     #pragma unroll
 				    for(unsigned int degree1 = 0; degree1 < Size; ++degree1)
-					    c1[degree1] = in_polynomial1[degree1 * ((((Order>>1)<<1)+1) * Order)];
+					    c1[degree1] = in_polynomial1[degree1 * (OrderPadded<Order>::value * Order)];
 
                                     #pragma unroll
 				    for(unsigned int degree2 = 0; degree2 < Size; ++degree2)
-					    c2[degree2] = in_polynomial2[degree2  * ((((Order>>1)<<1)+1) * Order)];
+					    c2[degree2] = in_polynomial2[degree2  * (OrderPadded<Order>::value * Order)];
 
                                     multiplies<BaseInt, Size>(res, res1, c1, c2);
 
@@ -159,12 +159,12 @@ namespace vli {
 		    const unsigned int element_count,
 		    unsigned int * __restrict__ out)
     {
-	    __shared__ unsigned int buf[SUM_BLOCK_SIZE * 2*(((Order>>1)<<1)+1)];
+	    __shared__ unsigned int buf[SUM_BLOCK_SIZE * 2*OrderPadded<Order>::value];
 
 	    unsigned int local_thread_id = threadIdx.x;
 	    unsigned int coefficient_id = blockIdx.x;
 
-	    unsigned int * t1 = buf + (local_thread_id * 2*(((Order>>1)<<1)+1));
+	    unsigned int * t1 = buf + (local_thread_id * 2*OrderPadded<Order>::value);
             #pragma unroll
 	    for(unsigned int i = 0; i < 2*Size; ++i)
 		    t1[i] = 0;
@@ -172,31 +172,20 @@ namespace vli {
 	    const unsigned int * in2 = intermediate + (coefficient_id * element_count *2*Size) + local_thread_id;
 	    for(unsigned int element_id = local_thread_id; element_id < element_count; element_id += SUM_BLOCK_SIZE)
 	    {
-		    unsigned int carry_over = 0;
-                    #pragma unroll
-		    for(unsigned int degree = 0; degree < 2*Size; ++degree)
-		    {
-			    unsigned long long res_wide = (unsigned long long)t1[degree] + in2[degree * element_count] + carry_over;
-			    t1[degree] = res_wide;
-			    carry_over = res_wide >> 32;
-		    }
-		    in2 += SUM_BLOCK_SIZE;
+                 asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(t1[0]):"r"(in2[0])); 
+                 #pragma unroll
+                 for(int i=1; i < 2*Order; ++i)
+                     asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(t1[i]):"r"(in2[i*element_count])); 
+
+     	         in2 += SUM_BLOCK_SIZE;
 	    }
 
             #pragma unroll
 	    for(unsigned int stride = SUM_BLOCK_SIZE >> 1; stride > 0; stride >>= 1) {
 		    __syncthreads();
 		    if (local_thread_id < stride) {
-
-			    unsigned int * t2 = buf + ((local_thread_id + stride) * 2 *(((Order>>1)<<1)+1));
-
-			    unsigned int carry_over = 0;
-                            #pragma unroll
-			    for(unsigned int degree = 0; degree < 2*Size; ++degree) {
-				    unsigned long long res_wide = (unsigned long long)t1[degree] + t2[degree] + carry_over;
-				    t1[degree] = res_wide;
-				    carry_over = res_wide >> 32;
-			    }
+			    unsigned int * t2 = buf + ((local_thread_id + stride) * 2 *OrderPadded<Order>::value);
+                            add<BaseInt, 2*Size>(t1,t2);
 		    }
 	    }
 
@@ -211,16 +200,15 @@ namespace vli {
     template <typename BaseInt, std::size_t Size, unsigned int Order>
     void inner_product_vector_nvidia(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
 	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time 
-            gm->resize(Size,Order,VectorSize);
+            gm->resize(Size,Order,VectorSize); // we resize if the block is larger
 	    gpu_hardware_carryover_implementation<BaseInt, Size, Order>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order>::Instance(); // calculate the different packet, singleton only one time 
-
 	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*Order*Order*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*Order*Order*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 
 	    {
 		    dim3 grid(VectorSize) ;
-		    dim3 threads(MUL_BLOCK_SIZE);
-		    polynomial_mul_full<BaseInt, Size, Order><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_);
+		    dim3 threads(MulBlockSize<Order>::value);
+		    polynomial_mul_full<BaseInt, Size, Order><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {

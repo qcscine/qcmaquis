@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product_gmp_positive, Vli, vli_extent
     
     vli::test::InitVecVLItoVecGMP(v1,vgmp1);
     vli::test::InitVecVLItoVecGMP(v2,vgmp2);
-    pd = vli::detail::inner_product_plain(v1,v2);
+    pd = vli::detail::inner_product_gpu_omp(v1,v2);
     pgmpd = inner_product(vgmp1,vgmp2);
     
     BOOST_CHECK_EQUAL(vli::test::ValidatePolyVLI_PolyGMP(pd,pgmpd), true );
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product_gmp_positive_negative, Vli, v
         
     vli::test::InitVecVLItoVecGMP(v1,vgmp1);
     vli::test::InitVecVLItoVecGMP(v2,vgmp2);
-    pd = vli::detail::inner_product_plain(v1,v2);
+    pd = vli::detail::inner_product_gpu_omp(v1,v2);
     pgmpd = inner_product(vgmp1,vgmp2);
         
     BOOST_CHECK_EQUAL(vli::test::ValidatePolyVLI_PolyGMP(pd,pgmpd), true );

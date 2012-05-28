@@ -103,11 +103,11 @@ int main (int argc, char * const argv[])
  polynomial_result_type_cpu result_mix_cpu_gpu  ;
  polynomial_result_type_cpu result_cpu_gpu  ;
    
-    fill_vector_random(v1,2);
-    fill_vector_random(v2,3);
+    fill_vector_random(v1,3);
+    fill_vector_random(v2,2);
 
-    fill_vector_negate(v1,2);
-    fill_vector_negate(v2,3);
+    fill_vector_negate(v1,3);
+    fill_vector_negate(v2,2);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);

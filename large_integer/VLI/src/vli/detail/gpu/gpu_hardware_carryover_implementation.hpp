@@ -4,14 +4,24 @@ namespace vli {
 
     template <typename BaseInt, std::size_t Size, unsigned int Order>
     gpu_hardware_carryover_implementation<BaseInt, Size, Order>::gpu_hardware_carryover_implementation(){
-
-        unsigned int mul_block_size = (((Order*2-1)*(Order*2-1)/2U >= 256U) ? 256U : (((Order*2-1)*(Order*2-1)/2U+32U-1U)/32U*32U));// 32U is the warp size here
-        unsigned int max_iteration_count = ((Order*2-1)*(Order*2-1)+31U)/32U;
-        //it's a big constructor
+        // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
+        // only once due to singleton
+        cudaMalloc((void**)&(this->execution_plan_), MulBlockSize<Order>::value*MaxIterationCount<Order>::value*sizeof(single_coefficient_task));
+        cudaMalloc((void**)&(this->workblock_count_by_warp_), MulBlockSize<Order>::value/32*sizeof(unsigned int));
         element_count_prepared=0;
-    
-        std::vector<unsigned int> workblock_count_by_warp_local(mul_block_size / 32,0);
-        std::vector<unsigned int> work_total_by_size(mul_block_size / 32,0);
+        plan();
+    }
+
+    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    gpu_hardware_carryover_implementation<BaseInt, Size, Order>::~gpu_hardware_carryover_implementation(){
+        cudaFree(this->execution_plan_);
+        cudaFree(this->workblock_count_by_warp_);
+    } 
+
+    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    void gpu_hardware_carryover_implementation<BaseInt, Size, Order>::plan(){
+        std::vector<unsigned int> workblock_count_by_warp_local(MulBlockSize<Order>::value / 32,0);
+        std::vector<unsigned int> work_total_by_size(MulBlockSize<Order>::value / 32,0);
         std::vector<vli::detail::single_coefficient_task> tasks((((Order*2-1)*(Order*2-1) + 32 - 1) / 32) * 32);
       
         for(unsigned int degree_y = 0; degree_y < (Order*2-1); ++degree_y) {
@@ -34,23 +44,24 @@ namespace vli {
         
          vli::detail::single_coefficient_task empty_task;
          empty_task.step_count = 0;
-         std::vector<vli::detail::single_coefficient_task> tasks_reordered(mul_block_size * max_iteration_count, empty_task);
+         std::vector<vli::detail::single_coefficient_task> tasks_reordered(MulBlockSize<Order>::value * MaxIterationCount<Order>::value, empty_task);
     
          for(unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
                 unsigned int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin();
                 std::copy(
                 	tasks.begin() + (batch_id * 32),
                 	tasks.begin() + ((batch_id + 1) * 32),
-                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size) + (warp_id * 32));
+                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * MulBlockSize<Order>::value) + (warp_id * 32));
                 unsigned int max_step_count = tasks[batch_id * 32].step_count;
         
                 workblock_count_by_warp_local[warp_id]++;
                 work_total_by_size[warp_id] += max_step_count;
          }
         
-	 cudaMemcpyToSymbolAsync(workblock_count_by_warp, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size());
-	 cudaMemcpyToSymbolAsync(execution_plan, &(*tasks_reordered.begin()), sizeof(vli::detail::single_coefficient_task) * tasks_reordered.size());
+	 cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice);
+	 cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice);
      }
+
 
      } // end namespace detail
  }//end namespace vli
