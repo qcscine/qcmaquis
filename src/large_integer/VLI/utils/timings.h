@@ -66,7 +66,7 @@ public:
     : val(0), name(name_), freq(CPU_FREQ),nCounter(0)
     { }
     
-    ~Timer() { std::cout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
+    ~Timer() { std::cout << name << " " << val << std::endl; }
     
     Timer & operator+=(double t)
     {
