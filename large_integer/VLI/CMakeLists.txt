@@ -33,6 +33,7 @@ set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" OFF)
 option (VLI_TESTS "Build the VLI regression tests" ON)
+option (VLI_BENCHMARKS "Build the VLI benchmarks" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
 
@@ -143,6 +144,14 @@ if(VLI_TESTS)
     add_subdirectory (regression)
     add_subdirectory (regression/vli_cpu)
 endif(VLI_TESTS)
+
+if(VLI_BENCHMARKS)
+    include(CTest)
+    enable_testing() 
+    set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
+      mark_as_advanced(BUILDNAME)
+    add_subdirectory (benchmarks)
+endif(VLI_BENCHMARKS)
 
 
 ########################################################################
