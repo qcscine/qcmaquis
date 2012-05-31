@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE(block_matrix_resize_block){
     Index<U1> rows,cols;
 
     rows.insert(std::make_pair(1, 3));
-    rows.insert(std::make_pair(1, 3));
+    cols.insert(std::make_pair(1, 3));
 
     block_matrix<Matrix, U1> ba(rows,cols);
 
@@ -254,15 +254,157 @@ BOOST_AUTO_TEST_CASE(block_matrix_resize_block){
     ba[0](2,1) = 8 ;
     ba[0](2,2) = 9 ;
 
-    ba.resize_block(3,3,2,2,false);
-/*
+    ba.resize_block(1,1,2,2,false);
+
 
     BOOST_CHECK_EQUAL(ba[0](0,0),1);
     BOOST_CHECK_EQUAL(ba[0](0,1),2);
 
     BOOST_CHECK_EQUAL(ba[0](1,0),4);
     BOOST_CHECK_EQUAL(ba[0](1,1),5);
-*/
 }
+
+BOOST_AUTO_TEST_CASE(block_matrix_remove_block){
+    Index<U1> rows,cols;
+
+    rows.insert(std::make_pair(1, 1));
+    cols.insert(std::make_pair(1, 1));
+
+    rows.insert(std::make_pair(2, 1));
+    cols.insert(std::make_pair(2, 1));
+
+    rows.insert(std::make_pair(3, 1));
+    cols.insert(std::make_pair(3, 1));
+
+    block_matrix<Matrix, U1> ba(rows,cols);
+
+    ba[0](0,0)=1;
+    ba[1](0,0)=2;
+    ba[2](0,0)=3;
+
+    ba.remove_block(1);
+    BOOST_CHECK_EQUAL(ba[0](0,0),1);
+    BOOST_CHECK_EQUAL(ba[1](0,0),3);
+    ba.remove_block(3,3);
+    BOOST_CHECK_EQUAL(ba[0](0,0),3);
+}
+
+
+BOOST_AUTO_TEST_CASE(match_and_add_block){
+
+    Index<U1> rows,cols;
+    rows.insert(std::make_pair(2, 2));
+    cols.insert(std::make_pair(2, 2));
+
+    block_matrix<Matrix, U1> ba(rows,cols);
+  
+    ba[0](0,0) = 1;
+    ba[0](0,1) = 2;
+    ba[0](1,0) = 3;
+    ba[0](1,1) = 4;
+
+    Matrix M1(1,1,2);
+    
+    ba.match_and_add_block(M1,1,1);
+    
+    BOOST_CHECK_EQUAL(ba[1],M1);
+
+    Matrix M2(2,2,1);
+
+    ba.match_and_add_block(M2,2,2);
+
+    BOOST_CHECK_EQUAL(ba[0](0,0),2);
+    BOOST_CHECK_EQUAL(ba[0](0,1),3);
+    BOOST_CHECK_EQUAL(ba[0](1,0),4);
+    BOOST_CHECK_EQUAL(ba[0](1,1),5);
+
+    Matrix M3(3,3,1);
+    ba.match_and_add_block(M3,2,2);
+
+    BOOST_CHECK_EQUAL(ba[0](0,0),3);
+    BOOST_CHECK_EQUAL(ba[0](0,1),4);
+    BOOST_CHECK_EQUAL(ba[0](0,2),1);
+
+    BOOST_CHECK_EQUAL(ba[0](1,0),5);
+    BOOST_CHECK_EQUAL(ba[0](1,1),6);
+    BOOST_CHECK_EQUAL(ba[0](1,2),1);
+
+    BOOST_CHECK_EQUAL(ba[0](2,0),1);
+    BOOST_CHECK_EQUAL(ba[0](2,1),1);
+    BOOST_CHECK_EQUAL(ba[0](2,2),1);
+
+    ba.match_and_add_block(M1,2,2);
+
+    BOOST_CHECK_EQUAL(ba[0](0,0),5);
+    BOOST_CHECK_EQUAL(ba[0](0,1),4);
+    BOOST_CHECK_EQUAL(ba[0](0,2),1);
+
+    BOOST_CHECK_EQUAL(ba[0](1,0),5);
+    BOOST_CHECK_EQUAL(ba[0](1,1),6);
+    BOOST_CHECK_EQUAL(ba[0](1,2),1);
+
+    BOOST_CHECK_EQUAL(ba[0](2,0),1);
+    BOOST_CHECK_EQUAL(ba[0](2,1),1);
+    BOOST_CHECK_EQUAL(ba[0](2,2),1);
+
+}
+
+BOOST_AUTO_TEST_CASE(reserve){
+
+    Index<U1> rows,cols;
+    rows.insert(std::make_pair(2, 2));
+    cols.insert(std::make_pair(2, 2));
+
+    block_matrix<Matrix, U1> ba(rows,cols);
+   
+    ba.reserve(2,2,3,4);
+
+    BOOST_CHECK_EQUAL(ba.left_basis()[0].second,3);
+    BOOST_CHECK_EQUAL(ba.right_basis()[0].second,4);
+
+    ba.reserve(3,3,2,3);
+
+    BOOST_CHECK_EQUAL(ba.left_basis()[0].second,2);
+    BOOST_CHECK_EQUAL(ba.left_basis()[0].first,3);
+
+}
+
+
+BOOST_AUTO_TEST_CASE(reserve_pos){
+    Index<U1> rows,cols;
+    rows.insert(std::make_pair(2, 2));
+    cols.insert(std::make_pair(2, 2));
+
+    block_matrix<Matrix, U1> ba(rows,cols);
+   
+    ba.reserve_pos(2,2,3,4);
+
+    BOOST_CHECK_EQUAL(ba.left_basis()[0].second,4);
+    BOOST_CHECK_EQUAL(ba.right_basis()[0].second,5);
+
+    ba.reserve_pos(3,3,2,3);
+
+    BOOST_CHECK_EQUAL(ba.left_basis()[0].second,3);
+    BOOST_CHECK_EQUAL(ba.right_basis()[0].second,4);
+}
+
+BOOST_AUTO_TEST_CASE(allocate_blocks){
+    Index<U1> rows,cols;
+    rows.insert(std::make_pair(2, 1));
+    cols.insert(std::make_pair(2, 1));
+
+    block_matrix<Matrix, U1> ba(rows,cols);
+
+    ba.reserve_pos(2,2,2,2);
+    ba.allocate_blocks();
+
+    BOOST_CHECK_EQUAL(ba[0](1,1),0); // if no allocate_blocks, segfault !
+
+}
+
+
+
+
+
 
 
