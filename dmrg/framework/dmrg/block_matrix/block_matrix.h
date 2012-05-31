@@ -37,11 +37,11 @@ public:
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
     
-    block_matrix(charge rc, charge cc, Matrix const & m)
+    block_matrix(charge rc, charge cc, Matrix& m)
     {
         rows_.push_back(std::make_pair(rc, num_rows(m)));
-        cols_.push_back(std::make_pair(cc, num_columns(m)));
-        data_.push_back(m);
+        cols_.push_back(std::make_pair(cc, num_cols(m)));
+        data_.push_back(&m);
     }
     std::string description() const;
     
