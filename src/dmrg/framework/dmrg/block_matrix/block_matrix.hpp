@@ -142,14 +142,14 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k)
-{
+{ // we should add an assert block < data_.size()
     remove_rows(data_[block], r, k);
     rows_[block].second -= k;
 }
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k)
-{
+{ // we should add an assert block < data_.size()
     remove_columns(data_[block], r, k);
     cols_[block].second -= k;
 }
@@ -238,7 +238,7 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
             
             Matrix cpy = mtx; // only in this case do we need to copy the argument matrix
             
-            resize_block(c1, c2, maxrows, maxcols);
+            resize_block(c1, c2, maxrows, maxcols); // I think useless 
             resize(cpy, maxrows, maxcols);
             
             (*this)(c1, c2) += cpy;
