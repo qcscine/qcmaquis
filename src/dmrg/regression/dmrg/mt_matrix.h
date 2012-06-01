@@ -51,9 +51,9 @@ public:
     
     typedef typename slave_t::element_iterator element_iterator;
     
-    mt_matrix(size_type rows = 0, size_type columns = 0,
+    mt_matrix(size_type rows = 0, size_type cols = 0,
               value_type val = value_type())
-    : data_(rows, columns, val)
+    : data_(rows, cols, val)
     { }
     
     mt_matrix(mt_matrix const & rhs)
@@ -126,10 +126,10 @@ public:
         data_.remove_rows(i, k);
     }
     
-    void remove_columns(size_type i, difference_type k)
+    void remove_cols(size_type i, difference_type k)
     {
         wait();
-        data_.remove_columns(i, k);
+        data_.remove_cols(i, k);
     }
     
     void resize(size_type r, size_type c)
@@ -150,7 +150,7 @@ public:
     }
     
     size_type num_rows() const { return data_.num_rows(); }
-    size_type num_columns() const { return data_.num_columns(); }
+    size_type num_cols() const { return data_.num_cols(); }
     
     friend
     void svd(mt_matrix const & M,
@@ -215,9 +215,9 @@ std::size_t num_rows(mt_matrix<T> const & m)
 }
 
 template<typename T>
-std::size_t num_columns(mt_matrix<T> const & m)
+std::size_t num_cols(mt_matrix<T> const & m)
 {
-    return m.num_columns();
+    return m.num_cols();
 }
 
 template<typename T>
@@ -238,10 +238,10 @@ void resize(mt_matrix<T> & m,
 template<typename T>
 mt_matrix<T> transpose(mt_matrix<T> const & m)
 {
-    mt_matrix<T> ret(num_columns(m), num_rows(m));
+    mt_matrix<T> ret(num_cols(m), num_rows(m));
     
     for (std::size_t r = 0; r < num_rows(m); ++r)
-        for (std::size_t c = 0; c < num_columns(m); ++c)
+        for (std::size_t c = 0; c < num_cols(m); ++c)
             ret(c, r) = m(r, c);
     return ret;
 }
@@ -250,7 +250,7 @@ template<typename T>
 mt_matrix<T> conjugate(mt_matrix<T> m)
 {
     for (std::size_t r = 0; r < num_rows(m); ++r)
-        for (std::size_t c = 0; c < num_columns(m); ++c)
+        for (std::size_t c = 0; c < num_cols(m); ++c)
             m(r, c) = conj(m(r, c));
     return m;
 }
@@ -259,7 +259,7 @@ template<typename T>
 T trace(mt_matrix<T> const & m)
 {
     T ret = T();
-    for (std::size_t r = 0; r < std::min(num_rows(m), num_columns(m)); ++r)
+    for (std::size_t r = 0; r < std::min(num_rows(m), num_cols(m)); ++r)
         ret += m(r, r);
     return ret;
 }
@@ -268,7 +268,7 @@ template<typename T>
 std::ostream& operator<<(std::ostream & os, mt_matrix<T> const & m)
 {
     for (std::size_t r = 0; r < num_rows(m); ++r) {
-        for (std::size_t c = 0; c < num_columns(m); ++c)
+        for (std::size_t c = 0; c < num_cols(m); ++c)
             os << m(r, c);
         os << std::endl;
     }
