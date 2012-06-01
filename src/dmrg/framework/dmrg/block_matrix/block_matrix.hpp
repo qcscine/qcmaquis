@@ -150,7 +150,7 @@ void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, si
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k)
 { // we should add an assert block < data_.size()
-    remove_columns(data_[block], r, k);
+    remove_cols(data_[block], r, k);
     cols_[block].second -= k;
 }
 
