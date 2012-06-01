@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_rows_test, T, test_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( append_columns_test, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( append_cols_test, T, test_types)
 {
     const unsigned int initsize = 20;
     maquis::types::dense_matrix<T> a(initsize,initsize);
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_columns_test, T, test_types)
     iota = fill_range_with_numbers(data_multiple.begin(),data_multiple.end(),iota);
 
     // Append a single column
-    append_columns(a, std::make_pair(data_single.begin(), data_single.end()) );
+    append_cols(a, std::make_pair(data_single.begin(), data_single.end()) );
     for(unsigned int i=0; i<num_rows(a); ++i)
         for(unsigned int j=0; j<num_cols(a); ++j)
         {
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_columns_test, T, test_types)
                 BOOST_CHECK_EQUAL(a(i,j),T(i));
         }
     // Append multiple rows
-    append_columns(a, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
+    append_cols(a, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
     for(unsigned int i=0; i<num_rows(a); ++i)
         for(unsigned int j=0; j<num_cols(a); ++j)
         {
@@ -449,7 +449,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows_test, T, test_types)
 
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( remove_columns_test, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( remove_cols_test, T, test_types)
 {
     const unsigned int initsize = 20;
     maquis::types::dense_matrix<T> a(initsize,initsize);
@@ -457,12 +457,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_columns_test, T, test_types)
     maquis::types::dense_matrix<T> b(a);
 
     // remove the last row
-    remove_columns(a,initsize-1);
+    remove_cols(a,initsize-1);
     // remove the first row
-    remove_columns(a,0);
-    //remove some columns in the middle
-    remove_columns(a,5);
-    remove_columns(a,11,4);
+    remove_cols(a,0);
+    //remove some cols in the middle
+    remove_cols(a,5);
+    remove_cols(a,11,4);
 
     BOOST_CHECK_EQUAL(num_cols(a),initsize-7);
 
@@ -525,7 +525,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( insert_rows_test, T, test_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( insert_columns_test, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( insert_cols_test, T, test_types)
 { 
     const unsigned int initsize = 20;
     maquis::types::dense_matrix<T> a(initsize,initsize);
@@ -539,10 +539,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( insert_columns_test, T, test_types)
     iota = fill_range_with_numbers(data_multiple.begin(),data_multiple.end(),iota);
     
     // Insert a column in for the 0th line, the last line and in the middle
-    insert_columns(a, initsize, std::make_pair(data_single.begin(), data_single.end()) );
-    insert_columns(a, 0, std::make_pair(data_single.begin(), data_single.end()) );
-    insert_columns(a, 5, std::make_pair(data_single.begin(), data_single.end()) );
-    insert_columns(a, 8, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
+    insert_cols(a, initsize, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_cols(a, 0, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_cols(a, 5, std::make_pair(data_single.begin(), data_single.end()) );
+    insert_cols(a, 8, std::make_pair(data_multiple.begin(),data_multiple.end()),3);
     for(unsigned int i=0; i<num_rows(a); ++i)
         for(unsigned int j=0; j<num_cols(a); ++j)
         {
