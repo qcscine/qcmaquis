@@ -13,8 +13,8 @@ namespace maquis {
     }
 
     template <typename T, typename MemoryBlock>
-    dense_matrix<T, MemoryBlock>::dense_matrix(size_type rows, size_type columns, T init_value)
-    : size1_(rows), size2_(columns), reserved_size1_(rows), values_(rows*columns, init_value)
+    dense_matrix<T, MemoryBlock>::dense_matrix(size_type rows, size_type cols, T init_value)
+    : size1_(rows), size2_(cols), reserved_size1_(rows), values_(rows*cols, init_value)
     {
     }
 
@@ -244,7 +244,7 @@ namespace maquis {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::append_columns(std::pair<InputIterator,InputIterator> const& range, difference_type k)
+    void dense_matrix<T, MemoryBlock>::append_cols(std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( std::distance(range.first, range.second) == k*this->size1_ );
         // Reserve more space if needed
@@ -291,7 +291,7 @@ namespace maquis {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::insert_columns(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k)
+    void dense_matrix<T, MemoryBlock>::insert_cols(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( j <= this->size2_);
         assert( std::distance(range.first, range.second) == k*this->size1_ );
@@ -318,7 +318,7 @@ namespace maquis {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::remove_columns(size_type j, difference_type k)
+    void dense_matrix<T, MemoryBlock>::remove_cols(size_type j, difference_type k)
     {
         assert( j+k <= this->size2_ );
         this->values_.erase(this->values_.begin()+(this->reserved_size1_*j), this->values_.begin()+(this->reserved_size1_*(j+k)) );
@@ -334,7 +334,7 @@ namespace maquis {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::swap_columns(size_type j1, size_type j2)
+    void dense_matrix<T, MemoryBlock>::swap_cols(size_type j1, size_type j2)
     {
         assert( j1 < this->size2_ && j2 < this->size2_ );
         std::pair<column_element_iterator, column_element_iterator> range( column(j1) );

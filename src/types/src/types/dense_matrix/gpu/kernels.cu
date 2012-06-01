@@ -23,11 +23,11 @@ typedef float TYPE;
 
 
 /**
-	this kernel comes from Nvidia nevertheless they consider the ROW order and we used the columns order
-	therefore I have adapted it, it is a big mess between x,y and num_columns and num_rows.
+	this kernel comes from Nvidia nevertheless they consider the ROW order and we used the cols order
+	therefore I have adapted it, it is a big mess between x,y and num_cols and num_rows.
 */
 template <typename T>
-__global__ void transpose(T odata, T idata, int num_rows, int num_columns, int ld)
+__global__ void transpose(T odata, T idata, int num_rows, int num_cols, int ld)
 {
 		unsigned int BLOCK_DIM = 16;
        __shared__ float block[16][16+1];
@@ -35,7 +35,7 @@ __global__ void transpose(T odata, T idata, int num_rows, int num_columns, int l
         // read the matrix tile into shared memory
         unsigned int xIndex = blockIdx.x * BLOCK_DIM + threadIdx.x;
         unsigned int yIndex = blockIdx.y * BLOCK_DIM + threadIdx.y;
-        if((yIndex < num_rows) && (xIndex < num_columns))
+        if((yIndex < num_rows) && (xIndex < num_cols))
         {
                 unsigned int index_in = xIndex * num_rows + yIndex;
                 block[threadIdx.y][threadIdx.x] = idata[index_in];
@@ -46,9 +46,9 @@ __global__ void transpose(T odata, T idata, int num_rows, int num_columns, int l
         // write the transposed matrix tile to global memory
         xIndex = blockIdx.y * BLOCK_DIM + threadIdx.x;
         yIndex = blockIdx.x * BLOCK_DIM + threadIdx.y;
-        if((yIndex < num_columns) && (xIndex < num_rows))
+        if((yIndex < num_cols) && (xIndex < num_rows))
         {
-                unsigned int index_out = xIndex * num_columns + yIndex;
+                unsigned int index_out = xIndex * num_cols + yIndex;
                 odata[index_out] = block[threadIdx.x][threadIdx.y];
         }		
 }
@@ -58,7 +58,7 @@ __global__ void transpose(T odata, T idata, int num_rows, int num_columns, int l
 swap row kernel
 */
 template <typename T>
-__global__ void SwapRows(T data, int num_rows, int num_columns, int ld, int i1, int i2)
+__global__ void SwapRows(T data, int num_rows, int num_cols, int ld, int i1, int i2)
 {
 		__shared__ float rows_i1[16];
 		__shared__ float rows_i2[16];
@@ -66,13 +66,13 @@ __global__ void SwapRows(T data, int num_rows, int num_columns, int ld, int i1, 
 		int xIndex = blockIdx.x*blockDim.x + threadIdx.x;
 		int yIndex = blockIdx.y*blockDim.y + threadIdx.y;
 
-		if ((yIndex == i1) && (xIndex < num_columns))
+		if ((yIndex == i1) && (xIndex < num_cols))
 		{
 				unsigned int index_in = xIndex * num_rows + yIndex;
 				rows_i1[threadIdx.x] = data[index_in];
 		} 
 
-		if ((yIndex == i2) && (xIndex < num_columns))
+		if ((yIndex == i2) && (xIndex < num_cols))
 		{
 				unsigned int index_in = xIndex * num_rows + yIndex;
 				rows_i2[threadIdx.x] = data[index_in];
@@ -80,14 +80,14 @@ __global__ void SwapRows(T data, int num_rows, int num_columns, int ld, int i1, 
 		
 		__syncthreads();
 		
-		if ((yIndex == i1) && (xIndex < num_columns))
+		if ((yIndex == i1) && (xIndex < num_cols))
 		{
 				unsigned int index_in = xIndex * num_rows + yIndex;
 				data[index_in] = rows_i2[threadIdx.x];
 		} 
 		
 		
-		if ((yIndex == i2) && (xIndex < num_columns))
+		if ((yIndex == i2) && (xIndex < num_cols))
 		{
 				unsigned int index_in = xIndex * num_rows + yIndex;
 				data[index_in] = rows_i1[threadIdx.x];
@@ -95,10 +95,10 @@ __global__ void SwapRows(T data, int num_rows, int num_columns, int ld, int i1, 
 }
 
 /**
-swap columns kernel
+swap cols kernel
 */
 template <typename T>
-__global__ void SwapColumns(T data, int num_rows, int num_columns, int ld, int i1, int i2)
+__global__ void SwapColumns(T data, int num_rows, int num_cols, int ld, int i1, int i2)
 {
 		__shared__ float rows_i1[16];
 		__shared__ float rows_i2[16];
@@ -143,7 +143,7 @@ __global__ void SwapColumns(T data, int num_rows, int num_columns, int ld, int i
 	are the pointer _p of the class matrix_gpu
 */
 template<>
-void transpose(TYPE*  B_GPU_p, TYPE*  A_GPU_p, std::size_t num_rows, std::size_t num_columns, std::size_t ld)
+void transpose(TYPE*  B_GPU_p, TYPE*  A_GPU_p, std::size_t num_rows, std::size_t num_cols, std::size_t ld)
 {
 	dim3 dimgrid;
 	dim3 dimblock;
@@ -157,7 +157,7 @@ void transpose(TYPE*  B_GPU_p, TYPE*  A_GPU_p, std::size_t num_rows, std::size_t
 	dimthread.y = NUM;
 	dimthread.z = 1;		
 	
-	dimgrid.x = (int(num_columns) + dimblock.x - 1)/ dimblock.x;
+	dimgrid.x = (int(num_cols) + dimblock.x - 1)/ dimblock.x;
 	dimgrid.y = (int(ld) + dimblock.y - 1)/ dimblock.y;
 	dimgrid.z = 1;
 
@@ -166,12 +166,12 @@ void transpose(TYPE*  B_GPU_p, TYPE*  A_GPU_p, std::size_t num_rows, std::size_t
 	printf("%i %i \n",dimblock.x, dimblock.y);
 	printf("%i %i \n",dimthread.x, dimthread.y);
 #endif
-	transpose <<< dimgrid, dimblock >>>(B_GPU_p, A_GPU_p, int(num_rows), int(num_columns), int(ld));
+	transpose <<< dimgrid, dimblock >>>(B_GPU_p, A_GPU_p, int(num_rows), int(num_cols), int(ld));
 
 }
 
 template<>
-void swap_rows(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_columns, std::size_t ld , std::size_t i1, std::size_t i2)
+void swap_rows(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_cols, std::size_t ld , std::size_t i1, std::size_t i2)
 {
 	dim3 dimgrid;
 	dim3 dimblock;
@@ -185,7 +185,7 @@ void swap_rows(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_columns, std
 	dimthread.y = NUM;
 	dimthread.z = 1;		
 	
-	dimgrid.x = (int(num_columns) + dimblock.x - 1)/ dimblock.x;
+	dimgrid.x = (int(num_cols) + dimblock.x - 1)/ dimblock.x;
 	dimgrid.y = (int(ld) + dimblock.y - 1)/ dimblock.y;
 	dimgrid.z = 1;
 
@@ -194,12 +194,12 @@ void swap_rows(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_columns, std
 	printf("%i %i \n",dimblock.x, dimblock.y);
 	printf("%i %i \n",dimthread.x, dimthread.y);
 #endif
-	SwapRows <<< dimgrid, dimblock >>>(A_GPU_p, int(num_rows), int(num_columns), int(ld), int(i1), int(i2));
+	SwapRows <<< dimgrid, dimblock >>>(A_GPU_p, int(num_rows), int(num_cols), int(ld), int(i1), int(i2));
 }
 
 
 template<>
-void swap_columns(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_columns, std::size_t ld , std::size_t i1, std::size_t i2)
+void swap_cols(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_cols, std::size_t ld , std::size_t i1, std::size_t i2)
 {
 	dim3 dimgrid;
 	dim3 dimblock;
@@ -213,7 +213,7 @@ void swap_columns(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_columns, 
 	dimthread.y = NUM;
 	dimthread.z = 1;		
 	
-	dimgrid.x = (int(num_columns) + dimblock.x - 1)/ dimblock.x;
+	dimgrid.x = (int(num_cols) + dimblock.x - 1)/ dimblock.x;
 	dimgrid.y = (int(ld) + dimblock.y - 1)/ dimblock.y;	
 	dimgrid.z = 1;	
 
@@ -222,10 +222,10 @@ void swap_columns(TYPE* A_GPU_p, std::size_t num_rows, std::size_t num_columns, 
 	printf("%i %i \n",dimblock.x, dimblock.y);
 	printf("%i %i \n",dimthread.x, dimthread.y);
 //#endif
-	SwapColumns <<< dimgrid, dimblock >>>(A_GPU_p, int(num_rows), int(num_columns), int(ld), int(i1), int(i2));
+	SwapColumns <<< dimgrid, dimblock >>>(A_GPU_p, int(num_rows), int(num_cols), int(ld), int(i1), int(i2));
 }
 
 
 
-//void swap_columns(size_type j1, size_type j2);
+//void swap_cols(size_type j1, size_type j2);
 

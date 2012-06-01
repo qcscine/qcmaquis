@@ -33,12 +33,12 @@ namespace maquis {
     }
     
     template <typename T, typename MemoryBlock>
-    void remove_columns( dense_matrix<T,MemoryBlock>& m,
+    void remove_cols( dense_matrix<T,MemoryBlock>& m,
             typename dense_matrix<T,MemoryBlock>::size_type j,
             typename dense_matrix<T,MemoryBlock>::difference_type k = 1)
     {
         BOOST_CONCEPT_ASSERT((maquis::types::ResizableMatrix<dense_matrix<T,MemoryBlock> >));
-        return m.remove_columns(j,k);
+        return m.remove_cols(j,k);
     }
     
     //append_row(), append_column(), insert_row(), insert_column()
@@ -53,11 +53,11 @@ namespace maquis {
     }
     
     template <typename T, typename MemoryBlock, typename InputIterator>
-    void append_columns( dense_matrix<T,MemoryBlock>& m, INPUT_ITERATOR_PAIR range,
+    void append_cols( dense_matrix<T,MemoryBlock>& m, INPUT_ITERATOR_PAIR range,
             typename dense_matrix<T,MemoryBlock>::difference_type k = 1)
     {
         BOOST_CONCEPT_ASSERT((maquis::types::ResizableMatrix<dense_matrix<T,MemoryBlock> >));
-        return m.append_columns(range,k);
+        return m.append_cols(range,k);
     }
     
     template <typename T, typename MemoryBlock, typename InputIterator>
@@ -71,13 +71,13 @@ namespace maquis {
     }
     
     template <typename T, typename MemoryBlock, typename InputIterator>
-    void insert_columns( dense_matrix<T,MemoryBlock>& m,
+    void insert_cols( dense_matrix<T,MemoryBlock>& m,
             typename dense_matrix<T,MemoryBlock>::size_type j,
             INPUT_ITERATOR_PAIR range,
             typename dense_matrix<T,MemoryBlock>::difference_type k = 1)
     {
         BOOST_CONCEPT_ASSERT((maquis::types::ResizableMatrix<dense_matrix<T,MemoryBlock> >));
-        return m.insert_columns(j,range,k);
+        return m.insert_cols(j,range,k);
     }
     
     #undef INPUT_ITERATOR_PAIR

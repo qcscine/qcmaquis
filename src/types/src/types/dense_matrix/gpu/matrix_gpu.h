@@ -98,7 +98,7 @@ public:
 	template<class MemoryBlock>
 	matrix_gpu(maquis::types::dense_matrix<T, MemoryBlock> const & Matrix_cpu, size_type nrows, size_type ncols, size_type ld)
 	{
-		size_type size_matrix = Matrix_cpu.num_columns()*Matrix_cpu.num_rows();
+		size_type size_matrix = Matrix_cpu.num_cols()*Matrix_cpu.num_rows();
 		check_error(   cublasAlloc( size_matrix, sizeof(T), (void**)&p_ ) , __LINE__);
 		cublasSetMatrix (nrows, ncols, sizeof(T),  &Matrix_cpu(0,0), Matrix_cpu.stride2(),p(), ld);	
 	};
@@ -124,7 +124,7 @@ public:
 * Copy constructor from CPU Matrix to GPU Matrix, use in pure GPU mode 
 */
 	template<class MemoryBlock>
-	matrix_gpu(maquis::types::dense_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.num_rows()),size2_(Matrix_cpu.num_columns()),ld_(Matrix_cpu.stride2())
+	matrix_gpu(maquis::types::dense_matrix<T, MemoryBlock> const & Matrix_cpu):size1_(Matrix_cpu.num_rows()),size2_(Matrix_cpu.num_cols()),ld_(Matrix_cpu.stride2())
 	{
 		size_type size_matrix = size1_*size2_;
 		check_error(  cublasAlloc( size_matrix, sizeof(T), (void**)&p_ ) , __LINE__);	
@@ -141,7 +141,7 @@ public:
 	void copy_matrix_from_cpu(maquis::types::dense_matrix<T,MemoryBlock> const& m_cpu)
 	{
 		assert( size1_ == num_rows(m_cpu) );
-		assert( size2_ == num_columns(m_cpu) );
+		assert( size2_ == num_cols(m_cpu) );
 		check_error(   cublasSetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2()), __LINE__);
 	}
 	
@@ -153,7 +153,7 @@ public:
 	void copy_matrix_to_cpu(maquis::types::dense_matrix<T,MemoryBlock>& m_cpu) const
 	{
 		assert( size1_ == maquis::types::num_rows(m_cpu));
-		assert( size2_ == maquis::types::num_columns(m_cpu) );
+		assert( size2_ == maquis::types::num_cols(m_cpu) );
 		check_error(   cublasGetMatrix(size1_,size2_,sizeof(T),p(),ld_,&m_cpu(0,0),m_cpu.stride2()), __LINE__);			
 	}
 	
@@ -278,7 +278,7 @@ public:
 /**
 * return the number of columns, classical notation
 */			
-	inline const size_type num_columns() const
+	inline const size_type num_cols() const
 	{
 		return size2_;
 	}

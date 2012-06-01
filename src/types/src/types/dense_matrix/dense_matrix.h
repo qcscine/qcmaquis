@@ -76,7 +76,7 @@ namespace maquis {
           * @param columns the number of columns
           * @param init_value all matrix elements will be initialized to this value.
           */
-        explicit dense_matrix(size_type rows = 0, size_type columns = 0, T init_value = T());
+        explicit dense_matrix(size_type rows = 0, size_type cols = 0, T init_value = T());
 
         /**
           * The copy constructor
@@ -216,7 +216,7 @@ namespace maquis {
         }
 
         template <typename InputIterator>
-        void append_columns(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
+        void append_cols(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         template <typename InputIterator>
         void append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
@@ -225,15 +225,15 @@ namespace maquis {
         void insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         template <typename InputIterator>
-        void insert_columns(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
+        void insert_cols(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         void remove_rows(size_type i, difference_type k = 1);
 
-        void remove_columns(size_type j, difference_type k = 1);
+        void remove_cols(size_type j, difference_type k = 1);
 
         void swap_rows(size_type i1, size_type i2);
 
-        void swap_columns(size_type j1, size_type j2);
+        void swap_cols(size_type j1, size_type j2);
 
 
         // Default implementations

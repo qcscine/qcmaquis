@@ -101,7 +101,7 @@ namespace maquis {
             data_.erase(data_.begin(), data_.begin()+n);
         }
         
-        void remove_columns(std::size_t k, std::size_t n)
+        void remove_cols(std::size_t k, std::size_t n)
         {
             remove_rows(k, n);
         }
@@ -218,9 +218,9 @@ namespace maquis {
     }
     
     template<typename T>
-    void remove_columns(diagonal_matrix<T> & m, std::size_t k, std::size_t n = 1)
+    void remove_cols(diagonal_matrix<T> & m, std::size_t k, std::size_t n = 1)
     {
-        m.remove_columns(k, n);
+        m.remove_cols(k, n);
     }
     
     template<typename T>

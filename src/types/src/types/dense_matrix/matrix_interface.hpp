@@ -8,7 +8,7 @@ namespace maquis {
     namespace types {
     
     // This macro creates free functions that call member functions with the same
-    // name, e.g. swap_columns(A,i,j) -> A.swap_columns(i,j)
+    // name, e.g. swap_cols(A,i,j) -> A.swap_cols(i,j)
     #define COMMA ,
     #define IMPLEMENT_FORWARDING(TEMPLATE_PARS,TYPE,RET,NAME,ARGS,VARS) \
     template TEMPLATE_PARS \
@@ -18,7 +18,7 @@ namespace maquis {
         return m.NAME VARS; \
     } 
     
-    // num_rows(), num_columns(), swap_rows(), swap_columns()
+    // num_rows(), num_cols(), swap_rows(), swap_cols()
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
                          typename dense_matrix<T COMMA MemoryBlock>::size_type, num_rows, (dense_matrix<T, MemoryBlock> const& m), () )
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
@@ -26,7 +26,7 @@ namespace maquis {
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
                          void, swap_rows, (dense_matrix<T, MemoryBlock>& m, typename dense_matrix<T, MemoryBlock>::size_type i1, typename dense_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         void, swap_columns, (dense_matrix<T, MemoryBlock>& m, typename dense_matrix<T, MemoryBlock>::size_type i1, typename dense_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
+                         void, swap_cols, (dense_matrix<T, MemoryBlock>& m, typename dense_matrix<T, MemoryBlock>::size_type i1, typename dense_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
         
     //
     // Matrix Iterator Interface
