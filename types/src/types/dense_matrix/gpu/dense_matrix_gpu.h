@@ -19,8 +19,8 @@ namespace blas
 template <typename MemoryBlock> \
 const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
 { \
-assert( lhs.num_columns() == rhs.num_rows() ); \
-dense_matrix<T,MemoryBlock> result_cpu(lhs.num_rows(),rhs.num_columns()); \
+assert( lhs.num_cols() == rhs.num_rows() ); \
+dense_matrix<T,MemoryBlock> result_cpu(lhs.num_rows(),rhs.num_cols()); \
 gpu::matrix_matrix_multiply(lhs, rhs, result_cpu); \
 return result_cpu; \
 }
@@ -33,10 +33,10 @@ IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
 template <typename MemoryBlock> \
 const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
 { \
-assert( lhs.num_columns() == rhs.num_rows() ); \
+assert( lhs.num_cols() == rhs.num_rows() ); \
 gpu::matrix_gpu<T> lhs_gpu(lhs); \
 gpu::matrix_gpu<T> rhs_gpu(rhs); \
-gpu::matrix_gpu<T> result_gpu(num_rows(lhs), num_columns(rhs)); \
+gpu::matrix_gpu<T> result_gpu(num_rows(lhs), num_cols(rhs)); \
 result_gpu = matrix_matrix_multiply( lhs_gpu, rhs_gpu) ; \
 return result_gpu; \
 }
@@ -50,14 +50,14 @@ IMPLEMENT_FOR_ALL_GPU_TYPES(MATRIX_MATRIX_MULTIPLY)
 template <typename MemoryBlock> \
 const dense_matrix<float,MemoryBlock> matrix_matrix_multiply(dense_matrix<float,MemoryBlock> const& lhs, dense_matrix<float,MemoryBlock> const& rhs) 
 { 
-assert( lhs.num_columns() == rhs.num_rows() ); 
+assert( lhs.num_cols() == rhs.num_rows() ); 
 size_type m = lhs.num_rows(); 
 size_type m_gpu = 2 ; 
-size_type k = rhs.num_columns() ; 
-size_type k_gpu = rhs.num_columns() ; 
+size_type k = rhs.num_cols() ; 
+size_type k_gpu = rhs.num_cols() ; 
 size_type n_gpu = 2 ; 
 size_type n_cpu = 1 ; 
-dense_matrix<float,MemoryBlock> result_cpu(lhs.num_rows(),rhs.num_columns()); 
+dense_matrix<float,MemoryBlock> result_cpu(lhs.num_rows(),rhs.num_cols()); 
 gpu::matrix_gpu<float> lhs_gpu(lhs,m,k,m); 
 gpu::matrix_gpu<float> rhs_gpu(rhs,k,n_gpu,k_gpu); 
 gpu::matrix_gpu<float> result_gpu(m,n_gpu,m_gpu); 
@@ -118,13 +118,13 @@ template <typename MemoryBlock> \
 void svd(dense_matrix<T, MemoryBlock>  M, dense_matrix<T, MemoryBlock> & U, dense_matrix<T, MemoryBlock>& V, typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & S) \
 { \
 BOOST_CONCEPT_ASSERT((maquis::types::Matrix<dense_matrix<T, MemoryBlock> >)); \
-typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_columns(M)); \
+typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M)); \
 resize(U, num_rows(M), k); \
-resize(V, k, num_columns(M)); \
+resize(V, k, num_cols(M)); \
 std::size_t size1 = M.size1(); \
 std::size_t size2 = M.size2(); \
 std::size_t min = k; \
-std::size_t max = std::max(num_rows(M), num_columns(M)); \
+std::size_t max = std::max(num_rows(M), num_cols(M)); \
 gpu::matrix_gpu<T> U_gpu(max,max); \
 gpu::matrix_gpu<T> V_gpu(min,min); \
 gpu::matrix_gpu<T> M_gpu(M); \

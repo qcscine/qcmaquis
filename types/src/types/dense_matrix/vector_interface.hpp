@@ -6,7 +6,7 @@
 namespace blas
 {
     // This macro creates free functions that call member functions with the same
-    // name, e.g. swap_columns(A,i,j) -> A.swap_columns(i,j)
+    // name, e.g. swap_cols(A,i,j) -> A.swap_cols(i,j)
 #define IMPLEMENT_FORWARDING(RET,NAME,ARGS,VARS) \
 template <typename Vector> \
 RET NAME ARGS \

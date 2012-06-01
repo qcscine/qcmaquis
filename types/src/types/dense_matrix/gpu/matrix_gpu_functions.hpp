@@ -37,7 +37,7 @@ namespace gpu
 template <>
 void multiplies_assign( matrix_gpu<float> &  Matrix_gpu, float const& t)
 {
-	size_type num = Matrix_gpu.num_rows()* Matrix_gpu.num_columns();
+	size_type num = Matrix_gpu.num_rows()* Matrix_gpu.num_cols();
 	cublasSscal(num, t , Matrix_gpu.p(), 1);
 	cublasGetError();
 }
@@ -45,7 +45,7 @@ void multiplies_assign( matrix_gpu<float> &  Matrix_gpu, float const& t)
 template <>
 void multiplies_assign( matrix_gpu<double> &  Matrix_gpu, double const& t)
 {
-	size_type num = Matrix_gpu.num_rows()* Matrix_gpu.num_columns();
+	size_type num = Matrix_gpu.num_rows()* Matrix_gpu.num_cols();
 	cublasDscal(num, t , Matrix_gpu.p(), 1);		
 	cublasGetError();
 }
@@ -59,10 +59,10 @@ void matrix_gpu<float>::multiplies_assign(matrix_gpu<float> const& Matrix_right)
 	char  TRANS_RIGHT = 'N';
 	
 	size_type num_rows = this->num_rows();
-	size_type num_columns = Matrix_right.num_columns();
-	size_type K =  this->num_columns();
+	size_type num_cols = Matrix_right.num_cols();
+	size_type K =  this->num_cols();
 	
-	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, this->p(), this->ld(), Matrix_right.p(), Matrix_right.ld(), 0, this->p_, this->ld());	
+	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_cols, K, 1, this->p(), this->ld(), Matrix_right.p(), Matrix_right.ld(), 0, this->p_, this->ld());	
 	
 }
 	
@@ -73,10 +73,10 @@ void gemm(matrix_gpu<float> const& A, matrix_gpu<float> const& B, matrix_gpu<flo
 	char  TRANS_RIGHT = 'N';
 	
 	size_type num_rows = A.num_rows();
-	size_type num_columns = B.num_columns();
-	size_type K =  A.num_columns();
+	size_type num_cols = B.num_cols();
+	size_type K =  A.num_cols();
 	cublasStatus s; 
-	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, A.p(), A.ld(), B.p(), B.ld(), 0, C.p(), C.ld());	
+	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_cols, K, 1, A.p(), A.ld(), B.p(), B.ld(), 0, C.p(), C.ld());	
 	if (s != CUBLAS_STATUS_SUCCESS )
 	{
 		maquis::cout << " Sgemm " <<cublasGetError() << std::endl;
@@ -92,28 +92,28 @@ void matrix_gpu<double>::multiplies_assign(matrix_gpu<double> const& Matrix_righ
 	char  TRANS_RIGHT = 'N';
 	
 	size_type num_rows = this->num_rows();
-	size_type num_columns = Matrix_right.num_columns();
-	size_type K =  this->num_columns();
+	size_type num_cols = Matrix_right.num_cols();
+	size_type K =  this->num_cols();
 	
-	cublasDgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, this->p(), this->ld(), Matrix_right.p(), Matrix_right.ld(), 0, this->p_, this->ld());	
+	cublasDgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_cols, K, 1, this->p(), this->ld(), Matrix_right.p(), Matrix_right.ld(), 0, this->p_, this->ld());	
 	
 }
 
 template<>
 matrix_gpu<float> operator* ( matrix_gpu<float> const & Matrix_left,  matrix_gpu<float>const & Matrix_right)
 {
-	assert(Matrix_left.num_rows() == Matrix_right.num_columns());
+	assert(Matrix_left.num_rows() == Matrix_right.num_cols());
 	
 	char  TRANS_LEFT  = 'N';
 	char  TRANS_RIGHT = 'N';
 	
 	size_type num_rows = Matrix_left.num_rows();
-	size_type num_columns = Matrix_right.num_columns();
-	size_type K =  Matrix_left.num_columns();
+	size_type num_cols = Matrix_right.num_cols();
+	size_type K =  Matrix_left.num_cols();
 	
-	matrix_gpu<float> Result(num_rows,num_columns);
+	matrix_gpu<float> Result(num_rows,num_cols);
 	
-	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
+	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_cols, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
 	
 	return Result;
 };
@@ -130,7 +130,7 @@ void matrix_matrix_multiply(maquis::types::dense_matrix<float,std::vector<float,
 	const char TRANS_RIGHT = 'N';
 	
 //	const fortran_int_t m_gpu = lhs.num_rows() ; old
-	const fortran_int_t m_gpu = rhs.num_columns() ; 
+	const fortran_int_t m_gpu = rhs.num_cols() ; 
 	
 	const fortran_int_t n_cpu = static_cast<fortran_int_t> (0) ;
 //	const fortran_int_t n_cpu = static_cast<fortran_int_t> (2061) ;
@@ -144,7 +144,7 @@ void matrix_matrix_multiply(maquis::types::dense_matrix<float,std::vector<float,
 	const fortran_int_t n_gpu = m_gpu - n_cpu ;
 	
 	const fortran_int_t m = lhs.num_rows(); 
-	const fortran_int_t k = lhs.num_columns() ; 
+	const fortran_int_t k = lhs.num_cols() ; 
 	const fortran_int_t k_gpu = rhs.num_rows() ; 
 	
 	const float alpha = 1;
@@ -181,12 +181,12 @@ void matrix_matrix_multiply(maquis::types::dense_matrix<double,std::vector<doubl
 	const char TRANS_RIGHT = 'N';
 	
 //	const fortran_int_t m_gpu = lhs.num_rows() ; 
-	const fortran_int_t m_gpu = rhs.num_columns() ; 
+	const fortran_int_t m_gpu = rhs.num_cols() ; 
 	const fortran_int_t n_cpu = static_cast<fortran_int_t> (m_gpu/7) ;
 	const fortran_int_t n_gpu = m_gpu - n_cpu ;
 	
 	const fortran_int_t m = lhs.num_rows(); 
-	const fortran_int_t k = lhs.num_columns() ; 
+	const fortran_int_t k = lhs.num_cols() ; 
 	const fortran_int_t k_gpu = rhs.num_rows() ; 
 	
 	const double alpha = 1;
@@ -223,18 +223,18 @@ void matrix_matrix_multiply(maquis::types::dense_matrix<double, MemoryBlock> con
 template<>
 matrix_gpu<float> matrix_matrix_multiply(matrix_gpu<float> const & Matrix_left,matrix_gpu<float> const & Matrix_right)
 {
-//	assert(Matrix_left.num_rows() == Matrix_right.num_columns());
+//	assert(Matrix_left.num_rows() == Matrix_right.num_cols());
 	
 	char  TRANS_LEFT  = 'N';
 	char  TRANS_RIGHT = 'N';
 	
 	size_type num_rows = Matrix_left.num_rows();
-	size_type num_columns = Matrix_right.num_columns();
-	size_type K =  Matrix_left.num_columns();
+	size_type num_cols = Matrix_right.num_cols();
+	size_type K =  Matrix_left.num_cols();
 	
-	matrix_gpu<float> Result(num_rows,num_columns);
+	matrix_gpu<float> Result(num_rows,num_cols);
 
-	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
+	cublasSgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_cols, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
 	cublasGetError();
 
 	
@@ -244,18 +244,18 @@ matrix_gpu<float> matrix_matrix_multiply(matrix_gpu<float> const & Matrix_left,m
 	template<>
 	matrix_gpu<double> matrix_matrix_multiply(matrix_gpu<double> const & Matrix_left,matrix_gpu<double> const & Matrix_right)
 	{
-		//	assert(Matrix_left.num_rows() == Matrix_right.num_columns());
+		//	assert(Matrix_left.num_rows() == Matrix_right.num_cols());
 		
 		char  TRANS_LEFT  = 'N';
 		char  TRANS_RIGHT = 'N';
 		
 		size_type num_rows = Matrix_left.num_rows();
-		size_type num_columns = Matrix_right.num_columns();
-		size_type K =  Matrix_left.num_columns();
+		size_type num_cols = Matrix_right.num_cols();
+		size_type K =  Matrix_left.num_cols();
 		
-		matrix_gpu<double> Result(num_rows,num_columns);
+		matrix_gpu<double> Result(num_rows,num_cols);
 		
-		cublasDgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
+		cublasDgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_cols, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
 		cublasGetError();
 		
 		
@@ -265,18 +265,18 @@ matrix_gpu<float> matrix_matrix_multiply(matrix_gpu<float> const & Matrix_left,m
 template<>
 matrix_gpu<double> operator * ( matrix_gpu<double> const & Matrix_left,  matrix_gpu<double> const & Matrix_right)
 {
-	assert(Matrix_left.num_rows() == Matrix_right.num_columns());
+	assert(Matrix_left.num_rows() == Matrix_right.num_cols());
 	
 	char  TRANS_LEFT  = 'N';
 	char  TRANS_RIGHT = 'N';
 	
 	size_type num_rows = Matrix_left.num_rows();
-	size_type num_columns = Matrix_right.num_columns();
-	size_type K =  Matrix_left.num_columns();
+	size_type num_cols = Matrix_right.num_cols();
+	size_type K =  Matrix_left.num_cols();
 	
-	matrix_gpu<double> Result(num_rows,num_columns);
+	matrix_gpu<double> Result(num_rows,num_cols);
 	
-	cublasDgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_columns, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
+	cublasDgemm( TRANS_LEFT, TRANS_RIGHT, num_rows, num_cols, K, 1, Matrix_left.p(), Matrix_left.ld(), Matrix_right.p(), Matrix_right.ld(), 0, Result.p(), Result.ld());
 	
 	return Result;
 };
@@ -286,7 +286,7 @@ matrix_gpu<double> operator * ( matrix_gpu<double> const & Matrix_left,  matrix_
 template<>
 void matrix_gpu<float>::plus_assign(matrix_gpu<float> const& Matrix_right)
 {
-	assert( (this->num_rows() == Matrix_right.num_rows())  &&  (this->num_columns() == Matrix_right.num_columns()) );
+	assert( (this->num_rows() == Matrix_right.num_rows())  &&  (this->num_cols() == Matrix_right.num_cols()) );
 	
 	size_type incx = 1;
 	size_type incy = 1;
@@ -301,7 +301,7 @@ void matrix_gpu<float>::plus_assign(matrix_gpu<float> const& Matrix_right)
 template<>
 void matrix_gpu<double>::plus_assign(matrix_gpu<double> const& Matrix_right)
 {
-	assert( (this->num_rows() == Matrix_right.num_rows())  &&  (this->num_columns() == Matrix_right.num_columns()) );
+	assert( (this->num_rows() == Matrix_right.num_rows())  &&  (this->num_cols() == Matrix_right.num_cols()) );
 	
 	size_type incx = 1;
 	size_type incy = 1;
@@ -316,12 +316,12 @@ void matrix_gpu<double>::plus_assign(matrix_gpu<double> const& Matrix_right)
 template<>
 const matrix_gpu<float> operator+ ( matrix_gpu<float>& Matrix_left, const matrix_gpu<float>& Matrix_right)
 {
-	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_columns() == Matrix_right.num_columns()) );
+	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_cols() == Matrix_right.num_cols()) );
 	
 	size_type num_rows = Matrix_left.num_rows();
-	size_type num_columns = Matrix_left.num_columns();
+	size_type num_cols = Matrix_left.num_cols();
 		
-	matrix_gpu<float> Result(num_rows,num_columns);
+	matrix_gpu<float> Result(num_rows,num_cols);
 	
 	size_type incx = 1;
 	size_type incy = 1;
@@ -337,12 +337,12 @@ const matrix_gpu<float> operator+ ( matrix_gpu<float>& Matrix_left, const matrix
 template<>
 const matrix_gpu<double> operator + ( matrix_gpu<double>& Matrix_left, const matrix_gpu<double>& Matrix_right)
 {
-	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_columns() == Matrix_right.num_columns()) );
+	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_cols() == Matrix_right.num_cols()) );
 	
 	size_type num_rows = Matrix_left.num_rows();
-	size_type num_columns = Matrix_left.num_columns();
+	size_type num_cols = Matrix_left.num_cols();
 	
-	matrix_gpu<double> Result(num_rows,num_columns);
+	matrix_gpu<double> Result(num_rows,num_cols);
 	
 	size_type incx = 1;
 	size_type incy = 1;
@@ -387,12 +387,12 @@ void matrix_gpu<double>::minus_assign(matrix_gpu<double> const& Matrix_right)
 template<>
 const matrix_gpu<float> operator- ( matrix_gpu<float>& Matrix_left, const matrix_gpu<float>& Matrix_right)
 {
-	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_columns() == Matrix_right.num_columns()) );
+	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_cols() == Matrix_right.num_cols()) );
 	
 	size_type num_rows = Matrix_left.num_rows();
-	size_type num_columns = Matrix_left.num_columns();
+	size_type num_cols = Matrix_left.num_cols();
 	
-	matrix_gpu<float> Result(num_rows,num_columns);
+	matrix_gpu<float> Result(num_rows,num_cols);
 	
 	size_type incx = 1;
 	size_type incy = 1;
@@ -408,12 +408,12 @@ const matrix_gpu<float> operator- ( matrix_gpu<float>& Matrix_left, const matrix
 template<>
 const matrix_gpu<double> operator - ( matrix_gpu<double>& Matrix_left, const matrix_gpu<double>& Matrix_right)
 {
-	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_columns() == Matrix_right.num_columns()) );
+	assert( (Matrix_left.num_rows() == Matrix_right.num_rows())  &&  (Matrix_left.num_cols() == Matrix_right.num_cols()) );
 	
 	size_type num_rows = Matrix_left.num_rows();
-	size_type num_columns = Matrix_left.num_columns();
+	size_type num_cols = Matrix_left.num_cols();
 	
-	matrix_gpu<double> Result(num_rows,num_columns);
+	matrix_gpu<double> Result(num_rows,num_cols);
 	
 	size_type incx = 1;
 	size_type incy = 1;
@@ -437,9 +437,9 @@ void svd(matrix_gpu<float> & M, matrix_gpu<float> & U, matrix_gpu<float> & V, ve
 	char jobvt = 'A';
 	
 	size_type num_rows = M.num_rows();
-	size_type num_columns = M.num_columns();
+	size_type num_cols = M.num_cols();
 		
-	s = culaDeviceSgesvd(jobu,jobvt,num_rows,num_columns,M.p(),M.ld(),S.p(),U.p(),U.ld(),V.p(),V.ld());
+	s = culaDeviceSgesvd(jobu,jobvt,num_rows,num_cols,M.p(),M.ld(),S.p(),U.p(),U.ld(),V.p(),V.ld());
 	if(s != culaNoError)
 	{
 		maquis::cout << culaGetErrorInfo() << std::endl;
@@ -462,11 +462,11 @@ void svd(matrix_gpu<double> & M, matrix_gpu<double> & U, matrix_gpu<double> & V)
 	char jobvt = 'A';
 	
 	size_type num_rows = M.num_rows();
-	size_type num_columns = M.num_columns();
+	size_type num_cols = M.num_cols();
 	
-	vector_gpu<double> S(std::min(num_rows,num_columns),0);
+	vector_gpu<double> S(std::min(num_rows,num_cols),0);
 	
-	s = culaDeviceDgesvd(jobu,jobvt,num_rows,num_columns,M.p(),M.ld(),S.p(),U.p(),U.ld(),V.p(),V.ld());
+	s = culaDeviceDgesvd(jobu,jobvt,num_rows,num_cols,M.p(),M.ld(),S.p(),U.p(),U.ld(),V.p(),V.ld());
 	if(s != culaNoError)
 	{
 		maquis::cout << culaGetErrorInfo() << std::endl;
@@ -483,11 +483,11 @@ void qr(matrix_gpu<float> & M,  matrix_gpu<float> & Q , matrix_gpu<float> & R)
 {
 	
 	size_type num_rows = M.num_rows();
-	size_type num_columns = M.num_columns();
-	vector_gpu<float> TAU(std::min(num_rows,num_columns),0);
+	size_type num_cols = M.num_cols();
+	vector_gpu<float> TAU(std::min(num_rows,num_cols),0);
 	
 	culaStatus s;	
-	s = culaDeviceSgeqrf(num_rows, num_columns, M.p(), M.ld(), TAU.p() );
+	s = culaDeviceSgeqrf(num_rows, num_cols, M.p(), M.ld(), TAU.p() );
 	if(s != culaNoError)
 	{
 		maquis::cout << culaGetErrorInfo() << std::endl;
