@@ -239,7 +239,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     //  Given the full SVD in each block (above), remove all singular values and corresponding rows/cols
     //  where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
     //  Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
-    //  (remove_rows/remove_columns methods for that)
+    //  (remove_rows/remove_cols methods for that)
     estimate_truncation(S, Mmax, rel_tol, keeps, truncated_weight, smallest_ev);
      
     for ( int k = S.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
