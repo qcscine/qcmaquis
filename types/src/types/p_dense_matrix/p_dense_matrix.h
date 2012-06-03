@@ -29,7 +29,7 @@ namespace maquis { namespace types {
             this->impl = new I(); 
         }
 
-        inline p_dense_matrix(size_type rows, size_type cols = 0, value_type init_value = value_type()){
+        inline p_dense_matrix(size_type rows, size_type cols, value_type init_value = value_type()){
             this->impl = new I(rows, cols, init_value); 
         }
 
@@ -81,6 +81,10 @@ namespace maquis { namespace types {
 
         inline size_type num_cols() const {
             return this->impl->num_cols();
+        }
+
+        inline size_type grid_dim() const {
+            return this->impl->grid_dim();
         }
 
         inline void resize(size_type rows, size_type cols){
@@ -149,38 +153,39 @@ namespace maquis { namespace types {
 
     template <typename T>
     class p_dense_matrix_impl :
-    public ambient::parallel_t< p_dense_matrix_impl<T> >
+    public ambient::parallel< p_dense_matrix_impl<T> >
     {
     public:
         typedef T         value_type;      // The type T of the elements of the matrix
         typedef size_t    size_type;       // Unsigned integer type that represents the dimensions of the matrix
         typedef ptrdiff_t difference_type; // Signed integer type to represent the distance of two elements in the memory
-        typedef typename ambient::parallel_t< p_dense_matrix_impl<T> >::ptr ptr;
+        typedef typename ambient::parallel< p_dense_matrix_impl<T> >::ptr ptr;
         typedef typename ambient::future<T> scalar_type;
 
-       ~p_dense_matrix_impl();
-        p_dense_matrix_impl();             // please avoid implicit conversions
-        p_dense_matrix_impl(size_type rows, size_type cols, T init_value);
-        p_dense_matrix_impl(p_dense_matrix_impl const& m);
-        value_type& get(size_type i, size_type j);
-        scalar_type trace() const;
-        void fill_identity();
-        void fill_random();
-        void fill_value(value_type v);
-        void conjugate();
-        void transpose();
+        inline ~p_dense_matrix_impl();
+        inline p_dense_matrix_impl();             // please avoid implicit conversions
+        inline p_dense_matrix_impl(size_type rows, size_type cols, T init_value);
+        inline p_dense_matrix_impl(p_dense_matrix_impl const& m);
+        inline value_type& get(size_type i, size_type j);
+        inline scalar_type trace() const;
+        inline void fill_identity();
+        inline void fill_random();
+        inline void fill_value(value_type v);
+        inline void conjugate();
+        inline void transpose();
         inline bool empty() const;
         inline size_type num_rows() const;
         inline size_type num_cols() const;
-        void resize(size_type rows, size_type cols);
-        void remove_rows(size_type i, size_type k);
-        void remove_cols(size_type j, size_type k);
-        void cpy(const p_dense_matrix_impl& rhs);
-        void add(const p_dense_matrix_impl& rhs); 
-        void sub(const p_dense_matrix_impl& rhs);
-        void mul(const p_dense_matrix_impl& rhs);
-        void mul(const p_diagonal_matrix<T>& rhs);
-        template <typename T2> void mul(const T2& t);
+        inline size_type grid_dim() const;
+        inline void resize(size_type rows, size_type cols);
+        inline void remove_rows(size_type i, size_type k);
+        inline void remove_cols(size_type j, size_type k);
+        inline void cpy(const p_dense_matrix_impl& rhs);
+        inline void add(const p_dense_matrix_impl& rhs); 
+        inline void sub(const p_dense_matrix_impl& rhs);
+        inline void mul(const p_dense_matrix_impl& rhs);
+        inline void mul(const p_diagonal_matrix<T>& rhs);
+        template <typename T2> inline void mul(const T2& t);
     private:
         size_type rows;
         size_type cols;

@@ -1,10 +1,13 @@
 #ifndef __MAQUIS_TYPES_P_DENSE_MATRIX_ALGORITHMS_HPP__
 #define __MAQUIS_TYPES_P_DENSE_MATRIX_ALGORITHMS_HPP__
 
-#include "types/p_dense_matrix/kernels/l_kernels.hpp"
-#include "types/p_dense_matrix/kernels/c_kernels.hpp"
+#include "types/p_dense_matrix/kernels/utils.hpp"
+#include "types/p_dense_matrix/kernels/kernels.hpp"
+#include "types/p_dense_matrix/kernels/atomics.hpp"
 
 //#define AMBIENT_SERIAL_CHECK
+#define USE_ATOMIC(condition, kernel, ...) if(!(condition)) ambient::push< ambient::kernel<T> >(__VA_ARGS__); \
+                                           else ambient::push< ambient::kernel ## _atomic<T> >(__VA_ARGS__);
 
 #ifdef AMBIENT_SERIAL_CHECK
 #include "types/dense_matrix/dense_matrix.h"
@@ -24,23 +27,6 @@ namespace maquis { namespace types {
     // {{{ p_dense_matrix advanced algorithms
 
     template <typename T>
-    inline void reshape_r2l(p_dense_matrix<T>& left, const p_dense_matrix<T>& right,
-                            size_t left_offset, size_t right_offset, 
-                            size_t sdim, size_t ldim, size_t rdim)
-    { // gs
-#ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sl = maquis::traits::matrix_cast<dense_matrix<T> >(left);
-        dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
-        reshape_r2l(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
-#endif
-        ambient::push(ambient::reshape_r2l_l<T>, ambient::reshape_r2l_c<T>, left, right, 
-                      left_offset, right_offset, sdim, ldim, rdim);
-#ifdef AMBIENT_SERIAL_CHECK
-        if(sl == left){} else printf("--------------------- RESHAPE R2L WAS INCORRECT!\n");
-#endif
-    }
-
-    template <typename T>
     inline void reshape_l2r(const p_dense_matrix<T>& left, p_dense_matrix<T>& right,
                             size_t left_offset, size_t right_offset, 
                             size_t sdim, size_t ldim, size_t rdim)
@@ -50,10 +36,27 @@ namespace maquis { namespace types {
         dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
         reshape_l2r(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
 #endif
-        ambient::push(ambient::reshape_l2r_l<T>, ambient::reshape_l2r_c<T>, left, right, 
-                      left_offset, right_offset, sdim, ldim, rdim);
+        USE_ATOMIC(left.grid_dim() == 1 && right.grid_dim() == 1, reshape_l2r, 
+                   left, right, left_offset, right_offset, sdim, ldim, rdim);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sr == right){} else printf("--------------------- RESHAPE L2R WAS INCORRECT!\n");
+#endif
+    }
+
+    template <typename T>
+    inline void reshape_r2l(p_dense_matrix<T>& left, const p_dense_matrix<T>& right,
+                            size_t left_offset, size_t right_offset, 
+                            size_t sdim, size_t ldim, size_t rdim)
+    { // gs
+#ifdef AMBIENT_SERIAL_CHECK
+        dense_matrix<T> sl = maquis::traits::matrix_cast<dense_matrix<T> >(left);
+        dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
+        reshape_r2l(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
+#endif
+        USE_ATOMIC(left.grid_dim() == 1 && right.grid_dim() == 1, reshape_r2l, 
+                   left, right, left_offset, right_offset, sdim, ldim, rdim);
+#ifdef AMBIENT_SERIAL_CHECK
+        if(sl == left){} else printf("--------------------- RESHAPE R2L WAS INCORRECT!\n");
 #endif
     }
 
@@ -68,8 +71,8 @@ namespace maquis { namespace types {
         dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
         lb_tensor_mpo(sout, sin, salfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #endif
-        ambient::push(ambient::lb_tensor_mpo_l<T>, ambient::lb_tensor_mpo_c<T>,
-                      out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+        USE_ATOMIC(out.grid_dim() == 1 && in.grid_dim() == 1 && alfa.grid_dim() == 1, lb_tensor_mpo, 
+                   out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sout == out){} else printf("--------------------- LB TENSOR MPO WAS INCORRECT!\n");
 #endif
@@ -86,8 +89,8 @@ namespace maquis { namespace types {
         dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
         rb_tensor_mpo(sout, sin, salfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #endif
-        ambient::push(ambient::rb_tensor_mpo_l<T>, ambient::rb_tensor_mpo_c<T>,
-                      out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+        USE_ATOMIC(out.grid_dim() == 1 && in.grid_dim() == 1 && alfa.grid_dim() == 1, rb_tensor_mpo, 
+                   out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sout == out){} else printf("--------------------- RB TENSOR MPO WAS INCORRECT!\n");
 #endif
@@ -103,7 +106,7 @@ namespace maquis { namespace types {
 #endif
         size_t m = num_rows(a);
         size_t n = num_cols(a);
-        ambient::push(ambient::scalar_norm_l<T>, ambient::scalar_norm_c<T>, a, m, n, ret);
+        USE_ATOMIC(a.grid_dim() == 1, scalar_norm, a, m, n, ret);
 #ifdef AMBIENT_SERIAL_CHECK
         if(std::abs((T)ret - sret) > 0.01) printf("--------------------- SCALAR NORM IS INCORRECT (%.2f vs %.2f)\n", (T)ret, sret); 
 #endif
@@ -119,7 +122,7 @@ namespace maquis { namespace types {
 #endif
         size_t m = num_rows(a);
         size_t n = num_cols(a);
-        ambient::push(ambient::scalar_overlap_l<T>, ambient::scalar_overlap_c<T>, a, b, m, n, ret);
+        USE_ATOMIC(a.grid_dim() == 1, scalar_overlap, a, b, m, n, ret);
 #ifdef AMBIENT_SERIAL_CHECK
         if(std::abs((T)ret - sret) > 0.01) printf("--------------------- SCALAR NORM OVERLAP IS INCORRECT (%.2f vs %.2f)\n", (T)ret, sret); 
 #endif
@@ -134,7 +137,7 @@ namespace maquis { namespace types {
         bond_renyi_entropies(sm, ssv);
 #endif
         std::vector<T>* sc_ptr = &sv;
-        ambient::push(ambient::push_back_sqr_gt_l<T>, ambient::push_back_sqr_gt_c<T>, m, sc_ptr);
+        ambient::push< ambient::push_back_sqr_gt<T> >(m, sc_ptr);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sv != ssv) printf("--------------------- BOND RENYI ENTROPIES WAS INCORRECT!\n");
 #endif
@@ -212,13 +215,15 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    inline p_dense_matrix<T> transpose(const p_dense_matrix<T>& m){
+    inline p_dense_matrix<T> transpose(const p_dense_matrix<T>& a){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(m);
+        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(a);
 #endif
-        p_dense_matrix<T> t(m.num_cols(), m.num_rows());
-        ambient::push(ambient::transpose_out_l<T>, ambient::transpose_out_c<T>, m, t);
+        p_dense_matrix<T> t(a.num_cols(), a.num_rows());
+        size_t m = a.num_rows();
+        size_t n = a.num_cols();
+        USE_ATOMIC(a.grid_dim() == 1, transpose_out, a, t, m, n);
         // p_dense_matrix<T> t(m); // alternative
         // t.transpose();
 #ifdef AMBIENT_SERIAL_CHECK
@@ -234,7 +239,7 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1.){
+    inline p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1.){
         //printf("exp\n");
         typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
         p_dense_matrix<T> evecs;
@@ -247,6 +252,7 @@ namespace maquis { namespace types {
     // {{{ strassen matrix multiplication algorithm
 
     // {{{ strassen multiplication supplementary functions
+    /*
     template<typename T>
     void gemm_strassen_gad(const p_dense_matrix<T>& a, size_t ai, size_t aj, 
                            p_dense_matrix<T>& r, size_t n)
@@ -344,7 +350,7 @@ namespace maquis { namespace types {
         assert(n == num_rows(b));
         c.resize(n, n);
         gemm_strassen(a, 0, 0, b, 0, 0, c, 0, 0, n);
-    }
+    }*/
     // }}}
 
     template<typename T>
@@ -358,7 +364,7 @@ namespace maquis { namespace types {
         gemm(sa,sb,sc);
 #endif
         c.resize(a.num_rows(), b.num_cols());
-        ambient::push(ambient::gemm_l<T>, ambient::gemm_c<T>, a, b, c);
+        USE_ATOMIC(a.grid_dim() == 1 && b.grid_dim() == 1, gemm_general, a, b, c);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sc == c){} else printf("--------------------- GEMM WAS INCORRECT!\n");
 #endif
@@ -378,7 +384,7 @@ namespace maquis { namespace types {
         size_t n = b.num_cols();
         size_t k = a.num_cols();
         c.resize(m, n);
-        ambient::push(ambient::gemm_diagonal_rhs_l<T,D>, ambient::gemm_diagonal_rhs_c<T,D>, a, b, c, m, n, k);
+        ambient::push< ambient::gemm_diagonal_rhs<T,D> >(a, b, c, m, n, k);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sc == c){} else printf("--------------------- GEMM PDP WAS INCORRECT!\n");
 #endif
@@ -398,7 +404,7 @@ namespace maquis { namespace types {
         size_t n = b.num_cols();
         size_t k = a.num_cols();
         c.resize(m, n);
-        ambient::push(ambient::gemm_diagonal_lhs_l<T,D>, ambient::gemm_diagonal_lhs_c<T,D>, a, b, c, m, n, k);
+        ambient::push< ambient::gemm_diagonal_lhs<T,D> >(a, b, c, m, n, k);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sc == c){} else printf("--------------------- GEMM DPP WAS INCORRECT!\n");
 #endif
@@ -424,7 +430,7 @@ namespace maquis { namespace types {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        ambient::push(ambient::svd_l<T>, ambient::svd_c<T>, a, m, n, u, vt, s);
+        ambient::push< ambient::svd<T> >(a, m, n, u, vt, s);
 #endif
     }
 
@@ -442,7 +448,7 @@ namespace maquis { namespace types {
 #endif
         size_t m = num_rows(a);
         evecs.resize(m, m);
-        ambient::push(ambient::heev_l<double>, ambient::heev_c<double>, a, m, evals); // destoys U triangle of M
+        ambient::push< ambient::heev<T> >(a, m, evals); // destoys U triangle of M
         evecs = a;
 #ifdef AMBIENT_SERIAL_CHECK
         if(sevecs == evecs){}else printf("--------------------- HEEV WAS INCORRECT!\n");
@@ -473,33 +479,33 @@ namespace algorithms {
     template<typename T>
     inline void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols, size_type orows, size_type ocols){ 
         // gs
-        ambient::push(ambient::resize_l<T>, ambient::resize_c<T>, m, rows, cols, orows, ocols);
+        ambient::push< ambient::resize<T> >(m, rows, cols, orows, ocols);
     }
 
     template<typename T>
     inline void remove_rows(p_dense_matrix_impl<T>& m, size_type i, difference_type k){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- REMOVE ROWS");
-        ambient::push(ambient::remove_rows_l<T>, ambient::remove_rows_c<T>, m, i, k);
+        ambient::push< ambient::remove_rows<T> >(m, i, k);
     }
 
     template<typename T>
     inline void remove_cols(p_dense_matrix_impl<T>& m, size_type j, difference_type k){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- REMOVE COLS");
-        ambient::push(ambient::remove_cols_l<T>, ambient::remove_cols_c<T>, m, j, k);
+        ambient::push< ambient::remove_cols<T> >(m, j, k);
     }
 
     template<typename T>
     inline void fill_identity(p_dense_matrix_impl<T>& a){
         size_t m = a.num_rows();
         size_t n = a.num_cols();
-        ambient::push(ambient::init_identity_l<T>, ambient::init_identity_c<T>, a, m, n);
+        ambient::push< ambient::init_identity<T> >(a, m, n);
     }
 
     template<typename T>
     inline void fill_random(p_dense_matrix_impl<T>& a){
         size_t m = a.num_rows();
         size_t n = a.num_cols();
-        ambient::push(ambient::init_random_l<T>, ambient::init_random_c<T>, a, m, n);
+        ambient::push< ambient::init_random<T> >(a, m, n);
     }
 
     template<typename T>
@@ -507,7 +513,7 @@ namespace algorithms {
         if(value == 0.) return; // matrices are 0s by default
         size_t m = a.num_rows();
         size_t n = a.num_cols();
-        ambient::push(ambient::init_value_l<T>, ambient::init_value_c<T>, a, m, n, value);
+        ambient::push< ambient::init_value<T> >(a, m, n, value);
     }
 
     template<typename T>
@@ -521,7 +527,7 @@ namespace algorithms {
     inline void inplace_transpose(p_dense_matrix_impl<T>& m){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- INPLACE TRANSPOSE");
         assert(m.num_rows() == m.num_cols()); // current limitation
-        ambient::push(ambient::transpose_l<T>, ambient::transpose_c<T>, m);
+        ambient::push< ambient::transpose<T> >(m);
     }
 
     template <typename T>
@@ -532,7 +538,7 @@ namespace algorithms {
 #endif
         scalar_type trace;
         size_t n = std::min(a.num_rows(), a.num_cols());
-        ambient::push(ambient::trace_l<T>, ambient::trace_c<T>, a, n, trace);
+        ambient::push< ambient::trace<T> >(a, n, trace);
 #ifdef AMBIENT_SERIAL_CHECK
         if(maquis::types::trace(sm) != (T)trace) printf("--------------------- TRACE IS INCORRECT!\n");
 #endif
@@ -547,7 +553,7 @@ namespace algorithms {
         dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
         sm += srhs;
 #endif
-        ambient::push(ambient::mem_bound_l<T>, ambient::add_c<T>, m, rhs);
+        USE_ATOMIC(m.grid_dim() == 1, add, m, rhs);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sm == m){}else printf("--------------------- ADD INPLACE IS INCORRECT!\n");
 #endif
@@ -561,7 +567,7 @@ namespace algorithms {
         dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
         sm -= srhs;
 #endif
-        ambient::push(ambient::mem_bound_l<T>, ambient::sub_c<T>, m, rhs);
+        USE_ATOMIC(m.grid_dim() == 1, sub, m, rhs);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sm == m){}else printf("--------------------- SUB INPLACE IS INCORRECT!\n");
 #endif
@@ -570,13 +576,13 @@ namespace algorithms {
     template <typename T>
     inline void gemm_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- GEMM INPLACE");
-        ambient::push(ambient::gemm_inplace_l<T>, ambient::gemm_inplace_c<T>, m, rhs);
+        ambient::push< ambient::gemm_inplace<T> >(m, rhs);
     }
 
     template <typename T>
     inline void gemm_diag_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs_diag) {
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- GEMM DIAG INPLACE");
-        //ambient::push(ambient::gemm_diag_inplace_l<T>, ambient::gemm_diag_inplace_c<T>, m, rhs);
+        //ambient::push< ambient::gemm_diag_inplace<T> >(m, rhs);
     }
 
     template <typename T>
@@ -588,7 +594,7 @@ namespace algorithms {
 #endif
         size_t m = a.num_rows();
         size_t n = a.num_cols();
-        ambient::push(ambient::scale_l<T>, ambient::scale_c<T>, a, m, n, rhs);
+        USE_ATOMIC(a.grid_dim() == 1, scale, a, m, n, rhs);
 #ifdef AMBIENT_SERIAL_CHECK
         if(s == a){} else printf("--------------------- SCALE WAS INCORRECT!\n");
 #endif
@@ -597,8 +603,7 @@ namespace algorithms {
     template <typename T>
     inline void cpy(p_dense_matrix_impl<T>& dst, const p_dense_matrix_impl<T>& src){
         // gs
-        ambient::push(static_cast<typename p_dense_matrix_impl<T>::copy_t>(&ambient::copy_l), 
-                      static_cast<typename p_dense_matrix_impl<T>::copy_t>(&ambient::copy_c), dst, src);
+        USE_ATOMIC(src.grid_dim() == 1, copy, dst, src);
     }
 } 
 // }}} end of implementation specific type-nested algorithms //

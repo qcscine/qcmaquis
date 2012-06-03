@@ -10,10 +10,13 @@ namespace maquis { namespace types {
     inline p_dense_matrix_impl<T>::~p_dense_matrix_impl(){ } // #destructor // 
 
     template <typename T>
-    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(){ }  // be cautious (implicit)
+    inline p_dense_matrix_impl<T>::p_dense_matrix_impl()
+    : cols(0), rows(0)  // be cautious (implicit)
+    {
+    }
 
     template <typename T>
-    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols = 0, T init_value = T() ){
+    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols, T init_value = T() ){
         this->cols = cols;
         this->rows = rows;
         this->pt_set_dim(cols, rows);
@@ -22,7 +25,7 @@ namespace maquis { namespace types {
 
     template <typename T>
     inline p_dense_matrix_impl<T>::p_dense_matrix_impl(const p_dense_matrix_impl& m)
-    : ambient::parallel_t< p_dense_matrix_impl<T> >(m)
+    : ambient::parallel< p_dense_matrix_impl<T> >(m)
     {
         this->cols = m.num_cols();
         this->rows = m.num_rows();
@@ -44,6 +47,11 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
+    inline size_type p_dense_matrix_impl<T>::grid_dim() const {
+        return this->pt_grid_dim().max();   
+    }
+
+    template <typename T>
     inline void p_dense_matrix_impl<T>::resize(size_type rows, size_type cols){
         assert(rows > 0); assert(cols > 0);
         if(this->rows != rows || this->cols != cols){
@@ -58,16 +66,14 @@ namespace maquis { namespace types {
     inline void p_dense_matrix_impl<T>::remove_rows(size_type i, size_type k = 1){
         assert( i+k <= this->rows );
         algorithms::remove_rows(*this, i, k);
-        this->pt_set_dim(this->cols, this->rows - k);
-        this->rows -= k;
+        this->resize(this->rows-k, this->cols);
     }
 
     template <typename T>
     inline void p_dense_matrix_impl<T>::remove_cols(size_type j, size_type k = 1){
         assert( j+k <= this->cols );
         algorithms::remove_cols(*this, j, k);
-        this->pt_set_dim(this->cols - k, this->rows);
-        this->cols -= k;
+        this->resize(this->rows, this->cols-k);
     }
 
     template <typename T>

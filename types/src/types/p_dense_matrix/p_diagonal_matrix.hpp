@@ -6,6 +6,12 @@ namespace maquis { namespace types {
     #define value_type  typename p_diagonal_matrix<T>::value_type
 
     template<typename T>
+    inline p_diagonal_matrix<T>::p_diagonal_matrix()
+    : data_()
+    {
+    }
+
+    template<typename T>
     inline p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, const value_type& init)
     : data_(rows,1)
     {
@@ -84,13 +90,13 @@ namespace maquis { namespace types {
     template<typename T>
     inline void p_diagonal_matrix<T>::exp(const T& alfa){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- EXP DIAG");
-        ambient::push(ambient::exp_diagonal_l<T>, ambient::exp_diagonal_c<T>, *this, alfa);
+        ambient::push< ambient::exp_diagonal<T> >(*this, alfa);
     }
 
     template<typename T>
     inline void p_diagonal_matrix<T>::sqrt(){ 
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- SQRT DIAG");
-        ambient::push(ambient::sqrt_diagonal_l<T>, ambient::sqrt_diagonal_c<T>, *this);
+        ambient::push< ambient::sqrt_diagonal<T> >(*this);
     }
 
     // {{{ p_diagonal_matrix free functions
@@ -115,7 +121,7 @@ namespace maquis { namespace types {
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- EXP");
         assert(false);
         p_diagonal_matrix< std::complex<T> > e(num_rows(m), num_rows(m));
-        ambient::push(ambient::exp_diagonal_rc_l<T>, ambient::exp_diagonal_rc_c<T>, e, m, alfa);
+        ambient::push< ambient::exp_diagonal_rc<T> >(e, m, alfa);
         return e;
     }
 

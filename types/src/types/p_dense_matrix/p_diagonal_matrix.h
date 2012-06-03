@@ -15,24 +15,25 @@ namespace maquis { namespace types {
         typedef typename container::value_type value_type;
         typedef typename container::size_type size_type;
         
-        p_diagonal_matrix(size_t rows = 0, const value_type& init = value_type());
-        size_type num_rows() const;
-        size_type num_cols() const;
-        p_diagonal_matrix<T>& operator = (const p_diagonal_matrix<T>& rhs);
-        const value_type& operator[](size_t i) const;
-        value_type& operator[](size_t i); 
-        const value_type& operator()(size_t i, size_t j) const;
-        value_type& operator()(size_t i, size_t j);
-        void remove_rows(size_t i, size_t k = 1);
-        void remove_cols(size_t j, size_t k = 1);
-        void resize(size_t rows, size_t cols);
+        inline p_diagonal_matrix();
+        inline p_diagonal_matrix(size_t rows, const value_type& init = value_type());
+        inline size_type num_rows() const;
+        inline size_type num_cols() const;
+        inline p_diagonal_matrix<T>& operator = (const p_diagonal_matrix<T>& rhs);
+        inline const value_type& operator[](size_t i) const;
+        inline value_type& operator[](size_t i); 
+        inline const value_type& operator()(size_t i, size_t j) const;
+        inline value_type& operator()(size_t i, size_t j);
+        inline void remove_rows(size_t i, size_t k = 1);
+        inline void remove_cols(size_t j, size_t k = 1);
+        inline void resize(size_t rows, size_t cols);
         template< class T1 > 
         friend std::ostream & operator <<(std::ostream& os, const p_diagonal_matrix<T1>& m);
-        const container& get_data() const; 
-        container & get_data();    
-        size_type size() const;
-        void sqrt();
-        void exp(const T& alfa = 1.);
+        inline const container& get_data() const; 
+        inline container & get_data();    
+        inline size_type size() const;
+        inline void sqrt();
+        inline void exp(const T& alfa = 1.);
    private:
         container data_;
     };
