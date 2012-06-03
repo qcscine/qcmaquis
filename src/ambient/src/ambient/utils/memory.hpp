@@ -31,7 +31,7 @@ namespace ambient {
     template <size_t size>
     class container {
     public:
-        container()
+        inline container()
         : references(0)
         {
             memset(memory, 0, size);

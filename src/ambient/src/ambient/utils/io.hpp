@@ -1,13 +1,9 @@
 #ifndef AMBIENT_IO
 #define AMBIENT_IO
-#include <iostream>
-#include <fstream>
 
 namespace ambient {
 
-    template<typename T>
-    class future;
-
+    template<typename T> class future;
     bool verbose();
 
     class io {

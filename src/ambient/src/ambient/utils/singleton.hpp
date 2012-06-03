@@ -7,16 +7,16 @@ namespace ambient {
     class singleton {
     public:
         static T& instance();
-        virtual ~singleton(){ }                 // execute derived destructors
+        inline virtual ~singleton(){ }          // execute derived destructors
     protected:
-        singleton(){}                           // only for derived classes
+        inline singleton(){}                    // only for derived classes
     private:
         singleton(singleton const&);            // copy constructor is private
         singleton& operator=(singleton const&); // assignment operator is private
     };
 
     template <typename T>
-    T& singleton<T>::instance(){
+    inline T& singleton<T>::instance(){
         static T singleton;                     // not thread-safe
         return singleton;
     }
