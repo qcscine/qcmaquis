@@ -6,7 +6,12 @@ namespace ambient{
     class dim2 {
     public:
         size_t x, y;
-        inline dim2(size_t x = 1, size_t y = 1) 
+        inline dim2() 
+        : x(0), y(0) 
+        {
+        }
+
+        inline dim2(size_t x, size_t y) 
         : x(x), y(y) 
         {
         }
@@ -57,6 +62,14 @@ namespace ambient{
 
         inline bool operator<(size_t m) const {
             return (x < m && y < m);
+        }
+
+        inline bool operator>(dim2 m) const {
+            return (x > m.x && y > m.y);
+        }
+
+        inline bool operator>(size_t m) const {
+            return (x > m && y > m);
         }
     };
 
