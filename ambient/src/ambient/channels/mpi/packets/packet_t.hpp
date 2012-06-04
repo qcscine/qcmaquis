@@ -81,10 +81,8 @@ namespace ambient { namespace channels { namespace mpi {
     // {{{ memory management (C-style intrusive ptr)
 
     inline void* alloc_t(const packet_t& type){
-        static __a_timer time("ALLOC_T"); time.begin();
         void* memory = malloc(type.get_size());
         memset(memory, 0, type.get_size());
-        time.end();
         // *(int*)((size_t)memory + type.displacements[1]) = 0; // usage
         return memory;
     }

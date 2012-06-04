@@ -9,6 +9,7 @@
 #define __a_packet__      MPI_Datatype& __a_packet_start = 
 #define __a_code(code)    construct(code, LEN(a_packet_types_sizes), \
                           a_packet_types_sizes, &__a_packet_start);
+#include "ambient/utils/timings.hpp"
 namespace ambient { namespace channels { namespace mpi {
 
     class packet_t
