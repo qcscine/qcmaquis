@@ -36,6 +36,8 @@ option (VLI_TESTS "Build the VLI regression tests" ON)
 option (VLI_BENCHMARKS "Build the VLI benchmarks" ON)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
+option (VLI_ARCH_X86  "Build VLI on x86 architecture  " ON)
+option (VLI_ARCH_POWER  "Build VLI on Power architecture " ON)
 
 if(NOT MACHINE_CONFIG)
     set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
