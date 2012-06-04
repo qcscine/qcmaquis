@@ -3,11 +3,8 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline history::history(size_t ts)
-    : t_size(ts)
+    : t_size(ts), current(NULL)
     {
-        layout* l = new layout(ts);
-        ambient::model.insert(l);
-        this->add_state(l);
     }
 
     inline history::~history(){
@@ -20,16 +17,8 @@ namespace ambient { namespace models { namespace velvet {
         this->content.push_back(this->current);
     }
 
-    inline revision* history::back(){
+    inline revision* history::back() const {
         return this->current;
-    }
-
-    inline dim2 history::get_dim() const {
-        return this->current->get_dim();
-    }
-
-    inline void history::set_dim(dim2 dim){
-        this->current->set_dim(dim); // used in pt_set_dim after pushes
     }
 
     inline size_t history::get_t_size() const {
@@ -38,6 +27,14 @@ namespace ambient { namespace models { namespace velvet {
 
     inline size_t history::time() const {
         return this->content.size()-1;
+    }
+
+    inline dim2 history::get_cached_dim() const {
+        return this->dim;
+    }
+
+    inline void history::cache_dim(dim2 dim){
+        this->dim = dim; 
     }
 
 } } }

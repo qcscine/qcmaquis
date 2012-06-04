@@ -12,11 +12,12 @@ namespace ambient { namespace models { namespace velvet {
         inline void add_state(layout* l);
         inline size_t get_t_size() const; // is it used?
         inline size_t time() const;
-        inline dim2 get_dim() const;
-        inline void set_dim(dim2);
-        inline revision* back();
+        inline revision* back() const;
+        inline dim2 get_cached_dim() const; // model
+        inline void cache_dim(dim2); // model
         std::vector<revision*> content;
         size_t t_size;
+        dim2   dim;
         revision* current;
     };
 

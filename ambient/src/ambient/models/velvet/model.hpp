@@ -12,15 +12,38 @@ namespace ambient { namespace models { namespace velvet {
         *const_cast<size_t*>(&l->sid) = this->map.insert(l);
     }
 
-    inline void model::add_revision(history* obj){
-        layout* l = new layout(obj->get_t_size());
-        l->set_dim(obj->get_dim());
+    inline void model::add_revision(history* o){
+        dim2 block_dim;
+        if(this->mem_dim > o->get_cached_dim().max()) block_dim = o->get_cached_dim();
+        else block_dim = this->mem_dim;
+        layout* l = new layout(o->get_t_size(), block_dim, o->get_cached_dim());
         this->insert(l);
-        obj->add_state(l);
+        o->add_state(l);
     }
 
-    inline void model::update_revision(revision* r, group* placement){
+    inline bool model::is_atomic(const history* o){
+        if(o->back() == NULL) return (this->mem_dim > o->get_cached_dim().max()); 
+        return (o->back()->content->grid_dim == 1);
+    }
 
+    inline size_t model::get_block_lda(history* o){
+        return o->back()->content->mem_dim.y;
+    }
+
+    inline dim2 model::get_current_dim(const history* o){
+        return o->get_cached_dim();
+    }
+
+    inline void model::set_current_dim(history* o, dim2 dim){
+        if(o->back() != NULL)
+            o->back()->set_dim(dim);
+        o->cache_dim(dim);
+    }
+
+    inline size_t model::time(const history* o){
+        if(o->back() == NULL) 
+            this->add_revision(const_cast<history*>(o));
+        return o->time();
     }
 
     inline layout* model::get_layout(size_t id) const {
