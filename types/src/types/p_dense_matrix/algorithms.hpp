@@ -36,7 +36,7 @@ namespace maquis { namespace types {
         dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
         reshape_l2r(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
 #endif
-        USE_ATOMIC(left.grid_dim() == 1 && right.grid_dim() == 1, reshape_l2r, 
+        USE_ATOMIC(left.atomic() && right.atomic(), reshape_l2r, 
                    left, right, left_offset, right_offset, sdim, ldim, rdim);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sr == right){} else printf("--------------------- RESHAPE L2R WAS INCORRECT!\n");
@@ -53,7 +53,7 @@ namespace maquis { namespace types {
         dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
         reshape_r2l(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
 #endif
-        USE_ATOMIC(left.grid_dim() == 1 && right.grid_dim() == 1, reshape_r2l, 
+        USE_ATOMIC(left.atomic() && right.atomic(), reshape_r2l, 
                    left, right, left_offset, right_offset, sdim, ldim, rdim);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sl == left){} else printf("--------------------- RESHAPE R2L WAS INCORRECT!\n");
@@ -71,7 +71,7 @@ namespace maquis { namespace types {
         dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
         lb_tensor_mpo(sout, sin, salfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #endif
-        USE_ATOMIC(out.grid_dim() == 1 && in.grid_dim() == 1 && alfa.grid_dim() == 1, lb_tensor_mpo, 
+        USE_ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), lb_tensor_mpo, 
                    out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sout == out){} else printf("--------------------- LB TENSOR MPO WAS INCORRECT!\n");
@@ -89,7 +89,7 @@ namespace maquis { namespace types {
         dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
         rb_tensor_mpo(sout, sin, salfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #endif
-        USE_ATOMIC(out.grid_dim() == 1 && in.grid_dim() == 1 && alfa.grid_dim() == 1, rb_tensor_mpo, 
+        USE_ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), rb_tensor_mpo, 
                    out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sout == out){} else printf("--------------------- RB TENSOR MPO WAS INCORRECT!\n");
@@ -106,7 +106,7 @@ namespace maquis { namespace types {
 #endif
         size_t m = num_rows(a);
         size_t n = num_cols(a);
-        USE_ATOMIC(a.grid_dim() == 1, scalar_norm, a, m, n, ret);
+        USE_ATOMIC(a.atomic(), scalar_norm, a, m, n, ret);
 #ifdef AMBIENT_SERIAL_CHECK
         if(std::abs((T)ret - sret) > 0.01) printf("--------------------- SCALAR NORM IS INCORRECT (%.2f vs %.2f)\n", (T)ret, sret); 
 #endif
@@ -122,7 +122,7 @@ namespace maquis { namespace types {
 #endif
         size_t m = num_rows(a);
         size_t n = num_cols(a);
-        USE_ATOMIC(a.grid_dim() == 1, scalar_overlap, a, b, m, n, ret);
+        USE_ATOMIC(a.atomic(), scalar_overlap, a, b, m, n, ret);
 #ifdef AMBIENT_SERIAL_CHECK
         if(std::abs((T)ret - sret) > 0.01) printf("--------------------- SCALAR NORM OVERLAP IS INCORRECT (%.2f vs %.2f)\n", (T)ret, sret); 
 #endif
@@ -223,7 +223,7 @@ namespace maquis { namespace types {
         p_dense_matrix<T> t(a.num_cols(), a.num_rows());
         size_t m = a.num_rows();
         size_t n = a.num_cols();
-        USE_ATOMIC(a.grid_dim() == 1, transpose_out, a, t, m, n);
+        USE_ATOMIC(a.atomic(), transpose_out, a, t, m, n);
         // p_dense_matrix<T> t(m); // alternative
         // t.transpose();
 #ifdef AMBIENT_SERIAL_CHECK
@@ -364,7 +364,7 @@ namespace maquis { namespace types {
         gemm(sa,sb,sc);
 #endif
         c.resize(a.num_rows(), b.num_cols());
-        USE_ATOMIC(a.grid_dim() == 1 && b.grid_dim() == 1, gemm_general, a, b, c);
+        USE_ATOMIC(a.atomic() && b.atomic(), gemm_general, a, b, c);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sc == c){} else printf("--------------------- GEMM WAS INCORRECT!\n");
 #endif
@@ -553,7 +553,7 @@ namespace algorithms {
         dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
         sm += srhs;
 #endif
-        USE_ATOMIC(m.grid_dim() == 1, add, m, rhs);
+        USE_ATOMIC(m.atomic(), add, m, rhs);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sm == m){}else printf("--------------------- ADD INPLACE IS INCORRECT!\n");
 #endif
@@ -567,7 +567,7 @@ namespace algorithms {
         dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
         sm -= srhs;
 #endif
-        USE_ATOMIC(m.grid_dim() == 1, sub, m, rhs);
+        USE_ATOMIC(m.atomic(), sub, m, rhs);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sm == m){}else printf("--------------------- SUB INPLACE IS INCORRECT!\n");
 #endif
@@ -594,7 +594,7 @@ namespace algorithms {
 #endif
         size_t m = a.num_rows();
         size_t n = a.num_cols();
-        USE_ATOMIC(a.grid_dim() == 1, scale, a, m, n, rhs);
+        USE_ATOMIC(a.atomic(), scale, a, m, n, rhs);
 #ifdef AMBIENT_SERIAL_CHECK
         if(s == a){} else printf("--------------------- SCALE WAS INCORRECT!\n");
 #endif
@@ -603,7 +603,7 @@ namespace algorithms {
     template <typename T>
     inline void cpy(p_dense_matrix_impl<T>& dst, const p_dense_matrix_impl<T>& src){
         // gs
-        USE_ATOMIC(src.grid_dim() == 1, copy, dst, src);
+        USE_ATOMIC(src.atomic(), copy, dst, src);
     }
 } 
 // }}} end of implementation specific type-nested algorithms //

@@ -47,8 +47,8 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    inline size_type p_dense_matrix_impl<T>::grid_dim() const {
-        return this->pt_grid_dim().max();   
+    inline bool p_dense_matrix_impl<T>::atomic() const {
+        return this->pt_atomic();   
     }
 
     template <typename T>

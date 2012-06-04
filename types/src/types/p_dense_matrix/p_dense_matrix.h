@@ -83,8 +83,8 @@ namespace maquis { namespace types {
             return this->impl->num_cols();
         }
 
-        inline size_type grid_dim() const {
-            return this->impl->grid_dim();
+        inline bool atomic() const {
+            return this->impl->atomic();
         }
 
         inline void resize(size_type rows, size_type cols){
@@ -176,7 +176,7 @@ namespace maquis { namespace types {
         inline bool empty() const;
         inline size_type num_rows() const;
         inline size_type num_cols() const;
-        inline size_type grid_dim() const;
+        inline bool atomic() const;
         inline void resize(size_type rows, size_type cols);
         inline void remove_rows(size_type i, size_type k);
         inline void remove_cols(size_type j, size_type k);
