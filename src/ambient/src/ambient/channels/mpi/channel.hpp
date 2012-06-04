@@ -1,4 +1,5 @@
 #include "ambient/channels/mpi/packets/auxiliary.hpp"
+#include "ambient/utils/timings.hpp"
 
 #define AMBIENT_MASTER_RANK 0
 #define RESERVATION 2
@@ -45,19 +46,14 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline packet_t& channel::get_block_packet_type(size_t len){
-        static std::map<size_t,packet_t*> map;
-        std::map<size_t,packet_t*>::iterator value = map.find(len);
-        packet_t* pt;
-
-        if(value != map.end()) 
-            pt = (*value).second;
-        else{
-            pt = new block_packet_t(len);
+        static packet_t* types[65538] = { NULL };
+        size_t idx = len / 8; // for double
+        if(types[idx] == NULL){
+            types[idx] = new block_packet_t(len);
             //pt->commit(); // serial
-            map.insert(std::pair<size_t,packet_t*>(len,pt));
             //this->add_handler(*pt, controllers::accept_block);
         }
-        return *pt;
+        return *types[idx];
     }
 
     inline void channel::finalize(){
