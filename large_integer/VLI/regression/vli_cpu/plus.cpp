@@ -82,3 +82,4 @@ VLI_STATIC_TEST( plus_assign_overflow_bug )
     
     BOOST_CHECK_EQUAL(a,c);
 }   
+

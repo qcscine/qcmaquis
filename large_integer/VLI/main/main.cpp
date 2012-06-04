@@ -82,7 +82,15 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
-    
+
+{
+vli_type_cpu a(2), b(1);
+a[0] = 0xFFFfFFFFFFFFFFFF;
+a[2] = 0xFFFfFFFFFFFFFFFF;
+a*=-2;
+std::cout << a << std::endl;
+}
+/*  
     int SizeVector =  atoi(argv[1]); 
      
  polynomial_vector_type v1gmp(SizeVector);
@@ -142,17 +150,17 @@ std::cout << " --------------------------- " << std::endl;
     t4.end();
 #endif
 
-/*
+
      std::cout << " GPU----------------------------------------------------- " << std::endl;
      std::cout << result_pure_cpu_omp << std::endl;
      std::cout << " CPU----------------------------------------------------- " << std::endl;
      std::cout << result_pure_cpu << std::endl;
-*/
+
     if(result_pure_cpu_omp ==result_pure_cpu ) {printf("OK gpu\n"); } else{printf("NO OK gpu \n"); } 
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
-
+*/
     return 0;
 }
 

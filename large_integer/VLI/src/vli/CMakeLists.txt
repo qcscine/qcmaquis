@@ -15,11 +15,20 @@ configure_file (
 # Configure Header File Template
 #
 ########################################################################
+
+if(VLI_ARCH_X86)
+    set(ARCHITECTURE cpu_x86)
+endif(VLI_ARCH_X86)
+
+if(VLI_ARCH_POWER)
+    set(ARCHITECTURE cpu_power)
+endif(VLI_ARCH_POWER)
+
 add_library(vli_cpu 
-            detail/cpu_x86/kernels_cpu_add_asm.cpp
-            detail/cpu_x86/kernels_cpu_sub_asm.cpp
-            detail/cpu_x86/kernels_cpu_mul_asm.cpp
-            detail/cpu_x86/kernels_cpu_muladd_asm.cpp
+            detail/${ARCHITECTURE}/kernels_cpu_add_asm.cpp
+            detail/${ARCHITECTURE}/kernels_cpu_sub_asm.cpp
+            detail/${ARCHITECTURE}/kernels_cpu_mul_asm.cpp
+            detail/${ARCHITECTURE}/kernels_cpu_muladd_asm.cpp
       )
      
 
