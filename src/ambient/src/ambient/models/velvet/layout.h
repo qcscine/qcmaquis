@@ -51,7 +51,7 @@ namespace ambient { namespace models { namespace velvet {
         };
     
         inline ~layout();
-        inline layout(size_t);
+        inline layout(size_t, dim2, dim2);
         inline void embed(void* memory, size_t x, size_t y, size_t bound); // fires controllers::unlock_revision if complete
         inline entry* get(size_t x, size_t y);
         inline void mesh();

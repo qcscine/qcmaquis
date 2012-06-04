@@ -55,14 +55,14 @@ namespace ambient {
             delete (ptr_type*)ptr;
         }
         static inline size_t modify(T& obj, sfunctor* m){
-            size_t timestamp = obj.time();
+            size_t timestamp = ambient::model.time(&obj);
             ui_m_current(obj).add_modifier(m);
             ambient::model.add_revision(&obj);
             ui_m_current(obj).set_generator(m); // (updated obj)
             return timestamp;
         }
         static inline size_t modify(const T& obj, sfunctor* m){
-            size_t timestamp = obj.time();
+            size_t timestamp = ambient::model.time(&obj);
             ui_m_current(obj).add_modifier(m);
             return timestamp;
         }

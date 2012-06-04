@@ -16,8 +16,12 @@ namespace ambient { namespace models { namespace velvet {
     public:
         inline model();
         inline void insert(layout* l);
-        inline void add_revision(history* obj);
-        inline void update_revision(revision* r, group* placement);
+        inline void add_revision(history* o);
+        inline bool is_atomic(const history* o);
+        inline size_t get_block_lda(history* o);
+        inline dim2 get_current_dim(const history* o);
+        inline void set_current_dim(history* o, dim2);
+        inline size_t time(const history* o);
         inline layout* get_layout(size_t id) const;
         inline model& operator>>(dim2);
         inline model& operator, (dim2);

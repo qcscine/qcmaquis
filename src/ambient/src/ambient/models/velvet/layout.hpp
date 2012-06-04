@@ -13,9 +13,10 @@ namespace ambient { namespace models { namespace velvet {
         }
     }
 
-    inline layout::layout(size_t t_size)
-    : master(0), t_size(t_size), mesh_dim(0,0), mem_dim(0,0), placement(NULL), grid_dim(0,0), dim(0,0)
+    inline layout::layout(size_t t_size, dim2 b_size, dim2 size)
+    : t_size(t_size), mem_dim(b_size), dim(size), placement(NULL), grid_dim(0,0), master(0), mesh_dim(0,0)
     {
+        this->set_dim(size);
     }
 
 
@@ -71,11 +72,6 @@ namespace ambient { namespace models { namespace velvet {
     } 
 
     inline void layout::set_dim(dim2 dim){
-        if(dim.x == 0 || dim.y == 0) printf("SETTING 0-DIMENSION (%lu %lu)!\n", dim.x, dim.y);
-        if(this->mem_dim == 0){
-            if(ambient::model.mem_dim > dim.max()) this->mem_dim = dim; // or use dim2(dim.max(),dim.max()) for square blocks
-            else this->mem_dim = ambient::model.mem_dim;
-        }
         this->dim = dim;
         this->mesh();
     }
