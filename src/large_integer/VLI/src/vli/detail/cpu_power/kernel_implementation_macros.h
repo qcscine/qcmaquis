@@ -48,6 +48,8 @@
 // addition ASM operators
 #define  ADC_register(z, n, OffSet) "adde "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,BOOST_PP_ADD(OffSet,1)))" \n" /* adcq rsi + rdi + CB  */     
 #define  ADC0_register(z, n, unused) "addze "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
+#define  ADC00_register(z, n, OffSet) "adde "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,1))",6 \n" /* adcq rsi + rdi + CB  */     
+
 // substraction ASM operators 
 #define SUBC_register(z, n, OffSet) "subfe "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,BOOST_PP_ADD(OffSet,1)))","R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
 // multiplication VLI<n*64> *= 64 bits, note : results are saved in to r8, r9, r10 .... thus for the first iteration I move direclty inside

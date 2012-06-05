@@ -49,11 +49,23 @@ namespace vli{
 
                      #define FUNCTION_add_nbits_64bits(z, n, unused) \
                          void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){ \
-   assert(false);\
+                         asm(                                                                                 \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                      \
+                                 "ld   5,0(4)   \n" \
+                                 "addi 6,5,0    \n" \
+                                 "sradi 6,6,63   \n" \
+                                 "addc 14,5,14  \n" \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC00_register, ~)    \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
+                                 : : :BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"        \
+                                ); \
                          }                                                                                     \
 
                      BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
                      #undef FUNCTION_add_nbits_64bits
+
+/*
+*/
 
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
