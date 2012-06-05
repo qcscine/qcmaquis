@@ -52,13 +52,12 @@ namespace vli{
                          void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){ \
                          asm(                                                                                  \
                                  "movq   (%%rsi)            , %%rcx  \n"                                       \
-                                 "xorq   %%rax              , %%rax  \n" /*rax to 0 */                         \
-                                 "xorq   %%rbx              , %%rbx  \n" /*rbx to 0 */                         \
-                                 "notq   %%rbx                       \n" /* rbx to 0xff.. */                   \
-                                 "cmpq   $0                 , %%rcx  \n" /*check if the 64 bits int is <0*/    \
-                                 "cmovsq %%rbx              , %%rax  \n" /*if yes we adcq 0xff.. and not 0*/   \
+                                 "movq   %%rcx              , %%rbx  \n"   /*  XOR then AND could make a cpy */\
+                                 "xorq   %%rax              , %%rax  \n" /*rbx to 0 */                         \
+                                 "shrq   $63                , %%rbx  \n" /* get the sign */                    \
+                                 "subq   %%rbx              , %%rax  \n" /* 0 or 0xffffff...    */             \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register, ~)                          \
-                                 "addq %%rcx                , "R(0)" \n"                                       \
+                                 "addq   %%rcx              , "R(0)" \n"                                       \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC00_register, ~) /* rbx used inside */   \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), SAVE_register, ~)                          \
                                  : : :"rax","rbx","rcx",BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"   \
