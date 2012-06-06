@@ -182,8 +182,7 @@ namespace ambient {
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
         }
     };
-        
-        
+
     template<typename T>
     struct resize : public ambient::kernel_dispatch< resize<T> > 
     {
@@ -358,7 +357,7 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME("ambient_reshape_l2r_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(right, dim2(0,0), right, dim2(0,0), dim2(ui_c_get_dim(right).x,ui_c_get_dim(right).y)); // refreshing updated memory
+            __a_memptf<T, __a_memcpy>(right, dim2(0,0), right, dim2(0,0), ui_c_get_dim(right)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss){
                 __a_memptf<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
                                           left,  dim2(0, ss*ldim + left_offset), 
@@ -388,7 +387,7 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME("ambient_reshape_r2l_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(left, dim2(0,0), left, dim2(0,0), dim2(ui_c_get_dim(left).x,ui_c_get_dim(left).y)); // refreshing updated memory
+            __a_memptf<T, __a_memcpy>(left, dim2(0,0), left, dim2(0,0), ui_c_get_dim(left)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss)
                 __a_memptf<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
                                           right, dim2(ss*rdim + right_offset,0), 
@@ -419,7 +418,7 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME("ambient_rb_tensor_mpo_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), dim2(ui_c_get_dim(out).x,ui_c_get_dim(out).y)); // refreshing updated memory
+            __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T* alfad = ui_c_current(alfa)(ss2/ui_c_get_mem_dim(alfa).x, ss1/ui_c_get_mem_dim(alfa).y);
@@ -453,7 +452,7 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME("ambient_lb_tensor_mpo_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), dim2(ui_c_get_dim(out).x,ui_c_get_dim(out).y)); // refreshing updated memory
+            __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T* alfad = ui_c_current(alfa)(ss2/ui_c_get_mem_dim(alfa).x, ss1/ui_c_get_mem_dim(alfa).y);
