@@ -10,14 +10,10 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void logistics()   = 0;
         virtual void computation() = 0;
         virtual bool pretend()     = 0;
-        inline cfunctor()
-        : workload(1),credit(0)
-        {
-            pthread_mutex_init(&mutex, NULL);
-        }
         virtual ~cfunctor(){
             pthread_mutex_destroy(&mutex);
         } 
+        inline cfunctor();
         inline void check_complete();
         inline void lock()                 { pthread_mutex_lock(&mutex);    }
         inline void unlock()               { pthread_mutex_unlock(&mutex);  }

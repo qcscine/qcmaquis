@@ -2,9 +2,6 @@
 #define AMBIENT_INTERFACE_KERNELS
 #include "ambient/utils/timings.hpp"
  
-#define marked NULL,
-#define pinned ambient::pin_marker* ,
-
 //#define AMBIENT_PUSH_TIMINGS
 #ifdef AMBIENT_PUSH_TIMINGS
     #define __A_TIME(name) static __a_timer time(name); time.begin();
@@ -23,43 +20,72 @@ namespace ambient {
         private:
         static void invoke  (){}
         static void latch   (){}
-        static void pin     (){}
         static void cleanup (){}
         static void weight  (){}
         static void place   (){}
     };
 
-    class pin_marker { /* empty class for args marking */ };
-    template <class K> class kernel_dispatch;
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
     template<class K>
     class kernel_dispatch : public cfunctor
     {
     public:
+        virtual ~kernel_dispatch(){
+            kernel_inliner<typename K::F,K::c>::cleanup(this);
+        }
         virtual void weight(){
             kernel_inliner<typename K::F,K::c>::weight(this);
-        }
-        virtual void logistics(){
-            kernel_inliner<typename K::F,K::l>::invoke(this);
-            kernel_inliner<typename K::F,K::l>::l_check_complete(this);
-        }
-        virtual void computation(){
-            kernel_inliner<typename K::F,K::c>::invoke(this);
-            kernel_inliner<typename K::F,K::c>::c_check_complete(this);
-        }
-        virtual bool pretend(){
-            return kernel_inliner<typename K::F,K::c>::pretend(this);
         }
         virtual void place(){
             kernel_inliner<typename K::F,K::c>::place(this);
         }
-        virtual ~kernel_dispatch(){
+        virtual void computation(){
+            kernel_inliner<typename K::F,K::c>::invoke(this);
+            this->check_complete();
+        }
+        virtual void logistics(){
+            kernel_inliner<typename K::F,K::l>::invoke(this);
+            this->check_complete();
+        }
+        virtual bool pretend(){
+            return false;
+        }
+    };
+
+    template<class K>
+    class kernel_dispatch_unpinned : public cfunctor
+    {
+    public:
+        virtual ~kernel_dispatch_unpinned(){
             kernel_inliner<typename K::F,K::c>::cleanup(this);
+        }
+        virtual void weight(){
+            kernel_inliner<typename K::F,K::c>::weight(this);
+        }
+        virtual void place(){
+            kernel_inliner<typename K::F,K::c>::place(this);
+        }
+        virtual void computation(){
+            kernel_inliner<typename K::F,K::c>::invoke(this);
+            this->check_complete();
+        }
+        virtual void logistics(){
+            kernel_inliner<typename K::F,K::l>::invoke(this);
+            this->lock();
+            if(this->workload == 1) controller.execute_free_mod(this);
+            else this->workload--;
+            this->unlock();
+        }
+        virtual bool pretend(){
+            this->lock();
+            this->workload--;
+            this->unlock();
+            if(!this->workload) return false;
+            return true;
         }
     };
 }
 
 #include "ambient/interface/pp/push.pp.hpp"    
-#undef marked
 #endif

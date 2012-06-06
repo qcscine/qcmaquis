@@ -15,70 +15,50 @@ namespace ambient {
     // {{{ compile-time type info: singular types or simple types
     template <typename T> struct singular_info {
         typedef T* ptr_type;
-        static inline ptr_type pointer(T& obj){
-            T* r = new T(obj);
-            return ptr_type(r);
-        }
-        static inline T& dereference(void* ptr){
-            return *(ptr_type)ptr;
-        }
-        static inline void deallocate(void* ptr){
-            delete (ptr_type)ptr;
-        }
-        static inline size_t modify(T& obj, sfunctor* m){ 
-            return 0; // empty for serial objects
-        }
-        static inline T& revised(void* ptr, size_t revisino){
-            return dereference(ptr);
-        }
-        static inline void weight(void* ptr, cfunctor* m){
-            // empty for serial objects
-        }
-        static inline void place(void* ptr, sfunctor* m){
-            // empty for serial objects
-        }
+        template<size_t arg> static inline void deallocate    (sfunctor* m){ delete  (ptr_type)(m->arguments[arg]); }
+        template<size_t arg> static inline T&   revised       (sfunctor* m){ return *(ptr_type)(m->arguments[arg]); }
+        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ m->arguments[arg] = (void*)new T(obj); }
+        template<size_t arg> static inline void weight        (cfunctor* m){                                        }
+        template<size_t arg> static inline void place         (sfunctor* m){                                        }
     };
     // }}}
     // {{{ compile-time type info: parallel derived types
     template <typename T> struct parallel_info {
         typedef typename T::ptr ptr_type;
-        static inline ptr_type* pointer(T& obj){
-            return new ptr_type(&obj);
+        template<size_t arg> 
+        static inline void deallocate(sfunctor* m){
+            delete (ptr_type*)(m->arguments[arg]);
         }
-        static inline ptr_type* pointer(const T& obj){
-            return new ptr_type(const_cast<T*>(&obj));
-        }
-        static inline T& dereference(void* ptr){
-            return *(*(ptr_type*)ptr);
-        }
-        static inline void deallocate(void* ptr){
-            delete (ptr_type*)ptr;
-        }
-        static inline size_t modify(T& obj, sfunctor* m){
-            size_t timestamp = ambient::model.time(&obj);
+        template<size_t n>
+        static inline void modify(T& obj, sfunctor* m){
+            m->arguments[n] = (void*)new ptr_type(&obj);
+            m->revisions[n] = ambient::model.time(&obj);
             obj.back()->add_modifier(m);
             ambient::model.add_revision(&obj).set_generator(m);
-            return timestamp;
         }
-        static inline size_t modify(const T& obj, sfunctor* m){
-            size_t timestamp = ambient::model.time(&obj);
+        template<size_t n>
+        static inline void modify(const T& obj, sfunctor* m){
+            m->arguments[n] = (void*)new ptr_type(const_cast<T*>(&obj));
+            m->revisions[n] = ambient::model.time(&obj);
             obj.back()->add_modifier(m);
-            return timestamp;
         }
-        static inline T& revised(void* ptr, size_t revision){
-            T& obj = *(*(ptr_type*)ptr);
-            ctxt.set_revision_base(&obj, revision);
-            return dereference(ptr);
+        template<size_t arg>
+        static inline T& revised(sfunctor* m){
+            T& obj = *(*(ptr_type*)m->arguments[arg]);
+            obj.set_thread_revision_base(m->revisions[arg]);
+            return obj;
         }
-        static inline void weight(void* ptr, cfunctor* m){
-            T& obj = *(*(ptr_type*)ptr);
+        template<size_t arg>
+        static inline void weight(cfunctor* m){
+            T& obj = *(*(ptr_type*)(m->arguments[arg]));
             if(obj.time() > m->get_weight()){
                 m->set_weight(obj.time());
                 //m->set_vellum(current(obj)); // fixme
             }
         }
-        static inline void place(void* ptr, sfunctor* m){
-            //T& obj = *(*(ptr_type*)ptr);
+        template<size_t arg>
+        static inline void place(sfunctor* m){
+            //T& obj = *(*(ptr_type*)m->arguments[arg]);
             //if(current(obj).get_placement() == NULL) // fixme
             //    current(obj).set_placement(m->get_group());
         }
@@ -91,13 +71,8 @@ namespace ambient {
         static inline T& unfold(T& naked){ return naked; }
     };
 
-    template <typename T>
-    struct info < boost::intrusive_ptr<T> > { 
-    };
-
-    template <typename T>
-    struct info < const boost::intrusive_ptr<T> > { 
-    };
+    template <typename T> struct info < boost::intrusive_ptr<T> > {};
+    template <typename T> struct info < const boost::intrusive_ptr<T> > {};
 
     template <typename S>
     struct info < ambient::future<S> > { 
