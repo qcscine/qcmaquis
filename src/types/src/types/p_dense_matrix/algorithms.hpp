@@ -430,7 +430,7 @@ namespace maquis { namespace types {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        ambient::push< ambient::svd<T> >(a, m, n, u, vt, s);
+        USE_ATOMIC(a.atomic(), svd, a, m, n, u, vt, s);
 #endif
     }
 
@@ -448,7 +448,7 @@ namespace maquis { namespace types {
 #endif
         size_t m = num_rows(a);
         evecs.resize(m, m);
-        ambient::push< ambient::heev<T> >(a, m, evals); // destoys U triangle of M
+        USE_ATOMIC(a.atomic(), heev, a, m, evals); // destoys U triangle of M
         evecs = a;
 #ifdef AMBIENT_SERIAL_CHECK
         if(sevecs == evecs){}else printf("--------------------- HEEV WAS INCORRECT!\n");
