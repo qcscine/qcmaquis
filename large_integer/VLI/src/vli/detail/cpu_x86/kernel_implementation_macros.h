@@ -51,7 +51,7 @@
 #define ADC00_register(z, n, unused)"adcq %%rax                               ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
 // substraction ASM operators 
 #define  SBB_register(z, n, unused) "sbbq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rsi) ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi - rdi - SB  */     
-#define SBB0_register(z, n, unused) "sbbq $0x0                                ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 - rdi - SB    */     
+#define SBB0_register(z, n, unused) "sbbq %%rax                               ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 - rdi - SB    */     
 // multiplication VLI<n*64> *= 64 bits, note : results are saved in to r8, r9, r10 .... thus for the first iteration I move direclty inside
 #define  MUL_register(z, n, unused) "mulq "PPS(1,BOOST_PP_ADD(n,1))"(%%rdi)             \n" /* mulq r??*rax */                \
                                     "addq %%rax            ,"R(BOOST_PP_ADD(n,1))"      \n" /* add hia?b? + loa?b? */         \
