@@ -50,15 +50,15 @@ namespace vli{
                              BOOST_PP_REPEAT(n, MUL_register, ~)               /* mul algo */                      \
                              "ld      "R(0)", "PPS(1,BOOST_PP_ADD(1,n))"(3) \n"                                       \
                              "mulld   5     ,"R(0)","R(1)" \n "                                                          \
-                             "addc "R(BOOST_PP_ADD(3,n))", 5, "R(BOOST_PP_ADD(3,n))"  \n"  \
+                             "add  "R(BOOST_PP_ADD(3,n))", 5, "R(BOOST_PP_ADD(3,n))"  \n"  \
                              "cmpi 0,0,6,0                  \n" /* rax is negative ? */             \
                              "beq 0, "NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)" \n" /* not equal ZF = 0, negate*/       \
-                              BOOST_PP_REPEAT(BOOST_PP_ADD(n,4), NOT_register, ~) /* if for final sign */           \
-                             "addic. 16,16, 0x1                 \n  " /* 2cm add 1 */                   \
-                              BOOST_PP_REPEAT(BOOST_PP_ADD(n,3), ADC0_register, ~)/* propagate carry bit */         \
+                              BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), NOT_register, ~) /* if for final sign */           \
+                             "addic. 16,16, 1                 \n  " /* 2cm add 1 */                   \
+                              BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC0_register, ~)/* propagate carry bit */         \
                              " "NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)" : \n"   /* end final if */                \
                               BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3mul,~)                                  \
-                              : : :BOOST_PP_REPEAT(BOOST_PP_ADD(n,4), CLOTHER_register, ~) "memory"   /* clother register*/      \
+                              : : :"r5","r6",BOOST_PP_REPEAT(BOOST_PP_ADD(n,4), CLOTHER_register, ~) "memory"   /* clother register*/      \
                              ); \
                          } \
  

@@ -57,20 +57,26 @@ namespace vli{
                                  "addc 14,5,14  \n" \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC00_register, ~)    \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
-                                 : : :BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"        \
+                                 : : :"r5","r6",BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"        \
                                 ); \
                          }                                                                                     \
 
                      BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
                      #undef FUNCTION_add_nbits_64bits
 
-/*
-*/
-
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
                          void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(unsigned long int* x , unsigned long int const* y , unsigned long int const* w /* z used by boost pp !*/){ \
-   assert(false);\
+                         asm(                                                                                 \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), LOAD_register_r5,~ )                      \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), LOAD_register_r4,BOOST_PP_ADD(n,1))       \
+                                 "addc 14,14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,1)))" \n"    \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,0), ADC_register    ,BOOST_PP_ADD(n,1))       \
+                                 "xor  "R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))" \n"                    \
+                                 "adde  "R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))" \n"                    \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
+                                 : : :BOOST_PP_REPEAT(BOOST_PP_MUL(BOOST_PP_ADD(n,1),2), CLOTHER_register, ~) "memory"        \
+                            );                                                                                \
                         }                                                                                                                         \
 
                      BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
