@@ -20,6 +20,10 @@ namespace ambient{
             return std::max(this->x, this->y);
         }
 
+        inline size_t min(){
+            return std::min(this->x, this->y);
+        }
+
         inline size_t square(){
             return this->x * this->y;
         }
