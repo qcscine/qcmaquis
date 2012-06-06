@@ -1,9 +1,6 @@
 #include <boost/preprocessor.hpp>
 #define ARGS_MAX_LEN 10
 
-#define pin_object(z, n, pn)                                                                                         \
-    BOOST_PP_IF(BOOST_PP_EQUAL(n,pn), o->pin = &ui_m_current(info<T ## n>::typed::dereference(o->arguments[n]));,)   \
-
 #define cleanup_object(z, n, unused)                                                                                 \
     info<T ## n>::typed::deallocate(o->arguments[n]);
 
@@ -40,7 +37,6 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ), fp
     template<typename K>                                                                                             \
     static inline void latch(kernel_dispatch<K>* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){               \
         BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~)                                                          \
-        BOOST_PP_REPEAT(TYPES_NUMBER, pin_object, n)                                                                 \
         ambient::controller.push(o);                                                                                 \
     }                                                                                                                \
     static inline void invoke(sfunctor* o){                                                                          \

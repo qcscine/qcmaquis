@@ -21,7 +21,6 @@ namespace ambient { namespace models { namespace velvet {
         inline group* get_group()           { return grp;       }
         group* grp;
         revision* vellum;
-        revision* pin;
         void*  arguments[SFUNCTOR_ARITY];
         size_t revisions[SFUNCTOR_ARITY];
     };

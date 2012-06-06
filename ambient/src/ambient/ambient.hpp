@@ -46,7 +46,6 @@ namespace ambient{
     using controllers::velvet::slow_revision;
     using controllers::velvet::cfunctor;
 
-    template <typename T> inline revision&      ui_m_current(T& obj){ return *((history*)&obj)->back(); } // (marking)
     template <typename T> inline revision&      ui_l_current(T& obj){ return obj.ui_l_revision_0();     } // (logistics)
     template <typename T> inline revision&      ui_l_updated(T& obj){ return obj.ui_l_revision_1();     } // (logistics, debug)
     template <typename T> inline fast_revision& ui_c_current(T& obj){ return obj.ui_c_revision_0();     } // (computation)
