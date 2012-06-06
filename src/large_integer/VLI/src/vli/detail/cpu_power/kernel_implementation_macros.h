@@ -44,14 +44,16 @@
 
 // move ASM operator to get the data from the mem
 #define LOAD_register_r3(z, n, unused)     "ld "R(n)","PPS(AOS,n)"(3) \n" /* load 0x??(%%r3) */ 
+#define LOAD_register_r5(z, n, unused)     "ld "R(n)","PPS(AOS,n)"(5) \n" /* load 0x??(%%r3) */ 
 #define LOAD_register_r4(z, n, OffSet)     "ld "R(BOOST_PP_ADD(n,OffSet))","PPS(AOS,n)"(4) \n" /* load 0x??(%%r3) */ 
 // addition ASM operators
-#define  ADC_register(z, n, OffSet) "adde "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,BOOST_PP_ADD(OffSet,1)))" \n" /* adcq rsi + rdi + CB  */     
-#define  ADC0_register(z, n, unused) "addze "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
+#define  ADC_register(z, n, OffSet)   "adde "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,BOOST_PP_ADD(OffSet,1)))" \n" /* adcq rsi + rdi + CB  */     
+#define  ADC0_register(z, n, unused)  "addze "R(BOOST_PP_ADD(n,3))","R(BOOST_PP_ADD(n,3))" \n" /* adcq rsi + rdi + CB  */     
 #define  ADC00_register(z, n, OffSet) "adde "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,1))",6 \n" /* adcq rsi + rdi + CB  */     
 
 // substraction ASM operators 
-#define SUBC_register(z, n, OffSet) "subfe "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,BOOST_PP_ADD(OffSet,1)))","R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
+#define SUBC_register(z, n, OffSet)   "subfe "R(BOOST_PP_ADD(n,1))","R(BOOST_PP_ADD(n,BOOST_PP_ADD(OffSet,1)))","R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
+#define SUB00_register(z, n, OffSet)  "subfe "R(BOOST_PP_ADD(n,1))",6,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
 // multiplication VLI<n*64> *= 64 bits, note : results are saved in to r8, r9, r10 .... thus for the first iteration I move direclty inside
 #define  MUL_register(z, n, unused) "ld     "R(0)", "PPS(AOS,BOOST_PP_ADD(1,n))"(3) \n"             \
                                     "mulld   5, "R(0)","R(1)" \n "                                  \
@@ -60,7 +62,7 @@
                                     "addze  "R(BOOST_PP_ADD(4,n))", 5 \n"                       \
 
 // negate for 2CM method, combine with ADC0_register macro
-#define NOT_register(z, n, unused)  "not "R(n)" , "R(n)"                                      \n" /* start C2M negate */ 
+#define NOT_register(z, n, unused)  "not "R(BOOST_PP_ADD(n,2))" , "R(BOOST_PP_ADD(n,2))"                                      \n" /* start C2M negate */ 
 // movi ASM operators to set up the data into the mem
 #define STORE_register_r3(z, n, unused)     "std "R(n)","PPS(AOS,n)"(3) \n" /* load 0x??(%%r3) */ 
 #define STORE_register_r4(z, n, OffSet)     "std "R(BOOST_PP_ADD(n,OffSet))","PPS(AOS,n)"(4) \n" /* load 0x??(%%r3) */ 

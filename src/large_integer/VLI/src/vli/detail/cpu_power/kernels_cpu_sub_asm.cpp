@@ -40,8 +40,7 @@ namespace vli{
                                  "subfc 14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,2)))",14 \n"     \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), SUBC_register    ,BOOST_PP_ADD(n,2))       \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                      \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r4,BOOST_PP_ADD(n,2))       \
-                                 : : :BOOST_PP_REPEAT(BOOST_PP_ADD(n,4), CLOTHER_register, ~) "memory"         \
+                                 : : :BOOST_PP_REPEAT(BOOST_PP_MUL(BOOST_PP_ADD(n,2),2), CLOTHER_register, ~) "memory"         \
                             );                                                                                 \
                          }                                                                                     \
 
@@ -52,7 +51,16 @@ namespace vli{
                      //the case is done after sub128_64
                      #define FUNCTION_sub_nbits_64bits(z, n, unused) \
                          void NAME_SUB_NBITS_MINUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){ \
-assert(false);\
+                         asm(                                                                                 \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                      \
+                                 "ld    5,0(4)   \n" \
+                                 "addi  6,5,0    \n" \
+                                 "sradi 6,6,63   \n" \
+                                 "subfc 14,5,14  \n" \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), SUB00_register, ~)    \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
+                                 : : :"r5","r6",BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"        \
+                                ); \
                          }                                                                                     \
 
                      BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
