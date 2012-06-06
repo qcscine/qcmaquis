@@ -29,14 +29,25 @@ VLI_FUZZABLE_TEST( minus_assign_minus_equivalence_int )
     int b;
     init(b);
     int b_orig(b);
-   
+    
     vli_type ab = a - b;
     a -= b;
     BOOST_CHECK_EQUAL(a,ab);
     
     //Check that b hasn't changed
     BOOST_CHECK_EQUAL(b,b_orig);
+    
+    //b become negative
+    b=-b;
+    ab = a - b;
+    a -= b;
+    BOOST_CHECK_EQUAL(a,ab);
+    
+    BOOST_CHECK_EQUAL(b,-b_orig);
 }
+
+
+
 
 VLI_STATIC_TEST( minus_assign_borrow )
 {
