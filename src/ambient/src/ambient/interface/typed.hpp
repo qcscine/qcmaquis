@@ -57,8 +57,7 @@ namespace ambient {
         static inline size_t modify(T& obj, sfunctor* m){
             size_t timestamp = ambient::model.time(&obj);
             ui_m_current(obj).add_modifier(m);
-            ambient::model.add_revision(&obj);
-            ui_m_current(obj).set_generator(m); // (updated obj)
+            ambient::model.add_revision(&obj).set_generator(m);
             return timestamp;
         }
         static inline size_t modify(const T& obj, sfunctor* m){

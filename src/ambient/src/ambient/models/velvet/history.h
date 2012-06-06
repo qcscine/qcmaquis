@@ -9,7 +9,7 @@ namespace ambient { namespace models { namespace velvet {
         inline history(size_t ts);
     public:
         inline ~history();
-        inline void add_state(layout* l);
+        inline revision& add_state(layout* l);
         inline size_t get_t_size() const; // is it used?
         inline size_t time() const;
         inline revision* back() const;

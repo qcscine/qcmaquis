@@ -12,9 +12,10 @@ namespace ambient { namespace models { namespace velvet {
             delete this->content[i];
     }
 
-    inline void history::add_state(layout* l){
+    inline revision& history::add_state(layout* l){
         this->current = new revision(l);
         this->content.push_back(this->current);
+        return *this->current;
     }
 
     inline revision* history::back() const {

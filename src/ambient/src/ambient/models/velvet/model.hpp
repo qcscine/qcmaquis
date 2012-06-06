@@ -12,13 +12,13 @@ namespace ambient { namespace models { namespace velvet {
         *const_cast<size_t*>(&l->sid) = this->map.insert(l);
     }
 
-    inline void model::add_revision(history* o){
+    inline revision& model::add_revision(history* o){
         dim2 block_dim;
         if(this->mem_dim > o->get_cached_dim().max()) block_dim = o->get_cached_dim();
         else block_dim = this->mem_dim;
         layout* l = new layout(o->get_t_size(), block_dim, o->get_cached_dim());
         this->insert(l);
-        o->add_state(l);
+        return o->add_state(l);
     }
 
     inline bool model::is_atomic(const history* o){
