@@ -1,6 +1,11 @@
 #ifndef __MAQUIS_TYPES_KERNELS_ATOMICS_HPP__
 #define __MAQUIS_TYPES_KERNELS_ATOMICS_HPP__
 
+extern "C" {
+    void dcopy_(const int*, const double*, const int*, double*, const int*);
+}
+
+
 namespace ambient {
 
     template<typename T>
@@ -48,35 +53,12 @@ namespace ambient {
 
         static inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
             __A_TIME("ambient_copy_atomic_c_kernel"); 
-            T* a_elements  = ui_c_current(a)(0,0);
-            T* ac_elements = ui_c_updated(ac)(0,0);
-            memcpy(ac_elements, a_elements, sizeof(T)*ui_c_get_mem_dim(a).y*ui_c_get_mem_dim(a).x);
+            T* ad  = ui_c_current(a)(0,0);
+            T* acd  = ui_c_updated(ac)(0,0);
+            __a_copy(acd, ad, ui_c_get_mem_dim(a).square());
             __A_TIME_STOP
         }
     };
-
-    /*template<>
-    struct copy_atomic<double> :  public ambient::kernel_dispatch< copy_atomic<double> > 
-    { // gs
-        typedef void(*F)(maquis::types::p_dense_matrix_impl<double>&, const maquis::types::p_dense_matrix_impl<double>&);
-
-        static inline void l(maquis::types::p_dense_matrix_impl<double>& ac, const maquis::types::p_dense_matrix_impl<double>& a){
-            ctxt_select("1 from ambient as copy_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_assign(ui_l_current(ac),0,0);
-        }
-
-        static inline void c(maquis::types::p_dense_matrix_impl<double>& ac, const maquis::types::p_dense_matrix_impl<double>& a){
-            __A_TIME("ambient_copy_atomic_double_c_kernel"); 
-            int ONE = 1;
-            int n = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
-            double* a_elements  = ui_c_current(a)(0,0);
-            double* ac_elements = ui_c_updated(ac)(0,0);
-            dcopy_(&n, a_elements, &ONE, ac_elements, &ONE); 
-            __A_TIME_STOP
-        }
-    };*/
-        
         
     template<typename T>
     struct reshape_l2r_atomic : public ambient::kernel_dispatch< reshape_l2r_atomic<T> > 
@@ -217,14 +199,8 @@ namespace ambient {
 
         static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
             __A_TIME("ambient_scalar_norm_atomic_c_kernel"); 
-            T summ = 0;
             T* ad = ui_c_current(a)(0,0);
-            size_t lda = ui_c_get_mem_dim(a).y;
-            for(size_t ii=0; ii < m; ii++)
-                for(size_t jj=0; jj < n; jj++)
-                    summ += ad[ii+jj*lda]*ad[ii+jj*lda];
-        
-            *norm += summ;
+            *norm += __a_dot(ad, ad, m*n);;
             __A_TIME_STOP
         }
     };
@@ -242,15 +218,9 @@ namespace ambient {
 
         static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
             __A_TIME("ambient_scalar_overlap_atomic_c_kernel"); 
-            T summ = 0;
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            size_t lda = ui_c_get_mem_dim(a).y;
-            size_t ldb = ui_c_get_mem_dim(b).y;
-            for(size_t ii=0; ii < m; ii++)
-                for(size_t jj=0; jj < n; jj++)
-                    summ += ad[ii+jj*lda]*bd[ii+jj*ldb];
-            *overlap += summ;
+            *overlap += __a_dot(ad, bd, m*n);;
             __A_TIME_STOP
         }
     };
@@ -272,7 +242,7 @@ namespace ambient {
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
             T* ar = ui_c_updated(a)(0,0);
-            size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
+            size_t size = ui_c_get_mem_dim(a).square();
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] + bd[k];
             __A_TIME_STOP
@@ -296,7 +266,7 @@ namespace ambient {
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
             T* ar = ui_c_updated(a)(0,0);
-            size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
+            size_t size = ui_c_get_mem_dim(a).square();
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] - bd[k];
             __A_TIME_STOP
@@ -317,11 +287,9 @@ namespace ambient {
             __A_TIME("ambient_scale_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* ar = ui_c_updated(a)(0,0);
-        
-            size_t lda = ui_c_get_mem_dim(a).y;
-            for(size_t jj=0; jj < n; jj++)
-            for(size_t ii=0; ii < m; ii++)
-            ar[jj*lda+ii] = ad[jj*lda+ii] * (*t);
+            size_t size = m*n;
+            for(size_t k=0; k < size; k++) 
+                ar[k] = ad[k] * (*t);
             __A_TIME_STOP
         }
     };

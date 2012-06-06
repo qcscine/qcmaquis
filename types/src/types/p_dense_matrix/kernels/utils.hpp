@@ -4,6 +4,10 @@
 #include <limits>
 #include "utils/timings.h"
 
+extern "C" {
+    double ddot_(const int*, const double*, const int*, const double*, const int*);
+}
+
 namespace ambient {
 
     #include "ambient/utils/numeric.h" // BLAS/LAPACK prototypes
@@ -76,12 +80,28 @@ namespace ambient {
         return std::min(ui_c_get_mem_dim(a).y, m-ctxt.get_block_id().y*ui_c_get_mem_dim(a).y);
     }
 
-    // C - w, alfa are not nested into dim2 because they are not 2D coordinates
+    template <typename T> inline T __a_dot(T* a, T* b, int size){
+        T summ(0);
+        for(size_t k=0; k < size; k++)
+           summ += a[k]*b[k];
+        return summ;
+    }
+
+    inline double __a_dot(double* a, double* b, int size){
+        int ONE = 1;
+        return ddot_(&size, a, &ONE, b, &ONE);
+    }
+
+    template<typename T>
+    inline void __a_copy(T* dst, T* src, int size){
+        memcpy(dst, src, size*sizeof(T));
+    }
+
     template <typename T>
     inline void __a_memcpy(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos, const maquis::types::p_dense_matrix_impl<T>& src, T *sd, dim2 spos, size_t w, T alfa){
-        memcpy(&dd[dpos.x*ui_c_get_mem_dim_u(dest).y+dpos.y],
-               &sd[spos.x*ui_c_get_mem_dim(src).y+spos.y],
-               w*sizeof(T));
+        __a_copy(&dd[dpos.x*ui_c_get_mem_dim_u(dest).y+dpos.y],
+                 &sd[spos.x*ui_c_get_mem_dim(src).y+spos.y],
+                 w);
     }
 
     template <typename T>
@@ -261,7 +281,7 @@ namespace ambient {
     inline void __a_atomic_refresh(maquis::types::p_dense_matrix_impl<T>& m){
         T* dm = ui_c_current(m)(0,0);
         T* rm = ui_c_updated(m)(0,0);
-        memcpy(rm, dm, sizeof(T)*ui_c_get_mem_dim(m).y*ui_c_get_mem_dim(m).x);
+        __a_copy(rm, dm, ui_c_get_mem_dim(m).square());
     }
 
     inline void atomic_assign(revision& r, int x, int y){ 
