@@ -30,9 +30,10 @@ namespace ambient {
     };
 
     class pin_marker { /* empty class for args marking */ };
+    template <class K> class kernel_dispatch;
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
-    template< class K >
+    template<class K>
     class kernel_dispatch : public cfunctor
     {
     public:
