@@ -33,11 +33,12 @@
                                                                                                                      
 #define body_tn(z, n, text)                                                                                          \
 template< BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) , void(*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) )> \
-struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ), fp> {                               \
+struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ), fp> {                                  \
                                                                                                                      \
-    static inline void latch(cfunctor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){                         \
-        o->arguments    = (void**)malloc(sizeof(void*)*TYPES_NUMBER);                                                \
-        o->revisions    = (size_t*)malloc(sizeof(size_t)*TYPES_NUMBER);                                              \
+    static const size_t argc = TYPES_NUMBER;                                                                         \
+                                                                                                                     \
+    template<typename K>                                                                                             \
+    static inline void latch(kernel_dispatch<K>* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){               \
         BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~)                                                          \
         BOOST_PP_REPEAT(TYPES_NUMBER, pin_object, n)                                                                 \
         ambient::controller.push(o);                                                                                 \
@@ -82,12 +83,12 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, n) ), fp
 
 template< BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) , void(*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )>
 struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ), fp> {
+    
+    static const size_t argc = TYPES_NUMBER;
 
-    static inline void latch(cfunctor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
-        o->arguments    = (void**)malloc(sizeof(void*)*TYPES_NUMBER);
-        o->revisions    = (size_t*)malloc(sizeof(size_t)*TYPES_NUMBER);
+    template<typename K>
+    static inline void latch(kernel_dispatch<K>* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
         BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
-        o->pin = NULL;
         ambient::controller.push(o); 
     }
     static inline void invoke(sfunctor* o){
