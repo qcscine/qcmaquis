@@ -399,8 +399,8 @@ struct multigrid {
                 MPS<Matrix, SymmGroup> mps_mixed = mps_small;
                 mps_mixed.resize(2*(p+1) + (L-1-p));
                 
-                std::copy(mps_large.begin(), mps_large.begin()+2*(p+1), mps_mixed.begin());
-                std::copy(mps_small.begin()+(p+1), mps_small.end(), mps_mixed.begin()+2*(p+1));
+                std::copy(mps_large.const_begin(), mps_large.const_begin()+2*(p+1), mps_mixed.begin());
+                std::copy(mps_small.const_begin()+(p+1), mps_small.const_end(), mps_mixed.begin()+2*(p+1));
                 
                 
                 if (false && p == 0) {

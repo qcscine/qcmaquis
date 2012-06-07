@@ -10,6 +10,7 @@
 #define BLOCK_MATRIX_ALGORITHMS_H
 
 #include "dmrg/utils/logger.h"
+#include "dmrg/utils/utils.hpp"
 #include "utils/timings.h"
 #include "types/utils/traits.hpp"
 #include "types/utils/bindings.hpp"
@@ -17,8 +18,6 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
-
-#include "types/utils/traits.hpp"
 
 
 // some example functions
@@ -417,8 +416,8 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 }
 
 // Is it really useful?
-//template <class Matrix, class SymmGroup>
-//block_matrix<Matrix, SymmGroup> exp (block_matrix<Matrix, SymmGroup> const & M, typename Matrix::value_type const & alpha = 1)
+//template <class Matrix, class SymmGroup, class A>
+//block_matrix<Matrix, SymmGroup> exp (block_matrix<Matrix, SymmGroup> const & M, A const & alpha = 1)
 //{
 //    block_matrix<Matrix, SymmGroup> N, tmp, res;
 //    block_matrix<typename maquis::types::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
@@ -432,10 +431,10 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 //    return res;
 //}
 
-template <class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> op_exp (Index<SymmGroup> const & phys,
-                                        block_matrix<Matrix, SymmGroup> M,
-                                        typename Matrix::value_type const & alpha = 1) // time step propagation (todo 30.04.2012)
+template <class Matrix, class SymmGroup, class A>
+block_matrix<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
+                                       block_matrix<Matrix, SymmGroup> M,
+                                       A const & alpha = 1.)
 {
     for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
         if (M.has_block(it_c->first, it_c->first))

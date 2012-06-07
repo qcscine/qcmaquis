@@ -11,6 +11,8 @@
 #include "contractions.h"
 #include <boost/math/special_functions/binomial.hpp>
 
+#include <limits>
+
 template<class Matrix, class SymmGroup>
 std::string MPS<Matrix, SymmGroup>::description() const
 {
@@ -27,8 +29,14 @@ std::string MPS<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup>::MPS()
+: canonized_i(std::numeric_limits<size_t>::max())
+{ }
+
+template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L)
-: std::vector<MPSTensor<Matrix, SymmGroup> >(L)
+: canonized_i(std::numeric_limits<size_t>::max())
+, data_(L)
 { }
 
 template<class Matrix, class SymmGroup>
@@ -37,7 +45,8 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
                             Index<SymmGroup> phys,
                             typename SymmGroup::charge right_end,
                             mps_initializer<Matrix, SymmGroup> & init)
-: std::vector<MPSTensor<Matrix, SymmGroup> >(L)
+: canonized_i(std::numeric_limits<size_t>::max())
+, data_(L)
 {
     init(*this, Mmax, phys, right_end);
     
@@ -45,65 +54,129 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
     for (int i = 0; i < L; ++i)
         (*this)[i].normalize_left(SVD);
 
-    this->canonize_left();
+    this->normalize_left();
 }
 
 template<class Matrix, class SymmGroup>
-typename MPS<Matrix, SymmGroup>::scalar_type MPS<Matrix, SymmGroup>::canonize_left()
+typename MPS<Matrix, SymmGroup>::value_type const & MPS<Matrix, SymmGroup>::operator[](size_t i) const
+{ return data_[i]; }
+
+template<class Matrix, class SymmGroup>
+typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](size_t i)
 {
-    block_matrix<Matrix, SymmGroup> t;
-    for(int i = 0; i < length(); ++i){
-        t = (*this)[i].normalize_left(SVD);
-        if(i < length()-1) {
-            (*this)[i+1].multiply_from_left(t);
-            (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm()); // may playout here
-        }
-    }
-    return trace(t);
+    canonized_i=std::numeric_limits<size_t>::max();
+    return data_[i];
 }
 
 template<class Matrix, class SymmGroup>
-typename MPS<Matrix, SymmGroup>::scalar_type MPS<Matrix, SymmGroup>::canonize_right()
+void MPS<Matrix, SymmGroup>::resize(size_t L)
 {
-    block_matrix<Matrix, SymmGroup> t;
-    for (int i = length()-1; i >= 0; --i) {
-        t = (*this)[i].normalize_right(SVD);
-        if (i > 0) {
-            (*this)[i-1].multiply_from_right(t);
-            (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm()); // may playout
+    // if canonized_i < L and L < current L, we could conserve canonized_i
+    canonized_i=std::numeric_limits<size_t>::max();
+    data_.resize(L);
+}
+
+template<class Matrix, class SymmGroup>
+size_t MPS<Matrix, SymmGroup>::canonization(bool search) const
+{
+    if (!search)
+        return canonized_i;
+    
+    size_t center = ((*this)[0].isleftnormalized()) ? 1 : 0;
+    for (size_t i=1; i<length(); ++i) {
+        if (!(*this)[i].isnormalized() && center != i) {
+            canonized_i = std::numeric_limits<size_t>::max();
+            return canonized_i;
+        } else if ((*this)[i].isleftnormalized() && center == i)
+            center = i+1;
+        else if ((*this)[i].isleftnormalized()) {
+            canonized_i = std::numeric_limits<size_t>::max();
+            return canonized_i;
         }
     }
-    return trace(t);
+    if (center == length())
+        center = length()-1;
+    
+    canonized_i = center;
+    return canonized_i;
 }
 
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::normalize_left()
 {
-    canonize_left();
+    canonize(length()-1);
 }
 
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::normalize_right()
 {
-    canonize_right();
+    canonize(0);
 }
 
+// input:  M  M  M  M  M  M  M
+//  (idx)        c
+// output: A  A  M  B  B  B  B
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::canonize(std::size_t center)
 {
-    for (int i = 0; i < center; ++i)
-    {
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(SVD);
-        (*this)[i+1].multiply_from_left(t);
-        (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm()); // may playout
-    }
+    if (canonized_i == center)
+        return;
     
-    for (int i = length()-1; i > center; --i)
-    {
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
-        (*this)[i-1].multiply_from_right(t);
-        (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm()); // may playout
+    if (canonized_i < center)
+        move_normalization_l2r(canonized_i, center);
+    else if (canonized_i < length())
+        move_normalization_r2l(canonized_i, center);
+    else {
+        move_normalization_l2r(0, center);
+        move_normalization_r2l(length()-1, center);
     }
+    canonized_i = center;
+}
+
+// input:  M  M  M  M  M  M  M
+//  (idx)     p1       p2
+// output: M  A  A  A  M  M  M
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2)
+{
+    size_t tmp_i = canonized_i;
+    for (int i = p1; i < std::min(p2, length()); ++i)
+    {
+        if ((*this)[i].isleftnormalized())
+            continue;
+        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(SVD);
+        if (i < length()-1) {
+            (*this)[i+1].multiply_from_left(t);
+            (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm()); // may playout
+        }
+    }
+    if (tmp_i == p1)
+        canonized_i = p2;
+    else
+        canonized_i = std::numeric_limits<size_t>::max();
+}
+
+// input:  M  M  M  M  M  M  M
+//  (idx)     p2       p1
+// output: M  M  B  B  B  M  M
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2)
+{
+    size_t tmp_i = canonized_i;
+    for (int i = p1; i >= static_cast<int>(std::max(p2, size_t(0))); --i)
+    {
+        if ((*this)[i].isrightnormalized())
+            continue;
+        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
+        if (i > 0) {
+            (*this)[i-1].multiply_from_right(t);
+            (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm()); // may playout
+        }
+    }
+    if (tmp_i == p1)
+        canonized_i = p2;
+    else
+        canonized_i = std::numeric_limits<size_t>::max();
 }
 
 template<class Matrix, class SymmGroup>
@@ -113,7 +186,7 @@ void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             std::size_t l, double alpha,
                                             double cutoff, std::size_t Mmax,
                                             Logger & logger)
-{
+{ // canonized_i invalided through (*this)[] 
     MPSTensor<Matrix, SymmGroup> new_mps =
     contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, logger);
     (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
@@ -128,7 +201,7 @@ void MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             std::size_t l, double alpha,
                                             double cutoff, std::size_t Mmax,
                                             Logger & logger)
-{
+{ // canonized_i invalided through (*this)[] 
     MPSTensor<Matrix, SymmGroup> new_mps =
     contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, logger);
     
@@ -177,15 +250,14 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
 {
-    ar >> alps::make_pvp("MPS",
-                         static_cast<std::vector<MPSTensor<Matrix, SymmGroup> >&>(*this));
+    canonized_i = std::numeric_limits<size_t>::max();
+    ar >> alps::make_pvp("MPS", data_);
 }
 
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 {
-    ar << alps::make_pvp("MPS",
-                         static_cast<std::vector<MPSTensor<Matrix, SymmGroup> > const &>(*this));
+    ar << alps::make_pvp("MPS", data_);
 }
 
 #endif

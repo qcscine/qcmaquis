@@ -32,12 +32,9 @@ set (VLI_VERSION_MINOR 1)
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" OFF)
-option (VLI_TESTS "Build the VLI regression tests" ON)
-option (VLI_BENCHMARKS "Build the VLI benchmarks" ON)
+option (VLI_TESTS "Build the VLI regression tests" OFF)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
-option (VLI_ARCH_X86  "Build VLI on x86 architecture  " ON)
-option (VLI_ARCH_POWER  "Build VLI on Power architecture " ON)
 
 if(NOT MACHINE_CONFIG)
     set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
@@ -46,7 +43,7 @@ endif(NOT MACHINE_CONFIG)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
-set (VLI_COMPILE_TYPES "((unsigned long int,2,11)) ((unsigned long int,3,11)) ((unsigned long int,3,11)) " CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
+set (VLI_COMPILE_TYPES "((unsigned long int,3,11))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
 ########################################################################
 #
@@ -60,7 +57,7 @@ endif(VLI_USE_OPENMP)
 
 if (VLI_COMPILE_GPU)
    find_package (CUDA)
-# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_20")
+ #  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_21"
   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_20 --ptxas-options=-v") 
    include_directories(${CUDA_INCLUDE_DIRS})
 else (VLI_COMPILE_GPU)
@@ -88,7 +85,7 @@ endif (VLI_COMPILE_GPU)
 #endif (VLI_TESTS)
 
 set(BOOST_ROOT ${BOOST_DIR})
-find_package (Boost COMPONENTS unit_test_framework random)
+find_package (Boost COMPONENTS unit_test_framework)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 else()
@@ -143,17 +140,8 @@ if(VLI_TESTS)
     enable_testing() 
     set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
       mark_as_advanced(BUILDNAME)
-    add_subdirectory (regression)
-    add_subdirectory (regression/vli_cpu)
+    add_subdirectory (regression/)
 endif(VLI_TESTS)
-
-if(VLI_BENCHMARKS)
-    include(CTest)
-    enable_testing() 
-    set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
-      mark_as_advanced(BUILDNAME)
-    add_subdirectory (benchmarks)
-endif(VLI_BENCHMARKS)
 
 
 ########################################################################

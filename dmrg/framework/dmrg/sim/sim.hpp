@@ -162,13 +162,34 @@ sim<Matrix, SymmGroup>::~sim()
     cublasShutdown();
 #endif
 }
-    
+
 template <class Matrix, class SymmGroup>
-bool sim<Matrix, SymmGroup>::exec_sweeps ()
+int sim<Matrix, SymmGroup>::advance (Logger& iteration_log, int nsteps, double time_limit)
+{
+    int site = -1;
+    int ns = sweep + nsteps;
+    for (; sweep < ns && site < 0; ++sweep) // do_sweep requires the correct sweep number!
+    {
+        parms.set("sweep", sweep);
+        site = do_sweep(iteration_log, time_limit);
+    }
+    // sweep = ns !
+    --sweep;
+    return site;
+}
+
+template <class Matrix, class SymmGroup>
+bool sim<Matrix, SymmGroup>::run ()
 {
     bool early_exit = false;
     
-    for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+    int nsteps = parms.get<int>("nsweeps");
+    if (parms.get<int>("measure_each") > -1)
+        nsteps = std::min(nsteps, parms.get<int>("measure_each"));
+    if (parms.get<int>("measure_each") > -1)
+        nsteps = std::min(nsteps, parms.get<int>("chkp_each"));
+    
+    while (sweep < parms.get<int>("nsweeps")) {
         DCOLLECTOR_GROUP(gemm_collector, "sweep"+boost::lexical_cast<std::string>(sweep))
         DCOLLECTOR_GROUP(svd_collector, "sweep"+boost::lexical_cast<std::string>(sweep))
         gettimeofday(&snow, NULL);
@@ -179,14 +200,14 @@ bool sim<Matrix, SymmGroup>::exec_sweeps ()
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
         
-        parms.set("sweep", sweep);
-        
-        site = do_sweep(iteration_log, rs > 0 ? rs-elapsed : -1);
+        int sweep_after = sweep + nsteps - 1;
+        site = advance(iteration_log, nsteps, rs > 0 ? rs-elapsed : -1);
         early_exit = (site >= 0);
+        assert(sweep == sweep_after);
         
         gettimeofday(&sthen, NULL);
         double elapsed_sweep = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-        maquis::cout << "Sweep " << sweep << " done after " << elapsed_sweep << " seconds." << std::endl;
+        maquis::cout << "Sweep " << sweep << " done " << nsteps << " steps after " << elapsed_sweep << " seconds." << std::endl;
         
         
         gettimeofday(&then, NULL);
@@ -196,8 +217,8 @@ bool sim<Matrix, SymmGroup>::exec_sweeps ()
         
         
         if (!early_exit &&
-            (   sweep % parms.get<int>("measure_each") == 0 
-             || sweep+1 == parms.get<int>("nsweeps") ))
+            (   (sweep+1) % parms.get<int>("measure_each") == 0 
+             || (sweep+1) == parms.get<int>("nsweeps") ))
         {
             
             do_sweep_measure(iteration_log);
@@ -234,8 +255,8 @@ bool sim<Matrix, SymmGroup>::exec_sweeps ()
         
         // Write checkpoint
         if (!dns && (early_exit ||
-                     sweep % parms.get<int>("chkp_each") == 0 ||
-                     sweep+1 == parms.get<int>("nsweeps")))
+                     (sweep+1) % parms.get<int>("chkp_each") == 0 ||
+                     (sweep+1) == parms.get<int>("nsweeps")))
         {
             alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             
@@ -248,14 +269,9 @@ bool sim<Matrix, SymmGroup>::exec_sweeps ()
         if (early_exit)
             return true;
         
+        ++sweep;
     }
     return false;
-}
-
-template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::run ()
-{
-    bool early_exit = exec_sweeps();
 }
 
 template <class Matrix, class SymmGroup>
@@ -271,7 +287,7 @@ std::string sim<Matrix, SymmGroup>::sweep_archive_path ()
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::do_sweep_measure (Logger&)
 {
-    
+    maquis::cout << "Calculating vN entropy." << std::endl;
     std::vector<double> entropies = calculate_bond_entropies(mps);
     
     {
@@ -292,7 +308,6 @@ void sim<Matrix, SymmGroup>::do_sweep_measure (Logger&)
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure ()
 {
-    
     {
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         

@@ -1,23 +1,24 @@
 #ifndef AMBIENT_UTILS_DELEGATE
 #define AMBIENT_UTILS_DELEGATE
+#include <stdlib.h>
 
 namespace ambient {
 
     class delegate {
     public:
-        inline delegate() 
+        delegate() 
         : length(0), callbacks(NULL) 
         {
         }
 
         template<typename T>
-        inline void operator+=(void(*callback)(T&)){
+        void operator+=(void(*callback)(T&)){
             callbacks = (void(**)())realloc(this->callbacks, (++this->length)*sizeof(void(*)()));
             callbacks[length-1] = (void(*)())callback;
         }
 
         template<typename T>
-        inline void operator()(T& arg){
+        void operator()(T& arg){
             for(size_t i = 0; i < this->length; i++){
                 ((void(*)(T&))this->callbacks[i])(arg);
             }
