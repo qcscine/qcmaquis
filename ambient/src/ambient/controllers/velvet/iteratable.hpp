@@ -21,8 +21,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     template<class T>
-    inline iteratable<T>::iteratable(size_t ts)
-    : T(ts) {
+    inline iteratable<T>::iteratable(){
         this->thread_revision_base = (size_t*)calloc(NUM_THREADS, sizeof(size_t));
     }
 

@@ -2,8 +2,8 @@
 
 namespace ambient { namespace models { namespace velvet {
 
-    inline history::history(size_t ts)
-    : t_size(ts), current(NULL)
+    inline history::history()
+    : current(NULL)
     {
     }
 
@@ -20,10 +20,6 @@ namespace ambient { namespace models { namespace velvet {
 
     inline revision* history::back() const {
         return this->current;
-    }
-
-    inline size_t history::get_t_size() const {
-        return this->t_size;
     }
 
     inline size_t history::time() const {

@@ -13,12 +13,15 @@ namespace ambient { namespace models { namespace velvet {
         }
     }
 
-    inline layout::layout(size_t t_size, dim2 b_size, dim2 size)
-    : t_size(t_size), mem_dim(b_size), dim(size), placement(NULL), grid_dim(0,0), master(0), mesh_dim(0,0)
+    inline layout::layout(void* ctype, dim2 b_size, dim2 size)
+    : container(ctype), mem_dim(b_size), dim(size), placement(NULL), grid_dim(0,0), master(0), mesh_dim(0,0)
     {
         this->set_dim(size);
     }
 
+    inline void* layout::get_container_type() const {
+        return this->container;
+    }
 
     inline void layout::embed(void* memory, size_t x, size_t y, size_t bound){
         this->get(x,y)->set_memory(memory, bound);
@@ -60,15 +63,6 @@ namespace ambient { namespace models { namespace velvet {
     inline size_t layout::get_master(){
         return this->master;
     }
-
-    inline size_t layout::get_mem_size() const {
-        return this->get_mem_dim().square() *
-               this->t_size; // returning in bytes
-    }
-    inline size_t layout::get_mem_lda() const {
-        return this->get_mem_dim().y *
-               this->t_size; // returning lda in bytes
-    } 
 
     inline void layout::set_dim(dim2 dim){
         this->dim = dim;

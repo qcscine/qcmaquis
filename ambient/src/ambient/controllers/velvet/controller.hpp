@@ -125,7 +125,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline layout::entry& controller::alloc_block(layout& l, size_t x, size_t y){
-        packet_t& type = ambient::channel.get_block_packet_type(l.get_mem_size());
+        packet_t& type = *(packet_t*)l.get_container_type();
         l.embed(alloc_t(type), x, y, type.get_bound(A_BLOCK_P_DATA_FIELD));
         return *l.get(x,y);
     }
@@ -222,8 +222,8 @@ namespace ambient { namespace controllers { namespace velvet {
     
     inline packet* package(layout& l, const char* state, int x, int y, int dest){
         void* header = l.get(x,y)->get_memory();
-        packet* package = pack(channel.get_block_packet_type(l.get_mem_size()), 
-                                                             header, dest, "P2P", l.id(), state, x, y, NULL);
+        packet* package = pack(*(packet_t*)l.get_container_type(), 
+                               header, dest, "P2P", l.id(), state, x, y, NULL);
         return package;
     }
 

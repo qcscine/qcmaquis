@@ -15,13 +15,13 @@ namespace ambient { namespace models { namespace velvet {
     class model : public singleton< model > {
     public:
         inline model();
-        inline void insert(layout* l);
-        inline revision& add_revision(history* o);
+        template<typename T> inline size_t time(const T* o);
+        template<typename T> inline revision& add_revision(T* o);
         inline bool is_atomic(const history* o);
         inline size_t get_block_lda(history* o);
         inline dim2 get_current_dim(const history* o);
         inline void set_current_dim(history* o, dim2);
-        inline size_t time(const history* o);
+        inline void insert(layout* l);
         inline layout* get_layout(size_t id) const;
         inline model& operator>>(dim2);
         inline model& operator, (dim2);

@@ -20,12 +20,12 @@ namespace ambient{
         long references;
 
         inline parallel()
-        : iteratable<history>(sizeof(value_type)), references(0) 
+        : references(0) 
         {
         }
 
         inline parallel(const T& o)
-        : iteratable<history>(sizeof(value_type)), references(1) // avoiding auto-deallocation
+        : iteratable<history>(), references(1) // avoiding auto-deallocation
         {
             ambient::model.set_current_dim(this, ambient::model.get_current_dim(&o));
             if(!o.pt_atomic()) ambient::push< ambient::copy<value_type> >(*(T*)this, *(const T*)&o);
