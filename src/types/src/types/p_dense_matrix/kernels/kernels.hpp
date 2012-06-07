@@ -69,9 +69,9 @@ namespace ambient {
             __A_TIME("ambient_gemm_c_kernel");
             //if(ui_c_get_grid_dim(a) == 1 && ui_c_get_grid_dim(b) == 1) // use gemm atomic for this case
             if(ui_c_get_mem_dim(a) != ui_c_get_mem_dim(b) || ui_c_get_mem_dim(a) != ui_c_get_mem_dim(c)){
-                T* ad = (T*)__a_solidify(a);
-                T* bd = (T*)__a_solidify(b);
-                T* cd = (T*)__a_solidify(c);
+                T* ad = (T*)__a_solidify<T>(a);
+                T* bd = (T*)__a_solidify<T>(b);
+                T* cd = (T*)__a_solidify<T>(c);
                 int m   = ui_c_get_dim(a).y;
                 int n   = ui_c_get_dim(b).x;
                 int k   = ui_c_get_dim(b).y;
@@ -81,7 +81,7 @@ namespace ambient {
                 T alpha(1.0); 
                 T beta(1.0);
                 gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                __a_disperse(cd, c);
+                __a_disperse<T>(cd, c);
                 __A_TIME_STOP
                 return;
             }
@@ -909,10 +909,10 @@ namespace ambient {
             T wkopt;
             T* work;
             double* rwork = new double[5*std::min(lda,ldu)]; // C - useless for double but need for complex 
-            T* ad  = (T*)__a_solidify(a);
-            T* ud  = (T*)__a_solidify(u);
-            T* vtd = (T*)__a_solidify(vt);
-            double* sd = (double*)__a_solidify(s);
+            T* ad  = (T*)__a_solidify<T>(a);
+            T* ud  = (T*)__a_solidify<T>(u);
+            T* vtd = (T*)__a_solidify<T>(vt);
+            double* sd = (double*)__a_solidify<T>(s);
             
         /* Query and allocate the optimal workspace */
             lwork = -1; // C - Alex, netlib said -1 for the best workspace
@@ -926,9 +926,9 @@ namespace ambient {
                 printf( "The algorithm computing SVD failed to converge.\n" );
                 exit( 1 );
             }
-            __a_disperse(ud, u);
-            __a_disperse(vtd, vt);
-            __a_disperse(sd, s);
+            __a_disperse<T>(ud, u);
+            __a_disperse<T>(vtd, vt);
+            __a_disperse<T>(sd, s);
             free(work);
             __A_TIME_STOP
         }
@@ -950,8 +950,8 @@ namespace ambient {
             int info, lwork = -1;
             double wkopt;
             double* work;
-            double* ad = (double*)__a_solidify(a);
-            double* wd = ui_c_get_grid_dim(a) == 1 ? ui_c_updated(w)(0,0) : (double*)__a_solidify(w);
+            double* ad = (double*)__a_solidify<T>(a);
+            double* wd = ui_c_get_grid_dim(a) == 1 ? ui_c_updated(w)(0,0) : (double*)__a_solidify<T>(w);
              
             dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
@@ -963,9 +963,9 @@ namespace ambient {
                 exit( 1 );
             }
         
-            __a_disperse(ad, a);
+            __a_disperse<T>(ad, a);
             if(ui_c_get_grid_dim(a) != 1) 
-                __a_disperse(wd, w);
+                __a_disperse<T>(wd, w);
             free(work); 
         }
     };
@@ -991,8 +991,8 @@ namespace ambient {
             double* work;
             int am = (int)m; // for mkl (int*)
         
-            double* ad = (double*)__a_solidify(a);
-            double* wd = (double*)__a_solidify(w);
+            double* ad = (double*)__a_solidify<double>(a);
+            double* wd = (double*)__a_solidify<double>(w);
        
             if(ui_c_current(a).get_layout().mem_dim != ui_c_updated(a).get_layout().mem_dim) printf("Dimensions don't match!\n"); 
 
@@ -1023,8 +1023,8 @@ namespace ambient {
             }
             delete[] tempcol; 
          
-            __a_disperse(ad, a);
-            __a_disperse(wd, w);
+            __a_disperse<double>(ad, a);
+            __a_disperse<double>(wd, w);
             free(work);
             __A_TIME_STOP
         }

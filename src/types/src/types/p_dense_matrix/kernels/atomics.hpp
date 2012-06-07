@@ -392,8 +392,8 @@ namespace ambient {
             double wkopt;
             double* work;
             int am = (int)m; // for mkl (int*)
-            double* ad = (double*)__a_solidify(a);
-            double* wd = (double*)__a_solidify(w);
+            double* ad = (double*)__a_solidify<T>(a);
+            double* wd = (double*)__a_solidify<T>(w);
 
             dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
@@ -420,8 +420,8 @@ namespace ambient {
             }
             delete[] tempcol; 
          
-            __a_disperse(ad, a);
-            __a_disperse(wd, w);
+            __a_disperse<T>(ad, a);
+            __a_disperse<T>(wd, w);
             free(work);
             __A_TIME_STOP
         }
