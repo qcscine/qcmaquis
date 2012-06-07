@@ -1,5 +1,6 @@
 #ifndef AMBIENT_CHANNELS_MPI_CHANNEL
 #define AMBIENT_CHANNELS_MPI_CHANNEL
+#include "ambient/utils/singleton.hpp"
 #include "ambient/channels/mpi/packets/packet_t.h"
 #include "ambient/channels/mpi/packets/types.h"
 #include "ambient/channels/mpi/packets/packet.h"

@@ -27,7 +27,7 @@ namespace ambient { namespace controllers { namespace velvet {
     class iteratable : public T
     {
     protected:
-        inline iteratable(size_t ts);
+        inline iteratable();
         inline ~iteratable();
     public:
         inline revision& state(size_t offset) const;

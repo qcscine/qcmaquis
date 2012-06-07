@@ -50,14 +50,13 @@ namespace ambient { namespace models { namespace velvet {
         };
     
         inline ~layout();
-        inline layout(size_t, dim2, dim2);
+        inline layout(void*, dim2, dim2);
         inline void embed(void* memory, size_t x, size_t y, size_t bound); // fires controllers::unlock_revision if complete
         inline entry* get(size_t x, size_t y);
         inline void mesh();
         inline size_t id();
+        inline void*  get_container_type() const;
         inline size_t get_master();
-        inline size_t get_mem_size() const;
-        inline size_t get_mem_lda() const;
         inline void   set_dim(dim2);
         inline dim2   get_dim() const;
         inline dim2   get_mem_dim() const;
@@ -71,8 +70,7 @@ namespace ambient { namespace models { namespace velvet {
         dim2   mesh_dim;                // size of the grid (reserved) 
         dim2   grid_dim;                // size of the grid 
         dim2   dim;                     // total size of the revision (typed)
-    private:
-        size_t t_size;
+        void*  container;
     }; 
     // }}}
 

@@ -12,11 +12,13 @@ namespace ambient { namespace models { namespace velvet {
         *const_cast<size_t*>(&l->sid) = this->map.insert(l);
     }
 
-    inline revision& model::add_revision(history* o){
+    template<typename T>
+    inline revision& model::add_revision(T* o){
         dim2 block_dim;
         if(this->mem_dim > o->get_cached_dim().max()) block_dim = o->get_cached_dim();
         else block_dim = this->mem_dim;
-        layout* l = new layout(o->get_t_size(), block_dim, o->get_cached_dim());
+        layout* l = new layout(&ambient::channel.get_block_packet_type(block_dim.square()*sizeof(typename T::value_type)), 
+                               block_dim, o->get_cached_dim());
         this->insert(l);
         return o->add_state(l);
     }
@@ -40,9 +42,10 @@ namespace ambient { namespace models { namespace velvet {
         o->cache_dim(dim);
     }
 
-    inline size_t model::time(const history* o){
+    template<typename T>
+    inline size_t model::time(const T* o){
         if(o->back() == NULL) 
-            this->add_revision(const_cast<history*>(o));
+            this->add_revision(const_cast<T*>(o));
         return o->time();
     }
 
