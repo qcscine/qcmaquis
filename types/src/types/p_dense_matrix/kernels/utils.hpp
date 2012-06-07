@@ -25,7 +25,7 @@ namespace ambient {
     #endif
 
     // {{{ continuous memory mangling
-    template<typename T>
+    template<typename V, typename T>
     inline void* __a_solidify(const iteratable<T>& o){
         using ambient::models::velvet::layout;
 
@@ -33,20 +33,23 @@ namespace ambient {
         layout& l = r.get_layout();
         size_t iterator = 0;
         char* memory = NULL;
+        size_t stride = l.get_mem_dim().y*sizeof(V);
+        size_t block = l.get_mem_dim().x;
+        dim2 grid = l.get_grid_dim();
 
-        for(size_t x=0; x < l.get_grid_dim().x; x++)
-            for(size_t xx=0; xx < l.get_mem_dim().x; xx++)
-                for(size_t y=0; y < l.get_grid_dim().y; y++){
-                    memory = (char*)realloc(memory, (iterator+1)*l.get_mem_lda());
-                    memcpy(memory+iterator*l.get_mem_lda(),                         // copy to
-                           &((char*)r(x,y))[xx*l.get_mem_lda()],                    // copy from
-                           l.get_mem_lda());                                        // of size
+        for(size_t x=0; x < grid.x; x++)
+            for(size_t xx=0; xx < block; xx++)
+                for(size_t y=0; y < grid.y; y++){
+                    memory = (char*)realloc(memory, (iterator+1)*stride);
+                    memcpy(memory+iterator*stride,                         // copy to
+                           &((char*)r(x,y))[xx*stride],                    // copy from
+                           stride);                                        // of size
                     iterator++;
                 }
         return memory;
     }
 
-    template<typename T>
+    template<typename V, typename T>
     inline void __a_disperse(void* data, iteratable<T>& o){
         using ambient::models::velvet::layout;
         using ambient::models::velvet::history;
@@ -55,14 +58,17 @@ namespace ambient {
         layout& l = r.get_layout();
         char* memory = (char*)data;
         size_t iterator = 0;
+        size_t stride = l.get_mem_dim().y*sizeof(V);
+        size_t block = l.get_mem_dim().x;
+        dim2 grid = l.get_grid_dim();
 
-        for(size_t x=0; x < l.get_grid_dim().x; x++)
-            for(size_t xx=0; xx < l.get_mem_dim().x; xx++)
-                for(size_t y=0; y < l.get_grid_dim().y; y++){
-                    memcpy(&((char*)r(x,y))[xx*l.get_mem_lda()],                    // copy to
-                           memory,                                                  // copy from
-                           l.get_mem_lda());                                        // of size
-                    memory += l.get_mem_lda();
+        for(size_t x=0; x < grid.x; x++)
+            for(size_t xx=0; xx < block; xx++)
+                for(size_t y=0; y < grid.y; y++){
+                    memcpy(&((char*)r(x,y))[xx*stride],                    // copy to
+                           memory,                                         // copy from
+                           stride);                                        // of size
+                    memory += stride;
                 }
         free(data);
     }
