@@ -54,11 +54,10 @@ namespace ambient{
     inline void pin(cfunctor* o, revision& r, int x, int y){ r.content->entries[x][y]->assignments.push_back(o); }
     inline void assign(revision& r, int x, int y){ ambient::controller.ifetch_block(r, x, y); }
 
-    template<typename T> inline size_t ui_c_get_mem_size (T& ref){ return ui_c_current(ref).get_layout().get_mem_size(); }
-    template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().get_dim();      }
+    template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().dim;            }
     template<typename T> inline dim2 ui_c_get_mem_dim    (T& ref){ return ui_c_current(ref).get_layout().mem_dim;        }
     template<typename T> inline dim2 ui_c_get_grid_dim   (T& ref){ return ui_c_current(ref).get_layout().grid_dim;       }
-    template<typename T> inline dim2 ui_c_get_dim_u      (T& ref){ return ui_c_updated(ref).get_layout().get_dim();      }
+    template<typename T> inline dim2 ui_c_get_dim_u      (T& ref){ return ui_c_updated(ref).get_layout().dim;            }
     template<typename T> inline dim2 ui_c_get_mem_dim_u  (T& ref){ return ui_c_updated(ref).get_layout().mem_dim;        }
     template<typename T> inline dim2 ui_c_get_grid_dim_u (T& ref){ return ui_c_updated(ref).get_layout().grid_dim;       }
 

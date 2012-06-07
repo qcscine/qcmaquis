@@ -124,11 +124,6 @@ namespace ambient { namespace controllers { namespace velvet {
         ++this->rrn %= this->num_threads;
     }
 
-    inline layout::entry* controller::alloc_block(layout& l){
-        packet_t& type = ambient::channel.get_block_packet_type(l.get_mem_size());
-        return new layout::entry(alloc_t(type), type.get_bound(A_BLOCK_P_DATA_FIELD));
-    }
-
     inline layout::entry& controller::alloc_block(layout& l, size_t x, size_t y){
         packet_t& type = ambient::channel.get_block_packet_type(l.get_mem_size());
         l.embed(alloc_t(type), x, y, type.get_bound(A_BLOCK_P_DATA_FIELD));

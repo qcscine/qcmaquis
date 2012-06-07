@@ -62,8 +62,7 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline size_t layout::get_mem_size() const {
-        return this->get_mem_dim().x *
-               this->get_mem_dim().y *
+        return this->get_mem_dim().square() *
                this->t_size; // returning in bytes
     }
     inline size_t layout::get_mem_lda() const {
@@ -109,12 +108,6 @@ namespace ambient { namespace models { namespace velvet {
     inline layout::entry::entry()
     : header(NULL), request(false), locked(false)
     {
-    }
-
-    inline layout::entry::entry(void* memory, size_t bound)
-    : header(memory), request(false)
-    {
-        this->data = (void*)((size_t)memory + bound);
     }
 
     inline void layout::entry::set_memory(void* memory, size_t bound){

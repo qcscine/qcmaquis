@@ -16,9 +16,10 @@ namespace ambient { namespace models { namespace velvet {
         inline dim2 get_cached_dim() const; // model
         inline void cache_dim(dim2); // model
         std::vector<revision*> content;
-        size_t t_size;
         dim2   dim;
         revision* current;
+    private:
+        size_t t_size;
     };
 
 } } }
