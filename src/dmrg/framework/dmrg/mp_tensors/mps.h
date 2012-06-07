@@ -14,33 +14,57 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
+#include <limits>
+
 template<class Matrix, class SymmGroup>
 struct mps_initializer;
 
 template<class Matrix, class SymmGroup>
-class MPS : public std::vector<MPSTensor<Matrix, SymmGroup> >
+class MPS
 {
+    typedef std::vector<MPSTensor<Matrix, SymmGroup> > data_t;
 public:
     typedef std::size_t size_t;
-    typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type;
 
-    MPS() { }
+    // reproducing interface of std::vector
+    typedef typename data_t::size_type size_type;
+    typedef typename data_t::value_type value_type;
+    typedef typename data_t::iterator iterator;
+    typedef typename data_t::const_iterator const_iterator;
+    typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type;
+    
+    MPS();
     MPS(size_t L);  
     MPS(size_t L, size_t Mmax, Index<SymmGroup> phys,
         typename SymmGroup::charge right_end,
         mps_initializer<Matrix, SymmGroup> & init);
     
-    size_t length() const { return this->size(); }
-    Index<SymmGroup> const & site_dim(size_t i) const { return (*this)[i].site_dim(); }
-    Index<SymmGroup> const & row_dim(size_t i) const { return (*this)[i].row_dim(); }
-    Index<SymmGroup> const & col_dim(size_t i) const { return (*this)[i].col_dim(); }
+    size_t size() const { return data_.size(); }
+    size_t length() const { return size(); }
+    Index<SymmGroup> const & site_dim(size_t i) const { return data_[i].site_dim(); }
+    Index<SymmGroup> const & row_dim(size_t i) const { return data_[i].row_dim(); }
+    Index<SymmGroup> const & col_dim(size_t i) const { return data_[i].col_dim(); }
     
+    value_type const & operator[](size_t i) const;
+    value_type& operator[](size_t i);
+    
+    void resize(size_t L);
+    
+    const_iterator begin() const {return data_.begin();}
+    const_iterator end() const {return data_.end();}
+    const_iterator const_begin() const {return data_.begin();}
+    const_iterator const_end() const {return data_.end();}
+    iterator begin() {return data_.begin();}
+    iterator end() {return data_.end();}
+    
+    size_t canonization(bool=false) const;
     void canonize(size_t center);
-    block_matrix<Matrix, SymmGroup> canonize_left_step(size_t site);
-    block_matrix<Matrix, SymmGroup> canonize_right_step(size_t site);
     
     void normalize_left();
     void normalize_right();
+    
+    void move_normalization_l2r(size_t p1, size_t p2);
+    void move_normalization_r2l(size_t p1, size_t p2);
     
     std::string description() const;
     
@@ -66,9 +90,9 @@ public:
 #endif
     
 private:
-    scalar_type canonize_left();
-    scalar_type canonize_right();
     
+    data_t data_;
+    mutable size_t canonized_i;
 };
 
 template<class Matrix, class SymmGroup>

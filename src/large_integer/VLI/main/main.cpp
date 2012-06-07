@@ -13,7 +13,7 @@
 #include "vli/utils/gpu_manager.hpp"
 #endif //VLI_USE_GPU
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
-#include "vli/polynomial/polynomial.hpp"
+#include "vli/polynomial/polynomial_cpu.h"
 #include "vli/polynomial/monomial.hpp"
 #include "vli/vli_cpu.h"
 #include "vli/vli_traits.hpp"
@@ -29,8 +29,8 @@
 using vli::vli_cpu;
 using vli::max_int_value;
 using vli::monomial;
-using vli::polynomial;
-using vli::vector_polynomial;
+using vli::polynomial_cpu;
+using vli::vector_polynomial_cpu;
 
 using vli::test::fill_random;
 using vli::test::fill_poly_random;
@@ -44,10 +44,10 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 
 typedef vli::monomial<vli_type_cpu> monomial_type_cpu;
 
-typedef vli::polynomial< vli_type_cpu, Order > polynomial_type_cpu;
-typedef vli::polynomial< vli_result_type_cpu, 2*Order > polynomial_result_type_cpu;
+typedef vli::polynomial_cpu< vli_type_cpu, Order > polynomial_type_cpu;
+typedef vli::polynomial_cpu< vli_result_type_cpu, 2*Order > polynomial_result_type_cpu;
 
-typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
+typedef vli::vector_polynomial_cpu<polynomial_type_cpu> vector_type_cpu;
 
 typedef mpz_class large_int;
 typedef hp2c::monomial<large_int> monomial_type;
@@ -59,7 +59,7 @@ template <typename VpolyVLI, typename VpolyGMP>
 void InitPolyVLItoPolyGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP)
 {
     #pragma omp parallel for
-    for (int i =0 ; i < (int)VVLI.size() ; ++i)
+    for (int i =0 ; i <VVLI.size() ; ++i)
         for(int j = 0; j < Order; j++)
             for(int k = 0; k < Order; k++){
                 VGMP[i](j,k) = VVLI[i](j,k).get_str();
@@ -82,87 +82,61 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
 
 int main (int argc, char * const argv[]) 
 {
+    
+   vli_type_cpu a; 
+   vli::vli_cpu<unsigned long int, 4> b;
 
-{
-vli_type_cpu a(2), b(1);
-a[0] = 0xFFFfFFFFFFFFFFFF;
-a[2] = 0xFFFfFFFFFFFFFFFF;
-a*=-2;
-std::cout << a << std::endl;
-}
-/*  
-    int SizeVector =  atoi(argv[1]); 
-     
- polynomial_vector_type v1gmp(SizeVector);
- polynomial_vector_type v2gmp(SizeVector);
- polynomial_type pgmp;
- polynomial_typed pgmpd;
+   std::cout << b << std::endl; 
 
+   b[0]=0xffffffffffffffff;
+
+   a[0]=0xffffffffffffffff;
+   a*=-2;
+   b*=-2;
+   std::cout << a << std::endl; 
+   std::cout << b << std::endl; 
+    /*
 #ifdef VLI_USE_GPU
- gpu::gpu_manager* gpu;
- gpu->instance();
- #endif
+    gpu::gpu_manager* gpu;
+    gpu->instance();
+#endif
+    
+    vector_type_cpu v1(SizeVector);
+    vector_type_cpu v2(SizeVector);
+    polynomial_result_type_cpu result_pure_cpu,result_mix_cpu_gpu,  result_cpu_gpu  ;
+    
+    fill_vector_random(v1,2);
+    fill_vector_random(v2,3);
 
- vector_type_cpu v1(SizeVector);
- vector_type_cpu v2(SizeVector);
-
- polynomial_result_type_cpu result_pure_cpu  ;
- polynomial_result_type_cpu result_pure_cpu_omp  ;
- polynomial_result_type_cpu result_mix_cpu_gpu  ;
- polynomial_result_type_cpu result_cpu_gpu  ;
-   
-    fill_vector_random(v1,3);
-    fill_vector_random(v2,2);
-
-    fill_vector_negate(v1,3);
-    fill_vector_negate(v2,2);
+    fill_vector_negate(v1,2);
+    fill_vector_negate(v2,3);
 
     InitPolyVLItoPolyGMP(v1,v1gmp);
     InitPolyVLItoPolyGMP(v2,v2gmp);
 
-    Timer t3("CPU vli_omp");
-    t3.begin();
-      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
-    t3.end();
-
-#ifdef VLI_USE_GPU
-std::cout << " --------------------------- " << std::endl;
-    TimerOMP t("GPU omp 1" );
-    t.begin();   
-      result_pure_cpu_omp = vli::detail::inner_product_gpu_omp(v1,v2);
-    t.end();
-
-std::cout << " --------------------------- " << std::endl;
-    TimerOMP t1("GPU omp 2 ");
-    t1.begin();   
-      result_pure_cpu_omp = vli::detail::inner_product_gpu_omp(v1,v2);
+    Timer t1("CPU vli_omp");
+    t1.begin();
+      result_pure_cpu = vli::detail::inner_product_plain(v1,v2);
     t1.end();
-std::cout << " --------------------------- " << std::endl;
-    TimerOMP t2("GPU omp 3 ");
-    t2.begin();   
-      result_pure_cpu_omp = vli::detail::inner_product_gpu_omp(v1,v2);
+
+    Timer t2("CPU gmp_omp");
+    t2.begin();
+       pgmpd = inner_product(v1gmp,v2gmp);
     t2.end();
 
-
-    Timer t4("CPU gmp_omp");
-    t4.begin();
-       pgmpd = inner_product(v1gmp,v2gmp);
-    t4.end();
+#ifdef VLI_USE_GPU
+    Timer t3("MIX CPU/GPU openmp");
+    std::cout << result_mix_cpu_gpu << std::endl   ; 
+    t3.begin();    
+    result_mix_cpu_gpu = vli::detail::inner_product_gpu(v1,v2);
+    t3.end();
+    if(result_mix_cpu_gpu ==result_pure_cpu ) {printf("OK \n"); } else{printf("NO OK \n"); }  
 #endif
-
-
-     std::cout << " GPU----------------------------------------------------- " << std::endl;
-     std::cout << result_pure_cpu_omp << std::endl;
-     std::cout << " CPU----------------------------------------------------- " << std::endl;
-     std::cout << result_pure_cpu << std::endl;
-
-    if(result_pure_cpu_omp ==result_pure_cpu ) {printf("OK gpu\n"); } else{printf("NO OK gpu \n"); } 
+   
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
         std::cout << "validation GMP OK " << std::endl;
 */
-    return 0;
-}
-
-
+return  0;
+}  
 

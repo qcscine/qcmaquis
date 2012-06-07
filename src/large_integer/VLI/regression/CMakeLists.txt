@@ -1,24 +1,25 @@
 #
 # Find Package boost
 #
-if(VLI_COMPILE_GPU)
-    include_directories(${CUDA_INCLUDE_DIRS})
-    add_definitions(-DVLI_USE_GPU -DVLI_SPLIT_PARAM=${VLI_SPLIT_PARAM} )
-endif(VLI_COMPILE_GPU)
-
 add_definitions (-DBOOST_TEST_DYN_LINK)
 
+add_executable (vli_cpu_tests vli_cpu_tests.cpp)
+add_executable ( vli_monomial_tests vli_monomial_tests.cpp)
+add_executable ( vli_polynomial_tests vli_polynomial_tests.cpp)
+#add_executable (vli_vector_cpu_gpu_tests vli_vector_cpu_gpu_tests.cpp)
+
 foreach(test_vli
+        vli_cpu_tests
         vli_monomial_tests
         vli_polynomial_tests
-#       vli_vector_cpu_gpu_tests
+#        vli_vector_cpu_gpu_tests
        )
-           add_executable(${test_vli} ${test_vli}.cpp)
            target_link_libraries(${test_vli} ${Boost_LIBRARIES} ${GMP_LIBRARY_CXX} ${PROJECT_BINARY_DIR}/src/vli/libvli_cpu.a ${OpenMP_CXX_FLAGS})
-
-           if(VLI_COMPILE_GPU)
-               target_link_libraries(${test_vli} ${Boost_LIBRARIES} ${GMP_LIBRARY_CXX} ${PROJECT_BINARY_DIR}/src/vli/libvli_cpu.a ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a ${CUDA_CUDART_LIBRARY} ${CUDA_LIBRARIES}  ${OpenMP_CXX_FLAGS})
-           endif(VLI_COMPILE_GPU)
-
            add_test(${test_vli} ${test_vli}) 
 endforeach(test_vli)
+
+if(VLI_COMPILE_GPU)
+    add_executable (vli_gpu_tests vli_gpu_tests.cpp)
+    target_link_libraries(vli_gpu_tests ${Boost_LIBRARIES} ${GMP_LIBRARY_CXX} ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a ${CUDA_LIBRARIES} ${PROJECT_BINARY_DIR}/src/vli/libvli_cpu.a ${OpenMP_CXX_FLAGS})
+    add_test(vli_gpu_tests vli_gpu_tests) 
+endif(VLI_COMPILE_GPU)
