@@ -30,7 +30,6 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void   execute_mod(cfunctor* op, dim2 pin);
         inline void   execute_free_mod(cfunctor* op);
 
-        inline layout::entry* alloc_block (layout& l);
         inline layout::entry& alloc_block (layout& l, size_t x, size_t y);
         inline layout::entry& ufetch_block(revision& r, size_t x, size_t y);
         inline layout::entry& ifetch_block(revision& r, size_t x, size_t y);

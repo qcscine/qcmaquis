@@ -21,7 +21,6 @@ namespace ambient { namespace models { namespace velvet {
         public:
             inline entry();
             inline ~entry();
-            inline entry(void*, size_t);
             inline operator char* (){ return (char*)this->data; }
             inline operator double* (){ return (double*)this->data; }
             inline operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
@@ -68,12 +67,12 @@ namespace ambient { namespace models { namespace velvet {
         size_t master;
         size_t * gid;
         size_t sid;
-        size_t t_size;
         dim2   mem_dim;                 // size of distribution blocks
         dim2   mesh_dim;                // size of the grid (reserved) 
         dim2   grid_dim;                // size of the grid 
-    private:
         dim2   dim;                     // total size of the revision (typed)
+    private:
+        size_t t_size;
     }; 
     // }}}
 
