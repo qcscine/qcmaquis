@@ -1,13 +1,10 @@
 #ifndef AMBIENT_IO
 #define AMBIENT_IO
-#include <iostream>
-#include <fstream>
 
 namespace ambient {
 
-    bool verbose(){
-        return (rank() ? false : true); 
-    }
+    template<typename T> class future;
+    bool verbose();
 
     class io {
     public:
@@ -15,6 +12,13 @@ namespace ambient {
         io()
         : nullio("/dev/null")
         {
+        }
+
+        template<class T>
+        io& operator<<(future<T> const & obj){
+            if(verbose()) std::cout << (T)obj;
+            else nullio << (T)obj; // for symmetry ,)
+            return *this;
         }
 
         template<class T>
@@ -31,7 +35,13 @@ namespace ambient {
         void precision(int p){
             if(verbose()) std::cout.precision(p);
         }
-    } cout, cerr;
+
+        void flush(){
+            if(verbose()) std::cout.flush();
+        }
+    };
+
+    extern io cout, cerr;
 }
 
 #endif

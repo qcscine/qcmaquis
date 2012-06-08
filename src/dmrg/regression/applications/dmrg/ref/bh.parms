@@ -1,8 +1,0 @@
-nsweeps = 5
-nmainsweeps = 1
-resultfile = "bh.out.h5"
-truncation_final = 1e-10
-ngrowsweeps = 1
-chkpfile = "bh.out.ckp.h5"
-symmetry = "u1"
-max_bond_dimension = 200

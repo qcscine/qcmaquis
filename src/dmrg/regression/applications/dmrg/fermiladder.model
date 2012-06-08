@@ -1,9 +1,11 @@
 LATTICE = "open ladder"
-U = 8
+L = 10
+
+MODEL = "fermion Hubbard"
 t = 1
 t' = 1
-MODEL = "fermion Hubbard"
-Nup_total = 10
-L = 10
-Ndown_total = 10
+U = 8
+
 CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+Nup_total = 10
+Ndown_total = 10

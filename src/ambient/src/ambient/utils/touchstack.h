@@ -7,19 +7,19 @@ namespace ambient{
     template<typename T>
     class touchstack {
     public:
-        touchstack();
-       ~touchstack();
-        void push_back(T element);
-        bool end_reached();
-        bool alt_end_reached();
-        void sort();
-        T pick();
-        T alt_pick();
-        T back();
-        void reset();
-        void alt_reset();
-        void clean();
-        bool empty();
+        inline touchstack();
+        inline ~touchstack();
+        inline void push_back(T element);
+        inline bool end_reached();
+        inline bool alt_end_reached();
+        inline void sort();
+        inline T pick();
+        inline T alt_pick();
+        inline T back();
+        inline void reset();
+        inline void alt_reset();
+        inline void clean();
+        inline bool empty();
     private:
         T* content;
         size_t write_iterator; 

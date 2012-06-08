@@ -1,9 +1,14 @@
-Nmax = 2
 LATTICE = "open chain lattice"
-N_total = 5
-U = 8
-t = 1
-MODEL = "boson Hubbard"
-MEASURE_LOCAL[Local density] = "n"
 L = 10
+
+MODEL = "boson Hubbard"
+Nmax = 2
+
+t = 1
+U = 8
+
 CONSERVED_QUANTUMNUMBERS = "N"
+N_total = 5
+
+MEASURE_LOCAL[Local density] = "n"
+

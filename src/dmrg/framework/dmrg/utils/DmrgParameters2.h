@@ -68,11 +68,10 @@ private:
         add_option("measure_each", "", value(1)); 
         add_option("chkp_each", "", value(1)); 
         
-        add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
-        add_option("te_optim", "optimized nn time evolution", value(true));
-		add_option("te_order", "trotter decomposition: second, fourth (default)", value("fourth"));
-        add_option("dt", "time step in time eovlution", value(1e-3));
-        add_option("nsweeps_img", "number of imaginary time steps", value(0));
+        add_option("te_type", "", value("nn"));
+		add_option("te_order", "second, fourth", value("fourth"));
+        add_option("dt", "", value(1e-3));
+        add_option("nsweeps_img", "", value(0));
         
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));

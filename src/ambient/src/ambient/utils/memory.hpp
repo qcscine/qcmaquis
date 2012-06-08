@@ -28,6 +28,20 @@ namespace ambient {
         if(--(p->references) == 0) delete p;
     } 
 
+    template <size_t size>
+    class container {
+    public:
+        inline container()
+        : references(0)
+        {
+            memset(memory, 0, size);
+        }
+    private:
+        char memory[size];
+        long references;
+        friend void intrusive_ptr_add_ref<>(container* p);
+        friend void intrusive_ptr_release<>(container* p);
+    };
 //inline void* operator new(size_t nbytes, ambient::memory& pool){
 //    return pool.alloc(nbytes);
 //}
