@@ -138,6 +138,7 @@ namespace maquis { namespace types {
 #endif
         std::vector<T>* sc_ptr = &sv;
         ambient::push< ambient::push_back_sqr_gt<T> >(m, sc_ptr);
+        ambient::playout();
 #ifdef AMBIENT_SERIAL_CHECK
         if(sv != ssv) printf("--------------------- BOND RENYI ENTROPIES WAS INCORRECT!\n");
 #endif

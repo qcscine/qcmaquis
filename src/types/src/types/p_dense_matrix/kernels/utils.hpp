@@ -290,42 +290,6 @@ namespace ambient {
         __a_copy(rm, dm, ui_c_get_mem_dim(m).square());
     }
 
-    inline void atomic_assign(revision& r, int x, int y){ 
-        assign(r, x, y); 
-    }
-
-    inline void atomic_pin(revision& r, int x, int y){ 
-        cfunctor* o = ctxt.get_op();
-        o->add_condition();
-        pin(o, r, x, y);
-        assign(r, x, y);
-    }
-
-    inline void block_outright_assign(revision& r){
-        size_t sizex = ui_l_get_grid_dim(r).x;
-        size_t sizey = ui_l_get_grid_dim(r).y;
-        for(int x = 0; x < sizex; x++)
-        for(int y = 0; y < sizey; y++)
-        assign(r, x, y);
-    }
-
-    inline void block_outright_pin(revision& r){
-        cfunctor* o = ctxt.get_op();
-        size_t sizex = ui_l_get_grid_dim(r).x;
-        size_t sizey = ui_l_get_grid_dim(r).y;
-        o->add_condition(sizey*sizex);
-        for(int x = 0; x < sizex; x++)
-        for(int y = 0; y < sizey; y++)
-        pin(o, r, x, y);
-
-        block_outright_assign(r);
-    }
-
-    inline void block_2d_cycle_assign(revision& r){ block_outright_assign(r); }
-    inline void block_2d_cycle_pin(revision& r){ block_outright_pin(r); }
-    inline void block_outright_conditional_assign(revision& r){ block_outright_pin(r); }
-    inline void block_2d_cycle_conditional_assign(revision& r){ block_outright_conditional_assign(r); }
-
 }
 
 #endif
