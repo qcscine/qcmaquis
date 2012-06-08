@@ -44,6 +44,7 @@ namespace maquis{ namespace traits{
             maquis::types::p_dense_matrix<T> pm(num_rows, num_cols);    
             const std::vector<typename maquis::types::dense_matrix<T>::value_type>* v_ptr = &m.get_values();
             ambient::push< ambient::cast_to_p_dense<T> >(v_ptr, pm, num_rows, num_cols, lda);
+            ambient::playout();
             return pm;
         }
     };
@@ -82,6 +83,7 @@ namespace maquis{ namespace traits{
             maquis::types::p_diagonal_matrix<T> pm(num_rows, num_rows);    
             const std::vector<typename maquis::types::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
             ambient::push< ambient::cast_to_p_dense<T> >(v_ptr, pm, num_rows, num_cols, num_rows);
+            ambient::playout();
             return pm;
         }
     };

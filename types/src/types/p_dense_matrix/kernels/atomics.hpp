@@ -9,19 +9,19 @@ extern "C" {
 namespace ambient {
 
     template<typename T>
-    struct gemm_general_atomic : public ambient::kernel_dispatch< gemm_general_atomic<T> > 
+    struct gemm_general_atomic : public ambient::kernel_atomic< gemm_general_atomic<T> > 
     { // gs
-        typedef void(*F)(const maquis::types::p_dense_matrix_impl<T>&, 
+        typedef void(gemm_general_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, 
                          const maquis::types::p_dense_matrix_impl<T>&, 
                                maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
-            ctxt_select("1 from ambient as gemm_general_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_assign(ui_l_current(b),0,0);
-            atomic_assign(ui_l_current(c),0,0);
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_general_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
+            this->assign(ui_l_current(c));
         }
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
             __A_TIME("ambient_gemm_general_atomic_c_kernel"); 
             T* bd   = ui_c_current(b)(0,0);
             T* ad   = ui_c_current(a)(0,0);
@@ -41,17 +41,17 @@ namespace ambient {
 
 
     template<typename T>
-    struct copy_atomic : public ambient::kernel_dispatch< copy_atomic<T> > 
+    struct copy_atomic : public ambient::kernel_atomic< copy_atomic<T> > 
     { // gs
-        typedef void(*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
+        typedef void(copy_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
-            ctxt_select("1 from ambient as copy_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_assign(ui_l_current(ac),0,0);
+        inline void l(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
+            this->ctxt_select("1 from ambient as copy_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(ac));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
             __A_TIME("ambient_copy_atomic_c_kernel"); 
             T* ad  = ui_c_current(a)(0,0);
             T* acd  = ui_c_updated(ac)(0,0);
@@ -61,21 +61,21 @@ namespace ambient {
     };
         
     template<typename T>
-    struct reshape_l2r_atomic : public ambient::kernel_dispatch< reshape_l2r_atomic<T> > 
+    struct reshape_l2r_atomic : public ambient::kernel_atomic< reshape_l2r_atomic<T> > 
     { // gs
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (reshape_l2r_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&,
                           const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as reshape_l2r_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(right),0,0);
-            atomic_assign(ui_l_current(left),0,0);
+            this->ctxt_select("1 from ambient as reshape_l2r_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(right));
+            this->assign(ui_l_current(left));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
@@ -91,21 +91,21 @@ namespace ambient {
     };
         
     template<typename T>
-    struct reshape_r2l_atomic : public ambient::kernel_dispatch< reshape_r2l_atomic<T> > 
+    struct reshape_r2l_atomic : public ambient::kernel_atomic< reshape_r2l_atomic<T> > 
     { // gs
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (reshape_r2l_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
                const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
+        inline void l(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as reshape_l2r_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(left),0,0);
-            atomic_assign(ui_l_current(right),0,0);
+            this->ctxt_select("1 from ambient as reshape_l2r_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(left));
+            this->assign(ui_l_current(right));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
+        inline void c(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
@@ -120,22 +120,22 @@ namespace ambient {
     };
         
     template<typename T>
-    struct lb_tensor_mpo_atomic : public ambient::kernel_dispatch< lb_tensor_mpo_atomic<T> > 
+    struct lb_tensor_mpo_atomic : public ambient::kernel_atomic< lb_tensor_mpo_atomic<T> > 
     { // gs
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (lb_tensor_mpo_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
                const size_t&, const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as rb_tensor_mpo_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(out),0,0);
-            atomic_assign(ui_l_current(in),0,0);
-            atomic_assign(ui_l_current(alfa),0,0);
+            this->ctxt_select("1 from ambient as rb_tensor_mpo_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+            this->assign(ui_l_current(alfa));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
@@ -154,22 +154,22 @@ namespace ambient {
     };
         
     template<typename T>
-    struct rb_tensor_mpo_atomic : public ambient::kernel_dispatch< rb_tensor_mpo_atomic<T> > 
+    struct rb_tensor_mpo_atomic : public ambient::kernel_atomic< rb_tensor_mpo_atomic<T> > 
     { // gs
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (rb_tensor_mpo_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
                           const size_t&, const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as rb_tensor_mpo_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(out),0,0);
-            atomic_assign(ui_l_current(in),0,0);
-            atomic_assign(ui_l_current(alfa),0,0);
+            this->ctxt_select("1 from ambient as rb_tensor_mpo_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+            this->assign(ui_l_current(alfa));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
@@ -188,16 +188,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct scalar_norm_atomic : public ambient::kernel_dispatch< scalar_norm_atomic<T> > 
+    struct scalar_norm_atomic : public ambient::kernel_atomic< scalar_norm_atomic<T> > 
     {// gs
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
+        typedef void (scalar_norm_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
-            ctxt_select("* from ambient as scalar_norm_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+            this->ctxt_select("* from ambient as scalar_norm_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
             __A_TIME("ambient_scalar_norm_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             *norm += __a_dot(ad, ad, m*n);;
@@ -206,17 +206,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct scalar_overlap_atomic : public ambient::kernel_dispatch< scalar_overlap_atomic<T> > 
+    struct scalar_overlap_atomic : public ambient::kernel_atomic< scalar_overlap_atomic<T> > 
     { // gs
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
+        typedef void (scalar_overlap_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
-            ctxt_select("* from ambient as scalar_overlap_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_assign(ui_l_current(b),0,0);
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
+            this->ctxt_select("* from ambient as scalar_overlap_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
             __A_TIME("ambient_scalar_overlap_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
@@ -227,17 +227,17 @@ namespace ambient {
 
         
     template<typename T>
-    struct add_atomic : public ambient::kernel_dispatch< add_atomic<T> > 
+    struct add_atomic : public ambient::kernel_atomic< add_atomic<T> > 
     { // gs
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
+        typedef void (add_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-            ctxt_select("1 from ambient as add_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_assign(ui_l_current(b),0,0);
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+            this->ctxt_select("1 from ambient as add_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             __A_TIME("ambient_add_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
@@ -251,17 +251,17 @@ namespace ambient {
 
         
     template<typename T>
-    struct sub_atomic : public ambient::kernel_dispatch< sub_atomic<T> > 
+    struct sub_atomic : public ambient::kernel_atomic< sub_atomic<T> > 
     { // gs
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
+        typedef void (sub_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-            ctxt_select("1 from ambient as sub_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_assign(ui_l_current(b),0,0);
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+            this->ctxt_select("1 from ambient as sub_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             __A_TIME("ambient_sub_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
@@ -274,16 +274,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct scale_atomic : public ambient::kernel_dispatch< scale_atomic<T> > 
+    struct scale_atomic : public ambient::kernel_atomic< scale_atomic<T> > 
     { // gs
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const T*&);
+        typedef void (scale_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const T*&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
-            ctxt_select("1 from ambient as scale_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
+            this->ctxt_select("1 from ambient as scale_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
             __A_TIME("ambient_scale_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* ar = ui_c_updated(a)(0,0);
@@ -295,17 +295,17 @@ namespace ambient {
     };
 
     template<typename T>
-    struct transpose_out_atomic : public ambient::kernel_dispatch< transpose_out_atomic<T> > 
+    struct transpose_out_atomic : public ambient::kernel_atomic< transpose_out_atomic<T> > 
     { // gs
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (transpose_out_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
-            ctxt_select("1 from ambient as transpose_out_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_assign(ui_l_current(t),0,0);
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
+            this->ctxt_select("1 from ambient as transpose_out_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(t));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
             __A_TIME("ambient_transpose_out_atomic_c_kernel"); 
             T* od = ui_c_current(a)(0,0);
             T* td = ui_c_updated(t)(0,0);
@@ -324,22 +324,22 @@ namespace ambient {
     // {{{ MKL LAPACK kernels
 
     template<typename T>
-    struct svd_atomic : public ambient::kernel_dispatch_unpinned< svd_atomic<T> > 
+    struct svd_atomic : public ambient::kernel_unpinned< svd_atomic<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
+        typedef void (svd_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
                           maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<double>&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
                       maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
-            ctxt_select("1 from ambient as svd_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(s),0,0);
-            atomic_pin(ui_l_current(a),0,0);
-            atomic_pin(ui_l_current(u),0,0);
-            atomic_pin(ui_l_current(vt),0,0);
+            this->ctxt_select("1 from ambient as svd_atomic"); //if(!ctxt.involved()) return;
+            this->atomic_conditional_assign(ui_l_current(s));
+            this->atomic_conditional_assign(ui_l_current(a));
+            this->atomic_conditional_assign(ui_l_current(u));
+            this->atomic_conditional_assign(ui_l_current(vt));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
                      maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             // gs
@@ -374,17 +374,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct heev_atomic : public ambient::kernel_dispatch_unpinned< heev_atomic<T> > 
+    struct heev_atomic : public ambient::kernel_unpinned< heev_atomic<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, maquis::types::p_dense_matrix_impl<double>&);
+        typedef void (heev_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, maquis::types::p_dense_matrix_impl<double>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
-            ctxt_select("1 from ambient as heev_atomic"); //if(!ctxt.involved()) return;
-            atomic_pin(ui_l_current(a), 0, 0);
-            atomic_pin(ui_l_current(w), 0, 0);
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
+            this->ctxt_select("1 from ambient as heev_atomic"); //if(!ctxt.involved()) return;
+            this->atomic_conditional_assign(ui_l_current(a));
+            this->atomic_conditional_assign(ui_l_current(w));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
             // gs
             __A_TIME("ambient_heev_atomic_c_kernel"); 
             int lda = ui_c_get_mem_dim(a).y;

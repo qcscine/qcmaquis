@@ -4,18 +4,18 @@
 namespace ambient {
 
     template<typename T>
-    struct gemm_inplace : public ambient::kernel_dispatch< gemm_inplace<T> > 
+    struct gemm_inplace : public ambient::kernel< gemm_inplace<T> > 
     {
-        typedef void(*F)(maquis::types::p_dense_matrix_impl<T>&, 
+        typedef void(gemm_inplace::*F)(maquis::types::p_dense_matrix_impl<T>&, 
                          const maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-            ctxt_select("1 from ambient as gemm_inplace"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
-            block_2d_cycle_assign(ui_l_current(b));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+            this->ctxt_select("1 from ambient as gemm_inplace"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_assign(ui_l_current(b));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             int m   = ui_c_get_mem_dim(a).y;
             int n   = ui_c_get_mem_dim(b).x;
             int k   = ui_c_get_mem_dim(b).y;
@@ -51,20 +51,20 @@ namespace ambient {
     };
 
     template<typename T>
-    struct gemm_general : public ambient::kernel_dispatch< gemm_general<T> > 
+    struct gemm_general : public ambient::kernel< gemm_general<T> > 
     {
-        typedef void(*F)(const maquis::types::p_dense_matrix_impl<T>&, 
+        typedef void(gemm_general::*F)(const maquis::types::p_dense_matrix_impl<T>&, 
                          const maquis::types::p_dense_matrix_impl<T>&, 
                                maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
-            ctxt_select("1 from ambient as gemm"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
-            block_2d_cycle_assign(ui_l_current(b));
-            block_2d_cycle_assign(ui_l_current(c));
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_assign(ui_l_current(b));
+            this->block_2d_cycle_assign(ui_l_current(c));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
             // gs
             __A_TIME("ambient_gemm_c_kernel");
             //if(ui_c_get_grid_dim(a) == 1 && ui_c_get_grid_dim(b) == 1) // use gemm atomic for this case
@@ -125,17 +125,17 @@ namespace ambient {
 
 
     template<typename T>
-    struct copy : public ambient::kernel_dispatch< copy<T> > 
+    struct copy : public ambient::kernel< copy<T> > 
     {
-        typedef void(*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
+        typedef void(copy::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
-            ctxt_select("1 from ambient as copy"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
-            block_2d_cycle_assign(ui_l_current(ac));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
+            this->ctxt_select("1 from ambient as copy"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_assign(ui_l_current(ac));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
             // gs
             __A_TIME("ambient_copy_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
@@ -148,16 +148,16 @@ namespace ambient {
     };
 
     template<typename T>
-    struct remove_rows : public ambient::kernel_dispatch< remove_rows<T> > 
+    struct remove_rows : public ambient::kernel< remove_rows<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (remove_rows::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
-            ctxt_select("1 from ambient as remove_rows"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
+            this->ctxt_select("1 from ambient as remove_rows"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
         
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
             size_t numcols = ui_c_get_dim(a).x;
             size_t numrows = ui_c_get_dim(a).y;
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
@@ -166,16 +166,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct remove_cols : public ambient::kernel_dispatch< remove_cols<T> > 
+    struct remove_cols : public ambient::kernel< remove_cols<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (remove_cols::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
-            ctxt_select("1 from ambient as remove_cols"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
+            this->ctxt_select("1 from ambient as remove_cols"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
             size_t numcols = ui_c_get_dim(a).x;
             size_t numrows = ui_c_get_dim(a).y;
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
@@ -184,31 +184,31 @@ namespace ambient {
     };
 
     template<typename T>
-    struct resize : public ambient::kernel_dispatch< resize<T> > 
+    struct resize : public ambient::kernel< resize<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const size_t&, const size_t&);
+        typedef void (resize::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
-            ctxt_select("1 from ambient as resize"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
+            this->ctxt_select("1 from ambient as resize"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
         }
     };
         
     template<typename T>
-    struct sqrt_diagonal : public ambient::kernel_dispatch< sqrt_diagonal<T> > 
+    struct sqrt_diagonal : public ambient::kernel< sqrt_diagonal<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&);
+        typedef void (sqrt_diagonal::*F)(maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a){
-            ctxt_select("1 from ambient as sqrt_diagonal"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a){
+            this->ctxt_select("1 from ambient as sqrt_diagonal"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a){
             T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
             T* sd = ui_c_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
             size_t size = ui_c_get_mem_dim(a).y;
@@ -218,16 +218,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct exp_diagonal : public ambient::kernel_dispatch< exp_diagonal<T> > 
+    struct exp_diagonal : public ambient::kernel< exp_diagonal<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const T&);
+        typedef void (exp_diagonal::*F)(maquis::types::p_dense_matrix_impl<T>&, const T&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
-            ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
+            this->ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
             T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
             T* sd = ui_c_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
             size_t size = ui_c_get_mem_dim(a).y;
@@ -237,17 +237,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct exp_diagonal_rc : public ambient::kernel_dispatch< exp_diagonal_rc<T> > 
+    struct exp_diagonal_rc : public ambient::kernel< exp_diagonal_rc<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl< std::complex<T> >&, const maquis::types::p_dense_matrix_impl<T>&, const std::complex<T>&);
+        typedef void (exp_diagonal_rc::*F)(maquis::types::p_dense_matrix_impl< std::complex<T> >&, const maquis::types::p_dense_matrix_impl<T>&, const std::complex<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
-            ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(e));
-            block_2d_cycle_assign(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
+            this->ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(e));
+            this->block_2d_cycle_assign(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
+        inline void c(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
             std::complex<T>* ed = ui_c_updated(e)(x,y);
@@ -259,16 +259,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct push_back_sqr_gt : public ambient::kernel_dispatch< push_back_sqr_gt<T> > 
+    struct push_back_sqr_gt : public ambient::kernel< push_back_sqr_gt<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, std::vector<T>*&);
+        typedef void (push_back_sqr_gt::*F)(const maquis::types::p_dense_matrix_impl<T>&, std::vector<T>*&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
-            ctxt_select("* from ambient as push_back_sqr_gt"); //if(!ctxt.involved()) return;
-            block_outright_pin(ui_l_current(a));
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
+            this->ctxt_select("* from ambient as push_back_sqr_gt"); //if(!ctxt.involved()) return;
+            this->block_outright_pin(ui_l_current(a));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
             // gs
             __A_TIME("ambient_push_back_sqr_gt_c_kernel"); 
             T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
@@ -282,16 +282,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct cast_to_dense : public ambient::kernel_dispatch< cast_to_dense<T> > 
+    struct cast_to_dense : public ambient::kernel< cast_to_dense<T> > 
     {
-        typedef void (*F)(std::vector<T>*&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (cast_to_dense::*F)(std::vector<T>*&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        static inline void l(std::vector<T>*& ac, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-            ctxt_select("* from ambient as cast_to_dense"); //if(!ctxt.involved()) return;
-            block_outright_pin(ui_l_current(a));
+        inline void l(std::vector<T>*& ac, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+            this->ctxt_select("* from ambient as cast_to_dense"); //if(!ctxt.involved()) return;
+            this->block_outright_pin(ui_l_current(a));
         }
 
-        static inline void c(std::vector<T>*& ac, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        inline void c(std::vector<T>*& ac, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             // gs
             __A_TIME("ambient_cast_to_dense_c_kernel"); 
             int x = ctxt.get_block_id().x;
@@ -314,16 +314,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct cast_to_p_dense : public ambient::kernel_dispatch< cast_to_p_dense<T> > 
+    struct cast_to_p_dense : public ambient::kernel< cast_to_p_dense<T> > 
     {
-        typedef void (*F)(const std::vector<T>*&, maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const size_t&);
+        typedef void (cast_to_p_dense::*F)(const std::vector<T>*&, maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(const std::vector<T>*& ac, maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
-            ctxt_select("1 from ambient as cast_to_p_dense"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(const std::vector<T>*& ac, maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
+            this->ctxt_select("1 from ambient as cast_to_p_dense"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(const std::vector<T>*& ac, maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
+        inline void c(const std::vector<T>*& ac, maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             size_t xx = ui_c_get_mem_dim(a).x*x;
@@ -338,21 +338,21 @@ namespace ambient {
     };
         
     template<typename T>
-    struct reshape_l2r : public ambient::kernel_dispatch< reshape_l2r<T> > 
+    struct reshape_l2r : public ambient::kernel< reshape_l2r<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (reshape_l2r::*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&,
                           const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            block_2d_cycle_assign(ui_l_current(left)); 
-            block_2d_cycle_pin(ui_l_current(right)); 
+            this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_assign(ui_l_current(left)); 
+            this->block_2d_cycle_pin(ui_l_current(right)); 
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
@@ -368,21 +368,21 @@ namespace ambient {
     };
         
     template<typename T>
-    struct reshape_r2l : public ambient::kernel_dispatch< reshape_r2l<T> > 
+    struct reshape_r2l : public ambient::kernel< reshape_r2l<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (reshape_r2l::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
                const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
+        inline void l(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(left)); 
-            block_2d_cycle_assign(ui_l_current(right)); 
+            this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(left)); 
+            this->block_2d_cycle_assign(ui_l_current(right)); 
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
+        inline void c(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
@@ -398,22 +398,22 @@ namespace ambient {
         
         
     template<typename T>
-    struct rb_tensor_mpo : public ambient::kernel_dispatch< rb_tensor_mpo<T> > 
+    struct rb_tensor_mpo : public ambient::kernel< rb_tensor_mpo<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (rb_tensor_mpo::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
                           const size_t&, const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(out)); 
-            block_2d_cycle_assign(ui_l_current(in)); 
-            block_2d_cycle_assign(ui_l_current(alfa)); 
+            this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(out)); 
+            this->block_2d_cycle_assign(ui_l_current(in)); 
+            this->block_2d_cycle_assign(ui_l_current(alfa)); 
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
@@ -432,22 +432,22 @@ namespace ambient {
     };
         
     template<typename T>
-    struct lb_tensor_mpo : public ambient::kernel_dispatch< lb_tensor_mpo<T> > 
+    struct lb_tensor_mpo : public ambient::kernel< lb_tensor_mpo<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (lb_tensor_mpo::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&,
                const size_t&, const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void l(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(out)); 
-            block_2d_cycle_assign(ui_l_current(in)); 
-            block_2d_cycle_assign(ui_l_current(alfa)); 
+            this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(out)); 
+            this->block_2d_cycle_assign(ui_l_current(in)); 
+            this->block_2d_cycle_assign(ui_l_current(alfa)); 
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
+        inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
@@ -466,16 +466,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct scalar_norm : public ambient::kernel_dispatch< scalar_norm<T> > 
+    struct scalar_norm : public ambient::kernel< scalar_norm<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
+        typedef void (scalar_norm::*F)(const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
-            ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
-            block_outright_pin(ui_l_current(a));
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+            this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
+            this->block_outright_pin(ui_l_current(a));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
             // gs
             __A_TIME("ambient_scalar_norm_c_kernel"); 
             T summ = 0;
@@ -495,17 +495,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct scalar_overlap : public ambient::kernel_dispatch< scalar_overlap<T> > 
+    struct scalar_overlap : public ambient::kernel< scalar_overlap<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
+        typedef void (scalar_overlap::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
-            ctxt_select("* from ambient as scalar_overlap"); //if(!ctxt.involved()) return;
-            block_outright_pin(ui_l_current(a));
-            block_outright_assign(ui_l_current(b));
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
+            this->ctxt_select("* from ambient as scalar_overlap"); //if(!ctxt.involved()) return;
+            this->block_outright_pin(ui_l_current(a));
+            this->block_outright_assign(ui_l_current(b));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
             // gs
             __A_TIME("ambient_scalar_overlap_c_kernel"); 
             T summ = 0;
@@ -526,17 +526,17 @@ namespace ambient {
         
         
     template<typename T>
-    struct add : public ambient::kernel_dispatch< add<T> > 
+    struct add : public ambient::kernel< add<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
+        typedef void (add::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-            ctxt_select("1 from ambient as add"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
-            block_2d_cycle_assign(ui_l_current(b));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+            this->ctxt_select("1 from ambient as add"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_assign(ui_l_current(b));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             // gs
             __A_TIME("ambient_add_c_kernel"); 
             int x = ctxt.get_block_id().x;
@@ -552,17 +552,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct sub : public ambient::kernel_dispatch< sub<T> > 
+    struct sub : public ambient::kernel< sub<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
+        typedef void (sub::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-            ctxt_select("1 from ambient as sub"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
-            block_2d_cycle_assign(ui_l_current(b));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+            this->ctxt_select("1 from ambient as sub"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_assign(ui_l_current(b));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             // gs
             __A_TIME("ambient_sub_c_kernel"); 
             int x = ctxt.get_block_id().x;
@@ -578,16 +578,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct scale : public ambient::kernel_dispatch< scale<T> > 
+    struct scale : public ambient::kernel< scale<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const T*&);
+        typedef void (scale::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const T*&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
-            ctxt_select("1 from ambient as scale"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
+            this->ctxt_select("1 from ambient as scale"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
             // gs
             __A_TIME("ambient_scale_c_kernel"); 
             int x = ctxt.get_block_id().x;
@@ -606,21 +606,21 @@ namespace ambient {
     };
         
     template<typename T, typename D>
-    struct gemm_diagonal_lhs : public ambient::kernel_dispatch< gemm_diagonal_lhs<T,D> > 
+    struct gemm_diagonal_lhs : public ambient::kernel< gemm_diagonal_lhs<T,D> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<D>&, const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (gemm_diagonal_lhs::*F)(const maquis::types::p_dense_matrix_impl<D>&, const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&,
                           const size_t&, const size_t&, const size_t&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
+        inline void l(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
                       const size_t& m, const size_t& n, const size_t& k)
         {
-            ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
-            block_2d_cycle_assign(ui_l_current(a_diag));
-            block_2d_cycle_pin(ui_l_current(b));
-            block_2d_cycle_assign(ui_l_current(c));
+            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_assign(ui_l_current(a_diag));
+            this->block_2d_cycle_pin(ui_l_current(b));
+            this->block_2d_cycle_assign(ui_l_current(c));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
+        inline void c(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
                       const size_t& m, const size_t& n, const size_t& k){
             // gs
             __A_TIME("ambient_gemm_diagonal_lhs_c_kernel"); 
@@ -642,21 +642,21 @@ namespace ambient {
     };
         
     template<typename T, typename D>
-    struct gemm_diagonal_rhs : public ambient::kernel_dispatch< gemm_diagonal_rhs<T,D> > 
+    struct gemm_diagonal_rhs : public ambient::kernel< gemm_diagonal_rhs<T,D> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<D>&, maquis::types::p_dense_matrix_impl<T>&,
+        typedef void (gemm_diagonal_rhs::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<D>&, maquis::types::p_dense_matrix_impl<T>&,
                           const size_t&, const size_t&, const size_t&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
                       const size_t& m, const size_t& n, const size_t& k)
         {
-            ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
-            block_2d_cycle_assign(ui_l_current(b_diag));
-            block_2d_cycle_assign(ui_l_current(c));
+            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_assign(ui_l_current(b_diag));
+            this->block_2d_cycle_assign(ui_l_current(c));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
                       const size_t& m, const size_t& n, const size_t& k){
             // gs
             __A_TIME("ambient_gemm_diagonal_rhs_c_kernel"); 
@@ -677,18 +677,18 @@ namespace ambient {
     };
         
     template<typename T>
-    struct trace : public ambient::kernel_dispatch< trace<T> > 
+    struct trace : public ambient::kernel< trace<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, const size_t&, T*&);
+        typedef void (trace::*F)(const maquis::types::p_dense_matrix_impl<T>&, const size_t&, T*&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
-            ctxt_select("* from ambient as trace"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a)); // we need only diagonal 
-                                    // but we have to track the diagonal separately afterward
-                                    // which is troublesome
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
+            this->ctxt_select("* from ambient as trace"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));    // we need only diagonal 
+                                                          // but we have to track the diagonal separately afterward
+                                                          // which is troublesome
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
             // gs
             __A_TIME("ambient_trace_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
@@ -710,17 +710,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct transpose_out : public ambient::kernel_dispatch< transpose_out<T> > 
+    struct transpose_out : public ambient::kernel< transpose_out<T> > 
     { // only for square blocks
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (transpose_out::*F)(const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
-            ctxt_select("1 from ambient as transpose_out_l"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
-            block_2d_cycle_assign(ui_l_current(t));
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
+            this->ctxt_select("1 from ambient as transpose_out_l"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_assign(ui_l_current(t));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
             // gs
             __A_TIME("ambient_transpose_out_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
@@ -748,16 +748,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct init_value : public ambient::kernel_dispatch< init_value<T> > 
+    struct init_value : public ambient::kernel< init_value<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const T&);
+        typedef void (init_value::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const T&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
-            ctxt_select("1 from ambient as init_value"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
+            this->ctxt_select("1 from ambient as init_value"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
             __A_TIME("ambient_init_value_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
@@ -776,22 +776,22 @@ namespace ambient {
     };
        
     template<typename T>
-    struct init_random : public ambient::kernel_dispatch< init_random<T> > 
+    struct init_random : public ambient::kernel< init_random<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (init_random::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
      
-        template<typename T> static inline void randomize(T* ad){ *ad = drand48(); }
-        template<typename T> static inline void randomize(std::complex<T>* ad){
+        template<typename T> inline void randomize(T* ad){ *ad = drand48(); }
+        template<typename T> inline void randomize(std::complex<T>* ad){
             (*ad).real() = drand48();
             (*ad).imag() = drand48();
         }
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-            ctxt_select("1 from ambient as init_random"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+            this->ctxt_select("1 from ambient as init_random"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
         
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             __A_TIME("ambient_init_random_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
@@ -810,16 +810,16 @@ namespace ambient {
     };
         
     template<typename T>
-    struct init_identity : public ambient::kernel_dispatch< init_identity<T> > 
+    struct init_identity : public ambient::kernel< init_identity<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (init_identity::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-            ctxt_select("1 from ambient as init_identity"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+            this->ctxt_select("1 from ambient as init_identity"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             __A_TIME("ambient_init_identity_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
@@ -840,17 +840,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct validation : public ambient::kernel_dispatch< validation<T> > 
+    struct validation : public ambient::kernel< validation<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, int*&);
+        typedef void (validation::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, int*&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){
-            ctxt_select("1 from ambient as validation"); //if(!ctxt.involved()) return;
-            block_2d_cycle_pin(ui_l_current(a)); 
-            block_2d_cycle_assign(ui_l_current(b)); 
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){
+            this->ctxt_select("1 from ambient as validation"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_pin(ui_l_current(a)); 
+            this->block_2d_cycle_assign(ui_l_current(b)); 
         }
         
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){ // see paper for Reference Dongara 
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){ // see paper for Reference Dongara 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x, y); 
@@ -881,22 +881,22 @@ namespace ambient {
     // {{{ MKL LAPACK kernels
 
     template<typename T>
-    struct svd : public ambient::kernel_dispatch_unpinned< svd<T> > 
+    struct svd : public ambient::kernel_unpinned< svd<T> > 
     {
-        typedef void (*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
+        typedef void (svd::*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
                           maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<double>&);
 
-        static inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
                       maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
-            ctxt_select("1 from ambient as svd"); //if(!ctxt.involved()) return;
-            block_outright_conditional_assign(ui_l_current(s));
-            block_2d_cycle_conditional_assign(ui_l_current(a));
-            block_2d_cycle_conditional_assign(ui_l_current(u));
-            block_2d_cycle_conditional_assign(ui_l_current(vt));
+            this->ctxt_select("1 from ambient as svd"); //if(!ctxt.involved()) return;
+            this->block_outright_conditional_assign(ui_l_current(s));
+            this->block_2d_cycle_conditional_assign(ui_l_current(a));
+            this->block_2d_cycle_conditional_assign(ui_l_current(u));
+            this->block_2d_cycle_conditional_assign(ui_l_current(vt));
         }
 
-        static inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
                      maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             // gs
@@ -935,17 +935,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct syev : public ambient::kernel_dispatch_unpinned< syev<T> > 
+    struct syev : public ambient::kernel_unpinned< syev<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, int&, maquis::types::p_dense_matrix_impl<T>&);
+        typedef void (syev::*F)(maquis::types::p_dense_matrix_impl<T>&, int&, maquis::types::p_dense_matrix_impl<T>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
-            ctxt_select("1 from ambient as syev"); //if(!ctxt.involved()) return;
-            block_2d_cycle_conditional_assign(ui_l_current(a));
-            block_2d_cycle_conditional_assign(ui_l_current(w));
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
+            this->ctxt_select("1 from ambient as syev"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_conditional_assign(ui_l_current(a));
+            this->block_2d_cycle_conditional_assign(ui_l_current(w));
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
             int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
             int info, lwork = -1;
             double wkopt;
@@ -971,17 +971,17 @@ namespace ambient {
     };
         
     template<typename T>
-    struct heev : public ambient::kernel_dispatch_unpinned< heev<T> > 
+    struct heev : public ambient::kernel_unpinned< heev<T> > 
     {
-        typedef void (*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, maquis::types::p_dense_matrix_impl<double>&);
+        typedef void (heev::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, maquis::types::p_dense_matrix_impl<double>&);
 
-        static inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
-            ctxt_select("1 from ambient as heev"); //if(!ctxt.involved()) return;
-            block_2d_cycle_conditional_assign(ui_l_current(a));
-            block_2d_cycle_conditional_assign(ui_l_current(w)); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
+            this->ctxt_select("1 from ambient as heev"); //if(!ctxt.involved()) return;
+            this->block_2d_cycle_conditional_assign(ui_l_current(a));
+            this->block_2d_cycle_conditional_assign(ui_l_current(w)); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
         }
 
-        static inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
             // gs
             __A_TIME("ambient_heev_c_kernel"); 
             int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
