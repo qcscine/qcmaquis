@@ -9,6 +9,7 @@ namespace ambient { namespace models { namespace velvet {
         inline history();
     public:
         inline ~history();
+        inline void clean();
         inline revision& add_state(layout* l);
         inline size_t time() const;
         inline revision* back() const;
@@ -16,7 +17,8 @@ namespace ambient { namespace models { namespace velvet {
         inline void cache_dim(dim2); // model
         std::vector<revision*> content;
         revision* current;
-        dim2   dim;
+        size_t start;
+        dim2 dim;
     };
 
 } } }

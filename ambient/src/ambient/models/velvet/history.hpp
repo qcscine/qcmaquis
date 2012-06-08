@@ -3,13 +3,19 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline history::history()
-    : current(NULL)
+    : current(NULL), start(0)
     {
     }
 
     inline history::~history(){
-        for(size_t i=0; i < this->content.size(); i++)
+        size_t size = this->content.size();
+        for(size_t i = start; i < size; i++)
             delete this->content[i];
+    }
+
+    inline void history::clean(){
+        while(this->content[start] != this->current)
+            delete this->content[start++];
     }
 
     inline revision& history::add_state(layout* l){

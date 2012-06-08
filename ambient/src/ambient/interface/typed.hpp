@@ -27,6 +27,7 @@ namespace ambient {
         typedef typename T::ptr ptr_type;
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
+            (*(ptr_type*)m->arguments[arg])->clean();
             delete (ptr_type*)(m->arguments[arg]);
         }
         template<size_t n>
