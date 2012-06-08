@@ -37,12 +37,9 @@ public:
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
     
-    block_matrix(charge rc, charge cc, Matrix& m)
-    {
-        rows_.push_back(std::make_pair(rc, num_rows(m)));
-        cols_.push_back(std::make_pair(cc, num_cols(m)));
-        data_.push_back(&m);
-    }
+//  Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
+//  block_matrix(charge rc, charge cc, Matrix& m);
+
     std::string description() const;
     
     block_matrix &       operator=(block_matrix rhs);
@@ -66,8 +63,9 @@ public:
     void remove_block(charge r, charge c);
     void remove_block(std::size_t which);
 
-    void remove_rows_from_block(size_type block, size_type r, size_type k = 1);
-    void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
+// Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
+//  void remove_rows_from_block(size_type block, size_type r, size_type k = 1);
+//  void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
     
     scalar_type trace() const;
     void inplace_transpose();

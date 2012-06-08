@@ -22,6 +22,15 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
         data_.push_back(new Matrix(rows_[k].second, cols_[k].second));
 }
 
+// Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
+//template<class Matrix, class SymmGroup>
+//block_matrix<Matrix, SymmGroup>::block_matrix(charge rc, charge cc, Matrix& m)
+//{
+//    rows_.push_back(std::make_pair(rc, num_rows(m)));
+//    cols_.push_back(std::make_pair(cc, num_cols(m)));
+//    data_.push_back(&m);
+//}
+
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix const & rhs)
 {
@@ -139,20 +148,21 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
     assert( rows_.position(r.first) == cols_.position(c.first) );
     return data_[rows_.position(r.first)](r.second, c.second);
 }
+// Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
+//template<class Matrix, class SymmGroup>
+//void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k)
+//{ // we should add an assert block < data_.size()
+//    remove_rows(data_[block], r, k);
+//    rows_[block].second -= k;
+//}
 
-template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k)
-{ // we should add an assert block < data_.size()
-    remove_rows(data_[block], r, k);
-    rows_[block].second -= k;
-}
-
-template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k)
-{ // we should add an assert block < data_.size()
-    remove_cols(data_[block], r, k);
-    cols_[block].second -= k;
-}
+// Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
+//template<class Matrix, class SymmGroup>
+//void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k)
+//{ // we should add an assert block < data_.size()
+//    remove_cols(data_[block], r, k);
+//    cols_[block].second -= k;
+//}
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator*=(scalar_type v)
