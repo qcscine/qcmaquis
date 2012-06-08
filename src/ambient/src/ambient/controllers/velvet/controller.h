@@ -39,6 +39,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void unlink_revision(revision* arg);
 
         inline void flush();
+        inline void conditional_flush();
         inline void allocate_threads();
         inline void set_num_threads(size_t n);
         inline size_t get_num_threads() const;

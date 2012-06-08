@@ -20,8 +20,6 @@ namespace ambient { namespace controllers {
     public:
 // proxy functionality //
         inline context& operator()(int rank){ return *this;   } // proxy
-        inline void set_op(cfunctor* f)     { functor = f;    }
-        inline cfunctor* get_op()           { return functor; }
         inline group* get_group()           { return grp;     }
         inline void set_group(group* grp);
         template<typename T>
@@ -53,7 +51,6 @@ namespace ambient { namespace controllers {
 
 namespace ambient {
     extern controllers::context& ctxt;
-    void ctxt_select(const char* sql);
 }
 
 #endif

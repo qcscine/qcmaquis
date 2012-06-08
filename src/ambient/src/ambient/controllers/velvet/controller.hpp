@@ -198,19 +198,24 @@ namespace ambient { namespace controllers { namespace velvet {
         pthread_mutex_unlock(&this->mutex);
     }
 
+    inline void controller::conditional_flush(){
+        //static int counter = 1;
+        //counter = (counter+1) % 2;
+        //if(!counter) 
+            this->flush();
+    }
+
     inline void controller::flush(){
         //static __a_timer time("ambient_total_compute_playout");
         //static __a_timer time2("ambient_total_logistic_playout");
         if(this->stack.empty()) return;
 
-        while(!this->stack.end_reached())  // estimating operations credits 
-            this->stack.pick()->weight();
-        this->stack.sort();                // sorting operations using credit
+        //while(!this->stack.end_reached())  // estimating operations credits 
+        //    this->stack.pick()->weight();
+        //this->stack.sort();                // sorting operations using credit
         //time2.begin();
-        while(!this->stack.end_reached()){
-            ctxt.set_op(this->stack.pick());
-            ctxt.get_op()->logistics();       // sending requests for data
-        }
+        while(!this->stack.end_reached())
+            this->stack.pick()->logistics();       // sending requests for data
         //time2.end();
         //time.begin();
         this->master_stream(this->tasks);  // using up the main thread

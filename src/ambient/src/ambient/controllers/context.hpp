@@ -35,9 +35,9 @@ namespace ambient { namespace controllers {
 
 namespace ambient { 
 
+        /*
     inline void ctxt_select(const char* sql)
     {
-        /*
         group* parent_grp;
         group* grp;
         group* vellum = NULL;
@@ -114,10 +114,10 @@ namespace ambient {
             delete grp;
             free(as);
             grp = original;
-        }*/
+        }
 
         ctxt.set_group(channel.world());
-    }
+    }*/
 
     template<int TT>
     inline int parseout(const char* sql, char** id)
