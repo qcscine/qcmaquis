@@ -86,7 +86,7 @@ public:
         return exit_site;
     }
     
-    bool run ()
+    void run ()
     {
         bool early_exit = false;
         do {
@@ -157,7 +157,7 @@ public:
             // OPTIM
             m_type = sweep_measure;
             init_optimizer();
-            early_exit = base::run();
+            early_exit = base::exec_sweeps();
             if (!this->dns)
             {
                 alps::hdf5::archive h5ar(this->chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);

@@ -18,48 +18,25 @@
 struct compression {
     template<class Matrix, class SymmGroup>
     void static
-    replace_two_sites_l2r(MPS<Matrix, SymmGroup> & mps,
-                          std::size_t Mmax, double cutoff,
-                          block_matrix<Matrix, SymmGroup> const & t,
-                          std::size_t p,
-                          Logger * logger = NULL)
+    replace_two_sites(MPS<Matrix, SymmGroup> & mps,
+                      std::size_t Mmax, double cutoff,
+                      block_matrix<Matrix, SymmGroup> const & t,
+                      std::size_t p,
+                      Logger * logger = NULL)
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
         typedef typename maquis::types::associated_real_diagonal_matrix<Matrix>::type dmt;
-        
+
         block_matrix<dmt, SymmGroup> s;
         
         svd_truncate(t, u, v, s,
                      cutoff, Mmax, true, logger);
         
-        mps[p].replace_left_paired(u, Lnorm);
+	mps[p].replace_left_paired(u);
         
         gemm(s, v, u);
-        mps[p+1].replace_right_paired(u);
-    }
-
-    template<class Matrix, class SymmGroup>
-    void static
-    replace_two_sites_r2l(MPS<Matrix, SymmGroup> & mps,
-                          std::size_t Mmax, double cutoff,
-                          block_matrix<Matrix, SymmGroup> const & t,
-                          std::size_t p,
-                          Logger * logger = NULL)
-    {
-        block_matrix<Matrix, SymmGroup> u, v;
-        
-        typedef typename maquis::types::associated_real_diagonal_matrix<Matrix>::type dmt;
-        
-        block_matrix<dmt, SymmGroup> s;
-        
-        svd_truncate(t, u, v, s,
-                     cutoff, Mmax, true, logger);
-        
-        mps[p+1].replace_right_paired(v, Rnorm);
-        
-        gemm(u, s, v);
-        mps[p].replace_left_paired(v);
+	mps[p+1].replace_right_paired(u);
     }
     
     template<class Matrix, class SymmGroup>
@@ -75,7 +52,7 @@ struct compression {
         
         gemm(mps[p].data(), mps[p+1].data(), t);
         
-        replace_two_sites_l2r(mps, Mmax, cutoff, t, p, logger);
+        replace_two_sites(mps, Mmax, cutoff, t, p, logger);
     }
         
     template<class Matrix, class SymmGroup>

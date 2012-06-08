@@ -58,7 +58,7 @@ public:
         , J2 = parms.get<double>("J2")
         , delta = parms.get<double>("delta")
         , KK = parms.get<double>("K2")
-        , K3 = parms.get<double>("K3");
+        , funny = parms.get<int>("funny");
         
         int L = lat.size();
         std::vector<int> last_adj = lat.all(L-1);
@@ -96,18 +96,16 @@ NN(p1, delta*J*sz, p2, sz);
                 NN(p, delta*J2*sz, (p+2)%L, sz);
             }
 
-        } else {
+        }else{
             for(int p = 0; p < L; ++p){
-                if (p % 3 == 1) continue;
-                if (open && p+3 >= L) continue;
-                GRP(p, (p+3)%L, J1);
-                // if (p % 3 == 2) continue;
-                // GRP(p, (p+1)%L, J1);
+                GRP(p, (p+3)%L, J2);
+                if (p % 3 == 2) continue;
+                GRP(p, (p+1)%L, J1);
             }
-            // for(int p = 1; p < L; p += 3){
-                // GRP(p, (p+2)%L, J1);
-                // GRP(p, (p+4)%L, J1);
-            // }
+            for(int p = 1; p < L; p += 3){
+                GRP(p, (p+2)%L, J1);
+                GRP(p, (p+4)%L, J1);
+            }
         }
 #undef NN
 #undef GRP
@@ -120,13 +118,37 @@ term.operators.push_back( make_pair((p+1)%L, op2) ); \
 term.operators.push_back( make_pair((p+2)%L, op3) ); \
 terms.push_back(term); }
 
-        if (KK == 0 && K3 == 0) {
+        if (KK == 0) {
 
             for (int p = 0; p < L; ++p) {
                 if (open && p+2 >= L)
                     continue;
 
                 double K = (p % 2 == 0 ? parms.get<double>("K0") : parms.get<double>("K1"));
+                if (funny == 1) {
+                    int p1 = L/2-1;
+                    if (p == p1)
+                        continue;
+                } else if (funny == 2) {
+                    int p1 = L/2-1;
+                    K = parms.get<double>("K0");
+                    if (p < p1 && p1 % 2 == 1)
+                        K *= -1;
+                } else if (funny == 3) {
+                    int p1 = L/2-1;
+                    K = parms.get<double>("K0") * powf(-1, p);
+                    if (p == p1 || p == p1-1 || p == p1+1)
+                        K = parms.get<double>("K1") * powf(-1, p);
+                    //else if (p == p1 - 1 || p == p1 + 1)
+                    //    K = parms.get<double>("K1") * powf(-1, p);
+                } else if (funny == 3) {
+                    int p1 = L/2-1;
+                    K = parms.get<double>("K0") * powf(-1, p);
+                    if (p == p1)
+                        continue;
+                    else if (p == p1 - 1 || p == p1 + 1)
+                        K = parms.get<double>("K1") * powf(-1, p);
+                }
 
                 std::complex<double> f(0, 0.5);
 
@@ -140,7 +162,7 @@ terms.push_back(term); }
                 NNN(p, -f*K * delta*sz, sminus, splus);
             }
 
-        }
+        } else
 
 #undef NNN
 
@@ -152,23 +174,21 @@ term.operators.push_back( make_pair(p2, op2) ); \
 term.operators.push_back( make_pair(p3, op3) ); \
 terms.push_back(term); }
 
-//if (!open || (p1_ < L && p2_ < L && p3_ < L)) { \
-
 #define TERM(p1_,p2_,p3_) \
 if (true) { \
 maquis::cout << "Operator on " << p1_ << " " << p2_ << " " << p3_ << std::endl; \
 int p1=(p1_)%L, p2=(p2_)%L, p3=(p3_)%L; \
-NNN(p1,  f * splus, p2, sminus, p3, delta*sz); \
-NNN(p1, -f * splus, p2, sz, p3, sminus); \
-NNN(p1,  f * sminus, p2, sz, p3, splus); \
-NNN(p1, -f * sminus, p2, splus, p3, delta*sz); \
-NNN(p1,  f * delta*sz, p2, splus, p3, sminus); \
-NNN(p1, -f * delta*sz, p2, sminus, p3, splus); }
+NNN(p1,  f*KK * splus, p2, sminus, p3, delta*sz); \
+NNN(p1, -f*KK * splus, p2, sz, p3, sminus); \
+NNN(p1,  f*KK * sminus, p2, sz, p3, splus); \
+NNN(p1, -f*KK * sminus, p2, splus, p3, delta*sz); \
+NNN(p1,  f*KK * delta*sz, p2, splus, p3, sminus); \
+NNN(p1, -f*KK * delta*sz, p2, sminus, p3, splus); }
 
-        else if (KK != 0 && K3 == 0){ // see above: KK != 0
+        { // see above: KK != 0
 
             for (int p = 0; p < L; ++p) {
-                std::complex<double> f(0, KK*0.5);
+                std::complex<double> f(0, 0.5);
                 /*if (p % 3 == 0) {
                     TERM(p, p+1, p+3);
                 } else if (p % 3 == 1) {
@@ -180,49 +200,13 @@ NNN(p1, -f * delta*sz, p2, sminus, p3, splus); }
                 if (p % 3 == 0) {
                     TERM(p, p+1, p+3);
                 } else if (p % 3 == 1) {
-                    // TERM(p, p+2, p+3);
-                    // TERM(p, p+1, p+3);
+                    TERM(p, p+2, p+3);
+                    TERM(p, p+1, p+3);
                 } else if (p % 3 == 2) {
                     TERM(p, p+2, p+3);
                 }
             }
 
-        } else {
-            
-            std::cout << L << " " << L/12 << std::endl;
-            for (int p = 0; p < L; p += 12) {
-                std::cout << p << std::endl;
-                
-                std::complex<double> f(0, K3 * 0.5);
-                
-                // int pos[] = {
-                //     8, 13, 12,
-                //     9, 13, 14,
-                //     2, 3, 9,
-                //     3, 10, 4,
-                //     10, 17, 16,
-                //     11, 17, 18,
-                //     6, 7, 11,
-                //     7, 8, 0
-                // };
-                
-                int pos[] = {
-                    1, 14, 12,
-                    4, 14, 15,
-                    3, 5, 4,
-                    5, 6, 7,
-                    6, 20, 19,
-                    20, 21, 10,
-                    9, 11, 10,
-                    11, 1, 0
-                };
-                
-                for (int k = 0; k < 8; ++k) {
-                    TERM(p+pos[k*3+0], p+pos[k*3+1], p+pos[k*3+2]);
-                }
-
-            }
-            
         }
 
 #undef TERM

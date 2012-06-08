@@ -1,13 +1,21 @@
-nsweeps = 3
-symmetry = "u1"
-alpha_initial = 0.001
-donotsave = 1
-chkpfile = "ff_middle.out.h5"
-max_bond_dimension = 50
-alpha_main = 1e-06
-truncation_initial = 0.0001
-nmainsweeps = 1
+alpha_initial = 0.01
+alpha_main = 1e-6
 alpha_final = 0
-truncation_final = 1e-12
+
+eigensolver = IETL_JCD
+ietl_jcd_gmres = 0
+ietl_jcd_tol = 1e-8
+ietl_jcd_maxiter = 10
+
+chkpfile = results.h5
+max_bond_dimension = 50
+
+nsweeps = 3
+nmainsweeps = 1
 ngrowsweeps = 1
-resultfile = "ff_middle.out.h5"
+
+resultfile = results.h5
+truncation_final = 1e-12
+truncation_initial = 0.0001
+
+symmetry = u1

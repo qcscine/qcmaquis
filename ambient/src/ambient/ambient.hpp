@@ -1,133 +1,68 @@
 #ifndef AMBIENT_INTERFACE
 #define AMBIENT_INTERFACE
-#include "ambient/ambient.h"
+#ifndef AMBIENT
+#define AMBIENT
+#endif
+// {{{ system includes
+#include <mpi.h>
+#include <complex>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string>
+#include <limits>
+#include <vector>
+#include <set>
+#include <map>
+#include <list>
+#include <memory.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <iostream>
+#include <fstream>
+#include <sys/time.h>
+#include <pthread.h>
+#define BOOST_SP_NO_SP_CONVERTIBLE
+#include <boost/intrusive_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+// }}}
+#include "ambient/channels/mpi/channel.h"
+#include "ambient/models/velvet/model.h"
+#include "ambient/controllers/velvet/controller.h"
+#include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/memory.hpp"
-#include "ambient/utils/jstrings.hpp"
-#include "ambient/interface/forwarding.h"
-#include "ambient/utils/memory.hpp"
-#include "utils/io.hpp"
+#include "ambient/utils/io.hpp"
+#include "ambient/interface/typed.hpp"
+#include "ambient/interface/kernel.hpp"
+#include "ambient/interface/parallel.hpp"
+#include "ambient/interface/future.hpp"
 
 namespace ambient{
 
-    void set_num_threads(size_t n);
+    using models::velvet::history;
+    using models::velvet::revision;
+    using controllers::velvet::iteratable;
+    using controllers::velvet::fast_revision;
+    using controllers::velvet::slow_revision;
+    using controllers::velvet::cfunctor;
 
-    size_t get_num_threads();
+    template <typename T> inline revision&      ui_l_current(T& obj){ return obj.ui_l_revision_0();     } // (logistics)
+    template <typename T> inline revision&      ui_l_updated(T& obj){ return obj.ui_l_revision_1();     } // (logistics, debug)
+    template <typename T> inline fast_revision& ui_c_current(T& obj){ return obj.ui_c_revision_0();     } // (computation)
+    template <typename T> inline slow_revision& ui_c_updated(T& obj){ return obj.ui_c_revision_1();     } // (memcheck)
 
-    void playout();
+    inline void pin(cfunctor* o, revision& r, int x, int y){ r.content->entries[x][y]->assignments.push_back(o); }
+    inline void assign(revision& r, int x, int y){ ambient::controller.ifetch_block(r, x, y); }
 
-    template<typename T>
-    void assign(const T& ref, int i, int j = 0);
+    template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().dim;            }
+    template<typename T> inline dim2 ui_c_get_mem_dim    (T& ref){ return ui_c_current(ref).get_layout().mem_dim;        }
+    template<typename T> inline dim2 ui_c_get_grid_dim   (T& ref){ return ui_c_current(ref).get_layout().grid_dim;       }
+    template<typename T> inline dim2 ui_c_get_dim_u      (T& ref){ return ui_c_updated(ref).get_layout().dim;            }
+    template<typename T> inline dim2 ui_c_get_mem_dim_u  (T& ref){ return ui_c_updated(ref).get_layout().mem_dim;        }
+    template<typename T> inline dim2 ui_c_get_grid_dim_u (T& ref){ return ui_c_updated(ref).get_layout().grid_dim;       }
 
-    template<typename T>
-    void pin(const T& ref, int i, int j = 0);
+    inline dim2 ui_l_get_grid_dim(revision& r){ return r.content->grid_dim; }
 
-    template<typename T>
-    inline std::pair<size_t*,size_t> id(T& ref);
-
-    template<typename T>
-    inline dim2 get_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_work_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_grid_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_mem_grid_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_mem_dim(T& ref);
-
-    template<typename T>
-    inline dim2 get_item_dim(T& ref);
-
-    // {{{ realization of interface functions
-    #include "ambient/interface/pp/push.pp.hpp" // all variants of push
-
-    void set_num_threads(size_t n){ 
-        controller.set_num_threads(n);
-    }
-
-    size_t get_num_threads(){
-        return controller.get_num_threads();
-    }
-
-    void playout(){ 
-        controller.flush(); 
-    }
-
-    template<typename T>
-    void assign(const T& ref, int i, int j){
-        ambient::models::imodel::layout& layout = current(ref).get_layout();
-        dim2 work_blocks(layout.get_work_dim().x / layout.get_mem_dim().x,
-                         layout.get_work_dim().y / layout.get_mem_dim().y);
-        size_t ii = i*work_blocks.y;
-        size_t jj = j*work_blocks.x;
-    
-        for(int i = ii; i < ii+work_blocks.y; i++)
-            for(int j = jj; j < jj+work_blocks.x; j++){
-                if(ctxt.get_op()->get_pin() == NULL){
-                    ctxt.get_op()->add_condition();
-                    current(ref).block(i,j)->get_assignments().push_back(ctxt.get_op());
-                }
-                controller.ifetch_block(current(ref), i, j);
-            }
-    }
-
-    template<typename T>
-    void pin(const T& ref, int i, int j){
-        ambient::models::imodel::layout& layout = current(ref).get_layout();
-        dim2 work_blocks(layout.get_work_dim().x / layout.get_mem_dim().x,
-                         layout.get_work_dim().y / layout.get_mem_dim().y);
-        size_t ii = i*work_blocks.y;
-        size_t jj = j*work_blocks.x;
-    
-        for(int i = ii; i < ii+work_blocks.y; i++)
-            for(int j = jj; j < jj+work_blocks.x; j++){
-                ctxt.get_op()->add_condition();
-                current(ref).block(i,j)->get_assignments().push_back(ctxt.get_op());
-                controller.ifetch_block(current(ref), i, j);
-            }
-    }
-
-    template<typename T>
-    inline std::pair<size_t*,size_t> id(T& ref){
-        return current(ref).id();
-    }
-
-    template<typename T>
-    inline dim2 get_dim(T& ref){
-        return current(ref).get_layout().get_dim();
-    }
-
-    template<typename T>
-    inline dim2 get_grid_dim(T& ref){
-        return current(ref).get_layout().get_grid_dim();
-    }
-
-    template<typename T>
-    inline dim2 get_mem_grid_dim(T& ref){
-        return current(ref).get_layout().get_mem_grid_dim();
-    }
-
-    template<typename T>
-    inline dim2 get_mem_dim(T& ref){
-        return current(ref).get_layout().get_mem_dim();
-    }
-
-    template<typename T>
-    inline dim2 get_item_dim(T& ref){
-        return current(ref).get_layout().get_item_dim();
-    }
-
-    template<typename T>
-    inline dim2 get_work_dim(T& ref){
-        return current(ref).get_layout().get_work_dim();
-    }
-
-    // }}}
 }
-    
-#include "ambient/interface/parallel_t.hpp"
+
 #endif

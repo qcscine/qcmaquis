@@ -61,13 +61,15 @@ class sim {
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
     typedef Boundary<Matrix, SymmGroup> boundary_t;
-        
+    
 public:
     
     sim (DmrgParameters const &, ModelParameters const &, bool fullinit=true);    
     ~sim();
     
-    virtual bool run ();
+    virtual void run ();
+    virtual int do_sweep (Logger&, double=-1) =0;
+    virtual void do_sweep_measure (Logger&);
     
     virtual void measure ();
     
@@ -78,9 +80,7 @@ protected:
     virtual void model_init ();
     virtual void mps_init ();
     
-    virtual int do_sweep (Logger&, double=-1) =0;
-    virtual void do_sweep_measure (Logger&);
-    virtual int advance (Logger&, int=1, double=-1);
+    virtual bool exec_sweeps ();
     
 private:
     
