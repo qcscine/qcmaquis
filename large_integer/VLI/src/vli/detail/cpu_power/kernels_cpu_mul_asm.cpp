@@ -64,18 +64,7 @@ namespace vli{
  
                       BOOST_PP_REPEAT(7, FUNCTION_mul_nbits_64bits, ~) // 7 -> expand until 512 !
 
-// remark the multiplication is done from bottom to the right top corner, different from the childhood method,
-// to avoid carry bit pb propagation,
-// mul192_192
-//                      a0 a1 a2
-//                   X  b0 b1 b2
-//                   -------------
-//                      b2a0 b2a1 b2a2  //3
-//                      b1a2 b1a1       //2
-//                      b0a2            //1 
-//         I do : b0a2, b1a1, b1a2, b2a2, b2a1, b2a0
-// the boost pp is very hard to understand, look hall of fame to understand what it does !!!!!!!!!!
-/* PP_REPEAT limited to 3 nested */ 
+                      // remark same than x86, look cpu_x86 for details
 
                        #define BOOST_PP_LOCAL_MACRO(n) \
                           void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))(unsigned long int* x, unsigned long int const* y){ \
@@ -90,43 +79,17 @@ namespace vli{
 
                        #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
 
-// the expansion gives
-//                      void mul192_192(unsigned long int* x, unsigned long int const * y){
-//                          asm( 
-//                              "movq 16(%%rsi)         ,%%rax    \n" // 0 
-//                              "mulq 0(%%rdi)                    \n"
-//                              "movq %%rax             ,%%r15    \n" 
-//                              "movq 8(%%rsi)          ,%%rax    \n" // 1
-//                              "movq %%rax             ,%%rbx    \n"
-//                              "mulq 0(%%rdi)                    \n"
-//                              "movq %%rax             ,%%r14    \n"
-//                              "addq %%rdx             ,%%r15    \n"        
-//                              "movq %%rbx             ,%%rax    \n"
-//                              "mulq 8(%%rdi)                    \n"
-//                              "addq %%rax             ,%%r15    \n"        
-//                              "movq 0(%%rsi)          ,%%rax    \n" // 2
-//                              "movq %%rax             ,%%rbx    \n"
-//                              "mulq 0(%%rdi)                    \n"
-//                              "movq %%rax             ,%%r13    \n"
-//                              "addq %%rdx             ,%%r14    \n"        
-//                              "adcq $0x0              ,%%r15    \n"        
-//                              "movq %%rbx             ,%%rax    \n"
-//                              "mulq 8(%%rdi)                    \n"
-//                              "addq %%rax             ,%%r14    \n"        
-//                              "adcq %%rdx             ,%%r15    \n"        
-//                              "movq %%rbx             ,%%rax    \n"
-//                              "mulq 16(%%rdi)                   \n"
-//                              "addq %%rax             ,%%r15    \n"        
-//                              "movq %%r13             ,0(%%rdi) \n"
-//                              "movq %%r14             ,8(%%rdi) \n"
-//                              "movq %%r15             ,16(%%rdi)\n"
-//                             : : :"rax","rbx","rdx","r15","r14","r13","memory" 
-//                         ); 
-//                      };
-                     
 
                        void mul128_64_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rcx */){
-   assert(false);
+                          asm( 
+                              "ld 14, 0(4)     \n"                   
+                              "ld 15, 0(5)     \n"                   
+                              "mulld  16,14,15 \n"  
+                              "mulhdu 17,14,15 \n"  
+                              "std 0(3), 16     \n"
+                              "std 8(3), 17     \n"
+                              : : :"r14","r15","r16","r17"
+                              );
                        }
 
                        void mul256_128_128(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
