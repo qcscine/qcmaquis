@@ -79,7 +79,11 @@ namespace vli{
 
                        #define BOOST_PP_LOCAL_MACRO(n) \
                           void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))(unsigned long int* x, unsigned long int const* y){ \
-   assert(false);\
+                         asm(                                                                                       \
+                              BOOST_PP_REPEAT(n, MULNTON0, BOOST_PP_SUB(n,1))                                             \
+                              BOOST_PP_REPEAT(n, STORE_register_r3mul2,BOOST_PP_ADD(n,2) )                     \
+                              : : :"r5","r6","r14","r15",BOOST_PP_REPEAT(n, CLOTHER_register2,n ) "memory"   /* clother register*/      \
+                             ); \
                          } \
                      
                        #define BOOST_PP_LOCAL_LIMITS (2, 8)
