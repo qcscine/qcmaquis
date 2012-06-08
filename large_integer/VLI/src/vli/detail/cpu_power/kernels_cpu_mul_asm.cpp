@@ -85,10 +85,10 @@ namespace vli{
                               "ld 14, 0(4)     \n"                   
                               "ld 15, 0(5)     \n"                   
                               "mulld  16,14,15 \n"  
-                              "mulhdu 17,14,15 \n"  
-                              "std 0(3), 16     \n"
-                              "std 8(3), 17     \n"
-                              : : :"r14","r15","r16","r17"
+                              "std 16 ,0(3)    \n"
+                              "mulhdu 16,14,15 \n"  
+                              "std 16 ,8(3)    \n"
+                              : : :"r14","r15","r16"
                               );
                        }
 
@@ -100,8 +100,8 @@ namespace vli{
    assert(false);
                             }
 
-                             void mul512_256_256(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                     void mul512_256_256(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
    assert(false);
-                             }
+                     }
                     } // end namespace detail
              } // end namespace vli
