@@ -38,14 +38,14 @@
 #define n BOOST_PP_ITERATION()
 #define TYPES_NUMBER n
 
-template< BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) , void(*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )>
-struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ), fp> {
+template< class K, BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) , void(K::*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )>
+struct kernel_inliner<void(K::*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ), fp> {
     
     static inline void latch(cfunctor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
         BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
     }
-    static inline void invoke(sfunctor* o){
-        fp( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
+    static inline void invoke(K* o){
+        (o->*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
     }
     static inline void cleanup(sfunctor* o){
         BOOST_PP_REPEAT(TYPES_NUMBER, cleanup_object, ~) 

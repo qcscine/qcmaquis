@@ -13,15 +13,15 @@ namespace ambient{
 
 template <typename K, class T0>
 inline void push(T0& arg0){
-    kernel_inliner<typename K::F,K::c>::latch(new K(), info<T0>::unfold(arg0)); 
+    kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0)); 
 }
 template <typename K, class T0, class T1>
 inline void push(T0& arg0, T1& arg1){
-    kernel_inliner<typename K::F,K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1)); 
+    kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1)); 
 }
 template <typename K, class T0, class T1, class T2>
 inline void push(T0& arg0, T1& arg1, T2& arg2){
-    kernel_inliner<typename K::F,K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1), info<T2>::unfold(arg2)); 
+    kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1), info<T2>::unfold(arg2)); 
 }
 
 #define BOOST_PP_ITERATION_LIMITS (4, ARGS_MAX_LEN)
@@ -36,7 +36,7 @@ inline void push(T0& arg0, T1& arg1, T2& arg2){
 
 template < typename K, BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, class T) >
 inline void push( BOOST_PP_ENUM_BINARY_PARAMS(TYPES_NUMBER, T, &arg) ){
-    kernel_inliner<typename K::F,K::c>::latch(new K(), BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
+    kernel_inliner<typename K::F,&K::c>::latch(new K(), BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
 }
 
 #endif
