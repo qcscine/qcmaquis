@@ -1,4 +1,4 @@
-nsweeps = 1
+nsweeps = 4
 symmetry = "2u1"
 alpha_initial = 0.001
 donotsave = 1
