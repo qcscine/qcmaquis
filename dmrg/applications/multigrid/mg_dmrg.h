@@ -14,6 +14,7 @@
 #include "types/dense_matrix/dense_matrix.h"
 #include "types/dense_matrix/matrix_interface.hpp"
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "types/dense_matrix/dense_matrix_blas.hpp"
 #include "types/dense_matrix/algorithms.hpp"
 #ifdef USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
