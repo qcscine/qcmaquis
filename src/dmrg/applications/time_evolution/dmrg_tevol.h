@@ -21,6 +21,7 @@
     #include "types/dense_matrix/dense_matrix.h"
     #include "types/dense_matrix/matrix_interface.hpp"
     #include "types/dense_matrix/resizable_matrix_interface.hpp"
+    #include "types/dense_matrix/dense_matrix_blas.hpp"
     #include "types/dense_matrix/algorithms.hpp"
     typedef maquis::types::dense_matrix<double> matrix;
     typedef maquis::types::dense_matrix<std::complex<double> > cmatrix;
