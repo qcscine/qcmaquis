@@ -142,6 +142,7 @@ void sim<Matrix, SymmGroup>::mps_init()
         alps::hdf5::archive h5ar_in(chkpfile);
         h5ar_in >> alps::make_pvp("/state", mps);
     } else if (parms.get<std::string>("initfile").size() > 0) {
+        maquis::cout << "Loading init state from " << parms.get<std::string>("initfile") << std::endl;
         mps = MPS<Matrix, SymmGroup>(lat->size());
         alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
         h5ar_in >> alps::make_pvp("/state", mps);
