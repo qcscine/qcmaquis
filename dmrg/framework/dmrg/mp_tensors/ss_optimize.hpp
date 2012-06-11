@@ -232,7 +232,7 @@ public:
                 this->boundary_right_step(mpo, site); // creating right_[site]
             }
             
-            if (lr != +1 && site != L-1)
+            if (! (lr == +1 && site == L-1))
             {
             	storage::store(left_[site], left_stores_[site]); // store currently used boundary
             	storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary

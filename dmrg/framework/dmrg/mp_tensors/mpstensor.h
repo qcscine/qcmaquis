@@ -37,20 +37,20 @@ public:
               Index<SymmGroup> const & rd = Index<SymmGroup>(),
               bool fillrand = true,
               value_type val = 0);
-        
+    
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
     Index<SymmGroup> const & col_dim() const;
     bool isobccompatible(Indicator) const;
     
-    void replace_right_paired(block_matrix<Matrix, SymmGroup> const &);
-    void replace_left_paired(block_matrix<Matrix, SymmGroup> const &);
+    void replace_right_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
+    void replace_left_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
     
     // these are not const because after a numerical test
     // they may update the status
-    bool isleftnormalized(bool test = false);
-    bool isrightnormalized(bool test = false);
-    bool isnormalized(bool test = false);
+    bool isleftnormalized(bool test = false) const;
+    bool isrightnormalized(bool test = false) const;
+    bool isnormalized(bool test = false) const;
     
     block_matrix<Matrix, SymmGroup> normalize_left(DecompMethod method = QR,
                                                    bool multiplied = true,
@@ -73,6 +73,7 @@ public:
     
     block_matrix<Matrix, SymmGroup> & data();
     block_matrix<Matrix, SymmGroup> const & data() const;
+    block_matrix<Matrix, SymmGroup> const & const_data() const;
     
     std::vector<block_matrix<Matrix, SymmGroup> > to_list() const;
     
@@ -154,7 +155,7 @@ public:
     bool num_check() const; // checks for nan or inf
     
 private:
-    mutable Index<SymmGroup> phys_i, left_i, right_i;
+    Index<SymmGroup> phys_i, left_i, right_i;
     mutable block_matrix<Matrix, SymmGroup> data_;
     mutable MPSStorageLayout cur_storage;
     Indicator cur_normalization;
