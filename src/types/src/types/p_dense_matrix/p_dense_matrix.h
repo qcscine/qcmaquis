@@ -138,7 +138,7 @@ namespace maquis { namespace types {
         }
 
         template <typename T2> inline p_dense_matrix& operator /= (const T2& t){
-            this->impl->mul(1/t);
+            this->impl->mul(((value_type)1)/t);
             return *this;
         }
 
