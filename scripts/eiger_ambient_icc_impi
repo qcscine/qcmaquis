@@ -2,7 +2,7 @@
 STATE="void"
 STATE_AMBIENT="void"
 STATE_TYPES="void"
-STATE_DMRG="configure"
+STATE_DMRG="build"
 # end of target states #
 SITE=eiger_ambient # the dashboard name (uname -n)
 ROOT_DIR=~/maquis2012/src
@@ -24,6 +24,8 @@ module load ${BOOST}/${BOOST_VERSION}
 module load ${CMAKE}
 
 ## common ##
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O0 -g -DNDEBUG"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O0 -g -DNDEBUG"
 MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -inline-level=2"
 MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -inline-level=2"
 MAQUIS_COMMON_CMAKE_C_COMPILER=icc
