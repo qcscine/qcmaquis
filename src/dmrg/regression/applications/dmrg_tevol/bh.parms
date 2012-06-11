@@ -11,6 +11,7 @@ nsweeps=300
 dt = 0.01
 te_type = nn
 te_order=fourth
+te_optim = 1
 
 measure_each = 20
 chkp_each = 100

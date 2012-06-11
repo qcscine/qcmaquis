@@ -10,6 +10,8 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/mp_tensors/generic_reshape.h"
 #include "dmrg/mp_tensors/mpo_manip.h"
+#include "dmrg/mp_tensors/compression.h"
+
 
 #include <vector>
 #include <set>
@@ -142,6 +144,53 @@ std::map<std::size_t, block_matrix<Matrix, SymmGroup> > make_exp_nn (Hamiltonian
     }
             
     return map_exp;
+}
+
+
+template <class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> term2block(typename Hamiltonian<Matrix, SymmGroup>::hamterm_t const & term, std::size_t pos1,
+                                           Index<SymmGroup> const & phys_i, block_matrix<Matrix, SymmGroup> const & ident)
+{
+#ifndef NDEBUG
+    if (term.operators.size() == 2)
+        assert(std::abs( term.operators[0].first-term.operators[1].first ) == 1);
+#endif
+    
+    block_matrix<Matrix, SymmGroup> bond_op;
+    if (term.operators.size() == 2)
+        op_kron(phys_i, term.operators[0].second, term.operators[1].second, bond_op);
+    else if (term.operators[0].first == pos1)
+        op_kron(phys_i, term.operators[0].second, ident, bond_op);
+    else
+        op_kron(phys_i, ident, term.operators[0].second, bond_op);
+//    else
+//        throw std::runtime_error("Operator k not matching any valid position.");
+    return bond_op;
+}
+
+template <class Matrix, class SymmGroup>
+std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Hamiltonian<Matrix, SymmGroup> const & H, std::size_t L)
+{
+    std::vector<block_matrix<Matrix, SymmGroup> > ret_blocks(L-1);
+    
+    for (int i=0; i<H.n_terms(); ++i)
+    {
+        Hamiltonian_Term<Matrix, SymmGroup> term = H[i];
+        std::size_t pos1 = term.operators[0].first;
+        if (term.operators.size() == 1) {
+            if (pos1 != 0 && pos1 != L-1)
+                term.operators[0].second /= 2.;
+            if (pos1 < L-1)
+                ret_blocks[pos1] += term2block(term, pos1, H.get_phys(), H.get_identity());
+            if (pos1 > 0)
+                ret_blocks[pos1-1] += term2block(term, pos1-1, H.get_phys(), H.get_identity());
+        } else if (term.operators.size() == 2) {
+            term.canonical_order(); // TODO: check and fix for fermions!!
+            ret_blocks[pos1] += term2block(term, pos1, H.get_phys(), H.get_identity());
+        }
+    }
+    
+    return ret_blocks;
 }
 
 template <class Matrix, class SymmGroup>
