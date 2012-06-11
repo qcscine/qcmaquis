@@ -120,32 +120,6 @@ private:
 };
 #endif
 
-#ifdef AMBIENT 
-class TimerPTH : public Timer{
-public:
-    TimerPTH(std::string name, pthread_t thread): Timer(name),thread_(thread){}
-    TimerPTH(std::string name): Timer(name),thread_(pthread_self()){}
-    ~TimerPTH(){}
-
-    void begin(){
-         pthread_getcpuclockid(this->thread_,&this->cid_);
-         struct timespec ts; //from time.h
-         clock_gettime(this->cid_, &ts);
-         this->t0 = ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
-    }    
-    
-    void end(){
-        nCounter ++;
-        struct timespec ts; //from time.h
-        clock_gettime(this->cid_, &ts);
-        this->val += (ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION))) - this->t0);
-    }
-private:    
-    pthread_t thread_; 
-    clockid_t cid_;
-};
-#endif
-
 #ifndef WIN32
 #include <sys/time.h>
 #else
