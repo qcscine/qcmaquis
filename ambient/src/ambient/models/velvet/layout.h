@@ -61,7 +61,7 @@ namespace ambient { namespace models { namespace velvet {
         inline dim2     get_dim() const;
         inline dim2     get_mem_dim() const;
         inline dim2     get_grid_dim() const;
-        std::vector< std::vector<layout::entry*> > entries;
+        size_t mesh_lda;
         group* placement;
         size_t master;
         size_t * gid;
@@ -71,6 +71,8 @@ namespace ambient { namespace models { namespace velvet {
         dim2   grid_dim;                // size of the grid 
         dim2   dim;                     // total size of the revision (typed)
         memspec spec;
+    private:
+        std::vector< layout::entry* > entries;
     }; 
     // }}}
 
