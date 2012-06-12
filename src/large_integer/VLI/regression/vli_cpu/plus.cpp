@@ -56,28 +56,12 @@ VLI_STATIC_TEST( plus_assign_overflow )
 {
     // TODO this test could also be a fuzz test
     vli_type a;
-    for(std::size_t i(0); i < vli_type::size; ++i) 
-        a[i] = static_cast<vli_type::value_type>(-1);  
-    
-    vli_type c;
-
-    a+=1;
-
-    std::cout << std::hex << a << std::endl;
-    std::cout << std::hex <<  c << std::endl;
-    
-    BOOST_CHECK_EQUAL(a,c);
-} 
-
-VLI_STATIC_TEST( plus_assign_overflow_bug )
-{
-    // TODO this test could also be a fuzz test
-    vli_type a;
     vli_type b(1);
     init(a,max_positive);
     vli_type c(a);
     negate_inplace(c);
     
+    a+=b;
     a+=b;
     
     BOOST_CHECK_EQUAL(a,c);
