@@ -12,6 +12,12 @@ namespace ambient { namespace controllers {
         this->thread_block_id = (dim2*)calloc(ambient::controller.get_num_threads(), sizeof(dim2));
     }
 
+    inline context::~context()
+    {
+        free(this->thread_block_id);
+        free(pthread_getspecific(pthread_tid));
+    }
+
     inline void context::set_group(group* grp){
         this->functor->set_group(grp);
         this->grp = grp;

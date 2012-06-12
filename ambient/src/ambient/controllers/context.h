@@ -16,7 +16,8 @@ namespace ambient { namespace controllers {
     class context : public singleton< context > 
     {
     public:
-        inline context();
+        inline  context();
+        inline ~context();
     public:
 // proxy functionality //
         inline context& operator()(int rank){ return *this;   } // proxy
