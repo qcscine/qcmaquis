@@ -4,6 +4,7 @@
 #include "ambient/utils/hashmap.hpp"
 #include "ambient/utils/dim2.h"
 
+#include "ambient/models/velvet/memspec.h"
 #include "ambient/models/velvet/layout.h"
 #include "ambient/models/velvet/sfunctor.h"
 #include "ambient/models/velvet/revision.h"
@@ -11,6 +12,7 @@
 #include "ambient/models/velvet/history.h"
 
 namespace ambient { namespace models { namespace velvet {
+
 
     class model : public singleton< model > {
     public:
@@ -42,4 +44,5 @@ namespace ambient {
 #include "ambient/models/velvet/reduction.hpp"
 #include "ambient/models/velvet/revision.hpp"
 #include "ambient/models/velvet/layout.hpp"
+#include "ambient/models/velvet/memspec.hpp"
 #endif

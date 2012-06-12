@@ -29,9 +29,12 @@ namespace ambient { namespace channels { namespace mpi {
             }
             return *singleton;
         }
-        static inline packet_t& type_map(int t_code, const packet_t* type = NULL){
+        static inline const packet_t& type_map(int t_code, const packet_t* type = NULL){
             static std::map<int,const packet_t*> map;
-            if(type != NULL) map.insert(std::pair<int,const packet_t*>(t_code,type));
+            if(type != NULL){
+                map.insert(std::pair<int,const packet_t*>(t_code,type));
+                return *type;
+            }
             return const_cast<packet_t&>(*(map.find(t_code)->second));
         }
         inline void change_field_size(int field, int size);

@@ -46,6 +46,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline packet_t& channel::get_block_packet_type(size_t len){
+        printf("WARNING: Getting packet type for some reason!\n");
         static packet_t* types[65538] = { NULL };
         size_t idx = len / 8; // for double
         if(types[idx] == NULL){

@@ -17,8 +17,7 @@ namespace ambient { namespace models { namespace velvet {
         dim2 block_dim;
         if(this->mem_dim > o->get_cached_dim().max()) block_dim = o->get_cached_dim();
         else block_dim = this->mem_dim;
-        layout* l = new layout(&ambient::channel.get_block_packet_type(block_dim.square()*sizeof(typename T::value_type)), 
-                               block_dim, o->get_cached_dim());
+        layout* l = new layout(sizeof(typename T::value_type), block_dim, o->get_cached_dim());
         this->insert(l);
         return o->add_state(l);
     }

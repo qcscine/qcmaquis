@@ -37,8 +37,8 @@ namespace ambient { namespace controllers { namespace velvet {
         inline revision& ui_l_revision_1() const { // only for debug for now
             return *this->content[this->thread_revision_base[GET_TID] + 1]; 
         }
-        inline fast_revision& ui_c_revision_0() const {
-            return *(fast_revision*)this->content[this->thread_revision_base[GET_TID]]; 
+        inline slow_revision& ui_c_revision_0() const {
+            return *(slow_revision*)this->content[this->thread_revision_base[GET_TID]]; 
         }
         inline slow_revision& ui_c_revision_1() const { 
             return *(slow_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; 

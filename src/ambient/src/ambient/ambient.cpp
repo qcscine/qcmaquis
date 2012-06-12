@@ -18,8 +18,8 @@
 #include <sys/time.h>
 #include <pthread.h>
 // }}}
-#include "ambient/models/velvet/model.h"
 #include "ambient/channels/mpi/channel.h"
+#include "ambient/models/velvet/model.h"
 #include "ambient/controllers/velvet/controller.h"
 
 pthread_key_t pthread_tid;
