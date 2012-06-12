@@ -66,7 +66,7 @@ namespace ambient {
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
             // gs
-            __A_TIME("ambient_gemm_c_kernel");
+            __A_TIME_C("ambient_gemm_c_kernel");
             //if(ui_c_get_grid_dim(a) == 1 && ui_c_get_grid_dim(b) == 1) // use gemm atomic for this case
             if(ui_c_get_mem_dim(a) != ui_c_get_mem_dim(b) || ui_c_get_mem_dim(a) != ui_c_get_mem_dim(c)){
                 T* ad = (T*)__a_solidify<T>(a);
@@ -82,7 +82,7 @@ namespace ambient {
                 T beta(1.0);
                 gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
                 __a_disperse<T>(cd, c);
-                __A_TIME_STOP
+                __A_TIME_C_STOP
                 return;
             }
             int m   = ui_c_get_mem_dim(a).y;
@@ -119,7 +119,7 @@ namespace ambient {
                 }
                 y += a_grid_dim.y;
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 
@@ -137,13 +137,13 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
             // gs
-            __A_TIME("ambient_copy_c_kernel"); 
+            __A_TIME_C("ambient_copy_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             T* a_elements  = ui_c_current(a)(x,y);
             T* ac_elements = ui_c_updated(ac)(x,y);
             memcpy(ac_elements, a_elements, sizeof(T)*ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 
@@ -270,14 +270,14 @@ namespace ambient {
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
             // gs
-            __A_TIME("ambient_push_back_sqr_gt_c_kernel"); 
+            __A_TIME_C("ambient_push_back_sqr_gt_c_kernel"); 
             T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
             size_t sizey = __a_get_limit_y(a);
             for(int i=0; i < sizey; i++){
                 double v = std::abs(ad[i]);
                 if(v > 1e-10) ac->push_back(v*v);
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -293,7 +293,7 @@ namespace ambient {
 
         inline void c(std::vector<T>*& ac, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             // gs
-            __A_TIME("ambient_cast_to_dense_c_kernel"); 
+            __A_TIME_C("ambient_cast_to_dense_c_kernel"); 
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
             int xx = ui_c_get_mem_dim(a).x*x; 
@@ -309,7 +309,7 @@ namespace ambient {
                 offset = yy + (xx+j)*m;
                 memcpy((void*)&(*ac)[offset],(void*)&ad[j*lda], sizey*sizeof(T));  
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -356,14 +356,14 @@ namespace ambient {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
-            __A_TIME("ambient_reshape_l2r_c_kernel"); 
+            __A_TIME_C("ambient_reshape_l2r_c_kernel"); 
             __a_memptf<T, __a_memcpy>(right, dim2(0,0), right, dim2(0,0), ui_c_get_dim(right)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss){
                 __a_memptf<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
                                           left,  dim2(0, ss*ldim + left_offset), 
                                           dim2( rdim, ldim ));
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -386,13 +386,13 @@ namespace ambient {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
-            __A_TIME("ambient_reshape_r2l_c_kernel"); 
+            __A_TIME_C("ambient_reshape_r2l_c_kernel"); 
             __a_memptf<T, __a_memcpy>(left, dim2(0,0), left, dim2(0,0), ui_c_get_dim(left)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss)
                 __a_memptf<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
                                           right, dim2(ss*rdim + right_offset,0), 
                                           dim2( rdim, ldim ));
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -417,7 +417,7 @@ namespace ambient {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
-            __A_TIME("ambient_rb_tensor_mpo_c_kernel"); 
+            __A_TIME_C("ambient_rb_tensor_mpo_c_kernel"); 
             __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -427,7 +427,7 @@ namespace ambient {
                                                in,  dim2(in_offset + ss1*rdim, 0),
                                                dim2(rdim, ldim), alfa_t);
                 }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -451,7 +451,7 @@ namespace ambient {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
-            __A_TIME("ambient_lb_tensor_mpo_c_kernel"); 
+            __A_TIME_C("ambient_lb_tensor_mpo_c_kernel"); 
             __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -461,7 +461,7 @@ namespace ambient {
                                                in,  dim2(0, in_offset + ss1*ldim),
                                                dim2(rdim, ldim), alfa_t);
                 }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -477,7 +477,7 @@ namespace ambient {
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
             // gs
-            __A_TIME("ambient_scalar_norm_c_kernel"); 
+            __A_TIME_C("ambient_scalar_norm_c_kernel"); 
             T summ = 0;
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
@@ -490,7 +490,7 @@ namespace ambient {
                     summ += ad[i+j*lda]*ad[i+j*lda];
         
             *norm += summ;
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -507,7 +507,7 @@ namespace ambient {
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
             // gs
-            __A_TIME("ambient_scalar_overlap_c_kernel"); 
+            __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
             T summ = 0;
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
@@ -520,7 +520,7 @@ namespace ambient {
                 for(size_t j=0; j < sizex; j++)
                     summ += ad[i+j*lda]*bd[i+j*lda];
             *overlap += summ;
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -538,7 +538,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             // gs
-            __A_TIME("ambient_add_c_kernel"); 
+            __A_TIME_C("ambient_add_c_kernel"); 
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x,y);
@@ -547,7 +547,7 @@ namespace ambient {
             size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] + bd[k];
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -564,7 +564,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             // gs
-            __A_TIME("ambient_sub_c_kernel"); 
+            __A_TIME_C("ambient_sub_c_kernel"); 
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x,y);
@@ -573,7 +573,7 @@ namespace ambient {
             size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] + (-1)*bd[k];
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -589,7 +589,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
             // gs
-            __A_TIME("ambient_scale_c_kernel"); 
+            __A_TIME_C("ambient_scale_c_kernel"); 
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x, y);
@@ -601,7 +601,7 @@ namespace ambient {
             for(size_t j=0; j < sizex; j++)
             for(size_t i=0; i < sizey; i++)
             ar[j*lda+i] = ad[j*lda+i] * (*t);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -623,7 +623,7 @@ namespace ambient {
         inline void c(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
                       const size_t& m, const size_t& n, const size_t& k){
             // gs
-            __A_TIME("ambient_gemm_diagonal_lhs_c_kernel"); 
+            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
             size_t sizey = __a_get_limit_y(a_diag, m);
             int j = ctxt.get_block_id().y*ui_c_get_mem_dim(b).y;
             int size = ui_c_get_mem_dim(b).x;
@@ -637,7 +637,7 @@ namespace ambient {
         	     axpy(&size, &alpha[(j+jj)%ui_c_get_mem_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
         	     if(sizeof(T) != sizeof(D)) axpy(&size, &alpha[(j+jj)%ui_c_get_mem_dim(a_diag).y], &bd[jj+1], &lda, &cd[jj], &lda); // for complex
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -659,7 +659,7 @@ namespace ambient {
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
                       const size_t& m, const size_t& n, const size_t& k){
             // gs
-            __A_TIME("ambient_gemm_diagonal_rhs_c_kernel"); 
+            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
             size_t sizex = std::min((ctxt.get_block_id().x+1)*ui_c_get_mem_dim(b_diag).y, n)-ctxt.get_block_id().x*ui_c_get_mem_dim(b_diag).y;
         
             int j = ctxt.get_block_id().x*ui_c_get_mem_dim(a).x;
@@ -672,7 +672,7 @@ namespace ambient {
         	    D* alpha = ui_c_current(b_diag)(0, (j+jj)/ui_c_get_mem_dim(b_diag).y);
         	    axpy(&size, &alpha[(j+jj)%ui_c_get_mem_dim(b_diag).y], &ad[jj*ui_c_get_mem_dim(a).y], &ONE, &cd[jj*ui_c_get_mem_dim(c).y], &ONE);
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -690,7 +690,7 @@ namespace ambient {
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
             // gs
-            __A_TIME("ambient_trace_c_kernel"); 
+            __A_TIME_C("ambient_trace_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             size_t ld = ui_c_get_mem_dim(a).y;
@@ -705,7 +705,7 @@ namespace ambient {
                 if((y+1)*ld <= jj) continue;
                *trace += ad[jj % ld + (jj%sd)*ld];
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -722,7 +722,7 @@ namespace ambient {
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
             // gs
-            __A_TIME("ambient_transpose_out_c_kernel"); 
+            __A_TIME_C("ambient_transpose_out_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             T* od = ui_c_current(a)(x,y);
@@ -743,7 +743,7 @@ namespace ambient {
                     td[ti+tj*tlda] = od[i+j*mlda];
                 }
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -758,7 +758,7 @@ namespace ambient {
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
-            __A_TIME("ambient_init_value_c_kernel"); 
+            __A_TIME_C("ambient_init_value_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
         
@@ -771,7 +771,7 @@ namespace ambient {
                     ad[i+j*ui_c_get_mem_dim(a).y] = value; // not a memset due to complex
                 }
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
        
@@ -792,7 +792,7 @@ namespace ambient {
         }
         
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-            __A_TIME("ambient_init_random_c_kernel"); 
+            __A_TIME_C("ambient_init_random_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             size_t ld = ui_c_get_mem_dim(a).y;
@@ -805,7 +805,7 @@ namespace ambient {
                 for(size_t ii = 0; ii < sizey; ii++)
                     randomize((ad+(jj*ld+ii)));
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -820,7 +820,7 @@ namespace ambient {
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
-            __A_TIME("ambient_init_identity_c_kernel"); 
+            __A_TIME_C("ambient_init_identity_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             size_t ld = ui_c_get_mem_dim(a).y;
@@ -835,7 +835,7 @@ namespace ambient {
                 if((y+1)*ld <= jj) continue;
                 ad[jj % ld + (jj%sd)*ld] = 1.;
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -900,7 +900,7 @@ namespace ambient {
                      maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             // gs
-            __A_TIME("ambient_svd_c_kernel"); 
+            __A_TIME_C("ambient_svd_c_kernel"); 
         /* Locals */
             int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
             int ldu = ui_c_get_grid_dim(u).y*ui_c_get_mem_dim(u).y;
@@ -930,7 +930,7 @@ namespace ambient {
             __a_disperse<T>(vtd, vt);
             __a_disperse<T>(sd, s);
             free(work);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -983,7 +983,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
             // gs
-            __A_TIME("ambient_heev_c_kernel"); 
+            __A_TIME_C("ambient_heev_c_kernel"); 
             int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
             int info, lwork = -1;
         
@@ -1026,7 +1026,7 @@ namespace ambient {
             __a_disperse<double>(ad, a);
             __a_disperse<double>(wd, w);
             free(work);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 

@@ -17,11 +17,11 @@ namespace ambient {
     //#define AMBIENT_CHECK_BOUNDARIES
    
     #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        #define __A_TIME(name) static TimerPTH time(name); time.begin();
-        #define __A_TIME_STOP time.end();
+        #define __A_TIME_C(name) static __a_timer time(name); time.begin();
+        #define __A_TIME_C_STOP time.end();
     #else
-        #define __A_TIME(name) 
-        #define __A_TIME_STOP 
+        #define __A_TIME_C(name) 
+        #define __A_TIME_C_STOP 
     #endif
 
     // {{{ continuous memory mangling
@@ -29,7 +29,7 @@ namespace ambient {
     inline void* __a_solidify(const iteratable<T>& o){
         using ambient::models::velvet::layout;
 
-        fast_revision& r = o.ui_c_revision_0();
+        slow_revision& r = o.ui_c_revision_0();
         layout& l = r.get_layout();
         size_t iterator = 0;
         char* memory = NULL;
@@ -123,7 +123,7 @@ namespace ambient {
                                   const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                                   dim2 size, T alfa = 0.0)
     {
-        __A_TIME("ambient_memptf_f_atomic_kernel");
+        __A_TIME_C("ambient_memptf_f_atomic_kernel");
         // the ouput (dest) must be a pinned p_dense_matrix
 
 #ifdef AMBIENT_CHECK_BOUNDARIES
@@ -143,7 +143,7 @@ namespace ambient {
             PTF(dest,dd,dim2(dest_p.x + x, dest_p.y),
                 src, sd,dim2(src_p.x + x,  src_p.y),
                 size.y, alfa);            
-        __A_TIME_STOP
+        __A_TIME_C_STOP
     }
 
     template<typename T, void(*PTF)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos,
@@ -153,7 +153,7 @@ namespace ambient {
                            const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                            dim2 size, T alfa = 0.0)
     {
-        __A_TIME("ambient_memptf_f_kernel");
+        __A_TIME_C("ambient_memptf_f_kernel");
         // the ouput (dest) must be a pinned p_dense_matrix
 
         T* dd = ui_c_updated(dest)(ctxt.get_block_id().x, ctxt.get_block_id().y);
@@ -202,7 +202,7 @@ namespace ambient {
                 spos.y = 0;
             }
         }
-        __A_TIME_STOP
+        __A_TIME_C_STOP
     }
 
     template<typename T, void(*PTF)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos,
@@ -212,7 +212,7 @@ namespace ambient {
                                    const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                                    dim2 size, T alfa = 0.0)
     {
-        __A_TIME("ambient_memptf_revers_f_kernel");
+        __A_TIME_C("ambient_memptf_revers_f_kernel");
         // the input (src) must be a pinned p_dense_matrix
 
         dim2 context(ctxt.get_block_id().x, ctxt.get_block_id().y);
@@ -263,7 +263,7 @@ namespace ambient {
                 dpos.y = 0;
             }
         }
-        __A_TIME_STOP
+        __A_TIME_C_STOP
     }
 
     /*template<void(*ASSIGN)(const models::v_model::object&, int, int), typename T>

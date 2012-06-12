@@ -44,7 +44,8 @@ size_t get_input_y(){
     return dim;
 }
 
-void report(const Timer& a, double(*gflops)(size_t, size_t, double), size_t x, size_t y, size_t nthreads){
+template<class TIMER>
+void report(const TIMER& a, double(*gflops)(size_t, size_t, double), size_t x, size_t y, size_t nthreads){
     maquis::cout << "-------------------------\n"
                  << " Time     " << a.get_time()               << "\n"
                  << " GFlops   " << gflops(x,y,a.get_time())   << "\n" 
