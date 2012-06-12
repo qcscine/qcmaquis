@@ -7,12 +7,12 @@ namespace ambient { namespace models { namespace velvet {
     {
     public:
         inline layout::entry& operator()(size_t x, size_t y){
-            return *this->block(x, y);
+            return this->block(x, y);
         } 
         inline layout& get_layout(){ return *content; }
         inline revision(layout*);
         inline ~revision();
-        inline layout::entry* block(size_t x, size_t y);
+        inline layout::entry& block(size_t x, size_t y);
         inline void add_modifier(sfunctor* m);
         inline std::list<sfunctor*>& get_modifiers();
         inline size_t id();
