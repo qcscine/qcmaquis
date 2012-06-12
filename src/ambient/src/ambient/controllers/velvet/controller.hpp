@@ -21,8 +21,6 @@ namespace ambient { namespace controllers { namespace velvet {
         }
         pthread_mutex_destroy(&this->mutex);
         pthread_mutex_destroy(&this->pool_control_mutex);
-        free(this->pool);
-        free(this->mpool);
     }
 
     inline controller::controller()
@@ -53,9 +51,6 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::allocate_threads(){
-        this->pool = (pthread_t*)malloc(sizeof(pthread_t)*MAX_NUM_THREADS);
-        this->mpool = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t)*MAX_NUM_THREADS);
-        this->tasks = new tasklist[MAX_NUM_THREADS];
         for(size_t i = 1; i < MAX_NUM_THREADS; i++){
             this->tasks[i].id = i;
             pthread_mutex_init(&this->mpool[i], NULL);
@@ -72,18 +67,12 @@ namespace ambient { namespace controllers { namespace velvet {
         while(l->active){
             instruction = (mod*)l->get_task();
             if(instruction == NULL){
-                if(!l->idle){
-                    l->idle = true;
-                   /// printf("Thread is idle %lu\n", (size_t)l);
-                }
                 pthread_yield();
                 continue;
-            }else if(l->idle){
-                l->idle = false;
-                ///printf("Thread is not idle %lu\n", (size_t)l);
             }
             ctxt.set_block_id(instruction->pin);
             instruction->f->computation();
+            delete instruction;
         }
         return NULL;
     }
@@ -101,6 +90,7 @@ namespace ambient { namespace controllers { namespace velvet {
             }
             ctxt.set_block_id(instruction->pin);
             instruction->f->computation();
+            delete instruction;
         }
     }
 
@@ -127,13 +117,13 @@ namespace ambient { namespace controllers { namespace velvet {
     inline layout::entry& controller::alloc_block(layout& l, size_t x, size_t y){
         const memspec& spec = l.get_spec();
         l.embed(spec.alloc(), x, y, spec.get_bound());
-        return *l.get(x,y);
+        return l.get(x,y);
     }
 
     // note: ufetch_block is used only by pt_fetch in user-space
     inline layout::entry& controller::ufetch_block(revision& r, size_t x, size_t y){
-        if(r.block(x,y)->valid()){
-            return *r.block(x,y);
+        if(r.block(x,y).valid()){
+            return r.block(x,y);
         }else printf("REQUESTING UNEXISTING BLOCK (%lu, %lu)!\n", x, y);
             
             //else if(r.get_placement() == NULL || r.get_placement()->is_master()){
@@ -142,15 +132,15 @@ namespace ambient { namespace controllers { namespace velvet {
               return this->alloc_block(r.get_layout(), x, y);
             //}
         //}
-        //else if(!r.block(x,y)->requested()){
+        //else if(!r.block(x,y).requested()){
          //   ambient::channel.ifetch(r.get_placement(), *r.get_layout().id(), x, y);
          //} // blocks should be already requested
-        //return *r.block(x,y);
+        //return r.block(x,y);
     }
 
     inline layout::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
         //assert(r.get_placement() != NULL);
-        if(r.block(x,y)->valid())
+        if(r.block(x,y).valid())
             this->atomic_receive(r.get_layout(), x, y); // check the stacked operations for the block
         else { //if(r.get_placement()->is_master()){
             //if(r.get_layout().marked(x, y)){
@@ -163,31 +153,31 @@ namespace ambient { namespace controllers { namespace velvet {
 //              else
 //                  leaving on the side of the generator to deliver (we don't really know who generates but the destination is already known)
             //}
-        }//else if(!r.block(x,y)->valid() && !r.block(x,y)->requested()){
+        }//else if(!r.block(x,y).valid() && !r.block(x,y).requested()){
          //   ambient::channel.ifetch(r.get_placement(), r.get_layout().id(), x, y);
          // }
-        return *r.block(x,y);
+        return r.block(x,y);
     }
 
     inline bool controller::lock_block(revision& r, size_t x, size_t y){
         pthread_mutex_lock(&this->pool_control_mutex);
-        bool acquired = r.block(x,y)->trylock();
+        bool acquired = r.block(x,y).trylock();
         pthread_mutex_unlock(&this->pool_control_mutex);
         return acquired;
     }
 
     inline void controller::unlock_block(revision& r, size_t x, size_t y){
         pthread_mutex_lock(&this->pool_control_mutex);
-        r.block(x,y)->unlock();
+        r.block(x,y).unlock();
         pthread_mutex_unlock(&this->pool_control_mutex);
     }
 
     inline void controller::atomic_receive(layout& l, size_t x, size_t y){
         // pthread_mutex_lock(&this->mutex); // will be needed in case of redunant accepts
-        std::list<cfunctor*>::iterator it = l.get(x,y)->get_assignments().begin();
-        while(it != l.get(x,y)->get_assignments().end()){
+        std::list<cfunctor*>::iterator it = l.get(x,y).get_assignments().begin();
+        while(it != l.get(x,y).get_assignments().end()){
             this->execute_mod(*it, dim2(x,y));
-            l.get(x,y)->get_assignments().erase(it++);
+            l.get(x,y).get_assignments().erase(it++);
         }
     }
 
@@ -226,7 +216,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
     
     inline packet* package(layout& l, const char* state, int x, int y, int dest){
-        void* header = l.get(x,y)->get_memory();
+        void* header = l.get(x,y).get_memory();
         packet* package = pack(*(packet_t*)l.get_spec().get_packet_t(), 
                                header, dest, "P2P", l.id(), state, x, y, NULL);
         return package;
@@ -238,14 +228,14 @@ namespace ambient { namespace controllers { namespace velvet {
         if(c.get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM OWNER ACTION
         size_t x = c.get<int>(A_LAYOUT_P_X_FIELD);
         size_t y = c.get<int>(A_LAYOUT_P_Y_FIELD);
-        layout::entry& entry = *l.get(x,y);
+        layout::entry& entry = l.get(x,y);
         if(entry.valid()){
             channel.emit(package(l, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), x, y, c.get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }else if(l.placement->is_master()){
             ambient::controller.alloc_block(l, x, y); // generating block
             forward_block(cmd);             // and forwarding
         }else{
-            l.get(x,y)->get_path().push_back(c.get<int>(A_LAYOUT_P_OWNER_FIELD));
+            l.get(x,y).get_path().push_back(c.get<int>(A_LAYOUT_P_OWNER_FIELD));
         }
     }
 
@@ -254,13 +244,13 @@ namespace ambient { namespace controllers { namespace velvet {
         size_t x = c.get<int>(A_BLOCK_P_X_FIELD);
         size_t y = c.get<int>(A_BLOCK_P_Y_FIELD);
         layout& l = *ambient::model.get_layout(c.get<size_t>(A_BLOCK_P_SID_FIELD));
-        if(l.get(x,y)->valid()) return; // quick exit for redunant accepts
+        if(l.get(x,y).valid()) return; // quick exit for redunant accepts
         l.embed(c.get_memory(), x, y, c.get_bound(A_BLOCK_P_DATA_FIELD));
 
-        while(!l.get(x,y)->get_path().empty()){ // satisfying the path
+        while(!l.get(x,y).get_path().empty()){ // satisfying the path
             channel.emit(package(l, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), 
-                                 x, y, l.get(x,y)->get_path().back()));
-            l.get(x,y)->get_path().pop_back();
+                                 x, y, l.get(x,y).get_path().back()));
+            l.get(x,y).get_path().pop_back();
         }
 
         ambient::controller.atomic_receive(l, x, y); // calling controller event handlers

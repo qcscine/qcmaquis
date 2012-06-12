@@ -1,10 +1,10 @@
 #ifndef AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 #include "ambient/utils/touchstack.h"
-#include "ambient/utils/tasklist.hpp"
 #include "ambient/controllers/velvet/cfunctor.h"
 #include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/controllers/context.h"
+#include "ambient/utils/tasklist.hpp"
 
 #ifndef DEFAULT_NUM_THREADS 
 #define DEFAULT_NUM_THREADS 1
@@ -53,9 +53,9 @@ namespace ambient { namespace controllers { namespace velvet {
         pthread_mutex_t pool_control_mutex;
         pthread_mutex_t mutex;
         touchstack< cfunctor* > stack;
-        pthread_mutex_t* mpool;
-        pthread_t* pool;
-        tasklist* tasks;
+        pthread_mutex_t mpool[MAX_NUM_THREADS];
+        pthread_t pool[MAX_NUM_THREADS];
+        tasklist tasks[MAX_NUM_THREADS];
         size_t workload;
         size_t num_threads;
         size_t rrn;

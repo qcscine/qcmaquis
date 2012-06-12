@@ -24,15 +24,15 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline void layout::embed(void* memory, size_t x, size_t y, size_t bound){
-        this->get(x,y)->set_memory(memory, bound);
+        this->get(x,y).set_memory(memory, bound);
     }
 
-    inline layout::entry* layout::get(size_t x, size_t y){
+    inline layout::entry& layout::get(size_t x, size_t y){
 #ifdef LAYOUT_ACCESS_CHECK
         if(y >= this->get_grid_dim().y || x >= this->get_grid_dim().x)
         printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, x, y, this->get_grid_dim().x, this->get_grid_dim().y);
 #endif
-        return this->entries[x][y];
+        return *this->entries[x][y];
     }
 
     inline void layout::mesh(){

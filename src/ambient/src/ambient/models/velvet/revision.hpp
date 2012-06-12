@@ -21,7 +21,7 @@ namespace ambient { namespace models { namespace velvet {
         return this->content->id();
     }
 
-    inline layout::entry* revision::block(size_t x, size_t y){
+    inline layout::entry& revision::block(size_t x, size_t y){
         return this->content->get(x, y);
     }
 

@@ -13,7 +13,6 @@
 
 namespace ambient { namespace models { namespace velvet {
 
-
     class model : public singleton< model > {
     public:
         inline model();
