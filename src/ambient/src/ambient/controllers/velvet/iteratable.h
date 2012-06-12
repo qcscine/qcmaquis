@@ -9,13 +9,6 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::models::velvet::revision;
     using ambient::models::velvet::layout;
 
-    class fast_revision
-    {
-    public:
-        inline layout::entry& operator()(size_t x, size_t y);
-        inline layout& get_layout();
-    };
-
     class slow_revision
     {
     public:
