@@ -8,43 +8,38 @@ import argparse
 from subprocess import check_call
 
 # Settings
-testname    = 'fermiladder'
-prog_dmrg   = '/Users/michele/PhD/hp2c/src_stable/build-merge/applications/dmrg/dmrg'
-prog_meas   = '/Users/michele/PhD/hp2c/src_stable/build-merge/applications/dmrg/dmrg_meas'
+testname    = 'bh'
+prog_dmrg   = '@APPTEST_DMRG1EXEC@'
+prog_meas   = '@APPTEST_DMRG2EXEC@'
 
 # Input parameters
 parms = {
-			'nsweeps'					: 1,
+			'nsweeps'					: 5,
 			'nmainsweeps'				: 1,
 			'ngrowsweeps'				: 1,
 
-			'max_bond_dimension'		: 400,
+			'max_bond_dimension'		: 200,
 
-			'truncation_initial'		: 1e-16,
-			'truncation_final'			: 1e-16,
+			'truncation_final'			: 1e-10,
 
-			'alpha_initial'				: 0.001,
-			'alpha_main'				: 1e-6,
-			'alpha_final'				: 0,
-			
 			'resultfile'                : testname+'.out.h5',
-            'chkpfile'                  : testname+'.out.h5',
-            'donotsave'                 : 1,
+            'chkpfile'                  : testname+'.out.ckp.h5',
 			
-			'symmetry'                  : '2u1',
+			'symmetry'                  : 'u1',
 	    }
 model = {
-        	'LATTICE'                   : 'open ladder',
+        	'LATTICE'                   : 'open chain lattice',
             'L'                         : 10,
 
-            'MODEL'                     : 'fermion Hubbard',
+            'MODEL'                     : 'boson Hubbard',
+            'Nmax'                      : 2,
             't'                         : 1,
-            "t'"                        : 1,
             'U'                         : 8,
 
-            'CONSERVED_QUANTUMNUMBERS'  : 'Nup,Ndown',
-            'Nup_total'                 : 10,
-            'Ndown_total'               : 10,
+            'CONSERVED_QUANTUMNUMBERS'  : 'N',
+            'N_total'                   : 5,
+            
+            'MEASURE_LOCAL[Local density]' : 'n',
 	    }
 
 

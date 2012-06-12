@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="ALPS.xsl"?>
 <TEST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://xml.comp-phys.org/2002/10/ALPS.xsd">
-   <OUTPUT file="bh.testout.xml"/>
-   <SCRIPT file="bh.py"/>
+   <OUTPUT file="@APPTEST_RUNDIR@/bh.testout.xml"/>
+   <SCRIPT file="@APPTEST_RUNDIR@/bh.py"/>
    <TESTINFOS>
        <TESTINFO name="WRITE_RESULTS_TO_FILE">yes</TESTINFO>
        <TESTINFO name="SAVE_OUT_IF_FAIL">yes</TESTINFO>
@@ -10,7 +10,7 @@
        <TESTINFO name="TESTNAME">bh</TESTINFO>
    </TESTINFOS>
    <REFERENCE>
-       <FILE file="./ref/bh.out.h5" />
+       <FILE file="@APPTEST_SOURCEDIR@/ref/bh.out.h5" />
    </REFERENCE>
    <OBSERVABLES>
        <OBSERVABLE>Local density</OBSERVABLE>
