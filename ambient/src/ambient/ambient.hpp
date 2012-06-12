@@ -42,13 +42,12 @@ namespace ambient{
     using models::velvet::history;
     using models::velvet::revision;
     using controllers::velvet::iteratable;
-    using controllers::velvet::fast_revision;
     using controllers::velvet::slow_revision;
     using controllers::velvet::cfunctor;
 
     template <typename T> inline revision&      ui_l_current(T& obj){ return obj.ui_l_revision_0();     } // (logistics)
     template <typename T> inline revision&      ui_l_updated(T& obj){ return obj.ui_l_revision_1();     } // (logistics, debug)
-    template <typename T> inline fast_revision& ui_c_current(T& obj){ return obj.ui_c_revision_0();     } // (computation)
+    template <typename T> inline slow_revision& ui_c_current(T& obj){ return obj.ui_c_revision_0();     } // (computation)
     template <typename T> inline slow_revision& ui_c_updated(T& obj){ return obj.ui_c_revision_1();     } // (memcheck)
 
     template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().dim;            }

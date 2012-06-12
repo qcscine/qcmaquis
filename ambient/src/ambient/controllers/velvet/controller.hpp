@@ -125,8 +125,8 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline layout::entry& controller::alloc_block(layout& l, size_t x, size_t y){
-        packet_t& type = *(packet_t*)l.get_container_type();
-        l.embed(alloc_t(type), x, y, type.get_bound(A_BLOCK_P_DATA_FIELD));
+        const memspec& spec = l.get_spec();
+        l.embed(spec.alloc(), x, y, spec.get_bound());
         return *l.get(x,y);
     }
 
@@ -154,7 +154,7 @@ namespace ambient { namespace controllers { namespace velvet {
             this->atomic_receive(r.get_layout(), x, y); // check the stacked operations for the block
         else { //if(r.get_placement()->is_master()){
             //if(r.get_layout().marked(x, y)){
-                this->alloc_block(r.get_layout(), x, y);
+                //this->alloc_block(r.get_layout(), x, y); // ! making all allocations inside computational kernels
                 this->atomic_receive(r.get_layout(), x, y);
             //}else{
             //    printf("UNEXPECTED ERROR IN IFETCH BLOCK -- asking for %lu %lu!\n", x, y);
@@ -227,7 +227,7 @@ namespace ambient { namespace controllers { namespace velvet {
     
     inline packet* package(layout& l, const char* state, int x, int y, int dest){
         void* header = l.get(x,y)->get_memory();
-        packet* package = pack(*(packet_t*)l.get_container_type(), 
+        packet* package = pack(*(packet_t*)l.get_spec().get_packet_t(), 
                                header, dest, "P2P", l.id(), state, x, y, NULL);
         return package;
     }
