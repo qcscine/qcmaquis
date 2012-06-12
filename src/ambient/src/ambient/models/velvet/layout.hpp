@@ -1,20 +1,23 @@
 #include "ambient/utils/ceil.h"
 //#define LAYOUT_ACCESS_CHECK
 
+#define VECTOR_RESERVATION 1.5
+
 namespace ambient { namespace models { namespace velvet {
 
     // {{{ layout model
 
     inline layout::~layout(){
-        for(int x = 0; x < this->entries.size(); x++){
-            for(int y = 0; y < this->entries[x].size(); y++){
-                delete this->entries[x][y];
-            }
-        }
+        if(this->mesh_dim != 1){
+            for(unsigned int x = 0; x < mesh_dim.x; x++)
+            for(unsigned int y = 0; y < mesh_dim.y; y++) 
+            delete entries[x*mesh_lda+y];
+        }else
+            delete entries[0];
     }
 
     inline layout::layout(size_t t_size, dim2 b_size, dim2 size)
-    : spec(t_size*b_size.x*b_size.y), mem_dim(b_size), dim(size), placement(NULL), grid_dim(0,0), master(0), mesh_dim(0,0)
+    : spec(t_size*b_size.x*b_size.y), mem_dim(b_size), dim(size), placement(NULL), grid_dim(0,0), master(0), mesh_dim(0,0), mesh_lda(0)
     {
         this->set_dim(size);
     }
@@ -32,7 +35,7 @@ namespace ambient { namespace models { namespace velvet {
         if(y >= this->get_grid_dim().y || x >= this->get_grid_dim().x)
         printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, x, y, this->get_grid_dim().x, this->get_grid_dim().y);
 #endif
-        return *this->entries[x][y];
+        return *this->entries[x*mesh_lda+y];
     }
 
     inline void layout::mesh(){
@@ -41,19 +44,27 @@ namespace ambient { namespace models { namespace velvet {
         dim2 dim = this->grid_dim;
         if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
 
-        for(size_t x = this->mesh_dim.x; x < dim.x; x++)
-            entries.push_back(std::vector<entry*>());
-        
+        if(this->mesh_lda < dim.y){ // reserve
+            std::vector<entry*> tmp;
+            tmp.reserve(std::max(dim.x,this->mesh_dim.x)*dim.y*VECTOR_RESERVATION);
+            for(int j=0; j < this->mesh_dim.x; ++j)
+                tmp.insert(tmp.end(),&this->entries[this->mesh_lda*j],&this->entries[this->mesh_lda*j + this->mesh_dim.y]);
+            std::swap(this->entries,tmp);
+            this->mesh_lda = dim.y*VECTOR_RESERVATION;
+        }
+
+        entries.resize(this->mesh_lda*dim.x);
+
         for(size_t x = 0; x < this->mesh_dim.x; x++)
             for(size_t y = this->mesh_dim.y; y < dim.y; y++)
-                entries[x].push_back(new layout::entry());
+                entries[x*mesh_lda+y] = new layout::entry();
 
         for(size_t x = this->mesh_dim.x; x < dim.x; x++)
             for(size_t y = 0; y < dim.y; y++)
-                entries[x].push_back(new layout::entry());
+                entries[x*mesh_lda+y] = new layout::entry();
 
-        if(dim.x > this->mesh_dim.x) this->mesh_dim.x = dim.x;
-        if(dim.y > this->mesh_dim.y) this->mesh_dim.y = dim.y;
+        this->mesh_dim.x = std::max(dim.x, mesh_dim.x);
+        this->mesh_dim.y = std::max(dim.y, mesh_dim.y);
     }
 
     inline size_t layout::id(){
