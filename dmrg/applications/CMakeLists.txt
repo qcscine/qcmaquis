@@ -17,12 +17,6 @@ else(BUILD_TIME_EVOLUTION)
   add_subdirectory(time_evolution EXCLUDE_FROM_ALL)
 endif(BUILD_TIME_EVOLUTION)
 
-if(BUILD_OLD_TARGETS AND BUILD_TIME_EVOLUTION)
-  add_subdirectory(time_evolution_deprecated)
-else(BUILD_TIME_EVOLUTION)
-  add_subdirectory(time_evolution_deprecated EXCLUDE_FROM_ALL)
-endif(BUILD_OLD_TARGETS AND BUILD_TIME_EVOLUTION)
-
 if(BUILD_MULTIGRID)
   add_subdirectory(multigrid)
 else(BUILD_MULTIGRID)
