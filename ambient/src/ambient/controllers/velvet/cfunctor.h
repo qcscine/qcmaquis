@@ -26,14 +26,6 @@ namespace ambient { namespace controllers { namespace velvet {
         pthread_mutex_t mutex;
     };
 
-    class mod {
-    public:
-        inline mod(cfunctor* f, dim2 pin)
-        : f(f), pin(pin){ };
-        cfunctor* f;
-        dim2 pin;
-    };
-
 } } }
 
 #endif

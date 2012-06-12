@@ -60,12 +60,12 @@ namespace ambient { namespace controllers { namespace velvet {
 
 #ifndef AMBIENT_INTERFACE
     void* controller::stream(void* list){
-        mod* instruction;
+        tasklist::task* instruction;
         tasklist* l = static_cast<tasklist*>(list);
         ctxt.set_tid(l->id);
 
         while(l->active){
-            instruction = (mod*)l->get_task();
+            instruction = l->get_task();
             if(instruction == NULL){
                 pthread_yield();
                 continue;
@@ -79,11 +79,11 @@ namespace ambient { namespace controllers { namespace velvet {
 #endif
 
     inline void controller::master_stream(void* list){
-        mod* instruction;
+        tasklist::task* instruction;
         tasklist* l = static_cast<tasklist*>(list);
 
         while(this->workload){
-            instruction = (mod*)l->get_task();
+            instruction = l->get_task();
             if(instruction == NULL){
                 pthread_yield();
                 continue;
@@ -105,12 +105,12 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::execute_mod(cfunctor* op, dim2 pin){
         if(op->pretend()) return;
-        this->tasks[this->rrn].add_task(new mod(op, pin));
+        this->tasks[this->rrn].add_task(new tasklist::task(op, pin));
         ++this->rrn %= this->num_threads;
     }
 
     inline void controller::execute_free_mod(cfunctor* op){
-        this->tasks[this->rrn].add_task(new mod(op, dim2(0,0)));
+        this->tasks[this->rrn].add_task(new tasklist::task(op, dim2(0,0)));
         ++this->rrn %= this->num_threads;
     }
 
