@@ -22,7 +22,7 @@ namespace ambient {
             this->assign(ui_l_current(c));
         }
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
-            __A_TIME("ambient_gemm_general_atomic_c_kernel"); 
+            __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
             T* bd   = ui_c_current(b)(0,0);
             T* ad   = ui_c_current(a)(0,0);
             T* cd   = ui_c_updated(c)(0,0);
@@ -35,7 +35,7 @@ namespace ambient {
             T alpha(1.0); 
             T beta(1.0);
             gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 
@@ -52,11 +52,11 @@ namespace ambient {
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
-            __A_TIME("ambient_copy_atomic_c_kernel"); 
+            __A_TIME_C("ambient_copy_atomic_c_kernel"); 
             T* ad  = ui_c_current(a)(0,0);
             T* acd  = ui_c_updated(ac)(0,0);
             __a_copy(acd, ad, ui_c_get_mem_dim(a).square());
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -79,14 +79,14 @@ namespace ambient {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            __A_TIME("ambient_reshape_l2r_atomic_c_kernel"); 
+            __A_TIME_C("ambient_reshape_l2r_atomic_c_kernel"); 
             __a_atomic_refresh(right); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss){
                 __a_memptf_atomic<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
                                                  left,  dim2(0, ss*ldim + left_offset), 
                                                  dim2( rdim, ldim ));
             }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -109,13 +109,13 @@ namespace ambient {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            __A_TIME("ambient_reshape_r2l_atomic_c_kernel"); 
+            __A_TIME_C("ambient_reshape_r2l_atomic_c_kernel"); 
             __a_atomic_refresh(left); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss)
                 __a_memptf_atomic<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
                                                  right, dim2(ss*rdim + right_offset,0), 
                                                  dim2( rdim, ldim ));
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -139,7 +139,7 @@ namespace ambient {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            __A_TIME("ambient_lb_tensor_mpo_atomic_c_kernel"); 
+            __A_TIME_C("ambient_lb_tensor_mpo_atomic_c_kernel"); 
             __a_atomic_refresh(out); // refreshing updated memory
             T* alfad = ui_c_current(alfa)(0,0);
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
@@ -149,7 +149,7 @@ namespace ambient {
                                                       in,  dim2(0, in_offset + ss1*ldim),
                                                       dim2(rdim, ldim), alfa_t);
                 }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -173,7 +173,7 @@ namespace ambient {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            __A_TIME("ambient_rb_tensor_mpo_atomic_c_kernel"); 
+            __A_TIME_C("ambient_rb_tensor_mpo_atomic_c_kernel"); 
             __a_atomic_refresh(out); // refreshing updated memory
             T* alfad = ui_c_current(alfa)(0,0);
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
@@ -183,7 +183,7 @@ namespace ambient {
                                                       in,  dim2(in_offset + ss1*rdim, 0),
                                                       dim2(rdim, ldim), alfa_t);
                 }
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -198,10 +198,10 @@ namespace ambient {
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
-            __A_TIME("ambient_scalar_norm_atomic_c_kernel"); 
+            __A_TIME_C("ambient_scalar_norm_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             *norm += __a_dot(ad, ad, m*n);;
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -217,11 +217,11 @@ namespace ambient {
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
-            __A_TIME("ambient_scalar_overlap_atomic_c_kernel"); 
+            __A_TIME_C("ambient_scalar_overlap_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
             *overlap += __a_dot(ad, bd, m*n);;
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 
@@ -238,14 +238,14 @@ namespace ambient {
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-            __A_TIME("ambient_add_atomic_c_kernel"); 
+            __A_TIME_C("ambient_add_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
             T* ar = ui_c_updated(a)(0,0);
             size_t size = ui_c_get_mem_dim(a).square();
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] + bd[k];
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 
@@ -262,14 +262,14 @@ namespace ambient {
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
-            __A_TIME("ambient_sub_atomic_c_kernel"); 
+            __A_TIME_C("ambient_sub_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
             T* ar = ui_c_updated(a)(0,0);
             size_t size = ui_c_get_mem_dim(a).square();
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] - bd[k];
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -284,13 +284,13 @@ namespace ambient {
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
-            __A_TIME("ambient_scale_atomic_c_kernel"); 
+            __A_TIME_C("ambient_scale_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* ar = ui_c_updated(a)(0,0);
             size_t size = m*n;
             for(size_t k=0; k < size; k++) 
                 ar[k] = ad[k] * (*t);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 
@@ -306,7 +306,7 @@ namespace ambient {
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
-            __A_TIME("ambient_transpose_out_atomic_c_kernel"); 
+            __A_TIME_C("ambient_transpose_out_atomic_c_kernel"); 
             T* od = ui_c_current(a)(0,0);
             T* td = ui_c_updated(t)(0,0);
 
@@ -317,7 +317,7 @@ namespace ambient {
             for(size_t i = 0; i < m; ++i)
             td[j+i*tlda] = od[i+j*mlda];
             
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -343,7 +343,7 @@ namespace ambient {
                      maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             // gs
-            __A_TIME("ambient_svd_atomic_c_kernel"); 
+            __A_TIME_C("ambient_svd_atomic_c_kernel"); 
         /* Locals */
             int lda = ui_c_get_mem_dim(a).y;
             int ldu = ui_c_get_mem_dim(u).y;
@@ -369,7 +369,7 @@ namespace ambient {
                 exit( 1 );
             }
             free(work);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
         
@@ -386,7 +386,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
             // gs
-            __A_TIME("ambient_heev_atomic_c_kernel"); 
+            __A_TIME_C("ambient_heev_atomic_c_kernel"); 
             int lda = ui_c_get_mem_dim(a).y;
             int info, lwork = -1;
             double wkopt;
@@ -423,7 +423,7 @@ namespace ambient {
             __a_disperse<T>(ad, a);
             __a_disperse<T>(wd, w);
             free(work);
-            __A_TIME_STOP
+            __A_TIME_C_STOP
         }
     };
 

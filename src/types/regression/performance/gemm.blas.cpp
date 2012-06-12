@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types)
         bd[i] = Rd();
     }
        
-    TimerPTH time("blas");
+    Timer time("blas");
     time.begin();
     gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     time.end();

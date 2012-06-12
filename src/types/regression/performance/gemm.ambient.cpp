@@ -12,7 +12,7 @@
 #include "types/dense_matrix/resizable_matrix_interface.hpp"
 #include "types/utils/bindings.hpp"
 
-#include "utils/timings.h"
+#include "ambient/utils/timings.hpp"
 #include "utilities.h"
 
 
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
 
     maquis::types::gemm(pA, pB, pC); 
 
-    TimerPTH time("ambient");
+    __a_timer time("ambient");
     time.begin();
     ambient::playout();
     time.end();
