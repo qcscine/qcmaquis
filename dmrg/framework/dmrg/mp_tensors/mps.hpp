@@ -105,12 +105,20 @@ template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::normalize_left()
 {
     canonize(length()-1);
+    // now state is: A A A A A A M
+    block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(SVD);
+    // now state is: A A A A A A A
+    canonized_i = length()-1;
 }
 
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::normalize_right()
 {
     canonize(0);
+    // now state is: M B B B B B B
+    block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(SVD);
+    // now state is: B B B B B B B
+    canonized_i = 0;
 }
 
 // input:  M  M  M  M  M  M  M

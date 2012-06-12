@@ -80,8 +80,8 @@ public:
     , parms(parms_)
     , storage_master(sm)
     {
-//        mps.normalize_right();
-        mps.canonize(0);
+        mps.normalize_right();
+//        mps.canonize(0);
         init_left_right(mpo, 0);
         maquis::cout << "Done init_left_right" << std::endl;
     }
