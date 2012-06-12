@@ -9,9 +9,8 @@ namespace ambient { namespace models { namespace velvet {
 
     inline layout::~layout(){
         if(this->mesh_dim != 1){
-            for(unsigned int x = 0; x < mesh_dim.x; x++)
-            for(unsigned int y = 0; y < mesh_dim.y; y++) 
-            delete entries[x*mesh_lda+y];
+            size_t size = this->mesh_dim.x*this->mesh_lda;
+            for(size_t i = 0; i < size; i++) delete entries[i];
         }else
             delete entries[0];
     }
@@ -47,22 +46,22 @@ namespace ambient { namespace models { namespace velvet {
         if(this->mesh_lda < dim.y){ // reserve
             std::vector<entry*> tmp;
             tmp.reserve(std::max(dim.x,this->mesh_dim.x)*dim.y*VECTOR_RESERVATION);
-            for(int j=0; j < this->mesh_dim.x; ++j)
+            for(int j=0; j < this->mesh_dim.x; ++j){
                 tmp.insert(tmp.end(),&this->entries[this->mesh_lda*j],&this->entries[this->mesh_lda*j + this->mesh_dim.y]);
+                for(size_t y = this->mesh_dim.y; y < dim.y*VECTOR_RESERVATION; y++)
+                    tmp.push_back(new layout::entry());
+            }
             std::swap(this->entries,tmp);
             this->mesh_lda = dim.y*VECTOR_RESERVATION;
         }
 
+        if(dim.x > mesh_dim.x){
+            size_t appendix = (dim.x-this->mesh_dim.x)*this->mesh_lda;
+            for(size_t i = 0; i < appendix; i++)
+                entries.push_back(new layout::entry());
+        }
+
         entries.resize(this->mesh_lda*dim.x);
-
-        for(size_t x = 0; x < this->mesh_dim.x; x++)
-            for(size_t y = this->mesh_dim.y; y < dim.y; y++)
-                entries[x*mesh_lda+y] = new layout::entry();
-
-        for(size_t x = this->mesh_dim.x; x < dim.x; x++)
-            for(size_t y = 0; y < dim.y; y++)
-                entries[x*mesh_lda+y] = new layout::entry();
-
         this->mesh_dim.x = std::max(dim.x, mesh_dim.x);
         this->mesh_dim.y = std::max(dim.y, mesh_dim.y);
     }
