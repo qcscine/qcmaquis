@@ -8,7 +8,7 @@ namespace ambient { namespace models { namespace velvet {
     // {{{ layout model
 
     inline layout::~layout(){
-        if(this->mesh_dim != 1){
+        if(this->mesh_dim != 1 || this->mesh_lda != 1){
             size_t size = this->mesh_dim.x*this->mesh_lda;
             for(size_t i = 0; i < size; i++) delete entries[i];
         }else
@@ -61,7 +61,6 @@ namespace ambient { namespace models { namespace velvet {
                 entries.push_back(new layout::entry());
         }
 
-        entries.resize(this->mesh_lda*dim.x);
         this->mesh_dim.x = std::max(dim.x, mesh_dim.x);
         this->mesh_dim.y = std::max(dim.y, mesh_dim.y);
     }
