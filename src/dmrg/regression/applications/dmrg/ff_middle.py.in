@@ -8,38 +8,41 @@ import argparse
 from subprocess import check_call
 
 # Settings
-testname    = 'bh'
-prog_dmrg   = '/Users/michele/PhD/hp2c/src_stable/build-merge/applications/dmrg/dmrg'
-prog_meas   = '/Users/michele/PhD/hp2c/src_stable/build-merge/applications/dmrg/dmrg_meas'
+testname    = 'ff_middle'
+prog_dmrg   = '@APPTEST_DMRG1EXEC@'
+prog_meas   = '@APPTEST_DMRG2EXEC@'
 
 # Input parameters
 parms = {
-			'nsweeps'					: 5,
+			'nsweeps'					: 3,
 			'nmainsweeps'				: 1,
 			'ngrowsweeps'				: 1,
 
-			'max_bond_dimension'		: 200,
+			'max_bond_dimension'		: 50,
 
-			'truncation_final'			: 1e-10,
+			'truncation_initial'		: 0.0001,
+			'truncation_final'			: 1e-12,
 
+			'alpha_initial'				: 0.001,
+			'alpha_main'				: 1e-6,
+			'alpha_final'				: 0,
+			
 			'resultfile'                : testname+'.out.h5',
-            'chkpfile'                  : testname+'.out.ckp.h5',
+            'chkpfile'                  : testname+'.out.h5',
+            'donotsave'                 : 1,
 			
 			'symmetry'                  : 'u1',
 	    }
 model = {
-        	'LATTICE'                   : 'open chain lattice',
-            'L'                         : 10,
+        	'LATTICE'                   : 'open square lattice',
+            'L'                         : 5,
+            'W'                         : 5,
 
-            'MODEL'                     : 'boson Hubbard',
-            'Nmax'                      : 2,
+            'MODEL'                     : 'spinless fermions',
             't'                         : 1,
-            'U'                         : 8,
 
             'CONSERVED_QUANTUMNUMBERS'  : 'N',
-            'N_total'                   : 5,
-            
-            'MEASURE_LOCAL[Local density]' : 'n',
+            'N_total'                 : 10,
 	    }
 
 
