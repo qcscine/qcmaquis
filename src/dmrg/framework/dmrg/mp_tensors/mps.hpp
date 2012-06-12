@@ -163,7 +163,7 @@ template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2)
 {
     size_t tmp_i = canonized_i;
-    for (int i = p1; i >= static_cast<int>(std::max(p2, size_t(0))); --i)
+    for (int i = p1; i > static_cast<int>(std::max(p2, size_t(0))); --i)
     {
         if ((*this)[i].isrightnormalized())
             continue;
