@@ -339,7 +339,7 @@ if(BUILD_REGRESSION)
   add_subdirectory(regression/tests)
 # add_subdirectory(regression/block_matrix)
 # add_subdirectory(regression/mp_tensors)
- add_subdirectory(regression/dmrg)
+# add_subdirectory(regression/dmrg)
 # add_subdirectory(regression/te)
   
   if(ENABLE_APPLICATION_TESTS)
