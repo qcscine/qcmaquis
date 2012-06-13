@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
+#include <algorithm>
 #include <pthread.h>
 // }}}
 #include "ambient/channels/mpi/channel.h"
