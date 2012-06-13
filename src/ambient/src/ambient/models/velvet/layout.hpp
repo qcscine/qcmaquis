@@ -16,9 +16,10 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline layout::layout(size_t t_size, dim2 b_size, dim2 size)
-    : spec(t_size*b_size.x*b_size.y), mem_dim(b_size), dim(size), placement(NULL), grid_dim(0,0), master(0), mesh_dim(0,0), mesh_lda(0)
+    : spec(t_size*b_size.x*b_size.y), dim(size), mem_dim(b_size), entries(1), grid_dim(1,1), mesh_dim(1,1), mesh_lda(1)
     {
-        this->set_dim(size);
+        entries[0] = new layout::entry();
+        this->mesh();
     }
 
     inline const memspec& layout::get_spec() const {
