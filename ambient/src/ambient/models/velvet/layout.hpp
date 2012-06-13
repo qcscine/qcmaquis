@@ -1,22 +1,21 @@
 #include "ambient/utils/ceil.h"
 //#define LAYOUT_ACCESS_CHECK
 
-#define VECTOR_RESERVATION 1.5
 
 namespace ambient { namespace models { namespace velvet {
 
     // {{{ layout model
 
+    struct deleter {
+       inline void operator()(layout::entry* e){ free(e->header); delete e; }
+    };
+
     inline layout::~layout(){
-        if(this->mesh_dim != 1 || this->mesh_lda != 1){
-            size_t size = this->mesh_dim.x*this->mesh_lda;
-            for(size_t i = 0; i < size; i++) delete entries[i];
-        }else
-            delete entries[0];
+        std::for_each(entries.begin(), entries.end(), deleter());
     }
 
     inline layout::layout(size_t t_size, dim2 b_size, dim2 size)
-    : spec(t_size*b_size.x*b_size.y), dim(size), mem_dim(b_size), entries(1), grid_dim(1,1), mesh_dim(1,1), mesh_lda(1)
+    : spec(t_size*b_size.x*b_size.y), dim(size), mem_dim(b_size), entries(1), grid_dim(1,1), mesh_dim(1,1)
     {
         entries[0] = new layout::entry();
         this->mesh();
@@ -35,7 +34,7 @@ namespace ambient { namespace models { namespace velvet {
         if(y >= this->get_grid_dim().y || x >= this->get_grid_dim().x)
         printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, x, y, this->get_grid_dim().x, this->get_grid_dim().y);
 #endif
-        return *this->entries[x*mesh_lda+y];
+        return *this->entries[x*mesh_dim.y+y];
     }
 
     inline void layout::mesh(){
@@ -44,26 +43,23 @@ namespace ambient { namespace models { namespace velvet {
         dim2 dim = this->grid_dim;
         if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
 
-        if(this->mesh_lda < dim.y){ // reserve
+        dim.x = std::max(dim.x, mesh_dim.x);
+        if(this->mesh_dim.y < dim.y){ // reserve
             std::vector<entry*> tmp;
-            tmp.reserve(std::max(dim.x,this->mesh_dim.x)*dim.y*VECTOR_RESERVATION);
+            tmp.reserve(dim.square());
             for(int j=0; j < this->mesh_dim.x; ++j){
-                tmp.insert(tmp.end(),&this->entries[this->mesh_lda*j],&this->entries[this->mesh_lda*j + this->mesh_dim.y]);
-                for(size_t y = this->mesh_dim.y; y < dim.y*VECTOR_RESERVATION; y++)
+                tmp.insert(tmp.end(),&this->entries[this->mesh_dim.y*j],&this->entries[this->mesh_dim.y*(j+1)]);
+                for(size_t y = this->mesh_dim.y; y < dim.y; y++)
                     tmp.push_back(new layout::entry());
             }
             std::swap(this->entries,tmp);
-            this->mesh_lda = dim.y*VECTOR_RESERVATION;
+            this->mesh_dim.y = dim.y;
         }
 
-        if(dim.x > mesh_dim.x){
-            size_t appendix = (dim.x-this->mesh_dim.x)*this->mesh_lda;
-            for(size_t i = 0; i < appendix; i++)
-                entries.push_back(new layout::entry());
-        }
-
-        this->mesh_dim.x = std::max(dim.x, mesh_dim.x);
-        this->mesh_dim.y = std::max(dim.y, mesh_dim.y);
+        size_t appendix = (dim.x-this->mesh_dim.x)*this->mesh_dim.y;
+        this->mesh_dim.x = dim.x;
+        for(size_t i = 0; i < appendix; i++)
+            entries.push_back(new layout::entry());
     }
 
     inline size_t layout::id(){
@@ -93,7 +89,7 @@ namespace ambient { namespace models { namespace velvet {
 
     // }}}
 
-    // {{{ layout::entry + layout::marker //
+    // {{{ layout::entry //
 
     inline bool layout::entry::trylock(){
         if(this->locked == true) return false;
@@ -103,10 +99,6 @@ namespace ambient { namespace models { namespace velvet {
 
     inline void layout::entry::unlock(){
         this->locked = false;
-    }
-
-    inline layout::entry::~entry(){
-        free(this->header);
     }
 
     inline layout::entry::entry()
@@ -134,8 +126,7 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline bool layout::entry::occupied(){
-        if(!this->valid()) return true;
-        return false;
+        return (this->data == NULL);
     }
 
     inline bool layout::entry::requested(){
@@ -148,28 +139,6 @@ namespace ambient { namespace models { namespace velvet {
 
     inline std::list<size_t>& layout::entry::get_path(){
         return this->path;
-    }
-
-    inline layout::marker::marker(){
-        this->active = true;
-        this->xmarker = 0;
-        this->ymarker = 0;
-    }
-
-    inline bool layout::marker::marked(size_t x, size_t y){
-        if(!this->active) return false;
-        if(x >= this->xmarker || y >= this->ymarker) return true;
-        return false;
-    }
-
-    inline void layout::marker::mark(size_t x, size_t y){
-        this->active = true;
-        this->xmarker = x;
-        this->ymarker = y;
-    }
-
-    inline void layout::marker::clear(){
-        this->active = false;
     }
 
     // }}}

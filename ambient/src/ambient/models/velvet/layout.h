@@ -20,7 +20,6 @@ namespace ambient { namespace models { namespace velvet {
         class entry {
         public:
             inline entry();
-            inline ~entry();
             inline operator char* (){ return (char*)this->data; }
             inline operator double* (){ return (double*)this->data; }
             inline operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
@@ -41,15 +40,6 @@ namespace ambient { namespace models { namespace velvet {
             std::list<cfunctor*> assignments;
             std::list<size_t> path;
         };
-        class marker {
-        public:
-            inline marker();
-            inline bool marked(size_t x, size_t y);
-            inline void mark(size_t x, size_t y);
-            inline void clear();
-            bool active;
-            size_t xmarker, ymarker;
-        };
     
         inline ~layout();
         inline layout(size_t, dim2, dim2);
@@ -63,7 +53,6 @@ namespace ambient { namespace models { namespace velvet {
         inline dim2     get_dim() const;
         inline dim2     get_mem_dim() const;
         inline dim2     get_grid_dim() const;
-        size_t mesh_lda;
         group* placement;
         size_t master;
         size_t * gid;

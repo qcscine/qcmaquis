@@ -21,6 +21,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
+#include <algorithm>
 #include <pthread.h>
 #define BOOST_SP_NO_SP_CONVERTIBLE
 #include <boost/intrusive_ptr.hpp>
