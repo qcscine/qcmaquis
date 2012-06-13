@@ -98,7 +98,7 @@ evolve_l2r(MPS<Matrix, SymmGroup> & mps,
         mps.move_normalization_l2r(p+1, p+3);
     }
     mps.canonization(true);
-    assert(mps.canonization() == 0);
+    assert(mps.canonization() == mps.length()-1);
     // maquis::cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << std::endl;
 }
 
@@ -138,7 +138,7 @@ evolve_r2l(MPS<Matrix, SymmGroup> & mps,
     
     
     mps.canonization(true);
-    assert(mps.canonization() == mps.length()-1);
+    assert(mps.canonization() == 0);
     // maquis::cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << std::endl;
 }
 
