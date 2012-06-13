@@ -10,6 +10,7 @@ namespace ambient { namespace models { namespace velvet {
             return this->block(x, y);
         } 
         inline layout& get_layout(){ return *content; }
+        inline revision* get_parent(){ return parent; }
         inline revision(layout*);
         inline ~revision();
         inline layout::entry& block(size_t x, size_t y);
@@ -25,6 +26,7 @@ namespace ambient { namespace models { namespace velvet {
         layout* const content;
         sfunctor* generator;
         std::list<sfunctor*> modifiers;
+        revision* parent;
     };
 
 } } }

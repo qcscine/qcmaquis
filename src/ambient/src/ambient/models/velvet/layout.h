@@ -24,9 +24,11 @@ namespace ambient { namespace models { namespace velvet {
             inline operator char* (){ return (char*)this->data; }
             inline operator double* (){ return (double*)this->data; }
             inline operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
+            inline void swap(entry&);
             inline void set_memory(void* memory, size_t bound);
             inline void* get_memory();
             inline bool valid();
+            inline bool occupied();
             inline bool requested();
             inline bool trylock();
             inline void unlock();

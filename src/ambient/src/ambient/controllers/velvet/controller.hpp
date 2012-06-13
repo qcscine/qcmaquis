@@ -217,6 +217,7 @@ namespace ambient { namespace controllers { namespace velvet {
     
     inline packet* package(layout& l, const char* state, int x, int y, int dest){
         void* header = l.get(x,y).get_memory();
+        //if(header == NULL) printf("HEADER IS NULL (SWAPPED)\n");
         packet* package = pack(*(packet_t*)l.get_spec().get_packet_t(), 
                                header, dest, "P2P", l.id(), state, x, y, NULL);
         return package;

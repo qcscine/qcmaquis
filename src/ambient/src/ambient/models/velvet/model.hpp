@@ -36,6 +36,10 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline void model::set_current_dim(history* o, dim2 dim){
+        o->cache_dim(dim);
+    }
+
+    inline void model::reset_current_dim(history* o, dim2 dim){
         if(o->back() != NULL)
             o->back()->set_dim(dim);
         o->cache_dim(dim);
