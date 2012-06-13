@@ -25,7 +25,7 @@ namespace ambient {
             __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
             T* bd   = ui_c_current(b)(0,0);
             T* ad   = ui_c_current(a)(0,0);
-            T* cd   = ui_c_updated(c)(0,0);
+            T* cd   = ui_r_updated(c)(0,0);
             int m   = ui_c_get_dim(a).y;
             int n   = ui_c_get_dim(b).x;
             int k   = ui_c_get_dim(b).y;
@@ -54,7 +54,7 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
             __A_TIME_C("ambient_copy_atomic_c_kernel"); 
             T* ad  = ui_c_current(a)(0,0);
-            T* acd  = ui_c_updated(ac)(0,0);
+            T* acd  = ui_r_updated(ac)(0,0);
             __a_copy(acd, ad, ui_c_get_mem_dim(a).square());
             __A_TIME_C_STOP
         }
@@ -82,9 +82,9 @@ namespace ambient {
             __A_TIME_C("ambient_reshape_l2r_atomic_c_kernel"); 
             __a_atomic_refresh(right); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss){
-                __a_memptf_atomic<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
-                                                 left,  dim2(0, ss*ldim + left_offset), 
-                                                 dim2( rdim, ldim ));
+                __a_memptf_atomic_r<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
+                                                   left,  dim2(0, ss*ldim + left_offset), 
+                                                   dim2( rdim, ldim ));
             }
             __A_TIME_C_STOP
         }
@@ -112,9 +112,9 @@ namespace ambient {
             __A_TIME_C("ambient_reshape_r2l_atomic_c_kernel"); 
             __a_atomic_refresh(left); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss)
-                __a_memptf_atomic<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
-                                                 right, dim2(ss*rdim + right_offset,0), 
-                                                 dim2( rdim, ldim ));
+                __a_memptf_atomic_r<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
+                                                   right, dim2(ss*rdim + right_offset,0), 
+                                                   dim2( rdim, ldim ));
             __A_TIME_C_STOP
         }
     };
@@ -145,9 +145,9 @@ namespace ambient {
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T alfa_t = alfad[ss1 + ui_c_get_mem_dim(alfa).y*ss2];
-                    __a_memptf_atomic<T, __a_memscal>(out, dim2(0, out_offset + ss2*ldim),
-                                                      in,  dim2(0, in_offset + ss1*ldim),
-                                                      dim2(rdim, ldim), alfa_t);
+                    __a_memptf_atomic_r<T, __a_memscal>(out, dim2(0, out_offset + ss2*ldim),
+                                                        in,  dim2(0, in_offset + ss1*ldim),
+                                                        dim2(rdim, ldim), alfa_t);
                 }
             __A_TIME_C_STOP
         }
@@ -179,9 +179,9 @@ namespace ambient {
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T alfa_t = alfad[ss1 + ui_c_get_mem_dim(alfa).y*ss2];
-                    __a_memptf_atomic<T, __a_memscal>(out, dim2(out_offset + ss2*rdim, 0),
-                                                      in,  dim2(in_offset + ss1*rdim, 0),
-                                                      dim2(rdim, ldim), alfa_t);
+                    __a_memptf_atomic_r<T, __a_memscal>(out, dim2(out_offset + ss2*rdim, 0),
+                                                        in,  dim2(in_offset + ss1*rdim, 0),
+                                                        dim2(rdim, ldim), alfa_t);
                 }
             __A_TIME_C_STOP
         }
@@ -241,10 +241,16 @@ namespace ambient {
             __A_TIME_C("ambient_add_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            T* ar = ui_c_updated(a)(0,0);
-            size_t size = ui_c_get_mem_dim(a).square();
-            for(size_t k = 0; k < size; k++)
-                ar[k] = ad[k] + bd[k];
+            T* ar = ui_r_updated(a)(0,0);
+            int size = ui_c_get_mem_dim(a).square();
+            //if(ad != ar){
+                for(int k = 0; k < size; k++)
+                    ar[k] = ad[k] + bd[k];
+            //}else{
+            //    T sign = 1.;
+            //    int ONE = 1;
+            //    axpy(&size, &sign, bd, &ONE, ar, &ONE);
+            //}
             __A_TIME_C_STOP
         }
     };
@@ -265,10 +271,16 @@ namespace ambient {
             __A_TIME_C("ambient_sub_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            T* ar = ui_c_updated(a)(0,0);
-            size_t size = ui_c_get_mem_dim(a).square();
-            for(size_t k = 0; k < size; k++)
-                ar[k] = ad[k] - bd[k];
+            T* ar = ui_r_updated(a)(0,0);
+            int size = ui_c_get_mem_dim(a).square();
+            //if(ad != ar){
+                for(int k = 0; k < size; k++)
+                    ar[k] = ad[k] - bd[k];
+            //}else{
+            //    T sign = -1.;
+            //    int ONE = 1;
+            //    axpy(&size, &sign, bd, &ONE, ar, &ONE);
+            //}
             __A_TIME_C_STOP
         }
     };
@@ -283,13 +295,33 @@ namespace ambient {
             this->pin(ui_l_current(a));
         }
 
-        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
+        inline void c(maquis::types::p_dense_matrix_impl<double>& a, const size_t& m, const size_t& n, const double*& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
-            T* ar = ui_c_updated(a)(0,0);
-            size_t size = m*n;
-            for(size_t k=0; k < size; k++) 
-                ar[k] = ad[k] * (*t);
+            T* ar = ui_r_updated(a)(0,0);
+            int size = m*n;
+            //if(ad != ar){
+                for(int k=0; k < size; k++) 
+                    ar[k] = ad[k] * (*t);
+            //}else{
+            //    int ONE = 1;
+            //    dscal_( &size, t, ar, &ONE );
+            //}
+            __A_TIME_C_STOP
+        }
+
+        inline void c(maquis::types::p_dense_matrix_impl<std::complex<double> >& a, const size_t& m, const size_t& n, const std::complex<double>*& t){
+            __A_TIME_C("ambient_scale_atomic_c_kernel"); 
+            T* ad = ui_c_current(a)(0,0);
+            T* ar = ui_r_updated(a)(0,0);
+            int size = m*n;
+            //if(ad != ar){
+                for(int k=0; k < size; k++) 
+                    ar[k] = ad[k] * (*t);
+            //}else{
+            //    int ONE = 1;
+            //    zscal_( &size, t, ar, &ONE );
+            //}
             __A_TIME_C_STOP
         }
     };
@@ -308,13 +340,13 @@ namespace ambient {
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_transpose_out_atomic_c_kernel"); 
             T* od = ui_c_current(a)(0,0);
-            T* td = ui_c_updated(t)(0,0);
+            T* td = ui_r_updated(t)(0,0);
 
-            size_t mlda = ui_c_get_mem_dim(a).y;
-            size_t tlda = ui_c_get_mem_dim(t).y;
+            int mlda = ui_c_get_mem_dim(a).y;
+            int tlda = ui_c_get_mem_dim(t).y;
 
-            for(size_t j=0; j < n; ++j)
-            for(size_t i = 0; i < m; ++i)
+            for(int j=0; j < n; ++j)
+            for(int i = 0; i < m; ++i)
             td[j+i*tlda] = od[i+j*mlda];
             
             __A_TIME_C_STOP
@@ -368,9 +400,9 @@ namespace ambient {
             T* work;
             double* rwork = new double[5*std::min(lda,ldu)]; // C - useless for double but need for complex 
             T* ad  = ui_c_current(a) (0,0);
-            T* ud  = ui_c_updated(u) (0,0);
-            T* vtd = ui_c_updated(vt)(0,0);
-            double* sd  = ui_c_updated(s) (0,0);
+            T* ud  = ui_r_updated(u) (0,0);
+            T* vtd = ui_r_updated(vt)(0,0);
+            double* sd  = ui_r_updated(s) (0,0);
         /* Query and allocate the optimal workspace */
             lwork = -1; // C - Alex, netlib said -1 for the best workspace
             gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, &wkopt, &lwork, rwork, &info );
