@@ -79,7 +79,7 @@ namespace ambient {
                 int ldb = ui_c_get_mem_dim(b).y*ui_c_get_grid_dim(b).y;
                 int ldc = ui_c_get_mem_dim(c).y*ui_c_get_grid_dim(c).y;
                 T alpha(1.0); 
-                T beta(1.0);
+                T beta(0.0);
                 gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
                 __a_disperse<T>(cd, c);
                 __A_TIME_C_STOP
@@ -160,7 +160,8 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
             size_t numcols = ui_c_get_dim(a).x;
             size_t numrows = ui_c_get_dim(a).y;
-            __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
+            if((T*)ui_c_current(a)(0,0) != (T*)ui_c_updated(a)(0,0)) 
+                __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
         }
     };
@@ -178,7 +179,8 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
             size_t numcols = ui_c_get_dim(a).x;
             size_t numrows = ui_c_get_dim(a).y;
-            __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
+            if((T*)ui_c_current(a)(0,0) != (T*)ui_c_updated(a)(0,0)) 
+                __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
         }
     };
@@ -357,7 +359,8 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_reshape_l2r_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(right, dim2(0,0), right, dim2(0,0), ui_c_get_dim(right)); // refreshing updated memory
+            if((T*)ui_c_current(right)(0,0) != (T*)ui_c_updated(right)(0,0)) 
+                __a_memptf<T, __a_memcpy>(right, dim2(0,0), right, dim2(0,0), ui_c_get_dim(right)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss){
                 __a_memptf<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
                                           left,  dim2(0, ss*ldim + left_offset), 
@@ -387,7 +390,8 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_reshape_r2l_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(left, dim2(0,0), left, dim2(0,0), ui_c_get_dim(left)); // refreshing updated memory
+            if((T*)ui_c_current(left)(0,0) != (T*)ui_c_updated(left)(0,0)) 
+                __a_memptf<T, __a_memcpy>(left, dim2(0,0), left, dim2(0,0), ui_c_get_dim(left)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss)
                 __a_memptf<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
                                           right, dim2(ss*rdim + right_offset,0), 
@@ -418,7 +422,8 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_rb_tensor_mpo_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
+            if((T*)ui_c_current(out)(0,0) != (T*)ui_c_updated(out)(0,0)) 
+                __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T* alfad = ui_c_current(alfa)(ss2/ui_c_get_mem_dim(alfa).x, ss1/ui_c_get_mem_dim(alfa).y);
@@ -452,7 +457,8 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_lb_tensor_mpo_c_kernel"); 
-            __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
+            if((T*)ui_c_current(out)(0,0) != (T*)ui_c_updated(out)(0,0)) 
+                __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T* alfad = ui_c_current(alfa)(ss2/ui_c_get_mem_dim(alfa).x, ss1/ui_c_get_mem_dim(alfa).y);
@@ -951,7 +957,7 @@ namespace ambient {
             double wkopt;
             double* work;
             double* ad = (double*)__a_solidify<T>(a);
-            double* wd = ui_c_get_grid_dim(a) == 1 ? ui_c_updated(w)(0,0) : (double*)__a_solidify<T>(w);
+            double* wd = (double*)__a_solidify<T>(w);
              
             dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
@@ -964,8 +970,7 @@ namespace ambient {
             }
         
             __a_disperse<T>(ad, a);
-            if(ui_c_get_grid_dim(a) != 1) 
-                __a_disperse<T>(wd, w);
+            __a_disperse<T>(wd, w);
             free(work); 
         }
     };

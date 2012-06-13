@@ -55,7 +55,7 @@ namespace maquis { namespace types {
     inline void p_dense_matrix_impl<T>::resize(size_type rows, size_type cols){
         assert(rows > 0); assert(cols > 0);
         if(this->rows != rows || this->cols != cols){
-            this->pt_set_dim(cols, rows);
+            this->pt_reset_dim(cols, rows);
             algorithms::resize(*this, rows, cols, this->rows, this->cols);
             this->rows = rows; 
             this->cols = cols;

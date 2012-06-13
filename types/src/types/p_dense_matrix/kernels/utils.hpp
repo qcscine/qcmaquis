@@ -287,7 +287,7 @@ namespace ambient {
     inline void __a_atomic_refresh(maquis::types::p_dense_matrix_impl<T>& m){
         T* dm = ui_c_current(m)(0,0);
         T* rm = ui_c_updated(m)(0,0);
-        __a_copy(rm, dm, ui_c_get_mem_dim(m).square());
+        if(dm != rm) __a_copy(rm, dm, ui_c_get_mem_dim(m).square());
     }
 
 }

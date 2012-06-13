@@ -33,7 +33,7 @@ namespace ambient {
             int ldb = ui_c_get_mem_dim(b).y;
             int ldc = ui_c_get_mem_dim(c).y;
             T alpha(1.0); 
-            T beta(1.0);
+            T beta(0.0);
             gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
             __A_TIME_C_STOP
         }
@@ -318,6 +318,21 @@ namespace ambient {
             td[j+i*tlda] = od[i+j*mlda];
             
             __A_TIME_C_STOP
+        }
+    };
+
+    template<typename T>
+    struct resize_atomic : public ambient::kernel_atomic< resize_atomic<T> > 
+    {
+        typedef void (resize_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const size_t&, const size_t&);
+
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
+            this->ctxt_select("1 from ambient as resize_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
+            __a_memptf_atomic<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
         }
     };
         
