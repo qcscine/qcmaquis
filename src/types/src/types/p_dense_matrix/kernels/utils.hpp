@@ -119,6 +119,36 @@ namespace ambient {
     template<typename T, void(*PTF)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos,
                                     const maquis::types::p_dense_matrix_impl<T>& src, T *sd, dim2 spos, 
                                     size_t w, T alfa)>
+    inline void __a_memptf_atomic_r(maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
+                                    const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
+                                    dim2 size, T alfa = 0.0)
+    {
+        __A_TIME_C("ambient_memptf_fr_atomic_kernel");
+        // the ouput (dest) must be a pinned p_dense_matrix
+
+#ifdef AMBIENT_CHECK_BOUNDARIES
+        if(ui_c_get_dim(dest).x - dest_p.x < size.x || ui_c_get_dim(dest).y - dest_p.y < size.y ||
+           ui_c_get_dim(src).x - src_p.x   < size.x || ui_c_get_dim(src).y - src_p.y   < size.y) 
+            maquis::cout << "Error: invalid memory movement" << std::endl;
+#endif
+    
+        if( size.x == 0 || size.y == 0            ||
+            ui_c_get_mem_dim(dest).y <= dest_p.y  || 
+            ui_c_get_mem_dim(dest).x <= dest_p.x  ) return;
+
+        T* dd = ui_r_updated(dest)(0,0); // reusable !
+        T* sd = ui_c_current(src)(0,0);
+
+        for(size_t x = 0; x < size.x; x++)
+            PTF(dest,dd,dim2(dest_p.x + x, dest_p.y),
+                src, sd,dim2(src_p.x + x,  src_p.y),
+                size.y, alfa);            
+        __A_TIME_C_STOP
+    }
+
+    template<typename T, void(*PTF)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos,
+                                    const maquis::types::p_dense_matrix_impl<T>& src, T *sd, dim2 spos, 
+                                    size_t w, T alfa)>
     inline void __a_memptf_atomic(maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
                                   const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                                   dim2 size, T alfa = 0.0)
@@ -286,7 +316,7 @@ namespace ambient {
     template <typename T>
     inline void __a_atomic_refresh(maquis::types::p_dense_matrix_impl<T>& m){
         T* dm = ui_c_current(m)(0,0);
-        T* rm = ui_c_updated(m)(0,0);
+        T* rm = ui_r_updated(m)(0,0);
         if(dm != rm) __a_copy(rm, dm, ui_c_get_mem_dim(m).square());
     }
 
