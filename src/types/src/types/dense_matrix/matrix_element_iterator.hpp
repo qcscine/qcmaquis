@@ -4,6 +4,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
 #include <iostream>
+#include "utils/io.hpp"
 
 template <typename Matrix, typename T>
 class matrix_element_iterator : public boost::iterator_facade<
