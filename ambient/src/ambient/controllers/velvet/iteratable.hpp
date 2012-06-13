@@ -3,12 +3,30 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline layout::entry& slow_revision::operator()(size_t x, size_t y){
         layout::entry& e = ((revision*)this)->block(x,y);
-        if(e.header == NULL) return ambient::controller.alloc_block(this->get_layout(), x, y);
+        if(!e.valid()) return ambient::controller.alloc_block(this->get_layout(), x, y);
         return e;
     }
 
     inline layout& slow_revision::get_layout(){
         return ((revision*)this)->get_layout();
+    }
+
+    inline layout::entry& reusable_revision::operator()(size_t x, size_t y){
+        layout::entry& e = ((revision*)this)->block(x,y);
+        if(!e.valid()){
+            layout::entry& parent = this->get_parent()->block(x,y);
+            if(parent.occupied()) ambient::controller.alloc_block(this->get_layout(), x, y);
+            else e.swap(parent);
+        }
+        return e;
+    }
+
+    inline layout& reusable_revision::get_layout(){
+        return ((revision*)this)->get_layout();
+    }
+
+    inline revision* reusable_revision::get_parent(){
+        return ((revision*)this)->get_parent();
     }
     
     template<class T>

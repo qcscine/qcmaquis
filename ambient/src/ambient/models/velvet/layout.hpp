@@ -109,8 +109,14 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline layout::entry::entry()
-    : header(NULL), request(false), locked(false)
+    : header(NULL), data(NULL), request(false), locked(false)
     {
+    }
+
+    inline void layout::entry::swap(entry& e){
+        this->data = e.data;
+        this->header = e.header;
+        e.header = NULL;
     }
 
     inline void layout::entry::set_memory(void* memory, size_t bound){
@@ -123,7 +129,11 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline bool layout::entry::valid(){
-        if(this->header != NULL) return true;
+        return (this->data != NULL);
+    }
+
+    inline bool layout::entry::occupied(){
+        if(!this->valid()) return true;
         return false;
     }
 
