@@ -29,7 +29,7 @@ namespace ambient {
     inline void* __a_solidify(const iteratable<T>& o){
         using ambient::models::velvet::layout;
 
-        slow_revision& r = o.ui_c_revision_0();
+        check_revision& r = o.ui_c_revision_0();
         layout& l = r.get_layout();
         size_t iterator = 0;
         char* memory = NULL;
@@ -54,7 +54,7 @@ namespace ambient {
         using ambient::models::velvet::layout;
         using ambient::models::velvet::history;
 
-        slow_revision& r = o.ui_c_revision_1();
+        check_revision& r = o.ui_c_revision_1();
         layout& l = r.get_layout();
         char* memory = (char*)data;
         size_t iterator = 0;
