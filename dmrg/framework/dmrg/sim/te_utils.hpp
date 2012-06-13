@@ -176,6 +176,7 @@ std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Hamiltonian<Matrix
     for (int i=0; i<H.n_terms(); ++i)
     {
         Hamiltonian_Term<Matrix, SymmGroup> term = H[i];
+        term.canonical_order(); // TODO: check and fix for fermions!!
         std::size_t pos1 = term.operators[0].first;
         if (term.operators.size() == 1) {
             if (pos1 != 0 && pos1 != L-1)
@@ -185,7 +186,6 @@ std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Hamiltonian<Matrix
             if (pos1 > 0)
                 ret_blocks[pos1-1] += term2block(term, pos1-1, H.get_phys(), H.get_identity());
         } else if (term.operators.size() == 2) {
-            term.canonical_order(); // TODO: check and fix for fermions!!
             ret_blocks[pos1] += term2block(term, pos1, H.get_phys(), H.get_identity());
         }
     }
