@@ -480,7 +480,7 @@ namespace algorithms {
     template<typename T>
     inline void resize(p_dense_matrix_impl<T>& m, size_type rows, size_type cols, size_type orows, size_type ocols){ 
         // gs
-        ambient::push< ambient::resize<T> >(m, rows, cols, orows, ocols);
+        USE_ATOMIC(m.atomic(), resize, m, rows, cols, orows, ocols);
     }
 
     template<typename T>
