@@ -115,7 +115,7 @@ namespace maquis { namespace types {
 
         inline p_dense_matrix& operator = (const p_dense_matrix& rhs){
             this->resize(rhs.num_rows(), rhs.num_cols());
-            this->impl->cpy(*rhs.impl);
+            if(!rhs.impl->pt_clean()) this->impl->cpy(*rhs.impl);
             return *this;
         }
 
