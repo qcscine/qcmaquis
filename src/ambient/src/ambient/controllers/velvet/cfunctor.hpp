@@ -9,7 +9,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
         inline void cfunctor::check_complete(){
             lock(); 
-            if(--workload == 0) ambient::controller.atomic_complete(); 
+            if(--workload == 0) return ambient::controller.atomic_complete(this);
             unlock();
         }
 
