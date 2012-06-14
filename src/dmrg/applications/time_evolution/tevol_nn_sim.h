@@ -267,6 +267,7 @@ protected:
         }
         // this->sweep = ns!
         --(this->sweep);
+        this->parms.set("sweep", this->sweep);
     }
 
     

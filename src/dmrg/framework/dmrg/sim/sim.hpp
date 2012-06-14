@@ -202,7 +202,7 @@ bool sim<Matrix, SymmGroup>::run ()
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
         
         int sweep_after = sweep + nsteps - 1;
-        site = advance(iteration_log, nsteps, rs > 0 ? rs-elapsed : -1);
+        site = advance(iteration_log, std::min(parms.get<int>("nsweeps")-sweep, nsteps), rs > 0 ? rs-elapsed : -1);
         early_exit = (site >= 0);
         assert(sweep == sweep_after);
         
