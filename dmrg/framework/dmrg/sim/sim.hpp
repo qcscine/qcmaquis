@@ -189,6 +189,8 @@ bool sim<Matrix, SymmGroup>::run ()
         nsteps = std::min(nsteps, parms.get<int>("measure_each"));
     if (parms.get<int>("measure_each") > -1)
         nsteps = std::min(nsteps, parms.get<int>("chkp_each"));
+    if (parms.get<int>("update_each") > -1)
+        nsteps = std::min(nsteps, parms.get<int>("update_each"));
     
     while (sweep < parms.get<int>("nsweeps")) {
         DCOLLECTOR_GROUP(gemm_collector, "sweep"+boost::lexical_cast<std::string>(sweep))

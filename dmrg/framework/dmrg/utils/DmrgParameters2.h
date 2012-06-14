@@ -67,6 +67,7 @@ private:
         add_option("always_measure", "comma separated list of measurements", value(""));
         add_option("measure_each", "", value(1)); 
         add_option("chkp_each", "", value(1)); 
+        add_option("update_each", "", value(-1)); 
         
         add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
         add_option("te_optim", "optimized nn time evolution", value(true));
