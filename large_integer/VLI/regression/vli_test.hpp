@@ -45,6 +45,9 @@
 
 namespace vli
 {
+template <class T>
+struct iterator;
+
 namespace test
 {
 
@@ -120,16 +123,15 @@ void fill_poly_random(Polynomial& p){
 
 template <typename Polynomial>
 void fill_poly_random(Polynomial& p, typename Polynomial::exponent_type size){
-    for(typename Polynomial::exponent_type i=0; i < Polynomial::max_order; ++i)
-        for(typename Polynomial::exponent_type j=0; j < Polynomial::max_order; ++j)
-            fill_random(p(i,j),size);
+    for(typename vli::iterator<Polynomial>::type it= p.begin(); it != p.end(); ++it)
+        fill_random(*it,size);
 }
 
 template <typename Polynomial>
 void fill_poly_negate(Polynomial& p, int random){
-    for(typename Polynomial::exponent_type i=0; i < Polynomial::max_order; ++i)
-        for(typename Polynomial::exponent_type j=0; j < Polynomial::max_order; ++j)
-            vli_negate(p(i,j),random);
+    //TODO remove?
+    for(typename vli::iterator<Polynomial>::type it= p.begin(); it != p.end(); ++it)
+        vli_negate(*it,random);
 }
     
 template <typename Vector>
@@ -153,7 +155,7 @@ void fill_vector_negate(Vector& v,int random){
     
 template<typename PolynomialVLI, typename PolynomialGMP>
 void InitPolyVLItoPolyGMP(PolynomialVLI const& P1, PolynomialGMP& P2){
-    int max_order = PolynomialVLI::max_order;
+    int max_order = PolynomialGMP::order_cutoff;
 
     for(long int j = 0; j < max_order; j++)
         for(long int k = 0; k < max_order; k++)
@@ -171,8 +173,8 @@ template <typename PolyVLI, typename PolyGMP>
 bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP & PGMP){
     bool b(true);
     #pragma omp parallel for
-    for(int j = 0; j < PolyVLI::max_order; j++)
-        for(int k = 0; k < PolyVLI::max_order; k++){
+    for(int j = 0; j < PolyGMP::max_order; j++)
+        for(int k = 0; k < PolyGMP::max_order; k++){
             if( PGMP(j,k).get_str() != PVLI(j,k).get_str()){
                 b = false;
                 }   

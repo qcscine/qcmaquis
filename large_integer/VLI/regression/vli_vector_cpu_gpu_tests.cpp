@@ -32,13 +32,14 @@
 #include <boost/mpl/front.hpp>
 #include <cstdio>
 
+#include "use_gmp_integers.hpp"
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial.hpp"
+#include "vli/polynomial/polynomial_traits.hpp"
 #include "vli/polynomial/monomial.hpp"
 #include "vli/vli_cpu.h"
 #include "vli/vli_traits.hpp"
 
-#include "use_gmp_integers.hpp"
 #include "minimal_polynomial.hpp"
 
 #include "regression/vli_test.hpp"
@@ -66,9 +67,9 @@ enum { vector_size = 64 };
 BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product_gmp_positive, Vli, vli_extented_type_two )
 {
     // VLI
-    typedef vli::polynomial<Vli, 11 > polynomial_type;
+    typedef vli::polynomial<Vli, vli::max_order_each<11>, vli::var<'J'>, vli::var<'h'> > polynomial_type;
     typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;
-    typedef vli::polynomial<vli_result_type_cpu, 22 > polynomial_result_type_cpu;
+    typedef vli::polynomial<vli_result_type_cpu, vli::max_order_each<22>, vli::var<'J'>, vli::var<'h'> > polynomial_result_type_cpu;
     typedef vli::vector_polynomial<polynomial_type> vector_type;
     // GMP
     typedef hp2c::polynomial<large_int,11> poly_gmp;
@@ -89,19 +90,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product_gmp_positive, Vli, vli_extent
     
     vli::test::InitVecVLItoVecGMP(v1,vgmp1);
     vli::test::InitVecVLItoVecGMP(v2,vgmp2);
-    pd = vli::detail::inner_product_gpu_omp(v1,v2);
+    pd = inner_product(v1,v2);
+//    pd = vli::detail::inner_product_gpu_omp(v1,v2);
     pgmpd = inner_product(vgmp1,vgmp2);
     
-    BOOST_CHECK_EQUAL(vli::test::ValidatePolyVLI_PolyGMP(pd,pgmpd), true );
+    vli::polynomial<large_int,vli::max_order_each<22>, vli::var<'J'>, vli::var<'h'> > gmp_pd(pd);
+//    std::cout<<"===============pd=================\n"<<pd<<std::endl;
+//    std::cout<<"===============pgmpd==============\n"<<pgmpd<<std::endl;
+//    std::cout<<"===============gmp_pd==============\n"<<gmp_pd<<std::endl;
+    for(unsigned int i=0; i <= 22; ++i)
+        for(unsigned int j=0; j <= 22; ++j)
+            BOOST_CHECK_EQUAL(gmp_pd(i,j),pgmpd(i,j));
 }
 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product_gmp_positive_negative, Vli, vli_extented_type_two)
 {
     // VLI
-    typedef vli::polynomial<Vli, 11 > polynomial_type;
+    typedef vli::polynomial<Vli, vli::max_order_each<11>, vli::var<'J'>, vli::var<'h'> > polynomial_type;
     typedef vli::vli_cpu<typename Vli::value_type,  2*Vli::size > vli_result_type_cpu;
-    typedef vli::polynomial<vli_result_type_cpu, 22 > polynomial_result_type_cpu;
+    typedef vli::polynomial<vli_result_type_cpu, vli::max_order_each<22>, vli::var<'J'>, vli::var<'h'> > polynomial_result_type_cpu;
     typedef vli::vector_polynomial<polynomial_type> vector_type_cpu;
     // GMP
     typedef hp2c::polynomial<large_int,11> poly_gmp;
@@ -125,8 +133,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(vector_inner_product_gmp_positive_negative, Vli, v
         
     vli::test::InitVecVLItoVecGMP(v1,vgmp1);
     vli::test::InitVecVLItoVecGMP(v2,vgmp2);
-    pd = vli::detail::inner_product_gpu_omp(v1,v2);
+    pd = inner_product(v1,v2);
+//    pd = vli::detail::inner_product_gpu_omp(v1,v2);
     pgmpd = inner_product(vgmp1,vgmp2);
-        
-    BOOST_CHECK_EQUAL(vli::test::ValidatePolyVLI_PolyGMP(pd,pgmpd), true );
+
+    vli::polynomial<large_int,vli::max_order_each<22>, vli::var<'J'>, vli::var<'h'> > gmp_pd(pd);
+    for(unsigned int i=0; i <= 22; ++i)
+        for(unsigned int j=0; j <= 22; ++j)
+            BOOST_CHECK_EQUAL(gmp_pd(i,j),pgmpd(i,j));
 }
