@@ -11,6 +11,7 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void computation() = 0;
         virtual bool pretend()     = 0;
         virtual ~cfunctor(){
+            pthread_mutex_unlock(&mutex);
             pthread_mutex_destroy(&mutex);
         } 
         inline cfunctor();

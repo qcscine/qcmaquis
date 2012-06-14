@@ -44,7 +44,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void allocate_threads();
         inline void set_num_threads(size_t n);
         inline size_t get_num_threads() const;
-        inline void atomic_complete();
+        inline void atomic_complete(cfunctor* op);
         inline void atomic_receive(layout& l, size_t x, size_t y);
         inline pthread_mutex_t* get_pool_control_mutex();
         inline ~controller();

@@ -184,11 +184,12 @@ namespace ambient { namespace controllers { namespace velvet {
         }
     }
 
-    inline void controller::atomic_complete(){
+    inline void controller::atomic_complete(cfunctor* op){
         pthread_mutex_lock(&this->mutex);
         assert(this->workload > 0);
         this->workload--;
         pthread_mutex_unlock(&this->mutex);
+        delete op;
     }
 
     inline void controller::conditional_flush(){
@@ -207,15 +208,13 @@ namespace ambient { namespace controllers { namespace velvet {
         //    this->stack.pick()->weight();
         //this->stack.sort();                // sorting operations using credit
         //time2.begin();
-        while(!this->stack.end_reached())
-            this->stack.pick()->logistics();       // sending requests for data
+        while(!this->stack.end_reached())    // can be read only once
+            this->stack.pick()->logistics(); // sending requests for data
         //time2.end();
         //time.begin();
         this->master_stream(this->tasks);  // using up the main thread
+        this->stack.reset();
         //time.end();
-        while(!this->stack.end_reached())
-            delete this->stack.pick();     // deleting operations
-        this->stack.clean();               // reseting the stack
     }
     
     inline packet* package(layout& l, const char* state, int x, int y, int dest){
