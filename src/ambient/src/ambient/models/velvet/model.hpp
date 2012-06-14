@@ -39,12 +39,6 @@ namespace ambient { namespace models { namespace velvet {
         o->cache_dim(dim);
     }
 
-    inline void model::reset_current_dim(history* o, dim2 dim){
-        if(o->back() != NULL)
-            o->back()->set_dim(dim);
-        o->cache_dim(dim);
-    }
-
     template<typename T>
     inline size_t model::time(const T* o){
         if(o->back() == NULL) 

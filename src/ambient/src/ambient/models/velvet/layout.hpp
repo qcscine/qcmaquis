@@ -70,11 +70,6 @@ namespace ambient { namespace models { namespace velvet {
         return this->master;
     }
 
-    inline void layout::set_dim(dim2 dim){
-        this->dim = dim;
-        this->mesh();
-    }
-
     inline dim2 layout::get_dim() const {
         return this->dim;
     }

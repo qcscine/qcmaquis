@@ -9,14 +9,6 @@ namespace ambient { namespace models { namespace velvet {
         delete this->content;
     }
 
-    inline void revision::set_dim(dim2 dim){
-        this->content->set_dim(dim);
-    }
-
-    inline dim2 revision::get_dim(){
-        return this->content->get_dim();
-    }
-
     inline size_t revision::id(){
         return this->content->id();
     }

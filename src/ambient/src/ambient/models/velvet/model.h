@@ -21,7 +21,6 @@ namespace ambient { namespace models { namespace velvet {
         inline size_t get_block_lda(history* o);
         inline dim2 get_current_dim(const history* o);
         inline void set_current_dim(history* o, dim2);
-        inline void reset_current_dim(history* o, dim2);
         inline void insert(layout* l);
         inline layout* get_layout(size_t id) const;
         inline model& operator>>(dim2);

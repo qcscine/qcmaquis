@@ -21,8 +21,6 @@ namespace ambient { namespace models { namespace velvet {
         inline void set_placement(group*);
         inline sfunctor* get_generator();
         inline void set_generator(sfunctor*);
-        inline void set_dim(dim2);
-        inline dim2 get_dim();
         layout* const content;
         sfunctor* generator;
         std::list<sfunctor*> modifiers;
