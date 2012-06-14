@@ -169,19 +169,6 @@ void InitVecVLItoVecGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP){
         InitPolyVLItoPolyGMP(VVLI[i],VGMP[i]);
 }
 
-template <typename PolyVLI, typename PolyGMP>
-bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP & PGMP){
-    bool b(true);
-    #pragma omp parallel for
-    for(int j = 0; j < PolyGMP::max_order; j++)
-        for(int k = 0; k < PolyGMP::max_order; k++){
-            if( PGMP(j,k).get_str() != PVLI(j,k).get_str()){
-                b = false;
-                }   
-            }   
-    return b;
-}    
-
 
 } //namespace test
 } //namespace vli
