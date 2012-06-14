@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
         unsigned int seed = std::time(0);
         if (argc == 3)
             seed = boost::lexical_cast<unsigned int>(argv[2]);
-        std::cout<<"Using seed: "<<seed<<std::endl;
+        std::cout<<"Using random seed: "<<seed<<std::endl;
         vli::test::fuzz_initializer::rng.seed(seed);
 
     } else {
