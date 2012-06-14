@@ -9,16 +9,19 @@ namespace ambient { namespace models { namespace velvet {
     struct deleter {
        inline void operator()(layout::entry* e){ free(e->header); delete e; }
     };
+    struct constructor {
+       inline void operator()(layout::entry*& e){ e = new layout::entry(); }
+    };
 
     inline layout::~layout(){
         std::for_each(entries.begin(), entries.end(), deleter());
     }
 
     inline layout::layout(size_t t_size, dim2 b_size, dim2 size)
-    : spec(t_size*b_size.x*b_size.y), dim(size), mem_dim(b_size), entries(1), grid_dim(1,1), mesh_dim(1,1)
+    : spec(t_size*b_size.square()), grid_dim(__a_ceil(size.x / b_size.x), __a_ceil(size.y / b_size.y)), 
+      dim(size), mem_dim(b_size), entries(grid_dim.square()) 
     {
-        entries[0] = new layout::entry();
-        this->mesh();
+        std::for_each(entries.begin(), entries.end(), constructor());
     }
 
     inline const memspec& layout::get_spec() const {
@@ -34,32 +37,7 @@ namespace ambient { namespace models { namespace velvet {
         if(y >= this->get_grid_dim().y || x >= this->get_grid_dim().x)
         printf("%ld: Trying to access %ld x %ld of %ld x %ld\n", this->sid, x, y, this->get_grid_dim().x, this->get_grid_dim().y);
 #endif
-        return *this->entries[x*mesh_dim.y+y];
-    }
-
-    inline void layout::mesh(){
-        this->grid_dim = dim2(__a_ceil(this->dim.x / this->mem_dim.x), 
-                              __a_ceil(this->dim.y / this->mem_dim.y));
-        dim2 dim = this->grid_dim;
-        if(this->mesh_dim.x >= dim.x && this->mesh_dim.y >= dim.y) return;
-
-        dim.x = std::max(dim.x, mesh_dim.x);
-        if(this->mesh_dim.y < dim.y){ // reserve
-            std::vector<entry*> tmp;
-            tmp.reserve(dim.square());
-            for(int j=0; j < this->mesh_dim.x; ++j){
-                tmp.insert(tmp.end(),&this->entries[this->mesh_dim.y*j],&this->entries[this->mesh_dim.y*(j+1)]);
-                for(size_t y = this->mesh_dim.y; y < dim.y; y++)
-                    tmp.push_back(new layout::entry());
-            }
-            std::swap(this->entries,tmp);
-            this->mesh_dim.y = dim.y;
-        }
-
-        size_t appendix = (dim.x-this->mesh_dim.x)*this->mesh_dim.y;
-        this->mesh_dim.x = dim.x;
-        for(size_t i = 0; i < appendix; i++)
-            entries.push_back(new layout::entry());
+        return *this->entries[x*grid_dim.y+y];
     }
 
     inline size_t layout::id(){

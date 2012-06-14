@@ -122,14 +122,14 @@ namespace ambient { namespace controllers { namespace velvet {
 
     // note: ufetch_block is used only by pt_fetch in user-space
     inline layout::entry& controller::ufetch_block(revision& r, size_t x, size_t y){
-        if(r.block(x,y).valid()){
+        //if(r.block(x,y).valid()){
             return r.block(x,y);
-        }else printf("REQUESTING UNEXISTING BLOCK (%lu, %lu)!\n", x, y);
+        //}else printf("REQUESTING UNEXISTING BLOCK (%lu, %lu)!\n", x, y);
             
             //else if(r.get_placement() == NULL || r.get_placement()->is_master()){
             //assert(r.get_generator()->get_group() != NULL);
             //if(r.get_generator()->get_group()->is_master()){
-              return this->alloc_block(r.get_layout(), x, y);
+            //  return this->alloc_block(r.get_layout(), x, y);
             //}
         //}
         //else if(!r.block(x,y).requested()){
@@ -139,24 +139,27 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline layout::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
-        //assert(r.get_placement() != NULL);
+        this->atomic_receive(r.get_layout(), x, y); // check the stacked operations for the block
+        return r.block(x,y);
+
+        /*assert(r.get_placement() != NULL);
         if(r.block(x,y).valid())
             this->atomic_receive(r.get_layout(), x, y); // check the stacked operations for the block
-        else { //if(r.get_placement()->is_master()){
-            //if(r.get_layout().marked(x, y)){
-                //this->alloc_block(r.get_layout(), x, y); // ! making all allocations inside computational kernels
+        else if(r.get_placement()->is_master()){
+            if(r.get_layout().marked(x, y)){
+                this->alloc_block(r.get_layout(), x, y); // ! making all allocations inside computational kernels
                 this->atomic_receive(r.get_layout(), x, y);
-            //}else{
-            //    printf("UNEXPECTED ERROR IN IFETCH BLOCK -- asking for %lu %lu!\n", x, y);
-            //    if(r.get_generator()->get_group() != NULL) // we already know the generation place
-            //        ambient::channel.ifetch(r.get_generator()->get_group(), r.get_layout().id(), x, y);
-//              else
-//                  leaving on the side of the generator to deliver (we don't really know who generates but the destination is already known)
-            //}
-        }//else if(!r.block(x,y).valid() && !r.block(x,y).requested()){
-         //   ambient::channel.ifetch(r.get_placement(), r.get_layout().id(), x, y);
-         // }
-        return r.block(x,y);
+            }else{
+                printf("UNEXPECTED ERROR IN IFETCH BLOCK -- asking for %lu %lu!\n", x, y);
+                if(r.get_generator()->get_group() != NULL) // we already know the generation place
+                    ambient::channel.ifetch(r.get_generator()->get_group(), r.get_layout().id(), x, y);
+              //else
+              //    leaving on the side of the generator to deliver (we don't really know who generates but the destination is already known)
+            }
+        }else if(!r.block(x,y).valid() && !r.block(x,y).requested()){
+            ambient::channel.ifetch(r.get_placement(), r.get_layout().id(), x, y);
+        }
+        return r.block(x,y);*/
     }
 
     inline bool controller::lock_block(revision& r, size_t x, size_t y){
@@ -198,7 +201,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::flush(){
         //static __a_timer time("ambient_total_compute_playout");
         //static __a_timer time2("ambient_total_logistic_playout");
-        if(this->stack.empty()) return;
+        //if(this->stack.empty()) return;
 
         //while(!this->stack.end_reached())  // estimating operations credits 
         //    this->stack.pick()->weight();
