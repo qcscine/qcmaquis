@@ -85,6 +85,7 @@ namespace ambient { namespace controllers { namespace velvet {
         while(this->workload){
             instruction = l->get_task();
             if(instruction == NULL){
+                printf("WARNING: MASTER HAS NULL INSTRUCTIONS!\n");
                 pthread_yield();
                 continue;
             }
@@ -163,16 +164,22 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline bool controller::lock_block(revision& r, size_t x, size_t y){
+#ifdef AMBIENT_THREADS
         pthread_mutex_lock(&this->pool_control_mutex);
         bool acquired = r.block(x,y).trylock();
         pthread_mutex_unlock(&this->pool_control_mutex);
         return acquired;
+#else
+        return true;
+#endif
     }
 
     inline void controller::unlock_block(revision& r, size_t x, size_t y){
+#ifdef AMBIENT_THREADS
         pthread_mutex_lock(&this->pool_control_mutex);
         r.block(x,y).unlock();
         pthread_mutex_unlock(&this->pool_control_mutex);
+#endif
     }
 
     inline void controller::atomic_receive(layout& l, size_t x, size_t y){
@@ -185,10 +192,14 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::atomic_complete(cfunctor* op){
+#ifdef AMBIENT_THREADS
         pthread_mutex_lock(&this->mutex);
+#endif
         assert(this->workload > 0);
         this->workload--;
+#ifdef AMBIENT_THREADS
         pthread_mutex_unlock(&this->mutex);
+#endif
         delete op;
     }
 
