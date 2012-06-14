@@ -221,9 +221,9 @@ namespace maquis { namespace types {
 #ifdef AMBIENT_SERIAL_CHECK
         dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(a);
 #endif
-        p_dense_matrix<T> t(a.num_cols(), a.num_rows());
         size_t m = a.num_rows();
         size_t n = a.num_cols();
+        p_dense_matrix<T> t(n, m);
         USE_ATOMIC(a.atomic(), transpose_out, a, t, m, n);
         // p_dense_matrix<T> t(m); // alternative
         // t.transpose();
@@ -241,7 +241,7 @@ namespace maquis { namespace types {
 
     template<typename T>
     inline p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1.){
-        //printf("exp\n");
+        printf("----------------------------------- exp is actually used!\n\n");
         typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
         p_dense_matrix<T> evecs;
         heev(m, evecs, evals);
