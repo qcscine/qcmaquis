@@ -16,7 +16,7 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols, T init_value = T() ){
+    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols, T init_value){
         this->cols = cols;
         this->rows = rows;
         this->pt_set_dim(cols, rows);
@@ -52,28 +52,20 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    inline void p_dense_matrix_impl<T>::resize(size_type rows, size_type cols){
-        assert(rows > 0); assert(cols > 0);
-        if(this->rows != rows || this->cols != cols){
-            this->pt_reset_dim(cols, rows);
-            algorithms::resize(*this, rows, cols, this->rows, this->cols);
-            this->rows = rows; 
-            this->cols = cols;
-        }
+    inline void p_dense_matrix_impl<T>::resize(p_dense_matrix_impl& r, size_type rows, size_type cols){
+        algorithms::resize(r, rows, cols, *this, this->rows, this->cols);
     }
 
     template <typename T>
-    inline void p_dense_matrix_impl<T>::remove_rows(size_type i, size_type k = 1){
+    inline void p_dense_matrix_impl<T>::remove_rows(size_type i, size_type k){
         assert( i+k <= this->rows );
         algorithms::remove_rows(*this, i, k);
-        this->resize(this->rows-k, this->cols);
     }
 
     template <typename T>
-    inline void p_dense_matrix_impl<T>::remove_cols(size_type j, size_type k = 1){
+    inline void p_dense_matrix_impl<T>::remove_cols(size_type j, size_type k){
         assert( j+k <= this->cols );
         algorithms::remove_cols(*this, j, k);
-        this->resize(this->rows, this->cols-k);
     }
 
     template <typename T>
@@ -142,7 +134,6 @@ namespace maquis { namespace types {
 
     template <typename T>
     inline void p_dense_matrix_impl<T>::cpy(const p_dense_matrix_impl<T>& rhs){
-        this->resize(rhs.num_rows(), rhs.num_cols());
         algorithms::cpy(*this, rhs);
     }
 
