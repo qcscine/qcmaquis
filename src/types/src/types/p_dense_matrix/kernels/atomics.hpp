@@ -348,7 +348,6 @@ namespace ambient {
             for(int j=0; j < n; ++j)
             for(int i = 0; i < m; ++i)
             td[j+i*tlda] = od[i+j*mlda];
-            
             __A_TIME_C_STOP
         }
     };
@@ -365,7 +364,9 @@ namespace ambient {
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
+            __A_TIME_C("ambient_resize_atomic_c_kernel"); 
             __a_memptf_atomic<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
+            __A_TIME_C_STOP
         }
     };
         
