@@ -1,3 +1,4 @@
+//#define AMBIENT_THREADS
 // {{{ system includes
 #include <mpi.h>
 #include <complex>

@@ -24,20 +24,28 @@ namespace ambient{
             pthread_mutex_destroy(&mutex);
         }
         inline void add_task(task* t){ // delegate thread
+#ifdef AMBIENT_THREADS
             pthread_mutex_lock(&mutex);
+#endif
             if(this->seed == NULL) this->seed = t;
             else this->tail->next = t;
             this->tail = t;
+#ifdef AMBIENT_THREADS
             pthread_mutex_unlock(&mutex);
+#endif
         }
         inline task* get_task(){ // worker thread
+#ifdef AMBIENT_THREADS
             pthread_mutex_lock(&mutex);
+#endif
             task* data = this->seed;
             if(this->seed != NULL){
                 if(this->seed == this->tail) this->tail = this->seed = NULL;
                 else this->seed = this->seed->next;
             }
+#ifdef AMBIENT_THREADS
             pthread_mutex_unlock(&mutex);
+#endif
             return data;
         }
 
