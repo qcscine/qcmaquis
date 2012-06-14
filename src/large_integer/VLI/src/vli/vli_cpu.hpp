@@ -330,7 +330,7 @@ void mul(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a
 }
 
 template <class BaseInt, std::size_t Size>
-void muladd(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) {         
+void multiply_add(vli_cpu<BaseInt, 2*Size>& vli_res, vli_cpu<BaseInt, Size> const&  vli_a, vli_cpu<BaseInt, Size> const& vli_b) {         
     multiply_add_assign<BaseInt, Size>(vli_res, vli_a, vli_b);
 }
 

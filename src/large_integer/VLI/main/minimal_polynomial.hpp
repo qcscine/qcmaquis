@@ -84,18 +84,13 @@ class polynomial;
 template <typename CoeffType, unsigned int Order>
 polynomial<CoeffType,2*Order> operator * (polynomial<CoeffType,Order> const& p1, polynomial<CoeffType,Order> const& p2)
 {
-    std::size_t max_order = p1.max_order;
-    std::vector<CoeffType> result_coeffs(4*max_order*max_order);
-    for(std::size_t je1 = 0; je1 < max_order; ++je1){
-        for(std::size_t he1 = 0; he1 < max_order; ++he1){
-            for(std::size_t je2 = 0; je2 < max_order; ++je2){
-               for(std::size_t he2 = 0; he2 < max_order; ++he2){
-                     result_coeffs[ 2*(je1+je2)*max_order + he1+he2 ] += p1.coeffs[je1*max_order+he1] * p2.coeffs[je2*max_order+he2];
-               }
-            }
-
-        }
-    }
+    static std::size_t const order_cutoff = polynomial<CoeffType,Order>::order_cutoff;
+    std::vector<CoeffType> result_coeffs((2*Order+1)*(2*Order+1));
+    for(std::size_t je1 = 0; je1 <= Order; ++je1)
+        for(std::size_t he1 = 0; he1 <= Order; ++he1)
+            for(std::size_t je2 = 0; je2 <= Order; ++je2)
+               for(std::size_t he2 = 0; he2 <= Order; ++he2)
+                     result_coeffs[ (je1+je2)*(2*Order+1) + he1+he2 ] += p1.coeffs[je1*order_cutoff+he1] * p2.coeffs[je2*order_cutoff+he2];
     return polynomial<CoeffType,2*Order>(result_coeffs);
 }
 
@@ -106,9 +101,8 @@ template <typename CoeffType, unsigned int Order, typename T>
 polynomial<CoeffType,Order> operator * (polynomial<CoeffType,Order> const& p, monomial<T> const& m)
 {
     polynomial<CoeffType,Order> r;
-    std::size_t max_order = r.max_order;
-    for(std::size_t je = 0; je < max_order-m.j_exp; ++je)
-        for(std::size_t he = 0; he < max_order-m.h_exp; ++he)
+    for(std::size_t je = 0; je + m.j_exp <= Order; ++je)
+        for(std::size_t he = 0; he + m.h_exp <= Order; ++he)
             r(je+m.j_exp,he+m.h_exp) = p(je,he)  * m.coeff;
     return r;
 }
@@ -119,7 +113,7 @@ class polynomial
     private:
         std::vector<CoeffType> coeffs;
     public:
-        enum {max_order = Order};
+        enum {order_cutoff = Order+1};
 
         friend polynomial<CoeffType,2*Order> operator *<> (polynomial<CoeffType,Order> const&, polynomial<CoeffType,Order> const&);
 
@@ -130,7 +124,7 @@ class polynomial
           * where all c_* are of type CoeffType and set to 0.
           */
         polynomial()
-            : coeffs(max_order*max_order,CoeffType(0))
+            : coeffs(order_cutoff*order_cutoff,CoeffType(0))
         {
         }
 
@@ -145,7 +139,7 @@ class polynomial
         explicit polynomial(std::vector<CoeffType> const& v)
             : coeffs(v)
         {
-            assert(v.size() == max_order*max_order);
+            assert(v.size() == order_cutoff*order_cutoff);
         }
 
         /**
@@ -170,10 +164,10 @@ class polynomial
           */
         void print(std::ostream& o) const
         {
-            for(std::size_t je = 0; je < max_order; ++je)
-                for(std::size_t he = 0; he < max_order; ++he)
-                    if( coeffs[je*max_order+he] != CoeffType(0))
-                        o<<"+"<<coeffs[je*max_order+he]<<"*J^"<<je<<"*h^"<<he<<std::endl;
+            for(std::size_t je = 0; je < order_cutoff; ++je)
+                for(std::size_t he = 0; he < order_cutoff; ++he)
+                    if( coeffs[je*order_cutoff+he] != CoeffType(0))
+                        o<<"+"<<coeffs[je*order_cutoff+he]<<"*J^"<<je<<"*h^"<<he<<std::endl;
         }
 
         /**
@@ -186,11 +180,7 @@ class polynomial
             typename std::vector<CoeffType>::const_iterator p_it  = p.coeffs.begin();
             typename std::vector<CoeffType>::const_iterator p_end = p.coeffs.end();
             while( it != end && p_it != p_end)
-            {
-                *it += *p_it;
-                ++it;
-                ++p_it;
-            }
+                *it++ += *p_it++;
             return *this;
         }
 
@@ -210,9 +200,9 @@ class polynomial
         template <typename T>
         polynomial& operator += (monomial<T> const& m)
         {
-            assert(m.j_exp < max_order);
-            assert(m.h_exp < max_order);
-            coeffs[m.j_exp*max_order+m.h_exp] += m.coeff;
+            assert(m.j_exp <= Order);
+            assert(m.h_exp <= Order);
+            coeffs[m.j_exp*order_cutoff+m.h_exp] += m.coeff;
             return *this;
         }
 
@@ -260,9 +250,9 @@ class polynomial
          */
         inline CoeffType const& operator ()(unsigned int j_exp, unsigned int h_exp) const
         {
-            assert(j_exp < max_order);
-            assert(h_exp < max_order);
-            return coeffs[j_exp*max_order+h_exp];
+            assert(j_exp <= Order);
+            assert(h_exp <= Order);
+            return coeffs[j_exp*order_cutoff+h_exp];
         }
         
         /**
@@ -270,9 +260,9 @@ class polynomial
          */
         inline CoeffType& operator ()(unsigned int j_exp, unsigned int h_exp)
         {
-            assert(j_exp < max_order);
-            assert(h_exp < max_order);
-            return coeffs[j_exp*max_order+h_exp];
+            assert(j_exp <= Order);
+            assert(h_exp <= Order);
+            return coeffs[j_exp*order_cutoff+h_exp];
         }
 
 };
@@ -335,11 +325,7 @@ polynomial<CoeffType,2*Order>  inner_product(std::vector<polynomial<CoeffType,Or
     polynomial<CoeffType,2*Order> result;
     typename std::vector<polynomial<CoeffType,Order> >::const_iterator it(a.begin()),  it_b(b.begin());
     while( it != a.end() )
-    {
-        result += *it * *it_b;
-        ++it;
-        ++it_b;
-    }
+        result += *(it++) * *(it_b++);
 
     return result;
 #endif

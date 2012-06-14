@@ -48,25 +48,25 @@ typedef vli::test::vli_cpu_type_extented_list vli_extented_type;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE ( constructor, Vli, vli_extented_type )
 {
-    monomial<Vli> ma;
-    monomial<Vli> mb(0,0);
+    monomial<Vli,vli::var<'x'> > ma;
+    monomial<Vli,vli::var<'x'> > mb(0,0);
     BOOST_CHECK_EQUAL(ma,mb);
 
-    monomial<Vli> mc(1,2);
-    monomial<Vli> md(2,1);
+    monomial<Vli,vli::var<'x'> > mc(1,2);
+    monomial<Vli,vli::var<'x'> > md(2,1);
 
     BOOST_CHECK_EQUAL(mc == md, false);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE ( copy_constructor, Vli, vli_extented_type )
 {
-    monomial<Vli> ma;
-    monomial<Vli> mb(8,5);
-    monomial<Vli> mc(mb);
+    monomial<Vli,vli::var<'x'> > ma;
+    monomial<Vli,vli::var<'x'> > mb(8,5);
+    monomial<Vli,vli::var<'x'> > mc(mb);
     BOOST_CHECK_EQUAL(mb,mc);
     BOOST_CHECK_EQUAL(ma == mc,false);
 
-    mc.j_exp_ = 1;
+    exponent(mc,vli::var<'x'>()) = 1;
     BOOST_CHECK_EQUAL(mb == mc,false);
 }
 
@@ -75,11 +75,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_vli, Vli, vli_extented_type)
     Vli a;
     fill_random(a,Vli::size-1);
     Vli a_orig(a);
-    monomial<Vli> ma(2,3);
-    monomial<Vli> ma_orig(ma);
+    monomial<Vli,vli::var<'x'> > ma(2,3);
+    monomial<Vli,vli::var<'x'> > ma_orig(ma);
 
-    monomial<Vli> mb = ma * a;
-    monomial<Vli> mc = a * ma;
+    monomial<Vli,vli::var<'x'> > mb = ma * a;
+    monomial<Vli,vli::var<'x'> > mc = a * ma;
     BOOST_CHECK_EQUAL(ma, ma_orig);
 
     ma *= a;
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_vli, Vli, vli_extented_type)
     BOOST_CHECK_EQUAL(ma,mc);
 
     BOOST_CHECK_EQUAL(ma == ma_orig, false);
-    BOOST_CHECK_EQUAL(ma.coeff_,a);
+    BOOST_CHECK_EQUAL(ma.c_,a);
 
     BOOST_CHECK_EQUAL(a, a_orig);
 }
@@ -96,11 +96,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_int, Vli, vli_extented_type)
 {
     int a = 10;
     int a_orig(a);
-    monomial<Vli> ma(5,7);
-    monomial<Vli> ma_orig(ma);
+    monomial<Vli,vli::var<'x'> > ma(5,7);
+    monomial<Vli,vli::var<'x'> > ma_orig(ma);
 
-    monomial<Vli> mb = ma * a;
-    monomial<Vli> mc = a* ma;
+    monomial<Vli,vli::var<'x'> > mb = ma * a;
+    monomial<Vli,vli::var<'x'> > mc = a* ma;
     BOOST_CHECK_EQUAL(ma, ma_orig);
 
     ma *= a;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( multiply_by_int, Vli, vli_extented_type)
     BOOST_CHECK_EQUAL(ma,mc);
 
     BOOST_CHECK_EQUAL(ma == ma_orig, false);
-    BOOST_CHECK_EQUAL(ma.coeff_,Vli(a));
+    BOOST_CHECK_EQUAL(ma.c_,Vli(a));
     
     BOOST_CHECK_EQUAL(a, a_orig);
 }

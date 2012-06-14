@@ -1,8 +1,8 @@
 /*
 *Very Large Integer Library, License - Version 1.0 - May 3rd, 2012
 *
-*Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
+*Timothee Ewart - University of Geneva, 
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -31,77 +31,71 @@
 #define VLI_MONOMIAL_HPP
 
 #include <ostream>
+#include <vli/polynomial/variable.hpp>
+#include <vli/polynomial/detail/storage.hpp>
 
 namespace vli {
-    template <class Coeff>
-    struct monomial {
-        typedef unsigned int exponent_type;
-        typedef Coeff coeff_type;
-        typedef coeff_type value_type;
-
-        /**
-         * Constructor: Creates a monomial 1*J^j_exp*h^h_exp
-         */
-        explicit monomial(exponent_type j_exp = 0, exponent_type h_exp = 0)
-        :j_exp_(j_exp), h_exp_(h_exp), coeff_(1) {
-        }
-
-        /*
-        * These two functions are only called inside the vli_polynomial_gpu_function_hooks.hpp
-        */
-        value_type* p() {
-            return coeff_.p();
-        }
-        
-        value_type* p() const {
-            return coeff_.p();
-        }
-
-        monomial operator - () const {
-            monomial r(*this);
-            r.coeff_ = -this->coeff_;
-            return r;
-        }
-        monomial& operator *= (coeff_type const& c) {
-            coeff_ *= c;
-            return (*this);
-        }
-        
-        monomial& operator *= (int c) {
-            coeff_ *= c;
-            return (*this);
-        }
+template <class Coeff, class Var0, class Var1 = no_variable, class Var2 = no_variable, class Var3 = no_variable>
+struct monomial : public detail::element_descriptor_impl<Var0,Var1,Var2,Var3> {
+    typedef Coeff           value_type;
+    typedef unsigned int    exponent_type;
+    typedef detail::element_descriptor_impl<Var0,Var1,Var2,Var3> base_type;
     
-        void print(std::ostream& os) const {
-            if(coeff_ > 0)
-                os<<"+";
-            os<<coeff_<<"*J^"<<j_exp_<<"*h^"<<h_exp_;
-        }
-
-        bool operator == (monomial const& m) const{
-            return (j_exp_ == m.j_exp_) && (h_exp_ == m.h_exp_) && (coeff_ == m.coeff_);
-        }
-    
-        exponent_type j_exp_;
-        exponent_type h_exp_;
-        value_type coeff_;
-    };
-    
-    template <class Coeff>
-    std::ostream& operator<<(std::ostream& os, monomial<Coeff> const& m){
-        m.print(os);
-        return os;
+    monomial()
+    : detail::element_descriptor_impl<Var0,Var1,Var2,Var3>(0,0,0,0), c_(Coeff(1)) {
     }
-    template <class Coeff, class T>
-    monomial<Coeff> operator * (monomial<Coeff> m, T const& c) {
-        m*=c;
-        return m;
+    explicit monomial(exponent_type exp0, exponent_type exp1 = 0, exponent_type exp2 = 0, exponent_type exp3 = 0)
+    : detail::element_descriptor_impl<Var0,Var1,Var2,Var3>(exp0,exp1,exp2,exp3), c_(Coeff(1)) {
+    }
+    
+    monomial operator - () const {
+        monomial r(*this);
+        r.c_ = -c_;
+        return r;
+    }
+    
+    template <class T>
+    monomial& operator *= (T const& c) {
+        c_ *= c;
+        return *this;
+    }
+    
+    void print(std::ostream& os) const {
+        if(c_ > 0)
+            os << "+";
+        os << c_ << "*";
+        os << static_cast<base_type>(*this);
     }
 
-    template <class Coeff, class T>
-    monomial<Coeff> operator * (T const& c, monomial<Coeff> const& m) {
-        return m*c;
+    bool operator == (monomial const& m) const{
+        return (
+               (exponent(*this,Var0()) == exponent(m,Var0()))
+            && (exponent(*this,Var1()) == exponent(m,Var1()))
+            && (exponent(*this,Var2()) == exponent(m,Var2()))
+            && (exponent(*this,Var3()) == exponent(m,Var3()))
+            && (c_ == m.c_)
+        );
     }
+
+    Coeff c_;
+};
+
+
+template <class Coeff, class Var0, class Var1, class Var2, class Var3>
+std::ostream& operator << (std::ostream& os, monomial<Coeff,Var0,Var1,Var2,Var3> const& m){
+    m.print(os);
+    return os;
+}
+template <class Coeff, class Var0, class Var1, class Var2, class Var3, class T>
+monomial<Coeff,Var0,Var1,Var2,Var3> operator * (monomial<Coeff,Var0,Var1,Var2,Var3> m, T const& c) {
+    m*=c;
+    return m;
+}
+
+template <class Coeff, class Var0, class Var1, class Var2, class Var3, class T>
+monomial<Coeff,Var0,Var1,Var2,Var3> operator * (T const& c, monomial<Coeff,Var0,Var1,Var2,Var3> const& m) {
+    return m*c;
+}
 
 } //end namespace vli
 

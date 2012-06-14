@@ -44,21 +44,13 @@
 #include "vli/detail/gpu/inner_product_gpu_booster.hpp"
 #endif //VLI_COMPILE_GPU
 
-namespace vli
-{
+namespace vli {
 
 template <class BaseInt, std::size_t Size>
 class vli_cpu;
 
 template<class Polynomial>
-class vector_polynomial : public std::vector<Polynomial>{ 
-  private:
-//    typedef typename Polynomial::value_type::value_type vli_value_type;
-    
-//    static typename exponent_type<Polynomial>::type max_order_poly;
-//    enum {vli_size   = polynomial_cpu::value_type::size }; 
-    static std::size_t const element_offset = Polynomial::max_order*Polynomial::max_order*Polynomial::value_type::size;
-
+class vector_polynomial : public std::vector<Polynomial> { 
   public:
     vector_polynomial(std::size_t size = 1)
     :std::vector<Polynomial>(size) {
@@ -66,8 +58,16 @@ class vector_polynomial : public std::vector<Polynomial>{
     //copy and assignemant are done by the std vector
 }; //end class
 
-namespace detail
-{    
+template <class VectorPolynomial>
+struct inner_product_result_type {
+};
+
+template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+struct inner_product_result_type< vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > > {
+    typedef typename polynomial_multiply_result_type<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> >::type type;
+};
+
+namespace detail {    
 #ifdef _OPENMP
 template <class BaseInt, std::size_t Size, unsigned int Order>
 polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order>
@@ -91,35 +91,29 @@ inner_product_openmp( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order
 }
 #endif
 
-template <class BaseInt, std::size_t Size, unsigned int Order>
-polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> 
-inner_product_plain( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
-               vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+template <class Polynomial>
+typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_product_plain (
+      vector_polynomial<Polynomial> const& v1
+    , vector_polynomial<Polynomial> const& v2
+    ) {
     assert(v1.size() == v2.size());
-    std::size_t size_v = v1.size();
-    polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order>  res;
-    for(std::size_t i=0 ; i < size_v ; ++i)
+    std::size_t const v_size = v1.size();
+    typename inner_product_result_type<vector_polynomial<Polynomial> >::type res;
+    for(std::size_t i=0; i < v_size; ++i)
         res += v1[i]*v2[i];
     return res;
 }
+
 } // end namespace detail
 
 
-template <class VectorPolynomial>
-struct inner_product_result_type {
-};
-
-template <class Coeff, unsigned int Order>
-struct inner_product_result_type< vector_polynomial<polynomial<Coeff,Order> > > {
-    typedef typename polynomial_multiply_result_type<polynomial<Coeff,Order> >::type type;
-};
 
 
-template <class Coeff, unsigned int Order>
-inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,Order> > >::type
+template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > >::type
 inner_product(
-          vector_polynomial<polynomial<Coeff, Order> > const& v1
-        , vector_polynomial<polynomial<Coeff, Order> > const& v2
+          vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > const& v1
+        , vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > const& v2
         ) {
     // TODO this is a little dirty and could be done better
 #ifdef _OPENMP
@@ -137,9 +131,8 @@ inner_product(
 #endif //_OPENMP
 }
 
-template<class Polynomial, unsigned int Order >
-std::ostream & operator<<(std::ostream & os, vector_polynomial<Polynomial> const& v)
-{        
+template<class Polynomial>
+std::ostream & operator<<(std::ostream & os, vector_polynomial<Polynomial> const& v) {        
     for(std::size_t i = 0; i < v.size(); ++i)
         os << v[i] << std::endl;
     return os;
