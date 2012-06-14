@@ -57,9 +57,6 @@ namespace ambient{
     template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().dim;            }
     template<typename T> inline dim2 ui_c_get_mem_dim    (T& ref){ return ui_c_current(ref).get_layout().mem_dim;        }
     template<typename T> inline dim2 ui_c_get_grid_dim   (T& ref){ return ui_c_current(ref).get_layout().grid_dim;       }
-    template<typename T> inline dim2 ui_c_get_dim_u      (T& ref){ return ui_c_updated(ref).get_layout().dim;            }
-    template<typename T> inline dim2 ui_c_get_mem_dim_u  (T& ref){ return ui_c_updated(ref).get_layout().mem_dim;        }
-    template<typename T> inline dim2 ui_c_get_grid_dim_u (T& ref){ return ui_c_updated(ref).get_layout().grid_dim;       }
 
     inline dim2 ui_l_get_grid_dim(revision& r){ return r.content->grid_dim; }
 
