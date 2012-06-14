@@ -356,15 +356,16 @@ namespace ambient {
     template<typename T>
     struct resize_atomic : public ambient::kernel_atomic< resize_atomic<T> > 
     {
-        typedef void (resize_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const size_t&, const size_t&);
+        typedef void (resize_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
+        inline void l(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
             this->ctxt_select("1 from ambient as resize_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
+            this->assign(ui_l_current(r));
         }
 
-        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& om, const size_t& on){
-            __a_memptf_atomic<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
+        inline void c(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
+            __a_memptf_atomic<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
         }
     };
         

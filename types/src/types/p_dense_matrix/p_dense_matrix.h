@@ -25,7 +25,7 @@ namespace maquis { namespace types {
         typedef typename I::difference_type difference_type;
         // {{{ p_dense_matrix_impl forwarding
 
-        inline p_dense_matrix(){ 
+        inline p_dense_matrix(){
             this->impl = new I(); 
         }
 
@@ -88,15 +88,21 @@ namespace maquis { namespace types {
         }
 
         inline void resize(size_type rows, size_type cols){
-            this->impl->resize(rows, cols); 
+            if(this->num_rows() != rows || this->num_cols() != cols){
+                p_dense_matrix resized(rows, cols);
+                if(this->num_rows() != 0) this->impl->resize(*resized.impl, rows, cols);
+                this->impl.swap(resized.impl);
+            }
         }
 
-        inline void remove_rows(size_type i, size_type k){
+        inline void remove_rows(size_type i, size_type k = 1){
             this->impl->remove_rows(i, k);
+            this->resize(this->num_rows()-k, this->num_cols());
         }
 
-        inline void remove_cols(size_type j, size_type k){
+        inline void remove_cols(size_type j, size_type k = 1){
             this->impl->remove_cols(j, k); 
+            this->resize(this->num_rows(), this->num_cols()-k);
         }
 
         inline value_type& operator() (size_type i, size_type j){
@@ -108,6 +114,7 @@ namespace maquis { namespace types {
         }
 
         inline p_dense_matrix& operator = (const p_dense_matrix& rhs){
+            this->resize(rhs.num_rows(), rhs.num_cols());
             this->impl->cpy(*rhs.impl);
             return *this;
         }
@@ -177,7 +184,7 @@ namespace maquis { namespace types {
         inline size_type num_rows() const;
         inline size_type num_cols() const;
         inline bool atomic() const;
-        inline void resize(size_type rows, size_type cols);
+        inline void resize(p_dense_matrix_impl& r, size_type rows, size_type cols);
         inline void remove_rows(size_type i, size_type k);
         inline void remove_cols(size_type j, size_type k);
         inline void cpy(const p_dense_matrix_impl& rhs);
