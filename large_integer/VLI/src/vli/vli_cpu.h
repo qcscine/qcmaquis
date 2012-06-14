@@ -99,7 +99,6 @@ namespace vli{
 
     template <class BaseInt, std::size_t Size>
     class extend_helper {
-
     };
     
     /**

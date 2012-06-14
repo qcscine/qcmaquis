@@ -2,8 +2,8 @@ add_definitions (-DBOOST_TEST_DYN_LINK -Wno-unused-variable)
 
 set(VLI_FUZZ_TEST_ITERATIONS "10000" CACHE STRING "Number of fuzz iterations for the fuzz tests") 
 
-set(tests constructors equal negate plus plus_negative gmp_plus minus gmp_minus multiplies multiplies_negative gmp_multiplies_int gmp_multiplies comparison misc_tests )
-set(fuzz_tests constructors negate plus plus_negative gmp_plus minus gmp_minus multiplies multiplies_negative gmp_multiplies_int gmp_multiplies)
+set(tests constructors equal negate plus plus_negative minus multiplies multiplies_negative gmp_and_str_conversion gmp_plus gmp_minus gmp_multiplies_int gmp_multiplies comparison misc_tests )
+set(fuzz_tests constructors negate plus plus_negative minus multiplies multiplies_negative gmp_and_str_conversion gmp_plus gmp_minus gmp_multiplies_int gmp_multiplies)
 set(extending_plus_tests gmp_extending_plus)
 set(extending_multiplies_tests gmp_extending_multiplies gmp_extending_multiplies_negative gmp_extending_multiplie_add)
 

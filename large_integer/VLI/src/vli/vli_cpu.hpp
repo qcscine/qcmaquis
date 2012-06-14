@@ -28,6 +28,27 @@
 */
 
 namespace vli {
+namespace detail {
+    template <typename GMPClass>
+    struct gmp_convert_helper {
+        template <typename BaseInt, std::size_t Size>
+        static GMPClass apply(vli_cpu<BaseInt,Size> a) {
+            bool const neg = a.is_negative();
+            if(neg)
+                negate_inplace(a);
+            GMPClass result(0);
+            GMPClass factor(1);
+            GMPClass const segment_factor( mpz_class(~BaseInt(0)) + 1 );
+            for(typename vli_cpu<BaseInt,Size>::size_type i=0; i<Size; ++i) {
+                result += factor * a[i];
+                factor *= segment_factor;
+            }
+            if(neg)
+                result *= -1;
+            return result;
+        }
+    };
+} // end namespace detail
 
 // C - constructors, copy-swap, access operators
 template<typename BaseInt, std::size_t Size>
@@ -55,12 +76,12 @@ vli_cpu<BaseInt, Size>::vli_cpu(vli_cpu const& r){
 #if defined __GNU_MP_VERSION
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>::operator mpz_class() const{
-    return mpz_class(get_str());
+    return detail::gmp_convert_helper<mpz_class>::apply(*this);
 }
 
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>::operator mpq_class() const{
-    return mpq_class(get_str());
+    return detail::gmp_convert_helper<mpq_class>::apply(*this);
 }
 #endif //__GNU_MP_VERSION
 
