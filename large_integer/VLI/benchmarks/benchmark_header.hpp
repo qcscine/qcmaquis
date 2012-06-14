@@ -24,8 +24,8 @@ namespace vli {
      typedef vli::vli_cpu<unsigned long int, VLI_SIZE> vli_type;
      typedef vli::vli_cpu<unsigned long int, 2*VLI_SIZE> vli_type_double;
     
-     typedef vli::polynomial< vli_type, ORDER_POLY > polynomial_type;
-     typedef vli::polynomial< vli_type_double, 2*ORDER_POLY > polynomial_type_double;
+     typedef vli::polynomial< vli_type, vli::max_order_each<ORDER_POLY>, vli::var<'x'>, vli::var<'y'> > polynomial_type;
+     typedef vli::polynomial< vli_type_double, vli::max_order_each<2*ORDER_POLY>, vli::var<'x'>, vli::var<'y'> > polynomial_type_double;
     
      typedef vli::vector_polynomial<polynomial_type> vector_type;
 
