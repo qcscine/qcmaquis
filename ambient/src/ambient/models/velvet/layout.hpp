@@ -40,10 +40,6 @@ namespace ambient { namespace models { namespace velvet {
         return *this->entries[x*grid_dim.y+y];
     }
 
-    inline size_t layout::id(){
-        return this->sid;
-    }
-
     inline size_t layout::get_master(){
         return this->master;
     }
@@ -65,7 +61,7 @@ namespace ambient { namespace models { namespace velvet {
     // {{{ layout::entry //
 
     inline bool layout::entry::trylock(){
-        if(this->locked == true) return false;
+        if(this->locked) return false;
         this->locked = true;
         return true;
     }

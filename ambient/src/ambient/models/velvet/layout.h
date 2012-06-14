@@ -45,7 +45,6 @@ namespace ambient { namespace models { namespace velvet {
         inline layout(size_t, dim2, dim2);
         inline void embed(void* memory, size_t x, size_t y, size_t bound); // fires controllers::unlock_revision if complete
         inline entry& get(size_t x, size_t y);
-        inline size_t id();
         inline const memspec& get_spec() const;
         inline size_t   get_master();
         inline dim2     get_dim() const;
@@ -53,7 +52,6 @@ namespace ambient { namespace models { namespace velvet {
         inline dim2     get_grid_dim() const;
         group* placement;
         size_t master;
-        size_t * gid;
         size_t sid;
         dim2   mem_dim;                 // size of distribution blocks
         dim2   grid_dim;                // size of the grid 

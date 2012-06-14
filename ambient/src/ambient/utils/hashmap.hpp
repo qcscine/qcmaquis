@@ -1,8 +1,8 @@
 #ifndef AMBIENT_UTILS_HASHMAP
 #define AMBIENT_UTILS_HASHMAP
 #define HASHMAP_PARTITION_BIT_SIZE 8
-#define HASHMAP_PARTITION_SIZE 256 // 2^HAH_MAP_PARTITION_BIT_SIZE
-#define HASHMAP_VECTOR_RESERVATION 1.5
+#define HASHMAP_PARTITION_SIZE 65536 // 2^HAH_MAP_PARTITION_BIT_SIZE
+#define HASHMAP_VECTOR_RESERVATION 2
 
 namespace ambient{
 
@@ -13,12 +13,10 @@ namespace ambient{
             size_t size = this->content.size();
             if(this->content.capacity() == size)
                 this->content.reserve(size*HASHMAP_VECTOR_RESERVATION);
-            this->content.resize(size+1);
-            
-            this->content[size] = value;
-            return size+1; // 1-based id
+            this->content.push_back(value);
+            return size;
         }
-        inline void* find(size_t id) const { return this->content[id-1]; };
+        inline void* find(size_t id) const { return this->content[id]; };
     private:
         std::vector<void*> content;
     };

@@ -1,6 +1,5 @@
 #ifndef AMBIENT_UTILS_TASKLIST
 #define AMBIENT_UTILS_TASKLIST
-#define STACK_CONTENT_RESERVATION 10
 
 namespace ambient{
 
@@ -10,10 +9,8 @@ namespace ambient{
     public:
         class task {
         public:
-            inline task(cfunctor* f, dim2 pin):f(f),pin(pin),pair(NULL){}
-            inline task* next(task* t){ pair = t; return t; }
-            inline task* next(){ return pair; }
-            task* pair;
+            inline task(cfunctor* f, dim2 pin):f(f),pin(pin),next(NULL){}
+            task* next;
             cfunctor* f;
             dim2 pin;
         };
@@ -28,8 +25,9 @@ namespace ambient{
         }
         inline void add_task(task* t){ // delegate thread
             pthread_mutex_lock(&mutex);
-            if(this->seed == NULL) this->tail = this->seed = t;
-            else this->tail = this->tail->next(t);
+            if(this->seed == NULL) this->seed = t;
+            else this->tail->next = t;
+            this->tail = t;
             pthread_mutex_unlock(&mutex);
         }
         inline task* get_task(){ // worker thread
@@ -37,7 +35,7 @@ namespace ambient{
             task* data = this->seed;
             if(this->seed != NULL){
                 if(this->seed == this->tail) this->tail = this->seed = NULL;
-                else this->seed = this->seed->next();
+                else this->seed = this->seed->next;
             }
             pthread_mutex_unlock(&mutex);
             return data;
