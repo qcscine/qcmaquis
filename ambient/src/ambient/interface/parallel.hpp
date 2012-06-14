@@ -37,10 +37,6 @@ namespace ambient{
             ambient::model.set_current_dim(this, dim2(x, y));
         }
 
-        inline void pt_reset_dim(size_t x, size_t y){
-            ambient::model.reset_current_dim(this, dim2(x, y));
-        }
-
         inline dim2 pt_mem_dim() const {
             return this->current->content->get_mem_dim();
         }
@@ -48,6 +44,10 @@ namespace ambient{
     public:
         inline bool pt_atomic() const {
             return ambient::model.is_atomic(this);
+        }
+
+        inline bool pt_clean() const {
+            return (this->back() == NULL);
         }
 
         inline value_type& pt_fetch(size_t blocked_i, size_t blocked_j, 

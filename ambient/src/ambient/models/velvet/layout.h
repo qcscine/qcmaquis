@@ -49,7 +49,6 @@ namespace ambient { namespace models { namespace velvet {
         inline size_t id();
         inline const memspec& get_spec() const;
         inline size_t   get_master();
-        inline void     set_dim(dim2);
         inline dim2     get_dim() const;
         inline dim2     get_mem_dim() const;
         inline dim2     get_grid_dim() const;
