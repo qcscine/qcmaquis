@@ -41,8 +41,10 @@ namespace ambient { namespace models { namespace velvet {
 
     template<typename T>
     inline size_t model::time(const T* o){
-        if(o->back() == NULL) 
+        if(o->back() == NULL){
             this->add_revision(const_cast<T*>(o));
+            o->current->content->spec.clean = true;
+        }
         return o->time();
     }
 

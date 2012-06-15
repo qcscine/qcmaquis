@@ -2,9 +2,15 @@
 
 namespace ambient { namespace models { namespace velvet {
 
-    inline memspec::memspec(size_t size):size(size){ }
+    inline memspec::memspec(size_t size):size(size),clean(false){ }
 
     inline void* memspec::alloc() const {    
+        void* memory = malloc(size + BOUND);
+        if(clean) memset((char*)memory + BOUND, 0, size);
+        return memory;
+    }
+
+    inline void* memspec::calloc() const {    
         void* memory = malloc(size + BOUND);
         memset((char*)memory + BOUND, 0, size);
         return memory;

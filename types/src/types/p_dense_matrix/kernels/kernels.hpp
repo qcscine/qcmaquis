@@ -38,11 +38,11 @@ namespace ambient {
                 while(!L.empty()){
                     std::list<int>::iterator zy = L.begin();
                     while(zy != L.end()){
-                        if(!ui_c_updated(a)(y,*zy).trylock()){ zy++; continue; }
+                        if(!ui_p_updated(a)(y,*zy).trylock()){ zy++; continue; }
                         T* ad = ui_c_current(a)(x,*zy);
-                        T* cd = ui_c_updated(a)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
+                        T* cd = ui_p_updated(a)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
                         gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                        ui_c_updated(a)(y,*zy).unlock();
+                        ui_p_updated(a)(y,*zy).unlock();
                         L.erase(zy++);
                     }
                 }
@@ -111,11 +111,11 @@ namespace ambient {
                 while(!L.empty()){
                     std::list<int>::iterator zy = L.begin();
                     while(zy != L.end()){
-                        if(!ui_c_updated(c)(y,*zy).trylock()){ zy++; continue; }
+                        if(!ui_p_updated(c)(y,*zy).trylock()){ zy++; continue; }
                         T* ad = ui_c_current(a)(x,*zy);
-                        T* cd = ui_c_updated(c)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
+                        T* cd = ui_p_updated(c)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
                         gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                        ui_c_updated(c)(y,*zy).unlock();
+                        ui_p_updated(c)(y,*zy).unlock();
                         L.erase(zy++);
                     }
                 }
@@ -143,7 +143,7 @@ namespace ambient {
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             T* a_elements  = ui_c_current(a)(x,y);
-            T* ac_elements = ui_c_updated(ac)(x,y);
+            T* ac_elements = ui_w_updated(ac)(x,y);
             memcpy(ac_elements, a_elements, sizeof(T)*ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y);
             __A_TIME_C_STOP
         }
@@ -163,7 +163,7 @@ namespace ambient {
             __A_TIME_C("ambient_remove_rows_c_kernel"); 
             size_t numcols = ui_c_get_dim(a).x;
             size_t numrows = ui_c_get_dim(a).y;
-            if((T*)ui_c_current(a)(0,0) != (T*)ui_c_updated(a)(0,0)) 
+            if((T*)ui_c_current(a)(0,0) != (T*)ui_w_updated(a)(0,0)) 
                 __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
             __A_TIME_C_STOP
@@ -184,7 +184,7 @@ namespace ambient {
             __A_TIME_C("ambient_remove_cols_c_kernel"); 
             size_t numcols = ui_c_get_dim(a).x;
             size_t numrows = ui_c_get_dim(a).y;
-            if((T*)ui_c_current(a)(0,0) != (T*)ui_c_updated(a)(0,0)) 
+            if((T*)ui_c_current(a)(0,0) != (T*)ui_w_updated(a)(0,0)) 
                 __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
             __a_memptf_reverse<T, __a_memcpy>(a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
             __A_TIME_C_STOP
@@ -222,7 +222,7 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<T>& a){
             __A_TIME_C("ambient_sqrt_diagonal_c_kernel"); 
             T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            T* sd = ui_c_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
+            T* sd = ui_w_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
             size_t size = ui_c_get_mem_dim(a).y;
             for(int i=0; i < size; i++)
                 sd[i] = sqrt(ad[i]);
@@ -243,7 +243,7 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
             __A_TIME_C("ambient_exp_diagonal_c_kernel"); 
             T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            T* sd = ui_c_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
+            T* sd = ui_w_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
             size_t size = ui_c_get_mem_dim(a).y;
             for(int i=0; i < size; i++)
                 sd[i] = exp(ad[i]*alfa);
@@ -266,7 +266,7 @@ namespace ambient {
             __A_TIME_C("ambient_exp_diagonal_rc_kernel"); 
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
-            std::complex<T>* ed = ui_c_updated(e)(x,y);
+            std::complex<T>* ed = ui_w_updated(e)(x,y);
             T* ad = ui_c_current(a)(x,y);
             size_t size = ui_c_get_mem_dim(e).y;
             for(int i=0; i < size; i++)
@@ -349,7 +349,7 @@ namespace ambient {
             size_t sizex = __a_get_limit_x(a, n);
             size_t sizey = __a_get_limit_y(a, m);
 
-            T* ad = ui_c_updated(a)(x,y);
+            T* ad = ui_w_updated(a)(x,y);
             for(int j=0; j < sizex; ++j)
                 memcpy((void*)&ad[j*ui_c_get_mem_dim(a).y],(void*)&(*ac)[yy + (xx+j)*lda], sizey*sizeof(T));
             __A_TIME_C_STOP 
@@ -376,7 +376,7 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_reshape_l2r_c_kernel"); 
-            if((T*)ui_c_current(right)(0,0) != (T*)ui_c_updated(right)(0,0)) 
+            if((T*)ui_c_current(right)(0,0) != (T*)ui_w_updated(right)(0,0)) 
                 __a_memptf<T, __a_memcpy>(right, dim2(0,0), right, dim2(0,0), ui_c_get_dim(right)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss){
                 __a_memptf<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
@@ -407,7 +407,7 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_reshape_r2l_c_kernel"); 
-            if((T*)ui_c_current(left)(0,0) != (T*)ui_c_updated(left)(0,0)) 
+            if((T*)ui_c_current(left)(0,0) != (T*)ui_w_updated(left)(0,0)) 
                 __a_memptf<T, __a_memcpy>(left, dim2(0,0), left, dim2(0,0), ui_c_get_dim(left)); // refreshing updated memory
             for(size_t ss = 0; ss < sdim; ++ss)
                 __a_memptf<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
@@ -439,7 +439,7 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_rb_tensor_mpo_c_kernel"); 
-            if((T*)ui_c_current(out)(0,0) != (T*)ui_c_updated(out)(0,0)) 
+            if((T*)ui_c_current(out)(0,0) != (T*)ui_w_updated(out)(0,0)) 
                 __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -474,7 +474,7 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         { // gs
             __A_TIME_C("ambient_lb_tensor_mpo_c_kernel"); 
-            if((T*)ui_c_current(out)(0,0) != (T*)ui_c_updated(out)(0,0)) 
+            if((T*)ui_c_current(out)(0,0) != (T*)ui_w_updated(out)(0,0)) 
                 __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
@@ -566,7 +566,7 @@ namespace ambient {
             int y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x,y);
             T* bd = ui_c_current(b)(x,y);
-            T* ar = ui_c_updated(a)(x,y);
+            T* ar = ui_w_updated(a)(x,y);
             size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] + bd[k];
@@ -592,7 +592,7 @@ namespace ambient {
             int y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x,y);
             T* bd = ui_c_current(b)(x,y);
-            T* ar = ui_c_updated(a)(x,y);
+            T* ar = ui_w_updated(a)(x,y);
             size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
             for(size_t k = 0; k < size; k++)
                 ar[k] = ad[k] + (-1)*bd[k];
@@ -616,7 +616,7 @@ namespace ambient {
             int x = ctxt.get_block_id().x;
             int y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x, y);
-            T* ar = ui_c_updated(a)(x, y);
+            T* ar = ui_w_updated(a)(x, y);
         
             size_t sizey = __a_get_limit_y(a, m);
             size_t sizex = __a_get_limit_x(a, n);
@@ -653,7 +653,7 @@ namespace ambient {
             int lda  = sizeof(T)/sizeof(D)*ui_c_get_mem_dim(b).y;
             int ONE  = 1;
             D* bd = ui_c_current(b)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            D* cd = ui_c_updated(c)(ctxt.get_block_id().x, ctxt.get_block_id().y);
+            D* cd = ui_p_updated(c)(ctxt.get_block_id().x, ctxt.get_block_id().y);
         
             for(int jj = 0 ; jj < sizey; jj++){
                  D* alpha = ui_c_current(a_diag)(0, (j+jj)/ui_c_get_mem_dim(a_diag).y);
@@ -689,7 +689,7 @@ namespace ambient {
             int size = sizeof(T)/sizeof(D)*ui_c_get_mem_dim(a).y; // for the case of complex
             int ONE = 1;
             D* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            D* cd = ui_c_updated(c)(ctxt.get_block_id().x, ctxt.get_block_id().y);
+            D* cd = ui_p_updated(c)(ctxt.get_block_id().x, ctxt.get_block_id().y);
         
             for(int jj = 0 ; jj < sizex; jj++){
         	    D* alpha = ui_c_current(b_diag)(0, (j+jj)/ui_c_get_mem_dim(b_diag).y);
@@ -760,7 +760,7 @@ namespace ambient {
 
             for(size_t j=0; j < sizex; ++j){
                 for(size_t i = 0; i < sizey; ++i){
-                    T* td = ui_c_updated(t)((txx+i) / ui_c_get_mem_dim(t).x, (tyy+j) / ui_c_get_mem_dim(t).y);
+                    T* td = ui_w_updated(t)((txx+i) / ui_c_get_mem_dim(t).x, (tyy+j) / ui_c_get_mem_dim(t).y);
                     size_t ti = (tyy+j) % ui_c_get_mem_dim(t).y;
                     size_t tj = (txx+i) % ui_c_get_mem_dim(t).x;
                     td[ti+tj*tlda] = od[i+j*mlda];
@@ -785,7 +785,7 @@ namespace ambient {
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
         
-            T* ad = ui_c_updated(a)(x,y);
+            T* ad = ui_w_updated(a)(x,y);
             size_t sizey = __a_get_limit_y(a, m);
             size_t sizex = __a_get_limit_x(a, n);
         
@@ -820,7 +820,7 @@ namespace ambient {
             size_t y = ctxt.get_block_id().y;
             size_t ld = ui_c_get_mem_dim(a).y;
             size_t sd = ui_c_get_mem_dim(a).x;
-            T* ad = ui_c_updated(a)(x,y);
+            T* ad = ui_w_updated(a)(x,y);
             size_t sizey = __a_get_limit_y(a, m);
             size_t sizex = __a_get_limit_x(a, n);
           
@@ -848,7 +848,7 @@ namespace ambient {
             size_t y = ctxt.get_block_id().y;
             size_t ld = ui_c_get_mem_dim(a).y;
             size_t sd = ui_c_get_mem_dim(a).x;
-            T* ad = ui_c_updated(a)(x,y);
+            T* ad = ui_r_updated(a)(x,y);
             if((y+1)*ld <= x*sd) return;
             if(y*ld >= (x+1)*sd) return;
             size_t sizex = std::min(m,n); // respecting borders
@@ -1018,8 +1018,6 @@ namespace ambient {
             double* ad = (double*)__a_solidify<double>(a);
             double* wd = (double*)__a_solidify<double>(w);
        
-            if(ui_c_current(a).get_layout().mem_dim != ui_c_updated(a).get_layout().mem_dim) printf("Dimensions don't match!\n"); 
-
             dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
             work = (double*)malloc( lwork*sizeof(double) );

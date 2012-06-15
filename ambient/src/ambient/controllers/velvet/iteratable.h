@@ -9,20 +9,15 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::models::velvet::revision;
     using ambient::models::velvet::layout;
 
-    class check_revision
-    {
-    public:
-        inline layout::entry& operator()(size_t x, size_t y); // should be operator
-        inline layout& get_layout();
-    };
-
-    class reuse_revision
-    {
-    public:
-        inline layout::entry& operator()(size_t x, size_t y);
+    struct revision_sub {
         inline layout& get_layout();
         inline revision* get_parent();
     };
+
+    struct c_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // check
+    struct w_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // weak
+    struct p_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // purge
+    struct r_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // reuse
 
     template<class T>
     class iteratable : public T
@@ -31,25 +26,13 @@ namespace ambient { namespace controllers { namespace velvet {
         inline iteratable();
         inline ~iteratable();
     public:
-        inline revision& state(size_t offset) const;
-        inline revision& ui_l_revision_0() const {
-            return *this->content[this->thread_revision_base[GET_TID]]; 
-        }
-        inline revision& ui_l_revision_1() const { // only for debug for now
-            return *this->content[this->thread_revision_base[GET_TID] + 1]; 
-        }
-        inline check_revision& ui_c_revision_0() const {
-            return *(check_revision*)this->content[this->thread_revision_base[GET_TID]]; 
-        }
-        inline check_revision& ui_c_revision_1() const { 
-            return *(check_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; 
-        }
-        inline reuse_revision& ui_r_revision_1() const { 
-            return *(reuse_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; 
-        }
+        inline revision&   ui_l_revision_0() const { return *this->content[this->thread_revision_base[GET_TID]];                  }
+        inline c_revision& ui_c_revision_0() const { return *(c_revision*)this->content[this->thread_revision_base[GET_TID]];     }
+        inline w_revision& ui_w_revision_1() const { return *(w_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; }
+        inline p_revision& ui_p_revision_1() const { return *(p_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; }
+        inline r_revision& ui_r_revision_1() const { return *(r_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; }
         inline size_t get_thread_revision_base() const;
         inline void set_thread_revision_base(size_t);
-
         size_t* thread_revision_base;
     };
 

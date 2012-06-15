@@ -7,9 +7,11 @@ namespace ambient { namespace models { namespace velvet {
     public:
         inline memspec(size_t size);
         inline void* alloc() const;
+        inline void* calloc() const;
         inline size_t get_bound() const;
         inline void* get_packet_t() const;
         size_t size;
+        bool clean;
     };
 
 } } }

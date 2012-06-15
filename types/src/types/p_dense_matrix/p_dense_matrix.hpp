@@ -16,11 +16,10 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols, T init_value){
+    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols){
         this->cols = cols;
         this->rows = rows;
         this->pt_set_dim(cols, rows);
-        this->fill_value(init_value);
     }
 
     template <typename T>
