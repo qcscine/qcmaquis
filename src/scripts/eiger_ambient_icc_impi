@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="void"
+STATE_TYPES="build"
 STATE_DMRG="build"
 # end of target states #
 SITE=eiger_ambient # the dashboard name (uname -n)
@@ -26,8 +26,8 @@ module load ${CMAKE}
 ## common ##
 #MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O0 -g -DNDEBUG"
 #MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O0 -g -DNDEBUG"
-#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -inline-level=2"
-#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -inline-level=2"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O2 -DNDEBUG" # -inline-level=2"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O2 -DNDEBUG" # -inline-level=2"
 MAQUIS_COMMON_CMAKE_C_COMPILER=icc
 MAQUIS_COMMON_CMAKE_CXX_COMPILER=icpc
 MAQUIS_COMMON_MPI_CXX_FOUND=TRUE

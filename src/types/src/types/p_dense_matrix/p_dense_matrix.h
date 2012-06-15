@@ -30,7 +30,8 @@ namespace maquis { namespace types {
         }
 
         inline p_dense_matrix(size_type rows, size_type cols, value_type init_value = value_type()){
-            this->impl = new I(rows, cols, init_value); 
+            this->impl = new I(rows, cols); 
+            this->impl->fill_value(init_value);
         }
 
         inline p_dense_matrix(p_dense_matrix const& m){
@@ -171,7 +172,7 @@ namespace maquis { namespace types {
 
         inline ~p_dense_matrix_impl();
         inline p_dense_matrix_impl();             // please avoid implicit conversions
-        inline p_dense_matrix_impl(size_type rows, size_type cols, T init_value);
+        inline p_dense_matrix_impl(size_type rows, size_type cols);
         inline p_dense_matrix_impl(p_dense_matrix_impl const& m);
         inline value_type& get(size_type i, size_type j);
         inline scalar_type trace() const;

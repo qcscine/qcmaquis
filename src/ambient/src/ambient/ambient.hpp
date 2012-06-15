@@ -44,22 +44,23 @@ namespace ambient{
     using models::velvet::history;
     using models::velvet::revision;
     using controllers::velvet::iteratable;
-    using controllers::velvet::check_revision;
-    using controllers::velvet::reuse_revision;
+    using controllers::velvet::c_revision;
+    using controllers::velvet::w_revision;
+    using controllers::velvet::p_revision;
+    using controllers::velvet::r_revision;
     using controllers::velvet::cfunctor;
 
-    template <typename T> inline revision&       ui_l_current(T& obj){ return obj.ui_l_revision_0();     } // (logistics)
-    template <typename T> inline revision&       ui_l_updated(T& obj){ return obj.ui_l_revision_1();     } // (logistics, debug)
-    template <typename T> inline check_revision& ui_c_current(T& obj){ return obj.ui_c_revision_0();     } // (computation)
-    template <typename T> inline check_revision& ui_c_updated(T& obj){ return obj.ui_c_revision_1();     } // (memcheck)
-    template <typename T> inline reuse_revision& ui_r_updated(T& obj){ return obj.ui_r_revision_1();     } // (reusable)
+    template <typename T> inline revision&   ui_l_current(T& obj){ return obj.ui_l_revision_0(); } // (logistics)
+    template <typename T> inline c_revision& ui_c_current(T& obj){ return obj.ui_c_revision_0(); } // (computation)
+    template <typename T> inline w_revision& ui_w_updated(T& obj){ return obj.ui_w_revision_1(); } // (reusable weak)
+    template <typename T> inline p_revision& ui_p_updated(T& obj){ return obj.ui_p_revision_1(); } // (purged malloc)
+    template <typename T> inline r_revision& ui_r_updated(T& obj){ return obj.ui_r_revision_1(); } // (reusable)
 
-    template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().dim;            }
-    template<typename T> inline dim2 ui_c_get_mem_dim    (T& ref){ return ui_c_current(ref).get_layout().mem_dim;        }
-    template<typename T> inline dim2 ui_c_get_grid_dim   (T& ref){ return ui_c_current(ref).get_layout().grid_dim;       }
+    template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().dim;      }
+    template<typename T> inline dim2 ui_c_get_mem_dim    (T& ref){ return ui_c_current(ref).get_layout().mem_dim;  }
+    template<typename T> inline dim2 ui_c_get_grid_dim   (T& ref){ return ui_c_current(ref).get_layout().grid_dim; }
 
     inline dim2 ui_l_get_grid_dim(revision& r){ return r.content->grid_dim; }
-
 }
 
 #endif

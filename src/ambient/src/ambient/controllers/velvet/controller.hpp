@@ -115,10 +115,12 @@ namespace ambient { namespace controllers { namespace velvet {
         ++this->rrn %= this->num_threads;
     }
 
-    inline layout::entry& controller::alloc_block(layout& l, size_t x, size_t y){
-        const memspec& spec = l.get_spec();
-        l.embed(spec.alloc(), x, y, spec.get_bound());
-        return l.get(x,y);
+    inline void controller::alloc_block(const memspec& s, layout& l, size_t x, size_t y){
+        l.embed(s.alloc(), x, y, s.get_bound());
+    }
+
+    inline void controller::calloc_block(const memspec& s, layout& l, size_t x, size_t y){
+        l.embed(s.calloc(), x, y, s.get_bound());
     }
 
     // note: ufetch_block is used only by pt_fetch in user-space
@@ -246,7 +248,7 @@ namespace ambient { namespace controllers { namespace velvet {
         if(entry.valid()){
             channel.emit(package(l, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), x, y, c.get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }else if(l.placement->is_master()){
-            ambient::controller.alloc_block(l, x, y); // generating block
+            ambient::controller.alloc_block(l.spec, l, x, y); // generating block
             forward_block(cmd);             // and forwarding
         }else{
             l.get(x,y).get_path().push_back(c.get<int>(A_LAYOUT_P_OWNER_FIELD));

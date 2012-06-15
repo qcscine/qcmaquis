@@ -25,7 +25,7 @@ namespace ambient {
             __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
             T* bd   = ui_c_current(b)(0,0);
             T* ad   = ui_c_current(a)(0,0);
-            T* cd   = ui_r_updated(c)(0,0);
+            T* cd   = ui_w_updated(c)(0,0);
             int m   = ui_c_get_dim(a).y;
             int n   = ui_c_get_dim(b).x;
             int k   = ui_c_get_dim(b).y;
@@ -54,7 +54,7 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
             __A_TIME_C("ambient_copy_atomic_c_kernel"); 
             T* ad  = ui_c_current(a)(0,0);
-            T* acd  = ui_r_updated(ac)(0,0);
+            T* acd  = ui_w_updated(ac)(0,0);
             __a_copy(acd, ad, ui_c_get_mem_dim(a).square());
             __A_TIME_C_STOP
         }
@@ -241,7 +241,7 @@ namespace ambient {
             __A_TIME_C("ambient_add_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            T* ar = ui_r_updated(a)(0,0);
+            T* ar = ui_w_updated(a)(0,0);
             int size = ui_c_get_mem_dim(a).square();
             //if(ad != ar){
                 for(int k = 0; k < size; k++)
@@ -271,7 +271,7 @@ namespace ambient {
             __A_TIME_C("ambient_sub_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            T* ar = ui_r_updated(a)(0,0);
+            T* ar = ui_w_updated(a)(0,0);
             int size = ui_c_get_mem_dim(a).square();
             //if(ad != ar){
                 for(int k = 0; k < size; k++)
@@ -298,7 +298,7 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<double>& a, const size_t& m, const size_t& n, const double*& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
-            T* ar = ui_r_updated(a)(0,0);
+            T* ar = ui_w_updated(a)(0,0);
             int size = m*n;
             //if(ad != ar){
                 for(int k=0; k < size; k++) 
@@ -313,7 +313,7 @@ namespace ambient {
         inline void c(maquis::types::p_dense_matrix_impl<std::complex<double> >& a, const size_t& m, const size_t& n, const std::complex<double>*& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
-            T* ar = ui_r_updated(a)(0,0);
+            T* ar = ui_w_updated(a)(0,0);
             int size = m*n;
             //if(ad != ar){
                 for(int k=0; k < size; k++) 
@@ -340,7 +340,7 @@ namespace ambient {
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_transpose_out_atomic_c_kernel"); 
             T* od = ui_c_current(a)(0,0);
-            T* td = ui_r_updated(t)(0,0);
+            T* td = ui_w_updated(t)(0,0);
 
             int mlda = ui_c_get_mem_dim(a).y;
             int tlda = ui_c_get_mem_dim(t).y;
@@ -365,7 +365,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
             __A_TIME_C("ambient_resize_atomic_c_kernel"); 
-            __a_memptf_atomic<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
+            __a_memptf_atomic_r<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
             __A_TIME_C_STOP
         }
     };
@@ -414,7 +414,7 @@ namespace ambient {
             gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, work, &lwork, rwork, &info );
         /* Check for convergence */
             if( info > 0 ) {
-                printf( "The algorithm computing SVD failed to converge.\n" );
+                printf( "The algorithm computing atomic SVD failed to converge.\n" );
                 exit( 1 );
             }
             free(work);
