@@ -46,9 +46,23 @@
 #define LOAD_register(z, n, unused)     "movq "PPS(AOS,n)"(%%rdi)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
 #define LOAD_register_rdx(z, n, unused) "movq "PPS(AOS,n)"(%%rdx)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
 // addition ASM operators
-#define  ADC_register(z, n, unused) "adcq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rsi) ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */     
+#define  ADC_register(z, n, unused) "adcq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rsi) ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */    
 #define ADC0_register(z, n, unused) "adcq $0x0                                ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
-#define ADC00_register(z, n, unused)"adcq %%rax                               ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
+#define ADC00_register(z, n, unused)"adcq %%rcx                               ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
+
+#define Addition( z, n, unused) "movq "PPS(AOS,n)"(%%rdi), %%rax \n" \
+                                ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(AOS,n)"(%%rsi), %%rax \n" \
+                                "movq %%rax              , "PPS(AOS,n)"(%%rdi) \n" 
+
+#define Addition2( z, n, unused) "movq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
+                                 "adcq %%rcx              , %%rax \n" \
+                                 "movq %%rax              , "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
+
+#define Addition3( z, n, unused) "movq "PPS(AOS,n)"(%%rdx), %%rax \n" \
+                                 ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(AOS,n)"(%%rsi), %%rax \n" \
+                                 "movq %%rax              , "PPS(AOS,n)"(%%rdi) \n" 
+
+
 // substraction ASM operators 
 #define  SBB_register(z, n, unused) "sbbq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rsi) ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi - rdi - SB  */     
 #define SBB0_register(z, n, unused) "sbbq %%rax                               ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 - rdi - SB    */     

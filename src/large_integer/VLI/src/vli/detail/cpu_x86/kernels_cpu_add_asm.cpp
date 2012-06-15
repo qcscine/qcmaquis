@@ -35,11 +35,8 @@ namespace vli{
                      #define FUNCTION_add_nbits_nbits(z, n, unused) \
                          void NAME_ADD_NBITS_PLUS_NBITS(n)(unsigned long int* x, unsigned long int const* y){ \
                          asm(                                                                                 \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register, ~)                         \
-                                 "addq (%%rsi), "R(0)" \n"                                                    \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC_register, ~)                          \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), SAVE_register, ~)                         \
-                                 : : :BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"        \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Addition, ~)                              \
+                                 : : :"rax","memory"                                                          \
                             );                                                                                \
                          }                                                                                    \
 
@@ -49,20 +46,19 @@ namespace vli{
                      //new functions type : VLI<n*64> + VLI<64> : add192_64, add256_64
                      //the case is done after add128_64
                      #define FUNCTION_add_nbits_64bits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){ \
-                         asm(                                                                                  \
-                                 "movq   (%%rsi)            , %%rcx  \n"                                       \
-                                 "movq   %%rcx              , %%rbx  \n"   /*  XOR then AND could make a cpy */\
-                                 "xorq   %%rax              , %%rax  \n" /*rbx to 0 */                         \
-                                 "shrq   $63                , %%rbx  \n" /* get the sign */                    \
-                                 "subq   %%rbx              , %%rax  \n" /* 0 or 0xffffff...    */             \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register, ~)                          \
-                                 "addq   %%rcx              , "R(0)" \n"                                       \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC00_register, ~) /* rbx used inside */   \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), SAVE_register, ~)                          \
-                                 : : :"rax","rbx","rcx",BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"   \
-                            );                                                                                 \
-                         }                                                                                     \
+                         void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){  \
+                         asm(                                                                                   \
+                                 "movq   (%%rsi)            , %%rax   \n"                                       \
+                                 "movq   %%rax              , %%r8    \n" /*  XOR then AND could make a cpy */  \
+                                 "xorq   %%rcx              , %%rcx   \n" /*rbx to 0 */                         \
+                                 "shrq   $63                , %%r8    \n" /* get the sign */                    \
+                                 "subq   %%r8               , %%rcx   \n" /* 0 or 0xffffff...    */             \
+                                 "addq   (%%rdi)            , %%rax   \n"                                       \
+                                 "movq   %%rax              , (%%rdi) \n"                                       \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Addition2, ~)                               \
+                                 : : :"rax","r8","rcx","memory"                                                 \
+                            );                                                                                  \
+                         }                                                                                      \
 
                      BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
                      #undef FUNCTION_add_nbits_64bits
@@ -70,16 +66,14 @@ namespace vli{
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
                          void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(unsigned long int* x , unsigned long int const* y , unsigned long int const* w /* z used by boost pp !*/){ \
-                         asm(                                                                                                                     \
-                                 "xorq "R(BOOST_PP_ADD(n,1))", "R(BOOST_PP_ADD(n,1))" \n"                                                         \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), LOAD_register_rdx, ~)                                                         \
-                                 "addq (%%rsi), "R(0)" \n"                                                                                        \
-                                 BOOST_PP_REPEAT(n, ADC_register, ~)                                                                              \
-                                 "adcq $0x0, "R(BOOST_PP_ADD(n,1))" \n"                                                                           \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), SAVE_register, ~)                                                             \
-                                 : : :BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"                                            \
-                            );                                                                                                                    \
-                        }                                                                                                                         \
+                         asm(                                                                 \
+                                 "xorq %%rcx  ,%%rcx \n"                                      \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), Addition3, ~)              \
+                                 "adcq $0x0   ,%%rcx \n"                                      \
+                                 "movq %%rcx  ,"PPS(AOS,BOOST_PP_ADD(n,2))"(%%rdi) \n "       \
+                                 : : :"rax","rcx","memory"                                    \
+                            );                                                                \
+                        }                                                                     \
 
                      BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
                      #undef FUNCTION_add_nbits_nminus1bits
