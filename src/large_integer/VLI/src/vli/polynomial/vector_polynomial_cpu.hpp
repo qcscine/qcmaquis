@@ -69,14 +69,15 @@ struct inner_product_result_type< vector_polynomial<polynomial<Coeff,OrderSpecif
 
 namespace detail {    
 #ifdef _OPENMP
-template <class BaseInt, std::size_t Size, unsigned int Order>
-polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order>
-inner_product_openmp( vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v1, 
-                      vector_polynomial<polynomial<vli_cpu<BaseInt, Size>, Order> >  const& v2){
+template <class Polynomial>
+typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_product_openmp( 
+    vector_polynomial<Polynomial> const& v1, 
+    vector_polynomial<Polynomial> const& v2){
+    
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
 
-    std::vector<polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> > res(omp_get_max_threads()); 
+    std::vector<typename inner_product_result_type<vector_polynomial<Polynomial> >::type > res(omp_get_max_threads()); 
    
     #pragma omp parallel for schedule(dynamic)
     for(std::size_t i=0 ; i < size_v ; ++i){
