@@ -247,7 +247,7 @@ MPSTensor<Matrix, SymmGroup>::inplace_conjugate()
 }
 
 template<class Matrix, class SymmGroup>
-typename MPSTensor<Matrix, SymmGroup>::scalar_type
+typename MPSTensor<Matrix, SymmGroup>::magnitude_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 {
 

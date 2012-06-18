@@ -153,9 +153,10 @@ term.operators.push_back( make_pair(p3, op3) ); \
 terms.push_back(term); }
 
 //if (!open || (p1_ < L && p2_ < L && p3_ < L)) { \
+//if (true) } \
 
 #define TERM(p1_,p2_,p3_) \
-if (true) { \
+if (!open || (p1_ < L && p2_ < L && p3_ < L)) { \
 maquis::cout << "Operator on " << p1_ << " " << p2_ << " " << p3_ << std::endl; \
 int p1=(p1_)%L, p2=(p2_)%L, p3=(p3_)%L; \
 NNN(p1,  f * splus, p2, sminus, p3, delta*sz); \
@@ -167,8 +168,8 @@ NNN(p1, -f * delta*sz, p2, sminus, p3, splus); }
 
         else if (KK != 0 && K3 == 0){ // see above: KK != 0
 
+            std::complex<double> f(0, KK*0.5);
             for (int p = 0; p < L; ++p) {
-                std::complex<double> f(0, KK*0.5);
                 /*if (p % 3 == 0) {
                     TERM(p, p+1, p+3);
                 } else if (p % 3 == 1) {
@@ -177,15 +178,29 @@ NNN(p1, -f * delta*sz, p2, sminus, p3, splus); }
                 } else if (p % 3 == 2) {
                     TERM(p, p-1, p+3);
                 }*/
-                if (p % 3 == 0) {
+
+                // This is a mapping of the 3l Kagome case that creates a pretty funny open boundary
+                /*if (p % 3 == 0) {
                     TERM(p, p+1, p+3);
                 } else if (p % 3 == 1) {
                     // TERM(p, p+2, p+3);
                     // TERM(p, p+1, p+3);
                 } else if (p % 3 == 2) {
                     TERM(p, p+2, p+3);
-                }
+                }*/
+
+                // This should do better
+                /*if (p % 3 == 0) {
+                    TERM(p, p+1, p+3);
+                } else if (p % 3 == 2) {
+                    TERM(p, p-1, p+3);
+                }*/
+                if (p % 3 != 0)
+                    continue;
+                TERM(p, p+1, p+3);
+                TERM(p+2, p+1, p+5);
             }
+            TERM(L-3, L-4, L-1);
 
         } else {
             
