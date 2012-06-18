@@ -32,8 +32,7 @@ class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var
     typedef unsigned int                                    exponent_type;      // Type of the exponents (has to be the same type as Vli::size_type)
     
     polynomial() {
-        detail::init(*this, typename boost::is_fundamental<Coeff>::type());
-        std::cout<<this->size()<<std::endl;
+        detail::init(*this, typename boost::is_fundamental<Coeff>::type()); 
     }
     
     explicit polynomial(int i) {
