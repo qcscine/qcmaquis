@@ -61,6 +61,14 @@ public:
     block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
     block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
     
+    bool reasonable() const
+    {
+        for (size_t i=0; i<data_.size(); ++i)
+            if (! data_[i].reasonable())
+                return false;
+        return true;
+    }
+    
 public:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
 //    Index<SymmGroup> upper_i, lower_i;
