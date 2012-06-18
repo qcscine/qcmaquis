@@ -110,6 +110,8 @@ public:
     void save(alps::hdf5::archive & ar) const;
 #endif
     
+    bool reasonable() const;
+    
 private:
     boost::ptr_vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;

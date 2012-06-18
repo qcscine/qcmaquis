@@ -354,3 +354,14 @@ void block_matrix<Matrix, SymmGroup>::allocate_blocks()
     for (std::size_t k = 0; k < n_blocks(); ++k)
         resize(data_[k], rows_[k].second, cols_[k].second);
 }
+
+template<class Matrix, class SymmGroup>
+bool block_matrix<Matrix, SymmGroup>::reasonable() const
+{
+    for (size_t k=0; k<n_blocks(); ++k)
+        if (num_rows((*this)[k]) != rows_[k].second || num_cols((*this)[k]) != cols_[k].second)
+            return false;
+    return true;
+}
+
+

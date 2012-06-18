@@ -109,6 +109,10 @@ public:
                     storage::prefetch(left_[site-1], left_stores_[site-1]);
             }
             
+            assert( left_[site].reasonable() );    // in case something is wrong with storage
+            assert( right_[site+1].reasonable() ); // in case something is wrong with storage
+            
+            
 //            maquis::cout << "My size: " << std::endl;
 //            maquis::cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << std::endl;
 //            maquis::cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << std::endl;
