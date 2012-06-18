@@ -356,7 +356,7 @@ namespace maquis { namespace types {
     template<typename T>
     inline void gemm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c){
         // gs
-        if(num_cols(a) != num_rows(b)) maquis::cout << "Incorrect GEMM operation\n";
+        assert(num_cols(a) == num_rows(b));
 #ifdef AMBIENT_SERIAL_CHECK
         dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         dense_matrix<T> sb = maquis::traits::matrix_cast<dense_matrix<T> >(b);
@@ -373,7 +373,7 @@ namespace maquis { namespace types {
     template<typename T, typename D>
     inline void gemm(const p_dense_matrix<T>& a, const p_diagonal_matrix<D>& b, p_dense_matrix<T>& c){
         // gs
-        if(num_cols(a) != num_rows(b)) maquis::cout << "Incorrect GEMM operation\n";
+        assert(num_cols(a) == num_rows(b));
 #ifdef AMBIENT_SERIAL_CHECK
         dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         diagonal_matrix<D> sb = maquis::traits::matrix_cast<diagonal_matrix<D> >(b);
@@ -393,7 +393,7 @@ namespace maquis { namespace types {
     template<typename T, typename D>
     inline void gemm(const p_diagonal_matrix<D>& a, const p_dense_matrix<T>& b, p_dense_matrix<T>& c){
         // gs
-        if(num_cols(a) != num_rows(b)) maquis::cout << "Incorrect GEMM operation\n";
+        assert(num_cols(a) == num_rows(b));
 #ifdef AMBIENT_SERIAL_CHECK
         diagonal_matrix<D> sa = maquis::traits::matrix_cast<diagonal_matrix<D> >(a);
         dense_matrix<T> sb = maquis::traits::matrix_cast<dense_matrix<T> >(b);
@@ -438,7 +438,7 @@ namespace maquis { namespace types {
     inline void heev(p_dense_matrix<T> a, p_dense_matrix<T>& evecs,
                      typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     { // gs
-        if(num_rows(a) != num_cols(a) || num_rows(evals) != num_rows(a)) maquis::cout << "Incorrect HEEV operation\n";
+        assert(num_rows(a) == num_cols(a) && num_rows(evals) == num_rows(a));
 #ifdef AMBIENT_SERIAL_CHECK
         dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         dense_matrix<T> sevecs = maquis::traits::matrix_cast<dense_matrix<T> >(evecs);

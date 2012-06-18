@@ -89,12 +89,11 @@ namespace maquis { namespace types {
         }
 
         inline void resize(size_type rows, size_type cols){
-            if(this->num_rows() != rows || this->num_cols() != cols){
-                assert(this->num_rows() != 0 && this->num_cols() != 0);
-                p_dense_matrix resized(rows, cols);
-                this->impl->resize(*resized.impl, rows, cols); 
-                this->impl.swap(resized.impl);
-            }
+            assert(this->num_rows() != 0 && this->num_cols() != 0);
+            if(this->num_rows() == rows && this->num_cols() == cols) return;
+            p_dense_matrix resized(rows, cols);
+            this->impl->resize(*resized.impl, rows, cols); 
+            this->impl.swap(resized.impl);
         }
 
         inline void remove_rows(size_type i, size_type k = 1){
@@ -116,8 +115,9 @@ namespace maquis { namespace types {
         }
 
         inline p_dense_matrix& operator = (const p_dense_matrix& rhs){
+            assert(!rhs.impl->pt_clean());
             this->resize(rhs.num_rows(), rhs.num_cols());
-            if(!rhs.impl->pt_clean()) this->impl->cpy(*rhs.impl);
+            this->impl->cpy(*rhs.impl);
             return *this;
         }
 

@@ -945,10 +945,7 @@ namespace ambient {
         /* Compute SVD */
             gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, work, &lwork, rwork, &info );
         /* Check for convergence */
-            if( info > 0 ) {
-                printf( "The algorithm computing SVD failed to converge.\n" );
-                exit( 1 );
-            }
+            assert( info == 0 ); // otherwise the algorithm computing SVD failed to converge
             __a_disperse<T>(ud, u);
             __a_disperse<T>(vtd, vt);
             __a_disperse<T>(sd, s);
@@ -981,12 +978,7 @@ namespace ambient {
             lwork = (int)wkopt;
             work = (double*)malloc( lwork*sizeof(double) );
             dsyev_("V","U",&m,ad,&lda,wd,work,&lwork,&info);
-        
-            if( info > 0 ) {
-                printf( "The algorithm computing SYEV failed to converge.\n" );
-                exit( 1 );
-            }
-        
+            assert( info == 0 ); // otherwise the algorithm computing SYEV failed to converge
             __a_disperse<T>(ad, a);
             __a_disperse<T>(wd, w);
             free(work); 
@@ -1022,11 +1014,7 @@ namespace ambient {
             lwork = (int)wkopt;
             work = (double*)malloc( lwork*sizeof(double) );
             dsyev_("V","U",&am,ad,&lda,wd,work,&lwork,&info);
-        
-            if( info > 0 ) {
-                printf( "The algorithm computing SYEV failed to converge.\n" );
-                exit( 1 );
-            }
+            assert(info == 0); // otherwise the algorithm computing HEEV failed to converge
             
             // First we reverse the eigenvalues, to be in agreement with the serial version ! 
             // The matrix is solidified, so we do not care on the workgroup representation
