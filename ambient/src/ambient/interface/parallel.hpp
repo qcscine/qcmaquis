@@ -38,7 +38,7 @@ namespace ambient{
         }
 
         inline dim2 pt_mem_dim() const {
-            return this->current->content->get_mem_dim();
+            return this->spec->block;
         }
 
     public:

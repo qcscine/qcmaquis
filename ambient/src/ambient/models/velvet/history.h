@@ -19,6 +19,8 @@ namespace ambient { namespace models { namespace velvet {
         revision* current;
         size_t start;
         dim2 dim;
+        memspec* spec;
+        memspec* init_spec;
     };
 
 } } }

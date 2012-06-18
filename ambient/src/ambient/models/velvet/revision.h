@@ -16,8 +16,8 @@ namespace ambient { namespace models { namespace velvet {
         inline layout::entry& block(size_t x, size_t y);
         inline void add_modifier(sfunctor* m);
         inline std::list<sfunctor*>& get_modifiers();
-        inline group* get_placement();
-        inline void set_placement(group*);
+        //inline group* get_placement();
+        //inline void set_placement(group*);
         inline sfunctor* get_generator();
         inline void set_generator(sfunctor*);
         layout* const content;

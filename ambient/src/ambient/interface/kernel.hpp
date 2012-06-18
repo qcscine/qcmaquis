@@ -42,27 +42,33 @@ namespace ambient {
         inline void assign(revision& r, int x, int y){ ambient::controller.ifetch_block(r, x, y); }
         inline void ctxt_select(const char* sql){ this->set_group(channel.world()); }
 
-        inline void block_outright_assign(revision& r){
-            size_t sizex = r.content->grid_dim.x;
-            size_t sizey = r.content->grid_dim.y;
+        template<typename T>
+        inline void block_outright_assign(T& ref){
+            size_t sizex = ref.spec->grid.x;
+            size_t sizey = ref.spec->grid.y;
+            revision& r = ui_l_current(ref);
             for(int x = 0; x < sizex; x++)
                 for(int y = 0; y < sizey; y++)
                     this->assign(r, x, y);
         }
-        inline void block_outright_pin(revision& r){
-            size_t sizex = r.content->grid_dim.x;
-            size_t sizey = r.content->grid_dim.y;
+        template<typename T>
+        inline void block_outright_pin(T& ref){
+            size_t sizex = ref.spec->grid.x;
+            size_t sizey = ref.spec->grid.y;
+            revision& r = ui_l_current(ref);
             this->add_condition(sizey*sizex);
             for(int x = 0; x < sizex; x++)
                 for(int y = 0; y < sizey; y++)
                     this->pin(r, x, y);
-            this->block_outright_assign(r);
+            this->block_outright_assign(ref);
         }
-        inline void block_2d_cycle_assign(revision& r){ 
-            this->block_outright_assign(r); 
+        template<typename T>
+        inline void block_2d_cycle_assign(T& ref){ 
+            this->block_outright_assign(ref); 
         }
-        inline void block_2d_cycle_pin(revision& r){ 
-            this->block_outright_pin(r); 
+        template<typename T>
+        inline void block_2d_cycle_pin(T& ref){ 
+            this->block_outright_pin(ref); 
         }
     };
 

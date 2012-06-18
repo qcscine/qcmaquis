@@ -56,11 +56,9 @@ namespace ambient{
     template <typename T> inline p_revision& ui_p_updated(T& obj){ return obj.ui_p_revision_1(); } // (purged malloc)
     template <typename T> inline r_revision& ui_r_updated(T& obj){ return obj.ui_r_revision_1(); } // (reusable)
 
-    template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ui_c_current(ref).get_layout().dim;      }
-    template<typename T> inline dim2 ui_c_get_mem_dim    (T& ref){ return ui_c_current(ref).get_layout().mem_dim;  }
-    template<typename T> inline dim2 ui_c_get_grid_dim   (T& ref){ return ui_c_current(ref).get_layout().grid_dim; }
-
-    inline dim2 ui_l_get_grid_dim(revision& r){ return r.content->grid_dim; }
+    template<typename T> inline dim2 ui_c_get_dim        (T& ref){ return ref.spec->dim;   }
+    template<typename T> inline dim2 ui_c_get_mem_dim    (T& ref){ return ref.spec->block; }
+    template<typename T> inline dim2 ui_c_get_grid_dim   (T& ref){ return ref.spec->grid;  }
 }
 
 #endif

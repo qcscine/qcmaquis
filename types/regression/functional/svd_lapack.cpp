@@ -28,11 +28,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sMatrix sU(T::valuex,T::valuey);
     sMatrix sV(T::valuex,T::valuey);
 
+    typename maquis::types::associated_diagonal_matrix<pMatrix>::type pS(T::valuex,T::valuex);
+    typename maquis::types::associated_diagonal_matrix<sMatrix>::type sS(T::valuex,T::valuex); 
+
     pA.fill_random();
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-
-    typename maquis::types::associated_diagonal_matrix<pMatrix>::type pS;
-    typename maquis::types::associated_diagonal_matrix<sMatrix>::type sS; 
  
     maquis::types::svd(pA,pU,pV,pS);
     maquis::types::svd(sA,sU,sV,sS);

@@ -21,13 +21,13 @@ namespace ambient { namespace models { namespace velvet {
         return this->modifiers;
     }
 
-    inline group* revision::get_placement(){
-        return this->content->placement;
-    }
+    //inline group* revision::get_placement(){
+    //    return this->content->placement;
+    //}
 
-    inline void revision::set_placement(group* grp){
-        this->content->placement = grp;
-    }
+    //inline void revision::set_placement(group* grp){
+    //    this->content->placement = grp;
+    //}
 
     inline void revision::set_generator(sfunctor* m){
         this->generator = m;
