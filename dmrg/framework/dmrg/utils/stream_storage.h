@@ -299,7 +299,8 @@ class StreamWriteRequest_impl : public StreamRequest
 {
 public:
     StreamWriteRequest_impl(StreamStorage *,
-                            Object *) { }
+                            Object *,
+                            boost::shared_ptr<boost::mutex> wait_mutex_) { }
     
     void operator()()
     { }
@@ -313,15 +314,18 @@ class StreamWriteRequest_impl<Boundary<Matrix, SymmGroup> >
     
 public:
     StreamWriteRequest_impl(StreamStorage * store_,
-                            Object * ptr_)
+                            Object * ptr_,
+                            boost::shared_ptr<boost::mutex> wait_mutex_)
     : store(store_)
-    , ptr(ptr_) { }
+    , ptr(ptr_)
+    , wait_mutex(wait_mutex_)
+    , wait_lock(*wait_mutex_)
+    { }
     
     void operator()()
     {
         if (store->master->base_path.size() == 0)
             return;
-        
         std::string fp = store->master->base_path + store->object_path;
         std::ofstream of(fp.c_str(), std::ofstream::binary);
         
@@ -343,6 +347,8 @@ public:
 private:
     StreamStorage * store;
     Object * ptr;
+    boost::shared_ptr<boost::mutex> wait_mutex;
+    boost::lock_guard<boost::mutex> wait_lock;
 };
 
 template<class Matrix, class SymmGroup>
@@ -353,9 +359,13 @@ class StreamWriteRequest_impl<block_matrix<Matrix, SymmGroup> >
     
 public:
     StreamWriteRequest_impl(StreamStorage * store_,
-                            Object * ptr_)
+                            Object * ptr_,
+                            boost::shared_ptr<boost::mutex> wait_mutex_)
     : store(store_)
-    , ptr(ptr_) { }
+    , ptr(ptr_)
+    , wait_mutex(wait_mutex_)
+    , wait_lock(*wait_mutex_)
+    { }
     
     void operator()()
     {
@@ -383,6 +393,8 @@ public:
 private:
     StreamStorage * store;
     Object * ptr;
+    boost::shared_ptr<boost::mutex> wait_mutex;
+    boost::lock_guard<boost::mutex> wait_lock;
 };
 
 class StreamDeleteRequest : public StreamRequest
@@ -433,8 +445,8 @@ struct storage {
     {
         if (ss.status() == StreamStorage::Complete)
             return;
-        else if (ss.status() == StreamStorage::Prefetching)
-            ss.wait();
+else if (ss.status() == StreamStorage::Prefetching)
+    ss.wait();
         else if (ss.status() == StreamStorage::Stored) {
             prefetch(o, ss);
             ss.wait();
@@ -450,12 +462,17 @@ struct storage {
         if (ss.status() == StreamStorage::Stored)
             return;
         
-        boost::shared_ptr<StreamRequest> req(new StreamWriteRequest_impl<T>(&ss, &o));
+        boost::shared_ptr<boost::mutex> new_mutex(new boost::mutex());
+        boost::shared_ptr<StreamRequest> req(new StreamWriteRequest_impl<T>(&ss, &o, new_mutex));
         
         {
             boost::lock_guard<boost::mutex> lock(ss.master->deque_mutex);
             ss.master->requests.push_back(req);
         }
+        // this operation does not have to be protected by a mutex, since ss.mutexes is only
+        // modified by the calling thread
+        ss.mutexes.push_back(new_mutex);
+
         ss.master->notify();
         
         ss.status_ = StreamStorage::Stored;
