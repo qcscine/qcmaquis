@@ -1,7 +1,7 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline model::model()
-    : mem_dim(dim2(512,512))
+    : mem_dim(dim2(1024,1024))
     {
     }
 

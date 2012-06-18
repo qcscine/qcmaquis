@@ -6,8 +6,7 @@
 #include "types/p_dense_matrix/kernels/atomics.hpp"
 
 //#define AMBIENT_SERIAL_CHECK
-#define USE_ATOMIC(condition, kernel, ...) if(!(condition)) ambient::push< ambient::kernel<T> >(__VA_ARGS__); \
-                                           else ambient::push< ambient::kernel ## _atomic<T> >(__VA_ARGS__);
+#define USE_ATOMIC(condition, kernel, ...) assert(condition); ambient::push< ambient::kernel ## _atomic<T> >(__VA_ARGS__);
 
 #ifdef AMBIENT_SERIAL_CHECK
 #include "types/dense_matrix/dense_matrix.h"
