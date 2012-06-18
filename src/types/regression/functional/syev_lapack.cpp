@@ -29,12 +29,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( syev, T, test_types)
     pA.fill_random();
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
  
-    typename maquis::types::associated_diagonal_matrix<pMatrix>::type pE; 
-    typename maquis::types::associated_diagonal_matrix<sMatrix>::type sE;
+    typename maquis::types::associated_diagonal_matrix<pMatrix>::type pE(T::valuex,T::valuex); 
+    typename maquis::types::associated_diagonal_matrix<sMatrix>::type sE(T::valuex,T::valuex);
 
-    pE.resize(T::valuex,T::valuex); 
-    sE.resize(T::valuex,T::valuex); 
- 
     maquis::types::syev(pA,pV,pE); // to modify the algo we need the reverse inside !
     maquis::types::syev(sA,sV,sE);
      

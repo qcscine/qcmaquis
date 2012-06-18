@@ -115,12 +115,13 @@ namespace ambient { namespace controllers { namespace velvet {
         ++this->rrn %= this->num_threads;
     }
 
-    inline void controller::alloc_block(const memspec& s, layout& l, size_t x, size_t y){
-        l.embed(s.alloc(), x, y, s.get_bound());
+    inline void controller::alloc_block(const memspec* s, layout& l, size_t x, size_t y){
+        if(s->clean) l.embed(s->calloc(), x, y, s->get_bound());
+        else l.embed(s->alloc(), x, y, s->get_bound());
     }
 
-    inline void controller::calloc_block(const memspec& s, layout& l, size_t x, size_t y){
-        l.embed(s.calloc(), x, y, s.get_bound());
+    inline void controller::calloc_block(const memspec* s, layout& l, size_t x, size_t y){
+        l.embed(s->calloc(), x, y, s->get_bound());
     }
 
     // note: ufetch_block is used only by pt_fetch in user-space
@@ -233,13 +234,13 @@ namespace ambient { namespace controllers { namespace velvet {
     inline packet* package(layout& l, const char* state, int x, int y, int dest){
         void* header = l.get(x,y).get_memory();
         //if(header == NULL) printf("HEADER IS NULL (SWAPPED)\n");
-        packet* package = pack(*(packet_t*)l.get_spec().get_packet_t(), 
+        packet* package = pack(*(packet_t*)l.spec->get_packet_t(), 
                                header, dest, "P2P", l.sid, state, x, y, NULL);
         return package;
     }
 
     inline void forward_block(packet& cmd){
-        packet& c = static_cast<packet&>(cmd);
+        /*packet& c = static_cast<packet&>(cmd);
         layout& l = *ambient::model.get_layout(c.get<size_t>(A_LAYOUT_P_SID_FIELD));
         if(c.get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM OWNER ACTION
         size_t x = c.get<int>(A_LAYOUT_P_X_FIELD);
@@ -252,11 +253,11 @@ namespace ambient { namespace controllers { namespace velvet {
             forward_block(cmd);             // and forwarding
         }else{
             l.get(x,y).get_path().push_back(c.get<int>(A_LAYOUT_P_OWNER_FIELD));
-        }
+        }*/
     }
 
     inline void accept_block(packet& cmd){
-        packet& c = static_cast<packet&>(cmd);
+        /*packet& c = static_cast<packet&>(cmd);
         size_t x = c.get<int>(A_BLOCK_P_X_FIELD);
         size_t y = c.get<int>(A_BLOCK_P_Y_FIELD);
         layout& l = *ambient::model.get_layout(c.get<size_t>(A_BLOCK_P_SID_FIELD));
@@ -269,7 +270,7 @@ namespace ambient { namespace controllers { namespace velvet {
             l.get(x,y).get_path().pop_back();
         }
 
-        ambient::controller.atomic_receive(l, x, y); // calling controller event handlers
+        ambient::controller.atomic_receive(l, x, y); // calling controller event handlers*/
     }
 
 } } }

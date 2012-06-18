@@ -27,15 +27,15 @@ namespace ambient {
     // {{{ continuous memory mangling
     template<typename V, typename T>
     inline void* __a_solidify(const iteratable<T>& o){
-        using ambient::models::velvet::layout;
+        using ambient::models::velvet::memspec;
 
         c_revision& r = o.ui_c_revision_0();
-        layout& l = r.get_layout();
+        memspec& s = *o.spec;
         size_t iterator = 0;
         char* memory = NULL;
-        size_t stride = l.get_mem_dim().y*sizeof(V);
-        size_t block = l.get_mem_dim().x;
-        dim2 grid = l.get_grid_dim();
+        size_t stride = s.block.y*sizeof(V);
+        size_t block = s.block.x;
+        dim2 grid = s.grid;
 
         for(size_t x=0; x < grid.x; x++)
             for(size_t xx=0; xx < block; xx++)
@@ -51,16 +51,16 @@ namespace ambient {
 
     template<typename V, typename T>
     inline void __a_disperse(void* data, iteratable<T>& o){
-        using ambient::models::velvet::layout;
+        using ambient::models::velvet::memspec;
         using ambient::models::velvet::history;
 
         w_revision& r = o.ui_w_revision_1();
-        layout& l = r.get_layout();
+        memspec& s = *o.spec;
         char* memory = (char*)data;
         size_t iterator = 0;
-        size_t stride = l.get_mem_dim().y*sizeof(V);
-        size_t block = l.get_mem_dim().x;
-        dim2 grid = l.get_grid_dim();
+        size_t stride = s.block.y*sizeof(V);
+        size_t block = s.block.x;
+        dim2 grid = s.grid;
 
         for(size_t x=0; x < grid.x; x++)
             for(size_t xx=0; xx < block; xx++)

@@ -11,8 +11,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             this->ctxt_select("1 from ambient as gemm_inplace"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(b));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(b);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
@@ -38,11 +38,11 @@ namespace ambient {
                 while(!L.empty()){
                     std::list<int>::iterator zy = L.begin();
                     while(zy != L.end()){
-                        if(!ui_p_updated(a)(y,*zy).trylock()){ zy++; continue; }
+                        //if(!ui_p_updated(a)(y,*zy).trylock()){ zy++; continue; }
                         T* ad = ui_c_current(a)(x,*zy);
                         T* cd = ui_p_updated(a)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
                         gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                        ui_p_updated(a)(y,*zy).unlock();
+                        //ui_p_updated(a)(y,*zy).unlock();
                         L.erase(zy++);
                     }
                 }
@@ -61,9 +61,9 @@ namespace ambient {
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(b));
-            this->block_2d_cycle_assign(ui_l_current(c));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(b);
+            this->block_2d_cycle_assign(c);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
@@ -111,11 +111,11 @@ namespace ambient {
                 while(!L.empty()){
                     std::list<int>::iterator zy = L.begin();
                     while(zy != L.end()){
-                        if(!ui_p_updated(c)(y,*zy).trylock()){ zy++; continue; }
+                        //if(!ui_p_updated(c)(y,*zy).trylock()){ zy++; continue; }
                         T* ad = ui_c_current(a)(x,*zy);
                         T* cd = ui_p_updated(c)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
                         gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                        ui_p_updated(c)(y,*zy).unlock();
+                        //ui_p_updated(c)(y,*zy).unlock();
                         L.erase(zy++);
                     }
                 }
@@ -133,8 +133,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as copy"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(ac));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(ac);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& ac, const maquis::types::p_dense_matrix_impl<T>& a){
@@ -156,7 +156,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
             this->ctxt_select("1 from ambient as remove_rows"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
         
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
@@ -177,7 +177,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
             this->ctxt_select("1 from ambient as remove_cols"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
@@ -198,8 +198,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
             this->ctxt_select("1 from ambient as resize"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(r));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(r);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
@@ -216,7 +216,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as sqrt_diagonal"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a){
@@ -237,7 +237,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
             this->ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const T& alfa){
@@ -258,8 +258,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
             this->ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(e));
-            this->block_2d_cycle_assign(ui_l_current(a));
+            this->block_2d_cycle_pin(e);
+            this->block_2d_cycle_assign(a);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl< std::complex<T> >& e, const maquis::types::p_dense_matrix_impl<T>& a, const std::complex<T>& alfa){
@@ -282,7 +282,7 @@ namespace ambient {
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
             this->ctxt_select("* from ambient as push_back_sqr_gt"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(ui_l_current(a));
+            this->block_outright_pin(a);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, std::vector<T>*& ac){
@@ -305,7 +305,7 @@ namespace ambient {
 
         inline void l(std::vector<T>*& ac, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("* from ambient as cast_to_dense"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(ui_l_current(a));
+            this->block_outright_pin(a);
         }
 
         inline void c(std::vector<T>*& ac, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
@@ -337,7 +337,7 @@ namespace ambient {
 
         inline void l(const std::vector<T>*& ac, maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
             this->ctxt_select("1 from ambient as cast_to_p_dense"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
 
         inline void c(const std::vector<T>*& ac, maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
@@ -367,8 +367,8 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_assign(ui_l_current(left)); 
-            this->block_2d_cycle_pin(ui_l_current(right)); 
+            this->block_2d_cycle_assign(left); 
+            this->block_2d_cycle_pin(right); 
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& left, maquis::types::p_dense_matrix_impl<T>& right,
@@ -398,8 +398,8 @@ namespace ambient {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(left)); 
-            this->block_2d_cycle_assign(ui_l_current(right)); 
+            this->block_2d_cycle_pin(left); 
+            this->block_2d_cycle_assign(right); 
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& left, const maquis::types::p_dense_matrix_impl<T>& right,
@@ -429,9 +429,9 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(out)); 
-            this->block_2d_cycle_assign(ui_l_current(in)); 
-            this->block_2d_cycle_assign(ui_l_current(alfa)); 
+            this->block_2d_cycle_pin(out); 
+            this->block_2d_cycle_assign(in); 
+            this->block_2d_cycle_assign(alfa); 
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
@@ -464,9 +464,9 @@ namespace ambient {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(out)); 
-            this->block_2d_cycle_assign(ui_l_current(in)); 
-            this->block_2d_cycle_assign(ui_l_current(alfa)); 
+            this->block_2d_cycle_pin(out); 
+            this->block_2d_cycle_assign(in); 
+            this->block_2d_cycle_assign(alfa); 
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& out, const maquis::types::p_dense_matrix_impl<T>& in, const maquis::types::p_dense_matrix_impl<T>& alfa,
@@ -495,7 +495,7 @@ namespace ambient {
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
             this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(ui_l_current(a));
+            this->block_outright_pin(a);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
@@ -524,8 +524,8 @@ namespace ambient {
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
             this->ctxt_select("* from ambient as scalar_overlap"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(ui_l_current(a));
-            this->block_outright_assign(ui_l_current(b));
+            this->block_outright_pin(a);
+            this->block_outright_assign(b);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
@@ -555,8 +555,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             this->ctxt_select("1 from ambient as add"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(b));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(b);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
@@ -581,8 +581,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             this->ctxt_select("1 from ambient as sub"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(b));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(b);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
@@ -607,7 +607,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
             this->ctxt_select("1 from ambient as scale"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
@@ -638,9 +638,9 @@ namespace ambient {
                       const size_t& m, const size_t& n, const size_t& k)
         {
             this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_assign(ui_l_current(a_diag));
-            this->block_2d_cycle_pin(ui_l_current(b));
-            this->block_2d_cycle_assign(ui_l_current(c));
+            this->block_2d_cycle_assign(a_diag);
+            this->block_2d_cycle_pin(b);
+            this->block_2d_cycle_assign(c);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
@@ -674,9 +674,9 @@ namespace ambient {
                       const size_t& m, const size_t& n, const size_t& k)
         {
             this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(b_diag));
-            this->block_2d_cycle_assign(ui_l_current(c));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(b_diag);
+            this->block_2d_cycle_assign(c);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
@@ -706,9 +706,9 @@ namespace ambient {
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
             this->ctxt_select("* from ambient as trace"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));    // we need only diagonal 
-                                                          // but we have to track the diagonal separately afterward
-                                                          // which is troublesome
+            this->block_2d_cycle_pin(a);    // we need only diagonal 
+                                            // but we have to track the diagonal separately afterward
+                                            // which is troublesome
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& n, T*& trace){
@@ -739,8 +739,8 @@ namespace ambient {
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
             this->ctxt_select("1 from ambient as transpose_out_l"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
-            this->block_2d_cycle_assign(ui_l_current(t));
+            this->block_2d_cycle_pin(a);
+            this->block_2d_cycle_assign(t);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, maquis::types::p_dense_matrix_impl<T>& t, const size_t& m, const size_t& n){
@@ -777,7 +777,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
             this->ctxt_select("1 from ambient as init_value"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
@@ -811,7 +811,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("1 from ambient as init_random"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
         
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
@@ -839,7 +839,7 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("1 from ambient as init_identity"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a));
+            this->block_2d_cycle_pin(a);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
@@ -869,8 +869,8 @@ namespace ambient {
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){
             this->ctxt_select("1 from ambient as validation"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(ui_l_current(a)); 
-            this->block_2d_cycle_assign(ui_l_current(b)); 
+            this->block_2d_cycle_pin(a); 
+            this->block_2d_cycle_assign(b); 
         }
         
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, int*& ret){ // see paper for Reference Dongara 
@@ -913,10 +913,10 @@ namespace ambient {
                       maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             this->ctxt_select("1 from ambient as svd"); //if(!ctxt.involved()) return;
-            this->block_outright_conditional_assign(ui_l_current(s));
-            this->block_2d_cycle_conditional_assign(ui_l_current(a));
-            this->block_2d_cycle_conditional_assign(ui_l_current(u));
-            this->block_2d_cycle_conditional_assign(ui_l_current(vt));
+            this->block_outright_conditional_assign(s);
+            this->block_2d_cycle_conditional_assign(a);
+            this->block_2d_cycle_conditional_assign(u);
+            this->block_2d_cycle_conditional_assign(vt);
         }
 
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
@@ -961,8 +961,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
             this->ctxt_select("1 from ambient as syev"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_conditional_assign(ui_l_current(a));
-            this->block_2d_cycle_conditional_assign(ui_l_current(w));
+            this->block_2d_cycle_conditional_assign(a);
+            this->block_2d_cycle_conditional_assign(w);
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<T>& w){
@@ -993,8 +993,8 @@ namespace ambient {
 
         inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
             this->ctxt_select("1 from ambient as heev"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_conditional_assign(ui_l_current(a));
-            this->block_2d_cycle_conditional_assign(ui_l_current(w)); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
+            this->block_2d_cycle_conditional_assign(a);
+            this->block_2d_cycle_conditional_assign(w); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
         }
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
