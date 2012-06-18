@@ -78,6 +78,11 @@ public:
                 site = 2*L-_site-1;
                 lr = -1;
             }
+
+            if (lr == -1 && site == L-1) {
+                maquis::cout << "Syncing storage" << std::endl;
+                base::storage_master.sync();
+            }
             
             maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
 //            storage_master.print_size();
@@ -100,15 +105,10 @@ public:
             storage::load(right_[site+1], right_stores_[site+1]);
             
             if (lr == +1) {
-                //storage::prefetch(left_[site+1], left_stores_[site+1]);
-                if (site+2 < right_.size())
-                    storage::prefetch(right_[site+2], right_stores_[site+2]);
+                storage::prefetch(left_[site+1], left_stores_[site+1]);
             } else {
-//                storage::prefetch(right_[site], right_stores_[site]);
-                if (site > 1)
-                    storage::prefetch(left_[site-1], left_stores_[site-1]);
+                storage::prefetch(right_[site], right_stores_[site]);
             }
-            
             assert( left_[site].reasonable() );    // in case something is wrong with storage
             assert( right_[site+1].reasonable() ); // in case something is wrong with storage
             
@@ -123,16 +123,6 @@ public:
             
             timeval now, then;
 
-//            { // LAUSANNE
-//                MPSTensor<Matrix, SymmGroup> vec1 = mps[site], vec2;
-//                vec1.make_left_paired(); vec2.make_left_paired();
-//                maquis::cout << vec1 << " " << vec2 << std::endl;
-//                ietl::mult(sp, vec1, vec2);
-//                vec1.make_left_paired(); vec2.make_left_paired();
-//                maquis::cout << vec1 << " " << vec2 << std::endl;
-//                maquis::cout << "Initial energy guess " << ietl::dot(vec1, vec2) << std::endl;
-//            } // LAUSANNE
-            
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
             if (d == Both ||
@@ -147,20 +137,10 @@ public:
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, mps[site], parms);
                     END_TIMING("JCD")
-                } /* else if (parms.template <std::string>("eigensolver") == std::string("IETL_NEW_JCD")) {
-                    BEGIN_TIMING("JD")
-                    res = solve_ietl_new_jd(sp, mps[site], parms);
-                    END_TIMING("JD")
-                } */ else {
+                } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
  
-//                {
-//                    ietl::mult(sp, mps[site], res.second);
-//                    res.first = ietl::dot(res.second, mps[site]);
-//                    res.second = mps[site];
-//                }
-                
                 mps[site] = res.second;
             }
             
@@ -171,12 +151,6 @@ public:
             iteration_log << make_log("Energy", res.first);
             
             double alpha;
-//            if (sweep < parms.template <int>("ngrowsweeps"))
-//                alpha = parms.template <double>("alpha_initial");
-//            else
-//                alpha = log_interpolate(parms.template <double>("alpha_initial"), parms.template <double>("alpha_final"),
-//                                        parms.template <int>("nsweeps")-parms.template <int>("ngrowsweeps"),
-//                                        sweep-parms.template <int>("ngrowsweeps"));
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
             if (sweep < ngs)
                 alpha = parms.template get<double>("alpha_initial");
@@ -236,11 +210,8 @@ public:
                 this->boundary_right_step(mpo, site); // creating right_[site]
             }
             
-            if (! (lr == +1 && site == L-1))
-            {
-            	storage::store(left_[site], left_stores_[site]); // store currently used boundary
-            	storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary
-            }
+        	storage::store(left_[site], left_stores_[site]); // store currently used boundary
+        	storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary
 
             
             
