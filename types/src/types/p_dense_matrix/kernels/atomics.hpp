@@ -244,12 +244,12 @@ namespace ambient {
             T* ar = ui_w_updated(a)(0,0);
             int size = ui_c_get_mem_dim(a).square();
             //if(ad != ar){
-                for(int k = 0; k < size; k++)
-                    ar[k] = ad[k] + bd[k];
+            //    for(int k = 0; k < size; k++)
+            //        ar[k] = ad[k] + bd[k];
             //}else{
-            //    T sign = 1.;
-            //    int ONE = 1;
-            //    axpy(&size, &sign, bd, &ONE, ar, &ONE);
+                T sign = 1.;
+                int ONE = 1;
+                axpy(&size, &sign, bd, &ONE, ar, &ONE);
             //}
             __A_TIME_C_STOP
         }
@@ -274,12 +274,12 @@ namespace ambient {
             T* ar = ui_w_updated(a)(0,0);
             int size = ui_c_get_mem_dim(a).square();
             //if(ad != ar){
-                for(int k = 0; k < size; k++)
-                    ar[k] = ad[k] - bd[k];
+            //    for(int k = 0; k < size; k++)
+            //        ar[k] = ad[k] - bd[k];
             //}else{
-            //    T sign = -1.;
-            //    int ONE = 1;
-            //    axpy(&size, &sign, bd, &ONE, ar, &ONE);
+                T sign = -1.;
+                int ONE = 1;
+                axpy(&size, &sign, bd, &ONE, ar, &ONE);
             //}
             __A_TIME_C_STOP
         }
@@ -301,11 +301,11 @@ namespace ambient {
             T* ar = ui_w_updated(a)(0,0);
             int size = m*n;
             //if(ad != ar){
-                for(int k=0; k < size; k++) 
-                    ar[k] = ad[k] * (*t);
+            //    for(int k=0; k < size; k++) 
+            //        ar[k] = ad[k] * (*t);
             //}else{
-            //    int ONE = 1;
-            //    dscal_( &size, t, ar, &ONE );
+                int ONE = 1;
+                dscal_( &size, t, ar, &ONE );
             //}
             __A_TIME_C_STOP
         }
