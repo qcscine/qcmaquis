@@ -413,10 +413,7 @@ namespace ambient {
         /* Compute SVD */
             gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, work, &lwork, rwork, &info );
         /* Check for convergence */
-            if( info > 0 ) {
-                printf( "The algorithm computing atomic SVD failed to converge.\n" );
-                exit( 1 );
-            }
+            assert( info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
             free(work);
             __A_TIME_C_STOP
         }
@@ -448,10 +445,8 @@ namespace ambient {
             lwork = (int)wkopt;
             work = (double*)malloc( lwork*sizeof(double) );
             dsyev_("V","U",&am,ad,&lda,wd,work,&lwork,&info);
-            if( info > 0 ) {
-                printf( "The algorithm computing SYEV failed to converge.\n" );
-                exit( 1 );
-            }
+            assert( info == 0 ); // otherwise the algorithm computing SYEV failed to converge
+
             // First we reverse the eigenvalues, to be in agreement with the serial version ! 
             // The matrix is solidified, so we do not care on the workgroup representation
             double tempdbl;
