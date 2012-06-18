@@ -66,7 +66,7 @@ public:
     void multiply_by_scalar(scalar_type);
     
     scalar_type scalar_overlap(MPSTensor const &) const;
-    scalar_type scalar_norm() const;
+    magnitude_type scalar_norm() const;
     
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
