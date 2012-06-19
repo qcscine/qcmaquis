@@ -115,13 +115,12 @@ namespace ambient { namespace controllers { namespace velvet {
         ++this->rrn %= this->num_threads;
     }
 
-    inline void controller::alloc_block(const memspec* s, layout& l, size_t x, size_t y){
-        if(s->clean) l.embed(s->calloc(), x, y, s->get_bound());
-        else l.embed(s->alloc(), x, y, s->get_bound());
+    inline void controller::alloc_block(layout& l, size_t x, size_t y){
+        l.embed(l.spec->alloc(), x, y, l.spec->get_bound());
     }
 
-    inline void controller::calloc_block(const memspec* s, layout& l, size_t x, size_t y){
-        l.embed(s->calloc(), x, y, s->get_bound());
+    inline void controller::calloc_block(layout& l, size_t x, size_t y){
+        l.embed(l.spec->calloc(), x, y, l.spec->get_bound());
     }
 
     // note: ufetch_block is used only by pt_fetch in user-space

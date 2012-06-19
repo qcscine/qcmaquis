@@ -16,7 +16,6 @@
 #endif
 
 #ifdef PDENSE
-    #include <mpi.h>
     #include "types/p_dense_matrix/p_dense_matrix.h"
     #include "types/p_dense_matrix/algorithms.hpp"
     typedef maquis::types::p_dense_matrix<dmrg_value_type> Matrix;

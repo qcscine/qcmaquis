@@ -17,8 +17,8 @@ namespace ambient { namespace models { namespace velvet {
         std::for_each(entries.begin(), entries.end(), deleter());
     }
 
-    inline layout::layout(memspec* spec)
-    : spec(spec), lda(spec->grid.y), entries(spec->grid.square()) 
+    inline layout::layout(memspec* spec, bool clean)
+    : spec(spec), clean(clean), lda(spec->grid.y), entries(spec->grid.square())
     {
         std::for_each(entries.begin(), entries.end(), constructor());
     }

@@ -1,7 +1,7 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline model::model()
-    : mem_dim(dim2(1024,1024))
+    : mem_dim(dim2(10240,10240))
     {
     }
 
@@ -14,31 +14,26 @@ namespace ambient { namespace models { namespace velvet {
 
     template<typename T>
     inline revision& model::init_revision(T* o){
-        dim2 block;
-        if(this->mem_dim < o->get_cached_dim().max()) block = this->mem_dim;
-        else block = o->get_cached_dim();
-        o->init_spec = new memspec(block.square()*sizeof(typename T::value_type), 
-                                   block, o->get_cached_dim());
-        o->spec = new memspec(*o->init_spec);
-        layout* l = new layout(o->init_spec);
-        o->init_spec->clean = true;
-        //this->insert(l);
+        //if(this->mem_dim < o->get_cached_dim().max()) block = this->mem_dim; else 
+        dim2 block = o->get_cached_dim();
+        o->spec.latch(block.square()*sizeof(typename T::value_type), 
+                      block, o->get_cached_dim());
+        layout* l = new layout(&o->spec, true);
         return o->add_state(l);
     }
 
     inline revision& model::add_revision(history* o){
-        layout* l = new layout(o->spec);
-        //this->insert(l);
+        layout* l = new layout(&o->spec);
         return o->add_state(l);
     }
 
     inline bool model::is_atomic(const history* o){
         if(o->back() == NULL) return (this->mem_dim > o->get_cached_dim().max()); 
-        return (o->spec->grid == 1);
+        return (o->spec.grid == 1);
     }
 
     inline size_t model::get_block_lda(history* o){
-        return o->spec->grid.y;
+        return o->spec.grid.y;
     }
 
     inline dim2 model::get_current_dim(const history* o){

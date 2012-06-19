@@ -11,8 +11,6 @@ namespace ambient { namespace models { namespace velvet {
         size_t size = this->content.size();
         for(size_t i = start; i < size; i++)
             delete this->content[i];
-        delete this->init_spec;
-        delete this->spec;
     }
 
     inline void history::clean(){

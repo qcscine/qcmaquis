@@ -30,12 +30,11 @@ namespace ambient {
         using ambient::models::velvet::memspec;
 
         c_revision& r = o.ui_c_revision_0();
-        memspec& s = *o.spec;
         size_t iterator = 0;
         char* memory = NULL;
-        size_t stride = s.block.y*sizeof(V);
-        size_t block = s.block.x;
-        dim2 grid = s.grid;
+        size_t stride = o.spec.block.y*sizeof(V);
+        size_t block = o.spec.block.x;
+        dim2 grid = o.spec.grid;
 
         for(size_t x=0; x < grid.x; x++)
             for(size_t xx=0; xx < block; xx++)
@@ -55,12 +54,11 @@ namespace ambient {
         using ambient::models::velvet::history;
 
         w_revision& r = o.ui_w_revision_1();
-        memspec& s = *o.spec;
         char* memory = (char*)data;
         size_t iterator = 0;
-        size_t stride = s.block.y*sizeof(V);
-        size_t block = s.block.x;
-        dim2 grid = s.grid;
+        size_t stride = o.spec.block.y*sizeof(V);
+        size_t block = o.spec.block.x;
+        dim2 grid = o.spec.grid;
 
         for(size_t x=0; x < grid.x; x++)
             for(size_t xx=0; xx < block; xx++)
@@ -293,7 +291,7 @@ namespace ambient {
     inline void __a_atomic_refresh(maquis::types::p_dense_matrix_impl<T>& m){
         T* dm = ui_c_current(m)(0,0);
         T* rm = ui_w_updated(m)(0,0);
-        if(dm != rm) __a_copy(rm, dm, ui_c_get_mem_dim(m).square());
+        if(dm != rm) memcpy(rm, dm, ui_c_get_mem_size(m));
     }
 
 }
