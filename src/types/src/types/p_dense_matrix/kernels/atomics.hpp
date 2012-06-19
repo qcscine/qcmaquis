@@ -23,18 +23,15 @@ namespace ambient {
         }
         inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
             __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
-            T* bd   = ui_c_current(b)(0,0);
             T* ad   = ui_c_current(a)(0,0);
+            T* bd   = ui_c_current(b)(0,0);
             T* cd   = ui_w_updated(c)(0,0);
             int m   = ui_c_get_dim(a).y;
             int n   = ui_c_get_dim(b).x;
             int k   = ui_c_get_dim(b).y;
-            int lda = ui_c_get_mem_dim(a).y;
-            int ldb = ui_c_get_mem_dim(b).y;
-            int ldc = ui_c_get_mem_dim(c).y;
             T alpha(1.0); 
             T beta(0.0);
-            gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            gemm("N","N", &m, &n, &k, &alpha, ad, &m, bd, &k, &beta, cd, &m);
             __A_TIME_C_STOP
         }
     };
@@ -239,9 +236,8 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             __A_TIME_C("ambient_add_atomic_c_kernel"); 
-            T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            T* ar = ui_w_updated(a)(0,0);
+            T* ar = ui_r_updated(a)(0,0);
             int size = ui_c_get_mem_dim(a).square();
             //if(ad != ar){
             //    for(int k = 0; k < size; k++)
@@ -269,9 +265,8 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b){
             __A_TIME_C("ambient_sub_atomic_c_kernel"); 
-            T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            T* ar = ui_w_updated(a)(0,0);
+            T* ar = ui_r_updated(a)(0,0);
             int size = ui_c_get_mem_dim(a).square();
             //if(ad != ar){
             //    for(int k = 0; k < size; k++)
@@ -297,8 +292,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<double>& a, const size_t& m, const size_t& n, const double*& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
-            T* ad = ui_c_current(a)(0,0);
-            T* ar = ui_w_updated(a)(0,0);
+            T* ar = ui_r_updated(a)(0,0);
             int size = m*n;
             //if(ad != ar){
             //    for(int k=0; k < size; k++) 
@@ -342,12 +336,10 @@ namespace ambient {
             T* od = ui_c_current(a)(0,0);
             T* td = ui_w_updated(t)(0,0);
 
-            int mlda = ui_c_get_mem_dim(a).y;
-            int tlda = ui_c_get_mem_dim(t).y;
-
-            for(int j=0; j < n; ++j)
-            for(int i = 0; i < m; ++i)
-            td[j+i*tlda] = od[i+j*mlda];
+            for(int i = 0; i < m; i++){
+                for(int j = 0; j < n; j++) *td++ = od[j*m];
+                od++;
+            }
             __A_TIME_C_STOP
         }
     };
@@ -355,17 +347,17 @@ namespace ambient {
     template<typename T>
     struct resize_atomic : public ambient::kernel_atomic< resize_atomic<T> > 
     {
-        typedef void (resize_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (resize_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        inline void l(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
+        inline void l(maquis::types::p_dense_matrix_impl<T>& r, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("1 from ambient as resize_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(r));
         }
 
-        inline void c(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& r, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_atomic_c_kernel"); 
-            __a_memptf_atomic_r<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
+            __a_memptf_atomic_r<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(n, m));
             __A_TIME_C_STOP
         }
     };

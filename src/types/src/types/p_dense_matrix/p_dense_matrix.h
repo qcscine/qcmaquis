@@ -114,10 +114,9 @@ namespace maquis { namespace types {
             return this->impl->get(i,j);
         }
 
-        inline p_dense_matrix& operator = (const p_dense_matrix& rhs){
+        inline p_dense_matrix& operator = (p_dense_matrix rhs){
             assert(!rhs.impl->pt_clean());
-            this->resize(rhs.num_rows(), rhs.num_cols());
-            this->impl->cpy(*rhs.impl);
+            this->impl.swap(rhs.impl);
             return *this;
         }
 
@@ -189,7 +188,6 @@ namespace maquis { namespace types {
         inline void resize(p_dense_matrix_impl& r, size_type rows, size_type cols);
         inline void remove_rows(size_type i, size_type k);
         inline void remove_cols(size_type j, size_type k);
-        inline void cpy(const p_dense_matrix_impl& rhs);
         inline void add(const p_dense_matrix_impl& rhs); 
         inline void sub(const p_dense_matrix_impl& rhs);
         inline void mul(const p_dense_matrix_impl& rhs);

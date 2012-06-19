@@ -131,11 +131,6 @@ namespace maquis { namespace types {
         algorithms::scale_inplace(*this, t);
     }
 
-    template <typename T>
-    inline void p_dense_matrix_impl<T>::cpy(const p_dense_matrix_impl<T>& rhs){
-        algorithms::cpy(*this, rhs);
-    }
-
     #undef size_type
     #undef value_type
     #undef scalar_type

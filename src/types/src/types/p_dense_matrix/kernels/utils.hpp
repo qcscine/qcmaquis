@@ -73,15 +73,23 @@ namespace ambient {
     // }}}
 
     template<typename T>
-    inline size_t __a_get_limit_x(const T& a, size_t n = 0){
-        if(n == 0) n = ui_c_get_dim(a).x;
+    inline size_t __a_get_limit_x(const T& a, size_t n){
         return std::min(ui_c_get_mem_dim(a).x, n-ctxt.get_block_id().x*ui_c_get_mem_dim(a).x);
     }
 
     template<typename T>
-    inline size_t __a_get_limit_y(const T& a, size_t m = 0){
-        if(m == 0) m = ui_c_get_dim(a).y;
+    inline size_t __a_get_limit_x(const T& a){
+        return std::min(ui_c_get_mem_dim(a).x, ui_c_get_dim(a).x-ctxt.get_block_id().x*ui_c_get_mem_dim(a).x);
+    }
+
+    template<typename T>
+    inline size_t __a_get_limit_y(const T& a, size_t m){
         return std::min(ui_c_get_mem_dim(a).y, m-ctxt.get_block_id().y*ui_c_get_mem_dim(a).y);
+    }
+
+    template<typename T>
+    inline size_t __a_get_limit_y(const T& a){
+        return std::min(ui_c_get_mem_dim(a).y, ui_c_get_dim(a).y-ctxt.get_block_id().y*ui_c_get_mem_dim(a).y);
     }
 
     template <typename T> inline T __a_dot(T* a, T* b, int size){
@@ -110,7 +118,7 @@ namespace ambient {
 
     template <typename T>
     inline void __a_memcpy(T* dd, T *sd, size_t w, T alfa){
-        __a_copy(dd, sd, w);
+        memcpy(dd, sd, w);
     }
 
     template <typename T>
@@ -121,32 +129,30 @@ namespace ambient {
 
     template <typename T>
     inline void __a_memscal(T* dd, T *sd, size_t w, T alfa){
-        for(int z = 0; z < w; z++)
-            dd[z] += sd[z]*alfa; // be carefull that dd != sd
+        int z = w/sizeof(T);
+        do{ *dd++ += alfa*(*sd++); }while(--z > 0); // be carefull that dd != sd
     }
 
     template<typename T, void(*PTF)(T* dd, T* sd, size_t w, T alfa)>
-    inline void __a_memptf_atomic_r(maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
+    inline void __a_memptf_atomic_r(maquis::types::p_dense_matrix_impl<T>& dst, dim2 dst_p, 
                                     const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
                                     dim2 size, T alfa = 0.0)
     {
         __A_TIME_C("ambient_memptf_fr_atomic_kernel");
-        // the ouput (dest) must be a pinned p_dense_matrix
 #ifdef AMBIENT_CHECK_BOUNDARIES
-        if(ui_c_get_dim(dest).x - dest_p.x < size.x || ui_c_get_dim(dest).y - dest_p.y < size.y ||
-           ui_c_get_dim(src).x - src_p.x   < size.x || ui_c_get_dim(src).y - src_p.y   < size.y) 
+        if(ui_c_get_dim(dst).x - dst_p.x < size.x || ui_c_get_dim(dst).y - dst_p.y < size.y ||
+           ui_c_get_dim(src).x - src_p.x < size.x || ui_c_get_dim(src).y - src_p.y < size.y) 
             maquis::cout << "Error: invalid memory movement" << std::endl;
 #endif
-        T* dd = ui_r_updated(dest)(0,0); // reusable !
-        T* sd = ui_c_current(src)(0,0);
+        int n = size.x;
+        int m = size.y*sizeof(T);
+        int lda = ui_c_get_mem_dim(src).y;
+        int ldb = ui_c_get_mem_dim(dst).y;
 
-        size_t lda = ui_c_get_mem_dim(src).y;
-        size_t ldb = ui_c_get_mem_dim(dest).y;
+        T* sd = (T*)ui_c_current(src)(0,0) + src_p.y + src_p.x*lda;
+        T* dd = (T*)ui_r_updated(dst)(0,0) + dst_p.y + dst_p.x*ldb;
 
-        dd += dest_p.x*ldb + dest_p.y;
-        sd += src_p.x*lda + src_p.y;
-        for(size_t x = 0; x < size.x; x++)
-            PTF(&dd[x*ldb], &sd[x*lda], size.y, alfa);            
+        do{ PTF(dd, sd, m, alfa); sd += lda; dd += ldb; }while(--n > 0);
         __A_TIME_C_STOP
     }
 
