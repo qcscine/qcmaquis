@@ -430,7 +430,7 @@ namespace maquis { namespace types {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        USE_ATOMIC(a.atomic(), svd, a, m, n, u, vt, s);
+        USE_ATOMIC(a.atomic(), svd, a, m, n, k, u, vt, s);
 #endif
     }
 
@@ -446,7 +446,7 @@ namespace maquis { namespace types {
             maquis::traits::matrix_cast<typename associated_real_diagonal_matrix< dense_matrix<T> >::type >(evals);
         heev(sa, sevecs, sevals.get_values());
 #endif
-        size_t m = num_rows(a);
+        int m = num_rows(a);
         evecs.resize(m, m);
         USE_ATOMIC(a.atomic(), heev, a, m, evals); // destoys U triangle of M
         evecs = a;
