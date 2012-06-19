@@ -6,7 +6,6 @@ namespace ambient{
     using ambient::models::velvet::history;
     using ambient::controllers::velvet::iteratable;
    
-    template<typename T> class copy;
     template<typename T> class copy_atomic;
 
     template <typename T>
@@ -27,9 +26,9 @@ namespace ambient{
         inline parallel(const T& o)
         : iteratable<history>(), references(1) // avoiding auto-deallocation
         {
+            assert(o.pt_atomic()); 
             ambient::model.set_current_dim(this, ambient::model.get_current_dim(&o));
-            if(!o.pt_atomic()) ambient::push< ambient::copy<value_type> >(*(T*)this, *(const T*)&o);
-            else ambient::push< ambient::copy_atomic<value_type> >(*(T*)this, *(const T*)&o);
+            ambient::push< ambient::copy_atomic<value_type> >(*(T*)this, *(const T*)&o);
             this->references--; // push is done, can revert it back
         }
 
