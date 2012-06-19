@@ -55,7 +55,7 @@ namespace ambient {
             __A_TIME_C("ambient_copy_atomic_c_kernel"); 
             T* ad  = ui_c_current(a)(0,0);
             T* acd  = ui_w_updated(ac)(0,0);
-            __a_copy(acd, ad, ui_c_get_mem_dim(a).square());
+            memcpy(acd, ad, ui_c_get_mem_size(a));
             __A_TIME_C_STOP
         }
     };

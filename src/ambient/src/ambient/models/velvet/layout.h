@@ -42,7 +42,7 @@ namespace ambient { namespace models { namespace velvet {
         };
     
         inline ~layout();
-        inline layout(memspec* spec);
+        inline layout(memspec* spec, bool clean = false);
         inline void embed(void* memory, size_t x, size_t y, size_t bound); // fires controllers::unlock_revision if complete
         inline entry& get(size_t x, size_t y);
         //inline size_t get_master();
@@ -51,6 +51,7 @@ namespace ambient { namespace models { namespace velvet {
         size_t sid;
         size_t lda;
         memspec* spec;
+        bool clean;
     private:
         std::vector< layout::entry* > entries;
     }; 

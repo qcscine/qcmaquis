@@ -5,20 +5,25 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline layout::entry& c_revision::operator()(size_t x, size_t y){
         layout::entry& e = ((revision*)this)->block(x,y);
-        if(!e.valid()) ambient::controller.alloc_block(this->get_layout().spec, this->get_layout(), x, y);
+        if(!e.valid()){
+            if(this->get_layout().clean) ambient::controller.calloc_block(this->get_layout(), x, y);
+            else ambient::controller.alloc_block(this->get_layout(), x, y);
+        }
         return e;
     }
     inline layout::entry& p_revision::operator()(size_t x, size_t y){
         layout::entry& e = ((revision*)this)->block(x,y);
-        if(!e.valid()) ambient::controller.calloc_block(this->get_layout().spec, this->get_layout(), x, y);
+        if(!e.valid()) ambient::controller.calloc_block(this->get_layout(), x, y);
         return e;
     }
     inline layout::entry& w_revision::operator()(size_t x, size_t y){
         layout::entry& e = ((revision*)this)->block(x,y);
         if(!e.valid()){
             layout::entry& parent = this->get_parent()->block(x,y);
-            if(parent.occupied()) ambient::controller.alloc_block(this->get_layout().spec, this->get_layout(), x, y);
-            else e.swap(parent);
+            if(parent.occupied()){
+                 if(this->get_layout().clean) ambient::controller.calloc_block(this->get_layout(), x, y);
+                 else ambient::controller.alloc_block(this->get_layout(), x, y);
+            }else e.swap(parent);
         }
         return e;
     }
@@ -26,8 +31,10 @@ namespace ambient { namespace controllers { namespace velvet {
         layout::entry& e = ((revision*)this)->block(x,y);
         if(!e.valid()){
             layout::entry& parent = this->get_parent()->block(x,y);
-            if(parent.occupied()) ambient::controller.alloc_block(this->get_parent()->get_layout().spec, this->get_layout(), x, y);
-            else e.swap(parent);
+            if(parent.occupied()){
+                if(this->get_parent()->get_layout().clean) ambient::controller.calloc_block(this->get_layout(), x, y);
+                else ambient::controller.alloc_block(this->get_layout(), x, y);
+            }else e.swap(parent);
         }
         return e;
     }

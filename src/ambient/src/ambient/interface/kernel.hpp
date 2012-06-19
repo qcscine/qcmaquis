@@ -44,8 +44,8 @@ namespace ambient {
 
         template<typename T>
         inline void block_outright_assign(T& ref){
-            size_t sizex = ref.spec->grid.x;
-            size_t sizey = ref.spec->grid.y;
+            size_t sizex = ref.spec.grid.x;
+            size_t sizey = ref.spec.grid.y;
             revision& r = ui_l_current(ref);
             for(int x = 0; x < sizex; x++)
                 for(int y = 0; y < sizey; y++)
@@ -53,8 +53,8 @@ namespace ambient {
         }
         template<typename T>
         inline void block_outright_pin(T& ref){
-            size_t sizex = ref.spec->grid.x;
-            size_t sizey = ref.spec->grid.y;
+            size_t sizex = ref.spec.grid.x;
+            size_t sizey = ref.spec.grid.y;
             revision& r = ui_l_current(ref);
             this->add_condition(sizey*sizex);
             for(int x = 0; x < sizex; x++)

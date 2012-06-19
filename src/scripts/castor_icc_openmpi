@@ -1,11 +1,11 @@
 #!/bin/bash -l
-STATE="build"
-STATE_AMBIENT="build"
+STATE="void"
+STATE_AMBIENT="void"
 STATE_TYPES="build"
 STATE_DMRG="build"
 # end of target states #
 SITE=castor # the dashboard name (uname -n)
-ROOT_DIR=/users/ewartt/MAQUIS/trunk/src
+ROOT_DIR=/users/akosenko/maquis2012/src
 COMPILER=intel
 COMPILER_VERSION=2011
 MPI_WRAPPER=openmpi
