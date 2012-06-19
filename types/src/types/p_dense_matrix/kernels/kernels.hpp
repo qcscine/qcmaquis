@@ -194,17 +194,17 @@ namespace ambient {
     template<typename T>
     struct resize : public ambient::kernel< resize<T> > 
     {
-        typedef void (resize::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (resize::*F)(maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&);
 
-        inline void l(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
+        inline void l(maquis::types::p_dense_matrix_impl<T>& r, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("1 from ambient as resize"); //if(!ctxt.involved()) return;
             this->block_2d_cycle_pin(a);
             this->block_2d_cycle_assign(r);
         }
 
-        inline void c(maquis::types::p_dense_matrix_impl<T>& r, const size_t& m, const size_t& n, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& om, const size_t& on){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& r, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_c_kernel"); 
-            __a_memptf_reverse<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(std::min(n,on), std::min(m,om)));
+            __a_memptf_reverse<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(n,m));
             __A_TIME_C_STOP
         }
     };

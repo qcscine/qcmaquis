@@ -479,7 +479,7 @@ namespace algorithms {
     template<typename T>
     inline void resize(p_dense_matrix_impl<T>& r, size_type rows, size_type cols, p_dense_matrix_impl<T>& m, size_type orows, size_type ocols){ 
         // gs
-        USE_ATOMIC(m.atomic(), resize, r, rows, cols, m, orows, ocols);
+        USE_ATOMIC(m.atomic(), resize, r, m, std::min(rows, orows), std::min(cols, ocols));
     }
 
     template<typename T>
@@ -598,12 +598,6 @@ namespace algorithms {
 #ifdef AMBIENT_SERIAL_CHECK
         if(s == a){} else printf("--------------------- SCALE WAS INCORRECT!\n");
 #endif
-    }
-
-    template <typename T>
-    inline void cpy(p_dense_matrix_impl<T>& dst, const p_dense_matrix_impl<T>& src){
-        // gs
-        USE_ATOMIC(src.atomic(), copy, dst, src);
     }
 } 
 // }}} end of implementation specific type-nested algorithms //
