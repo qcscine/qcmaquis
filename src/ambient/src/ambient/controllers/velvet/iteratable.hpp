@@ -20,10 +20,8 @@ namespace ambient { namespace controllers { namespace velvet {
         layout::entry& e = ((revision*)this)->block(x,y);
         if(!e.valid()){
             layout::entry& parent = this->get_parent()->block(x,y);
-            if(parent.occupied()){
-                 if(this->get_layout().clean) ambient::controller.calloc_block(this->get_layout(), x, y);
-                 else ambient::controller.alloc_block(this->get_layout(), x, y);
-            }else e.swap(parent);
+            if(parent.occupied()) ambient::controller.alloc_block(this->get_layout(), x, y);
+            else e.swap(parent);
         }
         return e;
     }
