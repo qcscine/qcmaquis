@@ -367,10 +367,10 @@ namespace ambient {
     template<typename T>
     struct svd_atomic : public ambient::kernel_unpinned< svd_atomic<T> > 
     {
-        typedef void (svd_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
+        typedef void (svd_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
                           maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<double>&);
 
-        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, int& k, maquis::types::p_dense_matrix_impl<T>& u, 
                       maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             this->ctxt_select("1 from ambient as svd_atomic"); //if(!ctxt.involved()) return;
@@ -380,31 +380,23 @@ namespace ambient {
             this->atomic_conditional_assign(ui_l_current(vt));
         }
 
-        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, int& k, maquis::types::p_dense_matrix_impl<T>& u, 
                      maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
-        {
-            // gs
+        { // gs
             __A_TIME_C("ambient_svd_atomic_c_kernel"); 
-        /* Locals */
-            int lda = ui_c_get_mem_dim(a).y;
-            int ldu = ui_c_get_mem_dim(u).y;
-            int ldvt = ui_c_get_mem_dim(vt).y;
-            int info, lwork;
+            int info;
+            int lwork = -1; // C - Alex, netlib said -1 for the best workspace
             T wkopt;
-            T* work;
-            double* rwork = new double[5*std::min(lda,ldu)]; // C - useless for double but need for complex 
-            T* ad  = ui_c_current(a) (0,0);
-            T* ud  = ui_r_updated(u) (0,0);
+            T* ad  = ui_c_current(a)(0,0);
+            T* ud  = ui_r_updated(u)(0,0);
             T* vtd = ui_r_updated(vt)(0,0);
-            double* sd  = ui_r_updated(s) (0,0);
-        /* Query and allocate the optimal workspace */
-            lwork = -1; // C - Alex, netlib said -1 for the best workspace
-            gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, &wkopt, &lwork, rwork, &info );
+            double* sd  = ui_r_updated(s)(0,0);
+            double* rwork; // = new double[5*m]; // C - useless for double but need for complex 
+            T* work;
+            gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, rwork, &info ); // query and allocate the optimal workspace
             lwork = OptimalSize(wkopt);
             work = (T*)malloc( lwork*sizeof(T) );
-        /* Compute SVD */
-            gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, work, &lwork, rwork, &info );
-        /* Check for convergence */
+            gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, work, &lwork, rwork, &info );   // compute SVD
             assert( info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
             free(work);
             __A_TIME_C_STOP
@@ -414,50 +406,44 @@ namespace ambient {
     template<typename T>
     struct heev_atomic : public ambient::kernel_unpinned< heev_atomic<T> > 
     {
-        typedef void (heev_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, const size_t&, maquis::types::p_dense_matrix_impl<double>&);
+        typedef void (heev_atomic::*F)(maquis::types::p_dense_matrix_impl<T>&, int&, maquis::types::p_dense_matrix_impl<double>&);
 
-        inline void l(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
+        inline void l(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
             this->ctxt_select("1 from ambient as heev_atomic"); //if(!ctxt.involved()) return;
             this->atomic_conditional_assign(ui_l_current(a));
             this->atomic_conditional_assign(ui_l_current(w));
         }
 
-        inline void c(maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, maquis::types::p_dense_matrix_impl<double>& w){
+        inline void c(maquis::types::p_dense_matrix_impl<T>& a, int& m, maquis::types::p_dense_matrix_impl<double>& w){
             // gs
             __A_TIME_C("ambient_heev_atomic_c_kernel"); 
-            int lda = ui_c_get_mem_dim(a).y;
             int info, lwork = -1;
             double wkopt;
             double* work;
-            int am = (int)m; // for mkl (int*)
-            double* ad = (double*)__a_solidify<T>(a);
-            double* wd = (double*)__a_solidify<T>(w);
+            double* ad = (double*)__a_solidify_atomic<T>(a);
+            double* wd = (double*)__a_solidify_atomic<T>(w);
 
-            dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
+            dsyev_("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
             work = (double*)malloc( lwork*sizeof(double) );
-            dsyev_("V","U",&am,ad,&lda,wd,work,&lwork,&info);
+            dsyev_("V","U",&m,ad,&m,wd,work,&lwork,&info);
             assert( info == 0 ); // otherwise the algorithm computing SYEV failed to converge
-
-            // First we reverse the eigenvalues, to be in agreement with the serial version ! 
-            // The matrix is solidified, so we do not care on the workgroup representation
-            double tempdbl;
-            for (int i=0; i< static_cast<int>(m/2); i++){ 
-                tempdbl = wd[i];
+            // First we reverse the eigenvalues, to be coherent with the serial version ! 
+            for(int i=0; i < (int)(m/2); i++){ 
+                wkopt = wd[i];
                 wd[i] = wd[m-i-1];
-                wd[m-i-1] = tempdbl;
+                wd[m-i-1] = wkopt;
             } 
             // Second we reverse the eigenvectors
-            double* tempcol = new double[lda]; 
-            for (int i=0; i< static_cast<int>(m/2); ++i){ 
-                memmove((void*)tempcol,(void*)&ad[i*lda],lda*sizeof(double));
-                memmove((void*)&ad[i*lda],(void*)&ad[(m-1-i)*lda],lda*sizeof(double));
-                memmove((void*)&ad[(m-1-i)*lda],(void*)tempcol,lda*sizeof(double));
+            size_t len = m*sizeof(double);
+            work = (double*)realloc(work, len);
+            for (int i=0; i < (int)(m/2); i++){ 
+                memcpy(work, &ad[i*m], len);
+                memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
+                memcpy(&ad[(m-1-i)*m], work, len);
             }
-            delete[] tempcol; 
-         
-            __a_disperse<T>(ad, a);
-            __a_disperse<T>(wd, w);
+            __a_disperse_atomic<T>(ad, a);
+            __a_disperse_atomic<T>(wd, w);
             free(work);
             __A_TIME_C_STOP
         }

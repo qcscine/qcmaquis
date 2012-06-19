@@ -55,7 +55,6 @@ namespace ambient {
 
         w_revision& r = o.ui_w_revision_1();
         char* memory = (char*)data;
-        size_t iterator = 0;
         size_t stride = o.spec.block.y*sizeof(V);
         size_t block = o.spec.block.x;
         dim2 grid = o.spec.grid;
@@ -68,6 +67,21 @@ namespace ambient {
                            stride);                                        // of size
                     memory += stride;
                 }
+        free(data);
+    }
+
+    template<typename V, typename T>
+    inline void* __a_solidify_atomic(const iteratable<T>& o){
+        c_revision& r = o.ui_c_revision_0();
+        void* memory = malloc(o.spec.size);
+        memcpy(memory, (char*)r(0,0), o.spec.size);
+        return memory;
+    }
+
+    template<typename V, typename T>
+    inline void __a_disperse_atomic(void* data, iteratable<T>& o){
+        w_revision& r = o.ui_w_revision_1();
+        memcpy((char*)r(0,0), data, o.spec.size);
         free(data);
     }
     // }}}

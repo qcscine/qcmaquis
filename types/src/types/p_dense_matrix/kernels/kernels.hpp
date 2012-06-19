@@ -906,10 +906,10 @@ namespace ambient {
     template<typename T>
     struct svd : public ambient::kernel_unpinned< svd<T> > 
     {
-        typedef void (svd::*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
+        typedef void (svd::*F)(const maquis::types::p_dense_matrix_impl<T>&, int&, int&, int&, maquis::types::p_dense_matrix_impl<T>&, 
                           maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<double>&);
 
-        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, int& k, maquis::types::p_dense_matrix_impl<T>& u, 
                       maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             this->ctxt_select("1 from ambient as svd"); //if(!ctxt.involved()) return;
@@ -919,7 +919,7 @@ namespace ambient {
             this->block_2d_cycle_conditional_assign(vt);
         }
 
-        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, maquis::types::p_dense_matrix_impl<T>& u, 
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, int& m, int& n, int& k, maquis::types::p_dense_matrix_impl<T>& u, 
                      maquis::types::p_dense_matrix_impl<T>& vt, maquis::types::p_dense_matrix_impl<double>& s)
         {
             // gs
