@@ -137,8 +137,8 @@ namespace detail {
             op(*it++, *it2++);
     }
 
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class MVar0, class MVar1, class MVar2, class MVar3, class Operation>
-    void additive_op_assign(POLYNOMIAL_CLASS& p, monomial<Coeff,MVar0,MVar1,MVar2,MVar3> const& m, Operation op) {
+    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3, class Operation>
+    void additive_op_assign(POLYNOMIAL_CLASS& p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m, Operation op) {
         op(p(typename element_descriptor<POLYNOMIAL_CLASS>::type(m)), m.c_);
     }
     
@@ -152,17 +152,17 @@ namespace detail {
         op(*p.begin(),a);
     }
     
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation>
-    void multiplicative_op_assign(POLYNOMIAL_CLASS& p, Coeff const& c, Operation op) {
+    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation, class Coeff2>
+    void multiplicative_op_assign(POLYNOMIAL_CLASS& p, Coeff2 const& c, Operation op) {
         for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
             op(*it, c);
     }
     
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation>
-    void multiplicative_op_assign(POLYNOMIAL_CLASS& p, typename boost::enable_if<boost::is_same<Coeff,int>,int>::type a, Operation op) {
-        for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
-            op(*it, a);
-    }
+//    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation>
+//    void multiplicative_op_assign(POLYNOMIAL_CLASS& p, typename boost::enable_if<boost::is_same<Coeff,int>,int>::type a, Operation op) {
+//        for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
+//            op(*it, a);
+//    }
     
     template <class Polynomial>
     struct print_helper {
@@ -206,7 +206,7 @@ namespace detail {
     
     template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
     bool is_zero_helper(POLYNOMIAL_CLASS const& p) {
-        for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
+        for(typename const_iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
             if (!is_zero(*it))
                 return false;
         return true;
@@ -241,8 +241,8 @@ namespace detail {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename exponent_type<polynomial_type>::type               exponent_type;
 
-        template <class MVar0, class MVar1, class MVar2, class MVar3>
-        static void apply(polynomial_type& p, monomial<Coeff,MVar0,MVar1,MVar2,MVar3> const& m) {
+        template <class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
+        static void apply(polynomial_type& p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m) {
            //TODO optimize: this operation should be possible without creating a new copy (is it worth the effort?)
            polynomial_type p2;
            for(exponent_type i=exponent(m,Var0()); i < stride<Var0,Order>::value; ++i)
@@ -260,7 +260,8 @@ namespace detail {
         typedef typename polynomial_type::reverse_iterator                                              reverse_iterator;
         typedef typename polynomial_type::value_type                                                    value_type;
         
-        static void apply(polynomial_type& p, monomial<Coeff, Var0, no_variable, no_variable, no_variable> const& m) {
+        template <class MCoeff>
+        static void apply(polynomial_type& p, monomial<MCoeff, Var0, no_variable, no_variable, no_variable> const& m) {
            for(reverse_iterator it = p.rbegin() + exponent(m,Var0()); it !=p.rend(); ++it)
                *(it-m.var0.exp) = m.c_ * (*it);
            for(reverse_iterator it = p.rend() - exponent(m,Var0()); it != p.rend(); ++it)
@@ -356,7 +357,7 @@ namespace detail {
         typedef typename element_descriptor<result_type>::type                              result_element_descriptor;
         typedef typename exponent_type<polynomial_type>::type                               exponent_type;
         typedef typename element_descriptor<polynomial_type>::type                          element_descriptor;
-        typename polynomial_multiply_keep_order_result_type<polynomial_type>::type operator()(polynomial_type const& p1, polynomial_type const& p2) {
+        static typename polynomial_multiply_keep_order_result_type<polynomial_type>::type apply(polynomial_type const& p1, polynomial_type const& p2) {
             result_type result;
             for(exponent_type i = 0; i < stride<Var0,Order>::value; ++i)
                 for(exponent_type i2 = 0; i2+i < stride<Var0,Order>::value; ++i2)

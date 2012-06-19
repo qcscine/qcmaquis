@@ -32,7 +32,7 @@ class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var
     typedef unsigned int                                    exponent_type;      // Type of the exponents (has to be the same type as Vli::size_type)
     
     polynomial() {
-        detail::init(*this, typename boost::is_fundamental<Coeff>::type()); 
+        detail::init(*this, typename boost::is_fundamental<Coeff>::type());
     }
     
     explicit polynomial(int i) {
@@ -59,25 +59,29 @@ class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var
 
     template <class T>
     polynomial& operator += (T const& t) {
-        detail::additive_op_assign(*this, t, detail::operations::plus_assign());
+        using detail::additive_op_assign;
+        additive_op_assign(*this, t, detail::operations::plus_assign());
         return *this;
     }
 
     template <class T>
     polynomial& operator -= (T const& t) {
-        detail::additive_op_assign(*this, t, detail::operations::minus_assign());
+        using detail::additive_op_assign;
+        additive_op_assign(*this, t, detail::operations::minus_assign());
         return *this;
     }
 
     template <class T>
     polynomial& operator *= (T const& t) {
-        detail::multiplicative_op_assign(*this, t, detail::operations::multiply_assign());
+        using detail::multiplicative_op_assign;
+        multiplicative_op_assign(*this, t, detail::operations::multiply_assign());
         return *this;
     }
 
     template <class T>
     polynomial& operator /= (T const& t) {
-        detail::multiplicative_op_assign(*this, t, detail::operations::devide_assign());
+        using detail::multiplicative_op_assign;
+        multiplicative_op_assign(*this, t, detail::operations::devide_assign());
         return *this;
     }
 
@@ -141,16 +145,16 @@ typename polynomial_multiply_keep_order_result_type<POLYNOMIAL_CLASS>::type mult
     return detail::polynomial_multiply_keep_order_helper<POLYNOMIAL_CLASS>::apply(p1,p2);
 }
 
-//template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-//POLYNOMIAL_CLASS operator * (POLYNOMIAL_CLASS p, monomial<Coeff,Var0,Var1,Var2,Var3> const& m) {
-//    p *= m;
-//    return p;
-//}
-//
-//template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-//POLYNOMIAL_CLASS operator * (monomial<Coeff,Var0,Var1,Var2,Var3> const& m, POLYNOMIAL_CLASS const& p) {
-//    return p*m;
-//}
+template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
+POLYNOMIAL_CLASS operator * (POLYNOMIAL_CLASS p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m) {
+    p *= m;
+    return p;
+}
+
+template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
+POLYNOMIAL_CLASS operator * (monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m, POLYNOMIAL_CLASS const& p) {
+    return p*m;
+}
 
 template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Coeff2>
 POLYNOMIAL_CLASS operator * (POLYNOMIAL_CLASS p, Coeff2 const& c) {
