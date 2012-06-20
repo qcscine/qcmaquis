@@ -1,4 +1,4 @@
-#define BOUND 30
+#define BOUND 0 //30
 
 namespace ambient { namespace models { namespace velvet {
 

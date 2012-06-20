@@ -15,12 +15,12 @@ namespace ambient { namespace models { namespace velvet {
         virtual ~sfunctor(){
             this->grp->idle(); 
         } 
-        inline revision& get_vellum()       { return *vellum;   }
-        inline void set_vellum(revision& v) { vellum = &v;      }
+        //inline revision& get_vellum()       { return *vellum;   }
+        //inline void set_vellum(revision& v) { vellum = &v;      }
         inline void set_group(group* g)     { grp = g; place(); }
         inline group* get_group()           { return grp;       }
         group* grp;
-        revision* vellum;
+        //revision* vellum;
         void*  arguments[SFUNCTOR_ARITY];
         size_t revisions[SFUNCTOR_ARITY];
     };

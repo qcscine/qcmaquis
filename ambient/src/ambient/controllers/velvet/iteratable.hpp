@@ -1,37 +1,36 @@
 namespace ambient { namespace controllers { namespace velvet {
 
-    inline layout& revision_sub::get_layout()  { return ((revision*)this)->get_layout(); }
     inline revision* revision_sub::get_parent(){ return ((revision*)this)->get_parent(); }
 
-    inline layout::entry& c_revision::operator()(size_t x, size_t y){
-        layout::entry& e = ((revision*)this)->block(x,y);
+    inline revision::entry& c_revision::operator()(size_t x, size_t y){
+        revision::entry& e = *((revision*)this)->content;
         if(!e.valid()){
-            if(this->get_layout().clean) ambient::controller.calloc_block(this->get_layout(), x, y);
-            else ambient::controller.alloc_block(this->get_layout(), x, y);
+            if(((revision*)this)->clean) ambient::controller.calloc_block(*(revision*)this, x, y);
+            else ambient::controller.alloc_block(*(revision*)this, x, y);
         }
         return e;
     }
-    inline layout::entry& p_revision::operator()(size_t x, size_t y){
-        layout::entry& e = ((revision*)this)->block(x,y);
-        if(!e.valid()) ambient::controller.calloc_block(this->get_layout(), x, y);
+    inline revision::entry& p_revision::operator()(size_t x, size_t y){
+        revision::entry& e = *((revision*)this)->content;
+        if(!e.valid()) ambient::controller.calloc_block(*(revision*)this, x, y);
         return e;
     }
-    inline layout::entry& w_revision::operator()(size_t x, size_t y){
-        layout::entry& e = ((revision*)this)->block(x,y);
+    inline revision::entry& w_revision::operator()(size_t x, size_t y){
+        revision::entry& e = *((revision*)this)->content;
         if(!e.valid()){
-            layout::entry& parent = this->get_parent()->block(x,y);
-            if(parent.occupied()) ambient::controller.alloc_block(this->get_layout(), x, y);
+            revision::entry& parent = *this->get_parent()->content;
+            if(parent.occupied()) ambient::controller.alloc_block(*(revision*)this, x, y);
             else e.swap(parent);
         }
         return e;
     }
-    inline layout::entry& r_revision::operator()(size_t x, size_t y){
-        layout::entry& e = ((revision*)this)->block(x,y);
+    inline revision::entry& r_revision::operator()(size_t x, size_t y){
+        revision::entry& e = *((revision*)this)->content;
         if(!e.valid()){
-            layout::entry& parent = this->get_parent()->block(x,y);
+            revision::entry& parent = *this->get_parent()->content;
             if(parent.occupied()){
-                if(this->get_parent()->get_layout().clean) ambient::controller.calloc_block(this->get_layout(), x, y);
-                else ambient::controller.alloc_block(this->get_layout(), x, y);
+                if(this->get_parent()->clean) ambient::controller.calloc_block(*(revision*)this, x, y);
+                else ambient::controller.alloc_block(*(revision*)this, x, y);
             }else e.swap(parent);
         }
         return e;

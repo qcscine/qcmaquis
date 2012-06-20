@@ -5,7 +5,6 @@
 #include "ambient/utils/dim2.h"
 
 #include "ambient/models/velvet/memspec.h"
-#include "ambient/models/velvet/layout.h"
 #include "ambient/models/velvet/sfunctor.h"
 #include "ambient/models/velvet/revision.h"
 #include "ambient/models/velvet/history.h"
@@ -22,8 +21,8 @@ namespace ambient { namespace models { namespace velvet {
         inline size_t get_block_lda(history* o);
         inline dim2 get_current_dim(const history* o);
         inline void set_current_dim(history* o, dim2);
-        inline void insert(layout* l);
-        inline layout* get_layout(size_t id) const;
+        inline void insert(revision* r);
+        inline revision* get_revision(size_t id) const;
         inline model& operator>>(dim2);
         inline model& operator, (dim2);
         inline ~model();
@@ -41,6 +40,5 @@ namespace ambient {
 #include "ambient/models/velvet/model.hpp"
 #include "ambient/models/velvet/history.hpp"
 #include "ambient/models/velvet/revision.hpp"
-#include "ambient/models/velvet/layout.hpp"
 #include "ambient/models/velvet/memspec.hpp"
 #endif

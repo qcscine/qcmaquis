@@ -18,12 +18,11 @@ namespace ambient { namespace models { namespace velvet {
             delete this->content[start++];
     }
 
-    inline revision& history::add_state(layout* l){
-        revision* parent = this->current;
-        this->current = new revision(l);
-        this->current->parent = parent;
-        this->content.push_back(this->current);
-        return *this->current;
+    inline revision& history::add_state(revision* r){
+        r->parent = this->current;
+        this->content.push_back(r);
+        this->current = r;
+        return *r;
     }
 
     inline revision* history::back() const {

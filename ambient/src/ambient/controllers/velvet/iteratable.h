@@ -7,17 +7,15 @@ extern pthread_key_t pthread_tid;
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::models::velvet::revision;
-    using ambient::models::velvet::layout;
 
     struct revision_sub {
-        inline layout& get_layout();
         inline revision* get_parent();
     };
 
-    struct c_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // check
-    struct w_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // weak
-    struct p_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // purge
-    struct r_revision : public revision_sub { inline layout::entry& operator()(size_t, size_t); }; // reuse
+    struct c_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // check
+    struct w_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // weak
+    struct p_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // purge
+    struct r_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // reuse
 
     template<class T>
     class iteratable : public T

@@ -8,8 +8,8 @@ namespace ambient { namespace models { namespace velvet {
     inline model::~model(){
     }
 
-    inline void model::insert(layout* l){
-        *const_cast<size_t*>(&l->sid) = this->map.insert(l);
+    inline void model::insert(revision* r){
+        *const_cast<size_t*>(&r->sid) = this->map.insert(r);
     }
 
     template<typename T>
@@ -18,13 +18,13 @@ namespace ambient { namespace models { namespace velvet {
         dim2 block = o->get_cached_dim();
         o->spec.latch(block.square()*sizeof(typename T::value_type), 
                       block, o->get_cached_dim());
-        layout* l = new layout(&o->spec, true);
-        return o->add_state(l);
+        revision* r = new revision(&o->spec, true);
+        return o->add_state(r);
     }
 
     inline revision& model::add_revision(history* o){
-        layout* l = new layout(&o->spec);
-        return o->add_state(l);
+        revision* r = new revision(&o->spec);
+        return o->add_state(r);
     }
 
     inline bool model::is_atomic(const history* o){
@@ -51,8 +51,8 @@ namespace ambient { namespace models { namespace velvet {
         return o->time();
     }
 
-    inline layout* model::get_layout(size_t id) const {
-        return (layout*)this->map.find(id);
+    inline revision* model::get_revision(size_t id) const {
+        return (revision*)this->map.find(id);
     }
 
     inline model& model::operator>>(dim2 mem_dim){
