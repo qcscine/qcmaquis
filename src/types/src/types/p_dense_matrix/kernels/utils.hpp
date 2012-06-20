@@ -114,7 +114,7 @@ namespace ambient {
     }
 
     inline double __a_dot(double* a, double* b, int size){
-        int ONE = 1;
+        static const int ONE = 1;
         return ddot_(&size, a, &ONE, b, &ONE);
     }
 
