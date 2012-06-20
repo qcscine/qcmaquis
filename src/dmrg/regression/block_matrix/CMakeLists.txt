@@ -6,3 +6,6 @@ add_test(NAME multi_index2
          # CONFIGURATIONS Debug
          COMMAND multi_index.test
          )
+         
+add_executable (check_multi_index.test check_multi_index.cpp)
+
