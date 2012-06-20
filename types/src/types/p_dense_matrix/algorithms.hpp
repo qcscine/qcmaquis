@@ -103,9 +103,7 @@ namespace maquis { namespace types {
         typename dense_matrix<T>::value_type sret((T)ret);
         scalar_norm(s, sret);
 #endif
-        size_t m = num_rows(a);
-        size_t n = num_cols(a);
-        USE_ATOMIC(a.atomic(), scalar_norm, a, m, n, ret);
+        USE_ATOMIC(a.atomic(), scalar_norm, a, ret);
 #ifdef AMBIENT_SERIAL_CHECK
         if(std::abs((T)ret - sret) > 0.01) printf("--------------------- SCALAR NORM IS INCORRECT (%.2f vs %.2f)\n", (T)ret, sret); 
 #endif
@@ -119,9 +117,7 @@ namespace maquis { namespace types {
         dense_matrix<T> sb = maquis::traits::matrix_cast<dense_matrix<T> >(b);
         T sret((T)ret); scalar_norm(sa, sb, sret);
 #endif
-        size_t m = num_rows(a);
-        size_t n = num_cols(a);
-        USE_ATOMIC(a.atomic(), scalar_overlap, a, b, m, n, ret);
+        USE_ATOMIC(a.atomic(), scalar_overlap, a, b, ret);
 #ifdef AMBIENT_SERIAL_CHECK
         if(std::abs((T)ret - sret) > 0.01) printf("--------------------- SCALAR NORM OVERLAP IS INCORRECT (%.2f vs %.2f)\n", (T)ret, sret); 
 #endif
@@ -220,10 +216,8 @@ namespace maquis { namespace types {
 #ifdef AMBIENT_SERIAL_CHECK
         dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(a);
 #endif
-        size_t m = a.num_rows();
-        size_t n = a.num_cols();
-        p_dense_matrix<T> t(n, m);
-        USE_ATOMIC(a.atomic(), transpose_out, a, t, m, n);
+        p_dense_matrix<T> t(a.num_cols(), a.num_rows());
+        USE_ATOMIC(a.atomic(), transpose_out, a, t);
         // p_dense_matrix<T> t(m); // alternative
         // t.transpose();
 #ifdef AMBIENT_SERIAL_CHECK
@@ -430,7 +424,7 @@ namespace maquis { namespace types {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        USE_ATOMIC(a.atomic(), svd, a, m, n, k, u, vt, s);
+        USE_ATOMIC(a.atomic(), svd, a, u, vt, s);
 #endif
     }
 
@@ -448,7 +442,7 @@ namespace maquis { namespace types {
 #endif
         int m = num_rows(a);
         evecs.resize(m, m);
-        USE_ATOMIC(a.atomic(), heev, a, m, evals); // destoys U triangle of M
+        USE_ATOMIC(a.atomic(), heev, a, evals); // destoys U triangle of M
         evecs = a;
 #ifdef AMBIENT_SERIAL_CHECK
         if(sevecs == evecs){}else printf("--------------------- HEEV WAS INCORRECT!\n");
@@ -592,9 +586,7 @@ namespace algorithms {
         dense_matrix<T> s = maquis::traits::matrix_cast<dense_matrix<T> >(a);
         s *= (T)rhs;
 #endif
-        size_t m = a.num_rows();
-        size_t n = a.num_cols();
-        USE_ATOMIC(a.atomic(), scale, a, m, n, rhs);
+        USE_ATOMIC(a.atomic(), scale, a, rhs);
 #ifdef AMBIENT_SERIAL_CHECK
         if(s == a){} else printf("--------------------- SCALE WAS INCORRECT!\n");
 #endif
