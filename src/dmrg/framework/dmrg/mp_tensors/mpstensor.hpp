@@ -160,7 +160,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             make_left_paired();
             
             block_matrix<Matrix, SymmGroup> U, V;
-            block_matrix<typename maquis::types::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             
             svd(data_, U, V, S);
             
@@ -192,7 +192,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             make_right_paired();
             
             block_matrix<Matrix, SymmGroup> U, V;
-            block_matrix<typename maquis::types::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             
             svd(data_, U, V, S);
             
@@ -258,7 +258,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 
     scalar_type ret(0);
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        maquis::types::scalar_norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
+        alps::numeric::scalar_norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
     assert( ret == ret );
     assert( maquis::traits::real(ret) >= 0);
     return sqrt(maquis::traits::real(ret));
@@ -297,13 +297,13 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
-        maquis::types::scalar_norm(data_(c,c),
+        alps::numeric::scalar_norm(data_(c,c),
                                    rhs.data_(c,c),
                                    ret);
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
     
     // for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        // maquis::types::scalar_norm(data_[b],rhs.data_[b],ret);
+        // alps::numeric::scalar_norm(data_[b],rhs.data_[b],ret);
 
     return ret;
 }

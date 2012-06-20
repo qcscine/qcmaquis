@@ -198,25 +198,25 @@ namespace maquis { namespace types {
         size_type cols;
     };
 
-    // {{{ matrix-specific associated types
+    // {{{ matrix-specific alps::numeric::associated types
     template<typename T>
-    struct associated_diagonal_matrix< p_dense_matrix<T> > {
+    struct alps::numeric::associated_diagonal_matrix< p_dense_matrix<T> > {
         typedef p_diagonal_matrix<T> type;
     };
 
     template<typename T>
-    struct associated_real_diagonal_matrix< p_dense_matrix<T> > {
+    struct alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> > {
         typedef p_diagonal_matrix<typename detail::real_type<T>::type> type;
     };
 
     template<typename T>
-    struct associated_vector<p_dense_matrix<T> > {
+    struct alps::numeric::associated_vector<p_dense_matrix<T> > {
         //typedef p_diagonal_matrix<T> type;
         typedef std::vector<T> type;
     };
     
     template<typename T>
-    struct associated_real_vector<p_dense_matrix<T> > {
+    struct alps::numeric::associated_real_vector<p_dense_matrix<T> > {
         //typedef p_diagonal_matrix<typename detail::real_type<T>::type> type;
         typedef std::vector<typename detail::real_type<T>::type> type;
     };

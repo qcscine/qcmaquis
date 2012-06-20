@@ -107,7 +107,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 #pragma omp parallel for schedule(dynamic)
 #endif
     for (std::size_t k = 0; k < loop_max; ++k)
-        maquis::types::svd(M[k], U[k], V[k], S[k]);
+        svd(M[k], U[k], V[k], S[k]);
     
 }
 
@@ -124,7 +124,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
 #pragma omp parallel for schedule(dynamic)
 #endif
     for(std::size_t k = 0; k < loop_max; ++k)
-        maquis::types::heev(M[k], evecs[k], evals[k]);
+        heev(M[k], evecs[k], evals[k]);
 
 }
     
@@ -148,7 +148,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
 
     std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type > allevals(length);
 
-    std::vector< std::vector<typename DiagMatrix::value_type> > evals_vector; // can be done with associated futures vector
+    std::vector< std::vector<typename DiagMatrix::value_type> > evals_vector; // can be done with alps::numeric::associated futures vector
     for(size_t k=0; k<evals.n_blocks(); ++k){
         evals_vector.push_back(maquis::traits::matrix_cast< std::vector<typename DiagMatrix::value_type> >(evals[k]));
     }
@@ -349,7 +349,7 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
     R = block_matrix<Matrix, SymmGroup>(n,n);
     
     for (std::size_t k = 0; k < M.n_blocks(); ++k)
-        maquis::types::qr(M[k], Q[k], R[k]);
+        qr(M[k], Q[k], R[k]);
 }
 
 template<class Matrix, class SymmGroup>
@@ -420,7 +420,7 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 //block_matrix<Matrix, SymmGroup> exp (block_matrix<Matrix, SymmGroup> const & M, A const & alpha = 1)
 //{
 //    block_matrix<Matrix, SymmGroup> N, tmp, res;
-//    block_matrix<typename maquis::types::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+//    block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
 //    
 //    heev(M, N, S);
 //    for (std::size_t k = 0; k < S.n_blocks(); ++k)
@@ -438,7 +438,7 @@ block_matrix<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
 {
     for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
         if (M.has_block(it_c->first, it_c->first))
-            M(it_c->first, it_c->first) = maquis::types::exp(M(it_c->first, it_c->first), alpha);
+            M(it_c->first, it_c->first) = exp(M(it_c->first, it_c->first), alpha);
         else
             M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
                            it_c->first, it_c->first);

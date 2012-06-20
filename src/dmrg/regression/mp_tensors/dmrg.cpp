@@ -2,13 +2,13 @@
 #include <iterator>
 #include <iostream>
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
-typedef maquis::types::dense_matrix<double> Matrix;
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
+typedef alps::numeric::matrix<double> Matrix;
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"

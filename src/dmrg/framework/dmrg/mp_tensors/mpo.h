@@ -40,7 +40,7 @@ public:
             
             block_matrix<Matrix, SymmGroup> M, U, V;
 
-            block_matrix<typename maquis::types::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;
             gemm(left, right, M);
             svd_truncate(M, U, V, S, cutoff, 100000, false);
             Sqrt = sqrt(S);

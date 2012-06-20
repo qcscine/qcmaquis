@@ -7,13 +7,13 @@
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 
 #include "types/utils/bindings.hpp"
 #include "utilities.h"
@@ -26,14 +26,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( heev, T, test_types)
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sV(T::valuex,T::valuex);
 
-    typename maquis::types::associated_diagonal_matrix<pMatrix>::type pE(T::valuex,T::valuex); 
-    typename maquis::types::associated_diagonal_matrix<sMatrix>::type sE(T::valuex,T::valuex);
+    typename alps::numeric::associated_diagonal_matrix<pMatrix>::type pE(T::valuex,T::valuex); 
+    typename alps::numeric::associated_diagonal_matrix<sMatrix>::type sE(T::valuex,T::valuex);
  
     pA.fill_random();
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
-    maquis::types::heev(pA,pV,pE); // to modify the algo we need the reverse inside !
-    maquis::types::heev(sA,sV,sE);
+    heev(pA,pV,pE); // to modify the algo we need the reverse inside !
+    heev(sA,sV,sE);
      
     BOOST_CHECK(sE == pE);
 }

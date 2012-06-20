@@ -7,13 +7,13 @@
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 
 #include "types/utils/bindings.hpp"
 #include "utilities.h"
@@ -28,14 +28,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sMatrix sU(T::valuex,T::valuey);
     sMatrix sV(T::valuex,T::valuey);
 
-    typename maquis::types::associated_diagonal_matrix<pMatrix>::type pS(T::valuex,T::valuex);
-    typename maquis::types::associated_diagonal_matrix<sMatrix>::type sS(T::valuex,T::valuex); 
+    typename alps::numeric::associated_diagonal_matrix<pMatrix>::type pS(T::valuex,T::valuex);
+    typename alps::numeric::associated_diagonal_matrix<sMatrix>::type sS(T::valuex,T::valuex); 
 
     pA.fill_random();
     sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
  
-    maquis::types::svd(pA,pU,pV,pS);
-    maquis::types::svd(sA,sU,sV,sS);
+    svd(pA,pU,pV,pS);
+    svd(sA,sU,sV,sS);
   
     BOOST_CHECK(sS == pS); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

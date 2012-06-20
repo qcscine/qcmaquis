@@ -248,7 +248,7 @@ struct multigrid {
         
         
         block_matrix<Matrix, SymmGroup> V, left, right;
-        block_matrix<typename maquis::types::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         svd(M, left, V, S);
         gemm(S, V, right);

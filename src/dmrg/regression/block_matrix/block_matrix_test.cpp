@@ -1,15 +1,15 @@
 #include <iostream>
 #include <vector>
 
-#include "types/dense_matrix/vector_interface.hpp"
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/diagonal_matrix.h"
-#include "types/dense_matrix/algorithms.hpp"
-typedef maquis::types::dense_matrix<double> Matrix;
-typedef maquis::types::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
+#include "alps/numeric/matrix/vector_interface.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+typedef alps::numeric::matrix<double> Matrix;
+typedef alps::numeric::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"

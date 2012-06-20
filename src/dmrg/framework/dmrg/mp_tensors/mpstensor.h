@@ -114,7 +114,7 @@ public:
         
         for (std::size_t b = 0; b < m1.data_.n_blocks(); ++b) {
             if (m2.data_.has_block(m1.data_.left_basis()[b], m1.data_.right_basis()[b])) {
-                Matrix nb = maquis::types::join(m1.data_[b],
+                Matrix nb = join(m1.data_[b],
                                        m2.data_(m1.data_.left_basis()[b].first, m1.data_.right_basis()[b].first));
                 
                 ret.data_.insert_block(nb, m1.data_.left_basis()[b].first, m1.data_.right_basis()[b].first);

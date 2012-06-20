@@ -4,14 +4,14 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
-#include "types/dense_matrix/algorithms.hpp"
-typedef maquis::types::dense_matrix<double> Matrix;
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+typedef alps::numeric::matrix<double> Matrix;
 
 #include <alps/hdf5.hpp>
 
@@ -83,7 +83,7 @@ MPO<Matrix, grp> block_to_mpo(Index<grp> const & phys_i,
     
     bond_op = reshape_2site_op(phys_i, bond_op);
     block_matrix<Matrix, grp> U, V, left, right;
-    block_matrix<maquis::types::associated_diagonal_matrix<Matrix>::type, grp> S, Ssqrt;
+    block_matrix<alps::numeric::associated_diagonal_matrix<Matrix>::type, grp> S, Ssqrt;
     svd(bond_op, U, V, S);
     Ssqrt = sqrt(S);
     gemm(U, Ssqrt, left);

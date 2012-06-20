@@ -6,11 +6,11 @@
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
 
 #include "types/utils/bindings.hpp"
 
@@ -26,14 +26,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sMatrix sB(T::valuex,T::valuex);
     sDiagMatrix sC(T::valuex,T::valuex);
 
-    maquis::types::generate(sB,Rd); // Rd is rand generator static variable inside utilities
+    generate(sB,Rd); // Rd is rand generator static variable inside utilities
     sC.generate(Rd); // Rd is rand generator static variable inside utilities
 
     pB = maquis::traits::matrix_cast<pMatrix>(sB); // playout is inside the cast
     pC = maquis::traits::matrix_cast<pDiagMatrix>(sC); // playout is inside the cast
  
-    maquis::types::gemm(pC,pB,pA);
-    maquis::types::gemm(sC,sB,sA);
+    gemm(pC,pB,pA);
+    gemm(sC,sB,sA);
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

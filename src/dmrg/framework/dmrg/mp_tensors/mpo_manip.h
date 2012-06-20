@@ -73,7 +73,7 @@ MPO<Matrix, SymmGroup> block_to_mpo(Index<SymmGroup> const & phys_i,
             reshape(midx, curr_s, svd_s, block, btmp);
             
             block_matrix<Matrix, SymmGroup> U, V;
-            block_matrix<typename maquis::types::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
             svd(btmp, U, V, S);
             Ssqrt = sqrt(S);
             gemm(U, Ssqrt, btmp);

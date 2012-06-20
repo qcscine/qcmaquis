@@ -7,9 +7,9 @@
 #include <boost/geometry/geometries/adapted/boost_array.hpp>
 
 /*
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 */
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/block_matrix/block_matrix.h"
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(block_matrix_constructor_one){
     BOOST_CHECK_EQUAL(ba[1](0,0),0);
     BOOST_CHECK_EQUAL(true,ba[1](0,0)!=1);
 }
-/* the associate constructor is not used into the DMRG
+/* the alps::numeric::associate constructor is not used into the DMRG
 BOOST_AUTO_TEST_CASE(block_matrix_constructor_two){
     block_matrix<Matrix, U1> ba(1,1,*(new Matrix(1,1)));
     BOOST_CHECK_EQUAL(ba[0](0,0),0);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(block_matrix_operator_parenthesis){
   // todo 
 }
 
-/* the associate functions are disable into block_matrix 
+/* the alps::numeric::associate functions are disable into block_matrix 
 BOOST_AUTO_TEST_CASE(block_matrix_remove_rows_cols_from_block){
     Index<U1> rows,cols;
     rows.insert(std::make_pair(1, 2));

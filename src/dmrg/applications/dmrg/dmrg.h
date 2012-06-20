@@ -19,19 +19,19 @@
     typedef maquis::types::p_dense_matrix<dmrg_value_type> matrix;
 #elif defined USE_MTM
     #include "types/mt_matrix/mt_matrix.h"
-    typedef maquis::types::mt_matrix<dmrg_value_type> matrix;
+    typedef alps::numeric::mt_matrix<dmrg_value_type> matrix;
 #else
-    #include "types/dense_matrix/dense_matrix.h"
-    #include "types/dense_matrix/matrix_interface.hpp"
-    #include "types/dense_matrix/resizable_matrix_interface.hpp"
-    #include "types/dense_matrix/algorithms.hpp"
-    #include "types/dense_matrix/dense_matrix_blas.hpp"
-    typedef maquis::types::dense_matrix<dmrg_value_type> matrix;
+    #include "alps/numeric/matrix/matrix.hpp"
+    #include "alps/numeric/matrix/matrix_interface.hpp"
+    #include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+    #include "alps/numeric/matrix/algorithms.hpp"
+    #include "alps/numeric/matrix/matrix_blas.hpp"
+    typedef alps::numeric::matrix<dmrg_value_type> matrix;
 #endif
 #undef dmrg_value_type
 
 #include "dmrg/utils/DmrgParameters2.h"
-#include "types/dense_matrix/dense_matrix.h"
+#include "alps/numeric/matrix/matrix.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
 // def. of run functions

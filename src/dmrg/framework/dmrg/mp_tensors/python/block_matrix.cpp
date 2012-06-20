@@ -6,7 +6,7 @@
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/block_matrix/block_matrix.h"
 
-#include <types/dense_matrix/dense_matrix.h>
+#include <alps/numeric/matrix/matrix.hpp>
 
 #include <boost/python.hpp>
 
@@ -58,7 +58,7 @@ class_<Index<sgrp> >(name) \
 class_<block_matrix<matrix, sgrp> >(name) \
 .def("left_basis", &block_matrix<matrix, sgrp>::left_basis) \
 .def("right_basis", &block_matrix<matrix, sgrp>::right_basis)
-    EXPORT_BLOCK_MATRIX(types::dense_matrix<double>, TrivialGroup, "NG_d_matrix");
-    EXPORT_BLOCK_MATRIX(types::dense_matrix<double>, Ztwo, "Z2_d_matrix");
+    EXPORT_BLOCK_MATRIX(alps::numeric::matrix<double>, TrivialGroup, "NG_d_matrix");
+    EXPORT_BLOCK_MATRIX(alps::numeric::matrix<double>, Ztwo, "Z2_d_matrix");
 #undef EXPORT_BLOCK_MATRIX
 }

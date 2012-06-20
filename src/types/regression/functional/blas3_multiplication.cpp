@@ -6,10 +6,10 @@
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
 
 #include "types/utils/bindings.hpp"
 
@@ -31,9 +31,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     sA = maquis::traits::matrix_cast<sMatrix>(pA);
     sB = maquis::traits::matrix_cast<sMatrix>(pB);
 
-    maquis::types::gemm(pA,pB,pC);
+    gemm(pA,pB,pC);
     ambient::playout();
-    maquis::types::gemm(sA,sB,sC);
+    gemm(sA,sB,sC);
     BOOST_CHECK(pC==sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 

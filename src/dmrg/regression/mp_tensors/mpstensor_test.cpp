@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-typedef types::dense_matrix<double> Matrix;
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+typedef alps::numeric::matrix<double> Matrix;
 
 
 #include "dmrg/block_matrix/indexing.h"

@@ -9,11 +9,11 @@
 #define USE_ATOMIC(condition, kernel, ...) assert(condition); ambient::push< ambient::kernel ## _atomic<T> >(__VA_ARGS__);
 
 #ifdef AMBIENT_SERIAL_CHECK
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
 #include "types/utils/bindings.hpp"
 #endif
 
@@ -31,8 +31,8 @@ namespace maquis { namespace types {
                             size_t sdim, size_t ldim, size_t rdim)
     { // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sl = maquis::traits::matrix_cast<dense_matrix<T> >(left);
-        dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
+        alps::numeric::matrix<T> sl = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(left);
+        alps::numeric::matrix<T> sr = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(right);
         reshape_l2r(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
 #endif
         USE_ATOMIC(left.atomic() && right.atomic(), reshape_l2r, 
@@ -48,8 +48,8 @@ namespace maquis { namespace types {
                             size_t sdim, size_t ldim, size_t rdim)
     { // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sl = maquis::traits::matrix_cast<dense_matrix<T> >(left);
-        dense_matrix<T> sr = maquis::traits::matrix_cast<dense_matrix<T> >(right);
+        alps::numeric::matrix<T> sl = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(left);
+        alps::numeric::matrix<T> sr = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(right);
         reshape_r2l(sl, sr, left_offset, right_offset, sdim, ldim, rdim);
 #endif
         USE_ATOMIC(left.atomic() && right.atomic(), reshape_r2l, 
@@ -65,9 +65,9 @@ namespace maquis { namespace types {
                               size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     { // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sout = maquis::traits::matrix_cast<dense_matrix<T> >(out);
-        dense_matrix<T> sin = maquis::traits::matrix_cast<dense_matrix<T> >(in);
-        dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
+        alps::numeric::matrix<T> sout = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(out);
+        alps::numeric::matrix<T> sin = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(in);
+        alps::numeric::matrix<T> salfa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(alfa);
         lb_tensor_mpo(sout, sin, salfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #endif
         USE_ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), lb_tensor_mpo, 
@@ -83,9 +83,9 @@ namespace maquis { namespace types {
                               size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     { // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sout = maquis::traits::matrix_cast<dense_matrix<T> >(out);
-        dense_matrix<T> sin = maquis::traits::matrix_cast<dense_matrix<T> >(in);
-        dense_matrix<T> salfa = maquis::traits::matrix_cast<dense_matrix<T> >(alfa);
+        alps::numeric::matrix<T> sout = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(out);
+        alps::numeric::matrix<T> sin = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(in);
+        alps::numeric::matrix<T> salfa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(alfa);
         rb_tensor_mpo(sout, sin, salfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
 #endif
         USE_ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), rb_tensor_mpo, 
@@ -99,8 +99,8 @@ namespace maquis { namespace types {
     inline void scalar_norm(const p_dense_matrix<T>& a, scalar_type& ret){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> s = maquis::traits::matrix_cast<dense_matrix<T> >(a);
-        typename dense_matrix<T>::value_type sret((T)ret);
+        alps::numeric::matrix<T> s = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
+        typename alps::numeric::matrix<T>::value_type sret((T)ret);
         scalar_norm(s, sret);
 #endif
         USE_ATOMIC(a.atomic(), scalar_norm, a, ret);
@@ -113,8 +113,8 @@ namespace maquis { namespace types {
     inline void scalar_norm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, scalar_type& ret){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
-        dense_matrix<T> sb = maquis::traits::matrix_cast<dense_matrix<T> >(b);
+        alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
+        alps::numeric::matrix<T> sb = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(b);
         T sret((T)ret); scalar_norm(sa, sb, sret);
 #endif
         USE_ATOMIC(a.atomic(), scalar_overlap, a, b, ret);
@@ -124,11 +124,11 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    inline void bond_renyi_entropies(const p_diagonal_matrix<T>& m, typename associated_real_vector<p_dense_matrix<T> >::type& sv){
+    inline void bond_renyi_entropies(const p_diagonal_matrix<T>& m, typename alps::numeric::associated_real_vector<p_dense_matrix<T> >::type& sv){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
         diagonal_matrix<T> sm = maquis::traits::matrix_cast<diagonal_matrix<T> >(m);
-        typename associated_real_vector<p_dense_matrix<T> >::type ssv(sv);
+        typename alps::numeric::associated_real_vector<p_dense_matrix<T> >::type ssv(sv);
         bond_renyi_entropies(sm, ssv);
 #endif
         std::vector<T>* sc_ptr = &sv;
@@ -143,7 +143,7 @@ namespace maquis { namespace types {
     inline void left_right_boundary_init(p_dense_matrix<T> & a){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
+        alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
         left_right_boundary_init(sa);
 #endif
         a.fill_value(1.0);
@@ -214,7 +214,7 @@ namespace maquis { namespace types {
     inline p_dense_matrix<T> transpose(const p_dense_matrix<T>& a){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(a);
+        alps::numeric::matrix<T> sm = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
 #endif
         p_dense_matrix<T> t(a.num_cols(), a.num_rows());
         USE_ATOMIC(a.atomic(), transpose_out, a, t);
@@ -235,7 +235,7 @@ namespace maquis { namespace types {
     template<typename T>
     inline p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1.){
         printf("----------------------------------- exp is actually used!\n\n");
-        typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
+        typename alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
         p_dense_matrix<T> evecs;
         heev(m, evecs, evals);
         p_dense_matrix<T> e = evecs * exp(evals, alfa);
@@ -352,9 +352,9 @@ namespace maquis { namespace types {
         // gs
         assert(num_cols(a) == num_rows(b));
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
-        dense_matrix<T> sb = maquis::traits::matrix_cast<dense_matrix<T> >(b);
-        dense_matrix<T> sc = maquis::traits::matrix_cast<dense_matrix<T> >(c);
+        alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
+        alps::numeric::matrix<T> sb = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(b);
+        alps::numeric::matrix<T> sc = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(c);
         gemm(sa,sb,sc);
 #endif
         c.resize(a.num_rows(), b.num_cols());
@@ -369,9 +369,9 @@ namespace maquis { namespace types {
         // gs
         assert(num_cols(a) == num_rows(b));
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
+        alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
         diagonal_matrix<D> sb = maquis::traits::matrix_cast<diagonal_matrix<D> >(b);
-        dense_matrix<T> sc = maquis::traits::matrix_cast<dense_matrix<T> >(c);
+        alps::numeric::matrix<T> sc = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(c);
         gemm(sa, sb, sc);
 #endif
         size_t m = a.num_rows();
@@ -390,8 +390,8 @@ namespace maquis { namespace types {
         assert(num_cols(a) == num_rows(b));
 #ifdef AMBIENT_SERIAL_CHECK
         diagonal_matrix<D> sa = maquis::traits::matrix_cast<diagonal_matrix<D> >(a);
-        dense_matrix<T> sb = maquis::traits::matrix_cast<dense_matrix<T> >(b);
-        dense_matrix<T> sc = maquis::traits::matrix_cast<dense_matrix<T> >(c);
+        alps::numeric::matrix<T> sb = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(b);
+        alps::numeric::matrix<T> sc = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(c);
         gemm(sa, sb, sc);
 #endif
         size_t m = a.num_rows();
@@ -406,20 +406,20 @@ namespace maquis { namespace types {
 
     template<typename T>
     inline void svd(const p_dense_matrix<T>& a, p_dense_matrix<T>& u, p_dense_matrix<T>& vt,
-                    typename associated_real_diagonal_matrix<p_dense_matrix<T> >::type& s)
+                    typename alps::numeric::associated_real_diagonal_matrix<p_dense_matrix<T> >::type& s)
     { // gs
         int m = num_rows(a);
         int n = num_cols(a);
         int k = std::min(m,n);
 #ifdef AMBIENT_SERIAL_CHECK // warning: we don't check the correctness (out can vary)
-        dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
-        dense_matrix<T> su(m,k);
-        dense_matrix<T> sv(k,n);
-        typename associated_real_diagonal_matrix< dense_matrix<T> >::type ss(k,k);
+        alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
+        alps::numeric::matrix<T> su(m,k);
+        alps::numeric::matrix<T> sv(k,n);
+        typename alps::numeric::associated_real_diagonal_matrix< alps::numeric::matrix<T> >::type ss(k,k);
         svd(sa,su,sv,ss);
         u  = maquis::traits::matrix_cast<p_dense_matrix<T> >(su);
         vt = maquis::traits::matrix_cast<p_dense_matrix<T> >(sv);
-        s  = maquis::traits::matrix_cast<typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type>(ss);
+        s  = maquis::traits::matrix_cast<typename alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> >::type>(ss);
 #else
         u.resize(m, k);
         vt.resize(k, n);
@@ -430,14 +430,14 @@ namespace maquis { namespace types {
 
     template<typename T>
     inline void heev(p_dense_matrix<T> a, p_dense_matrix<T>& evecs,
-                     typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type& evals)
+                     typename alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     { // gs
         assert(num_rows(a) == num_cols(a) && num_rows(evals) == num_rows(a));
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sa = maquis::traits::matrix_cast<dense_matrix<T> >(a);
-        dense_matrix<T> sevecs = maquis::traits::matrix_cast<dense_matrix<T> >(evecs);
-        typename associated_real_diagonal_matrix< dense_matrix<T> >::type sevals = 
-            maquis::traits::matrix_cast<typename associated_real_diagonal_matrix< dense_matrix<T> >::type >(evals);
+        alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
+        alps::numeric::matrix<T> sevecs = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(evecs);
+        typename alps::numeric::associated_real_diagonal_matrix< alps::numeric::matrix<T> >::type sevals = 
+            maquis::traits::matrix_cast<typename alps::numeric::associated_real_diagonal_matrix< alps::numeric::matrix<T> >::type >(evals);
         heev(sa, sevecs, sevals.get_values());
 #endif
         int m = num_rows(a);
@@ -451,7 +451,7 @@ namespace maquis { namespace types {
 
     template<typename T>
     inline void syev(p_dense_matrix<T> a, p_dense_matrix<T>& evecs,
-                     typename associated_real_diagonal_matrix< p_dense_matrix<T> >::type& evals)
+                     typename alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     {
         heev(a, evecs, evals);
     }
@@ -528,13 +528,13 @@ namespace algorithms {
     inline scalar_type trace(const p_dense_matrix_impl<T>& a) {
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(a);
+        alps::numeric::matrix<T> sm = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
 #endif
         scalar_type trace;
         size_t n = std::min(a.num_rows(), a.num_cols());
         ambient::push< ambient::trace<T> >(a, n, trace);
 #ifdef AMBIENT_SERIAL_CHECK
-        if(maquis::types::trace(sm) != (T)trace) printf("--------------------- TRACE IS INCORRECT!\n");
+        if(trace(sm) != (T)trace) printf("--------------------- TRACE IS INCORRECT!\n");
 #endif
         return trace;
     }
@@ -543,8 +543,8 @@ namespace algorithms {
     inline void add_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(m);
-        dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
+        alps::numeric::matrix<T> sm = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(m);
+        alps::numeric::matrix<T> srhs = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(rhs);
         sm += srhs;
 #endif
         USE_ATOMIC(m.atomic(), add, m, rhs);
@@ -557,8 +557,8 @@ namespace algorithms {
     inline void sub_inplace(p_dense_matrix_impl<T>& m, const p_dense_matrix_impl<T>& rhs) {
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> sm = maquis::traits::matrix_cast<dense_matrix<T> >(m);
-        dense_matrix<T> srhs = maquis::traits::matrix_cast<dense_matrix<T> >(rhs);
+        alps::numeric::matrix<T> sm = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(m);
+        alps::numeric::matrix<T> srhs = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(rhs);
         sm -= srhs;
 #endif
         USE_ATOMIC(m.atomic(), sub, m, rhs);
@@ -583,7 +583,7 @@ namespace algorithms {
     inline void scale_inplace(p_dense_matrix_impl<T>& a, const scalar_type& rhs) {
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
-        dense_matrix<T> s = maquis::traits::matrix_cast<dense_matrix<T> >(a);
+        alps::numeric::matrix<T> s = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
         s *= (T)rhs;
 #endif
         USE_ATOMIC(a.atomic(), scale, a, rhs);

@@ -231,7 +231,7 @@ MPS<Matrix, SymmGroup>::left_boundary() const
 //        ret(0,*it,*it) = 1;
 
    for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
-       maquis::types::left_right_boundary_init(ret[0][k]);
+       alps::numeric::left_right_boundary_init(ret[0][k]);
 
     return ret;
 }
@@ -248,7 +248,7 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 //        ret(0,*it,*it) = 1;
 
     for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
-        maquis::types::left_right_boundary_init(ret[0][k]);
+        alps::numeric::left_right_boundary_init(ret[0][k]);
 
     return ret;
 }

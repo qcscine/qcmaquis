@@ -4,12 +4,10 @@
 #include <stdexcept>
 
 #include "types/mt_matrix/mt_matrix.h"
-#include "types/dense_matrix/algorithms.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
 
-namespace maquis {
-    namespace types {
-        namespace algorithms {
-            
+namespace alps {
+    namespace numeric {
             template<typename T, class DiagMatrix>
             void svd(mt_matrix<T> const & M,
                      mt_matrix<T> & U,
@@ -47,7 +45,7 @@ namespace maquis {
             template<typename T>
             void heev(mt_matrix<T> M,
                       mt_matrix<T> & evecs,
-                      typename associated_real_vector<dense_matrix<T> >::type & evals) 
+                      typename alps::numeric::associated_real_vector<matrix<T> >::type & evals) 
             {
                 M.wait(); evecs.wait();
                 heev(M.data_, evecs.data_, evals);
@@ -56,7 +54,7 @@ namespace maquis {
             template<typename T>
             void heev(mt_matrix<T> M,
                       mt_matrix<T> & evecs,
-                      typename associated_diagonal_matrix<dense_matrix<T> >::type & evals)
+                      typename alps::numeric::associated_diagonal_matrix<matrix<T> >::type & evals)
             {
                 M.wait(); evecs.wait();
                 heev(M.data_, evecs.data_, evals);
@@ -65,15 +63,14 @@ namespace maquis {
             template<typename T>
             void syev(mt_matrix<T> const & M,
                       mt_matrix<T> & vecs,
-                      typename maquis::types::diagonal_matrix<double> & S)
+                      typename alps::numeric::diagonal_matrix<double> & S)
             {
                 M.wait();
                 vecs.wait();
                 syev(M.data_, vecs.data_, S);
             }
             
-        } // end namespace algorithms
-    } // end namspace types
-} //end namespace maquis
+    } // end namspace numeric
+} //end namespace alps
 
 #endif

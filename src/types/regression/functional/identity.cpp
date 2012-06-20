@@ -10,11 +10,11 @@
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
 
 #include "types/utils/bindings.hpp"
 
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    maquis::types::generate(sA,Rd); // Rd is rand generator static variable inside utilities
+    generate(sA,Rd); // Rd is rand generator static variable inside utilities
     pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
 
     pA(accessx,accessy) = 3;
