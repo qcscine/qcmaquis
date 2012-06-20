@@ -131,7 +131,19 @@ POLYNOMIAL_CLASS operator + (POLYNOMIAL_CLASS p, Addend const& a) {
 
 template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Addend>
 POLYNOMIAL_CLASS operator + (Addend const& a, POLYNOMIAL_CLASS const& p) {
-    return p * a;
+    return p + a;
+}
+
+template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+POLYNOMIAL_CLASS operator - (POLYNOMIAL_CLASS p1, POLYNOMIAL_CLASS const& p2) {
+    p1 -= p2;
+    return p1;
+}
+
+template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Addend>
+POLYNOMIAL_CLASS operator - (POLYNOMIAL_CLASS p, Addend const& a) {
+    p -= a;
+    return p;
 }
 
 // Polynomial * Polynomial  for the moment we only provide the multiplication between two identical polynomial types
