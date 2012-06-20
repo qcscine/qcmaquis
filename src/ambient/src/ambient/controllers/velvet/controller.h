@@ -16,7 +16,6 @@
 
 namespace ambient { namespace controllers { namespace velvet {
 
-    using ambient::models::velvet::layout;
     using ambient::models::velvet::revision;
     using ambient::models::velvet::memspec;
 
@@ -31,10 +30,10 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void   execute_mod(cfunctor* op, dim2 pin);
         inline void   execute_free_mod(cfunctor* op);
 
-        inline void alloc_block (layout& l, size_t x, size_t y);
-        inline void calloc_block(layout& l, size_t x, size_t y);
-        inline layout::entry& ufetch_block(revision& r, size_t x, size_t y);
-        inline layout::entry& ifetch_block(revision& r, size_t x, size_t y);
+        inline void alloc_block (revision& r, size_t x, size_t y);
+        inline void calloc_block(revision& r, size_t x, size_t y);
+        inline revision::entry& ufetch_block(revision& r, size_t x, size_t y);
+        inline revision::entry& ifetch_block(revision& r, size_t x, size_t y);
         inline bool lock_block  (revision& r, size_t x, size_t y);
         inline void unlock_block(revision& r, size_t x, size_t y);
         inline void unlock_revision(revision* arg);
@@ -46,7 +45,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void set_num_threads(size_t n);
         inline size_t get_num_threads() const;
         inline void atomic_complete(cfunctor* op);
-        inline void atomic_receive(layout& l, size_t x, size_t y);
+        inline void atomic_receive(revision& r, size_t x, size_t y);
         inline pthread_mutex_t* get_pool_control_mutex();
         inline ~controller();
 

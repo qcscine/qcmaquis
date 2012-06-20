@@ -1,26 +1,55 @@
 #ifndef AMBIENT_MODELS_VELVET_REVISION
 #define AMBIENT_MODELS_VELVET_REVISION
 
+namespace ambient { namespace controllers { namespace velvet {
+
+    class cfunctor;
+
+} } }
+
 namespace ambient { namespace models { namespace velvet {
+
+    using ambient::controllers::velvet::cfunctor;
 
     class revision
     {
     public:
-        inline layout::entry& operator()(size_t x, size_t y){
-            return this->block(x, y);
+        class entry {
+        public:
+            inline entry();
+            inline operator char* (){ return (char*)this->data; }
+            inline operator double* (){ return (double*)this->data; }
+            inline operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
+            inline void swap(entry&);
+            inline void set_memory(void* memory, size_t bound);
+            inline void* get_memory();
+            inline bool valid();
+            inline bool occupied();
+            inline std::list<cfunctor*>& get_assignments();
+            void* header;
+            void* data;
+            std::list<cfunctor*> assignments;
+        };
+
+        inline void embed(void* memory, size_t x, size_t y, size_t bound);
+        size_t sid;
+        size_t lda;
+        memspec* spec;
+        bool clean;
+        entry* content;
+        // layout part //
+
+        inline revision::entry& operator()(size_t x, size_t y){
+            return *this->content;
         } 
-        inline layout& get_layout(){ return *content; }
         inline revision* get_parent(){ return parent; }
-        inline revision(layout*);
+        inline revision(memspec*, bool clean = false);
         inline ~revision();
-        inline layout::entry& block(size_t x, size_t y);
+        inline entry& block(size_t x, size_t y);
         inline void add_modifier(sfunctor* m);
         inline std::list<sfunctor*>& get_modifiers();
-        //inline group* get_placement();
-        //inline void set_placement(group*);
         inline sfunctor* get_generator();
         inline void set_generator(sfunctor*);
-        layout* const content;
         sfunctor* generator;
         std::list<sfunctor*> modifiers;
         revision* parent;

@@ -115,16 +115,16 @@ namespace ambient { namespace controllers { namespace velvet {
         ++this->rrn %= this->num_threads;
     }
 
-    inline void controller::alloc_block(layout& l, size_t x, size_t y){
-        l.embed(l.spec->alloc(), x, y, l.spec->get_bound());
+    inline void controller::alloc_block(revision& r, size_t x, size_t y){
+        r.embed(r.spec->alloc(), x, y, r.spec->get_bound());
     }
 
-    inline void controller::calloc_block(layout& l, size_t x, size_t y){
-        l.embed(l.spec->calloc(), x, y, l.spec->get_bound());
+    inline void controller::calloc_block(revision& r, size_t x, size_t y){
+        r.embed(r.spec->calloc(), x, y, r.spec->get_bound());
     }
 
     // note: ufetch_block is used only by pt_fetch in user-space
-    inline layout::entry& controller::ufetch_block(revision& r, size_t x, size_t y){
+    inline revision::entry& controller::ufetch_block(revision& r, size_t x, size_t y){
         //if(r.block(x,y).valid()){
             return r.block(x,y);
         //}else printf("REQUESTING UNEXISTING BLOCK (%lu, %lu)!\n", x, y);
@@ -141,8 +141,8 @@ namespace ambient { namespace controllers { namespace velvet {
         //return r.block(x,y);
     }
 
-    inline layout::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
-        this->atomic_receive(r.get_layout(), x, y); // check the stacked operations for the block
+    inline revision::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
+        this->atomic_receive(r, x, y); // check the stacked operations for the block
         return r.block(x,y);
 
         /*assert(r.get_placement() != NULL);
@@ -184,12 +184,13 @@ namespace ambient { namespace controllers { namespace velvet {
 #endif
     }
 
-    inline void controller::atomic_receive(layout& l, size_t x, size_t y){
+    inline void controller::atomic_receive(revision& r, size_t x, size_t y){
         // pthread_mutex_lock(&this->mutex); // will be needed in case of redunant accepts
-        std::list<cfunctor*>::iterator it = l.get(x,y).get_assignments().begin();
-        while(it != l.get(x,y).get_assignments().end()){
+        std::list<cfunctor*>& list = r.block(x,y).get_assignments();
+        std::list<cfunctor*>::iterator it = list.begin();
+        while(it != list.end()){
             this->execute_mod(*it, dim2(x,y));
-            l.get(x,y).get_assignments().erase(it++);
+            list.erase(it++);
         }
     }
 
@@ -230,11 +231,11 @@ namespace ambient { namespace controllers { namespace velvet {
         //time.end();
     }
     
-    inline packet* package(layout& l, const char* state, int x, int y, int dest){
-        void* header = l.get(x,y).get_memory();
+    inline packet* package(revision& r, const char* state, int x, int y, int dest){
+        void* header = r.block(x,y).get_memory();
         //if(header == NULL) printf("HEADER IS NULL (SWAPPED)\n");
-        packet* package = pack(*(packet_t*)l.spec->get_packet_t(), 
-                               header, dest, "P2P", l.sid, state, x, y, NULL);
+        packet* package = pack(*(packet_t*)r.spec->get_packet_t(), 
+                               header, dest, "P2P", r.sid, state, x, y, NULL);
         return package;
     }
 

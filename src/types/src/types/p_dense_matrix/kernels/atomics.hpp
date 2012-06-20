@@ -373,13 +373,7 @@ namespace ambient {
 
         inline void c(maquis::types::p_dense_matrix_impl<T>& r, const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_atomic_c_kernel"); 
-            int lda = ui_c_get_dim(a).y;
-            int ldb = ui_c_get_dim(r).y;
-            int size = m*sizeof(T);
-            int count = n;
-            T* sd = ui_c_current(a)(0,0);
-            T* dd = ui_r_updated(r)(0,0);
-            do{ memcpy(dd, sd, size); sd += lda; dd += ldb; }while(--count > 0);
+            __a_memptf_atomic_r<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(n, m)); 
             __A_TIME_C_STOP
         }
     };
