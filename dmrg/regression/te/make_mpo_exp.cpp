@@ -4,14 +4,14 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
-#include "types/dense_matrix/algorithms.hpp"
-typedef maquis::types::dense_matrix<double> Matrix;
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+typedef alps::numeric::matrix<double> Matrix;
 
 #include <alps/hdf5.hpp>
 

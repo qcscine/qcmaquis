@@ -22,11 +22,11 @@
 #endif
 
 #ifdef DENSE
-    #include "types/dense_matrix/dense_matrix.h"
-    #include "types/dense_matrix/matrix_interface.hpp"
-    #include "types/dense_matrix/resizable_matrix_interface.hpp"
-    #include "types/dense_matrix/algorithms.hpp"
-    typedef maquis::types::dense_matrix<dmrg_value_type> Matrix;
+    #include "alps/numeric/matrix/matrix.hpp"
+    #include "alps/numeric/matrix/matrix_interface.hpp"
+    #include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+    #include "alps/numeric/matrix/algorithms.hpp"
+    typedef alps::numeric::matrix<dmrg_value_type> Matrix;
 #endif
 
 #undef dmrg_value_type

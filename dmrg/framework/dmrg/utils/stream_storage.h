@@ -333,7 +333,7 @@ public:
         
         for (std::size_t i = 0; i < o.aux_dim(); ++i)
             for (std::size_t k = 0; k < o[i].n_blocks(); ++k) {
-                // workaround until capacity business in dense_matrix is sorted out
+                // workaround until capacity business in alps::numeric::matrix is sorted out
                 for (std::size_t c = 0; c < num_cols(o[i][k]); ++c)
                     of.write((char*)(&o[i][k](0, c)),
                              num_rows(o[i][k]) *
@@ -379,7 +379,7 @@ public:
         Object & o = *ptr;
         
         for (std::size_t k = 0; k < o.n_blocks(); ++k) {
-            // workaround until capacity business in dense_matrix is sorted out
+            // workaround until capacity business in alps::numeric::matrix is sorted out
             for (std::size_t c = 0; c < num_cols(o[k]); ++c)
                 of.write((char*)(&o[k](0, c)),
                          num_rows(o[k]) *

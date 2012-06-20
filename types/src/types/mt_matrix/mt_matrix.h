@@ -1,8 +1,8 @@
 #ifndef MT_MATRIX_H
 #define MT_MATRIX_H
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
 
 #ifdef USE_GPU
 #include "types/mt_matrix/matrix_gpu_functions.hpp"
@@ -21,8 +21,8 @@
 #define GEMM_GPU_THRESHOLD 100
 #endif
 
-namespace maquis { 
-    namespace types {
+namespace alps { 
+    namespace numeric {
         
         template<typename T>
         class mt_matrix;
@@ -32,9 +32,9 @@ namespace maquis {
 namespace detail {
     
     template <class T>
-    void gpu_gemm(maquis::types::dense_matrix<T> const & A,
-                  maquis::types::dense_matrix<T> const & B,
-                  maquis::types::dense_matrix<T> & C)
+    void gpu_gemm(alps::numeric::matrix<T> const & A,
+                  alps::numeric::matrix<T> const & B,
+                  alps::numeric::matrix<T> & C)
     {
         if (A.num_cols() > GEMM_GPU_THRESHOLD)
             gpu::matrix_matrix_multiply(A, B, C, 0.);
@@ -43,9 +43,9 @@ namespace detail {
     }
     
     template <class T>
-    void gpu_gemm(maquis::types::dense_matrix<std::complex<T> > const & A,
-                  maquis::types::dense_matrix<std::complex<T> > const & B,
-                  maquis::types::dense_matrix<std::complex<T> > & C)
+    void gpu_gemm(alps::numeric::matrix<std::complex<T> > const & A,
+                  alps::numeric::matrix<std::complex<T> > const & B,
+                  alps::numeric::matrix<std::complex<T> > & C)
     {
         gemm(A, B, C);
     }
@@ -56,9 +56,9 @@ template<typename T>
 class MtmGemmRequest : public MtmRequest
 {
 public:
-    MtmGemmRequest(maquis::types::mt_matrix<T> const & A,
-                   maquis::types::mt_matrix<T> const & B,
-                   maquis::types::mt_matrix<T> & C,
+    MtmGemmRequest(alps::numeric::mt_matrix<T> const & A,
+                   alps::numeric::mt_matrix<T> const & B,
+                   alps::numeric::mt_matrix<T> & C,
                    boost::shared_ptr<boost::mutex> mutA,
                    boost::shared_ptr<boost::mutex> mutB,
                    boost::shared_ptr<boost::mutex> mutC)
@@ -82,48 +82,45 @@ public:
     }
     
 private:
-    maquis::types::mt_matrix<T> const & A_;
-    maquis::types::mt_matrix<T> const & B_;
-    maquis::types::mt_matrix<T> & C_;
+    alps::numeric::mt_matrix<T> const & A_;
+    alps::numeric::mt_matrix<T> const & B_;
+    alps::numeric::mt_matrix<T> & C_;
     boost::shared_ptr<boost::mutex> mutA_, mutB_, mutC_;
     boost::lock_guard<boost::mutex> lgA, lgB, lgC;
 };
 
-namespace maquis
+namespace alps
 {
-    namespace types
+    namespace numeric
     {
         
-        namespace algorithms {
-            template <typename T, class DiagMatrix>
-            void svd(mt_matrix<T> const & M, mt_matrix<T> & U, mt_matrix<T> & V,
-                                 DiagMatrix & S);
-            
-            template <typename T>
-            void qr(mt_matrix<T> const & M, mt_matrix<T> & Q,  mt_matrix<T> & R);
-            
-            template <typename T>
-            void syev(mt_matrix<T> const & M, mt_matrix<T> & vecs,
-                                  typename maquis::types::diagonal_matrix<double> & S);
+        template <typename T, class DiagMatrix>
+        void svd(mt_matrix<T> const & M, mt_matrix<T> & U, mt_matrix<T> & V,
+                             DiagMatrix & S);
+        
+        template <typename T>
+        void qr(mt_matrix<T> const & M, mt_matrix<T> & Q,  mt_matrix<T> & R);
+        
+        template <typename T>
+        void syev(mt_matrix<T> const & M, mt_matrix<T> & vecs,
+                              typename alps::numeric::diagonal_matrix<double> & S);
 
-            template <typename T>
-            void heev(mt_matrix<T> M, mt_matrix<T> & evecs,
-                                  typename associated_real_vector<dense_matrix<T> >::type & evals);
-            
-            template <typename T>
-            void heev(mt_matrix<T> M, mt_matrix<T> & evecs,
-                                  typename associated_diagonal_matrix<dense_matrix<T> >::type & evals);
-            
-            template <typename T>
-            mt_matrix<T> exp (mt_matrix<T> M, T const & alpha=1);
-
-        }
+        template <typename T>
+        void heev(mt_matrix<T> M, mt_matrix<T> & evecs,
+                              typename alps::numeric::associated_real_vector<matrix<T> >::type & evals);
+        
+        template <typename T>
+        void heev(mt_matrix<T> M, mt_matrix<T> & evecs,
+                              typename alps::numeric::associated_diagonal_matrix<matrix<T> >::type & evals);
+        
+        template <typename T>
+        mt_matrix<T> exp (mt_matrix<T> M, T const & alpha=1);
         
         
         template<typename T>
         class mt_matrix
         {   
-            typedef maquis::types::dense_matrix<T> slave_t;
+            typedef alps::numeric::matrix<T> slave_t;
             
         public:
             typedef typename slave_t::value_type value_type;
@@ -315,16 +312,16 @@ namespace maquis
             template <typename U>
             friend
             void algorithms::syev(mt_matrix<U> const & M, mt_matrix<U> & vecs,
-                                  typename maquis::types::diagonal_matrix<double> & S);
+                                  typename alps::numeric::diagonal_matrix<double> & S);
             template <typename U>
             friend
             void algorithms::heev(mt_matrix<U> M, mt_matrix<U> & evecs,
-                      typename associated_real_vector<dense_matrix<U> >::type & evals);
+                      typename alps::numeric::associated_real_vector<matrix<U> >::type & evals);
             
             template <typename U>
             friend
             void algorithms::heev(mt_matrix<U> M, mt_matrix<U> & evecs,
-                      typename associated_diagonal_matrix<dense_matrix<U> >::type & evals);
+                      typename alps::numeric::associated_diagonal_matrix<matrix<U> >::type & evals);
 
             template <typename U>
             friend
@@ -336,7 +333,7 @@ namespace maquis
             void generate(Generator g)
             {
                 wait();
-                maquis::types::algorithms::generate(data_, g);
+                algorithms::generate(data_, g);
             }
             
             template<typename T2>
@@ -440,34 +437,34 @@ namespace maquis
         }
         
         template<typename T>
-        struct associated_diagonal_matrix<mt_matrix<T> >
+        struct alps::numeric::associated_diagonal_matrix<mt_matrix<T> >
         {
-            typedef typename associated_diagonal_matrix<dense_matrix<T> >::type type;
+            typedef typename alps::numeric::associated_diagonal_matrix<matrix<T> >::type type;
         };
         
         template<typename T>
-        struct associated_vector<mt_matrix<T> >
+        struct alps::numeric::associated_vector<mt_matrix<T> >
         {
-            typedef typename associated_vector<dense_matrix<T> >::type type;
+            typedef typename alps::numeric::associated_vector<matrix<T> >::type type;
         };
         
         template<typename T>
-        struct associated_real_diagonal_matrix<mt_matrix<T> >
+        struct alps::numeric::associated_real_diagonal_matrix<mt_matrix<T> >
         {
-            typedef typename associated_real_diagonal_matrix<dense_matrix<T> >::type type;
+            typedef typename alps::numeric::associated_real_diagonal_matrix<matrix<T> >::type type;
         };
         
         template<typename T>
-        struct associated_real_vector<mt_matrix<T> >
+        struct alps::numeric::associated_real_vector<mt_matrix<T> >
         {
-            typedef typename associated_real_vector<dense_matrix<T> >::type type;
+            typedef typename alps::numeric::associated_real_vector<matrix<T> >::type type;
         };
 
     }
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream & os, maquis::types::mt_matrix<T> const & m)
+std::ostream& operator<<(std::ostream & os, alps::numeric::mt_matrix<T> const & m)
 {
     for (std::size_t r = 0; r < num_rows(m); ++r) {
         for (std::size_t c = 0; c < num_cols(m); ++c)

@@ -26,7 +26,7 @@ struct compression {
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
-        typedef typename maquis::types::associated_real_diagonal_matrix<Matrix>::type dmt;
+        typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
         
         block_matrix<dmt, SymmGroup> s;
         
@@ -49,7 +49,7 @@ struct compression {
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
-        typedef typename maquis::types::associated_real_diagonal_matrix<Matrix>::type dmt;
+        typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
         
         block_matrix<dmt, SymmGroup> s;
         

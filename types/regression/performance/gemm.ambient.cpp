@@ -6,10 +6,10 @@
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
 #include "types/utils/bindings.hpp"
 
 #include "ambient/utils/timings.hpp"
@@ -18,8 +18,8 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     typedef ambient::dim2 dim;
-    typedef maquis::types::dense_matrix<typename T::value_type> sMatrix;
-    typedef maquis::types::diagonal_matrix<typename T::value_type> sDiagMatrix;
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef alps::numeric::diagonal_matrix<typename T::value_type> sDiagMatrix;
     typedef maquis::types::p_dense_matrix<typename T::value_type> pMatrix;
     typedef maquis::types::p_diagonal_matrix<typename T::value_type> pDiagMatrix;
 
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
     ambient::playout();
 
-    maquis::types::gemm(pA, pB, pC); 
+    gemm(pA, pB, pC); 
 
     __a_timer time("ambient");
     time.begin();

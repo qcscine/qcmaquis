@@ -12,13 +12,13 @@
 
 #include <complex>
 #include <vector>
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 
 #ifdef USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
@@ -37,13 +37,13 @@
 #include <boost/tokenizer.hpp>
 
 // BLAS matrix
-typedef maquis::types::dense_matrix<double> matrix;
-typedef maquis::types::dense_matrix<std::complex<double> > cmatrix;
+typedef alps::numeric::matrix<double> matrix;
+typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 
 // MT matrix
 #ifdef USE_MTM
-typedef maquis::types::mt_matrix<double> mtmatrix;
-typedef maquis::types::mt_matrix<std::complex<double> > cmtmatrix;
+typedef alps::numeric::mt_matrix<double> mtmatrix;
+typedef alps::numeric::mt_matrix<std::complex<double> > cmtmatrix;
 #endif
 
 // parallel matrix

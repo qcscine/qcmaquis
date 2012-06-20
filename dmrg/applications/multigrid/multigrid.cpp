@@ -16,13 +16,13 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 
 #ifdef USE_GPU
 #include <cublas.h>
@@ -32,9 +32,9 @@
 #define USE_MTM_MAIN
 #include "types/mt_matrix/mt_matrix.h"
 #include "types/mt_matrix/algorithms.hpp"
-typedef maquis::types::mt_matrix<double> Matrix;
+typedef alps::numeric::mt_matrix<double> Matrix;
 #else
-typedef maquis::types::dense_matrix<double> Matrix;
+typedef alps::numeric::matrix<double> Matrix;
 #endif
 
 #include <alps/hdf5.hpp>

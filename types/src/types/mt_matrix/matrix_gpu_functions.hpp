@@ -3,7 +3,7 @@
 #define M_MATRIX_GPU_FUNCTIONS
 
 #include <vector>
-#include "types/dense_matrix/dense_matrix.h"
+#include "alps/numeric/matrix/matrix.hpp"
 
 //#include "cuda_runtime_api.h" // needed for streams
 #include "cublas.h"
@@ -54,9 +54,9 @@ namespace gpu {
     }
     
     
-    inline void matrix_matrix_multiply(maquis::types::dense_matrix<double> const & lhs,
-                                       maquis::types::dense_matrix<double> const & rhs,
-                                       maquis::types::dense_matrix<double>  & res,
+    inline void matrix_matrix_multiply(alps::numeric::matrix<double> const & lhs,
+                                       alps::numeric::matrix<double> const & rhs,
+                                       alps::numeric::matrix<double>  & res,
                                        double ratio=0.)
     {
         /** ration value

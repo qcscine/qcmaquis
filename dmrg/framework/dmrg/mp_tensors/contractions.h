@@ -278,7 +278,7 @@ struct contraction {
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
                                     
-                                    maquis::types::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                    alps::numeric::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
                                                                  physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 
@@ -407,7 +407,7 @@ struct contraction {
                                     Matrix & oblock = ret.data_[b1](out_l_charge, out_r_charge);
 
                                     //printf("contraction: %d %d , %d %d\n", oblock.num_rows(), oblock.num_cols(), iblock.num_rows(), iblock.num_cols());
-                                    maquis::types::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
+                                    alps::numeric::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
                                                                  physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 
@@ -566,7 +566,7 @@ struct contraction {
         assert(dm.left_basis() == mps.data_.left_basis());
         
         block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename maquis::types::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
       
         MPSTensor<Matrix, SymmGroup> ret = mps;
@@ -631,7 +631,7 @@ struct contraction {
         assert(dm.right_basis() == mps.data_.right_basis());
         
         block_matrix<Matrix, SymmGroup> U, V;
-        block_matrix<typename maquis::types::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
         V = conjugate(transpose(U));

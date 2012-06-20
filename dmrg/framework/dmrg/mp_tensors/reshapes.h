@@ -65,7 +65,7 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
                         
-                        maquis::types::reshape_l2r(in_block, out_block, in_left_offset, out_right_offset,
+                        alps::numeric::reshape_l2r(in_block, out_block, in_left_offset, out_right_offset,
                                                    physical_i[s].second, left_i[l].second, right_i[r].second);
                     }
 
@@ -159,7 +159,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                     if (!pretend) {
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
-                        maquis::types::reshape_r2l(out_block, in_block, out_left_offset, in_right_offset, 
+                        alps::numeric::reshape_r2l(out_block, in_block, out_left_offset, in_right_offset, 
                                                    physical_i[s].second, left_i[l].second, right_i[r].second);
                     }
 
@@ -180,7 +180,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
                                                   block_matrix<Matrix, SymmGroup> const & A)
 { // only for the dense matrices in MPO (30.04.2012 / scalar / value types discussion)
-  // TODO: (scatter dense_matrix during building of MPO)
+  // TODO: (scatter alps::numeric::matrix during building of MPO)
     typedef typename SymmGroup::charge charge;
     block_matrix<Matrix, SymmGroup> ret;
     
@@ -233,9 +233,9 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
             if (!ret.has_block(it1->first, it2->first)) continue;
             
             Matrix tmp = ret(it1->first, it2->first);
-            for (int i=0; i<maquis::types::num_rows(tmp); ++i)
+            for (int i=0; i<num_rows(tmp); ++i)
             {
-                for (int j=0; j<maquis::types::num_cols(tmp); ++j)
+                for (int j=0; j<num_cols(tmp); ++j)
                     if (tmp(i,j) != typename Matrix::value_type()) {
                         empty=false;
                         break;
@@ -299,8 +299,8 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
         for (int n=0; n<Ai.n_blocks(); ++n)
         {
         	bool empty = true;
-        	for (int i=0; i<maquis::types::num_rows(Ai[n]) && empty; ++i)
-        		for (int j=0; j<maquis::types::num_cols(Ai[n]) && empty; ++j)
+        	for (int i=0; i<num_rows(Ai[n]) && empty; ++i)
+        		for (int j=0; j<num_cols(Ai[n]) && empty; ++j)
         			if (Ai[n](i,j) != typename Matrix::value_type())
         				empty=false;
 
@@ -364,8 +364,8 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_left_to_list (Index<SymmGr
 		for (int n=0; n<Ai.n_blocks(); ++n)
 		{
 			bool empty = true;
-			for (int i=0; i<maquis::types::num_rows(Ai[n]) && empty; ++i)
-				for (int j=0; j<maquis::types::num_cols(Ai[n]) && empty; ++j)
+			for (int i=0; i<num_rows(Ai[n]) && empty; ++i)
+				for (int j=0; j<num_cols(Ai[n]) && empty; ++j)
 					if (Ai[n](i,j) != typename Matrix::value_type())
 						empty=false;
 

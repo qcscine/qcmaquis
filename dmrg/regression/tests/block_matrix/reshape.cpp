@@ -13,13 +13,13 @@ using std::endl;
 
 //#include <boost/filesystem.hpp>
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/aligned_allocator.h"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix_algorithms.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 
 //#include <alps/hdf5.hpp>
 
@@ -40,7 +40,7 @@ using std::endl;
 //#include "utils/timings.h"
 
 typedef U1 SymmGroup;
-typedef maquis::types::dense_matrix<double> Matrix;
+typedef alps::numeric::matrix<double> Matrix;
 
 
 std::vector<double> density(MPS<Matrix, SymmGroup> const & mps, block_matrix<Matrix, SymmGroup> const & dens_op,

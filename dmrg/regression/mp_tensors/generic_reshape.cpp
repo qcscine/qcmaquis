@@ -5,11 +5,11 @@
 #include <algorithm>
 #include <cstdlib>
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/algorithms.hpp"
-typedef maquis::types::dense_matrix<double> Matrix;
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
+typedef alps::numeric::matrix<double> Matrix;
 
 
 #include "dmrg/block_matrix/block_matrix.h"

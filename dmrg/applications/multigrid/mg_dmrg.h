@@ -11,20 +11,20 @@
 
 #include "dmrg/utils/DmrgParameters2.h"
 
-#include "types/dense_matrix/dense_matrix.h"
-#include "types/dense_matrix/matrix_interface.hpp"
-#include "types/dense_matrix/resizable_matrix_interface.hpp"
-#include "types/dense_matrix/dense_matrix_blas.hpp"
-#include "types/dense_matrix/algorithms.hpp"
+#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/matrix/algorithms.hpp"
 #ifdef USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
-typedef maquis::types::mt_matrix<double> Matrix;
+typedef alps::numeric::mt_matrix<double> Matrix;
 #else
 
 #ifndef USE_COMPLEX
-typedef maquis::types::dense_matrix<double> Matrix;
+typedef alps::numeric::matrix<double> Matrix;
 #else
-typedef maquis::types::dense_matrix<std::complex<double> > Matrix;
+typedef alps::numeric::matrix<std::complex<double> > Matrix;
 #endif
 
 #endif

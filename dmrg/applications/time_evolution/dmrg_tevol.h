@@ -15,20 +15,20 @@
     typedef maquis::types::p_dense_matrix<std::complex<double> > cmatrix;
 #elif defined USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
-    typedef maquis::types::mt_matrix<double> matrix;
-    typedef maquis::types::mt_matrix<std::complex<double> > cmatrix;
+    typedef alps::numeric::mt_matrix<double> matrix;
+    typedef alps::numeric::mt_matrix<std::complex<double> > cmatrix;
 #else
-    #include "types/dense_matrix/dense_matrix.h"
-    #include "types/dense_matrix/matrix_interface.hpp"
-    #include "types/dense_matrix/resizable_matrix_interface.hpp"
-    #include "types/dense_matrix/dense_matrix_blas.hpp"
-    #include "types/dense_matrix/algorithms.hpp"
-    typedef maquis::types::dense_matrix<double> matrix;
-    typedef maquis::types::dense_matrix<std::complex<double> > cmatrix;
+    #include "alps/numeric/matrix/matrix.hpp"
+    #include "alps/numeric/matrix/matrix_interface.hpp"
+    #include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+    #include "alps/numeric/matrix/matrix_blas.hpp"
+    #include "alps/numeric/matrix/algorithms.hpp"
+    typedef alps::numeric::matrix<double> matrix;
+    typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 #endif
 
 #include "dmrg/utils/DmrgParameters2.h"
-#include "types/dense_matrix/dense_matrix.h"
+#include "alps/numeric/matrix/matrix.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
 // def. of run functions

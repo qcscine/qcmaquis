@@ -200,11 +200,18 @@ void block_matrix<Matrix, SymmGroup>::inplace_conjugate()
     std::transform(data_.begin(), data_.end(), data_.begin(), utils::functor_conjugate());
 }
 
+namespace detail {
+    // md: this is needed because block_matrix::generate is hiding the correct one
+    template<class Matrix, class Generator>
+    void generate_impl(Matrix & m, Generator g)
+    { generate(m, g); }
+}
+
 template<class Matrix, class SymmGroup>
 template<class Generator>
 void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 {
-    for(std::size_t k = 0; k < n_blocks(); ++k) maquis::types::generate(data_[k], g);
+    for(std::size_t k = 0; k < n_blocks(); ++k) detail::generate_impl(data_[k], g);
 }
 
 template<class Matrix, class SymmGroup>

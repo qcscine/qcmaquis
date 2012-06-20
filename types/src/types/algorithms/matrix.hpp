@@ -17,7 +17,7 @@ namespace maquis {
 
         template <class Matrix>
         void svd(Matrix M, Matrix & U, Matrix& V,
-                 typename associated_real_diagonal_matrix<Matrix>::type& S);
+                 typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type& S);
 
         template <class Matrix>
         void qr(Matrix M, Matrix & Q, Matrix & R);
@@ -30,11 +30,11 @@ namespace maquis {
     
         template <class Matrix>
         void heev(Matrix M, Matrix & evecs,
-                  typename associated_real_vector<Matrix>::type & evals);
+                  typename alps::numeric::associated_real_vector<Matrix>::type & evals);
         
         template <class Matrix>
         void heev(Matrix M, Matrix & evecs,
-                  typename associated_diagonal_matrix<Matrix>::type & evals);
+                  typename alps::numeric::associated_diagonal_matrix<Matrix>::type & evals);
 
         template<class Matrix, class ThirdArgument>
         void syev(Matrix M, Matrix & evecs, ThirdArgument & evals);
@@ -68,7 +68,7 @@ namespace maquis {
         template <class Matrix>
         void scalar_norm(Matrix & M1, Matrix & M2, typename Matrix::value_type & ret);// not const due to nullcut        
         template <class DiagMatrix>
-        void bond_renyi_entropies(const DiagMatrix & M, typename associated_real_vector<DiagMatrix>::type& sv);
+        void bond_renyi_entropies(const DiagMatrix & M, typename alps::numeric::associated_real_vector<DiagMatrix>::type& sv);
         
         template <class Matrix>
         void left_right_boundary_init(Matrix & M);
