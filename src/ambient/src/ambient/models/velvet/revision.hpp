@@ -1,21 +1,18 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline revision::revision(memspec* spec, bool clean)
-    : spec(spec), clean(clean), lda(spec->grid.y), generator(NULL)
-    {
-        content = new entry();
-    }
+    : spec(spec), clean(clean), generator(NULL) { }
 
     inline revision::~revision(){
-        free(content->header); delete content;
+        free(content.header);
     }
 
     inline void revision::embed(void* memory, size_t x, size_t y, size_t bound){
-        this->content->set_memory(memory, bound);
+        this->content.set_memory(memory, bound);
     }
 
     inline revision::entry& revision::block(size_t x, size_t y){
-        return *this->content;
+        return this->content;
     }
 
     inline void revision::add_modifier(sfunctor* m){
@@ -37,9 +34,7 @@ namespace ambient { namespace models { namespace velvet {
     // {{{ revision::entry //
 
     inline revision::entry::entry()
-    : header(NULL), data(NULL)
-    {
-    }
+    : header(NULL), data(NULL){ }
 
     inline void revision::entry::swap(entry& e){
         this->data = e.data;

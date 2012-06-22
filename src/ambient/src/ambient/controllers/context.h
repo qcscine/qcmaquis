@@ -6,6 +6,9 @@
 extern pthread_key_t pthread_tid;
 
 #define GET_TID 0 // this->get_tid()
+#ifndef NUM_THREADS
+#define NUM_THREADS 1 // controller.get_num_threads()
+#endif
 
 namespace ambient { namespace controllers {     
 
@@ -32,7 +35,7 @@ namespace ambient { namespace controllers {
     private:
         group* grp;
         cfunctor* functor;
-        dim2* thread_block_id;
+        dim2 thread_block_id[NUM_THREADS];
 // group class method duplicates
     public:
         int np,nq; //mask of the two cyclic distribution

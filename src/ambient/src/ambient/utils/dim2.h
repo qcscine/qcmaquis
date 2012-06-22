@@ -16,15 +16,15 @@ namespace ambient{
         {
         }
 
-        inline size_t max(){
+        inline size_t max() const {
             return std::max(this->x, this->y);
         }
 
-        inline size_t min(){
+        inline size_t min() const {
             return std::min(this->x, this->y);
         }
 
-        inline size_t square(){
+        inline size_t square() const {
             return this->x * this->y;
         }
 

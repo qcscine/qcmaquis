@@ -33,15 +33,11 @@ namespace ambient { namespace models { namespace velvet {
 
         inline void embed(void* memory, size_t x, size_t y, size_t bound);
         size_t sid;
-        size_t lda;
         memspec* spec;
         bool clean;
-        entry* content;
+        entry content;
         // layout part //
 
-        inline revision::entry& operator()(size_t x, size_t y){
-            return *this->content;
-        } 
         inline revision* get_parent(){ return parent; }
         inline revision(memspec*, bool clean = false);
         inline ~revision();

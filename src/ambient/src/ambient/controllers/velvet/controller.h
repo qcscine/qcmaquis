@@ -12,7 +12,9 @@
 #ifndef MAX_NUM_THREADS 
 #define MAX_NUM_THREADS 8
 #endif
+#ifndef NUM_THREADS
 #define NUM_THREADS 1 // controller.get_num_threads()
+#endif
 
 namespace ambient { namespace controllers { namespace velvet {
 

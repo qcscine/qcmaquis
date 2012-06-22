@@ -18,9 +18,6 @@ namespace ambient { namespace models { namespace velvet {
         template<typename T> inline revision& init_revision(T* o);
         inline revision& add_revision(history* o);
         inline bool is_atomic(const history* o);
-        inline size_t get_block_lda(history* o);
-        inline dim2 get_current_dim(const history* o);
-        inline void set_current_dim(history* o, dim2);
         inline void insert(revision* r);
         inline revision* get_revision(size_t id) const;
         inline model& operator>>(dim2);

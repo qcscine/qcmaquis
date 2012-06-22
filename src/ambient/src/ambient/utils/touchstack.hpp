@@ -3,14 +3,8 @@
 namespace ambient{
 
     template<typename T>
-    inline touchstack<T>::touchstack(){
-        ri = wi = content = (T*)malloc(TOUCHSTACK_LENGTH);
-    }
-
-    template<typename T>
-    inline touchstack<T>::~touchstack(){
-        free(content);
-    }
+    inline touchstack<T>::touchstack()
+    : ri(content), wi(content) { }
 
     template<typename T>
     inline T touchstack<T>::pick(){
