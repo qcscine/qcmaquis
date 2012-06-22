@@ -7,63 +7,57 @@ namespace maquis { namespace types {
     #define scalar_type typename p_dense_matrix_impl<T>::scalar_type
 
     template <typename T>
-    inline p_dense_matrix_impl<T>::~p_dense_matrix_impl(){ } // #destructor // 
-
-    template <typename T>
     inline p_dense_matrix_impl<T>::p_dense_matrix_impl()
-    : cols(0), rows(0)  // be cautious (implicit)
-    {
+    : ambient::iteratable<history>(ambient::dim2(0,0)), references(0)
+    { // be cautious (implicit)
     }
 
     template <typename T>
-    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols){
-        this->cols = cols;
-        this->rows = rows;
-        this->pt_set_dim(cols, rows);
+    inline p_dense_matrix_impl<T>::p_dense_matrix_impl(size_type rows, size_type cols)
+    : ambient::iteratable<history>(ambient::dim2(cols, rows)), references(0)
+    {
     }
 
     template <typename T>
     inline p_dense_matrix_impl<T>::p_dense_matrix_impl(const p_dense_matrix_impl& m)
-    : ambient::parallel< p_dense_matrix_impl<T> >(m)
+    : ambient::iteratable<history>(m.spec.dim), references(0)
     {
-        this->cols = m.num_cols();
-        this->rows = m.num_rows();
     }
 
     template <typename T>
     inline bool p_dense_matrix_impl<T>::empty() const {
-        return (this->rows == 0 || this->cols == 0); 
+        return (this->spec.dim.x == 0 || this->spec.dim.y == 0); 
     }
 
     template <typename T>
     inline size_type p_dense_matrix_impl<T>::num_rows() const {
-        return this->rows;   
+        return this->spec.dim.y;   
     }
 
     template <typename T>
     inline size_type p_dense_matrix_impl<T>::num_cols() const {
-        return this->cols;   
+        return this->spec.dim.x;   
     }
 
     template <typename T>
     inline bool p_dense_matrix_impl<T>::atomic() const {
-        return this->pt_atomic();   
+        return ambient::model.is_atomic(this);
     }
 
     template <typename T>
     inline void p_dense_matrix_impl<T>::resize(p_dense_matrix_impl& r, size_type rows, size_type cols){
-        algorithms::resize(r, rows, cols, *this, this->rows, this->cols);
+        algorithms::resize(r, rows, cols, *this, this->spec.dim.y, this->spec.dim.x);
     }
 
     template <typename T>
     inline void p_dense_matrix_impl<T>::remove_rows(size_type i, size_type k){
-        assert( i+k <= this->rows );
+        assert( i+k <= this->spec.dim.y );
         algorithms::remove_rows(*this, i, k);
     }
 
     template <typename T>
     inline void p_dense_matrix_impl<T>::remove_cols(size_type j, size_type k){
-        assert( j+k <= this->cols );
+        assert( j+k <= this->spec.dim.x );
         algorithms::remove_cols(*this, j, k);
     }
 
@@ -94,10 +88,9 @@ namespace maquis { namespace types {
 
     template <typename T>
     inline value_type& p_dense_matrix_impl<T>::get(size_type i, size_type j){
-        return this->pt_fetch(i / this->pt_mem_dim().y,  // blocked_i
-                              j / this->pt_mem_dim().x,  // blocked_j 
-                              i % this->pt_mem_dim().y,  // element_i 
-                              j % this->pt_mem_dim().x); // element_j
+        ambient::playout();
+        return ((value_type*)ambient::controller.ufetch_block(*this->current, j/this->spec.block.x, i/this->spec.block.y))
+               [ (j%this->spec.block.x)*this->spec.block.y + i%this->spec.block.y ];
     }
 
     template <typename T>
@@ -129,6 +122,11 @@ namespace maquis { namespace types {
     template <typename T2>
     inline void p_dense_matrix_impl<T>::mul(const T2& t){
         algorithms::scale_inplace(*this, t);
+    }
+
+    template <typename T>
+    inline void p_dense_matrix_impl<T>::copy(const p_dense_matrix_impl<T>& m){
+        algorithms::copy(*this, m);
     }
 
     #undef size_type

@@ -6,32 +6,19 @@ namespace maquis { namespace types {
     #define value_type  typename p_diagonal_matrix<T>::value_type
 
     template<typename T>
-    inline p_diagonal_matrix<T>::p_diagonal_matrix()
-    : data_()
-    {
-    }
-
-    template<typename T>
     inline p_diagonal_matrix<T>::p_diagonal_matrix(size_t rows, const value_type& init)
-    : data_(rows,1)
+    : data_(rows,1,init)
     {
-       this->data_.fill_value(init);
     }
 
     template<typename T>
     inline size_type p_diagonal_matrix<T>::num_rows() const {
-       return this->data_.num_rows();
+        return this->data_.num_rows();
     }
 
     template<typename T>
     inline size_type p_diagonal_matrix<T>::num_cols() const {
         return this->num_rows();
-    }
-
-    template<typename T>
-    inline p_diagonal_matrix<T>& p_diagonal_matrix<T>::operator=(const p_diagonal_matrix<T>& rhs){
-        this->data_ = rhs.get_data(); 
-        return *this;
     }
 
     template<typename T>
@@ -111,9 +98,10 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    inline p_diagonal_matrix<T> exp(p_diagonal_matrix<T> m, const T& alfa = 1.){
-        m.exp(alfa);
-        return m;
+    inline p_diagonal_matrix<T> exp(const p_diagonal_matrix<T>& m, const T& alfa = 1.){
+        p_diagonal_matrix<T> result(m);
+        result.exp(alfa);
+        return result;
     }
 
     template<typename T>
@@ -126,9 +114,10 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    inline p_diagonal_matrix<T> sqrt(p_diagonal_matrix<T> m){
-        m.sqrt();
-        return m;
+    inline p_diagonal_matrix<T> sqrt(const p_diagonal_matrix<T>& m){
+        p_diagonal_matrix<T> result(m);
+        result.sqrt();
+        return result;
     }
 
     template<typename T>
@@ -138,17 +127,17 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    inline void remove_rows(p_diagonal_matrix<T> & m, size_t k, size_t n = 1){
+    inline void remove_rows(p_diagonal_matrix<T>& m, size_t k, size_t n = 1){
         m.remove_rows(k, n);
     }
 
     template<typename T>
-    inline void remove_cols(p_diagonal_matrix<T> & m, size_t k, size_t n = 1){
+    inline void remove_cols(p_diagonal_matrix<T>& m, size_t k, size_t n = 1){
         m.remove_cols(k, n);
     }
 
     template<typename T>
-    inline void resize(p_diagonal_matrix<T> & m, size_t rows, size_t cols){
+    inline void resize(p_diagonal_matrix<T>& m, size_t rows, size_t cols){
         m.resize(rows, cols);
     }
     // }}}

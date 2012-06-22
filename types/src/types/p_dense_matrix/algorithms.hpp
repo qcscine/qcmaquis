@@ -140,7 +140,7 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    inline void left_right_boundary_init(p_dense_matrix<T> & a){
+    inline void left_right_boundary_init(p_dense_matrix<T>& a){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
         alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
@@ -156,28 +156,28 @@ namespace maquis { namespace types {
 
     // {{{ p_dense_matrix operators (free functions)
     template <typename T>
-    inline p_dense_matrix<T> operator + (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){
-        return (lhs += rhs); 
+    inline p_dense_matrix<T> operator + (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){
+        return (lhs.clone() += rhs); 
     }
 
     template <typename T>
-    inline p_dense_matrix<T> operator - (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
-        return (lhs -= rhs); 
+    inline p_dense_matrix<T> operator - (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ 
+        return (lhs.clone() -= rhs); 
     }
 
     template<typename T>
-    inline const p_dense_matrix<T> operator * (p_dense_matrix<T> lhs, const p_dense_matrix<T>& rhs){ 
-        return (lhs *= rhs); 
+    inline const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const p_dense_matrix<T>& rhs){ 
+        return (lhs.clone() *= rhs); 
     }
 
     template<typename T, typename T2>
-    inline const p_dense_matrix<T> operator * (p_dense_matrix<T> lhs, const T2& rhs){ 
-        return (lhs *= rhs); 
+    inline const p_dense_matrix<T> operator * (const p_dense_matrix<T>& lhs, const T2& rhs){ 
+        return (lhs.clone() *= rhs); 
     }
 
     template<typename T, typename T2>
-    inline const p_dense_matrix<T> operator * (const T2& lhs, p_dense_matrix<T> rhs){ 
-        return (rhs *= lhs); 
+    inline const p_dense_matrix<T> operator * (const T2& lhs, const p_dense_matrix<T>& rhs){ 
+        return (rhs.clone() *= lhs); 
     }
 
     template <typename T>
@@ -211,36 +211,35 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    inline p_dense_matrix<T> transpose(const p_dense_matrix<T>& a){
+    inline const p_dense_matrix<T>& transpose(const p_dense_matrix<T>& a){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
         alps::numeric::matrix<T> sm = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
 #endif
         p_dense_matrix<T> t(a.num_cols(), a.num_rows());
         USE_ATOMIC(a.atomic(), transpose_out, a, t);
+        const_cast<p_dense_matrix<T>&>(a).swap(t); // somewhat inplace :)
         // p_dense_matrix<T> t(m); // alternative
         // t.transpose();
 #ifdef AMBIENT_SERIAL_CHECK
         if(transpose(sm) == t){}else printf("--------------------- INCORRECT TRANSPOSE!\n");
 #endif
-        return t;
+        return a;
     }
 
     template<typename T>
-    inline p_dense_matrix<T> conjugate(p_dense_matrix<T> m){
-        m.conjugate();
+    inline const p_dense_matrix<T>& conjugate(const p_dense_matrix<T>& m){
+        //m.conjugate();
         return m;
     }
 
     template<typename T>
-    inline p_dense_matrix<T> exp(p_dense_matrix<T> m, T const & alfa = 1.){
+    inline p_dense_matrix<T> exp(const p_dense_matrix<T>& m, const T& alfa = 1.){
         printf("----------------------------------- exp is actually used!\n\n");
         typename alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> >::type evals(m.num_rows());
         p_dense_matrix<T> evecs;
         heev(m, evecs, evals);
-        p_dense_matrix<T> e = evecs * exp(evals, alfa);
-        e *= conjugate(transpose(evecs));
-        return e;
+        return (evecs * exp(evals, alfa))*conjugate(transpose(evecs));
     }
 
     // {{{ strassen matrix multiplication algorithm
@@ -357,8 +356,9 @@ namespace maquis { namespace types {
         alps::numeric::matrix<T> sc = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(c);
         gemm(sa,sb,sc);
 #endif
-        c.resize(a.num_rows(), b.num_cols());
-        USE_ATOMIC(a.atomic() && b.atomic(), gemm_general, a, b, c);
+        p_dense_matrix<T> result(a.num_rows(), b.num_cols());
+        USE_ATOMIC(a.atomic() && b.atomic(), gemm_general, a, b, result);
+        c.swap(result);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sc == c){} else printf("--------------------- GEMM WAS INCORRECT!\n");
 #endif
@@ -377,8 +377,9 @@ namespace maquis { namespace types {
         size_t m = a.num_rows();
         size_t n = b.num_cols();
         size_t k = a.num_cols();
-        c.resize(m, n);
-        ambient::push< ambient::gemm_diagonal_rhs<T,D> >(a, b, c, m, n, k);
+        p_dense_matrix<T> result(m, n);
+        ambient::push< ambient::gemm_diagonal_rhs<T,D> >(a, b, result, m, n, k);
+        c.swap(result);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sc == c){} else printf("--------------------- GEMM PDP WAS INCORRECT!\n");
 #endif
@@ -397,8 +398,9 @@ namespace maquis { namespace types {
         size_t m = a.num_rows();
         size_t n = b.num_cols();
         size_t k = a.num_cols();
-        c.resize(m, n);
-        ambient::push< ambient::gemm_diagonal_lhs<T,D> >(a, b, c, m, n, k);
+        p_dense_matrix<T> result(m, n);
+        ambient::push< ambient::gemm_diagonal_lhs<T,D> >(a, b, result, m, n, k);
+        c.swap(result);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sc == c){} else printf("--------------------- GEMM DPP WAS INCORRECT!\n");
 #endif
@@ -424,12 +426,13 @@ namespace maquis { namespace types {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        USE_ATOMIC(a.atomic(), svd, a, u, vt, s);
+        p_dense_matrix<T> ac(a);
+        USE_ATOMIC(a.atomic(), svd, ac, u, vt, s);
 #endif
     }
 
     template<typename T>
-    inline void heev(p_dense_matrix<T> a, p_dense_matrix<T>& evecs,
+    inline void heev(const p_dense_matrix<T>& a, p_dense_matrix<T>& evecs,
                      typename alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     { // gs
         assert(num_rows(a) == num_cols(a) && num_rows(evals) == num_rows(a));
@@ -440,24 +443,23 @@ namespace maquis { namespace types {
             maquis::traits::matrix_cast<typename alps::numeric::associated_real_diagonal_matrix< alps::numeric::matrix<T> >::type >(evals);
         heev(sa, sevecs, sevals.get_values());
 #endif
-        int m = num_rows(a);
-        evecs.resize(m, m);
-        USE_ATOMIC(a.atomic(), heev, a, evals); // destoys U triangle of M
-        evecs = a;
+        p_dense_matrix<T> ac(a);
+        USE_ATOMIC(a.atomic(), heev, ac, evals); // destoys U triangle of M
+        evecs.swap(ac);
 #ifdef AMBIENT_SERIAL_CHECK
         if(sevecs == evecs){}else printf("--------------------- HEEV WAS INCORRECT!\n");
 #endif
     }
 
     template<typename T>
-    inline void syev(p_dense_matrix<T> a, p_dense_matrix<T>& evecs,
+    inline void syev(const p_dense_matrix<T>& a, p_dense_matrix<T>& evecs,
                      typename alps::numeric::associated_real_diagonal_matrix< p_dense_matrix<T> >::type& evals)
     {
         heev(a, evecs, evals);
     }
 
     template<typename T>
-    inline void qr(p_dense_matrix<T> m, p_dense_matrix<T> & q, p_dense_matrix<T> & r){
+    inline void qr(const p_dense_matrix<T>& m, p_dense_matrix<T>& q, p_dense_matrix<T>& r){
         assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- QR");
     }
 
@@ -590,6 +592,11 @@ namespace algorithms {
 #ifdef AMBIENT_SERIAL_CHECK
         if(s == a){} else printf("--------------------- SCALE WAS INCORRECT!\n");
 #endif
+    }
+
+    template<typename T>
+    inline void copy(p_dense_matrix_impl<T>& ac, const p_dense_matrix_impl<T>& a){
+        USE_ATOMIC(a.atomic(), copy, ac, a);
     }
 } 
 // }}} end of implementation specific type-nested algorithms //
