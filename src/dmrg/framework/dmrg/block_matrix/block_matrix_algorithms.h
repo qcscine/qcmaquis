@@ -36,7 +36,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         // avoid copying, use resize
-        C.insert_block(Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
+        C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
                        A.left_basis()[k].first, B.right_basis()[matched_block].first);
         gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
     }
@@ -80,7 +80,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A, Tag1,
         std::size_t s1 = result_size(A[k], Tag1(), B[matched_block], Tag2()).first;
         std::size_t s2 = result_size(A[k], Tag1(), B[matched_block], Tag2()).second;
         
-        C.insert_block(Matrix3(s1, s2),
+        C.insert_block(new Matrix3(s1, s2),
                        basis_eval<Tag1>::first(A)[k].first,
                        basis_eval<Tag2>::second(B)[matched_block].first);
         
@@ -383,7 +383,7 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type trace(block_matrix<Matrix,
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m)
 {
-    ;block_matrix<Matrix, SymmGroup> ret;
+    block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         ret.insert_block(m[k],
                          -m.left_basis()[k].first,
@@ -410,7 +410,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 {
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
-        m[k] = sqrt(m[k]);
+        m[k].sqrt();
 
     return m;
 }

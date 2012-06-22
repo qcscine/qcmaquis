@@ -2,7 +2,7 @@
 STATE="void"
 STATE_AMBIENT="void"
 STATE_TYPES="build"
-STATE_DMRG="build"
+STATE_DMRG="void"
 # end of target states #
 SITE=castor # the dashboard name (uname -n)
 ROOT_DIR=/users/akosenko/maquis2012/src

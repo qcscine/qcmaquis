@@ -94,9 +94,9 @@ struct multigrid {
                                 //                            maquis::cout << "s: " << s.first << ", " << s.second << std::endl;
                                 
                                 if (!M.has_block(out_left_c, out_right_c))
-                                    M.insert_block(Matrix(out_left.size(s.first, alpha->first),
-                                                          beta_basis.size_of_block(beta->first),
-                                                          0),
+                                    M.insert_block(new Matrix(out_left.size(s.first, alpha->first),
+                                                              beta_basis.size_of_block(beta->first),
+                                                              0),
                                                    out_left_c, out_right_c);
                                 
                                 
@@ -209,11 +209,11 @@ struct multigrid {
                         //                            maquis::cout << "s: " << s.first << ", " << s.second << std::endl;
                         
                         if (!M.has_block(out_left_c, out_right_c))
-                            M.insert_block(Matrix(out_left.size(s1->first, alpha->first),
-                                                  out_right.size(s2->first, beta->first,
-                                                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                                     -boost::lambda::_1, boost::lambda::_2)),
-                                                  0),
+                            M.insert_block(new Matrix(out_left.size(s1->first, alpha->first),
+                                                      out_right.size(s2->first, beta->first,
+                                                                    boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                                         -boost::lambda::_1, boost::lambda::_2)),
+                                                      0),
                                            out_left_c, out_right_c);
                         
                         
