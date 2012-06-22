@@ -38,7 +38,7 @@ namespace ambient {
         virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); this->check_complete(); }
         virtual void logistics()  { kernel_inliner<typename K::F,&K::l>::invoke((K*)this); this->check_complete(); }
         virtual bool pretend()    { return false; }
-        inline void pin(revision& r, int x, int y){ r.content->assignments.push_back(this); }
+        inline void pin(revision& r, int x, int y){ r.content.assignments.push_back(this); }
         inline void assign(revision& r, int x, int y){ ambient::controller.ifetch_block(r, x, y); }
         inline void ctxt_select(const char* sql){ this->set_group(channel.world()); }
 
@@ -87,7 +87,7 @@ namespace ambient {
             this->workload++; 
         }
         inline void pin(revision& r){ 
-            r.content->assignments.push_back(this);
+            r.content.assignments.push_back(this);
             ambient::controller.ifetch_block(r,0,0);
         }
         inline void assign(revision& r){ 
@@ -103,7 +103,7 @@ namespace ambient {
         virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);                             }
         virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);                              }
         virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); this->check_complete(); }
-        inline void pin(revision& r, int x, int y){ r.content->assignments.push_back(this); }
+        inline void pin(revision& r, int x, int y){ r.content.assignments.push_back(this); }
         inline void assign(revision& r, int x, int y){ ambient::controller.ifetch_block(r, x, y); }
         inline void ctxt_select(const char* sql){ this->set_group(channel.world()); }
         virtual void logistics(){
@@ -122,7 +122,7 @@ namespace ambient {
         }
         inline void atomic_conditional_assign(revision& r){ 
             this->add_condition();
-            r.content->assignments.push_back(this);
+            r.content.assignments.push_back(this);
             ambient::controller.ifetch_block(r, 0, 0);
         }
         inline void block_outright_conditional_assign(revision& r){

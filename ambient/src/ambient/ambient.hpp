@@ -36,7 +36,6 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
-#include "ambient/interface/parallel.hpp"
 #include "ambient/interface/future.hpp"
 
 namespace ambient{

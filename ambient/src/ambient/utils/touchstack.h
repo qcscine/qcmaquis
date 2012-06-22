@@ -8,7 +8,6 @@ namespace ambient{
     class touchstack {
     public:
         inline touchstack();
-        inline ~touchstack();
         inline T pick();
         inline void push_back(T e);
         inline bool end_reached();
@@ -16,7 +15,7 @@ namespace ambient{
         inline bool empty();
         inline void sort();
     private:
-        T* content;
+        T content[TOUCHSTACK_LENGTH];
         T* wi; 
         T* ri;
     };

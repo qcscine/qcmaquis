@@ -6,19 +6,17 @@ namespace ambient { namespace models { namespace velvet {
 
     class history {
     protected:
-        inline history();
+        inline history(dim2);
     public:
         inline ~history();
         inline void clean();
         inline revision& add_state(revision* r);
         inline size_t time() const;
         inline revision* back() const;
-        inline dim2 get_cached_dim() const; // model
-        inline void cache_dim(dim2); // model
+        inline bool weak() const;
         std::vector<revision*> content;
         revision* current;
         size_t start;
-        dim2 dim;
         memspec spec;
     };
 

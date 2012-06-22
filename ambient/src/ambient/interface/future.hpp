@@ -15,6 +15,7 @@ namespace ambient {
         {
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
+            *(T*)this->naked = T();
         }
 
         inline future(const future& f){

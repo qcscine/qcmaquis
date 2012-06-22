@@ -6,15 +6,9 @@ extern pthread_key_t pthread_tid;
 namespace ambient { namespace controllers {
 
 
-    inline context::context()
-    :grp(NULL)
-    { 
-        this->thread_block_id = (dim2*)calloc(ambient::controller.get_num_threads(), sizeof(dim2));
-    }
+    inline context::context() : grp(NULL) { }
 
-    inline context::~context()
-    {
-        free(this->thread_block_id);
+    inline context::~context(){
         free(pthread_getspecific(pthread_tid));
     }
 

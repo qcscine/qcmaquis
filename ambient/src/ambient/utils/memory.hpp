@@ -32,10 +32,7 @@ namespace ambient {
     class container {
     public:
         inline container()
-        : references(0)
-        {
-            memset(memory, 0, size);
-        }
+        : references(0){ }
     private:
         char memory[size];
         long references;

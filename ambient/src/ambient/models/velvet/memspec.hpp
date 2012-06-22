@@ -2,11 +2,13 @@
 
 namespace ambient { namespace models { namespace velvet {
 
-    inline void memspec::latch(size_t size, dim2 block, dim2 dim){
-        this->size = size;
+    inline memspec::memspec(dim2 dim) : dim(dim) { }
+
+    template<typename T>
+    inline void memspec::latch(dim2 block){
         this->block = block;
+        this->size = block.square()*sizeof(T);
         this->grid = dim2(__a_ceil(dim.x/block.x), __a_ceil(dim.y/block.y));
-        this->dim = dim;
     }
 
     inline void* memspec::alloc() const {    

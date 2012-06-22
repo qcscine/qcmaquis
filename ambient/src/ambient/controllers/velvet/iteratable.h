@@ -21,8 +21,7 @@ namespace ambient { namespace controllers { namespace velvet {
     class iteratable : public T
     {
     protected:
-        inline iteratable();
-        inline ~iteratable();
+        inline iteratable(dim2);
     public:
         inline revision&   ui_l_revision_0() const { return *this->content[this->thread_revision_base[GET_TID]];                  }
         inline c_revision& ui_c_revision_0() const { return *(c_revision*)this->content[this->thread_revision_base[GET_TID]];     }
@@ -31,7 +30,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline r_revision& ui_r_revision_1() const { return *(r_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; }
         inline size_t get_thread_revision_base() const;
         inline void set_thread_revision_base(size_t);
-        size_t* thread_revision_base;
+        size_t thread_revision_base[NUM_THREADS];
     };
 
 } } }

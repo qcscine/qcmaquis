@@ -2,10 +2,7 @@
 
 namespace ambient { namespace models { namespace velvet {
 
-    inline history::history()
-    : current(NULL), start(0)
-    {
-    }
+    inline history::history(dim2 dim) : current(NULL), start(0), spec(dim) { }
 
     inline history::~history(){
         size_t size = this->content.size();
@@ -33,12 +30,8 @@ namespace ambient { namespace models { namespace velvet {
         return this->content.size()-1;
     }
 
-    inline dim2 history::get_cached_dim() const {
-        return this->dim;
-    }
-
-    inline void history::cache_dim(dim2 dim){
-        this->dim = dim; 
+    inline bool history::weak() const {
+        return (this->back() == NULL);
     }
 
 } } }
