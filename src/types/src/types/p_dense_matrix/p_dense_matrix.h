@@ -25,27 +25,47 @@ namespace maquis { namespace types {
         typedef typename I::difference_type difference_type;
         // {{{ p_dense_matrix_impl forwarding
 
-        inline p_dense_matrix(){
+        static inline p_dense_matrix<T> identity_matrix(size_type size){
+            return p_dense_matrix<T>(size);
+        }
+
+        explicit inline p_dense_matrix(size_type size){ // identity
+            this->impl = new I(size, size); 
+            this->impl->fill_identity();
+        }
+
+        explicit inline p_dense_matrix(){ // shouldn't be called
             this->impl = new I(); 
         }
 
-        inline p_dense_matrix(size_type rows, size_type cols, value_type init_value = value_type()){
+        explicit inline p_dense_matrix(size_type rows, size_type cols, value_type init_value = value_type()){
             this->impl = new I(rows, cols); 
             this->impl->fill_value(init_value);
         }
 
-        inline p_dense_matrix(p_dense_matrix const& m){
+        inline p_dense_matrix(const p_dense_matrix& m){
             this->impl = new I(*m.impl);
+            this->impl->copy(*m.impl);
         }
 
-        static inline p_dense_matrix<T> identity_matrix(size_type size){
-            p_dense_matrix<T> m(size, size);
-            m.fill_identity();
-            return m;
+        p_dense_matrix& operator = (const p_dense_matrix& rhs){
+            assert(!rhs.impl->weak());
+            p_dense_matrix clone(rhs);
+            this->swap(clone);
+            return *this;
         }
 
-        inline value_type& get(size_type i, size_type j) const {
-            return this->impl->get(i,j);
+        p_dense_matrix clone() const {
+            return p_dense_matrix<T>(*this);
+        }
+
+    public:
+        inline void swap(p_dense_matrix& r){
+            this->impl.swap(r.impl);
+        }
+
+        friend void swap(p_dense_matrix& x, p_dense_matrix& y){
+            x.swap(y);
         }
 
         inline scalar_type trace() const {
@@ -92,8 +112,9 @@ namespace maquis { namespace types {
             assert(this->num_rows() != 0 && this->num_cols() != 0);
             if(this->num_rows() == rows && this->num_cols() == cols) return;
             p_dense_matrix resized(rows, cols);
-            this->impl->resize(*resized.impl, rows, cols); 
-            this->impl.swap(resized.impl);
+            if(!this->impl->weak())
+                this->impl->resize(*resized.impl, rows, cols);
+            this->swap(resized);
         }
 
         inline void remove_rows(size_type i, size_type k = 1){
@@ -112,12 +133,6 @@ namespace maquis { namespace types {
 
         inline const value_type& operator() (size_type i, size_type j) const {
             return this->impl->get(i,j);
-        }
-
-        inline p_dense_matrix& operator = (p_dense_matrix rhs){
-            assert(!rhs.impl->pt_clean());
-            this->impl.swap(rhs.impl);
-            return *this;
         }
 
         inline p_dense_matrix& operator += (const p_dense_matrix& rhs){
@@ -161,19 +176,18 @@ namespace maquis { namespace types {
 
     template <typename T>
     class p_dense_matrix_impl :
-    public ambient::parallel< p_dense_matrix_impl<T> >
+    public ambient::iteratable<ambient::history>
     {
     public:
         typedef T         value_type;      // The type T of the elements of the matrix
         typedef size_t    size_type;       // Unsigned integer type that represents the dimensions of the matrix
         typedef ptrdiff_t difference_type; // Signed integer type to represent the distance of two elements in the memory
-        typedef typename ambient::parallel< p_dense_matrix_impl<T> >::ptr ptr;
+        typedef typename boost::intrusive_ptr<p_dense_matrix_impl<T> > ptr;
         typedef typename ambient::future<T> scalar_type;
 
-        inline ~p_dense_matrix_impl();
-        inline p_dense_matrix_impl();             // please avoid implicit conversions
-        inline p_dense_matrix_impl(size_type rows, size_type cols);
-        inline p_dense_matrix_impl(p_dense_matrix_impl const& m);
+        explicit inline p_dense_matrix_impl();             // please avoid implicit conversions
+        explicit inline p_dense_matrix_impl(size_type rows, size_type cols);
+        explicit inline p_dense_matrix_impl(p_dense_matrix_impl const& m);
         inline value_type& get(size_type i, size_type j);
         inline scalar_type trace() const;
         inline void fill_identity();
@@ -193,9 +207,11 @@ namespace maquis { namespace types {
         inline void mul(const p_dense_matrix_impl& rhs);
         inline void mul(const p_diagonal_matrix<T>& rhs);
         template <typename T2> inline void mul(const T2& t);
+        inline void copy(const p_dense_matrix_impl& m);
+        friend void intrusive_ptr_add_ref(p_dense_matrix_impl* p){ ++(p->references); }
+        friend void intrusive_ptr_release(p_dense_matrix_impl* p){ if(--(p->references) == 0) delete p; }
     private:
-        size_type rows;
-        size_type cols;
+        long references;
     };
 
     // {{{ matrix-specific alps::numeric::associated types
