@@ -70,7 +70,7 @@ namespace ts_reshape {
                         
                         // Why is this supposed to work?
                         if (! m2.has_block(out_l_charge, out_r_charge) )
-                            m2.insert_block(Matrix(out_left.size(s_charge, left_i[l].first), right_i[r].second, 0),
+                            m2.insert_block(new Matrix(out_left.size(s_charge, left_i[l].first), right_i[r].second, 0),
                                             out_l_charge, out_r_charge);
                         
                         size_t in_left_offset = in_left(physical_i[s1].first, left_i[l].first);
@@ -152,7 +152,7 @@ namespace ts_reshape {
                         if (! m1.has_block(in_l_charge, in_r_charge) ) continue;
                         
                         if (! m2.has_block(out_l_charge, out_r_charge) )
-                            m2.insert_block(Matrix(out_left.size(physical_i[s1].first, left_i[l].first),
+                            m2.insert_block(new Matrix(out_left.size(physical_i[s1].first, left_i[l].first),
                                                    out_right.size(-physical_i[s2].first, right_i[r].first), 0),
                                             out_l_charge, out_r_charge);
                         
@@ -224,7 +224,7 @@ namespace ts_reshape {
                         if (! m1.has_block(in_l_charge, in_r_charge) ) continue;
                         
                         if (! m2.has_block(out_l_charge, out_r_charge) )
-                            m2.insert_block(Matrix(out_left.size(physical_i[s1].first, left_i[l].first),
+                            m2.insert_block(new Matrix(out_left.size(physical_i[s1].first, left_i[l].first),
                                                    out_right.size(-physical_i[s2].first, right_i[r].first), 0),
                                             out_l_charge, out_r_charge);
                         
@@ -308,7 +308,7 @@ namespace ts_reshape {
                         if (! m1.has_block(in_l_charge, in_r_charge) ) continue;
                         
                         if (! m2.has_block(out_l_charge, out_r_charge) )
-                            m2.insert_block(Matrix(left_i[l].second, out_right.size(-s_charge, right_i[r].first), 0),
+                            m2.insert_block(new Matrix(left_i[l].second, out_right.size(-s_charge, right_i[r].first), 0),
                                             out_l_charge, out_r_charge);
                         
                         size_t in_left_offset = in_left(physical_i[s1].first, left_i[l].first);

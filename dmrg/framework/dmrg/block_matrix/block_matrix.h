@@ -60,6 +60,7 @@ public:
                    std::pair<charge, size_type> const & c) const;
     
     void insert_block(Matrix const &, charge, charge);
+    void insert_block(Matrix *, charge, charge);
     void remove_block(charge r, charge c);
     void remove_block(std::size_t which);
 

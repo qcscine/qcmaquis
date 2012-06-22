@@ -203,9 +203,9 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
                     charge out_right_c = SymmGroup::fuse(s4->first, -s2->first);
                     
                     if (!ret.has_block(out_left_c, out_right_c))
-                        ret.insert_block(Matrix(pb_new.size(s1->first, -s3->first),
-                                                pb_new.size(s4->first, -s2->first),
-                                                0),
+                        ret.insert_block(new Matrix(pb_new.size(s1->first, -s3->first),
+                                                    pb_new.size(s4->first, -s2->first),
+                                                    0),
                                          out_left_c, out_right_c);
                     
                     std::size_t in_left_offset = pb(s1->first, s2->first);
@@ -278,9 +278,9 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
                 charge out_right_c = s2->first;
                 
                 if (!Ai.has_block(out_left_c, out_right_c))
-                    Ai.insert_block(Matrix(phys.size_of_block(s1->first),
-                                            phys.size_of_block(s2->first),
-                                            0),
+                    Ai.insert_block(new Matrix(phys.size_of_block(s1->first),
+                                               phys.size_of_block(s2->first),
+                                               0),
                                      out_left_c, out_right_c);
                 
                 std::size_t in_left_offset = pb(s1->first, -s2->first);
@@ -342,7 +342,7 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_left_to_list (Index<SymmGr
 				charge out_right_c = s2->first;
 
 				if (!Ai.has_block(out_left_c, out_right_c))
-					Ai.insert_block(Matrix(phys.size_of_block(s1->first),
+					Ai.insert_block(new Matrix(phys.size_of_block(s1->first),
 							phys.size_of_block(s2->first),
 							0),
 							out_left_c, out_right_c);

@@ -786,7 +786,7 @@ struct contraction {
                         if (! op.has_block(s1c, s2c) )
                             continue;
                         if (! ret_vec.has_block(left_out_charge, right_out_charge) )
-                            ret_vec.insert_block(Matrix(left_pb.size(s2c, lc), right_i[rs].second, 0), left_out_charge, right_out_charge);
+                            ret_vec.insert_block(new Matrix(left_pb.size(s2c, lc), right_i[rs].second, 0), left_out_charge, right_out_charge);
                         
                         Matrix & oblock = ret_vec(left_out_charge, right_out_charge);
                         Matrix const & iblock = vec(left_vec_charge, right_vec_charge);
@@ -872,7 +872,7 @@ struct contraction {
                         if (! bra_vec.has_block(left_bra_charge, right_charge) )
                             continue;
                         if (! ret.has_block(s1c, s2c) )
-                            ret.insert_block(Matrix(phys_i[s1].second, phys_i[s2].second, 0), s1c, s2c);
+                            ret.insert_block(new Matrix(phys_i[s1].second, phys_i[s2].second, 0), s1c, s2c);
                         
                         Matrix & oblock = ret(s1c, s2c);
                         Matrix const & ket_block = ket_vec(left_ket_charge, right_charge);

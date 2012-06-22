@@ -80,6 +80,20 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1
 }
 
 template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, charge c2)
+{
+    assert( !has_block(c1, c2) );
+    
+    std::pair<charge, size_type>
+    p1 = std::make_pair(c1, num_rows(*mtx)),
+    p2 = std::make_pair(c2, num_cols(*mtx));
+    
+    size_type i1 = rows_.insert(p1);
+    cols_.insert(i1, p2);
+    data_.insert(data_.begin() + i1, mtx);
+}
+
+template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(block_matrix rhs)
 {
     swap(*this, rhs);
@@ -253,7 +267,7 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
             std::size_t maxcols = std::max(num_cols(mtx),
                                            num_cols((*this)(c1, c2)));
             
-            Matrix cpy = mtx; // only in this case do we need to copy the argument matrix
+            Matrix cpy(mtx); // only in this case do we need to copy the argument matrix
             
             resize_block(c1, c2, maxrows, maxcols); // I think useless 
             resize(cpy, maxrows, maxcols);
