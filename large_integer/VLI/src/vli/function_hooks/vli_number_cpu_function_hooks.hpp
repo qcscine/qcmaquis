@@ -140,7 +140,7 @@ namespace vli
     // specialization extention addition 
     #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
         template<> \
-        void add_extension<unsigned long int,BOOST_PP_ADD(n,1)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
+        void add_extension<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
         detail::NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(x,y,w); \
         }; \
 

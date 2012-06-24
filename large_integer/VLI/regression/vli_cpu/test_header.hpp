@@ -115,9 +115,9 @@ struct initializer {
 };
 #ifdef VLI_FUZZ_TESTS
 struct fuzz_initializer {
-    static boost::random::mt19937                                           rng;
-    static boost::random::uniform_int_distribution<vli_type::value_type>    vli_value_type_max_rnd;
-    static boost::random::uniform_int_distribution<int>                     int_plus_rnd;
+      static boost::random::mt19937                                           rng;
+      static boost::random::uniform_int_distribution<vli_type::value_type>    vli_value_type_max_rnd;
+      static boost::random::uniform_int_distribution<int>                     int_plus_rnd;
     static unsigned int                                                     fuzz_iterations;
     void operator()(vli_type& v, variant_enum variant = overflow_safe) {
         for(std::size_t i=0; i != vli_type::size; ++i)
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
         if (argc == 3)
             seed = boost::lexical_cast<unsigned int>(argv[2]);
         std::cout<<"Using random seed: "<<seed<<std::endl;
-        vli::test::fuzz_initializer::rng.seed(seed);
+       // vli::test::fuzz_initializer::rng.seed(seed);
 
     } else {
         std::cerr<<"Usage:"<<std::endl;

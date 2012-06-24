@@ -1,3 +1,4 @@
+
 /***********************************************************************************
  * Copyright (C) 2012 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                       ETH Zurich                                                *
@@ -287,6 +288,8 @@ namespace detail {
     template <class Polynomial>
     struct polynomial_multiply_helper {
     };
+    
+ 
 
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
@@ -298,19 +301,22 @@ namespace detail {
         static result_type apply(polynomial_type const& p1 , polynomial_type const& p2) {
             // TODO optimize
             result_type result;
+
             for(exponent_type i = 0; i < stride<Var0,Order>::value; ++i)
                 for(exponent_type i2 = 0; i2 < stride<Var0,Order>::value; ++i2)
                     for(exponent_type j = 0; j < stride<Var1,Order>::value; ++j)
-                        for(exponent_type j2 = 0; j2 < stride<Var1,Order>::value; ++j2)
+                        for(exponent_type j2 = 0; j2 < stride<Var1,Order>::value; ++j2)                        
                             for(exponent_type k = 0; k < stride<Var2,Order>::value; ++k)
                                 for(exponent_type k2 = 0; k2 < stride<Var2,Order>::value; ++k2)
                                     for(exponent_type l = 0; l < stride<Var3,Order>::value; ++l)
                                         for(exponent_type l2 = 0; l2 < stride<Var3,Order>::value; ++l2)
-                                            multiply_add(result(result_element_descriptor(i+i2,j+j2,k+k2,l+l2)), p1(element_descriptor(i,j,k,l)), p2(element_descriptor(i2,j2,k2,l2)));
-            return result;
+                                            multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
+            
+
+             return result;
         };
     };
-    
+
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
@@ -367,7 +373,7 @@ namespace detail {
                                 for(exponent_type k2 = 0; k2+k < stride<Var2,Order>::value; ++k2)
                                     for(exponent_type l = 0; l < stride<Var3,Order>::value; ++l)
                                         for(exponent_type l2 = 0; l2+l < stride<Var3,Order>::value; ++l2)
-                                            multiply_add(result(result_element_descriptor(i+i2,j+j2,k+k2,l+l2)), p1(element_descriptor(i,j,k,l)), p2(element_descriptor(i2,j2,k2,l2)));
+                                              multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
             return result;
         }
     };

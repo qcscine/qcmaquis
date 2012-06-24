@@ -7,7 +7,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME) // later boost mpl on the polynomial type
 {
 //    assert(boost::unit_test::framework::master_test_suite().argc == 1);
 //    int SizeVector = atoi(boost::unit_test::framework::master_test_suite().argv[0]); 
-    int SizeVector = 512;
+    int SizeVector = 16384;
      
     vector_type v1(SizeVector);
     vector_type v2(SizeVector);
@@ -30,6 +30,6 @@ BOOST_AUTO_TEST_CASE(TEST_NAME) // later boost mpl on the polynomial type
 
     Timer t(name);
     t.begin();
-      result_cpu = vli::detail::inner_product_plain(v1,v2);
+      result_cpu = vli::detail::inner_product_openmp(v1,v2);
     t.end();
 } 
