@@ -102,13 +102,15 @@ class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var
     }
 
     using base_type::operator();
-
-    value_type& operator()(exponent_type i, exponent_type j=0, exponent_type k=0, exponent_type l=0) {
-        return base_type::operator()(element_descriptor(i,j,k,l));
+    // for direct access, I removed the element descriptor
+    inline value_type& operator()(exponent_type i, exponent_type j=0, exponent_type k=0, exponent_type l=0) {
+        return base_type::operator()(i,j,k,l);
+    //     return base_type::operator()(element_descriptor(i,j,k,l));
     }
 
-    value_type const& operator()(exponent_type i, exponent_type j=0, exponent_type k=0, exponent_type l=0) const {
-        return base_type::operator()(element_descriptor(i,j,k,l));
+    inline value_type const& operator()(exponent_type i, exponent_type j=0, exponent_type k=0, exponent_type l=0) const {
+        return base_type::operator()(i,j,k,l);
+    //    return base_type::operator()(element_descriptor(i,j,k,l));
     }
 };
 

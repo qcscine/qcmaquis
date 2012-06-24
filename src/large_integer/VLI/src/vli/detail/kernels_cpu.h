@@ -71,12 +71,6 @@ namespace vli{
         BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
         #undef FUNCTION_sub_nbits_64bits
         /* ------------------------------------------------------- */
-        #define FUNCTION_sub_nbits_nminus1bits(z, n, unused) \
-            void NAME_SUB_NBITS_MINUS_NMINUS1BITS(n)(unsigned long int* x, unsigned long int const* y);
-
-        BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_sub_nbits_nminus1bits, ~)
-        #undef FUNCTION_sub_nbits_nminus1bits
-        /* ------------------------------------------------------- */
         //multiplication
         #define FUNCTION_mul_nbits_64bits(z, n, unused) \
             void NAME_MUL_NBITS_64BITS(n)(unsigned long int* x,unsigned long int const* y);
