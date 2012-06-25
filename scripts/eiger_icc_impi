@@ -2,7 +2,7 @@
 STATE="void"
 STATE_AMBIENT="void"
 STATE_TYPES="void"
-STATE_DMRG="build"
+STATE_DMRG="void"
 # end of target states #
 SITE=eiger # the dashboard name (uname -n)
 ROOT_DIR=~/maquis2012/src

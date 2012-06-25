@@ -96,12 +96,12 @@ namespace maquis { namespace types {
     }
      
     template <typename T>
-    inline void scalar_norm(const p_dense_matrix<T>& a, scalar_type& ret){
+    inline void norm(const p_dense_matrix<T>& a, scalar_type& ret){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
         alps::numeric::matrix<T> s = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
         typename alps::numeric::matrix<T>::value_type sret((T)ret);
-        scalar_norm(s, sret);
+        norm(s, sret);
 #endif
         USE_ATOMIC(a.atomic(), scalar_norm, a, ret);
 #ifdef AMBIENT_SERIAL_CHECK
@@ -110,14 +110,14 @@ namespace maquis { namespace types {
     }
 
     template <typename T>
-    inline void scalar_norm(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, scalar_type& ret){
+    inline void overlap(const p_dense_matrix<T>& a, const p_dense_matrix<T>& b, scalar_type& ret){
         // gs
 #ifdef AMBIENT_SERIAL_CHECK
         alps::numeric::matrix<T> sa = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(a);
         alps::numeric::matrix<T> sb = maquis::traits::matrix_cast<alps::numeric::matrix<T> >(b);
-        T sret((T)ret); scalar_norm(sa, sb, sret);
+        T sret((T)ret); overlap(sa, sb, sret);
 #endif
-        USE_ATOMIC(a.atomic(), scalar_overlap, a, b, ret);
+        USE_ATOMIC(a.atomic(), overlap, a, b, ret);
 #ifdef AMBIENT_SERIAL_CHECK
         if(std::abs((T)ret - sret) > 0.01) printf("--------------------- SCALAR NORM OVERLAP IS INCORRECT (%.2f vs %.2f)\n", (T)ret, sret); 
 #endif
