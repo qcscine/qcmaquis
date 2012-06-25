@@ -53,6 +53,6 @@ foreach( functional_test
          syev_lapack.out
          trace.out 
          transpose.out )
-    target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) 
+    target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES}) 
     add_test(${functional_test} ${functional_test})
 endforeach(functional_test)

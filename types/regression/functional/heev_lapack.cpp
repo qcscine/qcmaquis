@@ -18,7 +18,7 @@
 #include "types/utils/bindings.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( heev, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( heev_comparison, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pV(T::valuex,T::valuex);
