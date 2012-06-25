@@ -30,7 +30,6 @@ namespace maquis { namespace types {
         inline const container& get_data() const; 
         inline container& get_data();    
         inline size_type size() const;
-        inline void sqrt();
         inline void exp(const T& alfa = 1.);
    private:
         container data_;

@@ -216,12 +216,12 @@ namespace ambient {
     };
         
     template<typename T>
-    struct scalar_overlap_atomic : public ambient::kernel_atomic< scalar_overlap_atomic<T> > 
+    struct overlap_atomic : public ambient::kernel_atomic< overlap_atomic<T> > 
     { // gs
-        typedef void (scalar_overlap_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, T*&);
+        typedef void (overlap_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, T*&);
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, T*& overlap){
-            this->ctxt_select("* from ambient as scalar_overlap_atomic"); //if(!ctxt.involved()) return;
+            this->ctxt_select("* from ambient as overlap_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(b));
         }

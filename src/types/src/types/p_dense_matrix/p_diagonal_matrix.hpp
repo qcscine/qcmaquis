@@ -80,12 +80,6 @@ namespace maquis { namespace types {
         ambient::push< ambient::exp_diagonal<T> >(*this, alfa);
     }
 
-    template<typename T>
-    inline void p_diagonal_matrix<T>::sqrt(){ 
-        assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- SQRT DIAG");
-        ambient::push< ambient::sqrt_diagonal<T> >(*this);
-    }
-
     // {{{ p_diagonal_matrix free functions
     template<typename T>
     inline size_type num_rows(const p_diagonal_matrix<T>& m){
@@ -116,8 +110,14 @@ namespace maquis { namespace types {
     template<typename T>
     inline p_diagonal_matrix<T> sqrt(const p_diagonal_matrix<T>& m){
         p_diagonal_matrix<T> result(m);
-        result.sqrt();
+        sqrt_inplace(result);
         return result;
+    }
+
+    template<typename T>
+    inline void sqrt_inplace(p_diagonal_matrix<T>& m){
+        assert(false); printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO <- SQRT DIAG");
+        ambient::push< ambient::sqrt_diagonal<T> >(m);
     }
 
     template<typename T>

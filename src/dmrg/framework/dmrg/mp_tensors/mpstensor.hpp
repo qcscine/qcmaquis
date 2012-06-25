@@ -258,7 +258,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 
     scalar_type ret(0);
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        alps::numeric::scalar_norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
+        norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
     assert( ret == ret );
     assert( maquis::traits::real(ret) >= 0);
     return sqrt(maquis::traits::real(ret));
@@ -297,13 +297,13 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
-        alps::numeric::scalar_norm(data_(c,c),
-                                   rhs.data_(c,c),
-                                   ret);
+        overlap(data_(c,c),
+                rhs.data_(c,c),
+                ret);
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
     
     // for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        // alps::numeric::scalar_norm(data_[b],rhs.data_[b],ret);
+        // overlap(data_[b],rhs.data_[b],ret);
 
     return ret;
 }

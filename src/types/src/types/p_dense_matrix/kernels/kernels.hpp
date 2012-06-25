@@ -493,12 +493,12 @@ namespace ambient {
     {
         typedef void (scalar_norm::*F)(const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
 
-        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& scalar_norm){
             this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
             this->block_outright_pin(a);
         }
 
-        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const size_t& m, const size_t& n, T*& scalar_norm){
             // gs
             __A_TIME_C("ambient_scalar_norm_c_kernel"); 
             T summ = 0;
@@ -512,18 +512,18 @@ namespace ambient {
                 for(size_t j=0; j < sizex; j++)
                     summ += ad[i+j*lda]*ad[i+j*lda];
         
-            *norm += summ;
+            *scalar_norm += summ;
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct scalar_overlap : public ambient::kernel< scalar_overlap<T> > 
+    struct overlap : public ambient::kernel< overlap<T> > 
     {
-        typedef void (scalar_overlap::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
+        typedef void (overlap::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<T>&, const size_t&, const size_t&, T*&);
 
         inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
-            this->ctxt_select("* from ambient as scalar_overlap"); //if(!ctxt.involved()) return;
+            this->ctxt_select("* from ambient as overlap"); //if(!ctxt.involved()) return;
             this->block_outright_pin(a);
             this->block_outright_assign(b);
         }
