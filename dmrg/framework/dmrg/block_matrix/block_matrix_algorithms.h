@@ -410,7 +410,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 {
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
-        m[k].sqrt();
+        sqrt_inplace(m[k]);
 
     return m;
 }

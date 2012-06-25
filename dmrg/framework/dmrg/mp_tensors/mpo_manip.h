@@ -3,6 +3,7 @@
 #define MPO_MANIP_H
 
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/multi_index.h"
 
 #include "dmrg/mp_tensors/mpotensor.h"
