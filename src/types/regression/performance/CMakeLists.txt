@@ -26,9 +26,9 @@ add_executable( gemm.blas.out    gemm.blas.cpp    )
 add_executable( gemm.pblas.out   gemm.pblas.cpp   )
 add_executable( gemm.ambient.out gemm.ambient.cpp )
 
-target_link_libraries( gemm.blas.out     ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${BLAS_LAPACK_multi}          )
-target_link_libraries( gemm.pblas.out    ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${BLAS_SCALAPACK_serial}      )
-target_link_libraries( gemm.ambient.out  ${MPI_CXX_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${BLAS_LAPACK_serial} ambient )
+target_link_libraries( gemm.blas.out     ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES} ${BLAS_LAPACK_multi}          )
+target_link_libraries( gemm.pblas.out    ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES} ${BLAS_SCALAPACK_serial}      )
+target_link_libraries( gemm.ambient.out  ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES} ${BLAS_LAPACK_serial} ambient )
 
 add_test( gemm.blas.out    gemm.blas.out    )
 add_test( gemm.pblas.out   gemm.pblas.out   )

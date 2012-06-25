@@ -1,8 +1,8 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="void"
-STATE_DMRG="build"
+STATE_TYPES="build"
+STATE_DMRG="void"
 # end of target states #
 SITE=castor_ambient # the dashboard name (uname -n)
 ROOT_DIR=/users/akosenko/maquis2012/src
@@ -11,7 +11,7 @@ COMPILER_VERSION=2011
 MPI_WRAPPER=openmpi
 MPI_WRAPPER_VERSION=1.5.4
 BOOST=boost
-BOOST_VERSION=1.48.0
+BOOST_VERSION=1.49.0
 CMAKE=cmake
 
 export CXX=icpc
@@ -20,7 +20,7 @@ export BOOST_ROOT=/project/h07/BOOST_1_49/
 
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
-#module load ${BOOST}/${BOOST_VERSION}. on castor boost has not been compiled
+#module load ${BOOST}/${BOOST_VERSION} #. on castor boost has not been compiled
 module load ${CMAKE}
 
 ## common ##
