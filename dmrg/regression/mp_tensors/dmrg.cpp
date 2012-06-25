@@ -2,12 +2,11 @@
 #include <iterator>
 #include <iostream>
 
-#include "alps/numeric/matrix/matrix.hpp"
-#include "alps/numeric/matrix/matrix_interface.hpp"
-#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
 #include "alps/numeric/matrix/matrix_algorithms.hpp"
 #include "alps/numeric/diagonal_matrix.hpp"
+#include "dmrg/kernels/alps_matrix.hpp"
 typedef alps::numeric::matrix<double> Matrix;
 
 #include "dmrg/block_matrix/indexing.h"
