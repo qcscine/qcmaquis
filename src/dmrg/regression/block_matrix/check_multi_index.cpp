@@ -4,10 +4,9 @@
 #include <iterator>
 #include <algorithm>
 
-#include "alps/numeric/matrix/matrix.hpp"
-#include "alps/numeric/matrix/matrix_interface.hpp"
-#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
+#include "dmrg/kernels/alps_matrix.hpp"
 typedef alps::numeric::matrix<double> Matrix;
 
 

@@ -171,7 +171,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
         std::vector<double> sv;
         
         for (std::size_t k = 0; k < s.n_blocks(); ++k)
-            bond_renyi_entropies(s[k],sv);
+            maquis::dmrg::kernels::bond_renyi_entropies(s[k],sv);
 //        maquis::cout << p << " " << sv[0] << " " << sv[1] << std::endl;
         
         double r = std::accumulate(sv.begin(), sv.end(), double(0));

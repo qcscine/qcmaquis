@@ -13,13 +13,11 @@ typedef ambient::dim2 dim;
 #include "types/p_dense_matrix/p_dense_matrix.h"
 #include "types/p_dense_matrix/p_diagonal_matrix.h"
 
-#include "alps/numeric/matrix/matrix.hpp"
-#include "alps/numeric/matrix/matrix_interface.hpp"
-#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/matrix_algorithms.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
-#include "alps/numeric/matrix/matrix_blas.hpp"
 #include "alps/numeric/matrix/aligned_allocator.h"
+#include "dmrg/kernels/alps_matrix.hpp"
 
 #include "types/utils/matrix_cast.h"
 

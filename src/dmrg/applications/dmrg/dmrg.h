@@ -16,22 +16,22 @@
 #endif
 #if defined USE_AMBIENT
     #include "types/p_dense_matrix/p_dense_matrix.h"
+    #include "dmrg/kernels/p_dense_matrix.hpp"
     typedef maquis::types::p_dense_matrix<dmrg_value_type> matrix;
 #elif defined USE_MTM
     #include "types/mt_matrix/mt_matrix.h"
     typedef alps::numeric::mt_matrix<dmrg_value_type> matrix;
 #else
-    #include "alps/numeric/matrix/matrix.hpp"
-    #include "alps/numeric/matrix/matrix_interface.hpp"
-    #include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+    #include "alps/numeric/matrix.hpp"
     #include "alps/numeric/matrix/algorithms.hpp"
-    #include "alps/numeric/matrix/matrix_blas.hpp"
+    #include "dmrg/kernels/alps_matrix.hpp"
     typedef alps::numeric::matrix<dmrg_value_type> matrix;
 #endif
 #undef dmrg_value_type
 
 #include "dmrg/utils/DmrgParameters2.h"
-#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix.hpp"
+#include "dmrg/kernels/alps_matrix.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
 // def. of run functions

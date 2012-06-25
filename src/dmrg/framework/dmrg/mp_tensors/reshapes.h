@@ -65,7 +65,7 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
                         
-                        reshape_l2r(in_block, out_block, in_left_offset, out_right_offset,
+                        maquis::dmrg::kernels::reshape_l2r(in_block, out_block, in_left_offset, out_right_offset,
                                     physical_i[s].second, left_i[l].second, right_i[r].second);
                     }
 
@@ -159,7 +159,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                     if (!pretend) {
                         Matrix const & in_block = m1(in_l_charge, in_r_charge);
                         Matrix & out_block = m2(out_l_charge, out_r_charge);
-                        reshape_r2l(out_block, in_block, out_left_offset, in_right_offset, 
+                        maquis::dmrg::kernels::reshape_r2l(out_block, in_block, out_left_offset, in_right_offset, 
                                     physical_i[s].second, left_i[l].second, right_i[r].second);
                     }
 
