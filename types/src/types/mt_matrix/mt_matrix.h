@@ -219,7 +219,7 @@ namespace alps
             void inplace_conjugate()
             {
                 wait();
-                data_.inplace_conjugate();
+                conj_inplace(data_);
             }
             
             std::pair<element_iterator,element_iterator> elements()

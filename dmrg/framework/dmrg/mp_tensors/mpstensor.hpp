@@ -243,7 +243,7 @@ template<class Matrix, class SymmGroup>
 void
 MPSTensor<Matrix, SymmGroup>::inplace_conjugate()
 {
-    data_ = conjugate(data_);
+    data_ = data_.inplace_conjugate();
 }
 
 template<class Matrix, class SymmGroup>
@@ -253,12 +253,13 @@ MPSTensor<Matrix, SymmGroup>::scalar_norm() const
 
 //    make_left_paired();
 //    block_matrix<Matrix, SymmGroup> t;
-//    pgemm(conjugate_transpose(data_), data_, t);
+//    pgemm(adjoint(data_), data_, t);
 //    scalar_type r = sqrt(trace(t));
 
     scalar_type ret(0);
     for (std::size_t b = 0; b < data_.n_blocks(); ++b)
         norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
+                            // MD: todo(for alex), can we make it ret = norm(data_[b])?
     assert( ret == ret );
     assert( maquis::traits::real(ret) >= 0);
     return sqrt(maquis::traits::real(ret));
@@ -299,7 +300,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
         typename SymmGroup::charge c = i1[b].first;
         overlap(data_(c,c),
                 rhs.data_(c,c),
-                ret);
+                ret);  // MD: todo(for alex), can we make it ret = overlap(data_(c,c), rhs.data_(c,c))?
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
     
     // for (std::size_t b = 0; b < data_.n_blocks(); ++b)

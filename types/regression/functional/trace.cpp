@@ -6,11 +6,7 @@
 
 #include "types/p_dense_matrix/p_dense_matrix.h"
 
-#include "alps/numeric/matrix/matrix.hpp"
-#include "alps/numeric/matrix/matrix_blas.hpp"
-#include "alps/numeric/matrix/matrix_algorithms.hpp"
-#include "alps/numeric/matrix/matrix_interface.hpp"
-#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
+#include "alps/numeric/matrix.hpp"
 
 #include "types/utils/bindings.hpp"
 #include "utilities.h"

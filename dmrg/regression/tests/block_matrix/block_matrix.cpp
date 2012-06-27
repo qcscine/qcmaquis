@@ -7,8 +7,6 @@
 #include <boost/geometry/geometries/adapted/boost_array.hpp>
 
 /*
-#include "alps/numeric/matrix/matrix_algorithms.hpp"
-#include "alps/numeric/matrix/matrix_blas.hpp"
 #include "alps/numeric/diagonal_matrix.hpp"
 */
 #include "dmrg/block_matrix/symmetry.h"

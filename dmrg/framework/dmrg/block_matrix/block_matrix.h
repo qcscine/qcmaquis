@@ -71,6 +71,7 @@ public:
     scalar_type trace() const;
     void inplace_transpose();
     void inplace_conjugate();
+    void adjoint_inplace();
     void clear();
     template<class Generator>
     void generate(Generator g);

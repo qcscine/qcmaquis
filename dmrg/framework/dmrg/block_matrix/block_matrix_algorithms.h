@@ -367,10 +367,9 @@ block_matrix<Matrix, SymmGroup> conjugate(block_matrix<Matrix, SymmGroup> m)
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> conjugate_transpose(block_matrix<Matrix, SymmGroup> m)
+block_matrix<Matrix, SymmGroup> adjoint(block_matrix<Matrix, SymmGroup> m)
 {
-    m.inplace_transpose();
-    m.inplace_conjugate();
+    m.adjoint_inplace();
     return m;
 }
 
@@ -426,7 +425,7 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 //    for (std::size_t k = 0; k < S.n_blocks(); ++k)
 //        S[k] = exp(alpha*S[k]);
 //    gemm(N, S, tmp);
-//    gemm(tmp, conjugate_transpose(N), res);
+//    gemm(tmp, adjoint(N), res);
 //    
 //    return res;
 //}
