@@ -10,36 +10,17 @@ namespace maquis { namespace types {
     template<typename T> class p_dense_matrix;
     template<typename T> class p_diagonal_matrix;
 
-    class Transpose { };
-    class NoTranspose { };
-    
-    namespace detail {
-
-        template<class Tag> struct evaluate_tag;
-        template<> struct evaluate_tag<maquis::types::NoTranspose> {
-            template<class Matrix>
-            static Matrix const & eval(Matrix const & m) { return m; }
-        };
-        template<> struct evaluate_tag<maquis::types::Transpose> {
-            template<class Matrix>
-            static Matrix eval(Matrix const & m) { return transpose(m); }
-        };
-        
-        template<class Tag> struct dims;
-        template<> struct dims<NoTranspose> {
-            template<class Matrix> 
-            static typename Matrix::size_type first(Matrix const & m){ return num_rows(m); }
-            template<class Matrix>
-            static typename Matrix::size_type second(Matrix const & m){ return num_cols(m); }
-        };
-        template<> struct dims<Transpose> {
-            template<class Matrix>
-            static typename Matrix::size_type first(Matrix const & m){ return num_cols(m); }
-            template<class Matrix>
-            static typename Matrix::size_type second(Matrix const & m){ return num_rows(m); }
-        };
-    }
-
+    struct Transpose   { 
+        static const char* code(){ return "T"; } 
+        template<class Matrix> static typename Matrix::size_type first(Matrix const & m){ return m.num_cols(); }
+        template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_rows(); }
+    };
+    struct NoTranspose { 
+        static const char* code(){ return "N"; } 
+        template<class Matrix> static typename Matrix::size_type first(Matrix const & m){ return m.num_rows(); }
+        template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_cols(); }
+    };
+   
 } } // namespace maquis::types
 
 namespace alps { namespace numeric {
@@ -93,17 +74,5 @@ namespace maquis { namespace traits {
     }
 
 } }
-
-template<class Matrix1, class Matrix2, class Matrix3, class Tag1, class Tag2>
-void gemm(Matrix1 const & A, Tag1, Matrix2 const & B, Tag2, Matrix3 & C){
-    gemm(maquis::types::detail::evaluate_tag<Tag1>::eval(A),
-         maquis::types::detail::evaluate_tag<Tag2>::eval(B),
-         C);
-}
-
-template<class Matrix1, class Matrix2, class Tag1, class Tag2>
-std::pair<std::size_t, std::size_t> result_size(Matrix1 const & A, Tag1, Matrix2 const & B, Tag2){
-    return std::make_pair(maquis::types::detail::dims<Tag1>::first(A), maquis::types::detail::dims<Tag2>::second(B));
-}
 
 #endif
