@@ -628,72 +628,118 @@ namespace ambient {
         }
     };
         
-    template<typename T, typename D>
-    struct gemm_diagonal_lhs : public ambient::kernel< gemm_diagonal_lhs<T,D> > 
+    template<class Tag1, class Tag2, typename T, typename D>
+    struct gemm_diagonal_lhs : public ambient::kernel_atomic< gemm_diagonal_lhs<Tag1,Tag2,T,D> > 
     {
-        typedef void (gemm_diagonal_lhs::*F)(const maquis::types::p_dense_matrix_impl<D>&, const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&,
-                          const size_t&, const size_t&, const size_t&);
+        typedef void (gemm_diagonal_lhs::*F)(const maquis::types::p_dense_matrix_impl<D>&, const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&);
 
-        inline void l(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
-                      const size_t& m, const size_t& n, const size_t& k)
-        {
+        inline void l(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_assign(a_diag);
-            this->block_2d_cycle_pin(b);
-            this->block_2d_cycle_assign(c);
+            this->assign(ui_l_current(a_diag));
+            this->pin(ui_l_current(b));
+            this->assign(ui_l_current(c));
         }
 
-        inline void c(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c,
-                      const size_t& m, const size_t& n, const size_t& k){
+        inline void c(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
-            size_t sizey = __a_get_limit_y(a_diag, m);
-            int j = ctxt.get_block_id().y*ui_c_get_mem_dim(b).y;
-            int size = ui_c_get_mem_dim(b).x;
-            int lda  = sizeof(T)/sizeof(D)*ui_c_get_mem_dim(b).y;
+            int sizey = ui_c_get_dim(a_diag).y;
+            int size = ui_c_get_dim(b).x;
             int ONE  = 1;
-            D* bd = ui_c_current(b)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            D* cd = ui_p_updated(c)(ctxt.get_block_id().x, ctxt.get_block_id().y);
+            D* bd = ui_c_current(b)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+            D* alpha = ui_c_current(a_diag)(0,0);
         
-            for(int jj = 0 ; jj < sizey; jj++){
-                 D* alpha = ui_c_current(a_diag)(0, (j+jj)/ui_c_get_mem_dim(a_diag).y);
-        	     axpy(&size, &alpha[(j+jj)%ui_c_get_mem_dim(a_diag).y], &bd[jj], &lda, &cd[jj], &lda);
-        	     if(sizeof(T) != sizeof(D)) axpy(&size, &alpha[(j+jj)%ui_c_get_mem_dim(a_diag).y], &bd[jj+1], &lda, &cd[jj], &lda); // for complex
+            for(int k = 0 ; k < sizey; k++){
+        	     axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey);
             }
             __A_TIME_C_STOP
         }
     };
         
-    template<typename T, typename D>
-    struct gemm_diagonal_rhs : public ambient::kernel< gemm_diagonal_rhs<T,D> > 
+    template<class Tag1, typename T, typename D>
+    struct gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> : public ambient::kernel_atomic< gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> > 
     {
-        typedef void (gemm_diagonal_rhs::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<D>&, maquis::types::p_dense_matrix_impl<T>&,
-                          const size_t&, const size_t&, const size_t&);
+        typedef void (gemm_diagonal_lhs::*F)(const maquis::types::p_dense_matrix_impl<D>&, const maquis::types::p_dense_matrix_impl<T>&, maquis::types::p_dense_matrix_impl<T>&);
 
-        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
-                      const size_t& m, const size_t& n, const size_t& k)
-        {
-            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(b_diag);
-            this->block_2d_cycle_assign(c);
+        inline void l(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->assign(ui_l_current(a_diag));
+            this->pin(ui_l_current(b));
+            this->assign(ui_l_current(c));
         }
 
-        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c,
-                      const size_t& m, const size_t& n, const size_t& k){
+        inline void c(const maquis::types::p_dense_matrix_impl<D>& a_diag, const maquis::types::p_dense_matrix_impl<T>& b, maquis::types::p_dense_matrix_impl<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
+            printf("Special DIAGONAL!\n");
+            size_t sizex = ui_c_get_dim(b).x;
+            int size  = ui_c_get_dim(a_diag).y;
+            int ONE  = 1;
+            D* bd = ui_c_current(b)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+            D* alpha = ui_c_current(a_diag)(0,0);
+        
+            for(int k = 0 ; k < sizex; k++){
+        	     axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<class Tag1, class Tag2, typename T, typename D>
+    struct gemm_diagonal_rhs : public ambient::kernel_atomic< gemm_diagonal_rhs<Tag1,Tag2,T,D> > 
+    {
+        typedef void (gemm_diagonal_rhs::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<D>&, maquis::types::p_dense_matrix_impl<T>&);
+
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b_diag));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
-            size_t sizex = std::min((ctxt.get_block_id().x+1)*ui_c_get_mem_dim(b_diag).y, n)-ctxt.get_block_id().x*ui_c_get_mem_dim(b_diag).y;
-        
-            int j = ctxt.get_block_id().x*ui_c_get_mem_dim(a).x;
-            int size = sizeof(T)/sizeof(D)*ui_c_get_mem_dim(a).y; // for the case of complex
+            size_t sizex = ui_c_get_dim(b_diag).y;
+            int size = ui_c_get_dim(a).y; // for the case of complex
             int ONE = 1;
-            D* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            D* cd = ui_p_updated(c)(ctxt.get_block_id().x, ctxt.get_block_id().y);
+            D* ad = ui_c_current(a)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+        	D* alpha = ui_c_current(b_diag)(0,0);
         
-            for(int jj = 0 ; jj < sizex; jj++){
-        	    D* alpha = ui_c_current(b_diag)(0, (j+jj)/ui_c_get_mem_dim(b_diag).y);
-        	    axpy(&size, &alpha[(j+jj)%ui_c_get_mem_dim(b_diag).y], &ad[jj*ui_c_get_mem_dim(a).y], &ONE, &cd[jj*ui_c_get_mem_dim(c).y], &ONE);
+            for(int k = 0 ; k < sizex; k++){
+        	    axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+    template<class Tag2, typename T, typename D>
+    struct gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> : public ambient::kernel_atomic< gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> > 
+    {
+        typedef void (gemm_diagonal_rhs::*F)(const maquis::types::p_dense_matrix_impl<T>&, const maquis::types::p_dense_matrix_impl<D>&, maquis::types::p_dense_matrix_impl<T>&);
+
+        inline void l(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b_diag));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const maquis::types::p_dense_matrix_impl<T>& a, const maquis::types::p_dense_matrix_impl<D>& b_diag, maquis::types::p_dense_matrix_impl<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
+            printf("Special DIAGONAL!\n");
+            int sizey = ui_c_get_dim(b_diag).y;
+            int size = ui_c_get_dim(a).x;
+            int ONE = 1;
+            D* ad = ui_c_current(a)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+        	D* alpha = ui_c_current(b_diag)(0,0);
+        
+            for(int k = 0 ; k < sizey; k++){
+        	    axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);
             }
             __A_TIME_C_STOP
         }
