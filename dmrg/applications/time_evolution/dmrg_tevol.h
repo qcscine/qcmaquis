@@ -11,7 +11,7 @@
 
 #if defined USE_AMBIENT
     #include "types/p_dense_matrix/p_dense_matrix.h"
-    #include "dmrg/kernels/p_dense_matrix.hpp"
+    #include "dmrg/block_matrix/detail/ambient_matrix_kernels.hpp"
     typedef maquis::types::p_dense_matrix<double> matrix;
     typedef maquis::types::p_dense_matrix<std::complex<double> > cmatrix;
 #elif defined USE_MTM
@@ -19,15 +19,13 @@
     typedef alps::numeric::mt_matrix<double> matrix;
     typedef alps::numeric::mt_matrix<std::complex<double> > cmatrix;
 #else
-    #include "alps/numeric/matrix.hpp"
-    #include "alps/numeric/matrix/algorithms.hpp"
-    #include "dmrg/kernels/alps_matrix.hpp"
+    #include "dmrg/block_matrix/detail/alps_matrix.hpp"
     typedef alps::numeric::matrix<double> matrix;
     typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 #endif
 
 #include "dmrg/utils/DmrgParameters2.h"
-#include "alps/numeric/matrix.hpp"
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
 // def. of run functions

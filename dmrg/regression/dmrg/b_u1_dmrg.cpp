@@ -4,10 +4,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/algorithms.hpp"
-#include "alps/numeric/matrix/aligned_allocator.h"
-#include "dmrg/kernels/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
 typedef alps::numeric::matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
 
 #include <alps/hdf5.hpp>

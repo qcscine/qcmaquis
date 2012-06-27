@@ -1,8 +1,6 @@
 #include <iostream>
 
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/algorithms.hpp"
-#include "dmrg/kernels/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
 typedef alps::numeric::matrix<double> Matrix;
 
 

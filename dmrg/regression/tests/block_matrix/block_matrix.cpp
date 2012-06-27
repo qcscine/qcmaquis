@@ -6,9 +6,6 @@
 #include <boost/mpl/assert.hpp>
 #include <boost/geometry/geometries/adapted/boost_array.hpp>
 
-/*
-#include "alps/numeric/diagonal_matrix.hpp"
-*/
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/block_matrix/block_matrix.h"
 
