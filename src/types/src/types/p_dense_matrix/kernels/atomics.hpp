@@ -8,8 +8,8 @@ extern "C" {
 
 namespace ambient {
 
-    template<typename T>
-    struct gemm_general_atomic : public ambient::kernel_atomic< gemm_general_atomic<T> > 
+    template<class Tag1, class Tag2, typename T>
+    struct gemm_general_atomic : public ambient::kernel_atomic< gemm_general_atomic<Tag1, Tag2, T> > 
     { // gs
         typedef void(gemm_general_atomic::*F)(const maquis::types::p_dense_matrix_impl<T>&, 
                          const maquis::types::p_dense_matrix_impl<T>&, 
@@ -26,12 +26,15 @@ namespace ambient {
             double* ad = ui_c_current(a)(0,0);
             double* bd = ui_c_current(b)(0,0);
             double* cd = ui_w_updated(c)(0,0);
-            int m = ui_c_get_dim(a).y;
-            int n = ui_c_get_dim(b).x;
-            int k = ui_c_get_dim(b).y;
+            int m = Tag1::first(a);
+            int n = Tag2::second(b);
+            int k = Tag1::second(a);
+            int lda = ui_c_get_dim(a).y;
+            int ldb = ui_c_get_dim(b).y;
+            int ldc = ui_c_get_dim(c).y;
             static const double alpha(1.0); 
             static const double beta(0.0);
-            dgemm_("N","N", &m, &n, &k, &alpha, ad, &m, bd, &k, &beta, cd, &m);
+            dgemm_(Tag1::code(), Tag2::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
             __A_TIME_C_STOP
         }
         inline void c(const maquis::types::p_dense_matrix_impl<std::complex<double> >& a, const maquis::types::p_dense_matrix_impl<std::complex<double> >& b, maquis::types::p_dense_matrix_impl<std::complex<double> >& c){
