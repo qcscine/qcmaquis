@@ -15,7 +15,7 @@ namespace maquis { namespace types {
         typedef typename container::value_type value_type;
         typedef typename container::size_type size_type;
         
-        inline explicit p_diagonal_matrix(size_t rows, const value_type& init = value_type());
+        inline p_diagonal_matrix(size_t rows, const value_type& init = value_type());
         inline size_type num_rows() const;
         inline size_type num_cols() const;
         inline const value_type& operator[](size_t i) const;
