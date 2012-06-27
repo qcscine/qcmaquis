@@ -21,31 +21,11 @@
 
 
 // some example functions
-template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-void gemm(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C)
-{
-    C.clear();
-    
-    typedef typename SymmGroup::charge charge;
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        if (! B.left_basis().has(A.right_basis()[k].first))
-            continue;
-        
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-        
-        // avoid copying, use resize
-        C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
-        gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
-    }
-}
 
 template<class Tag> struct basis_eval;
 
-template<> struct basis_eval<maquis::types::NoTranspose>
-{
+template<> struct basis_eval<maquis::types::NoTranspose> {
+
     template<class Matrix, class SymmGroup> static Index<SymmGroup> const &
     first(block_matrix<Matrix, SymmGroup> const & m) { return m.left_basis(); }
     
@@ -53,8 +33,8 @@ template<> struct basis_eval<maquis::types::NoTranspose>
     second(block_matrix<Matrix, SymmGroup> const & m) { return m.right_basis(); }
 };
 
-template<> struct basis_eval<maquis::types::Transpose>
-{
+template<> struct basis_eval<maquis::types::Transpose> {
+
     template<class Matrix, class SymmGroup> static Index<SymmGroup> const &
     first(block_matrix<Matrix, SymmGroup> const & m) { return m.right_basis(); }
     
@@ -62,30 +42,35 @@ template<> struct basis_eval<maquis::types::Transpose>
     second(block_matrix<Matrix, SymmGroup> const & m) { return m.left_basis(); }
 };
 
-template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Tag1, class Tag2>
-void gemm(block_matrix<Matrix1, SymmGroup> const & A, Tag1,
-          block_matrix<Matrix2, SymmGroup> const & B, Tag2,
+template<class Tag1, class Tag2, class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+void gemm(block_matrix<Matrix1, SymmGroup> const & A,
+          block_matrix<Matrix2, SymmGroup> const & B,
           block_matrix<Matrix3, SymmGroup> & C)
 {
     C.clear();
-    
     typedef typename SymmGroup::charge charge;
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        if (! basis_eval<Tag2>::first(B).has(basis_eval<Tag1>::second(A)[k].first))
-            continue;
+
+    for(std::size_t k = 0; k < A.n_blocks(); ++k){
+        if(! basis_eval<Tag2>::first(B).has(basis_eval<Tag1>::second(A)[k].first)) continue;
         
         std::size_t matched_block = basis_eval<Tag2>::first(B).position(basis_eval<Tag1>::second(A)[k].first);
         
-        // avoid copying, use resize
-        std::size_t s1 = result_size(A[k], Tag1(), B[matched_block], Tag2()).first;
-        std::size_t s2 = result_size(A[k], Tag1(), B[matched_block], Tag2()).second;
-        
-        C.insert_block(new Matrix3(s1, s2),
+        C.insert_block(new Matrix3(Tag1::first(A[k]), Tag2::second(B[matched_block])),
                        basis_eval<Tag1>::first(A)[k].first,
                        basis_eval<Tag2>::second(B)[matched_block].first);
         
-        gemm(A[k], Tag1(), B[matched_block], Tag2(), C[C.left_basis().position(basis_eval<Tag1>::first(A)[k].first)]);
+        gemm(Tag1::eval(A[k]), Tag2::eval(B[matched_block]), C[C.left_basis().position(basis_eval<Tag1>::first(A)[k].first)]);
+        //gemm<Tag1,Tag2>(A[k], B[matched_block], C[C.left_basis().position(basis_eval<Tag1>::first(A)[k].first)]);
     }
+}
+
+template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+void gemm(block_matrix<Matrix1, SymmGroup> const & A,
+          block_matrix<Matrix2, SymmGroup> const & B,
+          block_matrix<Matrix3, SymmGroup> & C)
+{
+    using maquis::types::NoTranspose;
+    gemm<NoTranspose,NoTranspose>(A, B, C);
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -355,14 +340,14 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> transpose(block_matrix<Matrix, SymmGroup> m)
 {
-    m.inplace_transpose();
+    m.transpose_inplace();
     return m;
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> conjugate(block_matrix<Matrix, SymmGroup> m)
 {
-    m.inplace_conjugate();
+    m.conjugate_inplace();
     return m;
 }
 

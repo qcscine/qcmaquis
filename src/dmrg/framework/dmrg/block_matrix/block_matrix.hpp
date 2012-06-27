@@ -202,14 +202,14 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmG
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::inplace_transpose()
+void block_matrix<Matrix, SymmGroup>::transpose_inplace()
 {
     std::for_each(data_.begin(), data_.end(), utils::functor_transpose_inplace());
     std::swap(rows_, cols_);
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::inplace_conjugate()
+void block_matrix<Matrix, SymmGroup>::conjugate_inplace()
 {
     std::for_each(data_.begin(), data_.end(), utils::functor_conj_inplace());
 }
