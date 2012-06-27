@@ -241,7 +241,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_by_scalar(scalar_type s)
 
 template<class Matrix, class SymmGroup>
 void
-MPSTensor<Matrix, SymmGroup>::inplace_conjugate()
+MPSTensor<Matrix, SymmGroup>::conjugate_inplace()
 {
     data_ = data_.inplace_conjugate();
 }
