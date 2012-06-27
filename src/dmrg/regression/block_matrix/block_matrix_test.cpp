@@ -3,7 +3,6 @@
 
 #include "alps/numeric/matrix/vector_interface.hpp"
 #include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/matrix_algorithms.hpp"
 #include "alps/numeric/diagonal_matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
 #include "dmrg/kernels/alps_matrix.hpp"

@@ -55,7 +55,7 @@ struct contraction {
         bra_tensor.make_right_paired();
         ket_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(transpose(bra_tensor.data_)), t3 = transpose(right);
+        block_matrix<Matrix, SymmGroup> t1, t2 = adjoint(bra_tensor.data_), t3 = transpose(right);
         gemm(ket_tensor.data_, t3, t1);
         reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(),
                               t1, t3);
@@ -466,7 +466,7 @@ struct contraction {
         ret.data_.resize(mpo.row_dim());
         
         std::size_t loop_max = mpo.row_dim();
-        block_matrix<Matrix, SymmGroup> tmp = conjugate(transpose(bra_tensor.data()));
+        block_matrix<Matrix, SymmGroup> tmp = adjoint(bra_tensor.data());
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
@@ -543,7 +543,7 @@ struct contraction {
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(mps.data_, conjugate(transpose(mps.data_)), dm);
+        gemm(mps.data_, adjoint(mps.data_), dm);
         
         Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
         
@@ -551,7 +551,7 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(half_dm.data_[b], conjugate(transpose(half_dm.data_[b])), tdm);
+            gemm(half_dm.data_[b], adjoint(half_dm.data_[b]), tdm);
             
             
             tdm *= alpha;
@@ -588,7 +588,7 @@ struct contraction {
         A.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(conjugate(transpose(A.data_)), psi.data_, tmp);
+        gemm(adjoint(A.data_), psi.data_, tmp);
 //        gemm(A.data_, maquis::types::Transpose(), psi.data_, maquis::types::NoTranspose(), tmp);
         
         B.multiply_from_left(tmp);
@@ -608,7 +608,7 @@ struct contraction {
         
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(conjugate(transpose(mps.data_)), mps.data_, dm);
+        gemm(adjoint(mps.data_), mps.data_, dm);
             
         Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
         
@@ -616,7 +616,7 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(conjugate(transpose(half_dm.data_[b])), half_dm.data_[b], tdm);
+            gemm(adjoint(half_dm.data_[b]), half_dm.data_[b], tdm);
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -634,7 +634,7 @@ struct contraction {
         block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
-        V = conjugate(transpose(U));
+        V = adjoint(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.replace_right_paired(V);
@@ -655,7 +655,7 @@ struct contraction {
         A.make_right_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(psi.data_, conjugate(transpose(A.data_)), tmp);
+        gemm(psi.data_, adjoint(A.data_), tmp);
         
         B.multiply_from_right(tmp);
         
