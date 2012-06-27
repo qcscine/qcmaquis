@@ -69,8 +69,8 @@ public:
 //  void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
     
     scalar_type trace() const;
-    void inplace_transpose();
-    void inplace_conjugate();
+    void transpose_inplace();
+    void conjugate_inplace();
     void adjoint_inplace();
     void clear();
     template<class Generator>
