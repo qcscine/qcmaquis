@@ -44,7 +44,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
     ambient::playout();
 
-    gemm(pA, pB, pC); 
+    using maquis::types::NoTranspose;
+    maquis::types::gemm<NoTranspose,NoTranspose>(pA, pB, pC); 
 
     __a_timer time("ambient");
     time.begin();
