@@ -29,6 +29,7 @@ class DataCollector;
 
 extern DataCollector gemm_collector;
 extern DataCollector svd_collector;
+extern DataCollector num_blocks_gemm_collector;
 
 #else
 
