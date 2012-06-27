@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(block_matrix_remove_trace){
     BOOST_CHECK_EQUAL(ba.trace(),21);
 }
 
-BOOST_AUTO_TEST_CASE(block_matrix_inplace_transpose){
+BOOST_AUTO_TEST_CASE(block_matrix_transpose_inplace){
     Index<U1> rows,cols;
 
     rows.insert(std::make_pair(1, 2));
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(block_matrix_inplace_transpose){
     ba[1](0,1) = 3;
     ba[1](1,0) = 4;
    
-    ba.inplace_transpose();
+    ba.transpose_inplace();
 
     BOOST_CHECK_EQUAL(ba[0](0,1),2);
     BOOST_CHECK_EQUAL(ba[0](1,0),1);
