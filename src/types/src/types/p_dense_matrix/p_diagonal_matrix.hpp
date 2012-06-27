@@ -92,10 +92,9 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    inline p_diagonal_matrix<T> exp(const p_diagonal_matrix<T>& m, const T& alfa = 1.){
-        p_diagonal_matrix<T> result(m);
-        result.exp(alfa);
-        return result;
+    inline p_diagonal_matrix<T> exp(p_diagonal_matrix<T> m, const T& alfa = 1.){
+        m.exp(alfa);
+        return m;
     }
 
     template<typename T>
@@ -108,10 +107,9 @@ namespace maquis { namespace types {
     }
 
     template<typename T>
-    inline p_diagonal_matrix<T> sqrt(const p_diagonal_matrix<T>& m){
-        p_diagonal_matrix<T> result(m);
-        sqrt_inplace(result);
-        return result;
+    inline p_diagonal_matrix<T> sqrt(p_diagonal_matrix<T> m){
+        sqrt_inplace(m);
+        return m;
     }
 
     template<typename T>

@@ -78,12 +78,12 @@ namespace maquis { namespace types {
 
     template <typename T>
     inline void p_dense_matrix_impl<T>::conjugate(){ 
-        algorithms::inplace_conjugate(*this);
+        algorithms::conjugate_inplace(*this);
     }
 
     template <typename T>
     inline void p_dense_matrix_impl<T>::transpose(){ 
-        algorithms::inplace_transpose(*this);
+        algorithms::transpose_inplace(*this);
     }
 
     template <typename T>

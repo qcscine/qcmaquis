@@ -29,16 +29,16 @@ namespace maquis { namespace types {
             return p_dense_matrix<T>(size);
         }
 
-        explicit inline p_dense_matrix(size_type size){ // identity
+        inline p_dense_matrix(size_type size){ // identity
             this->impl = new I(size, size); 
             this->impl->fill_identity();
         }
 
-        explicit inline p_dense_matrix(){ // shouldn't be called
+        inline p_dense_matrix(){ // shouldn't be called
             this->impl = new I(); 
         }
 
-        explicit inline p_dense_matrix(size_type rows, size_type cols, value_type init_value = value_type()){
+        inline p_dense_matrix(size_type rows, size_type cols, value_type init_value = value_type()){
             this->impl = new I(rows, cols); 
             this->impl->fill_value(init_value);
         }
@@ -48,18 +48,14 @@ namespace maquis { namespace types {
             this->impl->copy(*m.impl);
         }
 
-        p_dense_matrix& operator = (const p_dense_matrix& rhs){
+        p_dense_matrix& operator = (p_dense_matrix rhs){
             assert(!rhs.impl->weak());
-            p_dense_matrix clone(rhs);
-            this->swap(clone);
+            this->swap(rhs);
             return *this;
         }
 
-        p_dense_matrix clone() const {
-            return p_dense_matrix<T>(*this);
-        }
-
     public:
+
         inline void swap(p_dense_matrix& r){
             this->impl.swap(r.impl);
         }
@@ -185,9 +181,9 @@ namespace maquis { namespace types {
         typedef typename boost::intrusive_ptr<p_dense_matrix_impl<T> > ptr;
         typedef typename ambient::future<T> scalar_type;
 
-        explicit inline p_dense_matrix_impl();             // please avoid implicit conversions
-        explicit inline p_dense_matrix_impl(size_type rows, size_type cols);
-        explicit inline p_dense_matrix_impl(p_dense_matrix_impl const& m);
+        inline p_dense_matrix_impl();             // please avoid implicit conversions
+        inline p_dense_matrix_impl(size_type rows, size_type cols);
+        inline p_dense_matrix_impl(p_dense_matrix_impl const& m);
         inline value_type& get(size_type i, size_type j);
         inline scalar_type trace() const;
         inline void fill_identity();
