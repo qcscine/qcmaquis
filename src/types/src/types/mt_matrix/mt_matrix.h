@@ -216,7 +216,7 @@ namespace alps
                 return *this;
             }
             
-            void inplace_conjugate()
+            void conjugate_inplace()
             {
                 wait();
                 conj_inplace(data_);
@@ -417,7 +417,7 @@ namespace alps
         template<typename T>
         mt_matrix<T> conjugate(mt_matrix<T> m)
         {
-            m.inplace_conjugate();
+            m.conjugate_inplace();
             return m;
         }
         
