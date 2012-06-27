@@ -14,11 +14,13 @@ namespace maquis { namespace types {
         static const char* code(){ return "T"; } 
         template<class Matrix> static typename Matrix::size_type first(Matrix const & m){ return m.num_cols(); }
         template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_rows(); }
+        template<class Matrix> Matrix eval(const Matrix& m){ return transpose(m); }
     };
     struct NoTranspose { 
         static const char* code(){ return "N"; } 
         template<class Matrix> static typename Matrix::size_type first(Matrix const & m){ return m.num_rows(); }
         template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_cols(); }
+        template<class Matrix> const Matrix& eval(const Matrix& m){ return m; }
     };
    
 } } // namespace maquis::types
