@@ -31,8 +31,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 
     pB = maquis::traits::matrix_cast<pMatrix>(sB); // playout is inside the cast
     pC = maquis::traits::matrix_cast<pDiagMatrix>(sC); // playout is inside the cast
- 
-    gemm(pC,pB,pA);
+
+    using maquis::types::NoTranspose; 
+    maquis::types::gemm<NoTranspose,NoTranspose>(pC,pB,pA);
     gemm(sC,sB,sA);
 
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
