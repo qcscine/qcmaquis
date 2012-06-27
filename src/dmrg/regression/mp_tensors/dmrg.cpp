@@ -2,10 +2,7 @@
 #include <iterator>
 #include <iostream>
 
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/algorithms.hpp"
-#include "alps/numeric/diagonal_matrix.hpp"
-#include "dmrg/kernels/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
 typedef alps::numeric::matrix<double> Matrix;
 
 #include "dmrg/block_matrix/indexing.h"

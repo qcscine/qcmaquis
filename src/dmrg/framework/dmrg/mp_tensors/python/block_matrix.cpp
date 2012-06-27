@@ -5,8 +5,7 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/block_matrix/block_matrix.h"
-
-#include <alps/numeric/matrix.hpp>
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
 
 #include <boost/python.hpp>
 

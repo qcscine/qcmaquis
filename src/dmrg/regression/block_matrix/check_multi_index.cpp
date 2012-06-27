@@ -4,14 +4,10 @@
 #include <iterator>
 #include <algorithm>
 
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/algorithms.hpp"
-#include "dmrg/kernels/alps_matrix.hpp"
-typedef alps::numeric::matrix<double> Matrix;
-
-
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/multi_index.h"
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+typedef alps::numeric::matrix<double> Matrix;
 
 typedef U1 symm;
 

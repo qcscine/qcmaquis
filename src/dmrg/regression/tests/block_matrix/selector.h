@@ -18,14 +18,12 @@
 #ifdef PDENSE
     #include "types/p_dense_matrix/p_dense_matrix.h"
     #include "types/p_dense_matrix/algorithms.hpp"
-    #include "dmrg/kernels/p_dense_matrix.hpp"
+    #include "dmrg/block_matrix/detail/ambient_matrix_kernels.hpp"
     typedef maquis::types::p_dense_matrix<dmrg_value_type> Matrix;
 #endif
 
 #ifdef DENSE
-    #include "alps/numeric/matrix.hpp"
-    #include "alps/numeric/matrix/algorithms.hpp"
-    #include "dmrg/kernels/alps_matrix.hpp"
+    #include "dmrg/block_matrix/detail/alps_matrix.hpp"
     typedef alps::numeric::matrix<dmrg_value_type> Matrix;
 #endif
 

@@ -1,7 +1,7 @@
 #ifndef MT_MATRIX_H
 #define MT_MATRIX_H
 
-#include "alps/numeric/matrix/matrix.hpp"
+#include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
 
 #ifdef USE_GPU

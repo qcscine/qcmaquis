@@ -13,10 +13,7 @@ using std::endl;
 
 //#include <boost/filesystem.hpp>
 
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/algorithms.hpp"
-#include "dmrg/kernels/alps_matrix.hpp"
-#include "alps/numeric/diagonal_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
 
 //#include <alps/hdf5.hpp>
 

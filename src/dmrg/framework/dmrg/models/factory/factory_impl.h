@@ -7,16 +7,16 @@
  *****************************************************************************/
 
 #ifdef USE_AMBIENT
+// parallel matrix
 #include "types/p_dense_matrix/p_dense_matrix.h"
-#include "dmrg/kernels/p_dense_matrix.hpp"
+#include "dmrg/block_matrix/detail/ambient_matrix_kernels.hpp"
 #endif
 
 #include <complex>
 #include <vector>
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/algorithms.hpp"
-#include "alps/numeric/diagonal_matrix.hpp"
-#include "dmrg/kernels/alps_matrix.hpp"
+
+// serial matrix
+#include "dmrg/block_matrix/detail/alps_matrix.hpp"
 
 #ifdef USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
