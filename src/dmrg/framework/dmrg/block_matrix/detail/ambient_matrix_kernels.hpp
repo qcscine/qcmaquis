@@ -12,8 +12,7 @@
 
 #include <types/p_dense_matrix/p_dense_matrix.h>
 
-namespace maquis { namespace dmrg {
-    namespace kernels {
+namespace maquis { namespace dmrg { namespace detail {
         
         template <typename T>
         inline void reshape_l2r(const maquis::types::p_dense_matrix<T>& left, maquis::types::p_dense_matrix<T>& right,
@@ -142,8 +141,7 @@ namespace maquis { namespace dmrg {
 #endif
         }
         
-    } // namespace kernels
-} } // namespace maquis::dmrg
+} } } // namespace maquis::dmrg::detail
 
 
 #endif // MAQUIS_DMRG_KERNELS_P_DENSE_MATRIX_HPP
