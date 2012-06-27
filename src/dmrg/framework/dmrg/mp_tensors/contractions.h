@@ -23,6 +23,9 @@ struct contraction {
                       block_matrix<Matrix, SymmGroup> const & left,
                       block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
+
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
         
@@ -30,14 +33,18 @@ struct contraction {
         
         bra_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t2 = conjugate(bra_tensor.data_), t3;
+        block_matrix<Matrix, SymmGroup> t1, t3; //t2 = conjugate(bra_tensor.data_)
         ket_tensor.make_right_paired();
         gemm(left, ket_tensor.data_, t1);
         reshape_right_to_left(ket_tensor.phys_i, left.left_basis(), ket_tensor.right_i,
                               t1, t3);
-        t3 = transpose(t3);
-        gemm(t3, t2, t1);
-        return transpose(t1);
+        gemm<Transpose,NoTranspose>(conjugate(bra_tensor.data_), t3, t1);
+        return t1;
+
+        // original:
+        // t3 = transpose(t3);
+        // gemm(t3, t2, t1);
+        // return transpose(t1);
     }
     
     template<class Matrix, class SymmGroup>
@@ -47,6 +54,9 @@ struct contraction {
                        block_matrix<Matrix, SymmGroup> const & right,
                        block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
+
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
         
@@ -55,13 +65,18 @@ struct contraction {
         bra_tensor.make_right_paired();
         ket_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t2 = adjoint(bra_tensor.data_), t3 = transpose(right);
-        gemm(ket_tensor.data_, t3, t1);
-        reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(),
-                              t1, t3);
-        
-        gemm(t3, t2, t1);
-        return transpose(t1);
+        block_matrix<Matrix, SymmGroup> t1, t3;
+        gemm<NoTranspose,Transpose>(ket_tensor.data_, right, t1);
+        reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(), t1, t3);
+        gemm<NoTranspose,Transpose>(conjugate(bra_tensor.data_), t3, t1);
+        return t1;
+
+        // original:
+        // block_matrix<Matrix, SymmGroup> t1, t2 = adjoint(bra_tensor.data_), t3 = transpose(right);
+        // gemm(ket_tensor.data_, t3, t1);
+        // reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(), t1, t3);
+        // gemm(t3, t2, t1);
+        // return transpose(t1);
     }
    /* 
     template<class Matrix, class SymmGroup>
@@ -178,6 +193,8 @@ struct contraction {
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              Index<SymmGroup> const * in_low = NULL)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
         
         if (in_low == NULL)
             in_low = &mps.row_dim();
@@ -192,7 +209,7 @@ struct contraction {
 #endif
         for (std::size_t b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
-            gemm(transpose(left.data_[b]), mps.data_, tmp);
+            gemm<Transpose,NoTranspose>(left.data_[b], mps.data_, tmp);
             reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
                                           tmp, t[b]);
         }
@@ -434,6 +451,9 @@ struct contraction {
                           Boundary<Matrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
+
         Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
         
         bra_tensor.make_left_paired();
@@ -446,7 +466,7 @@ struct contraction {
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
-            gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
+            gemm<Transpose,NoTranspose>(lbtm.data_[b], conjugate(bra_tensor.data()), ret.data_[b]);
 
         return ret;
     }
@@ -458,7 +478,9 @@ struct contraction {
                            Boundary<Matrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
+
         Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
         
         bra_tensor.make_right_paired();
@@ -466,12 +488,12 @@ struct contraction {
         ret.data_.resize(mpo.row_dim());
         
         std::size_t loop_max = mpo.row_dim();
-        block_matrix<Matrix, SymmGroup> tmp = adjoint(bra_tensor.data());
+        //block_matrix<Matrix, SymmGroup> tmp = adjoint(bra_tensor.data());
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
-            gemm(rbtm.data_[b], tmp, ret.data_[b]);
+            gemm<NoTranspose,Transpose>(rbtm.data_[b], conjugate(bra_tensor.data()), ret.data_[b]);
         
         
         return ret;
@@ -540,10 +562,12 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 Logger & logger)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(mps.data_, adjoint(mps.data_), dm);
+        gemm<NoTranspose,Transpose>(mps.data_, conjugate(mps.data_), dm);
         
         Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
         
@@ -551,7 +575,7 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(half_dm.data_[b], adjoint(half_dm.data_[b]), tdm);
+            gemm<NoTranspose,Transpose>(half_dm.data_[b], conjugate(half_dm.data_[b]), tdm);
             
             
             tdm *= alpha;
@@ -565,7 +589,7 @@ struct contraction {
         mps.make_left_paired();
         assert(dm.left_basis() == mps.data_.left_basis());
         
-        block_matrix<Matrix, SymmGroup> U, V;
+        block_matrix<Matrix, SymmGroup> U;
         block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
       
@@ -583,12 +607,14 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
         
         psi.make_left_paired();
         A.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(adjoint(A.data_), psi.data_, tmp);
+        gemm<Transpose,NoTranspose>(conjugate(A.data_), psi.data_, tmp);
 //        gemm(A.data_, maquis::types::Transpose(), psi.data_, maquis::types::NoTranspose(), tmp);
         
         B.multiply_from_left(tmp);
@@ -605,10 +631,12 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 Logger & logger)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
         
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(adjoint(mps.data_), mps.data_, dm);
+        gemm<Transpose,NoTranspose>(conjugate(mps.data_), mps.data_, dm);
             
         Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
         
@@ -616,7 +644,7 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(adjoint(half_dm.data_[b]), half_dm.data_[b], tdm);
+            gemm<Transpose,NoTranspose>(conjugate(half_dm.data_[b]), half_dm.data_[b], tdm);
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -630,14 +658,16 @@ struct contraction {
         mps.make_right_paired();
         assert(dm.right_basis() == mps.data_.right_basis());
         
-        block_matrix<Matrix, SymmGroup> U, V;
+        block_matrix<Matrix, SymmGroup> U;
         block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
         
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
-        V = adjoint(U);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
-        ret.replace_right_paired(V);
+        ret.replace_right_paired(adjoint(U));
+
+        //block_matrix<Matrix, SymmGroup> V = adjoint(U);
+        //ret.replace_right_paired(V);
         // ret.data_ = V;
         // ret.left_i = V.left_basis();
       
@@ -650,12 +680,14 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
+        using maquis::types::Transpose;
+        using maquis::types::NoTranspose;
         
         psi.make_right_paired();
         A.make_right_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(psi.data_, adjoint(A.data_), tmp);
+        gemm<NoTranspose,Transpose>(psi.data_, conjugate(A.data_), tmp);
         
         B.multiply_from_right(tmp);
         
