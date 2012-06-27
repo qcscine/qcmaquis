@@ -295,7 +295,7 @@ struct contraction {
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
                                     
-                                    maquis::dmrg::kernels::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                    maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
                                                   physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 
@@ -424,7 +424,7 @@ struct contraction {
                                     Matrix & oblock = ret.data_[b1](out_l_charge, out_r_charge);
 
                                     //printf("contraction: %d %d , %d %d\n", oblock.num_rows(), oblock.num_cols(), iblock.num_rows(), iblock.num_cols());
-                                    maquis::dmrg::kernels::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
+                                    maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
                                                   physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 

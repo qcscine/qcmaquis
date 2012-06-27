@@ -14,30 +14,27 @@
 
 #include <alps/numeric/matrix.hpp>
 
-namespace maquis { namespace dmrg {
-    namespace kernels {
+namespace maquis { namespace dmrg { namespace detail {
         
-        namespace detail {
-            template<class InputIterator, class OutputIterator, class T>
-            void iterator_axpy(InputIterator in1, InputIterator in2,
-                               OutputIterator out1, T val)
-            {
-                std::transform(in1, in2, out1, out1, boost::lambda::_1*val+boost::lambda::_2);
-            }
-            
-            inline void iterator_axpy(double const * in1, double const * in2,
-                                      double * out1, double val)
-            {
-                fortran_int_t one = 1, diff = in2-in1;
-                daxpy_(&diff, &val, in1, &one, out1, &one);
-            }
-            
-            inline void iterator_axpy(std::complex<double> const * in1, std::complex<double> const * in2,
-                                      std::complex<double> * out1, double val)
-            {
-                throw std::runtime_error("Not implemented.");
-            }
-        } // namespace kernels
+        template<class InputIterator, class OutputIterator, class T>
+        void iterator_axpy(InputIterator in1, InputIterator in2,
+                           OutputIterator out1, T val)
+        {
+            std::transform(in1, in2, out1, out1, boost::lambda::_1*val+boost::lambda::_2);
+        }
+        
+        inline void iterator_axpy(double const * in1, double const * in2,
+                                  double * out1, double val)
+        {
+            fortran_int_t one = 1, diff = in2-in1;
+            daxpy_(&diff, &val, in1, &one, out1, &one);
+        }
+        
+        inline void iterator_axpy(std::complex<double> const * in1, std::complex<double> const * in2,
+                                  std::complex<double> * out1, double val)
+        {
+            throw std::runtime_error("Not implemented.");
+        }
         
         template <typename T>
         void reshape_r2l(alps::numeric::matrix<T>& left, const alps::numeric::matrix<T>& right,
@@ -74,10 +71,10 @@ namespace maquis { namespace dmrg {
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
                     T alfa_t = alfa(ss1, ss2);
                     for(size_t rr = 0; rr < rdim; ++rr) {
-                        detail::iterator_axpy(&in(in_offset + ss1*ldim, rr),
-                                              &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
-                                              &out(out_offset + ss2*ldim, rr),
-                                              alfa_t);
+                        iterator_axpy(&in(in_offset + ss1*ldim, rr),
+                                      &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
+                                      &out(out_offset + ss2*ldim, rr),
+                                      alfa_t);
                     }
                 }
         }
@@ -114,8 +111,7 @@ namespace maquis { namespace dmrg {
             for_each(elements(M).first,elements(M).second, boost::lambda::_1 = 1); // boost::lambda ^^' because iterable matrix concept 
         }
         
-    } // namespace kernels
-} } // namespace maquis::dmrg
+} } } // namespace maquis::dmrg::detail
 
 
 #endif // MAQUIS_DMRG_KERNELS_ALPS_MATRIX_HPP
