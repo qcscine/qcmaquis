@@ -1,8 +1,7 @@
 #ifndef MATRIX_BINDINGS_H
 #define MATRIX_BINDINGS_H
 
-#include "alps/numeric/matrix/matrix.hpp"
-#include "alps/numeric/matrix/matrix_interface.hpp"
+#include "alps/numeric/matrix.hpp"
 #include "alps/numeric/diagonal_matrix.hpp"
 
 namespace maquis{ namespace traits{
