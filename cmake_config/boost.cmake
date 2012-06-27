@@ -3,7 +3,7 @@ if(ALPS_FOUND)
   set(MAQUIS_Boost_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS})
   if(ALPS_Boost_LIBRARIES)
 		set(MAQUIS_Boost_LIBRARIES ${ALPS_Boost_LIBRARIES})
-		set(MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY "-lboost_unit_test_framework -lboost_test_exec_monitor -lboost_prg_exec_monitor")
+		set(MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY "-lboost_unit_test_framework -lboost_test_exec_monitor -lboost_prg_exec_monitor -lboost_system")
 	else(ALPS_Boost_LIBRARIES)
 		set(MAQUIS_Boost_LIBRARIES boost) # only for back compatibility
 	endif(ALPS_Boost_LIBRARIES)
