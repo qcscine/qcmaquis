@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     ambient::playout();
 
     using maquis::types::NoTranspose;
-    maquis::types::gemm<NoTranspose,NoTranspose>(pA, pB, pC); 
+    ambient::numeric::gemm<NoTranspose,NoTranspose>(pA, pB, pC); 
 
     __a_timer time("ambient");
     time.begin();
