@@ -45,7 +45,15 @@ public:
     
     int advance (Logger& iteration_log, int nsteps, double time_limit)
     {
-        if (this->parms.template get<int>("update_each") > -1 && (this->sweep % this->parms.template get<int>("update_each")) == 0)
+        if (this->sweep == 0)
+        {
+            int pc = 0, mc = 0;
+            this->parms = parms_orig.get_at_index("t", this->sweep, &pc);
+            this->model = model_orig.get_at_index("t", this->sweep, &mc);
+            if (mc > 0)
+                this->model_init();
+            prepare_te_terms();
+        } else if (this->parms.template get<int>("update_each") > -1 && (this->sweep % this->parms.template get<int>("update_each")) == 0)
         {
             int pc = 0, mc = 0;
             this->parms = parms_orig.get_at_index("t", this->sweep, &pc);
