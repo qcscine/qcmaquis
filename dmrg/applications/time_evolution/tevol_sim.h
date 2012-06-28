@@ -101,8 +101,8 @@ protected:
         --base::sweep;
     }
     
-    BaseParameters parms_orig;
-    BaseParameters model_orig;
+    DmrgParameters parms_orig;
+    ModelParameters model_orig;
 };
 
 #endif
