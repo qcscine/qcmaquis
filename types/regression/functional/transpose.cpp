@@ -4,12 +4,10 @@
 #include <boost/test/test_case_template.hpp>
 #include <boost/mpl/list.hpp>
 
-#include "types/p_dense_matrix/p_dense_matrix.h"
-
 #include "alps/numeric/matrix.hpp"
-
+#include "alps/numeric/matrix/algorithms.hpp"
+#include "ambient/numeric/matrix.hpp"
 #include "types/utils/bindings.hpp"
-
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( Transpose, T, test_types)

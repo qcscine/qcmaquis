@@ -16,10 +16,8 @@
 #endif
 
 #ifdef PDENSE
-    #include "types/p_dense_matrix/p_dense_matrix.h"
-    #include "types/p_dense_matrix/algorithms.hpp"
-    #include "dmrg/block_matrix/detail/ambient_matrix_kernels.hpp"
-    typedef maquis::types::p_dense_matrix<dmrg_value_type> Matrix;
+    #include "dmrg/block_matrix/detail/ambient.hpp"
+    typedef ambient::numeric::matrix<dmrg_value_type> Matrix;
 #endif
 
 #ifdef DENSE

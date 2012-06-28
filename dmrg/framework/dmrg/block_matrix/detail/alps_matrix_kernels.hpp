@@ -9,8 +9,8 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_DMRG_KERNELS_ALPS_MATRIX_HPP
-#define MAQUIS_DMRG_KERNELS_ALPS_MATRIX_HPP
+#ifndef MAQUIS_DMRG_DETAIL_ALPS_MATRIX_HPP
+#define MAQUIS_DMRG_DETAIL_ALPS_MATRIX_HPP
 
 #include <alps/numeric/matrix.hpp>
 
@@ -114,4 +114,4 @@ namespace maquis { namespace dmrg { namespace detail {
 } } } // namespace maquis::dmrg::detail
 
 
-#endif // MAQUIS_DMRG_KERNELS_ALPS_MATRIX_HPP
+#endif // MAQUIS_DMRG_DETAIL_ALPS_MATRIX_HPP

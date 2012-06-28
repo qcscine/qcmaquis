@@ -8,8 +8,7 @@
 
 #ifdef USE_AMBIENT
 // parallel matrix
-#include "types/p_dense_matrix/p_dense_matrix.h"
-#include "dmrg/block_matrix/detail/ambient_matrix_kernels.hpp"
+#include "dmrg/block_matrix/detail/ambient.hpp"
 #endif
 
 #include <complex>
@@ -46,8 +45,8 @@ typedef alps::numeric::mt_matrix<std::complex<double> > cmtmatrix;
 
 // parallel matrix
 #ifdef USE_AMBIENT
-typedef maquis::types::p_dense_matrix<double> pmatrix;
-typedef maquis::types::p_dense_matrix<std::complex<double> > cpmatrix;
+typedef ambient::numeric::matrix<double> pmatrix;
+typedef ambient::numeric::matrix<std::complex<double> > cpmatrix;
 #endif
 
 // Definition of init function

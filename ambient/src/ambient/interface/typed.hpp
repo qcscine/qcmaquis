@@ -1,10 +1,10 @@
 #ifndef AMBIENT_INTERFACE_TYPED
 #define AMBIENT_INTERFACE_TYPED
 
-namespace maquis { namespace types {
-    template <class T> class p_dense_matrix;
-    template <class T> class p_diagonal_matrix;
-    template <class T> class p_dense_matrix_impl;
+namespace ambient { namespace numeric {
+    template <class T> class matrix;
+    template <class T> class matrix_impl;
+    template <class T> class diagonal_matrix;
 } }
 
 namespace ambient { 
@@ -93,48 +93,48 @@ namespace ambient {
     };
 
     template <typename S>
-    struct info < maquis::types::p_diagonal_matrix<S> > { 
-        typedef maquis::types::p_diagonal_matrix<S> T;
-        static inline maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+    struct info < ambient::numeric::diagonal_matrix<S> > { 
+        typedef ambient::numeric::diagonal_matrix<S> T;
+        static inline ambient::numeric::matrix_impl<S>& unfold(T& folded){
             return *folded.get_data().impl;
         }
     };
 
     template <typename S>
-    struct info < const maquis::types::p_diagonal_matrix<S> > { 
-        typedef const maquis::types::p_diagonal_matrix<S> T;
-        static inline const maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+    struct info < const ambient::numeric::diagonal_matrix<S> > { 
+        typedef const ambient::numeric::diagonal_matrix<S> T;
+        static inline const ambient::numeric::matrix_impl<S>& unfold(T& folded){
             return *folded.get_data().impl;
         }
     };
 
     template <typename S>
-    struct info < maquis::types::p_dense_matrix<S> > { 
-        typedef maquis::types::p_dense_matrix<S> T;
-        static inline maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+    struct info < ambient::numeric::matrix<S> > { 
+        typedef ambient::numeric::matrix<S> T;
+        static inline ambient::numeric::matrix_impl<S>& unfold(T& folded){
             return *folded.impl;
         }
     };
 
     template <typename S>
-    struct info < const maquis::types::p_dense_matrix<S> > { 
-        typedef const maquis::types::p_dense_matrix<S> T;
-        static inline const maquis::types::p_dense_matrix_impl<S>& unfold(T& folded){
+    struct info < const ambient::numeric::matrix<S> > { 
+        typedef const ambient::numeric::matrix<S> T;
+        static inline const ambient::numeric::matrix_impl<S>& unfold(T& folded){
             return *folded.impl;
         }
     };
 
     template <typename S>
-    struct info < maquis::types::p_dense_matrix_impl<S> > {
-        typedef maquis::types::p_dense_matrix_impl<S> T;
+    struct info < ambient::numeric::matrix_impl<S> > {
+        typedef ambient::numeric::matrix_impl<S> T;
         static inline T& unfold(T& naked){ return naked; }
         typedef parallel_info< T > typed; 
         typedef S value_type;
     };
 
     template <typename S>
-    struct info < const maquis::types::p_dense_matrix_impl<S> > { 
-        typedef maquis::types::p_dense_matrix_impl<S> T;
+    struct info < const ambient::numeric::matrix_impl<S> > { 
+        typedef ambient::numeric::matrix_impl<S> T;
         static inline const T& unfold(const T& naked){ return naked; }
         typedef parallel_info< T > typed; 
         typedef S value_type;

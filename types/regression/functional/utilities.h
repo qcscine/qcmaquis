@@ -27,9 +27,10 @@ struct size {
 typedef ambient::dim2 dim;
 // to do move all this typdef into the structure 
 typedef alps::numeric::matrix<double> sMatrix;
-typedef maquis::types::p_dense_matrix<double> pMatrix;
 typedef alps::numeric::diagonal_matrix<double> sDiagMatrix;
-typedef maquis::types::p_diagonal_matrix<double> pDiagMatrix;
+
+typedef ambient::numeric::matrix<double> pMatrix;
+typedef ambient::numeric::diagonal_matrix<double> pDiagMatrix;
 //typedef boost::mpl::list<size<2,0,double>,size<2,3,double>,size<3,0,double>,size<3,3,double>,size<3,-3,double>,size<5,7,double>,size<5,-7,double> > test_types; // prime numbers ...
 
 typedef boost::mpl::list<size<2,0,double> > test_types; 

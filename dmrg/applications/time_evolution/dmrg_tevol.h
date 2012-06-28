@@ -10,10 +10,9 @@
 #define APP_DMRG_TEVOL_H
 
 #if defined USE_AMBIENT
-    #include "types/p_dense_matrix/p_dense_matrix.h"
-    #include "dmrg/block_matrix/detail/ambient_matrix_kernels.hpp"
-    typedef maquis::types::p_dense_matrix<double> matrix;
-    typedef maquis::types::p_dense_matrix<std::complex<double> > cmatrix;
+    #include "dmrg/block_matrix/detail/ambient.hpp"
+    typedef ambient::numeric::matrix<double> matrix;
+    typedef ambient::numeric::matrix<std::complex<double> > cmatrix;
 #elif defined USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
     typedef alps::numeric::mt_matrix<double> matrix;
