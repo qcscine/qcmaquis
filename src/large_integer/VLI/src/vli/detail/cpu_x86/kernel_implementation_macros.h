@@ -33,10 +33,6 @@
 #include <boost/preprocessor/iteration/local.hpp>
 #include <boost/preprocessor/comparison/equal.hpp>
 
-//#include <boost/preprocessor/config/limits.hpp>
-//#include <boost/preprocessor/punctuation/comma_if.hpp>
-//#include <boost/preprocessor/comparison/greater_equal.hpp>
-
 //macro to get the correct name of the register
 #define R(n)        BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_ADD(8,n))) // give register starts from r8 
 #define RCLOTHER(n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(r, BOOST_PP_ADD(8,n)))  // for clother
@@ -46,9 +42,7 @@
 #define LOAD_register(z, n, unused)     "movq "PPS(AOS,n)"(%%rdi)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
 #define LOAD_register_rdx(z, n, unused) "movq "PPS(AOS,n)"(%%rdx)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
 // addition ASM operators
-#define  ADC_register(z, n, unused) "adcq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rsi) ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi + rdi + CB  */    
 #define ADC0_register(z, n, unused) "adcq $0x0                                ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
-#define ADC00_register(z, n, unused)"adcq %%rcx                               ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
 
 #define Addition( z, n, unused) "movq "PPS(AOS,n)"(%%rdi), %%rax \n" \
                                 ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(AOS,n)"(%%rsi), %%rax \n" \
@@ -62,10 +56,15 @@
                                  ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(AOS,n)"(%%rsi), %%rax \n" \
                                  "movq %%rax              , "PPS(AOS,n)"(%%rdi) \n" 
 
-
 // substraction ASM operators 
-#define  SBB_register(z, n, unused) "sbbq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rsi) ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq rsi - rdi - SB  */     
-#define SBB0_register(z, n, unused) "sbbq %%rax                               ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 - rdi - SB    */     
+#define Substraction( z, n, unused) "movq "PPS(AOS,n)"(%%rdi), %%rax \n" \
+                                    ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq),BOOST_PP_STRINGIZE(subq))" "PPS(AOS,n)"(%%rsi), %%rax  \n" \
+                                    "movq %%rax              , "PPS(AOS,n)"(%%rdi) \n" 
+
+#define Substraction2( z, n, unused)"movq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
+                                    "sbbq %%rcx              , %%rax \n" \
+                                    "movq %%rax              , "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
+
 // multiplication VLI<n*64> *= 64 bits, note : results are saved in to r8, r9, r10 .... thus for the first iteration I move direclty inside
 #define  MUL_register(z, n, unused) "mulq "PPS(1,BOOST_PP_ADD(n,1))"(%%rdi)             \n" /* mulq r??*rax */                \
                                     "addq %%rax            ,"R(BOOST_PP_ADD(n,1))"      \n" /* add hia?b? + loa?b? */         \

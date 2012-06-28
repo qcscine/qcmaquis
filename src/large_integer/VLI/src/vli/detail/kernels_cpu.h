@@ -34,7 +34,6 @@
 
 namespace vli{
     namespace detail{
-
         // C first number output #bits, second and third input #bits
         //Addition
         // new functions type : VLI<n*64> + VLI<n*64> : add128_128, add192_192 ...
