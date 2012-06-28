@@ -9,7 +9,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include "boost/tuple/tuple.hpp"
-
+//#include "vli/function_hooks/vli_number_cpu_function_hooks.hpp"
 
 #ifdef VLI_USE_GPU
 //
@@ -27,8 +27,8 @@
 
 #include "vli/detail/bit_masks.hpp"
 
-#define Size1 3
-#define Size2 6
+#define Size1 2
+#define Size2 4
 #define Order 10
 
 using vli::vli_cpu;
@@ -58,7 +58,7 @@ typedef hp2c::monomial<large_int> monomial_type;
 typedef hp2c::polynomial<large_int,Order> polynomial_type;
 typedef hp2c::polynomial<large_int,2*Order> polynomial_typed;
 typedef std::vector<polynomial_type> polynomial_vector_type;
-/*
+
 template <typename VpolyVLI, typename VpolyGMP>
 void InitPolyVLItoPolyGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP)
 {
@@ -83,17 +83,17 @@ bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
         }   
     return b;
 }
-*/
+
 int main (int argc, char * const argv[]) 
 {
-    
-    int SizeVector = 16384; //atoi(argv[1]);   
-    /*
+    int SizeVector = atoi(argv[1]);   
+
  polynomial_vector_type v1gmp(SizeVector);
  polynomial_vector_type v2gmp(SizeVector);
  polynomial_type pgmp;
  polynomial_typed pgmpd;
-*/
+
+   
 #ifdef VLI_USE_GPU
  gpu::gpu_manager* gpu;
  gpu->instance();
@@ -107,14 +107,14 @@ int main (int argc, char * const argv[])
  polynomial_result_type_cpu result_mix_cpu_gpu  ;
  polynomial_result_type_cpu result_cpu_gpu  ;
    
-    fill_vector_random(v1,3);
+    fill_vector_random(v1,1);
     fill_vector_random(v2,2);
 
-    fill_vector_negate(v1,3);
+    fill_vector_negate(v1,1);
     fill_vector_negate(v2,2);
 
-  //  InitPolyVLItoPolyGMP(v1,v1gmp);
-  //  InitPolyVLItoPolyGMP(v2,v2gmp);
+    InitPolyVLItoPolyGMP(v1,v1gmp);
+    InitPolyVLItoPolyGMP(v2,v2gmp);
 
     Timer t3("CPU vli_omp");
     t3.begin();
@@ -141,20 +141,18 @@ std::cout << " --------------------------- " << std::endl;
 
 
 #endif
-//     std::cout << result_pure_cpu << std::endl;
-   /* 
+
+ //     std::cout << result_pure_cpu << std::endl;
+   
     Timer t4("CPU gmp_omp");
     t4.begin();
     pgmpd = inner_product(v1gmp,v2gmp);
     t4.end();
 
-     std::cout << " GPU----------------------------------------------------- " << std::endl;
-     std::cout << result_pure_cpu_omp << std::endl;
-     std::cout << " CPU----------------------------------------------------- " << std::endl;
-*/
-  //   if(result_pure_cpu_omp ==result_pure_cpu ) {printf("OK gpu\n"); } else{printf("NO OK gpu \n"); } 
-//    if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
- //       std::cout << "validation GMP OK " << std::endl;
+
+//     if(result_pure_cpu_omp ==result_pure_cpu ) {printf("OK gpu\n"); } else{printf("NO OK gpu \n"); } 
+    if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
+     std::cout << "validation GMP OK " << std::endl;
 
     return 0;
 }

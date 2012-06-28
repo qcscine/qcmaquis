@@ -154,42 +154,128 @@ namespace vli{
                               );
                        }
 
-                       void mul256_128_128(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                      //       8rbx 0rbx
+                      //     x 8rsi 0rsi
+                      //       ---------
+                      // TO DO write a notice for the cryptic lines 
+
+
+
+                       void mul256_128_128_old(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+	                          asm( 
+	                              "subq $0x20            ,%%rsp             \n" /* create stack frame */           
+	                              "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
+	                              "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   
+	                              "xorq %%r11            ,%%r11             \n" /* r11 = 0 due to carry effect */   
+	                              "xorq %%r14            ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   \
+	                              "xorq %%r15            ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   \
+	                               /* te a if negative and store into stack, in reverse order due to universal access */ 
+	                              "movq 8(%%rsi)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
+	                              "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
+	                              "jns _Negativea_256_128_                  \n" /* number is negative, we negate */ 
+	                              "movq (%%rsi)          ,%%r8              \n" /* load a0 */                       
+	                              "notq %%r8                                \n" /* C2M, ~a0 */                     
+	                              "notq %%rax                               \n" /* C2M, ~a1 */                     
+	                              "addq $0x1             ,%%r8              \n" /* C2M, ~a0+1 */                   
+	                              "adcq $0x0             ,%%rax             \n" /* C2M, ~a1+CB */                   
+	                              "movq %%r8             ,-0x10(%%rsp)      \n" /* a0 into the stack -16 rsp */     
+	                              "movq %%rax            ,-0x08(%%rsp)      \n" /* a1 into the stack -8 rsp */     
+	                              "leaq  -0x10(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */   
+	                              "movq $1               ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   
+	                              "_Negativea_256_128_ :                    \n" /* end if structure */             
+	                              /* te a if negative and store into stack, in reverse order due to universal access */ 
+	                              "movq 8(%%rbx)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
+	                              "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
+	                              "jns _Negativeb_256_128_                  \n" /* number is negative, we negate */ 
+	                              "movq (%%rbx)          ,%%r8              \n" /* load b0 */                       
+	                              "notq %%r8                                \n" /* C2M, ~b0 */                     
+	                              "notq %%rax                               \n" /* C2M, ~b1 */                     
+	                              "addq $0x1             ,%%r8              \n" /* C2M, ~b0+1 */                   
+	                              "adcq $0x0             ,%%rax             \n" /* C2M, ~b1+CB */                   
+	                              "movq %%r8             ,-0x20(%%rsp)      \n" /* b0 into the stack -16 rsp */     
+	                              "movq %%rax            ,-0x18(%%rsp)      \n" /* b1 into the stack -8 rsp */     
+	                              "leaq  -0x20(%%rsp)    ,%%rbx             \n" /* rsi points to stack b0 > 0 */   
+	                              "movq $1               ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   
+	                              "_Negativeb_256_128_ :                    \n" /* end if structure */             
+	                              /*----------------------- a0 * b0, a0 * b1 start ------------------------*/ 
+	                              "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
+	                              "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
+	                              "mulq (%%rbx)                             \n" /* lo rax, hi rdx   a0*b0 */       
+	                              "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */ 
+	                              "movq %%rdx            ,%%r9              \n" /* a0b0hi into r8 */               
+	                              "movq %%rcx            ,%%rax             \n" /* reload rax(a0) from the stack */ 
+	                              "mulq 8(%%rbx)                            \n" /* a0 * b1 */                       
+	                              "addq %%rax            ,%%r9              \n" /* add a0b0hi + a0b1lo */           
+	                              "adcq %%rdx            ,%%r10             \n" /* save the a0b1hi into r9 */       
+	                              /*----------------------- a0 * b0, a0 * b1 end --------------------------*/ 
+	                              /*----------------------- a1 * b0, a1 * b1 start ------------------------*/ 
+	                              "movq 8(%%rsi)         ,%%rax             \n" /* a1 into rax */                   
+	                              "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
+	                              "mulq (%%rbx)                             \n" /* a1 * b0 */                       
+	                              "addq %%rax            ,%%r9              \n" /* l46 + a1b0lo */                 
+	                              "adcq %%rdx            ,%%r10             \n" /* l47 + a1b0hi + c */             
+	                              "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq */ 
+	                              "movq %%rcx            ,%%rax             \n" /* reload rax(a1) from the stack */ 
+	                              "mulq 8(%%rbx)                            \n" /* a1*b1 */                         
+	                              "addq %%rax            ,%%r10             \n" /* a1b2lo to r9 */                 
+	                              "adcq %%rdx            ,%%r11             \n" /* a1b2hi + c  */                   
+	                              /*----------------------- a1 * b0, a1 * b1 end --------------------------*/ 
+	                              "xorq %%r14            ,%%r15             \n"                                     
+	                              "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             
+	                              "je _IsNegativeResult_256_128_            \n" /* not equal ZF = 0, negate*/       
+	                              "notq %%r8                                \n" /* start2ComplementMethod negate */ 
+	                              "notq %%r9                                \n" /* 2CM negate */                   
+	                              "notq %%r10                               \n" /* 2CM negate */                   
+	                              "notq %%r11                               \n" /* 2CM negate */                   
+	                              "addq $0x1             ,%%r8              \n" /* 2CM add 1 */                     
+	                              "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */             
+	                              "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */             
+	                              "adcq $0x0             ,%%r11             \n" /* 2CM propagate CB */             
+	                              "_IsNegativeResult_256_128_ :             \n" /* end if negative result */       
+	                              "movq %%r8             ,(%%rdi)           \n" /* r8 -> c1 */                     
+	                              "movq %%r9             ,8(%%rdi)          \n" /* r9 -> c1 */                     
+	                              "movq %%r10            ,16(%%rdi)         \n" /* r10 -> c2 */                     
+	                              "movq %%r11            ,24(%%rdi)         \n" /* r11 -> c3 */                     
+	                              "addq $0x20            ,%%rsp             \n" /* destroy stack frame */           
+	                              : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r14","r15","memory"   
+	                             );
+	                       }
+
+
+
+                      void mul256_128_128(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
                           asm( 
-                              "subq $0x20            ,%%rsp             \n" /* create stack frame */            
                               "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
                               "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   
                               "xorq %%r11            ,%%r11             \n" /* r11 = 0 due to carry effect */   
-                              "xorq %%r14            ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   \
-                              "xorq %%r15            ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   \
-                               /* te a if negative and store into stack, in reverse order due to universal access */ 
-                              "movq 8(%%rsi)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
-                              "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                              "jns _Negativea_256_128_                  \n" /* number is negative, we negate */ 
-                              "movq (%%rsi)          ,%%r8              \n" /* load a0 */                       
-                              "notq %%r8                                \n" /* C2M, ~a0 */                      
-                              "notq %%rax                               \n" /* C2M, ~a1 */                      
-                              "addq $0x1             ,%%r8              \n" /* C2M, ~a0+1 */                    
-                              "adcq $0x0             ,%%rax             \n" /* C2M, ~a1+CB */                   
-                              "movq %%r8             ,-0x10(%%rsp)      \n" /* a0 into the stack -16 rsp */     
-                              "movq %%rax            ,-0x08(%%rsp)      \n" /* a1 into the stack -8 rsp */      
-                              "leaq  -0x10(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    
-                              "movq $1               ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   
-                              "_Negativea_256_128_ :                    \n" /* end if structure */              
-                              /* te a if negative and store into stack, in reverse order due to universal access */ 
-                              "movq 8(%%rbx)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
-                              "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                              "jns _Negativeb_256_128_                  \n" /* number is negative, we negate */ 
-                              "movq (%%rbx)          ,%%r8              \n" /* load b0 */                       
-                              "notq %%r8                                \n" /* C2M, ~b0 */                      
-                              "notq %%rax                               \n" /* C2M, ~b1 */                      
-                              "addq $0x1             ,%%r8              \n" /* C2M, ~b0+1 */                    
-                              "adcq $0x0             ,%%rax             \n" /* C2M, ~b1+CB */                   
-                              "movq %%r8             ,-0x20(%%rsp)      \n" /* b0 into the stack -16 rsp */     
-                              "movq %%rax            ,-0x18(%%rsp)      \n" /* b1 into the stack -8 rsp */      
-                              "leaq  -0x20(%%rsp)    ,%%rbx             \n" /* rsi points to stack b0 > 0 */    
-                              "movq $1               ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   
-                              "_Negativeb_256_128_ :                    \n" /* end if structure */              
+                              "xorq %%r13            ,%%r13             \n" /* r11 = 0 due to carry effect */   
+                              "xorq %%r14            ,%%r14             \n" /* r11 = 0 due to carry effect */   
+                              "movq 8(%%rbx)         ,%%r15             \n" 
+                              "shrq $63              ,%%r15             \n"
+                              "subq %%r15            ,%%r13             \n" // 0 ou fff...
+                              "movq 0(%%rsi)         ,%%r14             \n" 
+                              "andq %%r13            ,%%r14             \n"
+                              "subq %%r14            ,%%r10             \n"
+                              "movq 8(%%rsi)         ,%%r14             \n" 
+                              "andq %%r13            ,%%r14             \n"
+                              "subq %%r14            ,%%r11             \n"
+                              "addq %%r13            ,%%r11             \n"
+                              "movq 8(%%rsi)         ,%%r15             \n" 
+                              "shrq $63              ,%%r15             \n"
+                              "xorq %%r13            ,%%r13             \n"    
+                              "subq %%r15            ,%%r13             \n" // 0 ou fff...
+                              "movq 0(%%rbx)         ,%%r14             \n" 
+                              "andq %%r13            ,%%r14             \n"
+                              "xorq %%r15            ,%%r15             \n"   
+                              "subq %%r14            ,%%r15             \n"
+                              "addq %%r15            ,%%r10             \n"    
+                              "adcq $0               ,%%r11             \n"    
+                              "movq 8(%%rbx)         ,%%r14             \n" 
+                              "andq %%r13            ,%%r14             \n"
+                              "xorq %%r15            ,%%r15             \n"    
+                              "subq %%r14            ,%%r15             \n"
+                              "addq %%r15            ,%%r11             \n"   
+                              "addq %%r13            ,%%r11             \n"
                               /*----------------------- a0 * b0, a0 * b1 start ------------------------*/ 
                               "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
                               "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
@@ -200,6 +286,7 @@ namespace vli{
                               "mulq 8(%%rbx)                            \n" /* a0 * b1 */                       
                               "addq %%rax            ,%%r9              \n" /* add a0b0hi + a0b1lo */           
                               "adcq %%rdx            ,%%r10             \n" /* save the a0b1hi into r9 */       
+                              "adcq $0               ,%%r11             \n" /* save the a0b1hi into r9 */       
                               /*----------------------- a0 * b0, a0 * b1 end --------------------------*/ 
                               /*----------------------- a1 * b0, a1 * b1 start ------------------------*/ 
                               "movq 8(%%rsi)         ,%%rax             \n" /* a1 into rax */                   
@@ -213,26 +300,13 @@ namespace vli{
                               "addq %%rax            ,%%r10             \n" /* a1b2lo to r9 */                  
                               "adcq %%rdx            ,%%r11             \n" /* a1b2hi + c  */                   
                               /*----------------------- a1 * b0, a1 * b1 end --------------------------*/ 
-                              "xorq %%r14            ,%%r15             \n"                                     
-                              "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             
-                              "je _IsNegativeResult_256_128_            \n" /* not equal ZF = 0, negate*/       
-                              "notq %%r8                                \n" /* start2ComplementMethod negate */ 
-                              "notq %%r9                                \n" /* 2CM negate */                    
-                              "notq %%r10                               \n" /* 2CM negate */                    
-                              "notq %%r11                               \n" /* 2CM negate */                    
-                              "addq $0x1             ,%%r8              \n" /* 2CM add 1 */                     
-                              "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */              
-                              "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */              
-                              "adcq $0x0             ,%%r11             \n" /* 2CM propagate CB */              
-                              "_IsNegativeResult_256_128_ :             \n" /* end if negative result */        
                               "movq %%r8             ,(%%rdi)           \n" /* r8 -> c1 */                      
                               "movq %%r9             ,8(%%rdi)          \n" /* r9 -> c1 */                      
                               "movq %%r10            ,16(%%rdi)         \n" /* r10 -> c2 */                     
-                              "movq %%r11            ,24(%%rdi)         \n" /* r11 -> c3 */                     
-                              "addq $0x20            ,%%rsp             \n" /* destroy stack frame */           
-                              : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r14","r15","memory"   
-                             );
-                       }
+                              "movq %%r11            ,24(%%rdi)         \n" /* r8 -> c1 */                      
+                              : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r13","r14","r15","memory"   
+                              );
+                      }
 
                       void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
                                asm( 
