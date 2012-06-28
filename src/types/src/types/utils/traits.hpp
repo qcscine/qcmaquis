@@ -5,6 +5,13 @@
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
 
+namespace ambient { namespace numeric {
+
+    template<typename T> class matrix;
+    template<typename T> class diagonal_matrix;
+
+} }
+
 namespace maquis { namespace types {
 
     struct Transpose   { 
@@ -19,15 +26,9 @@ namespace maquis { namespace types {
         template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_cols(); }
         template<class Matrix> static const Matrix& eval(const Matrix& m){ return m; }
     };
+
 } }
 
-namespace maquis { namespace traits {
-
-    template<class T> struct scalar_type { typedef typename T::value_type type; };
-   
-} }
-
-#ifdef USE_AMBIENT
 namespace alps { namespace numeric {
 
     template<typename T> 
@@ -51,6 +52,7 @@ namespace alps { namespace numeric {
 
 namespace maquis { namespace traits {
 
+    template<class T> struct scalar_type { typedef typename T::value_type type; };
     template<class T> struct scalar_type <ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
     template<class T> struct scalar_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
 
@@ -78,6 +80,5 @@ namespace maquis { namespace traits {
     }
 
 } }
-#endif
 
 #endif
