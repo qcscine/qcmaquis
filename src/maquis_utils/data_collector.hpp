@@ -3,6 +3,7 @@
 #define MAQUIS_DATA_COLLECTOR_HPP_
 
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <vector>
 #include <map>
@@ -19,6 +20,7 @@ class DataCollector;
 #define DCOLLECTOR_GROUP(var, keyname) var.set_key(keyname);
 #define DCOLLECTOR_SET_SIZE(var, num) var.set_size(num);
 #define DCOLLECTOR_ADD(var, value) var.add_data(value);
+#define DCOLLECTOR_ADD_VERB(var, value) var.add_data(value, true);
 #define DCOLLECTOR_ADD_AT(var, keyname, value) var.add_data(keyname, value);
 #define DCOLLECTOR_SAVE(var, ar, path) ar << alps::make_pvp(path, var);
 #define DCOLLECTOR_SAVE_TO_FILE(var, fname, path)                           \
@@ -38,6 +40,7 @@ extern DataCollector num_blocks_svd_collector;
 #define DCOLLECTOR_GROUP(var, keyname)
 #define DCOLLECTOR_SET_SIZE(var, num)
 #define DCOLLECTOR_ADD(var, value)
+#define DCOLLECTOR_ADD_VERB(var, value)
 #define DCOLLECTOR_ADD_AT(var, keyname, value)
 #define DCOLLECTOR_SAVE(var, ar, path)
 #define DCOLLECTOR_SAVE_TO_FILE(var, fname, path) 
@@ -71,20 +74,19 @@ public:
         }
     }
     
-	void add_data (const size_t& val)
+	void add_data (const size_t& val, bool verbose=false)
 	{
 		if (val >= data[active_key].size()) {
-            if (maxsize < val)
+            if (maxsize <= val)
                 maxsize = val + 1;
             data[active_key].resize(maxsize, 0);
         }
            data[active_key][val]++;
-            
 	}
 	void add_data (std::string const & key, const size_t& val)
 	{
 		if (val >= data[key].size()) {
-            if (maxsize < val)
+            if (maxsize <= val)
                 maxsize = val + 1;
             data[key].resize(maxsize, 0);
         }
