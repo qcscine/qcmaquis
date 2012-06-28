@@ -7,9 +7,6 @@
 
 namespace maquis { namespace types {
 
-    template<typename T> class p_dense_matrix;
-    template<typename T> class p_diagonal_matrix;
-
     struct Transpose   { 
         static const char* code(){ return "T"; } 
         template<class Matrix> static typename Matrix::size_type first(Matrix const & m){ return m.num_cols(); }
@@ -22,25 +19,31 @@ namespace maquis { namespace types {
         template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_cols(); }
         template<class Matrix> static const Matrix& eval(const Matrix& m){ return m; }
     };
-   
-} } // namespace maquis::types
+} }
 
+namespace maquis { namespace traits {
+
+    template<class T> struct scalar_type { typedef typename T::value_type type; };
+   
+} }
+
+#ifdef USE_AMBIENT
 namespace alps { namespace numeric {
 
     template<typename T> 
-    struct associated_diagonal_matrix< maquis::types::p_dense_matrix<T> > {
-        typedef maquis::types::p_diagonal_matrix<T> type;
+    struct associated_diagonal_matrix< ambient::numeric::matrix<T> > {
+        typedef ambient::numeric::diagonal_matrix<T> type;
     };
     template<typename T> 
-    struct associated_real_diagonal_matrix< maquis::types::p_dense_matrix<T> > {
-        typedef maquis::types::p_diagonal_matrix<typename utils::real_type<T>::type> type;
+    struct associated_real_diagonal_matrix< ambient::numeric::matrix<T> > {
+        typedef ambient::numeric::diagonal_matrix<typename utils::real_type<T>::type> type;
     };
     template<typename T> 
-    struct associated_vector< maquis::types::p_dense_matrix<T> > {
+    struct associated_vector< ambient::numeric::matrix<T> > {
         typedef std::vector<T> type;
     };
     template<typename T> 
-    struct associated_real_vector< maquis::types::p_dense_matrix<T> > {
+    struct associated_real_vector< ambient::numeric::matrix<T> > {
         typedef std::vector<typename utils::real_type<T>::type> type;
     };
 
@@ -48,9 +51,8 @@ namespace alps { namespace numeric {
 
 namespace maquis { namespace traits {
 
-    template<class T> struct scalar_type { typedef typename T::value_type type; };
-    template<class T> struct scalar_type <maquis::types::p_dense_matrix<T> > { typedef typename maquis::types::p_dense_matrix<T>::scalar_type type; };
-    template<class T> struct scalar_type <maquis::types::p_diagonal_matrix<T> > { typedef typename maquis::types::p_dense_matrix<T>::scalar_type type; };
+    template<class T> struct scalar_type <ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
+    template<class T> struct scalar_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
 
     template <class T> 
     inline typename utils::real_type<T>::type real(T x){
@@ -76,5 +78,6 @@ namespace maquis { namespace traits {
     }
 
 } }
+#endif
 
 #endif

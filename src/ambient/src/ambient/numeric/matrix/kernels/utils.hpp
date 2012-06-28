@@ -8,7 +8,9 @@ extern "C" {
     double ddot_(const int*, const double*, const int*, const double*, const int*);
 }
 
-namespace ambient {
+namespace ambient { namespace numeric { namespace kernels {
+
+    using ambient::numeric::matrix_impl;
 
     #include "ambient/utils/numeric.h" // BLAS/LAPACK prototypes
     #include "ambient/utils/ceil.h"
@@ -124,7 +126,7 @@ namespace ambient {
     }
 
     template <typename T>
-    inline void __a_memcpy(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos, const maquis::types::p_dense_matrix_impl<T>& src, T *sd, dim2 spos, size_t w, T alfa){
+    inline void __a_memcpy(matrix_impl<T>& dest, T* dd, dim2 dpos, const matrix_impl<T>& src, T *sd, dim2 spos, size_t w, T alfa){
         __a_copy(&dd[dpos.x*ui_c_get_mem_dim(dest).y+dpos.y],
                  &sd[spos.x*ui_c_get_mem_dim(src).y+spos.y],
                  w);
@@ -136,7 +138,7 @@ namespace ambient {
     }
 
     template <typename T>
-    inline void __a_memscal(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos, const maquis::types::p_dense_matrix_impl<T>& src, T *sd, dim2 spos, size_t w, T alfa){
+    inline void __a_memscal(matrix_impl<T>& dest, T* dd, dim2 dpos, const matrix_impl<T>& src, T *sd, dim2 spos, size_t w, T alfa){
         for(int z = 0; z < w; z++)
             dd[dpos.x*ui_c_get_mem_dim(dest).y+dpos.y + z] += sd[spos.x*ui_c_get_mem_dim(src).y+spos.y + z]*alfa; // be carefull that dd != sd
     }
@@ -148,15 +150,15 @@ namespace ambient {
     }
 
     template<typename T, void(*PTF)(T* dd, T* sd, size_t w, T alfa)>
-    inline void __a_memptf_atomic_r(maquis::types::p_dense_matrix_impl<T>& dst, dim2 dst_p, 
-                                    const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
+    inline void __a_memptf_atomic_r(matrix_impl<T>& dst, dim2 dst_p, 
+                                    const matrix_impl<T>& src, dim2 src_p, 
                                     dim2 size, T alfa = 0.0)
     {
         __A_TIME_C("ambient_memptf_fr_atomic_kernel");
 #ifdef AMBIENT_CHECK_BOUNDARIES
         if(ui_c_get_dim(dst).x - dst_p.x < size.x || ui_c_get_dim(dst).y - dst_p.y < size.y ||
            ui_c_get_dim(src).x - src_p.x < size.x || ui_c_get_dim(src).y - src_p.y < size.y) 
-            maquis::cout << "Error: invalid memory movement" << std::endl;
+            ambient::cout << "Error: invalid memory movement" << std::endl;
 #endif
         int n = size.x;
         int m = size.y*sizeof(T);
@@ -170,15 +172,15 @@ namespace ambient {
         __A_TIME_C_STOP
     }
 
-    template<typename T, void(*PTF)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos,
-                                    const maquis::types::p_dense_matrix_impl<T>& src, T *sd, dim2 spos, 
+    template<typename T, void(*PTF)(matrix_impl<T>& dest, T* dd, dim2 dpos,
+                                    const matrix_impl<T>& src, T *sd, dim2 spos, 
                                     size_t w, T alfa)>
-    inline void __a_memptf(maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
-                           const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
+    inline void __a_memptf(matrix_impl<T>& dest, dim2 dest_p, 
+                           const matrix_impl<T>& src, dim2 src_p, 
                            dim2 size, T alfa = 0.0)
     {
         __A_TIME_C("ambient_memptf_f_kernel");
-        // the ouput (dest) must be a pinned p_dense_matrix
+        // the ouput (dest) must be a pinned matrix
 
         T* dd = ui_r_updated(dest)(ctxt.get_block_id().x, ctxt.get_block_id().y);
         size_t dx = ctxt.get_block_id().x * ui_c_get_mem_dim(dest).x;
@@ -187,7 +189,7 @@ namespace ambient {
 #ifdef AMBIENT_CHECK_BOUNDARIES
         if(ui_c_get_dim(dest).x - dest_p.x < size.x || ui_c_get_dim(dest).y - dest_p.y < size.y ||
            ui_c_get_dim(src).x - src_p.x   < size.x || ui_c_get_dim(src).y - src_p.y   < size.y) 
-            maquis::cout << "Error: invalid memory movement" << std::endl;
+            ambient::cout << "Error: invalid memory movement" << std::endl;
 #endif
     
         if( size.x == 0 || size.y == 0            ||
@@ -229,15 +231,15 @@ namespace ambient {
         __A_TIME_C_STOP
     }
 
-    template<typename T, void(*PTF)(maquis::types::p_dense_matrix_impl<T>& dest, T* dd, dim2 dpos,
-                                    const maquis::types::p_dense_matrix_impl<T>& src, T *sd, dim2 spos, 
+    template<typename T, void(*PTF)(matrix_impl<T>& dest, T* dd, dim2 dpos,
+                                    const matrix_impl<T>& src, T *sd, dim2 spos, 
                                     size_t w, T alfa)>
-    inline void __a_memptf_reverse(maquis::types::p_dense_matrix_impl<T>& dest, dim2 dest_p, 
-                                   const maquis::types::p_dense_matrix_impl<T>& src, dim2 src_p, 
+    inline void __a_memptf_reverse(matrix_impl<T>& dest, dim2 dest_p, 
+                                   const matrix_impl<T>& src, dim2 src_p, 
                                    dim2 size, T alfa = 0.0)
     {
         __A_TIME_C("ambient_memptf_revers_f_kernel");
-        // the input (src) must be a pinned p_dense_matrix
+        // the input (src) must be a pinned matrix
 
         dim2 context(ctxt.get_block_id().x, ctxt.get_block_id().y);
 
@@ -248,7 +250,7 @@ namespace ambient {
 #ifdef AMBIENT_CHECK_BOUNDARIES
         if(ui_c_get_dim(dest).x - dest_p.x < size.x || ui_c_get_dim(dest).y - dest_p.y < size.y ||
            ui_c_get_dim(src).x - src_p.x   < size.x || ui_c_get_dim(src).y - src_p.y   < size.y) 
-            maquis::cout << "Error: invalid memory movement" << std::endl;
+            ambient::cout << "Error: invalid memory movement" << std::endl;
 #endif
     
         if( size.x == 0 || size.y == 0          ||
@@ -308,12 +310,12 @@ namespace ambient {
     }*/
 
     template <typename T>
-    inline void __a_atomic_refresh(maquis::types::p_dense_matrix_impl<T>& m){
+    inline void __a_atomic_refresh(matrix_impl<T>& m){
         T* dm = ui_c_current(m)(0,0);
         T* rm = ui_w_updated(m)(0,0);
         if(dm != rm) memcpy(rm, dm, ui_c_get_mem_size(m));
     }
 
-}
+} } }
 
 #endif

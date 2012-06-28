@@ -6,21 +6,13 @@
 #include <boost/mpl/list.hpp>
 #include <boost/random.hpp>
 
-#include "types/p_dense_matrix/p_dense_matrix.h"
-
-#include "alps/numeric/matrix/matrix.hpp"
-#include "alps/numeric/matrix/matrix_blas.hpp"
+#include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
-#include "alps/numeric/matrix/matrix_interface.hpp"
-#include "alps/numeric/matrix/resizable_matrix_interface.hpp"
-
+#include "ambient/numeric/matrix.hpp"
 #include "types/utils/bindings.hpp"
-
-#include "utils/debug_mpi.h"
-
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_dense, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
@@ -29,7 +21,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_dense, T, test_types)
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_dense, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);

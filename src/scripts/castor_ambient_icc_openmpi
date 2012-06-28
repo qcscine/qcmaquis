@@ -1,8 +1,8 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="build"
-STATE_DMRG="void"
+STATE_TYPES="void"
+STATE_DMRG="build"
 # end of target states #
 SITE=castor_ambient # the dashboard name (uname -n)
 ROOT_DIR=/users/akosenko/maquis2012/src
