@@ -4,6 +4,7 @@
 #include "utils/types.h"
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
+#include <boost/numeric/bindings/tag.hpp>
 
 namespace ambient { namespace numeric {
 
@@ -15,16 +16,18 @@ namespace ambient { namespace numeric {
 namespace maquis { namespace types {
 
     struct Transpose   { 
-        static const char* code(){ return "T"; } 
+        typedef boost::numeric::bindings::tag::transpose type;
         template<class Matrix> static typename Matrix::size_type first(Matrix const & m){ return m.num_cols(); }
         template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_rows(); }
         template<class Matrix> static Matrix eval(const Matrix& m){ return transpose(m); }
+        static const char* code(){ return "T"; } 
     };
     struct NoTranspose { 
-        static const char* code(){ return "N"; } 
+        typedef boost::numeric::bindings::tag::no_transpose type;
         template<class Matrix> static typename Matrix::size_type first(Matrix const & m){ return m.num_rows(); }
         template<class Matrix> static typename Matrix::size_type second(Matrix const & m){ return m.num_cols(); }
         template<class Matrix> static const Matrix& eval(const Matrix& m){ return m; }
+        static const char* code(){ return "N"; } 
     };
 
 } }
