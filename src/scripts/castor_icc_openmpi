@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="void"
+STATE_TYPES="build"
 STATE_DMRG="build"
 # end of target states #
 SITE=castor # the dashboard name (uname -n)
@@ -24,6 +24,8 @@ module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 
 ## common ##
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
 MAQUIS_COMMON_CMAKE_C_COMPILER=icc
 MAQUIS_COMMON_CMAKE_CXX_COMPILER=icpc
 MAQUIS_COMMON_MPI_CXX_FOUND=FALSE
