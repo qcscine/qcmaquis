@@ -59,8 +59,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
                        basis_eval<Tag1>::first(A)[k].first,
                        basis_eval<Tag2>::second(B)[matched_block].first);
         
-        gemm(Tag1::eval(A[k]), Tag2::eval(B[matched_block]), C[C.left_basis().position(basis_eval<Tag1>::first(A)[k].first)]);
-        //gemm<Tag1,Tag2>(A[k], B[matched_block], C[C.left_basis().position(basis_eval<Tag1>::first(A)[k].first)]);
+        gemm<Tag1,Tag2>(A[k], B[matched_block], C[C.left_basis().position(basis_eval<Tag1>::first(A)[k].first)]);
     }
 }
 
