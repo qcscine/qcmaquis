@@ -41,6 +41,7 @@
 #endif //_OPENMP
 
 #ifdef VLI_COMPILE_GPU
+#include "vli/detail/kernels_gpu.h"
 #include "vli/detail/gpu/inner_product_gpu_booster.hpp"
 #endif //VLI_COMPILE_GPU
 
@@ -138,6 +139,7 @@ std::ostream & operator<<(std::ostream & os, vector_polynomial<Polynomial> const
         os << v[i] << std::endl;
     return os;
 }
-}
+
+} // namespace vli
 
 #endif //VLI_VECTOR_POLYNOME_GPU_H

@@ -190,7 +190,7 @@ namespace vli {
 	    }
 
 	    if (local_thread_id == 0) {
-		    unsigned int * out2 = out+(coefficient_id*2*Size) /* ---> offset there ------> */ + coefficient_id/(2*Order-1)*(2*Size); // I add an offset to fit with vli, to do find a way to remove ghost element into VLI
+  		    unsigned int * out2 = out+(coefficient_id*2*Size); 
                     #pragma unroll
 		    for(unsigned int i=0; i<2*Size; ++i)
 			    out2[i] = buf[i];

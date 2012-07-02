@@ -30,7 +30,7 @@ class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var
     typedef typename  base_type::reverse_iterator           reverse_iterator;
     typedef typename  base_type::const_reverse_iterator     const_reverse_iterator;
     typedef unsigned int                                    exponent_type;      // Type of the exponents (has to be the same type as Vli::size_type)
-    
+
     polynomial() {
         detail::init(*this, typename boost::is_fundamental<Coeff>::type());
     }

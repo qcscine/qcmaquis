@@ -25,7 +25,6 @@ struct polynomial_multiply_result_type<polynomial<Coeff,max_order_combined<Order
 };
 
 
-
 template <class Polynomial>
 struct polynomial_multiply_keep_order_result_type {
 };

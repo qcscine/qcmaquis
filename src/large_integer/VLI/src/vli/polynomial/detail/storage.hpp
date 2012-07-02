@@ -391,7 +391,6 @@ namespace detail {
         typedef boost::array<Coeff, max_order_combined_helpers::size<2+1, Order>::value >    base_type;
         typedef detail::element_descriptor_impl<Var0, Var1, no_variable, no_variable> element_descriptor;
         typedef typename base_type::size_type   size_type;
-        
         inline Coeff& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) {
             return base_type::operator[](stride*i - (i*i - i)/2 + j);            
         }

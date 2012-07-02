@@ -1,6 +1,6 @@
 # !/bin/bash
 #path
-PATH_FILE=${PWD}/../build/Testing/Temporary
+PATH_FILE=${PWD}/../build_castor_gcc/Testing/Temporary
 PATH_PLOT=${PWD}
 #create files
 touch $PATH_PLOT/out.data
