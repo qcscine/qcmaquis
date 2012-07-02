@@ -15,7 +15,7 @@ namespace ambient{
     inline void touchstack<T>::push_back(T e){
         *wi++ = e;
 #ifdef TOUCHSTACK_ACCESS_CHECK
-        if(((size_t)wi-(size_t)content) == TOUCHSTACK_LENGTH*sizeof(T)){
+        if(this->size() == TOUCHSTACK_LENGTH){
             printf("ERROR: end of touchstack has been reached!\n");
         }
 #endif
@@ -34,6 +34,11 @@ namespace ambient{
     template<typename T>
     inline bool touchstack<T>::empty(){
         return (wi == content);
+    }
+
+    template<typename T>
+    inline size_t touchstack<T>::size(){
+        return ((size_t)wi-(size_t)content)/sizeof(T);
     }
 
     template<typename T>
