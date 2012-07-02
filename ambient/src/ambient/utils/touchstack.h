@@ -1,6 +1,10 @@
 #ifndef AMBIENT_UTILS_TOUCHSTACK
 #define AMBIENT_UTILS_TOUCHSTACK
-#define TOUCHSTACK_LENGTH 256*sizeof(T)
+#define TOUCHSTACK_LENGTH 131072
+
+// 8192 -- ff_short
+// 65536 -- ff_large
+// 131072 -- fermi ladder
 
 namespace ambient{
 

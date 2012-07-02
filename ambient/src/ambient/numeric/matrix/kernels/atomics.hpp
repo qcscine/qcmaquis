@@ -255,6 +255,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix_impl<T>& a, const matrix_impl<T>& b){
             __A_TIME_C("ambient_add_atomic_c_kernel"); 
+            T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
             T* ar = ui_r_updated(a)(0,0);
             int size = ui_c_get_dim(a).square();

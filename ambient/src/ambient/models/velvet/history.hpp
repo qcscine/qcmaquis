@@ -11,8 +11,12 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline void history::clean(){
-        while(this->content[start] != this->current)
-            delete this->content[start++];
+        //if(current != NULL)
+        //while(this->content[start] != this->current){
+        //    if(this->content[start]->content.get_assignments().size() != 0) break;
+        //    else printf("Going to delete the revision! (%lu)\n", this->content[start]->content.get_assignments().size());
+        //    delete this->content[start++];
+        //}
     }
 
     inline revision& history::add_state(revision* r){
