@@ -46,7 +46,7 @@ endif(NOT MACHINE_CONFIG)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
-set (VLI_COMPILE_TYPES "((unsigned long int,2,11)) ((unsigned long int,3,11)) ((unsigned long int,3,11)) " CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
+set (VLI_COMPILE_TYPES "((unsigned long int,2,11)) ((unsigned long int,3,11)) ((unsigned long int,4,11)) " CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
 ########################################################################
 #
