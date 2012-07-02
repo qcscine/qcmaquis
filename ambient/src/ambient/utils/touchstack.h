@@ -17,6 +17,7 @@ namespace ambient{
         inline bool end_reached();
         inline void reset();
         inline bool empty();
+        inline size_t size();
         inline void sort();
     private:
         T content[TOUCHSTACK_LENGTH];
