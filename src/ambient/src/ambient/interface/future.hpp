@@ -10,12 +10,11 @@ namespace ambient {
         typedef typename boost::intrusive_ptr< container<sizeof(T)> > ptr;
         typedef T value_type;
 
-        inline future()
-        : value(NULL)
-        {
+        inline future(){
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
             *(T*)this->naked = T();
+            this->value = (T*)this->naked;
         }
 
         inline future(const future& f){
@@ -29,32 +28,33 @@ namespace ambient {
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
             *(T*)this->naked = value;
-            this->value = NULL; //(T*)this->naked; // let's playout
+            this->value = (T*)this->naked;
         }
 
         inline future(std::complex<double> value){
             this->naked = new container<sizeof(T)>();
             this->ghost = (container<sizeof(T)>*)this->naked;
             *(T*)this->naked = value;
-            this->value = NULL; //(T*)this->naked; // let's playout
+            this->value = (T*)this->naked;
         }
 
         inline operator T () const {
             if(this->value == NULL){
                 ambient::playout();
-                this->value = (T*)&(*this->ghost);
+                this->value = (T*)this->naked;
             }
             return *this->value;
         }
 
         inline T*& unfold(){
+            this->value = NULL;
             return (T*&)this->naked;
         }
 
         inline const T*& unfold() const {
             return (const T*&)this->naked;
         }
-    private:
+    //private:
         ptr    ghost;
         mutable T* value;
         void*  naked;

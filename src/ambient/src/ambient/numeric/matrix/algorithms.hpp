@@ -16,10 +16,10 @@ namespace ambient { namespace numeric {
     // {{{ matrix advanced algorithms
 
     template <typename T>
-    inline void norm(const matrix<T>& a, scalar_type& ret){ ATOMIC(a.atomic(), scalar_norm, a, ret); } // gs
+    inline scalar_type norm_square(const matrix<T>& a){ scalar_type norm; ATOMIC(a.atomic(), scalar_norm, a, norm); return norm; } // gs
 
     template <typename T>
-    inline void overlap(const matrix<T>& a, const matrix<T>& b, scalar_type& ret){ ATOMIC(a.atomic(), overlap, a, b, ret); } // gs
+    inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ scalar_type overlap; ATOMIC(a.atomic(), overlap, a, b, overlap); return overlap; } // gs
 
     // }}}
 

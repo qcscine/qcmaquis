@@ -222,6 +222,8 @@ namespace ambient { namespace controllers { namespace velvet {
         //    this->stack.pick()->weight();
         //this->stack.sort();                // sorting operations using credit
         //time2.begin();
+        if(this->stack.empty()) return;
+        printf("PLAYOUT WITH %lu!\n", this->stack.size());
         while(!this->stack.end_reached())    // can be read only once
             this->stack.pick()->logistics(); // sending requests for data
         //time2.end();

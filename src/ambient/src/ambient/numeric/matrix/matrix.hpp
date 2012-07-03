@@ -91,6 +91,7 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     inline value_type& matrix_impl<T>::get(size_type i, size_type j){
+        printf("Get element explicit PLAYOUT!\n");
         ambient::playout();
         return ((value_type*)ambient::controller.ufetch_block(*this->current, j/this->spec.block.x, i/this->spec.block.y))
                [ (j%this->spec.block.x)*this->spec.block.y + i%this->spec.block.y ];
