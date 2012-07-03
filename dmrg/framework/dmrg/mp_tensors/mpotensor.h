@@ -127,7 +127,7 @@ public:
     block_matrix<Matrix, SymmGroup> & operator()(std::size_t left_index,
                                                  std::size_t right_index);
     
-    void multiply_by_scalar(scalar_type);
+    void multiply_by_scalar(const scalar_type&);
     
     bool has(std::size_t left_index, std::size_t right_index) const;
     

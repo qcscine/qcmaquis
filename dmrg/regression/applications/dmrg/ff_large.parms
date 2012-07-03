@@ -1,4 +1,4 @@
-max_bond_dimension = 800
+max_bond_dimension = 600
 
 truncation_initial = 0.0001
 truncation_final = 1e-12

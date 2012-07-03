@@ -63,7 +63,7 @@ public:
     
     void multiply_from_left(block_matrix<Matrix, SymmGroup> const &);
     void multiply_from_right(block_matrix<Matrix, SymmGroup> const &);
-    void multiply_by_scalar(scalar_type);
+    void multiply_by_scalar(const scalar_type&);
     
     scalar_type scalar_overlap(MPSTensor const &) const;
     magnitude_type scalar_norm() const;
@@ -86,8 +86,8 @@ public:
     friend class  TwoSiteTensor<Matrix, SymmGroup>;
     
     // math functions: these are not part of the Python code, but required by IETL
-    MPSTensor const & operator*=(scalar_type);
-    MPSTensor const & operator/=(scalar_type);
+    MPSTensor const & operator*=(const scalar_type&);
+    MPSTensor const & operator/=(const scalar_type&);
     
     MPSTensor const & operator+=(MPSTensor const &);
     MPSTensor const & operator-=(MPSTensor const &);
@@ -163,7 +163,7 @@ private:
 
 // this is also required by IETL
 template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup> operator*(typename MPSTensor<Matrix, SymmGroup>::scalar_type t,
+MPSTensor<Matrix, SymmGroup> operator*(const typename MPSTensor<Matrix, SymmGroup>::scalar_type& t,
                                        MPSTensor<Matrix, SymmGroup> m)
 {
     m *= t;
@@ -171,14 +171,14 @@ MPSTensor<Matrix, SymmGroup> operator*(typename MPSTensor<Matrix, SymmGroup>::sc
 }
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> operator*(MPSTensor<Matrix, SymmGroup> m,
-                                       typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
+                                       const typename MPSTensor<Matrix, SymmGroup>::scalar_type& t)
 {
     m *= t;
     return m;
 }
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> operator/(MPSTensor<Matrix, SymmGroup> m,
-                                       typename MPSTensor<Matrix, SymmGroup>::scalar_type t)
+                                       const typename MPSTensor<Matrix, SymmGroup>::scalar_type& t)
 {
     m *= typename MPSTensor<Matrix, SymmGroup>::scalar_type(1.0)/t;
     return m;
