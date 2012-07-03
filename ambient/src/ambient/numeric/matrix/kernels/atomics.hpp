@@ -216,7 +216,7 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(const matrix_impl<T>& a, T*& norm){
             __A_TIME_C("ambient_scalar_norm_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
-            *norm += __a_dot(ad, ad, ui_c_get_dim(a).square());
+            *norm = __a_dot(ad, ad, ui_c_get_dim(a).square());
             __A_TIME_C_STOP
         }
     };
@@ -236,7 +236,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_scalar_overlap_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            *overlap += __a_dot(ad, bd, ui_c_get_dim(a).square());
+            *overlap = __a_dot(ad, bd, ui_c_get_dim(a).square());
             __A_TIME_C_STOP
         }
     };
