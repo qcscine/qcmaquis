@@ -77,7 +77,7 @@ bool MPOTensor<Matrix, SymmGroup>::has(std::size_t left_index,
 }
 
 template<class Matrix, class SymmGroup>
-void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(scalar_type v)
+void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
 {
 //    std::for_each(elements(data_).first, elements(data_).second, boost::lambda::_1 *= v);
     for (typename std::vector<block_matrix<Matrix, SymmGroup> >::iterator it = data_.begin();

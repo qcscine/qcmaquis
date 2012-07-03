@@ -35,7 +35,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( p_block_matrix_test, T, test_types )
 
     Matrix d(0,0);
     Matrix e(0,0);
-    //ambient::playout();
 
     resize(d, 4, 4);
     resize(e, 4, 4);

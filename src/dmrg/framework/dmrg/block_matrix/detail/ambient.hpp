@@ -52,6 +52,7 @@ namespace maquis { namespace dmrg { namespace detail {
         inline void bond_renyi_entropies(const ambient::numeric::diagonal_matrix<T>& m, typename alps::numeric::associated_real_vector<ambient::numeric::matrix<T> >::type& sv){
             std::vector<T>* sc_ptr = &sv;
             ambient::push< ambient::numeric::kernels::push_back_sqr_gt<T> >(m, sc_ptr);
+            printf("Bond renyi entropies expliciy PLAYOUT!\n");
             ambient::playout();
         }
         

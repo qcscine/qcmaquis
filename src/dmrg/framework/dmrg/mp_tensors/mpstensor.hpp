@@ -233,7 +233,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup>
 
 template<class Matrix, class SymmGroup>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_by_scalar(scalar_type s)
+MPSTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& s)
 {
     cur_normalization = Unorm;
     *this *= s;
@@ -248,21 +248,9 @@ MPSTensor<Matrix, SymmGroup>::conjugate_inplace()
 
 template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::magnitude_type
-MPSTensor<Matrix, SymmGroup>::scalar_norm() const
+MPSTensor<Matrix, SymmGroup>::scalar_norm() const 
 {
-
-//    make_left_paired();
-//    block_matrix<Matrix, SymmGroup> t;
-//    pgemm(adjoint(data_), data_, t);
-//    scalar_type r = sqrt(trace(t));
-
-    scalar_type ret(0);
-    for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        norm(data_[b], ret); // need reduction here (todo: Matthias, 30.04.12 / scalar-value types)
-                            // MD: todo(for alex), can we make it ret = norm(data_[b])?
-    assert( ret == ret );
-    assert( maquis::traits::real(ret) >= 0);
-    return sqrt(maquis::traits::real(ret));
+    return sqrt(maquis::traits::real(data_.norm_square()));
 }
 
 template<class T>
@@ -282,7 +270,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 
     make_left_paired();
     rhs.make_left_paired();
-    scalar_type ret(0);
 
     // verbose_assert(left_i, rhs.left_i);
     // verbose_assert(right_i, rhs.right_i);
@@ -295,18 +282,14 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     // This shouldn't be necessary, but as of Rev. 1702, is necessary in some cases
     // If I haven't fixed this by the end of Feb 2012, remind me
     Index<SymmGroup> i1 = data_.left_basis(), i2 = rhs.data_.left_basis();
+    std::vector<scalar_type> vt(i1.size());
     common_subset(i1, i2);
+
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
-        overlap(data_(c,c),
-                rhs.data_(c,c),
-                ret);  // MD: todo(for alex), can we make it ret = overlap(data_(c,c), rhs.data_(c,c))?
+        vt[b] = overlap(data_(c,c), rhs.data_(c,c));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
-    
-    // for (std::size_t b = 0; b < data_.n_blocks(); ++b)
-        // overlap(data_[b],rhs.data_[b],ret);
-
-    return ret;
+    return std::accumulate(vt.begin(), vt.end(), scalar_type(0));
 }
 
 template<class Matrix, class SymmGroup>
@@ -371,7 +354,7 @@ MPSTensor<Matrix, SymmGroup>::const_data() const
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &
-MPSTensor<Matrix, SymmGroup>::operator*=(scalar_type t)
+MPSTensor<Matrix, SymmGroup>::operator*=(const scalar_type& t)
 {
     cur_normalization = Unorm;
     data_ *= t;
@@ -380,7 +363,7 @@ MPSTensor<Matrix, SymmGroup>::operator*=(scalar_type t)
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &
-MPSTensor<Matrix, SymmGroup>::operator/=(scalar_type t)
+MPSTensor<Matrix, SymmGroup>::operator/=(const scalar_type& t)
 {
     cur_normalization = Unorm;
     data_ /= t;

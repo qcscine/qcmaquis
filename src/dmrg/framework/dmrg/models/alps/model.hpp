@@ -190,8 +190,7 @@ public:
                         SiteOperator op = ops[n].get<1>();
                         alps_matrix m = alps::get_matrix(value_type(), op, model.site_basis(type), parms, true);
                         
-                        scalar_type coeff = ops[n].get<0>().value();
-                        site_terms[type].push_back( coeff*convert_matrix(m, type) );
+                        site_terms[type].push_back( ops[n].get<0>().value()*convert_matrix(m, type) );
                     }
                     
                 }

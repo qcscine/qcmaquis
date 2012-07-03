@@ -51,8 +51,8 @@ public:
                                     std::pair<charge, size_type> const & c) const;
     block_matrix &       operator+=(block_matrix const & rhs);
     block_matrix &       operator-=(block_matrix const & rhs);
-    block_matrix const & operator*=(scalar_type v);
-    block_matrix const & operator/=(scalar_type v);
+    block_matrix const & operator*=(const scalar_type& v);
+    block_matrix const & operator/=(const scalar_type& v);
 
     size_type n_blocks() const;
     bool has_block(charge r, charge c) const;
@@ -69,6 +69,7 @@ public:
 //  void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
     
     scalar_type trace() const;
+    scalar_type norm_square() const;
     void transpose_inplace();
     void conjugate_inplace();
     void adjoint_inplace();
@@ -121,7 +122,7 @@ private:
 
 #include "dmrg/block_matrix/block_matrix.hpp"
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> operator*(typename block_matrix<Matrix,SymmGroup>::scalar_type v,
+block_matrix<Matrix, SymmGroup> operator*(const typename block_matrix<Matrix,SymmGroup>::scalar_type& v,
                                           block_matrix<Matrix, SymmGroup> bm)
 {
     bm *= v;
@@ -130,7 +131,7 @@ block_matrix<Matrix, SymmGroup> operator*(typename block_matrix<Matrix,SymmGroup
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
-                                          typename block_matrix<Matrix,SymmGroup>::scalar_type v)
+                                          const typename block_matrix<Matrix,SymmGroup>::scalar_type& v)
 {
     bm *= v;
     return bm;
