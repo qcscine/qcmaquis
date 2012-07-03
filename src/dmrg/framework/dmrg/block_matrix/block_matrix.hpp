@@ -9,7 +9,6 @@
 #include "dmrg/block_matrix/block_matrix.h"
 
 #include "utils/function_objects.h"
-#include <boost/lambda/bind.hpp>
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
@@ -181,14 +180,14 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator*=(const scalar_type& v)
 {
-    std::for_each(data_.begin(), data_.end(), boost::lambda::_1 *= v);
+    for(size_type k = 0; k < n_blocks(); ++k) data_[k] *= v;
     return *this;
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator/=(const scalar_type& v)
 {
-    std::for_each(data_.begin(), data_.end(), boost::lambda::_1 /= v);
+    for(size_type k = 0; k < n_blocks(); ++k) data_[k] /= v;
     return *this;
 }
 
