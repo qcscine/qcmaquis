@@ -32,19 +32,19 @@ namespace vli {
 
     template<unsigned int Order>
     struct MulBlockSize{
-        enum {value = ((((Order*2-1)*(Order*2-1))/2U >= 256U) ? 256U : ((((Order*2-1)*(Order*2-1))/2U+32U-1U)/32U*32U)) };
+        enum {value = ((((Order*2+1)*(Order*2+1))/2U >= 256U) ? 256U : ((((Order*2+1)*(Order*2+1))/2U+32U-1U)/32U*32U)) };
     };
     /*
     *  (((X>>1)<<1)+1) == X if odd, X+1 if even
     */
     template<unsigned int Order>
     struct OrderPadded{
-        enum {value = (((Order>>1)<<1)+1)};
+        enum {value = (((Order+1)>>1)<<1)+1};
     };
 
     template<unsigned int Order>
     struct MaxIterationCount{
-        enum {value = ((Order*2-1)*(Order*2-1)+31U)/32U};
+        enum {value = ((Order*2+1)*(Order*2+1)+31U)/32U};
     };
 
     }
