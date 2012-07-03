@@ -68,15 +68,12 @@ namespace vli
         typename inner_product_result_type<vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > >::type poly;
 
         std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
+        vli::detail::inner_product_vector_nvidia(vli_size_tag<Coeff::size,OrderSpecification::value>(), split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
 
-        // NOTE : +1 due to old representation polynomial 
-        vli::detail::inner_product_vector_nvidia(vli_size_tag<Coeff::size,OrderSpecification::value+1>(), split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
-
-        for(std::size_t i=split ; i < size_v ; ++i){
+        for(std::size_t i=split ; i < size_v ; ++i)
             res += v1[i]*v2[i];
-        }
-        // NOTE : the size of the message is horrible, due to the new polynomial class 
-        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value+1>()),2*Coeff::size*sizeof(long)+2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+        
+        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value>()),2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
         res += poly;
 
         return res;
@@ -97,8 +94,7 @@ namespace vli
         typename inner_product_result_type<vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > >::type poly;
 
         std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
-
-        vli::detail::inner_product_vector_nvidia(vli_size_tag<Coeff::size,OrderSpecification::value+1>(), split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
+        vli::detail::inner_product_vector_nvidia(vli_size_tag<Coeff::size,OrderSpecification::value>(), split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
 
         #pragma omp parallel for schedule(dynamic)
         for(std::size_t i=split ; i < size_v ; ++i)
@@ -106,8 +102,7 @@ namespace vli
       
         for(int i=1; i < omp_get_max_threads(); ++i)
             res[0]+=res[i];
-        // NOTE : the size of the message is horrible, due to the new polynomial class 
-        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value+1>()),2*Coeff::size*sizeof(long)+2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value>()),2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
         res[0] += poly;
 
         return res[0];

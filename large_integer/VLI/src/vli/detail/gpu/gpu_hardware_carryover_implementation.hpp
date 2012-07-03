@@ -22,18 +22,18 @@ namespace vli {
     void gpu_hardware_carryover_implementation<BaseInt, Size, Order>::plan(){
         std::vector<unsigned int> workblock_count_by_warp_local(MulBlockSize<Order>::value / 32,0);
         std::vector<unsigned int> work_total_by_size(MulBlockSize<Order>::value / 32,0);
-        std::vector<vli::detail::single_coefficient_task> tasks((((Order*2-1)*(Order*2-1) + 32 - 1) / 32) * 32);
+        std::vector<vli::detail::single_coefficient_task> tasks((((Order*2+1)*(Order*2+1) + 32 - 1) / 32) * 32);
       
-        for(unsigned int degree_y = 0; degree_y < (Order*2-1); ++degree_y) {
-            for(unsigned int degree_x = 0; degree_x < (Order*2-1); ++degree_x) {
-                vli::detail::single_coefficient_task& task = tasks[degree_y * (Order*2-1) + degree_x];
+        for(unsigned int degree_y = 0; degree_y <(Order*2+1); ++degree_y) {
+            for(unsigned int degree_x = 0; degree_x <(Order*2+1); ++degree_x) {
+                vli::detail::single_coefficient_task& task = tasks[degree_y * (Order*2+1) + degree_x];
                 task.output_degree_x = degree_x;
                 task.output_degree_y = degree_y;
-                task.step_count = (std::min<unsigned int>(((Order*2-1) - 1) - degree_x, degree_x) + 1) * (std::min<unsigned int>(((Order*2-1) - 1) - degree_y, degree_y) + 1);
+                task.step_count = (std::min<unsigned int>(((Order*2+1) - 1) - degree_x, degree_x) + 1) * (std::min<unsigned int>(((Order*2+1) - 1) - degree_y, degree_y) + 1);
             }
         }
         // Fill the task list up to the multiple of the warp size
-        for(unsigned int i = (Order*2-1) * (Order*2-1); i < tasks.size(); ++i) {
+        for(unsigned int i = (Order*2+1) * (Order*2+1); i < tasks.size(); ++i) {
                vli::detail::single_coefficient_task& task = tasks[i];
                task.output_degree_x = 0;
                task.output_degree_y = 0;
