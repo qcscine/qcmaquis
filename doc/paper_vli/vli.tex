@@ -112,7 +112,7 @@ par of the product into 2 separate registers (the classical operator $\times$ re
 The x86-64 architecture allows 16 registers, as much as possible , we conserved the datas into the registers when we perform a long multiplication to reduce read/write actions to the minimum (1 cycle).
 Additional optimizations are done like a full unrolling and assembly tips (xor, conditionals move \dots). 
 
-To conclude about assembly, the assembly language is the probably the most stable in term of portability $i386$ are supported since 20 years and 10 years for the x86 (80\% of the top 500 is x86 machine 20 \% power machine).
+To conclude about assembly, the assembly language is the probably the most stable in term of portability $i386$ are supported since 20 years and 10 years for the x86 (79\% of the top 500 is x86 machine 20 \% power machine).
 The VLI lib supported both x86 and power assembly, 99\% of the top 500 cluster.   
 
 \subsection*{About the implementation}
@@ -142,49 +142,31 @@ The second possibility; SoA interleaves the coefficient of the VLI and the polyn
 
 The choice of the memory layout is important because it allows or not the usage of the SIMD instructions. We remember  the SIMD instructions are 128 to 256 bits vector register ($ymm_i$) allows 4 to 8 \texttt{int}  operations simultaneously.
 A number of constraints force us to work with the half of the register because we have to manage the carry bit and the extended multiplication by hand. In the previous sections we presented an addition of 128 bits VLI, it took two operations
-without \texttt{move}, if with consider the same operation in SIMD (256 bits registers), we will get : 
+without \texttt{move}.   The same operation in SIMD (256 bits registers) necessitates a few adaptations as work in base 31 for use the 32 bits as carry, but or number will be limited to 124 bits. Thus  we have :    
 
 
 \begin{center}
 \begin{tabular}{ c  c c c c c c c c} 
  $ymm_0$   register      &    $a^0_{00}$  & $a^0_{10}$ & $a^0_{20}$  &  $a^0_{30}$ & $a^0_{40}$  &   $a^0_{50}$ &  $a^0_{60}$   & $a^0_{70}$  \\
-  shift left    &    $a^0_{10}$  & 0 & $a^0_{30}$  &  0  & $a^0_{50}$  &   0  &  $a^0_{70}$   & 0  \\
-  \\
  $ymm_1$   register      &    $b^0_{00}$  & $b^0_{10}$ & $b^0_{20}$  &  $b^0_{30}$ & $b^0_{40}$  &   $b^0_{50}$ &  $b^0_{60}$   & $b^0_{70}$  \\
-  shift left     &    $b^0_{10}$  & 0 & $b^0_{30}$  &  0  & $b^0_{50}$  &   0  &  $b^0_{70}$   & 0  \\
-\\
-$ymm_0 += ymm_1$           &    $c^0_{10}$  & CB & $c^0_{30}$  &  CB  & $c^0_{50}$  &  CB  &  $c^0_{70}$   & CB  \\
-shift left  CB register        & CB & 0 & CB & 0 & CB & 0 & CB & 0 \\
-\\
+$ymm_0 += ymm_1$    &    $c^0_{00}$  & $c^0_{10}$ & $c^0_{20}$  &  $c^0_{30}$  & $c^0_{40}$  &   $c^0_{50}$  &  $c^0_{60}$   & $c^0_{70}$  \\
+shift right  get CB        &     CB                 & CB                & CB                 & CB                   & CB               &  CB                   & CB                   & CB \\
 $ymm_2$   register      &    $a^1_{00}$  & $a^1_{10}$ & $a^1_{20}$  &  $a^1_{30}$ & $a^1_{40}$  &   $a^1_{50}$ &  $a^1_{60}$   & $a^1_{70}$  \\
-shift left     &    $a^1_{10}$  & 0 & $a^1_{30}$  &  0  & $a^1_{50}$  &   0  &  $a^1_{70}$   & 0  \\
- \\
  $ymm_3$   register      &    $b^1_{00}$  & $b^1_{10}$ & $b^1_{20}$  &  $b^1_{30}$ & $b^1_{40}$  &   $b^1_{50}$ &  $b^1_{60}$   & $b^1_{70}$  \\
-  shift left   &    $b^1_{10}$  & 0 & $b^1_{30}$  &  0  & $b^1_{50}$  &   0  &  $b^1_{70}$   & 0  \\
-\\
-$ymm_2 += ymm_3$                                  &    $c^1_{10}$  & CB & $c^1_{30}$  &  CB  & $c^1_{50}$  &  CB  &  $c^1_{70}$   & -  \\
-$ymm_2 +=  \textrm{CB register} $            &    $c^1_{10} $  & CB & $c^1_{30}$  &  CB  & $c^1_{50}$  &  CB  &  $c^1_{70}$   & -  \\
- shift right logical          &  0     &    $c^1_{10} $  & 0 & $c^1_{30}$  &  0 & $c^1_{50}$  & 0  &  $c^1_{70}$    \\
-
+$ymm_2 += ymm_3$     & $c^1_{00}$  & $c^1_{10}$ & $c^1_{20}$  &  $c^1_{30}$  & $c^1_{40}$  &   $c^1_{50}$  &  $c^1_{60}$   & $c^1_{70}$  \\                            
+$ymm_2 +=  \textrm{CB } $ & $c^1_{00}$  & $c^1_{10}$ & $c^1_{20}$  &  $c^1_{30}$  & $c^1_{40}$  &   $c^1_{50}$  &  $c^1_{60}$   & $c^1_{70}$  \\                            
 \end{tabular}
 \end{center}
 
-This operation must be repeat a second time to get the second part of the addition and two time to get the128 bits += operations. At the end we perform 24 additions and 48  shift operations for eight VLI$<4*32, \texttt{\textrm{uint}}>$ += VLI$<4*32, \texttt{\textrm{uint}}>$ operations. Our primary solution (under 64 bits mode,  VLI$<2*64, \texttt{\textrm{uint}}>$ += VLI$<2*64, \texttt{\textrm{uint}}>$) needs 16 operations plus operations and 0 shift. 
+This operation must be repeat two more times to get the 124 bits addition. At the end we perform 9 additions and 3  shift operations for eight VLI$<4*31, \texttt{\textrm{uint}}>$ += VLI$<4*31, \texttt{\textrm{uint}}>$ operations. 
+ Comparing to the original solution we saved a factor two,  nevertheless on modern CPU (Sandybridge), we have 3 APU  we can not exclude that the execution of  the addition of the polynomial coefficients will be execute in parallel over the APU. 
 
-A second possibility is to work under 31 bits base mode, thus we can make an addition
- VLI$<4*31, \texttt{\textrm{uint}}>$ += VLI$<4*31, \texttt{\textrm{uint}}>$  in  12 additions and 1 shift it will be faster. Nevertheless on monder CPU (Sandybridge), we have 3 APU during the addition of the polynomial as the coefficient are fully independent 
- we can not exclude that the execution of  the addition of the coefficients will be execute in parallel over the APU. 
+Below, we should consider the extended  multiplication using SIMD instructions. For this multiplication   VLI$<4*64, \texttt{\textrm{ulint}}>$  = VLI$<2*64, \texttt{\textrm{ulint}}>$ $\times$ VLI$<2*64, \texttt{\textrm{ulint}}>$) using the
+childhood  algorithm we need 4 multiplications and 3 additions so 32 multiplications and 24 additions to perform 8 vli multiplications. For the SIMD version we need 16 multiplications and 29 additions, 16 copies for the ouput multiplications 
+associated to 16 right shift  to extract the higher part on the multiplication and16 mask operator to get the lower part. And additional shift to get the carry bit. Time for both implementation will be similar. 
 
-To conclude, if you know consider the multiplication under SIMD execution, 
-
-
-
-
-
-
-
-
-
+As the SIMD implementation does not give enough argument to focus on it we have privileged  the AoS and classic assembly instructions. To conclude the new coprocessor of Intel named Mic could reconsider our choice on SIMD
+because this processor support Carry Bit, and extract lower and higher part of the multiplication natively. It also allow selected operations on the register by a judicious system of mask.
 
 
 \end{document}  
