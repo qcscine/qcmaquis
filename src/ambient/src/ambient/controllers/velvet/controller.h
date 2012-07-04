@@ -43,6 +43,8 @@ namespace ambient { namespace controllers { namespace velvet {
 
         inline void flush();
         inline void conditional_flush();
+        inline void mute();
+        inline void unmute();
         inline void allocate_threads();
         inline void set_num_threads(size_t n);
         inline size_t get_num_threads() const;
@@ -61,6 +63,7 @@ namespace ambient { namespace controllers { namespace velvet {
         size_t workload;
         size_t num_threads;
         size_t rrn;
+        bool muted;
     };
     
 } } }
