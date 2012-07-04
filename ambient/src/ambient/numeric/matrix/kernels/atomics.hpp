@@ -206,17 +206,17 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scalar_norm_atomic : public kernel_atomic< scalar_norm_atomic<T> > 
     {// gs
-        typedef void (scalar_norm_atomic::*F)(const matrix_impl<T>&, T*&);
+        typedef void (scalar_norm_atomic::*F)(const matrix_impl<T>&, future<T>&);
 
-        inline void l(const matrix_impl<T>& a, T*& norm){
+        inline void l(const matrix_impl<T>& a, future<T>& norm){
             this->ctxt_select("* from ambient as scalar_norm_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
-        inline void c(const matrix_impl<T>& a, T*& norm){
+        inline void c(const matrix_impl<T>& a, future<T>& norm){
             __A_TIME_C("ambient_scalar_norm_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
-            *norm = __a_dot(ad, ad, ui_c_get_dim(a).square());
+            norm.get_value() = __a_dot(ad, ad, ui_c_get_dim(a).square());
             __A_TIME_C_STOP
         }
     };
@@ -224,19 +224,19 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct overlap_atomic : public kernel_atomic< overlap_atomic<T> > 
     { // gs
-        typedef void (overlap_atomic::*F)(const matrix_impl<T>&, const matrix_impl<T>&, T*&);
+        typedef void (overlap_atomic::*F)(const matrix_impl<T>&, const matrix_impl<T>&, future<T>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, T*& overlap){
+        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, future<T>& overlap){
             this->ctxt_select("* from ambient as overlap_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(b));
         }
 
-        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, T*& overlap){
+        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, future<T>& overlap){
             __A_TIME_C("ambient_scalar_overlap_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* bd = ui_c_current(b)(0,0);
-            *overlap = __a_dot(ad, bd, ui_c_get_dim(a).square());
+            overlap.get_value() = __a_dot(ad, bd, ui_c_get_dim(a).square());
             __A_TIME_C_STOP
         }
     };
@@ -293,29 +293,29 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scale_atomic : public kernel_atomic< scale_atomic<T> > 
     { // gs
-        typedef void (scale_atomic::*F)(matrix_impl<T>&, const T*&);
+        typedef void (scale_atomic::*F)(matrix_impl<T>&, const future<T>&);
 
-        inline void l(matrix_impl<T>& a, const T*& t){
+        inline void l(matrix_impl<T>& a, const future<T>& t){
             this->ctxt_select("1 from ambient as scale_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
-        inline void c(matrix_impl<double>& a, const double*& t){
+        inline void c(matrix_impl<double>& a, const future<double>& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
             T* ar = ui_r_updated(a)(0,0);
             int size = ui_c_get_dim(a).square();
             static const int ONE = 1;
-            dscal_( &size, t, ar, &ONE );
+            dscal_( &size, &t.get_value(), ar, &ONE );
             __A_TIME_C_STOP
         }
 
-        inline void c(matrix_impl<std::complex<double> >& a, const std::complex<double>*& t){
+        inline void c(matrix_impl<std::complex<double> >& a, const future< std::complex<double> >& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
             T* ar = ui_w_updated(a)(0,0);
             int size = ui_c_get_dim(a).square();
             for(int k=0; k < size; k++) 
-                ar[k] = ad[k] * (*t);
+                ar[k] = ad[k] * t.get_value();
             __A_TIME_C_STOP
         }
     };

@@ -6,58 +6,64 @@ namespace ambient {
 
     template <typename T>
     class future {
+    private:
+        future(){}
+        template<typename S> inline future& operator = (const S& v){ }
+        template<typename S> inline future& operator = (const future& v){ }
     public:
         typedef typename boost::intrusive_ptr< container<sizeof(T)> > ptr;
         typedef T value_type;
 
-        inline future(){
-            this->naked = new container<sizeof(T)>();
-            this->ghost = (container<sizeof(T)>*)this->naked;
-            *(T*)this->naked = T();
-            this->value = (T*)this->naked;
+        explicit inline future(const ptr& p)
+        : ghost(p), value((T*)&(*p))
+        {
         }
 
-        inline future(const future& f){
-            this->naked = new container<sizeof(T)>();
-            *(T*)this->naked = (T)f; // unfolding f (can be more optimal / wo playout)
-            this->ghost = (container<sizeof(T)>*)this->naked;
-            this->value = NULL; // let's playout again for copy
+        explicit inline future(const future& f){
+            ghost = new container<sizeof(T)>();
+            value = (T*)&(*ghost);
+           *value = (T)f; // move semantics
         }
 
-        inline future(double value){
-            this->naked = new container<sizeof(T)>();
-            this->ghost = (container<sizeof(T)>*)this->naked;
-            *(T*)this->naked = value;
-            this->value = (T*)this->naked;
+        inline future(double v){
+            ghost = new container<sizeof(T)>();
+            value = (T*)&(*ghost);
+           *value = v;
         }
 
-        inline future(std::complex<double> value){
-            this->naked = new container<sizeof(T)>();
-            this->ghost = (container<sizeof(T)>*)this->naked;
-            *(T*)this->naked = value;
-            this->value = (T*)this->naked;
+        inline future(std::complex<double> v){
+            ghost = new container<sizeof(T)>();
+            value = (T*)&(*ghost);
+           *value = v;
         }
 
         inline operator T () const {
-            if(this->value == NULL){
+            if(value == NULL){
                 ambient::playout();
-                this->value = (T*)this->naked;
+                value = (T*)&(*ghost);
             }
-            return *this->value;
+            return *value;
         }
 
-        inline T*& unfold(){
+        inline const T& get_value() const {
+            return *(T*)&(*ghost);
+        }
+
+        inline T& get_value(){
+            return *(T*)&(*ghost);
+        }
+
+        inline future<T>& unfold(){ // should be called reset
             this->value = NULL;
-            return (T*&)this->naked;
+            return *this;
         }
 
-        inline const T*& unfold() const {
-            return (const T*&)this->naked;
+        inline const future<T>& unfold() const {
+            return *this;
         }
-    //private:
         ptr    ghost;
+    private:
         mutable T* value;
-        void*  naked;
     };
 
     template<typename T1, typename T2>

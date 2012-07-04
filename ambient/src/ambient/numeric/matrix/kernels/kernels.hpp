@@ -493,14 +493,14 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scalar_norm : public kernel< scalar_norm<T> > 
     {
-        typedef void (scalar_norm::*F)(const matrix_impl<T>&, const size_t&, const size_t&, T*&);
+        typedef void (scalar_norm::*F)(const matrix_impl<T>&, const size_t&, const size_t&, future<T>&);
 
-        inline void l(const matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+        inline void l(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<T>& norm){
             this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
             this->block_outright_pin(a);
         }
 
-        inline void c(const matrix_impl<T>& a, const size_t& m, const size_t& n, T*& norm){
+        inline void c(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<T>& norm){
             // gs
             __A_TIME_C("ambient_scalar_norm_c_kernel"); 
             T summ = 0;
@@ -514,7 +514,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 for(size_t j=0; j < sizex; j++)
                     summ += ad[i+j*lda]*ad[i+j*lda];
         
-            *norm += summ;
+            norm.get_value() += summ;
             __A_TIME_C_STOP
         }
     };
@@ -522,15 +522,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct overlap : public kernel< overlap<T> > 
     {
-        typedef void (overlap::*F)(const matrix_impl<T>&, const matrix_impl<T>&, const size_t&, const size_t&, T*&);
+        typedef void (overlap::*F)(const matrix_impl<T>&, const matrix_impl<T>&, const size_t&, const size_t&, future<T>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
+        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, const size_t& m, const size_t& n, future<T>& overlap){
             this->ctxt_select("* from ambient as overlap"); //if(!ctxt.involved()) return;
             this->block_outright_pin(a);
             this->block_outright_assign(b);
         }
 
-        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, const size_t& m, const size_t& n, T*& overlap){
+        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, const size_t& m, const size_t& n, future<T>& overlap){
             // gs
             __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
             T summ = 0;
@@ -544,7 +544,7 @@ namespace ambient { namespace numeric { namespace kernels {
             for(size_t i=0; i < sizey; i++)
                 for(size_t j=0; j < sizex; j++)
                     summ += ad[i+j*lda]*bd[i+j*lda];
-            *overlap += summ;
+            overlap.get_value() += summ;
             __A_TIME_C_STOP
         }
     };
@@ -605,14 +605,14 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scale : public kernel< scale<T> > 
     {
-        typedef void (scale::*F)(matrix_impl<T>&, const size_t&, const size_t&, const T*&);
+        typedef void (scale::*F)(matrix_impl<T>&, const size_t&, const size_t&, const future<T>&);
 
-        inline void l(matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
+        inline void l(matrix_impl<T>& a, const size_t& m, const size_t& n, const future<T>& t){
             this->ctxt_select("1 from ambient as scale"); //if(!ctxt.involved()) return;
             this->block_2d_cycle_pin(a);
         }
 
-        inline void c(matrix_impl<T>& a, const size_t& m, const size_t& n, const T*& t){
+        inline void c(matrix_impl<T>& a, const size_t& m, const size_t& n, const future<T>& t){
             // gs
             __A_TIME_C("ambient_scale_c_kernel"); 
             int x = ctxt.get_block_id().x;
@@ -625,7 +625,7 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t lda = ui_c_get_mem_dim(a).y;
             for(size_t j=0; j < sizex; j++)
             for(size_t i=0; i < sizey; i++)
-            ar[j*lda+i] = ad[j*lda+i] * (*t);
+            ar[j*lda+i] = ad[j*lda+i] * t.get_value();
             __A_TIME_C_STOP
         }
     };
@@ -750,16 +750,16 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct trace : public kernel< trace<T> > 
     {
-        typedef void (trace::*F)(const matrix_impl<T>&, const size_t&, T*&);
+        typedef void (trace::*F)(const matrix_impl<T>&, const size_t&, future<T>&);
 
-        inline void l(const matrix_impl<T>& a, const size_t& n, T*& trace){
+        inline void l(const matrix_impl<T>& a, const size_t& n, future<T>& trace){
             this->ctxt_select("* from ambient as trace"); //if(!ctxt.involved()) return;
             this->block_2d_cycle_pin(a);    // we need only diagonal 
                                             // but we have to track the diagonal separately afterward
                                             // which is troublesome
         }
 
-        inline void c(const matrix_impl<T>& a, const size_t& n, T*& trace){
+        inline void c(const matrix_impl<T>& a, const size_t& n, future<T>& trace){
             // gs
             __A_TIME_C("ambient_trace_c_kernel"); 
             size_t x = ctxt.get_block_id().x;
@@ -774,7 +774,7 @@ namespace ambient { namespace numeric { namespace kernels {
             for(size_t jj = x*sd; jj < sizex; jj++){
                 if(y*ld > jj) continue;
                 if((y+1)*ld <= jj) continue;
-               *trace += ad[jj % ld + (jj%sd)*ld];
+                trace.get_value() += ad[jj % ld + (jj%sd)*ld];
             }
             __A_TIME_C_STOP
         }

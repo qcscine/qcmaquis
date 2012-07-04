@@ -24,7 +24,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline controller::controller()
-    : workload(0), rrn(0), num_threads(1) 
+    : workload(0), rrn(0), num_threads(1), muted(false) 
     {
         this->acquire(&ambient::channel);
         pthread_key_create(&pthread_tid, free);
@@ -206,30 +206,39 @@ namespace ambient { namespace controllers { namespace velvet {
         delete op;
     }
 
+    inline void controller::mute(){
+        this->muted = true;
+    }
+
+    inline void controller::unmute(){
+        this->muted = false;
+    }
+
     inline void controller::conditional_flush(){
         //static int counter = 1;
         //counter = (counter+1) % 2;
-        //if(!counter) 
-           // this->flush();
+        //if(!counter) this->flush();
     }
 
     inline void controller::flush(){
-        //static __a_timer time("ambient_total_compute_playout");
-        //static __a_timer time2("ambient_total_logistic_playout");
-        //if(this->stack.empty()) return;
+        //static __a_timer time1("ambient_total_bin_playout");
+        //static __a_timer time2("ambient_total_small_playout");
+        if(this->stack.empty()) return;
+        //__a_timer& time = (this->stack.size() > 100) ? time1 : time2;
 
         //while(!this->stack.end_reached())  // estimating operations credits 
         //    this->stack.pick()->weight();
         //this->stack.sort();                // sorting operations using credit
         //time2.begin();
-        if(this->stack.empty()) return;
-        printf("PLAYOUT WITH %lu!\n", this->stack.size());
-        while(!this->stack.end_reached())    // can be read only once
-            this->stack.pick()->logistics(); // sending requests for data
-        //time2.end();
+
+        if(!this->muted) printf("PLAYOUT WITH %lu!\n", this->stack.size());
+
         //time.begin();
-        this->master_stream(this->tasks);  // using up the main thread
+        while(!this->stack.end_reached())
+            this->stack.pick()->logistics(); // sending requests for data
+        this->master_stream(this->tasks);    // using up the main thread
         this->stack.reset();
+
         //time.end();
     }
     

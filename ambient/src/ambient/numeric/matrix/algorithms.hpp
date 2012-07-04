@@ -16,10 +16,10 @@ namespace ambient { namespace numeric {
     // {{{ matrix advanced algorithms
 
     template <typename T>
-    inline scalar_type norm_square(const matrix<T>& a){ scalar_type norm; ATOMIC(a.atomic(), scalar_norm, a, norm); return norm; } // gs
+    inline scalar_type norm_square(const matrix<T>& a){ scalar_type norm(0); ATOMIC(a.atomic(), scalar_norm, a, norm); return norm; } // gs
 
     template <typename T>
-    inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ scalar_type overlap; ATOMIC(a.atomic(), overlap, a, b, overlap); return overlap; } // gs
+    inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ scalar_type overlap(0); ATOMIC(a.atomic(), overlap, a, b, overlap); return overlap; } // gs
 
     // }}}
 
@@ -297,7 +297,7 @@ namespace algorithms {
     template <typename T>
     inline scalar_type trace(const matrix_impl<T>& a) {
         // gs
-        scalar_type trace;
+        scalar_type trace(0);
         size_t n = std::min(a.num_rows(), a.num_cols());
         ambient::push< kernels::trace<T> >(a, n, trace);
         return trace;
