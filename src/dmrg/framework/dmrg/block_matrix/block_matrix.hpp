@@ -195,16 +195,16 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmGroup>::trace() const
 {
-    std::vector<scalar_type> vt(n_blocks());
-    std::transform(data_.begin(), data_.end(), vt.begin(), utils::functor_trace());
-    return std::accumulate(vt.begin(), vt.end(), scalar_type(0)); // reduction
+    std::vector<scalar_type> vt;
+    std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_trace());
+    return std::accumulate(vt.begin(), vt.end(), scalar_type(0)); // maquis::accumulate
 }
 
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmGroup>::norm_square() const
 {
-    std::vector<scalar_type> vt(n_blocks());
-    std::transform(data_.begin(), data_.end(), vt.begin(), utils::functor_norm_square());
+    std::vector<scalar_type> vt;
+    std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_norm_square());
     return std::accumulate(vt.begin(), vt.end(), scalar_type(0));
 }
 
