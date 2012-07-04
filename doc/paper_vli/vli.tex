@@ -1,0 +1,190 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{Brief descriptions of the VLI library}
+\author{Timothee/Andreas or TAinmdortehaese, that is the question}
+%\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+%\section{}
+%\subsection{}
+
+
+The main purpose of the VLI lib is performed hybrid (CPU/GPU) inner product of polynomial from 1 to 4 variables with large integer coefficient. We will first remember the basics of the inner product of a polynomial, 
+and the implementation of the cpu version  The second par will be on the gpu where the inner product and long arithmetic are nested.
+
+\section*{Inner product}
+
+The main object of the library is performed an inner product of vector of polynomials. The polynomials $P$ are defined like :
+\begin{eqnarray}
+P_a(x,y,\dots) = \sum_i^n \left( \sum_j^n \dots a_{ij} x^i y^j \dots \right)
+\end{eqnarray}
+
+To illustrate if we consider a polynomial with two variables,  $n=2$, we get :
+
+\begin{eqnarray}
+P_a(x,y) &=&   a_{00} + a_{10}x + a_{20}x^2 + a_{01}y + a_{11} xy + a_{21}x^2y +  a_{02}y^2  \\
+              &+ & a_{12}xy^2 + a_{22}x^2y^2 \nonumber \label{poly0}
+\end{eqnarray}
+ 
+ If now we consider 2 vectors of polynomials of $m$ entries  $\boldsymbol{v}_1<P_a>$ and  $\boldsymbol{v}_2<P_b>$ the inner product  consists of the product 
+ of every entries of the vectors one by one and a global reduction 
+ 
+ \begin{eqnarray}
+ P_c = \sum_i^m \boldsymbol{v}_{1_i}<P_a>  \times  \boldsymbol{v}_{2_i}<P_b> \label{poly1}
+\end{eqnarray}
+
+where $times$ indicates the multiplication between two polynomials. We just note remember for the multiplication of the polynomial we get cross term. A cross term coefficient is simply the 
+sum of several coefficients resulting from the multiplication. Per example, if we multiply two polynomial as defined in \ref{poly0}, the resulting coefficient $c_{12}xy^2$ will be given by : 
+
+\begin{eqnarray}
+c_{12}xy^2 = \left(a_{12}b_{00}  +  a_{00}b_{12} + a_{10}b_{02}   + b_{10}a_{02}  +  a_{11}b_{01} + b_{12}a_{01}  \right)xy^2
+\end{eqnarray}
+
+These cross terms are not a problem for the cpu version but it is the bottleneck for the gpu version, (see gpu section). In term of  programming and parallelisation, 
+for the cpu version the equation  \ref{poly1} can be reduced by a basic loop with a final reduction. These work can be easily done in OpenMP. Every OpenMP threads
+will calculate several  polynomial multiplications and make a local reduction. At the end a final reduction is performed sequential by the main thread \footnote{In OpenMP reduction for class is not supported}. 
+
+
+
+\section*{Details of VLI\_CPU}
+
+The coefficient of the polynomial are represented by a large integer, this number has been designed by the 
+
+The Very Large Integer (VLI)  models  basic arithmetic  operation for large integer on CPU (lib\_vli\_cpu) and GPU (lib\_vli\_gpu).  A VLI number is characterized by two parameters, a type and a size.
+ The type is a \texttt{unsigned long int}, and the size varies from 2 to 8.
+Thus the large integer can vary from 128 to 512 bits, by steps of 64 bits. It's implementation is static and determined during the compile time, it is not dynamic at all, as the well know GMP. Inside the memory every VLI number has contiguous data, 
+the number is based on a basic array initialized by the type and size given during the compilation (template parameters).
+
+
+The basic operations supported by VLI are the additions, the multiplications and the subtractions. For every family of operations, a subset of operations are available :
+the subset of the additions are,
+\begin{itemize}
+\item VLI$<$Type, Size$>$ += VLI$<$Type, Size$>$
+\item VLI$<$Type, Size$>$ += \texttt{long} or \texttt{int}
+\item VLI$<$Type, Size+1$>$ = VLI$<$Type, Size$>$ + VLI$<$Type, Size$>$
+\end{itemize}
+the subset of the substractions are,
+\begin{itemize}
+\item VLI$<$Type, Size$>$ -= VLI$<$Type, Size$>$
+\item VLI$<$Type, Size$>$ -= \texttt{long} or \texttt{int}
+\end{itemize}
+the subset of the  multiplications are,
+\begin{itemize}
+\item VLI$<$Type, Size$>$  $\times$= VLI$<$Type, Size$>$
+\item VLI$<$Type, Size$>$  $\times$= \texttt{long} or \texttt{int}
+\item VLI$<$Type, 2$\times$Size$>$ = VLI$<$Type, Size$>$ $\times$ VLI$<$Type, Size$>$
+\end{itemize}
+
+\subsection*{Why Assembly ?}
+
+The algorithms of all these operations are based on the childhood knowledge but their realization are done in assembly because a few assembly instructions facilitate the implementation and the performances.
+In programming, the basic operators of the addition, subtraction and multiplication between identical type gives the same type. 
+
+Per example for an addition, the propagation/subtraction of the  carry/borrow can be done by hand, but its performance will be low compare to a pure assembly version. 
+The number of assembly instruction can be reduce by a factor 3 for the additions/substraction, and  2-order for the multiplication.
+
+In classical programming, the addition is realized with bit shift to simulate the carry, added to cast operator between  \texttt{int} and \text{long int}. Oppositely, 
+in assembly, the addition with the carry bit (CB) allows a simplified model without hand made carry propagation. \footnote{ The carry bit is a bit of the status register, as the overflow bit, 
+it informs  the overflow of an operation and but it can be re-use to propagate the carry. }  It formalized in pseudo-assembly x86-64 by the following sequence:
+\begin{table}[htdp]
+\begin{center}
+\begin{tabular}{ l c c c l c}
+ \texttt{add }   &  b[0]  & a[0]    & $\Leftrightarrow$ & a[0]+=b[0]            & \tiny{0}  \\ 
+ \texttt{adc }   &  b[1]   & a[1]   & $\Leftrightarrow$ & a[1]+=b[1] + CB  & \tiny{1}  \\  
+\end{tabular}
+\end{center}
+\end{table}%
+where the first columns indicates the  mnemonic instructions, \texttt{add} is a basic addition between two number of the same type, if the result is larger than the capacity of the number, the CB is set to one,
+and re-use if the \texttt{adc} instruction is performed. In pure assembly, additional \texttt{move} instructions will be necessary to move the data from the global memory, to one of the 16 registers and reciprocally.
+We will not detail because it exceeds the purpose of the present document. 
+
+The same techniques are performed for all additions/subtractions with respective mnemonic. For the multiplication, we use the mnemonic \texttt{mul} this instruction has the specificity to return the lower and the higher
+par of the product into 2 separate registers (the classical operator $\times$ returns only the low part in C/C++/fortran \dots), combined with the additions and our childhood algorithm, we can construct a large multiplication.  
+The x86-64 architecture allows 16 registers, as much as possible , we conserved the datas into the registers when we perform a long multiplication to reduce read/write actions to the minimum (1 cycle).
+Additional optimizations are done like a full unrolling and assembly tips (xor, conditionals move \dots). 
+
+To conclude about assembly, the assembly language is the probably the most stable in term of portability $i386$ are supported since 20 years and 10 years for the x86 (80\% of the top 500 is x86 machine 20 \% power machine).
+The VLI lib supported both x86 and power assembly, 99\% of the top 500 cluster.   
+
+\subsection*{About the implementation}
+
+Generate by hand all these kernels in assembly can be painful and a source of error. Thus we designed a generator of assembly for every kernels, it generates all versions of a kernels during the compilation.   
+It is based of the GNU inline assembly. Typically, the programmer gives a string between asm tag. We use the preprocessor and the package boost preprocessor package. 
+(it allows repetition, branching, and more important the construction of string during the precompilation) to generate the strings of the associated kernels.
+All kernels into lib\_vli\_cpu use this procedure except the extended multiplication.
+
+\subsection*{Memory layout and SIMD implementation}
+
+It exists at lest two data layout for this problem : the array of structure (AoS) and structure of array (SoA), both have their advantage and disadvantage. In our problem the AoS consists of saving the data in this order  : VLI - Series of VLI (polynomial coefficient)- series of polynomial (the vector), as following  in the memory (contiguous):
+
+\begin{eqnarray}
+ \underbrace{
+ \underbrace{ \underbrace{a^0_{00} | a^1_{00} | a^2_{00}}_{VLI, a_{00} } || \underbrace{a^0_{10} | a^1_{10} | a^2_{10}}_{VLI, a_{10}} ||   \dots  }_{1^{st} \textrm{polynomial}} 
+      |||    \underbrace{ \underbrace{b^0_{00} | a^1_{00} | b^2_{00}}_{VLI, b_{00} } || \underbrace{b^0_{10} | b^1_{10} | b^2_{10}}_{VLI, b_{10}} ||   \dots  }_{2^{nd} \textrm{polynomial} } }_{\textrm{Vector of polynomial}} \nonumber
+\end{eqnarray}
+
+The second possibility; SoA interleaves the coefficient of the VLI and the polynomial, they become nested:
+
+\begin{eqnarray}
+ \underbrace{
+ \underbrace{a^0_{00} | a^0_{10} | \dots || a^1_{00} | a^1_{10} | \dots  }_{1st  \textrm{ nested VLI/Polynomial} } |||  \underbrace{b^0_{00} | b^0_{10} | \dots || b^1_{00} | b^1_{10} | \dots  }_{2nd  \textrm{ nested VLI/Polynomial} }
+ }_{\textrm{Vector of polynomial}} \nonumber
+\end{eqnarray}
+
+The choice of the memory layout is important because it allows or not the usage of the SIMD instructions. We remember  the SIMD instructions are 128 to 256 bits vector register ($ymm_i$) allows 4 to 8 \texttt{int}  operations simultaneously.
+A number of constraints force us to work with the half of the register because we have to manage the carry bit and the extended multiplication by hand. In the previous sections we presented an addition of 128 bits VLI, it took two operations
+without \texttt{move}, if with consider the same operation in SIMD (256 bits registers), we will get : 
+
+
+\begin{center}
+\begin{tabular}{ c  c c c c c c c c} 
+ $ymm_0$   register      &    $a^0_{00}$  & $a^0_{10}$ & $a^0_{20}$  &  $a^0_{30}$ & $a^0_{40}$  &   $a^0_{50}$ &  $a^0_{60}$   & $a^0_{70}$  \\
+  shift left    &    $a^0_{10}$  & 0 & $a^0_{30}$  &  0  & $a^0_{50}$  &   0  &  $a^0_{70}$   & 0  \\
+  \\
+ $ymm_1$   register      &    $b^0_{00}$  & $b^0_{10}$ & $b^0_{20}$  &  $b^0_{30}$ & $b^0_{40}$  &   $b^0_{50}$ &  $b^0_{60}$   & $b^0_{70}$  \\
+  shift left     &    $b^0_{10}$  & 0 & $b^0_{30}$  &  0  & $b^0_{50}$  &   0  &  $b^0_{70}$   & 0  \\
+\\
+$ymm_0 += ymm_1$           &    $c^0_{10}$  & CB & $c^0_{30}$  &  CB  & $c^0_{50}$  &  CB  &  $c^0_{70}$   & CB  \\
+shift left  CB register        & CB & 0 & CB & 0 & CB & 0 & CB & 0 \\
+\\
+$ymm_2$   register      &    $a^1_{00}$  & $a^1_{10}$ & $a^1_{20}$  &  $a^1_{30}$ & $a^1_{40}$  &   $a^1_{50}$ &  $a^1_{60}$   & $a^1_{70}$  \\
+shift left     &    $a^1_{10}$  & 0 & $a^1_{30}$  &  0  & $a^1_{50}$  &   0  &  $a^1_{70}$   & 0  \\
+ \\
+ $ymm_3$   register      &    $b^1_{00}$  & $b^1_{10}$ & $b^1_{20}$  &  $b^1_{30}$ & $b^1_{40}$  &   $b^1_{50}$ &  $b^1_{60}$   & $b^1_{70}$  \\
+  shift left   &    $b^1_{10}$  & 0 & $b^1_{30}$  &  0  & $b^1_{50}$  &   0  &  $b^1_{70}$   & 0  \\
+\\
+$ymm_2 += ymm_3$                                  &    $c^1_{10}$  & CB & $c^1_{30}$  &  CB  & $c^1_{50}$  &  CB  &  $c^1_{70}$   & -  \\
+$ymm_2 +=  \textrm{CB register} $            &    $c^1_{10} $  & CB & $c^1_{30}$  &  CB  & $c^1_{50}$  &  CB  &  $c^1_{70}$   & -  \\
+ shift right logical          &  0     &    $c^1_{10} $  & 0 & $c^1_{30}$  &  0 & $c^1_{50}$  & 0  &  $c^1_{70}$    \\
+
+\end{tabular}
+\end{center}
+
+This operation must be repeat a second time to get the second part of the addition and two time to get the128 bits += operations. At the end we perform 24 additions and 48  shift operations for eight VLI$<4*32, \texttt{\textrm{uint}}>$ += VLI$<4*32, \texttt{\textrm{uint}}>$ operations. Our primary solution (under 64 bits mode,  VLI$<2*64, \texttt{\textrm{uint}}>$ += VLI$<2*64, \texttt{\textrm{uint}}>$) needs 16 operations plus operations and 0 shift. 
+
+A second possibility is to work under 31 bits base mode, thus we can make an addition
+ VLI$<4*31, \texttt{\textrm{uint}}>$ += VLI$<4*31, \texttt{\textrm{uint}}>$  in  12 additions and 1 shift it will be faster. Nevertheless on monder CPU (Sandybridge), we have 3 APU during the addition of the polynomial as the coefficient are fully independent 
+ we can not exclude that the execution of  the addition of the coefficients will be execute in parallel over the APU. 
+
+To conclude, if you know consider the multiplication under SIMD execution, 
+
+
+
+
+
+
+
+
+
+
+
+\end{document}  
