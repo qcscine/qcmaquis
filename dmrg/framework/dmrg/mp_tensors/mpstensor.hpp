@@ -241,13 +241,21 @@ MPSTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& s)
 
 template<class Matrix, class SymmGroup>
 void
+MPSTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& s)
+{
+    cur_normalization = Unorm;
+    *this /= s;
+}
+
+template<class Matrix, class SymmGroup>
+void
 MPSTensor<Matrix, SymmGroup>::conjugate_inplace()
 {
     data_ = data_.inplace_conjugate();
 }
 
 template<class Matrix, class SymmGroup>
-typename MPSTensor<Matrix, SymmGroup>::magnitude_type
+typename MPSTensor<Matrix, SymmGroup>::scalar_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const 
 {
     return sqrt(maquis::traits::real(data_.norm_square()));

@@ -167,19 +167,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
         
         svd(t, u, v, s);
         
-        std::vector<double> sv;
-        
-        for (std::size_t k = 0; k < s.n_blocks(); ++k)
-            maquis::dmrg::detail::bond_renyi_entropies(s[k],sv);
-//        maquis::cout << p << " " << sv[0] << " " << sv[1] << std::endl;
-        
-        double r = std::accumulate(sv.begin(), sv.end(), double(0));
-//        std::transform(sv.begin(), sv.end(), sv.begin(),
-//                       boost::lambda::_1 / r);
-        
-//        maquis::cout << r << " " << sv.size() << std::endl;
-//        if (fabs(1-r) < 0.01)
-//            std::copy(sv.begin(), sv.end(), std::ostream_iterator<double>(maquis::cout, " ")); maquis::cout << std::endl;
+        std::vector<double> sv = maquis::dmrg::detail::bond_renyi_entropies(s);
         
         double S = 0;
         if (n == 1) {
@@ -194,8 +182,6 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
             ret.push_back(1/(1-n)*log(S));
         }
         
-//        maquis::cout << ret.back() << std::endl;
-
         mps.move_normalization_l2r(p-1, p);
     }
     

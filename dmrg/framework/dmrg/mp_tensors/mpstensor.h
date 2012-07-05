@@ -64,9 +64,10 @@ public:
     void multiply_from_left(block_matrix<Matrix, SymmGroup> const &);
     void multiply_from_right(block_matrix<Matrix, SymmGroup> const &);
     void multiply_by_scalar(const scalar_type&);
+    void divide_by_scalar(const scalar_type&);
     
     scalar_type scalar_overlap(MPSTensor const &) const;
-    magnitude_type scalar_norm() const;
+    scalar_type scalar_norm() const;
     
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
@@ -180,7 +181,7 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> operator/(MPSTensor<Matrix, SymmGroup> m,
                                        const typename MPSTensor<Matrix, SymmGroup>::scalar_type& t)
 {
-    m *= typename MPSTensor<Matrix, SymmGroup>::scalar_type(1.0)/t;
+    m /= t;
     return m;
 }
 

@@ -13,53 +13,64 @@
 #include <ambient/numeric/matrix.hpp>
 #define ATOMIC(condition, kernel, ...) assert(condition); ambient::push< ambient::numeric::kernels::kernel ## _atomic<T> >(__VA_ARGS__);
 
+template<class T, class SymmGroup>
+class block_matrix;
+
 namespace maquis { namespace dmrg { namespace detail {
-        
-        template <typename T>
-        inline void reshape_l2r(const ambient::numeric::matrix<T>& left, ambient::numeric::matrix<T>& right,
-                                size_t left_offset, size_t right_offset, 
-                                size_t sdim, size_t ldim, size_t rdim)
-        {
-            ATOMIC(left.atomic() && right.atomic(), reshape_l2r, left, right, left_offset, right_offset, sdim, ldim, rdim);
+
+    template <typename T>
+    inline void reshape_l2r(const ambient::numeric::matrix<T>& left, ambient::numeric::matrix<T>& right,
+                            size_t left_offset, size_t right_offset, 
+                            size_t sdim, size_t ldim, size_t rdim)
+    {
+        ATOMIC(left.atomic() && right.atomic(), reshape_l2r, left, right, left_offset, right_offset, sdim, ldim, rdim);
+    }
+    
+    template <typename T>
+    inline void reshape_r2l(ambient::numeric::matrix<T>& left, const ambient::numeric::matrix<T>& right,
+                            size_t left_offset, size_t right_offset, 
+                            size_t sdim, size_t ldim, size_t rdim)
+    {
+        ATOMIC(left.atomic() && right.atomic(), reshape_r2l, left, right, left_offset, right_offset, sdim, ldim, rdim);
+    }
+    
+    template <typename T>
+    inline void lb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
+                              size_t out_offset, size_t in_offset, 
+                              size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), lb_tensor_mpo, out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+    }
+    
+    template <typename T>
+    inline void rb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
+                              size_t out_offset, size_t in_offset, 
+                              size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), rb_tensor_mpo, 
+               out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+    }
+   
+    template<class T, class SymmGroup>
+    std::vector<double> bond_renyi_entropies(const block_matrix<ambient::numeric::diagonal_matrix<T>, SymmGroup>& set){
+        std::vector< std::vector<double> > r(set.n_blocks());
+        for(std::size_t k = 0; k < set.n_blocks(); ++k){
+            std::vector<T>* v_ptr = &r[k];
+            ambient::push< ambient::numeric::kernels::push_back_sqr_gt<T> >(set[k], v_ptr);
         }
+        ambient::playout();
+
+        std::vector<double> ret;
+        for(std::size_t k = 0; k < set.n_blocks(); ++k)
+            std::copy(r[k].begin(), r[k].end(), std::back_inserter(ret));
         
-        template <typename T>
-        inline void reshape_r2l(ambient::numeric::matrix<T>& left, const ambient::numeric::matrix<T>& right,
-                                size_t left_offset, size_t right_offset, 
-                                size_t sdim, size_t ldim, size_t rdim)
-        {
-            ATOMIC(left.atomic() && right.atomic(), reshape_r2l, left, right, left_offset, right_offset, sdim, ldim, rdim);
-        }
-        
-        template <typename T>
-        inline void lb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
-                                  size_t out_offset, size_t in_offset, 
-                                  size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
-        {
-            ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), lb_tensor_mpo, out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
-        }
-        
-        template <typename T>
-        inline void rb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
-                                  size_t out_offset, size_t in_offset, 
-                                  size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
-        {
-            ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), rb_tensor_mpo, 
-                   out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
-        }
-        
-        template <typename T>
-        inline void bond_renyi_entropies(const ambient::numeric::diagonal_matrix<T>& m, typename alps::numeric::associated_real_vector<ambient::numeric::matrix<T> >::type& sv){
-            std::vector<T>* sc_ptr = &sv;
-            ambient::push< ambient::numeric::kernels::push_back_sqr_gt<T> >(m, sc_ptr);
-            printf("Bond renyi entropies expliciy PLAYOUT!\n");
-            ambient::playout();
-        }
-        
-        template <typename T>
-        inline void left_right_boundary_init(ambient::numeric::matrix<T>& a){
-            a.fill_value(1.0);
-        }
+        return ret;
+    }
+
+    template <typename T>
+    inline void left_right_boundary_init(ambient::numeric::matrix<T>& a){
+        a.fill_value(1.0);
+    }
         
 } } }
 

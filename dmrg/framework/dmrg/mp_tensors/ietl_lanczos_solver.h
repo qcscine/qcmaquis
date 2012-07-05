@@ -115,7 +115,7 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
     
     //            Vector test;
     //            ietl::mult(sp, mps[site], test);
-    //            test.multiply_by_scalar(1/test.scalar_norm());
+    //            test.divide_by_scalar(test.scalar_norm());
     //            test -= mps[site];
     //            maquis::cout << "How close to eigenstate? " << test.scalar_norm() << std::endl;
     
