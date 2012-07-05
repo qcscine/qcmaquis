@@ -157,7 +157,7 @@ namespace ambient { namespace numeric {
         }
 
         template <typename T2> inline matrix& operator /= (const T2& t){
-            this->impl->mul(((value_type)1)/t);
+            this->impl->div(t);
             return *this;
         }
 
@@ -203,6 +203,7 @@ namespace ambient { namespace numeric {
         inline void mul(const matrix_impl& rhs);
         inline void mul(const diagonal_matrix<T>& rhs);
         template <typename T2> inline void mul(const T2& t);
+        template <typename T2> inline void div(const T2& t);
         inline void copy(const matrix_impl& m);
         friend void intrusive_ptr_add_ref(matrix_impl* p){ ++(p->references); }
         friend void intrusive_ptr_release(matrix_impl* p){ if(--(p->references) == 0) delete p; }

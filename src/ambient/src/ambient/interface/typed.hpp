@@ -25,11 +25,11 @@ namespace ambient {
     // {{{ compile-time type info: future types
     template <typename T> struct future_info {
         typedef T* ptr_type;
-        template<size_t arg> static inline void deallocate          (sfunctor* m){ delete (ptr_type)(m->arguments[arg]);        }
-        template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(ptr_type)(m->arguments[arg]);       }
-        template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new T(obj.ghost); }
-        template<size_t arg> static inline void weight              (cfunctor* m){                                              }
-        template<size_t arg> static inline void place               (sfunctor* m){                                              }
+        template<size_t arg> static inline void deallocate          (sfunctor* m){ delete (ptr_type)(m->arguments[arg]);           }
+        template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(ptr_type)(m->arguments[arg]);          }
+        template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new T(obj.ghost);    }
+        template<size_t arg> static inline void weight              (cfunctor* m){                                                 }
+        template<size_t arg> static inline void place               (sfunctor* m){                                                 }
     };
     // }}}
     // {{{ compile-time type info: iteratable derived types

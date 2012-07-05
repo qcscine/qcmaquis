@@ -129,6 +129,12 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
+    template <typename T2>
+    inline void matrix_impl<T>::div(const T2& t){
+        algorithms::scale_inverse_inplace(*this, t);
+    }
+
+    template <typename T>
     inline void matrix_impl<T>::copy(const matrix_impl<T>& m){
         algorithms::copy(*this, m);
     }
