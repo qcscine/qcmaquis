@@ -312,6 +312,9 @@ namespace algorithms {
     template <typename T>
     inline void scale_inplace(matrix_impl<T>& a, const scalar_type& rhs) { ATOMIC(a.atomic(), scale, a, rhs); } // gs
 
+    template <typename T>
+    inline void scale_inverse_inplace(matrix_impl<T>& a, const scalar_type& rhs) { ATOMIC(a.atomic(), scale_inverse, a, rhs); } // gs
+
     template<typename T>
     inline void copy(matrix_impl<T>& ac, const matrix_impl<T>& a){ ATOMIC(a.atomic(), copy, ac, a); } // gs
 

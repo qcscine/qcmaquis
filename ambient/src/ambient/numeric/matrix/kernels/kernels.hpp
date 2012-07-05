@@ -853,8 +853,8 @@ namespace ambient { namespace numeric { namespace kernels {
      
         template<typename T> inline void randomize(T* ad){ *ad = drand48(); }
         template<typename T> inline void randomize(std::complex<T>* ad){
-            (*ad).real() = drand48();
-            (*ad).imag() = drand48();
+            ad->real(drand48());
+            ad->imag(drand48());
         }
 
         inline void l(matrix_impl<T>& a, const size_t& m, const size_t& n){

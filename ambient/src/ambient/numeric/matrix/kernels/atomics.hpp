@@ -319,6 +319,37 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
     };
+        
+    template<typename T>
+    struct scale_inverse_atomic : public kernel_atomic< scale_inverse_atomic<T> > 
+    { // gs
+        typedef void (scale_inverse_atomic::*F)(matrix_impl<T>&, const future<T>&);
+
+        inline void l(matrix_impl<T>& a, const future<T>& t){
+            this->ctxt_select("1 from ambient as scale_inverse_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(matrix_impl<double>& a, const future<double>& t){
+            __A_TIME_C("ambient_scale_inverse_atomic_c_kernel"); 
+            T* ar = ui_r_updated(a)(0,0);
+            int size = ui_c_get_dim(a).square();
+            static const int ONE = 1;
+            double factor = 1. / t.get_value();
+            dscal_( &size, &factor, ar, &ONE );
+            __A_TIME_C_STOP
+        }
+
+        inline void c(matrix_impl<std::complex<double> >& a, const future< std::complex<double> >& t){
+            __A_TIME_C("ambient_scale_inverse_atomic_c_kernel"); 
+            T* ad = ui_c_current(a)(0,0);
+            T* ar = ui_w_updated(a)(0,0);
+            int size = ui_c_get_dim(a).square();
+            for(int k=0; k < size; k++) 
+                ar[k] = ad[k] / t.get_value();
+            __A_TIME_C_STOP
+        }
+    };
 
     template<typename T>
     struct transpose_out_atomic : public kernel_atomic< transpose_out_atomic<T> > 
