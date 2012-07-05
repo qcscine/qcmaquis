@@ -181,7 +181,7 @@ namespace generate_mpo
             for (size_t p = 0; p < length; ++p)
             {
                 if (p+1 < length)
-                    prempo[p].push_back( make_tuple(std::size_t(0), std::size_t(0), ident) );
+                    prempo[p].push_back( boost::make_tuple(std::size_t(0), std::size_t(0), ident) );
             }
         }
         
@@ -218,7 +218,7 @@ namespace generate_mpo
                 size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert( it->first < prempo.size() );
                 if (minp != maxp) { // bond term
-                    prempo[it->first].push_back( make_tuple(first_use_b, second_use_b, it->second) );
+                    prempo[it->first].push_back( boost::make_tuple(first_use_b, second_use_b, it->second) );
                     used_dims[it->first].insert(use_b);
                 } else // site term
                     site_terms[it->first] += it->second;
@@ -227,7 +227,7 @@ namespace generate_mpo
             
             for (size_t p = minp; p <= maxp; ++p)
                 if (!done[p]) {
-                    prempo[p].push_back( make_tuple(use_b, use_b, term.fill_operator) );
+                    prempo[p].push_back( boost::make_tuple(use_b, use_b, term.fill_operator) );
                     used_dims[p].insert(use_b);
                     done[p] = true;
                 }
@@ -239,10 +239,10 @@ namespace generate_mpo
         {
             for (typename std::map<std::size_t, op_t>::const_iterator it = site_terms.begin();
                  it != site_terms.end(); ++it)
-                prempo[it->first].push_back( make_tuple(0, 1, it->second) );
+                prempo[it->first].push_back( boost::make_tuple(0, 1, it->second) );
             
             for (size_t p = leftmost_right + 1; p < length; ++p)
-                prempo[p].push_back( make_tuple(1, 1, ident) );
+                prempo[p].push_back( boost::make_tuple(1, 1, ident) );
             
             for (typename vector<vector<block> >::iterator it = prempo.begin();
                  it + 1 != prempo.end();
@@ -394,15 +394,15 @@ namespace generate_mpo
             
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( make_tuple(u1, u2, op) );
+            prempo[p].push_back( boost::make_tuple(u1, u2, op) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
             //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             //            maquis::cout << op;
             if (trivial)
-                tags[p].push_back( make_tuple(u1, u2, lab) );
+                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
             else
-                tags[p].push_back( make_tuple(u1, u2, lab) );
+                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
             return u2;
         }
         
@@ -556,15 +556,15 @@ namespace generate_mpo
             
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( make_tuple(u1, u2, op) );
+            prempo[p].push_back( boost::make_tuple(u1, u2, op) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
             //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             //            maquis::cout << op;
             if (trivial)
-                tags[p].push_back( make_tuple(u1, u2, lab) );
+                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
             else
-                tags[p].push_back( make_tuple(u1, u2, lab) );
+                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
             return u2;
         }
         
