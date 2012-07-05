@@ -212,13 +212,13 @@ namespace mpos {
         {
             size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( make_tuple(u1, u2, op) );
+            prempo[p].push_back( boost::make_tuple(u1, u2, op) );
             used[p].insert(u2);
 //            maquis::cout << "Adding a " << (trivial ? "trivial " : "") << "term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             if (trivial)
-                tags[p].push_back( make_tuple(u1, u2, "trivial") );
+                tags[p].push_back( boost::make_tuple(u1, u2, "trivial") );
             else
-                tags[p].push_back( make_tuple(u1, u2, "nontriv") );
+                tags[p].push_back( boost::make_tuple(u1, u2, "nontriv") );
             return u2;
         }
         
@@ -308,7 +308,7 @@ namespace mpos {
             for (size_t p = 0; p < adj.size(); ++p)
             {
                 if (p+1 < adj.size())
-                    prempo[p].push_back( make_tuple(0, 0, H.get_identity()) );
+                    prempo[p].push_back( boost::make_tuple(0, 0, H.get_identity()) );
             }
         }
         
@@ -359,14 +359,14 @@ namespace mpos {
                 size_t first_use_b = (it->first == minp ? 0 : use_b);
                 size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert( it->first < prempo.size() );
-                prempo[it->first].push_back( make_tuple(first_use_b, second_use_b, it->second) );
+                prempo[it->first].push_back( boost::make_tuple(first_use_b, second_use_b, it->second) );
                 used_dims[it->first].insert(use_b);
                 done[it->first] = true;
             }
             
             for (int p = minp; p <= maxp; ++p)
                 if (!done[p]) {
-                    prempo[p].push_back( make_tuple(use_b, use_b, H.get_free()) );
+                    prempo[p].push_back( boost::make_tuple(use_b, use_b, H.get_free()) );
                     used_dims[p].insert(use_b);
                     done[p] = true;
                 }
@@ -377,7 +377,7 @@ namespace mpos {
         MPO<Matrix, SymmGroup> create_mpo()
         {
             for (int p = leftmost_right + 1; p < adj.size(); ++p)
-                prempo[p].push_back( make_tuple(1, 1, H.get_identity()) );
+                prempo[p].push_back( boost::make_tuple(1, 1, H.get_identity()) );
             
             for (typename vector<vector<block> >::iterator it = prempo.begin();
                  it + 1 != prempo.end();
