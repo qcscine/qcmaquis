@@ -155,7 +155,7 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2)
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(SVD);
         if (i < length()-1) {
             (*this)[i+1].multiply_from_left(t);
-            (*this)[i+1].multiply_by_scalar(1. / (*this)[i+1].scalar_norm()); // may playout
+            (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
     }
     if (tmp_i == p1)
@@ -178,7 +178,7 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2)
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
         if (i > 0) {
             (*this)[i-1].multiply_from_right(t);
-            (*this)[i-1].multiply_by_scalar(1. / (*this)[i-1].scalar_norm()); // may playout
+            (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
         }
     }
     if (tmp_i == p1)

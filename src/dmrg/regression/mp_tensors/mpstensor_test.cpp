@@ -21,7 +21,7 @@ void ng()
     
     MPSTensor<Matrix, grp> mps(physical, aux1, aux1);
     maquis::cout << mps.scalar_norm() << std::endl;
-    mps.multiply_by_scalar(1/mps.scalar_norm());
+    mps.divide_by_scalar(mps.scalar_norm());
     maquis::cout << mps.scalar_norm() << std::endl;
     
     mps.normalize_left(SVD);
@@ -66,7 +66,7 @@ void u1()
     MPSTensor<Matrix, grp> mps(physical, aux1, aux2);
     
     maquis::cout << mps.scalar_norm() << std::endl;
-    mps.multiply_by_scalar(1/mps.scalar_norm());
+    mps.divide_by_scalar(mps.scalar_norm());
     maquis::cout << mps.scalar_norm() << std::endl;
     mps.normalize_left(SVD);
     maquis::cout << mps.scalar_norm() << std::endl;

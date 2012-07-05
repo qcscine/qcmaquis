@@ -14,6 +14,9 @@
 
 #include <alps/numeric/matrix.hpp>
 
+template<class T, class SymmGroup>
+class block_matrix;
+
 namespace maquis { namespace dmrg { namespace detail {
         
         template<class InputIterator, class OutputIterator, class T>
@@ -94,15 +97,19 @@ namespace maquis { namespace dmrg { namespace detail {
                 }
         }
         
-        template <typename T>
-        void bond_renyi_entropies(const alps::numeric::diagonal_matrix<T> & M, typename alps::numeric::associated_real_vector<alps::numeric::matrix<T> >::type& sv){
-            for (typename alps::numeric::diagonal_matrix<T>::const_element_iterator it = elements(M).first;
-                 it != elements(M).second; ++it)
-            {
-                double a = std::abs(*it);
-                if (a > 1e-10)
-                    sv.push_back(a*a);
+        template<class T, class SymmGroup>
+        std::vector<double> bond_renyi_entropies(const block_matrix<alps::numeric::diagonal_matrix<T>, SymmGroup>& set){
+            std::vector<double> ret;
+            for(std::size_t k = 0; k < set.n_blocks(); ++k){
+                for (typename alps::numeric::diagonal_matrix<T>::const_element_iterator it = elements(set[k]).first;
+                     it != elements(set[k]).second; ++it)
+                {
+                    double a = std::abs(*it);
+                    if (a > 1e-10)
+                        ret.push_back(a*a);
+                }
             }
+            return ret;
         }
         
         template <typename T>

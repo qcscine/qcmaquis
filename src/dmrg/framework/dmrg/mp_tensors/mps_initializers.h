@@ -110,7 +110,7 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         
         for (int i = 0; i < L; ++i) {
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1], fillrand, val);
-            mps[i].multiply_by_scalar(1. / mps[i].scalar_norm()); // may playout
+            mps[i].divide_by_scalar(mps[i].scalar_norm());
         }
         
 #ifndef NDEBUG
@@ -275,7 +275,7 @@ struct linear_mps_init : public mps_initializer<Matrix, U1>
         
         for (int i = 0; i < L; ++i) {
             mps[i] = MPSTensor<Matrix, U1>(phys, allowed[i], allowed[i+1], fillrand, val);
-            mps[i].multiply_by_scalar(1. / mps[i].scalar_norm()); // may playout
+            mps[i].divide_by_scalar(mps[i].scalar_norm());
         }
         
 #ifndef NDEBUG

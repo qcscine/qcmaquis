@@ -128,6 +128,7 @@ public:
                                                  std::size_t right_index);
     
     void multiply_by_scalar(const scalar_type&);
+    void divide_by_scalar(const scalar_type&);
     
     bool has(std::size_t left_index, std::size_t right_index) const;
     

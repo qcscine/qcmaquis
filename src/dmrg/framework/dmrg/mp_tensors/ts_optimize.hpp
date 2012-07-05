@@ -171,7 +171,7 @@ public:
 		
         		//t = mps[site1].normalize_left(SVD);
         		//mps[site2].multiply_from_left(t);
-        		//mps[site2].multiply_by_scalar(1./mps[site2].scalar_norm());	
+        		//mps[site2].divide_by_scalar(mps[site2].scalar_norm());	
 
         		t = mps[site2].normalize_left(SVD);
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
@@ -187,7 +187,7 @@ public:
 
         		//t = mps[site2].normalize_right(SVD);
         		//mps[site1].multiply_from_right(t);
-        		//mps[site1].multiply_by_scalar(1./mps[site1].scalar_norm());	
+        		//mps[site1].divide_by_scalar(mps[site1].scalar_norm());	
 
         		t = mps[site1].normalize_right(SVD);
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);

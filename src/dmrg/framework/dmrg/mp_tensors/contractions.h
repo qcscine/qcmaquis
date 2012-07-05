@@ -660,7 +660,6 @@ struct contraction {
         
         block_matrix<Matrix, SymmGroup> U;
         block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
-        
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
