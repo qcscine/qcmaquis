@@ -21,7 +21,7 @@ namespace maquis{ namespace traits{
         }
     };
 
-    template <typename T, typename S, template<class M, class S> class C>
+    template <typename T, typename S, template<class M, class SS> class C>
     struct binding< std::vector< std::vector<T> >, C<alps::numeric::diagonal_matrix<T>, S> > {
         static std::vector< std::vector<T> > convert(const C<alps::numeric::diagonal_matrix<T>, S>& m){
             std::vector< std::vector<T> > set;
@@ -117,7 +117,7 @@ namespace maquis{ namespace traits{
         }
     };
 
-    template <typename T, typename S, template<class M, class S> class C>
+    template <typename T, typename S, template<class M, class SS> class C>
     struct binding< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
         static std::vector< std::vector<T> > convert(const C<ambient::numeric::diagonal_matrix<T>, S>& m){
             std::vector< std::vector<T> > set;
