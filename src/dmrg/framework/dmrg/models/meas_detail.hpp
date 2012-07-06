@@ -255,7 +255,26 @@ namespace meas_detail {
             ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, val));
         }
 	}
-
+    
+	template<class Matrix, class SymmGroup>
+	void measure_overlap(MPS<Matrix, SymmGroup> const & mps,
+                         const std::string & bra_ckp,
+                         std::string const & h5name, std::string const & base_path)
+	{
+        MPS<Matrix, SymmGroup> bra_mps;
+        maquis::cout << "Measuring overlap with " << bra_ckp << "." << std::endl;
+        {
+            alps::hdf5::archive ar(bra_ckp, alps::hdf5::archive::READ);
+            ar >> alps::make_pvp("/state", bra_mps);
+        }
+        
+        typename MPS<Matrix, SymmGroup>::scalar_type result = overlap(bra_mps, mps);
+        {
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>(1, result));
+        }
+	}
+    
 	template <class Matrix, class SymmGroup>
 	class CorrPermutator
 	{
