@@ -175,6 +175,66 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
 //    assert(m2.right_basis() == right_i);
 }
 
+// MD: here we reshape without the `pretend` loop. This way i) we are faster, ii) we avoid the bug that the size is not correct.
+// example for ii): the output is going to be multiplied with a left_i containing more elements, than the size of some blocks
+// might be wrong. Such a situation originates in overlap() if right_i and left_i are very different: the block_matrix will contain
+// only diagonal blocks.
+template<class Matrix, class SymmGroup>
+void reshape_right_to_left_new(Index<SymmGroup> physical_i,
+                               Index<SymmGroup> left_i,
+                               Index<SymmGroup> right_i,
+                               block_matrix<Matrix, SymmGroup> const & m1,
+                               block_matrix<Matrix, SymmGroup> & m2)
+{
+    //    assert(m1.left_basis() == left_i);
+    
+    
+    m2 = block_matrix<Matrix, SymmGroup>();
+    
+    typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
+    
+    ProductBasis<SymmGroup> in_right(physical_i, right_i,
+                                     boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                         -boost::lambda::_1, boost::lambda::_2));
+    ProductBasis<SymmGroup> out_left(physical_i, left_i);
+    
+    for (size_t block = 0; block < m1.n_blocks(); ++block)
+    {
+        for (size_t s = 0; s < physical_i.size(); ++s)
+        {
+            size_t l = left_i.position(m1.left_basis()[block].first);
+            size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
+                                                        physical_i[s].first));
+            if(l == left_i.size()) continue;
+            if(r == right_i.size()) continue;
+            {
+                
+                charge in_l_charge = left_i[l].first;
+                charge in_r_charge = SymmGroup::fuse(-physical_i[s].first, right_i[r].first);
+                charge out_l_charge = SymmGroup::fuse(physical_i[s].first, left_i[l].first);
+                charge out_r_charge = right_i[r].first;
+                
+                if (! m1.has_block(in_l_charge, in_r_charge) )
+                    continue;
+                
+                if (! m2.has_block(out_l_charge, out_r_charge))
+                    m2.insert_block(Matrix(out_left.size(physical_i[s].first, left_i[l].first), right_i[r].second, 0),
+                                    out_l_charge, out_r_charge);
+                
+                size_t in_right_offset = in_right(physical_i[s].first, right_i[r].first);
+                size_t out_left_offset = out_left(physical_i[s].first, left_i[l].first);
+                
+                Matrix const & in_block = m1(in_l_charge, in_r_charge);
+                Matrix & out_block = m2(out_l_charge, out_r_charge);
+                
+                maquis::dmrg::detail::reshape_r2l(out_block, in_block, out_left_offset, in_right_offset, 
+                                                  physical_i[s].second, left_i[l].second, right_i[r].second);
+            }
+        }
+    }
+}
+
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,

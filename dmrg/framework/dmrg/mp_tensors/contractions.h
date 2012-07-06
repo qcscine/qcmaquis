@@ -36,8 +36,9 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> t1, t3; //t2 = conjugate(bra_tensor.data_)
         ket_tensor.make_right_paired();
         gemm(left, ket_tensor.data_, t1);
-        reshape_right_to_left(ket_tensor.phys_i, left.left_basis(), ket_tensor.right_i,
-                              t1, t3);
+        
+        reshape_right_to_left_new(ket_tensor.phys_i, bra_tensor.row_dim(), ket_tensor.right_i,
+                                  t1, t3);
         gemm<Transpose,NoTranspose>(conjugate(bra_tensor.data_), t3, t1);
         return t1;
 
@@ -47,6 +48,8 @@ struct contraction {
         // return transpose(t1);
     }
     
+    // MD: todo, overlap_left_step needs to call a new reshape function with `bra_tensor.row_dim()`.
+    // this changes need to be ported to overlap_right_step as well!
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
     overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
