@@ -21,6 +21,17 @@ namespace maquis{ namespace traits{
         }
     };
 
+    template <typename T, typename S, template<class M, class S> class C>
+    struct binding< std::vector< std::vector<T> >, C<alps::numeric::diagonal_matrix<T>, S> > {
+        static std::vector< std::vector<T> > convert(const C<alps::numeric::diagonal_matrix<T>, S>& m){
+            std::vector< std::vector<T> > set;
+            for(size_t k = 0; k < m.n_blocks(); ++k){
+                set.push_back(m[k].get_values());
+            }
+            return set;
+        }
+    };
+
     template<typename O, typename I> 
     O matrix_cast(I const& input){
        return binding<O,I>::convert(input);
@@ -103,6 +114,24 @@ namespace maquis{ namespace traits{
     struct binding< std::vector<T>, ambient::numeric::diagonal_matrix<T> > {
         static std::vector<T> convert(const ambient::numeric::diagonal_matrix<T>& pm){
             return binding<alps::numeric::diagonal_matrix<T>, ambient::numeric::diagonal_matrix<T> >::convert(pm).get_values();
+        }
+    };
+
+    template <typename T, typename S, template<class M, class S> class C>
+    struct binding< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
+        static std::vector< std::vector<T> > convert(const C<ambient::numeric::diagonal_matrix<T>, S>& m){
+            std::vector< std::vector<T> > set;
+            for(size_t k = 0; k < m.n_blocks(); ++k) 
+                set.push_back(std::vector<T>(m[k].num_rows()));
+            size_t num_cols(1);
+            size_t num_rows;
+            for(size_t k = 0; k < m.n_blocks(); ++k){
+                num_rows = m[k].num_rows();
+                std::vector<T>* v_ptr = &set[k];
+                ambient::push< ambient::numeric::kernels::cast_to_vector<T> >(v_ptr, m[k], num_rows, num_cols);
+            }
+            ambient::playout();
+            return set;
         }
     };
 
