@@ -6,16 +6,6 @@
 #include "ambient/controllers/context.h"
 #include "ambient/utils/tasklist.hpp"
 
-#ifndef DEFAULT_NUM_THREADS 
-#define DEFAULT_NUM_THREADS 1
-#endif
-#ifndef MAX_NUM_THREADS 
-#define MAX_NUM_THREADS 8
-#endif
-#ifndef NUM_THREADS
-#define NUM_THREADS 1 // controller.get_num_threads()
-#endif
-
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::models::velvet::revision;
@@ -57,9 +47,9 @@ namespace ambient { namespace controllers { namespace velvet {
         pthread_mutex_t pool_control_mutex;
         pthread_mutex_t mutex;
         touchstack< cfunctor* > stack;
-        pthread_mutex_t mpool[MAX_NUM_THREADS];
-        pthread_t pool[MAX_NUM_THREADS];
-        tasklist tasks[MAX_NUM_THREADS];
+        pthread_mutex_t mpool[AMBIENT_THREADS_LIMIT];
+        pthread_t pool[AMBIENT_THREADS_LIMIT];
+        tasklist tasks[AMBIENT_THREADS_LIMIT];
         size_t workload;
         size_t num_threads;
         size_t rrn;

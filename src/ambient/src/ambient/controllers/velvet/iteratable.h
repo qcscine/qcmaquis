@@ -30,7 +30,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline r_revision& ui_r_revision_1() const { return *(r_revision*)this->content[this->thread_revision_base[GET_TID] + 1]; }
         inline size_t get_thread_revision_base() const;
         inline void set_thread_revision_base(size_t);
-        size_t thread_revision_base[NUM_THREADS];
+        size_t thread_revision_base[AMBIENT_THREADS];
     };
 
 } } }
