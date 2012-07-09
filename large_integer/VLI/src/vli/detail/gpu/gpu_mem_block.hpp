@@ -30,13 +30,13 @@
 namespace vli{
 namespace detail
 {
-    template <typename BaseInt>
-    gpu_memblock<BaseInt>::gpu_memblock()
+    template <typename BaseInt, class Var0, class Var1, class Var2, class Var3>
+    gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>::gpu_memblock()
     : block_size_(0), V1Data_(0), V2Data_(0), VinterData_(0), PoutData_(0) {
     }
 
-    template <typename BaseInt>
-    gpu_memblock<BaseInt>::~gpu_memblock() {
+    template <typename BaseInt, class Var0, class Var1, class Var2, class Var3>
+    gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>::~gpu_memblock() {
         if (V1Data_ != 0 )
             cudaFree((void*)this->V1Data_);
         if (V2Data_ != 0 )
@@ -47,9 +47,10 @@ namespace detail
             cudaFree((void*)this->PoutData_);
     }
 
-    template <typename BaseInt>
-    void gpu_memblock<BaseInt>::resize(std::size_t vli_size, unsigned int order, std::size_t vectorsize) {
-        std::size_t req_size = vectorsize * vli_size * (order+1) * (order+1);
+    template <typename BaseInt, class Var0, class Var1, class Var2, class Var3>
+    void gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>::resize(std::size_t vli_size, unsigned int order, std::size_t vectorsize) {
+        std::size_t req_size = vectorsize * vli_size * stridef<Var0>(order)* stridef<Var1>(order)* stridef<Var2>(order)* stridef<Var3>(order);
+
         if( req_size > block_size_) {
             if (V1Data_ != 0 )
                 cudaFree((void*)this->V1Data_);
@@ -61,14 +62,14 @@ namespace detail
                 cudaFree((void*)this->PoutData_);
             cudaMalloc((void**)&(this->V1Data_), req_size*sizeof(BaseInt));
             cudaMalloc((void**)&(this->V2Data_), req_size*sizeof(BaseInt));
-            cudaMalloc((void**)&(this->VinterData_), vectorsize * 2*vli_size * 2*(order+1) * 2*(order+1) * sizeof(BaseInt));
-            cudaMalloc((void**)&(this->PoutData_), 2*vli_size*2*(order+1)*2*(order+1)*sizeof(BaseInt));
+            cudaMalloc((void**)&(this->VinterData_), vectorsize *  2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
+            cudaMalloc((void**)&(this->PoutData_), 2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
         }
 
         // TODO due to ghost element, to remove one day!
         if( req_size != block_size_){
             block_size_ = req_size;
-            cudaMemset((void*)this->PoutData_,0,2*vli_size*2*(order+1)*2*(order+1)*sizeof(BaseInt));
+            cudaMemset((void*)this->PoutData_, 0, 2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
         }
     }
 }

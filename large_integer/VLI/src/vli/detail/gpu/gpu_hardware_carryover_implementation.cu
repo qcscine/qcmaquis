@@ -29,6 +29,9 @@
 
 #include <vector>
 #include <algorithm>
+#include <iostream>
+
+#include "vli/detail/gpu/variables_gpu.h"
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu
 #include "vli/detail/gpu/gpu_hardware_carryover_implementation.h" 
 #include "vli/detail/gpu/gpu_mem_block.h"
@@ -197,13 +200,13 @@ namespace vli {
 	    }
     }
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     void inner_product_vector_nvidia(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
-	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time 
+	    gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>* gm = gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time 
             gm->resize(Size,Order,VectorSize); // we resize if the block is larger
 	    gpu_hardware_carryover_implementation<BaseInt, Size, Order>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order>::Instance(); // calculate the different packet, singleton only one time 
-	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*(Order+1)*(Order+1)*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
-	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*(Order+1)*(Order+1)*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
+	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
+	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 
 	    {
 		    dim3 grid(VectorSize) ;
@@ -218,22 +221,25 @@ namespace vli {
 	    }
     } 
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     BaseInt* get_polynomial(){
-	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // I just get the mem pointer
+	    gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>* gm = gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>::Instance(); // I just get the mem pointer
 	    return gm->PoutData_;
     }
 
-#define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE, POLY_ORDER) \
-    void inner_product_vector_nvidia(vli_size_tag<VLI_SIZE, POLY_ORDER>, std::size_t vector_size, TYPE const* A, TYPE const* B) \
-    {inner_product_vector_nvidia<unsigned int, 2*VLI_SIZE, POLY_ORDER>(vector_size, const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(A)), const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(B)));} \
-    unsigned int* get_polynomial(vli_size_tag<VLI_SIZE, POLY_ORDER>) /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
-    {return get_polynomial<unsigned int, 2*VLI_SIZE, POLY_ORDER>();}\
+    //to do clean memory for gpu
+   
 
-#define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_ORDER_TUPLE) \
-    VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(3,0,BASEINT_SIZE_ORDER_TUPLE), BOOST_PP_TUPLE_ELEM(3,1,BASEINT_SIZE_ORDER_TUPLE), BOOST_PP_TUPLE_ELEM(3,2,BASEINT_SIZE_ORDER_TUPLE) )
+#define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE, POLY_ORDER, VAR) \
+    void inner_product_vector_nvidia(vli_size_tag<VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>, std::size_t vector_size, TYPE const* A, TYPE const* B) \
+    {inner_product_vector_nvidia<unsigned int, 2*VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR) >(vector_size, const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(A)), const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(B)));} \
+    unsigned int* get_polynomial(vli_size_tag<VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>) /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
+    {return get_polynomial<unsigned int, 2*VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>();}\
 
-    BOOST_PP_SEQ_FOR_EACH(VLI_IMPLEMENT_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_BASEINT_SIZE_ORDER_TUPLE_SEQ)
+#define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_ORDER_VAR_TUPLE) \
+    VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(4,0,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,1,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,2,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,3,BASEINT_SIZE_ORDER_VAR_TUPLE) )
+
+    BOOST_PP_SEQ_FOR_EACH(VLI_IMPLEMENT_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_BASEINT_SIZE_ORDER_VAR_TUPLE_SEQ)
 
 #undef VLI_IMPLEMENT_GPU_FUNCTIONS_FOR
 #undef VLI_IMPLEMENT_GPU_FUNCTIONS

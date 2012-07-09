@@ -59,13 +59,13 @@ namespace test
 //  in vli_utils/vli_config.h)
 //
 
-#define VLI_CPU_APPEND_TEST_TYPE(r,data,BASEINT_SIZE_ORDER_TUPLE) \
-        , vli_cpu< BOOST_PP_TUPLE_ELEM(3,0,BASEINT_SIZE_ORDER_TUPLE ) , BOOST_PP_TUPLE_ELEM(3,1,BASEINT_SIZE_ORDER_TUPLE ) >
+#define VLI_CPU_APPEND_TEST_TYPE(r,data,BASEINT_SIZE_ORDER_VAR_TUPLE) \
+        , vli_cpu< BOOST_PP_TUPLE_ELEM(4,0,BASEINT_SIZE_ORDER_VAR_TUPLE ) , BOOST_PP_TUPLE_ELEM(4,1,BASEINT_SIZE_ORDER_VAR_TUPLE ) >
 
 typedef boost::mpl::pop_front<
     boost::mpl::list<
         boost::mpl::void_
-BOOST_PP_SEQ_FOR_EACH(VLI_CPU_APPEND_TEST_TYPE, _, VLI_COMPILE_BASEINT_SIZE_ORDER_TUPLE_SEQ )
+BOOST_PP_SEQ_FOR_EACH(VLI_CPU_APPEND_TEST_TYPE, _, VLI_COMPILE_BASEINT_SIZE_ORDER_VAR_TUPLE_SEQ )
     >
 >::type vli_cpu_type_list;
 // I could boost pp

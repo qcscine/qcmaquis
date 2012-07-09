@@ -40,6 +40,8 @@
 #include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/config/limits.hpp>
 #include <boost/preprocessor/iteration/local.hpp>
+#include <boost/preprocessor/tuple/elem.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
 
 //g++ -DNUM=1 -E -P -I /opt/boost/include/ main.cpp | sed  "s/n/; \\`echo -e '\n\r      '`/g"
 #define MAX_ITERATION 7
@@ -114,3 +116,19 @@
 // max number of thread
 #define SUM_BLOCK_SIZE 256
 
+//macro for the wrapper
+
+#define FOUR 4 // x,y,z,w
+#define VARIABLE0 'x'
+#define VARIABLE1 'y'
+#define VARIABLE2 'z'
+#define VARIABLE3 'w'
+
+//just for fun
+//#define QUOTE '
+//#define TIM_PP_CHARIZE(ARG) BOOST_PP_CAT(BOOST_PP_CAT(QUOTE,ARG),QUOTE)
+
+#define GET_VAR(z,n,unused) BOOST_PP_COMMA_IF(n) vli::var<BOOST_PP_CAT(VARIABLE,n)> 
+#define GET_NULVAR(z,n,unused) BOOST_PP_COMMA_IF(BOOST_PP_SUB(FOUR,n)) vli::no_variable
+#define EXPEND_VAR(ARG) BOOST_PP_REPEAT(ARG,GET_VAR,~)  BOOST_PP_REPEAT(BOOST_PP_SUB(FOUR,ARG),GET_NULVAR,~)
+//give somehting like  vli::var<'x'> , vli::var<'y'> , vli::no_variable , vli::no_variable
