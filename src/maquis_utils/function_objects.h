@@ -21,7 +21,7 @@ struct functor_##name { template<class T> return_type operator() (arg_type t) { 
 struct functor_##name { template<class T> void operator() (arg_type t) { name(t); } };
     
     DEFINE_FUNCTION_OBJECT(trace, typename maquis::traits::scalar_type<T>::type, T const &)
-    DEFINE_FUNCTION_OBJECT(norm_square, typename maquis::traits::scalar_type<T>::type, T const &)
+    DEFINE_FUNCTION_OBJECT(norm_square, typename maquis::traits::real_type<T>::type, T const &)
     DEFINE_FUNCTION_OBJECT(transpose, T, T const &)
     DEFINE_VOID_FUNCTION_OBJECT(transpose_inplace, T &)
     DEFINE_FUNCTION_OBJECT(conj, T, T)
