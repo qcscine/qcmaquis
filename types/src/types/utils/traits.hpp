@@ -59,29 +59,6 @@ namespace maquis { namespace traits {
     template<class T> struct scalar_type <ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
     template<class T> struct scalar_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
 
-    template <class T> 
-    inline typename utils::real_type<T>::type real(T x){
-        return alps::numeric::real((typename T::value_type)x);
-    }
-
-    template <>
-    inline utils::real_type<double>::type real(double x){
-        return x;
-    }
-
-    template <typename T>
-    inline typename utils::real_type<double>::type real(std::complex<T> x){
-        return alps::numeric::real(x);
-    }
-
-    template <class T>
-    inline std::vector<typename utils::real_type<T>::type> real(std::vector<T> x){
-        std::vector<typename utils::real_type<T>::type> re; re.reserve(x.size());
-        std::transform(x.begin(),x.end(),std::back_inserter(re),
-                       static_cast<typename utils::real_type<T>::type (*)(T)>(&real));
-        return re;
-    }
-
 } }
 
 #endif
