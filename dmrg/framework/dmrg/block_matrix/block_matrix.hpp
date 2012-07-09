@@ -201,11 +201,11 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmG
 }
 
 template<class Matrix, class SymmGroup>
-typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmGroup>::norm_square() const
+typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGroup>::norm() const
 {
-    std::vector<scalar_type> vt;
+    std::vector<real_type> vt;
     std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_norm_square());
-    return std::accumulate(vt.begin(), vt.end(), scalar_type(0));
+    return sqrt(std::accumulate(vt.begin(), vt.end(), real_type(0)));
 }
 
 template<class Matrix, class SymmGroup>

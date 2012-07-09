@@ -255,10 +255,10 @@ MPSTensor<Matrix, SymmGroup>::conjugate_inplace()
 }
 
 template<class Matrix, class SymmGroup>
-typename MPSTensor<Matrix, SymmGroup>::scalar_type
+typename MPSTensor<Matrix, SymmGroup>::real_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const 
 {
-    return sqrt(alps::numeric::real(data_.norm_square()));
+    return data_.norm();
 }
 
 template<class T>

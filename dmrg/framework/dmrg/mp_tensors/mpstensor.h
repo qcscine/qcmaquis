@@ -28,6 +28,7 @@ class MPSTensor
 {
 public:
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
+    typedef typename maquis::traits::real_type<Matrix>::type real_type;
     typedef typename Matrix::value_type value_type;
     typedef double magnitude_type; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
     typedef std::size_t size_type;
@@ -67,7 +68,7 @@ public:
     void divide_by_scalar(const scalar_type&);
     
     scalar_type scalar_overlap(MPSTensor const &) const;
-    scalar_type scalar_norm() const;
+    real_type scalar_norm() const;
     
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
