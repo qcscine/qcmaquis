@@ -258,7 +258,7 @@ template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::scalar_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const 
 {
-    return sqrt(maquis::traits::real(data_.norm_square()));
+    return sqrt(alps::numeric::real(data_.norm_square()));
 }
 
 template<class T>

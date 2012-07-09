@@ -64,11 +64,11 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     if (d == 0) {
         std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
         assert( check_real(left_[mps.length()][0].trace()) );
-        return maquis::traits::real(left_[mps.length()][0].trace());
+        return alps::numeric::real(left_[mps.length()][0].trace());
     } else {
         std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
         assert( check_real(right_[0][0].trace()) );
-        return maquis::traits::real(right_[0][0].trace());
+        return alps::numeric::real(right_[0][0].trace());
     }
 }
 
@@ -89,7 +89,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     }
     
     assert( check_real(left[0].trace()) );
-    return maquis::traits::real(left[0].trace()); // real function for future
+    return alps::numeric::real(left[0].trace());
 }
 
 template<class Matrix, class SymmGroup>
@@ -106,7 +106,7 @@ std::vector<double> multi_expval(MPS<Matrix, SymmGroup> const & mps,
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    return maquis::traits::real(left.traces());
+    return alps::numeric::real(left.traces());
 }
 
 template<class Matrix, class SymmGroup>

@@ -41,8 +41,7 @@ public:
     std::vector<scalar_type> traces() const
     {
         std::vector<scalar_type> ret;
-        std::transform(data_.begin(), data_.end(), back_inserter(ret),
-                       utils::functor_trace());
+        for (size_t k=0; k < data_.size(); ++k) ret.push_back(data_[k].trace());
         return ret;
     }
     
