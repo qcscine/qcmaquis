@@ -31,7 +31,7 @@ namespace ambient { namespace controllers { namespace velvet {
         pthread_mutex_init(&this->mutex, NULL);
         pthread_mutex_init(&this->pool_control_mutex, NULL);
         this->allocate_threads();
-        this->set_num_threads(DEFAULT_NUM_THREADS);
+        this->set_num_threads(AMBIENT_THREADS);
     }
 
     inline pthread_mutex_t* controller::get_pool_control_mutex(){
@@ -43,7 +43,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::set_num_threads(size_t n){
-        if(this->num_threads >= n || n > MAX_NUM_THREADS) return;
+        if(this->num_threads >= n || n > AMBIENT_THREADS_LIMIT) return;
         for(size_t i = this->num_threads; i < n; i++){
             pthread_create(&this->pool[i], NULL, &controller::stream, &this->tasks[i]);
         }
@@ -51,7 +51,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::allocate_threads(){
-        for(size_t i = 1; i < MAX_NUM_THREADS; i++){
+        for(size_t i = 1; i < AMBIENT_THREADS_LIMIT; i++){
             this->tasks[i].id = i;
             pthread_mutex_init(&this->mpool[i], NULL);
         }
@@ -215,9 +215,8 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::conditional_flush(){
-        //static int counter = 1;
-        //counter = (counter+1) % 2;
-        //if(!counter) this->flush();
+        // you can call flush any time some condition
+        // has been satisfied (i.e. memory has ended)
     }
 
     inline void controller::flush(){

@@ -1,5 +1,3 @@
-#define NUM_THREADS 1 // controller.get_num_threads()
-
 namespace ambient { namespace models { namespace velvet {
 
     inline history::history(dim2 dim) : current(NULL), start(0), spec(dim) { }

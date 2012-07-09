@@ -33,6 +33,16 @@ namespace ambient { namespace models { namespace velvet {
 
     // {{{ revision::entry //
 
+    inline bool revision::entry::trylock(){
+        //if(this->locked) return false;
+        //this->locked = true;
+        return true;
+    }
+
+    inline void revision::entry::unlock(){
+        //this->locked = false;
+    }
+
     inline revision::entry::entry()
     : header(NULL), data(NULL){ }
 
