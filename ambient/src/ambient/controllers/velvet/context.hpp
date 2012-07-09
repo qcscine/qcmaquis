@@ -27,7 +27,7 @@ namespace ambient { namespace controllers {
     }
 
     template<typename T>
-    inline size_t context::get_revision_base(const iteratable<T>* o){
+    inline size_t context::get_revision_base(const T* o){
         return o->get_thread_revision_base();
     }
 

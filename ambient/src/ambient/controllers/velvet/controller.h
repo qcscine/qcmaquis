@@ -2,8 +2,8 @@
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 #include "ambient/utils/touchstack.h"
 #include "ambient/controllers/velvet/cfunctor.h"
+#include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
-#include "ambient/controllers/context.h"
 #include "ambient/utils/tasklist.hpp"
 
 namespace ambient { namespace controllers { namespace velvet {
@@ -63,7 +63,7 @@ namespace ambient {
 }
 
 #include "ambient/controllers/velvet/controller.hpp"
-#include "ambient/controllers/context.hpp"
+#include "ambient/controllers/velvet/context.hpp"
 #include "ambient/controllers/velvet/iteratable.hpp"
 #include "ambient/controllers/velvet/cfunctor.hpp"
 #endif
