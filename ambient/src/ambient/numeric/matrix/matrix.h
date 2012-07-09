@@ -9,6 +9,10 @@
 #include <alps/hdf5.hpp>
 #endif
 
+#ifndef RVALUE
+#define RVALUE
+#endif
+
 namespace ambient { namespace numeric {
 
     template<class T>
@@ -24,21 +28,17 @@ namespace ambient { namespace numeric {
         typedef typename I::size_type size_type; 
         typedef typename I::difference_type difference_type;
         // {{{ matrix_impl forwarding
-
+        //
         static inline matrix<T> identity_matrix(size_type size){
-            return matrix<T>(size);
+            ptr identity = new I(size, size);
+            identity->fill_identity();
+            return matrix(identity);
         }
 
-        inline matrix(size_type size){ // identity
-            this->impl = new I(size, size); 
-            this->impl->fill_identity();
-        }
+        explicit inline matrix(const ptr& p) : impl(p) {}
+        explicit inline matrix(){ this->impl = new I(); }
 
-        inline matrix(){ // shouldn't be called
-            this->impl = new I(); 
-        }
-
-        inline matrix(size_type rows, size_type cols, value_type init_value = value_type()){
+        explicit inline matrix(size_type rows, size_type cols, value_type init_value = value_type()){
             this->impl = new I(rows, cols); 
             this->impl->fill_value(init_value);
         }
@@ -48,11 +48,23 @@ namespace ambient { namespace numeric {
             this->impl->copy(*m.impl);
         }
 
-        matrix& operator = (matrix rhs){
+        matrix& operator = (const matrix& rhs){
             assert(!rhs.impl->weak());
+            matrix c(rhs);
+            this->swap(c);
+            return *this;
+        }
+
+#ifdef RVALUE
+        inline matrix(matrix&& m){
+            this->impl = m.impl;
+        }
+
+        matrix& operator = (matrix&& rhs){
             this->swap(rhs);
             return *this;
         }
+#endif
 
     public:
 

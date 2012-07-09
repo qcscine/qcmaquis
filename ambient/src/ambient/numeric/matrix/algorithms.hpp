@@ -88,7 +88,7 @@ namespace ambient { namespace numeric {
     inline matrix<T> exp(const matrix<T>& m, const T& alfa = 1.){
         printf("Error: Not checked <- EXP\n");
         typename alps::numeric::associated_real_diagonal_matrix< matrix<T> >::type evals(m.num_rows());
-        matrix<T> evecs;
+        matrix<T> evecs = matrix<T>();
         heev(m, evecs, evals);
         return (evecs * exp(evals, alfa))*conj(transpose(evecs));
     }

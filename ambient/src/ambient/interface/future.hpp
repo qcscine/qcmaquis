@@ -2,7 +2,15 @@
 #define AMBIENT_INTERFACE_FUTURE
 // see history for an advanced version // supports multiple revisions
 
+#ifdef HAVE_ALPS_HDF5
+#include <alps/hdf5.hpp>
+#endif
+
 #define FUTURE_SAFE_CHECK
+
+#ifndef RVALUE
+#define RVALUE
+#endif
 
 namespace ambient {
 
@@ -23,45 +31,52 @@ namespace ambient {
         explicit inline future(const future& f){
             ghost = new container<sizeof(T)>();
             value = (T*)&(*ghost);
-           *value = (T)f; // move semantics
-#ifdef FUTURE_SAFE_CHECK
-            counter = 0;
-#endif
+           *value = f.calc_value();
         }
 
         inline future& operator = (const future& v){ 
             ghost = v.ghost;
             value = (T*)&(*ghost);
-#ifdef FUTURE_SAFE_CHECK
-            counter = v.counter;
-#endif
             return *this;
         }
+
+#ifdef RVALUE
+        inline future(future&& f){
+            printf("RVALUE COPY!\n");
+            ghost = f.ghost;
+            value = (T*)&(*ghost);
+        }
+
+        inline future& operator = (future&& v){ 
+            printf("RVALUE =!\n");
+            ghost = v.ghost;
+            value = (T*)&(*ghost);
+            return *this;
+        }
+#endif
 
         inline future(double v){
             ghost = new container<sizeof(T)>();
             value = (T*)&(*ghost);
            *value = v;
-#ifdef FUTURE_SAFE_CHECK
-            counter = 0;
-#endif
         }
 
         inline future(std::complex<double> v){
             ghost = new container<sizeof(T)>();
             value = (T*)&(*ghost);
            *value = v;
-#ifdef FUTURE_SAFE_CHECK
-            counter = 0;
-#endif
         }
 
-        inline operator T () const {
+        inline T calc_value() const {
             if(value == NULL){
                 ambient::playout();
                 value = (T*)&(*ghost);
             }
             return *value;
+        }
+
+        inline operator T () const {
+            return this->calc_value();
         }
 
         inline const T& get_value() const {
@@ -73,35 +88,95 @@ namespace ambient {
         }
 
         inline future<T>& unfold(){ // should be called reset
-            this->value = NULL;
 #ifdef FUTURE_SAFE_CHECK
-            counter++;
-            if(counter > 1) printf("ERROR: Overusing the future!\n");
+            if(this->value == NULL) printf("ERROR: Overusing the future!\n");
 #endif
+            this->value = NULL;
             return *this;
         }
 
         inline const future<T>& unfold() const {
             return *this;
         }
-        ptr    ghost;
-#ifdef FUTURE_SAFE_CHECK
-        size_t counter;
+
+#ifdef HAVE_ALPS_HDF5
+        inline void load(alps::hdf5::archive & ar) { /*ambient::cerr << "I don't do much." << std::endl;*/ }
+        inline void save(alps::hdf5::archive & ar) const { /*ambient::cerr << "I don't do much either." << std::endl;*/ }
 #endif
+
+        ptr    ghost;
     private:
         mutable T* value;
     };
 
-    template<typename T1, typename T2>
-    inline const T2 operator / (T1 lhs, const future<T2>& rhs){ 
-        return (lhs / (T2)rhs); 
+    template<typename T>
+    inline const T operator / (double lhs, const future<T>& rhs){ 
+        return (lhs / rhs.calc_value()); 
+    }
+
+    template<typename T>
+    inline const T operator / (std::complex<double> lhs, const future<T>& rhs){ 
+        return (lhs / rhs.calc_value()); 
+    }
+
+    template<typename T>
+    inline T operator / (const future<T>& lhs, const future<T>& rhs){ 
+        return (lhs.calc_value() / rhs.calc_value()); 
     }
 
     template<typename T>
     inline const future<T> operator + (const future<T>& lhs, const future<T>& rhs){ 
-        return future<T>((T)lhs + (T)rhs); // explicit
+        return future<T>(lhs.calc_value() + rhs.calc_value()); // explicit
     }
 
+    inline double sqrt(const future<double>& f){
+        return std::sqrt(f.calc_value());
+    } 
+
 }
+
+namespace alps { namespace numeric {
+
+    inline double real(double f){
+        return f;
+    }
+
+    inline double real(std::complex<double> f){
+        return f.real();
+    }
+
+    inline const ambient::future<double>& real(const ambient::future<double>& f){
+        return f;
+    }
+
+    inline double real(const ambient::future<std::complex<double> >& f){
+        return f.calc_value().real();
+    }
+
+    inline const std::vector<double>& real(const std::vector<double>& f){
+        return f;
+    }
+
+    inline std::vector<double> real(const std::vector<std::complex<double> >& f){
+        std::vector<double> res;
+        for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].real());
+        return res;
+    }
+
+    inline std::vector<double> real(const std::vector<ambient::future<double> >& f){
+        ambient::playout();
+        std::vector<double> res;
+        for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].get_value());
+        return res;
+    }
+
+    inline std::vector<double> real(const std::vector<ambient::future<std::complex<double> > >& f){
+        ambient::playout();
+        std::vector<double> res;
+        for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].get_value().real());
+        return res;
+    }
+
+} }
 
 #endif
