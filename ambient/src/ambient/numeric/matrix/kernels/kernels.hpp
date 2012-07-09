@@ -493,14 +493,14 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scalar_norm : public kernel< scalar_norm<T> > 
     {
-        typedef void (scalar_norm::*F)(const matrix_impl<T>&, const size_t&, const size_t&, future<T>&);
+        typedef void (scalar_norm::*F)(const matrix_impl<T>&, const size_t&, const size_t&, future<double>&);
 
-        inline void l(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<T>& norm){
+        inline void l(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<double>& norm){
             this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
             this->block_outright_pin(a);
         }
 
-        inline void c(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<T>& norm){
+        inline void c(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<double>& norm){
             // gs
             __A_TIME_C("ambient_scalar_norm_c_kernel"); 
             T summ = 0;
@@ -514,7 +514,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 for(size_t j=0; j < sizex; j++)
                     summ += ad[i+j*lda]*ad[i+j*lda];
         
-            norm.get_value() += summ;
+            norm.get_value() += alps::numeric::real(summ);
             __A_TIME_C_STOP
         }
     };

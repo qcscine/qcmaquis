@@ -6,7 +6,7 @@
 #include <alps/hdf5.hpp>
 #endif
 
-#define FUTURE_SAFE_CHECK
+//#define FUTURE_SAFE_CHECK
 
 #ifndef RVALUE
 #define RVALUE
@@ -32,6 +32,13 @@ namespace ambient {
             ghost = new container<sizeof(T)>();
             value = (T*)&(*ghost);
            *value = f.calc_value();
+        }
+
+        template<typename S>
+        inline future(const future<S>& f){ // can be optimized later
+            ghost = new container<sizeof(T)>();
+            value = (T*)&(*ghost);
+           *value = (T)f.calc_value();
         }
 
         inline future& operator = (const future& v){ 

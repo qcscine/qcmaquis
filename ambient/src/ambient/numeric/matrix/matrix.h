@@ -23,9 +23,10 @@ namespace ambient { namespace numeric {
     public:
         typedef matrix_impl<T> I;
         typedef typename I::ptr ptr;
+        typedef typename I::real_type real_type;
+        typedef typename I::size_type size_type; 
         typedef typename I::value_type value_type;
         typedef typename I::scalar_type scalar_type;
-        typedef typename I::size_type size_type; 
         typedef typename I::difference_type difference_type;
         // {{{ matrix_impl forwarding
         //
@@ -191,6 +192,7 @@ namespace ambient { namespace numeric {
         typedef size_t    size_type;       // Unsigned integer type that represents the dimensions of the matrix
         typedef ptrdiff_t difference_type; // Signed integer type to represent the distance of two elements in the memory
         typedef typename boost::intrusive_ptr<matrix_impl<T> > ptr;
+        typedef typename ambient::future<double> real_type;
         typedef typename ambient::future<T> scalar_type;
 
         inline matrix_impl();             // please avoid implicit conversions

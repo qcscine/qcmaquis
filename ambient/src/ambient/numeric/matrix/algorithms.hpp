@@ -8,6 +8,7 @@
 #define ATOMIC(condition, kernel, ...) assert(condition); ambient::push< kernels::kernel ## _atomic<T> >(__VA_ARGS__);
 
 #define size_type       typename matrix<T>::size_type
+#define real_type       typename matrix<T>::real_type
 #define scalar_type     typename matrix<T>::scalar_type
 #define difference_type typename matrix<T>::difference_type
 
@@ -16,7 +17,7 @@ namespace ambient { namespace numeric {
     // {{{ matrix advanced algorithms
 
     template <typename T>
-    inline scalar_type norm_square(const matrix<T>& a){ scalar_type norm(0); ATOMIC(a.atomic(), scalar_norm, a, norm); return norm; } // gs
+    inline real_type norm_square(const matrix<T>& a){ real_type norm(0); ATOMIC(a.atomic(), scalar_norm, a, norm); return norm; } // gs
 
     template <typename T>
     inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ scalar_type overlap(0); ATOMIC(a.atomic(), overlap, a, b, overlap); return overlap; } // gs
@@ -336,6 +337,7 @@ namespace algorithms {
 
 #undef ATOMIC
 #undef size_type
+#undef real_type
 #undef scalar_type
 #undef difference_type 
 #endif
