@@ -41,12 +41,12 @@ namespace ambient { namespace controllers { namespace velvet {
 
     template<class T>
     inline size_t iteratable<T>::get_thread_revision_base() const {
-        return this->thread_revision_base[ctxt.get_tid()];
+        return this->thread_revision_base[GET_TID];
     }
 
     template<class T>
     inline void iteratable<T>::set_thread_revision_base(size_t r){
-        this->thread_revision_base[ctxt.get_tid()] = r;
+        this->thread_revision_base[GET_TID] = r;
     }
 
 } } }

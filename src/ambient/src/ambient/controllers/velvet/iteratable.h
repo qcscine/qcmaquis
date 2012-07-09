@@ -1,9 +1,6 @@
 #ifndef AMBIENT_CONTROLLERS_VELVET_ITERATABLE
 #define AMBIENT_CONTROLLERS_VELVET_ITERATABLE
 
-extern pthread_key_t pthread_tid;
-#define GET_TID 0 //*(size_t*)pthread_getspecific(pthread_tid)
-
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::models::velvet::revision;
