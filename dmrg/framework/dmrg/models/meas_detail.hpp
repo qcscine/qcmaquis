@@ -113,7 +113,7 @@ namespace meas_detail {
                         std::string const & h5name,
                         std::string const & base_path) const
         {
-            std::vector<double> vals; // vector of futures (todo: 30.04.12 / Matthias scalar/value types discussion)
+            std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals;
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
 
@@ -121,13 +121,13 @@ namespace meas_detail {
                 temp(0,0) = op.first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
-                vals.push_back( maquis::traits::real(mps[p].scalar_overlap(vec2)) );
+                vals.push_back( mps[p].scalar_overlap(vec2) );
                 labels.push_back( lat.get_prop<std::string>("label", p) );
             } // should return a vector of pairs or pair of vectors (todo: 30.04.12 / Matthias scalar/value types discussion)
             
             { // should be moved out to the main loop (todo: 30.04.12 / Matthias scalar/value types discussion)
                 alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, vals));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(vals)));
                 ar << alps::make_pvp(base_path + std::string("/labels"), labels);
             }
         }
@@ -138,7 +138,7 @@ namespace meas_detail {
         {
             assert(ops.size() == 2);
             
-            std::vector<double> vals;
+            std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals;
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
             Boundary<Matrix, SymmGroup> tmp_b;
@@ -152,13 +152,13 @@ namespace meas_detail {
                 temp(0,0) = ops[1].first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p+1], tmp_b, right_[p+1], temp);
-                vals.push_back( maquis::traits::real(mps[p+1].scalar_overlap(vec2)) );
+                vals.push_back( mps[p+1].scalar_overlap(vec2) );
                 labels.push_back( lat.get_prop<std::string>("label", p, p+1) );
             } // same here (todo: 30.04.12 / Matthias scalar/value types discussion)
             
             {
                 alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, vals));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(vals)));
                 ar << alps::make_pvp(base_path + std::string("/labels"), labels);
             }
         }
