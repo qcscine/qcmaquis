@@ -32,6 +32,25 @@ namespace maquis { namespace types {
 
 } }
 
+namespace maquis { namespace traits {
+
+    template<class T> struct scalar_type { typedef typename T::value_type type; };
+    template<class T> struct scalar_type <ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
+    template<class T> struct scalar_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
+
+    template<class T> struct real_type { typedef typename real_type<typename T::value_type>::type type; };
+    template<>        struct real_type<double> { typedef double type; };
+    template<class T> struct real_type<std::complex<T> > { typedef T type; };
+
+    template<class T> struct real_identity { static const T value = 1; };
+    template<class T> struct imag_identity { static const T value = 1; };
+    template<class T> struct real_identity<std::complex<T> > { static const std::complex<T> value; };
+    template<class T> struct imag_identity<std::complex<T> > { static const std::complex<T> value; };
+    template<class T> const std::complex<T> real_identity<std::complex<T> >::value = std::complex<T>(1,0);
+    template<class T> const std::complex<T> imag_identity<std::complex<T> >::value = std::complex<T>(0,1);
+
+} }
+
 namespace alps { namespace numeric {
 
     template<typename T> 
@@ -40,7 +59,7 @@ namespace alps { namespace numeric {
     };
     template<typename T> 
     struct associated_real_diagonal_matrix< ambient::numeric::matrix<T> > {
-        typedef ambient::numeric::diagonal_matrix<typename utils::real_type<T>::type> type;
+        typedef ambient::numeric::diagonal_matrix<typename maquis::traits::real_type<T>::type> type;
     };
     template<typename T> 
     struct associated_vector< ambient::numeric::matrix<T> > {
@@ -48,16 +67,8 @@ namespace alps { namespace numeric {
     };
     template<typename T> 
     struct associated_real_vector< ambient::numeric::matrix<T> > {
-        typedef std::vector<typename utils::real_type<T>::type> type;
+        typedef std::vector<typename maquis::traits::real_type<T>::type> type;
     };
-
-} }
-
-namespace maquis { namespace traits {
-
-    template<class T> struct scalar_type { typedef typename T::value_type type; };
-    template<class T> struct scalar_type <ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
-    template<class T> struct scalar_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
 
 } }
 
