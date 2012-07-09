@@ -26,8 +26,6 @@ template<class Matrix, class SymmGroup>
 class TwoSiteTensor
 {
 public:
-    typedef double real_type;
-    typedef double magnitude_type; 
     typedef std::size_t size_type;
     typedef typename MultiIndex<SymmGroup>::index_id index_id;
     typedef typename MultiIndex<SymmGroup>::set_id set_id;

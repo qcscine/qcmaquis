@@ -114,7 +114,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
 }
     
 template <class T>
-typename utils::real_type<T>::type gather_real_pred(T const & val)
+typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
 {
     assert( check_real(val) );
     assert( alps::numeric::real(val) > -1e-10 );
@@ -133,7 +133,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
         length += num_rows(evals[k]);
     }
     
-    typedef std::vector<typename utils::real_type<value_type>::type > real_vector_t;
+    typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
     std::vector< std::vector<value_type> > evals_vector = maquis::traits::matrix_cast< std::vector< std::vector<value_type> > >(evals);
     
@@ -163,7 +163,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0,  boost::lambda::_1 + boost::lambda::_2 *boost::lambda::_2);
     
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        std::vector<typename utils::real_type<value_type>::type> evals_k;
+        std::vector<typename maquis::traits::real_type<value_type>::type> evals_k;
         for (typename std::vector<value_type>::const_iterator it = evals_vector[k].begin(); it != evals_vector[k].end(); ++it)
             evals_k.push_back(alps::numeric::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
@@ -176,7 +176,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
         length += num_rows(evals[k]);
     }
 
-    std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type > allevals(length);
+    std::vector<typename maquis::traits::real_type<typename DiagMatrix::value_type>::type > allevals(length);
 
     std::size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
@@ -198,7 +198,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
     
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        std::vector<typename utils::real_type<typename DiagMatrix::value_type>::type> evals_k;
+        std::vector<typename maquis::traits::real_type<typename DiagMatrix::value_type>::type> evals_k;
         for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
             evals_k.push_back(alps::numeric::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();

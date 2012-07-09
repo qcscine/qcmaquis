@@ -102,7 +102,6 @@ class MPOTensor
 public:
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef double real_type;
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
     
     // the constructor asumes that the upper and lower physical dimension is the same

@@ -19,8 +19,6 @@
 #include "dmrg/sim/te_utils.hpp"
 #include "dmrg/mp_tensors/evolve.h"
 
-#include "utils/types.h"
-
 
 // ******     HELPER OBJECTS     ******
 template<class Matrix, class SymmGroup>
@@ -205,9 +203,9 @@ protected:
         
         typename Matrix::value_type I;
         if (this->sweep < this->parms.template get<int>("nsweeps_img"))
-            I = utils::real_identity<typename Matrix::value_type>::value;
+            I = maquis::traits::real_identity<typename Matrix::value_type>::value;
         else
-            I = utils::imag_identity<typename Matrix::value_type>::value;
+            I = maquis::traits::imag_identity<typename Matrix::value_type>::value;
         typename Matrix::value_type alpha = -I*this->parms.template get<double>("dt");
         
         Uterms.resize(gates_coeff.size(), trotter_gate<Matrix, SymmGroup>(L));

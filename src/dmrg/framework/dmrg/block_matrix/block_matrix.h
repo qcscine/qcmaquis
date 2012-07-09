@@ -30,6 +30,7 @@ public:
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
+    typedef typename maquis::traits::real_type<Matrix>::type real_type;
     
     block_matrix(Index<SymmGroup> rows = Index<SymmGroup>(),
                  Index<SymmGroup> cols = Index<SymmGroup>());
@@ -69,7 +70,7 @@ public:
 //  void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
     
     scalar_type trace() const;
-    scalar_type norm_square() const;
+    real_type norm() const;
     void transpose_inplace();
     void conjugate_inplace();
     void adjoint_inplace();
