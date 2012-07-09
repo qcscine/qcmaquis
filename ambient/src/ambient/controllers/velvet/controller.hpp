@@ -220,26 +220,31 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::flush(){
-        //static __a_timer time1("ambient_total_bin_playout");
-        //static __a_timer time2("ambient_total_small_playout");
         if(this->stack.empty()) return;
-        //__a_timer& time = (this->stack.size() > 100) ? time1 : time2;
-
-        //while(!this->stack.end_reached())  // estimating operations credits 
-        //    this->stack.pick()->weight();
-        //this->stack.sort();                // sorting operations using credit
-        //time2.begin();
-
-        if(!this->muted) printf("PLAYOUT WITH %lu!\n", this->stack.size());
-
-        //time.begin();
         while(!this->stack.end_reached())
-            this->stack.pick()->logistics(); // sending requests for data
-        this->master_stream(this->tasks);    // using up the main thread
+            this->stack.pick()->logistics();
+        this->master_stream(this->tasks);
         this->stack.reset();
-
-        //time.end();
     }
+
+/*  DEBUG VERSION:
+    inline void controller::flush(){
+        static __a_timer ts("ambient: time of small sets");
+        static __a_timer tl("ambient: time of large sets");
+        __a_timer& time = (this->stack.size() > 100)? ts : tl;
+        if(this->stack.empty()) return;
+
+        //while(!this->stack.end_reached()) 
+        //    this->stack.pick()->weight();
+        //this->stack.sort();
+
+        time.begin();
+        while(!this->stack.end_reached())
+            this->stack.pick()->logistics();
+        this->master_stream(this->tasks);
+        this->stack.reset();
+        time.end();
+    } */
     
     inline packet* package(revision& r, const char* state, int x, int y, int dest){
         void* header = r.block(x,y).get_memory();
