@@ -13,7 +13,7 @@ namespace ambient {
 
         template<class T>
         io& operator<<(future<T> const & obj){
-            std::cout << (T)obj;
+            std::cout << obj.calc_value();
             return *this;
         }
 
@@ -46,8 +46,8 @@ namespace ambient {
 
         template<class T>
         mpio& operator<<(future<T> const & obj){
-            if(v) std::cout << (T)obj;
-            else nullio << (T)obj; // for symmetry ,)
+            if(v) std::cout << obj.calc_value();
+            else nullio << obj.calc_value();
             return *this;
         }
 
