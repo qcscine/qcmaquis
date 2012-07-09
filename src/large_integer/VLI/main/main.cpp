@@ -28,8 +28,8 @@
 #include "vli/detail/bit_masks.hpp"
 
 #define Size1 3
-#define Size2 6
-#define Order 11
+#define Size2 2*Size1
+#define Order 10
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -178,15 +178,14 @@ std::cout << " --------------------------- " << std::endl;
 
 
 #endif
-
- //    std::cout << result_pure_cpu << std::endl;
-   
+/*
+     std::cout << result_pure_cpu << std::endl;
+     std::cout << result_pure_cpu_omp << std::endl;
+  */ 
     Timer t4("CPU gmp_omp");
     t4.begin();
     pgmpd = inner_product(v1gmp,v2gmp);
     t4.end();
-
- //    std::cout << pgmpd << std::endl;
 
      if(result_pure_cpu_omp ==result_pure_cpu ) {printf("OK gpu\n"); } else{printf("NO OK gpu \n"); } 
 
