@@ -36,8 +36,8 @@ namespace vli {
 namespace detail {
 
     // we allocate the mem only one time so pattern of this class singleton
-    template <typename BaseInt>
-    class gpu_memblock : public Singleton<gpu_memblock<BaseInt> >  {
+    template <typename BaseInt, class Var0, class Var1, class Var2, class Var3>
+    class gpu_memblock : public Singleton<gpu_memblock<BaseInt, Var0, Var1, Var2, Var3> >  {
         friend class Singleton<gpu_memblock>; // to have access to the Instance, Destroy functions into the singleton class
         public:
         typedef BaseInt value_type;
