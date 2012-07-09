@@ -913,15 +913,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct validation : public kernel< validation<T> > 
     {
-        typedef void (validation::*F)(const matrix_impl<T>&, const matrix_impl<T>&, int*&);
+        typedef void (validation::*F)(const matrix_impl<T>&, const matrix_impl<T>&, future<int>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, int*& ret){
+        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){
             this->ctxt_select("1 from ambient as validation"); //if(!ctxt.involved()) return;
             this->block_2d_cycle_pin(a); 
             this->block_2d_cycle_assign(b); 
         }
         
-        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, int*& ret){ // see paper for Reference Dongara 
+        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){ // see paper for Reference Dongara 
             size_t x = ctxt.get_block_id().x;
             size_t y = ctxt.get_block_id().y;
             T* ad = ui_c_current(a)(x, y); 
@@ -941,7 +941,7 @@ namespace ambient { namespace numeric { namespace kernels {
                         res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
                         if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
                             std::cout << position_y << " " << position_x << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
-                            *ret = 0; // test failed return 0 (bool false)
+                            ret.get_value() = 0; // test failed return 0 (bool false)
                         }
                     }
                 }
