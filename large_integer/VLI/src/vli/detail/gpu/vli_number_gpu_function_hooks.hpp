@@ -49,7 +49,7 @@ namespace vli {
     void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2){
 	unsigned int sign = (c1[Size-1]>>31) ^ (c2[Size-1]>>31);
 
-	if(c1[Size-1] >> 31 != 0)
+	if(c1[Size-1] >> 31 != 0) // 31 because uint , 63 a day if ulint
              neg<BaseInt, Size>(c1);
 
 	if(c2[Size-1] >> 31 != 0)
