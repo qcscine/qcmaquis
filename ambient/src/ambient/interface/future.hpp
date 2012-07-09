@@ -49,13 +49,11 @@ namespace ambient {
 
 #ifdef RVALUE
         inline future(future&& f){
-            printf("RVALUE COPY!\n");
             ghost = f.ghost;
             value = (T*)&(*ghost);
         }
 
         inline future& operator = (future&& v){ 
-            printf("RVALUE =!\n");
             ghost = v.ghost;
             value = (T*)&(*ghost);
             return *this;
