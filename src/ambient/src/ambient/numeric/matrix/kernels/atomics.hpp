@@ -206,17 +206,17 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scalar_norm_atomic : public kernel_atomic< scalar_norm_atomic<T> > 
     {// gs
-        typedef void (scalar_norm_atomic::*F)(const matrix_impl<T>&, future<T>&);
+        typedef void (scalar_norm_atomic::*F)(const matrix_impl<T>&, future<double>&);
 
-        inline void l(const matrix_impl<T>& a, future<T>& norm){
+        inline void l(const matrix_impl<T>& a, future<double>& norm){
             this->ctxt_select("* from ambient as scalar_norm_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
-        inline void c(const matrix_impl<T>& a, future<T>& norm){
+        inline void c(const matrix_impl<T>& a, future<double>& norm){
             __A_TIME_C("ambient_scalar_norm_atomic_c_kernel"); 
             T* ad = ui_c_current(a)(0,0);
-            norm.get_value() = __a_dot(ad, ad, ui_c_get_dim(a).square());
+            norm.get_value() = alps::numeric::real(__a_dot(ad, ad, ui_c_get_dim(a).square()));
             __A_TIME_C_STOP
         }
     };
