@@ -1,7 +1,6 @@
 #ifndef __ALPS_TYPES_TRAITS_HPP__
 #define __ALPS_TYPES_TRAITS_HPP__
 
-#include "utils/types.h"
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
 #include <boost/numeric/bindings/tag.hpp>
@@ -41,6 +40,8 @@ namespace maquis { namespace traits {
     template<class T> struct real_type { typedef typename real_type<typename T::value_type>::type type; };
     template<>        struct real_type<double> { typedef double type; };
     template<class T> struct real_type<std::complex<T> > { typedef T type; };
+    template<class T> struct real_type<ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::real_type type; };
+    template<class T> struct real_type<ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::real_type type; };
 
     template<class T> struct real_identity { static const T value = 1; };
     template<class T> struct imag_identity { static const T value = 1; };
