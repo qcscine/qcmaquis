@@ -24,7 +24,12 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline void revision::set_generator(sfunctor* m){
+        m->set_derivative(this);
         this->generator = m;
+    }
+
+    inline void revision::reset_generator(){
+        this->generator = NULL;
     }
 
     inline sfunctor* revision::get_generator(){

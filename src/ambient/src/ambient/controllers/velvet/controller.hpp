@@ -142,7 +142,8 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline revision::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
-        this->atomic_receive(r, x, y); // check the stacked operations for the block
+        //if(r.get_generator() == NULL) 
+            this->atomic_receive(r, x, y); // check the stacked operations for the block
         return r.block(x,y);
 
         /*assert(r.get_placement() != NULL);

@@ -5,9 +5,9 @@
 #include "ambient/utils/dim2.h"
 
 #include "ambient/models/velvet/memspec.h"
-#include "ambient/models/velvet/sfunctor.h"
 #include "ambient/models/velvet/revision.h"
 #include "ambient/models/velvet/history.h"
+#include "ambient/models/velvet/sfunctor.h"
 
 namespace ambient { namespace models { namespace velvet {
 
