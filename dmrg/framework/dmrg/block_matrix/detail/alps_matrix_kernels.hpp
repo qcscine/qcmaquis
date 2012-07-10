@@ -9,8 +9,8 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_DMRG_DETAIL_ALPS_MATRIX_HPP
-#define MAQUIS_DMRG_DETAIL_ALPS_MATRIX_HPP
+#ifndef MAQUIS_DMRG_DETAIL_ALPS_MATRIX_KERNELS_HPP
+#define MAQUIS_DMRG_DETAIL_ALPS_MATRIX_KERNELS_HPP
 
 #include <alps/numeric/matrix.hpp>
 
