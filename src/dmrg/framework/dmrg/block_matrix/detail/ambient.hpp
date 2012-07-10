@@ -56,7 +56,7 @@ namespace maquis { namespace dmrg { namespace detail {
         std::vector< std::vector<double> > r(set.n_blocks());
         for(std::size_t k = 0; k < set.n_blocks(); ++k){
             std::vector<T>* v_ptr = &r[k];
-            ambient::push< ambient::numeric::kernels::push_back_sqr_gt<T> >(set[k], v_ptr);
+            ATOMIC(set[k].atomic(), round_square, set[k], v_ptr);
         }
         ambient::playout();
 
