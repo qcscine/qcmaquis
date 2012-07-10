@@ -5,11 +5,7 @@
 
 extern pthread_key_t pthread_tid;
 
-#ifdef AMBIENT_THREADS
 #define GET_TID ctxt.get_tid()
-#else
-#define GET_TID 0
-#endif
 
 namespace ambient { namespace controllers {     
 
