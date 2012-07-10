@@ -52,7 +52,7 @@ namespace maquis{ namespace traits{
             size_t lda = m.stride2();
             ambient::numeric::matrix<T> pm(num_rows, num_cols);    
             const std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::push< ambient::numeric::kernels::cast_from_vector<T> >(v_ptr, pm, num_rows, num_cols, lda);
+            ambient::push< ambient::numeric::kernels::cast_from_vector_atomic<T> >(v_ptr, pm, num_rows, num_cols, lda);
             ambient::playout();
             return pm;
         }
@@ -65,7 +65,7 @@ namespace maquis{ namespace traits{
             size_t num_cols = pm.num_cols();
             alps::numeric::matrix<T> m(num_rows, num_cols);    
             std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::push< ambient::numeric::kernels::cast_to_vector<T> >(v_ptr, pm, num_rows, num_cols);
+            ambient::push< ambient::numeric::kernels::cast_to_vector_atomic<T> >(v_ptr, pm, num_rows, num_cols);
             ambient::playout();
             return m;
         }
@@ -78,7 +78,7 @@ namespace maquis{ namespace traits{
             size_t num_cols = pm.num_cols();
             alps::numeric::matrix<T> m(num_rows, num_cols);    
             std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::push< ambient::numeric::kernels::cast_to_vector<T> >(v_ptr, pm, num_rows, num_cols);
+            ambient::push< ambient::numeric::kernels::cast_to_vector_atomic<T> >(v_ptr, pm, num_rows, num_cols);
             ambient::playout();
             return m;
         }
@@ -91,7 +91,7 @@ namespace maquis{ namespace traits{
             size_t num_cols(1);
             ambient::numeric::diagonal_matrix<T> pm(num_rows, num_rows);    
             const std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::push< ambient::numeric::kernels::cast_from_vector<T> >(v_ptr, pm, num_rows, num_cols, num_rows);
+            ambient::push< ambient::numeric::kernels::cast_from_vector_atomic<T> >(v_ptr, pm, num_rows, num_cols, num_rows);
             ambient::playout();
             return pm;
         }
@@ -104,7 +104,7 @@ namespace maquis{ namespace traits{
             size_t num_rows = pm.num_rows();
             alps::numeric::diagonal_matrix<T> m(num_rows, num_rows);    
             std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::push< ambient::numeric::kernels::cast_to_vector<T> >(v_ptr, pm, num_rows, num_cols);
+            ambient::push< ambient::numeric::kernels::cast_to_vector_atomic<T> >(v_ptr, pm, num_rows, num_cols);
             ambient::playout();
             return m;
         }
@@ -128,7 +128,7 @@ namespace maquis{ namespace traits{
             for(size_t k = 0; k < m.n_blocks(); ++k){
                 num_rows = m[k].num_rows();
                 std::vector<T>* v_ptr = &set[k];
-                ambient::push< ambient::numeric::kernels::cast_to_vector<T> >(v_ptr, m[k], num_rows, num_cols);
+                ambient::push< ambient::numeric::kernels::cast_to_vector_atomic<T> >(v_ptr, m[k], num_rows, num_cols);
             }
             ambient::playout();
             return set;
@@ -142,7 +142,7 @@ bool operator == (alps::numeric::matrix<T> const & a, ambient::numeric::matrix_i
 {
     ambient::future<int> ret(1);
     ambient::numeric::matrix<T> pa = maquis::traits::matrix_cast<ambient::numeric::matrix<T> >(a);
-    ambient::push< ambient::numeric::kernels::validation<T> >(pa, b, ret); 
+    ambient::push< ambient::numeric::kernels::validation_atomic<T> >(pa, b, ret); 
     return ((int)ret > 0);
 }
 
@@ -151,7 +151,7 @@ bool operator == (alps::numeric::matrix<T> const & a, ambient::numeric::matrix<T
 {
     ambient::future<int> ret(1);
     ambient::numeric::matrix<T> pa = maquis::traits::matrix_cast<ambient::numeric::matrix<T> >(a);
-    ambient::push< ambient::numeric::kernels::validation<T> >(pa, b, ret); 
+    ambient::push< ambient::numeric::kernels::validation_atomic<T> >(pa, b, ret); 
     return ((int)ret > 0);
 }
 
@@ -160,7 +160,7 @@ bool operator == (alps::numeric::diagonal_matrix<T> const & a, ambient::numeric:
 {
     ambient::future<int> ret(1);
     ambient::numeric::diagonal_matrix<T> pa = maquis::traits::matrix_cast<ambient::numeric::diagonal_matrix<T> >(a);
-    ambient::push< ambient::numeric::kernels::validation<T> >(pa, b, ret); 
+    ambient::push< ambient::numeric::kernels::validation_atomic<T> >(pa, b, ret); 
     return ((int)ret > 0);
 }
 
@@ -168,7 +168,7 @@ template<typename T>
 bool operator == (ambient::numeric::matrix<T> const & a, ambient::numeric::matrix<T> const & b) 
 {
     ambient::future<int> ret(1);
-    ambient::push< ambient::numeric::kernels::validation<T> >(a, b, ret); 
+    ambient::push< ambient::numeric::kernels::validation_atomic<T> >(a, b, ret); 
     return ((int)ret > 0);
 }
 
