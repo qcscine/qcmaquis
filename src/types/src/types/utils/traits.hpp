@@ -11,13 +11,6 @@ namespace ambient { namespace numeric {
     template<typename T> class diagonal_matrix;
 
 } }
-//
-//namespace alps { namespace numeric {
-//    
-//    template<typename Matrix> class transpose_view;
-//    
-//} }
-
 
 
 namespace maquis { namespace types {
@@ -51,15 +44,17 @@ namespace maquis { namespace traits {
     template<class T> struct real_type<ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::real_type type; };
     template<class T> struct real_type<ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::real_type type; };
 
-    template<class T> struct real_identity { static const T value = 1; };
-    template<class T> struct imag_identity { static const T value = 1; };
+    template<class T> struct real_identity { static const T value; };
+    template<class T> struct imag_identity { static const T value; };
+    template<class T> const T real_identity<T>::value = 1;
+    template<class T> const T imag_identity<T>::value = 1;
     template<class T> struct real_identity<std::complex<T> > { static const std::complex<T> value; };
     template<class T> struct imag_identity<std::complex<T> > { static const std::complex<T> value; };
     template<class T> const std::complex<T> real_identity<std::complex<T> >::value = std::complex<T>(1,0);
     template<class T> const std::complex<T> imag_identity<std::complex<T> >::value = std::complex<T>(0,1);
 
     
-    // MD says: since we don't want to include ALPS Matrix everywhere, this trait will do the redirect. It hase to be implemented in
+    // MD says: since we don't want to include ALPS Matrix everywhere, this trait will do the redirect. It has to be implemented in
     //          block_matrx/detail/MATRIX.hpp
     template<class Matrix> struct transpose;
     
