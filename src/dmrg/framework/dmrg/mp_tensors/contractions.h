@@ -39,7 +39,7 @@ struct contraction {
         
         reshape_right_to_left_new(ket_tensor.phys_i, bra_tensor.row_dim(), ket_tensor.right_i,
                                   t1, t3);
-        gemm<Transpose,NoTranspose>(conjugate(bra_tensor.data_), t3, t1);
+        gemm(transpose(conjugate(bra_tensor.data_)), t3, t1);
         return t1;
 
         // original:
@@ -69,9 +69,9 @@ struct contraction {
         ket_tensor.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> t1, t3;
-        gemm<NoTranspose,Transpose>(ket_tensor.data_, right, t1);
+        gemm(ket_tensor.data_, transpose(right), t1);
         reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(), t1, t3);
-        gemm<NoTranspose,Transpose>(conjugate(bra_tensor.data_), t3, t1);
+        gemm(conjugate(bra_tensor.data_), transpose(t3), t1);
         return t1;
 
         // original:
@@ -212,7 +212,7 @@ struct contraction {
 #endif
         for (std::size_t b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
-            gemm<Transpose,NoTranspose>(left.data_[b], mps.data_, tmp);
+            gemm(transpose(left.data_[b]), mps.data_, tmp);
             reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
                                           tmp, t[b]);
         }
@@ -469,7 +469,7 @@ struct contraction {
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
-            gemm<Transpose,NoTranspose>(lbtm.data_[b], conjugate(bra_tensor.data()), ret.data_[b]);
+            gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
 
         return ret;
     }
@@ -496,7 +496,7 @@ struct contraction {
 #pragma omp parallel for schedule(guided)
 #endif
         for (std::size_t b = 0; b < loop_max; ++b)
-            gemm<NoTranspose,Transpose>(rbtm.data_[b], conjugate(bra_tensor.data()), ret.data_[b]);
+            gemm(rbtm.data_[b], transpose(conjugate(bra_tensor.data())), ret.data_[b]);
         
         
         return ret;
@@ -570,7 +570,7 @@ struct contraction {
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm<NoTranspose,Transpose>(mps.data_, conjugate(mps.data_), dm);
+        gemm(mps.data_, transpose(conjugate(mps.data_)), dm);
         
         Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
         
@@ -578,7 +578,7 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm<NoTranspose,Transpose>(half_dm.data_[b], conjugate(half_dm.data_[b]), tdm);
+            gemm(half_dm.data_[b], transpose(conjugate(half_dm.data_[b])), tdm);
             
             
             tdm *= alpha;
@@ -617,7 +617,7 @@ struct contraction {
         A.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm<Transpose,NoTranspose>(conjugate(A.data_), psi.data_, tmp);
+        gemm(transpose(conjugate(A.data_)), psi.data_, tmp);
 //        gemm(A.data_, maquis::types::Transpose(), psi.data_, maquis::types::NoTranspose(), tmp);
         
         B.multiply_from_left(tmp);
@@ -639,7 +639,7 @@ struct contraction {
         
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm<Transpose,NoTranspose>(conjugate(mps.data_), mps.data_, dm);
+        gemm(transpose(conjugate(mps.data_)), mps.data_, dm);
             
         Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
         
@@ -647,7 +647,7 @@ struct contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm<Transpose,NoTranspose>(conjugate(half_dm.data_[b]), half_dm.data_[b], tdm);
+            gemm(transpose(conjugate(half_dm.data_[b])), half_dm.data_[b], tdm);
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -689,7 +689,7 @@ struct contraction {
         A.make_right_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm<NoTranspose,Transpose>(psi.data_, conjugate(A.data_), tmp);
+        gemm(psi.data_, transpose(conjugate(A.data_)), tmp);
         
         B.multiply_from_right(tmp);
         

@@ -11,8 +11,13 @@
 #include "utils/function_objects.h"
 
 template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>::block_matrix()
+{ }
+
+template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
-                                              Index<SymmGroup> cols)
+                                              Index<SymmGroup> cols,
+                                              typename boost::disable_if<maquis::traits::is_transpose<Matrix> >::type* dummy)
 : rows_(rows)
 , cols_(cols)
 {
@@ -29,6 +34,20 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
 //    cols_.push_back(std::make_pair(cc, num_cols(m)));
 //    data_.push_back(&m);
 //}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<typename maquis::traits::transpose<Matrix>::type,
+                                              SymmGroup> const & m,
+                                              typename boost::disable_if<maquis::traits::is_transpose<Matrix> >::type* dummy)
+: rows_(m.rows_)
+, cols_(m.cols_)
+{
+    for (size_t k=0; k<m.data_.size(); ++k)
+        data_.push_back(new Matrix(m.data_[k]));
+    
+    // MD: unfortunately this doesn't work :(
+    // std::copy(m.data_.begin(), m.data_.end(), std::back_inserter<Matrix>(data_));
+}
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix const & rhs)
