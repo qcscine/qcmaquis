@@ -4,7 +4,7 @@
 #define AMBIENT
 #endif
 #define AMBIENT_THREADS 1
-#define AMBIENT_THREADS_LIMIT 8
+#define AMBIENT_THREADS_LIMIT 1
 // {{{ system includes
 #include <mpi.h>
 #include <complex>
