@@ -15,8 +15,8 @@ namespace ambient { namespace models { namespace velvet {
     public:
         inline model();
         template<typename T> inline size_t time(const T* o);
-        template<typename T> inline revision& init_revision(T* o);
-        inline revision& add_revision(history* o);
+        template<typename T> inline revision* init_revision(T* o);
+        inline revision* add_revision(history* o);
         inline bool is_atomic(const history* o);
         inline void insert(revision* r);
         inline revision* get_revision(size_t id) const;

@@ -17,11 +17,10 @@ namespace ambient { namespace models { namespace velvet {
         //}
     }
 
-    inline revision& history::add_state(revision* r){
+    inline void history::add_state(revision* r){
         r->parent = this->current;
         this->content.push_back(r);
         this->current = r;
-        return *r;
     }
 
     inline revision* history::back() const {

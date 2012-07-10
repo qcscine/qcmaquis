@@ -10,7 +10,7 @@ namespace ambient { namespace models { namespace velvet {
     public:
         inline ~history();
         inline void clean();
-        inline revision& add_state(revision* r);
+        inline void add_state(revision* r);
         inline size_t time() const;
         inline revision* back() const;
         inline bool weak() const;

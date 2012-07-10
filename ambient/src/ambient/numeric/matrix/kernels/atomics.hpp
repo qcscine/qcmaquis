@@ -50,6 +50,124 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
     };
+        
+    template<class Tag1, class Tag2, typename T, typename D>
+    struct gemm_diagonal_lhs : public kernel_atomic< gemm_diagonal_lhs<Tag1,Tag2,T,D> > 
+    {
+        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
+
+        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->assign(ui_l_current(a_diag));
+            this->pin(ui_l_current(b));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
+            int sizey = ui_c_get_dim(a_diag).y;
+            int size = ui_c_get_dim(b).x;
+            int ONE  = 1;
+            D* bd = ui_c_current(b)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+            D* alpha = ui_c_current(a_diag)(0,0);
+        
+            for(int k = 0 ; k < sizey; k++){
+        	     axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<class Tag1, typename T, typename D>
+    struct gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> : public kernel_atomic< gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> > 
+    {
+        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
+
+        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->assign(ui_l_current(a_diag));
+            this->pin(ui_l_current(b));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
+            printf("Special DIAGONAL!\n");
+            size_t sizex = ui_c_get_dim(b).x;
+            int size  = ui_c_get_dim(a_diag).y;
+            int ONE  = 1;
+            D* bd = ui_c_current(b)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+            D* alpha = ui_c_current(a_diag)(0,0);
+        
+            for(int k = 0 ; k < sizex; k++){
+        	     axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<class Tag1, class Tag2, typename T, typename D>
+    struct gemm_diagonal_rhs : public kernel_atomic< gemm_diagonal_rhs<Tag1,Tag2,T,D> > 
+    {
+        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
+
+        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b_diag));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
+            size_t sizex = ui_c_get_dim(b_diag).y;
+            int size = ui_c_get_dim(a).y; // for the case of complex
+            int ONE = 1;
+            D* ad = ui_c_current(a)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+        	D* alpha = ui_c_current(b_diag)(0,0);
+        
+            for(int k = 0 ; k < sizex; k++){
+        	    axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+
+    template<class Tag2, typename T, typename D>
+    struct gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> : public kernel_atomic< gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> > 
+    {
+        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
+
+        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b_diag));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
+            printf("Special DIAGONAL!\n");
+            int sizey = ui_c_get_dim(b_diag).y;
+            int size = ui_c_get_dim(a).x;
+            int ONE = 1;
+            D* ad = ui_c_current(a)(0,0);
+            D* cd = ui_p_updated(c)(0,0);
+        	D* alpha = ui_c_current(b_diag)(0,0);
+        
+            for(int k = 0 ; k < sizey; k++){
+        	    axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);
+            }
+            __A_TIME_C_STOP
+        }
+    };
 
 
     template<typename T>
@@ -199,6 +317,31 @@ namespace ambient { namespace numeric { namespace kernels {
                                                         in,  dim2(in_offset + ss1*rdim, 0),
                                                         dim2(rdim, ldim), alfa_t);
                 }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct trace_atomic : public kernel_atomic< trace_atomic<T> > 
+    {
+        typedef void (trace_atomic::*F)(const matrix_impl<T>&, future<T>&);
+
+        inline void l(const matrix_impl<T>& a, future<T>& trace){
+            this->ctxt_select("* from ambient as trace_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(const matrix_impl<T>& a, future<T>& trace){
+            // gs
+            __A_TIME_C("ambient_trace_atomic_c_kernel"); 
+            size_t m = ui_c_get_dim(a).y;
+            size_t n = ui_c_get_dim(a).x;
+            T* ad = ui_c_current(a)(0, 0);
+        
+            size_t sizex = std::min(n,m);
+            for(size_t jj = 0; jj < sizex; jj++){
+                trace.get_value() += ad[jj + jj*m];
+            }
             __A_TIME_C_STOP
         }
     };
@@ -395,20 +538,192 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
         
+    template<typename T>
+    struct init_identity_atomic : public kernel_atomic< init_identity_atomic<T> > 
+    {
+        typedef void (init_identity_atomic::*F)(matrix_impl<T>&);
+
+        inline void l(matrix_impl<T>& a){
+            this->ctxt_select("1 from ambient as init_identity_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(matrix_impl<T>& a){
+            __A_TIME_C("ambient_init_identity_atomic_c_kernel"); 
+            size_t n = ui_c_get_dim(a).x;
+            size_t m = ui_c_get_dim(a).y;
+            T* ad = ui_r_updated(a)(0,0);
+
+            size_t sizex = std::min(m,n); // respecting borders
+            for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
+            __A_TIME_C_STOP
+        }
+    };
+       
+    template<typename T>
+    struct init_random_atomic : public kernel_atomic< init_random_atomic<T> > 
+    {
+        typedef void (init_random_atomic::*F)(matrix_impl<T>&);
+     
+        template<typename T> inline void randomize(T* ad){ *ad = drand48(); }
+        template<typename T> inline void randomize(std::complex<T>* ad){
+            ad->real(drand48());
+            ad->imag(drand48());
+        }
+
+        inline void l(matrix_impl<T>& a){
+            this->ctxt_select("1 from ambient as init_random_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+        
+        inline void c(matrix_impl<T>& a){
+            __A_TIME_C("ambient_init_random_atomic_c_kernel"); 
+            size_t m = ui_c_get_dim(a).y;
+            size_t n = ui_c_get_dim(a).x;
+            T* ad = ui_w_updated(a)(0,0);
+          
+            for(size_t jj = 0; jj < n; jj++){
+                for(size_t ii = 0; ii < m; ii++)
+                    randomize((ad+(jj*m+ii)));
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct init_value_atomic : public kernel_atomic< init_value_atomic<T> > 
+    {
+        typedef void (init_value_atomic::*F)(matrix_impl<T>&, const T&);
+
+        inline void l(matrix_impl<T>& a, const T& value){
+            this->ctxt_select("1 from ambient as init_value_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(matrix_impl<T>& a, const T& value){
+            __A_TIME_C("ambient_init_value_atomic_c_kernel"); 
+            T* ad = ui_w_updated(a)(0,0);
+            size_t m = ui_c_get_dim(a).y;
+            size_t n = ui_c_get_dim(a).x;
+        
+            for(size_t j=0; j < n; ++j){
+                for(size_t i = 0; i < m; ++i){
+                    ad[i+j*m] = value; // not a memset due to complex
+                }
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct round_square_atomic : public kernel_atomic< round_square_atomic<T> > 
+    {
+        typedef void (round_square_atomic::*F)(const matrix_impl<T>&, std::vector<T>*&);
+
+        inline void l(const matrix_impl<T>& a, std::vector<T>*& ac){
+            this->ctxt_select("* from ambient as round_square_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(const matrix_impl<T>& a, std::vector<T>*& ac){
+            // gs
+            __A_TIME_C("ambient_round_square_atomic_c_kernel"); 
+            T* ad = ui_c_current(a)(0,0);
+            size_t sizey = ui_c_get_dim(a).y;
+            for(int i=0; i < sizey; i++){
+                double v = std::abs(ad[i]);
+                if(v > 1e-10) ac->push_back(v*v);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+
+    template<typename T>
+    struct cast_to_vector_atomic : public kernel_atomic< cast_to_vector_atomic<T> > 
+    {
+        typedef void (cast_to_vector_atomic::*F)(std::vector<T>*&, const matrix_impl<T>&, const size_t&, const size_t&);
+
+        inline void l(std::vector<T>*& ac, const matrix_impl<T>& a, const size_t& m, const size_t& n){
+            this->ctxt_select("* from ambient as cast_to_vector_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(std::vector<T>*& ac, const matrix_impl<T>& a, const size_t& m, const size_t& n){
+            // gs
+            __A_TIME_C("ambient_cast_to_vector_atomic_c_kernel"); 
+            T* ad = ui_c_current(a)(0,0);
+            for(int j=0; j < n; ++j) memcpy((void*)&(*ac)[j*m],(void*)&ad[j*m], m*sizeof(T));  
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct cast_from_vector_atomic : public kernel_atomic< cast_from_vector_atomic<T> > 
+    {
+        typedef void (cast_from_vector_atomic::*F)(const std::vector<T>*&, matrix_impl<T>&, const size_t&, const size_t&, const size_t&);
+
+        inline void l(const std::vector<T>*& ac, matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
+            this->ctxt_select("1 from ambient as cast_from_vector"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(const std::vector<T>*& ac, matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
+            __A_TIME_C("ambient_cast_from_vector_atomic_c_kernel"); 
+            T* ad = ui_w_updated(a)(0,0);
+            for(int j=0; j < n; ++j) memcpy((void*)&ad[j*m],(void*)&(*ac)[j*lda], m*sizeof(T));
+            __A_TIME_C_STOP 
+        }
+    };
+
+    template<typename T>
+    struct validation_atomic : public kernel_atomic< validation_atomic<T> > 
+    {
+        typedef void (validation_atomic::*F)(const matrix_impl<T>&, const matrix_impl<T>&, future<int>&);
+
+        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){
+            this->ctxt_select("1 from ambient as validation_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a)); 
+            this->assign(ui_l_current(b)); 
+        }
+        
+        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){ // see paper for Reference Dongara 
+            T* ad = ui_c_current(a)(0,0); 
+            T* bd = ui_c_current(b)(0,0); 
+            double res; 
+            double epsilon = std::numeric_limits<double>::epsilon();
+            size_t position_xy; 
+       
+            for(size_t ii=0; ii < ui_c_get_dim(a).y; ++ii){
+                for(size_t jj=0; jj < ui_c_get_dim(a).x; ++jj){
+                    if(jj < std::min(ui_c_get_dim(a).x,ui_c_get_dim(b).x) && 
+                       ii < std::min(ui_c_get_dim(a).y,ui_c_get_dim(b).y)  )
+                    {
+                        position_xy = jj*ui_c_get_dim(a).y+ii;
+                        res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
+                        if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
+                            std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
+                            ret.get_value() = 0; // test failed return 0 (bool false)
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     // {{{ MKL LAPACK kernels
 
     template<typename T>
-    struct svd_atomic : public kernel_unpinned< svd_atomic<T> > 
+    struct svd_atomic : public kernel_atomic< svd_atomic<T> > 
     {
         typedef void (svd_atomic::*F)(const matrix_impl<T>&, matrix_impl<T>&, matrix_impl<T>&, matrix_impl<double>&);
 
         inline void l(const matrix_impl<T>& a, matrix_impl<T>& u, matrix_impl<T>& vt, matrix_impl<double>& s)
         {
             this->ctxt_select("1 from ambient as svd_atomic"); //if(!ctxt.involved()) return;
-            this->atomic_conditional_assign(ui_l_current(s));
-            this->atomic_conditional_assign(ui_l_current(a));
-            this->atomic_conditional_assign(ui_l_current(u));
-            this->atomic_conditional_assign(ui_l_current(vt));
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(s));
+            this->assign(ui_l_current(u));
+            this->assign(ui_l_current(vt));
         }
 
         inline void c(const matrix_impl<T>& a, matrix_impl<T>& u, matrix_impl<T>& vt, matrix_impl<double>& s)
@@ -437,14 +752,14 @@ namespace ambient { namespace numeric { namespace kernels {
     };
         
     template<typename T>
-    struct heev_atomic : public kernel_unpinned< heev_atomic<T> > 
+    struct heev_atomic : public kernel_atomic< heev_atomic<T> > 
     {
         typedef void (heev_atomic::*F)(matrix_impl<T>&, matrix_impl<double>&);
 
         inline void l(matrix_impl<T>& a, matrix_impl<double>& w){
             this->ctxt_select("1 from ambient as heev_atomic"); //if(!ctxt.involved()) return;
-            this->atomic_conditional_assign(ui_l_current(a));
-            this->atomic_conditional_assign(ui_l_current(w));
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(w));
         }
 
         inline void c(matrix_impl<T>& a, matrix_impl<double>& w){

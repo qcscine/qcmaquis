@@ -85,7 +85,7 @@ namespace ambient { namespace controllers { namespace velvet {
         while(this->workload){
             instruction = l->get_task();
             if(instruction == NULL){
-                printf("WARNING: MASTER HAS NULL INSTRUCTIONS!\n");
+                printf("WARNING: MASTER HAS NULL INSTRUCTIONS! %d\n", (int)this->workload);
                 pthread_yield();
                 continue;
             }
@@ -194,6 +194,12 @@ namespace ambient { namespace controllers { namespace velvet {
         assert(this->workload > 0);
         this->workload--;
         pthread_mutex_unlock(&this->mutex);
+
+        std::list<revision*>& list = op->get_derivatives();
+        for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it){
+            (*it)->reset_generator();
+            ambient::controller.atomic_receive(**it, 0, 0);
+        }
         delete op;
     }
 

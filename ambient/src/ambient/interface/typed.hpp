@@ -51,7 +51,7 @@ namespace ambient {
             m->arguments[arg] = (void*)new ptr_type(&obj);
             m->revisions[arg] = ambient::model.time(&obj);
             obj.back()->add_modifier(m);
-            ambient::model.add_revision(&obj).set_generator(m);
+            m->add_derivative(ambient::model.add_revision(&obj)); 
         }
         template<size_t arg>
         static inline void modify(const T& obj, sfunctor* m){
