@@ -630,123 +630,6 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
         
-    template<class Tag1, class Tag2, typename T, typename D>
-    struct gemm_diagonal_lhs : public kernel_atomic< gemm_diagonal_lhs<Tag1,Tag2,T,D> > 
-    {
-        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
-
-        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(a_diag));
-            this->pin(ui_l_current(b));
-            this->assign(ui_l_current(c));
-        }
-
-        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
-            // gs
-            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
-            int sizey = ui_c_get_dim(a_diag).y;
-            int size = ui_c_get_dim(b).x;
-            int ONE  = 1;
-            D* bd = ui_c_current(b)(0,0);
-            D* cd = ui_p_updated(c)(0,0);
-            D* alpha = ui_c_current(a_diag)(0,0);
-        
-            for(int k = 0 ; k < sizey; k++){
-        	     axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey);
-            }
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<class Tag1, typename T, typename D>
-    struct gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> : public kernel_atomic< gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> > 
-    {
-        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
-
-        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(a_diag));
-            this->pin(ui_l_current(b));
-            this->assign(ui_l_current(c));
-        }
-
-        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
-            // gs
-            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
-            printf("Special DIAGONAL!\n");
-            size_t sizex = ui_c_get_dim(b).x;
-            int size  = ui_c_get_dim(a_diag).y;
-            int ONE  = 1;
-            D* bd = ui_c_current(b)(0,0);
-            D* cd = ui_p_updated(c)(0,0);
-            D* alpha = ui_c_current(a_diag)(0,0);
-        
-            for(int k = 0 ; k < sizex; k++){
-        	     axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);
-            }
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<class Tag1, class Tag2, typename T, typename D>
-    struct gemm_diagonal_rhs : public kernel_atomic< gemm_diagonal_rhs<Tag1,Tag2,T,D> > 
-    {
-        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
-
-        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b_diag));
-            this->assign(ui_l_current(c));
-        }
-
-        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
-            // gs
-            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
-            size_t sizex = ui_c_get_dim(b_diag).y;
-            int size = ui_c_get_dim(a).y; // for the case of complex
-            int ONE = 1;
-            D* ad = ui_c_current(a)(0,0);
-            D* cd = ui_p_updated(c)(0,0);
-        	D* alpha = ui_c_current(b_diag)(0,0);
-        
-            for(int k = 0 ; k < sizex; k++){
-        	    axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
-            }
-            __A_TIME_C_STOP
-        }
-    };
-    template<class Tag2, typename T, typename D>
-    struct gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> : public kernel_atomic< gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> > 
-    {
-        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
-
-        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b_diag));
-            this->assign(ui_l_current(c));
-        }
-
-        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
-            // gs
-            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
-            printf("Special DIAGONAL!\n");
-            int sizey = ui_c_get_dim(b_diag).y;
-            int size = ui_c_get_dim(a).x;
-            int ONE = 1;
-            D* ad = ui_c_current(a)(0,0);
-            D* cd = ui_p_updated(c)(0,0);
-        	D* alpha = ui_c_current(b_diag)(0,0);
-        
-            for(int k = 0 ; k < sizey; k++){
-        	    axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);
-            }
-            __A_TIME_C_STOP
-        }
-    };
-        
     template<typename T>
     struct trace : public kernel< trace<T> > 
     {
@@ -972,7 +855,7 @@ namespace ambient { namespace numeric { namespace kernels {
         {
             // gs
             __A_TIME_C("ambient_svd_c_kernel"); 
-        /* Locals */
+        // Locals //
             int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
             int ldu = ui_c_get_grid_dim(u).y*ui_c_get_mem_dim(u).y;
             int ldvt = ui_c_get_grid_dim(vt).y*ui_c_get_mem_dim(vt).y;
@@ -985,14 +868,14 @@ namespace ambient { namespace numeric { namespace kernels {
             T* vtd = (T*)__a_solidify<T>(vt);
             double* sd = (double*)__a_solidify<T>(s);
             
-        /* Query and allocate the optimal workspace */
+        // Query and allocate the optimal workspace //
             lwork = -1; // C - Alex, netlib said -1 for the best workspace
             gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, &wkopt, &lwork, rwork, &info );
             lwork = OptimalSize(wkopt);
             work = (T*)malloc( lwork*sizeof(T) );
-        /* Compute SVD */
+        // Compute SVD //
             gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, work, &lwork, rwork, &info );
-        /* Check for convergence */
+        // Check for convergence //
             assert( info == 0 ); // otherwise the algorithm computing SVD failed to converge
             __a_disperse<T>(ud, u);
             __a_disperse<T>(vtd, vt);

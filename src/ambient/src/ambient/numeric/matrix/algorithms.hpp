@@ -244,25 +244,19 @@ namespace ambient { namespace numeric {
 namespace algorithms {
 
     template<typename T>
-    inline void fill_identity(matrix_impl<T>& a){
-        size_t m = a.num_rows();
-        size_t n = a.num_cols();
-        ambient::push< kernels::init_identity<T> >(a, m, n);
+    inline void fill_identity(matrix_impl<T>& m){
+        ATOMIC(m.atomic(), init_identity, m);
     }
 
     template<typename T>
-    inline void fill_random(matrix_impl<T>& a){
-        size_t m = a.num_rows();
-        size_t n = a.num_cols();
-        ambient::push< kernels::init_random<T> >(a, m, n);
+    inline void fill_random(matrix_impl<T>& m){
+        ATOMIC(m.atomic(), init_random, m);
     }
 
     template<typename T>
-    inline void fill_value(matrix_impl<T>& a, T value){
+    inline void fill_value(matrix_impl<T>& m, T value){
         if(value == 0.) return; // matrices are 0s by default
-        size_t m = a.num_rows();
-        size_t n = a.num_cols();
-        ambient::push< kernels::init_value<T> >(a, m, n, value);
+        ATOMIC(m.atomic(), init_value, m, value);
     }
 
     template<typename T>
@@ -296,11 +290,10 @@ namespace algorithms {
     }
 
     template <typename T>
-    inline scalar_type trace(const matrix_impl<T>& a) {
+    inline scalar_type trace(const matrix_impl<T>& m){
         // gs
         scalar_type trace(0);
-        size_t n = std::min(a.num_rows(), a.num_cols());
-        ambient::push< kernels::trace<T> >(a, n, trace);
+        ATOMIC(m.atomic(), trace, m, trace);
         return trace;
     }
 

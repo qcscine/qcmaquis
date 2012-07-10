@@ -13,17 +13,19 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     template<typename T>
-    inline revision& model::init_revision(T* o){
+    inline revision* model::init_revision(T* o){
         //if(this->mem_dim < o->spec.dim.max()) block = this->mem_dim; else 
         dim2 block = o->spec.dim;
         o->spec.latch<T::value_type>(block);
         revision* r = new revision(&o->spec, true);
-        return o->add_state(r);
+        o->add_state(r);
+        return r;
     }
 
-    inline revision& model::add_revision(history* o){
+    inline revision* model::add_revision(history* o){
         revision* r = new revision(&o->spec);
-        return o->add_state(r);
+        o->add_state(r);
+        return r;
     }
 
     inline bool model::is_atomic(const history* o){
