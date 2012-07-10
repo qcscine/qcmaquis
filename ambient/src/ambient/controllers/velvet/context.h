@@ -3,9 +3,8 @@
 #include "ambient/models/velvet/model.h"
 #include "ambient/utils/singleton.hpp"
 
-extern pthread_key_t pthread_tid;
-
 #define GET_TID ctxt.get_tid()
+extern pthread_key_t pthread_tid;
 
 namespace ambient { namespace controllers {     
 
