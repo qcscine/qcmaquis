@@ -47,6 +47,8 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<typename maquis::trai
     
     // MD: unfortunately this doesn't work :(
     // std::copy(m.data_.begin(), m.data_.end(), std::back_inserter<Matrix>(data_));
+    // Alex: you are working with pointers here. Also this is the reason of the slowdown - you copy-convert the matrix, obviously RVO won't work.
+    //       Feel free to use C++ 11 though.
 }
 
 template<class Matrix, class SymmGroup>
