@@ -22,7 +22,6 @@ namespace maquis { namespace traits {
     template<class T> struct real_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::real_type type; };
 
     template <typename T> struct transpose_view< ambient::numeric::matrix<T> > { typedef ambient::numeric::transpose_view<ambient::numeric::matrix<T> > type; };
-    template <typename T> struct transpose_view< ambient::numeric::matrix<T> const > { typedef ambient::numeric::transpose_view<ambient::numeric::matrix<T> const > type; };
     template <typename T> struct transpose_view< ambient::numeric::diagonal_matrix<T> > { typedef ambient::numeric::diagonal_matrix<T> type; };
 
 } }

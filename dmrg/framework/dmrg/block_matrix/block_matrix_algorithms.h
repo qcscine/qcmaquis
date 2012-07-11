@@ -315,11 +315,11 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<typename maquis::traits::transpose<Matrix const>::type, SymmGroup> transpose(block_matrix<Matrix, SymmGroup> const & m) 
+block_matrix<typename maquis::traits::transpose<Matrix>::type, SymmGroup> transpose(block_matrix<Matrix, SymmGroup> const & m) 
 { 
-    block_matrix<typename maquis::traits::transpose<Matrix const>::type, SymmGroup> ret; 
+    block_matrix<typename maquis::traits::transpose<Matrix>::type, SymmGroup> ret; 
     for(size_t k=0; k<m.n_blocks(); ++k) 
-        ret.insert_block(new typename maquis::traits::transpose<Matrix const>::type(m[k]), 
+        ret.insert_block(new typename maquis::traits::transpose<Matrix>::type(m[k]), 
                          m.right_basis()[k].first, m.left_basis()[k].first);
     return ret; 
 } 
