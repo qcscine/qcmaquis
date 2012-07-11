@@ -53,8 +53,10 @@ namespace maquis { namespace traits {
     template<class T> const std::complex<T> real_identity<std::complex<T> >::value = std::complex<T>(1,0);
     template<class T> const std::complex<T> imag_identity<std::complex<T> >::value = std::complex<T>(0,1);
 
-    template <class Matrix> struct transpose{ typedef alps::numeric::transpose_view<Matrix> type; };
-    template <class Matrix> struct transpose< alps::numeric::transpose_view<Matrix> > { typedef Matrix type; };
+    template <class Matrix> struct transpose_view { typedef Matrix type; };
+
+    template <class Matrix> struct transpose{ typedef typename transpose_view<Matrix>::type type; };
+    template <class Matrix> struct transpose< typename transpose_view<Matrix>::type > { typedef Matrix type; };
     template <typename T>   struct transpose< alps::numeric::diagonal_matrix<T> > { typedef alps::numeric::diagonal_matrix<T> type; };
     template <typename T>   struct transpose< ambient::numeric::diagonal_matrix<T> > { typedef ambient::numeric::diagonal_matrix<T> type; };
     
