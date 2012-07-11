@@ -11,7 +11,7 @@
 
 #include "dmrg/utils/DmrgParameters2.h"
 
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 #ifdef USE_MTM
 #include "types/mt_matrix/mt_matrix.h"
 typedef alps::numeric::mt_matrix<double> Matrix;

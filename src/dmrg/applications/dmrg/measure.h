@@ -21,13 +21,13 @@ typedef ambient::numeric::matrix<dmrg_value_type> matrix;
 #include "types/mt_matrix/mt_matrix.h"
 typedef alps::numeric::mt_matrix<dmrg_value_type> matrix;
 #else
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<dmrg_value_type> matrix;
 #endif
 #undef dmrg_value_type
 
 #include "dmrg/utils/DmrgParameters2.h"
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
 // def. of run functions

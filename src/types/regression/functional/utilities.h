@@ -1,3 +1,4 @@
+#include "utils/bindings.hpp"
 #include <boost/static_assert.hpp> 
 
 #define M 0xF4240 
