@@ -23,9 +23,6 @@ struct contraction {
                       block_matrix<Matrix, SymmGroup> const & left,
                       block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
         
@@ -57,9 +54,6 @@ struct contraction {
                        block_matrix<Matrix, SymmGroup> const & right,
                        block_matrix<Matrix, SymmGroup> * localop = NULL)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
         
@@ -196,9 +190,6 @@ struct contraction {
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              Index<SymmGroup> const * in_low = NULL)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-        
         if (in_low == NULL)
             in_low = &mps.row_dim();
         
@@ -454,9 +445,6 @@ struct contraction {
                           Boundary<Matrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-
         Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
         
         bra_tensor.make_left_paired();
@@ -481,9 +469,6 @@ struct contraction {
                            Boundary<Matrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-
         Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
         
         bra_tensor.make_right_paired();
@@ -565,9 +550,6 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 Logger & logger)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-        
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
         gemm(mps.data_, transpose(conjugate(mps.data_)), dm);
@@ -610,9 +592,6 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-        
         psi.make_left_paired();
         A.make_left_paired();
         
@@ -634,9 +613,6 @@ struct contraction {
                                 double alpha, double cutoff, std::size_t Mmax,
                                 Logger & logger)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-        
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
         gemm(transpose(conjugate(mps.data_)), mps.data_, dm);
@@ -682,9 +658,6 @@ struct contraction {
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
-        using maquis::types::Transpose;
-        using maquis::types::NoTranspose;
-        
         psi.make_right_paired();
         A.make_right_paired();
         
