@@ -14,7 +14,7 @@
 #include <alps/numeric/diagonal_matrix.hpp>
 #include "dmrg/block_matrix/detail/alps_matrix_kernels.hpp"
 
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 
 namespace maquis { namespace traits {
 

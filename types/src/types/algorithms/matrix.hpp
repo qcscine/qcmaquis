@@ -1,7 +1,7 @@
 #ifndef __MAQUIS_MATRIX_ALGORITHMS_HPP__
 #define __MAQUIS_MATRIX_ALGORITHMS_HPP__
 
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 
 namespace maquis {
     namespace types {

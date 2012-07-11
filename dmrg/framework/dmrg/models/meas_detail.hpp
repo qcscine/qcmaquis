@@ -14,7 +14,7 @@
 #include <algorithm>
 
 #include "dmrg/utils/utils.hpp"
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 
 #include <alps/hdf5.hpp>
 

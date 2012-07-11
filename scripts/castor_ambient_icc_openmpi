@@ -2,7 +2,7 @@
 STATE="void"
 STATE_AMBIENT="void"
 STATE_TYPES="void"
-STATE_DMRG="build"
+STATE_DMRG="configure"
 # end of target states #
 SITE=castor_ambient # the dashboard name (uname -n)
 ROOT_DIR=/users/akosenko/maquis2012/src
@@ -24,8 +24,10 @@ module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 
 ## common ##
-MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
-MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O0 -g -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__ -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O0 -g -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__ -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__ -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__ -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
 MAQUIS_COMMON_CMAKE_C_COMPILER=icc
 MAQUIS_COMMON_CMAKE_CXX_COMPILER=icpc
 MAQUIS_COMMON_MPI_CXX_FOUND=FALSE
