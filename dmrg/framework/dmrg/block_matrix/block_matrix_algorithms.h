@@ -13,7 +13,7 @@
 #include "dmrg/utils/utils.hpp"
 #include "utils/timings.h"
 #include "utils/traits.hpp"
-#include "types/utils/bindings.hpp"
+#include "utils/bindings.hpp"
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
@@ -103,7 +103,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
-    std::vector< std::vector<value_type> > evals_vector = maquis::traits::matrix_cast< std::vector< std::vector<value_type> > >(evals);
+    std::vector< std::vector<value_type> > evals_vector = maquis::bindings::matrix_cast< std::vector< std::vector<value_type> > >(evals);
     
     std::size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){

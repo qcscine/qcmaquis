@@ -7,7 +7,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mpstensor.h"

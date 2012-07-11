@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<double> Matrix;
 
 #include <alps/hdf5.hpp>

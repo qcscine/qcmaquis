@@ -7,7 +7,6 @@
 #include "ambient/numeric/matrix.hpp"
 #include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
-#include "types/utils/bindings.hpp"
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)

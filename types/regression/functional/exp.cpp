@@ -8,7 +8,6 @@
 
 #include "alps/numeric/matrix.hpp"
 #include "ambient/numeric/matrix.hpp"
-#include "types/utils/bindings.hpp"
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( Exp, T, test_types)

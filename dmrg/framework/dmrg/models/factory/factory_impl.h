@@ -15,7 +15,7 @@
 #include <vector>
 
 // serial matrix
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 
 #ifdef USE_MTM
 #include "types/mt_matrix/mt_matrix.h"

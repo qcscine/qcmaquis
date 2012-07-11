@@ -9,7 +9,6 @@
 #include "alps/numeric/matrix/algorithms.hpp"
 #include "alps/numeric/diagonal_matrix.hpp"
 #include "ambient/numeric/matrix.hpp"
-#include "types/utils/bindings.hpp"
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( syev_comparison, T, test_types)

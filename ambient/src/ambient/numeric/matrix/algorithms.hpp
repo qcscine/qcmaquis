@@ -36,6 +36,13 @@ namespace ambient { namespace numeric {
         return o;
     }
 
+    template<typename T>
+    bool operator == (const matrix<T>& a, const matrix<T>& b){
+        ambient::future<bool> ret(1);
+        ambient::push< ambient::numeric::kernels::validation_atomic<T> >(a, b, ret); 
+        return (bool)ret;
+    }
+
     template <typename T> inline matrix<T> operator + (matrix<T> lhs, const matrix<T>& rhs){ return (lhs += rhs); }
     template <typename T> inline matrix<T> operator - (matrix<T> lhs, const matrix<T>& rhs){ return (lhs -= rhs); }
     template <typename T> inline const matrix<T> operator * (matrix<T> lhs, const matrix<T>& rhs){ return (lhs *= rhs); }

@@ -1,18 +1,15 @@
 #ifndef MATRIX_BINDINGS_H
 #define MATRIX_BINDINGS_H
 
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/diagonal_matrix.hpp"
+namespace maquis { namespace bindings {
 
-namespace maquis{ namespace traits{
-
-    template <typename O, typename I, typename T = typename I::value_type> 
-    struct binding {
-        typedef T value_type;
-        static O convert(const I& m){
-            return static_cast<O>(m); // default
-        }
+    template <typename O, typename I> struct binding { 
+        static O convert(const I& m){ return static_cast<O>(m); }
     };
+
+    template<typename O, typename I> O matrix_cast(I const& input){
+       return binding<O,I>::convert(input);
+    }
 
     template <typename T>
     struct binding< std::vector<T>, alps::numeric::diagonal_matrix<T> > {
@@ -32,17 +29,25 @@ namespace maquis{ namespace traits{
         }
     };
 
-    template<typename O, typename I> 
-    O matrix_cast(I const& input){
-       return binding<O,I>::convert(input);
-    }
-
-} }
-
 #ifdef AMBIENT 
-#include "ambient/numeric/matrix.hpp"
 
-namespace maquis{ namespace traits{
+    template <typename T, typename S, template<class M, class SS> class C>
+    struct binding< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
+        static std::vector< std::vector<T> > convert(const C<ambient::numeric::diagonal_matrix<T>, S>& m){
+            std::vector< std::vector<T> > set;
+            for(size_t k = 0; k < m.n_blocks(); ++k) 
+                set.push_back(std::vector<T>(m[k].num_rows()));
+            size_t num_cols(1);
+            size_t num_rows;
+            for(size_t k = 0; k < m.n_blocks(); ++k){
+                num_rows = m[k].num_rows();
+                std::vector<T>* v_ptr = &set[k];
+                ambient::push< ambient::numeric::kernels::cast_to_vector_atomic<T> >(v_ptr, m[k], num_rows, num_cols);
+            }
+            ambient::playout();
+            return set;
+        }
+    };
 
     template <typename T>
     struct binding< ambient::numeric::matrix<T>, alps::numeric::matrix<T> > {
@@ -116,32 +121,16 @@ namespace maquis{ namespace traits{
             return binding<alps::numeric::diagonal_matrix<T>, ambient::numeric::diagonal_matrix<T> >::convert(pm).get_values();
         }
     };
-
-    template <typename T, typename S, template<class M, class SS> class C>
-    struct binding< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
-        static std::vector< std::vector<T> > convert(const C<ambient::numeric::diagonal_matrix<T>, S>& m){
-            std::vector< std::vector<T> > set;
-            for(size_t k = 0; k < m.n_blocks(); ++k) 
-                set.push_back(std::vector<T>(m[k].num_rows()));
-            size_t num_cols(1);
-            size_t num_rows;
-            for(size_t k = 0; k < m.n_blocks(); ++k){
-                num_rows = m[k].num_rows();
-                std::vector<T>* v_ptr = &set[k];
-                ambient::push< ambient::numeric::kernels::cast_to_vector_atomic<T> >(v_ptr, m[k], num_rows, num_cols);
-            }
-            ambient::playout();
-            return set;
-        }
-    };
+#endif
 
 } }
 
+#ifdef AMBIENT
 template<typename T>
 bool operator == (alps::numeric::matrix<T> const & a, ambient::numeric::matrix_impl<T> const & b) 
 {
     ambient::future<int> ret(1);
-    ambient::numeric::matrix<T> pa = maquis::traits::matrix_cast<ambient::numeric::matrix<T> >(a);
+    ambient::numeric::matrix<T> pa = maquis::bindings::matrix_cast<ambient::numeric::matrix<T> >(a);
     ambient::push< ambient::numeric::kernels::validation_atomic<T> >(pa, b, ret); 
     return ((int)ret > 0);
 }
@@ -150,7 +139,7 @@ template<typename T>
 bool operator == (alps::numeric::matrix<T> const & a, ambient::numeric::matrix<T> const & b) 
 {
     ambient::future<int> ret(1);
-    ambient::numeric::matrix<T> pa = maquis::traits::matrix_cast<ambient::numeric::matrix<T> >(a);
+    ambient::numeric::matrix<T> pa = maquis::bindings::matrix_cast<ambient::numeric::matrix<T> >(a);
     ambient::push< ambient::numeric::kernels::validation_atomic<T> >(pa, b, ret); 
     return ((int)ret > 0);
 }
@@ -159,16 +148,8 @@ template<typename T>
 bool operator == (alps::numeric::diagonal_matrix<T> const & a, ambient::numeric::diagonal_matrix<T> const & b) 
 {
     ambient::future<int> ret(1);
-    ambient::numeric::diagonal_matrix<T> pa = maquis::traits::matrix_cast<ambient::numeric::diagonal_matrix<T> >(a);
+    ambient::numeric::diagonal_matrix<T> pa = maquis::bindings::matrix_cast<ambient::numeric::diagonal_matrix<T> >(a);
     ambient::push< ambient::numeric::kernels::validation_atomic<T> >(pa, b, ret); 
-    return ((int)ret > 0);
-}
-
-template<typename T>
-bool operator == (ambient::numeric::matrix<T> const & a, ambient::numeric::matrix<T> const & b) 
-{
-    ambient::future<int> ret(1);
-    ambient::push< ambient::numeric::kernels::validation_atomic<T> >(a, b, ret); 
     return ((int)ret > 0);
 }
 
@@ -186,6 +167,5 @@ template<typename T>
 bool operator == (ambient::numeric::diagonal_matrix<T> const & pm, alps::numeric::diagonal_matrix<T> const & m){
     return (m == pm);
 }
-
 #endif
 #endif

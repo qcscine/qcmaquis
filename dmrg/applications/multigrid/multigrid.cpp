@@ -16,7 +16,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 
 #ifdef USE_GPU
 #include <cublas.h>

@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 //typedef alps::numeric::matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
 typedef alps::numeric::matrix<std::complex<double> > Matrix;
 

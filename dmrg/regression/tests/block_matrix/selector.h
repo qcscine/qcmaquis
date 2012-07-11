@@ -21,7 +21,7 @@
 #endif
 
 #ifdef DENSE
-    #include "dmrg/block_matrix/detail/alps_matrix.hpp"
+    #include "dmrg/block_matrix/detail/alps.hpp"
     typedef alps::numeric::matrix<dmrg_value_type> Matrix;
 #endif
 

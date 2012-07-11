@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "dmrg/block_matrix/detail/alps_matrix.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<double> Matrix;
 typedef alps::numeric::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
 
