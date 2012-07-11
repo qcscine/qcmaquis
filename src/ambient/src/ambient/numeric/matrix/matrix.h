@@ -2,7 +2,6 @@
 #define __AMBIENT_NUMERIC_MATRIX_H__
 
 #include "ambient/ambient.hpp"
-#include "types/utils/traits.hpp"
 #include "utils/io.hpp"
 
 #ifdef HAVE_ALPS_HDF5

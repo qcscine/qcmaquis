@@ -16,7 +16,7 @@
 #include "dmrg/mp_tensors/contractions.h"
 
 #include "dmrg/utils/utils.hpp"
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 
 template<class Matrix, class SymmGroup>
 std::vector<Boundary<Matrix, SymmGroup> >

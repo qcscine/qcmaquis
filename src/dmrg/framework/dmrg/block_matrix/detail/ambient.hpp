@@ -76,7 +76,7 @@ namespace maquis { namespace dmrg { namespace detail {
 
 #undef ATOMIC
 
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 
 namespace maquis { namespace traits {
 

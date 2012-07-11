@@ -12,7 +12,7 @@
 #include "dmrg/utils/logger.h"
 #include "dmrg/utils/utils.hpp"
 #include "utils/timings.h"
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 #include "types/utils/bindings.hpp"
 
 #include "dmrg/block_matrix/block_matrix.h"

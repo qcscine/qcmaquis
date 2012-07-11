@@ -4,7 +4,7 @@
 
 #include "dmrg/models/hamiltonian.h"
 
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/multi_index.h"
 #include "dmrg/mp_tensors/reshapes.h"

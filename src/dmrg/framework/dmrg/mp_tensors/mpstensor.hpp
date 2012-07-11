@@ -15,7 +15,7 @@
 #include <alps/numeric/isnan.hpp>
 #include <alps/numeric/isinf.hpp>
 
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,

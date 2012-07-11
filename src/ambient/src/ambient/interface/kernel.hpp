@@ -32,7 +32,6 @@ namespace ambient {
     class kernel : public cfunctor
     {
     public:
-        kernel(){ printf("NON STANDARD KERNEL SSS!\n"); }
         virtual ~kernel()         { kernel_inliner<typename K::F,&K::c>::cleanup(this);                            }
         virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);                             }
         virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);                              }
@@ -100,7 +99,6 @@ namespace ambient {
     class kernel_unpinned : public cfunctor
     {
     public:
-        kernel_unpinned(){ printf("NON STANDARD KERNEL!\n"); }
         virtual ~kernel_unpinned(){ kernel_inliner<typename K::F,&K::c>::cleanup(this);                            }
         virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);                             }
         virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);                              }

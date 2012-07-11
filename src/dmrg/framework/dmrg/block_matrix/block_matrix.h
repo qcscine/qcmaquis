@@ -17,7 +17,7 @@
 #include "dmrg/block_matrix/symmetry.h"
 
 #include "utils/timings.h"
-#include "types/utils/traits.hpp"
+#include "utils/traits.hpp"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 

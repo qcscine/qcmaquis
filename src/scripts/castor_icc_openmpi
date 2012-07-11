@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="build"
+STATE_TYPES="void"
 STATE_DMRG="build"
 # end of target states #
 SITE=castor # the dashboard name (uname -n)

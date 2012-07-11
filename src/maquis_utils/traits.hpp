@@ -1,8 +1,5 @@
-#ifndef __ALPS_TYPES_TRAITS_HPP__
-#define __ALPS_TYPES_TRAITS_HPP__
-
-#include <alps/numeric/real.hpp>
-#include <alps/numeric/matrix/matrix_traits.hpp>
+#ifndef __MAQUIS_TYPES_TRAITS_HPP__
+#define __MAQUIS_TYPES_TRAITS_HPP__
 
 namespace maquis { namespace traits {
 
@@ -22,6 +19,7 @@ namespace maquis { namespace traits {
     template <class Matrix> struct transpose_view { typedef Matrix type; };
     template <class Matrix> struct transpose { typedef typename transpose_view<Matrix>::type type; };
     template <class Matrix> struct transpose< typename transpose_view<Matrix>::type > { typedef Matrix type; };
+
 } }
 
 #endif
