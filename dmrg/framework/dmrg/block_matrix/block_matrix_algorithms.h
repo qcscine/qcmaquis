@@ -361,20 +361,14 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<typename maquis::traits::transpose<Matrix const>::type, SymmGroup> transpose(block_matrix<Matrix, SymmGroup> const & m)
-{
-    block_matrix<typename maquis::traits::transpose<Matrix const>::type, SymmGroup> ret;
-    for (size_t k=0; k<m.n_blocks(); ++k)
-        ret.insert_block(new typename maquis::traits::transpose<Matrix const>::type(m[k]),
-                         m.right_basis()[k].first, m.left_basis()[k].first); // inverting the indices, and creating transpose_view
-    return ret;
-}
-
-template<class Matrix, class SymmGroup>
-void transpose_inplace(block_matrix<Matrix, SymmGroup> & m)
-{
-    m.transpose_inplace();
-}
+block_matrix<typename maquis::traits::transpose<Matrix const>::type, SymmGroup> transpose(block_matrix<Matrix, SymmGroup> const & m) 
+{ 
+    block_matrix<typename maquis::traits::transpose<Matrix const>::type, SymmGroup> ret; 
+    for(size_t k=0; k<m.n_blocks(); ++k) 
+        ret.insert_block(new typename maquis::traits::transpose<Matrix const>::type(m[k]), 
+                         m.right_basis()[k].first, m.left_basis()[k].first);
+    return ret; 
+} 
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> conjugate(block_matrix<Matrix, SymmGroup> m)

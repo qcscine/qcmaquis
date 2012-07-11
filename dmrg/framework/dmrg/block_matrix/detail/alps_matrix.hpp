@@ -16,4 +16,14 @@
 
 #include "types/utils/traits.hpp"
 
+namespace maquis { namespace traits {
+
+template <typename T, typename MemoryBlock> 
+struct transpose_view< alps::numeric::matrix<T, MemoryBlock> > { typedef alps::numeric::transpose_view<alps::numeric::matrix<T, MemoryBlock> > type; }; 
+
+template <typename T, typename MemoryBlock> 
+struct transpose_view< alps::numeric::matrix<T, MemoryBlock> const > { typedef alps::numeric::transpose_view<alps::numeric::matrix<T, MemoryBlock> const > type; };
+
+} }
+
 #endif

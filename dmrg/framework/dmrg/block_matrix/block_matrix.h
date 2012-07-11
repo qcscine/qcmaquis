@@ -31,16 +31,12 @@ public:
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef typename maquis::traits::real_type<Matrix>::type real_type;
-    
+   
     block_matrix();
 
     block_matrix(Index<SymmGroup> rows,
-                 Index<SymmGroup> cols,
-                 typename boost::disable_if<maquis::traits::is_transpose<Matrix> >::type* dummy = 0);
-    
-    block_matrix(block_matrix<typename maquis::traits::transpose<Matrix>::type, SymmGroup> const &,
-                 typename boost::disable_if<maquis::traits::is_transpose<Matrix> >::type* dummy = 0);
-    
+                 Index<SymmGroup> cols);
+
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
     
