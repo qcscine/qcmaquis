@@ -9,8 +9,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
     using ambient::numeric::matrix_impl;
 
-    template<class Tag1, class Tag2, typename T>
-    struct gemm_general_atomic : public kernel_atomic< gemm_general_atomic<Tag1, Tag2, T> > 
+    template<class ViewA, class ViewB, typename T>
+    struct gemm_general_atomic : public kernel_atomic< gemm_general_atomic<ViewA, ViewB, T> > 
     { // gs
         typedef void(gemm_general_atomic::*F)(const matrix_impl<T>&, const matrix_impl<T>&, matrix_impl<T>&);
 
@@ -25,15 +25,15 @@ namespace ambient { namespace numeric { namespace kernels {
             double* ad = ui_c_current(a)(0,0);
             double* bd = ui_c_current(b)(0,0);
             double* cd = ui_w_updated(c)(0,0);
-            int m = Tag1::first(a);
-            int n = Tag2::second(b);
-            int k = Tag1::second(a);
+            int m = ViewA::rows(a);
+            int k = ViewA::cols(a);
+            int n = ViewB::cols(b);
             int lda = ui_c_get_dim(a).y;
             int ldb = ui_c_get_dim(b).y;
             int ldc = ui_c_get_dim(c).y;
             static const double alpha(1.0); 
             static const double beta(0.0);
-            dgemm_(Tag1::code(), Tag2::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
             __A_TIME_C_STOP
         }
         inline void c(const matrix_impl<std::complex<double> >& a, const matrix_impl<std::complex<double> >& b, matrix_impl<std::complex<double> >& c){
@@ -51,8 +51,8 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
         
-    template<class Tag1, class Tag2, typename T, typename D>
-    struct gemm_diagonal_lhs : public kernel_atomic< gemm_diagonal_lhs<Tag1,Tag2,T,D> > 
+    template<class ViewB, typename T, typename D>
+    struct gemm_diagonal_lhs : public kernel_atomic< gemm_diagonal_lhs<ViewB,T,D> > 
     {
         typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
 
@@ -80,8 +80,8 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
         
-    template<class Tag1, typename T, typename D>
-    struct gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> : public kernel_atomic< gemm_diagonal_lhs<Tag1,maquis::types::Transpose,T,D> > 
+    template<typename T, typename D>
+    struct gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> : public kernel_atomic< gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> > 
     {
         typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
 
@@ -110,8 +110,8 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
         
-    template<class Tag1, class Tag2, typename T, typename D>
-    struct gemm_diagonal_rhs : public kernel_atomic< gemm_diagonal_rhs<Tag1,Tag2,T,D> > 
+    template<class ViewA, typename T, typename D>
+    struct gemm_diagonal_rhs : public kernel_atomic< gemm_diagonal_rhs<ViewA,T,D> > 
     {
         typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
 
@@ -139,8 +139,8 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
 
-    template<class Tag2, typename T, typename D>
-    struct gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> : public kernel_atomic< gemm_diagonal_rhs<maquis::types::Transpose,Tag2,T,D> > 
+    template<typename T, typename D>
+    struct gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> : public kernel_atomic< gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> > 
     {
         typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
 

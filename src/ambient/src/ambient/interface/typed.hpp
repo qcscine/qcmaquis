@@ -5,6 +5,7 @@ namespace ambient { namespace numeric {
     template <class T> class matrix;
     template <class T> class matrix_impl;
     template <class T> class diagonal_matrix;
+    template <class T> class transpose_view;
 } }
 
 namespace ambient { 
@@ -136,6 +137,12 @@ namespace ambient {
     template <typename S>
     struct info < const ambient::numeric::matrix<S> > {
         typedef const ambient::numeric::matrix<S> type;
+        static inline const ambient::numeric::matrix_impl<S>& unfold(type& folded){ return *folded.impl; }
+    };
+
+    template <typename S>
+    struct info < const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > > {
+        typedef const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > type;
         static inline const ambient::numeric::matrix_impl<S>& unfold(type& folded){ return *folded.impl; }
     };
     // }}}

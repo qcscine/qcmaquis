@@ -14,11 +14,23 @@
 
 namespace ambient { namespace numeric {
 
-    template<class T>
-    class diagonal_matrix;
+    template <class Matrix>
+    class transpose_view {
+    public:
+        typedef typename Matrix::real_type real_type;
+        typedef typename Matrix::size_type size_type; 
+        typedef typename Matrix::value_type value_type;
+        typedef typename Matrix::scalar_type scalar_type;
+        explicit transpose_view(const Matrix& m) : impl(m.impl) { }
+        operator Matrix () const { return transpose(Matrix(this->impl)); }
+        template<class M> static size_t rows(const M& m){ return m.num_cols(); } 
+        template<class M> static size_t cols(const M& m){ return m.num_rows(); } 
+        static const char* code(){ return "T"; }  
+        typename Matrix::ptr impl;
+    };
 
     template <class T>
-    class matrix {
+    class matrix { // normal view
     public:
         typedef matrix_impl<T> I;
         typedef typename I::ptr ptr;
@@ -28,7 +40,6 @@ namespace ambient { namespace numeric {
         typedef typename I::scalar_type scalar_type;
         typedef typename I::difference_type difference_type;
         // {{{ matrix_impl forwarding
-        //
         static inline matrix<T> identity_matrix(size_type size){
             ptr identity = new I(size, size);
             identity->fill_identity();
@@ -65,56 +76,21 @@ namespace ambient { namespace numeric {
             return *this;
         }
 #endif
-
     public:
-
-        inline void swap(matrix& r){
-            this->impl.swap(r.impl);
-        }
-
-        friend void swap(matrix& x, matrix& y){
-            x.swap(y);
-        }
-
-        inline scalar_type trace() const {
-            return this->impl->trace();
-        }
-
-        inline void fill_identity(){
-            this->impl->fill_identity();
-        }
-
-        inline void fill_value(value_type v){
-            this->impl->fill_value(v);
-        }
-
-        inline void fill_random(){
-            this->impl->fill_random();
-        }
-
-        inline void conj(){
-            this->impl->conj();
-        }
-
-        inline void transpose(){
-            this->impl->transpose();
-        }
-
-        inline bool empty() const {
-            return this->impl->empty();
-        }
-
-        inline size_type num_rows() const {
-            return this->impl->num_rows();
-        }
-
-        inline size_type num_cols() const {
-            return this->impl->num_cols();
-        }
-
-        inline bool atomic() const {
-            return this->impl->atomic();
-        }
+        template<class M> static size_t rows(const M& m){ return m.num_rows(); } 
+        template<class M> static size_t cols(const M& m){ return m.num_cols(); } 
+        inline size_type num_rows() const     { return this->impl->num_rows(); }
+        inline size_type num_cols() const     { return this->impl->num_cols(); }
+        inline scalar_type trace() const      { return this->impl->trace();    }
+        inline void fill_value(value_type v)  { this->impl->fill_value(v);     }
+        inline void fill_identity()           { this->impl->fill_identity();   }
+        inline void fill_random()             { this->impl->fill_random();     }
+        inline void transpose()               { this->impl->transpose();       }
+        inline void conj()                    { this->impl->conj();            }
+        inline bool empty() const             { return this->impl->empty();    }
+        inline bool atomic() const            { return this->impl->atomic();   }
+        inline void swap(matrix& r)           { this->impl.swap(r.impl);       }
+        friend void swap(matrix& x, matrix& y){ x.swap(y);                     }
 
         inline void resize(size_type rows, size_type cols){
             assert(this->num_rows() != 0 && this->num_cols() != 0);
@@ -153,16 +129,6 @@ namespace ambient { namespace numeric {
             return *this;
         }
 
-        inline matrix& operator *= (const matrix& rhs){
-            this->impl->mul(*rhs.impl);
-            return *this;
-        }
-
-        inline matrix& operator *= (const diagonal_matrix<T>& rhs){
-            this->impl->mul(rhs);
-            return *this;
-        }
-
         template <typename T2> inline matrix& operator *= (const T2& t){
             this->impl->mul(t);
             return *this;
@@ -172,29 +138,27 @@ namespace ambient { namespace numeric {
             this->impl->div(t);
             return *this;
         }
-
 #ifdef HAVE_ALPS_HDF5
         inline void load(alps::hdf5::archive & ar) { /*ambient::cerr << "I don't do much." << std::endl;*/ }
         inline void save(alps::hdf5::archive & ar) const { /*ambient::cerr << "I don't do much either." << std::endl;*/ }
 #endif
         // }}}
+        static const char* code(){ return "N"; }  
     public:
         ptr impl;
     };
 
     template <typename T>
-    class matrix_impl :
-    public ambient::iteratable<ambient::history>
-    {
+    class matrix_impl : public ambient::iteratable<ambient::history> {
     public:
-        typedef T         value_type;      // The type T of the elements of the matrix
-        typedef size_t    size_type;       // Unsigned integer type that represents the dimensions of the matrix
-        typedef ptrdiff_t difference_type; // Signed integer type to represent the distance of two elements in the memory
+        typedef T         value_type;
+        typedef size_t    size_type;
+        typedef ptrdiff_t difference_type;
         typedef typename boost::intrusive_ptr<matrix_impl<T> > ptr;
         typedef typename ambient::future<double> real_type;
         typedef typename ambient::future<T> scalar_type;
 
-        inline matrix_impl();             // please avoid implicit conversions
+        inline matrix_impl();
         inline matrix_impl(size_type rows, size_type cols);
         inline matrix_impl(matrix_impl const& m);
         inline value_type& get(size_type i, size_type j);
@@ -213,8 +177,6 @@ namespace ambient { namespace numeric {
         inline void remove_cols(size_type j, size_type k);
         inline void add(const matrix_impl& rhs); 
         inline void sub(const matrix_impl& rhs);
-        inline void mul(const matrix_impl& rhs);
-        inline void mul(const diagonal_matrix<T>& rhs);
         template <typename T2> inline void mul(const T2& t);
         template <typename T2> inline void div(const T2& t);
         inline void copy(const matrix_impl& m);

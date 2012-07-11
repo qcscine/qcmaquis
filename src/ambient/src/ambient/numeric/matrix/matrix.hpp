@@ -112,25 +112,15 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline void matrix_impl<T>::mul(const diagonal_matrix<T>& rhs){
-        algorithms::gemm_diag_inplace(*this, *rhs.get_data().impl);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::mul(const matrix_impl<T>& rhs){
-        algorithms::gemm_inplace(*this, rhs);
-    }
-
-    template <typename T>
     template <typename T2>
     inline void matrix_impl<T>::mul(const T2& t){
-        algorithms::scale_inplace(*this, t);
+        algorithms::mul_inplace(*this, t);
     }
 
     template <typename T>
     template <typename T2>
     inline void matrix_impl<T>::div(const T2& t){
-        algorithms::scale_inverse_inplace(*this, t);
+        algorithms::div_inplace(*this, t);
     }
 
     template <typename T>
