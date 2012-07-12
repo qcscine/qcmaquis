@@ -47,6 +47,7 @@ namespace ambient { namespace controllers { namespace velvet {
         touchstack< cfunctor* > stack;
         pthread_t pool[AMBIENT_THREADS_LIMIT];
         tasklist tasks[AMBIENT_THREADS_LIMIT];
+        tasklist resolutionq;
         size_t workload;
         size_t num_threads;
         size_t rrn;
