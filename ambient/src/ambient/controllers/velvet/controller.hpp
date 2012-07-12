@@ -59,11 +59,11 @@ namespace ambient { namespace controllers { namespace velvet {
         while(l->active){
             instruction = l->get_task();
             if(instruction == NULL){
-                pthread_yield();
+                //pthread_yield();
                 continue;
             }
             ctxt.set_block_id(instruction->pin);
-            instruction->f->computation();
+            ((cfunctor*)instruction->o)->computation();
             delete instruction;
         }
         return NULL;
@@ -75,14 +75,30 @@ namespace ambient { namespace controllers { namespace velvet {
         tasklist* l = static_cast<tasklist*>(list);
 
         while(this->workload){
+            // resolution queue //
+            std::list<cfunctor*> cleanset;
+            while((instruction = this->resolutionq.get_task()) != NULL){
+                cleanset.push_back(((cfunctor*)instruction->o));
+                std::list<revision*>& list = ((cfunctor*)instruction->o)->get_derivatives();
+                for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it)
+                    (*it)->reset_generator();
+                delete instruction;
+            }
+            for(std::list<cfunctor*>::iterator o = cleanset.begin(); o != cleanset.end(); ++o){
+                std::list<revision*>& list = (*o)->get_derivatives();
+                for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it)
+                    this->atomic_receive(**it,0,0);
+                delete *o;
+            }
+            // normal queue
             instruction = l->get_task();
             if(instruction == NULL){
                 //printf("WARNING: MASTER HAS NULL INSTRUCTIONS! %d\n", (int)this->workload);
-                pthread_yield();
+                //pthread_yield();
                 continue;
             }
             ctxt.set_block_id(instruction->pin);
-            instruction->f->computation();
+            ((cfunctor*)instruction->o)->computation();
             delete instruction;
         }
     }
@@ -134,9 +150,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline revision::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
-        pthread_mutex_lock(&r.mutex);
         if(r.get_generator() == NULL) this->atomic_receive(r, x, y); // check the stacked operations for the block
-        pthread_mutex_unlock(&r.mutex);
         return r.block(x,y);
 
         /*assert(r.get_placement() != NULL);
@@ -177,14 +191,11 @@ namespace ambient { namespace controllers { namespace velvet {
             bool ready = true;
             std::list<revision*>& deps = (*it)->get_dependencies();
             for(std::list<revision*>::iterator d = deps.begin(); d != deps.end(); ++d){
-                if(*d == &r) continue;
-                pthread_mutex_lock(&(*d)->mutex);
                 if((*d)->get_generator() != NULL){
                     (*d)->content.assignments.push_back(*it);
                     ready = false;
+                    break;
                 }
-                pthread_mutex_unlock(&(*d)->mutex);
-                if(!ready) break;
             }
             if(ready) this->execute_mod(*it, dim2(x,y));
             list.erase(it++);
@@ -195,15 +206,7 @@ namespace ambient { namespace controllers { namespace velvet {
         pthread_mutex_lock(&this->mutex);
         this->workload--;
         pthread_mutex_unlock(&this->mutex);
-
-        std::list<revision*>& list = op->get_derivatives();
-        for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it){
-            pthread_mutex_lock(&(*it)->mutex);
-            (*it)->reset_generator();
-            ambient::controller.atomic_receive(**it, 0, 0);
-            pthread_mutex_unlock(&(*it)->mutex);
-        }
-        delete op;
+        this->resolutionq.add_task( new tasklist::task(op, dim2(0,0)) );
     }
 
     inline void controller::mute(){

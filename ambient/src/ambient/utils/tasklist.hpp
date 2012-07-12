@@ -3,15 +3,13 @@
 
 namespace ambient{
 
-    using controllers::velvet::cfunctor;
-
     class tasklist {
     public:
         class task {
         public:
-            inline task(cfunctor* f, dim2 pin):f(f),pin(pin),next(NULL){}
+            inline task(void* o, dim2 pin):o(o),pin(pin),next(NULL){}
             task* next;
-            cfunctor* f;
+            void* o;
             dim2 pin;
         };
 
