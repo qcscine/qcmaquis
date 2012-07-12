@@ -1,6 +1,8 @@
 #ifndef __MAQUIS_TYPES_TRAITS_HPP__
 #define __MAQUIS_TYPES_TRAITS_HPP__
 
+#include <alps/numeric/matrix/matrix_traits.hpp> 
+
 namespace maquis { namespace traits {
 
     template<class T> struct scalar_type { typedef typename T::value_type type; };
