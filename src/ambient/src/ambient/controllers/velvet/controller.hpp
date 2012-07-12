@@ -85,7 +85,7 @@ namespace ambient { namespace controllers { namespace velvet {
         while(this->workload){
             instruction = l->get_task();
             if(instruction == NULL){
-                printf("WARNING: MASTER HAS NULL INSTRUCTIONS! %d\n", (int)this->workload);
+                //printf("WARNING: MASTER HAS NULL INSTRUCTIONS! %d\n", (int)this->workload);
                 pthread_yield();
                 continue;
             }
@@ -142,8 +142,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline revision::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
-        //if(r.get_generator() == NULL) 
-            this->atomic_receive(r, x, y); // check the stacked operations for the block
+        this->atomic_receive(r, x, y); // check the stacked operations for the block
         return r.block(x,y);
 
         /*assert(r.get_placement() != NULL);
@@ -181,10 +180,21 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::atomic_receive(revision& r, size_t x, size_t y){
         // pthread_mutex_lock(&this->mutex); // will be needed in case of redunant accepts
+        if(r.get_generator() != NULL) return;
         std::list<cfunctor*>& list = r.block(x,y).get_assignments();
-        std::list<cfunctor*>::iterator it = list.begin();
-        while(it != list.end()){
-            this->execute_mod(*it, dim2(x,y));
+        std::list<cfunctor*>::iterator it = list.begin(); 
+        while(it != list.end())
+        {
+            bool ready = true;
+            std::list<revision*>& deps = (*it)->get_dependencies();
+            for(std::list<revision*>::iterator d = deps.begin(); d != deps.end(); ++d){
+                if((*d)->get_generator() != NULL){
+                    (*d)->content.assignments.push_back(*it);
+                    ready = false;
+                    break;
+                }
+            }
+            if(ready) this->execute_mod(*it, dim2(x,y));
             list.erase(it++);
         }
     }
@@ -218,6 +228,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::flush(){
         if(this->stack.empty()) return;
+        //printf("PLAYOUT WITH %d\n", (int)this->stack.size());
         while(!this->stack.end_reached())
             this->stack.pick()->logistics();
         this->master_stream(this->tasks);

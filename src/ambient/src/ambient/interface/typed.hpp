@@ -52,6 +52,7 @@ namespace ambient {
             m->arguments[arg] = (void*)new ptr_type(&obj);
             m->revisions[arg] = ambient::model.time(&obj);
             obj.back()->add_modifier(m);
+            m->add_dependency(obj.back());
             m->add_derivative(ambient::model.add_revision(&obj)); 
         }
         template<size_t arg>
@@ -59,6 +60,7 @@ namespace ambient {
             m->arguments[arg] = (void*)new ptr_type(const_cast<T*>(&obj));
             m->revisions[arg] = ambient::model.time(&obj);
             obj.back()->add_modifier(m);
+            m->add_dependency(obj.back());
         }
         template<size_t arg>
         static inline void weight(cfunctor* m){
