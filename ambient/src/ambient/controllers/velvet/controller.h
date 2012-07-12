@@ -40,14 +40,11 @@ namespace ambient { namespace controllers { namespace velvet {
         inline size_t get_num_threads() const;
         inline void atomic_complete(cfunctor* op);
         inline void atomic_receive(revision& r, size_t x, size_t y);
-        inline pthread_mutex_t* get_pool_control_mutex();
         inline ~controller();
 
     private:
-        pthread_mutex_t pool_control_mutex;
         pthread_mutex_t mutex;
         touchstack< cfunctor* > stack;
-        pthread_mutex_t mpool[AMBIENT_THREADS_LIMIT];
         pthread_t pool[AMBIENT_THREADS_LIMIT];
         tasklist tasks[AMBIENT_THREADS_LIMIT];
         size_t workload;

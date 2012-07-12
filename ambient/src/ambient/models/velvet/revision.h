@@ -59,6 +59,7 @@ namespace ambient { namespace models { namespace velvet {
         sfunctor* generator;
         std::list<sfunctor*> modifiers;
         revision* parent;
+        pthread_mutex_t mutex;
     };
 
 } } }
