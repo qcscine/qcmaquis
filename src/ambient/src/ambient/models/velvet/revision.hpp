@@ -1,10 +1,13 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline revision::revision(memspec* spec, bool clean)
-    : spec(spec), clean(clean), generator(NULL) { }
+    : spec(spec), clean(clean), generator(NULL) { 
+        pthread_mutex_init(&this->mutex, NULL);
+    }
 
     inline revision::~revision(){
         free(content.header);
+        pthread_mutex_destroy(&this->mutex);
     }
 
     inline void revision::embed(void* memory, size_t x, size_t y, size_t bound){

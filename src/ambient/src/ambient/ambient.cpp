@@ -1,5 +1,5 @@
 #define AMBIENT_THREADS 1
-#define AMBIENT_THREADS_LIMIT 1
+#define AMBIENT_THREADS_LIMIT 12
 // {{{ system includes
 #include <mpi.h>
 #include <complex>

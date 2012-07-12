@@ -17,10 +17,8 @@ namespace ambient { namespace controllers { namespace velvet {
         for(size_t i = 1; i < this->num_threads; i++){
             this->tasks[i].active = false;
             pthread_join(this->pool[i], NULL);
-            pthread_mutex_destroy(&this->mpool[i]);
         }
         pthread_mutex_destroy(&this->mutex);
-        pthread_mutex_destroy(&this->pool_control_mutex);
     }
 
     inline controller::controller()
@@ -29,13 +27,8 @@ namespace ambient { namespace controllers { namespace velvet {
         this->acquire(&ambient::channel);
         pthread_key_create(&pthread_tid, free);
         pthread_mutex_init(&this->mutex, NULL);
-        pthread_mutex_init(&this->pool_control_mutex, NULL);
         this->allocate_threads();
         this->set_num_threads(AMBIENT_THREADS);
-    }
-
-    inline pthread_mutex_t* controller::get_pool_control_mutex(){
-        return &this->pool_control_mutex;
     }
 
     inline size_t controller::get_num_threads() const {
@@ -53,7 +46,6 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::allocate_threads(){
         for(size_t i = 1; i < AMBIENT_THREADS_LIMIT; i++){
             this->tasks[i].id = i;
-            pthread_mutex_init(&this->mpool[i], NULL);
         }
         ctxt.set_tid(0); // master thread id is 0
     }
@@ -142,7 +134,9 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline revision::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
-        this->atomic_receive(r, x, y); // check the stacked operations for the block
+        pthread_mutex_lock(&r.mutex);
+        if(r.get_generator() == NULL) this->atomic_receive(r, x, y); // check the stacked operations for the block
+        pthread_mutex_unlock(&r.mutex);
         return r.block(x,y);
 
         /*assert(r.get_placement() != NULL);
@@ -166,21 +160,16 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline bool controller::lock_block(revision& r, size_t x, size_t y){
-        pthread_mutex_lock(&this->pool_control_mutex);
+        printf("Warning: using slow block-locking!\n");
         bool acquired = r.block(x,y).trylock();
-        pthread_mutex_unlock(&this->pool_control_mutex);
         return acquired;
     }
 
     inline void controller::unlock_block(revision& r, size_t x, size_t y){
-        pthread_mutex_lock(&this->pool_control_mutex);
         r.block(x,y).unlock();
-        pthread_mutex_unlock(&this->pool_control_mutex);
     }
 
     inline void controller::atomic_receive(revision& r, size_t x, size_t y){
-        // pthread_mutex_lock(&this->mutex); // will be needed in case of redunant accepts
-        if(r.get_generator() != NULL) return;
         std::list<cfunctor*>& list = r.block(x,y).get_assignments();
         std::list<cfunctor*>::iterator it = list.begin(); 
         while(it != list.end())
@@ -188,11 +177,14 @@ namespace ambient { namespace controllers { namespace velvet {
             bool ready = true;
             std::list<revision*>& deps = (*it)->get_dependencies();
             for(std::list<revision*>::iterator d = deps.begin(); d != deps.end(); ++d){
+                if(*d == &r) continue;
+                pthread_mutex_lock(&(*d)->mutex);
                 if((*d)->get_generator() != NULL){
                     (*d)->content.assignments.push_back(*it);
                     ready = false;
-                    break;
                 }
+                pthread_mutex_unlock(&(*d)->mutex);
+                if(!ready) break;
             }
             if(ready) this->execute_mod(*it, dim2(x,y));
             list.erase(it++);
@@ -201,14 +193,15 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::atomic_complete(cfunctor* op){
         pthread_mutex_lock(&this->mutex);
-        assert(this->workload > 0);
         this->workload--;
         pthread_mutex_unlock(&this->mutex);
 
         std::list<revision*>& list = op->get_derivatives();
         for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it){
+            pthread_mutex_lock(&(*it)->mutex);
             (*it)->reset_generator();
             ambient::controller.atomic_receive(**it, 0, 0);
+            pthread_mutex_unlock(&(*it)->mutex);
         }
         delete op;
     }
