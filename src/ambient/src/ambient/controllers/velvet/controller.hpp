@@ -57,7 +57,7 @@ namespace ambient { namespace controllers { namespace velvet {
         while(l->active){
             instruction = l->get_task();
             if(instruction == NULL){
-                //pthread_yield();
+                pthread_yield();
                 continue;
             }
             ctxt.set_block_id(instruction->pin);
@@ -75,12 +75,14 @@ namespace ambient { namespace controllers { namespace velvet {
         while(this->workload){
             // resolution queue //
             std::list<cfunctor*> cleanset;
-            while((instruction = this->resolutionq.get_task()) != NULL){
-                cleanset.push_back(((cfunctor*)instruction->o));
-                std::list<revision*>& list = ((cfunctor*)instruction->o)->get_derivatives();
-                for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it)
-                    (*it)->reset_generator();
-                delete instruction;
+            for(size_t t = 1; t < AMBIENT_THREADS; ++t){
+                while((instruction = this->resolutionq[t].get_task()) != NULL){
+                    cleanset.push_back(((cfunctor*)instruction->o));
+                    std::list<revision*>& list = ((cfunctor*)instruction->o)->get_derivatives();
+                    for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it)
+                        (*it)->reset_generator();
+                    delete instruction;
+                }
             }
             for(std::list<cfunctor*>::iterator o = cleanset.begin(); o != cleanset.end(); ++o){
                 std::list<revision*>& list = (*o)->get_derivatives();
@@ -90,15 +92,15 @@ namespace ambient { namespace controllers { namespace velvet {
             }
             this->workload -= cleanset.size();
             // normal queue
-            instruction = l->get_task();
+            /*instruction = l->get_task();
             if(instruction == NULL){
                 //printf("WARNING: MASTER HAS NULL INSTRUCTIONS! %d\n", (int)this->workload);
-                //pthread_yield();
+                pthread_yield();
                 continue;
             }
             ctxt.set_block_id(instruction->pin);
             ((cfunctor*)instruction->o)->computation();
-            delete instruction;
+            delete instruction;*/
         }
     }
 
@@ -112,8 +114,8 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::execute_mod(cfunctor* op, dim2 pin){
-        this->tasks[this->rrn].add_task(new tasklist::task(op, pin));
-        ++this->rrn %= this->num_threads;
+        this->tasks[this->rrn+1].add_task(new tasklist::task(op, pin));
+        ++this->rrn %= this->num_threads-1;
     }
 
     inline void controller::alloc_block(revision& r, size_t x, size_t y){
@@ -153,7 +155,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::atomic_complete(cfunctor* op){
-        this->resolutionq.add_task( new tasklist::task(op, dim2(0,0)) );
+        this->resolutionq[ctxt.get_tid()].add_task( new tasklist::task(op, dim2(0,0)) );
     }
 
     inline void controller::flush(){
