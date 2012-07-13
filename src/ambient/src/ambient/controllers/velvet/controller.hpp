@@ -50,19 +50,17 @@ namespace ambient { namespace controllers { namespace velvet {
 
 #ifndef AMBIENT_INTERFACE
     void* controller::stream(void* list){
-        tasklist::task* instruction;
-        tasklist* l = static_cast<tasklist*>(list);
+        tasklist_async::task* instruction;
+        tasklist_async* l = static_cast<tasklist_async*>(list);
         ctxt.set_tid(l->id);
 
         while(l->active){
-            instruction = l->get_task();
-            if(instruction == NULL){
-                pthread_yield();
-                continue;
+            while(!l->end_reached()){
+                instruction = l->get_task();
+                ctxt.set_block_id(instruction->pin);
+                ((cfunctor*)instruction->o)->computation();
             }
-            ctxt.set_block_id(instruction->pin);
-            ((cfunctor*)instruction->o)->computation();
-            delete instruction;
+            pthread_yield();
         }
         return NULL;
     }
@@ -70,8 +68,6 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::master_stream(void* list){
         tasklist_async::task* instruction;
-        tasklist* l = static_cast<tasklist*>(list);
-
         while(this->workload){
             // resolution queue //
             std::list<cfunctor*> cleanset;
@@ -102,8 +98,10 @@ namespace ambient { namespace controllers { namespace velvet {
             ((cfunctor*)instruction->o)->computation();
             delete instruction;*/
         }
-        for(size_t t = 1; t < AMBIENT_THREADS; ++t)
+        for(size_t t = 1; t < AMBIENT_THREADS; ++t){
             this->resolutionq[t].reset();
+            this->tasks[t].reset();
+        }
     }
 
     inline void controller::acquire(channels::mpi::channel* channel){
@@ -116,7 +114,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::execute_mod(cfunctor* op, dim2 pin){
-        this->tasks[this->rrn+1].add_task(new tasklist::task(op, pin));
+        this->tasks[this->rrn+1].add_task(tasklist_async::task(op, pin));
         ++this->rrn %= this->num_threads-1;
     }
 
