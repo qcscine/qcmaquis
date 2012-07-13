@@ -69,19 +69,19 @@ namespace ambient { namespace controllers { namespace velvet {
 #endif
 
     inline void controller::master_stream(void* list){
-        tasklist::task* instruction;
+        tasklist_async::task* instruction;
         tasklist* l = static_cast<tasklist*>(list);
 
         while(this->workload){
             // resolution queue //
             std::list<cfunctor*> cleanset;
             for(size_t t = 1; t < AMBIENT_THREADS; ++t){
-                while((instruction = this->resolutionq[t].get_task()) != NULL){
+                while(!this->resolutionq[t].end_reached()){
+                    instruction = this->resolutionq[t].get_task();
                     cleanset.push_back(((cfunctor*)instruction->o));
                     std::list<revision*>& list = ((cfunctor*)instruction->o)->get_derivatives();
                     for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it)
                         (*it)->reset_generator();
-                    delete instruction;
                 }
             }
             for(std::list<cfunctor*>::iterator o = cleanset.begin(); o != cleanset.end(); ++o){
@@ -102,6 +102,8 @@ namespace ambient { namespace controllers { namespace velvet {
             ((cfunctor*)instruction->o)->computation();
             delete instruction;*/
         }
+        for(size_t t = 1; t < AMBIENT_THREADS; ++t)
+            this->resolutionq[t].reset();
     }
 
     inline void controller::acquire(channels::mpi::channel* channel){
@@ -155,7 +157,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::atomic_complete(cfunctor* op){
-        this->resolutionq[ctxt.get_tid()].add_task( new tasklist::task(op, dim2(0,0)) );
+        this->resolutionq[ctxt.get_tid()].add_task( tasklist_async::task(op, dim2(0,0)) );
     }
 
     inline void controller::flush(){

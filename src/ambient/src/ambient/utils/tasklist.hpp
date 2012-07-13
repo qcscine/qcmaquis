@@ -1,7 +1,41 @@
 #ifndef AMBIENT_UTILS_TASKLIST
 #define AMBIENT_UTILS_TASKLIST
+#define TASKLIST_LENGTH 131072
 
 namespace ambient{
+
+// 8192 -- ff_short
+// 65536 -- ff_large
+// 131072 -- fermi ladder
+
+    class tasklist_async {
+    public:
+        struct task {
+            inline task(){}
+            inline task(void* o, dim2 pin):o(o),pin(pin){}
+            void* o;
+            dim2 pin;
+        };
+
+        inline tasklist_async(): ri(content), wi(content) { }
+
+        inline task* get_task(){
+            return ri++;
+        }
+        inline void add_task(task&& e){
+            *wi++ = e;
+        }
+        inline bool end_reached(){
+            return (ri == wi);
+        }
+        inline void reset(){
+            ri = wi = content;
+        }
+    private:
+        task content[TASKLIST_LENGTH];
+        task* wi; 
+        task* ri;
+    };
 
     class tasklist {
     public:
