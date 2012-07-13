@@ -17,7 +17,7 @@ namespace ambient{
             dim2 pin;
         };
 
-        inline tasklist_async(): ri(content), wi(content) { }
+        inline tasklist_async(): ri(content), wi(content), active(true) { }
 
         inline task* get_task(){
             return ri++;
@@ -26,11 +26,13 @@ namespace ambient{
             *wi++ = e;
         }
         inline bool end_reached(){
-            return (ri == wi);
+            return (ri >= wi);
         }
         inline void reset(){
             ri = wi = content;
         }
+        bool active;
+        size_t id;
     private:
         task content[TASKLIST_LENGTH];
         task* wi; 
