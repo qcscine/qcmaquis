@@ -20,7 +20,6 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void   acquire(channels::mpi::channel* channel);
         inline void   push(cfunctor* op);
         inline void   execute_mod(cfunctor* op, dim2 pin);
-        inline void   execute_free_mod(cfunctor* op);
 
         inline void alloc_block (revision& r, size_t x, size_t y);
         inline void calloc_block(revision& r, size_t x, size_t y);

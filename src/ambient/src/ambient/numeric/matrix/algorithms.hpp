@@ -46,7 +46,7 @@ namespace ambient { namespace numeric {
     template<typename T>
     bool operator == (const matrix<T>& a, const matrix<T>& b){
         ambient::future<bool> ret(1);
-        ambient::push< ambient::numeric::kernels::validation_atomic<T> >(a, b, ret); 
+        ATOMIC(a.atomic(), validation, a, b, ret); 
         return (bool)ret;
     }
 
@@ -115,7 +115,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline matrix<T> exp(const matrix<T>& m, const T& alfa = 1.){
-        printf("Error: Not checked <- EXP\n");
+        printf("ERROR: NOT TESTED (EXP)\n");
         diagonal_matrix<double> evals(m.num_rows());
         matrix<T> evecs = matrix<T>();
         heev(m, evecs, evals);
@@ -191,14 +191,14 @@ namespace algorithms {
 
     template<typename T>
     inline void remove_rows(matrix_impl<T>& m, size_type i, difference_type k){
-        assert(false); printf("Error: Not checked <- REMOVE ROWS\n");
-        ambient::push< kernels::remove_rows<T> >(m, i, k);
+        assert(false); printf("ERROR: NOT TESTED (REMOVE ROWS)\n");
+        //ambient::push< kernels::remove_rows<T> >(m, i, k);
     }
 
     template<typename T>
     inline void remove_cols(matrix_impl<T>& m, size_type j, difference_type k){
-        assert(false); printf("Error: Not checked <- REMOVE COLS\n");
-        ambient::push< kernels::remove_cols<T> >(m, j, k);
+        assert(false); printf("ERROR: NOT TESTED (REMOVE COLS)\n");
+        //ambient::push< kernels::remove_cols<T> >(m, j, k);
     }
 
     template<typename T>
@@ -214,9 +214,9 @@ namespace algorithms {
 
     template<typename T>
     inline void transpose_inplace(matrix_impl<T>& m){
-        assert(false); printf("Error: Not checked <- INPLACE TRANSPOSE\n");
+        assert(false); printf("ERROR: NOT TESTED (INPLACE TRANSPOSE)\n");
         assert(m.num_rows() == m.num_cols()); // current limitation
-        ambient::push< kernels::transpose<T> >(m);
+        //ambient::push< kernels::transpose<T> >(m);
     }
 
     template <typename T>
@@ -238,13 +238,13 @@ namespace algorithms {
 
     template <typename T>
     inline void mul_inplace(matrix_impl<T>& m, const matrix<T>& rhs){
-        assert(false); printf("Error: Not checked <- GEMM INPLACE\n");
-        ambient::push< kernels::gemm_inplace<T> >(m, rhs);
+        assert(false); printf("ERROR: NOT TESTED (GEMM INPLACE)\n");
+        //ambient::push< kernels::gemm_inplace<T> >(m, rhs);
     }
 
     template <typename T>
     inline void mul_inplace(matrix_impl<T>& m, const diagonal_matrix<T>& rhs){
-        assert(false); printf("Error: Not checked <- GEMM DIAG INPLACE\n");
+        assert(false); printf("ERROR: NOT TESTED (GEMM DIAG INPLACE)\n");
         //ambient::push< kernels::gemm_diag_inplace<T> >(m, rhs);
     }
 

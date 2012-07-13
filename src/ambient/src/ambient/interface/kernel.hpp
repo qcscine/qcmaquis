@@ -29,62 +29,16 @@ namespace ambient {
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
     template<class K>
-    class kernel : public cfunctor
-    {
-    public:
-        virtual ~kernel()         { kernel_inliner<typename K::F,&K::c>::cleanup(this);                            }
-        virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);                             }
-        virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);                              }
-        virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); this->check_complete(); }
-        virtual void logistics()  { kernel_inliner<typename K::F,&K::l>::invoke((K*)this); this->check_complete(); }
-        virtual bool pretend()    { return false; }
-        inline void pin(revision& r, int x, int y){ r.content.assignments.push_back(this); }
-        inline void assign(revision& r, int x, int y){ ambient::controller.ifetch_block(r, x, y); }
-        inline void ctxt_select(const char* sql){ this->set_group(channel.world()); }
-
-        template<typename T>
-        inline void block_outright_assign(T& ref){
-            size_t sizex = ref.spec.grid.x;
-            size_t sizey = ref.spec.grid.y;
-            revision& r = ui_l_current(ref);
-            for(int x = 0; x < sizex; x++)
-                for(int y = 0; y < sizey; y++)
-                    this->assign(r, x, y);
-        }
-        template<typename T>
-        inline void block_outright_pin(T& ref){
-            size_t sizex = ref.spec.grid.x;
-            size_t sizey = ref.spec.grid.y;
-            revision& r = ui_l_current(ref);
-            this->add_condition(sizey*sizex);
-            for(int x = 0; x < sizex; x++)
-                for(int y = 0; y < sizey; y++)
-                    this->pin(r, x, y);
-            this->block_outright_assign(ref);
-        }
-        template<typename T>
-        inline void block_2d_cycle_assign(T& ref){ 
-            this->block_outright_assign(ref); 
-        }
-        template<typename T>
-        inline void block_2d_cycle_pin(T& ref){ 
-            this->block_outright_pin(ref); 
-        }
-    };
-
-    template<class K>
     class kernel_atomic : public cfunctor
     {
     public:
         virtual ~kernel_atomic()  { kernel_inliner<typename K::F,&K::c>::cleanup(this);                            }
         virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);                             }
         virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);                              }
-        virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); this->check_complete(); }
-        virtual void logistics()  { kernel_inliner<typename K::F,&K::l>::invoke((K*)this); this->check_complete(); }
-        virtual bool pretend()    { return false; }
-        inline void ctxt_select(const char* sql){ this->set_group(channel.world()); }
-        kernel_atomic(){ 
-            this->workload++; 
+        virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); this->complete();       }
+        virtual void logistics()  { kernel_inliner<typename K::F,&K::l>::invoke((K*)this);                         }
+        inline void ctxt_select(const char* sql){ 
+            this->set_group(channel.world()); 
         }
         inline void pin(revision& r){ 
             r.content.assignments.push_back(this);
@@ -92,52 +46,6 @@ namespace ambient {
         }
         inline void assign(revision& r){ 
             ambient::controller.ifetch_block(r,0,0);
-        }
-    };
-
-    template<class K>
-    class kernel_unpinned : public cfunctor
-    {
-    public:
-        virtual ~kernel_unpinned(){ kernel_inliner<typename K::F,&K::c>::cleanup(this);                            }
-        virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);                             }
-        virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);                              }
-        virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); this->check_complete(); }
-        inline void pin(revision& r, int x, int y){ r.content.assignments.push_back(this); }
-        inline void assign(revision& r, int x, int y){ ambient::controller.ifetch_block(r, x, y); }
-        inline void ctxt_select(const char* sql){ this->set_group(channel.world()); }
-        virtual void logistics(){
-            kernel_inliner<typename K::F,&K::l>::invoke((K*)this); 
-            this->lock();
-            if(this->workload == 1) controller.execute_free_mod(this);
-            else this->workload--;
-            this->unlock();
-        }
-        virtual bool pretend(){
-            this->lock();
-            this->workload--;
-            this->unlock();
-            if(!this->workload) return false;
-            return true;
-        }
-        inline void atomic_conditional_assign(revision& r){ 
-            this->add_condition();
-            r.content.assignments.push_back(this);
-            ambient::controller.ifetch_block(r, 0, 0);
-        }
-        inline void block_outright_conditional_assign(revision& r){
-            size_t sizex = r.spec->grid.x;
-            size_t sizey = r.spec->grid.y;
-            this->add_condition(sizey*sizex);
-            for(int x = 0; x < sizex; x++)
-                for(int y = 0; y < sizey; y++)
-                    this->pin(r, x, y);
-            for(int x = 0; x < sizex; x++)
-                for(int y = 0; y < sizey; y++)
-                    this->assign(r, x, y);
-        }
-        inline void block_2d_cycle_conditional_assign(revision& r){ 
-            this->block_outright_conditional_assign(r); 
         }
     };
 }
