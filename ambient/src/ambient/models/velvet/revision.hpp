@@ -16,14 +16,6 @@ namespace ambient { namespace models { namespace velvet {
         return this->content;
     }
 
-    inline void revision::add_modifier(sfunctor* m){
-        this->modifiers.push_back(m);
-    }
-
-    inline std::list<sfunctor*>& revision::get_modifiers(){
-        return this->modifiers;
-    }
-
     inline void revision::set_generator(sfunctor* m){
         this->generator = m;
     }
@@ -37,16 +29,6 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     // {{{ revision::entry //
-
-    inline bool revision::entry::trylock(){
-        //if(this->locked) return false;
-        //this->locked = true;
-        return true;
-    }
-
-    inline void revision::entry::unlock(){
-        //this->locked = false;
-    }
 
     inline revision::entry::entry()
     : header(NULL), data(NULL){ }
