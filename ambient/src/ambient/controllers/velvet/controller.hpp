@@ -90,6 +90,7 @@ namespace ambient { namespace controllers { namespace velvet {
                     this->atomic_receive(**it,0,0);
                 delete *o;
             }
+            this->workload -= cleanset.size();
             // normal queue
             instruction = l->get_task();
             if(instruction == NULL){
@@ -113,13 +114,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::execute_mod(cfunctor* op, dim2 pin){
-        if(op->pretend()) return;
         this->tasks[this->rrn].add_task(new tasklist::task(op, pin));
-        ++this->rrn %= this->num_threads;
-    }
-
-    inline void controller::execute_free_mod(cfunctor* op){
-        this->tasks[this->rrn].add_task(new tasklist::task(op, dim2(0,0)));
         ++this->rrn %= this->num_threads;
     }
 
@@ -203,9 +198,6 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::atomic_complete(cfunctor* op){
-        pthread_mutex_lock(&this->mutex);
-        this->workload--;
-        pthread_mutex_unlock(&this->mutex);
         this->resolutionq.add_task( new tasklist::task(op, dim2(0,0)) );
     }
 

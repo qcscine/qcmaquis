@@ -1,7 +1,7 @@
 #ifndef __AMBIENT_NUMERIC_MATRIX_KERNELS_HPP__
 #define __AMBIENT_NUMERIC_MATRIX_KERNELS_HPP__
 
-namespace ambient { namespace numeric { namespace kernels {
+/*namespace ambient { namespace numeric { namespace kernels {
 
     using ambient::numeric::matrix_impl;
 
@@ -973,5 +973,5 @@ namespace ambient { namespace numeric { namespace kernels {
 
     // }}}
 
-} } }
+} } }*/
 #endif
