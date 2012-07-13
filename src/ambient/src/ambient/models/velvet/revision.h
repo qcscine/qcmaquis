@@ -32,8 +32,6 @@ namespace ambient { namespace models { namespace velvet {
             inline void* get_memory();
             inline bool valid();
             inline bool occupied();
-            inline bool trylock();
-            inline void unlock();
             inline std::list<cfunctor*>& get_assignments();
             void* header;
             void* data;
@@ -51,13 +49,10 @@ namespace ambient { namespace models { namespace velvet {
         inline revision(memspec*, bool clean = false);
         inline ~revision();
         inline entry& block(size_t x, size_t y);
-        inline void add_modifier(sfunctor* m);
-        inline std::list<sfunctor*>& get_modifiers();
         inline sfunctor* get_generator();
         inline void set_generator(sfunctor*);
         inline void reset_generator();
         sfunctor* generator;
-        std::list<sfunctor*> modifiers;
         revision* parent;
     };
 

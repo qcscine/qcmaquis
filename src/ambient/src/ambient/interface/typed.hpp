@@ -51,7 +51,6 @@ namespace ambient {
         static inline void modify(T& obj, sfunctor* m){
             m->arguments[arg] = (void*)new ptr_type(&obj);
             m->revisions[arg] = ambient::model.time(&obj);
-            obj.back()->add_modifier(m);
             m->add_dependency(obj.back());
             m->add_derivative(ambient::model.add_revision(&obj)); 
         }
@@ -59,7 +58,6 @@ namespace ambient {
         static inline void modify(const T& obj, sfunctor* m){
             m->arguments[arg] = (void*)new ptr_type(const_cast<T*>(&obj));
             m->revisions[arg] = ambient::model.time(&obj);
-            obj.back()->add_modifier(m);
             m->add_dependency(obj.back());
         }
         template<size_t arg>
