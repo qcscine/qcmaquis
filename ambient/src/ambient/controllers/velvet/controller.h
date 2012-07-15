@@ -24,7 +24,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void alloc_block (revision& r, size_t x, size_t y);
         inline void calloc_block(revision& r, size_t x, size_t y);
         inline revision::entry& ufetch_block(revision& r, size_t x, size_t y);
-        inline revision::entry& ifetch_block(revision& r, size_t x, size_t y);
+        inline void ifetch_block(revision& r, size_t x, size_t y);
         inline void unlock_revision(revision* arg);
         inline void unlink_revision(revision* arg);
 
@@ -33,11 +33,11 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void allocate_threads();
         inline void set_num_threads(size_t n);
         inline size_t get_num_threads() const;
-        inline void atomic_complete(cfunctor* op);
         inline void atomic_receive(revision& r, size_t x, size_t y);
         inline ~controller();
     public:
         bool muted;
+        pthread_mutex_t mutex;
     private:
         touchstack< cfunctor* > stack;
         pthread_t pool[AMBIENT_THREADS_LIMIT];
