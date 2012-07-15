@@ -1,6 +1,8 @@
 namespace ambient { namespace controllers { namespace velvet {
 
-        inline cfunctor::cfunctor(){
+        inline cfunctor::cfunctor()
+        {
+            this->credit = 0; 
             ambient::controller.push(this);
         }
 

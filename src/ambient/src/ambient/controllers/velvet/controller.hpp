@@ -95,8 +95,19 @@ rt:         if(l->end_reached()){
         std::list<revision*>::iterator it;
         size_t count = 0;
 
-        for(size_t t = 0; t < AMBIENT_THREADS; ++t) 
+        for(size_t t = 0; t < AMBIENT_THREADS; ++t){
             this->tasks[t].pause = false;
+        }
+
+        /*size_t dbg_summ = 0;
+        for(size_t t = 0; t < AMBIENT_THREADS; ++t){
+            dbg_summ += this->tasks[t].size();
+        }
+        if(dbg_summ > 100){
+            for(size_t t = 0; t < AMBIENT_THREADS; ++t){
+                printf("Stack size of %d : %f %, total is %d\n", (int)t, 100*(float)this->tasks[t].size()/(float)dbg_summ, (int)dbg_summ);
+            }
+        }*/
         while(this->workload){
 rt:         if(l->end_reached()){ 
                 if(count){
@@ -151,9 +162,13 @@ rt:         if(l->end_reached()){
     }
 
     inline void controller::execute_mod(cfunctor* op, dim2 pin){
-        this->tasks[this->rrn].add_task( op );
-        ++this->rrn %= this->num_threads;
-        //this->tasks[0].add_task( op );
+        size_t weight = op->get_weight();
+        if(weight > 2 || (weight == 2 && (this->tasks[0].size() < this->tasks[1].size()*0.7))){
+            this->tasks[0].add_task( op );
+        }else{
+            this->tasks[this->rrn+1].add_task( op );
+            ++this->rrn %= this->num_threads-1;
+        }
     }
 
     inline void controller::alloc_block(revision& r, size_t x, size_t y){

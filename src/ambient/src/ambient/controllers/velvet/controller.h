@@ -46,6 +46,7 @@ namespace ambient { namespace controllers { namespace velvet {
         size_t workload;
         size_t num_threads;
         size_t rrn;
+        size_t rrn_p;
     };
     
 } } }

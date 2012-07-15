@@ -65,7 +65,6 @@ namespace ambient {
             T& obj = *(*(ptr_type*)(m->arguments[arg]));
             if(obj.time() > m->get_weight()){
                 m->set_weight(obj.time());
-                //m->set_vellum(current(obj)); // fixme
             }
         }
         template<size_t arg>
