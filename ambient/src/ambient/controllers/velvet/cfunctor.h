@@ -11,8 +11,8 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void computation() = 0;
         virtual ~cfunctor();
         inline cfunctor();
-        inline size_t get_weight(){ return 0; }
-        inline void set_weight(size_t c){ }
+        inline size_t get_weight(){ return credit; }
+        inline void set_weight(size_t c){ credit = c; }
     };
 
 } } }

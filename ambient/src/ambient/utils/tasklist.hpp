@@ -24,6 +24,9 @@ namespace ambient{
         inline bool end_reached(){
             return (ri >= wi);
         }
+        inline size_t size(){
+            return ((size_t)wi - (size_t)content)/sizeof(void*);
+        }
         inline void reset(){
             ri = wi = content;
         }

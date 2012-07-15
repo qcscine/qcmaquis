@@ -27,6 +27,11 @@ namespace ambient{
     }
 
     template<typename T>
+    inline void touchstack<T>::repeat(){
+        ri = content;
+    }
+
+    template<typename T>
     inline void touchstack<T>::reset(){
         ri = wi = content;
     }
