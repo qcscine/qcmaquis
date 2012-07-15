@@ -32,11 +32,11 @@ namespace ambient {
     class kernel_atomic : public cfunctor
     {
     public:
-        virtual ~kernel_atomic()  { kernel_inliner<typename K::F,&K::c>::cleanup(this);                            }
-        virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);                             }
-        virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);                              }
-        virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); this->complete();       }
-        virtual void logistics()  { kernel_inliner<typename K::F,&K::l>::invoke((K*)this);                         }
+        virtual ~kernel_atomic()  { kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
+        virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);     }
+        virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);      }
+        virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); }
+        virtual void logistics()  { kernel_inliner<typename K::F,&K::l>::invoke((K*)this); }
         inline void ctxt_select(const char* sql){ 
             this->set_group(channel.world()); 
         }

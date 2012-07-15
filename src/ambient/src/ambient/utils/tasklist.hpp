@@ -10,19 +10,15 @@ namespace ambient{
 
     class tasklist_async {
     public:
-        struct task {
-            inline task(){}
-            inline task(void* o, dim2 pin):o(o),pin(pin){}
-            void* o;
-            dim2 pin;
-        };
+        inline tasklist_async(): ri(content), wi(content), active(true), pause(true) { }
 
-        inline tasklist_async(): ri(content), wi(content), active(true) { }
-
-        inline task* get_task(){
-            return ri++;
+        inline void pop_task(){
+            *(ri-1) = *(--wi);
         }
-        inline void add_task(task&& e){
+        inline void* get_task(){
+            return *ri++;
+        }
+        inline void add_task(void* e){
             *wi++ = e;
         }
         inline bool end_reached(){
@@ -31,12 +27,16 @@ namespace ambient{
         inline void reset(){
             ri = wi = content;
         }
+        inline void repeat(){
+            ri = content;
+        }
         bool active;
+        bool pause;
         size_t id;
     private:
-        task content[TASKLIST_LENGTH];
-        task* wi; 
-        task* ri;
+        void* content[TASKLIST_LENGTH];
+        void** wi; 
+        void** ri;
     };
 
     class tasklist {

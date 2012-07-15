@@ -1,10 +1,7 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 
-#if __APPLE__ && __MACH__
-#include <sched.h>	// for sched_yield()
-#define pthread_yield() sched_yield()
-#endif
+#include <sched.h>
 
 extern pthread_key_t pthread_tid;
 
@@ -18,6 +15,7 @@ namespace ambient { namespace controllers { namespace velvet {
             this->tasks[i].active = false;
             pthread_join(this->pool[i], NULL);
         }
+        pthread_mutex_destroy(&this->mutex);
     }
 
     inline controller::controller()
@@ -25,6 +23,7 @@ namespace ambient { namespace controllers { namespace velvet {
     {
         this->acquire(&ambient::channel);
         pthread_key_create(&pthread_tid, free);
+        pthread_mutex_init(&this->mutex, NULL); 
         this->allocate_threads();
         this->set_num_threads(AMBIENT_THREADS);
     }
@@ -50,57 +49,95 @@ namespace ambient { namespace controllers { namespace velvet {
 
 #ifndef AMBIENT_INTERFACE
     void* controller::stream(void* list){
-        tasklist_async::task* instruction;
         tasklist_async* l = static_cast<tasklist_async*>(list);
         ctxt.set_tid(l->id);
+        std::list<revision*>::iterator it;
+        size_t count = 0;
 
         while(l->active){
-            while(!l->end_reached()){
-                instruction = l->get_task();
-                ctxt.set_block_id(instruction->pin);
-                ((cfunctor*)instruction->o)->computation();
+            if(l->pause){ sched_yield(); continue; }
+rt:         if(l->end_reached()){
+                if(count){
+                    pthread_mutex_lock(&ambient::controller.mutex);
+                    ambient::controller.workload -= count;
+                    pthread_mutex_unlock(&ambient::controller.mutex);
+                    count = 0;
+                }else{
+                    sched_yield(); 
+                }
+                l->repeat();
+                continue; 
             }
-            pthread_yield();
+            cfunctor* instruction = (cfunctor*)l->get_task();
+
+            std::list<revision*>& listr = instruction->dependencies;
+            it = listr.begin(); 
+            while(it != listr.end())
+                if((*it++)->generator != NULL){
+                goto rt; }
+
+            l->pop_task();
+            instruction->computation();
+
+            std::list<revision*>& listw = instruction->derivatives;
+            it = listw.begin(); 
+            while(it != listw.end()) (*it++)->reset_generator();
+
+            delete instruction;
+            count++;
         }
         return NULL;
     }
 #endif
 
     inline void controller::master_stream(void* list){
-        tasklist_async::task* instruction;
+        tasklist_async* l = static_cast<tasklist_async*>(list);
+        std::list<revision*>::iterator it;
+        size_t count = 0;
+
+        for(size_t t = 0; t < AMBIENT_THREADS; ++t) 
+            this->tasks[t].pause = false;
         while(this->workload){
-            // resolution queue //
-            std::list<cfunctor*> cleanset;
-            for(size_t t = 1; t < AMBIENT_THREADS; ++t){
-                while(!this->resolutionq[t].end_reached()){
-                    instruction = this->resolutionq[t].get_task();
-                    cleanset.push_back(((cfunctor*)instruction->o));
-                    std::list<revision*>& list = ((cfunctor*)instruction->o)->get_derivatives();
-                    for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it)
-                        (*it)->reset_generator();
+rt:         if(l->end_reached()){ 
+                if(count){
+                    pthread_mutex_lock(&ambient::controller.mutex);
+                    this->workload -= count;
+                    pthread_mutex_unlock(&ambient::controller.mutex);
+                    count = 0;
                 }
+                l->repeat(); 
+                continue; 
             }
-            for(std::list<cfunctor*>::iterator o = cleanset.begin(); o != cleanset.end(); ++o){
-                std::list<revision*>& list = (*o)->get_derivatives();
-                for(std::list<revision*>::iterator it = list.begin(); it != list.end(); ++it)
-                    this->atomic_receive(**it,0,0);
-                delete *o;
-            }
-            this->workload -= cleanset.size();
-            // normal queue
-            /*instruction = l->get_task();
-            if(instruction == NULL){
-                //printf("WARNING: MASTER HAS NULL INSTRUCTIONS! %d\n", (int)this->workload);
-                pthread_yield();
-                continue;
-            }
-            ctxt.set_block_id(instruction->pin);
-            ((cfunctor*)instruction->o)->computation();
-            delete instruction;*/
+            cfunctor* instruction = (cfunctor*)l->get_task();
+
+            std::list<revision*>& listr = instruction->dependencies;
+            it = listr.begin(); 
+            while(it != listr.end()) 
+                if((*it++)->generator != NULL){
+                goto rt; }
+
+            l->pop_task();
+            instruction->computation();
+
+            std::list<revision*>& listw = instruction->derivatives;
+            it = listw.begin(); 
+            while(it != listw.end()) (*it++)->reset_generator();
+
+            delete instruction;
+            count++;
         }
-        for(size_t t = 1; t < AMBIENT_THREADS; ++t){
-            this->resolutionq[t].reset();
+        for(size_t t = 0; t < AMBIENT_THREADS; t++){
             this->tasks[t].reset();
+            this->tasks[t].pause = true;
+        }
+    }
+
+    inline void controller::atomic_receive(revision& r, size_t x, size_t y){
+        std::list<cfunctor*>& list = r.content.assignments;
+        std::list<cfunctor*>::iterator it = list.begin(); 
+        while(it != list.end()){
+            this->execute_mod(*it, dim2(x,y));
+            list.erase(it++);
         }
     }
 
@@ -114,8 +151,9 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::execute_mod(cfunctor* op, dim2 pin){
-        this->tasks[this->rrn+1].add_task(tasklist_async::task(op, pin));
-        ++this->rrn %= this->num_threads-1;
+        this->tasks[this->rrn].add_task( op );
+        ++this->rrn %= this->num_threads;
+        //this->tasks[0].add_task( op );
     }
 
     inline void controller::alloc_block(revision& r, size_t x, size_t y){
@@ -130,32 +168,8 @@ namespace ambient { namespace controllers { namespace velvet {
         return r.block(x,y);
     }
 
-    inline revision::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
-        if(r.get_generator() == NULL) this->atomic_receive(r, x, y);
-        return r.block(x,y);
-    }
-
-    inline void controller::atomic_receive(revision& r, size_t x, size_t y){
-        std::list<cfunctor*>& list = r.block(x,y).get_assignments();
-        std::list<cfunctor*>::iterator it = list.begin(); 
-        while(it != list.end())
-        {
-            bool ready = true;
-            std::list<revision*>& deps = (*it)->get_dependencies();
-            for(std::list<revision*>::iterator d = deps.begin(); d != deps.end(); ++d){
-                if((*d)->get_generator() != NULL){
-                    (*d)->content.assignments.push_back(*it);
-                    ready = false;
-                    break;
-                }
-            }
-            if(ready) this->execute_mod(*it, dim2(x,y));
-            list.erase(it++);
-        }
-    }
-
-    inline void controller::atomic_complete(cfunctor* op){
-        this->resolutionq[ctxt.get_tid()].add_task( tasklist_async::task(op, dim2(0,0)) );
+    inline void controller::ifetch_block(revision& r, size_t x, size_t y){
+        this->atomic_receive(r, x, y);
     }
 
     inline void controller::flush(){
