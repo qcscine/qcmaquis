@@ -376,7 +376,7 @@ namespace vli{
                             /*49*/  "mulq 16(%%rbx)                           \n" /* a0 * b2 */                       
                             /*50*/  "addq %%rax            ,%%r10             \n" /* add l11 + a0b2lo + c */          
                             /*51*/  "adcq %%rdx            ,%%r11             \n" /* add l01 + a0b2hi + c, end */     
-//                            /*57*/  "adcq $0               ,%%r12            \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                \
+//                            /*57*/  "adcq $0               ,%%r12            \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                
                             /* --------------------------- a0 * b0, a0 * b1, a0 * b2 end --------------------------*/ 
                             /* --------------------------- a1 * b0, a1 * b1, a1 * b2 start ------------------------*/ 
                             /*52*/  "movq 8(%%rsi)         ,%%rax             \n" /* a1 into rax */                   
@@ -384,7 +384,7 @@ namespace vli{
                             /*54*/  "mulq (%%rbx)                             \n" /* a1 * b0 */                       
                             /*55*/  "addq %%rax            ,%%r9              \n" /* l46 + a1b0lo */                  
                             /*56*/  "adcq %%rdx            ,%%r10             \n" /* l47 + a1b0hi + c */              
-                            /*57*/  "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                \
+                            /*57*/  "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                
                             /*58*/  "movq %%rcx            ,%%rax             \n" /* reload rax(a1) from the stack */ 
                             /*59*/  "mulq 16(%%rbx)                           \n" /* a1*b2 */                         
                             /*60*/  "addq %%rax            ,%%r11             \n" /* l57 + a1b2lo + c */              

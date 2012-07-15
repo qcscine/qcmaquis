@@ -30,21 +30,24 @@
 namespace vli {
     namespace detail {
 
-    template<unsigned int Order>
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MulBlockSize{
-        enum {value = ((((Order*2+1)*(Order*2+1))/2U >= 256U) ? 256U : ((((Order*2+1)*(Order*2+1))/2U+32U-1U)/32U*32U)) };
+        enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value)/2U >= 256U) ? 
+                       256U :
+                       (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value))/2U+32U-1U)/32U*32U };
     };
     /*
-    *  (((X>>1)<<1)+1) == X if odd, X+1 if even
+    *  (((X>>1)<<1)+1) == X+2 if odd, X+1 if even
     */
     template<unsigned int Order>
     struct OrderPadded{
-        enum {value = (((Order+1)>>1)<<1)+1};
+        enum {value = (((Order+1)>>1)<<1)+1}; // WHY?
+        //enum {value = (Order+1)}; <----- it works
     };
 
-    template<unsigned int Order>
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MaxIterationCount{
-        enum {value = ((Order*2+1)*(Order*2+1)+31U)/32U};
+        enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+31U)/32U};
     };
 
     }
