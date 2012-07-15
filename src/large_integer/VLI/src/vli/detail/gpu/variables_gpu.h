@@ -48,6 +48,16 @@ namespace vli {
         static unsigned int const value = 1;
     };  
    
+    template <class Variable, unsigned int Order>
+    struct extend_stride {
+        static unsigned int const value = 2*Order+1;
+    };  
+        
+    template <unsigned int Order>
+    struct extend_stride<no_variable,Order> {
+        static unsigned int const value = 1;
+    };  
+
     template <class Variable>
     struct two {
         static unsigned int const value = 2;

@@ -31,7 +31,7 @@ set (VLI_VERSION_MINOR 1)
 
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
-option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" OFF)
+option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" ON)
 option (VLI_TESTS "Build the VLI regression tests" OFF)
 option (VLI_BENCHMARKS "Build the VLI benchmarks" OFF)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
@@ -46,7 +46,7 @@ endif(NOT MACHINE_CONFIG)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
-set (VLI_COMPILE_TYPES "((unsigned long int,3,11,2))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
+set (VLI_COMPILE_TYPES "((unsigned long int,3,10,1))((unsigned long int,3,10,2))((unsigned long int,3,10,3))((unsigned long int,3,10,4))" CACHE STRING "What sizes and BaseInt types should be compiled? Affects only the vli_gpu class and the tests.")
 
 ########################################################################
 #

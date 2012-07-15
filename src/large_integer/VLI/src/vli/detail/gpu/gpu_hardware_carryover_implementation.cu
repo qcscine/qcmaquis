@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include <boost/mpl/assert.hpp>
+
 #include "vli/detail/gpu/variables_gpu.h"
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu
 #include "vli/detail/gpu/gpu_hardware_carryover_implementation.h" 
@@ -43,9 +45,9 @@
 namespace vli {
     namespace detail {
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     __global__ void
-    __launch_bounds__(MulBlockSize<Order>::value , 2)
+    __launch_bounds__(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value , 2)
     polynomial_mul_full(
     	const unsigned int * __restrict__ in1,
     	const unsigned int * __restrict__ in2,
@@ -54,19 +56,22 @@ namespace vli {
         unsigned int* __restrict__ workblock_count_by_warp,
         single_coefficient_task* __restrict__ execution_plan)
     {
-	    __shared__ unsigned int in_buffer1[OrderPadded<Order>::value * (Order+1) * Size];
-	    __shared__ unsigned int in_buffer2[OrderPadded<Order>::value * (Order+1) * Size];
-
+            BOOST_MPL_ASSERT_MSG( (2*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt)) <  0xc000, NOT_ENOUGHT_SHARED_MEM_48KB_MAX, (Var0,Var1,Var2,Var3));
+            
+	    __shared__ unsigned int in_buffer1[stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value * Size];
+	    __shared__ unsigned int in_buffer2[stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value * Size];
+               
 	    const unsigned int local_thread_id = threadIdx.x;
 	    const unsigned int element_id = blockIdx.x;
 
 	    // Copy both input polynomials into the shared memory
 	    {
-		    const unsigned int * in_shifted1 = in1 + (element_id * ((Order+1) * (Order+1) * Size));
-		    const unsigned int * in_shifted2 = in2 + (element_id * ((Order+1) * (Order+1) * Size));
+		    const unsigned int * in_shifted1 = in1 + (element_id * stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value  * Size);
+		    const unsigned int * in_shifted2 = in2 + (element_id * stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value  * Size);
 		    unsigned int index_id = local_thread_id;
                     #pragma unroll
-		    for(unsigned int i = 0; i < ((Order+1) * (Order+1) * Size) / MulBlockSize<Order>::value; ++i) {
+		    for(unsigned int i = 0; i < ( stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value * Size) / MulBlockSize<Order, Var0, Var1, Var2, Var3>::value; ++i) {
+                            // pbs starts there
 			    unsigned int coefficient_id = index_id / Size;
 			    unsigned int degree_id = index_id % Size;
 			    unsigned int current_degree_y = coefficient_id / (Order+1);
@@ -74,7 +79,7 @@ namespace vli {
 			    unsigned int local_index_id = current_degree_x + (current_degree_y * OrderPadded<Order>::value) + (degree_id * (OrderPadded<Order>::value *(Order+1)));
 			    in_buffer1[local_index_id] = in_shifted1[index_id];
 			    in_buffer2[local_index_id] = in_shifted2[index_id];
-			    index_id += MulBlockSize<Order>::value ;
+			    index_id += MulBlockSize<Order, Var0, Var1, Var2, Var3>::value ;
 		    }
 
 		    if (index_id < ((Order+1) * (Order+1) * Size)) {
@@ -97,7 +102,7 @@ namespace vli {
 
 	    for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id)
 	    {
-		    single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<Order>::value)];
+		    single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<Order, Var0, Var1, Var2, Var3>::value)];
 		    const unsigned int step_count = task.step_count;
 
 		    if (step_count > 0)
@@ -204,20 +209,20 @@ namespace vli {
     void inner_product_vector_nvidia(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
 	    gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>* gm = gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time 
             gm->resize(Size,Order,VectorSize); // we resize if the block is larger
-	    gpu_hardware_carryover_implementation<BaseInt, Size, Order>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order>::Instance(); // calculate the different packet, singleton only one time 
+	    gpu_hardware_carryover_implementation<BaseInt, Size, Order, Var0, Var1, Var2, Var3>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
 	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 
 	    {
-		    dim3 grid(VectorSize) ;
-		    dim3 threads(MulBlockSize<Order>::value);
-		    polynomial_mul_full<BaseInt, Size, Order><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
+                dim3 grid(VectorSize) ;
+                dim3 threads(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value);
+                polynomial_mul_full<BaseInt, Size, Order, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
-		    dim3 grid((Order*2+1)*(Order*2+1));
-		    dim3 threads(SUM_BLOCK_SIZE);
-		    polynomial_sum_intermediate_full<BaseInt, Size, Order><<<grid,threads>>>(gm->VinterData_, VectorSize, gm->PoutData_);
+                dim3 grid(extend_stride<Var0, Order>::value*extend_stride<Var1, Order>::value*extend_stride<Var2, Order>::value*extend_stride<Var3, Order>::value);
+                dim3 threads(SUM_BLOCK_SIZE);
+                polynomial_sum_intermediate_full<BaseInt, Size, Order><<<grid,threads>>>(gm->VinterData_, VectorSize, gm->PoutData_);
 	    }
     } 
 

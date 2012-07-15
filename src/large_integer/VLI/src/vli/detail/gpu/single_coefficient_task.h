@@ -9,9 +9,11 @@ namespace vli {
 		unsigned short step_count; // how many time the coeff wil be calculate
 		unsigned char output_degree_x;
 		unsigned char output_degree_y;
+		unsigned char output_degree_z;
+		unsigned char output_degree_w;
 	};
 
-        bool single_coefficient_task_sort(single_coefficient_task i, single_coefficient_task j);
+        bool single_coefficient_task_sort(single_coefficient_task const & i, single_coefficient_task const & j);
 
     } // end namespace detail
 } // end name space vli

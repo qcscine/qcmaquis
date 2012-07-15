@@ -48,8 +48,10 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 
 
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
-
 typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
+
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
+//typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
 
@@ -123,7 +125,8 @@ std::cout << "correct : " << std::endl;
 std::cout << d << std::endl;
 */
  
-    int SizeVector = atoi(argv[1]);   
+    //int SizeVector = atoi(argv[1]);   
+    int SizeVector = 128;//atoi(argv[1]);   
 
  polynomial_vector_type v1gmp(SizeVector);
  polynomial_vector_type v2gmp(SizeVector);

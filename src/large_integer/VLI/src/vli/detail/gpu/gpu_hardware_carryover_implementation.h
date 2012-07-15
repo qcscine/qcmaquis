@@ -38,8 +38,8 @@
 namespace vli {
     namespace detail {
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
-    class gpu_hardware_carryover_implementation : public Singleton<gpu_hardware_carryover_implementation<BaseInt, Size, Order> > {
+    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    class gpu_hardware_carryover_implementation : public Singleton<gpu_hardware_carryover_implementation<BaseInt, Size, Order, Var0, Var1, Var2, Var3> > {
         friend class Singleton<gpu_hardware_carryover_implementation>; // to have access to the Instance, Destroy functions into the singleton class
     private:
         gpu_hardware_carryover_implementation();
