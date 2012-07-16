@@ -10,8 +10,12 @@ namespace ambient{
 
     class tasklist_async {
     public:
-        inline tasklist_async(): ri(content), wi(content), active(true), pause(true) { }
-
+        inline tasklist_async(): ri(content), wi(content), seed(content), active(true), pause(true) { 
+            pthread_mutex_init(&mutex, NULL);
+        }
+        inline ~tasklist_async(){
+            pthread_mutex_destroy(&mutex);
+        }
         inline void pop_task(){
             *(ri-1) = *(--wi);
         }
@@ -25,21 +29,24 @@ namespace ambient{
             return (ri >= wi);
         }
         inline size_t size(){
-            return ((size_t)wi - (size_t)content)/sizeof(void*);
+            return ((size_t)wi - (size_t)seed)/sizeof(void*);
         }
         inline void reset(){
-            ri = wi = content;
+            ri = wi = seed;
         }
         inline void repeat(){
-            ri = content;
+            ri = seed;
         }
         bool active;
         bool pause;
+        bool stall;
         size_t id;
+        void** seed; 
+        void** ri;
+        pthread_mutex_t mutex;
     private:
         void* content[TASKLIST_LENGTH];
         void** wi; 
-        void** ri;
     };
 
     class tasklist {

@@ -149,6 +149,9 @@ namespace ambient { namespace numeric {
     };
 
     template <typename T>
+    class weak_matrix_impl;
+
+    template <typename T>
     class matrix_impl : public ambient::iteratable<ambient::history> {
     public:
         typedef T         value_type;
@@ -182,8 +185,14 @@ namespace ambient { namespace numeric {
         inline void copy(const matrix_impl& m);
         friend void intrusive_ptr_add_ref(matrix_impl* p){ ++(p->references); }
         friend void intrusive_ptr_release(matrix_impl* p){ if(--(p->references) == 0) delete p; }
+        operator weak_matrix_impl<T>& (){ return *(weak_matrix_impl<T>*)this; }
     private:
         long references;
+    };
+
+    template <typename T>
+    class weak_matrix_impl : public matrix_impl<T> { 
+        typedef typename boost::intrusive_ptr<matrix_impl<T> > ptr;
     };
 
 } } // namespace ambient::numeric

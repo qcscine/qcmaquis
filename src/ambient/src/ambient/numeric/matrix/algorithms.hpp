@@ -123,7 +123,7 @@ namespace ambient { namespace numeric {
     }
 
     template<class MatrixViewA, class MatrixViewB, typename T>
-    inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T>& c){ 
+    inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T>& c){
         ambient::push< kernels::gemm_general_atomic<MatrixViewA,MatrixViewB,T> >(a, b, c); 
     }
 

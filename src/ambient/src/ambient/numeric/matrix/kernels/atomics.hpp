@@ -12,15 +12,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<class ViewA, class ViewB, typename T>
     struct gemm_general_atomic : public kernel_atomic< gemm_general_atomic<ViewA, ViewB, T> > 
     { // gs
-        typedef void(gemm_general_atomic::*F)(const matrix_impl<T>&, const matrix_impl<T>&, matrix_impl<T>&);
+        typedef void(gemm_general_atomic::*F)(const matrix_impl<T>&, const matrix_impl<T>&, weak_matrix_impl<T>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, matrix_impl<T>& c){
+        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_general_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(b));
             this->assign(ui_l_current(c));
         }
-        inline void c(const matrix_impl<double>& a, const matrix_impl<double>& b, matrix_impl<double>& c){
+        inline void c(const matrix_impl<double>& a, const matrix_impl<double>& b, weak_matrix_impl<double>& c){
             __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
             double* ad = ui_c_current(a)(0,0);
             double* bd = ui_c_current(b)(0,0);
@@ -36,7 +36,7 @@ namespace ambient { namespace numeric { namespace kernels {
             dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
             __A_TIME_C_STOP
         }
-        inline void c(const matrix_impl<std::complex<double> >& a, const matrix_impl<std::complex<double> >& b, matrix_impl<std::complex<double> >& c){
+        inline void c(const matrix_impl<std::complex<double> >& a, const matrix_impl<std::complex<double> >& b, weak_matrix_impl<std::complex<double> >& c){
             __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
             T* ad   = ui_c_current(a)(0,0);
             T* bd   = ui_c_current(b)(0,0);
@@ -54,16 +54,16 @@ namespace ambient { namespace numeric { namespace kernels {
     template<class ViewB, typename T, typename D>
     struct gemm_diagonal_lhs : public kernel_atomic< gemm_diagonal_lhs<ViewB,T,D> > 
     {
-        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
+        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, weak_matrix_impl<T>&);
 
-        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(a_diag));
             this->pin(ui_l_current(b));
             this->assign(ui_l_current(c));
         }
 
-        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
             int sizey = ui_c_get_dim(a_diag).y;
@@ -83,16 +83,16 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, typename D>
     struct gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> : public kernel_atomic< gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> > 
     {
-        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, matrix_impl<T>&);
+        typedef void (gemm_diagonal_lhs::*F)(const matrix_impl<D>&, const matrix_impl<T>&, weak_matrix_impl<T>&);
 
-        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+        inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(a_diag));
             this->pin(ui_l_current(b));
             this->assign(ui_l_current(c));
         }
 
-        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, matrix_impl<T>& c){
+        inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
             printf("Special DIAGONAL!\n");
@@ -113,16 +113,16 @@ namespace ambient { namespace numeric { namespace kernels {
     template<class ViewA, typename T, typename D>
     struct gemm_diagonal_rhs : public kernel_atomic< gemm_diagonal_rhs<ViewA,T,D> > 
     {
-        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
+        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, weak_matrix_impl<T>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(b_diag));
             this->assign(ui_l_current(c));
         }
 
-        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
             size_t sizex = ui_c_get_dim(b_diag).y;
@@ -142,16 +142,16 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, typename D>
     struct gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> : public kernel_atomic< gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> > 
     {
-        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, matrix_impl<T>&);
+        typedef void (gemm_diagonal_rhs::*F)(const matrix_impl<T>&, const matrix_impl<D>&, weak_matrix_impl<T>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+        inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(b_diag));
             this->assign(ui_l_current(c));
         }
 
-        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, matrix_impl<T>& c){
+        inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
             printf("Special DIAGONAL!\n");
@@ -173,15 +173,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct copy_atomic : public kernel_atomic< copy_atomic<T> > 
     { // gs
-        typedef void(copy_atomic::*F)(matrix_impl<T>&, const matrix_impl<T>&);
+        typedef void(copy_atomic::*F)(weak_matrix_impl<T>&, const matrix_impl<T>&);
 
-        inline void l(matrix_impl<T>& ac, const matrix_impl<T>& a){
+        inline void l(weak_matrix_impl<T>& ac, const matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as copy_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(ac));
         }
 
-        inline void c(matrix_impl<T>& ac, const matrix_impl<T>& a){
+        inline void c(weak_matrix_impl<T>& ac, const matrix_impl<T>& a){
             __A_TIME_C("ambient_copy_atomic_c_kernel"); 
             T* ad  = ui_c_current(a)(0,0);
             T* acd  = ui_w_updated(ac)(0,0);
@@ -497,15 +497,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct transpose_out_atomic : public kernel_atomic< transpose_out_atomic<T> > 
     { // gs
-        typedef void (transpose_out_atomic::*F)(const matrix_impl<T>&, matrix_impl<T>&);
+        typedef void (transpose_out_atomic::*F)(const matrix_impl<T>&, weak_matrix_impl<T>&);
 
-        inline void l(const matrix_impl<T>& a, matrix_impl<T>& t){
+        inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& t){
             this->ctxt_select("1 from ambient as transpose_out_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(t));
         }
 
-        inline void c(const matrix_impl<T>& a, matrix_impl<T>& t){
+        inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& t){
             __A_TIME_C("ambient_transpose_out_atomic_c_kernel"); 
             T* od = ui_c_current(a)(0,0);
             T* td = ui_w_updated(t)(0,0);
@@ -523,15 +523,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct resize_atomic : public kernel_atomic< resize_atomic<T> > 
     {
-        typedef void (resize_atomic::*F)(matrix_impl<T>&, const matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (resize_atomic::*F)(weak_matrix_impl<T>&, const matrix_impl<T>&, const size_t&, const size_t&);
 
-        inline void l(matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
+        inline void l(weak_matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("1 from ambient as resize_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(r));
         }
 
-        inline void c(matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
+        inline void c(weak_matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_atomic_c_kernel"); 
             __a_memptf_atomic_r<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(n, m)); 
             __A_TIME_C_STOP
@@ -541,14 +541,14 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct init_identity_atomic : public kernel_atomic< init_identity_atomic<T> > 
     {
-        typedef void (init_identity_atomic::*F)(matrix_impl<T>&);
+        typedef void (init_identity_atomic::*F)(weak_matrix_impl<T>&);
 
-        inline void l(matrix_impl<T>& a){
+        inline void l(weak_matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as init_identity_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
-        inline void c(matrix_impl<T>& a){
+        inline void c(weak_matrix_impl<T>& a){
             __A_TIME_C("ambient_init_identity_atomic_c_kernel"); 
             size_t n = ui_c_get_dim(a).x;
             size_t m = ui_c_get_dim(a).y;
@@ -563,7 +563,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct init_random_atomic : public kernel_atomic< init_random_atomic<T> > 
     {
-        typedef void (init_random_atomic::*F)(matrix_impl<T>&);
+        typedef void (init_random_atomic::*F)(weak_matrix_impl<T>&);
      
         template<typename T> inline void randomize(T* ad){ *ad = drand48(); }
         template<typename T> inline void randomize(std::complex<T>* ad){
@@ -571,12 +571,12 @@ namespace ambient { namespace numeric { namespace kernels {
             ad->imag(drand48());
         }
 
-        inline void l(matrix_impl<T>& a){
+        inline void l(weak_matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as init_random_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
         
-        inline void c(matrix_impl<T>& a){
+        inline void c(weak_matrix_impl<T>& a){
             __A_TIME_C("ambient_init_random_atomic_c_kernel"); 
             size_t m = ui_c_get_dim(a).y;
             size_t n = ui_c_get_dim(a).x;
@@ -593,14 +593,14 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct init_value_atomic : public kernel_atomic< init_value_atomic<T> > 
     {
-        typedef void (init_value_atomic::*F)(matrix_impl<T>&, const T&);
+        typedef void (init_value_atomic::*F)(weak_matrix_impl<T>&, const T&);
 
-        inline void l(matrix_impl<T>& a, const T& value){
+        inline void l(weak_matrix_impl<T>& a, const T& value){
             this->ctxt_select("1 from ambient as init_value_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
-        inline void c(matrix_impl<T>& a, const T& value){
+        inline void c(weak_matrix_impl<T>& a, const T& value){
             __A_TIME_C("ambient_init_value_atomic_c_kernel"); 
             T* ad = ui_w_updated(a)(0,0);
             size_t m = ui_c_get_dim(a).y;
@@ -715,9 +715,9 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct svd_atomic : public kernel_atomic< svd_atomic<T> > 
     {
-        typedef void (svd_atomic::*F)(const matrix_impl<T>&, matrix_impl<T>&, matrix_impl<T>&, matrix_impl<double>&);
+        typedef void (svd_atomic::*F)(const matrix_impl<T>&, weak_matrix_impl<T>&, weak_matrix_impl<T>&, weak_matrix_impl<double>&);
 
-        inline void l(const matrix_impl<T>& a, matrix_impl<T>& u, matrix_impl<T>& vt, matrix_impl<double>& s)
+        inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& u, weak_matrix_impl<T>& vt, weak_matrix_impl<double>& s)
         {
             this->ctxt_select("1 from ambient as svd_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
@@ -726,7 +726,7 @@ namespace ambient { namespace numeric { namespace kernels {
             this->assign(ui_l_current(vt));
         }
 
-        inline void c(const matrix_impl<T>& a, matrix_impl<T>& u, matrix_impl<T>& vt, matrix_impl<double>& s)
+        inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& u, weak_matrix_impl<T>& vt, weak_matrix_impl<double>& s)
         { // gs
             __A_TIME_C("ambient_svd_atomic_c_kernel"); 
             int m = ui_c_get_dim(a).y;
@@ -754,15 +754,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct heev_atomic : public kernel_atomic< heev_atomic<T> > 
     {
-        typedef void (heev_atomic::*F)(matrix_impl<T>&, matrix_impl<double>&);
+        typedef void (heev_atomic::*F)(matrix_impl<T>&, weak_matrix_impl<double>&);
 
-        inline void l(matrix_impl<T>& a, matrix_impl<double>& w){
+        inline void l(matrix_impl<T>& a, weak_matrix_impl<double>& w){
             this->ctxt_select("1 from ambient as heev_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
             this->assign(ui_l_current(w));
         }
 
-        inline void c(matrix_impl<T>& a, matrix_impl<double>& w){
+        inline void c(matrix_impl<T>& a, weak_matrix_impl<double>& w){
             // gs
             __A_TIME_C("ambient_heev_atomic_c_kernel"); 
             int m = ui_c_get_dim(a).y;
