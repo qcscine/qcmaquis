@@ -4,6 +4,7 @@
 namespace ambient { namespace numeric {
     template <class T> class matrix;
     template <class T> class matrix_impl;
+    template <class T> class weak_matrix_impl;
     template <class T> class diagonal_matrix;
     template <class T> class transpose_view;
 } }
@@ -75,6 +76,30 @@ namespace ambient {
         }
     };
     // }}}
+    // {{{ compile-time type info: weak iteratable derived types
+    template <typename T> struct weak_iteratable_info {
+        typedef typename T::ptr ptr_type;
+        template<size_t arg>
+        static inline void modify(T& obj, sfunctor* m){
+            m->arguments[arg] = (void*)new ptr_type(&obj);
+            m->revisions[arg] = ambient::model.time(&obj);
+            m->add_derivative(ambient::model.add_revision(&obj)); 
+        }
+        template<size_t arg> 
+        static inline void deallocate(sfunctor* m){
+            (*(ptr_type*)m->arguments[arg])->clean();
+            delete (ptr_type*)(m->arguments[arg]);
+        }
+        template<size_t arg>
+        static inline T& revised(sfunctor* m){
+            T& obj = *(T*)((*(ptr_type*)m->arguments[arg]).get());
+            obj.set_thread_revision_base(m->revisions[arg]);
+            return obj;
+        }
+        template<size_t arg> static inline void weight(cfunctor* m){ }
+        template<size_t arg> static inline void place(sfunctor* m){ }
+    };
+    // }}}
     // {{{ compile-time type info: specialization for forwarded types
     template <typename T> 
     struct info { 
@@ -112,6 +137,14 @@ namespace ambient {
         typedef ambient::numeric::matrix_impl<S> type;
         typedef iteratable_info< type > typed; 
         static inline const type& unfold(const type& naked){ return naked; }
+        typedef S value_type;
+    };
+
+    template <typename S>
+    struct info < ambient::numeric::weak_matrix_impl<S> > {
+        typedef ambient::numeric::weak_matrix_impl<S> type;
+        typedef weak_iteratable_info< type > typed; 
+        static inline type& unfold(type& naked){ return naked; }
         typedef S value_type;
     };
 
