@@ -55,13 +55,7 @@ namespace ambient { namespace controllers { namespace velvet {
         size_t count = 0;
         cfunctor* instruction;
 
-        while(l->active){
-            if(l->pause){ sched_yield(); continue; }
-
-
-
-
-
+        while(l->active){ if(l->pause){ sched_yield(); continue; }
 
             pthread_mutex_lock(&l->mutex);
 rt:         if(l->end_reached()){
@@ -76,22 +70,23 @@ rt:         if(l->end_reached()){
                     sched_yield();
                 }else if(l->stall){
 // start of workload stealing
-                    for(size_t t = 1; t < AMBIENT_THREADS; ++t){
-                            if(t == l->id) continue;
-                            if(pthread_mutex_trylock(&ambient::controller.tasks[t].mutex) != 0) continue;
-                            if(ambient::controller.tasks[t].stall || ambient::controller.tasks[t].end_reached()){
+                    for(int i = 0; i < 2; i++){
+                        for(size_t t = 1; t < AMBIENT_THREADS; ++t){
+                                if(t == l->id) continue;
+                                if(pthread_mutex_trylock(&ambient::controller.tasks[t].mutex) != 0) continue;
+                                if(ambient::controller.tasks[t].stall || ambient::controller.tasks[t].end_reached()){
+                                    pthread_mutex_unlock(&ambient::controller.tasks[t].mutex);
+                                    continue;
+                                }
+                                instruction = (cfunctor*)ambient::controller.tasks[t].get_task();
+                                ambient::controller.tasks[t].pop_task();
                                 pthread_mutex_unlock(&ambient::controller.tasks[t].mutex);
-                                continue;
-                            }
-                            instruction = (cfunctor*)ambient::controller.tasks[t].get_task();
-                            ambient::controller.tasks[t].pop_task();
-                            pthread_mutex_unlock(&ambient::controller.tasks[t].mutex);
-
-                            l->add_task(instruction);
+                        
+                                l->add_task(instruction);
+                        }
                     }
 // end of workload stealing
                 }
-                l->repeat();
                 pthread_mutex_unlock(&l->mutex);
                 continue; 
             }
@@ -123,7 +118,7 @@ rt:         if(l->end_reached()){
         cfunctor* instruction; 
         size_t count = 0;
 
-        for(size_t t = 0; t < AMBIENT_THREADS; ++t){
+        for(size_t t = 1; t < AMBIENT_THREADS; ++t){
             this->tasks[t].pause = false;
             this->tasks[t].stall = false;
         }
@@ -135,30 +130,10 @@ rt:         if(l->end_reached()){
                     this->workload -= count;
                     pthread_mutex_unlock(&ambient::controller.mutex);
                     count = 0;
-                }else if(!l->stall){ 
-                    l->stall = true;
-                }else if(l->stall){
-// start of workload stealing
-                    /*for(size_t t = 1; t < AMBIENT_THREADS; ++t){
-                            if(pthread_mutex_trylock(&this->tasks[t].mutex) != 0) continue;
-                            if(this->tasks[t].stall || this->tasks[t].end_reached()){
-                                pthread_mutex_unlock(&this->tasks[t].mutex);
-                                continue;
-                            }
-                            instruction = (cfunctor*)this->tasks[t].get_task();
-                            this->tasks[t].pop_task();
-                            pthread_mutex_unlock(&this->tasks[t].mutex);
-
-                            l->add_task(instruction);
-                            l->stall = false;
-                    }*/
-// end of workload stealing
                 }
-                
-                l->repeat(); 
                 continue; 
             }
-            instruction = (cfunctor*)l->get_task();
+            instruction = (cfunctor*)l->get_next_task();
 
             std::list<revision*>& listr = instruction->dependencies;
             it = listr.begin(); 
@@ -168,11 +143,9 @@ rt:         if(l->end_reached()){
 
             l->pop_task();
             instruction->computation();
-
             std::list<revision*>& listw = instruction->derivatives;
             it = listw.begin(); 
             while(it != listw.end()) (*it++)->reset_generator();
-
             delete instruction;
             count++;
         }
@@ -191,7 +164,6 @@ rt:         if(l->end_reached()){
     }
 
     inline void controller::execute_mod(cfunctor* op, dim2 pin){
-        size_t weight = op->get_weight();
         if(this->tasks[0].size() < this->stack.size()/this->num_threads){
             this->tasks[0].add_task( op );
         }else{
