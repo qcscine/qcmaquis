@@ -25,6 +25,7 @@ option(USE_GPU "Use GPU in libmtm" OFF)
 option(ENABLE_PARALLEL "Enable parallel matrix classes" OFF)
 option(ENABLE_REGRESSION_FUNCTIONAL "Build regression functional tests" OFF)
 option(ENABLE_REGRESSION_PERFORMANCE "Build regression performance tests" OFF)
+option(ENABLE_SANDBOX "play play play play" OFF)
 option(ENABLE_ALGEBRA "Enable algebra test " OFF)
 option(ENABLE_PLOT "Plot performance test " OFF)
 option(BUILD_AMBIENT "Build Ambient ? " OFF)
@@ -214,6 +215,12 @@ if(ENABLE_REGRESSION_PERFORMANCE)
     add_subdirectory(regression/performance)
   endif(ENABLE_PARALLEL)
 endif(ENABLE_REGRESSION_PERFORMANCE)
+
+if(ENABLE_SANDBOX)
+ add_subdirectory(regression/sandbox)
+endif(ENABLE_SANDBOX)
+
+
 
 # Configure
 configure_file(MaquisTypesConfig.cmake.in ${CMAKE_BINARY_DIR}/MaquisTypesConfig.cmake)
