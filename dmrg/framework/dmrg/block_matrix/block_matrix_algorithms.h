@@ -433,19 +433,15 @@ void op_kron(Index<SymmGroup> const & phys,
                        pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
                        0);
 
-            for (int l1 = 0; l1 < A.left_basis()[i].second; ++l1)
-                for (int l2 = 0; l2 < B.left_basis()[j].second; ++l2)
-                    for (int r1 = 0; r1 < A.right_basis()[i].second; ++r1)
-                        for (int r2 = 0; r2 < B.right_basis()[j].second; ++r2)
-                            tmp(pb_left(A.left_basis()[i].first,
-                                        B.left_basis()[j].first)+l1*B.left_basis()[j].second+l2,
-                                pb_right(A.right_basis()[i].first,
-                                         B.right_basis()[j].first)+r1*B.right_basis()[j].second+r2) = A[i](l1, r1) * B[j](l2, r2);
-            
+            maquis::dmrg::detail::op_kron(tmp, B[j], A[i], 
+                                          pb_left(A.left_basis()[i].first, B.left_basis()[j].first), 
+                                          pb_right(A.right_basis()[i].first, B.right_basis()[j].first), 
+                                          A.left_basis()[i].second, B.left_basis()[j].second, 
+                                          A.right_basis()[i].second, B.right_basis()[j].second);
+
             C.match_and_add_block(tmp, new_left, new_right);
         }
     }
-    
 }
 
 template<class Matrix, class SymmGroup>
