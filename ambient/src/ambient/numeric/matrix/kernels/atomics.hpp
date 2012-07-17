@@ -191,6 +191,134 @@ namespace ambient { namespace numeric { namespace kernels {
     };
         
     template<typename T>
+    struct op_kron_atomic : public kernel_atomic< op_kron_atomic<T> > 
+    { // gs - 2su
+        typedef void (op_kron_atomic::*F)(matrix_impl<T>&, const matrix_impl<T>&, const matrix_impl<T>&,
+                                          const size_t&, const size_t&, 
+                                          const size_t&, const size_t&,
+                                          const size_t&, const size_t&);
+
+        inline void l(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
+                      const size_t& out_y_offset, const size_t& out_x_offset, 
+                      const size_t& ldim1, const size_t& ldim2, 
+                      const size_t& rdim1, const size_t& rdim2)
+        {
+            this->ctxt_select("1 from ambient as op_kron_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+            this->assign(ui_l_current(alfa));
+        }
+
+        inline void c(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
+                      const size_t& out_y_offset, const size_t& out_x_offset, 
+                      const size_t& ldim1, const size_t& ldim2, 
+                      const size_t& rdim1, const size_t& rdim2)
+        {
+            __A_TIME_C("ambient_op_kron_atomic_c_kernel"); 
+            T* alfad = ui_c_current(alfa)(0,0);
+            for(size_t l1 = 0; l1 < ldim1; ++l1)
+            for(size_t r1 = 0; r1 < rdim1; ++r1)
+            {
+                T alfa_t = alfad[l1 + r1*ui_c_get_dim(alfa).y];
+                __a_memptf_atomic_r<T, __a_memscal>(out, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
+                                                    in,  dim2(0, 0), dim2(rdim2, ldim2), alfa_t);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct reshape_l2b_atomic : public kernel_atomic< reshape_l2b_atomic<T> > 
+    { // gs - 2su
+        typedef void (reshape_l2b_atomic::*F)(matrix_impl<T>&, const matrix_impl<T>&,
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&,
+                                              const size_t&, const size_t&);
+
+        inline void l(matrix_impl<T>& out, const matrix_impl<T>& in,
+                      const size_t& in_left_offset, const size_t& in_phys_offset, 
+                      const size_t& out_left_offset, const size_t& out_x_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            this->ctxt_select("1 from ambient as reshape_l2b_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+        }
+
+        inline void c(matrix_impl<T>& out, const matrix_impl<T>& in,
+                      const size_t& in_left_offset, const size_t& in_phys_offset, 
+                      const size_t& out_left_offset, const size_t& out_x_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            __A_TIME_C("ambient_reshape_l2b_atomic_c_kernel"); 
+
+            size_t in_y_offset  = in_left_offset + ldim*in_phys_offset;
+            size_t out_y_offset = out_left_offset;
+
+            __a_atomic_refresh(out);
+            for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
+                for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
+                    __a_memptf_atomic_r<T, __a_memcpy>(out, dim2(out_x_offset + rdim*ss2, out_y_offset), 
+                                                       in,  dim2(0, in_y_offset), 
+                                                       dim2( rdim, ldim ));
+                    in_y_offset += ldim;
+                }
+                out_y_offset += ldim;
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct reshape_b2l_atomic : public kernel_atomic< reshape_b2l_atomic<T> > 
+    { // gs - 2su
+        typedef void (reshape_b2l_atomic::*F)(matrix_impl<T>&, const matrix_impl<T>&,
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&,
+                                              const size_t&, const size_t&);
+
+        inline void l(matrix_impl<T>& out, const matrix_impl<T>& in,
+                      const size_t& in_left_offset, const size_t& in_x_offset, 
+                      const size_t& out_left_offset, const size_t& out_phys_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            this->ctxt_select("1 from ambient as reshape_b2l_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+        }
+
+        inline void c(matrix_impl<T>& out, const matrix_impl<T>& in,
+                      const size_t& in_left_offset, const size_t& in_x_offset, 
+                      const size_t& out_left_offset, const size_t& out_phys_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            __A_TIME_C("ambient_reshape_b2l_atomic_c_kernel"); 
+
+            size_t in_y_offset  = in_left_offset;
+            size_t out_y_offset = out_left_offset + out_phys_offset*ldim;
+
+            __a_atomic_refresh(out);
+            for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
+                for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+                {
+                    __a_memptf_atomic_r<T, __a_memcpy>(out, dim2(0, out_y_offset), 
+                                                       in,  dim2(in_x_offset + rdim*ss2, in_y_offset), 
+                                                       dim2( rdim, ldim ));
+                    out_y_offset += ldim;
+                }
+                in_y_offset += ldim;
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
     struct reshape_l2r_atomic : public kernel_atomic< reshape_l2r_atomic<T> > 
     { // gs
         typedef void (reshape_l2r_atomic::*F)(const matrix_impl<T>&, matrix_impl<T>&,
