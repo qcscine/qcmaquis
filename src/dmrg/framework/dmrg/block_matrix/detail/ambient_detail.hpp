@@ -18,7 +18,18 @@ class block_matrix;
 namespace maquis { namespace dmrg { namespace detail {
 
     template <typename T>
-    void reshape_l2b(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
+    inline void op_kron(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
+                        size_t out_y_offset, size_t out_x_offset, 
+                        size_t ldim1, size_t ldim2, 
+                        size_t rdim1, size_t rdim2)
+    {
+        ATOMIC(in.atomic() && out.atomic() && alfa.atomic(), op_kron, out, in, alfa, 
+                                                                      out_y_offset, out_x_offset, 
+                                                                      ldim1, ldim2, rdim1, rdim2);
+    }
+
+    template <typename T>
+    inline void reshape_l2b(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
                      size_t in_left_offset, size_t in_phys_offset, 
                      size_t out_left_offset, size_t out_right_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
@@ -29,7 +40,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
 
     template <typename T>
-    void reshape_b2l(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
+    inline void reshape_b2l(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
                      size_t in_left_offset, size_t in_right_offset, 
                      size_t out_left_offset, size_t out_phys_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
