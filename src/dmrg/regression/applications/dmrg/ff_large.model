@@ -5,4 +5,4 @@ W = 6
 MODEL = "spinless fermions"
 t = 1
 CONSERVED_QUANTUMNUMBERS = "N"
-N_total = 16
+N_total = 18
