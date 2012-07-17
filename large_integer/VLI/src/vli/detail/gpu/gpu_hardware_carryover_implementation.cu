@@ -48,6 +48,87 @@ namespace vli {
     template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     __global__ void
     __launch_bounds__(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value , 2)
+    polynomial_mul_full_kepler(
+    	const unsigned int * __restrict__ in1,
+    	const unsigned int * __restrict__ in2,
+        const unsigned int element_count,
+        unsigned int* __restrict__ out,
+        unsigned int* __restrict__ workblock_count_by_warp,
+        single_coefficient_task* __restrict__ execution_plan)
+    {
+	    const unsigned int local_thread_id = threadIdx.x;
+	    const unsigned int element_id = blockIdx.x;
+
+	    unsigned int c1[Size],c2[Size];
+	    unsigned int res[2*Size];
+	    unsigned int res1[2*Size];
+
+	    unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
+
+   	    const unsigned int input_elem_offset = element_id * stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value * Size;
+
+	    for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id)
+	    {
+		    single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<Order, Var0, Var1, Var2, Var3>::value)];
+		    const unsigned int step_count = task.step_count;
+
+		    if (step_count > 0)
+		    {
+			    const unsigned int output_degree_y = task.output_degree_y;
+			    const unsigned int output_degree_x = task.output_degree_x;
+
+                            #pragma unroll
+			    for(unsigned int i = 0; i < 2*Size; ++i)
+				    res[i] = 0;
+
+			    const unsigned int start_degree_x_inclusive = output_degree_x > Order ? output_degree_x - Order : 0;
+			    const unsigned int end_degree_x_inclusive = output_degree_x < (Order+1) ? output_degree_x : Order;
+			    unsigned int current_degree_x = start_degree_x_inclusive;
+			    unsigned int current_degree_y = output_degree_y > Order  ? output_degree_y - Order : 0;
+
+			    for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
+				    unsigned int  in_polynomial_offset1 = (current_degree_x + (current_degree_y * OrderPadded<Order>::value))*Size + input_elem_offset;
+				    unsigned int  in_polynomial_offset2 = ((output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * OrderPadded<Order>::value))*Size + input_elem_offset;
+
+                                    #pragma unroll
+                                    for(unsigned int i = 0; i < Size; ++i)
+                                        c1[i] = in1[in_polynomial_offset1 + i];
+        
+                                    #pragma unroll
+                                    for(unsigned int i = 0; i < Size; ++i)
+                                        c2[i] = in2[in_polynomial_offset2 + i];
+
+                                    #pragma unroll
+				    for(unsigned int i = 0; i < 2*Size; ++i)
+                                        res1[i] = 0;
+
+                                    multiplies<BaseInt, Size>(res, res1, c1, c2); // the multiplication using boost pp
+
+				    // Calculate the next pair of input coefficients to be multiplied and added to the result
+				    current_degree_x++;
+				    if (current_degree_x > end_degree_x_inclusive) {
+					    current_degree_x = start_degree_x_inclusive;
+					    current_degree_y++;
+				    }
+			    }
+
+			    unsigned int coefficient_id = output_degree_y * (Order*2+1) + output_degree_x;
+			    unsigned int * out2 = out + (coefficient_id * element_count *2* Size) + element_id; // coefficient->int_degree->element_id
+                            #pragma unroll
+			    for(unsigned int i = 0; i < 2*Size; ++i) {
+				    // This is a strongly compute-bound kernel,
+				    // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
+				    //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
+				    *out2 = res[i];
+				    out2 += element_count;
+			    }
+		    } // if (step_count > 0)
+	    } //for(unsigned int iteration_id
+    }
+/*
+    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    __global__ void
+    __launch_bounds__(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value , 2)
     polynomial_mul_full(
     	const unsigned int * __restrict__ in1,
     	const unsigned int * __restrict__ in2,
@@ -64,19 +145,19 @@ namespace vli {
 	    const unsigned int local_thread_id = threadIdx.x;
 	    const unsigned int element_id = blockIdx.x;
 
-	    // Copy both input polynomials into the shared memory
 	    {
 		    const unsigned int * in_shifted1 = in1 + (element_id * stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value  * Size);
 		    const unsigned int * in_shifted2 = in2 + (element_id * stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value  * Size);
 		    unsigned int index_id = local_thread_id;
                     #pragma unroll
-		    for(unsigned int i = 0; i < ( stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value * Size) / MulBlockSize<Order, Var0, Var1, Var2, Var3>::value; ++i) {
+		    for(unsigned int i = 0; i < (stride<Var0,Order>::value * stride<Var1,Order>::value * stride<Var2,Order>::value * stride<Var3,Order>::value * Size) / MulBlockSize<Order, Var0, Var1, Var2, Var3>::value; ++i) {
                             // pbs starts there
 			    unsigned int coefficient_id = index_id / Size;
 			    unsigned int degree_id = index_id % Size;
 			    unsigned int current_degree_y = coefficient_id / (Order+1);
 			    unsigned int current_degree_x = coefficient_id % (Order+1);
-			    unsigned int local_index_id = current_degree_x + (current_degree_y * OrderPadded<Order>::value) + (degree_id * (OrderPadded<Order>::value *(Order+1)));
+			   // unsigned int local_index_id = current_degree_x + (current_degree_y * OrderPadded<Order>::value) + (degree_id * (OrderPadded<Order>::value *(Order+1)));
+			    unsigned int local_index_id = current_degree_x + (current_degree_y * stride<Var0,Order>::value) + degree_id * (stride<Var0,Order>::value * stride<Var1,Order>::value);
 			    in_buffer1[local_index_id] = in_shifted1[index_id];
 			    in_buffer2[local_index_id] = in_shifted2[index_id];
 			    index_id += MulBlockSize<Order, Var0, Var1, Var2, Var3>::value ;
@@ -158,7 +239,7 @@ namespace vli {
 		    } // if (step_count > 0)
 	    } //for(unsigned int iteration_id
     }
-
+*/
     template <typename BaseInt, std::size_t Size, unsigned int Order>
     __global__ void
     __launch_bounds__(SUM_BLOCK_SIZE, 2)
@@ -216,7 +297,7 @@ namespace vli {
 	    {
                 dim3 grid(VectorSize) ;
                 dim3 threads(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value);
-                polynomial_mul_full<BaseInt, Size, Order, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
+                polynomial_mul_full_kepler<BaseInt, Size, Order, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
