@@ -38,6 +38,20 @@ namespace maquis { namespace dmrg { namespace detail {
     }
 
     template <typename T>
+    void op_kron(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in, const alps::numeric::matrix<T>& alfa,
+                 size_t out_y_offset, size_t out_x_offset, 
+                 size_t ldim1, size_t ldim2, 
+                 size_t rdim1, size_t rdim2)
+    {
+            for(int l1 = 0; l1 < ldim1; ++l1)
+            for(int r1 = 0; r1 < rdim1; ++r1)
+            for(int l2 = 0; l2 < ldim2; ++l2)
+            for(int r2 = 0; r2 < rdim2; ++r2)
+                out(out_y_offset + l1*ldim2 + l2, out_x_offset + r1*rdim2 + r2) = 
+                in(l2, r2)*alfa(l1, r1);
+    }
+
+    template <typename T>
     void reshape_l2b(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in,
                      size_t in_left_offset, size_t in_phys_offset, 
                      size_t out_left_offset, size_t out_right_offset,
