@@ -73,25 +73,10 @@ namespace ts_reshape {
                             m2.insert_block(new Matrix(out_left.size(s_charge, left_i[l].first), right_i[r].second, 0),
                                             out_l_charge, out_r_charge);
                         
-                        size_t in_left_offset = in_left(physical_i[s1].first, left_i[l].first);
-                        size_t in_right_offset = in_right(physical_i[s2].first, right_i[r].first);
-                        size_t out_left_offset = out_left(s_charge, left_i[l].first);
-                        size_t out_phys_offset = phys_pb(physical_i[s1].first, physical_i[s2].first);
-                        
-                        Matrix const & in_block = m1(in_l_charge, in_r_charge);
-                        Matrix & out_block = m2(out_l_charge, out_r_charge);
-                        
-                        for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
-                            for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2)
-                            {
-                                size_t ss_out = out_phys_offset + ss1*physical_i[s2].second + ss2;
-                                for (size_t rr = 0; rr < right_i[r].second; ++rr)
-                                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                                        out_block(out_left_offset + ss_out*left_i[l].second + ll, rr) = 
-                                        in_block(in_left_offset + ss1*left_i[l].second+ll,
-                                                 in_right_offset + ss2*right_i[r].second+rr);
-                            }
-                        
+                        maquis::dmrg::detail::reshape_b2l( m2(out_l_charge, out_r_charge), m1(in_l_charge, in_r_charge), 
+                                                           in_left(physical_i[s1].first, left_i[l].first), in_right(physical_i[s2].first, right_i[r].first),
+                                                           out_left(s_charge, left_i[l].first), phys_pb(physical_i[s1].first, physical_i[s2].first),
+                                                           physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second );
                     }
                 }
         }
@@ -156,22 +141,10 @@ namespace ts_reshape {
                                                    out_right.size(-physical_i[s2].first, right_i[r].first), 0),
                                             out_l_charge, out_r_charge);
                         
-                        size_t in_left_offset = in_left(s_charge, left_i[l].first);
-                        size_t out_right_offset = out_right(physical_i[s2].first, right_i[r].first);
-                        size_t out_left_offset = out_left(physical_i[s1].first, left_i[l].first);
-                        size_t in_phys_offset = phys_pb(physical_i[s1].first, physical_i[s2].first);
-                        
-                        Matrix const & in_block = m1(in_l_charge, in_r_charge);
-                        Matrix & out_block = m2(out_l_charge, out_r_charge);
-                        
-                        for (size_t ss1 = 0; ss1 < physical_i[s1].second; ++ss1)
-                            for (size_t ss2 = 0; ss2 < physical_i[s2].second; ++ss2)
-                            {
-                                size_t ss_out = in_phys_offset + ss1*physical_i[s2].second + ss2;
-                                for (size_t rr = 0; rr < right_i[r].second; ++rr)
-                                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                                        out_block(out_left_offset + ss1*left_i[l].second + ll, out_right_offset + ss2*right_i[r].second + rr) = in_block(in_left_offset + ss_out*left_i[l].second + ll, rr);
-                            }
+                        maquis::dmrg::detail::reshape_l2b( m2(out_l_charge, out_r_charge), m1(in_l_charge, in_r_charge),
+                                                           in_left(s_charge, left_i[l].first), phys_pb(physical_i[s1].first, physical_i[s2].first),
+                                                           out_left(physical_i[s1].first, left_i[l].first), out_right(physical_i[s2].first, right_i[r].first),
+                                                           physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second );
                     }
                 }
         }
