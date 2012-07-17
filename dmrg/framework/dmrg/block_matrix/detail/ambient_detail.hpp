@@ -18,32 +18,57 @@ class block_matrix;
 namespace maquis { namespace dmrg { namespace detail {
 
     template <typename T>
+    void reshape_l2b(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
+                     size_t in_left_offset, size_t in_phys_offset, 
+                     size_t out_left_offset, size_t out_right_offset,
+                     size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        ATOMIC(in.atomic() && out.atomic(), reshape_l2b, out, in, in_left_offset, in_phys_offset, 
+                                                         out_left_offset, out_right_offset, 
+                                                         sdim1, sdim2, ldim, rdim);
+    }
+
+    template <typename T>
+    void reshape_b2l(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
+                     size_t in_left_offset, size_t in_right_offset, 
+                     size_t out_left_offset, size_t out_phys_offset,
+                     size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        ATOMIC(in.atomic() && out.atomic(), reshape_b2l, out, in, in_left_offset, in_right_offset, 
+                                                         out_left_offset, out_phys_offset, 
+                                                         sdim1, sdim2, ldim, rdim);
+    }
+
+    template <typename T>
     inline void reshape_l2r(const ambient::numeric::matrix<T>& left, ambient::numeric::matrix<T>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
-        ATOMIC(left.atomic() && right.atomic(), reshape_l2r, left, right, left_offset, right_offset, sdim, ldim, rdim);
+        ATOMIC(left.atomic() && right.atomic(), reshape_l2r, left, right, left_offset, right_offset, 
+                                                             sdim, ldim, rdim);
     }
     
     template <typename T>
     inline void reshape_r2l(ambient::numeric::matrix<T>& left, const ambient::numeric::matrix<T>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
-        ATOMIC(left.atomic() && right.atomic(), reshape_r2l, left, right, left_offset, right_offset, sdim, ldim, rdim);
+        ATOMIC(left.atomic() && right.atomic(), reshape_r2l, left, right, left_offset, right_offset, 
+                                                             sdim, ldim, rdim);
     }
     
     template <typename T>
     inline void lb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), lb_tensor_mpo, out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+        ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), lb_tensor_mpo, out, in, alfa, out_offset, in_offset, 
+                                                                            sdim1, sdim2, ldim, rdim);
     }
     
     template <typename T>
     inline void rb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), rb_tensor_mpo, 
-               out, in, alfa, out_offset, in_offset, sdim1, sdim2, ldim, rdim);
+        ATOMIC(out.atomic() && in.atomic() && alfa.atomic(), rb_tensor_mpo, out, in, alfa, out_offset, in_offset, 
+                                                                            sdim1, sdim2, ldim, rdim);
     }
    
     template<class T, class SymmGroup>
