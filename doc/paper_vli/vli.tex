@@ -42,7 +42,7 @@ P_a(x,y) &=&   a_{00} + a_{10}x + a_{20}x^2 + a_{01}y + a_{11} xy + a_{21}x^2y +
  P_c = \sum_i^m \boldsymbol{v}_{1_i}<P_a>  \times  \boldsymbol{v}_{2_i}<P_b> \label{poly1}
 \end{eqnarray}
 
-where $\times$ indicates the multiplication between two polynomials. We  note, a coefficient may be not unique. It can be the sum of several coefficients resulting from the sum of several multiplications.
+where $\times$ indicates the multiplication between two polynomials.   Note, a result coefficient may be not unique. It can be the sum of several coefficients resulting from several multiplications.
 These coefficients are named cross term. Per example, if we multiply two polynomial as defined in \ref{poly0}, the resulting coefficient $c_{12}xy^2$ will be given by : 
 
 \begin{eqnarray}
@@ -80,7 +80,7 @@ The algorithms of all these operations are based on the childhood knowledge but 
 \subsection*{Why Assembly ?}
 
 In programming, the basic operators of the addition, subtraction and multiplication between identical type give the same type. 
-Per example, if we need an long addition or long subtraction, the propagation of the  carry/borrow can be done by hand, but the performance will be low compare to a pure assembly version. 
+Per example, if we need a long addition or a long subtraction, the propagation of the  carry/borrow can be done by hand, but the performance will be low compare to a pure assembly version. 
 The number of assembly instruction can be reduce by a factor 3 for the additions/subtraction, and  2-order for the multiplication.
 
 In assembly, the addition with the carry bit (CB) allows a simplified model without  carry bit propagation by hand\footnote{ The carry bit is a bit of the status register, as the overflow bit, 
@@ -98,18 +98,18 @@ and re-use if the \texttt{adc} instruction is performed. In pure assembly, addit
 We will not detail because it exceeds the purpose of the present document. 
 
 The same techniques are performed for all additions/subtractions with respective mnemonic. For the multiplication, we use the mnemonic \texttt{mul} this instruction has the specificity to return the lower and the higher
-par of the product into 2 separate registers (the classical operator $\times$ returns only the low part in C/C++/fortran \dots), combined with the additions and our childhood algorithm, we can construct a large multiplication.  
+par of the product into  separate registers (the classical operator $\times$ returns only the low part in C/C++/fortran \dots), combined with the additions and our childhood algorithm, we can construct a large multiplication.  
 
 \subsection*{About the implementation}
 
-We intro=duce the assembly using the GNU inline assembly, it consists of a string between ASM tag.
-Generate by hand all these  string (kernels) in assembly can be painful and a source of error (15 000 lines). 
-Thus, we designed a generator of assembly. It generates all versions of a kernels during the compilation.   
-We use the preprocessor and the package boost preprocessor package, it allows repetition, branching, and more
+We code the assembly using the GNU inline assembly, it consists of a string between ASM tag.
+Generate by hand all these  string (kernels) in assembly can be painful and a source of error ($\sim$10 000 lines). 
+We designed a generator of assembly. It create all versions of a kernels during the compilation.   
+We use the preprocessor and the  boost preprocessor package. It allows repetition, branching, and more
  important the construction of string during the pre-compilation.  All kernels use this procedure except the extended multiplication for the cpu.
 
 The x86-64 architecture allows 16 registers (32 for power), as much as possible , we conserved the datas into the registers when we perform a long multiplication to reduce read/write actions to the minimum (1 cycle for a register).
-Additional optimizations are done like unrolling and assembly tips (xor,  \dots).  The VLI lib supported  x86-64 and Power assembly,
+Additional optimizations are done like unrolling and assembly tips (xor,  \dots).  The VLI lib supported  x86-64 and Power assembly.
 
 \subsection*{Memory layout and SIMD implementation}
 
@@ -130,7 +130,7 @@ The second possibility; SoA interleaves the coefficient of the VLI and the polyn
 \end{eqnarray}
 
 The choice of the memory layout is important because it allows or not the usage of the SIMD instructions. The SIMD instructions are 128 to 256 bits vector register ($xmm_i$ or $ymm_i$) allows 4 to 8 \texttt{int}  operations simultaneously.
-A number of constraints force us to work under 31 bits base because we have to manage the carry bit and the extended multiplication by hand. In the previous sections we presented an addition of 128 bits VLI, it took two operations
+A number of constraints force us to work under 31 bits base because we have to manage the carry bit and the extended multiplication by hand. In the previous sections we presented an addition of 128 bits VLI. It took two operations
 without \texttt{move}.   The same operation in SIMD (256 bits registers) necessitates a few adaptations as we work now in base 31 :    
 
 \begin{center}
@@ -149,14 +149,12 @@ $ymm_2 +=  \textrm{CB } $ & $c^1_{00}$  & $c^1_{10}$ & $c^1_{20}$  &  $c^1_{30}$
 \end{center}
 
 
-This operation must be repeat two more times to get the 124 bits addition. At the end we perform 9 additions and 3  shift operations for eight VLI$<4*31, \texttt{\textrm{uint}}>$ += VLI$<4*31, \texttt{\textrm{uint}}>$ operations. 
+This operation must be repeat two more times to get the 124 bits addition. At the end, we perform 9 additions and 3  shift operations for eight VLI$<4*31, \texttt{\textrm{uint}}>$ += VLI$<4*31, \texttt{\textrm{uint}}>$ operations. 
  Comparing to the original solution we saved a factor two,  nevertheless on modern CPU (Sandybridge), we have 3 APU  we can not exclude that the execution of  the addition of the polynomial coefficients will be execute in parallel over the APU. 
 
 Beyond, we should consider the extended  multiplication using SIMD instructions. For this multiplication of unsigned number   VLI$<4*64, \texttt{\textrm{ulint}}>$  = VLI$<2*64, \texttt{\textrm{ulint}}>$ $\times$ VLI$<2*64, \texttt{\textrm{ulint}}>$) using the
-childhood  algorithm we need 4 multiplications and 3 additions so 32 multiplications and 24 additions to perform 8 vli multiplications. For the SIMD version we need 16 multiplications and 29 additions, 16 copies for the ouput multiplications 
-associated to 16 right shift  to extract the higher part on the multiplication and 16 mask operator to get the lower part. And additional shift to get the carry bit. Execution time for both implementation will be similar. We should remember the treatment of the sign,
- a long multiplication can necessitate branching (cite art of assembly). The branching can be remove but it  becomes painful and useless for number larger than 128 bits.  A SIMD version necessitates no branching but its implementation will
-definitively discredit this choice.
+childhood  algorithm, we need 4 multiplications and 3 additions so 32 multiplications and 24 additions to perform 8 vli multiplications. For the SIMD version we need 16 multiplications and 29 additions, 16 copies for the ouput multiplications 
+associated to 16 right shift  to extract the higher part on the multiplication and 16 mask operator to get the lower part. And additional shift to get the carry bit. Execution time for both implementation will be similar. Nevertheless, we should remember the treatment of the sign,  a long multiplication can necessitate branching (cite art of assembly). The branching can be remove but it  becomes painful and useless for number larger than 128 bits.  A SIMD version necessitates no branching but its implementation will definitively discredit this choice.
 
 As the SIMD implementation does not give enough argument to focus on it, we have privileged  the AoS and classic assembly instructions. To conclude the new coprocessor of Intel named Mic could reconsider our choice on SIMD
 because this processor supports CB, and extraction of the  lower and higher part of the multiplication. It allows selected operations on the registers by a judicious system of mask.
