@@ -19,9 +19,9 @@ namespace vli {
 
     template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     void gpu_hardware_carryover_implementation<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::plan(){
-        std::vector<unsigned int> workblock_count_by_warp_local(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value / 32,0);
-        std::vector<unsigned int> work_total_by_size(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value / 32,0);
-        std::vector<vli::detail::single_coefficient_task > tasks(((extend_stride<Var0, Order>::value*extend_stride<Var1, Order>::value*extend_stride<Var2, Order>::value*extend_stride<Var3, Order>::value + 32 - 1) / 32) * 32);
+        std::vector<unsigned int> workblock_count_by_warp_local(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value / 32U,0);
+        std::vector<unsigned int> work_total_by_size(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value / 32U,0);
+        std::vector<vli::detail::single_coefficient_task > tasks(((extend_stride<Var0, Order>::value*extend_stride<Var1, Order>::value*extend_stride<Var2, Order>::value*extend_stride<Var3, Order>::value + 32U - 1) / 32U) * 32U);
 
         for(unsigned int degree_w = 0; degree_w <extend_stride<Var3, Order>::value; ++degree_w) {
             for(unsigned int degree_z = 0; degree_z <extend_stride<Var2, Order>::value; ++degree_z) {
@@ -54,13 +54,13 @@ namespace vli {
         }
        // Sort the tasks in step_count descending order
          std::sort(tasks.begin(), tasks.end(), vli::detail::single_coefficient_task_sort);
-
-         vli::detail::single_coefficient_task empty_task;
-         empty_task.step_count = 0;
-         std::vector<vli::detail::single_coefficient_task > tasks_reordered(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value * MaxIterationCount<Order, Var0, Var1, Var2, Var3>::value, empty_task);
-         // this thing should be generic ... 
+         std::cout << " total " << MulBlockSize<Order, Var0, Var1, Var2, Var3>::value * MaxIterationCount<Order, Var0, Var1, Var2, Var3>::value << std::endl;
+         std::cout << " Maxiteration " <<  MaxIterationCount<Order, Var0, Var1, Var2, Var3>::value << std::endl;
+         std::cout << " Mulblocksize " << MulBlockSize<Order, Var0, Var1, Var2, Var3>::value << std::endl;
+         std::vector<vli::detail::single_coefficient_task > tasks_reordered(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value * MaxIterationCount<Order, Var0, Var1, Var2, Var3>::value);
+         // this thing should be generic ... yes it is ! 
          for(unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
-                unsigned int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin();
+                unsigned int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
                 std::copy(
                 	tasks.begin() + (batch_id * 32),
                 	tasks.begin() + ((batch_id + 1) * 32),

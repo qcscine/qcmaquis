@@ -1,6 +1,7 @@
 /*
 *Very Large Integer Library, License - Version 1.0 - May 3rd, 2012
 *
+*Maxim Milakov - NVIDIA
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
 *
@@ -41,13 +42,13 @@ namespace vli {
     */
     template<unsigned int Order>
     struct OrderPadded{
-        enum {value = (((Order+1)>>1)<<1)+1}; // WHY?
-        //enum {value = (Order+1)}; <----- it works
+       // enum {value = (((Order+1)>>1)<<1)+1}; // WHY?
+        enum {value = (Order+1)}; //<----- it works
     };
 
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MaxIterationCount{
-        enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+31U)/32U};
+        enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+32U-1U)/32U};
     };
 
     }
