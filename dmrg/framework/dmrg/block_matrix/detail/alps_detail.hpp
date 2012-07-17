@@ -36,6 +36,40 @@ namespace maquis { namespace dmrg { namespace detail {
     {
         throw std::runtime_error("Not implemented.");
     }
+
+    template <typename T>
+    void reshape_l2b(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in,
+                     size_t in_left_offset, size_t in_phys_offset, 
+                     size_t out_left_offset, size_t out_right_offset,
+                     size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        {
+            size_t ss_out = in_phys_offset + ss1*sdim2 + ss2;
+            for(size_t rr = 0; rr < rdim; ++rr)
+                for(size_t ll = 0; ll < ldim; ++ll)
+                    out(out_left_offset + ss1*ldim + ll, out_right_offset + ss2*rdim + rr) =
+                    in(in_left_offset + ss_out*ldim + ll, rr);
+        }
+    }
+
+    template <typename T>
+    void reshape_b2l(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in,
+                     size_t in_left_offset, size_t in_right_offset, 
+                     size_t out_left_offset, size_t out_phys_offset,
+                     size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        {
+            size_t ss_out = out_phys_offset + ss1*sdim2 + ss2;
+            for(size_t rr = 0; rr < rdim; ++rr)
+                for(size_t ll = 0; ll < ldim; ++ll)
+                    out(out_left_offset + ss_out*ldim + ll, rr) = 
+                    in(in_left_offset + ss1*ldim+ll, in_right_offset + ss2*rdim+rr);
+        }
+    }
     
     template <typename T>
     void reshape_r2l(alps::numeric::matrix<T>& left, const alps::numeric::matrix<T>& right,
