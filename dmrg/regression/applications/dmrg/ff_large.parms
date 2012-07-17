@@ -12,6 +12,6 @@ chkpfile = "ff_large.out.h5"
 donotsave = 1
 
 // possible values: singlesite, twosite
-optimization = "singlesite"
+optimization = "twosite"
 
 symmetry = "u1"
