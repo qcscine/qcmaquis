@@ -427,7 +427,8 @@ void op_kron(Index<SymmGroup> const & phys,
             
             
             Matrix tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
-                       pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first));
+                       pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
+                       0);
 
             maquis::dmrg::detail::op_kron(tmp, B[j], A[i], 
                                           pb_left(A.left_basis()[i].first, B.left_basis()[j].first), 
