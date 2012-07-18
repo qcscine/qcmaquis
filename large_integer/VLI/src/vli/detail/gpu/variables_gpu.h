@@ -39,6 +39,16 @@ namespace vli {
     namespace detail {
 
     template <class Variable, unsigned int Order>
+    struct extend_stride {
+        static unsigned int const value = 2*Order+1;
+    };  
+        
+    template <unsigned int Order>
+    struct extend_stride<no_variable,Order> {
+        static unsigned int const value = 1;
+    };  
+
+    template <class Variable, unsigned int Order>
     struct stride {
         static unsigned int const value = Order+1;
     };  
@@ -49,13 +59,13 @@ namespace vli {
     };  
    
     template <class Variable, unsigned int Order>
-    struct extend_stride {
-        static unsigned int const value = 2*Order+1;
+    struct stride_pad {
+        static unsigned int const value = Order+1;
     };  
         
     template <unsigned int Order>
-    struct extend_stride<no_variable,Order> {
-        static unsigned int const value = 1;
+    struct stride_pad<no_variable,Order> {
+        static unsigned int const value = 0;
     };  
 
     template <class Variable>

@@ -74,8 +74,10 @@ namespace vli {
 
 		    if (step_count > 0)
 		    {
-			    const unsigned int output_degree_y = task.output_degree_y;
 			    const unsigned int output_degree_x = task.output_degree_x;
+			    const unsigned int output_degree_y = task.output_degree_y;
+			    const unsigned int output_degree_z = task.output_degree_z;
+			    const unsigned int output_degree_w = task.output_degree_w;
 
                             #pragma unroll
 			    for(unsigned int i = 0; i < 2*Size; ++i)
@@ -83,12 +85,13 @@ namespace vli {
 
 			    const unsigned int start_degree_x_inclusive = output_degree_x > Order ? output_degree_x - Order : 0;
 			    const unsigned int end_degree_x_inclusive = output_degree_x < (Order+1) ? output_degree_x : Order;
+
 			    unsigned int current_degree_x = start_degree_x_inclusive;
 			    unsigned int current_degree_y = output_degree_y > Order  ? output_degree_y - Order : 0;
 
 			    for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
-				    unsigned int  in_polynomial_offset1 = (current_degree_x + (current_degree_y * OrderPadded<Order>::value))*Size + input_elem_offset;
-				    unsigned int  in_polynomial_offset2 = ((output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * OrderPadded<Order>::value))*Size + input_elem_offset;
+				    unsigned int  in_polynomial_offset1 = (current_degree_x + (current_degree_y * stride_pad<Var1,Order>::value))*Size + input_elem_offset;
+				    unsigned int  in_polynomial_offset2 = ((output_degree_x - current_degree_x) + ((output_degree_y - current_degree_y) * stride_pad<Var1,Order>::value))*Size + input_elem_offset;
 
                                     #pragma unroll
                                     for(unsigned int i = 0; i < Size; ++i)
