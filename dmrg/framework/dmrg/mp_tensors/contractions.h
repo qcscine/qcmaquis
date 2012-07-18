@@ -204,8 +204,8 @@ struct contraction {
         for (std::size_t b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left.data_[b]), mps.data_, tmp);
-            reshape_right_to_left<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
-                                          tmp, t[b]);
+            reshape_right_to_left_new<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
+                                              tmp, t[b]);
         }
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
@@ -290,7 +290,7 @@ struct contraction {
                                     Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
                                     
                                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                                  physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 
                                 if (pretend)

@@ -115,8 +115,8 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
         return;
     
     block_matrix<Matrix, SymmGroup> tmp;
-    reshape_right_to_left<Matrix>(phys_i, left_i, right_i,
-                                  data_, tmp);
+    reshape_right_to_left_new<Matrix>(phys_i, left_i, right_i,
+                                      data_, tmp);
     swap(data_, tmp);
     cur_storage = LeftPaired;
     
