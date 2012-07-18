@@ -72,8 +72,6 @@ public:
 	      |         left to right  | right to left, lr = -1
 	      site 2                   |                               */
 
-	        Timer iteration_t("Iteration took");
-            
             int site, lr, site1, site2;
             if (_site < L-1) {
                 site = _site;
@@ -202,8 +200,6 @@ public:
                 storage::store(right_[site2+1], right_stores_[site2+1]); // store currently used boundary
             }
             
-    	    iteration_t.end();
-
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
