@@ -82,6 +82,11 @@ namespace ambient { namespace numeric {
         //ambient::push< kernels::exp_diagonal<T> >(*this, alfa);
     }
 
+    template<typename T>
+    inline bool diagonal_matrix<T>::atomic() const {
+        return this->data_.atomic(); 
+    }
+
     // {{{ diagonal_matrix free functions
     template<typename T>
     inline size_type num_rows(const diagonal_matrix<T>& m){

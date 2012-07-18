@@ -405,7 +405,7 @@ namespace ambient { namespace numeric { namespace kernels {
             T* alfad = ui_c_current(alfa)(0,0);
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    T alfa_t = alfad[ss1 + ui_c_get_dim(alfa).y*ss2];
+                    T alfa_t = alfad[ss1 + ss2*ui_c_get_dim(alfa).y];
                     __a_memptf_atomic_r<T, __a_memscal>(out, dim2(0, out_offset + ss2*ldim),
                                                         in,  dim2(0, in_offset + ss1*ldim),
                                                         dim2(rdim, ldim), alfa_t);
