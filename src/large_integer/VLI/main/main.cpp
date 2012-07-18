@@ -47,11 +47,11 @@ typedef vli_cpu< unsigned long int, Size1> vli_type_cpu;
 typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 
 
-//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
-//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
+typedef vli::polynomial<vli_result_type_cpu  , vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
+//typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
 
@@ -152,8 +152,8 @@ std::cout << d << std::endl;
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
 
- //   InitPolyVLItoPolyGMP(v1,v1gmp);
- //   InitPolyVLItoPolyGMP(v2,v2gmp);
+    InitPolyVLItoPolyGMP(v1,v1gmp);
+    InitPolyVLItoPolyGMP(v2,v2gmp);
 
     Timer t3("CPU vli_omp");
     t3.begin();

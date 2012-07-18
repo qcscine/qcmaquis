@@ -32,6 +32,12 @@
 #include <boost/preprocessor/stringize.hpp>
 
 //g++ -DNUM=1 -E -P -I /opt/boost/include/ main.cpp | sed  "s/n/; \\`echo -e '\n\r      '`/g"
+#define VLI_MAX_ITERATION 7
+#define VLI_MAX_ITERATION_MINUS_ONE 6
+#define VLI_FOUR 4
+#define VLI_THREE 3
+#define VLI_AOS 1 // if you change this value you move to the SOA structure be carefull 
+
 #define MAX_ITERATION 7
 #define MAX_ITERATION_MINUS_ONE 6
 #define FOUR 4
