@@ -44,10 +44,10 @@
 #include <boost/preprocessor/seq/for_each.hpp>
 
 //g++ -DNUM=1 -E -P -I /opt/boost/include/ main.cpp | sed  "s/n/; \\`echo -e '\n\r      '`/g"
-#define MAX_ITERATION 7
-#define MAX_ITERATION_MINUS_ONE 6
-#define THREE 3
-#define FOUR 4
+//##define VLI_MAX_ITERATION 7
+//#define VLI_MAX_ITERATION_MINUS_ONE 6
+//#define VLI_THREE 3
+#define VLI_FOUR 4
 //give the name of the function addition
 #define NAME_ADD_NBITS_PLUS_NBITS(n)                 BOOST_PP_CAT(BOOST_PP_CAT(add,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)))  /* addnx64_nx64 */
 //give the name of the multiplication VLI<2*n> = VLI<n>*VLI<n> -  mul2nxx64_nx64_nx64
@@ -116,7 +116,6 @@
 
 //macro for the wrapper
 
-#define FOUR 4 // x,y,z,w
 #define VARIABLE0 'x'
 #define VARIABLE1 'y'
 #define VARIABLE2 'z'
@@ -127,6 +126,6 @@
 //#define TIM_PP_CHARIZE(ARG) BOOST_PP_CAT(BOOST_PP_CAT(QUOTE,ARG),QUOTE)
 
 #define GET_VAR(z,n,unused) BOOST_PP_COMMA_IF(n) vli::var<BOOST_PP_CAT(VARIABLE,n)> 
-#define GET_NULVAR(z,n,unused) BOOST_PP_COMMA_IF(BOOST_PP_SUB(FOUR,n)) vli::no_variable
-#define EXPEND_VAR(ARG) BOOST_PP_REPEAT(ARG,GET_VAR,~)  BOOST_PP_REPEAT(BOOST_PP_SUB(FOUR,ARG),GET_NULVAR,~)
+#define GET_NULVAR(z,n,unused) BOOST_PP_COMMA_IF(BOOST_PP_SUB(VLI_FOUR,n)) vli::no_variable
+#define EXPEND_VAR(ARG) BOOST_PP_REPEAT(ARG,GET_VAR,~)  BOOST_PP_REPEAT(BOOST_PP_SUB(VLI_FOUR,ARG),GET_NULVAR,~)
 //give somehting like  vli::var<'x'> , vli::var<'y'> , vli::no_variable , vli::no_variable
