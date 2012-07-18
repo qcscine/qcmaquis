@@ -184,9 +184,6 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                   bool verbose = true,
                   Logger * logger = NULL)
 { 
-    #ifdef AMBIENT // AMBIENT: NOT IMPLEMENTED
-      assert(false);
-    #endif
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     svd(M, U, V, S);
     
@@ -430,8 +427,7 @@ void op_kron(Index<SymmGroup> const & phys,
             
             
             Matrix tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
-                       pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
-                       0);
+                       pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first));
 
             maquis::dmrg::detail::op_kron(tmp, B[j], A[i], 
                                           pb_left(A.left_basis()[i].first, B.left_basis()[j].first), 
