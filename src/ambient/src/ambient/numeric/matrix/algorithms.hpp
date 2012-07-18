@@ -4,6 +4,7 @@
 #include "ambient/numeric/matrix/kernels/utils.hpp"
 #include "ambient/numeric/matrix/kernels/kernels.hpp"
 #include "ambient/numeric/matrix/kernels/atomics.hpp"
+#include "ambient/numeric/matrix/diagonal_matrix.hpp"
 
 #define ATOMIC(condition, kernel, ...) assert(condition); ambient::push< kernels::kernel ## _atomic<T> >(__VA_ARGS__);
 

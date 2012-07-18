@@ -4,6 +4,13 @@
 #include <limits>
 #include "utils/timings.h"
 
+//#define AMBIENT_COMPUTATIONAL_TIMINGS
+//#define AMBIENT_CHECK_BOUNDARIES
+
+#ifdef AMBIENT_CHECK_BOUNDARIES
+#include <execinfo.h>
+#endif
+
 extern "C" {
     double ddot_(const int*, const double*, const int*, const double*, const int*);
 }
@@ -14,9 +21,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     #include "ambient/utils/numeric.h" // BLAS/LAPACK prototypes
     #include "ambient/utils/ceil.h"
-
-    //#define AMBIENT_COMPUTATIONAL_TIMINGS
-    //#define AMBIENT_CHECK_BOUNDARIES
    
     #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
         #define __A_TIME_C(name) static __a_timer time(name); time.begin();
@@ -157,8 +161,18 @@ namespace ambient { namespace numeric { namespace kernels {
         __A_TIME_C("ambient_memptf_fr_atomic_kernel");
 #ifdef AMBIENT_CHECK_BOUNDARIES
         if(ui_c_get_dim(dst).x - dst_p.x < size.x || ui_c_get_dim(dst).y - dst_p.y < size.y ||
-           ui_c_get_dim(src).x - src_p.x < size.x || ui_c_get_dim(src).y - src_p.y < size.y) 
-            ambient::cout << "Error: invalid memory movement" << std::endl;
+           ui_c_get_dim(src).x - src_p.x < size.x || ui_c_get_dim(src).y - src_p.y < size.y){
+            ambient::cout << "Error: invalid memory movement: " << std::endl;
+            ambient::cout << "Matrix dst " << ui_c_get_dim(dst).x << "x" << ui_c_get_dim(dst).y << "\n";
+            ambient::cout << "Dest p " << dst_p.x << "x" << dst_p.y << "\n";
+            ambient::cout << "Matrix src " << ui_c_get_dim(src).x << "x" << ui_c_get_dim(src).y << "\n";
+            ambient::cout << "Src p " << src_p.x << "x" << src_p.y << "\n";
+            ambient::cout << "Block size " << size.x << "x" << size.y << "\n";
+
+            void *array[10];
+            size_t size = backtrace(array, 10);
+            backtrace_symbols_fd(array, size, 2);
+        }
 #endif
         int n = size.x;
         int m = size.y*sizeof(T);
