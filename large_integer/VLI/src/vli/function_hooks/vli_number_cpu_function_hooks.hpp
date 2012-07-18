@@ -125,7 +125,7 @@ namespace vli
         detail::NAME_ADD_NBITS_PLUS_NBITS(n)(x,y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
+    BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
     #undef FUNCTION_add_nbits_nbits
 
     //specialization addnbits_64bits, until 512 bits
@@ -135,7 +135,7 @@ namespace vli
         detail::NAME_ADD_NBITS_PLUS_64BITS(n)(x,&y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
+    BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
     #undef FUNCTION_add_nbits_64bits
     // specialization extention addition 
     #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
@@ -144,7 +144,7 @@ namespace vli
         detail::NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(x,y,w); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
+    BOOST_PP_REPEAT(VLI_MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
     #undef FUNCTION_add_nbits_mninus1bits
     /* ---------------------------------------------------- End Addition specialization ---------------------------------------------------- */
 
@@ -156,7 +156,7 @@ namespace vli
         detail::NAME_SUB_NBITS_MINUS_NBITS(n)(x,y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
+    BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
     #undef FUNCTION_sub_nbits_nbits
     //specialization subnbits_64bits, until 512 bits
     #define FUNCTION_sub_nbits_64bits(z, n, unused) \
@@ -165,7 +165,7 @@ namespace vli
         detail::NAME_SUB_NBITS_MINUS_64BITS(n)(x,&y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
+    BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
     #undef FUNCTION_sub_nbits_64bits
 
     /* ---------------------------------------------------- end Substraction specialization ---------------------------------------------------- */
@@ -179,7 +179,7 @@ namespace vli
         detail::NAME_MUL_NBITS_64BITS(n)(x,&y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
+    BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
     #undef FUNCTION_mul_nbits_64bits
     //specialization mulnbits_nbits, until 512 bits
     #define FUNCTION_mul_nbits_nbits(z, n, unused) \
@@ -188,7 +188,7 @@ namespace vli
         detail::NAME_MUL_NBITS_NBITS(n)(x,y); \
         }; \
 
-    BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
+    BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
     #undef FUNCTION_mul_nbits_nbits
     //specialization mul2nbits_nbits_nbits, until 512 bits
     #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
@@ -197,7 +197,7 @@ namespace vli
         detail::NAME_MUL_TWONBITS_NBITS_NBITS(n)(x,y,w); \
         }; \
 
-    BOOST_PP_REPEAT(FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
+    BOOST_PP_REPEAT(VLI_FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
     #undef FUNCTION_mul_twonbits_nbits_nbits
     /* ---------------------------------------------------- end Multiplicatio specialization ---------------------------------------------------- */
     /* ---------------------------------------------------- Begin Multiplication Addition specialization ---------------------------------------------------- */
@@ -208,7 +208,7 @@ namespace vli
         detail::NAME_MULADD_TWONBITS_NBITS_NBITS(n)(x,y,w); \
         }; \
 
-    BOOST_PP_REPEAT(FOUR, FUNCTION_muladd_twonbits_nbits_nbits, ~)
+    BOOST_PP_REPEAT(VLI_FOUR, FUNCTION_muladd_twonbits_nbits_nbits, ~)
     #undef FUNCTION_muladd_twonbits_nbits_nbits
 
     /* ---------------------------------------------------- End Multiplication Addition specialization ---------------------------------------------------- */

@@ -96,6 +96,7 @@ namespace vli
         typename inner_product_result_type<vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > >::type poly;
 
         std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
+
         vli::detail::inner_product_vector_nvidia(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>(),
                                                  split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
 
@@ -106,8 +107,13 @@ namespace vli
         for(int i=1; i < omp_get_max_threads(); ++i)
             res[0]+=res[i];
 
-        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
-                            2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+        
+
+//        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
+//                            2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+
+          gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
+                              2*Coeff::size*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
         res[0] += poly;
 
         return res[0];

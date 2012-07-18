@@ -125,7 +125,7 @@ namespace vli {
                                 multiplies<BaseInt, Size>(res, res1, c1, c2); // the multiplication using boost pp
 
 				// Calculate the next pair of input coefficients to be multiplied and added to the result
-                                // to specialize if kill the perfs 
+                                // to specialize if, kill the perfs 
                                 current_degree_x++;
                                 if (current_degree_x > end_degree_x_inclusive)
                                 {

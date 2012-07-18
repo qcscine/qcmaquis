@@ -40,7 +40,7 @@ namespace vli{
                             );                                                                                \
                          }                                                                                    \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
                      #undef FUNCTION_sub_nbits_nbits
 
                      //new functions type : VLI<n*64> - VLI<64> : sub192_64, sub256_64
@@ -61,7 +61,7 @@ namespace vli{
                             );                                                                                   \
                           }                                                                                      \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
                      #undef FUNCTION_sub_nbits_64bits
 
                     } // end namespace detail

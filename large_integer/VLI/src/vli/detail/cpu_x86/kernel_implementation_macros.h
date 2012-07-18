@@ -39,31 +39,31 @@
 #define PPS(m,n)    BOOST_PP_STRINGIZE(BOOST_PP_MUL(BOOST_PP_MUL(m,n),8)) // m*n*8, 8 because long int, if one day SoA today AoS
 
 // move ASM operator to get the data from the mem
-#define LOAD_register(z, n, unused)     "movq "PPS(AOS,n)"(%%rdi)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
-#define LOAD_register_rdx(z, n, unused) "movq "PPS(AOS,n)"(%%rdx)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
+#define LOAD_register(z, n, unused)     "movq "PPS(VLI_AOS,n)"(%%rdi)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
+#define LOAD_register_rdx(z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rdx)                 ,"R(n)" \n" /* load 0x??(%%rdi) */
 // addition ASM operators
 #define ADC0_register(z, n, unused) "adcq $0x0                                ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
 
-#define Addition( z, n, unused) "movq "PPS(AOS,n)"(%%rdi), %%rax \n" \
-                                ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(AOS,n)"(%%rsi), %%rax \n" \
-                                "movq %%rax              , "PPS(AOS,n)"(%%rdi) \n" 
+#define Addition( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rdi), %%rax \n" \
+                                ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(VLI_AOS,n)"(%%rsi), %%rax \n" \
+                                "movq %%rax              , "PPS(VLI_AOS,n)"(%%rdi) \n" 
 
-#define Addition2( z, n, unused) "movq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
+#define Addition2( z, n, unused) "movq "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
                                  "adcq %%rcx              , %%rax \n" \
-                                 "movq %%rax              , "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
+                                 "movq %%rax              , "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
 
-#define Addition3( z, n, unused) "movq "PPS(AOS,n)"(%%rdx), %%rax \n" \
-                                 ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(AOS,n)"(%%rsi), %%rax \n" \
-                                 "movq %%rax              , "PPS(AOS,n)"(%%rdi) \n" 
+#define Addition3( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rdx), %%rax \n" \
+                                 ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(VLI_AOS,n)"(%%rsi), %%rax \n" \
+                                 "movq %%rax              , "PPS(VLI_AOS,n)"(%%rdi) \n" 
 
 // substraction ASM operators 
-#define Substraction( z, n, unused) "movq "PPS(AOS,n)"(%%rdi), %%rax \n" \
-                                    ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq),BOOST_PP_STRINGIZE(subq))" "PPS(AOS,n)"(%%rsi), %%rax  \n" \
-                                    "movq %%rax              , "PPS(AOS,n)"(%%rdi) \n" 
+#define Substraction( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rdi), %%rax \n" \
+                                    ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq),BOOST_PP_STRINGIZE(subq))" "PPS(VLI_AOS,n)"(%%rsi), %%rax  \n" \
+                                    "movq %%rax              , "PPS(VLI_AOS,n)"(%%rdi) \n" 
 
-#define Substraction2( z, n, unused)"movq "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
+#define Substraction2( z, n, unused)"movq "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
                                     "sbbq %%rcx              , %%rax \n" \
-                                    "movq %%rax              , "PPS(AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
+                                    "movq %%rax              , "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
 
 // multiplication VLI<n*64> *= 64 bits, note : results are saved in to r8, r9, r10 .... thus for the first iteration I move direclty inside
 #define  MUL_register(z, n, unused) "mulq "PPS(1,BOOST_PP_ADD(n,1))"(%%rdi)             \n" /* mulq r??*rax */                \
@@ -74,7 +74,7 @@
 // negate for 2CM method, combine with ADC0_register macro
 #define NOT_register(z, n, unused)  "notq "R(n)"                                        \n" /* start C2M negate */ 
 // movi ASM operators to set up the data into the mem
-#define SAVE_register(z, n, unused) "movq "R(n)"           ,"PPS(AOS,n)"(%%rdi)         \n" /* save 0x??(%%rdi) */     
+#define SAVE_register(z, n, unused) "movq "R(n)"           ,"PPS(VLI_AOS,n)"(%%rdi)         \n" /* save 0x??(%%rdi) */     
 // generate the list of registers clother
 #define CLOTHER_register(z, n, unused) RCLOTHER(n), /* "r8","r9", ... */
 // for the multiplication
@@ -84,7 +84,7 @@
 #define Radc0(MAX,n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_ADD(MAX,n))) // give register start at r15, r12, .... reverse order  
 #define ADC0_register_mulnton(z, n, nbegin) "adcq $0x0, "Radc0(nbegin,n)"      \n" /* adcq 0 + rdi + CB    */     
 #define Rr(Max,n) BOOST_PP_STRINGIZE(BOOST_PP_CAT(%%r, BOOST_PP_ADD(BOOST_PP_SUB(15,Max),n))) // give register start at r8  
-#define SAVEr_register(z, n, MAX) "movq "Rr(MAX,BOOST_PP_ADD(n,1))", "PPS(AOS,n)"(%%rdi)    \n" /* save 0x??(%%rdi) */     
+#define SAVEr_register(z, n, MAX) "movq "Rr(MAX,BOOST_PP_ADD(n,1))", "PPS(VLI_AOS,n)"(%%rdi)    \n" /* save 0x??(%%rdi) */     
 #define PPSr1(Max,n) BOOST_PP_STRINGIZE( BOOST_PP_MUL(BOOST_PP_SUB(Max,n),8)) // m*n*8, 8 because long int
 
 #define Rr2(z, n, unused)  BOOST_PP_STRINGIZE(BOOST_PP_CAT(r, BOOST_PP_SUB(15,n))), // give register start at r8  

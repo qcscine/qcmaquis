@@ -40,7 +40,7 @@ namespace vli{
                             );                                                                                \
                          }                                                                                    \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
                      #undef FUNCTION_add_nbits_nbits
 
                      //new functions type : VLI<n*64> + VLI<64> : add192_64, add256_64
@@ -60,7 +60,7 @@ namespace vli{
                             );                                                                                  \
                          }                                                                                      \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
                      #undef FUNCTION_add_nbits_64bits
 
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
@@ -70,12 +70,12 @@ namespace vli{
                                  "xorq %%rcx  ,%%rcx \n"                                      \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Addition3, ~)             \
                                  "adcq $0x0   ,%%rcx \n"                                      \
-                                 "movq %%rcx  ,"PPS(AOS,BOOST_PP_ADD(n,2))"(%%rdi) \n "       \
+                                 "movq %%rcx  ,"PPS(VLI_AOS,BOOST_PP_ADD(n,2))"(%%rdi) \n "       \
                                  : : :"rax","rcx","memory"                                    \
                             );                                                                \
                         }                                                                     \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_nminus1bits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nminus1bits, ~)
                      #undef FUNCTION_add_nbits_nminus1bits
 
                     } // end namespace detail

@@ -40,47 +40,47 @@ namespace vli{
         #define FUNCTION_add_nbits_nbits(z, n, unused) \
             void NAME_ADD_NBITS_PLUS_NBITS(n)(unsigned long int* x, unsigned long int const* y);
 
-        BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
+        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
         #undef FUNCTION_add_nbits_nbits
         /* ------------------------------------------------------- */
         //new functions type : VLI<n*64> + VLI<64> : add192_64 ...
         #define FUNCTION_add_nbits_64bits(z, n, unused) \
             void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, unsigned long int const* y);
 
-        BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
+        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
         #undef FUNCTION_add_nbits_64bits
         /* ------------------------------------------------------- */
         //new functions type : VLI<n*64> + VLI<64> : add128_64, add256_128 ...
         #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
             void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(unsigned long int* x, unsigned long int const* y, unsigned long int const* w);
 
-        BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
+        BOOST_PP_REPEAT(VLI_MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
         #undef FUNCTION_add_nbits_nminus1bits
         /* ------------------------------------------------------- */
         //substraction
         #define FUNCTION_sub_nbits_nbits(z, n, unused) \
             void NAME_SUB_NBITS_MINUS_NBITS(n)(unsigned long int* x, unsigned long int const* y);
 
-        BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
+        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
         #undef FUNCTION_sub_nbits_nbits
         /* ------------------------------------------------------- */
         #define FUNCTION_sub_nbits_64bits(z, n, unused) \
             void NAME_SUB_NBITS_MINUS_64BITS(n)(unsigned long int* x, unsigned long int const* y);
 
-        BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
+        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
         #undef FUNCTION_sub_nbits_64bits
         /* ------------------------------------------------------- */
         //multiplication
         #define FUNCTION_mul_nbits_64bits(z, n, unused) \
             void NAME_MUL_NBITS_64BITS(n)(unsigned long int* x,unsigned long int const* y);
 
-        BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
+        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
         #undef FUNCTION_mul_nbits_64bits
         /* ------------------------------------------------------- */
         #define FUNCTION_mul_nbits_nbits(z, n, unused) \
             void NAME_MUL_NBITS_NBITS(n)(unsigned long int* x,unsigned long int const* y);
 
-        BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
+        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
         #undef FUNCTION_mul_nbits_nbits
         /* ------------------------------------------------------- */
         #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
