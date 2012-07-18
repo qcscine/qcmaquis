@@ -27,7 +27,6 @@
 *DEALINGS IN THE SOFTWARE.
 */
 #include "vli/detail/gpu/single_coefficient_task.h"
-#include "vli/detail/gpu/compile_time_constants.h"
 #include "vli/detail/gpu/kernel_macros.h"
 
 namespace vli {

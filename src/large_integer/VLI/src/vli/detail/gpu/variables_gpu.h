@@ -79,6 +79,16 @@ namespace vli {
     };  
 
     template <class Variable>
+    struct one {
+        static unsigned int const value = 1;
+    };  
+        
+    template <>
+    struct one<no_variable> {
+        static unsigned int const value = 0;
+    };  
+
+    template <class Variable>
     inline unsigned int stridef(unsigned int  Order){
         return Order+1;
     };  
@@ -87,6 +97,22 @@ namespace vli {
     inline unsigned int stridef<no_variable>(unsigned int  Order){
         return 1;
     };  
+   
+    struct SumBlockSize {
+       enum { value = 256};
+    };
+
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    struct MulBlockSize{
+        enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value)/2U >= 256U) ? 
+                       256U :
+                       (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value))/2U+32U-1U)/32U*32U };
+    };
+
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    struct MaxIterationCount{
+        enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+32U-1U)/32U};
+    };
 
     }
 }

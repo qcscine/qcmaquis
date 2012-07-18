@@ -47,11 +47,11 @@ typedef vli_cpu< unsigned long int, Size1> vli_type_cpu;
 typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
 
-//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
-//typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
 
@@ -95,13 +95,13 @@ namespace detail{
 
 int main (int argc, char * const argv[]) 
 {
-
+/*
   vli_type_cpu a,b;
    vli_result_type_cpu c,d;
-/*   
+   
 fill_random(a);
 fill_random(b); 
-*/
+
 b[0] = 0xff237623ffffffff;
 b[1] = 0xEEEEEEEEEEEEEEEE;
 b[2] = 0xf1243abfffffffff;
@@ -119,14 +119,13 @@ for(long i(0) ; i < N ; ++i)
 A.end();
 TimerOMP B("old");
    mul(d,b,a);  
-/*
+
 std::cout << std::hex << c << std::endl;
 std::cout << "correct : " << std::endl;
 std::cout << d << std::endl;
 */
  
-    //int SizeVector = atoi(argv[1]);   
-    int SizeVector = 128;//atoi(argv[1]);   
+    int SizeVector = atoi(argv[1]);   
 
  polynomial_vector_type v1gmp(SizeVector);
  polynomial_vector_type v2gmp(SizeVector);
@@ -153,8 +152,8 @@ std::cout << d << std::endl;
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
 
-    InitPolyVLItoPolyGMP(v1,v1gmp);
-    InitPolyVLItoPolyGMP(v2,v2gmp);
+ //   InitPolyVLItoPolyGMP(v1,v1gmp);
+ //   InitPolyVLItoPolyGMP(v2,v2gmp);
 
     Timer t3("CPU vli_omp");
     t3.begin();
@@ -181,10 +180,10 @@ std::cout << " --------------------------- " << std::endl;
 
 
 #endif
-/*
-     std::cout << result_pure_cpu << std::endl;
-     std::cout << result_pure_cpu_omp << std::endl;
-  */ 
+
+  //   std::cout << result_pure_cpu << std::endl;
+  //   std::cout << result_pure_cpu_omp << std::endl;
+   
     Timer t4("CPU gmp_omp");
     t4.begin();
     pgmpd = inner_product(v1gmp,v2gmp);

@@ -113,8 +113,6 @@
 // negate for 2CM method, combine with ADC0_register macro
 #define NOT_register(z, n, unused)  "not.b32 "R(n)", "R(n)"; \n\t " 
 #define ADC0_register(z, n, MAX)    "addc.cc.u32 "R(BOOST_PP_ADD(n,1))", "R(BOOST_PP_ADD(n,1))", "BOOST_PP_STRINGIZE(BOOST_PP_CAT(pc,MAX))"; \n\t " 
-// max number of thread
-#define SUM_BLOCK_SIZE 256
 
 //macro for the wrapper
 
