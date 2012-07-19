@@ -124,7 +124,7 @@ namespace vli {
                                 multiplies<BaseInt, Size>(res, res1, c1, c2); // the multiplication using boost pp
 
 				// Calculate the next pair of input coefficients to be multiplied and added to the result
-                                // to specialize if, kill the perfs 
+                                // TO SPECIALIZE ..... all this dynamic if kill the perfs 
                                 current_degree_x++;
                                 if (current_degree_x > end_degree_x_inclusive)
                                 {
@@ -169,12 +169,12 @@ namespace vli {
 		    const unsigned int element_count,
 		    unsigned int * __restrict__ out)
     {
-	    __shared__ unsigned int buf[SumBlockSize::value * (one<Var0>::value + one<Var1>::value + one<Var2>::value + one<Var3>::value) * (Order+1)]; // for x,y 2*(Order+1)
+	    __shared__ unsigned int buf[SumBlockSize::value * size_pad<2*Size>::value]; 
 
 	    unsigned int local_thread_id = threadIdx.x;
 	    unsigned int coefficient_id = blockIdx.x;
 
-	    unsigned int * t1 = buf + (local_thread_id * (one<Var0>::value + one<Var1>::value + one<Var2>::value + one<Var3>::value) * (Order+1));
+	    unsigned int * t1 = buf + (local_thread_id * size_pad<2*Size>::value);
             #pragma unroll
 	    for(unsigned int i = 0; i < 2*Size; ++i)
 		    t1[i] = 0;
@@ -184,7 +184,7 @@ namespace vli {
 	    {
                  asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(t1[0]):"r"(in2[0])); 
                  #pragma unroll
-                 for(int i=1; i < 2*(Order+1); ++i)
+                 for(int i=1; i < 2*Size; ++i)
                      asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(t1[i]):"r"(in2[i*element_count])); 
 
      	         in2 += SumBlockSize::value;
@@ -194,7 +194,7 @@ namespace vli {
 	    for(unsigned int stride = SumBlockSize::value >> 1; stride > 0; stride >>= 1) {
 		    __syncthreads();
 		    if (local_thread_id < stride) {
-			    unsigned int * t2 = buf + ((local_thread_id + stride) * (one<Var0>::value + one<Var1>::value + one<Var2>::value + one<Var3>::value) * (Order+1));
+			    unsigned int * t2 = buf + (local_thread_id + stride) * size_pad<2*Size>::value;
                             add<BaseInt, 2*Size>(t1,t2);
 		    }
 	    }
@@ -218,13 +218,13 @@ namespace vli {
 	    {
                 dim3 grid(VectorSize) ;
                 dim3 threads(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value);
-                  polynomial_mul_full_kepler<BaseInt, Size, Order, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
+                polynomial_mul_full_kepler<BaseInt, Size, Order, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
                 dim3 grid(extend_stride<Var0, Order>::value*extend_stride<Var1, Order>::value*extend_stride<Var2, Order>::value*extend_stride<Var3, Order>::value);
                 dim3 threads(SumBlockSize::value);
-                  polynomial_sum_intermediate_full<BaseInt, Size, Order, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->VinterData_, VectorSize, gm->PoutData_);
+                polynomial_sum_intermediate_full<BaseInt, Size, Order, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->VinterData_, VectorSize, gm->PoutData_);
 	    }
     } 
 

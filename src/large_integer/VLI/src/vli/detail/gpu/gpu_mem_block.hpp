@@ -60,35 +60,12 @@ namespace detail
                 cudaFree((void*)this->VinterData_);
             if(PoutData_ != 0)
                 cudaFree((void*)this->PoutData_);
-            cudaMalloc((void**)&(this->V1Data_), req_size*sizeof(BaseInt));
-            cudaMalloc((void**)&(this->V2Data_), req_size*sizeof(BaseInt));
-            // FIXME this will reintroduce the 'ghost elements' since two<Var0>*stridef<Var0>(order) = 2*(Order+1) != 2*Order+1, see also variables_gpu.h 
-            /*
-               [13:42:18] <Timothee> too large ?
-               [13:42:20] <e-o> because two<Var0>*stridef<Var0>(order) will expand to 2*(Order+1) if Var0 is present
-               [13:42:41] <e-o> and it should be (2*Order+1)
-               [13:43:03] <Timothee> and for 3 a nd 4 ?
-               [13:43:12] <e-o> so the template meta functions two<Var0> and stridef<Var0> are not doing what you want
-               [13:43:18] <e-o> also for 3 and 4
-               [13:43:34] <e-o> independent of the number of variables
-               [13:44:03] <e-o> the two<Var0> is the increase of the polynomial order (for all variables), not an increase of the number of variables
-               [13:44:38] <e-o> if you have a polynomial p(x,y) your original polynomial is of size (Order+1)^2
-               [13:44:47] <e-o> (Order+1) for each variable
-               [13:45:03] <e-o> now if you double the size, you will get
-               [13:45:32] <e-o> P(x,y) = p(x,y)*p(x,y) -> (2*Order+1)^2
-               [13:46:00] <e-o> so for n variables it will be (2*Order+1)^n
-               [13:46:30] <e-o> and you are using (2*(Order+1))^n= (2*Order+2)^n
-            */
-            cudaMalloc((void**)&(this->VinterData_), vectorsize *  2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
-            cudaMalloc((void**)&(this->PoutData_),                 2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
-        }
-
-        // TODO due to ghost element, to remove one day!
-        if( req_size != block_size_){
-            block_size_ = req_size;
-            // FIXME this will reintroduce the 'ghost elements' since two<Var0>*stridef<Var0>(order) = 2*(Order+1) != 2*Order+1, see also variables_gpu.h 
-            cudaMemset((void*)this->PoutData_, 0, 2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
+            cudaMalloc((void**)&(this->V1Data_), req_size*sizeof(BaseInt)); //input 1
+            cudaMalloc((void**)&(this->V2Data_), req_size*sizeof(BaseInt)); //input 2
+            cudaMalloc((void**)&(this->VinterData_), vectorsize *  2*vli_size * extend_stridef<Var0>(order) * extend_stridef<Var1>(order) * extend_stridef<Var2>(order) * extend_stridef<Var3>(order)*sizeof(BaseInt)); //intermediate
+            cudaMalloc((void**)&(this->PoutData_),                 2*vli_size * extend_stridef<Var0>(order) * extend_stridef<Var1>(order) * extend_stridef<Var2>(order) * extend_stridef<Var3>(order)*sizeof(BaseInt)); //final result
         }
     }
 }
+
 }

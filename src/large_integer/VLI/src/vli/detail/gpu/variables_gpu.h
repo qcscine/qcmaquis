@@ -68,26 +68,14 @@ namespace vli {
         static unsigned int const value = 0;
     };  
 
-    // FIXME this does not what you intend
-    // It will reintroduce the 'ghost elements' since two<Var0>*stridef<Var0>(order) = 2*(Order+1) != 2*Order+1, see also variables_gpu.h 
     template <class Variable>
-    struct two {
-        static unsigned int const value = 2;
-    };  
-        
-    template <>
-    struct two<no_variable> {
-        static unsigned int const value = 1;
+    inline unsigned int extend_stridef(unsigned int  Order){
+        return 2*Order+1;
     };  
 
-    template <class Variable>
-    struct one {
-        static unsigned int const value = 1;
-    };  
-        
     template <>
-    struct one<no_variable> {
-        static unsigned int const value = 0;
+    inline unsigned int extend_stridef<no_variable>(unsigned int  Order){
+        return 1;
     };  
 
     template <class Variable>
@@ -114,6 +102,11 @@ namespace vli {
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MaxIterationCount{
         enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+32U-1U)/32U};
+    };
+
+    template<std::size_t Size>
+    struct size_pad{
+        enum {value = (((Size>>1)<<1)+1)};
     };
 
     }
