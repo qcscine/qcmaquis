@@ -108,7 +108,6 @@ namespace vli {
                                                                        + (output_degree_y - current_degree_y) * stride_pad<Var1, Order>::value
                                                                        + (output_degree_x - current_degree_x)
                                                                      ) * Size + input_elem_offset;
-                       
 
                                 #pragma unroll
                                 for(unsigned int i = 0; i < Size; ++i)
@@ -140,15 +139,13 @@ namespace vli {
                                             current_degree_z = start_degree_z_inclusive;
                                             current_degree_w++;                        
                                         }                    
-                                        
                                     }            
                                 }
 			    }
 
-		//	    unsigned int coefficient_id = output_degree_y * (Order*2+1) + output_degree_x;
-			    unsigned int coefficient_id =   output_degree_w * (Order * (one<Var0>::value + one<Var1>::value + one<Var2>::value + one<Var3>::value) + 1) 
-                                                          + output_degree_z * (Order * (one<Var0>::value + one<Var1>::value + one<Var2>::value) + 1) 
-                                                          + output_degree_y * (Order * (one<Var0>::value + one<Var1>::value) + 1) 
+			    unsigned int coefficient_id =   output_degree_w * (Order*2+1)*(Order*2+1)*(Order*2+1)
+                                                          + output_degree_z * (Order*2+1)*(Order*2+1) 
+                                                          + output_degree_y * (Order*2+1) 
                                                           + output_degree_x;
 
 			    unsigned int * out2 = out + (coefficient_id * element_count *2* Size) + element_id; // coefficient->int_degree->element_id
