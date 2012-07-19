@@ -29,7 +29,7 @@
 
 #define Size1 3
 #define Size2 2*Size1
-#define Order 10
+#define Order 4
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -47,11 +47,17 @@ typedef vli_cpu< unsigned long int, Size1> vli_type_cpu;
 typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
-typedef vli::polynomial<vli_result_type_cpu  , vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
+//typedef vli::polynomial<vli_result_type_cpu  , vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
 
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
+
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'> >polynomial_type_cpu;
+//typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_result_type_cpu;
+
+typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
 
@@ -152,14 +158,13 @@ std::cout << d << std::endl;
     fill_vector_negate(v1,2);
     fill_vector_negate(v2,3);
 
-    InitPolyVLItoPolyGMP(v1,v1gmp);
-    InitPolyVLItoPolyGMP(v2,v2gmp);
+//    InitPolyVLItoPolyGMP(v1,v1gmp);
+//    InitPolyVLItoPolyGMP(v2,v2gmp);
 
     Timer t3("CPU vli_omp");
     t3.begin();
       result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
     t3.end();
-
 #ifdef VLI_USE_GPU
 std::cout << " --------------------------- " << std::endl;
     Timer t("GPU omp 1" );
@@ -181,8 +186,9 @@ std::cout << " --------------------------- " << std::endl;
 
 #endif
 
-  //   std::cout << result_pure_cpu << std::endl;
-  //   std::cout << result_pure_cpu_omp << std::endl;
+     std::cout << result_pure_cpu << std::endl;
+std::cout << "-------------------------------------- " << std::endl;
+     std::cout << result_pure_cpu_omp << std::endl;
    
     Timer t4("CPU gmp_omp");
     t4.begin();

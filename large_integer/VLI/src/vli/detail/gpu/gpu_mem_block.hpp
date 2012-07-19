@@ -63,7 +63,7 @@ namespace detail
             cudaMalloc((void**)&(this->V1Data_), req_size*sizeof(BaseInt));
             cudaMalloc((void**)&(this->V2Data_), req_size*sizeof(BaseInt));
             cudaMalloc((void**)&(this->VinterData_), vectorsize *  2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
-            cudaMalloc((void**)&(this->PoutData_), 2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
+            cudaMalloc((void**)&(this->PoutData_),                 2*vli_size * two<Var0>::value*stridef<Var0>(order) * two<Var1>::value*stridef<Var1>(order) * two<Var2>::value*stridef<Var2>(order) * two<Var3>::value*stridef<Var3>(order)*sizeof(BaseInt));
         }
 
         // TODO due to ghost element, to remove one day!
