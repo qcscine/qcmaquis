@@ -38,6 +38,15 @@
 
 namespace vli
 {
+    template <class Variable, unsigned int Order>
+    struct extend_stride {
+        static unsigned int const value = 2*Order+1;
+    };
+   
+    template <unsigned int Order>
+    struct extend_stride<no_variable,Order> {
+        static unsigned int const value = 1;
+    };
 
     // a lot of forward declaration    
     template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
@@ -75,7 +84,12 @@ namespace vli
             res += v1[i]*v2[i];
         
         gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
-                            2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+                           2*Coeff::size*extend_stride<Var0,OrderSpecification::value>::value
+                                        *extend_stride<Var1,OrderSpecification::value>::value
+                                        *extend_stride<Var2,OrderSpecification::value>::value
+                                        *extend_stride<Var3,OrderSpecification::value>::value
+                                        *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+
         res += poly;
 
         return res;
@@ -107,18 +121,12 @@ namespace vli
         for(int i=1; i < omp_get_max_threads(); ++i)
             res[0]+=res[i];
 
-//        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
-//                           2*Coeff::size*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
-        
-
-//        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
-//                            2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
-
-//            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
-//                              2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
-
-            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
-                             2*Coeff::size*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*2*(OrderSpecification::value+1)*sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+        gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)get_polynomial(vli_size_tag<Coeff::size,OrderSpecification::value, Var0, Var1, Var2, Var3>()),
+                           2*Coeff::size*extend_stride<Var0,OrderSpecification::value>::value
+                                        *extend_stride<Var1,OrderSpecification::value>::value
+                                        *extend_stride<Var2,OrderSpecification::value>::value
+                                        *extend_stride<Var3,OrderSpecification::value>::value
+                                        *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
 
         res[0] += poly;
 
