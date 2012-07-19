@@ -68,6 +68,8 @@ namespace vli {
         static unsigned int const value = 0;
     };  
 
+    // FIXME this does not what you intend
+    // It will reintroduce the 'ghost elements' since two<Var0>*stridef<Var0>(order) = 2*(Order+1) != 2*Order+1, see also variables_gpu.h 
     template <class Variable>
     struct two {
         static unsigned int const value = 2;
