@@ -147,8 +147,8 @@ namespace maquis { namespace dmrg { namespace detail {
     std::vector<double> bond_renyi_entropies(const block_matrix<alps::numeric::diagonal_matrix<T>, SymmGroup>& set){
         std::vector<double> ret;
         for(std::size_t k = 0; k < set.n_blocks(); ++k){
-            for (typename alps::numeric::diagonal_matrix<T>::const_element_iterator it = elements(set[k]).first;
-                 it != elements(set[k]).second; ++it)
+            for (typename alps::numeric::diagonal_matrix<T>::const_diagonal_iterator it = diagonal(set[k]).first;
+                 it != diagonal(set[k]).second; ++it)
             {
                 double a = std::abs(*it);
                 if (a > 1e-10)
