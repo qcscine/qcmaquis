@@ -29,8 +29,8 @@
 
 
 
-#include "vli/detail/gpu/singleton.h"
-#include "vli/detail/gpu/numeric.h"
+#include "vli/detail/gpu/utils/singleton.h"
+#include "vli/detail/gpu/kernels/numeric.h"
 
 #ifndef GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
 #define GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
@@ -58,6 +58,6 @@ namespace vli {
     } // end namespace detail
  }//end namespace vli
 
-#include "vli/detail/gpu/gpu_hardware_carryover_implementation.hpp"
+#include "vli/detail/gpu/tasklist/gpu_hardware_carryover_implementation.hpp"
 
 #endif 

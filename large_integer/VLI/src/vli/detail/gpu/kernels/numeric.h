@@ -26,8 +26,8 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include "vli/detail/gpu/single_coefficient_task.h"
-#include "vli/detail/gpu/kernel_macros.h"
+#include "vli/detail/gpu/tasklist/single_coefficient_task.h"
+#include "vli/detail/gpu/kernels/kernel_macros.h"
 
 namespace vli {
     namespace detail  {

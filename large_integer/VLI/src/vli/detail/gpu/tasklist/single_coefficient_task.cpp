@@ -1,4 +1,4 @@
-#include "single_coefficient_task.h"
+#include "vli/detail/gpu/tasklist/single_coefficient_task.h"
 
 
 namespace vli {

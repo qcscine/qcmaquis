@@ -31,7 +31,7 @@
 #define VLI_KERNELS_GPU_H
 
 #include "vli/polynomial/variable.hpp"
-#include "vli/detail/gpu/kernel_macros.h"
+#include "vli/detail/gpu/kernels/kernel_macros.h"
 
 #include "vli/vli_config.h"
 

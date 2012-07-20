@@ -29,7 +29,7 @@
 
 #ifndef VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
 #define VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
-#include "vli/detail/gpu/kernel_macros.h"
+#include "vli/detail/gpu/kernels/kernel_macros.h"
 namespace vli {
     namespace detail {
 
@@ -47,6 +47,7 @@ namespace vli {
     //????_assign functions
     template <class BaseInt, std::size_t Size>
     void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2){
+        //if one day I success to remove branching ....
 	unsigned int sign = (c1[Size-1]>>31) ^ (c2[Size-1]>>31);
 
 	if(c1[Size-1] >> 31 != 0) // 31 because uint , 63 a day if ulint
