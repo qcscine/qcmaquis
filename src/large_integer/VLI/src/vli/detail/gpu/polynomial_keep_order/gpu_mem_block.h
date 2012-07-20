@@ -27,34 +27,40 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef KERNELS_GPU_NEG_HPP
-#define KERNELS_GPU_NEG_HPP
+#include "vli/detail/gpu/utils/singleton.h"
 
-#include "vli/detail/gpu/kernel_macros.h"
+#ifndef GPU_MEM_BLOCK_H
+#define GPU_MEM_BLOCK_H
 
-namespace vli{
-    namespace detail{
+namespace vli {
+namespace detail {
 
-    #define negn64_n64_gpu(z, n, unused) \
-        asm( \
-            "not.b32  %0, %0 ; \n\t"                                                        \
-            "not.b32  %1, %1 ; \n\t"                                                        \
-             BOOST_PP_IF(n,"addc.cc.u32 %0, %0, %3; \n\t","add.cc.u32  %0, %0, %2 ; \n\t")  \
-            "addc.cc.u32 %1, %1, %3 ; \n\t" /* x[i+1] += y[i+1] + CB                     */ \
-            :"+r"(x[BOOST_PP_MUL(2,n)]),"+r"(x[BOOST_PP_ADD(BOOST_PP_MUL(2,n),1)])          \
-            :"r"(one),"r"(zero)                                                             \
-           ); \
+    // we allocate the mem only one time so pattern of this class singleton
+    template <typename BaseInt, class Var0, class Var1, class Var2, class Var3>
+    class gpu_memblock : public Singleton<gpu_memblock<BaseInt, Var0, Var1, Var2, Var3> >  {
+        friend class Singleton<gpu_memblock>; // to have access to the Instance, Destroy functions into the singleton class
+        public:
+        typedef BaseInt value_type;
+        private:
+        gpu_memblock();
+        gpu_memblock(gpu_memblock const& );
+        gpu_memblock& operator=(gpu_memblock const& );
 
-    #define FUNCTION_negate_nbits(z, n, unused) \
-       inline void NAME_NEGATE_NBITS(n)(unsigned int* x){         \
-           unsigned int one(1);                                   \
-           unsigned int zero(0);                                  \
-           BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), negn64_n64_gpu , ~) \
-     }  \
+        std::size_t block_size_;
 
-     BOOST_PP_REPEAT(7, FUNCTION_negate_nbits, ~)
-     
-     #undef FUNCTION_negate_nbits
-     #undef negn64_n64_gpu
-}}
-#endif
+        public:
+        ~gpu_memblock();
+        void resize(std::size_t vli_size, unsigned int order, std::size_t vectorsize);
+
+        BaseInt* V1Data_; // input vector 1
+        BaseInt* V2Data_; // input vector 2
+        BaseInt* VinterData_; // inter value before the final reduction
+        BaseInt* PoutData_; // final output
+    };
+
+    } //end namespace detail
+} //end namespce vli  
+
+#include "vli/detail/gpu/polynomial_keep_order/gpu_mem_block.hpp"
+
+#endif //INNER_PRODUCT_GPU_BOOSTER_HPP

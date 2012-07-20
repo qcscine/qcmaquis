@@ -30,7 +30,7 @@
 #ifndef KERNELS_GPU_MUL_HPP
 #define KERNELS_GPU_MUL_HPP
 
-#include "vli/detail/gpu/kernel_macros.h"
+#include "vli/detail/gpu/kernels/kernel_macros.h"
 
 namespace vli{
     namespace detail{
