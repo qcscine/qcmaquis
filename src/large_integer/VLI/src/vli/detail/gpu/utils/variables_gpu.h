@@ -99,6 +99,28 @@ namespace vli {
                        (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value))/2U+32U-1U)/32U*32U };
     };
 
+    template<unsigned int Order, class Var0, class Var1, class Var2>
+    struct MulBlockSize<Order, Var0, Var1, Var2, vli::no_variable>{
+        enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value)/2U >= 256U) ? 
+                       256U :
+                       (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value))/2U+32U-1U)/32U*32U };
+    };
+
+
+    template<unsigned int Order, class Var0, class Var1>
+    struct MulBlockSize<Order, Var0, Var1, vli::no_variable, vli::no_variable>{
+        enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value)/2U >= 256U) ? 
+                       256U :
+                       (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value))/2U+32U-1U)/32U*32U };
+    };
+
+    template<unsigned int Order, class Var0>
+    struct MulBlockSize<Order, Var0, vli::no_variable, vli::no_variable, vli::no_variable>{
+        enum {value = ((extend_stride<Var0,Order>::value)/2U >= 256U) ? 
+                      256U :
+                      (((extend_stride<Var0,Order>::value))/2U+32U-1U)/32U*32U}; 
+    };
+
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MaxIterationCount{
         enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+32U-1U)/32U};

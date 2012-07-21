@@ -61,6 +61,4 @@ namespace detail {
     } //end namespace detail
 } //end namespce vli  
 
-#include "vli/detail/gpu/polynomial_keep_order/gpu_mem_block.hpp"
-
 #endif //INNER_PRODUCT_GPU_BOOSTER_HPP
