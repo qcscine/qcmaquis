@@ -40,5 +40,5 @@ add_library(vli_cpu
 ########################################################################
 
 if(VLI_COMPILE_GPU)
-    CUDA_ADD_LIBRARY(vli_gpu detail/gpu/single_coefficient_task.cpp detail/gpu/gpu_hardware_carryover_implementation.cu)
+    CUDA_ADD_LIBRARY(vli_gpu detail/gpu/tasklist/single_coefficient_task.cpp detail/gpu/polynomial_keep_order/gpu_hardware_carryover_implementation.cu)
 endif(VLI_COMPILE_GPU)
