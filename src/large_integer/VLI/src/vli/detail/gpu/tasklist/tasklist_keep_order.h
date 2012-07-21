@@ -27,8 +27,6 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-
-
 #include "vli/detail/gpu/utils/singleton.h"
 #include "vli/detail/gpu/kernels/numeric.h"
 
@@ -39,25 +37,23 @@ namespace vli {
     namespace detail {
 
     template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    class gpu_hardware_carryover_implementation : public Singleton<gpu_hardware_carryover_implementation<BaseInt, Size, Order, Var0, Var1, Var2, Var3> > {
-        friend class Singleton<gpu_hardware_carryover_implementation>; // to have access to the Instance, Destroy functions into the singleton class
+    class tasklist_keep_order : public Singleton<tasklist_keep_order<BaseInt, Size, Order, Var0, Var1, Var2, Var3> > {
+        friend class Singleton<tasklist_keep_order>; // to have access to the Instance, Destroy functions into the singleton class
     private:
-        gpu_hardware_carryover_implementation();
-        gpu_hardware_carryover_implementation(gpu_hardware_carryover_implementation const &);
-        gpu_hardware_carryover_implementation& operator =(gpu_hardware_carryover_implementation const &);
+        tasklist_keep_order();
+        tasklist_keep_order(tasklist_keep_order const &);
+        tasklist_keep_order& operator =(tasklist_keep_order const &);
+        ~tasklist_keep_order();
     public:
-        ~gpu_hardware_carryover_implementation();
         void plan();
-        void resize();
         single_coefficient_task* execution_plan_;// we do not care the type
         unsigned int* workblock_count_by_warp_; // we do not care the type
-    private:
         unsigned int  element_count_prepared;
     };
 
     } // end namespace detail
  }//end namespace vli
 
-#include "vli/detail/gpu/tasklist/gpu_hardware_carryover_implementation.hpp"
+#include "vli/detail/gpu/tasklist/tasklist_keep_order.hpp"
 
 #endif 

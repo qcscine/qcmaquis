@@ -33,7 +33,7 @@
 
 #include "vli/detail/gpu/utils/variables_gpu.h" //compile time  variable
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu
-#include "vli/detail/gpu/tasklist/gpu_hardware_carryover_implementation.h" //tasklist
+#include "vli/detail/gpu/tasklist/tasklist_keep_order.h" //tasklist
 #include "vli/detail/gpu/polynomial_keep_order/gpu_mem_block.h" // memory
 #include "vli/detail/gpu/kernels/kernels_gpu_neg_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/kernels/kernels_gpu_add_asm.hpp" //kernels gpu boost pp
@@ -163,7 +163,7 @@ namespace vli {
     void inner_product_vector_nvidia(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
 	    gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>* gm = gpu_memblock<BaseInt, Var0, Var1, Var2, Var3>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time 
             gm->resize(Size,Order,VectorSize); // we resize if the block is larger
-  	    gpu_hardware_carryover_implementation<BaseInt, Size, Order, Var0, Var1, Var2, Var3>* ghc = gpu_hardware_carryover_implementation<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
+  	    tasklist_keep_order<BaseInt, Size, Order, Var0, Var1, Var2, Var3>* ghc = tasklist_keep_order<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
   	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 
