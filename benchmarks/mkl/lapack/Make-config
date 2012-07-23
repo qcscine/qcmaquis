@@ -1,0 +1,45 @@
+# Make-config
+
+par:
+	$(MAKE) targets \
+	"N = par" \
+	"MPICC = g++" \
+	"OPTIONSmpi =  -O0 -m64 -DDEBUG  " \
+	"LINK = -o " \
+	"PATH_LIB1 = /share/apps/SCALAPACK/x86_64/lib/ " \
+	"PG = -lgfortran  -lcblas -lpthread  " \
+	"P = " \
+	"M = "
+GOTO:
+	$(MAKE) targets \
+	"N = GOTO" \
+	"MPICC = g++" \
+	"OPTIONSmpi = -DDGESVD   -O2 -m64   " \
+	"LINK = -o " \
+	"PATH_LIB1 = /users/ewartt/SCALA/scalapack_installer_0.96/lib " \
+	"PG =  ./libgoto.a -lpthread -lgfortran " \
+	"P = " \
+	"M = "
+ACML:
+	$(MAKE) targets \
+	"N = ACML" \
+	"MPICC = g++" \
+	"OPTIONSmpi = -DDGEMM -DDGESVD -DDGESDD -O2 -m64  " \
+	"LINK = -o " \
+	"PG = -lscalapack -lblacsC -lblacs -lblacsC  -lgfortran -lreflapack -lrefblas -lmpi_f77 " \
+	"PATH_LIB1 = /users/ewartt/SCALA/scalapack_installer_0.96/lib " \
+	"PG =  /users/ewartt/ACML/gfortran64_mp/lib/libacml_mp.a -lgfortran  -fopenmp " \
+	"P = " \
+	"M = "
+INTEL:
+	$(MAKE) targets \
+	"N = INTEL" \
+	"MPICC = g++" \
+	"OPTIONSmpi = -O2 -m64  " \
+	"LINK = -o " \
+	"PATH_LIB1 = /users/ewartt/SCALA/scalapack_installer_0.96/lib " \
+	"PG =  /share/apps/Intel/MKL/10.1.1/lib/em64t/libmkl_solver_lp64.a -Wl,--start-group /share/apps/Intel/MKL/10.1.1/lib/em64t/libmkl_intel_lp64.a /share/apps/Intel/MKL/10.1.1/lib/em64t/libmkl_gnu_thread.a /share/apps/Intel/MKL/10.1.1/lib/em64t/libmkl_core.a -Wl,--end-group -fopenmp -lpthread -lmpi_f77 -lgfortran" \
+	"P = " \
+	"M = "
+
+
