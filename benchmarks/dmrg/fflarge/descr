@@ -1,0 +1,8 @@
+# FF Large:
+#
+# The performance is limited.
+# Normally there are ~5 big blocks hence threading efficiency is limited.
+#
+# Scaling:
+#
+# 6 threads give ~2.5x of improvement.
