@@ -40,7 +40,8 @@ namespace ambient {
         inline void ctxt_select(const char* sql){ 
             this->set_group(channel.world()); 
         }
-        inline void pin(revision& r){ 
+        inline void pin(revision& r){
+            this->affinity = r.affinity;
             r.content.assignments.push_back(this);
             ambient::controller.ifetch_block(r,0,0);
         }

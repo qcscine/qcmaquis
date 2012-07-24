@@ -2,6 +2,7 @@
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 #include "ambient/utils/touchstack.h"
 #include "ambient/controllers/velvet/cfunctor.h"
+#include "ambient/controllers/velvet/chain.h"
 #include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/utils/tasklist.hpp"
@@ -40,6 +41,7 @@ namespace ambient { namespace controllers { namespace velvet {
         pthread_mutex_t mutex;
     private:
         touchstack< cfunctor* > stack;
+        chain* last;
         pthread_t pool[AMBIENT_THREADS_LIMIT];
         tasklist_async tasks[AMBIENT_THREADS_LIMIT];
         size_t workload;

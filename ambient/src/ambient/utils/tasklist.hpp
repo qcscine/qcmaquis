@@ -1,12 +1,15 @@
 #ifndef AMBIENT_UTILS_TASKLIST
 #define AMBIENT_UTILS_TASKLIST
-#define TASKLIST_LENGTH 131072
+#define TASKLIST_LENGTH 8388608
+
+//#define TASKLIST_ACCESS_CHECK
 
 namespace ambient{
 
 // 8192 -- ff_short
 // 65536 -- ff_large
 // 131072 -- fermi ladder
+// 8388608 -- wide fermi ladder
 
     class tasklist_async {
     public:
@@ -24,10 +27,17 @@ namespace ambient{
             return *(ri = content + (int)((double)this->size()*drand48()));
         }
         inline void* get_next_task(){
-            return *(ri = content + count++);
+            ri = content + count;
+            count++;
+            return *ri;
         }
         inline void add_task(void* e){
             *wi++ = e;
+#ifdef TASKLIST_ACCESS_CHECK
+            if(this->size() == TASKLIST_LENGTH){
+                printf("ERROR: end of touchstack has been reached!\n");
+            }
+#endif
         }
         inline bool end_reached(){
             if(count >= size()){
@@ -40,6 +50,10 @@ namespace ambient{
         }
         inline void reset(){
             ri = wi = content;
+            count = 0;
+        }
+        inline void repeat(){
+            count = 0;
         }
         bool active;
         bool pause;
