@@ -117,4 +117,35 @@ int main() {
         maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;
     }
 
+    { // measure using canonization
+        block_matrix<matrix, SymmGroup> op;
+        op.insert_block(matrix(1,1,1), 1,1);
+        op.insert_block(matrix(1,1,2), 2,2);
+        
+        for (int i=0; i<10; ++i) {
+            int p = dmrg_random::uniform() * L;
+            
+            generate_mpo::MPOMaker<matrix, SymmGroup> mpom(L, ident);
+            generate_mpo::Operator_Term<matrix, SymmGroup> term;
+            term.operators.push_back( std::make_pair(p, op) );
+            term.fill_operator = ident;
+            mpom.add_term(term);
+            MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
+            
+            double orig = expval(mps, mpo);
+            
+            // todo: here set default decomposition to SVD
+            mps1.canonize(p);
+            
+            double meas_mps1 = mps1[p].scalar_overlap(contraction::local_op(mps1[p], op));
+            
+            // todo: here set default decomposition to QR
+            mps2.canonize(p);
+            double meas_mps2 = mps2[p].scalar_overlap(contraction::local_op(mps2[p], op));
+            
+            maquis::cout << "Density at site " << p << ": ";
+            maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;
+        }
+    }
+    
 }
