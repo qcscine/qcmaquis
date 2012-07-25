@@ -43,11 +43,6 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline bool matrix_impl<T>::atomic() const {
-        return ambient::model.is_atomic(this);
-    }
-
-    template <typename T>
     inline void matrix_impl<T>::resize(matrix_impl& r, size_type rows, size_type cols){
         algorithms::resize(r, rows, cols, *this, this->spec.dim.y, this->spec.dim.x);
     }
@@ -92,8 +87,7 @@ namespace ambient { namespace numeric {
     template <typename T>
     inline value_type& matrix_impl<T>::get(size_type i, size_type j){
         ambient::playout();
-        return ((value_type*)ambient::controller.ufetch_block(*this->current, j/this->spec.block.x, i/this->spec.block.y))
-               [ (j%this->spec.block.x)*this->spec.block.y + i%this->spec.block.y ];
+        return ((value_type*)ambient::controller.ufetch(*this->current))[ j*this->spec.dim.y + i ];
     }
 
     template <typename T>

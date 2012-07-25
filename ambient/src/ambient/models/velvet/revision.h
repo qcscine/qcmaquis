@@ -38,7 +38,7 @@ namespace ambient { namespace models { namespace velvet {
             std::list<cfunctor*> assignments;
         };
 
-        inline void embed(void* memory, size_t x, size_t y, size_t bound);
+        inline void embed(void* memory, size_t bound);
         size_t sid;
         memspec* spec;
         bool clean;
@@ -48,7 +48,6 @@ namespace ambient { namespace models { namespace velvet {
         inline revision* get_parent(){ return parent; }
         inline revision(memspec*, bool clean = false);
         inline ~revision();
-        inline entry& block(size_t x, size_t y);
         inline sfunctor* get_generator();
         inline void set_generator(sfunctor*);
         inline void reset_generator();

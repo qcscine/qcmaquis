@@ -30,7 +30,6 @@ namespace ambient { namespace controllers {
     private:
         group* grp;
         cfunctor* functor;
-        dim2 thread_block_id[AMBIENT_THREADS_LIMIT];
 // group class method duplicates
     public:
         int np,nq; //mask of the two cyclic distribution
@@ -41,8 +40,6 @@ namespace ambient { namespace controllers {
         inline size_t get_tid()          { return *(size_t*)pthread_getspecific(pthread_tid);  }
         inline bool involved()           { return grp->involved();                             }
         inline bool is_master()          { return grp->is_master();                            }
-        inline void set_block_id(dim2 k) { thread_block_id[get_tid()] = k;                     }
-        inline dim2 get_block_id()       { return thread_block_id[get_tid()];                  }
         inline void set_tid(size_t);
     };
 

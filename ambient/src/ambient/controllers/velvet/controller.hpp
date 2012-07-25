@@ -134,7 +134,7 @@ rt:         if(l->end_reached()){
         this->last = NULL;
     }
 
-    inline void controller::execute_mod(cfunctor* op, dim2 pin){
+    inline void controller::execute_mod(cfunctor* op){
         if(this->last && this->last->constrains(op)) this->last->push_back(op);
         else{
             this->last = new chain(op);
@@ -148,11 +148,11 @@ rt:         if(l->end_reached()){
         }
     }
 
-    inline void controller::atomic_receive(revision& r, size_t x, size_t y){
+    inline void controller::atomic_receive(revision& r){
         std::list<cfunctor*>& list = r.content.assignments;
         std::list<cfunctor*>::iterator it = list.begin(); 
         while(it != list.end()){
-            this->execute_mod(*it, dim2(x,y));
+            this->execute_mod(*it);
             list.erase(it++);
         }
     }
@@ -165,22 +165,22 @@ rt:         if(l->end_reached()){
         this->stack.push_back(op);
     }
 
-    inline void controller::alloc_block(revision& r, size_t x, size_t y){
+    inline void controller::alloc(revision& r){
         r.affinity = ctxt.get_tid();
-        r.embed(r.spec->alloc(), x, y, r.spec->get_bound());
+        r.embed(r.spec->alloc(), r.spec->get_bound());
     }
 
-    inline void controller::calloc_block(revision& r, size_t x, size_t y){
+    inline void controller::calloc(revision& r){
         r.affinity = ctxt.get_tid();
-        r.embed(r.spec->calloc(), x, y, r.spec->get_bound());
+        r.embed(r.spec->calloc(), r.spec->get_bound());
     }
 
-    inline revision::entry& controller::ufetch_block(revision& r, size_t x, size_t y){
-        return r.block(x,y);
+    inline revision::entry& controller::ufetch(revision& r){
+        return r.content;
     }
 
-    inline void controller::ifetch_block(revision& r, size_t x, size_t y){
-        this->atomic_receive(r, x, y);
+    inline void controller::ifetch(revision& r){
+        this->atomic_receive(r);
     }
 
     inline void controller::conditional_flush(){
@@ -188,7 +188,7 @@ rt:         if(l->end_reached()){
         // has been satisfied (i.e. memory has ended)
     }
 
-    inline void forward_block(packet& cmd){ }
+    inline void forward(packet& cmd){ }
 
 /*  DEBUG VERSION:
     inline void controller::flush(){
@@ -218,7 +218,7 @@ rt:         if(l->end_reached()){
         return package;
     }
 
-    inline void forward_block(packet& cmd){
+    inline void forward(packet& cmd){
         packet& c = static_cast<packet&>(cmd);
         layout& l = *ambient::model.get_layout(c.get<size_t>(A_LAYOUT_P_SID_FIELD));
         if(c.get<char>(A_LAYOUT_P_ACTION) != 'I') return; // INFORM OWNER ACTION
@@ -229,13 +229,13 @@ rt:         if(l->end_reached()){
             channel.emit(package(l, (const char*)c.get(A_LAYOUT_P_STATE_FIELD), x, y, c.get<int>(A_LAYOUT_P_OWNER_FIELD)));
         }else if(l.placement->is_master()){
             ambient::controller.alloc_block(l.spec, l, x, y); // generating block
-            forward_block(cmd);             // and forwarding
+            forward(cmd);             // and forwarding
         }else{
             l.get(x,y).get_path().push_back(c.get<int>(A_LAYOUT_P_OWNER_FIELD));
         }
     }
 
-    inline void accept_block(packet& cmd){
+    inline void accept(packet& cmd){
         packet& c = static_cast<packet&>(cmd);
         size_t x = c.get<int>(A_BLOCK_P_X_FIELD);
         size_t y = c.get<int>(A_BLOCK_P_Y_FIELD);

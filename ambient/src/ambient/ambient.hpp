@@ -3,7 +3,7 @@
 #ifndef AMBIENT
 #define AMBIENT
 #endif
-#define AMBIENT_THREADS 1
+#define AMBIENT_THREADS 6
 #define AMBIENT_THREADS_LIMIT 12
 // {{{ system includes
 #include <mpi.h>
@@ -57,8 +57,6 @@ namespace ambient{
     template <typename T> inline r_revision& ui_r_updated(T& obj){ return obj.ui_r_revision_1(); } // (reusable)
 
     template<typename T> inline dim2   ui_c_get_dim        (T& ref){ return ref.spec.dim;   }
-    template<typename T> inline dim2   ui_c_get_mem_dim    (T& ref){ return ref.spec.block; }
-    template<typename T> inline dim2   ui_c_get_grid_dim   (T& ref){ return ref.spec.grid;  }
     template<typename T> inline size_t ui_c_get_mem_size   (T& ref){ return ref.spec.size;  }
 }
 

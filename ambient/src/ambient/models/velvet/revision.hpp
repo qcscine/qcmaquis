@@ -8,12 +8,8 @@ namespace ambient { namespace models { namespace velvet {
         free(content.header);
     }
 
-    inline void revision::embed(void* memory, size_t x, size_t y, size_t bound){
+    inline void revision::embed(void* memory, size_t bound){
         this->content.set_memory(memory, bound);
-    }
-
-    inline revision::entry& revision::block(size_t x, size_t y){
-        return this->content;
     }
 
     inline void revision::set_generator(sfunctor* m){
