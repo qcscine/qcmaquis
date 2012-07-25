@@ -50,16 +50,19 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> > polynomial_type_cpu;
 //typedef vli::polynomial<vli_result_type_cpu  , vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
 
-//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
-//typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'> >polynomial_type_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_result_type_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_combined_cpu;
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'> >polynomial_type_cpu;
+//typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_result_type_cpu;
 
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_result_type_cpu;
 
 typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
+typedef vli::vector_polynomial<polynomial_type_combined_cpu> vector_type_combined_cpu;
 
 typedef mpz_class large_int;
 typedef hp2c::monomial<large_int> monomial_type;
@@ -151,7 +154,18 @@ std::cout << d << std::endl;
  polynomial_result_type_cpu result_pure_cpu_omp  ;
  polynomial_result_type_cpu result_mix_cpu_gpu  ;
  polynomial_result_type_cpu result_cpu_gpu  ;
-   
+  
+
+polynomial_type_combined_cpu polyc;
+polynomial_result_type_combined_cpu polycres;
+
+ vector_type_combined_cpu v1c(SizeVector);
+ vector_type_combined_cpu v2c(SizeVector);
+
+
+      polycres = vli::detail::inner_product_gpu(v1c,v2c);
+
+ 
     fill_vector_random(v1,2);
     fill_vector_random(v2,3);
 
@@ -163,7 +177,7 @@ std::cout << d << std::endl;
 
     Timer t3("CPU vli_omp");
     t3.begin();
-      result_pure_cpu = vli::detail::inner_product_openmp(v1,v2);
+      result_pure_cpu = vli::detail::inner_product_cpu(v1,v2);
     t3.end();
 #ifdef VLI_USE_GPU
 std::cout << " --------------------------- " << std::endl;
