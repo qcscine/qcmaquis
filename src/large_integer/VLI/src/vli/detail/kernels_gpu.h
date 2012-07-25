@@ -38,15 +38,12 @@
 namespace vli {
     namespace detail {
 
-    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct vli_size_tag {
-        enum {size = Size};
-        enum {order = Order};
-    };
-
     #define VLI_DECLARE_GPU_FUNCTIONS(TYPE, VLI_SIZE, POLY_ORDER, VAR) \
-        void inner_product_vector_nvidia(vli_size_tag<VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>, std::size_t vector_size, TYPE const * A, TYPE const * B); \
-        unsigned int * get_polynomial(vli_size_tag<VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
+        template<std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3 >      \
+        void gpu_inner_product_vector(std::size_t vector_size, TYPE const * A, TYPE const * B); \
+        \
+        template<std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3 >      \
+        unsigned int * gpu_get_polynomial(); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
    
     #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_ORDER_VAR_TUPLE) \
         VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(4,0,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,1,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,2,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,3,BASEINT_SIZE_ORDER_VAR_TUPLE))

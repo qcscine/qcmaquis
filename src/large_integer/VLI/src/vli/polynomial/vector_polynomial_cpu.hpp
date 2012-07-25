@@ -31,6 +31,7 @@
 #define VLI_VECTOR_POLYNOME_CPU_H
 #include "vli/vli_config.h"
 #include "vli/polynomial/polynomial.hpp"
+#include "vli/polynomial/variable.hpp"
 #include "vli/vli_cpu.h"
 #include <vector>
 #include <ostream>
@@ -69,30 +70,43 @@ struct inner_product_result_type< vector_polynomial<polynomial<Coeff,OrderSpecif
 };
 
 namespace detail {    
-#ifdef _OPENMP
+
 template <class Polynomial>
-typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_product_openmp( 
+typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_product_cpu( 
     vector_polynomial<Polynomial> const& v1, 
     vector_polynomial<Polynomial> const& v2){
     
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
 
-    std::vector<typename inner_product_result_type<vector_polynomial<Polynomial> >::type > res(omp_get_max_threads()); 
+    #ifdef _OPENMP
+        std::vector<typename inner_product_result_type<vector_polynomial<Polynomial> >::type > res(omp_get_max_threads()); 
+    #else
+        typename inner_product_result_type<vector_polynomial<Polynomial> >::type res;
+    #endif 
    
     #pragma omp parallel for schedule(dynamic)
     for(std::size_t i=0 ; i < size_v ; ++i){
-        res[omp_get_thread_num()] += v1[i]*v2[i];
+        #ifdef _OPENMP
+           res[omp_get_thread_num()] += v1[i]*v2[i];
+        #else
+           res[0]+=res[i];
+        #endif
     }
 
-    for(int i=1; i < omp_get_max_threads(); ++i)
-        res[0]+=res[i];
+    #ifdef _OPENMP
+        for(int i=1; i < omp_get_max_threads(); ++i)
+            res[0]+=res[i];
+    #endif 
 
-    return res[0];
-
+    #ifdef _OPENMP
+        return res[0];
+    #else 
+        return res;
+    #endif
 }
-#endif
 
+// I keep it for dev but nothing else
 template <class Polynomial>
 typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_product_plain (
       vector_polynomial<Polynomial> const& v1
@@ -108,29 +122,17 @@ typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_p
 
 } // end namespace detail
 
-
-
-
 template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
 inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > >::type
 inner_product(
           vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > const& v1
         , vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > const& v2
         ) {
-    // TODO this is a little dirty and could be done better
-#ifdef _OPENMP
 #ifdef VLI_USE_GPU
-    return detail::inner_product_gpu_omp(v1,v2);
-#else //VLI_USE_GPU
-    return detail::inner_product_openmp(v1,v2);
-#endif //VLI_USE_GPU
-#else //_OPENMP
-#ifdef VLI_USE_GPU
-    return detail::inner_product_gpu(v1,v2);
-#else //VLI_USE_GPU
-    return detail::inner_product_plain(v1,v2);
-#endif //VLI_USE_GPU
-#endif //_OPENMP
+    return detail::inner_product_gpu_helper<Coeff, OrderSpecification, Var0, Var1, Var2, Var3>::inner_product_gpu(v1,v2); // can be pure gpu or hybride cpu omp/gpu
+#else 
+    return detail::inner_product_cpu(v1,v2);i// can be pure serial or omp
+#endif
 }
 
 template<class Polynomial>
