@@ -6,8 +6,8 @@
 
 namespace ambient { namespace controllers { namespace velvet {
 
-    void forward_block(ambient::channels::mpi::packet&);
-    void accept_block(ambient::channels::mpi::packet&);
+    void forward(ambient::channels::mpi::packet&);
+    void accept(ambient::channels::mpi::packet&);
 
 } } }
 
@@ -35,7 +35,7 @@ namespace ambient { namespace channels { namespace mpi {
         assert(threading_level == MPI_THREAD_MULTIPLE);
         this->ambient = new group("ambient", AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
 
-        this->add_handler( get_t<layout_packet_t>() , controllers::velvet::forward_block );
+        this->add_handler( get_t<layout_packet_t>() , controllers::velvet::forward );
 
         this->active = true;
         //pthread_create(&this->thread, NULL, &channel::stream, this);
@@ -52,7 +52,7 @@ namespace ambient { namespace channels { namespace mpi {
         if(types[idx] == NULL){
             types[idx] = new block_packet_t(len);
             //pt->commit(); // serial
-            //this->add_handler(*pt, controllers::accept_block);
+            //this->add_handler(*pt, controllers::accept);
         }
         return *types[idx];
     }

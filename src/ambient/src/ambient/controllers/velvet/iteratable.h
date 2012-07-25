@@ -9,10 +9,10 @@ namespace ambient { namespace controllers { namespace velvet {
         inline revision* get_parent();
     };
 
-    struct c_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // check
-    struct w_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // weak
-    struct p_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // purge
-    struct r_revision : public revision_sub { inline revision::entry& operator()(size_t, size_t); }; // reuse
+    struct c_revision : public revision_sub { template<typename T> inline operator T* (); }; // check
+    struct w_revision : public revision_sub { template<typename T> inline operator T* (); }; // weak
+    struct p_revision : public revision_sub { template<typename T> inline operator T* (); }; // purge
+    struct r_revision : public revision_sub { template<typename T> inline operator T* (); }; // reuse
 
     template<class T>
     class iteratable : public T

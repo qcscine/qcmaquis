@@ -13,17 +13,11 @@ namespace ambient { namespace models { namespace velvet {
 
     class model : public singleton< model > {
     public:
-        inline model();
         template<typename T> inline size_t time(const T* o);
         template<typename T> inline revision* init_revision(T* o);
         inline revision* add_revision(history* o);
-        inline bool is_atomic(const history* o);
         inline void insert(revision* r);
         inline revision* get_revision(size_t id) const;
-        inline model& operator>>(dim2);
-        inline model& operator, (dim2);
-        inline ~model();
-        dim2 mem_dim;
     private:
         hashmap map;
     };

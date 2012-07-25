@@ -20,12 +20,12 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void   master_stream(void* list); // specialized version for the main thread
         inline void   acquire(channels::mpi::channel* channel);
         inline void   push(cfunctor* op);
-        inline void   execute_mod(cfunctor* op, dim2 pin);
+        inline void   execute_mod(cfunctor* op);
 
-        inline void alloc_block (revision& r, size_t x, size_t y);
-        inline void calloc_block(revision& r, size_t x, size_t y);
-        inline revision::entry& ufetch_block(revision& r, size_t x, size_t y);
-        inline void ifetch_block(revision& r, size_t x, size_t y);
+        inline void alloc (revision& r);
+        inline void calloc(revision& r);
+        inline revision::entry& ufetch(revision& r);
+        inline void ifetch(revision& r);
         inline void unlock_revision(revision* arg);
         inline void unlink_revision(revision* arg);
 
@@ -34,7 +34,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void allocate_threads();
         inline void set_num_threads(size_t n);
         inline size_t get_num_threads() const;
-        inline void atomic_receive(revision& r, size_t x, size_t y);
+        inline void atomic_receive(revision& r);
         inline ~controller();
     public:
         bool muted;

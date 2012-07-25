@@ -6,7 +6,7 @@
 #include "ambient/numeric/matrix/kernels/atomics.hpp"
 #include "ambient/numeric/matrix/diagonal_matrix.hpp"
 
-#define ATOMIC(condition, kernel, ...) assert(condition); ambient::push< kernels::kernel ## _atomic<T> >(__VA_ARGS__);
+#define ATOMIC(kernel, ...) ambient::push< kernels::kernel ## _atomic<T> >(__VA_ARGS__);
 
 #define size_type       typename matrix<T>::size_type
 #define real_type       typename matrix<T>::real_type
@@ -47,7 +47,7 @@ namespace ambient { namespace numeric {
     template<typename T>
     bool operator == (const matrix<T>& a, const matrix<T>& b){
         ambient::future<bool> ret(1);
-        ATOMIC(a.atomic(), validation, a, b, ret); 
+        ATOMIC(validation, a, b, ret); 
         return (bool)ret;
     }
 
@@ -66,28 +66,28 @@ namespace ambient { namespace numeric {
     template <typename T>
     inline real_type norm_square(const matrix<T>& a){ 
         real_type norm(0); 
-        ATOMIC(a.atomic(), scalar_norm, a, norm); 
+        ATOMIC(scalar_norm, a, norm); 
         return norm; 
     }
 
     template <typename T>
     inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ 
         scalar_type overlap(0); 
-        ATOMIC(a.atomic(), overlap, a, b, overlap); 
+        ATOMIC(overlap, a, b, overlap); 
         return overlap; 
     }
 
     template<typename T>
     inline void transpose_inplace(matrix<T>& a){
         matrix<T> t(a.num_cols(), a.num_rows());
-        ATOMIC(a.atomic(), transpose_out, a, t);
+        ATOMIC(transpose_out, a, t);
         a.swap(t);
     }
 
     template<typename T>
     inline matrix<T> transpose(const matrix<T>& a){
         matrix<T> t(a.num_cols(), a.num_rows());
-        ATOMIC(a.atomic(), transpose_out, a, t);
+        ATOMIC(transpose_out, a, t);
         return t;
     }
 
@@ -146,13 +146,13 @@ namespace ambient { namespace numeric {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        ATOMIC(a.atomic(), svd, a, u, vt, s);
+        ATOMIC(svd, a, u, vt, s);
     }
 
     template<typename T>
     inline void heev(matrix<T> a, matrix<T>& evecs, diagonal_matrix<double>& evals){
         assert(num_rows(a) == num_cols(a) && num_rows(evals) == num_rows(a));
-        ATOMIC(a.atomic(), heev, a, evals); // destoys U triangle of M
+        ATOMIC(heev, a, evals); // destoys U triangle of M
         evecs.swap(a);
     }
 
@@ -176,18 +176,18 @@ namespace algorithms {
 
     template<typename T>
     inline void fill_identity(matrix_impl<T>& m){
-        ATOMIC(m.atomic(), init_identity, m);
+        ATOMIC(init_identity, m);
     }
 
     template<typename T>
     inline void fill_random(matrix_impl<T>& m){
-        ATOMIC(m.atomic(), init_random, m);
+        ATOMIC(init_random, m);
     }
 
     template<typename T>
     inline void fill_value(matrix_impl<T>& m, T value){
         if(value == 0.) return; // matrices are 0s by default
-        ATOMIC(m.atomic(), init_value, m, value);
+        ATOMIC(init_value, m, value);
     }
 
     template<typename T>
@@ -204,7 +204,7 @@ namespace algorithms {
 
     template<typename T>
     inline void resize(matrix_impl<T>& r, size_type rows, size_type cols, matrix_impl<T>& m, size_type orows, size_type ocols){
-        ATOMIC(m.atomic(), resize, r, m, std::min(rows, orows), std::min(cols, ocols));
+        ATOMIC(resize, r, m, std::min(rows, orows), std::min(cols, ocols));
     }
 
     template<typename T>
@@ -223,18 +223,18 @@ namespace algorithms {
     template <typename T>
     inline scalar_type trace(const matrix_impl<T>& m){
         scalar_type trace(0);
-        ATOMIC(m.atomic(), trace, m, trace);
+        ATOMIC(trace, m, trace);
         return trace;
     }
 
     template <typename T>
     inline void add_inplace(matrix_impl<T>& m, const matrix_impl<T>& rhs){ 
-        ATOMIC(m.atomic(), add, m, rhs); 
+        ATOMIC(add, m, rhs); 
     }
 
     template <typename T>
     inline void sub_inplace(matrix_impl<T>& m, const matrix_impl<T>& rhs){ 
-        ATOMIC(m.atomic(), sub, m, rhs); 
+        ATOMIC(sub, m, rhs); 
     }
 
     template <typename T>
@@ -251,17 +251,17 @@ namespace algorithms {
 
     template <typename T>
     inline void mul_inplace(matrix_impl<T>& a, const scalar_type& rhs) { 
-        ATOMIC(a.atomic(), scale, a, rhs); 
+        ATOMIC(scale, a, rhs); 
     }
 
     template <typename T>
     inline void div_inplace(matrix_impl<T>& a, const scalar_type& rhs) { 
-        ATOMIC(a.atomic(), scale_inverse, a, rhs); 
+        ATOMIC(scale_inverse, a, rhs); 
     }
 
     template<typename T>
     inline void copy(matrix_impl<T>& ac, const matrix_impl<T>& a){ 
-        ATOMIC(a.atomic(), copy, ac, a); 
+        ATOMIC(copy, ac, a); 
     }
 
 } 

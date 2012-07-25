@@ -43,10 +43,10 @@ namespace ambient {
         inline void pin(revision& r){
             this->affinity = r.affinity;
             r.content.assignments.push_back(this);
-            ambient::controller.ifetch_block(r,0,0);
+            ambient::controller.ifetch(r);
         }
         inline void assign(revision& r){ 
-            ambient::controller.ifetch_block(r,0,0);
+            ambient::controller.ifetch(r);
         }
     };
 }

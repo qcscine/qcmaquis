@@ -2,38 +2,42 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline revision* revision_sub::get_parent(){ return ((revision*)this)->get_parent(); }
 
-    inline revision::entry& c_revision::operator()(size_t x, size_t y){
+    template<typename T>
+    inline c_revision::operator T* (){
         revision::entry& e = ((revision*)this)->content;
         if(!e.valid()){
-            if(((revision*)this)->clean) ambient::controller.calloc_block(*(revision*)this, x, y);
-            else ambient::controller.alloc_block(*(revision*)this, x, y);
+            if(((revision*)this)->clean) ambient::controller.calloc(*(revision*)this);
+            else ambient::controller.alloc(*(revision*)this);
         }
-        return e;
+        return (T*)e;
     }
-    inline revision::entry& p_revision::operator()(size_t x, size_t y){
+    template<typename T>
+    inline p_revision::operator T* (){
         revision::entry& e = ((revision*)this)->content;
-        if(!e.valid()) ambient::controller.calloc_block(*(revision*)this, x, y);
-        return e;
+        if(!e.valid()) ambient::controller.calloc(*(revision*)this);
+        return (T*)e;
     }
-    inline revision::entry& w_revision::operator()(size_t x, size_t y){
+    template<typename T>
+    inline w_revision::operator T* (){
         revision::entry& e = ((revision*)this)->content;
         if(!e.valid()){
             revision::entry& parent = this->get_parent()->content;
-            if(parent.occupied()) ambient::controller.alloc_block(*(revision*)this, x, y);
+            if(parent.occupied()) ambient::controller.alloc(*(revision*)this);
             else e.swap(parent);
         }
-        return e;
+        return (T*)e;
     }
-    inline revision::entry& r_revision::operator()(size_t x, size_t y){
+    template<typename T>
+    inline r_revision::operator T* (){
         revision::entry& e = ((revision*)this)->content;
         if(!e.valid()){
             revision::entry& parent = this->get_parent()->content;
             if(parent.occupied()){
-                if(this->get_parent()->clean) ambient::controller.calloc_block(*(revision*)this, x, y);
-                else ambient::controller.alloc_block(*(revision*)this, x, y);
+                if(this->get_parent()->clean) ambient::controller.calloc(*(revision*)this);
+                else ambient::controller.alloc(*(revision*)this);
             }else e.swap(parent);
         }
-        return e;
+        return (T*)e;
     }
     
     template<class T>

@@ -1,6 +1,5 @@
 #ifndef AMBIENT_CONTROLLERS_VELVET_CFUNCTOR
 #define AMBIENT_CONTROLLERS_VELVET_CFUNCTOR
-#include "ambient/utils/dim2.h"
 
 namespace ambient { namespace controllers { namespace velvet {
 

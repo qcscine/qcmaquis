@@ -88,7 +88,6 @@ namespace ambient { namespace numeric {
         inline void transpose()               { this->impl->transpose();       }
         inline void conj()                    { this->impl->conj();            }
         inline bool empty() const             { return this->impl->empty();    }
-        inline bool atomic() const            { return this->impl->atomic();   }
         inline void swap(matrix& r)           { this->impl.swap(r.impl);       }
         friend void swap(matrix& x, matrix& y){ x.swap(y);                     }
 
@@ -174,7 +173,6 @@ namespace ambient { namespace numeric {
         inline bool empty() const;
         inline size_type num_rows() const;
         inline size_type num_cols() const;
-        inline bool atomic() const;
         inline void resize(matrix_impl& r, size_type rows, size_type cols);
         inline void remove_rows(size_type i, size_type k);
         inline void remove_cols(size_type j, size_type k);
