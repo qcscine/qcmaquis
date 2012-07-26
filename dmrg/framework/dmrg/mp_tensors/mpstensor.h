@@ -11,6 +11,7 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
+//#include "solver.h"
 
 #include <iostream>
 #include <algorithm>
@@ -18,7 +19,9 @@
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places
 enum Indicator { Unorm, Lnorm, Rnorm };
-enum DecompMethod { QR, SVD };
+enum DecompMethod {QR, SVD}; 
+
+static DecompMethod DefaultSolver() {return SVD;} // QR or SVD
 
 template<class Matrix, class SymmGroup>
 class TwoSiteTensor;
@@ -53,11 +56,11 @@ public:
     bool isrightnormalized(bool test = false) const;
     bool isnormalized(bool test = false) const;
     
-    block_matrix<Matrix, SymmGroup> normalize_left(DecompMethod method = QR,
+    block_matrix<Matrix, SymmGroup> normalize_left(DecompMethod method = DefaultSolver(),
                                                    bool multiplied = true,
                                                    double truncation = 0,
                                                    Index<SymmGroup> bond_dim = Index<SymmGroup>());
-    block_matrix<Matrix, SymmGroup> normalize_right(DecompMethod method = QR,
+    block_matrix<Matrix, SymmGroup> normalize_right(DecompMethod method = DefaultSolver(),
                                                     bool multiplied = true,
                                                     double truncation = 0,
                                                     Index<SymmGroup> bond_dim = Index<SymmGroup>());

@@ -103,3 +103,4 @@ std::size_t MPOTensor<Matrix, SymmGroup>::col_dim() const
 {
     return right_i;
 }
+

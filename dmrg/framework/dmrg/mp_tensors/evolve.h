@@ -47,10 +47,10 @@ evolve(MPS<Matrix, SymmGroup> mps,
             compression::replace_two_sites_l2r(mps, Mmax, cutoff, v1, p, logger);
             
             // move two to the right, if possible
-            t = mps[p+1].normalize_left(SVD);
+            t = mps[p+1].normalize_left(DefaultSolver());
             if (p+2 < L) {
                 mps[p+2].multiply_from_left(t);
-                t = mps[p+2].normalize_left(SVD);
+                t = mps[p+2].normalize_left(DefaultSolver());
                 if (p+3 < L) {
                     mps[p+3].multiply_from_left(t);
                 }
@@ -95,7 +95,7 @@ evolve_l2r(MPS<Matrix, SymmGroup> & mps,
                                                     constmps[p].site_dim());
             compression::replace_two_sites_l2r(mps, Mmax, cutoff, v1, p, logger);
         }
-        mps.move_normalization_l2r(p+1, p+3);
+        mps.move_normalization_l2r(p+1, p+3, DefaultSolver());
     }
     mps.canonization(true);
     assert(mps.canonization() == mps.length()-1);
@@ -133,7 +133,7 @@ evolve_r2l(MPS<Matrix, SymmGroup> & mps,
                                                     constmps[p].site_dim());
             compression::replace_two_sites_r2l(mps, Mmax, cutoff, v1, p, logger);
         }
-        mps.move_normalization_r2l(p, std::max(static_cast<long>(p)-2,0L));
+        mps.move_normalization_r2l(p, std::max(static_cast<long>(p)-2,0L), DefaultSolver());
     }
     
     

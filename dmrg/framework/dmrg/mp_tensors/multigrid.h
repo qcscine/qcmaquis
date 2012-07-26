@@ -284,9 +284,9 @@ struct multigrid {
             // Normalization
             if (p != 0)
                 mps_large[2*p].multiply_from_left(t_norm);
-            t_norm = mps_large[2*p].normalize_left(SVD);
+            t_norm = mps_large[2*p].normalize_left(DefaultSolver());
             mps_large[2*p+1].multiply_from_left(t_norm);
-            t_norm = mps_large[2*p+1].normalize_left(SVD);
+            t_norm = mps_large[2*p+1].normalize_left(DefaultSolver());
         }
         
     }
@@ -375,7 +375,7 @@ struct multigrid {
             mps_large[2*p+1].divide_by_scalar(mps_large[2*p+1].scalar_norm()); // that may playout
             assert( mps_large[2*p].num_check() );
             assert( mps_large[2*p+1].num_check() );
-            t_norm = mps_large[2*p+1].normalize_right(SVD);
+            t_norm = mps_large[2*p+1].normalize_right(DefaultSolver());
             mps_large[2*p].multiply_from_right(t_norm);
             mps_large[2*p].divide_by_scalar(mps_large[2*p].scalar_norm());
             assert( mps_large[2*p].num_check() );
@@ -480,7 +480,7 @@ struct multigrid {
                                          2*p, alpha, cutoff, Mmax, iteration_log);                
                  */
                  
-                t_norm = mps_large[2*p].normalize_left(SVD);
+                t_norm = mps_large[2*p].normalize_left(DefaultSolver());
                 mps_large[2*p+1].multiply_from_left(t_norm);
 
             }
@@ -540,13 +540,13 @@ struct multigrid {
                                                                     mps_large[2*p+1], new_mps);
                     mps_large[2*p+1] = new_mps;
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps_large[2*p+1].normalize_left(SVD);
+                    block_matrix<Matrix, SymmGroup> t = mps_large[2*p+1].normalize_left(DefaultSolver());
                 }
 
                 */
 
                 
-                t_norm = mps_large[2*p+1].normalize_left(SVD);
+                t_norm = mps_large[2*p+1].normalize_left(DefaultSolver());
 
                 if (p < L-1) {
                     Msmall = mps_small[p+1];

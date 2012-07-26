@@ -182,7 +182,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
             ret.push_back(1/(1-n)*log(S));
         }
         
-        mps.move_normalization_l2r(p-1, p);
+        mps.move_normalization_l2r(p-1, p, DefaultSolver());
     }
     
     return ret;
@@ -261,7 +261,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
             }
         }
         
-        block_matrix<Matrix, SymmGroup> t_norm = mps[p].normalize_left(SVD);
+        block_matrix<Matrix, SymmGroup> t_norm = mps[p].normalize_left(DefaultSolver());
         if (p < L-1)
             mps[p+1].multiply_from_left(t_norm);
         

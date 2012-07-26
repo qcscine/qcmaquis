@@ -147,15 +147,15 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
 {
     if (cur_normalization == Unorm || cur_normalization == Rnorm) {
         if (method == QR) {
-            throw std::runtime_error("Not implemented!");
             make_left_paired();
             
-            block_matrix<Matrix, SymmGroup> q, r;
-            qr(data_, q, r);
-            swap(data_, q);
+            block_matrix<Matrix, SymmGroup> Q, R;
+            qr(data_, Q, R);
+	    assert(data_.left_basis() == Q.left_basis());
+            swap(data_, Q);
             
             cur_normalization = Lnorm;
-            return r;
+            return R;
         } else {
             make_left_paired();
             
@@ -185,9 +185,17 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
                                               Index<SymmGroup> bond_dim)
 {
     if (cur_normalization == Unorm || cur_normalization == Lnorm) {
-        if (method == QR) {
-            throw std::runtime_error("Not implemented.");
+        if (method == QR) { //enum QR but LQ decomposition
+            make_right_paired();
             
+            block_matrix<Matrix, SymmGroup> L, Q;
+            lq(data_, L, Q);
+	    assert(data_.right_basis() == L.right_basis());
+
+            swap(data_, Q);
+            
+            cur_normalization = Rnorm;
+            return L;
         } else {
             make_right_paired();
             
@@ -197,8 +205,8 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             svd(data_, U, V, S);
             
             left_i = V.left_basis();
-            assert(data_.right_basis() == V.right_basis());
-            swap(data_, V);
+	    assert(data_.right_basis() == V.right_basis());
+	    swap(data_, V);
             
             gemm(U, S, V);
             
@@ -539,3 +547,4 @@ void MPSTensor<Matrix, SymmGroup>::check_equal (MPSTensor<Matrix, SymmGroup> con
         throw std::runtime_error(error);
         
 }
+

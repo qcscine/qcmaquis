@@ -92,7 +92,7 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     block_matrix<Matrix, SymmGroup> t;
-                    t = mpsp[site].normalize_left(SVD);
+                    t = mpsp[site].normalize_left(DefaultSolver());
                     mpsp[site+1].multiply_from_left(t);
                 }
                 
@@ -101,7 +101,7 @@ public:
             } else if (lr == -1) {
                 if (site > 0) {
                     block_matrix<Matrix, SymmGroup> t;
-                    t = mpsp[site].normalize_right(SVD);
+                    t = mpsp[site].normalize_right(DefaultSolver());
                     mpsp[site-1].multiply_from_right(t);
                 }   
                 
@@ -117,7 +117,7 @@ public:
     
     void finalize()
     {
-        mpsp[0].normalize_right(SVD);
+        mpsp[0].normalize_right(DefaultSolver());
     }
     
     MPS<Matrix, SymmGroup> get_original_mps() const { return mps; }
