@@ -102,7 +102,7 @@ struct compression {
             
             compress_two_sites(mps, Mmax, cutoff, p-1, logger);
             
-            t = mps[p].normalize_left(SVD);
+            t = mps[p].normalize_left(DefaultSolver());
             
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
@@ -137,7 +137,7 @@ struct compression {
             
             compress_two_sites(mps, Mmax, cutoff, p-1, logger);
             
-            t = mps[p-1].normalize_right(SVD);
+            t = mps[p-1].normalize_right(DefaultSolver());
             
             if (p > 1)
                 mps[p-2].multiply_from_right(t);

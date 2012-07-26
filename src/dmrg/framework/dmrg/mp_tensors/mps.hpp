@@ -52,7 +52,7 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
     
     // MD: this is actually important
     for (int i = 0; i < L; ++i)
-        (*this)[i].normalize_left(SVD);
+        (*this)[i].normalize_left(DefaultSolver());
 
     this->normalize_left();
 }
@@ -106,7 +106,7 @@ void MPS<Matrix, SymmGroup>::normalize_left()
 {
     canonize(length()-1);
     // now state is: A A A A A A M
-    block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(SVD);
+    block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
     // now state is: A A A A A A A
     canonized_i = length()-1;
 }
@@ -116,7 +116,7 @@ void MPS<Matrix, SymmGroup>::normalize_right()
 {
     canonize(0);
     // now state is: M B B B B B B
-    block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(SVD);
+    block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
     // now state is: B B B B B B B
     canonized_i = 0;
 }
@@ -125,18 +125,18 @@ void MPS<Matrix, SymmGroup>::normalize_right()
 //  (idx)        c
 // output: A  A  M  B  B  B  B
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::canonize(std::size_t center)
+void MPS<Matrix, SymmGroup>::canonize(std::size_t center, DecompMethod method)
 {
     if (canonized_i == center)
         return;
     
     if (canonized_i < center)
-        move_normalization_l2r(canonized_i, center);
+        move_normalization_l2r(canonized_i, center, method);
     else if (canonized_i < length())
-        move_normalization_r2l(canonized_i, center);
+        move_normalization_r2l(canonized_i, center, method);
     else {
-        move_normalization_l2r(0, center);
-        move_normalization_r2l(length()-1, center);
+        move_normalization_l2r(0, center, method);
+        move_normalization_r2l(length()-1, center, method);
     }
     canonized_i = center;
 }
@@ -145,14 +145,14 @@ void MPS<Matrix, SymmGroup>::canonize(std::size_t center)
 //  (idx)     p1       p2
 // output: M  A  A  A  M  M  M
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2)
+void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, DecompMethod method)
 {
     size_t tmp_i = canonized_i;
     for (int i = p1; i < std::min(p2, length()); ++i)
     {
         if ((*this)[i].isleftnormalized())
             continue;
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(SVD);
+        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(method);
         if (i < length()-1) {
             (*this)[i+1].multiply_from_left(t);
             (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
@@ -168,14 +168,14 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2)
 //  (idx)     p2       p1
 // output: M  M  B  B  B  M  M
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2)
+void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, DecompMethod method)
 {
     size_t tmp_i = canonized_i;
     for (int i = p1; i > static_cast<int>(std::max(p2, size_t(0))); --i)
     {
         if ((*this)[i].isrightnormalized())
             continue;
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(SVD);
+        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(method);
         if (i > 0) {
             (*this)[i-1].multiply_from_right(t);
             (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());

@@ -61,7 +61,6 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 #endif
     for (std::size_t k = 0; k < loop_max; ++k)
         svd(M[k], U[k], V[k], S[k]);
-    
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -301,14 +300,34 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
         block_matrix<Matrix, SymmGroup> & R)
 {
     /* thin QR in each block */
-    
     Index<SymmGroup> m = M.left_basis(), n = M.right_basis();
     
     Q = block_matrix<Matrix, SymmGroup>(m,n);
     R = block_matrix<Matrix, SymmGroup>(n,n);
     
+#ifdef MAQUIS_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
     for (std::size_t k = 0; k < M.n_blocks(); ++k)
         qr(M[k], Q[k], R[k]);
+}
+
+template<class Matrix, class SymmGroup>
+void lq(block_matrix<Matrix, SymmGroup> & M,
+        block_matrix<Matrix, SymmGroup> & L,
+        block_matrix<Matrix, SymmGroup> & Q)
+{
+    /* thin LQ in each block */
+    Index<SymmGroup> m = M.left_basis(), n = M.right_basis();
+    
+    L = block_matrix<Matrix, SymmGroup>(n,n);
+    Q = block_matrix<Matrix, SymmGroup>(m,n);
+    
+#ifdef MAQUIS_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
+    for (std::size_t k = 0; k < M.n_blocks(); ++k)
+        lq(M[k], L[k], Q[k]);
 }
 
 template<class Matrix, class SymmGroup>

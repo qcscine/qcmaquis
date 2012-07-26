@@ -185,7 +185,7 @@ public:
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(SVD);
+                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
                     if (site < L-1)
                         mps[site+1].multiply_from_left(t);
                 }
@@ -200,7 +200,7 @@ public:
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                        site, alpha, cutoff, Mmax, iteration_log);
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(SVD);
+                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
                     if (site > 0)
                         mps[site-1].multiply_from_right(t);
                 }

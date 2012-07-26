@@ -58,13 +58,13 @@ public:
     iterator end() {return data_.end();}
     
     size_t canonization(bool=false) const;
-    void canonize(size_t center);
+    void canonize(size_t center, DecompMethod method = DefaultSolver());
     
     void normalize_left();
     void normalize_right();
     
-    void move_normalization_l2r(size_t p1, size_t p2);
-    void move_normalization_r2l(size_t p1, size_t p2);
+    void move_normalization_l2r(size_t p1, size_t p2, DecompMethod method);
+    void move_normalization_r2l(size_t p1, size_t p2, DecompMethod method);
     
     std::string description() const;
     
