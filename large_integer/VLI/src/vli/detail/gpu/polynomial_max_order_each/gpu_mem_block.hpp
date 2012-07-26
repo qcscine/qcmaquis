@@ -26,6 +26,8 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
+// to remove when size ok
+#include <assert.h>
 
 namespace vli{
 namespace detail {
@@ -55,12 +57,13 @@ namespace detail {
     template <class BaseInt, class OrderSpecification ,class Var0, class Var1, class Var2, class Var3>
     struct resize_helper{
     };
+    // A free function, syntac light compared nested into the class
     // max order each specialization 
     template <class BaseInt, unsigned int Order,class Var0, class Var1, class Var2, class Var3>
     struct resize_helper<BaseInt, max_order_each<Order>, Var0, Var1, Var2, Var3>{
-        static void resize(gpu_memblock<BaseInt>* pgm, std::size_t vli_size,  std::size_t vector_size){
+        static void resize(gpu_memblock<BaseInt> const* pgm, std::size_t vli_size,  std::size_t vector_size){
 
-        std::size_t req_size = vector_size * vli_size * stridef<Var0>(max_order_each<Order>::value)* stridef<Var1>(max_order_each<Order>::value)* stridef<Var2>(max_order_each<Order>::value)* stridef<Var3>(max_order_each<Order>::value);
+        std::size_t req_size = vector_size * vli_size * stride<Var0,Order>::value * stride<Var1,Order>::value * stride<Var2,Order>::value * stride<Var3,Order>::value;
 
         if( req_size > pgm->GetBlockSize() ) {
             if (pgm->V1Data_ != 0 )
@@ -74,8 +77,8 @@ namespace detail {
 
             cudaMalloc((void**)&(pgm->V1Data_), req_size*sizeof(BaseInt)); //input 1
             cudaMalloc((void**)&(pgm->V2Data_), req_size*sizeof(BaseInt)); //input 2
-            cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*vli_size * extend_stridef<Var0>(max_order_each<Order>::value) * extend_stridef<Var1>(max_order_each<Order>::value) * extend_stridef<Var2>(max_order_each<Order>::value) * extend_stridef<Var3>(max_order_each<Order>::value)*sizeof(BaseInt)); 
-            cudaMalloc((void**)&(pgm->PoutData_),                  2*vli_size * extend_stridef<Var0>(max_order_each<Order>::value) * extend_stridef<Var1>(max_order_each<Order>::value) * extend_stridef<Var2>(max_order_each<Order>::value) * extend_stridef<Var3>(max_order_each<Order>::value)*sizeof(BaseInt));
+            cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*vli_size * extend_stride<Var0, Order>::value * extend_stride<Var1, Order>::value * extend_stride<Var2, Order>::value * extend_stride<Var3, Order>::value * sizeof(BaseInt)); 
+            cudaMalloc((void**)&(pgm->PoutData_),                  2*vli_size * extend_stride<Var0, Order>::value * extend_stride<Var1, Order>::value * extend_stride<Var2, Order>::value * extend_stride<Var3, Order>::value * sizeof(BaseInt));
         } // end if
 
         } // end function
@@ -84,10 +87,30 @@ namespace detail {
     // max order combined specialization 
     template <class BaseInt, unsigned int Order,class Var0, class Var1, class Var2, class Var3>
     struct resize_helper<BaseInt, max_order_combined<Order>, Var0, Var1, Var2, Var3>{
-        static void resize(gpu_memblock<BaseInt>* pgm, std::size_t vli_size,  std::size_t vector_size){
-        // TO DO
-        } // end function
-    }; // end struct
+        static void resize(gpu_memblock<BaseInt> const* pgm, std::size_t vli_size,  std::size_t vector_size){
+
+        std::size_t req_size = vector_size * vli_size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value;
+
+        if( req_size > pgm->GetBlockSize() ) {
+            if (pgm->V1Data_ != 0 )
+                cudaFree((void*)pgm->V1Data_);
+            if (pgm->V2Data_ != 0 )
+                cudaFree((void*)pgm->V2Data_);
+            if(pgm->VinterData_ != 0)
+                cudaFree((void*)pgm->VinterData_);
+            if(pgm->PoutData_ != 0)
+                cudaFree((void*)pgm->PoutData_);
+
+            cudaMalloc((void**)&(pgm->V1Data_), req_size*sizeof(BaseInt)); //input 1
+            cudaMalloc((void**)&(pgm->V2Data_), req_size*sizeof(BaseInt)); //input 2
+            // Check with andreas if it is correct for the result, I will say no !
+            assert(false);
+            cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*vli_size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order+1>::value)*sizeof(BaseInt); 
+            cudaMalloc((void**)&(pgm->PoutData_),                  2*vli_size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order+1>::value)*sizeof(BaseInt);
+
+            } // end if
+        } // end fonction
+    }; //end struct
 
     } // end namespace detail
 }// end namespace vli
