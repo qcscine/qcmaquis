@@ -38,6 +38,26 @@ namespace vli {
 
     namespace detail {
 
+    template <class Var0, class Var1, class Var2, class Var3>
+    struct num_of_variables_helper {
+        static unsigned int const value = 4;
+    };  
+        
+    template <class Var0, class Var1, class Var2>
+    struct num_of_variables_helper<Var0, Var1, Var2, no_variable> {
+        static unsigned int const value = 3;
+    };  
+
+    template <class Var0, class Var1>
+    struct num_of_variables_helper<Var0, Var1, no_variable, no_variable> {
+        static unsigned int const value = 2;
+    };  
+
+    template <class Var0>
+    struct num_of_variables_helper<Var0, no_variable, no_variable, no_variable> {
+        static unsigned int const value = 1;
+    };  
+
     template <class Variable, unsigned int Order>
     struct extend_stride {
         static unsigned int const value = 2*Order+1;
@@ -68,26 +88,6 @@ namespace vli {
         static unsigned int const value = 0;
     };  
 
-    template <class Variable>
-    inline unsigned int extend_stridef(unsigned int  Order){
-        return 2*Order+1;
-    };  
-
-    template <>
-    inline unsigned int extend_stridef<no_variable>(unsigned int  Order){
-        return 1;
-    };  
-
-    template <class Variable>
-    inline unsigned int stridef(unsigned int  Order){
-        return Order+1;
-    };  
-
-    template <>
-    inline unsigned int stridef<no_variable>(unsigned int  Order){
-        return 1;
-    };  
-   
     struct SumBlockSize {
        enum { value = 256};
     };
@@ -131,6 +131,37 @@ namespace vli {
         enum {value = (((Size>>1)<<1)+1)};
     };
 
+
+    namespace max_order_combined_helpers {
+
+        template<unsigned int NK, unsigned int K>
+        struct size_helper {
+            static unsigned int const value = NK*size_helper<NK-1,K>::value;
+        };
+
+        template <unsigned int K>
+        struct size_helper<K,K> {
+            static unsigned int const value = 1;
+        };
+
+        template <unsigned int N>
+        struct factorial {
+            static unsigned int const value = N*factorial<N-1>::value;
+        };
+
+        template <>
+        struct factorial<0> {
+            static unsigned int const value = 1;
+        };
+
+        template <unsigned int N, unsigned int K>
+        struct size {
+            // N variables, max order K -> n+k-1 over k  = (n+k-1)! / ( (n-1)! k! ) combinations
+            // Assuming N > 0
+            static unsigned int const value = size_helper<N+K-1,K>::value/factorial<N-1>::value;
+        };
+
+    }
 
 
     }

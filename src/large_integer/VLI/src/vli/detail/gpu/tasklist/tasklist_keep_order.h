@@ -36,8 +36,11 @@
 namespace vli {
     namespace detail {
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    class tasklist_keep_order : public Singleton<tasklist_keep_order<BaseInt, Size, Order, Var0, Var1, Var2, Var3> > {
+    template <std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    class tasklist_keep_order;
+
+    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    class tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3 > : public Singleton<tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3> > {
         friend class Singleton<tasklist_keep_order>; // to have access to the Instance, Destroy functions into the singleton class
     private:
         tasklist_keep_order();

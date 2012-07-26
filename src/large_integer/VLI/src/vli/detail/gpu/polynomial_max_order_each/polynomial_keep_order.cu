@@ -62,11 +62,12 @@ namespace vli {
 
     template <typename BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
     void gpu_inner_product_vector(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
+
 	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial 
             resize_helper<BaseInt, OrderSpecification, Var0, Var1, Var2, Var3>::resize(gm, Size, VectorSize);
             
+  	    tasklist_keep_order<Size,OrderSpecification, Var0, Var1, Var2, Var3>* ghc = tasklist_keep_order<Size, OrderSpecification, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
 
-  	    tasklist_keep_order<BaseInt, Size,OrderSpecification::value, Var0, Var1, Var2, Var3>* ghc = tasklist_keep_order<BaseInt, Size, OrderSpecification::value, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
   	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*stride<Var0,OrderSpecification::value>::value*stride<Var1,OrderSpecification::value>::value*stride<Var2,OrderSpecification::value>::value*stride<Var3,OrderSpecification::value>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*stride<Var0,OrderSpecification::value>::value*stride<Var1,OrderSpecification::value>::value*stride<Var2,OrderSpecification::value>::value*stride<Var3,OrderSpecification::value>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
 

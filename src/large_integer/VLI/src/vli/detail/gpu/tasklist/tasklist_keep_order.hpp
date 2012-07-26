@@ -2,8 +2,8 @@
 namespace vli {
     namespace detail {
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    tasklist_keep_order<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::tasklist_keep_order(){
+    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
         cudaMalloc((void**)&(this->execution_plan_), MulBlockSize<Order, Var0, Var1, Var2, Var3>::value*MaxIterationCount<Order, Var0, Var1, Var2, Var3>::value*sizeof(single_coefficient_task));
@@ -12,14 +12,14 @@ namespace vli {
         plan();
     }
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    tasklist_keep_order<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::~tasklist_keep_order(){
+    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::~tasklist_keep_order(){
         cudaFree(this->execution_plan_);
         cudaFree(this->workblock_count_by_warp_);
     } 
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    void tasklist_keep_order<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::plan(){
+    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    void tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::plan(){
         std::vector<unsigned int> workblock_count_by_warp_local(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value / 32U,0);
         std::vector<unsigned int> work_total_by_size(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value / 32U,0);
         std::vector<vli::detail::single_coefficient_task > tasks(((extend_stride<Var0, Order>::value*extend_stride<Var1, Order>::value*extend_stride<Var2, Order>::value*extend_stride<Var3, Order>::value + 32U - 1) / 32U) * 32U);
