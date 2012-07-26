@@ -166,6 +166,11 @@ namespace ambient { namespace numeric {
         assert(false); printf("Error: Not implemented <- QR\n");
     }
 
+    template<typename T>
+    inline void lq(const matrix<T>& m, matrix<T>& l, matrix<T>& q){
+        assert(false); printf("Error: Not implemented <- LQ\n");
+    }
+
     template<typename T, class G>
     inline void generate(matrix<T>& m, G g){ m.fill_random(); } // warning: G isn't used
     // }}}
