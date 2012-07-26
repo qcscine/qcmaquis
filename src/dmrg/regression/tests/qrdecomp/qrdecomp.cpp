@@ -1,6 +1,12 @@
+#define BOOST_TEST_MAIN
+#define BOOST_TEST_DYN_LINK 
+
+#include <boost/test/unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
 
 #include <iterator>
 #include <iostream>
+
 
 using std::cerr;
 using std::cout;
@@ -20,8 +26,8 @@ using std::endl;
 typedef U1 SymmGroup;
 typedef alps::numeric::matrix<double> matrix;
 
-
-int main() {
+BOOST_AUTO_TEST_CASE( test )
+{
     
     int Nrep = 10;
     int M = 50;
@@ -135,13 +141,18 @@ int main() {
             double orig = expval(mps, mpo);
             
             // todo: here set default decomposition to SVD
-            mps1.canonize(p);
+            mps1.canonize(p,SVD);
             
             double meas_mps1 = mps1[p].scalar_overlap(contraction::local_op(mps1[p], op));
             
             // todo: here set default decomposition to QR
-            mps2.canonize(p);
+            mps2.canonize(p,QR);
             double meas_mps2 = mps2[p].scalar_overlap(contraction::local_op(mps2[p], op));
+          
+            double ref_value = orig / onorm;
+            BOOST_CHECK_CLOSE(meas_mps1, meas_mps2, 0.00000001 );
+            BOOST_CHECK_CLOSE(ref_value, meas_mps1, 0.00000001);
+            BOOST_CHECK_CLOSE(ref_value, meas_mps2, 0.00000001 );
             
             maquis::cout << "Density at site " << p << ": ";
             maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;
