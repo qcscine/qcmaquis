@@ -50,11 +50,11 @@ BOOST_AUTO_TEST_CASE( test )
     
     MPS<matrix, SymmGroup> mps1(mps), mps2(mps);
     
-    // todo: here set default decomposition to SVD
-    mps1.canonize(20);
+    // here canonize with SVD
+    mps1.canonize(20, SVD);
     
-    // todo: here set default decomposition to QR
-    mps2.canonize(20);
+    // here canonize with QR
+    mps2.canonize(20, QR);
     
     { // measure norm
         double orig = norm(mps);
@@ -140,13 +140,13 @@ BOOST_AUTO_TEST_CASE( test )
             
             double orig = expval(mps, mpo);
             
-            // todo: here set default decomposition to SVD
-            mps1.canonize(p,SVD);
+            // here canonize with SVD
+            mps1.canonize(p, SVD);
             
             double meas_mps1 = mps1[p].scalar_overlap(contraction::local_op(mps1[p], op));
             
-            // todo: here set default decomposition to QR
-            mps2.canonize(p,QR);
+            // here canonize with QR
+            mps2.canonize(p, QR);
             double meas_mps2 = mps2[p].scalar_overlap(contraction::local_op(mps2[p], op));
           
             double ref_value = orig / onorm;
