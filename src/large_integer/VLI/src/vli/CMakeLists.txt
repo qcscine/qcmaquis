@@ -40,5 +40,5 @@ add_library(vli_cpu
 ########################################################################
 
 if(VLI_COMPILE_GPU)
-    CUDA_ADD_LIBRARY(vli_gpu detail/gpu/tasklist/single_coefficient_task.cpp detail/gpu/polynomial_max_order_each/polynomial_keep_order.cu)
+    CUDA_ADD_LIBRARY(vli_gpu detail/gpu/tasklist/single_coefficient_task.cpp detail/gpu/polynomial_operations.cu)
 endif(VLI_COMPILE_GPU)

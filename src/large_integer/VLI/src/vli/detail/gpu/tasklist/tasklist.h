@@ -54,9 +54,25 @@ namespace vli {
         unsigned int  element_count_prepared;
     };
 
+    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    class tasklist_keep_order<Size, max_order_combined<Order>, Var0, Var1, Var2, Var3 > : public Singleton<tasklist_keep_order<Size, max_order_combined<Order>, Var0, Var1, Var2, Var3> > {
+        friend class Singleton<tasklist_keep_order>; // to have access to the Instance, Destroy functions into the singleton class
+    private:
+        tasklist_keep_order();
+        tasklist_keep_order(tasklist_keep_order const &);
+        tasklist_keep_order& operator =(tasklist_keep_order const &);
+        ~tasklist_keep_order();
+    public:
+        void plan();
+        single_coefficient_task* execution_plan_;// we do not care the type
+        unsigned int* workblock_count_by_warp_; // we do not care the type
+        unsigned int  element_count_prepared;
+    };
+
     } // end namespace detail
  }//end namespace vli
 
-#include "vli/detail/gpu/tasklist/tasklist_keep_order.hpp"
+#include "vli/detail/gpu/tasklist/tasklist_max_order_each.hpp"
+#include "vli/detail/gpu/tasklist/tasklist_max_order_combined.hpp"
 
 #endif 

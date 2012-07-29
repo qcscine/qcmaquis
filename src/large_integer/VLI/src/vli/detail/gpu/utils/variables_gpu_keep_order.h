@@ -38,6 +38,37 @@ namespace vli {
 
     namespace detail {
 
+    namespace max_order_combined_helpers {
+
+        template<unsigned int NK, unsigned int K>
+        struct size_helper {
+            static unsigned int const value = NK*size_helper<NK-1,K>::value;
+        };
+
+        template <unsigned int K>
+        struct size_helper<K,K> {
+            static unsigned int const value = 1;
+        };
+
+        template <unsigned int N>
+        struct factorial {
+            static unsigned int const value = N*factorial<N-1>::value;
+        };
+
+        template <>
+        struct factorial<0> {
+            static unsigned int const value = 1;
+        };
+
+        template <unsigned int N, unsigned int K>
+        struct size {
+            // N variables, max order K -> n+k-1 over k  = (n+k-1)! / ( (n-1)! k! ) combinations
+            // Assuming N > 0
+            static unsigned int const value = size_helper<N+K-1,K>::value/factorial<N-1>::value;
+        };
+
+    }
+
     template <class Var0, class Var1, class Var2, class Var3>
     struct num_of_variables_helper {
         static unsigned int const value = 4;
@@ -92,38 +123,35 @@ namespace vli {
        enum { value = 256};
     };
 
+    template<class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    struct MulBlockSize;
+
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MulBlockSize{
+    struct MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, Var3>{
         enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value)/2U >= 256U) ? 
                        256U :
                        (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value))/2U+32U-1U)/32U*32U };
     };
-
-    template<unsigned int Order, class Var0, class Var1, class Var2>
-    struct MulBlockSize<Order, Var0, Var1, Var2, vli::no_variable>{
-        enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value)/2U >= 256U) ? 
+    // TO DO CHECK !!!!!!!!!!!!
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    struct MulBlockSize<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
+        enum {value = (( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value   )/2U >= 256U) ? 
                        256U :
-                       (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value))/2U+32U-1U)/32U*32U };
+                       ((( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value   ))/2U+32U-1U)/32U*32U };
     };
 
-
-    template<unsigned int Order, class Var0, class Var1>
-    struct MulBlockSize<Order, Var0, Var1, vli::no_variable, vli::no_variable>{
-        enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value)/2U >= 256U) ? 
-                       256U :
-                       (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value))/2U+32U-1U)/32U*32U };
-    };
-
-    template<unsigned int Order, class Var0>
-    struct MulBlockSize<Order, Var0, vli::no_variable, vli::no_variable, vli::no_variable>{
-        enum {value = ((extend_stride<Var0,Order>::value)/2U >= 256U) ? 
-                      256U :
-                      (((extend_stride<Var0,Order>::value))/2U+32U-1U)/32U*32U}; 
-    };
+    template<class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    struct MaxIterationCount;
 
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MaxIterationCount{
+    struct MaxIterationCount<max_order_each<Order>, Var0, Var1, Var2, Var3>{
         enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+32U-1U)/32U};
+    };
+
+    // TO DO CHECK !!!!!!!!!!!!
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    struct MaxIterationCount<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
+        enum {value = (vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value+32U-1U)/32U};
     };
 
     template<std::size_t Size>
@@ -132,36 +160,6 @@ namespace vli {
     };
 
 
-    namespace max_order_combined_helpers {
-
-        template<unsigned int NK, unsigned int K>
-        struct size_helper {
-            static unsigned int const value = NK*size_helper<NK-1,K>::value;
-        };
-
-        template <unsigned int K>
-        struct size_helper<K,K> {
-            static unsigned int const value = 1;
-        };
-
-        template <unsigned int N>
-        struct factorial {
-            static unsigned int const value = N*factorial<N-1>::value;
-        };
-
-        template <>
-        struct factorial<0> {
-            static unsigned int const value = 1;
-        };
-
-        template <unsigned int N, unsigned int K>
-        struct size {
-            // N variables, max order K -> n+k-1 over k  = (n+k-1)! / ( (n-1)! k! ) combinations
-            // Assuming N > 0
-            static unsigned int const value = size_helper<N+K-1,K>::value/factorial<N-1>::value;
-        };
-
-    }
 
 
     }

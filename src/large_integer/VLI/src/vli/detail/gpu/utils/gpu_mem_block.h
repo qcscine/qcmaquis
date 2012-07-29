@@ -57,8 +57,12 @@ namespace detail {
         BaseInt* VinterData_; // inter value before the final reduction
         BaseInt* PoutData_; // final output
     };
+
     
     } //end namespace detail
 } //end namespce vli  
+
+#include "vli/detail/gpu/utils/gpu_mem_block.hpp" // memory
+
 
 #endif //INNER_PRODUCT_GPU_BOOSTER_HPP
