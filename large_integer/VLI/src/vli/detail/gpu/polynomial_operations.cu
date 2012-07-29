@@ -33,23 +33,22 @@
 
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu + structure max_order_each, max_order_combined
 #include "vli/detail/gpu/utils/variables_gpu_keep_order.h" //compile time  variable
-#include "vli/detail/gpu/tasklist/tasklist_keep_order.h" //tasklist
+#include "vli/detail/gpu/tasklist/tasklist.h" //tasklist
 #include "vli/detail/gpu/utils/gpu_mem_block.h" // memory
-#include "vli/detail/gpu/polynomial_max_order_each/gpu_mem_block.hpp" // memory
 #include "vli/detail/gpu/kernels/kernels_gpu_neg_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/kernels/kernels_gpu_add_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/kernels/kernels_gpu_mul_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/vli_number_gpu_function_hooks.hpp" // wrapper
-#include "vli/detail/gpu/polynomial_max_order_each/booster.hpp" // booster
-#include "vli/detail/gpu/polynomial_generic/polynomial_reduction.hpp" // final reduction
+#include "vli/detail/gpu/polynomial_multiplication/booster_polynomial_multiplication_max_order_each.hpp" // booster
+#include "vli/detail/gpu/polynomial_reducion/polynomial_reduction.hpp" // final reduction
 
 namespace vli {
     namespace detail {
-
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+   
+    template <typename BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
     __global__ void
-    __launch_bounds__(MulBlockSize<Order, Var0, Var1, Var2, Var3>::value , 2)
-    polynomial_mul_full_kepler(
+    __launch_bounds__(MulBlockSize<OrderSpecification, Var0, Var1, Var2, Var3>::value , 2)
+    polynomial_mul_full_kepler( // TO DO change the name
     	const unsigned int * __restrict__ in1,
     	const unsigned int * __restrict__ in2,
         const unsigned int element_count,
@@ -57,7 +56,7 @@ namespace vli {
         unsigned int* __restrict__ workblock_count_by_warp,
         single_coefficient_task* __restrict__ execution_plan)
     {
-        booster<BaseInt, Size, Order, Var0, Var1, Var2, Var3>::polynomial_multiplication_max_order(in1, in2, element_count, out, workblock_count_by_warp, execution_plan);
+        booster<BaseInt, Size, OrderSpecification, Var0, Var1, Var2, Var3>::polynomial_multiplication_max_order(in1, in2, element_count, out, workblock_count_by_warp, execution_plan); // TO DO change the name
     }
 
     template <typename BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
@@ -73,8 +72,8 @@ namespace vli {
 
 	    {
                 dim3 grid(VectorSize) ;
-                dim3 threads(MulBlockSize<OrderSpecification::value, Var0, Var1, Var2, Var3>::value);
-                polynomial_mul_full_kepler<BaseInt, Size,OrderSpecification::value, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
+                dim3 threads(MulBlockSize<OrderSpecification, Var0, Var1, Var2, Var3>::value);
+                polynomial_mul_full_kepler<BaseInt, Size,OrderSpecification, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
