@@ -2,29 +2,48 @@
 #define AMBIENT_CONTROLLERS_VELVET_MEMORY
 #include "ambient/utils/singleton.hpp"
 
-#define CHUNK 72
-#define LENGTH 8388608
-
 #define INSTRUCTION_LENGTH 8388608
-#define INSTRUCTION_CHUNK 72
+#define CHAIN_CHUNK 48
+#define CFUNCTOR_CHUNK 224
 
 #include <queue>
 
 namespace ambient { namespace utils { 
 
-    class instruction_memory : public singleton< instruction_memory > 
+    class chain_memory : public singleton< chain_memory > 
     {
     public:
-        instruction_memory(){
-            this->pool = malloc(INSTRUCTION_LENGTH*INSTRUCTION_CHUNK);
+        chain_memory(){
+            this->pool = malloc(INSTRUCTION_LENGTH*CHAIN_CHUNK);
             this->iterator = (char*)this->pool;
         }
-       ~instruction_memory(){
+       ~chain_memory(){
             free(this->pool);
         }
-        void* get(size_t sz){
-            //return malloc(sz);
-            this->iterator += sz;
+        void* get(){
+            this->iterator += CHAIN_CHUNK;
+            return this->iterator;
+        }
+        void reset(){
+            this->iterator = (char*)this->pool;
+        }
+    public:
+        char* iterator;
+        void* pool;
+    };
+
+    class cfunctor_memory : public singleton< cfunctor_memory > 
+    {
+    public:
+        cfunctor_memory(){
+            this->pool = malloc(INSTRUCTION_LENGTH*CFUNCTOR_CHUNK);
+            this->iterator = (char*)this->pool;
+        }
+       ~cfunctor_memory(){
+            free(this->pool);
+        }
+        void* get(){
+            this->iterator += CFUNCTOR_CHUNK;
             return this->iterator;
         }
         void reset(){
@@ -39,8 +58,6 @@ namespace ambient { namespace utils {
     {
     public:
         inline memory(){
-            //this->pool = malloc(LENGTH*CHUNK);
-            //this->iterator = (char*)this->pool;
         }
         inline ~memory(){
             //free(this->pool);
@@ -61,7 +78,8 @@ namespace ambient { namespace utils {
 
 namespace ambient {
     extern utils::memory& pool;
-    extern utils::instruction_memory& instruction_pool;
+    extern utils::chain_memory& chain_pool;
+    extern utils::cfunctor_memory& cfunctor_pool;
 }
 
 #endif

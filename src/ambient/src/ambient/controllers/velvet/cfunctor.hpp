@@ -1,6 +1,5 @@
 namespace ambient { namespace controllers { namespace velvet {
 
-
     inline cfunctor::cfunctor()
     {
         this->credit = 0;
