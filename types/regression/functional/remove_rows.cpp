@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_first_rows, T, test_types)
 
     pA.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
     sA.remove_rows(T::null,1);
     pA.remove_rows(T::null,1);
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_rows, T, test_types)
 
     pA.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
     sA.remove_rows(T::valuex-1,1);
     pA.remove_rows(T::valuex-1,1);
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows, T, test_types)
 
     pA.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
     int row =  Rd.IntRd()%(sA.num_rows());  
     sA.remove_rows(row,1);
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_rows, T, test_types)
 
     pA.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
 
     int row =  Rd.IntRd()%(T::valuex-1);  
     int numrows = (int)(T::valuex-1 - row)/2;   

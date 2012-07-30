@@ -18,41 +18,46 @@ if(BLAS_Accelerate_LIBRARY) # apple
 endif()
 
 add_executable( blas3_multiplication.out       blas3_multiplication.cpp       )
-add_executable( blas3_multiplication_pdiag.out blas3_multiplication_pdiag.cpp )
 add_executable( blas3_addition.out             blas3_addition.cpp             )
 add_executable( blas3_substraction.out         blas3_substraction.cpp         )
 add_executable( cast.out                       cast.cpp                       )
 add_executable( transpose.out                  transpose.cpp                  )
 add_executable( remove_rows.out                remove_rows.cpp                )
 add_executable( remove_cols.out                remove_cols.cpp                )
-add_executable( trace.out                      trace.cpp                      )
 add_executable( resize.out                     resize.cpp                     )
-add_executable( svd_lapack.out                 svd_lapack.cpp                 )
-add_executable( heev_lapack.out                heev_lapack.cpp                )
-add_executable( syev_lapack.out                syev_lapack.cpp                )
-add_executable( sqrt.out                       sqrt.cpp                       )
-add_executable( exp.out                        exp.cpp                        )
+add_executable( qr_lapack.out                  qr_lapack.cpp                  )
+add_executable( lq_lapack.out                  lq_lapack.cpp                  )
 add_executable( serial_access.out              serial_access.cpp              )
 add_executable( identity.out                   identity.cpp                   )
+#add_executable( blas3_multiplication_pdiag.out blas3_multiplication_pdiag.cpp )
+#add_executable( trace.out                      trace.cpp                      )
+#add_executable( svd_lapack.out                 svd_lapack.cpp                 )
+#add_executable( heev_lapack.out                heev_lapack.cpp                )
+#add_executable( syev_lapack.out                syev_lapack.cpp                )
+#add_executable( sqrt.out                       sqrt.cpp                       )
+#add_executable( exp.out                        exp.cpp                        )
 
 foreach( functional_test 
          blas3_addition.out 
          blas3_multiplication.out 
-         blas3_multiplication_pdiag.out 
          blas3_substraction.out 
          cast.out
-         exp.out
-         heev_lapack.out 
          identity.out
          remove_cols.out 
          remove_rows.out 
          resize.out 
          serial_access.out
-         sqrt.out
-         svd_lapack.out 
-         syev_lapack.out
-         trace.out 
-         transpose.out )
+         qr_lapack.out 
+         lq_lapack.out 
+         transpose.out
+#         blas3_multiplication_pdiag.out 
+#         syev_lapack.out
+#         trace.out 
+#         exp.out
+#         heev_lapack.out 
+#         sqrt.out
+#         svd_lapack.out 
+ )
     target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES}) 
     add_test(${functional_test} ${functional_test})
 endforeach(functional_test)

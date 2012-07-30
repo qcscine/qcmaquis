@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Sqrt, T, test_types)
     sDiagMatrix sA(T::valuex,0);
 
     pA.get_data().fill_random();
-    sA = maquis::traits::matrix_cast<sDiagMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA); // playout is inside the cast
 
     sA = sqrt(sA);
     pA = sqrt(pA);

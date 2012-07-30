@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( write_access, T, test_types)
     sMatrix sA(T::valuex,T::valuey);
 
     generate(sA,Rd); // Rd is rand generator static variable inside utilities
-    pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
+    pA = maquis::bindings::matrix_cast<pMatrix>(sA); // playout is inside the cast
 
     pA(accessx,accessy) = 3;
     ambient::playout();
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
     sMatrix sA(T::valuex,T::valuey);
 
     generate(sA,Rd); // Rd is rand generator static variable inside utilities
-    pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
+    pA = maquis::bindings::matrix_cast<pMatrix>(sA); // playout is inside the cast
 
     x = sA(accessx,accessy);
     y = pA(accessx,accessy);

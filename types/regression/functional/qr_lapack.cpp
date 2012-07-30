@@ -14,21 +14,20 @@
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
-    pMatrix pU(T::valuex,T::valuey);
-    pMatrix pV(T::valuex,T::valuey);
+    pMatrix pQ(T::valuex,T::valuey);
+    pMatrix pR(T::valuex,T::valuey);
 
     sMatrix sA(T::valuex,T::valuey);
-    sMatrix sU(T::valuex,T::valuey);
-    sMatrix sV(T::valuex,T::valuey);
+    sMatrix sQ(T::valuex,T::valuey);
+    sMatrix sR(T::valuex,T::valuey);
 
-    typename alps::numeric::associated_real_diagonal_matrix<pMatrix>::type pS;
-    typename alps::numeric::associated_real_diagonal_matrix<sMatrix>::type sS; 
 
     pA.fill_random();
     sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
  
-    svd(pA,pU,pV,pS);
-    svd(sA,sU,sV,sS);
-  
-    BOOST_CHECK(sS == pS); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    qr(pA,pQ,pR);
+    qr(sA,sQ,sR);
+
+    BOOST_CHECK(sQ == pQ); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(sR == pR); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
