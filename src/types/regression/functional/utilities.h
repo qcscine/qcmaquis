@@ -2,7 +2,7 @@
 #include <boost/static_assert.hpp> 
 
 #define M 0xF4240 
-#define ValueWG 32 // was 32
+#define ValueWG 4 // was 32
 
 namespace Random{
    struct random {
@@ -32,9 +32,9 @@ typedef alps::numeric::diagonal_matrix<double> sDiagMatrix;
 
 typedef ambient::numeric::matrix<double> pMatrix;
 typedef ambient::numeric::diagonal_matrix<double> pDiagMatrix;
-//typedef boost::mpl::list<size<2,0,double>,size<2,3,double>,size<3,0,double>,size<3,3,double>,size<3,-3,double>,size<5,7,double>,size<5,-7,double> > test_types; // prime numbers ...
+typedef boost::mpl::list<size<2,0,double>,size<2,3,double>,size<3,0,double>,size<3,3,double>,size<3,-3,double>,size<5,7,double>,size<5,-7,double> > test_types; // prime numbers ...
 
-typedef boost::mpl::list<size<2,0,double> > test_types; 
+//typedef boost::mpl::list<size<2, 2,std::complex<double> > > test_types; 
 
 struct caveats {
     caveats() {

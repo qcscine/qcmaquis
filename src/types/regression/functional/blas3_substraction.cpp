@@ -21,9 +21,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substraction, T, test_types)
     pA.fill_random();
     pB.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-    sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
-    sC = maquis::traits::matrix_cast<sMatrix>(pC); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sB = maquis::bindings::matrix_cast<sMatrix>(pB); // playout is inside the cast
+    sC = maquis::bindings::matrix_cast<sMatrix>(pC); // playout is inside the cast
  
     sC = sA - sB; 
     pC = pA - pB; 
@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substraction_assign, T, test_types)
     pA.fill_random();
     pB.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-    sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
-    sC = maquis::traits::matrix_cast<sMatrix>(pC); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sB = maquis::bindings::matrix_cast<sMatrix>(pB); // playout is inside the cast
+    sC = maquis::bindings::matrix_cast<sMatrix>(pC); // playout is inside the cast
  
     sA -= sB; 
     pA -= pB; 

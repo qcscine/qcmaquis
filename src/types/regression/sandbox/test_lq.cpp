@@ -44,8 +44,9 @@
 #include <alps/numeric/diagonal_matrix.hpp>
 #include <alps/numeric/matrix/algorithms.hpp>
 
+#include "utils/timings.h"
 
-#define ValueWG 11
+#define ValueWG 111
 #define tuple1(z, n, unused) BOOST_PP_COMMA_IF(n) size<(BOOST_PP_ADD(n,1)), 11,double> 
 #define tuple2(z, n, unused) BOOST_PP_COMMA_IF(n) size<(BOOST_PP_ADD(n,1)),-11,double> 
 #define tuple3(z, n, unused) BOOST_PP_COMMA_IF(n) size<(BOOST_PP_ADD(n,1)), 11,std::complex<double> > 
@@ -142,13 +143,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(SVD_test, T, test_types)
 
     InitHelper<typename T::value_type>::init(M);
     Matrix Mcopy(M);
-
+Timer timeA("SVD1");
+timeA.begin();
     svd(M,U,V,S);
     gemm(U, S,A);
-    gemm(S, V,B);
-    lq(Mcopy,L,Q);
-    qr(Mcopy,Q1,R);
+timeA.end();
 
+Timer timeAA("SVD2");
+timeAA.begin();
+    svd(M,U,V,S);
+    gemm(S, V,B);
+timeAA.end();
+
+Timer timeB("LQ");
+timeB.begin();
+    lq(Mcopy,L,Q);
+timeB.end();
+
+
+Timer timeBB("QR");
+timeBB.begin();
+    qr(Mcopy,Q1,R);
+timeBB.end();
+
+/*
     std::cout << "------------------------------ SVD " << std::endl;
     std::cout << A << std::endl;
     std::cout << B << std::endl;
@@ -157,7 +175,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(SVD_test, T, test_types)
     std::cout << L << std::endl;
   //  std::cout << Q1 << std::endl;
     std::cout << R << std::endl;
-
+*/
  
 }
 

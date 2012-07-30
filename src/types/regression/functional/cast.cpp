@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
     pA.fill_random();
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 
@@ -25,17 +25,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
     generate(sA,Rd); // Rd is rand generator static variable inside utilities
-    pA = maquis::traits::matrix_cast<pMatrix>(sA); // playout is inside the cast
+    pA = maquis::bindings::matrix_cast<pMatrix>(sA); // playout is inside the cast
     BOOST_CHECK(sA==pA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
 {
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
 
     pA.get_data().fill_random();
-    sA = maquis::traits::matrix_cast<sDiagMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA); // playout is inside the cast
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_diag, T, test_types)
     sDiagMatrix sA(T::valuex,0);
    
     sA.generate(Rd); // Rd is rand generator static variable inside utilities
-    pA = maquis::traits::matrix_cast<pDiagMatrix>(sA); // playout is inside the cast
+    pA = maquis::bindings::matrix_cast<pDiagMatrix>(sA); // playout is inside the cast
     BOOST_CHECK(sA==pA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
-
+*/
