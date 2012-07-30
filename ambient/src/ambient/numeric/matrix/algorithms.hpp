@@ -29,6 +29,8 @@
 // gemm (matrix-matrix)
 // gemm (matrix-diagonal)
 // svd
+// qr
+// lq
 // heev
 
 namespace ambient { namespace numeric {
@@ -162,13 +164,23 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void qr(const matrix<T>& m, matrix<T>& q, matrix<T>& r){
-        assert(false); printf("Error: Not implemented <- QR\n");
+    inline void qr(const matrix<T> a, matrix<T>& q, matrix<T>& r){
+        int m = num_rows(a);           
+        int n = num_cols(a);           
+        int k = std::min(m,n);
+        resize(q, m, k); 
+        resize(r, k, n);
+        ATOMIC(qr, a, q, r); 
     }
 
     template<typename T>
-    inline void lq(const matrix<T>& m, matrix<T>& l, matrix<T>& q){
-        assert(false); printf("Error: Not implemented <- LQ\n");
+    inline void lq(const matrix<T>& a, matrix<T>& l, matrix<T>& q){
+        int m = num_rows(a);           
+        int n = num_cols(a);           
+        int k = std::min(m,n);
+        resize(l, m, k);
+        resize(q, k, n); 
+        ATOMIC(lq, a, l, q); 
     }
 
     template<typename T, class G>

@@ -37,16 +37,25 @@ extern "C" {
     double fabs(double);
 */
 // C - Fortran declaration : native compatibility all math libs (MKL, Goto, ACML, ESSLSMP, ...)
+
 #define BOOST_PP_DEF(z, I, _) \
     void BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_TYPE ## I),gemm_)(const char *transa, const char *transb, const int  *m, const int *n, const int *k, \
                       const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *alpha, const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *a, const int *lda, const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *b, const int *ldb, \
                       const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *beta, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *c, const int *ldc); \
+    \
     void BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_TYPE ## I),axpy_)(const int *n, const  BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *alpha, const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *x, const int *incx, \
                       BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *y, const int *incy); \
+    \
     void BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_TYPE ## I),gesvd_)( const char* jobu, const char* jobvt, const int* m, \
                       const int* n, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *a, const int* lda, double* s, \
                       BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* u, const int* ldu, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* vt, const int* ldvt, \
-                      BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* work, const int* lwork, ARG(I) COMMA_(I) int* info );
+                      BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* work, const int* lwork, ARG(I) COMMA_(I) int* info ); \
+    \
+    void BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_TYPE ## I),geqrf_)(const int* m, const int* n, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *a, const int* lda, \
+                      BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* tau, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* work, const int* lwork, int* info ); \
+    void BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_TYPE ## I),gelqf_)(const int* m, const int* n, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I) *a, const int* lda, \
+                      BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* tau, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_TYPE ## I)* work, const int* lwork, int* info ); 
+    
 
 BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 #undef BOOST_PP_DEF
@@ -55,6 +64,12 @@ BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
     void dsyev_( const char* jobz, const char* uplo, const int* n, double* a, 
                  const int* lda, double* w, double* work, const int* lwork, 
                  int* info );
+
+    void dorgqr_(const int* m, const int* n, const int* k, double *a, const int* lda, double* tau, double* work, const int* lwork, int* info );
+    void zungqr_(const int* m, const int* n, const int* k, std::complex<double> *a, const int* lda, std::complex<double>* tau, std::complex<double>* work, const int* lwork, int* info );
+
+    void dorglq_(const int* m, const int* n, const int* k, double *a, const int* lda, double* tau, double* work, const int* lwork, int* info );
+    void zunglq_(const int* m, const int* n, const int* k, std::complex<double> *a, const int* lda, std::complex<double>* tau, std::complex<double>* work, const int* lwork, int* info );
 }
 /*
 * wrapper to the lib call 
@@ -66,20 +81,61 @@ BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
                 { \
                     BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_WRAPPER ## I),gemm_)(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc); \
                 } \
+    \
     inline void axpy(const int *n, const  BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *alpha, const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *x, const int *incx, \
                      BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *y, const int *incy) \
                 { \
                     BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_WRAPPER ## I),axpy_)(n, alpha, x, incx, y, incy); \
                 } \
+    \
     inline void gesvd(const char* jobu, const char* jobvt, const int* m, \
                       const int* n, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *a, const int* lda, double * s, \
                       BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I)* u, const int* ldu, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I)* vt, const int* ldvt, \
                       BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I)* work, const int* lwork, double* rwork, int* info ) \
                 { \
                     BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_WRAPPER ## I),gesvd_)(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, work, lwork, BOOST_PP_EXPR_IF(I,rwork) COMMA_(I) info); \
-                }
+                } \
+    \
+    inline void geqrf(const int* m,  const int* n, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *a, const int* lda, \
+                      BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I)* tau, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I)* work, const int* lwork, int* info ) \
+                { \
+                    BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_WRAPPER ## I),geqrf_)(m, n, a, lda, tau, work, lwork, info); \
+                } \
+    \
+    inline void gelqf(const int* m,  const int* n, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *a, const int* lda, \
+                      BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I)* tau, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I)* work, const int* lwork, int* info ) \
+                { \
+                    BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,TUPLE_WRAPPER ## I),gelqf_)(m, n, a, lda, tau, work, lwork, info); \
+                } \
+    
+
     /**/
 BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 #undef BOOST_PP_DEF
 
+    template<typename T>
+    void getq_qr(const int* m, const int* n, const int* k, T *a, const int* lda, T* tau, T* work, const int* lwork, int* info);
+
+    template<>
+    void getq_qr<double>(const int* m, const int* n, const int* k, double *a, const int* lda, double* tau, double* work, const int* lwork, int* info){
+            dorgqr_(m, n, k, a, lda, tau, work, lwork, info);
+    }
+
+    template<>
+    void getq_qr<std::complex<double> >(const int* m, const int* n, const int* k, std::complex<double> *a, const int* lda, std::complex<double>* tau, std::complex<double>* work, const int* lwork, int* info){
+            zungqr_(m, n, k, a, lda, tau, work, lwork, info);
+    }
+
+    template<typename T>
+    void getq_lq(const int* m, const int* n, const int* k, T *a, const int* lda, T* tau, T* work, const int* lwork, int* info);
+
+    template<>
+    void getq_lq<double>(const int* m, const int* n, const int* k, double *a, const int* lda, double* tau, double* work, const int* lwork, int* info){
+            dorglq_(m, n, k, a, lda, tau, work, lwork, info);
+    }
+
+    template<>
+    void getq_lq<std::complex<double> >(const int* m, const int* n, const int* k, std::complex<double> *a, const int* lda, std::complex<double>* tau, std::complex<double>* work, const int* lwork, int* info){
+            zunglq_(m, n, k, a, lda, tau, work, lwork, info);
+    }
 #endif
