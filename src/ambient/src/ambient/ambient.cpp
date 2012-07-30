@@ -21,11 +21,14 @@
 #include <algorithm>
 #include <pthread.h>
 // }}}
+#include "ambient/utils/memory.h"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/models/velvet/model.h"
 #include "ambient/controllers/velvet/controller.h"
 
 namespace ambient {
+    utils::memory& pool = utils::memory::instance();
+    utils::instruction_memory& instruction_pool = utils::instruction_memory::instance();
     channels::mpi::multirank& rank = channels::mpi::multirank::instance();
     models::velvet::model& model = models::velvet::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();

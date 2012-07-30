@@ -1,5 +1,5 @@
-#ifndef AMBIENT_CONTROLLERS_CONTEXT
-#define AMBIENT_CONTROLLERS_CONTEXT
+#ifndef AMBIENT_CONTROLLERS_VELVET_CONTEXT
+#define AMBIENT_CONTROLLERS_VELVET_CONTEXT
 #include "ambient/models/velvet/model.h"
 #include "ambient/utils/singleton.hpp"
 

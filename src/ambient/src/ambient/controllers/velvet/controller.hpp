@@ -47,6 +47,7 @@ namespace ambient { namespace controllers { namespace velvet {
             std::swap(chains,mirror);
         }
         cilk_sync;
+        ambient::instruction_pool.reset();
     }
 
     inline void controller::execute_mod(cfunctor* op){

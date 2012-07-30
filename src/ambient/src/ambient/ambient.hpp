@@ -29,6 +29,7 @@
 #include <boost/intrusive_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 // }}}
+#include "ambient/utils/memory.h"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/models/velvet/model.h"
 #include "ambient/controllers/velvet/controller.h"
