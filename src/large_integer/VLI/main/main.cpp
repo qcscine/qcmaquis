@@ -202,7 +202,7 @@ std::cout << " --------------------------- " << std::endl;
 
 //     std::cout  << std::hex << result_pure_cpu << std::endl;
 //     std::cout << "-------------------------------------- " << std::endl;
-     std::cout << result_pure_cpu_omp << std::endl;
+//     std::cout << result_pure_cpu_omp << std::endl;
 
     Timer t4("CPU gmp_omp");
     t4.begin();

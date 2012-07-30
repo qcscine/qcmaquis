@@ -62,24 +62,23 @@ namespace vli {
     template <typename BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
     void gpu_inner_product_vector(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
 
-	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial 
-            resize_helper<BaseInt, OrderSpecification, Var0, Var1, Var2, Var3>::resize(gm, Size, VectorSize);
+	    gpu_memblock<BaseInt>* pgm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial 
+            resize_helper<BaseInt, Size, OrderSpecification, Var0, Var1, Var2, Var3>::resize(pgm, VectorSize);
             
   	    tasklist_keep_order<Size,OrderSpecification, Var0, Var1, Var2, Var3>* ghc = tasklist_keep_order<Size, OrderSpecification, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
 
-  	    cudaMemcpyAsync((void*)gm->V1Data_,(void*)A,VectorSize*stride<Var0,OrderSpecification::value>::value*stride<Var1,OrderSpecification::value>::value*stride<Var2,OrderSpecification::value>::value*stride<Var3,OrderSpecification::value>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
-	    cudaMemcpyAsync((void*)gm->V2Data_,(void*)B,VectorSize*stride<Var0,OrderSpecification::value>::value*stride<Var1,OrderSpecification::value>::value*stride<Var2,OrderSpecification::value>::value*stride<Var3,OrderSpecification::value>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
-
+            memory_transfer_helper<BaseInt, Size, OrderSpecification, Var0, Var1, Var2, Var3>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
+             
 	    {
                 dim3 grid(VectorSize) ;
                 dim3 threads(MulBlockSize<OrderSpecification, Var0, Var1, Var2, Var3>::value);
-                polynomial_mul_full_kepler<BaseInt, Size,OrderSpecification, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->V1Data_, gm->V2Data_,VectorSize, gm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
+                polynomial_mul_full_kepler<BaseInt, Size,OrderSpecification, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->V1Data_, pgm->V2Data_,VectorSize, pgm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
-                dim3 grid(extend_stride<Var0,OrderSpecification::value>::value*extend_stride<Var1,OrderSpecification::value>::value*extend_stride<Var2,OrderSpecification::value>::value*extend_stride<Var3,OrderSpecification::value>::value);
+                dim3 grid(MaxNumberCoefficientExtend<OrderSpecification, Var0, Var1, Var2, Var3>::value);
                 dim3 threads(SumBlockSize::value);
-                polynomial_sum_intermediate_full<BaseInt, Size,OrderSpecification::value, Var0, Var1, Var2, Var3><<<grid,threads>>>(gm->VinterData_, VectorSize, gm->PoutData_);
+                polynomial_sum_intermediate_full<BaseInt, Size,OrderSpecification::value, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->VinterData_, VectorSize, pgm->PoutData_); //the reduction is independent of the order specification
 	    }
     } 
 

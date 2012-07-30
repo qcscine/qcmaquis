@@ -154,6 +154,21 @@ namespace vli {
         enum {value = (vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value+32U-1U)/32U};
     };
 
+
+    template<class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    struct MaxNumberCoefficientExtend;
+
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    struct MaxNumberCoefficientExtend<max_order_each<Order>, Var0, Var1, Var2, Var3>{
+        enum {value = extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value};
+    };
+
+    // TO DO CHECK !!!!!!!!!!!!
+    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    struct MaxNumberCoefficientExtend<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
+          // TO DO
+    };
+
     template<std::size_t Size>
     struct size_pad{
         enum {value = (((Size>>1)<<1)+1)};
