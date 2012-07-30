@@ -100,7 +100,7 @@ namespace maquis { namespace dmrg { namespace detail {
 
     template <typename T>
     inline void left_right_boundary_init(ambient::numeric::matrix<T>& a){
-        a.fill_value(1.0);
+        fill_value(a, T(1.0));
     }
         
 } } }
