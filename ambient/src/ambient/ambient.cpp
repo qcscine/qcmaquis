@@ -1,5 +1,3 @@
-#define AMBIENT_THREADS 1
-#define AMBIENT_THREADS_LIMIT 12
 // {{{ system includes
 #include <mpi.h>
 #include <complex>
@@ -28,7 +26,8 @@
 
 namespace ambient {
     utils::memory& pool = utils::memory::instance();
-    utils::instruction_memory& instruction_pool = utils::instruction_memory::instance();
+    utils::chain_memory& chain_pool = utils::chain_memory::instance();
+    utils::cfunctor_memory& cfunctor_pool = utils::cfunctor_memory::instance();
     channels::mpi::multirank& rank = channels::mpi::multirank::instance();
     models::velvet::model& model = models::velvet::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();

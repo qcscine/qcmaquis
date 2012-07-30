@@ -7,6 +7,11 @@ namespace ambient { namespace controllers { namespace velvet {
 
     class chain {
     public:
+        void* operator new (size_t size){
+            return ambient::chain_pool.get();
+        }
+        void operator delete (void* ptr){
+        }
         chain(cfunctor* f){
             this->push_back(f);
         }
