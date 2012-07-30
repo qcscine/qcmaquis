@@ -878,7 +878,131 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
     };
+
+    template<typename T>
+    struct qr_atomic : public kernel_atomic< qr_atomic<T> > 
+    {
+        typedef void (qr_atomic::*F)(const matrix_impl<T>&, weak_matrix_impl<T>&, weak_matrix_impl<T>&);
+
+        inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& q, weak_matrix_impl<T>& r)
+        {
+            this->ctxt_select("1 from ambient as qr_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(q));
+            this->assign(ui_l_current(r));
+        }
+
+        inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& q, weak_matrix_impl<T>& r)
+        { // gs
+            __A_TIME_C("ambient_qr_atomic_c_kernel"); 
+            int m = ui_c_get_dim(a).y; //numrow a
+            int n = ui_c_get_dim(a).x; //numcol a, numcol r
+            int k = std::min(m,n); //numrow r
+            int info;
+            int lwork = -1; 
+            T wkopt;
+            T* tau = (T*)malloc(k*sizeof(T));
+            T* ad  = ui_c_current(a);
+            T* qd  = ui_r_updated(q);
+            T* rd = ui_r_updated(r);
+            T* work;
+            T* more_work;
+            T  kwork;
+
+            geqrf(&m, &n, ad, &m, tau, &kwork, &lwork, &info);
+            lwork = OptimalSize(kwork);
+            work = (T*)malloc( lwork*sizeof(T) );
+            geqrf(&m, &n, ad, &m, tau, work, &lwork, &info);
+            assert( info == 0 );
+
+            memset((void*)rd,0,k*n*sizeof(T)); // l 221 alps/numeric/matrix/algorithms.hpp
+
+            for (std::size_t c = 0; c < n; ++c)
+                for (std::size_t r = 0; r <= c && r < k; ++r)
+                    rd[r+k*c] = ad[r+m*c]; 
+
+            lwork = -1;
+
+            getq_qr(&m, &k, &k, ad, &m, tau, &kwork, &lwork, &info);
+
+            lwork = OptimalSize(kwork);
+            more_work = (T*)malloc( lwork*sizeof(T) );
+            getq_qr(&m, &k, &k, ad, &m, tau, more_work, &lwork, &info);
+            assert( info == 0 ); 
+             
+            memcpy((void*)qd,(void*)ad, k*ui_c_get_dim(a).y*sizeof(T)); // l 235 
+
+            free(work);
+            free(more_work);
+            free(tau);
+
+            __A_TIME_C_STOP
+        }
+    };
         
+    template<typename T>
+    struct lq_atomic : public kernel_atomic< lq_atomic<T> > 
+    {
+        typedef void (lq_atomic::*F)(const matrix_impl<T>&, weak_matrix_impl<T>&, weak_matrix_impl<T>&);
+
+        inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& l, weak_matrix_impl<T>& q)
+        {
+            this->ctxt_select("1 from ambient as lq_atomic"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(l));
+            this->assign(ui_l_current(q));
+        }
+
+        inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& l, weak_matrix_impl<T>& q)
+        { // gs
+            __A_TIME_C("ambient_lq_atomic_c_kernel"); 
+            int m = ui_c_get_dim(a).y; //numrow a, numrow l
+            int n = ui_c_get_dim(a).x; //numcol a
+            int k = std::min(m,n); //numcol l
+            int info;
+            int lwork = -1; 
+            T wkopt;
+            T* tau = (T*)malloc(k*sizeof(T));
+            T* ad  = ui_c_current(a);
+            T* ld  = ui_r_updated(l);
+            T* qd  = ui_r_updated(q);
+            T* work;
+            T* more_work;
+            T  kwork;
+
+            gelqf(&m, &n, ad, &m, tau, &kwork, &lwork, &info);
+            lwork = OptimalSize(kwork);
+            work = (T*)malloc( lwork*sizeof(T) );
+            gelqf(&m, &n, ad, &m, tau, work, &lwork, &info);
+            assert( info == 0 );
+
+            memset((void*)ld,0,k*m*sizeof(T)); // l 221 alps/numeric/matrix/algorithms.hpp
+
+            for (std::size_t c = 0; c < k; ++c)
+                for (std::size_t r = c; r < m ;++r)
+                    ld[r+m*c] = ad[r+m*c]; 
+
+            lwork = -1;
+            getq_lq(&k, &n, &k, ad, &m, tau, &kwork, &lwork, &info);
+
+            lwork = OptimalSize(kwork);
+            more_work = (T*)malloc( lwork*sizeof(T) );
+
+            getq_lq(&k, &n, &k, ad, &m, tau, more_work, &lwork, &info);
+            assert( info == 0 ); 
+
+            for (std::size_t c = 0; c < n; ++c)
+                for (std::size_t r = 0; r < k ;++r)
+                    qd[r+k*c] = ad[r+m*c]; 
+
+            free(work);
+            free(more_work);
+            free(tau);
+
+            __A_TIME_C_STOP
+        }
+    };
+
     template<typename T>
     struct heev_atomic : public kernel_atomic< heev_atomic<T> > 
     {
