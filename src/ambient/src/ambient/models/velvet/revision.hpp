@@ -1,7 +1,7 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline revision::revision(memspec* spec, bool clean)
-    : spec(spec), clean(clean), generator(NULL), affinity(-1) { 
+    : spec(spec), clean(clean), generator(NULL) { 
     }
 
     inline revision::~revision(){

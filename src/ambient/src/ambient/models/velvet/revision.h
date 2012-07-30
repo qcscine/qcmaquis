@@ -53,7 +53,6 @@ namespace ambient { namespace models { namespace velvet {
         inline void reset_generator();
         sfunctor* generator;
         revision* parent;
-        int affinity;
     };
 
 } } }

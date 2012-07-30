@@ -3,7 +3,7 @@
 #ifndef AMBIENT
 #define AMBIENT
 #endif
-#define AMBIENT_THREADS 6
+#define AMBIENT_THREADS 1
 #define AMBIENT_THREADS_LIMIT 12
 // {{{ system includes
 #include <mpi.h>
@@ -50,11 +50,6 @@ namespace ambient{
     using controllers::velvet::r_revision;
     using controllers::velvet::cfunctor;
 
-    template <typename T> inline revision&   ui_l_current(T& obj){ return obj.ui_l_revision_0(); } // (logistics)
-    template <typename T> inline c_revision& ui_c_current(T& obj){ return obj.ui_c_revision_0(); } // (computation)
-    template <typename T> inline w_revision& ui_w_updated(T& obj){ return obj.ui_w_revision_1(); } // (reusable weak)
-    template <typename T> inline p_revision& ui_p_updated(T& obj){ return obj.ui_p_revision_1(); } // (purged malloc)
-    template <typename T> inline r_revision& ui_r_updated(T& obj){ return obj.ui_r_revision_1(); } // (reusable)
 
     template<typename T> inline dim2   ui_c_get_dim        (T& ref){ return ref.spec.dim;   }
     template<typename T> inline size_t ui_c_get_mem_size   (T& ref){ return ref.spec.size;  }

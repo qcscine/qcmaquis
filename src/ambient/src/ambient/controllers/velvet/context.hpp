@@ -1,15 +1,12 @@
 #include "ambient/channels/mpi/groups/group.h"
 #include "ambient/utils/timings.hpp"
 
-extern pthread_key_t pthread_tid;
-
-namespace ambient { namespace controllers {
+namespace ambient { namespace controllers { namespace velvet {
 
 
     inline context::context() : grp(NULL) { }
 
     inline context::~context(){
-        free(pthread_getspecific(pthread_tid));
     }
 
     inline void context::set_group(group* grp){
@@ -17,21 +14,7 @@ namespace ambient { namespace controllers {
         this->grp = grp;
     }
 
-    inline void context::set_tid(size_t value){
-        void* tid = pthread_getspecific(pthread_tid);
-        if(tid == NULL){
-            tid = malloc(sizeof(size_t));
-            pthread_setspecific(pthread_tid, tid);
-        }
-        *(size_t*)tid = value;
-    }
-
-    template<typename T>
-    inline size_t context::get_revision_base(const T* o){
-        return o->get_thread_revision_base();
-    }
-
-} }
+} } }
 
 namespace ambient { 
 

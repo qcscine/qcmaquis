@@ -45,7 +45,6 @@ namespace ambient {
         template<size_t arg>
         static inline T& revised(sfunctor* m){
             T& obj = *(*(ptr_type*)m->arguments[arg]);
-            obj.set_thread_revision_base(m->revisions[arg]);
             return obj;
         }
         template<size_t arg>
@@ -93,7 +92,6 @@ namespace ambient {
         template<size_t arg>
         static inline T& revised(sfunctor* m){
             T& obj = *(T*)((*(ptr_type*)m->arguments[arg]).get());
-            obj.set_thread_revision_base(m->revisions[arg]);
             return obj;
         }
         template<size_t arg> static inline void weight(cfunctor* m){ }

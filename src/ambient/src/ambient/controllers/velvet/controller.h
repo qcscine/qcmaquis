@@ -16,8 +16,6 @@ namespace ambient { namespace controllers { namespace velvet {
     {
     public:
         controller();
-        static void* stream(void* list);
-        inline void   master_stream(void* list); // specialized version for the main thread
         inline void   acquire(channels::mpi::channel* channel);
         inline void   push(cfunctor* op);
         inline void   execute_mod(cfunctor* op);
@@ -29,25 +27,19 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void unlock_revision(revision* arg);
         inline void unlink_revision(revision* arg);
 
+        inline void execute(chain* op);
         inline void flush();
         inline void conditional_flush();
-        inline void allocate_threads();
-        inline void set_num_threads(size_t n);
-        inline size_t get_num_threads() const;
         inline void atomic_receive(revision& r);
         inline ~controller();
     public:
         bool muted;
-        pthread_mutex_t mutex;
     private:
         touchstack< cfunctor* > stack;
+        touchstack< chain* > chains;
+        touchstack< chain* > mirror;
         chain* last;
-        pthread_t pool[AMBIENT_THREADS_LIMIT];
-        tasklist_async tasks[AMBIENT_THREADS_LIMIT];
         size_t workload;
-        size_t num_threads;
-        size_t rrn;
-        size_t rrn_p;
     };
     
 } } }

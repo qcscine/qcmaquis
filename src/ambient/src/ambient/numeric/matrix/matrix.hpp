@@ -1,131 +1,287 @@
 #ifndef __AMBIENT_NUMERIC_MATRIX_HPP__
 #define __AMBIENT_NUMERIC_MATRIX_HPP__
+
 #include "ambient/numeric/matrix/matrix.h"
 #include "ambient/numeric/matrix/algorithms.hpp"
 
 namespace ambient { namespace numeric {
 
-    #define size_type   typename matrix_impl<T>::size_type
-    #define value_type  typename matrix_impl<T>::value_type
-    #define scalar_type typename matrix_impl<T>::scalar_type
+    // {{{ transpose_view
 
-    template <typename T>
-    inline matrix_impl<T>::matrix_impl()
-    : ambient::iteratable<history>(ambient::dim2(0,0)), references(0)
-    { // be cautious (implicit)
+    template<class Matrix>
+    inline void* transpose_view<Matrix>::operator new (size_t size){
+        return malloc(size); //ambient::pool.get(size);
+    }
+
+    template<class Matrix>
+    inline void transpose_view<Matrix>::operator delete (void* ptr){
+        free(ptr); //ambient::pool.reset(ptr);
+    }
+
+    template <class Matrix>
+    transpose_view<Matrix>::transpose_view(const Matrix& m)
+    : impl(m.impl) 
+    { 
+    }
+
+    template <class Matrix>
+    transpose_view<Matrix>::operator Matrix () const { 
+        return transpose(Matrix(this->impl)); 
+    }
+
+    template<class Matrix>
+    template<class M> 
+    size_t transpose_view<Matrix>::rows(const M& m){ 
+        return m.num_cols(); 
+    } 
+
+    template<class Matrix>
+    template<class M> 
+    size_t transpose_view<Matrix>::cols(const M& m){ 
+        return m.num_rows(); 
+    } 
+
+    template<class Matrix>
+    const char* transpose_view<Matrix>::code(){
+        return "T"; 
+    }  
+
+    // }}}
+
+    // {{{ matrix
+    #define size_type   typename matrix<T>::size_type
+    #define value_type  typename matrix<T>::value_type
+    #define scalar_type typename matrix<T>::scalar_type
+
+    template<typename T>
+    inline void* matrix<T>::operator new (size_t size){
+        return malloc(size); //ambient::pool.get(size);
+    }
+
+    template<typename T>
+    inline void matrix<T>::operator delete (void* ptr){
+        free(ptr); //ambient::pool.reset(ptr);
     }
 
     template <typename T>
-    inline matrix_impl<T>::matrix_impl(size_type rows, size_type cols)
-    : ambient::iteratable<history>(ambient::dim2(cols, rows)), references(0)
+    inline matrix<T> matrix<T>::identity_matrix(size_type size){
+        matrix i(size, size);
+        fill_identity(i);
+        return i;
+    }
+
+    template <typename T>
+    inline matrix<T>::matrix(const ptr& p) 
+    : impl(p) 
     {
     }
 
     template <typename T>
-    inline matrix_impl<T>::matrix_impl(const matrix_impl& m)
+    inline matrix<T>::matrix(){ 
+        this->impl = new I(); 
+    }
+
+    template <typename T>
+    inline matrix<T>::matrix(size_type rows, size_type cols, value_type init_value){
+        this->impl = new I(rows, cols); 
+        fill_value(*this, init_value);
+    }
+
+    template <typename T>
+    inline matrix<T>::matrix(const matrix& m){
+        this->impl = new I(*m.impl);
+        copy(*this, m);
+    }
+    
+    template <typename T>
+    matrix<T>& matrix<T>::operator = (const matrix& rhs){
+        assert(!rhs.impl->weak());
+        matrix c(rhs);
+        this->swap(c);
+        return *this;
+    }
+
+#ifdef RVALUE
+    template <typename T>
+    inline matrix<T>::matrix(matrix&& m){
+        this->impl = m.impl;
+    }
+
+    template <typename T>
+    matrix<T>& matrix<T>::operator = (matrix&& rhs){
+        this->swap(rhs);
+        return *this;
+    }
+#endif
+
+    template<typename T>
+    template<class M> 
+    size_t matrix<T>::rows(const M& m){ 
+        return m.num_rows(); 
+    } 
+
+    template<typename T>
+    template<class M> 
+    size_t matrix<T>::cols(const M& m){ 
+        return m.num_cols(); 
+    }
+
+    template<typename T>
+    inline size_type matrix<T>::num_rows() const { 
+        return this->impl->num_rows(); 
+    }
+
+    template<typename T>
+    inline size_type matrix<T>::num_cols() const {
+        return this->impl->num_cols(); 
+    }
+
+    template<typename T>
+    inline scalar_type matrix<T>::trace() const { 
+        return trace(*this);           
+    }
+
+    template<typename T>
+    inline void matrix<T>::transpose(){ 
+        transpose_inplace(*this);      
+    }
+
+    template<typename T>
+    inline void matrix<T>::conj(){ 
+        conj_inplace(*this);           
+    }
+
+    template<typename T>
+    inline bool matrix<T>::empty() const { 
+        return this->impl->empty();    
+    }
+
+    template<typename T>
+    inline void matrix<T>::swap(matrix& r){ 
+        this->impl.swap(r.impl);       
+    }
+
+    template<typename T>
+    inline void matrix<T>::resize(size_type rows, size_type cols){
+        ambient::numeric::resize(*this, rows, cols);
+    }
+
+    template<typename T>
+    inline void matrix<T>::remove_rows(size_type i, size_type k){
+        remove_rows(*this, i, k);
+    }
+
+    template<typename T>
+    inline void matrix<T>::remove_cols(size_type j, size_type k){
+        remove_cols(*this, j, k); 
+    }
+
+    template<typename T>
+    inline matrix<T>& matrix<T>::operator += (const matrix& rhs){
+        add_inplace(*this, rhs);
+        return *this;
+    }
+
+    template<typename T>
+    inline matrix<T>& matrix<T>::operator -= (const matrix& rhs){
+        sub_inplace(*this, rhs);
+        return *this;
+    }
+
+    template<typename T>
+    template <typename T2> 
+    inline matrix<T>& matrix<T>::operator *= (const T2& t){
+        mul_inplace(*this, t);
+        return *this;
+    }
+
+    template<typename T>
+    template <typename T2> 
+    inline matrix<T>& matrix<T>::operator /= (const T2& t){
+        div_inplace(*this, t);
+        return *this;
+    }
+
+    template<typename T>
+    inline value_type& matrix<T>::operator() (size_type i, size_type j){
+        return this->impl->get(i,j);
+    }
+
+    template<typename T>
+    inline const value_type& matrix<T>::operator() (size_type i, size_type j) const {
+        return this->impl->get(i,j);
+    }
+
+    template<typename T>
+    const char* matrix<T>::code(){ 
+        return "N"; 
+    }  
+    #undef size_type
+    #undef value_type
+    #undef scalar_type
+    // }}}
+
+    // {{{ matrix_impl
+    #define size_type  typename matrix_impl<T>::size_type
+    #define value_type typename matrix_impl<T>::value_type
+
+    template<typename T>
+    void* matrix_impl<T>::operator new (size_t size){
+        return malloc(size); //ambient::pool.get(size);
+    }
+
+    template<typename T>
+    void matrix_impl<T>::operator delete (void* ptr){
+        free(ptr); //ambient::pool.reset(ptr);
+    }
+
+    template<typename T>
+    inline matrix_impl<T>::matrix_impl() 
+    : ambient::iteratable<history>(ambient::dim2(0,0)), references(0) 
+    { // be cautious (implicit) 
+    }
+
+    template<typename T>
+    inline matrix_impl<T>::matrix_impl(size_type rows, size_type cols) 
+    : ambient::iteratable<history>(ambient::dim2(cols, rows)), references(0) 
+    { 
+    }
+
+    template<typename T>
+    inline matrix_impl<T>::matrix_impl(matrix_impl const& m) 
     : ambient::iteratable<history>(m.spec.dim), references(0)
-    {
+    { 
     }
 
-    template <typename T>
-    inline bool matrix_impl<T>::empty() const {
-        return (this->spec.dim.x == 0 || this->spec.dim.y == 0); 
+    template<typename T>
+    inline bool matrix_impl<T>::empty() const { 
+        return (this->spec.dim == 0);   
     }
 
-    template <typename T>
-    inline size_type matrix_impl<T>::num_rows() const {
-        return this->spec.dim.y;   
+    template<typename T>
+    inline size_type matrix_impl<T>::num_rows() const { 
+        return this->spec.dim.y; 
     }
 
-    template <typename T>
-    inline size_type matrix_impl<T>::num_cols() const {
-        return this->spec.dim.x;   
+    template<typename T>
+    inline size_type matrix_impl<T>::num_cols() const { 
+        return this->spec.dim.x; 
     }
 
-    template <typename T>
-    inline void matrix_impl<T>::resize(matrix_impl& r, size_type rows, size_type cols){
-        algorithms::resize(r, rows, cols, *this, this->spec.dim.y, this->spec.dim.x);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::remove_rows(size_type i, size_type k){
-        assert( i+k <= this->spec.dim.y );
-        algorithms::remove_rows(*this, i, k);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::remove_cols(size_type j, size_type k){
-        assert( j+k <= this->spec.dim.x );
-        algorithms::remove_cols(*this, j, k);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::fill_identity(){ 
-        algorithms::fill_identity(*this);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::fill_random(){ 
-        algorithms::fill_random(*this);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::fill_value(value_type v){ 
-        algorithms::fill_value(*this, v);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::conj(){ 
-        algorithms::conj_inplace(*this);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::transpose(){ 
-        algorithms::transpose_inplace(*this);
-    }
-
-    template <typename T>
+    template<typename T>
     inline value_type& matrix_impl<T>::get(size_type i, size_type j){
-        ambient::playout();
-        return ((value_type*)ambient::controller.ufetch(*this->current))[ j*this->spec.dim.y + i ];
+        ambient::playout(); return ((value_type*)ambient::controller.ufetch(*this->current))[ j*this->spec.dim.y + i ];
     }
 
-    template <typename T>
-    inline scalar_type matrix_impl<T>::trace() const {
-        return algorithms::trace(*this);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::add(const matrix_impl& rhs){
-        algorithms::add_inplace(*this, rhs);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::sub(const matrix_impl& rhs){
-        algorithms::sub_inplace(*this, rhs);
-    }
-
-    template <typename T>
-    template <typename T2>
-    inline void matrix_impl<T>::mul(const T2& t){
-        algorithms::mul_inplace(*this, t);
-    }
-
-    template <typename T>
-    template <typename T2>
-    inline void matrix_impl<T>::div(const T2& t){
-        algorithms::div_inplace(*this, t);
-    }
-
-    template <typename T>
-    inline void matrix_impl<T>::copy(const matrix_impl<T>& m){
-        algorithms::copy(*this, m);
+    template<typename T>
+    matrix_impl<T>::operator weak_matrix_impl<T>& (){ 
+        return *(weak_matrix_impl<T>*)this; 
     }
 
     #undef size_type
     #undef value_type
-    #undef scalar_type
+    // }}}
 
-} } // namespace ambient::numeric
+} }
 
 #endif
