@@ -12,7 +12,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline cfunctor();
         inline size_t get_weight(){ return credit; }
         inline void set_weight(size_t c){ credit = c; }
-        int affinity;
+        void* ctxt;
     };
 
 } } }

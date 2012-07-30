@@ -29,101 +29,9 @@
 // gemm (matrix-matrix)
 // gemm (matrix-diagonal)
 // svd
-// qr
-// lq
 // heev
 
 namespace ambient { namespace numeric {
-
-    // {{{ matrix operators (free functions)
-    template <typename T>
-    std::ostream& operator << (std::ostream& o, matrix<T> const& m){
-        for(size_type i=0; i< m.num_rows(); ++i){
-            for(size_type j=0; j < m.num_cols(); ++j)
-                ambient::cout << m(i,j) << " ";
-            ambient::cout << std::endl;
-        }
-        return o;
-    }
-
-    template<typename T>
-    bool operator == (const matrix<T>& a, const matrix<T>& b){
-        ambient::future<bool> ret(1);
-        ATOMIC(validation, a, b, ret); 
-        return (bool)ret;
-    }
-
-    template <typename T> inline matrix<T> operator + (matrix<T> lhs, const matrix<T>& rhs){ return (lhs += rhs); }
-    template <typename T> inline matrix<T> operator - (matrix<T> lhs, const matrix<T>& rhs){ return (lhs -= rhs); }
-    template <typename T> inline const matrix<T> operator * (matrix<T> lhs, const matrix<T>& rhs){ return (lhs *= rhs); }
-    template<typename T, typename T2> inline const matrix<T> operator * (matrix<T> lhs, const T2& rhs){ return (lhs *= rhs); }
-    template<typename T, typename T2> inline const matrix<T> operator * (const T2& lhs, matrix<T> rhs){ return (rhs *= lhs); }
-    template<typename T> inline size_type num_rows(const matrix<T>& m){ return m.num_rows(); }
-    template<typename T> inline size_type num_cols(const matrix<T>& m){ return m.num_cols(); }
-    template<typename T> inline size_type num_rows(const transpose_view<matrix<T> >& m){ return transpose_view<matrix<T> >::rows(*m.impl); }
-    template<typename T> inline size_type num_cols(const transpose_view<matrix<T> >& m){ return transpose_view<matrix<T> >::cols(*m.impl); }
-    template<typename T> inline void resize(matrix<T>& m, size_t rows, size_t cols){ m.resize(rows, cols); }
-    template<typename T> inline scalar_type trace(const matrix<T>& m){ return m.trace(); }
-
-    template <typename T>
-    inline real_type norm_square(const matrix<T>& a){ 
-        real_type norm(0); 
-        ATOMIC(scalar_norm, a, norm); 
-        return norm; 
-    }
-
-    template <typename T>
-    inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ 
-        scalar_type overlap(0); 
-        ATOMIC(overlap, a, b, overlap); 
-        return overlap; 
-    }
-
-    template<typename T>
-    inline void transpose_inplace(matrix<T>& a){
-        matrix<T> t(a.num_cols(), a.num_rows());
-        ATOMIC(transpose_out, a, t);
-        a.swap(t);
-    }
-
-    template<typename T>
-    inline matrix<T> transpose(const matrix<T>& a){
-        matrix<T> t(a.num_cols(), a.num_rows());
-        ATOMIC(transpose_out, a, t);
-        return t;
-    }
-
-    template<typename T>
-    inline void conj_inplace(matrix<T>& m){
-        //m.conj();
-    }
-
-    template<typename T>
-    inline const matrix<T>& conj(const matrix<T>& m){
-        //m.conj();
-        return m;
-    }
-
-    template<typename T>
-    inline void adjoint_inplace(matrix<T>& m){
-        transpose_inplace(m);
-        //m.conj();
-    }
-
-    template<typename T>
-    inline const matrix<T>& adjoint(const matrix<T>& m){
-        return transpose(m);
-        //m.conj();
-    }
-
-    template<typename T>
-    inline matrix<T> exp(const matrix<T>& m, const T& alfa = 1.){
-        printf("ERROR: NOT TESTED (EXP)\n");
-        diagonal_matrix<double> evals(m.num_rows());
-        matrix<T> evecs = matrix<T>();
-        heev(m, evecs, evals);
-        return (evecs * exp(evals, alfa))*conj(transpose(evecs));
-    }
 
     template<class MatrixViewA, class MatrixViewB, typename T>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T>& c){
@@ -163,231 +71,238 @@ namespace ambient { namespace numeric {
         heev(a, evecs, evals);
     }
 
-    template<typename T>
-    inline void qr(const matrix<T> a, matrix<T>& q, matrix<T>& r){
-        int m = num_rows(a);           
-        int n = num_cols(a);           
-        int k = std::min(m,n);
-        resize(q, m, k); 
-        resize(r, k, n);
-        ATOMIC(qr, a, q, r); 
+    template<typename T> 
+    inline void qr(matrix<T> a, matrix<T>& q, matrix<T>& r){ 
+        int m = num_rows(a);            
+        int n = num_cols(a);            
+        int k = std::min(m,n); 
+        resize(q, m, k);  
+        resize(r, k, n); 
+        ATOMIC(qr, a, q, r);  
     }
 
-    template<typename T>
-    inline void lq(const matrix<T>& a, matrix<T>& l, matrix<T>& q){
-        int m = num_rows(a);           
-        int n = num_cols(a);           
-        int k = std::min(m,n);
-        resize(l, m, k);
-        resize(q, k, n); 
-        ATOMIC(lq, a, l, q); 
-    }
-
-    template<typename T, class G>
-    inline void generate(matrix<T>& m, G g){ m.fill_random(); } // warning: G isn't used
-    // }}}
-
-// {{{ implementation-specific type-nested algorithms //
-
-namespace algorithms {
+    template<typename T> 
+    inline void lq(matrix<T> a, matrix<T>& l, matrix<T>& q){ 
+        int m = num_rows(a);            
+        int n = num_cols(a);            
+        int k = std::min(m,n); 
+        resize(l, m, k); 
+        resize(q, k, n);  
+        ATOMIC(lq, a, l, q);  
+    } 
 
     template<typename T>
-    inline void fill_identity(matrix_impl<T>& m){
-        ATOMIC(init_identity, m);
+    inline matrix<T> exp(const matrix<T>& m, const T& alfa = 1.){
+        printf("ERROR: NOT TESTED (EXP)\n");
+        diagonal_matrix<double> evals(m.num_rows());
+        matrix<T> evecs = matrix<T>();
+        heev(m, evecs, evals);
+        return (evecs * exp(evals, alfa))*conj(transpose(evecs));
     }
 
-    template<typename T>
-    inline void fill_random(matrix_impl<T>& m){
-        ATOMIC(init_random, m);
+    template<typename T> inline void resize(matrix<T>& m, size_t rows, size_t cols){ 
+        assert(m.num_rows() != 0 && m.num_cols() != 0);
+        if(m.num_rows() == rows && m.num_cols() == cols) return;
+        matrix<T> resized(rows, cols);
+        if(!m.impl->weak())
+            ATOMIC(resize, resized, m, std::min(rows, m.num_rows()), std::min(cols, m.num_cols()));
+        m.swap(resized);
     }
 
-    template<typename T>
-    inline void fill_value(matrix_impl<T>& m, T value){
-        if(value == 0.) return; // matrices are 0s by default
-        ATOMIC(init_value, m, value);
-    }
-
-    template<typename T>
-    inline void remove_rows(matrix_impl<T>& m, size_type i, difference_type k){
-        assert(false); printf("ERROR: NOT TESTED (REMOVE ROWS)\n");
-        //ambient::push< kernels::remove_rows<T> >(m, i, k);
-    }
-
-    template<typename T>
-    inline void remove_cols(matrix_impl<T>& m, size_type j, difference_type k){
-        assert(false); printf("ERROR: NOT TESTED (REMOVE COLS)\n");
-        //ambient::push< kernels::remove_cols<T> >(m, j, k);
-    }
-
-    template<typename T>
-    inline void resize(matrix_impl<T>& r, size_type rows, size_type cols, matrix_impl<T>& m, size_type orows, size_type ocols){
-        ATOMIC(resize, r, m, std::min(rows, orows), std::min(cols, ocols));
-    }
-
-    template<typename T>
-    inline void conj_inplace(matrix_impl<T>& m){
-        // gs (doubles)
-        // does nothing for now
-    }
-
-    template<typename T>
-    inline void transpose_inplace(matrix_impl<T>& m){
-        assert(false); printf("ERROR: NOT TESTED (INPLACE TRANSPOSE)\n");
-        assert(m.num_rows() == m.num_cols()); // current limitation
-        //ambient::push< kernels::transpose<T> >(m);
-    }
-
-    template <typename T>
-    inline scalar_type trace(const matrix_impl<T>& m){
+    template<typename T> inline scalar_type trace(const matrix<T>& m){ 
         scalar_type trace(0);
         ATOMIC(trace, m, trace);
         return trace;
     }
 
     template <typename T>
-    inline void add_inplace(matrix_impl<T>& m, const matrix_impl<T>& rhs){ 
-        ATOMIC(add, m, rhs); 
+    inline real_type norm_square(const matrix<T>& a){ 
+        real_type norm(0); 
+        ATOMIC(scalar_norm, a, norm); 
+        return norm; 
     }
 
     template <typename T>
-    inline void sub_inplace(matrix_impl<T>& m, const matrix_impl<T>& rhs){ 
-        ATOMIC(sub, m, rhs); 
+    inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ 
+        scalar_type overlap(0); 
+        ATOMIC(overlap, a, b, overlap); 
+        return overlap; 
+    }
+        
+    template<typename T>
+    inline void swap(matrix<T>& x, matrix<T>& y){ 
+        x.swap(y);                     
+    }
+
+    template<typename T>
+    inline const matrix<T>& conj(const matrix<T>& m){
+        //m.conj();
+        return m;
+    }
+
+    template<typename T>
+    inline void conj_inplace(matrix<T>& m){
+        // gs (doubles)
+        // does nothing for now
+    }
+
+    template<typename T>
+    inline void transpose_inplace(matrix<T>& a){
+        matrix<T> t(a.num_cols(), a.num_rows());
+        ATOMIC(transpose_out, a, t);
+        a.swap(t);
+    }
+
+    template<typename T>
+    inline matrix<T> transpose(const matrix<T>& a){
+        matrix<T> t(a.num_cols(), a.num_rows());
+        ATOMIC(transpose_out, a, t);
+        return t;
+    }
+
+    template<typename T>
+    inline void adjoint_inplace(matrix<T>& m){
+        transpose_inplace(m);
+    }
+
+    template<typename T>
+    inline const matrix<T>& adjoint(const matrix<T>& m){
+        return transpose(m);
+    }
+
+    template<typename T, class G>
+    inline void generate(matrix<T>& m, G g){ 
+        fill_random(m);  // G isn't used
+    }
+
+    template<typename T>
+    inline void fill_identity(matrix<T>& m){
+        ATOMIC(init_identity, m);
+    }
+
+    template<typename T>
+    inline void fill_random(matrix<T>& m){
+        ATOMIC(init_random, m);
+    }
+
+    template<typename T>
+    inline void fill_value(matrix<T>& m, T value){
+        if(value == 0.) return; // matrices are 0 by default
+        ATOMIC(init_value, m, value);
+    }
+
+    template<typename T>
+    inline void remove_rows(matrix<T>& m, size_type i, difference_type k){
+        assert( i+k <= m->num_rows() );
+        assert(false); printf("ERROR: NOT TESTED (REMOVE ROWS)\n");
+        //ambient::push< kernels::remove_rows<T> >(m, i, k);
+        resize(m, m.num_rows()-k, m.num_cols());
+    }
+
+    template<typename T>
+    inline void remove_cols(matrix<T>& m, size_type j, difference_type k){
+        assert( j+k <= m->num_cols() );
+        assert(false); printf("ERROR: NOT TESTED (REMOVE COLS)\n");
+        //ambient::push< kernels::remove_cols<T> >(m, j, k);
+        resize(m, m.num_rows(), m.num_cols()-k);
     }
 
     template <typename T>
-    inline void mul_inplace(matrix_impl<T>& m, const matrix<T>& rhs){
+    inline void add_inplace(matrix<T>& lhs, const matrix<T>& rhs){ 
+        ATOMIC(add, lhs, rhs); 
+    }
+
+    template <typename T>
+    inline void sub_inplace(matrix<T>& lhs, const matrix<T>& rhs){ 
+        ATOMIC(sub, lhs, rhs); 
+    }
+
+    template <typename T>
+    inline void mul_inplace(matrix<T>& m, const matrix<T>& rhs){
         assert(false); printf("ERROR: NOT TESTED (GEMM INPLACE)\n");
         //ambient::push< kernels::gemm_inplace<T> >(m, rhs);
     }
 
     template <typename T>
-    inline void mul_inplace(matrix_impl<T>& m, const diagonal_matrix<T>& rhs){
+    inline void mul_inplace(matrix<T>& m, const diagonal_matrix<T>& rhs){
         assert(false); printf("ERROR: NOT TESTED (GEMM DIAG INPLACE)\n");
         //ambient::push< kernels::gemm_diag_inplace<T> >(m, rhs);
     }
 
     template <typename T>
-    inline void mul_inplace(matrix_impl<T>& a, const scalar_type& rhs) { 
+    inline void mul_inplace(matrix<T>& a, const scalar_type& rhs) { 
         ATOMIC(scale, a, rhs); 
     }
 
     template <typename T>
-    inline void div_inplace(matrix_impl<T>& a, const scalar_type& rhs) { 
+    inline void div_inplace(matrix<T>& a, const scalar_type& rhs) { 
         ATOMIC(scale_inverse, a, rhs); 
     }
 
     template<typename T>
-    inline void copy(matrix_impl<T>& ac, const matrix_impl<T>& a){ 
+    inline void copy(matrix<T>& ac, const matrix<T>& a){ 
         ATOMIC(copy, ac, a); 
     }
 
-} 
-// }}} end of implementation specific type-nested algorithms //
-
-    // {{{ strassen matrix multiplication algorithm
-    // {{{ strassen multiplication supplementary functions
-    /*
     template<typename T>
-    void gemm_strassen_gad(const matrix<T>& a, size_t ai, size_t aj, 
-                           matrix<T>& r, size_t n)
-    {
-        ambient::push(ambient::gemm_strassen_gad_l<T>,  // output reduced matrix
-                      ambient::gemm_strassen_gad_c<T>,  // a11 + a12,  a12 - a22
-                      a, ai, aj, r, n);                 // a21 - a11,  a22 + a21
+    bool operator == (const matrix<T>& a, const matrix<T>& b){
+        ambient::future<bool> ret(1);
+        ATOMIC(validation, a, b, ret); 
+        return (bool)ret;
     }
 
-    template<typename T>
-    void gemm_strassen_dad(const matrix<T>& a, size_t ai, size_t aj,
-                           const matrix<T>& b, size_t bi, size_t bj, 
-                           matrix<T>& r, size_t n)
-    {
-        ambient::push(ambient::gemm_strassen_dad_l<T>,  // output reduced matrix
-                      ambient::gemm_strassen_dad_c<T>,  // a11 + a22,  b11 + b22
-                      a, ai, aj, b, bi, bj, r, n);
-
-    }
-
-    template<typename T>
-    void gemm_strassen_pluseqs(const matrix<T>& a, size_t ai, size_t aj,
-                               const matrix<T>& b, size_t bi, size_t bj, 
-                                     matrix<T>& c, size_t ci, size_t cj, 
-                                     size_t n)
-    {
-        ambient::push(ambient::add_sum_submx_l<T>, 
-                      ambient::add_sum_submx_c<T>, 
-                      a, ai, aj, b, bi, bj, c, ci, cj, n);
-    }
-
-    template<typename T>
-    void gemm_strassen_pluseqd(const matrix<T>& a, size_t ai, size_t aj,
-                               const matrix<T>& b, size_t bi, size_t bj, 
-                                     matrix<T>& c, size_t ci, size_t cj, 
-                                     size_t n)
-    {
-        ambient::push(ambient::add_dif_submx_l<T>, 
-                      ambient::add_dif_submx_c<T>, 
-                      a, ai, aj, b, bi, bj, c, ci, cj, n);
-    }
-    // }}}
-
-    template<typename T>
-    void gemm_strassen(const matrix<T>& a, size_t ai, size_t aj,
-                       const matrix<T>& b, size_t bi, size_t bj,
-                             matrix<T>& c, size_t ci, size_t cj, 
-                             size_t n)
-    {
-
-        if(n > 128){ 
-            // strassen algorithm recursion
-            matrix<T> m1(n/2, n/2);
-            matrix<T> m2(n/2, n/2);
-            matrix<T> m3(n/2, n/2);
-            matrix<T> m4(n/2, n/2);
-            matrix<T> m5(n/2, n/2);
-            matrix<T> m6(n/2, n/2);
-            matrix<T> m7(n/2, n/2);
-
-            matrix<T> ar(n,n);
-            matrix<T> br(n,n);
-            matrix<T> dr(n/2,n);
-
-            gemm_strassen_gad(a, ai, aj, ar, n);
-            gemm_strassen_gad(b, bi, bj, br, n);
-            gemm_strassen_dad(a, ai, aj, b, bi, bj, dr, n);
-
-            gemm_strassen( dr , 0      , 0      , dr , 0      , n/2    , m1, 0, 0, n/2 );
-            gemm_strassen( ar , n/2    , n/2    , b  , bi     , bj     , m2, 0, 0, n/2 );
-            gemm_strassen( a  , ai     , aj     , br , 0      , n/2    , m3, 0, 0, n/2 );
-            gemm_strassen( a  , ai+n/2 , aj+n/2 , br , n/2    , 0      , m4, 0, 0, n/2 );
-            gemm_strassen( ar , 0      , 0      , b  , bi+n/2 , bj+n/2 , m5, 0, 0, n/2 );
-            gemm_strassen( ar , n/2    , 0      , br , 0      , 0      , m6, 0, 0, n/2 );
-            gemm_strassen( ar , 0      , n/2    , br , n/2    , n/2    , m7, 0, 0, n/2 );
-
-            gemm_strassen_pluseqs( m2, 0, 0, m4, 0, 0, c , ci+n/2 , cj     , n/2 );
-            gemm_strassen_pluseqs( m3, 0, 0, m5, 0, 0, c , ci     , cj+n/2 , n/2 );
-            gemm_strassen_pluseqd( m1, 0, 0, m5, 0, 0, m4, 0      , 0      , n/2 );
-            gemm_strassen_pluseqd( m1, 0, 0, m2, 0, 0, m3, 0      , 0      , n/2 );
-            gemm_strassen_pluseqs( m4, 0, 0, m7, 0, 0, c , ci     , cj     , n/2 );
-            gemm_strassen_pluseqs( m3, 0, 0, m6, 0, 0, c , ci+n/2 , cj+n/2 , n/2 );
-        }else{
-            // standard gemm (submatrices)
-            ambient::push(ambient::gemm_submx_l<T>, ambient::gemm_submx_c<T>,
-                          a, ai, aj, b, bi, bj, c, ci, cj, n);
+    template <typename T>
+    std::ostream& operator << (std::ostream& o, matrix<T> const& m){
+        for(size_type i=0; i< m.num_rows(); ++i){
+            for(size_type j=0; j < m.num_cols(); ++j)
+                ambient::cout << m(i,j) << " ";
+            ambient::cout << std::endl;
         }
+        return o;
     }
 
-    template<typename T>
-    void gemm_strassen(const matrix<T>& a, const matrix<T>& b, matrix<T>& c){
-        size_t n  = num_cols(a);
-        assert(n == num_rows(a));
-        assert(n == num_cols(b));
-        assert(n == num_rows(b));
-        c.resize(n, n);
-        gemm_strassen(a, 0, 0, b, 0, 0, c, 0, 0, n);
-    }*/
-    // }}}
+    template <typename T> 
+    inline matrix<T> operator + (matrix<T> lhs, const matrix<T>& rhs){ 
+        return (lhs += rhs); 
+    }
 
-} } // namespace ambient::numeric
+    template <typename T> 
+    inline matrix<T> operator - (matrix<T> lhs, const matrix<T>& rhs){ 
+        return (lhs -= rhs); 
+    }
+
+    template <typename T>
+    inline const matrix<T> operator * (matrix<T> lhs, const matrix<T>& rhs){ 
+        return (lhs *= rhs); 
+    }
+
+    template<typename T, typename T2> 
+    inline const matrix<T> operator * (matrix<T> lhs, const T2& rhs){ 
+        return (lhs *= rhs); 
+    }
+
+    template<typename T, typename T2> 
+    inline const matrix<T> operator * (const T2& lhs, matrix<T> rhs){ 
+        return (rhs *= lhs); 
+    }
+
+    template<typename T> inline size_type num_rows(const matrix<T>& m){ 
+        return m.num_rows(); 
+    }
+
+    template<typename T> inline size_type num_cols(const matrix<T>& m){
+        return m.num_cols(); 
+    }
+
+    template<typename T> inline size_type num_rows(const transpose_view<matrix<T> >& m){ 
+        return transpose_view<matrix<T> >::rows(*m.impl); 
+    }
+
+    template<typename T> inline size_type num_cols(const transpose_view<matrix<T> >& m){ 
+        return transpose_view<matrix<T> >::cols(*m.impl); 
+    }
+
+} }
 
 #undef ATOMIC
 #undef size_type

@@ -8,7 +8,6 @@ namespace ambient { namespace controllers { namespace velvet {
     class chain {
     public:
         chain(cfunctor* f){
-            affinity = f->affinity;
             this->push_back(f);
         }
         void push_back(cfunctor* f){
@@ -57,7 +56,6 @@ rt:         while(it != op->dependencies.end())
             }
             return result;
         }
-        int affinity;
         std::list<cfunctor*> content;
     private:
         std::list<revision*> derivatives;

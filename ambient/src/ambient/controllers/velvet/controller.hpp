@@ -1,9 +1,7 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 
-#include <sched.h>
-
-extern pthread_key_t pthread_tid;
+#include <cilk/cilk.h>
 
 namespace ambient { namespace controllers { namespace velvet {
 
@@ -11,127 +9,44 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::channels::mpi::packet;
 
     inline controller::~controller(){
-        for(size_t i = 1; i < this->num_threads; i++){
-            this->tasks[i].active = false;
-            pthread_join(this->pool[i], NULL);
-        }
-        pthread_mutex_destroy(&this->mutex);
     }
 
     inline controller::controller()
-    : workload(0), rrn(0), num_threads(1), muted(false), last(NULL) 
+    : workload(0),  muted(false), last(NULL) 
     {
         this->acquire(&ambient::channel);
-        pthread_key_create(&pthread_tid, free);
-        pthread_mutex_init(&this->mutex, NULL); 
-        this->allocate_threads();
-        this->set_num_threads(AMBIENT_THREADS);
     }
 
-    inline size_t controller::get_num_threads() const {
-        return this->num_threads;
-    }
-
-    inline void controller::set_num_threads(size_t n){
-        if(this->num_threads >= n || n > AMBIENT_THREADS_LIMIT) return;
-        for(size_t i = this->num_threads; i < n; i++){
-            pthread_create(&this->pool[i], NULL, &controller::stream, &this->tasks[i]);
-        }
-        this->num_threads = n;
-    }
-
-    inline void controller::allocate_threads(){
-        for(size_t i = 1; i < AMBIENT_THREADS_LIMIT; i++){
-            this->tasks[i].id = i;
-        }
-        ctxt.set_tid(0); // master thread id is 0
-    }
-
-#ifndef AMBIENT_INTERFACE
-    void* controller::stream(void* list){
-        tasklist_async* l = static_cast<tasklist_async*>(list);
-        ctxt.set_tid(l->id);
-        size_t count = 0;
-        chain* set;
-
-        while(l->active){ if(l->pause){ sched_yield(); continue; }
-rt:         if(l->end_reached()){
-                if(count){
-                    pthread_mutex_lock(&ambient::controller.mutex); ambient::controller.workload -= count; pthread_mutex_unlock(&ambient::controller.mutex);
-                    count = 0;
-                }
-                continue; 
-            }
-            set = (chain*)l->get_next_task(); 
-            if(!set->ready()) goto rt;
-            l->pop_task();
-            set->execute();
-            delete set;
-
-            //size_t vacants = 0;
-            //l->repeat();
-            //while(!l->end_reached()){
-            //    if(((chain*)l->get_next_task())->ready()) vacants++;
-            //}
-
-            //printf("R%d can execute %d more\n", (int)l->id, (int)vacants);
-            count++;
-        }
-        return NULL;
-    }
-#endif
-
-    inline void controller::master_stream(void* list){
-        //static __a_timer tl("ambient: time of large sets");
-        //bool timing = false;
-        tasklist_async* l = static_cast<tasklist_async*>(list);
-        size_t count = 0;
-        chain* set; 
-
-        for(size_t t = 0; t < AMBIENT_THREADS; ++t){
-            this->tasks[t].pause = false;
-        }
-        while(this->workload){
-rt:         if(l->end_reached()){ 
-                if(count){
-                    pthread_mutex_lock(&ambient::controller.mutex); this->workload -= count; pthread_mutex_unlock(&ambient::controller.mutex);
-                    count = 0;
-                }
-                continue; 
-            }
-            set = (chain*)l->get_next_task();
-            if(!set->ready()) goto rt;
-            l->pop_task();
-            set->execute();
-            delete set;
-
-            
-            /*size_t vacants = 0;
-            l->repeat();
-            while(!l->end_reached()){
-                if(((chain*)l->get_next_task())->ready()) vacants++;
-            }
-
-            if(vacants < 1 && !timing){ tl.begin(); timing = true; }
-            else if(timing && vacants > 0){ tl.end(); timing = false; }
-            //printf("%ld == Master can execute %d more\n", time(NULL), (int)vacants);*/
-
-            count++;
-        }
-        //if(timing) tl.end();
-        for(size_t t = 0; t < AMBIENT_THREADS; t++){
-            this->tasks[t].reset();
-            this->tasks[t].pause = true;
-        }
+    inline void controller::execute(chain* op){
+        op->execute();
+        delete op;
     }
 
     inline void controller::flush(){
         if(this->stack.empty()) return;
         while(!this->stack.end_reached())
             this->stack.pick()->logistics();
-        this->master_stream(this->tasks);
+
         this->stack.reset();
         this->last = NULL;
+
+        touchstack< chain* >* chains = &this->chains;
+        touchstack< chain* >* mirror = &this->mirror;
+
+        while(this->workload){
+            while(!chains->end_reached()){
+                chain* op = chains->pick();
+                if(op->ready()){
+                    cilk_spawn this->execute(op);
+                    this->workload--;
+                }else{
+                    mirror->push_back(op);
+                }
+            }
+            chains->reset();
+            std::swap(chains,mirror);
+        }
+        cilk_sync;
     }
 
     inline void controller::execute_mod(cfunctor* op){
@@ -139,12 +54,7 @@ rt:         if(l->end_reached()){
         else{
             this->last = new chain(op);
             this->workload++;
-            if(this->last->affinity != -1){
-                this->tasks[this->last->affinity].add_task( this->last );
-            }else{
-                this->tasks[this->rrn].add_task( this->last );
-                ++this->rrn %= this->num_threads;
-            }
+            this->chains.push_back(this->last);
         }
     }
 
@@ -166,12 +76,10 @@ rt:         if(l->end_reached()){
     }
 
     inline void controller::alloc(revision& r){
-        r.affinity = ctxt.get_tid();
         r.embed(r.spec->alloc(), r.spec->get_bound());
     }
 
     inline void controller::calloc(revision& r){
-        r.affinity = ctxt.get_tid();
         r.embed(r.spec->calloc(), r.spec->get_bound());
     }
 

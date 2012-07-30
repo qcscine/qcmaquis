@@ -3,16 +3,16 @@
 
 #include "ambient/ambient.hpp"
 #include "utils/io.hpp"
-
-#ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
-#endif
 
 #ifndef RVALUE
 #define RVALUE
 #endif
 
 namespace ambient { namespace numeric {
+
+    template <typename T>
+    class weak_matrix_impl;
 
     template <class Matrix>
     class transpose_view {
@@ -21,16 +21,18 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::size_type size_type; 
         typedef typename Matrix::value_type value_type;
         typedef typename Matrix::scalar_type scalar_type;
-        explicit transpose_view(const Matrix& m) : impl(m.impl) { }
-        operator Matrix () const { return transpose(Matrix(this->impl)); }
-        template<class M> static size_t rows(const M& m){ return m.num_cols(); } 
-        template<class M> static size_t cols(const M& m){ return m.num_rows(); } 
-        static const char* code(){ return "T"; }  
+        inline void* operator new (size_t);
+        inline void operator delete (void*);
+        explicit transpose_view(const Matrix& m);
+        operator Matrix () const;
+        template<class M> static size_t rows(const M& m); 
+        template<class M> static size_t cols(const M& m);
+        static const char* code();
         typename Matrix::ptr impl;
     };
 
     template <class T>
-    class matrix { // normal view
+    class matrix {
     public:
         typedef matrix_impl<T> I;
         typedef typename I::ptr ptr;
@@ -39,151 +41,66 @@ namespace ambient { namespace numeric {
         typedef typename I::value_type value_type;
         typedef typename I::scalar_type scalar_type;
         typedef typename I::difference_type difference_type;
-        // {{{ matrix_impl forwarding
-        static inline matrix<T> identity_matrix(size_type size){
-            ptr identity = new I(size, size);
-            identity->fill_identity();
-            return matrix(identity);
-        }
-
-        explicit inline matrix(const ptr& p) : impl(p) {}
-        explicit inline matrix(){ this->impl = new I(); }
-
-        explicit inline matrix(size_type rows, size_type cols, value_type init_value = value_type()){
-            this->impl = new I(rows, cols); 
-            this->impl->fill_value(init_value);
-        }
-
-        inline matrix(const matrix& m){
-            this->impl = new I(*m.impl);
-            this->impl->copy(*m.impl);
-        }
-
-        matrix& operator = (const matrix& rhs){
-            assert(!rhs.impl->weak());
-            matrix c(rhs);
-            this->swap(c);
-            return *this;
-        }
-
+        inline void* operator new (size_t);
+        inline void operator delete (void*);
+        static inline matrix<T> identity_matrix(size_type size);
+        explicit inline matrix(const ptr& p);
+        explicit inline matrix();
+        explicit inline matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
+        inline matrix(const matrix& m);
+        matrix& operator = (const matrix& rhs); 
 #ifdef RVALUE
-        inline matrix(matrix&& m){
-            this->impl = m.impl;
-        }
-
-        matrix& operator = (matrix&& rhs){
-            this->swap(rhs);
-            return *this;
-        }
+        inline matrix(matrix&& m); 
+        matrix& operator = (matrix&& rhs);
 #endif
     public:
-        template<class M> static size_t rows(const M& m){ return m.num_rows(); } 
-        template<class M> static size_t cols(const M& m){ return m.num_cols(); } 
-        inline size_type num_rows() const     { return this->impl->num_rows(); }
-        inline size_type num_cols() const     { return this->impl->num_cols(); }
-        inline scalar_type trace() const      { return this->impl->trace();    }
-        inline void fill_value(value_type v)  { this->impl->fill_value(v);     }
-        inline void fill_identity()           { this->impl->fill_identity();   }
-        inline void fill_random()             { this->impl->fill_random();     }
-        inline void transpose()               { this->impl->transpose();       }
-        inline void conj()                    { this->impl->conj();            }
-        inline bool empty() const             { return this->impl->empty();    }
-        inline void swap(matrix& r)           { this->impl.swap(r.impl);       }
-        friend void swap(matrix& x, matrix& y){ x.swap(y);                     }
-
-        inline void resize(size_type rows, size_type cols){
-            assert(this->num_rows() != 0 && this->num_cols() != 0);
-            if(this->num_rows() == rows && this->num_cols() == cols) return;
-            matrix resized(rows, cols);
-            if(!this->impl->weak())
-                this->impl->resize(*resized.impl, rows, cols);
-            this->swap(resized);
-        }
-
-        inline void remove_rows(size_type i, size_type k = 1){
-            this->impl->remove_rows(i, k);
-            this->resize(this->num_rows()-k, this->num_cols());
-        }
-
-        inline void remove_cols(size_type j, size_type k = 1){
-            this->impl->remove_cols(j, k); 
-            this->resize(this->num_rows(), this->num_cols()-k);
-        }
-
-        inline value_type& operator() (size_type i, size_type j){
-            return this->impl->get(i,j);
-        }
-
-        inline const value_type& operator() (size_type i, size_type j) const {
-            return this->impl->get(i,j);
-        }
-
-        inline matrix& operator += (const matrix& rhs){
-            this->impl->add(*rhs.impl);
-            return *this;
-        }
-
-        inline matrix& operator -= (const matrix& rhs){
-            this->impl->sub(*rhs.impl);
-            return *this;
-        }
-
-        template <typename T2> inline matrix& operator *= (const T2& t){
-            this->impl->mul(t);
-            return *this;
-        }
-
-        template <typename T2> inline matrix& operator /= (const T2& t){
-            this->impl->div(t);
-            return *this;
-        }
-#ifdef HAVE_ALPS_HDF5
-        inline void load(alps::hdf5::archive & ar) { /*ambient::cerr << "I don't do much." << std::endl;*/ }
-        inline void save(alps::hdf5::archive & ar) const { /*ambient::cerr << "I don't do much either." << std::endl;*/ }
-#endif
-        // }}}
-        static const char* code(){ return "N"; }  
+        template<class M> static size_t rows(const M& m); 
+        template<class M> static size_t cols(const M& m);
+        inline size_type num_rows() const;
+        inline size_type num_cols() const;
+        inline scalar_type trace() const;
+        inline void transpose();
+        inline void conj();
+        inline bool empty() const;          
+        inline void swap(matrix& r);
+        friend void swap(matrix& x, matrix& y);
+        inline void resize(size_type rows, size_type cols); 
+        inline void remove_rows(size_type i, size_type k = 1);
+        inline void remove_cols(size_type j, size_type k = 1);
+        inline matrix& operator += (const matrix& rhs);
+        inline matrix& operator -= (const matrix& rhs);
+        template <typename T2> inline matrix& operator *= (const T2& t);
+        template <typename T2> inline matrix& operator /= (const T2& t);
+        inline value_type& operator() (size_type i, size_type j);
+        inline const value_type& operator() (size_type i, size_type j) const;
+        inline void load(alps::hdf5::archive & ar){};
+        inline void save(alps::hdf5::archive & ar)const{};
+        static const char* code();
     public:
         ptr impl;
     };
 
     template <typename T>
-    class weak_matrix_impl;
-
-    template <typename T>
     class matrix_impl : public ambient::iteratable<ambient::history> {
     public:
-        typedef T         value_type;
-        typedef size_t    size_type;
+        typedef T value_type;
+        typedef size_t size_type;
         typedef ptrdiff_t difference_type;
         typedef typename boost::intrusive_ptr<matrix_impl<T> > ptr;
         typedef typename ambient::future<double> real_type;
         typedef typename ambient::future<T> scalar_type;
-
+        inline void* operator new (size_t);
+        inline void operator delete (void*);
         inline matrix_impl();
         inline matrix_impl(size_type rows, size_type cols);
         inline matrix_impl(matrix_impl const& m);
-        inline value_type& get(size_type i, size_type j);
-        inline scalar_type trace() const;
-        inline void fill_identity();
-        inline void fill_random();
-        inline void fill_value(value_type v);
-        inline void conj();
-        inline void transpose();
         inline bool empty() const;
-        inline size_type num_rows() const;
+        inline size_type num_rows() const; 
         inline size_type num_cols() const;
-        inline void resize(matrix_impl& r, size_type rows, size_type cols);
-        inline void remove_rows(size_type i, size_type k);
-        inline void remove_cols(size_type j, size_type k);
-        inline void add(const matrix_impl& rhs); 
-        inline void sub(const matrix_impl& rhs);
-        template <typename T2> inline void mul(const T2& t);
-        template <typename T2> inline void div(const T2& t);
-        inline void copy(const matrix_impl& m);
-        friend void intrusive_ptr_add_ref(matrix_impl* p){ ++(p->references); }
-        friend void intrusive_ptr_release(matrix_impl* p){ if(--(p->references) == 0) delete p; }
-        operator weak_matrix_impl<T>& (){ return *(weak_matrix_impl<T>*)this; }
+        inline value_type& get(size_type i, size_type j);
+        friend void intrusive_ptr_add_ref(matrix_impl* p){ ++(p->references); } 
+        friend void intrusive_ptr_release(matrix_impl* p){ if(--(p->references) == 0) delete p; } 
+        operator weak_matrix_impl<T>& ();
     private:
         long references;
     };
@@ -193,6 +110,6 @@ namespace ambient { namespace numeric {
         typedef typename boost::intrusive_ptr<matrix_impl<T> > ptr;
     };
 
-} } // namespace ambient::numeric
+} }
 
 #endif

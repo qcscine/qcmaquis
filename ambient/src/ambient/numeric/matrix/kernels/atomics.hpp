@@ -5,7 +5,88 @@ extern "C" {
     void dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, const double*, const int*, const double*, const int*, const double*, double*, const int*);
 }
 
+#include "ambient/models/velvet/revision.h"
+#include "ambient/controllers/velvet/iteratable.h"
+
 namespace ambient { namespace numeric { namespace kernels {
+
+#define ui_l_current this->ui_l_current
+#define ui_c_current this->ui_c_current
+#define ui_w_updated this->ui_w_updated
+#define ui_p_updated this->ui_p_updated
+#define ui_r_updated this->ui_r_updated
+
+    inline void* __a_solidify_atomic(char* r, size_t sz){
+        void* memory = malloc(sz);
+        memcpy(memory, r, sz);
+        return memory;
+    }
+
+    inline void __a_disperse_atomic(void* data, char* r, size_t sz){
+        memcpy(r, data, sz);
+        free(data);
+    }
+
+    template <typename T> inline T __a_dot(T* a, T* b, int size){
+        T summ(0);
+        for(size_t k=0; k < size; k++)
+           summ += a[k]*b[k];
+        return summ;
+    }
+
+    inline double __a_dot(double* a, double* b, int size){
+        static const int ONE = 1;
+        return ddot_(&size, a, &ONE, b, &ONE);
+    }
+
+    template <typename T>
+    inline void __a_memcpy(T* dd, T *sd, size_t w, T alfa){
+        memcpy(dd, sd, w);
+    }
+
+    template <typename T>
+    inline void __a_memscal(T* dd, T *sd, size_t w, T alfa){
+        int z = w/sizeof(T);
+        do{ *dd++ += alfa*(*sd++); }while(--z > 0); // be carefull that dd != sd
+    }
+
+    template<typename T, void(*PTF)(T* dd, T* sd, size_t w, T alfa)>
+    inline void __a_memptf_atomic_r(T* dst, int ldb, dim2 dst_p, 
+                                    T* src, int lda, dim2 src_p, 
+                                    dim2 size, T alfa = 0.0)
+    {
+        __A_TIME_C("ambient_memptf_fr_atomic_kernel");
+#ifdef AMBIENT_CHECK_BOUNDARIES
+        if(ui_c_get_dim(dst).x - dst_p.x < size.x || ui_c_get_dim(dst).y - dst_p.y < size.y ||
+           ui_c_get_dim(src).x - src_p.x < size.x || ui_c_get_dim(src).y - src_p.y < size.y){
+            ambient::cout << "Error: invalid memory movement: " << std::endl;
+            ambient::cout << "Matrix dst " << ui_c_get_dim(dst).x << "x" << ui_c_get_dim(dst).y << "\n";
+            ambient::cout << "Dest p " << dst_p.x << "x" << dst_p.y << "\n";
+            ambient::cout << "Matrix src " << ui_c_get_dim(src).x << "x" << ui_c_get_dim(src).y << "\n";
+            ambient::cout << "Src p " << src_p.x << "x" << src_p.y << "\n";
+            ambient::cout << "Block size " << size.x << "x" << size.y << "\n";
+
+            void *array[10];
+            size_t size = backtrace(array, 10);
+            backtrace_symbols_fd(array, size, 2);
+        }
+#endif
+        int n = size.x;
+        int m = size.y*sizeof(T);
+
+        T* sd = src + src_p.y + src_p.x*lda;
+        T* dd = dst + dst_p.y + dst_p.x*ldb;
+
+        do{ PTF(dd, sd, m, alfa); sd += lda; dd += ldb; }while(--n > 0);
+        __A_TIME_C_STOP
+    }
+
+    template <typename T>
+    inline void __a_atomic_refresh(T* dst, const T* src, size_t sz){
+        if(dst != src) memcpy(dst, src, sz);
+    }
+
+
 
     using ambient::numeric::matrix_impl;
 
@@ -16,15 +97,15 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_general_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b));
-            this->assign(ui_l_current(c));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(b));
+            this->assign(ui_l_current<2>(c));
         }
         inline void c(const matrix_impl<double>& a, const matrix_impl<double>& b, weak_matrix_impl<double>& c){
             __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
-            double* ad = ui_c_current(a);
-            double* bd = ui_c_current(b);
-            double* cd = ui_w_updated(c);
+            double* ad = ui_c_current<0>(a);
+            double* bd = ui_c_current<1>(b);
+            double* cd = ui_w_updated<2>(c);
             int m = ViewA::rows(a);
             int k = ViewA::cols(a);
             int n = ViewB::cols(b);
@@ -38,9 +119,9 @@ namespace ambient { namespace numeric { namespace kernels {
         }
         inline void c(const matrix_impl<std::complex<double> >& a, const matrix_impl<std::complex<double> >& b, weak_matrix_impl<std::complex<double> >& c){
             __A_TIME_C("ambient_gemm_general_atomic_c_kernel"); 
-            T* ad   = ui_c_current(a);
-            T* bd   = ui_c_current(b);
-            T* cd   = ui_w_updated(c);
+            T* ad   = ui_c_current<0>(a);
+            T* bd   = ui_c_current<1>(b);
+            T* cd   = ui_w_updated<2>(c);
             int m   = ui_c_get_dim(a).y;
             int n   = ui_c_get_dim(b).x;
             int k   = ui_c_get_dim(b).y;
@@ -58,9 +139,9 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(a_diag));
-            this->pin(ui_l_current(b));
-            this->assign(ui_l_current(c));
+            this->assign(ui_l_current<0>(a_diag));
+            this->pin(ui_l_current<1>(b));
+            this->assign(ui_l_current<2>(c));
         }
 
         inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
@@ -69,9 +150,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int sizey = ui_c_get_dim(a_diag).y;
             int size = ui_c_get_dim(b).x;
             int ONE  = 1;
-            D* bd = ui_c_current(b);
-            D* cd = ui_p_updated(c);
-            D* alpha = ui_c_current(a_diag);
+            D* bd = ui_c_current<1>(b);
+            D* cd = ui_p_updated<2>(c);
+            D* alpha = ui_c_current<0>(a_diag);
         
             for(int k = 0 ; k < sizey; k++){
         	     axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey);
@@ -87,9 +168,9 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(a_diag));
-            this->pin(ui_l_current(b));
-            this->assign(ui_l_current(c));
+            this->assign(ui_l_current<0>(a_diag));
+            this->pin(ui_l_current<1>(b));
+            this->assign(ui_l_current<2>(c));
         }
 
         inline void c(const matrix_impl<D>& a_diag, const matrix_impl<T>& b, weak_matrix_impl<T>& c){
@@ -99,9 +180,9 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t sizex = ui_c_get_dim(b).x;
             int size  = ui_c_get_dim(a_diag).y;
             int ONE  = 1;
-            D* bd = ui_c_current(b);
-            D* cd = ui_p_updated(c);
-            D* alpha = ui_c_current(a_diag);
+            D* bd = ui_c_current<1>(b);
+            D* cd = ui_p_updated<2>(c);
+            D* alpha = ui_c_current<0>(a_diag);
         
             for(int k = 0 ; k < sizex; k++){
         	     axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);
@@ -117,9 +198,9 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b_diag));
-            this->assign(ui_l_current(c));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(b_diag));
+            this->assign(ui_l_current<2>(c));
         }
 
         inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
@@ -128,9 +209,9 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t sizex = ui_c_get_dim(b_diag).y;
             int size = ui_c_get_dim(a).y; // for the case of complex
             int ONE = 1;
-            D* ad = ui_c_current(a);
-            D* cd = ui_p_updated(c);
-        	D* alpha = ui_c_current(b_diag);
+            D* ad = ui_c_current<0>(a);
+            D* cd = ui_p_updated<2>(c);
+        	D* alpha = ui_c_current<1>(b_diag);
         
             for(int k = 0 ; k < sizex; k++){
         	    axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
@@ -146,9 +227,9 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
             this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b_diag));
-            this->assign(ui_l_current(c));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(b_diag));
+            this->assign(ui_l_current<2>(c));
         }
 
         inline void c(const matrix_impl<T>& a, const matrix_impl<D>& b_diag, weak_matrix_impl<T>& c){
@@ -158,9 +239,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int sizey = ui_c_get_dim(b_diag).y;
             int size = ui_c_get_dim(a).x;
             int ONE = 1;
-            D* ad = ui_c_current(a);
-            D* cd = ui_p_updated(c);
-        	D* alpha = ui_c_current(b_diag);
+            D* ad = ui_c_current<0>(a);
+            D* cd = ui_p_updated<2>(c);
+        	D* alpha = ui_c_current<1>(b_diag);
         
             for(int k = 0 ; k < sizey; k++){
         	    axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);
@@ -177,14 +258,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(weak_matrix_impl<T>& ac, const matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as copy_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(ac));
+            this->pin(ui_l_current<1>(a));
+            this->assign(ui_l_current<0>(ac));
         }
 
         inline void c(weak_matrix_impl<T>& ac, const matrix_impl<T>& a){
             __A_TIME_C("ambient_copy_atomic_c_kernel"); 
-            T* ad  = ui_c_current(a);
-            T* acd  = ui_w_updated(ac);
+            T* ad  = ui_c_current<1>(a);
+            T* acd  = ui_w_updated<0>(ac);
             memcpy(acd, ad, ui_c_get_mem_size(a));
             __A_TIME_C_STOP
         }
@@ -204,9 +285,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& rdim1, const size_t& rdim2)
         {
             this->ctxt_select("1 from ambient as op_kron_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
-            this->assign(ui_l_current(in));
-            this->assign(ui_l_current(alfa));
+            this->pin(ui_l_current<0>(out));
+            this->assign(ui_l_current<1>(in));
+            this->assign(ui_l_current<2>(alfa));
         }
 
         inline void c(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
@@ -215,13 +296,13 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& rdim1, const size_t& rdim2)
         {
             __A_TIME_C("ambient_op_kron_atomic_c_kernel"); 
-            T* alfad = ui_c_current(alfa);
+            T* alfad = ui_c_current<2>(alfa);
             for(size_t l1 = 0; l1 < ldim1; ++l1)
             for(size_t r1 = 0; r1 < rdim1; ++r1)
             {
                 T alfa_t = alfad[l1 + r1*ui_c_get_dim(alfa).y];
-                __a_memptf_atomic_r<T, __a_memscal>(out, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
-                                                    in,  dim2(0, 0), dim2(rdim2, ldim2), alfa_t);
+                __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated<0>(out), ui_c_get_dim(out).y, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
+                                                    ui_c_current<1>(in), ui_c_get_dim(in).y,  dim2(0, 0), dim2(rdim2, ldim2), alfa_t);
             }
             __A_TIME_C_STOP
         }
@@ -243,8 +324,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_l2b_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
-            this->assign(ui_l_current(in));
+            this->pin(ui_l_current<0>(out));
+            this->assign(ui_l_current<1>(in));
         }
 
         inline void c(matrix_impl<T>& out, const matrix_impl<T>& in,
@@ -258,11 +339,11 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t in_y_offset  = in_left_offset + ldim*in_phys_offset;
             size_t out_y_offset = out_left_offset;
 
-            __a_atomic_refresh(out);
+            __a_atomic_refresh<T>(ui_w_updated<0>(out), ui_c_current<0>(out), ui_c_get_mem_size(out));
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    __a_memptf_atomic_r<T, __a_memcpy>(out, dim2(out_x_offset + rdim*ss2, out_y_offset), 
-                                                       in,  dim2(0, in_y_offset), 
+                    __a_memptf_atomic_r<T, __a_memcpy>(ui_r_updated<0>(out), ui_c_get_dim(out).y, dim2(out_x_offset + rdim*ss2, out_y_offset), 
+                                                       ui_c_current<1>(in), ui_c_get_dim(in).y,  dim2(0, in_y_offset), 
                                                        dim2( rdim, ldim ));
                     in_y_offset += ldim;
                 }
@@ -288,8 +369,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_b2l_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
-            this->assign(ui_l_current(in));
+            this->pin(ui_l_current<0>(out));
+            this->assign(ui_l_current<1>(in));
         }
 
         inline void c(matrix_impl<T>& out, const matrix_impl<T>& in,
@@ -303,12 +384,12 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t in_y_offset  = in_left_offset;
             size_t out_y_offset = out_left_offset + out_phys_offset*ldim;
 
-            __a_atomic_refresh(out);
+            __a_atomic_refresh<T>(ui_w_updated<0>(out), ui_c_current<0>(out), ui_c_get_mem_size(out));
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
                 {
-                    __a_memptf_atomic_r<T, __a_memcpy>(out, dim2(0, out_y_offset), 
-                                                       in,  dim2(in_x_offset + rdim*ss2, in_y_offset), 
+                    __a_memptf_atomic_r<T, __a_memcpy>(ui_r_updated<0>(out), ui_c_get_dim(out).y, dim2(0, out_y_offset), 
+                                                       ui_c_current<1>(in), ui_c_get_dim(in).y,  dim2(in_x_offset + rdim*ss2, in_y_offset), 
                                                        dim2( rdim, ldim ));
                     out_y_offset += ldim;
                 }
@@ -330,8 +411,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_l2r_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(right));
-            this->assign(ui_l_current(left));
+            this->pin(ui_l_current<1>(right));
+            this->assign(ui_l_current<0>(left));
         }
 
         inline void c(const matrix_impl<T>& left, matrix_impl<T>& right,
@@ -339,10 +420,10 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_reshape_l2r_atomic_c_kernel"); 
-            __a_atomic_refresh(right); // refreshing updated memory
+            __a_atomic_refresh<T>(ui_w_updated<1>(right), ui_c_current<1>(right), ui_c_get_mem_size(right));
             for(size_t ss = 0; ss < sdim; ++ss){
-                __a_memptf_atomic_r<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
-                                                   left,  dim2(0, ss*ldim + left_offset), 
+                __a_memptf_atomic_r<T, __a_memcpy>(ui_r_updated<1>(right), ui_c_get_dim(right).y, dim2(ss*rdim + right_offset, 0), 
+                                                   ui_c_current<0>(left), ui_c_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
                                                    dim2( rdim, ldim ));
             }
             __A_TIME_C_STOP
@@ -361,8 +442,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_l2r_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(left));
-            this->assign(ui_l_current(right));
+            this->pin(ui_l_current<0>(left));
+            this->assign(ui_l_current<1>(right));
         }
 
         inline void c(matrix_impl<T>& left, const matrix_impl<T>& right,
@@ -370,10 +451,10 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_reshape_r2l_atomic_c_kernel"); 
-            __a_atomic_refresh(left); // refreshing updated memory
+            __a_atomic_refresh<T>(ui_w_updated<0>(left), ui_c_current<0>(left), ui_c_get_mem_size(left));
             for(size_t ss = 0; ss < sdim; ++ss)
-                __a_memptf_atomic_r<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
-                                                   right, dim2(ss*rdim + right_offset,0), 
+                __a_memptf_atomic_r<T, __a_memcpy>(ui_r_updated<0>(left), ui_c_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
+                                                   ui_c_current<1>(right), ui_c_get_dim(right).y, dim2(ss*rdim + right_offset,0), 
                                                    dim2( rdim, ldim ));
             __A_TIME_C_STOP
         }
@@ -391,9 +472,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as rb_tensor_mpo_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
-            this->assign(ui_l_current(in));
-            this->assign(ui_l_current(alfa));
+            this->pin(ui_l_current<0>(out));
+            this->assign(ui_l_current<1>(in));
+            this->assign(ui_l_current<2>(alfa));
         }
 
         inline void c(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
@@ -401,13 +482,13 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_lb_tensor_mpo_atomic_c_kernel"); 
-            __a_atomic_refresh(out); // refreshing updated memory
-            T* alfad = ui_c_current(alfa);
+            __a_atomic_refresh<T>(ui_w_updated<0>(out), ui_c_current<0>(out), ui_c_get_mem_size(out));
+            T* alfad = ui_c_current<2>(alfa);
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T alfa_t = alfad[ss1 + ss2*ui_c_get_dim(alfa).y];
-                    __a_memptf_atomic_r<T, __a_memscal>(out, dim2(0, out_offset + ss2*ldim),
-                                                        in,  dim2(0, in_offset + ss1*ldim),
+                    __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated<0>(out), ui_c_get_dim(out).y, dim2(0, out_offset + ss2*ldim),
+                                                        ui_c_current<1>(in), ui_c_get_dim(in).y,  dim2(0, in_offset + ss1*ldim),
                                                         dim2(rdim, ldim), alfa_t);
                 }
             __A_TIME_C_STOP
@@ -426,9 +507,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as rb_tensor_mpo_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
-            this->assign(ui_l_current(in));
-            this->assign(ui_l_current(alfa));
+            this->pin(ui_l_current<0>(out));
+            this->assign(ui_l_current<1>(in));
+            this->assign(ui_l_current<2>(alfa));
         }
 
         inline void c(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
@@ -436,13 +517,13 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_rb_tensor_mpo_atomic_c_kernel"); 
-            __a_atomic_refresh(out); // refreshing updated memory
-            T* alfad = ui_c_current(alfa);
+            __a_atomic_refresh<T>(ui_w_updated<0>(out), ui_c_current<0>(out), ui_c_get_mem_size(out));
+            T* alfad = ui_c_current<2>(alfa);
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
                     T alfa_t = alfad[ss1 + ui_c_get_dim(alfa).y*ss2];
-                    __a_memptf_atomic_r<T, __a_memscal>(out, dim2(out_offset + ss2*rdim, 0),
-                                                        in,  dim2(in_offset + ss1*rdim, 0),
+                    __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated<0>(out), ui_c_get_dim(out).y, dim2(out_offset + ss2*rdim, 0),
+                                                        ui_c_current<1>(in), ui_c_get_dim(in).y,  dim2(in_offset + ss1*rdim, 0),
                                                         dim2(rdim, ldim), alfa_t);
                 }
             __A_TIME_C_STOP
@@ -456,7 +537,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, future<T>& trace){
             this->ctxt_select("* from ambient as trace_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
 
         inline void c(const matrix_impl<T>& a, future<T>& trace){
@@ -464,7 +545,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_trace_atomic_c_kernel"); 
             size_t m = ui_c_get_dim(a).y;
             size_t n = ui_c_get_dim(a).x;
-            T* ad = ui_c_current(a);
+            T* ad = ui_c_current<0>(a);
         
             size_t sizex = std::min(n,m);
             for(size_t jj = 0; jj < sizex; jj++){
@@ -481,12 +562,12 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, future<double>& norm){
             this->ctxt_select("* from ambient as scalar_norm_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
 
         inline void c(const matrix_impl<T>& a, future<double>& norm){
             __A_TIME_C("ambient_scalar_norm_atomic_c_kernel"); 
-            T* ad = ui_c_current(a);
+            T* ad = ui_c_current<0>(a);
             norm.get_value() = alps::numeric::real(__a_dot(ad, ad, ui_c_get_dim(a).square()));
             __A_TIME_C_STOP
         }
@@ -499,14 +580,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, future<T>& overlap){
             this->ctxt_select("* from ambient as overlap_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(b));
         }
 
         inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, future<T>& overlap){
             __A_TIME_C("ambient_scalar_overlap_atomic_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* bd = ui_c_current(b);
+            T* ad = ui_c_current<0>(a);
+            T* bd = ui_c_current<1>(b);
             overlap.get_value() = __a_dot(ad, bd, ui_c_get_dim(a).square());
             __A_TIME_C_STOP
         }
@@ -520,15 +601,15 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(matrix_impl<T>& a, const matrix_impl<T>& b){
             this->ctxt_select("1 from ambient as add_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(b));
         }
 
         inline void c(matrix_impl<T>& a, const matrix_impl<T>& b){
             __A_TIME_C("ambient_add_atomic_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* bd = ui_c_current(b);
-            T* ar = ui_r_updated(a);
+            T* ad = ui_c_current<0>(a);
+            T* bd = ui_c_current<1>(b);
+            T* ar = ui_r_updated<0>(a);
             int size = ui_c_get_dim(a).square();
             static const T sign = 1.;
             static const int ONE = 1;
@@ -545,14 +626,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(matrix_impl<T>& a, const matrix_impl<T>& b){
             this->ctxt_select("1 from ambient as sub_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(b));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(b));
         }
 
         inline void c(matrix_impl<T>& a, const matrix_impl<T>& b){
             __A_TIME_C("ambient_sub_atomic_c_kernel"); 
-            T* bd = ui_c_current(b);
-            T* ar = ui_r_updated(a);
+            T* bd = ui_c_current<1>(b);
+            T* ar = ui_r_updated<0>(a);
             int size = ui_c_get_dim(a).square();
             static const T sign = -1.;
             static const int ONE = 1;
@@ -568,12 +649,12 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(matrix_impl<T>& a, const future<T>& t){
             this->ctxt_select("1 from ambient as scale_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
 
         inline void c(matrix_impl<double>& a, const future<double>& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
-            T* ar = ui_r_updated(a);
+            T* ar = ui_r_updated<0>(a);
             int size = ui_c_get_dim(a).square();
             static const int ONE = 1;
             dscal_( &size, &t.get_value(), ar, &ONE );
@@ -582,8 +663,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix_impl<std::complex<double> >& a, const future< std::complex<double> >& t){
             __A_TIME_C("ambient_scale_atomic_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* ar = ui_w_updated(a);
+            T* ad = ui_c_current<0>(a);
+            T* ar = ui_w_updated<0>(a);
             int size = ui_c_get_dim(a).square();
             for(int k=0; k < size; k++) 
                 ar[k] = ad[k] * t.get_value();
@@ -598,12 +679,12 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(matrix_impl<T>& a, const future<T>& t){
             this->ctxt_select("1 from ambient as scale_inverse_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
 
         inline void c(matrix_impl<double>& a, const future<double>& t){
             __A_TIME_C("ambient_scale_inverse_atomic_c_kernel"); 
-            T* ar = ui_r_updated(a);
+            T* ar = ui_r_updated<0>(a);
             int size = ui_c_get_dim(a).square();
             static const int ONE = 1;
             double factor = 1. / t.get_value();
@@ -613,8 +694,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix_impl<std::complex<double> >& a, const future< std::complex<double> >& t){
             __A_TIME_C("ambient_scale_inverse_atomic_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* ar = ui_w_updated(a);
+            T* ad = ui_c_current<0>(a);
+            T* ar = ui_w_updated<0>(a);
             int size = ui_c_get_dim(a).square();
             for(int k=0; k < size; k++) 
                 ar[k] = ad[k] / t.get_value();
@@ -629,14 +710,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& t){
             this->ctxt_select("1 from ambient as transpose_out_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(t));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(t));
         }
 
         inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& t){
             __A_TIME_C("ambient_transpose_out_atomic_c_kernel"); 
-            T* od = ui_c_current(a);
-            T* td = ui_w_updated(t);
+            T* od = ui_c_current<0>(a);
+            T* td = ui_w_updated<1>(t);
             int m = ui_c_get_dim(a).y;
             int n = ui_c_get_dim(a).x;
 
@@ -655,13 +736,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(weak_matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("1 from ambient as resize_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(r));
+            this->pin(ui_l_current<1>(a));
+            this->assign(ui_l_current<0>(r));
         }
 
         inline void c(weak_matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_atomic_c_kernel"); 
-            __a_memptf_atomic_r<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(n, m)); 
+            __a_memptf_atomic_r<T, __a_memcpy>(ui_r_updated<0>(r), ui_c_get_dim(r).y, dim2(0,0), 
+                                               ui_c_current<1>(a), ui_c_get_dim(a).y, dim2(0,0), dim2(n, m)); 
             __A_TIME_C_STOP
         }
     };
@@ -673,14 +755,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(weak_matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as init_identity_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
 
         inline void c(weak_matrix_impl<T>& a){
             __A_TIME_C("ambient_init_identity_atomic_c_kernel"); 
             size_t n = ui_c_get_dim(a).x;
             size_t m = ui_c_get_dim(a).y;
-            T* ad = ui_r_updated(a);
+            T* ad = ui_r_updated<0>(a);
 
             size_t sizex = std::min(m,n); // respecting borders
             for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
@@ -701,14 +783,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(weak_matrix_impl<T>& a){
             this->ctxt_select("1 from ambient as init_random_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
         
         inline void c(weak_matrix_impl<T>& a){
             __A_TIME_C("ambient_init_random_atomic_c_kernel"); 
             size_t m = ui_c_get_dim(a).y;
             size_t n = ui_c_get_dim(a).x;
-            T* ad = ui_w_updated(a);
+            T* ad = ui_w_updated<0>(a);
           
             for(size_t jj = 0; jj < n; jj++){
                 for(size_t ii = 0; ii < m; ii++)
@@ -725,12 +807,12 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(weak_matrix_impl<T>& a, const T& value){
             this->ctxt_select("1 from ambient as init_value_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
 
         inline void c(weak_matrix_impl<T>& a, const T& value){
             __A_TIME_C("ambient_init_value_atomic_c_kernel"); 
-            T* ad = ui_w_updated(a);
+            T* ad = ui_w_updated<0>(a);
             size_t m = ui_c_get_dim(a).y;
             size_t n = ui_c_get_dim(a).x;
         
@@ -750,13 +832,13 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, std::vector<T>*& ac){
             this->ctxt_select("* from ambient as round_square_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<0>(a));
         }
 
         inline void c(const matrix_impl<T>& a, std::vector<T>*& ac){
             // gs
             __A_TIME_C("ambient_round_square_atomic_c_kernel"); 
-            T* ad = ui_c_current(a);
+            T* ad = ui_c_current<0>(a);
             size_t sizey = ui_c_get_dim(a).y;
             for(int i=0; i < sizey; i++){
                 double v = std::abs(ad[i]);
@@ -773,13 +855,13 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(std::vector<T>*& ac, const matrix_impl<T>& a, const size_t& m, const size_t& n){
             this->ctxt_select("* from ambient as cast_to_vector_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<1>(a));
         }
 
         inline void c(std::vector<T>*& ac, const matrix_impl<T>& a, const size_t& m, const size_t& n){
             // gs
             __A_TIME_C("ambient_cast_to_vector_atomic_c_kernel"); 
-            T* ad = ui_c_current(a);
+            T* ad = ui_c_current<1>(a);
             for(int j=0; j < n; ++j) memcpy((void*)&(*ac)[j*m],(void*)&ad[j*m], m*sizeof(T));  
             __A_TIME_C_STOP
         }
@@ -792,12 +874,12 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const std::vector<T>*& ac, matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
             this->ctxt_select("1 from ambient as cast_from_vector"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current<1>(a));
         }
 
         inline void c(const std::vector<T>*& ac, matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
             __A_TIME_C("ambient_cast_from_vector_atomic_c_kernel"); 
-            T* ad = ui_w_updated(a);
+            T* ad = ui_w_updated<1>(a);
             for(int j=0; j < n; ++j) memcpy((void*)&ad[j*m],(void*)&(*ac)[j*lda], m*sizeof(T));
             __A_TIME_C_STOP 
         }
@@ -810,13 +892,13 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){
             this->ctxt_select("1 from ambient as validation_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a)); 
-            this->assign(ui_l_current(b)); 
+            this->pin(ui_l_current<0>(a)); 
+            this->assign(ui_l_current<1>(b)); 
         }
         
         inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){ // see paper for Reference Dongara 
-            T* ad = ui_c_current(a); 
-            T* bd = ui_c_current(b); 
+            T* ad = ui_c_current<0>(a); 
+            T* bd = ui_c_current<1>(b); 
             double res; 
             double epsilon = std::numeric_limits<double>::epsilon();
             size_t position_xy; 
@@ -848,10 +930,10 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& u, weak_matrix_impl<T>& vt, weak_matrix_impl<double>& s)
         {
             this->ctxt_select("1 from ambient as svd_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(s));
-            this->assign(ui_l_current(u));
-            this->assign(ui_l_current(vt));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<3>(s));
+            this->assign(ui_l_current<1>(u));
+            this->assign(ui_l_current<2>(vt));
         }
 
         inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& u, weak_matrix_impl<T>& vt, weak_matrix_impl<double>& s)
@@ -863,10 +945,10 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             int lwork = -1; // C - Alex, netlib said -1 for the best workspace
             T wkopt;
-            T* ad  = ui_c_current(a);
-            T* ud  = ui_r_updated(u);
-            T* vtd = ui_r_updated(vt);
-            double* sd  = ui_r_updated(s);
+            T* ad  = ui_c_current<0>(a);
+            T* ud  = ui_r_updated<1>(u);
+            T* vtd = ui_r_updated<2>(vt);
+            double* sd  = ui_r_updated<3>(s);
             double* rwork; // = new double[5*m]; // C - useless for double but need for complex 
             T* work;
             gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, rwork, &info ); // query and allocate the optimal workspace
@@ -887,9 +969,9 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& q, weak_matrix_impl<T>& r)
         {
             this->ctxt_select("1 from ambient as qr_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(q));
-            this->assign(ui_l_current(r));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(q));
+            this->assign(ui_l_current<2>(r));
         }
 
         inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& q, weak_matrix_impl<T>& r)
@@ -902,9 +984,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int lwork = -1; 
             T wkopt;
             T* tau = (T*)malloc(k*sizeof(T));
-            T* ad  = ui_c_current(a);
-            T* qd  = ui_r_updated(q);
-            T* rd = ui_r_updated(r);
+            T* ad  = ui_c_current<0>(a);
+            T* qd  = ui_r_updated<1>(q);
+            T* rd = ui_r_updated<2>(r);
             T* work;
             T* more_work;
             T  kwork;
@@ -930,7 +1012,7 @@ namespace ambient { namespace numeric { namespace kernels {
             getq_qr(&m, &k, &k, ad, &m, tau, more_work, &lwork, &info);
             assert( info == 0 ); 
              
-            memcpy((void*)qd,(void*)ad, k*ui_c_get_dim(a).y*sizeof(T)); // l 235 
+            memcpy((void*)qd, (void*)ad, k*ui_c_get_dim(a).y*sizeof(T)); // l 235 
 
             free(work);
             free(more_work);
@@ -948,9 +1030,9 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void l(const matrix_impl<T>& a, weak_matrix_impl<T>& l, weak_matrix_impl<T>& q)
         {
             this->ctxt_select("1 from ambient as lq_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(l));
-            this->assign(ui_l_current(q));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(l));
+            this->assign(ui_l_current<2>(q));
         }
 
         inline void c(const matrix_impl<T>& a, weak_matrix_impl<T>& l, weak_matrix_impl<T>& q)
@@ -963,9 +1045,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int lwork = -1; 
             T wkopt;
             T* tau = (T*)malloc(k*sizeof(T));
-            T* ad  = ui_c_current(a);
-            T* ld  = ui_r_updated(l);
-            T* qd  = ui_r_updated(q);
+            T* ad  = ui_c_current<0>(a);
+            T* ld  = ui_r_updated<1>(l);
+            T* qd  = ui_r_updated<2>(q);
             T* work;
             T* more_work;
             T  kwork;
@@ -1010,8 +1092,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void l(matrix_impl<T>& a, weak_matrix_impl<double>& w){
             this->ctxt_select("1 from ambient as heev_atomic"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
-            this->assign(ui_l_current(w));
+            this->pin(ui_l_current<0>(a));
+            this->assign(ui_l_current<1>(w));
         }
 
         inline void c(matrix_impl<T>& a, weak_matrix_impl<double>& w){
@@ -1021,8 +1103,8 @@ namespace ambient { namespace numeric { namespace kernels {
             int info, lwork = -1;
             double wkopt;
             double* work;
-            double* ad = (double*)__a_solidify_atomic<T>(a);
-            double* wd = (double*)__a_solidify_atomic<T>(w);
+            double* ad = (double*)__a_solidify_atomic(ui_c_current<0>(a), ui_c_get_mem_size(a));
+            double* wd = (double*)__a_solidify_atomic(ui_c_current<1>(w), ui_c_get_mem_size(w));
 
             dsyev_("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
@@ -1043,13 +1125,19 @@ namespace ambient { namespace numeric { namespace kernels {
                 memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
                 memcpy(&ad[(m-1-i)*m], work, len);
             }
-            __a_disperse_atomic<T>(ad, a);
-            __a_disperse_atomic<T>(wd, w);
+            __a_disperse_atomic(ad, ui_w_updated<0>(a), ui_c_get_mem_size(a));
+            __a_disperse_atomic(wd, ui_w_updated<1>(w), ui_c_get_mem_size(w));
             free(work);
             __A_TIME_C_STOP
         }
     };
 
     // }}}
+
+#undef ui_l_current
+#undef ui_c_current
+#undef ui_w_updated
+#undef ui_p_updated
+#undef ui_r_updated
 } } }
 #endif
