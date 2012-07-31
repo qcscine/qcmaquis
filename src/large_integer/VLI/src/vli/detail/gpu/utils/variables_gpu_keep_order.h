@@ -132,12 +132,12 @@ namespace vli {
                        256U :
                        (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value))/2U+32U-1U)/32U*32U };
     };
-    // TO DO CHECK !!!!!!!!!!!!
+    // TO DO CHECK !!!!!!!!!!!! 2*Order or 2*Order+1
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MulBlockSize<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = (( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value   )/2U >= 256U) ? 
+        enum {value = (( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value   )/2U >= 256U) ?
                        256U :
-                       ((( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value   ))/2U+32U-1U)/32U*32U };
+                       ((( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value   ))/2U+32U-1U)/32U*32U };
     };
 
     template<class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
@@ -148,10 +148,10 @@ namespace vli {
         enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+32U-1U)/32U};
     };
 
-    // TO DO CHECK !!!!!!!!!!!!
+    // TO DO CHECK !!!!!!!!!!!! 2*Order or 2*Order+1
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MaxIterationCount<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = (vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value+32U-1U)/32U};
+        enum {value = (vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value+32U-1U)/32U};
     };
 
 
@@ -163,10 +163,10 @@ namespace vli {
         enum {value = extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value};
     };
 
-    // TO DO CHECK !!!!!!!!!!!!
+    // TO DO CHECK !!!!!!!!!!!! 2*Order or 2*Order+1
     template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct MaxNumberCoefficientExtend<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
-          // TO DO
+        enum {value = vli::detail::max_order_combined_helpers::size<vli::detail::num_of_variables_helper<Var0,Var1,Var2,Var3 >::value+1, 2*Order>::value };
     };
 
     template<std::size_t Size>

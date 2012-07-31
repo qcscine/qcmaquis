@@ -103,10 +103,8 @@ namespace detail {
 
             cudaMalloc((void**)&(pgm->V1Data_), req_size*sizeof(BaseInt)); //input 1
             cudaMalloc((void**)&(pgm->V2Data_), req_size*sizeof(BaseInt)); //input 2
-            // Check with andreas if it is correct for the result, I will say no !
-            assert(false);
-            cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order+1>::value)*sizeof(BaseInt); 
-            cudaMalloc((void**)&(pgm->PoutData_),                  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order+1>::value)*sizeof(BaseInt);
+            cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value)*sizeof(BaseInt); 
+            cudaMalloc((void**)&(pgm->PoutData_),                  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value)*sizeof(BaseInt);
 
             } // end if
         } // end fonction
@@ -129,7 +127,6 @@ namespace detail {
     template <class BaseInt, std::size_t Size, unsigned int Order,class Var0, class Var1, class Var2, class Var3>
     struct memory_transfer_helper<BaseInt, Size, max_order_combined<Order>, Var0, Var1, Var2, Var3>{
          static void transfer_up(gpu_memblock<BaseInt> const* pgm, BaseInt const* pData1, BaseInt const* pData2,  std::size_t VectorSize){
-            assert(false);
   	    cudaMemcpyAsync((void*)pgm->V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
   	    cudaMemcpyAsync((void*)pgm->V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice);
          }

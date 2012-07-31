@@ -40,7 +40,8 @@
 #include "vli/detail/gpu/kernels/kernels_gpu_mul_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/vli_number_gpu_function_hooks.hpp" // wrapper
 #include "vli/detail/gpu/polynomial_multiplication/booster_polynomial_multiplication_max_order_each.hpp" // booster
-#include "vli/detail/gpu/polynomial_reducion/polynomial_reduction.hpp" // final reduction
+#include "vli/detail/gpu/polynomial_multiplication/booster_polynomial_multiplication_max_order_combined.hpp" // booster
+#include "vli/detail/gpu/polynomial_reduction/polynomial_reduction.hpp" // final reduction
 
 namespace vli {
     namespace detail {
@@ -97,6 +98,10 @@ namespace vli {
     template<>      \
     void gpu_inner_product_vector<VLI_SIZE, max_order_each<POLY_ORDER>, EXPEND_VAR(VAR) >(std::size_t vector_size, TYPE const* A, TYPE const* B) \
     {gpu_inner_product_vector<unsigned int, 2*VLI_SIZE, max_order_each<POLY_ORDER>, EXPEND_VAR(VAR) >(vector_size, const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(A)), const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(B)));} \
+    \
+    template<>      \
+    void gpu_inner_product_vector<VLI_SIZE, max_order_combined<POLY_ORDER>, EXPEND_VAR(VAR) >(std::size_t vector_size, TYPE const* A, TYPE const* B) \
+    {gpu_inner_product_vector<unsigned int, 2*VLI_SIZE, max_order_combined<POLY_ORDER>, EXPEND_VAR(VAR) >(vector_size, const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(A)), const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(B)));} \
     \
     template<std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3 >      \
     unsigned int* gpu_get_polynomial();/* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
