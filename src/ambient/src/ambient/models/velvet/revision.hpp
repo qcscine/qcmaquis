@@ -1,5 +1,13 @@
 namespace ambient { namespace models { namespace velvet {
 
+    inline void* revision::operator new (size_t size){
+        return boost::singleton_pool<ambient::utils::empty, sizeof(revision)>::malloc(); 
+    }
+
+    inline void revision::operator delete (void* ptr){
+        boost::singleton_pool<ambient::utils::empty, sizeof(revision)>::free(ptr); 
+    }
+
     inline revision::revision(memspec* spec, bool clean)
     : spec(spec), clean(clean), generator(NULL) { 
     }

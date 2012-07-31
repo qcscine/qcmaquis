@@ -10,12 +10,12 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void* transpose_view<Matrix>::operator new (size_t size){
-        return malloc(size); //ambient::pool.get(size);
+        return boost::singleton_pool<ambient::utils::empty, sizeof(transpose_view<Matrix>)>::malloc(); 
     }
 
     template<class Matrix>
     inline void transpose_view<Matrix>::operator delete (void* ptr){
-        free(ptr); //ambient::pool.reset(ptr);
+        boost::singleton_pool<ambient::utils::empty, sizeof(transpose_view<Matrix>)>::free(ptr); 
     }
 
     template <class Matrix>
@@ -55,12 +55,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void* matrix<T>::operator new (size_t size){
-        return malloc(size); //ambient::pool.get(size);
+        return boost::singleton_pool<ambient::utils::empty, sizeof(matrix<T>)>::malloc(); 
     }
 
     template<typename T>
     inline void matrix<T>::operator delete (void* ptr){
-        free(ptr); //ambient::pool.reset(ptr);
+        boost::singleton_pool<ambient::utils::empty, sizeof(matrix<T>)>::free(ptr); 
     }
 
     template <typename T>
@@ -227,29 +227,29 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     void* matrix_impl<T>::operator new (size_t size){
-        return malloc(size); //ambient::pool.get(size);
+        return boost::singleton_pool<ambient::utils::empty, sizeof(matrix_impl<T>)>::malloc(); 
     }
 
     template<typename T>
     void matrix_impl<T>::operator delete (void* ptr){
-        free(ptr); //ambient::pool.reset(ptr);
+        boost::singleton_pool<ambient::utils::empty, sizeof(matrix_impl<T>)>::free(ptr); 
     }
 
     template<typename T>
     inline matrix_impl<T>::matrix_impl() 
-    : ambient::iteratable<history>(ambient::dim2(0,0)), references(0) 
+    : ambient::history(ambient::dim2(0,0)), references(0) 
     { // be cautious (implicit) 
     }
 
     template<typename T>
     inline matrix_impl<T>::matrix_impl(size_type rows, size_type cols) 
-    : ambient::iteratable<history>(ambient::dim2(cols, rows)), references(0) 
+    : ambient::history(ambient::dim2(cols, rows)), references(0) 
     { 
     }
 
     template<typename T>
     inline matrix_impl<T>::matrix_impl(matrix_impl const& m) 
-    : ambient::iteratable<history>(m.spec.dim), references(0)
+    : ambient::history(m.spec.dim), references(0)
     { 
     }
 

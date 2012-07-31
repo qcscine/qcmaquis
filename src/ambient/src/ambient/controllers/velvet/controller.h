@@ -1,11 +1,14 @@
 #ifndef AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
+
 #include "ambient/utils/touchstack.h"
 #include "ambient/controllers/velvet/cfunctor.h"
 #include "ambient/controllers/velvet/chain.h"
 #include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/utils/tasklist.hpp"
+
+#include <cilk/cilk.h>
 
 namespace ambient { namespace controllers { namespace velvet {
 
@@ -51,5 +54,6 @@ namespace ambient {
 #include "ambient/controllers/velvet/controller.hpp"
 #include "ambient/controllers/velvet/context.hpp"
 #include "ambient/controllers/velvet/iteratable.hpp"
+#include "ambient/controllers/velvet/chain.hpp"
 #include "ambient/controllers/velvet/cfunctor.hpp"
 #endif

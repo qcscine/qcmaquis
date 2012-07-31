@@ -38,6 +38,8 @@ namespace ambient { namespace models { namespace velvet {
             std::list<cfunctor*> assignments;
         };
 
+        inline void* operator new (size_t size);
+        inline void operator delete (void* ptr);
         inline void embed(void* memory, size_t bound);
         size_t sid;
         memspec* spec;

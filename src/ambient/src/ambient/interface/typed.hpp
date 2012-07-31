@@ -17,9 +17,9 @@ namespace ambient {
     // {{{ compile-time type info: singular types or simple types
     template <typename T> struct singular_info {
         typedef T* ptr_type;
-        template<size_t arg> static inline void deallocate    (sfunctor* m){ delete  (ptr_type)(m->arguments[arg]); }
+        template<size_t arg> static inline void deallocate    (sfunctor* m){ } //((ptr_type)m->arguments[arg])->~T(); 
         template<size_t arg> static inline T&   revised       (sfunctor* m){ return *(ptr_type)(m->arguments[arg]); }
-        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ m->arguments[arg] = (void*)new T(obj); }
+        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj); }
         template<size_t arg> static inline void weight        (cfunctor* m){                                        }
         template<size_t arg> static inline void place         (sfunctor* m){                                        }
     };
@@ -27,9 +27,9 @@ namespace ambient {
     // {{{ compile-time type info: future types
     template <typename T> struct future_info {
         typedef T* ptr_type;
-        template<size_t arg> static inline void deallocate          (sfunctor* m){ delete (ptr_type)(m->arguments[arg]);           }
+        template<size_t arg> static inline void deallocate          (sfunctor* m){ ((ptr_type)m->arguments[arg])->~T();            }
         template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(ptr_type)(m->arguments[arg]);          }
-        template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new T(obj.ghost);    }
+        template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj.ghost);    }
         template<size_t arg> static inline void weight              (cfunctor* m){                                                 }
         template<size_t arg> static inline void place               (sfunctor* m){                                                 }
     };
@@ -40,7 +40,7 @@ namespace ambient {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
             (*(ptr_type*)m->arguments[arg])->clean();
-            delete (ptr_type*)(m->arguments[arg]);
+            ((ptr_type*)m->arguments[arg])->~ptr_type();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){
@@ -49,14 +49,14 @@ namespace ambient {
         }
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
-            m->arguments[arg] = (void*)new ptr_type(&obj);
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<ptr_type>()) ptr_type(&obj);
             m->revisions[arg] = ambient::model.time(&obj);
             m->add_dependency(obj.back());
             m->add_derivative(ambient::model.add_revision(&obj)); 
         }
         template<size_t arg>
         static inline void modify(const T& obj, sfunctor* m){
-            m->arguments[arg] = (void*)new ptr_type(const_cast<T*>(&obj));
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<ptr_type>()) ptr_type(const_cast<T*>(&obj));
             m->revisions[arg] = ambient::model.time(&obj);
             m->add_dependency(obj.back());
         }
@@ -80,14 +80,14 @@ namespace ambient {
         typedef typename T::ptr ptr_type;
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
-            m->arguments[arg] = (void*)new ptr_type(&obj);
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<ptr_type>()) ptr_type(&obj);
             m->revisions[arg] = ambient::model.time(&obj);
             m->add_derivative(ambient::model.add_revision(&obj)); 
         }
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
             (*(ptr_type*)m->arguments[arg])->clean();
-            delete (ptr_type*)(m->arguments[arg]);
+            ((ptr_type*)m->arguments[arg])->~ptr_type();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){
