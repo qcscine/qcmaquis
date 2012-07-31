@@ -102,9 +102,22 @@ mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRA
 
 
 # Boost
-include(${PROJECT_SOURCE_DIR}/config/boost.cmake)
+set(Boost_requirements bindings date_time filesystem regex system serialization)
+if(USE_MTM)
+  list(APPEND Boost_requirements thread)
+endif(USE_MTM)
+if(BUILD_REGRESSION)
+  list(APPEND Boost_requirements unit_test_framework)
+endif(BUILD_REGRESSION)
+
+include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
+find_maquis_boost(COMPONENTS ${Boost_requirements})
+
 include_directories(${MAQUIS_Boost_INCLUDE_DIRS})
 link_directories(${MAQUIS_Boost_LIBRARY_DIRS})
+message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
+message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
+message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
 
 # Ambient
 if(USE_AMBIENT)
