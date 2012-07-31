@@ -42,7 +42,6 @@ namespace ambient{
 
     using models::velvet::history;
     using models::velvet::revision;
-    using controllers::velvet::iteratable;
     using controllers::velvet::c_revision;
     using controllers::velvet::w_revision;
     using controllers::velvet::p_revision;

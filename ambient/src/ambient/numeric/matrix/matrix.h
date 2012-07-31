@@ -81,7 +81,7 @@ namespace ambient { namespace numeric {
     };
 
     template <typename T>
-    class matrix_impl : public ambient::iteratable<ambient::history> {
+    class matrix_impl : public ambient::history {
     public:
         typedef T value_type;
         typedef size_t size_type;

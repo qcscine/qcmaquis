@@ -11,8 +11,6 @@ namespace ambient { namespace models { namespace velvet {
     // spatial functor (modifier of objects)
     class sfunctor {
     public:
-        inline void* operator new (size_t size){ return ambient::cfunctor_pool.get(); }
-        inline void operator delete (void* ptr){ }
         virtual void place() = 0;
         inline void add_derivative(revision* r)        { r->set_generator(this); this->derivatives.push_back(r); }
         inline void add_dependency(revision* r)        { this->dependencies.push_back(r); if(r->get_generator() != NULL){ r->get_generator()->credit++; } }

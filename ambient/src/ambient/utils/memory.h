@@ -1,85 +1,42 @@
 #ifndef AMBIENT_CONTROLLERS_VELVET_MEMORY
 #define AMBIENT_CONTROLLERS_VELVET_MEMORY
 #include "ambient/utils/singleton.hpp"
+#include "boost/pool/singleton_pool.hpp"
 
-#define INSTRUCTION_LENGTH 8388608
-#define CHAIN_CHUNK 48
-#define CFUNCTOR_CHUNK 224
-
-#include <queue>
+#define BULK_LENGTH 8388608*224
 
 namespace ambient { namespace utils { 
 
-    class chain_memory : public singleton< chain_memory > 
+    struct empty { };
+
+    class bulk_memory : public singleton< bulk_memory > 
     {
     public:
-        chain_memory(){
-            this->pool = malloc(INSTRUCTION_LENGTH*CHAIN_CHUNK);
+        bulk_memory(){
+            this->pool = malloc(BULK_LENGTH);
             this->iterator = (char*)this->pool;
         }
-       ~chain_memory(){
+       ~bulk_memory(){
             free(this->pool);
         }
+        template<class T>
         void* get(){
-            this->iterator += CHAIN_CHUNK;
-            return this->iterator;
+            void* result = this->iterator;
+            this->iterator += 16*((size_t)(sizeof(T)/16)+1);
+            return result;
         }
-        void reset(){
+        void refresh(){
             this->iterator = (char*)this->pool;
         }
     public:
         char* iterator;
         void* pool;
-    };
-
-    class cfunctor_memory : public singleton< cfunctor_memory > 
-    {
-    public:
-        cfunctor_memory(){
-            this->pool = malloc(INSTRUCTION_LENGTH*CFUNCTOR_CHUNK);
-            this->iterator = (char*)this->pool;
-        }
-       ~cfunctor_memory(){
-            free(this->pool);
-        }
-        void* get(){
-            this->iterator += CFUNCTOR_CHUNK;
-            return this->iterator;
-        }
-        void reset(){
-            this->iterator = (char*)this->pool;
-        }
-    public:
-        char* iterator;
-        void* pool;
-    };
-
-    class memory : public singleton< memory > 
-    {
-    public:
-        inline memory(){
-        }
-        inline ~memory(){
-            //free(this->pool);
-        }
-        void* get(size_t sz){
-            return malloc(sz);
-        }
-        void reset(void* ptr){
-            free(ptr);
-        }
-    public:
-        char* iterator;
-        void* pool;
-        std::queue<void*> vacants;
     };
 
 } }
 
 namespace ambient {
-    extern utils::memory& pool;
-    extern utils::chain_memory& chain_pool;
-    extern utils::cfunctor_memory& cfunctor_pool;
+    extern utils::bulk_memory& bulk_pool;
 }
 
 #endif

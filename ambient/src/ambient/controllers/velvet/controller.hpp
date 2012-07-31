@@ -1,8 +1,6 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 
-#include <cilk/cilk.h>
-
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::channels::mpi::packet_t;
@@ -47,8 +45,7 @@ namespace ambient { namespace controllers { namespace velvet {
             std::swap(chains,mirror);
         }
         cilk_sync;
-        ambient::chain_pool.reset();
-        ambient::cfunctor_pool.reset();
+        ambient::bulk_pool.refresh();
     }
 
     inline void controller::execute_mod(cfunctor* op){

@@ -40,7 +40,4 @@ namespace ambient { namespace controllers { namespace velvet {
         return (T*)e;
     }
     
-    template<class T>
-    inline iteratable<T>::iteratable(dim2 dim) : T(dim) { }
-
 } } }
