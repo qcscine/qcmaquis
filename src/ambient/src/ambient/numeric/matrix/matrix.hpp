@@ -59,6 +59,11 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
+    inline void* matrix<T>::operator new (size_t size, void* placement){
+        return placement; 
+    }
+
+    template<typename T>
     inline void matrix<T>::operator delete (void* ptr){
         boost::singleton_pool<ambient::utils::empty, sizeof(matrix<T>)>::free(ptr); 
     }
@@ -71,25 +76,25 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline matrix<T>::matrix(const ptr& p) 
-    : impl(p) 
+    inline matrix<T>::matrix(const ptr& p, size_t r) 
+    : impl(p), ref(r)
     {
     }
 
     template <typename T>
     inline matrix<T>::matrix(){ 
-        this->impl = new I(); 
+        this->impl = new I(ambient::dim2(0,0), sizeof(T)); 
     }
 
     template <typename T>
     inline matrix<T>::matrix(size_type rows, size_type cols, value_type init_value){
-        this->impl = new I(rows, cols); 
+        this->impl = new I(ambient::dim2(cols, rows), sizeof(T)); 
         fill_value(*this, init_value);
     }
 
     template <typename T>
     inline matrix<T>::matrix(const matrix& m){
-        this->impl = new I(*m.impl);
+        this->impl = new I(m.impl->spec.dim, sizeof(T));
         copy(*this, m);
     }
     
@@ -128,12 +133,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline size_type matrix<T>::num_rows() const { 
-        return this->impl->num_rows(); 
+        return this->impl->spec.dim.y; 
     }
 
     template<typename T>
     inline size_type matrix<T>::num_cols() const {
-        return this->impl->num_cols(); 
+        return this->impl->spec.dim.x; 
     }
 
     template<typename T>
@@ -153,7 +158,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline bool matrix<T>::empty() const { 
-        return this->impl->empty();    
+        return (this->impl->spec.dim == 0);    
     }
 
     template<typename T>
@@ -204,12 +209,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline value_type& matrix<T>::operator() (size_type i, size_type j){
-        return this->impl->get(i,j);
+        ambient::playout(); return ((value_type*)ambient::controller.ufetch(*this->impl->current))[ j*this->impl->spec.dim.y + i ];
     }
 
     template<typename T>
     inline const value_type& matrix<T>::operator() (size_type i, size_type j) const {
-        return this->impl->get(i,j);
+        ambient::playout(); return ((value_type*)ambient::controller.ufetch(*this->impl->current))[ j*this->impl->spec.dim.y + i ];
     }
 
     template<typename T>
@@ -219,67 +224,6 @@ namespace ambient { namespace numeric {
     #undef size_type
     #undef value_type
     #undef scalar_type
-    // }}}
-
-    // {{{ matrix_impl
-    #define size_type  typename matrix_impl<T>::size_type
-    #define value_type typename matrix_impl<T>::value_type
-
-    template<typename T>
-    void* matrix_impl<T>::operator new (size_t size){
-        return boost::singleton_pool<ambient::utils::empty, sizeof(matrix_impl<T>)>::malloc(); 
-    }
-
-    template<typename T>
-    void matrix_impl<T>::operator delete (void* ptr){
-        boost::singleton_pool<ambient::utils::empty, sizeof(matrix_impl<T>)>::free(ptr); 
-    }
-
-    template<typename T>
-    inline matrix_impl<T>::matrix_impl() 
-    : ambient::history(ambient::dim2(0,0)), references(0) 
-    { // be cautious (implicit) 
-    }
-
-    template<typename T>
-    inline matrix_impl<T>::matrix_impl(size_type rows, size_type cols) 
-    : ambient::history(ambient::dim2(cols, rows)), references(0) 
-    { 
-    }
-
-    template<typename T>
-    inline matrix_impl<T>::matrix_impl(matrix_impl const& m) 
-    : ambient::history(m.spec.dim), references(0)
-    { 
-    }
-
-    template<typename T>
-    inline bool matrix_impl<T>::empty() const { 
-        return (this->spec.dim == 0);   
-    }
-
-    template<typename T>
-    inline size_type matrix_impl<T>::num_rows() const { 
-        return this->spec.dim.y; 
-    }
-
-    template<typename T>
-    inline size_type matrix_impl<T>::num_cols() const { 
-        return this->spec.dim.x; 
-    }
-
-    template<typename T>
-    inline value_type& matrix_impl<T>::get(size_type i, size_type j){
-        ambient::playout(); return ((value_type*)ambient::controller.ufetch(*this->current))[ j*this->spec.dim.y + i ];
-    }
-
-    template<typename T>
-    matrix_impl<T>::operator weak_matrix_impl<T>& (){ 
-        return *(weak_matrix_impl<T>*)this; 
-    }
-
-    #undef size_type
-    #undef value_type
     // }}}
 
 } }

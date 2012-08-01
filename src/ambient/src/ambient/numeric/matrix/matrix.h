@@ -11,8 +11,8 @@
 
 namespace ambient { namespace numeric {
 
-    template <typename T>
-    class weak_matrix_impl;
+    template <class T>
+    class weak_view;
 
     template <class Matrix>
     class transpose_view {
@@ -31,20 +31,22 @@ namespace ambient { namespace numeric {
         typename Matrix::ptr impl;
     };
 
-    template <class T>
+    template <typename T>
     class matrix {
     public:
-        typedef matrix_impl<T> I;
-        typedef typename I::ptr ptr;
-        typedef typename I::real_type real_type;
-        typedef typename I::size_type size_type; 
-        typedef typename I::value_type value_type;
-        typedef typename I::scalar_type scalar_type;
-        typedef typename I::difference_type difference_type;
+        typedef ambient::history I;
+        typedef T value_type;
+        typedef size_t size_type;
+        typedef ptrdiff_t difference_type;
+        typedef typename boost::intrusive_ptr<ambient::history> ptr;
+        typedef typename ambient::future<double> real_type;
+        typedef typename ambient::future<T> scalar_type;
+
         inline void* operator new (size_t);
+        inline void* operator new (size_t, void*);
         inline void operator delete (void*);
         static inline matrix<T> identity_matrix(size_type size);
-        explicit inline matrix(const ptr& p);
+        explicit inline matrix(const ptr& p, size_t r);
         explicit inline matrix();
         explicit inline matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
         inline matrix(const matrix& m);
@@ -76,38 +78,17 @@ namespace ambient { namespace numeric {
         inline void load(alps::hdf5::archive & ar){};
         inline void save(alps::hdf5::archive & ar)const{};
         static const char* code();
+        operator weak_view<T>& (){ return *(weak_view<T>*)this; }
     public:
+        size_t ref;
         ptr impl;
     };
 
-    template <typename T>
-    class matrix_impl : public ambient::history {
-    public:
-        typedef T value_type;
-        typedef size_t size_type;
-        typedef ptrdiff_t difference_type;
-        typedef typename boost::intrusive_ptr<matrix_impl<T> > ptr;
-        typedef typename ambient::future<double> real_type;
-        typedef typename ambient::future<T> scalar_type;
-        inline void* operator new (size_t);
-        inline void operator delete (void*);
-        inline matrix_impl();
-        inline matrix_impl(size_type rows, size_type cols);
-        inline matrix_impl(matrix_impl const& m);
-        inline bool empty() const;
-        inline size_type num_rows() const; 
-        inline size_type num_cols() const;
-        inline value_type& get(size_type i, size_type j);
-        friend void intrusive_ptr_add_ref(matrix_impl* p){ ++(p->references); } 
-        friend void intrusive_ptr_release(matrix_impl* p){ if(--(p->references) == 0) delete p; } 
-        operator weak_matrix_impl<T>& ();
-    private:
-        long references;
-    };
-
-    template <typename T>
-    class weak_matrix_impl : public matrix_impl<T> { 
-        typedef typename boost::intrusive_ptr<matrix_impl<T> > ptr;
+    template <class T>
+    class weak_view : public matrix<T> {
+        public:
+        operator matrix<T>& (){ return *(matrix<T>*)this; }
+        weak_view(const typename matrix<T>::ptr& p, size_t r) : matrix<T>(p, r) {}
     };
 
 } }

@@ -20,7 +20,7 @@ namespace ambient {
         future(){}
         template<typename S> inline future& operator = (const S& v){ }
     public:
-        typedef typename boost::intrusive_ptr< container<sizeof(T)> > ptr;
+        typedef typename boost::intrusive_ptr< utils::container<sizeof(T)> > ptr;
         typedef T value_type;
 
         explicit inline future(const ptr& p)
@@ -29,14 +29,14 @@ namespace ambient {
         }
 
         explicit inline future(const future& f){
-            ghost = new container<sizeof(T)>();
+            ghost = new utils::container<sizeof(T)>();
             value = (T*)&(*ghost);
            *value = f.calc_value();
         }
 
         template<typename S>
         inline future(const future<S>& f){ // can be optimized later
-            ghost = new container<sizeof(T)>();
+            ghost = new utils::container<sizeof(T)>();
             value = (T*)&(*ghost);
            *value = (T)f.calc_value();
         }
@@ -61,13 +61,13 @@ namespace ambient {
 #endif
 
         inline future(double v){
-            ghost = new container<sizeof(T)>();
+            ghost = new utils::container<sizeof(T)>();
             value = (T*)&(*ghost);
            *value = v;
         }
 
         inline future(std::complex<double> v){
-            ghost = new container<sizeof(T)>();
+            ghost = new utils::container<sizeof(T)>();
             value = (T*)&(*ghost);
            *value = v;
         }

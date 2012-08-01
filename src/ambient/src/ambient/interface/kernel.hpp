@@ -52,11 +52,11 @@ namespace ambient {
         inline void assign(revision& r){ 
             ambient::controller.ifetch(r);
         }
-        template <size_t arg, typename T> inline revision&   ui_l_current(T& obj){ return *obj.content[this->revisions[arg]];                  }
-        template <size_t arg, typename T> inline c_revision& ui_c_current(T& obj){ return *(c_revision*)obj.content[this->revisions[arg]];     }
-        template <size_t arg, typename T> inline w_revision& ui_w_updated(T& obj){ return *(w_revision*)obj.content[this->revisions[arg] + 1]; }
-        template <size_t arg, typename T> inline p_revision& ui_p_updated(T& obj){ return *(p_revision*)obj.content[this->revisions[arg] + 1]; }
-        template <size_t arg, typename T> inline r_revision& ui_r_updated(T& obj){ return *(r_revision*)obj.content[this->revisions[arg] + 1]; }
+        template <typename T> inline revision&   ui_l_current(T& obj){ return *obj.impl->content[obj.ref];                  }
+        template <typename T> inline c_revision& ui_c_current(T& obj){ return *(c_revision*)obj.impl->content[obj.ref];     }
+        template <typename T> inline w_revision& ui_w_updated(T& obj){ return *(w_revision*)(obj.impl->content[obj.ref+1]); }
+        template <typename T> inline p_revision& ui_p_updated(T& obj){ return *(p_revision*)(obj.impl->content[obj.ref+1]); }
+        template <typename T> inline r_revision& ui_r_updated(T& obj){ return *(r_revision*)(obj.impl->content[obj.ref+1]); }
     };
 }
 

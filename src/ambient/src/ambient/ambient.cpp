@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <pthread.h>
 // }}}
-#include "ambient/utils/memory.h"
+#include "ambient/utils/memory.hpp"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/models/velvet/model.h"
 #include "ambient/controllers/velvet/controller.h"
