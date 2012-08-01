@@ -294,12 +294,12 @@ namespace ambient { namespace numeric {
         return m.num_cols(); 
     }
 
-    template<typename T> inline size_type num_rows(const transpose_view<matrix<T> >& m){ 
-        return transpose_view<matrix<T> >::rows(*m.impl); 
+    template<typename T> inline size_type num_rows(const transpose_view< matrix<T> >& m){ 
+        return m.impl->spec.dim.x; 
     }
 
-    template<typename T> inline size_type num_cols(const transpose_view<matrix<T> >& m){ 
-        return transpose_view<matrix<T> >::cols(*m.impl); 
+    template<typename T> inline size_type num_cols(const transpose_view< matrix<T> >& m){ 
+        return m.impl->spec.dim.y; 
     }
 
 } }

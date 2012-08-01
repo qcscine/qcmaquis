@@ -17,7 +17,7 @@ extern "C" {
 
 namespace ambient { namespace numeric { namespace kernels {
 
-    using ambient::numeric::matrix_impl;
+    using ambient::numeric::matrix;
 
     #include "ambient/utils/numeric.h" // BLAS/LAPACK prototypes
     #include "ambient/utils/ceil.h"

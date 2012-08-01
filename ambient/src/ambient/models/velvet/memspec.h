@@ -4,8 +4,7 @@
 namespace ambient { namespace models { namespace velvet {
 
     struct memspec {
-        inline memspec(dim2 dim);
-        inline void latch(size_t);
+        inline memspec(dim2 dim, size_t ts);
         inline void* alloc() const;
         inline void* calloc() const;
         inline size_t get_bound() const;

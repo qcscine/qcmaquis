@@ -19,7 +19,6 @@ namespace ambient { namespace models { namespace velvet {
         inline void set_group(group* g)                { grp = g; place();    }
         inline group* get_group()                      { return grp;          }
         void*  arguments[SFUNCTOR_ARITY];
-        size_t revisions[SFUNCTOR_ARITY];
         std::list<revision*> derivatives;
         std::list<revision*> dependencies;
         group* grp;

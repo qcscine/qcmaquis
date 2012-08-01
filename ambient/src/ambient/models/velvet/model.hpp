@@ -6,7 +6,6 @@ namespace ambient { namespace models { namespace velvet {
 
     template<typename T>
     inline revision* model::init_revision(T* o){
-        o->spec.latch(sizeof(T::value_type));
         revision* r = new revision(&o->spec, true);
         o->add_state(r);
         return r;

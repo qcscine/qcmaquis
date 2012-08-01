@@ -3,96 +3,81 @@
 
 namespace ambient { namespace numeric {
     template <class T> class matrix;
-    template <class T> class matrix_impl;
-    template <class T> class weak_matrix_impl;
-    template <class T> class diagonal_matrix;
+    template <class T> class weak_view;
     template <class T> class transpose_view;
+    template <class T> class diagonal_matrix;
 } }
 
 namespace ambient { 
 
     using ambient::models::velvet::sfunctor;
     using ambient::controllers::velvet::cfunctor;
+    using ambient::models::velvet::history;
  
     // {{{ compile-time type info: singular types or simple types
     template <typename T> struct singular_info {
-        typedef T* ptr_type;
-        template<size_t arg> static inline void deallocate    (sfunctor* m){ } //((ptr_type)m->arguments[arg])->~T(); 
-        template<size_t arg> static inline T&   revised       (sfunctor* m){ return *(ptr_type)(m->arguments[arg]); }
+        template<size_t arg> static inline void deallocate    (sfunctor* m){ } //((T*)m->arguments[arg])->~T(); 
+        template<size_t arg> static inline T&   revised       (sfunctor* m){ return *(T*)m->arguments[arg]; }
         template<size_t arg> static inline void modify(T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj); }
-        template<size_t arg> static inline void weight        (cfunctor* m){                                        }
-        template<size_t arg> static inline void place         (sfunctor* m){                                        }
+        template<size_t arg> static inline void weight        (cfunctor* m){                                }
+        template<size_t arg> static inline void place         (sfunctor* m){                                }
     };
     // }}}
     // {{{ compile-time type info: future types
     template <typename T> struct future_info {
-        typedef T* ptr_type;
-        template<size_t arg> static inline void deallocate          (sfunctor* m){ ((ptr_type)m->arguments[arg])->~T();            }
-        template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(ptr_type)(m->arguments[arg]);          }
+        template<size_t arg> static inline void deallocate          (sfunctor* m){ ((T*)m->arguments[arg])->~T();            }
+        template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(T*)m->arguments[arg];            }
         template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj.ghost);    }
-        template<size_t arg> static inline void weight              (cfunctor* m){                                                 }
-        template<size_t arg> static inline void place               (sfunctor* m){                                                 }
+        template<size_t arg> static inline void weight              (cfunctor* m){                                           }
+        template<size_t arg> static inline void place               (sfunctor* m){                                           }
     };
     // }}}
     // {{{ compile-time type info: iteratable derived types
     template <typename T> struct iteratable_info {
-        typedef typename T::ptr ptr_type;
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
-            (*(ptr_type*)m->arguments[arg])->clean();
-            ((ptr_type*)m->arguments[arg])->~ptr_type();
+            ((T*)m->arguments[arg])->impl->clean();
+            ((T*)m->arguments[arg])->~T();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){
-            T& obj = *(*(ptr_type*)m->arguments[arg]);
-            return obj;
+            return *(T*)m->arguments[arg];
         }
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<ptr_type>()) ptr_type(&obj);
-            m->revisions[arg] = ambient::model.time(&obj);
-            m->add_dependency(obj.back());
-            m->add_derivative(ambient::model.add_revision(&obj)); 
+            history& o = *obj.impl;
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj.impl, ambient::model.time(&o));
+            m->add_dependency(o.back());
+            m->add_derivative(ambient::model.add_revision(&o)); 
         }
         template<size_t arg>
         static inline void modify(const T& obj, sfunctor* m){
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<ptr_type>()) ptr_type(const_cast<T*>(&obj));
-            m->revisions[arg] = ambient::model.time(&obj);
-            m->add_dependency(obj.back());
+            history& o = *obj.impl;
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(const_cast<T*>(&obj)->impl, ambient::model.time(&o));
+            m->add_dependency(o.back());
         }
         template<size_t arg>
-        static inline void weight(cfunctor* m){
-            T& obj = *(*(ptr_type*)(m->arguments[arg]));
-            if(obj.time() > m->get_weight()){
-                m->set_weight(obj.time());
-            }
-        }
+        static inline void weight(cfunctor* m){ }
         template<size_t arg>
-        static inline void place(sfunctor* m){
-            //T& obj = *(*(ptr_type*)m->arguments[arg]);
-            //if(current(obj).get_placement() == NULL) // fixme
-            //    current(obj).set_placement(m->get_group());
-        }
+        static inline void place(sfunctor* m){ }
     };
     // }}}
     // {{{ compile-time type info: weak iteratable derived types
     template <typename T> struct weak_iteratable_info {
-        typedef typename T::ptr ptr_type;
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<ptr_type>()) ptr_type(&obj);
-            m->revisions[arg] = ambient::model.time(&obj);
-            m->add_derivative(ambient::model.add_revision(&obj)); 
+            history& o = *obj.impl;
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj.impl, ambient::model.time(&o));
+            m->add_derivative(ambient::model.add_revision(&o)); 
         }
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
-            (*(ptr_type*)m->arguments[arg])->clean();
-            ((ptr_type*)m->arguments[arg])->~ptr_type();
+            ((T*)m->arguments[arg])->impl->clean();
+            ((T*)m->arguments[arg])->~T();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){
-            T& obj = *(T*)((*(ptr_type*)m->arguments[arg]).get());
-            return obj;
+            return *(T*)m->arguments[arg];
         }
         template<size_t arg> static inline void weight(cfunctor* m){ }
         template<size_t arg> static inline void place(sfunctor* m){ }
@@ -123,57 +108,45 @@ namespace ambient {
     };
 
     template <typename S>
-    struct info < ambient::numeric::matrix_impl<S> > {
-        typedef ambient::numeric::matrix_impl<S> type;
+    struct info < ambient::numeric::matrix<S> > {
+        typedef ambient::numeric::matrix<S> type;
         typedef iteratable_info< type > typed; 
         static inline type& unfold(type& naked){ return naked; }
         typedef S value_type;
     };
 
     template <typename S>
-    struct info < const ambient::numeric::matrix_impl<S> > {
-        typedef ambient::numeric::matrix_impl<S> type;
+    struct info < const ambient::numeric::matrix<S> > {
+        typedef ambient::numeric::matrix<S> type;
         typedef iteratable_info< type > typed; 
         static inline const type& unfold(const type& naked){ return naked; }
         typedef S value_type;
     };
 
     template <typename S>
-    struct info < ambient::numeric::weak_matrix_impl<S> > {
-        typedef ambient::numeric::weak_matrix_impl<S> type;
+    struct info < ambient::numeric::diagonal_matrix<S> > {
+        typedef ambient::numeric::diagonal_matrix<S> type;
+        static inline ambient::numeric::matrix<S>& unfold(type& folded){ return folded.get_data(); }
+    };
+
+    template <typename S>
+    struct info < const ambient::numeric::diagonal_matrix<S> > {
+        typedef const ambient::numeric::diagonal_matrix<S> type;
+        static inline const ambient::numeric::matrix<S>& unfold(type& folded){ return folded.get_data(); }
+    };
+
+    template <typename S>
+    struct info < ambient::numeric::weak_view<S> > {
+        typedef ambient::numeric::weak_view<S> type;
         typedef weak_iteratable_info< type > typed; 
         static inline type& unfold(type& naked){ return naked; }
         typedef S value_type;
     };
 
     template <typename S>
-    struct info < ambient::numeric::diagonal_matrix<S> > {
-        typedef ambient::numeric::diagonal_matrix<S> type;
-        static inline ambient::numeric::matrix_impl<S>& unfold(type& folded){ return *folded.get_data().impl; }
-    };
-
-    template <typename S>
-    struct info < const ambient::numeric::diagonal_matrix<S> > {
-        typedef const ambient::numeric::diagonal_matrix<S> type;
-        static inline const ambient::numeric::matrix_impl<S>& unfold(type& folded){ return *folded.get_data().impl; }
-    };
-
-    template <typename S>
-    struct info < ambient::numeric::matrix<S> > {
-        typedef ambient::numeric::matrix<S> type;
-        static inline ambient::numeric::matrix_impl<S>& unfold(type& folded){ return *folded.impl; }
-    };
-
-    template <typename S>
-    struct info < const ambient::numeric::matrix<S> > {
-        typedef const ambient::numeric::matrix<S> type;
-        static inline const ambient::numeric::matrix_impl<S>& unfold(type& folded){ return *folded.impl; }
-    };
-
-    template <typename S>
     struct info < const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > > {
         typedef const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > type;
-        static inline const ambient::numeric::matrix_impl<S>& unfold(type& folded){ return *folded.impl; }
+        static inline const ambient::numeric::matrix<S>& unfold(type& folded){ return ambient::numeric::matrix<S>(folded.impl, NULL); }
     };
     // }}}
 }
