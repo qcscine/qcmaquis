@@ -12,17 +12,16 @@ namespace ambient { namespace models { namespace velvet {
     class sfunctor {
     public:
         virtual void place() = 0;
-        inline void add_derivative(revision* r)        { r->set_generator(this); this->derivatives.push_back(r); }
-        inline void add_dependency(revision* r)        { this->dependencies.push_back(r); if(r->get_generator() != NULL){ r->get_generator()->credit++; } }
-        inline std::list<revision*>& get_derivatives() { return derivatives;  }
-        inline std::list<revision*>& get_dependencies(){ return dependencies; }
-        inline void set_group(group* g)                { grp = g; place();    }
-        inline group* get_group()                      { return grp;          }
+        inline void add_derivative(revision* r)          { r->set_generator(this); this->derivatives.push_back(r);         }
+        inline void add_dependency(revision* r)          { if(r->get_generator() != NULL) this->dependencies.push_back(r); }
+        inline std::vector<revision*>& get_derivatives() { return derivatives;  }
+        inline std::list<revision*>& get_dependencies()  { return dependencies; }
+        inline void set_group(group* g)                  { grp = g; place();    }
+        inline group* get_group()                        { return grp;          }
         void*  arguments[SFUNCTOR_ARITY];
-        std::list<revision*> derivatives;
+        std::vector<revision*> derivatives;
         std::list<revision*> dependencies;
         group* grp;
-        size_t credit;
     };
 
 } } }
