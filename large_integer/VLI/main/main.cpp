@@ -26,10 +26,11 @@
 #include "regression/vli_test.hpp"
 
 #include "vli/detail/bit_masks.hpp"
+#include "tools.h"
 
 #define Size1 3
 #define Size2 2*Size1
-#define Order 10
+#define Order 3
 
 using vli::vli_cpu;
 using vli::max_int_value;
@@ -53,10 +54,11 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_combined_cpu;
-typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'> >polynomial_type_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_result_type_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'> > polynomial_type_combined_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'> > polynomial_result_type_combined_cpu;
+
+typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
 
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_result_type_cpu;
@@ -157,23 +159,23 @@ std::cout << d << std::endl;
   
 
 polynomial_type_combined_cpu polyc;
-polynomial_result_type_combined_cpu polycres;
+polynomial_result_type_combined_cpu polycres, polycres2;
+
 
  vector_type_combined_cpu v1c(SizeVector);
  vector_type_combined_cpu v2c(SizeVector);
 
+    tools::fill_vector_random(v1c);
+    tools::fill_vector_random(v2c);
 
-      polycres = vli::detail::inner_product_gpu(v1c,v2c);
+    polycres2= vli::detail::inner_product_cpu(v1c,v2c);
+    polycres = vli::detail::inner_product_gpu(v1c,v2c);
 
- 
-    fill_vector_random(v1,2);
-    fill_vector_random(v2,3);
-
-    fill_vector_negate(v1,2);
-    fill_vector_negate(v2,3);
-
-//    InitPolyVLItoPolyGMP(v1,v1gmp);
-//    InitPolyVLItoPolyGMP(v2,v2gmp);
+    std::cout << std::hex << polycres2<< std::endl;    
+    std::cout << std::hex << polycres << std::endl;    
+/* 
+    tools::fill_vector_random(v1);
+    tools::fill_vector_random(v2);
 
     Timer t3("CPU vli_omp");
     t3.begin();
@@ -214,7 +216,7 @@ std::cout << " --------------------------- " << std::endl;
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
      std::cout << "validation GMP OK " << std::endl;
-
+*/
     return 0;
 }
 
