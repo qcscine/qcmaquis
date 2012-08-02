@@ -85,15 +85,14 @@ boost::mt11213b rng;
 
 template <typename Vli>
 typename Vli::value_type rnd_digit(){
-  //  static boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
-    return rand()%max_int_value<Vli>::value  ;//rnd(rng);
+    static boost::uniform_int<typename Vli::value_type> rnd(0,max_int_value<Vli>::value);
+    return rnd(rng);
 }
 
 template <typename Vli>
 int rnd_valid_int(){
- //   static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(max_int_value<Vli>::value)));
-    return rand()%max_int_value<Vli>::value  ;
-//    return rnd(rng);
+    static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(max_int_value<Vli>::value)));
+    return rnd(rng);
 }
 
 template <typename Vli>
