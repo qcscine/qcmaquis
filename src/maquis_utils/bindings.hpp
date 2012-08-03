@@ -77,19 +77,6 @@ namespace maquis { namespace bindings {
     };
 
     template <typename T>
-    struct binding< alps::numeric::matrix<T>, ambient::numeric::matrix_impl<T> > {
-        static alps::numeric::matrix<T> convert(const ambient::numeric::matrix_impl<T>& pm){
-            size_t num_rows = pm.num_rows();
-            size_t num_cols = pm.num_cols();
-            alps::numeric::matrix<T> m(num_rows, num_cols);    
-            std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::push< ambient::numeric::kernels::cast_to_vector_atomic<T> >(v_ptr, pm, num_rows, num_cols);
-            ambient::playout();
-            return m;
-        }
-    };
-
-    template <typename T>
     struct binding< ambient::numeric::diagonal_matrix<T>, alps::numeric::diagonal_matrix<T> > {
         static ambient::numeric::diagonal_matrix<T> convert(const alps::numeric::diagonal_matrix<T>& m){
             size_t num_rows(m.num_rows());
@@ -126,14 +113,6 @@ namespace maquis { namespace bindings {
 } }
 
 #ifdef AMBIENT
-template<typename T>
-bool operator == (alps::numeric::matrix<T> const & a, ambient::numeric::matrix_impl<T> const & b) 
-{
-    ambient::future<int> ret(1);
-    ambient::numeric::matrix<T> pa = maquis::bindings::matrix_cast<ambient::numeric::matrix<T> >(a);
-    ambient::push< ambient::numeric::kernels::validation_atomic<T> >(pa, b, ret); 
-    return ((int)ret > 0);
-}
 
 template<typename T>
 bool operator == (alps::numeric::matrix<T> const & a, ambient::numeric::matrix<T> const & b) 
@@ -154,11 +133,6 @@ bool operator == (alps::numeric::diagonal_matrix<T> const & a, ambient::numeric:
 }
 
 template<typename T>
-bool operator == (ambient::numeric::matrix_impl<T> const & pm, alps::numeric::matrix<T> const & m){
-    return (m == pm);
-}
-
-template<typename T>
 bool operator == (ambient::numeric::matrix<T> const & pm, alps::numeric::matrix<T> const & m){
     return (m == pm);
 }
@@ -167,5 +141,6 @@ template<typename T>
 bool operator == (ambient::numeric::diagonal_matrix<T> const & pm, alps::numeric::diagonal_matrix<T> const & m){
     return (m == pm);
 }
+
 #endif
 #endif
