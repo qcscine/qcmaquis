@@ -54,8 +54,8 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'> > polynomial_type_combined_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'> > polynomial_result_type_combined_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>  > polynomial_type_combined_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'>  > polynomial_result_type_combined_cpu;
 
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_cpu;
 typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
@@ -173,7 +173,8 @@ polynomial_result_type_combined_cpu polycres, polycres2;
 
     std::cout << std::hex << polycres2<< std::endl;    
     std::cout << std::hex << polycres << std::endl;    
-/* 
+ 
+     if(polycres2 == polycres ) {printf("OK gpu combined\n"); } else{printf("NO OK gpu combined \n"); } 
     tools::fill_vector_random(v1);
     tools::fill_vector_random(v2);
 
@@ -216,7 +217,7 @@ std::cout << " --------------------------- " << std::endl;
 
     if(ValidatePolyVLI_PolyGMP(result_pure_cpu,pgmpd))
      std::cout << "validation GMP OK " << std::endl;
-*/
+
     return 0;
 }
 

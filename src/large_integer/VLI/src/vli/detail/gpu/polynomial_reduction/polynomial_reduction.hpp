@@ -72,7 +72,7 @@ namespace vli {
   		    unsigned int * out2 = out+(coefficient_id*2*Size); 
                     #pragma unroll
 		    for(unsigned int i=0; i<2*Size; ++i)
-			    out2[i] = buf[i];
+		        out2[i] = buf[i];
 	    }
     }
 
