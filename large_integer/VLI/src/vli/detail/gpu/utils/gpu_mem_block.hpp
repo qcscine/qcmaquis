@@ -103,8 +103,8 @@ namespace detail {
 
             cudaMalloc((void**)&(pgm->V1Data_), req_size*sizeof(BaseInt)); //input 1
             cudaMalloc((void**)&(pgm->V2Data_), req_size*sizeof(BaseInt)); //input 2
-            cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value)*sizeof(BaseInt); 
-            cudaMalloc((void**)&(pgm->PoutData_),                  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value)*sizeof(BaseInt);
+            cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value*sizeof(BaseInt)); 
+            cudaMalloc((void**)&(pgm->PoutData_),                  2*size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value*sizeof(BaseInt));
 
             } // end if
         } // end fonction

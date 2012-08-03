@@ -9,13 +9,13 @@ namespace tools{
     template <typename Vli>
     typename Vli::value_type rnd_digit(){
         static boost::uniform_int<typename Vli::value_type> rnd(0,vli::max_int_value<Vli>::value);
-        return rnd(rng);
+        return 1;//  rnd(rng);
     }
    
     template <typename Vli>
     int rnd_valid_int(){
         static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(vli::max_int_value<Vli>::value)));
-        return rnd(rng);
+        return 1;// rnd(rng);
     }
    
     template <typename Vli>
@@ -40,7 +40,7 @@ namespace tools{
     template <typename Polynomial>
     void fill_poly_random(Polynomial& p){
         for(typename vli::iterator<Polynomial>::type it= p.begin(); it != p.end(); ++it){
-           fill_random(*it,2);
+           fill_random(*it,1);
        //    vli_negate(*it,2);
         }
     } 

@@ -63,7 +63,7 @@ namespace vli {
     template <typename BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
     void gpu_inner_product_vector(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
 
-	    gpu_memblock<BaseInt>* pgm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial 
+	    gpu_memblock<BaseInt>* pgm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial, could we change the pattern by a ref ? 
             resize_helper<BaseInt, Size, OrderSpecification, Var0, Var1, Var2, Var3>::resize(pgm, VectorSize);
             
   	    tasklist_keep_order<Size,OrderSpecification, Var0, Var1, Var2, Var3>* ghc = tasklist_keep_order<Size, OrderSpecification, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
@@ -73,13 +73,13 @@ namespace vli {
 	    {
                 dim3 grid(VectorSize) ;
                 dim3 threads(MulBlockSize<OrderSpecification, Var0, Var1, Var2, Var3>::value);
-                polynomial_mul_full_kepler<BaseInt, Size,OrderSpecification, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->V1Data_, pgm->V2Data_,VectorSize, pgm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
+                polynomial_mul_full_kepler<BaseInt, Size, OrderSpecification, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->V1Data_, pgm->V2Data_,VectorSize, pgm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
                 dim3 grid(MaxNumberCoefficientExtend<OrderSpecification, Var0, Var1, Var2, Var3>::value);
                 dim3 threads(SumBlockSize::value);
-                polynomial_sum_intermediate_full<BaseInt, Size,OrderSpecification::value, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->VinterData_, VectorSize, pgm->PoutData_); //the reduction is independent of the order specification
+                polynomial_sum_intermediate_full<BaseInt, Size, OrderSpecification::value, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->VinterData_, VectorSize, pgm->PoutData_); //the reduction is independent of the order specification
 	    }
     } 
 
@@ -108,6 +108,10 @@ namespace vli {
     \
     template<>      \
     unsigned int* gpu_get_polynomial<VLI_SIZE, max_order_each<POLY_ORDER>, EXPEND_VAR(VAR) >() /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
+    {return gpu_get_polynomial<unsigned int, 2*VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>();}\
+    \
+    template<>      \
+    unsigned int* gpu_get_polynomial<VLI_SIZE, max_order_combined<POLY_ORDER>, EXPEND_VAR(VAR) >() /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
     {return gpu_get_polynomial<unsigned int, 2*VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>();}\
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_ORDER_VAR_TUPLE) \

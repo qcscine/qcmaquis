@@ -252,7 +252,8 @@ namespace vli {
         
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
-        const unsigned int input_elem_offset = element_id * stride<Var0,Order>::value * stride<Var1,Order>::value * Size;
+        //const unsigned int input_elem_offset = element_id * stride<Var0,Order>::value * stride<Var1,Order>::value * Size; //faute ! c est la taille d un poly pas valable pour max_order_each
+        const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<vli::detail::num_of_variables_helper<Var0,Var1,vli::no_variable, vli::no_variable >::value+1, Order>::value  * Size; //faute ! c est la taille d un poly pas valable pour max_order_each
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<max_order_combined<Order>, Var0, Var1, vli::no_variable, vli::no_variable>::value)];
@@ -275,11 +276,11 @@ namespace vli {
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
                     unsigned int in_polynomial_offset1 = (  
-                                                           VLI__ExtendStride*current_degree_x - (current_degree_x*current_degree_x-current_degree_x)/2 + current_degree_y
+                                                           (Order+1)*current_degree_x - (current_degree_x*current_degree_x-current_degree_x)/2 + current_degree_y
                                                          ) * Size + input_elem_offset;
                     
                     unsigned int in_polynomial_offset2 = ( 
-                                                           VLI__ExtendStride*(output_degree_x-current_degree_x) - ((output_degree_x-current_degree_x)*(output_degree_x-current_degree_x)-(output_degree_x-current_degree_x))/2 + (output_degree_y-current_degree_y)
+                                                           (Order+1)*(output_degree_x-current_degree_x) - ((output_degree_x-current_degree_x)*(output_degree_x-current_degree_x)-(output_degree_x-current_degree_x))/2 + (output_degree_y-current_degree_y)
                                                          ) * Size + input_elem_offset;
                 
                     #pragma unroll

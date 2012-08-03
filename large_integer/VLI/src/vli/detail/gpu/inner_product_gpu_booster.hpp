@@ -206,8 +206,8 @@ namespace vli
                 res[0]+=res[i];
             #endif
             
-            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial<Coeff::size, max_order_each<Order>, Var0, Var1, Var2, Var3 >(),
-                                             max_order_combined_helpers::size<max_order_combined_helpers::num_of_variables_helper<Var0,Var1,Var2,Var3 >::value+1, 2*Order>::value
+            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial<Coeff::size, max_order_combined<Order>, Var0, Var1, Var2, Var3 >(),
+                                            2*Coeff::size*max_order_combined_helpers::size<max_order_combined_helpers::num_of_variables_helper<Var0,Var1,Var2,Var3 >::value+1, 2*Order>::value
                                             *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
           
             #ifdef _OPENMP
