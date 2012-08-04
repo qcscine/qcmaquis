@@ -47,6 +47,19 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
         data_.generate(utils::constant<typename Matrix::value_type>(val));
 }
 
+#ifdef RVALUE
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup>::MPSTensor(MPSTensor&& rhs){ 
+    swap(*this, rhs); 
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup>& MPSTensor<Matrix, SymmGroup>::operator=(MPSTensor&& rhs){
+    swap(*this, rhs);
+    return *this;
+}
+#endif
+
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::replace_left_paired(block_matrix<Matrix, SymmGroup> const & rhs, Indicator normalization)
 {
@@ -425,8 +438,8 @@ void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
     swap(this->left_i, b.left_i);
     swap(this->right_i, b.right_i);
     swap(this->data_, b.data_);
-    swap(this->cur_storage, b.cur_storage);
-    swap(this->cur_normalization, b.cur_normalization);
+    std::swap(this->cur_storage, b.cur_storage);
+    std::swap(this->cur_normalization, b.cur_normalization);
 }
 
 #ifdef HAVE_ALPS_HDF5
