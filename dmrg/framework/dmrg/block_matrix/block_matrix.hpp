@@ -26,6 +26,19 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
         data_.push_back(new Matrix(rows_[k].second, cols_[k].second));
 }
 
+#ifdef RVALUE
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix&& rhs){
+    swap(*this, rhs);
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>& block_matrix<Matrix, SymmGroup>::operator=(block_matrix&& rhs){
+    swap(*this, rhs);
+    return *this;
+}
+#endif
+
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
 //template<class Matrix, class SymmGroup>
 //block_matrix<Matrix, SymmGroup>::block_matrix(charge rc, charge cc, Matrix& m)
@@ -98,9 +111,10 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, char
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(block_matrix rhs)
+block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix& rhs)
 {
-    swap(*this, rhs);
+    block_matrix tmp(rhs);
+    swap(*this, tmp);
     return *this;
 }
 
