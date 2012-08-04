@@ -57,12 +57,12 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::atomic_receive(revision& r){
-        std::list<cfunctor*>& list = r.content.assignments;
+        /*std::list<cfunctor*>& list = r.content.assignments;
         std::list<cfunctor*>::iterator it = list.begin(); 
         while(it != list.end()){
             this->execute_mod(*it);
             list.erase(it++);
-        }
+        }*/ // should be rewritten for MPI
     }
 
     inline void controller::acquire(channels::mpi::channel* channel){
@@ -86,7 +86,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::ifetch(revision& r){
-        this->atomic_receive(r);
+        //this->atomic_receive(r);
     }
 
     inline void controller::conditional_flush(){
@@ -159,7 +159,7 @@ namespace ambient { namespace controllers { namespace velvet {
     } */
 
     /* Full fledged heavy version:
-    inline revision::entry& controller::ifetch_block(revision& r, size_t x, size_t y){
+    inline revision::entry& controller::ifetch(revision& r){
         assert(r.get_placement() != NULL);
         if(r.block(x,y).valid())
             this->atomic_receive(r.get_layout(), x, y);

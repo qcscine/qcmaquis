@@ -32,10 +32,8 @@ namespace ambient { namespace models { namespace velvet {
             inline void* get_memory();
             inline bool valid();
             inline bool occupied();
-            inline std::list<cfunctor*>& get_assignments();
             void* header;
             void* data;
-            std::list<cfunctor*> assignments;
         };
 
         inline void* operator new (size_t size);

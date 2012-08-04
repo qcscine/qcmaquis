@@ -60,10 +60,6 @@ namespace ambient { namespace models { namespace velvet {
         return (this->data == NULL);
     }
 
-    inline std::list<controllers::velvet::cfunctor*>& revision::entry::get_assignments(){
-        return this->assignments;
-    }
-
     // }}}
 
 } } }
