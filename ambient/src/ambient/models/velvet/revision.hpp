@@ -9,15 +9,12 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline revision::revision(memspec* spec, bool clean)
-    : spec(spec), clean(clean), generator(NULL) { 
-    }
-
-    inline revision::~revision(){
-        free(content.header);
+    : spec(spec), clean(clean), generator(NULL), header(NULL), data(NULL){
     }
 
     inline void revision::embed(void* memory, size_t bound){
-        this->content.set_memory(memory, bound);
+        this->header = memory;
+        this->data = (void*)((size_t)memory + bound);
     }
 
     inline void revision::set_generator(void* m){
@@ -32,31 +29,21 @@ namespace ambient { namespace models { namespace velvet {
         return this->generator;
     }
 
-    // {{{ revision::entry //
-
-    inline revision::entry::entry()
-    : header(NULL), data(NULL){ }
-
-    inline void revision::entry::swap(entry& e){
+    inline void revision::swap(revision& e){
         this->data = e.data;
         this->header = e.header;
         e.header = NULL;
     }
 
-    inline void revision::entry::set_memory(void* memory, size_t bound){
-        this->header = memory;
-        this->data = (void*)((size_t)memory + bound);
-    }
-
-    inline void* revision::entry::get_memory(){
+    inline void* revision::get_memory(){
         return this->header;
     }
 
-    inline bool revision::entry::valid(){
+    inline bool revision::valid(){
         return (this->data != NULL);
     }
 
-    inline bool revision::entry::occupied(){
+    inline bool revision::occupied(){
         return (this->data == NULL);
     }
 

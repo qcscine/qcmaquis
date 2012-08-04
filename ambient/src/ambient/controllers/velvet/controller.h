@@ -25,7 +25,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
         inline void alloc (revision& r);
         inline void calloc(revision& r);
-        inline revision::entry& ufetch(revision& r);
+        inline revision& ufetch(revision& r);
         inline void ifetch(revision& r);
         inline void unlock_revision(revision* arg);
         inline void unlink_revision(revision* arg);
