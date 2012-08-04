@@ -18,22 +18,72 @@ namespace ambient {
     template <typename T> struct singular_info {
         template<size_t arg> static inline void deallocate    (sfunctor* m){ } //((T*)m->arguments[arg])->~T(); 
         template<size_t arg> static inline T&   revised       (sfunctor* m){ return *(T*)m->arguments[arg]; }
-        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj); }
+        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj); }
         template<size_t arg> static inline void weight        (cfunctor* m){                                }
         template<size_t arg> static inline void place         (sfunctor* m){                                }
+        template<size_t arg> static inline bool ready         (sfunctor* m, void* e){ return true;          }
+        template<size_t arg> static inline bool match         (sfunctor* m, void* t){ return false;         }
+        template<size_t arg> static inline void tag           (sfunctor* m, void* t){                       }
     };
     // }}}
     // {{{ compile-time type info: future types
     template <typename T> struct future_info {
         template<size_t arg> static inline void deallocate          (sfunctor* m){ ((T*)m->arguments[arg])->~T();            }
         template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(T*)m->arguments[arg];            }
-        template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj.ghost);    }
+        template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.ghost);    }
         template<size_t arg> static inline void weight              (cfunctor* m){                                           }
         template<size_t arg> static inline void place               (sfunctor* m){                                           }
+        template<size_t arg> static inline bool ready               (sfunctor* m, void* e){ return true;                     } // might be checked
+        template<size_t arg> static inline bool match               (sfunctor* m, void* t){ return false;                    }
+        template<size_t arg> static inline void tag                 (sfunctor* m, void* t){                                  }
     };
     // }}}
     // {{{ compile-time type info: iteratable derived types
     template <typename T> struct iteratable_info {
+        template<size_t arg> 
+        static inline void deallocate(sfunctor* m){
+            T* obj = (T*)m->arguments[arg];
+            obj->impl->clean();
+            obj->impl->content[obj->ref+1]->reset_generator();
+            obj->~T();
+        }
+        template<size_t arg>
+        static inline T& revised(sfunctor* m){
+            return *(T*)m->arguments[arg];
+        }
+        template<size_t arg>
+        static inline void modify(T& obj, sfunctor* m){
+            history& o = *obj.impl;
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.impl, ambient::model.time(&o));
+            ambient::model.add_revision(&o); 
+        }
+        template<size_t arg>
+        static inline void weight(cfunctor* m){ }
+        template<size_t arg>
+        static inline void place(sfunctor* m){ }
+        template<size_t arg> 
+        static inline bool ready(sfunctor* m, void* e){
+            T* obj = (T*)m->arguments[arg];
+            void* generator = obj->impl->content[obj->ref]->generator;
+            if(generator == NULL || generator == e) return true;
+            return false;
+        }
+        template<size_t arg> 
+        static inline bool match(sfunctor* m, void* t){
+            T* obj = (T*)m->arguments[arg];
+            void* generator = obj->impl->content[obj->ref]->generator;
+            if(generator == t) return true;
+            return false;
+        }
+        template<size_t arg> 
+        static inline void tag(sfunctor* m, void* t){
+            T* obj = (T*)m->arguments[arg];
+            obj->impl->content[obj->ref+1]->set_generator(t);
+        }
+    };
+    // }}}
+    // {{{ compile-time type info: const iteratable derived types
+    template <typename T> struct const_iteratable_info {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
             ((T*)m->arguments[arg])->impl->clean();
@@ -46,20 +96,29 @@ namespace ambient {
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
             history& o = *obj.impl;
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj.impl, ambient::model.time(&o));
-            m->add_dependency(o.back());
-            m->add_derivative(ambient::model.add_revision(&o)); 
-        }
-        template<size_t arg>
-        static inline void modify(const T& obj, sfunctor* m){
-            history& o = *obj.impl;
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(const_cast<T*>(&obj)->impl, ambient::model.time(&o));
-            m->add_dependency(o.back());
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.impl, ambient::model.time(&o));
         }
         template<size_t arg>
         static inline void weight(cfunctor* m){ }
         template<size_t arg>
         static inline void place(sfunctor* m){ }
+        template<size_t arg> 
+        static inline bool ready(sfunctor* m, void* e){
+            T* obj = (T*)m->arguments[arg];
+            void* generator = obj->impl->content[obj->ref]->generator;
+            if(generator == NULL || generator == e) return true;
+            return false;
+        }
+        template<size_t arg> 
+        static inline bool match(sfunctor* m, void* t){
+            T* obj = (T*)m->arguments[arg];
+            void* generator = obj->impl->content[obj->ref]->generator;
+            if(generator == t) return true;
+            return false;
+        }
+        template<size_t arg> 
+        static inline void tag(sfunctor* m, void* t){
+        }
     };
     // }}}
     // {{{ compile-time type info: weak iteratable derived types
@@ -67,20 +126,29 @@ namespace ambient {
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
             history& o = *obj.impl;
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<T>()) T(obj.impl, ambient::model.time(&o));
-            m->add_derivative(ambient::model.add_revision(&o)); 
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.impl, ambient::model.time(&o));
+            ambient::model.add_revision(&o);
         }
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
-            ((T*)m->arguments[arg])->impl->clean();
-            ((T*)m->arguments[arg])->~T();
+            T* obj = (T*)m->arguments[arg];
+            obj->impl->clean();
+            obj->impl->content[obj->ref+1]->reset_generator();
+            obj->~T();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){
             return *(T*)m->arguments[arg];
         }
+        template<size_t arg> 
+        static inline void tag(sfunctor* m, void* t){
+            T* obj = (T*)m->arguments[arg];
+            obj->impl->content[obj->ref+1]->set_generator(t);
+        }
         template<size_t arg> static inline void weight(cfunctor* m){ }
         template<size_t arg> static inline void place(sfunctor* m){ }
+        template<size_t arg> static inline bool ready(sfunctor* m, void* e){ return true;  }
+        template<size_t arg> static inline bool match(sfunctor* m, void* t){ return false; }
     };
     // }}}
     // {{{ compile-time type info: specialization for forwarded types
@@ -117,9 +185,9 @@ namespace ambient {
 
     template <typename S>
     struct info < const ambient::numeric::matrix<S> > {
-        typedef ambient::numeric::matrix<S> type;
-        typedef iteratable_info< type > typed; 
-        static inline const type& unfold(const type& naked){ return naked; }
+        typedef const ambient::numeric::matrix<S> type;
+        typedef const_iteratable_info< type > typed; 
+        static inline type& unfold(type& naked){ return naked; }
         typedef S value_type;
     };
 
@@ -146,7 +214,7 @@ namespace ambient {
     template <typename S>
     struct info < const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > > {
         typedef const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > type;
-        static inline const ambient::numeric::matrix<S>& unfold(type& folded){ return ambient::numeric::matrix<S>(folded.impl, NULL); }
+        static inline const ambient::numeric::matrix<S>& unfold(type& folded){ return *(const ambient::numeric::matrix<S>*)&folded; }
     };
     // }}}
 }

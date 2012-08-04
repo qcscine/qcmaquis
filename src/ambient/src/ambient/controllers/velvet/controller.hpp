@@ -14,26 +14,10 @@ namespace ambient { namespace controllers { namespace velvet {
     {
         this->acquire(&ambient::channel);
     }
-#ifdef CHAINING
     inline void controller::execute(chain* op){
         op->execute();
         delete op;
     }
-#else
-    inline void controller::execute(cfunctor* op){
-        op->computation();
-        std::list<revision*>& list = op->derivatives; 
-        std::list<revision*>::iterator itd = list.begin(); 
-        while(itd != list.end()) (*itd++)->reset_generator();
-        delete op;
-    }
-#endif
-
-#ifdef CHAINING
-#define OP chain
-#else
-#define OP cfunctor
-#endif
 
     inline void controller::flush(){
         if(this->stack.empty()) return;
@@ -43,12 +27,12 @@ namespace ambient { namespace controllers { namespace velvet {
         this->stack.reset();
         this->last = NULL;
 
-        touchstack< OP* >* chains = &this->chains;
-        touchstack< OP* >* mirror = &this->mirror;
+        touchstack< chain* >* chains = &this->chains;
+        touchstack< chain* >* mirror = &this->mirror;
 
         while(this->workload){
             while(!chains->end_reached()){
-                OP* op = chains->pick();
+                chain* op = chains->pick();
                 if(op->ready()){
                     cilk_spawn this->execute(op);
                     this->workload--;
@@ -63,20 +47,13 @@ namespace ambient { namespace controllers { namespace velvet {
         ambient::bulk_pool.refresh();
     }
 
-#undef OP
-
     inline void controller::execute_mod(cfunctor* op){
-#ifdef CHAINING
         if(this->last && this->last->constrains(op)) this->last->push_back(op);
         else{
             this->last = new chain(op);
             this->workload++;
             this->chains.push_back(this->last);
         }
-#else
-        this->workload++;
-        this->chains.push_back(op);
-#endif
     }
 
     inline void controller::atomic_receive(revision& r){

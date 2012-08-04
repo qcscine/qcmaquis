@@ -15,9 +15,6 @@ namespace ambient { namespace controllers { namespace velvet {
         inline bool ready(); 
         inline bool constrains(cfunctor* op);
         std::vector<cfunctor*> content;
-    private:
-        std::vector<revision*> derivatives;
-        std::vector<revision*> dependencies;
     };
 
 } } }

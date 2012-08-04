@@ -29,6 +29,7 @@ namespace ambient { namespace numeric {
         template<class M> static size_t cols(const M& m);
         static const char* code();
         typename Matrix::ptr impl;
+        size_t ref;
     };
 
     template <typename T>
@@ -80,8 +81,8 @@ namespace ambient { namespace numeric {
         static const char* code();
         operator weak_view<T>& (){ return *(weak_view<T>*)this; }
     public:
-        size_t ref;
         ptr impl;
+        size_t ref;
     };
 
     template <class T>

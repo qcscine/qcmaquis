@@ -986,8 +986,8 @@ namespace ambient { namespace numeric { namespace kernels {
             T wkopt;
             T* tau = (T*)malloc(k*sizeof(T));
             T* ad  = ui_c_current(a);
-            T* qd  = ui_r_updated(q);
-            T* rd = ui_r_updated(r);
+            T* qd  = ui_w_updated(q);
+            T* rd = ui_p_updated(r);
             T* work;
             T* more_work;
             T  kwork;
@@ -997,8 +997,6 @@ namespace ambient { namespace numeric { namespace kernels {
             work = (T*)malloc( lwork*sizeof(T) );
             geqrf(&m, &n, ad, &m, tau, work, &lwork, &info);
             assert( info == 0 );
-
-            memset((void*)rd,0,k*n*sizeof(T)); // l 221 alps/numeric/matrix/algorithms.hpp
 
             for (std::size_t c = 0; c < n; ++c)
                 for (std::size_t r = 0; r <= c && r < k; ++r)
@@ -1047,8 +1045,8 @@ namespace ambient { namespace numeric { namespace kernels {
             T wkopt;
             T* tau = (T*)malloc(k*sizeof(T));
             T* ad  = ui_c_current(a);
-            T* ld  = ui_r_updated(l);
-            T* qd  = ui_r_updated(q);
+            T* ld  = ui_p_updated(l);
+            T* qd  = ui_w_updated(q);
             T* work;
             T* more_work;
             T  kwork;
@@ -1058,8 +1056,6 @@ namespace ambient { namespace numeric { namespace kernels {
             work = (T*)malloc( lwork*sizeof(T) );
             gelqf(&m, &n, ad, &m, tau, work, &lwork, &info);
             assert( info == 0 );
-
-            memset((void*)ld,0,k*m*sizeof(T)); // l 221 alps/numeric/matrix/algorithms.hpp
 
             for (std::size_t c = 0; c < k; ++c)
                 for (std::size_t r = c; r < m ;++r)

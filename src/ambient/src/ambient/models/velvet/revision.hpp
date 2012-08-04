@@ -20,7 +20,7 @@ namespace ambient { namespace models { namespace velvet {
         this->content.set_memory(memory, bound);
     }
 
-    inline void revision::set_generator(sfunctor* m){
+    inline void revision::set_generator(void* m){
         this->generator = m;
     }
 
@@ -28,7 +28,7 @@ namespace ambient { namespace models { namespace velvet {
         this->generator = NULL;
     }
 
-    inline sfunctor* revision::get_generator(){
+    inline void* revision::get_generator(){
         return this->generator;
     }
 
