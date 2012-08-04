@@ -41,6 +41,11 @@ public:
               Index<SymmGroup> const & rd = Index<SymmGroup>(),
               bool fillrand = true,
               value_type val = 0);
+
+#ifdef RVALUE
+    MPSTensor(MPSTensor&& rhs); 
+    MPSTensor& operator=(MPSTensor&& rhs);
+#endif
     
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
