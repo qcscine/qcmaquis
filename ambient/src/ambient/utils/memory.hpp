@@ -3,7 +3,7 @@
 #include "ambient/utils/singleton.hpp"
 #include "boost/pool/singleton_pool.hpp"
 
-#define BULK_LENGTH 8388608*224
+#define BULK_LENGTH 8388608*16
 
 namespace ambient { namespace utils {
 
@@ -19,10 +19,10 @@ namespace ambient { namespace utils {
        ~bulk_memory(){
             free(this->pool);
         }
-        template<class T>
+        template<size_t S>
         void* get(){
             void* result = this->iterator;
-            this->iterator += 16*((size_t)(sizeof(T)/16)+1);
+            this->iterator += 16*((size_t)(S/16)+1);
             return result;
         }
         void refresh(){

@@ -10,8 +10,6 @@
 
 #include <cilk/cilk.h>
 
-#define CHAINING
-
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::models::velvet::revision;
@@ -40,15 +38,9 @@ namespace ambient { namespace controllers { namespace velvet {
         bool muted;
     private:
         touchstack< cfunctor* > stack;
-#ifdef CHAINING
         inline void execute(chain* op);
         touchstack< chain* > chains;
         touchstack< chain* > mirror;
-#else
-        inline void execute(cfunctor* op);
-        touchstack< cfunctor* > chains;
-        touchstack< cfunctor* > mirror;
-#endif
         chain* last;
         size_t workload;
     };

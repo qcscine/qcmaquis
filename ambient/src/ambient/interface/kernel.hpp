@@ -24,11 +24,14 @@ namespace ambient {
     template<typename FP, FP fp>
     struct kernel_inliner { 
         private:
-        static void invoke  (){}
-        static void latch   (){}
-        static void cleanup (){}
-        static void weight  (){}
-        static void place   (){}
+        static void invoke    (){}
+        static void latch     (){}
+        static void cleanup   (){}
+        static void weight    (){}
+        static void place     (){}
+        static bool ready(void*){}
+        static bool match(void*){}
+        static void tag  (void*){}
     };
 
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
@@ -37,11 +40,20 @@ namespace ambient {
     class kernel_atomic : public cfunctor
     {
     public:
-        virtual ~kernel_atomic()  { kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
-        virtual void weight()     { kernel_inliner<typename K::F,&K::c>::weight(this);     }
-        virtual void place()      { kernel_inliner<typename K::F,&K::c>::place(this);      }
-        virtual void computation(){ kernel_inliner<typename K::F,&K::c>::invoke((K*)this); }
-        virtual void logistics()  { kernel_inliner<typename K::F,&K::l>::invoke((K*)this); }
+        inline void* operator new (size_t size){ 
+            return ambient::bulk_pool.get<sizeof(K)>(); 
+        }
+        
+        inline void operator delete (void* ptr){ }
+
+        virtual ~kernel_atomic()   { kernel_inliner<typename K::F,&K::c>::cleanup(this);           }
+        virtual void weight()      { return kernel_inliner<typename K::F,&K::c>::weight(this);     }
+        virtual void place()       { return kernel_inliner<typename K::F,&K::c>::place(this);      }
+        virtual bool ready(void* e){ return kernel_inliner<typename K::F,&K::c>::ready(this, e);   }
+        virtual bool match(void* t){ return kernel_inliner<typename K::F,&K::c>::match(this, t);   }
+        virtual void tag(void* t)  { return kernel_inliner<typename K::F,&K::c>::tag(this, t);     }
+        virtual void computation() { return kernel_inliner<typename K::F,&K::c>::invoke((K*)this); }
+        virtual void logistics()   { return kernel_inliner<typename K::F,&K::l>::invoke((K*)this); }
         inline void ctxt_select(const char* sql){ 
             this->set_group(channel.world()); 
         }

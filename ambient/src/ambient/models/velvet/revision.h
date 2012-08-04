@@ -50,10 +50,10 @@ namespace ambient { namespace models { namespace velvet {
         inline revision* get_parent(){ return parent; }
         inline revision(memspec*, bool clean = false);
         inline ~revision();
-        inline sfunctor* get_generator();
-        inline void set_generator(sfunctor*);
+        inline void* get_generator();
+        inline void set_generator(void*);
         inline void reset_generator();
-        sfunctor* generator;
+        void* generator;
         revision* parent;
     };
 
