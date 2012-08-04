@@ -81,8 +81,8 @@ namespace ambient { namespace controllers { namespace velvet {
         r.embed(r.spec->calloc(), r.spec->get_bound());
     }
 
-    inline revision::entry& controller::ufetch(revision& r){
-        return r.content;
+    inline revision& controller::ufetch(revision& r){
+        return r;
     }
 
     inline void controller::ifetch(revision& r){

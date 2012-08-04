@@ -1,40 +1,38 @@
 namespace ambient { namespace controllers { namespace velvet {
 
-    inline revision* revision_sub::get_parent(){ return ((revision*)this)->get_parent(); }
-
     template<typename T>
     inline c_revision::operator T* (){
-        revision::entry& e = ((revision*)this)->content;
+        revision& e = *(revision*)this;
         if(!e.valid()){
-            if(((revision*)this)->clean) ambient::controller.calloc(*(revision*)this);
-            else ambient::controller.alloc(*(revision*)this);
+            if(e.clean) ambient::controller.calloc(e);
+            else ambient::controller.alloc(e);
         }
         return (T*)e;
     }
     template<typename T>
     inline p_revision::operator T* (){
-        revision::entry& e = ((revision*)this)->content;
-        if(!e.valid()) ambient::controller.calloc(*(revision*)this);
+        revision& e = *(revision*)this;
+        if(!e.valid()) ambient::controller.calloc(e);
         return (T*)e;
     }
     template<typename T>
     inline w_revision::operator T* (){
-        revision::entry& e = ((revision*)this)->content;
+        revision& e = *(revision*)this;
         if(!e.valid()){
-            revision::entry& parent = this->get_parent()->content;
-            if(parent.occupied()) ambient::controller.alloc(*(revision*)this);
+            revision& parent = *e.get_parent();
+            if(parent.occupied()) ambient::controller.alloc(e);
             else e.swap(parent);
         }
         return (T*)e;
     }
     template<typename T>
     inline r_revision::operator T* (){
-        revision::entry& e = ((revision*)this)->content;
+        revision& e = *(revision*)this;
         if(!e.valid()){
-            revision::entry& parent = this->get_parent()->content;
+            revision& parent = *e.get_parent();
             if(parent.occupied()){
-                if(this->get_parent()->clean) ambient::controller.calloc(*(revision*)this);
-                else ambient::controller.alloc(*(revision*)this);
+                if(parent.clean) ambient::controller.calloc(e);
+                else ambient::controller.alloc(e);
             }else e.swap(parent);
         }
         return (T*)e;

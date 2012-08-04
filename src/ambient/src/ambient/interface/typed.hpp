@@ -43,7 +43,6 @@ namespace ambient {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
             T* obj = (T*)m->arguments[arg];
-            obj->impl->clean();
             obj->impl->content[obj->ref+1]->reset_generator();
             obj->~T();
         }
@@ -86,7 +85,6 @@ namespace ambient {
     template <typename T> struct const_iteratable_info {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
-            ((T*)m->arguments[arg])->impl->clean();
             ((T*)m->arguments[arg])->~T();
         }
         template<size_t arg>
@@ -132,7 +130,6 @@ namespace ambient {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
             T* obj = (T*)m->arguments[arg];
-            obj->impl->clean();
             obj->impl->content[obj->ref+1]->reset_generator();
             obj->~T();
         }
