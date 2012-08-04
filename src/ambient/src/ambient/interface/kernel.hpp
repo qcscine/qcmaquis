@@ -58,8 +58,8 @@ namespace ambient {
             this->set_group(channel.world()); 
         }
         inline void pin(revision& r){
-            r.content.assignments.push_back(this);
             ambient::controller.ifetch(r);
+            ambient::controller.execute_mod(this);
         }
         inline void assign(revision& r){ 
             ambient::controller.ifetch(r);
