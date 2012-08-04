@@ -8,6 +8,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline chain::chain(cfunctor* op){
+        this->content.reserve(2);
         this->push_back(op);
     }
 
