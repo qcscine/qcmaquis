@@ -4,10 +4,10 @@ namespace vli {
     namespace detail {
         
         
-    template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct BuildTaskList_helper;
-    // one variable 'x', similar max_order_each one variable
-    template< unsigned int Order, class Var0>
+        template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+        struct BuildTaskList_helper;
+        // one variable 'x', similar max_order_each one variable
+        template< unsigned int Order, class Var0>
         struct BuildTaskList_helper<Order, Var0, vli::no_variable, vli::no_variable, vli::no_variable>{
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x){
@@ -18,9 +18,9 @@ namespace vli {
                     task.output_degree_w = 0;
                     task.step_count =   (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_x, degree_x) + 1);
                 }
-            }
+             }
         };
-    // two variables 'x','y'
+        // two variables 'x','y'
         template< unsigned int Order, class Var0, class Var1>
         struct BuildTaskList_helper<Order, Var0, Var1, vli::no_variable, vli::no_variable>{
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
@@ -33,8 +33,8 @@ namespace vli {
                         task.output_degree_z = 0;
                         task.output_degree_w = 0;
                         //TO CHECK is it thrue ?
-                        task.step_count =   (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_x, degree_x) + 1)
-                                          * (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_y, degree_y) + 1) ;
+                        task.step_count =   (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_x, degree_x) + 1) // C EST TOTALEMENT FAUX !@!!!!!!!!!asdjhvbaksdhgqvksdvbqoy, WRONG TO CHANGE !!!
+                                          * (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_y, degree_y) + 1) 
                     }
             }
         };
