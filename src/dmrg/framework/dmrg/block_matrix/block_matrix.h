@@ -39,7 +39,10 @@ public:
 
 #ifdef RVALUE
     block_matrix(block_matrix&& rhs);
-    block_matrix& operator = (block_matrix&& rhs); 
+    block_matrix& operator=(block_matrix&& rhs); 
+    block_matrix& operator=(const block_matrix& rhs);
+#else
+    block_matrix& operator=(block_matrix rhs);
 #endif
 
     Index<SymmGroup> const & left_basis() const;
@@ -50,7 +53,6 @@ public:
 
     std::string description() const;
     
-    block_matrix &       operator=(const block_matrix& rhs);
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;
     value_type &         operator()(std::pair<charge, size_type> const & r,
