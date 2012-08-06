@@ -37,6 +37,21 @@ block_matrix<Matrix, SymmGroup>& block_matrix<Matrix, SymmGroup>::operator=(bloc
     swap(*this, rhs);
     return *this;
 }
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix& rhs)
+{
+    block_matrix tmp(rhs);
+    swap(*this, tmp);
+    return *this;
+}
+#else
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(block_matrix rhs)
+{
+    swap(*this, rhs);
+    return *this;
+}
 #endif
 
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
@@ -108,14 +123,6 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, char
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
     data_.insert(data_.begin() + i1, mtx);
-}
-
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix& rhs)
-{
-    block_matrix tmp(rhs);
-    swap(*this, tmp);
-    return *this;
 }
 
 template<class Matrix, class SymmGroup>
