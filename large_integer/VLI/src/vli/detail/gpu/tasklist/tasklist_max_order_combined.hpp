@@ -2,7 +2,21 @@
 
 namespace vli {
     namespace detail {
-        
+
+        // See the doc ...
+        template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+        struct CalculateStepCount_helper;
+            
+        template< unsigned int Order, class Var0, class Var1>
+        struct CalculateStepCount_helper<Order, Var0, Var1, vli::no_variable, vli::no_variable>{
+            static unsigned int CalculateStepCount(unsigned int output_degree_x,unsigned int output_degree_y){
+                unsigned int sum(0);
+                for(int i = std::max(0,(int)(output_degree_x-Order)); i <= std::min(output_degree_x, Order); ++i)
+                    sum += std::min((int)output_degree_y,(int)(Order-i)) - std::max(0,(int)(output_degree_x+output_degree_y-Order-i))+1;
+                return sum;
+            }        
+        };
+
         
         template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
         struct BuildTaskList_helper;
@@ -33,8 +47,7 @@ namespace vli {
                         task.output_degree_z = 0;
                         task.output_degree_w = 0;
                         //TO CHECK is it thrue ?
-                        task.step_count =   (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_x, degree_x) + 1) // C EST TOTALEMENT FAUX !@!!!!!!!!!asdjhvbaksdhgqvksdvbqoy, WRONG TO CHANGE !!!
-                                          * (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_y, degree_y) + 1) 
+                        task.step_count = CalculateStepCount_helper<Order, Var0, Var1, vli::no_variable, vli::no_variable>::CalculateStepCount(degree_x,degree_y);
                     }
             }
         };
