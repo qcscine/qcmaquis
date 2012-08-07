@@ -1,4 +1,4 @@
-//#define TOUCHSTACK_ACCESS_CHECK
+#define TOUCHSTACK_ACCESS_CHECK
 
 namespace ambient{
 
