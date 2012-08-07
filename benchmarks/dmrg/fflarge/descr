@@ -5,4 +5,26 @@
 #
 # Scaling:
 #
-# 6 threads give ~2.5x of improvement.
+# 12 threads give ~4x of improvement.
+# 4 threads give ~2.6x of improvement.
+#
+# Ambient:
+#
+# 1t  - 1053
+# 2t  - 627
+# 4t  - 402
+# 8t  - 297
+# 12t - 270
+#
+# OpenMP:
+#
+# 1t  - 939
+# 2t  - 612
+# 4t  - 380
+# 8t  - 276
+# 12t - 265
+#
+# 1/3 of the time on those threads is spent in serial regions (only 1 operation is disposable at a time)
+# 1/2 of the time is spent in weakly parallel regions ( < 20 operations are disposable )
+#
+# 
