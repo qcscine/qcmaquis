@@ -3,7 +3,7 @@
 #include "ambient/utils/singleton.hpp"
 #include "boost/pool/singleton_pool.hpp"
 
-#define BULK_LENGTH 8388608*8
+#define BULK_LENGTH 8388608*200
 
 namespace ambient { namespace utils {
 

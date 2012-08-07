@@ -2,7 +2,7 @@
 #define __AMBIENT_NUMERIC_MATRIX_HPP__
 
 #include "ambient/numeric/matrix/matrix.h"
-#include "ambient/numeric/matrix/algorithms.hpp"
+#include "ambient/numeric/matrix/matrix_algorithms.hpp"
 
 namespace ambient { namespace numeric {
 
