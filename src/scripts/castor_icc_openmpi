@@ -24,6 +24,7 @@ module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 
 ## common ##
+MAQUIS_COMMON_ENABLE_OMP=ON
 MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
 MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
 MAQUIS_COMMON_CMAKE_C_COMPILER=icc
