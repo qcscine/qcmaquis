@@ -12,7 +12,9 @@ alpha_initial = 0.001
 alpha_main = 1e-06
 alpha_final = 0
 
-resultfile = "res.h5"
-chkpfile = "chkp.h5"
+resultfile = "fermiwladder.out.h5"
+chkpfile = "fermiwladder.out.h5"
 donotsave = 1
-storagedir = temp
+
+// possible values: singlesite, twosite
+optimization = "twosite"
