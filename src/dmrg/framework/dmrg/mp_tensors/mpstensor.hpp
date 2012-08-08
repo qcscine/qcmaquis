@@ -434,12 +434,13 @@ MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rh
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
 {
+    using std::swap;
     swap(this->phys_i, b.phys_i);
     swap(this->left_i, b.left_i);
     swap(this->right_i, b.right_i);
     swap(this->data_, b.data_);
-    std::swap(this->cur_storage, b.cur_storage);
-    std::swap(this->cur_normalization, b.cur_normalization);
+    swap(this->cur_storage, b.cur_storage);
+    swap(this->cur_normalization, b.cur_normalization);
 }
 
 #ifdef HAVE_ALPS_HDF5
