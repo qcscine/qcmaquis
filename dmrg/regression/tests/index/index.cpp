@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(position_pair_test, T, SymmGroupList){
     Index<T> phys;
     phys.insert(std::make_pair(0, 1));
     phys.insert(std::make_pair(1, 1));
-    phys.insert(std::make_pair(2, 1));
+    phys.insert(std::make_pair(2, 2));
     phys.insert(std::make_pair(3, 1));
     BOOST_CHECK_EQUAL(2,phys.position(std::make_pair(2, 1)));
 }
@@ -65,8 +65,8 @@ BOOST_AUTO_TEST_CASE(sort_test){
 }
 
 BOOST_AUTO_TEST_CASE(operator_test){
-    std::pair<typename U1::charge,std::size_t> p(std::make_pair(0,1)); 
-    std::pair<typename U1::charge,std::size_t> p1(std::make_pair(1,1)); 
+    std::pair<U1::charge,std::size_t> p(std::make_pair(0,1)); 
+    std::pair<U1::charge,std::size_t> p1(std::make_pair(1,1)); 
 
     BOOST_CHECK_EQUAL(true,p<p1);
     BOOST_CHECK_EQUAL(false,p1<p);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(operator_test){
 }
 
 BOOST_AUTO_TEST_CASE(get_first_second_test){
-    std::pair<typename U1::charge,std::size_t> p(std::make_pair(0,1)); 
+    std::pair<U1::charge,std::size_t> p(std::make_pair(0,1)); 
 
     BOOST_CHECK_EQUAL(0,get_first<U1>(p));
     BOOST_CHECK_EQUAL(1,get_second<U1>(p));
