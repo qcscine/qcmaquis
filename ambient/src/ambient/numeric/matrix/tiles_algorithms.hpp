@@ -43,17 +43,56 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix> inline void resize(tiles<Matrix>& m, size_t rows, size_t cols){ 
+        if(m.num_rows() == rows && m.num_cols() == cols) return;
+        tiles<Matrix> r(rows, cols);
+        int nb = __a_ceil(cols/TILE_SIZE);
+        int mb = __a_ceil(rows/TILE_SIZE);
+        int mbo = __a_ceil(m.num_rows()/TILE_SIZE);
+        for(int j = 0; j < nb; j++){
+            for(int i = 0; i < mb; i++){
+                r.data[i+j*mb] = m.data[i+j*mbo];
+            }
+        }
+        if(rows % TILE_SIZE){
+            size_t remaining = rows % TILE_SIZE;
+            for(int j = 0; j < nb-1; j++)
+                resize(r.data[mb-1 + j*mb], remaining, TILE_SIZE);
+        }
+        // todo
     }
 
-    template<class Matrix> inline scalar_type trace(const tiles<Matrix>& m){ 
+    template<class Matrix> inline scalar_type trace(const tiles<Matrix>& m){
+        int nb = __a_ceil(a.num_cols()/TILE_SIZE);
+        int mb = __a_ceil(a.num_rows()/TILE_SIZE);
+        int size = std::min(nb, mb);
+        Matrix::scalar_type result(0);
+        std::vector<Matrix::scalar_type> parts;
+        parts.reserve(size);
+
+        for(int k = 0; k < size; k++) parts[k + k*mb] = trace(a[k]);
+        for(int k = 0; k < size; k++) result += parts[k];
     }
 
     template <class Matrix>
     inline real_type norm_square(const tiles<Matrix>& a){ 
+        int size = __a_ceil(a.num_cols()/TILE_SIZE) * __a_ceil(a.num_rows()/TILE_SIZE);
+        Matrix::scalar_type result(0);
+        std::vector<Matrix::scalar_type> parts;
+        parts.reserve(size);
+
+        for(int k = 0; k < size; k++) parts[k] = norm_square(a[k]);
+        for(int k = 0; k < size; k++) result += parts[k];
     }
 
     template <class Matrix>
-    inline scalar_type overlap(const tiles<Matrix>& a, const tiles<Matrix>& b){ 
+    inline scalar_type overlap(const tiles<Matrix>& a, const tiles<Matrix>& b){
+        int size = __a_ceil(a.num_cols()/TILE_SIZE) * __a_ceil(a.num_rows()/TILE_SIZE);
+        Matrix::scalar_type result(0);
+        std::vector<Matrix::scalar_type> parts;
+        parts.reserve(size);
+
+        for(int k = 0; k < size; k++) parts[k] = overlap(a[k], b[k]);
+        for(int k = 0; k < size; k++) result += parts[k];
     }
         
     template<class Matrix>
@@ -77,19 +116,17 @@ namespace ambient { namespace numeric {
     inline void transpose_inplace(tiles<Matrix>& a){
         int nb = __a_ceil(a.num_cols()/TILE_SIZE);
         int mb = __a_ceil(a.num_rows()/TILE_SIZE);
-        for(int j = 0; j < nb; i++){
-            for(int i = 0; i < mb; j++){
-                transpose_inplace(t.data[i+j*mb]);
+        std::vector<Matrix*> t;
+        t.reserve(mb*nb);
+        for(int i = 0; i < mb; i++){
+            for(int j = 0; j < nb; j++){
+                Matrix* block = a.data[i+mb*j];
+                transpose_inplace(block);
+                t.push_back(block);
             }
         }
         std::swap(a.rows, a.cols);
-        std::vector<Matrix*> t;
-        t.reserve(mb*nb);
-        for(int i = 0; i < mb; i--){
-            for(int j = 0; j < nb; j++){
-                t.push_back(a.data[i+mb*j]);
-            }
-        }
+        std::swap(a.data, t);
     }
 
     template<class Matrix>
