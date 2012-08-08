@@ -124,7 +124,7 @@ public:
             timeval now, then;
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-           
+          
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))

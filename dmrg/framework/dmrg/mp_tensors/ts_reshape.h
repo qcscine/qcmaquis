@@ -49,17 +49,17 @@ namespace ts_reshape {
             for (size_t s1 = 0; s1 < physical_i.size(); ++s1)
                 for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
                 {
-                    size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
-                                                               -physical_i[s1].first));
-                    size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
-                                                                physical_i[s2].first));
+                    size_t l = left_i.find(SymmGroup::fuse(m1.left_basis()[block].first,
+                                                           -physical_i[s1].first));
+                    size_t r = right_i.find(SymmGroup::fuse(m1.right_basis()[block].first,
+                                                            physical_i[s2].first));
                     
                     if (l == left_i.size()) continue;
                     if (r == right_i.size()) continue;
                     
                     {                            
                         charge s_charge = SymmGroup::fuse(physical_i[s1].first, physical_i[s2].first);
-                        size_t s_out = phys2_i.position(s_charge);
+                        size_t s_out = phys2_i.find(s_charge);
                         
                         charge in_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
                         charge in_r_charge = SymmGroup::fuse(-physical_i[s2].first, right_i[r].first);
@@ -121,10 +121,10 @@ namespace ts_reshape {
                 for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
                 {
                     charge s_charge = SymmGroup::fuse(physical_i[s1].first, physical_i[s2].first);
-                    size_t s_out = phys2_i.position(s_charge);
+                    size_t s_out = phys2_i.find(s_charge);
                     
-                    size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first, -s_charge));
-                    size_t r = right_i.position(m1.right_basis()[block].first);
+                    size_t l = left_i.find(SymmGroup::fuse(m1.left_basis()[block].first, -s_charge));
+                    size_t r = right_i.find(m1.right_basis()[block].first);
                     
                     if (l == left_i.size()) continue;
                     if (r == right_i.size()) continue;
@@ -181,10 +181,10 @@ namespace ts_reshape {
                 for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
                 {
                     charge s_charge = SymmGroup::fuse(physical_i[s1].first, physical_i[s2].first);
-                    size_t s_out = phys2_i.position(s_charge);
+                    size_t s_out = phys2_i.find(s_charge);
                     
-                    size_t l = left_i.position(m1.left_basis()[block].first);
-                    size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first, s_charge));
+                    size_t l = left_i.find(m1.left_basis()[block].first);
+                    size_t r = right_i.find(SymmGroup::fuse(m1.right_basis()[block].first, s_charge));
                     
                     if (l == left_i.size()) continue;
                     if (r == right_i.size()) continue;
@@ -261,9 +261,9 @@ namespace ts_reshape {
             for (size_t s1 = 0; s1 < physical_i.size(); ++s1)
                 for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
                 {
-                    size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
+                    size_t l = left_i.find(SymmGroup::fuse(m1.left_basis()[block].first,
                                                                -physical_i[s1].first));
-                    size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
+                    size_t r = right_i.find(SymmGroup::fuse(m1.right_basis()[block].first,
                                                                 physical_i[s2].first));
                     
                     if (l == left_i.size()) continue;
@@ -271,7 +271,7 @@ namespace ts_reshape {
                     
                     {
                         charge s_charge = SymmGroup::fuse(physical_i[s1].first, physical_i[s2].first);
-                        size_t s_out = phys2_i.position(s_charge);
+                        size_t s_out = phys2_i.find(s_charge);
                         
                         charge in_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
                         charge in_r_charge = SymmGroup::fuse(-physical_i[s2].first, right_i[r].first);

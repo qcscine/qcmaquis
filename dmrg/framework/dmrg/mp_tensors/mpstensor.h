@@ -145,7 +145,7 @@ public:
         for (typename Index<SymmGroup>::const_iterator it = m2.left_i.begin();
              it != m2.left_i.end(); ++it) {
             if (ret.left_i.has(it->first))
-                ret.left_i[ret.left_i.position(it->first)].second += it->second;
+                ret.left_i[ret.left_i.find(it->first)].second += it->second;
             else
                 ret.left_i.insert(*it);
         }

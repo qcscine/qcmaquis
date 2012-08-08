@@ -102,7 +102,7 @@ ret_map test_usual_l(Index<symm> const & left_i, Index<symm> const & right_i, In
                 for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
                 {
                     charge s_charge = symm::fuse(physical_i[s1].first, physical_i[s2].first);
-                    size_t s_out = phys2_i.position(s_charge);
+                    size_t s_out = phys2_i.find(s_charge);
                     
                     charge bp_l_charge = symm::fuse(physical_i[s1].first, left_i[l].first);    // both paired,  left
                     charge bp_r_charge = symm::fuse(-physical_i[s2].first, right_i[r].first);  // both paired,  right
@@ -177,10 +177,10 @@ ret_map test_usual_r(Index<symm> const & left_i, Index<symm> const & right_i, In
                 for (size_t s2 = 0; s2 < physical_i.size(); ++s2)
                 {
                     charge pyl_charge = symm::fuse(physical_i[s2].first, left_i[l].first);
-                    size_t pyl = pyleft_i.position(pyl_charge);
+                    size_t pyl = pyleft_i.find(pyl_charge);
                     
                     charge pyr_charge = symm::fuse(-physical_i[s2].first, right_i[r].first);
-                    size_t pyr = pyright_i.position(pyr_charge);
+                    size_t pyr = pyright_i.find(pyr_charge);
                     
                     
                     charge bp_l_charge = symm::fuse(physical_i[s1].first, left_i[l].first);    // both paired,  left

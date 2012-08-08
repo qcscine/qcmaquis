@@ -87,14 +87,14 @@ public:
     std::size_t size_of_block(charge c) const // rename
     {
         assert( has(c) );
-        return std::find_if(this->begin(), this->end(),
-                            index_detail::is_first_equal<SymmGroup>(c))->second;
+        return std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>)->second;
     }
     
-    std::size_t position(charge c) const
+    std::size_t find(charge c) const
     {
-        return std::find_if(this->begin(), this->end(),
-                            index_detail::is_first_equal<SymmGroup>(c)) - this->begin();
+        const_iterator match = std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>);
+        if(match != this->end() && (*match).first != c) match = this->end();
+        return (match - this->begin());
     }
 
     std::size_t position(std::pair<charge, std::size_t> x) const
@@ -102,8 +102,7 @@ public:
         assert( has(x.first) );
         assert( x.second < size_of_block(x.first) );
         return x.second + std::accumulate(this->begin(),
-                                          std::find_if(this->begin(), this->end(),
-                                                       index_detail::is_first_equal<SymmGroup>(x.first)),
+                                          std::lower_bound(this->begin(), this->end(), x, index_detail::gt<SymmGroup>),
                                           0,
                                           boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
                                           );
@@ -111,16 +110,12 @@ public:
 
     std::size_t destination(charge c) const
     {
-        return std::find_if(this->begin(), this->end(),
-                            boost::lambda::bind(index_detail::lt<SymmGroup>,
-                                                boost::lambda::_1,
-                                                std::make_pair(c, 0))) - this->begin();
+        return std::upper_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>) - this->begin();
     }
     
     bool has(charge c) const
     {
-        return std::find_if(this->begin(), this->end(),
-                            index_detail::is_first_equal<SymmGroup>(c)) != this->end();
+        return std::binary_search(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>);
     }
     
     void sort()
@@ -170,7 +165,13 @@ public:
         return std::accumulate(this->begin(), this->end(), 0,
                                boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2));
     }
-    
+
+private:
+    void push_back(std::pair<charge, std::size_t> const & x){
+        std::vector<std::pair<charge, std::size_t> >::push_back(x);
+    }
+
+public:    
 #ifdef PYTHON_EXPORTS
     std::size_t py_insert(wrapped_pair<SymmGroup> p)
     {
@@ -214,26 +215,25 @@ public:
     {
         init(a, b, f);
     }
-    
+   
+private: 
     template<class Fusion>
     void init(Index<SymmGroup> const & a,
               Index<SymmGroup> const & b,
               Fusion f)
     {
-        std::map<charge, size_t> block_begins;
-        
         for (typename Index<SymmGroup>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1)
             for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
             {
                 charge pc = f(it1->first, it2->first);
                 
                 keys_.push_back(std::make_pair(it1->first, it2->first));
-                vals_.push_back(block_begins[pc]);
+                vals_.push_back(size_[pc]);
                 size_[pc] += it1->second * it2->second;
-                block_begins[pc] += it1->second * it2->second;
             }
     }
-    
+
+public:
     size_t operator()(charge a, charge b) const
     {
         assert( std::count(keys_.begin(), keys_.end(), std::make_pair(a, b)) > 0 );
@@ -241,22 +241,16 @@ public:
         return vals_[pos];
     }
     
-    size_t size(charge a, charge b) const
-    {
-        return size(a, b, static_cast<charge(*)(charge, charge)>(SymmGroup::fuse));
-    }
-    template<class Fusion>
-    size_t size(charge a, charge b, Fusion f) const
+    template<class Fusion = charge(*)(charge, charge)>
+    size_t size(charge a, charge b, Fusion f = SymmGroup::fuse) const
     {
         charge pc = f(a, b);
         assert(size_.count(pc) > 0);
-        return size_.find(pc)->second;
+        return size_[pc];
     }
 
-    
-    
 private:
-    std::map<charge, size_t> size_;
+    mutable std::map<charge, size_t> size_;
     std::vector<std::pair<charge, charge> > keys_;
     std::vector<size_t> vals_;
 };
@@ -387,7 +381,7 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
             charge pdc = SymmGroup::fuse(it1->first, it2->first);
             std::size_t ps = it1->second * it2->second;
             if (ret.has(pdc))
-                ret[ret.position(pdc)].second += ps;
+                ret[ret.find(pdc)].second += ps;
             else
                 ret.insert(std::make_pair(pdc, ps));
         }

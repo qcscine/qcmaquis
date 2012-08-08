@@ -209,6 +209,7 @@ struct contraction {
         }
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
+        ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
         
         Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.col_dim());
@@ -216,10 +217,9 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        
         mps.make_left_paired();
-        
         loop_max = mpo.col_dim();
+                    
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
@@ -239,8 +239,6 @@ struct contraction {
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b1];
                     
-                    // note to self: I think these are always the same
-                    ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
                     ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
                     
                     Index<SymmGroup> out_left_i = physical_i * left_i;
@@ -250,14 +248,14 @@ struct contraction {
                         assert( physical_i.has(W.left_basis()[w_block].first) );
                         assert( physical_i.has(W.right_basis()[w_block].first) );
                         
-                        size_t s1 = physical_i.position(W.left_basis()[w_block].first);
-                        size_t s2 = physical_i.position(W.right_basis()[w_block].first);
+                        size_t s1 = physical_i.find(W.left_basis()[w_block].first);
+                        size_t s2 = physical_i.find(W.right_basis()[w_block].first);
                         
                         for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
                         {
-                            size_t r = right_i.position(T.right_basis()[t_block].first);
-                            size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
-                                                                       -physical_i[s1].first));
+                            size_t r = right_i.find(T.right_basis()[t_block].first);
+                            size_t l = left_i.find(SymmGroup::fuse(T.left_basis()[t_block].first,
+                                                                   -physical_i[s1].first));
                             
                             if (l >= left_i.size())
                                 continue;
@@ -333,14 +331,17 @@ struct contraction {
                                           t[b], tmp);
             swap(t[b], tmp);
         }
+
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low;
+        ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                 -boost::lambda::_1, boost::lambda::_2));
         
         Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.row_dim());
-        
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
         
         mps.make_right_paired();
         
@@ -366,9 +367,6 @@ struct contraction {
                     
                     //right_i = right.data_[b2].right_basis();
                     
-                    ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                             -boost::lambda::_1, boost::lambda::_2));
                     ProductBasis<SymmGroup> in_right_pb(physical_i, right.data_[b2].right_basis(),
                                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                             -boost::lambda::_1, boost::lambda::_2));
@@ -377,14 +375,14 @@ struct contraction {
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
-                        size_t s1 = physical_i.position(W.left_basis()[w_block].first);
-                        size_t s2 = physical_i.position(W.right_basis()[w_block].first);
+                        size_t s1 = physical_i.find(W.left_basis()[w_block].first);
+                        size_t s2 = physical_i.find(W.right_basis()[w_block].first);
                         
                         for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
                         {
-                            size_t l = left_i.position(T.left_basis()[t_block].first);
-                            size_t r = right_i.position(SymmGroup::fuse(physical_i[s1].first,
-                                                                        T.right_basis()[t_block].first));
+                            size_t l = left_i.find(T.left_basis()[t_block].first);
+                            size_t r = right_i.find(SymmGroup::fuse(physical_i[s1].first,
+                                                                    T.right_basis()[t_block].first));
                             
                             if (l >= left_i.size())
                                 continue;

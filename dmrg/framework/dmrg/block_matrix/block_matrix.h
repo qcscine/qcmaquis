@@ -107,15 +107,15 @@ public:
     Matrix const & operator()(charge r, charge c) const
     {
         assert( has_block(r, c) );
-        assert( rows_.position(r) == cols_.position(c) );
-        return data_[rows_.position(r)];
+        assert( rows_.find(r) == cols_.find(c) );
+        return data_[rows_.find(r)];
     }
     
     Matrix & operator()(charge r, charge c)
     {
         assert( has_block(r, c) );
-        assert( rows_.position(r) == cols_.position(c) );
-        return data_[rows_.position(r)];
+        assert( rows_.find(r) == cols_.find(c) );
+        return data_[rows_.find(r)];
     }
     
 #ifdef HAVE_ALPS_HDF5
