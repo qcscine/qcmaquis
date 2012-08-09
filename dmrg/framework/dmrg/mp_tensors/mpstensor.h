@@ -212,7 +212,7 @@ MPSTensor<Matrix, SymmGroup> operator+(MPSTensor<Matrix, SymmGroup> m,
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> operator-(MPSTensor<Matrix, SymmGroup> m)
 {
-    m *= -typename MPSTensor<Matrix, SymmGroup>::scalar_type(1.0);
+    m *= typename MPSTensor<Matrix, SymmGroup>::scalar_type(-1.0);
     return m;
 }
 

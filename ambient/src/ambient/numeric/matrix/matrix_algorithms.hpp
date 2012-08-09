@@ -33,6 +33,19 @@
 
 namespace ambient { namespace numeric {
 
+    template<typename T>
+    bool is_hermitian(matrix<T> const& m)
+    {
+        /*if(num_rows(m) != num_cols(m))
+            return false;
+        for (size_t i=0; i<num_rows(m); ++i)
+            for(size_t j=0; j<num_cols(m); ++j)
+                if ( m(i,j) != conj(m(j,i)) )
+                    return false;*/
+        return false;
+    }
+
+
     template<class MatrixViewA, class MatrixViewB, typename T>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T>& c){
         ambient::push< kernels::gemm_general_atomic<MatrixViewA,MatrixViewB,T> >(a, b, c); 
@@ -246,7 +259,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     bool operator == (const matrix<T>& a, const matrix<T>& b){
-        ambient::future<bool> ret(1);
+        ambient::future<bool> ret(true);
         ATOMIC(validation, a, b, ret); 
         return (bool)ret;
     }

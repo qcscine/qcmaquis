@@ -496,23 +496,19 @@ struct contraction {
         typedef std::size_t size_t;
         
         size_t loop_max = mpo.col_dim();
-        
+       
+        std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max); 
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
         for (size_t b = 0; b < loop_max; ++b)
-        {
-            block_matrix<Matrix, SymmGroup> oblock;
-            gemm(left_mpo_mps.data_[b], right.data_[b], oblock);
-            for (size_t k = 0; k < oblock.n_blocks(); ++k)
-#ifdef MAQUIS_OPENMP
-#pragma omp critical
-#endif
-                ret.data_.match_and_add_block(oblock[k],
-                                              oblock.left_basis()[k].first,
-                                              oblock.right_basis()[k].first);
+            gemm(left_mpo_mps.data_[b], right.data_[b], oblocks[b]);
             
-        }
+        for (size_t b = 0; b < loop_max; ++b)
+            for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
+                ret.data_.match_and_add_block(oblocks[b][k],
+                                              oblocks[b].left_basis()[k].first,
+                                              oblocks[b].right_basis()[k].first);
 
         // Bela's debugging output
         // If I haven't removed this by the end of February 2012, remind me to do so!
@@ -567,7 +563,7 @@ struct contraction {
         assert(dm.left_basis() == mps.data_.left_basis());
         
         block_matrix<Matrix, SymmGroup> U;
-        block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
       
         MPSTensor<Matrix, SymmGroup> ret = mps;
@@ -630,7 +626,7 @@ struct contraction {
         assert(dm.right_basis() == mps.data_.right_basis());
         
         block_matrix<Matrix, SymmGroup> U;
-        block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
+        block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
         heev_truncate(dm, U, S, cutoff, Mmax, logger);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
