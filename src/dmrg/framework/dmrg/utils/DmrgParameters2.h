@@ -25,7 +25,6 @@ public:
         init_options();
     }
     
-    
 private:
     
     void init_options()
@@ -160,6 +159,10 @@ private:
         add_option("u1_total_charge", "");
         add_option("u1_total_charge1", "");
         add_option("u1_total_charge2", "");
+        
+        add_option("MEASURE_CONTINUUM[Density]", "", value(true));
+        add_option("MEASURE_CONTINUUM[Local density]", "", value(true));
+        add_option("MEASURE_CONTINUUM[Onebody density matrix]", "", value(false));
     }
 
 };

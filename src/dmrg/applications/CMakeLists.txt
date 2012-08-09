@@ -3,6 +3,7 @@ option(BUILD_DMRG "Build DMRG Apps" ON)
 option(BUILD_TIME_EVOLUTION "Build DMRG-Time evolution Apps" ON)
 option(BUILD_DIAG "Build Diagonalization App" ON)
 option(BUILD_MULTIGRID "Build DMRG-Multigrid Apps" OFF)
+option(BUILD_CUSTOMAPP "Build custom applications" OFF)
 option(BUILD_OLD_TARGETS "Enable targets with old names" OFF)
 
 
@@ -29,4 +30,9 @@ if(BUILD_MULTIGRID)
 else(BUILD_MULTIGRID)
   add_subdirectory(multigrid EXCLUDE_FROM_ALL)
 endif(BUILD_MULTIGRID)
+
+if(BUILD_CUSTOMAPP)
+  add_subdirectory(strcorr)
+  add_subdirectory(misc)
+endif(BUILD_CUSTOMAPP)
 

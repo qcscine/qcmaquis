@@ -28,6 +28,9 @@ target_link_libraries(dmrg ${DMRG_APP_LIBRARIES})
 add_executable(dmrg_meas ${MEASURE_SYMM_SOURCES} measure.cpp)
 target_link_libraries(dmrg_meas ${DMRG_APP_LIBRARIES})
 
+add_executable(dmrg_cmeas ${MEASURE_SYMM_SOURCES} measure.cpp)
+target_link_libraries(dmrg_cmeas ${DMRG_APP_LIBRARIES})
+set_target_properties(dmrg_cmeas PROPERTIES COMPILE_FLAGS -DUSE_COMPLEX)
 
 # *** Install
-install(TARGETS dmrg dmrg_meas RUNTIME DESTINATION bin COMPONENT applications)
+install(TARGETS dmrg dmrg_meas dmrg_cmeas RUNTIME DESTINATION bin COMPONENT applications)

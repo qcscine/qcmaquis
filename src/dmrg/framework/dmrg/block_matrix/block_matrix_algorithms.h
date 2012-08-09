@@ -387,6 +387,23 @@ block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
 }
 
 template<class Matrix, class SymmGroup>
+bool is_hermitian(block_matrix<Matrix, SymmGroup> const & m)
+{
+    bool ret = true;
+    for (size_t k=0; ret && k < m.n_blocks(); ++k) {
+        if (m.left_basis()[k].second != m.right_basis()[k].second)
+            return false;
+        else if (m.left_basis()[k].first == m.right_basis()[k].first)
+            ret = is_hermitian(m[k]);
+        else if (! m.has_block(m.right_basis()[k].first, m.left_basis()[k].first))
+            return false;
+        else
+            ret = ( m[k] == transpose(conj( m(m.right_basis()[k].first, m.left_basis()[k].first) )) );
+    }
+    return ret;
+}
+
+template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 {
     for (std::size_t k = 0; k < m.n_blocks(); ++k)

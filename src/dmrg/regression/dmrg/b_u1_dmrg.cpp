@@ -241,9 +241,9 @@ int main(int argc, char ** argv)
     
     std::vector<double> energies, entropies, renyi2;
     std::vector<std::size_t> truncations;
-    maquis::cout << "eval1 " << expval(mps,mpo,0) << std::endl;
-//    maquis::cout << "eval2 " << expval(mps,mpo,1) << std::endl;
-//    maquis::cout << "eval3 " << expval(mps,mpo) << std::endl;
+    maquis::cout << "eval1 " << alps::numeric::real(expval(mps,mpo,0)) << std::endl;
+//    maquis::cout << "eval2 " << alps::numeric::real(expval(mps,mpo,1)) << std::endl;
+//    maquis::cout << "eval3 " << alps::numeric::real(expval(mps,mpo)) << std::endl;
 #ifndef MEASURE_ONLY
     
     bool early_exit = false;
@@ -328,9 +328,9 @@ int main(int argc, char ** argv)
         if (renyi2.size() > 0)
             h5ar << alps::make_pvp("/spectrum/results/Renyi2/mean/value", renyi2);
 
-        double energy = expval(mps, mpoc);
-        maquis::cout << "Energy before: " << expval(mps, mpo) << std::endl;
-        maquis::cout << "Energy after: " << expval(mps, mpoc) << std::endl;
+        double energy = alps::numeric::real(expval(mps, mpoc));
+        maquis::cout << "Energy before: " << alps::numeric::real(expval(mps, mpo)) << std::endl;
+        maquis::cout << "Energy after: " << alps::numeric::real(expval(mps, mpoc)) << std::endl;
         h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
         
         if (parms.get<int>("calc_h2") > 0) {
@@ -341,7 +341,7 @@ int main(int argc, char ** argv)
             Timer t3("expval mpo2"), t4("expval mpo2c");
             
             t4.begin();
-            double energy2 = expval(mps, mpo2, true);
+            double energy2 = alps::numeric::real(expval(mps, mpo2, true));
             t4.end();
         
             maquis::cout << "Energy^2: " << energy2 << std::endl;
