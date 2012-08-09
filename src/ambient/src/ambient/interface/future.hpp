@@ -184,4 +184,12 @@ namespace alps { namespace numeric {
 
 } }
 
+namespace ietl {
+
+    inline double real(const ambient::future<std::complex<double> >& f){
+        return alps::numeric::real(f);
+    }
+
+}
+
 #endif

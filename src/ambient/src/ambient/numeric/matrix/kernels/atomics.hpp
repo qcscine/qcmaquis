@@ -889,15 +889,15 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct validation_atomic : public kernel_atomic< validation_atomic<T> > 
     {
-        typedef void (validation_atomic::*F)(const matrix<T>&, const matrix<T>&, future<int>&);
+        typedef void (validation_atomic::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
 
-        inline void l(const matrix<T>& a, const matrix<T>& b, future<int>& ret){
+        inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
             this->ctxt_select("1 from ambient as validation_atomic"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a)); 
             this->assign(ui_l_current(b)); 
         }
         
-        inline void c(const matrix<T>& a, const matrix<T>& b, future<int>& ret){ // see paper for Reference Dongara 
+        inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
             T* ad = ui_c_current(a); 
             T* bd = ui_c_current(b); 
             double res; 
@@ -913,7 +913,7 @@ namespace ambient { namespace numeric { namespace kernels {
                         res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
                         if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
                             std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
-                            ret.get_value() = 0; // test failed return 0 (bool false)
+                            ret.get_value() = false; // test failed return 0 (bool false)
                         }
                     }
                 }
