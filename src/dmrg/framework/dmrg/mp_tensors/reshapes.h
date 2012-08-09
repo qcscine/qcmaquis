@@ -38,15 +38,12 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
         {
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
-                size_t l = left_i.find(SymmGroup::fuse(m1.left_basis()[block].first,
+                size_t r = right_i.position(m1.right_basis()[block].first);
+                if(r == right_i.size()) continue;
+                size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
                                                            -physical_i[s].first));
-                size_t r = right_i.find(m1.right_basis()[block].first);
-                
-                if (l == left_i.size())
-                    continue;
-                if (r == right_i.size())
-                    continue;
-                
+                if(l == left_i.size()) continue;
+
                 {
                     bool pretend = (run == 0);
                     
@@ -127,7 +124,7 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                          -boost::lambda::_1, boost::lambda::_2));
     ProductBasis<SymmGroup> out_left(physical_i, left_i);
-    
+   
     for (int run = 0; run < 2; ++run) {
         
         if (run == 1)
@@ -137,11 +134,12 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
         {
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
-                size_t l = left_i.find(m1.left_basis()[block].first);
-                size_t r = right_i.find(SymmGroup::fuse(m1.right_basis()[block].first,
-                                                            physical_i[s].first));
+                size_t l = left_i.position(m1.left_basis()[block].first);
                 if(l == left_i.size()) continue;
+                size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
+                                                            physical_i[s].first));
                 if(r == right_i.size()) continue;
+
                 {
                     bool pretend = (run == 0);
                     
@@ -198,15 +196,15 @@ void reshape_right_to_left_new(Index<SymmGroup> physical_i,
                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                          -boost::lambda::_1, boost::lambda::_2));
     ProductBasis<SymmGroup> out_left(physical_i, left_i);
-    
+   
     for (size_t block = 0; block < m1.n_blocks(); ++block)
     {
         for (size_t s = 0; s < physical_i.size(); ++s)
         {
-            size_t l = left_i.find(m1.left_basis()[block].first);
-            size_t r = right_i.find(SymmGroup::fuse(m1.right_basis()[block].first,
-                                                        physical_i[s].first));
+            size_t l = left_i.position(m1.left_basis()[block].first);
             if(l == left_i.size()) continue;
+            size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
+                                                        physical_i[s].first));
             if(r == right_i.size()) continue;
             {
                 

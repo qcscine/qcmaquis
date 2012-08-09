@@ -151,18 +151,11 @@ Matrix const & block_matrix<Matrix, SymmGroup>::operator[](size_type c) const { 
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 {
-    bool ret;
-    std::size_t p1 = rows_.find(r);
-    if (p1 == rows_.size())
-        ret = false;
-    else {
-        std::size_t p2 = cols_.find(c);
-        if (p2 == cols_.size())
-            ret = false;
-        else
-            ret = (p1 == p2);
-    }
-    return ret;
+    std::size_t p1 = rows_.position(r);
+    if (p1 == rows_.size()) return false;
+    std::size_t p2 = cols_.position(c);
+    if (p2 == cols_.size()) return false;
+    return (p1 == p2);
 }
 
 template<class Matrix, class SymmGroup>
@@ -176,16 +169,16 @@ template<class Matrix, class SymmGroup>
 typename Matrix::value_type & block_matrix<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
                                                                           std::pair<charge, size_type> const & c)
 {
-    assert( rows_.find(r.first) == cols_.find(c.first) );
-    return data_[rows_.find(r.first)](r.second, c.second);
+    assert( rows_.position(r.first) == cols_.position(c.first) );
+    return data_[rows_.position(r.first)](r.second, c.second);
 }
 
 template<class Matrix, class SymmGroup>
 typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
                                                                                 std::pair<charge, size_type> const & c) const
 {
-    assert( rows_.find(r.first) == cols_.find(c.first) );
-    return data_[rows_.find(r.first)](r.second, c.second);
+    assert( rows_.position(r.first) == cols_.position(c.first) );
+    return data_[rows_.position(r.first)](r.second, c.second);
 }
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
 //template<class Matrix, class SymmGroup>
@@ -325,17 +318,17 @@ void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
 {
     if (!pretend)
         resize((*this)(r,c), new_r, new_c);
-    rows_[rows_.find(r)].second = new_r;
-    cols_[cols_.find(c)].second = new_c;
+    rows_[rows_.position(r)].second = new_r;
+    cols_[cols_.position(c)].second = new_c;
 }
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
-    assert( rows_.find(r) == cols_.find(c) );
+    assert( rows_.position(r) == cols_.position(c) );
     
-    std::size_t which = rows_.find(r);
+    std::size_t which = rows_.position(r);
     
     rows_.erase(rows_.begin() + which);
     cols_.erase(cols_.begin() + which);
@@ -381,11 +374,11 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
 {
     if (this->has_block(c1, c2))
     {
-        std::size_t maxrows = std::max(rows_[rows_.find(c1)].second, r);
-        std::size_t maxcols = std::max(cols_[cols_.find(c2)].second, c);
+        std::size_t maxrows = std::max(rows_[rows_.position(c1)].second, r);
+        std::size_t maxcols = std::max(cols_[cols_.position(c2)].second, c);
     
-        rows_[rows_.find(c1)].second = maxrows;
-        cols_[cols_.find(c2)].second = maxcols;
+        rows_[rows_.position(c1)].second = maxrows;
+        cols_[cols_.position(c2)].second = maxcols;
     } else {
         std::pair<charge, size_type>
         p1 = std::make_pair(c1, r),

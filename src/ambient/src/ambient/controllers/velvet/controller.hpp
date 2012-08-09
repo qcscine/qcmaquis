@@ -70,6 +70,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::push(cfunctor* op){
+#pragma omp critical
         this->stack.push_back(op);
     }
 

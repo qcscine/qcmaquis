@@ -88,8 +88,7 @@ typename MPS<Matrix, SymmGroup>::scalar_type expval(MPS<Matrix, SymmGroup> const
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> traces = left.traces(); // overkill
-    return traces[0];
+    return left[0].trace();
 }
 
 template<class Matrix, class SymmGroup>

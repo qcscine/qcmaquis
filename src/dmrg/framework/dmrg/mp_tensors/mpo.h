@@ -111,7 +111,7 @@ private:
                  it != bond_index_charges[p].end();
                  ++it)
                 if (index.has(it->second))
-                    index[index.find(it->second)] = std::make_pair(it->second, index.size_of_block(it->second)+1);
+                    index[index.position(it->second)] = std::make_pair(it->second, index.size_of_block(it->second)+1);
                 else
                     index.insert(std::make_pair(it->second, 1));
             maquis::cout << index << std::endl;
@@ -163,7 +163,7 @@ private:
                         if (! (*this)[p](r,c).has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;                       
                         
-                        std::size_t cs = (*this)[p](r, c).left_basis().find(phys_i[ls].first);
+                        std::size_t cs = (*this)[p](r, c).left_basis().position(phys_i[ls].first);
                         
                         assert( lc == rc );
                         assert( outr < left_i.size_of_block(lc) );
@@ -235,7 +235,7 @@ private:
                         if (! (*this)[p](r, c).has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;
                         
-                        std::size_t cs = (*this)[p](r, c).left_basis().find(phys_i[ls].first);
+                        std::size_t cs = (*this)[p](r, c).left_basis().position(phys_i[ls].first);
                         
                         assert( lc == rc );
                         assert( outc < right_i.size_of_block(rc) );
