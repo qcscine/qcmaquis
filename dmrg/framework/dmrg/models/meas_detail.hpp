@@ -29,7 +29,7 @@ namespace meas_detail {
 							  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
 							  std::vector<std::size_t> const & order,
 							  bool is_nn,
-							  std::vector<double>& dc,
+							  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>& dc,
 							  std::vector<std::string>& labels);
     
 	inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<std::size_t> >& labels)
@@ -121,7 +121,7 @@ namespace meas_detail {
                 temp(0,0) = op.first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
-                vals.push_back( mps[p].scalar_overlap(vec2) );
+                vals.push_back( alps::numeric::real(mps[p].scalar_overlap(vec2)) ); // MD todo: allow complex numbers
                 labels.push_back( lat.get_prop<std::string>("label", p) );
             } // should return a vector of pairs or pair of vectors (todo: 30.04.12 / Matthias scalar/value types discussion)
             
@@ -152,7 +152,7 @@ namespace meas_detail {
                 temp(0,0) = ops[1].first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p+1], tmp_b, right_[p+1], temp);
-                vals.push_back( mps[p+1].scalar_overlap(vec2) );
+                vals.push_back( alps::numeric::real(mps[p+1].scalar_overlap(vec2)) ); // MD todo: allow complex numbers
                 labels.push_back( lat.get_prop<std::string>("label", p, p+1) );
             } // same here (todo: 30.04.12 / Matthias scalar/value types discussion)
             
@@ -182,7 +182,7 @@ namespace meas_detail {
                        std::string const & h5name,
                        std::string base_path)
 	{
-		std::vector<double> vals;
+		std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
         std::vector<std::string> labels;
         
         if (ops.size() == 1) {
@@ -204,17 +204,22 @@ namespace meas_detail {
 					mpom.add_term(term);
 					MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
                     
-					double val = expval(mps, mpo);
+					typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
 					vals.push_back(val);
 					labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
             	}
             }
         }
-                
+        
         {
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, vals));
             ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+            if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
+                                                              boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
+                          ) )
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(vals)));
+            else
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> >(1, vals));
         }
 	}
 
@@ -248,11 +253,16 @@ namespace meas_detail {
             }
         }
         MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-        double val = expval(mps, mpo);
+        typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
         
         {
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, val));
+            if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
+                                                              boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
+                          ) )
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, alps::numeric::real(val)));
+            else
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>(1, val));
         }
 	}
     
@@ -338,11 +348,11 @@ namespace meas_detail {
 							  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
 							  std::vector<std::size_t> const & order,
 							  bool is_nn,
-							  std::vector<double>& dc,
+							  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>& dc,
 							  std::vector<std::string>& labels)
 	{
-		for (size_t p = 0; p < lat.size()-(ops.size()-1); ++p) {
-			std::vector<double> dct;
+        for (size_t p = 0; p < lat.size()-(ops.size()-1); ++p) {
+			std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
 			std::vector<std::vector<std::size_t> > num_labels;
 			if (is_nn) {
 				generate_mpo::CorrMakerNN<Matrix, SymmGroup> dcorr(mps.length(), identity, fill,
@@ -382,7 +392,7 @@ namespace meas_detail {
 							 bool half=false,
 							 bool is_nn=false)
 	{
-	    std::vector<double> dc;
+	    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dc;
 	    std::vector<std::string> labels;
 	    if (half) {
 	    	measure_correlation_(mps, lat, identity, fill, ops, std::vector<std::size_t>(), is_nn, dc, labels);
@@ -392,9 +402,15 @@ namespace meas_detail {
 		    	measure_correlation_(mps, lat, identity, fill, perm[i], perm.order(i), is_nn, dc, labels);
 	    	}
 	    }
+
         {
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, dc));
+            if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
+                                                              boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
+                          ) )
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(dc)));
+            else
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> >(1, dc));           
             ar << alps::make_pvp(base_path + std::string("/labels"), labels);
         }
 	}

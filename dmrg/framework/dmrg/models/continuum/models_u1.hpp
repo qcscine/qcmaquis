@@ -187,7 +187,7 @@ public:
         Measurements<Matrix, U1> meas;
         meas.set_identity(ident);
         
-        {
+        if (model.get<bool>("MEASURE_CONTINUUM[Density]")) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Density";
@@ -196,7 +196,8 @@ public:
             
             meas.add_term(term);
         }
-        {
+        
+        if (model.get<bool>("MEASURE_CONTINUUM[Local density]")) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Local density";
@@ -205,6 +206,18 @@ public:
             
             meas.add_term(term);
         }
+
+        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
+            mterm_t term;
+            term.fill_operator = ident;
+            term.name = "Onebody density matrix";
+            term.type = mterm_t::HalfCorrelation;
+            term.operators.push_back( std::make_pair(create, false) );
+            term.operators.push_back( std::make_pair(destroy, false) );
+            
+            meas.add_term(term);
+        }
+
         return meas;
     }
     

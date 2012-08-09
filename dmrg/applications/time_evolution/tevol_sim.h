@@ -48,7 +48,7 @@ public:
             int pc = 0, mc = 0;
             this->parms = parms_orig.get_at_index("t", this->sweep, &pc);
             this->model = model_orig.get_at_index("t", this->sweep, &mc);
-            if (mc > 0)
+            if (mc > 0 || pc > 0)
                 this->model_init();
             prepare_te_terms();
         } else if (this->parms.template get<int>("update_each") > -1 && (this->sweep % this->parms.template get<int>("update_each")) == 0)
@@ -56,7 +56,7 @@ public:
             int pc = 0, mc = 0;
             this->parms = parms_orig.get_at_index("t", this->sweep, &pc);
             this->model = model_orig.get_at_index("t", this->sweep, &mc);
-            if (mc > 0) {
+            if (mc > 0 || pc > 0) {
                 this->model_init();
                 prepare_te_terms();
             }
@@ -70,7 +70,7 @@ public:
         // apply time evolution operators
         evolve_ntime_steps(nsteps, iteration_log);
         
-        double energy = expval(this->mps, this->mpo);
+        double energy = alps::numeric::real(expval(this->mps, this->mpo));
         maquis::cout << "Energy " << energy << std::endl;
         iteration_log << make_log("Energy", energy);
         

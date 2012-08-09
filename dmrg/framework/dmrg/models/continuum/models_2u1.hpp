@@ -200,7 +200,7 @@ public:
         Measurements<Matrix, TwoU1> meas;
         meas.set_identity(ident);
         
-        {
+        if (model.get<bool>("MEASURE_CONTINUUM[Density]")) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Density";
@@ -209,7 +209,7 @@ public:
             
             meas.add_term(term);
         }
-        {
+        if (model.get<bool>("MEASURE_CONTINUUM[Local density]")) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Local density up";
@@ -218,7 +218,7 @@ public:
             
             meas.add_term(term);
         }
-        {
+        if (model.get<bool>("MEASURE_CONTINUUM[Local density]")) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Local density down";
@@ -227,6 +227,28 @@ public:
             
             meas.add_term(term);
         }
+
+        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
+            mterm_t term;
+            term.fill_operator = sign_up;
+            term.name = "Onebody density matrix up";
+            term.type = mterm_t::HalfCorrelation;
+            term.operators.push_back( std::make_pair(create_up, true) );
+            term.operators.push_back( std::make_pair(destroy_up, true) );
+            
+            meas.add_term(term);
+        }
+        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
+            mterm_t term;
+            term.fill_operator = sign_down;
+            term.name = "Onebody density matrix down";
+            term.type = mterm_t::HalfCorrelation;
+            term.operators.push_back( std::make_pair(create_down, true) );
+            term.operators.push_back( std::make_pair(destroy_down, true) );
+            
+            meas.add_term(term);
+        }
+
         return meas;
     }
     

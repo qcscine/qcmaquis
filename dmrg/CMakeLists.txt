@@ -343,6 +343,9 @@ add_subdirectory(framework/dmrg)
 # *** applications
 add_subdirectory(applications)
 
+#add_subdirectory(tests)
+
+
 # *** regression tests
 if(BUILD_REGRESSION)
   enable_testing()

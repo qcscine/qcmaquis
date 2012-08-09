@@ -46,7 +46,7 @@ void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
                                           ops, p);
         MPO<Matrix, U1> mpo = dcorr.create_mpo();
         
-        std::vector<double> dct = multi_expval(mps, mpo);
+        std::vector<double> dct = alps::numeric::real(multi_expval(mps, mpo));
         std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
         
         std::vector<std::string> lbt = dcorr.label_strings();
@@ -98,7 +98,7 @@ struct measure_<Matrix, U1>
                 mpom.add_term(v);
                 MPO<Matrix, U1> mpo = mpom.create_mpo();
                 
-                double val = expval(mps, mpo);
+                double val = alps::numeric::real((expval(mps, mpo));
                 magns.push_back(val);
             }
             
@@ -114,7 +114,7 @@ struct measure_<Matrix, U1>
 //            mpos::CorrMaker<Matrix, U1> mcorr(mps.length(), ident, ident, corr);
 //            MPO<Matrix, U1> mpo = mcorr.create_mpo();
 //            
-//            std::vector<double> mc_v = multi_expval(mps, mpo);
+//            std::vector<double> mc_v = alps::numeric::real(multi_expval(mps, mpo));
             std::string name = std::string("/spectrum/results/") + names[i] + std::string("Correlation");
 //            ar << alps::make_pvp(name + std::string("/labels"), mcorr.label_strings());
 //            ar << alps::make_pvp(name + std::string("/mean/value"), mc_v);
@@ -145,7 +145,7 @@ struct measure_<Matrix, U1>
             mpom.add_term(v);
             MPO<Matrix, U1> mpo = mpom.create_mpo();
             
-            double val = expval(mps, mpo);
+            double val = alps::numeric::real(expval(mps, mpo));
             magns.push_back(val);
         }
             
@@ -166,7 +166,7 @@ struct measure_<Matrix, U1>
                 mpom.add_term(v);
                 MPO<Matrix, U1> mpo = mpom.create_mpo();
                 
-                double val = expval(mps, mpo);
+                double val = alps::numeric::real(expval(mps, mpo));
                 corrs.push_back(val);
             }
         }
@@ -201,7 +201,7 @@ struct measure_<Matrix, U1>
             mpom.add_term(v);
             MPO<Matrix, U1> mpo = mpom.create_mpo();
             
-            double val = expval(mps, mpo);
+            double val = alps::numeric::real(expval(mps, mpo));
             density.push_back(val);
         }
         ar << alps::make_pvp("/spectrum/results/Density/mean/value", density);
