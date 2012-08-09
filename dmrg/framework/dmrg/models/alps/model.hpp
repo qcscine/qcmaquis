@@ -186,11 +186,11 @@ public:
                 V  ops = model.site_term(type).template templated_split<value_type>();
                                                         
                 for (int n=0; n<ops.size(); ++n) {
-                    if (ops[n].get<0>().value() != 0.) {
-                        SiteOperator op = ops[n].get<1>();
+                    if (ops[n].template get<0>().value() != 0.) {
+                        SiteOperator op = ops[n].template get<1>();
                         alps_matrix m = alps::get_matrix(value_type(), op, model.site_basis(type), parms, true);
                         
-                        site_terms[type].push_back( ops[n].get<0>().value()*convert_matrix(m, type) );
+                        site_terms[type].push_back( ops[n].template get<0>().value()*convert_matrix(m, type) );
                     }
                     
                 }
@@ -242,8 +242,8 @@ public:
             
             V  ops = bondop.template templated_split<value_type>(b1,b2);
             for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-                SiteOperator op1 = tit->get<1>();
-                SiteOperator op2 = tit->get<2>();
+                SiteOperator op1 = tit->template get<1>();
+                SiteOperator op2 = tit->template get<2>();
                 
                 bool with_sign = fermionic(b1, op1, b2, op2);
                 
@@ -255,7 +255,7 @@ public:
                     term.fill_operator = tident[type_s];
                 {
                     alps_matrix m = alps::get_matrix(value_type(), op1, b1, parms, true);
-                    value_type coeff = tit->get<0>().value();
+                    value_type coeff = tit->template get<0>().value();
                     op_t tmp;
                     if (with_sign && !wrap_pbc) {                            
                         gemm(tfill[type_s], convert_matrix(m, type_s), tmp); // Note inverse notation because of notation in operator.
@@ -399,8 +399,8 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
                     V  ops = bondop.template templated_split<value_type>(b,b);
                     for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-                        SiteOperator op1 = tit->get<1>();
-                        SiteOperator op2 = tit->get<2>();
+                        SiteOperator op1 = tit->template get<1>();
+                        SiteOperator op2 = tit->template get<2>();
 
                         bool with_sign = fermionic(b, op1, b, op2);
 
@@ -419,7 +419,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                         		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
                             else
                                 tmp = convert_matrix(m, type);
-                        	term.operators.push_back( std::make_pair(tit->get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
+                        	term.operators.push_back( std::make_pair(tit->template get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
                         }
                         {
                             alps_matrix m = alps::get_matrix(value_type(), op2, b, parms, true);
@@ -460,8 +460,8 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
                     V  ops = bondop.template templated_split<value_type>(b,b);
                     for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-                        SiteOperator op1 = tit->get<1>();
-                        SiteOperator op2 = tit->get<2>();
+                        SiteOperator op1 = tit->template get<1>();
+                        SiteOperator op2 = tit->template get<2>();
 
                         bool with_sign = fermionic(b, op1, b, op2);
 
@@ -480,7 +480,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                         		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
                             else
                                 tmp = convert_matrix(m, type);
-                        	term.operators.push_back( std::make_pair(tit->get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
+                        	term.operators.push_back( std::make_pair(tit->template get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
                         }
                         {
                             alps_matrix m = alps::get_matrix(value_type(), op2, b, parms, true);
