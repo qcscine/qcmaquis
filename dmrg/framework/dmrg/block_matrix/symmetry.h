@@ -161,6 +161,11 @@ class ZqCharge
     {
         return a.c_ < b.c_;
     }
+
+    friend bool operator>(ZqCharge<Q> a, ZqCharge<Q> b)
+    {
+        return a.c_ > b.c_;
+    }
     
 public:
     ZqCharge(unsigned int c = 0) : c_(c) { }

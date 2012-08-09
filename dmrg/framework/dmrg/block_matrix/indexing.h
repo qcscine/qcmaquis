@@ -77,6 +77,7 @@ class basis_iterator_;
 template<class SymmGroup> class Index
 : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
 {
+    typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > base;
 public:
     typedef typename SymmGroup::charge charge;
     typedef typename std::vector<std::pair<typename SymmGroup::charge, std::size_t> >::iterator iterator;
@@ -168,7 +169,7 @@ public:
 
 private:
     void push_back(std::pair<charge, std::size_t> const & x){
-        std::vector<std::pair<charge, std::size_t> >::push_back(x);
+        base::push_back(x);
     }
 
 public:    
@@ -241,8 +242,14 @@ public:
         return vals_[pos];
     }
     
-    template<class Fusion = charge(*)(charge, charge)>
-    size_t size(charge a, charge b, Fusion f = SymmGroup::fuse) const
+    
+    // for the moment let's avoid the default template argument (C++11)
+    inline size_t size(charge a, charge b) const
+    {
+        return size(a, b, static_cast<charge(*)(charge, charge)>(SymmGroup::fuse));
+    }
+    template<class Fusion>
+    size_t size(charge a, charge b, Fusion f) const
     {
         charge pc = f(a, b);
         assert(size_.count(pc) > 0);
@@ -344,11 +351,11 @@ Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
                              -nc[i])-oc.begin()];
     
     Index<SymmGroup> ret;
-    std::transform(nc.begin(), nc.end(), nd.begin(), std::back_inserter(ret),
+    for (size_t i=0; i<nc.size(); ++i)
 #ifndef WIN32
-                   std::make_pair<charge, std::size_t>);
+        ret.insert(std::make_pair(nc[i], nd[i]));
 #else
-				   mypair<charge, std::size_t>);
+        ret.insert(mypair(nc[i], nd[i]));
 #endif
     return ret;
 }   
