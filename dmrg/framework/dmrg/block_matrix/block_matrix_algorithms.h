@@ -33,11 +33,11 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         if (! B.left_basis().has(A.right_basis()[k].first))
             continue;
         
-        std::size_t matched_block = B.left_basis().find(A.right_basis()[k].first);
+        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
                        A.left_basis()[k].first, B.right_basis()[matched_block].first);
-        gemm(A[k], B[matched_block], C[C.left_basis().find(A.left_basis()[k].first)]);
+        gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
     }
 }
 

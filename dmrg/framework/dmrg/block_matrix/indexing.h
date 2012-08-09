@@ -91,7 +91,7 @@ public:
         return std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>)->second;
     }
     
-    std::size_t find(charge c) const
+    std::size_t position(charge c) const
     {
         const_iterator match = std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>);
         if(match != this->end() && (*match).first != c) match = this->end();
@@ -388,7 +388,7 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
             charge pdc = SymmGroup::fuse(it1->first, it2->first);
             std::size_t ps = it1->second * it2->second;
             if (ret.has(pdc))
-                ret[ret.find(pdc)].second += ps;
+                ret[ret.position(pdc)].second += ps;
             else
                 ret.insert(std::make_pair(pdc, ps));
         }
