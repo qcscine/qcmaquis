@@ -8,7 +8,7 @@ namespace ambient { namespace models { namespace velvet {
         boost::singleton_pool<ambient::utils::empty, sizeof(history)>::free(ptr); 
     }
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), spec(dim, ts), references(0) { 
+    inline history::history(dim2 dim, size_t ts) : current(NULL), spec(dim, ts) { 
         this->content.reserve(2); 
     }
 

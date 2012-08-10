@@ -69,6 +69,11 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
+    inline matrix<T>::~matrix(){
+        destroy(*this);
+    }
+
+    template <typename T>
     inline matrix<T> matrix<T>::identity_matrix(size_type size){
         matrix i(size, size);
         fill_identity(i);
@@ -163,7 +168,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void matrix<T>::swap(matrix& r){ 
-        this->impl.swap(r.impl);       
+        std::swap(this->impl, r.impl);       
     }
 
     template<typename T>

@@ -12,6 +12,7 @@
 
 namespace ambient { namespace controllers { namespace velvet {
 
+    using ambient::models::velvet::history;
     using ambient::models::velvet::revision;
     using ambient::models::velvet::memspec;
 
@@ -29,6 +30,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void ifetch(revision& r);
         inline void unlock_revision(revision* arg);
         inline void unlink_revision(revision* arg);
+        inline void destroy(history* o);
 
         inline void flush();
         inline void conditional_flush();
@@ -37,6 +39,7 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         bool muted;
     private:
+        touchstack< history* > garbage;
         touchstack< cfunctor* > stack;
         inline void execute(chain* op);
         touchstack< chain* > chains;

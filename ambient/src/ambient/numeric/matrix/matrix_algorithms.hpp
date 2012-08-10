@@ -258,6 +258,11 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
+    inline void destroy(matrix<T>& a){
+        ambient::destroy(a.impl); 
+    }
+
+    template<typename T>
     bool operator == (const matrix<T>& a, const matrix<T>& b){
         ambient::future<bool> ret(true);
         ATOMIC(validation, a, b, ret); 

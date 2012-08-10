@@ -18,6 +18,10 @@ namespace ambient { namespace controllers { namespace velvet {
         op->execute();
         delete op;
     }
+        
+    inline void controller::destroy(history* o){
+        this->garbage.push_back(o);
+    }
 
     inline void controller::flush(){
         if(this->stack.empty()) return;
@@ -27,24 +31,35 @@ namespace ambient { namespace controllers { namespace velvet {
         this->stack.reset();
         this->last = NULL;
 
-        touchstack< chain* >* chains = &this->chains;
-        touchstack< chain* >* mirror = &this->mirror;
+        if(this->workload != 1){
+            touchstack< chain* >* chains = &this->chains;
+            touchstack< chain* >* mirror = &this->mirror;
 
-        while(this->workload){
-            while(!chains->end_reached()){
-                chain* op = chains->pick();
-                if(op->ready()){
-                    cilk_spawn this->execute(op);
-                    this->workload--;
-                }else{
-                    mirror->push_back(op);
+            while(this->workload){
+                while(!chains->end_reached()){
+                    chain* op = chains->pick();
+                    if(op->ready()){
+                        cilk_spawn this->execute(op);
+                        this->workload--;
+                    }else{
+                        mirror->push_back(op);
+                    }
                 }
+                chains->reset();
+                std::swap(chains,mirror);
             }
-            chains->reset();
-            std::swap(chains,mirror);
+            cilk_sync;
+        }else{
+            this->execute((chain*)this->chains.pick());
+            this->chains.reset();
+            this->workload = 0;
         }
-        cilk_sync;
         ambient::bulk_pool.refresh();
+
+        if(this->garbage.empty()) return;
+        while(!this->garbage.end_reached())
+            delete this->garbage.pick();
+        this->garbage.reset();
     }
 
     inline void controller::execute_mod(cfunctor* op){

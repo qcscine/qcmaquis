@@ -39,7 +39,7 @@ namespace ambient { namespace numeric {
         typedef T value_type;
         typedef size_t size_type;
         typedef ptrdiff_t difference_type;
-        typedef typename boost::intrusive_ptr<ambient::history> ptr;
+        typedef typename ambient::history* ptr;
         typedef typename ambient::future<double> real_type;
         typedef typename ambient::future<T> scalar_type;
 
@@ -56,6 +56,7 @@ namespace ambient { namespace numeric {
         inline matrix(matrix&& m); 
         matrix& operator = (matrix&& rhs);
 #endif
+        inline ~matrix();
     public:
         template<class M> static size_t rows(const M& m); 
         template<class M> static size_t cols(const M& m);
