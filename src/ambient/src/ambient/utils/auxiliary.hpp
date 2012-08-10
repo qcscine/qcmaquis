@@ -2,11 +2,12 @@
 #define AMBIENT_UTILS_AUXILIARY
 
 namespace ambient {
-    inline void playout()                { ambient::controller.flush();                  }
-    inline void conditional_playout()    { ambient::controller.conditional_flush();      }
-    inline void mute()                   { ambient::controller.muted = true;             }
-    inline void unmute()                 { ambient::controller.muted = false;            }
-    inline bool verbose()                { return (rank() ? false : true);               }
+    inline void destroy(ambient::models::velvet::history* o){ ambient::controller.destroy(o);          }
+    inline void playout()                                   { ambient::controller.flush();             }
+    inline void conditional_playout()                       { ambient::controller.conditional_flush(); }
+    inline void mute()                                      { ambient::controller.muted = true;        }
+    inline void unmute()                                    { ambient::controller.muted = false;       }
+    inline bool verbose()                                   { return (rank() ? false : true);          }
 }
 
 #endif

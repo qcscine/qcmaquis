@@ -17,10 +17,6 @@ namespace ambient { namespace models { namespace velvet {
         std::vector<revision*> content;
         revision* current;
         memspec spec;
-        friend void intrusive_ptr_add_ref(history* p){ ++(p->references); } 
-        friend void intrusive_ptr_release(history* p){ if(--(p->references) == 0) delete p; } 
-    private:
-        long references;
     };
 
 } } }
