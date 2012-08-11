@@ -27,7 +27,6 @@ namespace ambient {
         static void invoke    (){}
         static void latch     (){}
         static void cleanup   (){}
-        static void weight    (){}
         static void place     (){}
         static bool ready(void*){}
         static bool match(void*){}
@@ -46,7 +45,6 @@ namespace ambient {
         
         inline void operator delete (void* ptr){ }
 
-        virtual void weight()      { return kernel_inliner<typename K::F,&K::c>::weight(this);     }
         virtual void place()       { return kernel_inliner<typename K::F,&K::c>::place(this);      }
         virtual bool ready(void* e){ return kernel_inliner<typename K::F,&K::c>::ready(this, e);   }
         virtual bool match(void* t){ return kernel_inliner<typename K::F,&K::c>::match(this, t);   }

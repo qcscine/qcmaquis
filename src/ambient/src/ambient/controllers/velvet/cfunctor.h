@@ -5,7 +5,6 @@ namespace ambient { namespace controllers { namespace velvet {
 
     class cfunctor : public models::velvet::sfunctor {
     public:
-        virtual void weight()      = 0;
         virtual void logistics()   = 0;
         virtual void computation() = 0;
         virtual bool ready(void*)  = 0;
