@@ -123,21 +123,21 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T> inline scalar_type trace(const matrix<T>& m){ 
-        scalar_type trace(0);
+        scalar_type trace(0.);
         ATOMIC(trace, m, trace);
         return trace;
     }
 
     template <typename T>
     inline real_type norm_square(const matrix<T>& a){ 
-        real_type norm(0); 
+        real_type norm(0.); 
         ATOMIC(scalar_norm, a, norm); 
         return norm; 
     }
 
     template <typename T>
     inline scalar_type overlap(const matrix<T>& a, const matrix<T>& b){ 
-        scalar_type overlap(0); 
+        scalar_type overlap(0.); 
         ATOMIC(overlap, a, b, overlap); 
         return overlap; 
     }

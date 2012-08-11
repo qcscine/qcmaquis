@@ -318,7 +318,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
         typename SymmGroup::charge c = i1[b].first;
         vt.push_back(overlap(data_(c,c), rhs.data_(c,c)));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
-    return std::accumulate(vt.begin(), vt.end(), scalar_type(0));
+    return std::accumulate(vt.begin(), vt.end(), scalar_type(0.));
 }
 
 template<class Matrix, class SymmGroup>

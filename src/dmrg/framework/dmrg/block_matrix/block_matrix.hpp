@@ -216,7 +216,7 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmG
 {
     std::vector<scalar_type> vt;
     std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_trace());
-    return std::accumulate(vt.begin(), vt.end(), scalar_type(0)); // maquis::accumulate
+    return std::accumulate(vt.begin(), vt.end(), scalar_type(0.)); // maquis::accumulate
 }
 
 template<class Matrix, class SymmGroup>
@@ -224,7 +224,7 @@ typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGro
 {
     std::vector<real_type> vt;
     std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_norm_square());
-    return sqrt(std::accumulate(vt.begin(), vt.end(), real_type(0)));
+    return sqrt(std::accumulate(vt.begin(), vt.end(), real_type(0.)));
 }
 
 template<class Matrix, class SymmGroup>
