@@ -19,7 +19,6 @@ namespace ambient {
         template<size_t arg> static inline void deallocate    (sfunctor* m){ } //((T*)m->arguments[arg])->~T(); 
         template<size_t arg> static inline T&   revised       (sfunctor* m){ return *(T*)m->arguments[arg]; }
         template<size_t arg> static inline void modify(T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj); }
-        template<size_t arg> static inline void weight        (cfunctor* m){                                }
         template<size_t arg> static inline void place         (sfunctor* m){                                }
         template<size_t arg> static inline bool ready         (sfunctor* m, void* e){ return true;          }
         template<size_t arg> static inline bool match         (sfunctor* m, void* t){ return false;         }
@@ -31,7 +30,6 @@ namespace ambient {
         template<size_t arg> static inline void deallocate          (sfunctor* m){ ((T*)m->arguments[arg])->~T();            }
         template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(T*)m->arguments[arg];            }
         template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.ghost);    }
-        template<size_t arg> static inline void weight              (cfunctor* m){                                           }
         template<size_t arg> static inline void place               (sfunctor* m){                                           }
         template<size_t arg> static inline bool ready               (sfunctor* m, void* e){ return true;                     } // might be checked
         template<size_t arg> static inline bool match               (sfunctor* m, void* t){ return false;                    }
@@ -56,8 +54,6 @@ namespace ambient {
             ambient::model.add_revision(&o); 
         }
         template<size_t arg>
-        static inline void weight(cfunctor* m){ }
-        template<size_t arg>
         static inline void place(sfunctor* m){ }
         template<size_t arg> 
         static inline bool ready(sfunctor* m, void* e){
@@ -69,9 +65,7 @@ namespace ambient {
         template<size_t arg> 
         static inline bool match(sfunctor* m, void* t){
             T* obj = (T*)m->arguments[arg];
-            void* generator = obj->impl->content[obj->ref]->generator;
-            if(generator == t) return true;
-            return false;
+            return (obj->impl->content[obj->ref]->generator == t);
         }
         template<size_t arg> 
         static inline void tag(sfunctor* m, void* t){
@@ -95,8 +89,6 @@ namespace ambient {
             m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.impl, ambient::model.time(&o));
         }
         template<size_t arg>
-        static inline void weight(cfunctor* m){ }
-        template<size_t arg>
         static inline void place(sfunctor* m){ }
         template<size_t arg> 
         static inline bool ready(sfunctor* m, void* e){
@@ -108,9 +100,7 @@ namespace ambient {
         template<size_t arg> 
         static inline bool match(sfunctor* m, void* t){
             T* obj = (T*)m->arguments[arg];
-            void* generator = obj->impl->content[obj->ref]->generator;
-            if(generator == t) return true;
-            return false;
+            return (obj->impl->content[obj->ref]->generator == t);
         }
         template<size_t arg> 
         static inline void tag(sfunctor* m, void* t){
@@ -139,7 +129,6 @@ namespace ambient {
             T* obj = (T*)m->arguments[arg];
             obj->impl->content[obj->ref+1]->set_generator(t);
         }
-        template<size_t arg> static inline void weight(cfunctor* m){ }
         template<size_t arg> static inline void place(sfunctor* m){ }
         template<size_t arg> static inline bool ready(sfunctor* m, void* e){ return true;  }
         template<size_t arg> static inline bool match(sfunctor* m, void* t){ return false; }
