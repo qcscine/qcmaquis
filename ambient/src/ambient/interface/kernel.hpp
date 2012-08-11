@@ -46,13 +46,13 @@ namespace ambient {
         
         inline void operator delete (void* ptr){ }
 
-        virtual ~kernel_atomic()   { kernel_inliner<typename K::F,&K::c>::cleanup(this);           }
         virtual void weight()      { return kernel_inliner<typename K::F,&K::c>::weight(this);     }
         virtual void place()       { return kernel_inliner<typename K::F,&K::c>::place(this);      }
         virtual bool ready(void* e){ return kernel_inliner<typename K::F,&K::c>::ready(this, e);   }
         virtual bool match(void* t){ return kernel_inliner<typename K::F,&K::c>::match(this, t);   }
         virtual void tag(void* t)  { return kernel_inliner<typename K::F,&K::c>::tag(this, t);     }
-        virtual void computation() { return kernel_inliner<typename K::F,&K::c>::invoke((K*)this); }
+        virtual void computation() {        kernel_inliner<typename K::F,&K::c>::invoke((K*)this); 
+                                     return kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
         virtual void logistics()   { return kernel_inliner<typename K::F,&K::l>::invoke((K*)this); }
         inline void ctxt_select(const char* sql){ 
             this->set_group(channel.world()); 
