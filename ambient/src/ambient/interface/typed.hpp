@@ -27,7 +27,7 @@ namespace ambient {
     // }}}
     // {{{ compile-time type info: future types
     template <typename T> struct future_info {
-        template<size_t arg> static inline void deallocate          (sfunctor* m){ ((T*)m->arguments[arg])->~T();            }
+        template<size_t arg> static inline void deallocate          (sfunctor* m){                                           } 
         template<size_t arg> static inline T&   revised             (sfunctor* m){ return *(T*)m->arguments[arg];            }
         template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.ghost);    }
         template<size_t arg> static inline void place               (sfunctor* m){                                           }

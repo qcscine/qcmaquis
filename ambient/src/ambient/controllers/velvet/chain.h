@@ -13,7 +13,6 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void push_back(cfunctor* f);
         inline void execute();
         inline bool ready(); 
-        inline bool constrains(cfunctor* op);
         std::vector<cfunctor*> content;
     };
 

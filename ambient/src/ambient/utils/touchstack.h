@@ -13,16 +13,19 @@ namespace ambient{
     class touchstack {
     public:
         inline touchstack();
+        inline ~touchstack();
         inline T pick();
         inline void push_back(T e);
         inline bool end_reached();
         inline void reset();
         inline void repeat();
+        inline void clear();
+        inline void purge();
         inline bool empty();
         inline size_t size();
         inline void sort();
     private:
-        T content[TOUCHSTACK_LENGTH];
+        T* content;
         T* wi; 
         T* ri;
     };
