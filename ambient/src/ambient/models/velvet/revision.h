@@ -33,7 +33,7 @@ namespace ambient { namespace models { namespace velvet {
         inline bool occupied();
 
         inline revision* get_parent(){ return parent; }
-        inline revision(memspec*, bool clean = false);
+        inline revision(memspec*, bool clean);
         inline void* get_generator();
         inline void set_generator(void*);
         inline void reset_generator();
