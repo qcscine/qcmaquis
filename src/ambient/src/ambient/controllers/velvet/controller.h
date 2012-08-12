@@ -31,6 +31,7 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void unlock_revision(revision* arg);
         inline void unlink_revision(revision* arg);
         inline void destroy(history* o);
+        inline void deallocate(void* o);
 
         inline void flush();
         inline void conditional_flush();
@@ -40,6 +41,7 @@ namespace ambient { namespace controllers { namespace velvet {
         bool muted;
     private:
         touchstack< history* > garbage;
+        touchstack< void* > mgarbage;
         touchstack< cfunctor* > stack;
         inline void execute(chain* op);
         touchstack< chain* > chains;

@@ -29,8 +29,4 @@ namespace ambient { namespace controllers { namespace velvet {
         return true;
     }
 
-    inline bool chain::constrains(cfunctor* op){
-        return op->match(this);
-    }
-
 } } }

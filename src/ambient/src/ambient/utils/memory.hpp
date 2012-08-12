@@ -33,28 +33,6 @@ namespace ambient { namespace utils {
         void* pool;
     };
 
-    template<typename T>
-    inline void intrusive_ptr_add_ref(T* p){
-        ++(p->references);
-    }
-
-    template<typename T>
-    inline void intrusive_ptr_release(T* p){
-        if(--(p->references) == 0) delete p;
-    } 
-
-    template <size_t size>
-    class container {
-    public:
-        inline container()
-        : references(0){ }
-    private:
-        char memory[size];
-        long references;
-        friend void intrusive_ptr_add_ref<>(container* p);
-        friend void intrusive_ptr_release<>(container* p);
-    };
-
 } }
 
 namespace ambient {

@@ -3,6 +3,7 @@
 
 namespace ambient {
     inline void destroy(ambient::models::velvet::history* o){ ambient::controller.destroy(o);          }
+    inline void deallocate(void* o)                         { ambient::controller.deallocate(o);       }
     inline void playout()                                   { ambient::controller.flush();             }
     inline void conditional_playout()                       { ambient::controller.conditional_flush(); }
     inline void mute()                                      { ambient::controller.muted = true;        }

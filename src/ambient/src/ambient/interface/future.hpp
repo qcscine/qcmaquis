@@ -20,62 +20,77 @@ namespace ambient {
         future(){}
         template<typename S> inline future& operator = (const S& v){ }
     public:
-        typedef typename boost::intrusive_ptr< utils::container<sizeof(T)> > ptr;
+        typedef void* ptr;
         typedef T value_type;
 
         explicit inline future(const ptr& p)
-        : ghost(p), value((T*)&(*p))
+        : ghost(p), value((T*)p), symlink(true)
         {
         }
 
-        explicit inline future(const future& f){
-            ghost = new utils::container<sizeof(T)>();
-            value = (T*)&(*ghost);
+        inline ~future(){
+            if(!symlink) ambient::deallocate(ghost);
+        }
+
+        explicit inline future(const future& f)
+        : symlink(false) 
+        {
+            ghost = malloc(sizeof(T));
+            value = (T*)ghost;
            *value = f.calc_value();
         }
 
         template<typename S>
-        inline future(const future<S>& f){ // can be optimized later
-            ghost = new utils::container<sizeof(T)>();
-            value = (T*)&(*ghost);
+        inline future(const future<S>& f) // can be optimized later
+        : symlink(false) 
+        {
+            ghost = malloc(sizeof(T));
+            value = (T*)ghost;
            *value = (T)f.calc_value();
         }
 
-        inline future& operator = (const future& v){ 
-            ghost = v.ghost;
-            value = (T*)&(*ghost);
+        inline future& operator = (const future& f){
+            const_cast<future&>(f).symlink = true;
+            ghost = f.ghost;
+            value = (T*)ghost;
             return *this;
         }
 
 #ifdef RVALUE
         inline future(future&& f){
+            f.symlink = true;
             ghost = f.ghost;
-            value = (T*)&(*ghost);
+            value = (T*)ghost;
         }
 
-        inline future& operator = (future&& v){ 
-            ghost = v.ghost;
-            value = (T*)&(*ghost);
+        inline future& operator = (future&& f){ 
+            f.symlink = true;
+            ghost = f.ghost;
+            value = (T*)ghost;
             return *this;
         }
 #endif
 
-        inline future(double v){
-            ghost = new utils::container<sizeof(T)>();
-            value = (T*)&(*ghost);
+        inline future(double v)
+        : symlink(false)
+        {
+            ghost = malloc(sizeof(T));
+            value = (T*)ghost;
            *value = v;
         }
 
-        inline future(std::complex<double> v){
-            ghost = new utils::container<sizeof(T)>();
-            value = (T*)&(*ghost);
+        inline future(std::complex<double> v)
+        : symlink(false)
+        {
+            ghost = malloc(sizeof(T));
+            value = (T*)ghost;
            *value = v;
         }
 
         inline T calc_value() const {
             if(value == NULL){
                 ambient::playout();
-                value = (T*)&(*ghost);
+                value = (T*)ghost;
             }
             return *value;
         }
@@ -85,11 +100,11 @@ namespace ambient {
         }
 
         inline const T& get_value() const {
-            return *(T*)&(*ghost);
+            return *(T*)ghost;
         }
 
         inline T& get_value(){
-            return *(T*)&(*ghost);
+            return *(T*)ghost;
         }
 
         inline future<T>& unfold(){ // should be called reset
@@ -110,6 +125,7 @@ namespace ambient {
 #endif
 
         ptr    ghost;
+        bool   symlink;
     private:
         mutable T* value;
     };

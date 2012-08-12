@@ -22,6 +22,10 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::destroy(history* o){
         this->garbage.push_back(o);
     }
+        
+    inline void controller::deallocate(void* o){
+        this->mgarbage.push_back(o);
+    }
 
     inline void controller::flush(){
         if(this->stack.empty()) return;
@@ -56,14 +60,12 @@ namespace ambient { namespace controllers { namespace velvet {
         }
         ambient::bulk_pool.refresh();
 
-        if(this->garbage.empty()) return;
-        while(!this->garbage.end_reached())
-            delete this->garbage.pick();
-        this->garbage.reset();
+        garbage.clear();
+        mgarbage.purge();
     }
 
     inline void controller::execute_mod(cfunctor* op){
-        if(this->last && this->last->constrains(op)) this->last->push_back(op);
+        if(this->last && op->match(this->last)) this->last->push_back(op);
         else{
             this->last = new chain(op);
             this->workload++;
