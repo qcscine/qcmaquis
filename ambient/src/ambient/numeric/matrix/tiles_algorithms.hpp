@@ -8,11 +8,48 @@
 #define scalar_type     typename tiles<Matrix>::scalar_type
 #define difference_type typename tiles<Matrix>::difference_type
 
+inline size_t __a_mod(size_t size, size_t tile){
+    size_t mask[2] = {(size & (tile-1)), tile}; 
+    return mask[!mask[0]];
+}
+
+inline size_t __a_mod2(size_t size, size_t tile){
+    size_t m = size % tile;
+    if(m == 0) m = tile;
+    return m;
+}
+
+template<typename T>
+inline T& __a_reduce(std::vector<T>& seq){
+    for(int stride = 1; stride < seq.size(); stride *= 2)
+        for(int k = stride; k < seq.size(); k += stride*2)
+            seq[k-stride] += seq[k];
+    return seq[0];
+}
+
 namespace ambient { namespace numeric {
 
     template<class MatrixA, class MatrixB, typename MatrixC>
     inline void gemm(const tiles<MatrixA>& a, const tiles<MatrixB>& b, tiles<MatrixC>& c){
+        int nb = __a_ceil(c.cols/TILE_SIZE);
+        int mb = __a_ceil(c.rows/TILE_SIZE);
+        int kb = __a_ceil(a.cols/TILE_SIZE);
+        int lda = __a_ceil(a.rows/TILE_SIZE);
+        int ldb = __a_ceil(b.rows/TILE_SIZE);
 
+        for(int i = 0; i < mb; i++){
+            for(int j = 0; j < nb; j++){
+                std::vector<MatrixC> ctree;
+                ctree.reserve(kb);
+                for(int k = 0; k < kb; k++){
+                    MatrixA ab = a[i + kb*lda];
+                    MatrixB bb = b[kb + j*ldb];
+                    ctree.push_back(MatrixC(ab.num_rows(), bb.num_cols()));
+                    gemm(ab, bb, ctree[k]);
+                }
+                c[i + mb*j] = __a_reduce(ctree);
+            }
+        }
     }
 
     template<class Matrix, class DiagonalMatrix>
@@ -40,6 +77,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline tiles<Matrix> exp(const tiles<Matrix>& m, const T& alfa = 1.){
+        assert(false); printf("ERROR: NOT TESTED (EXP)\n");
     }
 
     template<class Matrix> inline void resize(tiles<Matrix>& m, size_t rows, size_t cols){ 
@@ -48,17 +86,39 @@ namespace ambient { namespace numeric {
         int nb = __a_ceil(cols/TILE_SIZE);
         int mb = __a_ceil(rows/TILE_SIZE);
         int mbo = __a_ceil(m.num_rows()/TILE_SIZE);
-        for(int j = 0; j < nb; j++){
-            for(int i = 0; i < mb; i++){
+        int nbo = __a_ceil(m.num_cols()/TILE_SIZE);
+        int mb_min = std::min(mb, mbo);
+        int nb_min = std::min(nb, nbo);
+
+        for(int j = 0; j < nb_min; j++){
+            for(int i = 0; i < mb_min; i++){
                 r.data[i+j*mb] = m.data[i+j*mbo];
             }
         }
-        if(rows % TILE_SIZE){
-            size_t remaining = rows % TILE_SIZE;
-            for(int j = 0; j < nb-1; j++)
-                resize(r.data[mb-1 + j*mb], remaining, TILE_SIZE);
+        if(mb > mbo){
+            for(int j = 0; j < nb_min; j++){
+                Matrix& block = r.data[mb_min-1 + j*mb];
+                resize(block, TILE_SIZE, block.num_cols());
+            }
+        }else{
+            size_t margin = __a_mod(rows, TILE_SIZE);
+            for(int j = 0; j < nb; j++){
+                Matrix& block = r.data[mb-1 + j*mb];
+                resize(block, margin, block.num_cols());
+            }
         }
-        // todo
+        if(nb > nbo){
+            for(int i = 0; i < mb_min; i++){
+                Matrix& block = r.data[i + (nb_min-1)*mb];
+                resize(block, block.num_rows(), TILE_SIZE);
+            }
+        }else{
+            size_t margin = __a_mod(cols, TILE_SIZE);
+            for(int i = 0; i < mb; i++){
+                Matrix& block = r.data[i + (nb-1)*mb];
+                resize(block, block.num_rows(), margin);
+            }
+        }
     }
 
     template<class Matrix> inline scalar_type trace(const tiles<Matrix>& m){
@@ -173,7 +233,7 @@ namespace ambient { namespace numeric {
     inline void add_inplace(tiles<Matrix>& lhs, const tiles<Matrix>& rhs){ 
         int size = lhs.data.size();
         for(int i = 0; i < size; i++){
-            lhs.data[i] += rhs;
+            lhs.data[i] += rhs.data[i];
         }
     }
 
@@ -181,7 +241,7 @@ namespace ambient { namespace numeric {
     inline void sub_inplace(tiles<Matrix>& lhs, const tiles<Matrix>& rhs){ 
         int size = lhs.data.size();
         for(int i = 0; i < size; i++){
-            lhs.data[i] -= rhs;
+            lhs.data[i] -= rhs.data[i];
         }
     }
 
