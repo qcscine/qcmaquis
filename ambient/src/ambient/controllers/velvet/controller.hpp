@@ -11,7 +11,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline controller::controller()
-    : workload(0),  muted(false)
+    : muted(false)
     {
         this->acquire(&ambient::channel);
         this->stacks = new touchstack< cfunctor* >[__cilkrts_get_nworkers()];
@@ -42,23 +42,18 @@ namespace ambient { namespace controllers { namespace velvet {
                 this->stacks[i].pick()->logistics();
             this->stacks[i].reset();
         }
-        if(this->workload == 1){
+        if(this->chains.size() == 1){
             this->execute((chain*)this->chains.pick());
             this->chains.reset();
-            this->workload = 0;
         }else{
             touchstack< chain* >* chains = &this->chains;
             touchstack< chain* >* mirror = &this->mirror;
 
-            while(this->workload){
+            while(!chains->empty()){
                 while(!chains->end_reached()){
                     chain* op = chains->pick();
-                    if(op->ready()){
-                        cilk_spawn this->execute(op);
-                        this->workload--;
-                    }else{
-                        mirror->push_back(op);
-                    }
+                    if(op->ready()) cilk_spawn this->execute(op);
+                    else mirror->push_back(op);
                 }
                 chains->reset();
                 std::swap(chains,mirror);
@@ -76,10 +71,8 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::execute_mod(cfunctor* op){
         if(!this->chains.empty() && op->match(this->chains.back())) 
             this->chains.back()->push_back(op);
-        else{
+        else
             this->chains.push_back(new chain(op));
-            this->workload++;
-        }
     }
 
     inline void controller::atomic_receive(revision& r){
