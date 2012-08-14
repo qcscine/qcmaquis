@@ -1,5 +1,7 @@
 //#define TOUCHSTACK_ACCESS_CHECK
 
+#include <cilk/cilk.h>
+
 namespace ambient{
 
     template<typename T>
@@ -15,6 +17,11 @@ namespace ambient{
     template<typename T>
     inline T touchstack<T>::pick(){
         return *ri++;
+    }
+
+    template<typename T>
+    inline T touchstack<T>::back(){
+        return *(wi-1);
     }
 
     template<typename T>

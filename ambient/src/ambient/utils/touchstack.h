@@ -15,16 +15,18 @@ namespace ambient{
         inline touchstack();
         inline ~touchstack();
         inline T pick();
+        inline T back();
         inline void push_back(T e);
         inline bool end_reached();
         inline void reset();
         inline void repeat();
+        inline void clear(T);
         inline void clear();
         inline void purge();
         inline bool empty();
         inline size_t size();
         inline void sort();
-    private:
+    public:
         T* content;
         T* wi; 
         T* ri;

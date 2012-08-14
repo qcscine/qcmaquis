@@ -11,7 +11,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline controller::controller()
-    : workload(0),  muted(false), last(NULL) 
+    : workload(0),  muted(false)
     {
         this->acquire(&ambient::channel);
         this->stacks = new touchstack< cfunctor* >[__cilkrts_get_nworkers()];
@@ -42,11 +42,11 @@ namespace ambient { namespace controllers { namespace velvet {
                 this->stacks[i].pick()->logistics();
             this->stacks[i].reset();
         }
-
-        if(this->workload == 0) return;
-        this->last = NULL;
-
-        if(this->workload != 1){
+        if(this->workload == 1){
+            this->execute((chain*)this->chains.pick());
+            this->chains.reset();
+            this->workload = 0;
+        }else{
             touchstack< chain* >* chains = &this->chains;
             touchstack< chain* >* mirror = &this->mirror;
 
@@ -64,25 +64,21 @@ namespace ambient { namespace controllers { namespace velvet {
                 std::swap(chains,mirror);
             }
             cilk_sync;
-        }else{
-            this->execute((chain*)this->chains.pick());
-            this->chains.reset();
-            this->workload = 0;
         }
         ambient::bulk_pool.refresh();
-
         for(int i = 0; i < __cilkrts_get_nworkers(); i++){
             garbage[i].clear();
             mgarbage[i].purge();
         }
+        // implicit cilk_sync //
     }
 
     inline void controller::execute_mod(cfunctor* op){
-        if(this->last && op->match(this->last)) this->last->push_back(op);
+        if(!this->chains.empty() && op->match(this->chains.back())) 
+            this->chains.back()->push_back(op);
         else{
-            this->last = new chain(op);
+            this->chains.push_back(new chain(op));
             this->workload++;
-            this->chains.push_back(this->last);
         }
     }
 
