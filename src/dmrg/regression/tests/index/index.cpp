@@ -36,9 +36,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(positioni_test, T, SymmGroupList){
     phys.insert(std::make_pair(2, 3));
     phys.insert(std::make_pair(1, 4));
     phys.insert(std::make_pair(4, 1));
-    BOOST_CHECK_EQUAL(1,phys.find(3));
+    BOOST_CHECK_EQUAL(1,phys.position(3));
     phys.insert(std::make_pair(3, 2));
-    BOOST_CHECK_EQUAL(1,phys.find(3));
+    BOOST_CHECK_EQUAL(1,phys.position(3));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(position_pair_test, T, SymmGroupList){
