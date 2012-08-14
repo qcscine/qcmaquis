@@ -40,9 +40,9 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         bool muted;
     private:
-        touchstack< history* > garbage;
-        touchstack< void* > mgarbage;
-        touchstack< cfunctor* > stack;
+        touchstack< history* >* garbage;
+        touchstack< void* >* mgarbage;
+        touchstack< cfunctor* >* stacks;
         inline void execute(chain* op);
         touchstack< chain* > chains;
         touchstack< chain* > mirror;

@@ -3,7 +3,7 @@
 #include "ambient/utils/singleton.hpp"
 #include "boost/pool/singleton_pool.hpp"
 
-#define BULK_LENGTH 8388608*200
+#define BULK_LENGTH 8388608*50
 
 namespace ambient { namespace utils {
 
@@ -13,24 +13,35 @@ namespace ambient { namespace utils {
     {
     public:
         bulk_memory(){
-            this->pool = malloc(BULK_LENGTH);
-            this->iterator = (char*)this->pool;
+            this->arity = __cilkrts_get_nworkers();
+            this->pools = (void**)malloc(sizeof(void*)*this->arity);
+            for(int i = 0; i < this->arity; i++)
+                this->pools[i] = malloc(BULK_LENGTH);
+            this->iterators = (char**)malloc(sizeof(char*)*this->arity);
+            for(int i = 0; i < this->arity; i++)
+                this->iterators[i] = (char*)this->pools[i];
         }
        ~bulk_memory(){
-            free(this->pool);
+            for(int i = 0; i < this->arity; i++)
+                free(this->pools[i]);
+            free(this->iterators);
+            free(this->pools);
         }
         template<size_t S>
         void* get(){
-            void* result = this->iterator;
-            this->iterator += S; // 16*((size_t)(S/16)+1); // alignment variant
+            char*& iterator = this->iterators[__cilkrts_get_worker_number()];
+            void* result = iterator;
+            iterator += S; // 16*((size_t)(S/16)+1); // alignment variant
             return result;
         }
         void refresh(){
-            this->iterator = (char*)this->pool;
+            for(int i = 0; i < this->arity; i++)
+                this->iterators[i] = (char*)this->pools[i];
         }
     public:
-        char* iterator;
-        void* pool;
+        char** iterators;
+        void** pools;
+        int arity;
     };
 
 } }

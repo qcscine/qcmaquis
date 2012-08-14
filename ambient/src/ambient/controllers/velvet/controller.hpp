@@ -7,32 +7,43 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::channels::mpi::packet;
 
     inline controller::~controller(){
+        delete[] this->stacks;
     }
 
     inline controller::controller()
     : workload(0),  muted(false), last(NULL) 
     {
         this->acquire(&ambient::channel);
+        this->stacks = new touchstack< cfunctor* >[__cilkrts_get_nworkers()];
+        this->garbage = new touchstack< history* >[__cilkrts_get_nworkers()];
+        this->mgarbage = new touchstack< void* >[__cilkrts_get_nworkers()];
     }
+        
+    inline void controller::destroy(history* o){
+        this->garbage[__cilkrts_get_worker_number()].push_back(o);
+    }
+        
+    inline void controller::deallocate(void* o){
+        this->mgarbage[__cilkrts_get_worker_number()].push_back(o);
+    }
+
+    inline void controller::push(cfunctor* op){
+        this->stacks[__cilkrts_get_worker_number()].push_back(op);
+    }
+
     inline void controller::execute(chain* op){
         op->execute();
         delete op;
     }
-        
-    inline void controller::destroy(history* o){
-        this->garbage.push_back(o);
-    }
-        
-    inline void controller::deallocate(void* o){
-        this->mgarbage.push_back(o);
-    }
 
     inline void controller::flush(){
-        if(this->stack.empty()) return;
-        while(!this->stack.end_reached())
-            this->stack.pick()->logistics();
+        for(int i = 0; i < __cilkrts_get_nworkers(); i++){
+            while(!this->stacks[i].end_reached())
+                this->stacks[i].pick()->logistics();
+            this->stacks[i].reset();
+        }
 
-        this->stack.reset();
+        if(this->workload == 0) return;
         this->last = NULL;
 
         if(this->workload != 1){
@@ -60,8 +71,10 @@ namespace ambient { namespace controllers { namespace velvet {
         }
         ambient::bulk_pool.refresh();
 
-        garbage.clear();
-        mgarbage.purge();
+        for(int i = 0; i < __cilkrts_get_nworkers(); i++){
+            garbage[i].clear();
+            mgarbage[i].purge();
+        }
     }
 
     inline void controller::execute_mod(cfunctor* op){
@@ -84,11 +97,6 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::acquire(channels::mpi::channel* channel){
         channel->init();
-    }
-
-    inline void controller::push(cfunctor* op){
-#pragma omp critical
-        this->stack.push_back(op);
     }
 
     inline void controller::alloc(revision& r){
