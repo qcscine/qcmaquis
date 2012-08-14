@@ -46,7 +46,6 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void execute(chain* op);
         touchstack< chain* > chains;
         touchstack< chain* > mirror;
-        size_t workload;
     };
     
 } } }
