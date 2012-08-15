@@ -13,11 +13,9 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline history::~history(){
-        size_t size = this->content.size();
-        for(size_t i = 0; i < size; i++){
-            free(this->content[i]->header);
-            delete this->content[i];
-        }
+        int size = this->content.size();
+        for(int i = 0; i < size; i++) free(this->content[i]->header);
+        for(int i = 0; i < size; i++) boost::singleton_pool<ambient::utils::empty, sizeof(revision)>::free(this->content[i]); 
     }
 
     inline void history::add_state(revision* r){

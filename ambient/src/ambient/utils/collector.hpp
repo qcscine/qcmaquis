@@ -11,8 +11,9 @@ namespace ambient{
     public:
 
         collector(){
-            this->str = new touchstack< history* >[__cilkrts_get_nworkers()];
-            this->raw = new touchstack< void* >[__cilkrts_get_nworkers()];
+            this->size = __cilkrts_get_nworkers();
+            this->str = new touchstack< history* >[size];
+            this->raw = new touchstack< void* >[size];
         }
 
        ~collector(){
@@ -29,7 +30,7 @@ namespace ambient{
         }
 
         void clear(){
-            for(int i = 0; i < __cilkrts_get_nworkers(); i++){
+            for(int i = 0; i < size; i++){
                 str[i].clear();
                 raw[i].purge();
             }
@@ -38,6 +39,7 @@ namespace ambient{
     private:
         touchstack< history* >* str;
         touchstack< void* >* raw;
+        int size;
     };
 
 }
