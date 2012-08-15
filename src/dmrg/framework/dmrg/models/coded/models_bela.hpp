@@ -244,6 +244,11 @@ NNN(p1, -f * delta*sz, p2, sminus, p3, splus); }
 #undef NNN
     }
     
+    Index<U1> get_phys() const
+    {
+        return phys;
+    }
+
     Hamiltonian<Matrix, U1> H () const
     {        
         return ham(phys, ident, terms);

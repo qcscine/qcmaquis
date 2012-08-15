@@ -21,8 +21,11 @@ typename SymmGroup::charge init_qn (BaseParameters &);
 template <class Matrix, class SymmGroup>
 class Model {
 public:
-    virtual Hamiltonian<Matrix, SymmGroup> H () const=0;
-    virtual Measurements<Matrix, SymmGroup> measurements () const=0;
+    virtual Hamiltonian<Matrix, SymmGroup> H() const=0;
+    virtual Measurements<Matrix, SymmGroup> measurements() const=0;
+    virtual Index<SymmGroup> get_phys() const=0;
+    virtual block_matrix<Matrix, SymmGroup> get_op(std::string const &) const
+    { return block_matrix<Matrix, SymmGroup>(); }
     virtual typename SymmGroup::charge initc(BaseParameters & parms) const
     {
         return init_qn<SymmGroup>(parms);

@@ -13,6 +13,7 @@
 #include <boost/tuple/tuple.hpp>
 
 #include "dmrg/mp_tensors/twositetensor.h"
+#include "dmrg/mp_tensors/mpo_ops.h"
 
 template<class Matrix, class SymmGroup, class StorageMaster>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, StorageMaster>

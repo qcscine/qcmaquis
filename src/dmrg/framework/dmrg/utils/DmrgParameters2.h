@@ -14,6 +14,7 @@
 class DmrgParameters : public BaseParameters
 {
 public:
+    DmrgParameters() : BaseParameters() { init_options(); }
     DmrgParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
     {
@@ -91,7 +92,7 @@ private:
 class ModelParameters : public BaseParameters
 {
 public:
-    ModelParameters() : BaseParameters() {}
+    ModelParameters() : BaseParameters() { init_options(); }
 	ModelParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
     {

@@ -12,7 +12,13 @@ public:
     : L(parms.get<int>("L"))
     , a(parms.get<double>("a"))
     , pbc(pbc_)
-    {}
+    { }
+
+    ChainLattice (int L_, bool pbc_=false, double a_=1.)
+    : L(L_)
+    , a(a_)
+    , pbc(pbc_)
+    { }
     
     std::vector<pos_t> forward(pos_t i) const
     {

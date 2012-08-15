@@ -48,6 +48,11 @@ public:
         }
     }
     
+    Index<U1> get_phys() const
+    {
+        return phys;
+    }
+
     Hamiltonian<Matrix, U1> H () const
     {
         std::vector<hamterm_t> terms;

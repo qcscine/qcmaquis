@@ -51,6 +51,11 @@ public:
         }
     }
     
+    Index<TrivialGroup> get_phys() const
+    {
+        return phys;
+    }
+
     Hamiltonian<Matrix, TrivialGroup> H () const
     {
         TrivialGroup::charge c = TrivialGroup::IdentityCharge;
