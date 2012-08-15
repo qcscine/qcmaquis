@@ -69,6 +69,11 @@ public:
         
     }
     
+    Index<U1> get_phys() const
+    {
+        return phys;
+    }
+
     Hamiltonian<Matrix, U1> H () const
     {        
         return ham(phys, ident, terms);
@@ -79,7 +84,19 @@ public:
         return Measurements<Matrix, U1>();
     }
 
-    
+    op_t get_op(std::string const & op) const
+    {
+        if (op == "splus")
+            return splus;
+        else if (op == "sminus")
+            return sminus;
+        else if (op == "sz")
+            return sz;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return op_t();
+    }
+
 private:
     op_t ident;    
     op_t splus, sminus, sz;
@@ -133,6 +150,11 @@ public:
     }
     
     
+    Index<U1> get_phys() const
+    {
+        return phys;
+    }
+
     Hamiltonian<Matrix, U1> H () const
     {        
         return ham(phys, ident, terms);
@@ -143,10 +165,122 @@ public:
         return Measurements<Matrix, U1>();
     }
     
+    op_t get_op(std::string const & op) const
+    {
+        if (op == "n")
+            return count;
+        else if (op == "bdag")
+            return create;
+        else if (op == "b")
+            return destroy;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return op_t();
+    }
+    
     
 private:
     op_t ident;    
     op_t create, destroy, count;
+    Index<U1> phys;
+    
+    std::vector<hamterm_t> terms;
+};
+
+/* ****************** BOSE-HUBBARD */
+template<class Matrix>
+class BoseHubbard : public Model<Matrix, U1>
+{
+    typedef Hamiltonian<Matrix, U1> ham;
+    typedef typename ham::hamterm_t hamterm_t;
+    typedef typename ham::op_t op_t;
+    
+public:
+    BoseHubbard (const Lattice& lat, int Nmax=2, double t=1., double U=1.)
+    {
+        phys.insert(std::make_pair(0, 1));
+        ident.insert_block(Matrix(1, 1, 1), 0, 0);
+        
+        for (int n=1; n<=Nmax; ++n)
+        {
+            phys.insert(std::make_pair(n, 1));
+            
+            ident.insert_block(Matrix(1, 1, 1), n, n);
+            
+            count.insert_block(Matrix(1, 1, n), n, n);
+            if ((n*n-n) != 0)
+                interaction.insert_block(Matrix(1, 1, n*n-n), n, n);
+            
+            
+            create.insert_block(Matrix(1, 1, std::sqrt(n)), n-1, n);
+            destroy.insert_block(Matrix(1, 1, std::sqrt(n)), n, n-1);
+        }
+        
+        for (int p=0; p<lat.size(); ++p) {
+            /* interaction */
+            {
+                hamterm_t term;
+                term.with_sign = false;
+                term.fill_operator = ident;
+                term.operators.push_back( std::make_pair(p, interaction) );
+                terms.push_back(term);
+            }
+            
+            /* hopping */
+            std::vector<int> neighs = lat.forward(p);
+            for (int n=0; n<neighs.size(); ++n) {
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, -t*create) );
+                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
+                    terms.push_back(term);
+                }
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, -t*destroy) );
+                    term.operators.push_back( std::make_pair(neighs[n], create) );
+                    terms.push_back(term);
+                }
+            }
+        }
+        
+    }
+    
+    
+    Index<U1> get_phys() const
+    {
+        return phys;
+    }
+    
+    Hamiltonian<Matrix, U1> H () const
+    {
+        return ham(phys, ident, terms);
+    }
+    
+    Measurements<Matrix, U1> measurements () const
+    {
+        return Measurements<Matrix, U1>();
+    }
+    
+    op_t get_op(std::string const & op) const
+    {
+        if (op == "n")
+            return count;
+        else if (op == "bdag")
+            return create;
+        else if (op == "b")
+            return destroy;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return op_t();
+    }
+    
+    
+private:
+    op_t ident;
+    op_t create, destroy, count, interaction;
     Index<U1> phys;
     
     std::vector<hamterm_t> terms;
@@ -201,6 +335,11 @@ public:
     
 }
     
+    Index<U1> get_phys() const
+    {
+        return phys;
+    }
+
     Hamiltonian<Matrix, U1> H () const
     {        
         return ham(phys, ident, terms);
@@ -243,6 +382,18 @@ public:
         return meas;
     }
     
+    op_t get_op(std::string const & op) const
+    {
+        if (op == "n")
+            return dens;
+        else if (op == "cdag")
+            return create;
+        else if (op == "c")
+            return destroy;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return op_t();
+    }
     
 private:
     op_t ident;    

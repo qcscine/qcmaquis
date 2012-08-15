@@ -22,6 +22,10 @@ struct model_factory<Matrix, U1> {
             return typename model_traits<Matrix, U1>::model_ptr(
                         new HCB<Matrix>(lattice)
                    );
+        else if (model.get<std::string>("MODEL") == std::string("boson Hubbard"))
+            return typename model_traits<Matrix, U1>::model_ptr(
+                        new BoseHubbard<Matrix>(lattice, model.get<int>("Nmax"), model.get<double>("t"), model.get<double>("U"))
+                                                                );
         else if (model.get<std::string>("MODEL") == std::string("FreeFermions"))
             return typename model_traits<Matrix, U1>::model_ptr(
                         new FreeFermions<Matrix>(lattice, model.get<double>("t"))

@@ -72,6 +72,11 @@ public:
         doubly_occ.insert_block(Matrix(1, 1, 1), updown, updown);
     }
     
+    Index<TwoU1> get_phys() const
+    {
+        return phys;
+    }
+
     Hamiltonian<Matrix, TwoU1> H () const
     {
         std::vector<hamterm_t> terms;

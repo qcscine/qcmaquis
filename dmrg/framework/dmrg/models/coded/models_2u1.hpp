@@ -124,6 +124,10 @@ public:
         }
     }
     
+    Index<TwoU1> get_phys() const
+    {
+        return phys;
+    }
     
     Hamiltonian<Matrix, TwoU1> H () const
     {
