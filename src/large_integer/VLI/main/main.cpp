@@ -4,12 +4,14 @@
 #include <cstdio>
 #include <cassert>
 
+
+#include <boost/mpl/for_each.hpp>
+
 #include "use_gmp_integers.hpp"
 #include "minimal_polynomial.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include "boost/tuple/tuple.hpp"
-//#include "vli/function_hooks/vli_number_cpu_function_hooks.hpp"
 
 #ifdef VLI_USE_GPU
 #include "vli/detail/gpu/inner_product_gpu_booster.hpp"
@@ -20,6 +22,7 @@
 #include "vli/polynomial/polynomial.hpp"
 #include "vli/polynomial/variable.hpp"
 #include "vli/polynomial/monomial.hpp"
+#include "vli/polynomial/polynomial_traits.hpp"
 #include "vli/vli_cpu.h"
 #include "vli/vli_traits.hpp"
 #include "utils/timings.h"
@@ -37,12 +40,6 @@ using vli::max_int_value;
 using vli::monomial;
 using vli::polynomial;
 using vli::vector_polynomial;
-/*
-using vli::test::fill_random;
-using vli::test::fill_poly_random;
-using vli::test::fill_vector_random;
-using vli::test::fill_vector_negate;
-*/
 
 typedef vli_cpu< unsigned long int, Size1> vli_type_cpu;
 typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
@@ -54,90 +51,25 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_result_type_combined_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_result_type_combined_xyzw;
 
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_result_type_combined_cpu;
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_each_x;
 
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'> , vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_result_type_cpu;
 
-typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
-typedef vli::vector_polynomial<polynomial_type_combined_cpu> vector_type_combined_cpu;
+//typedef vli::vector_polynomial<polynomial_type_cpu> vector_type_cpu;
+//typedef vli::vector_polynomial<polynomial_type_combined_cpu> vector_type_combined_cpu;
 
-typedef mpz_class large_int;
-typedef hp2c::monomial<large_int> monomial_type;
-typedef hp2c::polynomial<large_int,Order+1> polynomial_type;
-typedef hp2c::polynomial<large_int,2*(Order+1)> polynomial_typed;
-typedef std::vector<polynomial_type> polynomial_vector_type;
-
-template <typename VpolyVLI, typename VpolyGMP>
-void InitPolyVLItoPolyGMP(VpolyVLI const& VVLI, VpolyGMP & VGMP)
-{
-    #pragma omp parallel for
-    for (int i =0 ; i < (int)VVLI.size() ; ++i)
-        for(int j = 0; j < Order+1; j++)
-            for(int k = 0; k < Order+1; k++){
-                VGMP[i](j,k) = VVLI[i](j,k).get_str();
-            }
-}
-
-template <typename PolyVLI, typename PolyGMP>
-bool ValidatePolyVLI_PolyGMP(PolyVLI const& PVLI, PolyGMP const& PGMP)
-{
-    bool b(true);
-  #pragma omp parallel for
-    for(std::size_t j = 0; j < Order+1; j++)
-        for(std::size_t k = 0; k < Order+1; k++){
-            if( PGMP(j,k).get_str() != PVLI(j,k).get_str()){
-                 b = false;
-            }
-        }   
-    return b;
-}
-
-
-namespace vli{
-namespace detail{
-      void toto(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */);
-}
-}
-
+/*
 int main (int argc, char * const argv[]) 
 {
-/*
-  vli_type_cpu a,b;
-   vli_result_type_cpu c,d;
-   
-fill_random(a);
-fill_random(b); 
 
-b[0] = 0xff237623ffffffff;
-b[1] = 0xEEEEEEEEEEEEEEEE;
-b[2] = 0xf1243abfffffffff;
-a[0] = 0xAAAAAaA0932759ff;
-a[1] = 0xABDEfff0932759ff;
-a[2] = 0xffffffffffffffff;
-//std::cout << std::hex  << a << std::endl;
-//std::cout << std::hex  << b << std::endl;
-long N = 0xff;
-
-TimerOMP A("new");
-A.begin();
-for(long i(0) ; i < N ; ++i)
-   vli::detail::toto(&c[0],&a[0],&b[0]);
-A.end();
-TimerOMP B("old");
-   mul(d,b,a);  
-
-std::cout << std::hex << c << std::endl;
-std::cout << "correct : " << std::endl;
-std::cout << d << std::endl;
-*/
  
     int SizeVector = atoi(argv[1]);   
 
@@ -173,11 +105,7 @@ polynomial_result_type_combined_cpu polycres, polycres2;
 
     polycres2= vli::detail::inner_product_cpu(v1c,v2c);
     polycres = vli::detail::inner_product_gpu(v1c,v2c);
-/*
-    std::cout << std::hex << polycres2<< std::endl;    
-std::cout << " --------------------------- " << std::endl;
-    std::cout << std::hex << polycres << std::endl;    
- */
+
      if(polycres2 == polycres ) {printf("OK gpu combined\n"); } else{printf("NO OK gpu combined \n"); } 
     tools::fill_vector_random(v1);
     tools::fill_vector_random(v2);
@@ -221,5 +149,35 @@ std::cout << " --------------------------- " << std::endl;
     return 0;
 }
 
+*/
 
+    typedef boost::mpl::vector<polynomial_type_each_x, polynomial_type_combined_xyzw> polynomial_list;
+   
+    struct test_case {
+   
+       template <typename Polynomial>
+       void operator()(Polynomial const&) {
+             typedef typename vli::polynomial_multiply_result_type<Polynomial>::type Polynomial_res;
+             typedef vli::vector_polynomial<Polynomial> vector_polynomial;
+             typedef vli::vector_polynomial<Polynomial_res> vector_polynomial_res;
 
+             vector_polynomial v1(128),v2(128);
+             Polynomial_res p1_res, p2_res;
+
+             tools::fill_vector_random(v1);
+             tools::fill_vector_random(v2);
+
+             p1_res = vli::detail::inner_product_cpu(v1,v2);
+             p2_res = vli::detail::inner_product_gpu(v1,v2);
+           // if(p1_res == p2_res) {printf("OK gpu \n"); } else{printf("NO OK \n"); } 
+           }
+       };
+   
+   
+   int main() {
+   
+       boost::mpl::for_each<polynomial_list>(test_case());
+   
+       return 0;
+   
+   }
