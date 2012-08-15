@@ -42,14 +42,14 @@ double measure_local_expval(MPS<matrix, SymmGroup> const & mps, block_matrix<mat
 double measure_local_overlap(MPS<matrix, SymmGroup> const & mps,
                              block_matrix<matrix, SymmGroup> const & op, size_t pos)
 {
-    // asuming mps id canonized at site pos!
+    // asuming mps is canonized at site pos!
     return mps[pos].scalar_overlap(contraction::local_op(mps[pos], op));
 }
 
 double measure_local_trace(MPS<matrix, SymmGroup> const & mps,
                            block_matrix<matrix, SymmGroup> const & op, size_t pos)
 {
-    // asuming mps id canonized at site pos!
+    // asuming mps is canonized at site pos!
     block_matrix<matrix, SymmGroup> dm = contraction::density_matrix(mps[pos], mps[pos]);
     block_matrix<matrix, SymmGroup> tmp;
     gemm(op, dm, tmp);
@@ -59,7 +59,7 @@ double measure_local_trace(MPS<matrix, SymmGroup> const & mps,
 double measure_local_trace_2(MPS<matrix, SymmGroup> const & mps,
                              block_matrix<matrix, SymmGroup> const & op, size_t pos)
 {
-    // asuming mps id canonized at site pos!
+    // asuming mps is canonized at site pos!
     block_matrix<matrix, SymmGroup> dm = contraction::density_matrix_2(mps[pos], mps[pos]);
     block_matrix<matrix, SymmGroup> tmp;
     gemm(op, dm, tmp);
