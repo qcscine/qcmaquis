@@ -57,7 +57,7 @@ namespace ambient {
         }
         inline void pin(revision& r){
             ambient::controller.ifetch(r);
-            ambient::controller.execute_mod(this);
+            ambient::controller.schedule(this);
         }
         inline void assign(revision& r){ 
             ambient::controller.ifetch(r);

@@ -2,13 +2,22 @@
 #define AMBIENT_UTILS_AUXILIARY
 
 namespace ambient {
-    inline void destroy(ambient::models::velvet::history* o){ ambient::controller.destroy(o);          }
-    inline void deallocate(void* o)                         { ambient::controller.deallocate(o);       }
-    inline void playout()                                   { ambient::controller.flush();             }
+    template<typename T>
+    inline void destroy(T* o)                               { ambient::controller.destroy(o);          }
     inline void conditional_playout()                       { ambient::controller.conditional_flush(); }
     inline void mute()                                      { ambient::controller.muted = true;        }
     inline void unmute()                                    { ambient::controller.muted = false;       }
     inline bool verbose()                                   { return (rank() ? false : true);          }
+    inline void playout(){ 
+        ambient::controller.schedule();             
+        if(ambient::controller.chains.size() == 1){
+            ambient::controller.execute(ambient::controller.chains.pick());
+            ambient::controller.chains.reset();
+        }else{
+            ambient::controller.flush();
+            ambient::controller.garbage.clear();
+        }
+    } 
 }
 
 #endif

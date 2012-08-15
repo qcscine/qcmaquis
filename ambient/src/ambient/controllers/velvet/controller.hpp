@@ -15,18 +15,13 @@ namespace ambient { namespace controllers { namespace velvet {
     {
         this->acquire(&ambient::channel);
         this->stacks = new touchstack< cfunctor* >[__cilkrts_get_nworkers()];
-        this->garbage = new touchstack< history* >[__cilkrts_get_nworkers()];
-        this->mgarbage = new touchstack< void* >[__cilkrts_get_nworkers()];
     }
         
-    inline void controller::destroy(history* o){
-        this->garbage[__cilkrts_get_worker_number()].push_back(o);
+    template<typename T>
+    inline void controller::destroy(T* o){
+        this->garbage.push_back(o);
     }
         
-    inline void controller::deallocate(void* o){
-        this->mgarbage[__cilkrts_get_worker_number()].push_back(o);
-    }
-
     inline void controller::push(cfunctor* op){
         this->stacks[__cilkrts_get_worker_number()].push_back(op);
     }
@@ -36,50 +31,42 @@ namespace ambient { namespace controllers { namespace velvet {
         delete op;
     }
 
-    inline void controller::flush(){
-        for(int i = 0; i < __cilkrts_get_nworkers(); i++){
-            while(!this->stacks[i].end_reached())
-                this->stacks[i].pick()->logistics();
-            this->stacks[i].reset();
-        }
-        if(this->chains.size() == 1){
-            this->execute((chain*)this->chains.pick());
-            this->chains.reset();
-        }else{
-            touchstack< chain* >* chains = &this->chains;
-            touchstack< chain* >* mirror = &this->mirror;
-
-            while(!chains->empty()){
-                while(!chains->end_reached()){
-                    chain* op = chains->pick();
-                    if(op->ready()) cilk_spawn this->execute(op);
-                    else mirror->push_back(op);
-                }
-                chains->reset();
-                std::swap(chains,mirror);
-            }
-            cilk_sync;
-        }
-        ambient::bulk_pool.refresh();
-        for(int i = 0; i < __cilkrts_get_nworkers(); i++){
-            garbage[i].clear();
-            mgarbage[i].purge();
-        }
-        // implicit cilk_sync //
-    }
-
-    inline void controller::execute_mod(cfunctor* op){
+    inline void controller::schedule(cfunctor* op){
         if(!this->chains.empty() && op->match(this->chains.back())) 
             this->chains.back()->push_back(op);
         else
             this->chains.push_back(new chain(op));
     }
 
+    inline void controller::schedule(){
+        for(int i = 0; i < __cilkrts_get_nworkers(); i++){
+            while(!this->stacks[i].end_reached())
+                this->stacks[i].pick()->logistics();
+            this->stacks[i].reset();
+        }
+        ambient::bulk_pool.refresh();
+    }
+
+    inline void controller::flush(){
+        touchstack< chain* >* chains = &this->chains;
+        touchstack< chain* >* mirror = &this->mirror;
+        
+        while(!chains->empty()){
+            while(!chains->end_reached()){
+                chain* op = chains->pick();
+                if(op->ready()) cilk_spawn this->execute(op);
+                else mirror->push_back(op);
+            }
+            chains->reset();
+            std::swap(chains,mirror);
+        }
+    } // implicit cilk_sync //
+
     inline void controller::atomic_receive(revision& r){
         /*std::list<cfunctor*>& list = r.content.assignments;
         std::list<cfunctor*>::iterator it = list.begin(); 
         while(it != list.end()){
-            this->execute_mod(*it);
+            this->schedule(*it);
             list.erase(it++);
         }*/ // should be rewritten for MPI
     }
