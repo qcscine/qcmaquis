@@ -102,7 +102,7 @@ namespace vli
     template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
     class polynomial;
 
-    template <class Polynomial>
+    template <class polynomial>
     class vector_polynomial;
    
     template <class VectorPolynomial>
@@ -114,7 +114,8 @@ namespace vli
     namespace detail {
 
         // this class helper distinguishes keep_order and max_order polynomial by template specialization
-        template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+        //template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+        template <class polynomial>
         struct inner_product_gpu_helper{
         };
 
