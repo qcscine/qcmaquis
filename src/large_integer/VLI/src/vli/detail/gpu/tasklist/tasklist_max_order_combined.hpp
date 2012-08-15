@@ -2,21 +2,36 @@
 
 namespace vli {
     namespace detail {
-
-        // See the doc ...
-        template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-        struct CalculateStepCount_helper;
-            
-        template< unsigned int Order, class Var0, class Var1>
-        struct CalculateStepCount_helper<Order, Var0, Var1, vli::no_variable, vli::no_variable>{
-            static unsigned int CalculateStepCount(unsigned int output_degree_x,unsigned int output_degree_y){
+        // see doc for the origine of these equations
+        // 2 variables            
+        template< unsigned int Order>
+        int CalculateStepCount(int output_degree_x,int output_degree_y){
+            unsigned int sum(0);
+            for(int i1 = std::max(0,(int)(output_degree_x-(int)Order)); i1 <= std::min(output_degree_x, (int)Order); ++i1)
+                sum += std::min((int)output_degree_y,(int)(Order-i1)) - std::max(0,(int)(output_degree_x+output_degree_y-Order-i1))+1;
+            return sum;
+            }        
+       
+        //3 variables
+        template< unsigned int Order>
+        int CalculateStepCount(int output_degree_x,int output_degree_y, int output_degree_z){
                 unsigned int sum(0);
-                for(int i = std::max(0,(int)(output_degree_x-Order)); i <= std::min(output_degree_x, Order); ++i)
-                    sum += std::min((int)output_degree_y,(int)(Order-i)) - std::max(0,(int)(output_degree_x+output_degree_y-Order-i))+1;
+                for(int i1 = std::max(0,(int)(output_degree_x-(int)Order)); i1 <= std::min(output_degree_x, (int)Order); ++i1)
+                    for(int i2 = std::max(0,(int)(output_degree_x+output_degree_y-(int)Order)-i1); i2 <= std::min(output_degree_y, (int)Order-i1); ++i2)
+                        sum += std::min((int)output_degree_z,(int)(Order-i1-i2)) - std::max(0,(int)(output_degree_x+output_degree_y+output_degree_z-Order-i1-i2))+1;
                 return sum;
             }        
-        };
 
+        //4 variables
+        template< unsigned int Order>
+        int CalculateStepCount(int output_degree_x,int output_degree_y, int output_degree_z, int output_degree_w){
+                unsigned int sum(0);
+                for(int i1 = std::max(0,(int)(output_degree_x-(int)Order)); i1 <= std::min(output_degree_x, (int)Order); ++i1)
+                    for(int i2 = std::max(0,(int)(output_degree_x+output_degree_y-(int)Order)-i1); i2 <= std::min(output_degree_y, (int)Order-i1); ++i2)
+                        for(int i3 = std::max(0,(int)(output_degree_x+output_degree_y+output_degree_z-(int)Order)-i1-i2); i3 <= std::min(output_degree_z, (int)Order-i1-i2); ++i3)
+                            sum += std::min((int)output_degree_w,(int)(Order-i1-i2-i3)) - std::max(0,(int)(output_degree_x+output_degree_y+output_degree_z+output_degree_w-Order-i1-i2-i3))+1;
+                return sum;
+            }        
         
         template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
         struct BuildTaskList_helper;
@@ -40,14 +55,13 @@ namespace vli {
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x)
                     for(unsigned int degree_y = 0; degree_y <VLI__ExtendStride - degree_x; ++degree_y){
-                        //TO CHECK 2*order, come from Andreas work
+
                         vli::detail::single_coefficient_task& task = VecCoeff[VLI__ExtendStride*degree_x - (degree_x*degree_x-degree_x)/2 + degree_y];
                         task.output_degree_x = degree_x;
                         task.output_degree_y = degree_y;
                         task.output_degree_z = 0;
                         task.output_degree_w = 0;
-                        //TO CHECK is it thrue ?
-                        task.step_count = CalculateStepCount_helper<Order, Var0, Var1, vli::no_variable, vli::no_variable>::CalculateStepCount(degree_x,degree_y);
+                        task.step_count = CalculateStepCount<Order>(degree_x,degree_y);
                     }
             }
         };
@@ -58,7 +72,7 @@ namespace vli {
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x)
                     for(unsigned int degree_y = 0; degree_y <VLI__ExtendStride - degree_x; ++degree_y)
                         for(unsigned int degree_z = 0; degree_z <VLI__ExtendStride - degree_x - degree_y; ++degree_z){
-                            //TO CHECK 2*order, come from Andreas work
+
                             vli::detail::single_coefficient_task& task = VecCoeff[(degree_x*(degree_x*degree_x - 3*degree_x*(VLI__ExtendStride+1)
                                                                                   + 3*VLI__ExtendStride*(VLI__ExtendStride+2) +2))/6
                                                                                   + (VLI__ExtendStride - degree_x)*degree_y - (degree_y*degree_y-degree_y)/2 + degree_z];
@@ -66,10 +80,7 @@ namespace vli {
                             task.output_degree_y = degree_y;
                             task.output_degree_z = degree_z;
                             task.output_degree_w = 0;
-                            //TO CHECK is it thrue ?
-                            task.step_count =   (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_x, degree_x) + 1)
-                                              * (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_y, degree_y) + 1) 
-                                              * (std::min<unsigned int>((VLI__ExtendStride - 1) - degree_z, degree_z) + 1) ;
+                            task.step_count = CalculateStepCount<Order>(degree_x,degree_y,degree_z);
                     }
             }
         };
@@ -80,21 +91,17 @@ namespace vli {
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x)
                     for(unsigned int degree_y = 0; degree_y <VLI__ExtendStride - degree_x; ++degree_y)
                         for(unsigned int degree_z = 0; degree_z <VLI__ExtendStride - degree_x - degree_y; ++degree_z)
-                            for(unsigned int degree_w = 0; degree_w <VLI__ExtendStride - degree_x - degree_y - degree_y; ++degree_w){
-                                //TO CHECK 2*order, come from Andreas work
+                            for(unsigned int degree_w = 0; degree_w <VLI__ExtendStride - degree_x - degree_y - degree_z; ++degree_w){
+
                                 vli::detail::single_coefficient_task& task = VecCoeff[(degree_x*(2*VLI__ExtendStride+3-degree_x)*(2*VLI__ExtendStride*VLI__ExtendStride+6*VLI__ExtendStride+2 +degree_x*degree_x -2*VLI__ExtendStride*degree_x - 3*degree_x))/24
-                                                                                      + (degree_y*(degree_y*degree_y - 3*degree_y*(VLI__ExtendStride+1-degree_x) + 3*(VLI__ExtendStride-degree_x)*(VLI__ExtendStride+2-degree_x)+2))/6
-                                                                                      +(VLI__ExtendStride-degree_x-degree_y)*degree_z - (degree_z*degree_z-degree_z)/2 + degree_w];
-                                                                                      
+                                                                                     + (degree_y*(degree_y*degree_y - 3*degree_y*(VLI__ExtendStride+1-degree_x) + 3*(VLI__ExtendStride-degree_x)*(VLI__ExtendStride+2-degree_x)+2))/6
+                                                                                     +(VLI__ExtendStride-degree_x-degree_y)*degree_z - (degree_z*degree_z-degree_z)/2 + degree_w];
                                 task.output_degree_x = degree_x;
                                 task.output_degree_y = degree_y;
                                 task.output_degree_z = degree_z;
                                 task.output_degree_w = degree_w;
-                                //TO CHECK is it thrue ?
-                                task.step_count =   (std::min<unsigned int>((extend_stride<Var0, Order>::value - 1) - degree_x, degree_x) + 1)
-                                                  * (std::min<unsigned int>((extend_stride<Var1, Order>::value - 1) - degree_y, degree_y) + 1) 
-                                                  * (std::min<unsigned int>((extend_stride<Var2, Order>::value - 1) - degree_z, degree_z) + 1)
-                                                  * (std::min<unsigned int>((extend_stride<Var3, Order>::value - 1) - degree_w, degree_w) + 1) ;
+                                task.step_count = CalculateStepCount<Order>(degree_x,degree_y,degree_z,degree_w);
+
                             }
             }
         };
@@ -150,7 +157,6 @@ namespace vli {
                 workblock_count_by_warp_local[warp_id]++;
                 work_total_by_size[warp_id] += max_step_count;
          }
-       
 	 cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice);
          cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice);
     }

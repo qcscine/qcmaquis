@@ -90,7 +90,7 @@ typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_p
         #ifdef _OPENMP
            res[omp_get_thread_num()] += v1[i]*v2[i];
         #else
-           res[0]+=res[i];
+           res += v1[i]*v2[i];
         #endif
     }
 
@@ -131,7 +131,7 @@ inner_product(
 #ifdef VLI_USE_GPU
     return detail::inner_product_gpu_helper<Coeff, OrderSpecification, Var0, Var1, Var2, Var3>::inner_product_gpu(v1,v2); // can be pure gpu or hybride cpu omp/gpu
 #else 
-    return detail::inner_product_cpu(v1,v2);i// can be pure serial or omp
+    return detail::inner_product_cpu(v1,v2);// can be pure serial or omp
 #endif
 }
 
