@@ -890,6 +890,33 @@ struct contraction {
         return ret;
     }
 
+    template<class Matrix, class SymmGroup>
+    static block_matrix<Matrix, SymmGroup>
+    density_matrix_2(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                     MPSTensor<Matrix, SymmGroup> const & ket_tensor)
+    {
+        typedef typename SymmGroup::charge charge;
+        
+        assert( bra_tensor.row_dim() == ket_tensor.row_dim() );
+        assert( bra_tensor.col_dim() == ket_tensor.col_dim() );
+        assert( bra_tensor.site_dim() == ket_tensor.site_dim() );
+        
+        bra_tensor.make_left_paired();
+        ket_tensor.make_left_paired();
+        
+        Index<SymmGroup> phys_i = ket_tensor.site_dim();
+        Index<SymmGroup> left_i = ket_tensor.row_dim();
+        Index<SymmGroup> right_i = ket_tensor.col_dim();
+        
+        block_matrix<Matrix, SymmGroup> ket_mat = reshape_left_to_physleft(phys_i, left_i, right_i, ket_tensor.data());
+        block_matrix<Matrix, SymmGroup> bra_mat = reshape_left_to_physleft(phys_i, left_i, right_i, bra_tensor.data());
+
+        block_matrix<Matrix, SymmGroup> dm;
+        gemm(ket_mat, transpose(conjugate(bra_mat)), dm);
+        
+        return dm;
+    }
+
 };
 
 #endif
