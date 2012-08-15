@@ -54,7 +54,7 @@ namespace detail {
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>::vli_cpu(){
     for(size_type i=0; i<size; ++i)
-        data_[i] = 0;
+        data_[i] = 0; 
 }
 
 template<typename BaseInt, std::size_t Size>
