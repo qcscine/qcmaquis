@@ -49,8 +49,8 @@ namespace vli{
                          void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){  \
                          asm(                                                                                   \
                                  "movq   (%%rsi)            , %%rax   \n"                                       \
-                                 "movq   %%rax              , %%r8    \n" /*  XOR then AND could make a cpy */  \
-                                 "xorq   %%rcx              , %%rcx   \n" /*rbx to 0 */                         \
+                                 "movq   %%rax              , %%r8    \n" /* XOR then AND could make a cpy */   \
+                                 "xorq   %%rcx              , %%rcx   \n" /* rcx to 0 */                        \
                                  "shrq   $63                , %%r8    \n" /* get the sign */                    \
                                  "subq   %%r8               , %%rcx   \n" /* 0 or 0xffffff...    */             \
                                  "addq   (%%rdi)            , %%rax   \n"                                       \

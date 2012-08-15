@@ -23,26 +23,26 @@
 #include "vli/vli_cpu.h"
 #include "vli/vli_traits.hpp"
 #include "utils/timings.h"
-#include "regression/vli_test.hpp"
+//#include "regression/vli_test.hpp"
 
 #include "vli/detail/bit_masks.hpp"
 #include "tools.h"
 
 #define Size1 3
 #define Size2 2*Size1
-#define Order 3
+#define Order 10
 
 using vli::vli_cpu;
 using vli::max_int_value;
 using vli::monomial;
 using vli::polynomial;
 using vli::vector_polynomial;
-
+/*
 using vli::test::fill_random;
 using vli::test::fill_poly_random;
 using vli::test::fill_vector_random;
 using vli::test::fill_vector_negate;
-
+*/
 
 typedef vli_cpu< unsigned long int, Size1> vli_type_cpu;
 typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
@@ -54,8 +54,11 @@ typedef vli_cpu< unsigned long int, Size2> vli_result_type_cpu;
 //typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_cpu;
 //typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'>, vli::var<'y'> > polynomial_result_type_cpu;
 
-typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>  > polynomial_type_combined_cpu;
-typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'>  > polynomial_result_type_combined_cpu;
+typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_cpu;
+typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_result_type_combined_cpu;
+
+//typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_cpu;
+//typedef vli::polynomial< vli_result_type_cpu, vli::max_order_combined<2*Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_result_type_combined_cpu;
 
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_cpu;
 typedef vli::polynomial< vli_result_type_cpu, vli::max_order_each<2*Order>, vli::var<'x'> > polynomial_result_type_cpu;
@@ -170,10 +173,11 @@ polynomial_result_type_combined_cpu polycres, polycres2;
 
     polycres2= vli::detail::inner_product_cpu(v1c,v2c);
     polycres = vli::detail::inner_product_gpu(v1c,v2c);
-
+/*
     std::cout << std::hex << polycres2<< std::endl;    
+std::cout << " --------------------------- " << std::endl;
     std::cout << std::hex << polycres << std::endl;    
- 
+ */
      if(polycres2 == polycres ) {printf("OK gpu combined\n"); } else{printf("NO OK gpu combined \n"); } 
     tools::fill_vector_random(v1);
     tools::fill_vector_random(v2);
@@ -202,10 +206,6 @@ std::cout << " --------------------------- " << std::endl;
 
 
 #endif
-
-//     std::cout  << std::hex << result_pure_cpu << std::endl;
-//     std::cout << "-------------------------------------- " << std::endl;
-//     std::cout << result_pure_cpu_omp << std::endl;
 
     Timer t4("CPU gmp_omp");
     t4.begin();
