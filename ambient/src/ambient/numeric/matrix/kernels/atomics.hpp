@@ -300,11 +300,9 @@ namespace ambient { namespace numeric { namespace kernels {
             T* alfad = ui_c_current(alfa);
             for(size_t l1 = 0; l1 < ldim1; ++l1)
             for(size_t r1 = 0; r1 < rdim1; ++r1)
-            {
-                T alfa_t = alfad[l1 + r1*ui_c_get_dim(alfa).y];
-                __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
-                                                    ui_c_current(in), ui_c_get_dim(in).y,  dim2(0, 0), dim2(rdim2, ldim2), alfa_t);
-            }
+            __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
+                                                ui_c_current(in), ui_c_get_dim(in).y,  dim2(0, 0), 
+                                                dim2(rdim2, ldim2), alfad[l1 + r1*ui_c_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
     };
@@ -485,13 +483,11 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_lb_tensor_mpo_atomic_c_kernel"); 
             __a_atomic_refresh<T>(ui_w_updated(out), ui_c_current(out), ui_c_get_mem_size(out));
             T* alfad = ui_c_current(alfa);
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    T alfa_t = alfad[ss1 + ss2*ui_c_get_dim(alfa).y];
-                    __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(0, out_offset + ss2*ldim),
-                                                        ui_c_current(in), ui_c_get_dim(in).y,  dim2(0, in_offset + ss1*ldim),
-                                                        dim2(rdim, ldim), alfa_t);
-                }
+            __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(0, out_offset + ss2*ldim),
+                                                ui_c_current(in), ui_c_get_dim(in).y,  dim2(0, in_offset + ss1*ldim),
+                                                dim2(rdim, ldim), alfad[ss1 + ss2*ui_c_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
     };
@@ -520,13 +516,11 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_rb_tensor_mpo_atomic_c_kernel"); 
             __a_atomic_refresh<T>(ui_w_updated(out), ui_c_current(out), ui_c_get_mem_size(out));
             T* alfad = ui_c_current(alfa);
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    T alfa_t = alfad[ss1 + ui_c_get_dim(alfa).y*ss2];
-                    __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(out_offset + ss2*rdim, 0),
-                                                        ui_c_current(in), ui_c_get_dim(in).y,  dim2(in_offset + ss1*rdim, 0),
-                                                        dim2(rdim, ldim), alfa_t);
-                }
+            __a_memptf_atomic_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(out_offset + ss2*rdim, 0),
+                                                ui_c_current(in), ui_c_get_dim(in).y,  dim2(in_offset + ss1*rdim, 0),
+                                                dim2(rdim, ldim), alfad[ss1 + ss2*ui_c_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
     };
