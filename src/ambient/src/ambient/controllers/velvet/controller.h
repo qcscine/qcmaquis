@@ -7,6 +7,7 @@
 #include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/utils/tasklist.hpp"
+#include "ambient/utils/collector.hpp"
 
 #include <cilk/cilk.h>
 
@@ -22,7 +23,7 @@ namespace ambient { namespace controllers { namespace velvet {
         controller();
         inline void   acquire(channels::mpi::channel* channel);
         inline void   push(cfunctor* op);
-        inline void   execute_mod(cfunctor* op);
+        inline void   schedule(cfunctor* op);
 
         inline void alloc (revision& r);
         inline void calloc(revision& r);
@@ -30,21 +31,21 @@ namespace ambient { namespace controllers { namespace velvet {
         inline void ifetch(revision& r);
         inline void unlock_revision(revision* arg);
         inline void unlink_revision(revision* arg);
-        inline void destroy(history* o);
-        inline void deallocate(void* o);
+
+        template<typename T> inline void destroy(T* o);
 
         inline void flush();
+        inline void schedule();
         inline void conditional_flush();
+        inline void execute(chain* op);
         inline void atomic_receive(revision& r);
         inline ~controller();
     public:
         bool muted;
-    private:
-        touchstack< history* >* garbage;
-        touchstack< void* >* mgarbage;
-        touchstack< cfunctor* >* stacks;
-        inline void execute(chain* op);
+        collector garbage;
         touchstack< chain* > chains;
+    private:
+        touchstack< cfunctor* >* stacks;
         touchstack< chain* > mirror;
     };
     

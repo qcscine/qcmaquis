@@ -29,7 +29,7 @@ namespace ambient {
         }
 
         inline ~future(){
-            if(!symlink) ambient::deallocate(ghost);
+            if(!symlink) ambient::destroy(ghost);
         }
 
         explicit inline future(const future& f)
