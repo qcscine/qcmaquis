@@ -44,7 +44,6 @@ namespace ambient { namespace controllers { namespace velvet {
                 this->stacks[i].pick()->logistics();
             this->stacks[i].reset();
         }
-        ambient::bulk_pool.refresh();
     }
 
     inline void controller::flush(){
@@ -60,6 +59,7 @@ namespace ambient { namespace controllers { namespace velvet {
             chains->reset();
             std::swap(chains,mirror);
         }
+        ambient::bulk_pool.refresh();
     } // implicit cilk_sync //
 
     inline void controller::atomic_receive(revision& r){
