@@ -66,15 +66,15 @@ namespace detail {
         std::size_t req_size = vector_size * size * stride<Var0,Order>::value * stride<Var1,Order>::value * stride<Var2,Order>::value * stride<Var3,Order>::value;
 
         if( req_size > pgm->GetBlockSize() ) {
-            if (pgm->V1Data_ != 0 )
+            if(pgm->V1Data_ != 0 )
                 cudaFree((void*)pgm->V1Data_);
-            if (pgm->V2Data_ != 0 )
+            if(pgm->V2Data_ != 0 )
                 cudaFree((void*)pgm->V2Data_);
             if(pgm->VinterData_ != 0)
                 cudaFree((void*)pgm->VinterData_);
             if(pgm->PoutData_ != 0)
                 cudaFree((void*)pgm->PoutData_);
-
+            // first cuda malloc is terribly slow more than 4 s, I remote the bug to cscs ?
             cudaMalloc((void**)&(pgm->V1Data_), req_size*sizeof(BaseInt)); //input 1
             cudaMalloc((void**)&(pgm->V2Data_), req_size*sizeof(BaseInt)); //input 2
             cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*size * extend_stride<Var0, Order>::value * extend_stride<Var1, Order>::value * extend_stride<Var2, Order>::value * extend_stride<Var3, Order>::value * sizeof(BaseInt)); 
@@ -92,9 +92,9 @@ namespace detail {
         std::size_t req_size = vector_size * size * vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value;
 
         if( req_size > pgm->GetBlockSize() ) {
-            if (pgm->V1Data_ != 0 )
+            if(pgm->V1Data_ != 0 )
                 cudaFree((void*)pgm->V1Data_);
-            if (pgm->V2Data_ != 0 )
+            if(pgm->V2Data_ != 0 )
                 cudaFree((void*)pgm->V2Data_);
             if(pgm->VinterData_ != 0)
                 cudaFree((void*)pgm->VinterData_);

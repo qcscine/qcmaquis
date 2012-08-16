@@ -175,7 +175,7 @@ namespace detail {
             void operator()(Polynomial const& p, typename element_descriptor<Polynomial>::type const& e) {
                 if( !(p(e) < typename Polynomial::value_type(0)) ) 
                     os_<<"+";
-                os_<<p(e)<<e<<" " << std::endl;
+                os_<<p(e)<<e<<" "; //<< std::endl;
             }
             
           private:

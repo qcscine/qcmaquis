@@ -46,7 +46,7 @@ endif(NOT MACHINE_CONFIG)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
-set (VLI_COMPILE_TYPES "((unsigned long int,3,10,1))((unsigned long int,3,10,2))((unsigned long int,3,10,3))((unsigned long int,3,10,4))" CACHE STRING "BaseInt, Size VLI, Order Poly, number of variables into polynomials")
+set (VLI_COMPILE_TYPES "((unsigned long int,2,10,1))((unsigned long int,2,10,2))((unsigned long int,2,10,3))((unsigned long int,2,10,4))((unsigned long int,3,10,1))((unsigned long int,3,10,2))((unsigned long int,3,10,3))((unsigned long int,3,10,4))((unsigned long int,4,10,1))((unsigned long int,4,10,2))((unsigned long int,4,10,3))((unsigned long int,4,10,4)) " CACHE STRING "BaseInt, Size VLI, Order Poly, number of variables into polynomials")
 
 ########################################################################
 #
@@ -143,8 +143,9 @@ if(VLI_TESTS)
     enable_testing() 
     set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
       mark_as_advanced(BUILDNAME)
-    add_subdirectory (regression)
+    add_subdirectory (regression/polynomial)
     add_subdirectory (regression/vli_cpu)
+    add_subdirectory (regression/inner_product_gpu)
 endif(VLI_TESTS)
 
 if(VLI_BENCHMARKS)

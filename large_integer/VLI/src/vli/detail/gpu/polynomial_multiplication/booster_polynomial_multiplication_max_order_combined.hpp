@@ -1,6 +1,7 @@
 #define VLI__ExtendStride extend_stride<Var0, Order>::value // 2*order+1
 #include <cassert>
 #include <stdio.h> 
+
 namespace vli {
     namespace detail {
 // all this could be really simplified as the max_order version

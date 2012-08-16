@@ -14,9 +14,9 @@
 
 #include "tools.h"
 
-#define Size_vec 128
+#define Size_vec 8
 #define Order 10
-#define Size_vli 3
+#define Size_vli 4
 
 using vli::vli_cpu;
 using vli::polynomial;
@@ -37,7 +37,7 @@ typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<
 typedef boost::mpl::vector<polynomial_type_each_x,
                            polynomial_type_each_xy,
                            polynomial_type_each_xyz,
-                         //  polynomial_type_each_xyzw, buffer too large
+                           //polynomial_type_each_xyzw, // buffer too large
                            polynomial_type_combined_x,
                            polynomial_type_combined_xy,
                            polynomial_type_combined_xyz,
