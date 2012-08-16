@@ -224,13 +224,8 @@ MPS<Matrix, SymmGroup>::left_boundary() const
 {
     Index<SymmGroup> i = (*this)[0].row_dim();
     Boundary<Matrix, SymmGroup> ret(i, i, 1);
-// C - Tim, Ambient serial access = race conditions !
 
-//    Original, 
-//    for(typename Index<SymmGroup>::basis_iterator it = i.basis_begin(); !it.end(); ++it)
-//        ret(0,*it,*it) = 1;
-
-   for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
+    for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
        maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
 
     return ret;
