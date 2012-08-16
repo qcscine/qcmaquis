@@ -2,8 +2,8 @@
 #define AMBIENT_INTERFACE_KERNELS
 #include "ambient/utils/timings.hpp"
  
-//#define AMBIENT_PUSH_TIMINGS
-#ifdef AMBIENT_PUSH_TIMINGS
+//#define AMBIENT_SPAWN_TIMINGS
+#ifdef AMBIENT_SPAWN_TIMINGS
     #define __A_TIME(name) static __a_timer time(name); time.begin();
     #define __A_TIME_STOP time.end();
 #else
@@ -36,7 +36,7 @@ namespace ambient {
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
     template<class K>
-    class kernel_atomic : public cfunctor
+    class kernel : public cfunctor
     {
     public:
         inline void* operator new (size_t size){ 
@@ -67,8 +67,49 @@ namespace ambient {
         template <typename T> inline w_revision& ui_w_updated(T& obj){ return *(w_revision*)(obj.impl->content[obj.ref+1]); }
         template <typename T> inline p_revision& ui_p_updated(T& obj){ return *(p_revision*)(obj.impl->content[obj.ref+1]); }
         template <typename T> inline r_revision& ui_r_updated(T& obj){ return *(r_revision*)(obj.impl->content[obj.ref+1]); }
+
+        template <class T0>
+        static inline void spawn(T0& arg0){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0));
+        }
+        template <class T0, class T1>
+        static inline void spawn(T0& arg0, T1& arg1){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1));
+        }
+        template <class T0, class T1, class T2>
+        static inline void spawn(T0& arg0, T1& arg1, T2& arg2){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1), info<T2>::unfold(arg2));
+        }
+        template <class T0 , class T1 , class T2 , class T3 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 ){
+            kernel_inliner<typename K::F, &K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) );
+        }
+        template <class T0 , class T1 , class T2 , class T3 , class T4 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 ){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) );
+        }
+        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 ){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) );
+        }
+        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 ){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) );
+        }
+        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 ){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) );
+        }
+        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 ){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) );
+        }
+        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 , class T9 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9 ){
+            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) , info<T9>::unfold(arg9) );
+        }
+
     };
 }
 
-#include "ambient/interface/pp/push.pp.hpp"    
 #endif
