@@ -14,9 +14,9 @@
 
 #include "tools.h"
 
-#define Size_vec 8
+#define Size_vec 1024
 #define Order 10
-#define Size_vli 4
+#define Size_vli 3
 
 using vli::vli_cpu;
 using vli::polynomial;

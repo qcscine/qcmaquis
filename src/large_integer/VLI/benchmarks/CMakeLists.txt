@@ -7,7 +7,7 @@ endif(VLI_COMPILE_GPU)
 add_definitions (-DBOOST_TEST_DYN_LINK -Wno-unused-variable)
 
 set(size_vli 2 3 4)
-set(order_poly 10 11 12 13 14 15)
+set(order_poly   2 3 4 5)
 #set(order_poly 10)
 set(variable_poly 1 2 3 4 )
 set(benchmarks benchmarks_max_order_each benchmarks_max_order_combined)
