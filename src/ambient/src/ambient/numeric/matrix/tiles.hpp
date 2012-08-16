@@ -14,7 +14,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void* tiles<Matrix>::operator new (size_t size){
-        return boost::singleton_pool<ambient::utils::empty, sizeof(tiles<Matrix>)>::malloc(); 
+        return ambient::static_memory::malloc<tiles<Matrix> >();
     }
 
     template<class Matrix>
@@ -24,7 +24,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void tiles<Matrix>::operator delete (void* ptr){
-        boost::singleton_pool<ambient::utils::empty, sizeof(tiles<Matrix>)>::free(ptr); 
+        ambient::static_memory::free<tiles<Matrix> >(ptr); 
     }
 
     template<class Matrix>

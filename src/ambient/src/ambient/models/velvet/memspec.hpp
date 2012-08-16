@@ -5,13 +5,17 @@ namespace ambient { namespace models { namespace velvet {
     inline memspec::memspec(dim2 dim, size_t ts) : dim(dim), size(dim.square()*ts) { }
 
     inline void* memspec::alloc() const {    
-        return malloc(size + BOUND);
+        return ambient::range_pool.malloc(size + BOUND);
     }
 
     inline void* memspec::calloc() const {    
-        void* memory = malloc(size + BOUND);
+        void* memory = ambient::range_pool.malloc(size + BOUND);
         memset((char*)memory + BOUND, 0, size);
         return memory;
+    }
+
+    inline void memspec::free(void* ptr) const {    
+        return ambient::range_pool.free(ptr, size+BOUND);
     }
 
     inline size_t memspec::get_bound() const {
