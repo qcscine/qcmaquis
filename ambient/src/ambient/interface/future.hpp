@@ -89,7 +89,7 @@ namespace ambient {
 
         inline T calc_value() const {
             if(value == NULL){
-                ambient::playout();
+                ambient::sync();
                 value = (T*)ghost;
             }
             return *value;
@@ -185,14 +185,14 @@ namespace alps { namespace numeric {
     }
 
     inline std::vector<double> real(const std::vector<ambient::future<double> >& f){
-        ambient::playout();
+        ambient::sync();
         std::vector<double> res;
         for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].get_value());
         return res;
     }
 
     inline std::vector<double> real(const std::vector<ambient::future<std::complex<double> > >& f){
-        ambient::playout();
+        ambient::sync();
         std::vector<double> res;
         for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].get_value().real());
         return res;

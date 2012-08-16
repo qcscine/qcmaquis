@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
 //    using maquis::types::NoTranspose;
     //ambient::numeric::gemm<NoTranspose,NoTranspose>(pA,pB,pC);
     ambient::numeric::gemm(pA,pB,pC);
-    ambient::playout();
+    ambient::sync();
     gemm(sA,sB,sC);
     BOOST_CHECK(pC==sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

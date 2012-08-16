@@ -44,7 +44,7 @@ namespace maquis { namespace bindings {
                 std::vector<T>* v_ptr = &set[k];
                 ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k], num_rows, num_cols);
             }
-            ambient::playout();
+            ambient::sync();
             return set;
         }
     };
@@ -58,7 +58,7 @@ namespace maquis { namespace bindings {
             ambient::numeric::matrix<T> pm(num_rows, num_cols);    
             const std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
             ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, lda);
-            ambient::playout();
+            ambient::sync();
             return pm;
         }
     };
@@ -71,7 +71,7 @@ namespace maquis { namespace bindings {
             alps::numeric::matrix<T> m(num_rows, num_cols);    
             std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
             ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols);
-            ambient::playout();
+            ambient::sync();
             return m;
         }
     };
@@ -84,7 +84,7 @@ namespace maquis { namespace bindings {
             ambient::numeric::diagonal_matrix<T> pm(num_rows, num_rows);    
             const std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
             ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows);
-            ambient::playout();
+            ambient::sync();
             return pm;
         }
     };
@@ -97,7 +97,7 @@ namespace maquis { namespace bindings {
             alps::numeric::diagonal_matrix<T> m(num_rows, num_rows);    
             std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
             ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols);
-            ambient::playout();
+            ambient::sync();
             return m;
         }
     };

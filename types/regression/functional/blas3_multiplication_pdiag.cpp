@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     generate(sB,Rd); // Rd is rand generator static variable inside utilities
     sC.generate(Rd); // Rd is rand generator static variable inside utilities
 
-    pB = maquis::traits::matrix_cast<pMatrix>(sB); // playout is inside the cast
-    pC = maquis::traits::matrix_cast<pDiagMatrix>(sC); // playout is inside the cast
+    pB = maquis::traits::matrix_cast<pMatrix>(sB);
+    pC = maquis::traits::matrix_cast<pDiagMatrix>(sC);
 
     using maquis::types::NoTranspose; 
     ambient::numeric::gemm<NoTranspose,NoTranspose>(pC,pB,pA);
