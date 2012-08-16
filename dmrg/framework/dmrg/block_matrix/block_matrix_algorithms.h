@@ -21,6 +21,12 @@
 
 #include <boost/lambda/lambda.hpp>
 
+#ifdef USE_AMBIENT
+#define parallel_for cilk_for
+#else
+#define parallel_for for
+#endif
+
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           block_matrix<Matrix2, SymmGroup> const & B,
@@ -59,7 +65,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (std::size_t k = 0; k < loop_max; ++k)
+    parallel_for(std::size_t k = 0; k < loop_max; ++k)
         svd(M[k], U[k], V[k], S[k]);
 }
 
@@ -75,7 +81,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for(std::size_t k = 0; k < loop_max; ++k)
+    parallel_for(std::size_t k = 0; k < loop_max; ++k)
         heev(M[k], evecs[k], evals[k]);
 
 }
@@ -308,7 +314,7 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (std::size_t k = 0; k < M.n_blocks(); ++k)
+    parallel_for(std::size_t k = 0; k < M.n_blocks(); ++k)
         qr(M[k], Q[k], R[k]);
 }
 
@@ -326,7 +332,7 @@ void lq(block_matrix<Matrix, SymmGroup> & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (std::size_t k = 0; k < M.n_blocks(); ++k)
+    parallel_for(std::size_t k = 0; k < M.n_blocks(); ++k)
         lq(M[k], L[k], Q[k]);
 }
 
@@ -525,4 +531,5 @@ void op_kron_long(MultiIndex<SymmGroup> const & midx,
     
 }
 
+#undef parallel_for
 #endif
