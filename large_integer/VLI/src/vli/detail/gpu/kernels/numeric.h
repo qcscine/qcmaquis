@@ -31,6 +31,17 @@
 
 namespace vli {
     namespace detail  {
+                        
+                      template<class T>
+                      __device__ const T& min(T const& a, const T& b){
+                         return !(b<a)?a:b; 
+                      } 
+
+                      template<class T>
+                      __device__ const T& max(T const& a, const T& b){
+                         return !(b>a)?a:b; 
+                      } 
+
                       template <class BaseInt, std::size_t Size>
                       __device__ void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2);
                       //addition 256+256, 384+384, 512+512
