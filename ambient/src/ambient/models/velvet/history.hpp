@@ -1,11 +1,11 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline void* history::operator new (size_t size){
-        return boost::singleton_pool<ambient::utils::empty, sizeof(history)>::malloc(); 
+        return ambient::static_memory::malloc<history>();
     }
 
     inline void history::operator delete (void* ptr){
-        boost::singleton_pool<ambient::utils::empty, sizeof(history)>::free(ptr); 
+        ambient::static_memory::free<history>(ptr);
     }
 
     inline history::history(dim2 dim, size_t ts) : current(NULL), spec(dim, ts) { 
@@ -14,8 +14,8 @@ namespace ambient { namespace models { namespace velvet {
 
     inline history::~history(){
         int size = this->content.size();
-        for(int i = 0; i < size; i++) free(this->content[i]->header);
-        for(int i = 0; i < size; i++) boost::singleton_pool<ambient::utils::empty, sizeof(revision)>::free(this->content[i]); 
+        for(int i = 0; i < size; i++) spec.free(this->content[i]->header);
+        for(int i = 0; i < size; i++) ambient::static_memory::free<revision>(this->content[i]); 
     }
 
     inline void history::add_state(revision* r){

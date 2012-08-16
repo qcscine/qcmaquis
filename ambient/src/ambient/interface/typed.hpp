@@ -141,9 +141,6 @@ namespace ambient {
         static inline T& unfold(T& naked){ return naked; }
     };
 
-    template <typename T> struct info < boost::intrusive_ptr<T> > {};
-    template <typename T> struct info < const boost::intrusive_ptr<T> > {};
-
     template <typename S>
     struct info < ambient::future<S> > {
         typedef ambient::future<S> type;

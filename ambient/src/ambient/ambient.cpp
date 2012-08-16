@@ -26,6 +26,7 @@
 
 namespace ambient {
     utils::bulk_memory& bulk_pool = utils::bulk_memory::instance();
+    utils::range_memory& range_pool = utils::range_memory::instance();
     channels::mpi::multirank& rank = channels::mpi::multirank::instance();
     models::velvet::model& model = models::velvet::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();
