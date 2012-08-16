@@ -10,8 +10,6 @@
 #ifndef MAQUIS_BLOCK_MATRIX_DEATAIL_AMBIENT_MATRIX_DETAIL_HPP
 #define MAQUIS_BLOCK_MATRIX_DEATAIL_AMBIENT_MATRIX_DETAIL_HPP
 
-#define ATOMIC(kernel, ...) ambient::push< ambient::numeric::kernels::kernel ## _atomic<T> >(__VA_ARGS__);
-
 template<class T, class SymmGroup>
 class block_matrix;
 
@@ -23,9 +21,9 @@ namespace maquis { namespace dmrg { namespace detail {
                         size_t ldim1, size_t ldim2, 
                         size_t rdim1, size_t rdim2)
     {
-        ATOMIC(op_kron, out, in, alfa, 
-                        out_y_offset, out_x_offset, 
-                        ldim1, ldim2, rdim1, rdim2);
+        ambient::numeric::kernels::op_kron<T>::spawn(out, in, alfa, 
+                                                     out_y_offset, out_x_offset, 
+                                                     ldim1, ldim2, rdim1, rdim2);
     }
 
     template <typename T>
@@ -34,9 +32,9 @@ namespace maquis { namespace dmrg { namespace detail {
                      size_t out_left_offset, size_t out_right_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ATOMIC(reshape_l2b, out, in, in_left_offset, in_phys_offset, 
-                            out_left_offset, out_right_offset, 
-                            sdim1, sdim2, ldim, rdim);
+        ambient::numeric::kernels::reshape_l2b<T>::spawn(out, in, in_left_offset, in_phys_offset, 
+                                                         out_left_offset, out_right_offset, 
+                                                         sdim1, sdim2, ldim, rdim);
     }
 
     template <typename T>
@@ -45,41 +43,41 @@ namespace maquis { namespace dmrg { namespace detail {
                      size_t out_left_offset, size_t out_phys_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ATOMIC(reshape_b2l, out, in, in_left_offset, in_right_offset, 
-                            out_left_offset, out_phys_offset, 
-                            sdim1, sdim2, ldim, rdim);
+        ambient::numeric::kernels::reshape_b2l<T>::spawn(out, in, in_left_offset, in_right_offset, 
+                                                         out_left_offset, out_phys_offset, 
+                                                         sdim1, sdim2, ldim, rdim);
     }
 
     template <typename T>
     inline void reshape_l2r(const ambient::numeric::matrix<T>& left, ambient::numeric::matrix<T>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
-        ATOMIC(reshape_l2r, left, right, left_offset, right_offset, 
-                            sdim, ldim, rdim);
+        ambient::numeric::kernels::reshape_l2r<T>::spawn(left, right, left_offset, right_offset, 
+                                                         sdim, ldim, rdim);
     }
     
     template <typename T>
     inline void reshape_r2l(ambient::numeric::matrix<T>& left, const ambient::numeric::matrix<T>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
-        ATOMIC(reshape_r2l, left, right, left_offset, right_offset, 
-                            sdim, ldim, rdim);
+        ambient::numeric::kernels::reshape_r2l<T>::spawn(left, right, left_offset, right_offset, 
+                                                         sdim, ldim, rdim);
     }
     
     template <typename T>
     inline void lb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ATOMIC(lb_tensor_mpo, out, in, alfa, out_offset, in_offset, 
-                              sdim1, sdim2, ldim, rdim);
+        ambient::numeric::kernels::lb_tensor_mpo<T>::spawn(out, in, alfa, out_offset, in_offset, 
+                                                           sdim1, sdim2, ldim, rdim);
     }
     
     template <typename T>
     inline void rb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ATOMIC(rb_tensor_mpo, out, in, alfa, out_offset, in_offset, 
-                              sdim1, sdim2, ldim, rdim);
+        ambient::numeric::kernels::rb_tensor_mpo<T>::spawn(out, in, alfa, out_offset, in_offset, 
+                                                           sdim1, sdim2, ldim, rdim);
     }
    
     template<class T, class SymmGroup>
@@ -87,7 +85,7 @@ namespace maquis { namespace dmrg { namespace detail {
         std::vector< std::vector<double> > r(set.n_blocks());
         for(std::size_t k = 0; k < set.n_blocks(); ++k){
             std::vector<T>* v_ptr = &r[k];
-            ATOMIC(round_square, set[k], v_ptr);
+            ambient::numeric::kernels::round_square<T>::spawn(set[k], v_ptr);
         }
         ambient::playout();
 
@@ -105,5 +103,4 @@ namespace maquis { namespace dmrg { namespace detail {
         
 } } }
 
-#undef ATOMIC
 #endif
