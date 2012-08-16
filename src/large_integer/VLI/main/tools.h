@@ -19,14 +19,14 @@ namespace tools{
     }
    
     template <typename Vli>
-    void vli_negate(Vli& v, int random){
+    void vli_negate(Vli& v, int random=Vli::size-1){
         if(v[0]%random == 0)
             v.negate();
     }
    
     template <typename Vli>
     void fill_random(Vli& v){
-        for(typename Vli::size_type i=0; i < Vli::size; ++i)
+        for(typename Vli::size_type i=0; i < Vli::size-1; ++i)
             v[i] = rnd_digit<Vli>(); 
     }
    
@@ -40,8 +40,8 @@ namespace tools{
     template <typename Polynomial>
     void fill_poly_random(Polynomial& p){
         for(typename vli::iterator<Polynomial>::type it= p.begin(); it != p.end(); ++it){
-           fill_random(*it,2);
-           vli_negate(*it,2);
+           fill_random(*it);
+           vli_negate(*it);
         }
     } 
    

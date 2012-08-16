@@ -32,7 +32,7 @@
 #include <iostream>
 
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu + structure max_order_each, max_order_combined
-#include "vli/detail/gpu/utils/variables_gpu_keep_order.h" //compile time  variable
+#include "vli/detail/gpu/utils/variables_gpu.h" //compile time  variable
 #include "vli/detail/gpu/tasklist/tasklist.h" //tasklist
 #include "vli/detail/gpu/utils/gpu_mem_block.h" // memory
 #include "vli/detail/gpu/kernels/kernels_gpu_neg_asm.hpp" //kernels gpu boost pp
