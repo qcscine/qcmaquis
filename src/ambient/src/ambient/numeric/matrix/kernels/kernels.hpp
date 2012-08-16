@@ -1,127 +1,251 @@
 #ifndef __AMBIENT_NUMERIC_MATRIX_KERNELS_HPP__
 #define __AMBIENT_NUMERIC_MATRIX_KERNELS_HPP__
 
-/*namespace ambient { namespace numeric { namespace kernels {
+extern "C" {
+    void dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, const double*, const int*, const double*, const int*, const double*, double*, const int*);
+}
 
-    using ambient::numeric::matrix_impl;
+#include "ambient/models/velvet/revision.h"
+#include "ambient/controllers/velvet/iteratable.h"
 
-    template<typename T>
-    struct gemm_inplace : public kernel< gemm_inplace<T> > 
+namespace ambient { namespace numeric { namespace kernels {
+
+#define ui_l_current this->ui_l_current
+#define ui_c_current this->ui_c_current
+#define ui_w_updated this->ui_w_updated
+#define ui_p_updated this->ui_p_updated
+#define ui_r_updated this->ui_r_updated
+
+    inline void* __a_solidify(char* r, size_t sz){
+        void* memory = malloc(sz);
+        memcpy(memory, r, sz);
+        return memory;
+    }
+
+    inline void __a_disperse(void* data, char* r, size_t sz){
+        memcpy(r, data, sz);
+        free(data);
+    }
+
+    template <typename T> inline T __a_dot(T* a, T* b, int size){
+        T summ(0);
+        for(size_t k=0; k < size; k++)
+           summ += a[k]*b[k];
+        return summ;
+    }
+
+    inline double __a_dot(double* a, double* b, int size){
+        static const int ONE = 1;
+        return ddot_(&size, a, &ONE, b, &ONE);
+    }
+
+    template <typename T>
+    inline void __a_memcpy(T* dd, T *sd, size_t w, T alfa){
+        memcpy(dd, sd, w);
+    }
+
+    template <typename T>
+    inline void __a_memscal(T* dd, T *sd, size_t w, T alfa){
+        int z = w/sizeof(T);
+        do{ *dd++ += alfa*(*sd++); }while(--z > 0); // be carefull that dd != sd
+    }
+
+    template<typename T, void(*PTF)(T* dd, T* sd, size_t w, T alfa)>
+    inline void __a_memptf_r(T* dst, int ldb, dim2 dst_p, 
+                                    T* src, int lda, dim2 src_p, 
+                                    dim2 size, T alfa = 0.0)
     {
-        typedef void(gemm_inplace::*F)(matrix_impl<T>&, 
-                         const matrix_impl<T>&);
+        __A_TIME_C("ambient_memptf_fr_kernel");
+#ifdef AMBIENT_CHECK_BOUNDARIES
+        if(ui_c_get_dim(dst).x - dst_p.x < size.x || ui_c_get_dim(dst).y - dst_p.y < size.y ||
+           ui_c_get_dim(src).x - src_p.x < size.x || ui_c_get_dim(src).y - src_p.y < size.y){
+            ambient::cout << "Error: invalid memory movement: " << std::endl;
+            ambient::cout << "Matrix dst " << ui_c_get_dim(dst).x << "x" << ui_c_get_dim(dst).y << "\n";
+            ambient::cout << "Dest p " << dst_p.x << "x" << dst_p.y << "\n";
+            ambient::cout << "Matrix src " << ui_c_get_dim(src).x << "x" << ui_c_get_dim(src).y << "\n";
+            ambient::cout << "Src p " << src_p.x << "x" << src_p.y << "\n";
+            ambient::cout << "Block size " << size.x << "x" << size.y << "\n";
 
-        inline void l(matrix_impl<T>& a, const matrix_impl<T>& b){
-            this->ctxt_select("1 from ambient as gemm_inplace"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(b);
+            void *array[10];
+            size_t size = backtrace(array, 10);
+            backtrace_symbols_fd(array, size, 2);
+        }
+#endif
+        int n = size.x;
+        int m = size.y*sizeof(T);
+
+        T* sd = src + src_p.y + src_p.x*lda;
+        T* dd = dst + dst_p.y + dst_p.x*ldb;
+
+        do{ PTF(dd, sd, m, alfa); sd += lda; dd += ldb; }while(--n > 0);
+        __A_TIME_C_STOP
+    }
+
+    template <typename T>
+    inline void __a_refresh(T* dst, const T* src, size_t sz){
+        if(dst != src) memcpy(dst, src, sz);
+    }
+
+
+
+    using ambient::numeric::matrix;
+    using ambient::numeric::weak_view;
+
+    template<class ViewA, class ViewB, typename T>
+    struct gemm_general : public kernel< gemm_general<ViewA, ViewB, T> > 
+    { // gs
+        typedef void(gemm_general::*F)(const matrix<T>&, const matrix<T>&, weak_view<T>&);
+
+        inline void l(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
+            this->ctxt_select("1 from ambient as gemm_general"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
+            this->assign(ui_l_current(c));
+        }
+        inline void c(const matrix<double>& a, const matrix<double>& b, weak_view<double>& c){
+            __A_TIME_C("ambient_gemm_general_c_kernel"); 
+            double* ad = ui_c_current(a);
+            double* bd = ui_c_current(b);
+            double* cd = ui_w_updated(c);
+            int m = ViewA::rows(a);
+            int k = ViewA::cols(a);
+            int n = ViewB::cols(b);
+            int lda = ui_c_get_dim(a).y;
+            int ldb = ui_c_get_dim(b).y;
+            int ldc = ui_c_get_dim(c).y;
+            static const double alpha(1.0); 
+            static const double beta(0.0);
+            dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            __A_TIME_C_STOP
+        }
+        inline void c(const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& b, weak_view<std::complex<double> >& c){
+            __A_TIME_C("ambient_gemm_general_c_kernel"); 
+            T* ad   = ui_c_current(a);
+            T* bd   = ui_c_current(b);
+            T* cd   = ui_w_updated(c);
+            int m   = ui_c_get_dim(a).y;
+            int n   = ui_c_get_dim(b).x;
+            int k   = ui_c_get_dim(b).y;
+            T alpha(1.0); 
+            T beta(0.0);
+            gemm("N","N", &m, &n, &k, &alpha, ad, &m, bd, &k, &beta, cd, &m);
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<class ViewB, typename T, typename D>
+    struct gemm_diagonal_lhs : public kernel< gemm_diagonal_lhs<ViewB,T,D> > 
+    {
+        typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
+
+        inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->assign(ui_l_current(a_diag));
+            this->pin(ui_l_current(b));
+            this->assign(ui_l_current(c));
         }
 
-        inline void c(matrix_impl<T>& a, const matrix_impl<T>& b){
-            __A_TIME_C("ambient_gemm_inplace_c_kernel");
-            int m   = ui_c_get_mem_dim(a).y;
-            int n   = ui_c_get_mem_dim(b).x;
-            int k   = ui_c_get_mem_dim(b).y;
-            int lda = m;
-            int ldb = k;
-            int ldc = m;
-            T alpha(1.0); 
-            T beta(1.0);
-        // a(x,y) => a(x,z) x b(y,x)  where z : [m,0)
-        // current block of matrix a:
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-        // taking (y,x) of b:
-            if(ui_c_get_grid_dim(b).y > x) while(y < ui_c_get_grid_dim(b).x){
-                T* bd = ui_c_current(b)(y,x); // remote
-        // multiplying with column of a:
-                std::list<int> L;
-                for(int z = 0; z < ui_c_get_grid_dim(a).y; z++) L.push_back(z);
-                while(!L.empty()){
-                    std::list<int>::iterator zy = L.begin();
-                    while(zy != L.end()){
-                        //if(!ui_p_updated(a)(y,*zy).trylock()){ zy++; continue; }
-                        T* ad = ui_c_current(a)(x,*zy);
-                        T* cd = ui_p_updated(a)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
-                        gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                        //ui_p_updated(a)(y,*zy).unlock();
-                        L.erase(zy++);
-                    }
-                }
-                y += ui_c_get_grid_dim(a).y;
+        inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
+            int sizey = ui_c_get_dim(a_diag).y;
+            int size = ui_c_get_dim(b).x;
+            int ONE  = 1;
+            D* bd = ui_c_current(b);
+            D* cd = ui_p_updated(c);
+            D* alpha = ui_c_current(a_diag);
+        
+            for(int k = 0 ; k < sizey; k++){
+        	     axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T, typename D>
+    struct gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> : public kernel< gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> > 
+    {
+        typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
+
+        inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->assign(ui_l_current(a_diag));
+            this->pin(ui_l_current(b));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
+            printf("Special DIAGONAL!\n");
+            size_t sizex = ui_c_get_dim(b).x;
+            int size  = ui_c_get_dim(a_diag).y;
+            int ONE  = 1;
+            D* bd = ui_c_current(b);
+            D* cd = ui_p_updated(c);
+            D* alpha = ui_c_current(a_diag);
+        
+            for(int k = 0 ; k < sizex; k++){
+        	     axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);
+            }
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<class ViewA, typename T, typename D>
+    struct gemm_diagonal_rhs : public kernel< gemm_diagonal_rhs<ViewA,T,D> > 
+    {
+        typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
+
+        inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b_diag));
+            this->assign(ui_l_current(c));
+        }
+
+        inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
+            // gs
+            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
+            size_t sizex = ui_c_get_dim(b_diag).y;
+            int size = ui_c_get_dim(a).y; // for the case of complex
+            int ONE = 1;
+            D* ad = ui_c_current(a);
+            D* cd = ui_p_updated(c);
+        	D* alpha = ui_c_current(b_diag);
+        
+            for(int k = 0 ; k < sizex; k++){
+        	    axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
             }
             __A_TIME_C_STOP
         }
     };
 
-    template<typename T>
-    struct gemm_general : public kernel< gemm_general<T> > 
+    template<typename T, typename D>
+    struct gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> : public kernel< gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> > 
     {
-        typedef void(gemm_general::*F)(const matrix_impl<T>&, 
-                         const matrix_impl<T>&, 
-                               matrix_impl<T>&);
+        typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, matrix_impl<T>& c){
-            this->ctxt_select("1 from ambient as gemm"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(b);
-            this->block_2d_cycle_assign(c);
+        inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
+            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b_diag));
+            this->assign(ui_l_current(c));
         }
 
-        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, matrix_impl<T>& c){
+        inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
             // gs
-            __A_TIME_C("ambient_gemm_c_kernel");
-            //if(ui_c_get_grid_dim(a) == 1 && ui_c_get_grid_dim(b) == 1) // use gemm atomic for this case
-            if(ui_c_get_mem_dim(a) != ui_c_get_mem_dim(b) || ui_c_get_mem_dim(a) != ui_c_get_mem_dim(c)){
-                T* ad = (T*)__a_solidify<T>(a);
-                T* bd = (T*)__a_solidify<T>(b);
-                T* cd = (T*)__a_solidify<T>(c);
-                int m   = ui_c_get_dim(a).y;
-                int n   = ui_c_get_dim(b).x;
-                int k   = ui_c_get_dim(b).y;
-                int lda = ui_c_get_mem_dim(a).y*ui_c_get_grid_dim(a).y;
-                int ldb = ui_c_get_mem_dim(b).y*ui_c_get_grid_dim(b).y;
-                int ldc = ui_c_get_mem_dim(c).y*ui_c_get_grid_dim(c).y;
-                T alpha(1.0); 
-                T beta(0.0);
-                gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                __a_disperse<T>(cd, c);
-                __A_TIME_C_STOP
-                return;
-            }
-            int m   = ui_c_get_mem_dim(a).y;
-            int n   = ui_c_get_mem_dim(b).x;
-            int k   = ui_c_get_mem_dim(b).y;
-            int lda = m;
-            int ldb = k;
-            int ldc = m;
-            T alpha(1.0); 
-            T beta(1.0);
-        // a(x,y) => a(x,z) x b(y,x)  where z : [m,0)
-        // current block of matrix a:
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
+            __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
+            printf("Special DIAGONAL!\n");
+            int sizey = ui_c_get_dim(b_diag).y;
+            int size = ui_c_get_dim(a).x;
+            int ONE = 1;
+            D* ad = ui_c_current(a);
+            D* cd = ui_p_updated(c);
+        	D* alpha = ui_c_current(b_diag);
         
-            dim2 a_grid_dim = ui_c_get_grid_dim(a);
-            dim2 b_grid_dim = ui_c_get_grid_dim(b);
-        // taking (y,x) of b:
-            if(b_grid_dim.y > x) while(y < b_grid_dim.x){
-                T* bd = ui_c_current(b)(y,x); // remote
-        // multiplying with column of a:
-                std::list<int> L;
-                for(int z = 0; z < a_grid_dim.y; z++) L.push_back(z);
-                while(!L.empty()){
-                    std::list<int>::iterator zy = L.begin();
-                    while(zy != L.end()){
-                        //if(!ui_p_updated(c)(y,*zy).trylock()){ zy++; continue; }
-                        T* ad = ui_c_current(a)(x,*zy);
-                        T* cd = ui_p_updated(c)(y,*zy); // a(x,z) x b(y,x) => c(y,z)
-                        gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-                        //ui_p_updated(c)(y,*zy).unlock();
-                        L.erase(zy++);
-                    }
-                }
-                y += a_grid_dim.y;
+            for(int k = 0 ; k < sizey; k++){
+        	    axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);
             }
             __A_TIME_C_STOP
         }
@@ -130,260 +254,176 @@
 
     template<typename T>
     struct copy : public kernel< copy<T> > 
-    {
-        typedef void(copy::*F)(matrix_impl<T>&, const matrix_impl<T>&);
+    { // gs
+        typedef void(copy::*F)(weak_view<T>&, const matrix<T>&);
 
-        inline void l(matrix_impl<T>& ac, const matrix_impl<T>& a){
+        inline void l(weak_view<T>& ac, const matrix<T>& a){
             this->ctxt_select("1 from ambient as copy"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(ac);
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(ac));
         }
 
-        inline void c(matrix_impl<T>& ac, const matrix_impl<T>& a){
-            // gs
+        inline void c(weak_view<T>& ac, const matrix<T>& a){
             __A_TIME_C("ambient_copy_c_kernel"); 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
-            T* a_elements  = ui_c_current(a)(x,y);
-            T* ac_elements = ui_w_updated(ac)(x,y);
-            memcpy(ac_elements, a_elements, sizeof(T)*ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y);
-            __A_TIME_C_STOP
-        }
-    };
-
-    template<typename T>
-    struct remove_rows : public kernel< remove_rows<T> > 
-    {
-        typedef void (remove_rows::*F)(matrix_impl<T>&, const size_t&, const size_t&);
-
-        inline void l(matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
-            this->ctxt_select("1 from ambient as remove_rows"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-        }
-        
-        inline void c(matrix_impl<T>& a, const size_t& i_mark, const size_t& k){
-            __A_TIME_C("ambient_remove_rows_c_kernel"); 
-            size_t numcols = ui_c_get_dim(a).x;
-            size_t numrows = ui_c_get_dim(a).y;
-            if((T*)ui_c_current(a)(0,0) != (T*)ui_w_updated(a)(0,0)) 
-                __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(numcols, i_mark));
-            __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,i_mark), a, dim2(0,k+i_mark), dim2(numcols,numrows-k-i_mark));
+            T* ad  = ui_c_current(a);
+            T* acd  = ui_w_updated(ac);
+            memcpy(acd, ad, ui_c_get_mem_size(a));
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct remove_cols : public kernel< remove_cols<T> > 
-    {
-        typedef void (remove_cols::*F)(matrix_impl<T>&, const size_t&, const size_t&);
+    struct op_kron : public kernel< op_kron<T> > 
+    { // gs - 2su
+        typedef void (op_kron::*F)(matrix<T>&, const matrix<T>&, const matrix<T>&,
+                                          const size_t&, const size_t&, 
+                                          const size_t&, const size_t&,
+                                          const size_t&, const size_t&);
 
-        inline void l(matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
-            this->ctxt_select("1 from ambient as remove_cols"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
+        inline void l(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
+                      const size_t& out_y_offset, const size_t& out_x_offset, 
+                      const size_t& ldim1, const size_t& ldim2, 
+                      const size_t& rdim1, const size_t& rdim2)
+        {
+            this->ctxt_select("1 from ambient as op_kron"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+            this->assign(ui_l_current(alfa));
         }
 
-        inline void c(matrix_impl<T>& a, const size_t& j_mark, const size_t& k){
-            __A_TIME_C("ambient_remove_cols_c_kernel"); 
-            size_t numcols = ui_c_get_dim(a).x;
-            size_t numrows = ui_c_get_dim(a).y;
-            if((T*)ui_c_current(a)(0,0) != (T*)ui_w_updated(a)(0,0)) 
-                __a_memptf_reverse<T, __a_memcpy>(a, dim2(0,0), a, dim2(0,0), dim2(j_mark, numrows));
-            __a_memptf_reverse<T, __a_memcpy>(a, dim2(j_mark,0), a, dim2(k+j_mark,0), dim2(numcols-k-j_mark,numrows));
-            __A_TIME_C_STOP
-        }
-    };
-
-    template<typename T>
-    struct resize : public kernel< resize<T> > 
-    {
-        typedef void (resize::*F)(matrix_impl<T>&, const matrix_impl<T>&, const size_t&, const size_t&);
-
-        inline void l(matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
-            this->ctxt_select("1 from ambient as resize"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(r);
-        }
-
-        inline void c(matrix_impl<T>& r, const matrix_impl<T>& a, const size_t& m, const size_t& n){
-            __A_TIME_C("ambient_resize_c_kernel"); 
-            __a_memptf_reverse<T, __a_memcpy>(r, dim2(0,0), a, dim2(0,0), dim2(n,m));
+        inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
+                      const size_t& out_y_offset, const size_t& out_x_offset, 
+                      const size_t& ldim1, const size_t& ldim2, 
+                      const size_t& rdim1, const size_t& rdim2)
+        {
+            __A_TIME_C("ambient_op_kron_c_kernel"); 
+            T* alfad = ui_c_current(alfa);
+            for(size_t l1 = 0; l1 < ldim1; ++l1)
+            for(size_t r1 = 0; r1 < rdim1; ++r1)
+            __a_memptf_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
+                                                ui_c_current(in), ui_c_get_dim(in).y,  dim2(0, 0), 
+                                                dim2(rdim2, ldim2), alfad[l1 + r1*ui_c_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct sqrt_diagonal : public kernel< sqrt_diagonal<T> > 
-    {
-        typedef void (sqrt_diagonal::*F)(matrix_impl<T>&);
+    struct reshape_l2b : public kernel< reshape_l2b<T> > 
+    { // gs - 2su
+        typedef void (reshape_l2b::*F)(matrix<T>&, const matrix<T>&,
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&,
+                                              const size_t&, const size_t&);
 
-        inline void l(matrix_impl<T>& a){
-            this->ctxt_select("1 from ambient as sqrt_diagonal"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
+        inline void l(matrix<T>& out, const matrix<T>& in,
+                      const size_t& in_left_offset, const size_t& in_phys_offset, 
+                      const size_t& out_left_offset, const size_t& out_x_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            this->ctxt_select("1 from ambient as reshape_l2b"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
         }
 
-        inline void c(matrix_impl<T>& a){
-            __A_TIME_C("ambient_sqrt_diagonal_c_kernel"); 
-            T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            T* sd = ui_w_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            size_t size = ui_c_get_mem_dim(a).y;
-            for(int i=0; i < size; i++)
-                sd[i] = std::sqrt(ad[i]);
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct exp_diagonal : public kernel< exp_diagonal<T> > 
-    {
-        typedef void (exp_diagonal::*F)(matrix_impl<T>&, const T&);
+        inline void c(matrix<T>& out, const matrix<T>& in,
+                      const size_t& in_left_offset, const size_t& in_phys_offset, 
+                      const size_t& out_left_offset, const size_t& out_x_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            __A_TIME_C("ambient_reshape_l2b_c_kernel"); 
 
-        inline void l(matrix_impl<T>& a, const T& alfa){
-            this->ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-        }
+            size_t in_y_offset  = in_left_offset + ldim*in_phys_offset;
+            size_t out_y_offset = out_left_offset;
 
-        inline void c(matrix_impl<T>& a, const T& alfa){
-            __A_TIME_C("ambient_exp_diagonal_c_kernel"); 
-            T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            T* sd = ui_w_updated(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            size_t size = ui_c_get_mem_dim(a).y;
-            for(int i=0; i < size; i++)
-                sd[i] = std::exp(ad[i]*alfa);
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct exp_diagonal_rc : public kernel< exp_diagonal_rc<T> > 
-    {
-        typedef void (exp_diagonal_rc::*F)(matrix_impl< std::complex<T> >&, const matrix_impl<T>&, const std::complex<T>&);
-
-        inline void l(matrix_impl< std::complex<T> >& e, const matrix_impl<T>& a, const std::complex<T>& alfa){
-            this->ctxt_select("1 from ambient as exp_diagonal"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(e);
-            this->block_2d_cycle_assign(a);
-        }
-
-        inline void c(matrix_impl< std::complex<T> >& e, const matrix_impl<T>& a, const std::complex<T>& alfa){
-            __A_TIME_C("ambient_exp_diagonal_rc_kernel"); 
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-            std::complex<T>* ed = ui_w_updated(e)(x,y);
-            T* ad = ui_c_current(a)(x,y);
-            size_t size = ui_c_get_mem_dim(e).y;
-            for(int i=0; i < size; i++)
-                ed[i] = std::exp(ad[i]*alfa);
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct push_back_sqr_gt : public kernel< push_back_sqr_gt<T> > 
-    {
-        typedef void (push_back_sqr_gt::*F)(const matrix_impl<T>&, std::vector<T>*&);
-
-        inline void l(const matrix_impl<T>& a, std::vector<T>*& ac){
-            this->ctxt_select("* from ambient as push_back_sqr_gt"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(a);
-        }
-
-        inline void c(const matrix_impl<T>& a, std::vector<T>*& ac){
-            // gs
-            __A_TIME_C("ambient_push_back_sqr_gt_c_kernel"); 
-            T* ad = ui_c_current(a)(ctxt.get_block_id().x, ctxt.get_block_id().y);
-            size_t sizey = __a_get_limit_y(a);
-            for(int i=0; i < sizey; i++){
-                double v = std::abs(ad[i]);
-                if(v > 1e-10) ac->push_back(v*v);
+            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), ui_c_get_mem_size(out));
+            for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
+                for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
+                    __a_memptf_r<T, __a_memcpy>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(out_x_offset + rdim*ss2, out_y_offset), 
+                                                       ui_c_current(in), ui_c_get_dim(in).y,  dim2(0, in_y_offset), 
+                                                       dim2( rdim, ldim ));
+                    in_y_offset += ldim;
+                }
+                out_y_offset += ldim;
             }
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct cast_to_vector : public kernel< cast_to_vector<T> > 
-    {
-        typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix_impl<T>&, const size_t&, const size_t&);
+    struct reshape_b2l : public kernel< reshape_b2l<T> > 
+    { // gs - 2su
+        typedef void (reshape_b2l::*F)(matrix<T>&, const matrix<T>&,
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&,
+                                              const size_t&, const size_t&);
 
-        inline void l(std::vector<T>*& ac, const matrix_impl<T>& a, const size_t& m, const size_t& n){
-            this->ctxt_select("* from ambient as cast_to_vector"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(a);
+        inline void l(matrix<T>& out, const matrix<T>& in,
+                      const size_t& in_left_offset, const size_t& in_x_offset, 
+                      const size_t& out_left_offset, const size_t& out_phys_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            this->ctxt_select("1 from ambient as reshape_b2l"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
         }
 
-        inline void c(std::vector<T>*& ac, const matrix_impl<T>& a, const size_t& m, const size_t& n){
-            // gs
-            __A_TIME_C("ambient_cast_to_dense_c_kernel"); 
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-            int xx = ui_c_get_mem_dim(a).x*x; 
-            int yy = ui_c_get_mem_dim(a).y*y; // conversion cartersia coordinates alps / ambient
-            size_t offset;
-            T* ad = ui_c_current(a)(x,y);
-           
-            size_t sizex = __a_get_limit_x(a, n);
-            size_t sizey = __a_get_limit_y(a, m);
-            size_t lda = ui_c_get_mem_dim(a).y;
-        
-            for(int j=0; j < sizex; ++j){
-                offset = yy + (xx+j)*m;
-                memcpy((void*)&(*ac)[offset],(void*)&ad[j*lda], sizey*sizeof(T));  
+        inline void c(matrix<T>& out, const matrix<T>& in,
+                      const size_t& in_left_offset, const size_t& in_x_offset, 
+                      const size_t& out_left_offset, const size_t& out_phys_offset,
+                      const size_t& sdim1, const size_t& sdim2, 
+                      const size_t& ldim, const size_t& rdim)
+        {
+            __A_TIME_C("ambient_reshape_b2l_c_kernel"); 
+
+            size_t in_y_offset  = in_left_offset;
+            size_t out_y_offset = out_left_offset + out_phys_offset*ldim;
+
+            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), ui_c_get_mem_size(out));
+            for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
+                for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+                {
+                    __a_memptf_r<T, __a_memcpy>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(0, out_y_offset), 
+                                                       ui_c_current(in), ui_c_get_dim(in).y,  dim2(in_x_offset + rdim*ss2, in_y_offset), 
+                                                       dim2( rdim, ldim ));
+                    out_y_offset += ldim;
+                }
+                in_y_offset += ldim;
             }
             __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct cast_from_vector : public kernel< cast_from_vector<T> > 
-    {
-        typedef void (cast_from_vector::*F)(const std::vector<T>*&, matrix_impl<T>&, const size_t&, const size_t&, const size_t&);
-
-        inline void l(const std::vector<T>*& ac, matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
-            this->ctxt_select("1 from ambient as cast_from_vector"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-        }
-
-        inline void c(const std::vector<T>*& ac, matrix_impl<T>& a, const size_t& m, const size_t& n, const size_t& lda){
-            __A_TIME_C("ambient_cast_from_vector_c_kernel"); 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
-            size_t xx = ui_c_get_mem_dim(a).x*x;
-            size_t yy = ui_c_get_mem_dim(a).y*y;
-            size_t sizex = __a_get_limit_x(a, n);
-            size_t sizey = __a_get_limit_y(a, m);
-
-            T* ad = ui_w_updated(a)(x,y);
-            for(int j=0; j < sizex; ++j)
-                memcpy((void*)&ad[j*ui_c_get_mem_dim(a).y],(void*)&(*ac)[yy + (xx+j)*lda], sizey*sizeof(T));
-            __A_TIME_C_STOP 
         }
     };
         
     template<typename T>
     struct reshape_l2r : public kernel< reshape_l2r<T> > 
-    {
-        typedef void (reshape_l2r::*F)(const matrix_impl<T>&, matrix_impl<T>&,
-                          const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
+    { // gs
+        typedef void (reshape_l2r::*F)(const matrix<T>&, matrix<T>&,
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&, const size_t&);
 
-        inline void l(const matrix_impl<T>& left, matrix_impl<T>& right,
+        inline void l(const matrix<T>& left, matrix<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_assign(left); 
-            this->block_2d_cycle_pin(right); 
+            this->pin(ui_l_current(right));
+            this->assign(ui_l_current(left));
         }
 
-        inline void c(const matrix_impl<T>& left, matrix_impl<T>& right,
+        inline void c(const matrix<T>& left, matrix<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
-        { // gs
+        {
             __A_TIME_C("ambient_reshape_l2r_c_kernel"); 
-            if((T*)ui_c_current(right)(0,0) != (T*)ui_w_updated(right)(0,0)) 
-                __a_memptf<T, __a_memcpy>(right, dim2(0,0), right, dim2(0,0), ui_c_get_dim(right)); // refreshing updated memory
+            __a_refresh<T>(ui_w_updated(right), ui_c_current(right), ui_c_get_mem_size(right));
             for(size_t ss = 0; ss < sdim; ++ss){
-                __a_memptf<T, __a_memcpy>(right, dim2(ss*rdim + right_offset, 0), 
-                                          left,  dim2(0, ss*ldim + left_offset), 
-                                          dim2( rdim, ldim ));
+                __a_memptf_r<T, __a_memcpy>(ui_r_updated(right), ui_c_get_dim(right).y, dim2(ss*rdim + right_offset, 0), 
+                                                   ui_c_current(left), ui_c_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
+                                                   dim2( rdim, ldim ));
             }
             __A_TIME_C_STOP
         }
@@ -391,241 +431,96 @@
         
     template<typename T>
     struct reshape_r2l : public kernel< reshape_r2l<T> > 
-    {
-        typedef void (reshape_r2l::*F)(matrix_impl<T>&, const matrix_impl<T>&,
-               const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
+    { // gs
+        typedef void (reshape_r2l::*F)(matrix<T>&, const matrix<T>&,
+                                              const size_t&, const size_t&, 
+                                              const size_t&, const size_t&, const size_t&);
 
-        inline void l(matrix_impl<T>& left, const matrix_impl<T>& right,
+        inline void l(matrix<T>& left, const matrix<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(left); 
-            this->block_2d_cycle_assign(right); 
+            this->pin(ui_l_current(left));
+            this->assign(ui_l_current(right));
         }
 
-        inline void c(matrix_impl<T>& left, const matrix_impl<T>& right,
+        inline void c(matrix<T>& left, const matrix<T>& right,
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
-        { // gs
-            __A_TIME_C("ambient_reshape_r2l_c_kernel"); 
-            if((T*)ui_c_current(left)(0,0) != (T*)ui_w_updated(left)(0,0)) 
-                __a_memptf<T, __a_memcpy>(left, dim2(0,0), left, dim2(0,0), ui_c_get_dim(left)); // refreshing updated memory
-            for(size_t ss = 0; ss < sdim; ++ss)
-                __a_memptf<T, __a_memcpy>(left,  dim2(0, ss*ldim + left_offset), 
-                                          right, dim2(ss*rdim + right_offset,0), 
-                                          dim2( rdim, ldim ));
-            __A_TIME_C_STOP
-        }
-    };
-        
-        
-    template<typename T>
-    struct rb_tensor_mpo : public kernel< rb_tensor_mpo<T> > 
-    {
-        typedef void (rb_tensor_mpo::*F)(matrix_impl<T>&, const matrix_impl<T>&, const matrix_impl<T>&,
-                          const size_t&, const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
-
-        inline void l(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
-                      const size_t& out_offset, const size_t& in_offset, 
-                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(out); 
-            this->block_2d_cycle_assign(in); 
-            this->block_2d_cycle_assign(alfa); 
-        }
-
-        inline void c(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
-                      const size_t& out_offset, const size_t& in_offset, 
-                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
-        { // gs
-            __A_TIME_C("ambient_rb_tensor_mpo_c_kernel"); 
-            if((T*)ui_c_current(out)(0,0) != (T*)ui_w_updated(out)(0,0)) 
-                __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
-            for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    T* alfad = ui_c_current(alfa)(ss2/ui_c_get_mem_dim(alfa).x, ss1/ui_c_get_mem_dim(alfa).y);
-                    T  alfa_t = alfad[ss1%ui_c_get_mem_dim(alfa).y + ui_c_get_mem_dim(alfa).y*(ss2%ui_c_get_mem_dim(alfa).x)];
-                    __a_memptf<T, __a_memscal>(out, dim2(out_offset + ss2*rdim, 0),
-                                               in,  dim2(in_offset + ss1*rdim, 0),
-                                               dim2(rdim, ldim), alfa_t);
-                }
+            __A_TIME_C("ambient_reshape_r2l_c_kernel"); 
+            __a_refresh<T>(ui_w_updated(left), ui_c_current(left), ui_c_get_mem_size(left));
+            for(size_t ss = 0; ss < sdim; ++ss)
+                __a_memptf_r<T, __a_memcpy>(ui_r_updated(left), ui_c_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
+                                                   ui_c_current(right), ui_c_get_dim(right).y, dim2(ss*rdim + right_offset,0), 
+                                                   dim2( rdim, ldim ));
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
     struct lb_tensor_mpo : public kernel< lb_tensor_mpo<T> > 
-    {
-        typedef void (lb_tensor_mpo::*F)(matrix_impl<T>&, const matrix_impl<T>&, const matrix_impl<T>&,
-               const size_t&, const size_t&, const size_t&, const size_t&, const size_t&, const size_t&);
+    { // gs
+        typedef void (lb_tensor_mpo::*F)(matrix<T>&, const matrix<T>&, const matrix<T>&,
+                                                const size_t&, const size_t&, 
+                                                const size_t&, const size_t&, const size_t&, const size_t&);
 
-        inline void l(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
+        inline void l(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(out); 
-            this->block_2d_cycle_assign(in); 
-            this->block_2d_cycle_assign(alfa); 
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+            this->assign(ui_l_current(alfa));
         }
 
-        inline void c(matrix_impl<T>& out, const matrix_impl<T>& in, const matrix_impl<T>& alfa,
+        inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
-        { // gs
+        {
             __A_TIME_C("ambient_lb_tensor_mpo_c_kernel"); 
-            if((T*)ui_c_current(out)(0,0) != (T*)ui_w_updated(out)(0,0)) 
-                __a_memptf<T, __a_memcpy>(out, dim2(0,0), out, dim2(0,0), ui_c_get_dim(out)); // refreshing updated memory
+            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), ui_c_get_mem_size(out));
+            T* alfad = ui_c_current(alfa);
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    T* alfad = ui_c_current(alfa)(ss2/ui_c_get_mem_dim(alfa).x, ss1/ui_c_get_mem_dim(alfa).y);
-                    T  alfa_t = alfad[ss1%ui_c_get_mem_dim(alfa).y + ui_c_get_mem_dim(alfa).y*(ss2%ui_c_get_mem_dim(alfa).x)];
-                    __a_memptf<T, __a_memscal>(out, dim2(0, out_offset + ss2*ldim),
-                                               in,  dim2(0, in_offset + ss1*ldim),
-                                               dim2(rdim, ldim), alfa_t);
-                }
+            __a_memptf_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(0, out_offset + ss2*ldim),
+                                                ui_c_current(in), ui_c_get_dim(in).y,  dim2(0, in_offset + ss1*ldim),
+                                                dim2(rdim, ldim), alfad[ss1 + ss2*ui_c_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct scalar_norm : public kernel< scalar_norm<T> > 
-    {
-        typedef void (scalar_norm::*F)(const matrix_impl<T>&, const size_t&, const size_t&, future<double>&);
+    struct rb_tensor_mpo : public kernel< rb_tensor_mpo<T> > 
+    { // gs
+        typedef void (rb_tensor_mpo::*F)(matrix<T>&, const matrix<T>&, const matrix<T>&,
+                                                const size_t&, const size_t&, 
+                                                const size_t&, const size_t&, const size_t&, const size_t&);
 
-        inline void l(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<double>& norm){
-            this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(a);
+        inline void l(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
+                      const size_t& out_offset, const size_t& in_offset, 
+                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+        {
+            this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(out));
+            this->assign(ui_l_current(in));
+            this->assign(ui_l_current(alfa));
         }
 
-        inline void c(const matrix_impl<T>& a, const size_t& m, const size_t& n, future<double>& norm){
-            // gs
-            __A_TIME_C("ambient_scalar_norm_c_kernel"); 
-            T summ = 0;
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-            T* ad = ui_c_current(a)(x,y);
-            size_t lda = ui_c_get_mem_dim(a).y;
-            size_t sizey = __a_get_limit_y(a, m);
-            size_t sizex = __a_get_limit_x(a, n);
-            for(size_t i=0; i < sizey; i++)
-                for(size_t j=0; j < sizex; j++)
-                    summ += ad[i+j*lda]*ad[i+j*lda];
-        
-            norm.get_value() += alps::numeric::real(summ);
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct overlap : public kernel< overlap<T> > 
-    {
-        typedef void (overlap::*F)(const matrix_impl<T>&, const matrix_impl<T>&, const size_t&, const size_t&, future<T>&);
-
-        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, const size_t& m, const size_t& n, future<T>& overlap){
-            this->ctxt_select("* from ambient as overlap"); //if(!ctxt.involved()) return;
-            this->block_outright_pin(a);
-            this->block_outright_assign(b);
-        }
-
-        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, const size_t& m, const size_t& n, future<T>& overlap){
-            // gs
-            __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
-            T summ = 0;
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-            T* ad = ui_c_current(a)(x,y);
-            T* bd = ui_c_current(b)(x,y);
-            size_t lda = ui_c_get_mem_dim(a).y;
-            size_t sizey = __a_get_limit_y(a, m);
-            size_t sizex = __a_get_limit_x(a, n);
-            for(size_t i=0; i < sizey; i++)
-                for(size_t j=0; j < sizex; j++)
-                    summ += ad[i+j*lda]*bd[i+j*lda];
-            overlap.get_value() += summ;
-            __A_TIME_C_STOP
-        }
-    };
-        
-        
-    template<typename T>
-    struct add : public kernel< add<T> > 
-    {
-        typedef void (add::*F)(matrix_impl<T>&, const matrix_impl<T>&);
-
-        inline void l(matrix_impl<T>& a, const matrix_impl<T>& b){
-            this->ctxt_select("1 from ambient as add"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(b);
-        }
-
-        inline void c(matrix_impl<T>& a, const matrix_impl<T>& b){
-            // gs
-            __A_TIME_C("ambient_add_c_kernel"); 
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-            T* ad = ui_c_current(a)(x,y);
-            T* bd = ui_c_current(b)(x,y);
-            T* ar = ui_w_updated(a)(x,y);
-            size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
-            for(size_t k = 0; k < size; k++)
-                ar[k] = ad[k] + bd[k];
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct sub : public kernel< sub<T> > 
-    {
-        typedef void (sub::*F)(matrix_impl<T>&, const matrix_impl<T>&);
-
-        inline void l(matrix_impl<T>& a, const matrix_impl<T>& b){
-            this->ctxt_select("1 from ambient as sub"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(b);
-        }
-
-        inline void c(matrix_impl<T>& a, const matrix_impl<T>& b){
-            // gs
-            __A_TIME_C("ambient_sub_c_kernel"); 
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-            T* ad = ui_c_current(a)(x,y);
-            T* bd = ui_c_current(b)(x,y);
-            T* ar = ui_w_updated(a)(x,y);
-            size_t size = ui_c_get_mem_dim(a).x*ui_c_get_mem_dim(a).y;
-            for(size_t k = 0; k < size; k++)
-                ar[k] = ad[k] + (-1)*bd[k];
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct scale : public kernel< scale<T> > 
-    {
-        typedef void (scale::*F)(matrix_impl<T>&, const size_t&, const size_t&, const future<T>&);
-
-        inline void l(matrix_impl<T>& a, const size_t& m, const size_t& n, const future<T>& t){
-            this->ctxt_select("1 from ambient as scale"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-        }
-
-        inline void c(matrix_impl<T>& a, const size_t& m, const size_t& n, const future<T>& t){
-            // gs
-            __A_TIME_C("ambient_scale_c_kernel"); 
-            int x = ctxt.get_block_id().x;
-            int y = ctxt.get_block_id().y;
-            T* ad = ui_c_current(a)(x, y);
-            T* ar = ui_w_updated(a)(x, y);
-        
-            size_t sizey = __a_get_limit_y(a, m);
-            size_t sizex = __a_get_limit_x(a, n);
-            size_t lda = ui_c_get_mem_dim(a).y;
-            for(size_t j=0; j < sizex; j++)
-            for(size_t i=0; i < sizey; i++)
-            ar[j*lda+i] = ad[j*lda+i] * t.get_value();
+        inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
+                      const size_t& out_offset, const size_t& in_offset, 
+                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+        {
+            __A_TIME_C("ambient_rb_tensor_mpo_c_kernel"); 
+            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), ui_c_get_mem_size(out));
+            T* alfad = ui_c_current(alfa);
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+            for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+            __a_memptf_r<T, __a_memscal>(ui_r_updated(out), ui_c_get_dim(out).y, dim2(out_offset + ss2*rdim, 0),
+                                                ui_c_current(in), ui_c_get_dim(in).y,  dim2(in_offset + ss1*rdim, 0),
+                                                dim2(rdim, ldim), alfad[ss1 + ss2*ui_c_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
     };
@@ -633,69 +528,268 @@
     template<typename T>
     struct trace : public kernel< trace<T> > 
     {
-        typedef void (trace::*F)(const matrix_impl<T>&, const size_t&, future<T>&);
+        typedef void (trace::*F)(const matrix<T>&, future<T>&);
 
-        inline void l(const matrix_impl<T>& a, const size_t& n, future<T>& trace){
+        inline void l(const matrix<T>& a, future<T>& trace){
             this->ctxt_select("* from ambient as trace"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);    // we need only diagonal 
-                                            // but we have to track the diagonal separately afterward
-                                            // which is troublesome
+            this->pin(ui_l_current(a));
         }
 
-        inline void c(const matrix_impl<T>& a, const size_t& n, future<T>& trace){
+        inline void c(const matrix<T>& a, future<T>& trace){
             // gs
             __A_TIME_C("ambient_trace_c_kernel"); 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
-            size_t ld = ui_c_get_mem_dim(a).y;
-            size_t sd = ui_c_get_mem_dim(a).x;
-            T* ad = ui_c_current(a)(x, y);
+            size_t m = ui_c_get_dim(a).y;
+            size_t n = ui_c_get_dim(a).x;
+            T* ad = ui_c_current(a);
         
-            if((y+1)*ld <= x*sd) return;
-            if(y*ld >= (x+1)*sd) return;
-            size_t sizex = std::min(n,(x+1)*sd);
-            for(size_t jj = x*sd; jj < sizex; jj++){
-                if(y*ld > jj) continue;
-                if((y+1)*ld <= jj) continue;
-                trace.get_value() += ad[jj % ld + (jj%sd)*ld];
+            size_t sizex = std::min(n,m);
+            for(size_t jj = 0; jj < sizex; jj++){
+                trace.get_value() += ad[jj + jj*m];
             }
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct transpose_out : public kernel< transpose_out<T> > 
-    { // only for square blocks
-        typedef void (transpose_out::*F)(const matrix_impl<T>&, matrix_impl<T>&, const size_t&, const size_t&);
+    struct scalar_norm : public kernel< scalar_norm<T> > 
+    {// gs
+        typedef void (scalar_norm::*F)(const matrix<T>&, future<double>&);
 
-        inline void l(const matrix_impl<T>& a, matrix_impl<T>& t, const size_t& m, const size_t& n){
-            this->ctxt_select("1 from ambient as transpose_out_l"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-            this->block_2d_cycle_assign(t);
+        inline void l(const matrix<T>& a, future<double>& norm){
+            this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
         }
 
-        inline void c(const matrix_impl<T>& a, matrix_impl<T>& t, const size_t& m, const size_t& n){
-            // gs
+        inline void c(const matrix<T>& a, future<double>& norm){
+            __A_TIME_C("ambient_scalar_norm_c_kernel"); 
+            T* ad = ui_c_current(a);
+            norm.get_value() = alps::numeric::real(__a_dot(ad, ad, ui_c_get_dim(a).square()));
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct overlap : public kernel< overlap<T> > 
+    { // gs
+        typedef void (overlap::*F)(const matrix<T>&, const matrix<T>&, future<T>&);
+
+        inline void l(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
+            this->ctxt_select("* from ambient as overlap"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
+        }
+
+        inline void c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
+            __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
+            T* ad = ui_c_current(a);
+            T* bd = ui_c_current(b);
+            overlap.get_value() = __a_dot(ad, bd, ui_c_get_dim(a).square());
+            __A_TIME_C_STOP
+        }
+    };
+
+        
+    template<typename T>
+    struct add : public kernel< add<T> > 
+    { // gs
+        typedef void (add::*F)(matrix<T>&, const matrix<T>&);
+
+        inline void l(matrix<T>& a, const matrix<T>& b){
+            this->ctxt_select("1 from ambient as add"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
+        }
+
+        inline void c(matrix<T>& a, const matrix<T>& b){
+            __A_TIME_C("ambient_add_c_kernel"); 
+            T* ad = ui_c_current(a);
+            T* bd = ui_c_current(b);
+            T* ar = ui_r_updated(a);
+            int size = ui_c_get_dim(a).square();
+            static const T sign = 1.;
+            static const int ONE = 1;
+            axpy(&size, &sign, bd, &ONE, ar, &ONE);
+            __A_TIME_C_STOP
+        }
+    };
+
+        
+    template<typename T>
+    struct sub : public kernel< sub<T> > 
+    { // gs
+        typedef void (sub::*F)(matrix<T>&, const matrix<T>&);
+
+        inline void l(matrix<T>& a, const matrix<T>& b){
+            this->ctxt_select("1 from ambient as sub"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(b));
+        }
+
+        inline void c(matrix<T>& a, const matrix<T>& b){
+            __A_TIME_C("ambient_sub_c_kernel"); 
+            T* bd = ui_c_current(b);
+            T* ar = ui_r_updated(a);
+            int size = ui_c_get_dim(a).square();
+            static const T sign = -1.;
+            static const int ONE = 1;
+            axpy(&size, &sign, bd, &ONE, ar, &ONE);
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct scale : public kernel< scale<T> > 
+    { // gs
+        typedef void (scale::*F)(matrix<T>&, const future<T>&);
+
+        inline void l(matrix<T>& a, const future<T>& t){
+            this->ctxt_select("1 from ambient as scale"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(matrix<double>& a, const future<double>& t){
+            __A_TIME_C("ambient_scale_c_kernel"); 
+            T* ar = ui_r_updated(a);
+            int size = ui_c_get_dim(a).square();
+            static const int ONE = 1;
+            dscal_( &size, &t.get_value(), ar, &ONE );
+            __A_TIME_C_STOP
+        }
+
+        inline void c(matrix<std::complex<double> >& a, const future< std::complex<double> >& t){
+            __A_TIME_C("ambient_scale_c_kernel"); 
+            T* ad = ui_c_current(a);
+            T* ar = ui_w_updated(a);
+            int size = ui_c_get_dim(a).square();
+            for(int k=0; k < size; k++) 
+                ar[k] = ad[k] * t.get_value();
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct scale_inverse : public kernel< scale_inverse<T> > 
+    { // gs
+        typedef void (scale_inverse::*F)(matrix<T>&, const future<T>&);
+
+        inline void l(matrix<T>& a, const future<T>& t){
+            this->ctxt_select("1 from ambient as scale_inverse"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(matrix<double>& a, const future<double>& t){
+            __A_TIME_C("ambient_scale_inverse_c_kernel"); 
+            T* ar = ui_r_updated(a);
+            int size = ui_c_get_dim(a).square();
+            static const int ONE = 1;
+            double factor = 1. / t.get_value();
+            dscal_( &size, &factor, ar, &ONE );
+            __A_TIME_C_STOP
+        }
+
+        inline void c(matrix<std::complex<double> >& a, const future< std::complex<double> >& t){
+            __A_TIME_C("ambient_scale_inverse_c_kernel"); 
+            T* ad = ui_c_current(a);
+            T* ar = ui_w_updated(a);
+            int size = ui_c_get_dim(a).square();
+            for(int k=0; k < size; k++) 
+                ar[k] = ad[k] / t.get_value();
+            __A_TIME_C_STOP
+        }
+    };
+
+    template<typename T>
+    struct transpose_out : public kernel< transpose_out<T> > 
+    { // gs
+        typedef void (transpose_out::*F)(const matrix<T>&, weak_view<T>&);
+
+        inline void l(const matrix<T>& a, weak_view<T>& t){
+            this->ctxt_select("1 from ambient as transpose_out"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(t));
+        }
+
+        inline void c(const matrix<T>& a, weak_view<T>& t){
             __A_TIME_C("ambient_transpose_out_c_kernel"); 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
-            T* od = ui_c_current(a)(x,y);
+            T* od = ui_c_current(a);
+            T* td = ui_w_updated(t);
+            int m = ui_c_get_dim(a).y;
+            int n = ui_c_get_dim(a).x;
 
-            size_t sizey = __a_get_limit_y(a, m);
-            size_t sizex = __a_get_limit_x(a, n);
-            size_t mlda = ui_c_get_mem_dim(a).y;
-            size_t tlda = ui_c_get_mem_dim(t).y;
+            for(int i = 0; i < m; i++){
+                for(int j = 0; j < n; j++) *td++ = od[j*m];
+                od++;
+            }
+            __A_TIME_C_STOP
+        }
+    };
 
-            size_t txx = y*ui_c_get_mem_dim(a).y;
-            size_t tyy = x*ui_c_get_mem_dim(a).x;
+    template<typename T>
+    struct resize : public kernel< resize<T> > 
+    {
+        typedef void (resize::*F)(weak_view<T>&, const matrix<T>&, const size_t&, const size_t&);
 
-            for(size_t j=0; j < sizex; ++j){
-                for(size_t i = 0; i < sizey; ++i){
-                    T* td = ui_w_updated(t)((txx+i) / ui_c_get_mem_dim(t).x, (tyy+j) / ui_c_get_mem_dim(t).y);
-                    size_t ti = (tyy+j) % ui_c_get_mem_dim(t).y;
-                    size_t tj = (txx+i) % ui_c_get_mem_dim(t).x;
-                    td[ti+tj*tlda] = od[i+j*mlda];
-                }
+        inline void l(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
+            this->ctxt_select("1 from ambient as resize"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(r));
+        }
+
+        inline void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
+            __A_TIME_C("ambient_resize_c_kernel"); 
+            __a_memptf_r<T, __a_memcpy>(ui_r_updated(r), ui_c_get_dim(r).y, dim2(0,0), 
+                                               ui_c_current(a), ui_c_get_dim(a).y, dim2(0,0), dim2(n, m)); 
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct init_identity : public kernel< init_identity<T> > 
+    {
+        typedef void (init_identity::*F)(weak_view<T>&);
+
+        inline void l(weak_view<T>& a){
+            this->ctxt_select("1 from ambient as init_identity"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(weak_view<T>& a){
+            __A_TIME_C("ambient_init_identity_c_kernel"); 
+            size_t n = ui_c_get_dim(a).x;
+            size_t m = ui_c_get_dim(a).y;
+            T* ad = ui_r_updated(a);
+
+            size_t sizex = std::min(m,n); // respecting borders
+            for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
+            __A_TIME_C_STOP
+        }
+    };
+       
+    template<typename T>
+    struct init_random : public kernel< init_random<T> > 
+    {
+        typedef void (init_random::*F)(weak_view<T>&);
+     
+        template<typename T> inline void randomize(T* ad){ *ad = drand48(); }
+        template<typename T> inline void randomize(std::complex<T>* ad){
+            ad->real(drand48());
+            ad->imag(drand48());
+        }
+
+        inline void l(weak_view<T>& a){
+            this->ctxt_select("1 from ambient as init_random"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+        
+        inline void c(weak_view<T>& a){
+            __A_TIME_C("ambient_init_random_c_kernel"); 
+            size_t m = ui_c_get_dim(a).y;
+            size_t n = ui_c_get_dim(a).x;
+            T* ad = ui_w_updated(a);
+          
+            for(size_t jj = 0; jj < n; jj++){
+                for(size_t ii = 0; ii < m; ii++)
+                    randomize((ad+(jj*m+ii)));
             }
             __A_TIME_C_STOP
         }
@@ -704,127 +798,116 @@
     template<typename T>
     struct init_value : public kernel< init_value<T> > 
     {
-        typedef void (init_value::*F)(matrix_impl<T>&, const size_t&, const size_t&, const T&);
+        typedef void (init_value::*F)(weak_view<T>&, const T&);
 
-        inline void l(matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
+        inline void l(weak_view<T>& a, const T& value){
             this->ctxt_select("1 from ambient as init_value"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
+            this->pin(ui_l_current(a));
         }
 
-        inline void c(matrix_impl<T>& a, const size_t& m, const size_t& n, const T& value){
+        inline void c(weak_view<T>& a, const T& value){
             __A_TIME_C("ambient_init_value_c_kernel"); 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
+            T* ad = ui_w_updated(a);
+            size_t m = ui_c_get_dim(a).y;
+            size_t n = ui_c_get_dim(a).x;
         
-            T* ad = ui_w_updated(a)(x,y);
-            size_t sizey = __a_get_limit_y(a, m);
-            size_t sizex = __a_get_limit_x(a, n);
-        
-            for(size_t j=0; j < sizex; ++j){
-                for(size_t i = 0; i < sizey; ++i){
-                    ad[i+j*ui_c_get_mem_dim(a).y] = value; // not a memset due to complex
+            for(size_t j=0; j < n; ++j){
+                for(size_t i = 0; i < m; ++i){
+                    ad[i+j*m] = value; // not a memset due to complex
                 }
             }
             __A_TIME_C_STOP
         }
     };
-       
+        
     template<typename T>
-    struct init_random : public kernel< init_random<T> > 
+    struct round_square : public kernel< round_square<T> > 
     {
-        typedef void (init_random::*F)(matrix_impl<T>&, const size_t&, const size_t&);
-     
-        template<typename T> inline void randomize(T* ad){ *ad = drand48(); }
-        template<typename T> inline void randomize(std::complex<T>* ad){
-            ad->real(drand48());
-            ad->imag(drand48());
+        typedef void (round_square::*F)(const matrix<T>&, std::vector<T>*&);
+
+        inline void l(const matrix<T>& a, std::vector<T>*& ac){
+            this->ctxt_select("* from ambient as round_square"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
         }
 
-        inline void l(matrix_impl<T>& a, const size_t& m, const size_t& n){
-            this->ctxt_select("1 from ambient as init_random"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
-        }
-        
-        inline void c(matrix_impl<T>& a, const size_t& m, const size_t& n){
-            __A_TIME_C("ambient_init_random_c_kernel"); 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
-            size_t ld = ui_c_get_mem_dim(a).y;
-            size_t sd = ui_c_get_mem_dim(a).x;
-            T* ad = ui_w_updated(a)(x,y);
-            size_t sizey = __a_get_limit_y(a, m);
-            size_t sizex = __a_get_limit_x(a, n);
-          
-            for(size_t jj = 0; jj < sizex; jj++){
-                for(size_t ii = 0; ii < sizey; ii++)
-                    randomize((ad+(jj*ld+ii)));
+        inline void c(const matrix<T>& a, std::vector<T>*& ac){
+            // gs
+            __A_TIME_C("ambient_round_square_c_kernel"); 
+            T* ad = ui_c_current(a);
+            size_t sizey = ui_c_get_dim(a).y;
+            for(int i=0; i < sizey; i++){
+                double v = std::abs(ad[i]);
+                if(v > 1e-10) ac->push_back(v*v);
             }
+            __A_TIME_C_STOP
+        }
+    };
+
+    template<typename T>
+    struct cast_to_vector : public kernel< cast_to_vector<T> > 
+    {
+        typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix<T>&, const size_t&, const size_t&);
+
+        inline void l(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
+            this->ctxt_select("* from ambient as cast_to_vector"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+        }
+
+        inline void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
+            // gs
+            __A_TIME_C("ambient_cast_to_vector_c_kernel"); 
+            T* ad = ui_c_current(a);
+            for(int j=0; j < n; ++j) memcpy((void*)&(*ac)[j*m],(void*)&ad[j*m], m*sizeof(T));  
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct init_identity : public kernel< init_identity<T> > 
+    struct cast_from_vector : public kernel< cast_from_vector<T> > 
     {
-        typedef void (init_identity::*F)(matrix_impl<T>&, const size_t&, const size_t&);
+        typedef void (cast_from_vector::*F)(const std::vector<T>*&, matrix<T>&, const size_t&, const size_t&, const size_t&);
 
-        inline void l(matrix_impl<T>& a, const size_t& m, const size_t& n){
-            this->ctxt_select("1 from ambient as init_identity"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a);
+        inline void l(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda){
+            this->ctxt_select("1 from ambient as cast_from_vector"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
         }
 
-        inline void c(matrix_impl<T>& a, const size_t& m, const size_t& n){
-            __A_TIME_C("ambient_init_identity_c_kernel"); 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
-            size_t ld = ui_c_get_mem_dim(a).y;
-            size_t sd = ui_c_get_mem_dim(a).x;
-            T* ad = ui_r_updated(a)(x,y);
-            if((y+1)*ld <= x*sd) return;
-            if(y*ld >= (x+1)*sd) return;
-            size_t sizex = std::min(m,n); // respecting borders
-            sizex = std::min(sizex,(x+1)*sd);
-            for(size_t jj = x*sd; jj < sizex; jj++){
-                if(y*ld > jj) continue;
-                if((y+1)*ld <= jj) continue;
-                ad[jj % ld + (jj%sd)*ld] = 1.;
-            }
-            __A_TIME_C_STOP
+        inline void c(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda){
+            __A_TIME_C("ambient_cast_from_vector_c_kernel"); 
+            T* ad = ui_w_updated(a);
+            for(int j=0; j < n; ++j) memcpy((void*)&ad[j*m],(void*)&(*ac)[j*lda], m*sizeof(T));
+            __A_TIME_C_STOP 
         }
     };
-        
+
     template<typename T>
     struct validation : public kernel< validation<T> > 
     {
-        typedef void (validation::*F)(const matrix_impl<T>&, const matrix_impl<T>&, future<int>&);
+        typedef void (validation::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
 
-        inline void l(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){
+        inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
             this->ctxt_select("1 from ambient as validation"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_pin(a); 
-            this->block_2d_cycle_assign(b); 
+            this->pin(ui_l_current(a)); 
+            this->assign(ui_l_current(b)); 
         }
         
-        inline void c(const matrix_impl<T>& a, const matrix_impl<T>& b, future<int>& ret){ // see paper for Reference Dongara 
-            size_t x = ctxt.get_block_id().x;
-            size_t y = ctxt.get_block_id().y;
-            T* ad = ui_c_current(a)(x, y); 
-            T* bd = ui_c_current(b)(x, y); 
-            double res(0.0); 
+        inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
+            T* ad = ui_c_current(a); 
+            T* bd = ui_c_current(b); 
+            double res; 
             double epsilon = std::numeric_limits<double>::epsilon();
-            size_t position_x(0),position_y(0),position_xy(0); 
+            size_t position_xy; 
        
-            for(size_t ii=0; ii < ui_c_get_mem_dim(a).y; ++ii){
-                for(size_t jj=0; jj < ui_c_get_mem_dim(a).x; ++jj){
-                    position_x = x*ui_c_get_mem_dim(a).x+jj;
-                    position_y = y*ui_c_get_mem_dim(a).y+ii;
-                    if(position_x < std::min(ui_c_get_dim(a).x,ui_c_get_dim(b).x) && 
-                       position_y < std::min(ui_c_get_dim(a).y,ui_c_get_dim(b).y)  )
+            for(size_t ii=0; ii < ui_c_get_dim(a).y; ++ii){
+                for(size_t jj=0; jj < ui_c_get_dim(a).x; ++jj){
+                    if(jj < std::min(ui_c_get_dim(a).x,ui_c_get_dim(b).x) && 
+                       ii < std::min(ui_c_get_dim(a).y,ui_c_get_dim(b).y)  )
                     {
-                        position_xy = jj*ui_c_get_mem_dim(a).y+ii;
+                        position_xy = jj*ui_c_get_dim(a).y+ii;
                         res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
                         if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
-                            std::cout << position_y << " " << position_x << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
-                            ret.get_value() = 0; // test failed return 0 (bool false)
+                            std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
+                            ret.get_value() = false; // test failed return 0 (bool false)
                         }
                     }
                 }
@@ -835,137 +918,206 @@
     // {{{ MKL LAPACK kernels
 
     template<typename T>
-    struct svd : public kernel_unpinned< svd<T> > 
+    struct svd : public kernel< svd<T> > 
     {
-        typedef void (svd::*F)(const matrix_impl<T>&, int&, int&, int&, matrix_impl<T>&, 
-                          matrix_impl<T>&, matrix_impl<double>&);
+        typedef void (svd::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&, weak_view<double>&);
 
-        inline void l(const matrix_impl<T>& a, int& m, int& n, int& k, matrix_impl<T>& u, 
-                      matrix_impl<T>& vt, matrix_impl<double>& s)
+        inline void l(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s)
         {
             this->ctxt_select("1 from ambient as svd"); //if(!ctxt.involved()) return;
-            this->block_outright_conditional_assign(s);
-            this->block_2d_cycle_conditional_assign(a);
-            this->block_2d_cycle_conditional_assign(u);
-            this->block_2d_cycle_conditional_assign(vt);
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(s));
+            this->assign(ui_l_current(u));
+            this->assign(ui_l_current(vt));
         }
 
-        inline void c(const matrix_impl<T>& a, int& m, int& n, int& k, matrix_impl<T>& u, 
-                     matrix_impl<T>& vt, matrix_impl<double>& s)
-        {
-            // gs
+        inline void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s)
+        { // gs
             __A_TIME_C("ambient_svd_c_kernel"); 
-        // Locals //
-            int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
-            int ldu = ui_c_get_grid_dim(u).y*ui_c_get_mem_dim(u).y;
-            int ldvt = ui_c_get_grid_dim(vt).y*ui_c_get_mem_dim(vt).y;
-            int info, lwork;
+            int m = ui_c_get_dim(a).y;
+            int n = ui_c_get_dim(a).x;
+            int k = std::min(m,n);
+            int info;
+            int lwork = -1; // C - Alex, netlib said -1 for the best workspace
             T wkopt;
+            T* ad  = ui_c_current(a);
+            T* ud  = ui_r_updated(u);
+            T* vtd = ui_r_updated(vt);
+            double* sd  = ui_r_updated(s);
+            double* rwork; // = new double[5*m]; // C - useless for double but need for complex 
             T* work;
-            double* rwork = new double[5*std::min(lda,ldu)]; // C - useless for double but need for complex 
-            T* ad  = (T*)__a_solidify<T>(a);
-            T* ud  = (T*)__a_solidify<T>(u);
-            T* vtd = (T*)__a_solidify<T>(vt);
-            double* sd = (double*)__a_solidify<T>(s);
-            
-        // Query and allocate the optimal workspace //
-            lwork = -1; // C - Alex, netlib said -1 for the best workspace
-            gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, &wkopt, &lwork, rwork, &info );
+            gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, rwork, &info ); // query and allocate the optimal workspace
             lwork = OptimalSize(wkopt);
             work = (T*)malloc( lwork*sizeof(T) );
-        // Compute SVD //
-            gesvd( "S", "S", &m, &n, ad, &lda, sd, ud, &ldu, vtd, &ldvt, work, &lwork, rwork, &info );
-        // Check for convergence //
-            assert( info == 0 ); // otherwise the algorithm computing SVD failed to converge
-            __a_disperse<T>(ud, u);
-            __a_disperse<T>(vtd, vt);
-            __a_disperse<T>(sd, s);
+            gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, work, &lwork, rwork, &info );   // compute SVD
+            assert( info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
             free(work);
             __A_TIME_C_STOP
         }
     };
-        
-    template<typename T>
-    struct syev : public kernel_unpinned< syev<T> > 
-    {
-        typedef void (syev::*F)(matrix_impl<T>&, int&, matrix_impl<T>&);
 
-        inline void l(matrix_impl<T>& a, int& m, matrix_impl<T>& w){
-            this->ctxt_select("1 from ambient as syev"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_conditional_assign(a);
-            this->block_2d_cycle_conditional_assign(w);
+    template<typename T>
+    struct qr : public kernel< qr<T> > 
+    {
+        typedef void (qr::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
+
+        inline void l(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r)
+        {
+            this->ctxt_select("1 from ambient as qr"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(q));
+            this->assign(ui_l_current(r));
         }
 
-        inline void c(matrix_impl<T>& a, int& m, matrix_impl<T>& w){
-            __A_TIME_C("ambient_syev_c_kernel"); 
-            int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
-            int info, lwork = -1;
-            double wkopt;
-            double* work;
-            double* ad = (double*)__a_solidify<T>(a);
-            double* wd = (double*)__a_solidify<T>(w);
+        inline void c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r)
+        { // gs
+            __A_TIME_C("ambient_qr_c_kernel"); 
+            int m = ui_c_get_dim(a).y; //numrow a
+            int n = ui_c_get_dim(a).x; //numcol a, numcol r
+            int k = std::min(m,n); //numrow r
+            int info;
+            int lwork = -1; 
+            T wkopt;
+            T* tau = (T*)malloc(k*sizeof(T));
+            T* ad  = ui_c_current(a);
+            T* qd  = ui_w_updated(q);
+            T* rd = ui_p_updated(r);
+            T* work;
+            T* more_work;
+            T  kwork;
+
+            geqrf(&m, &n, ad, &m, tau, &kwork, &lwork, &info);
+            lwork = OptimalSize(kwork);
+            work = (T*)malloc( lwork*sizeof(T) );
+            geqrf(&m, &n, ad, &m, tau, work, &lwork, &info);
+            assert( info == 0 );
+
+            for (std::size_t c = 0; c < n; ++c)
+                for (std::size_t r = 0; r <= c && r < k; ++r)
+                    rd[r+k*c] = ad[r+m*c]; 
+
+            lwork = -1;
+
+            getq_qr(&m, &k, &k, ad, &m, tau, &kwork, &lwork, &info);
+
+            lwork = OptimalSize(kwork);
+            more_work = (T*)malloc( lwork*sizeof(T) );
+            getq_qr(&m, &k, &k, ad, &m, tau, more_work, &lwork, &info);
+            assert( info == 0 ); 
              
-            dsyev_("V","U",&m,ad,&lda,wd,&wkopt,&lwork,&info);
-            lwork = (int)wkopt;
-            work = (double*)malloc( lwork*sizeof(double) );
-            dsyev_("V","U",&m,ad,&lda,wd,work,&lwork,&info);
-            assert( info == 0 ); // otherwise the algorithm computing SYEV failed to converge
-            __a_disperse<T>(ad, a);
-            __a_disperse<T>(wd, w);
-            free(work); 
+            memcpy((void*)qd, (void*)ad, k*ui_c_get_dim(a).y*sizeof(T)); // l 235 
+
+            free(work);
+            free(more_work);
+            free(tau);
+
             __A_TIME_C_STOP
         }
     };
         
     template<typename T>
-    struct heev : public kernel_unpinned< heev<T> > 
+    struct lq : public kernel< lq<T> > 
     {
-        typedef void (heev::*F)(matrix_impl<T>&, const size_t&, matrix_impl<double>&);
+        typedef void (lq::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
 
-        inline void l(matrix_impl<T>& a, const size_t& m, matrix_impl<double>& w){
-            this->ctxt_select("1 from ambient as heev"); //if(!ctxt.involved()) return;
-            this->block_2d_cycle_conditional_assign(a);
-            this->block_2d_cycle_conditional_assign(w); // C - block_outright(w) is possible, if yes remove solidify and disperse for w 
+        inline void l(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q)
+        {
+            this->ctxt_select("1 from ambient as lq"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(l));
+            this->assign(ui_l_current(q));
         }
 
-        inline void c(matrix_impl<T>& a, const size_t& m, matrix_impl<double>& w){
+        inline void c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q)
+        { // gs
+            __A_TIME_C("ambient_lq_c_kernel"); 
+            int m = ui_c_get_dim(a).y; //numrow a, numrow l
+            int n = ui_c_get_dim(a).x; //numcol a
+            int k = std::min(m,n); //numcol l
+            int info;
+            int lwork = -1; 
+            T wkopt;
+            T* tau = (T*)malloc(k*sizeof(T));
+            T* ad  = ui_c_current(a);
+            T* ld  = ui_p_updated(l);
+            T* qd  = ui_w_updated(q);
+            T* work;
+            T* more_work;
+            T  kwork;
+
+            gelqf(&m, &n, ad, &m, tau, &kwork, &lwork, &info);
+            lwork = OptimalSize(kwork);
+            work = (T*)malloc( lwork*sizeof(T) );
+            gelqf(&m, &n, ad, &m, tau, work, &lwork, &info);
+            assert( info == 0 );
+
+            for (std::size_t c = 0; c < k; ++c)
+                for (std::size_t r = c; r < m ;++r)
+                    ld[r+m*c] = ad[r+m*c]; 
+
+            lwork = -1;
+            getq_lq(&k, &n, &k, ad, &m, tau, &kwork, &lwork, &info);
+
+            lwork = OptimalSize(kwork);
+            more_work = (T*)malloc( lwork*sizeof(T) );
+
+            getq_lq(&k, &n, &k, ad, &m, tau, more_work, &lwork, &info);
+            assert( info == 0 ); 
+
+            for (std::size_t c = 0; c < n; ++c)
+                for (std::size_t r = 0; r < k ;++r)
+                    qd[r+k*c] = ad[r+m*c]; 
+
+            free(work);
+            free(more_work);
+            free(tau);
+
+            __A_TIME_C_STOP
+        }
+    };
+
+    template<typename T>
+    struct heev : public kernel< heev<T> > 
+    {
+        typedef void (heev::*F)(matrix<T>&, weak_view<double>&);
+
+        inline void l(matrix<T>& a, weak_view<double>& w){
+            this->ctxt_select("1 from ambient as heev"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(a));
+            this->assign(ui_l_current(w));
+        }
+
+        inline void c(matrix<T>& a, weak_view<double>& w){
             // gs
             __A_TIME_C("ambient_heev_c_kernel"); 
-            int lda = ui_c_get_grid_dim(a).y*ui_c_get_mem_dim(a).y;
+            int m = ui_c_get_dim(a).y;
             int info, lwork = -1;
-        
             double wkopt;
             double* work;
-            int am = (int)m; // for mkl (int*)
-        
-            double* ad = (double*)__a_solidify<double>(a);
-            double* wd = (double*)__a_solidify<double>(w);
-       
-            dsyev_("V","U",&am,ad,&lda,wd,&wkopt,&lwork,&info);
+            double* ad = (double*)__a_solidify(ui_c_current(a), ui_c_get_mem_size(a));
+            double* wd = (double*)__a_solidify(ui_c_current(w), ui_c_get_mem_size(w));
+
+            dsyev_("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
             work = (double*)malloc( lwork*sizeof(double) );
-            dsyev_("V","U",&am,ad,&lda,wd,work,&lwork,&info);
-            assert(info == 0); // otherwise the algorithm computing HEEV failed to converge
-            
-            // First we reverse the eigenvalues, to be in agreement with the serial version ! 
-            // The matrix is solidified, so we do not care on the workgroup representation
-            double tempdbl;
-            for (int i=0; i< static_cast<int>(m/2); i++){ 
-                tempdbl = wd[i];
+            dsyev_("V","U",&m,ad,&m,wd,work,&lwork,&info);
+            assert( info == 0 ); // otherwise the algorithm computing SYEV failed to converge
+            // First we reverse the eigenvalues, to be coherent with the serial version ! 
+            for(int i=0; i < (int)(m/2); i++){ 
+                wkopt = wd[i];
                 wd[i] = wd[m-i-1];
-                wd[m-i-1] = tempdbl;
+                wd[m-i-1] = wkopt;
             } 
             // Second we reverse the eigenvectors
-            double* tempcol = new double[lda]; 
-            for (int i=0; i< static_cast<int>(m/2); ++i){ 
-                memmove((void*)tempcol,(void*)&ad[i*lda],lda*sizeof(double));
-                memmove((void*)&ad[i*lda],(void*)&ad[(m-1-i)*lda],lda*sizeof(double));
-                memmove((void*)&ad[(m-1-i)*lda],(void*)tempcol,lda*sizeof(double));
+            size_t len = m*sizeof(double);
+            work = (double*)realloc(work, len);
+            for (int i=0; i < (int)(m/2); i++){ 
+                memcpy(work, &ad[i*m], len);
+                memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
+                memcpy(&ad[(m-1-i)*m], work, len);
             }
-            delete[] tempcol; 
-         
-            __a_disperse<double>(ad, a);
-            __a_disperse<double>(wd, w);
+            __a_disperse(ad, ui_w_updated(a), ui_c_get_mem_size(a));
+            __a_disperse(wd, ui_w_updated(w), ui_c_get_mem_size(w));
             free(work);
             __A_TIME_C_STOP
         }
@@ -973,5 +1125,10 @@
 
     // }}}
 
-} } }*/
+#undef ui_l_current
+#undef ui_c_current
+#undef ui_w_updated
+#undef ui_p_updated
+#undef ui_r_updated
+} } }
 #endif
