@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Exp, T, test_types)
     sDiagMatrix sA(T::valuex,0);
 
     pA.get_data().fill_random();
-    sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA);
 
     sA = exp(sA);
     pA = exp(pA);

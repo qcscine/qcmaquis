@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
     sMatrix sA(T::valuex,T::valuey);
 
     generate(sA,Rd); // Rd is rand generator static variable inside utilities
-    pA = maquis::bindings::matrix_cast<pMatrix>(sA); // playout is inside the cast
+    pA = maquis::bindings::matrix_cast<pMatrix>(sA);
 
     pA(accessx,accessy) = 3;
     sA(accessx,accessy) = 3;
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
     typename T::dbl x,y;
     pMatrix pA = pMatrix::identity_matrix(T::valuex);
     sMatrix sA = sMatrix::identity_matrix(T::valuex);
-    ambient::playout();
+    ambient::sync();
    
     x = trace(pA);
     y = trace(sA);

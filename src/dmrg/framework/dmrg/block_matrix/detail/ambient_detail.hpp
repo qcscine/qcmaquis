@@ -87,7 +87,7 @@ namespace maquis { namespace dmrg { namespace detail {
             std::vector<T>* v_ptr = &r[k];
             ambient::numeric::kernels::round_square<T>::spawn(set[k], v_ptr);
         }
-        ambient::playout();
+        ambient::sync();
 
         std::vector<double> ret;
         for(std::size_t k = 0; k < set.n_blocks(); ++k)

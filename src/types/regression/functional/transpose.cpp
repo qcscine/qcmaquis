@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Transpose, T, test_types)
 
     pA.fill_random();
 
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
 
     ptA = transpose(pA); 
     stA = transpose(sA); 

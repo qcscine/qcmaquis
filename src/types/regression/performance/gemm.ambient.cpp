@@ -33,16 +33,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     pA.fill_random();
     pB.fill_random();
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA); // playout is inside the cast
-    sB = maquis::traits::matrix_cast<sMatrix>(pB); // playout is inside the cast
-    ambient::playout();
+    sA = maquis::traits::matrix_cast<sMatrix>(pA);
+    sB = maquis::traits::matrix_cast<sMatrix>(pB);
+    ambient::sync();
 
     using maquis::types::NoTranspose;
     ambient::numeric::gemm<NoTranspose,NoTranspose>(pA, pB, pC); 
 
     __a_timer time("ambient");
     time.begin();
-    ambient::playout();
+    ambient::sync();
     time.end();
 
     report(time, GFlopsGemm, x, y, nthreads);

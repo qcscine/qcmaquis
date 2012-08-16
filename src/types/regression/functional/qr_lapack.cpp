@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 
 
     pA.fill_random();
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
  
     qr(pA,pQ,pR);
     qr(sA,sQ,sR);

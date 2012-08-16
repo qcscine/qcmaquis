@@ -214,12 +214,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline value_type& matrix<T>::operator() (size_type i, size_type j){
-        ambient::playout(); return ((value_type*)ambient::controller.ufetch(*this->impl->current))[ j*this->impl->spec.dim.y + i ];
+        ambient::sync(); return ((value_type*)ambient::controller.ufetch(*this->impl->current))[ j*this->impl->spec.dim.y + i ];
     }
 
     template<typename T>
     inline const value_type& matrix<T>::operator() (size_type i, size_type j) const {
-        ambient::playout(); return ((value_type*)ambient::controller.ufetch(*this->impl->current))[ j*this->impl->spec.dim.y + i ];
+        ambient::sync(); return ((value_type*)ambient::controller.ufetch(*this->impl->current))[ j*this->impl->spec.dim.y + i ];
     }
 
     template<typename T>

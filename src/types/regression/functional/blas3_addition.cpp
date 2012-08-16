@@ -21,9 +21,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     pA.fill_random();
     pB.fill_random();
 
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
-    sB = maquis::bindings::matrix_cast<sMatrix>(pB); // playout is inside the cast
-    sC = maquis::bindings::matrix_cast<sMatrix>(pC); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    sB = maquis::bindings::matrix_cast<sMatrix>(pB);
+    sC = maquis::bindings::matrix_cast<sMatrix>(pC);
 
     sC = sA + sB;
     pC = pA + pB; 
@@ -42,8 +42,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition_assign, T, test_types)
     pA.fill_random();
     pB.fill_random();
 
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA); // playout is inside the cast
-    sB = maquis::bindings::matrix_cast<sMatrix>(pB); // playout is inside the cast
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    sB = maquis::bindings::matrix_cast<sMatrix>(pB);
  
     sA += sB; 
     pA += pB; 
