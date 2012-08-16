@@ -33,18 +33,23 @@
 
 #include "vli/vli_cpu.h"
 #include "vli/vli_traits.hpp"
+#include "vli/vli_config.h"
 #include "vli/polynomial/monomial.hpp"
+#include "vli/polynomial/polynomial.hpp"
 
-#include "regression/vli_test.hpp"
+#include "utils/tools.h"
 
-using vli::vli_cpu;
-using vli::max_int_value;
+using tools::fill_random;
 using vli::monomial;
 
-using vli::test::fill_random;
+typedef boost::mpl::list< vli::vli_cpu <unsigned long int, 2>,
+                          vli::vli_cpu <unsigned long int, 3>, 
+                          vli::vli_cpu <unsigned long int, 4>, 
+                          vli::vli_cpu <unsigned long int, 5>, 
+                          vli::vli_cpu <unsigned long int, 6>, 
+                          vli::vli_cpu <unsigned long int, 7> 
+                        > vli_extented_type;
 
-typedef vli::test::vli_cpu_type_list vli_types;
-typedef vli::test::vli_cpu_type_extented_list vli_extented_type;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE ( constructor, Vli, vli_extented_type )
 {
