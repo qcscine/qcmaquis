@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
     densop.insert_block(matrix(1,1,1), 1,1);
     densop.insert_block(matrix(1,1,2), 2,2);
     
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
+    block_matrix<matrix, SymmGroup> ident = identity_matrix(block_matrix<matrix,SymmGroup>(),phys);
     
     default_mps_init<matrix, SymmGroup> initializer;
     
