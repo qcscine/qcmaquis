@@ -64,7 +64,8 @@ typename MPS<Matrix, SymmGroup>::value_type const & MPS<Matrix, SymmGroup>::oper
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](size_t i)
 {
-    canonized_i=std::numeric_limits<size_t>::max();
+    if (i != canonized_i)
+        canonized_i=std::numeric_limits<size_t>::max();
     return data_[i];
 }
 
