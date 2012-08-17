@@ -428,7 +428,7 @@ public:
         phys.insert(std::make_pair(2, 1));
         
         ident.insert_block(Matrix(1, 1, 1), 0, 0);
-        ident.insert_block(identity_matrix(Matrix(),2), 1, 1);
+        ident.insert_block(Matrix::identity_matrix(2), 1, 1);
         ident.insert_block(Matrix(1, 1, 1), 2, 2);
         
         {Matrix tmp(1,2,0); tmp(0,0)=1; create_up.insert_block(tmp, 0, 1);}
@@ -449,11 +449,11 @@ public:
         doubly_occ.insert_block(Matrix(1, 1, 1), 2, 2);
         
         sign_up.insert_block(Matrix(1, 1, 1), 0, 0);
-        {Matrix tmp=identity_matrix(Matrix(),2); tmp(0,0)=-1; sign_up.insert_block(tmp, 1, 1);}
+        {Matrix tmp=Matrix::identity_matrix(2); tmp(0,0)=-1; sign_up.insert_block(tmp, 1, 1);}
         sign_up.insert_block(Matrix(1, 1, -1), 2, 2);
         
         sign_down.insert_block(Matrix(1, 1, 1), 0, 0);
-        {Matrix tmp=identity_matrix(Matrix(),2); tmp(1,1)=-1; sign_down.insert_block(tmp, 1, 1);}
+        {Matrix tmp=Matrix::identity_matrix(2); tmp(1,1)=-1; sign_down.insert_block(tmp, 1, 1);}
         sign_down.insert_block(Matrix(1, 1, -1), 2, 2);
         
         op_t tmp;
