@@ -121,19 +121,6 @@ typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_p
 }
 
 } // end namespace detail
-/*
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > >::type
-inner_product(
-          vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > const& v1
-        , vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > const& v2
-        ) {
-#ifdef VLI_USE_GPU
-    return detail::inner_product_gpu_helper<Coeff, OrderSpecification, Var0, Var1, Var2, Var3>::inner_product_gpu(v1,v2); // can be pure gpu or hybride cpu omp/gpu
-#else 
-    return detail::inner_product_cpu(v1,v2);// can be pure serial or omp
-#endif
-}*/
 
 template <class Polynomial>
 inline typename inner_product_result_type<vector_polynomial<Polynomial> >::type
