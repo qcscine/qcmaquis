@@ -39,7 +39,8 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::schedule(){
-        for(int i = 0; i < __cilkrts_get_nworkers(); i++){
+        int arity = __cilkrts_get_nworkers();
+        for(int i = 0; i < arity; i++){
             while(!this->stacks[i].end_reached())
                 this->stacks[i].pick()->logistics();
             this->stacks[i].reset();

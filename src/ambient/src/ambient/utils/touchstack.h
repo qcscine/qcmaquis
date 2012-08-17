@@ -20,9 +20,6 @@ namespace ambient{
         inline bool end_reached();
         inline void reset();
         inline void repeat();
-        inline void clear(T);
-        inline void clear();
-        inline void purge();
         inline bool empty();
         inline size_t size();
         inline void sort();

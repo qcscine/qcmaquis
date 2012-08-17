@@ -52,10 +52,9 @@ namespace ambient {
         virtual void computation() {        kernel_inliner<typename K::F,&K::c>::invoke((K*)this); 
                                      return kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
         virtual void logistics()   { return kernel_inliner<typename K::F,&K::l>::invoke((K*)this); }
-        inline void ctxt_select(const char* sql){ 
-            this->set_group(channel.world()); 
-        }
+
         inline void pin(revision& r){
+            this->set_group(channel.world()); 
             ambient::controller.ifetch(r);
             ambient::controller.schedule(this);
         }
