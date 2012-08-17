@@ -384,11 +384,11 @@ void generate(block_matrix<Matrix, SymmGroup> & m, Generator & g)
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
+block_matrix<Matrix, SymmGroup> identity_matrix(block_matrix<Matrix, SymmGroup> dummy, Index<SymmGroup> const & size)
 {
     block_matrix<Matrix, SymmGroup> ret(size, size);
     for (std::size_t k = 0; k < ret.n_blocks(); ++k)
-        ret[k] = Matrix::identity_matrix(size[k].second);
+        ret[k] = identity_matrix(Matrix(),size[k].second);
     return ret;
 }
 
@@ -443,7 +443,7 @@ block_matrix<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
         if (M.has_block(it_c->first, it_c->first))
             M(it_c->first, it_c->first) = exp(M(it_c->first, it_c->first), alpha);
         else
-            M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
+            M.insert_block(identity_matrix(Matrix(),phys.size_of_block(it_c->first)),
                            it_c->first, it_c->first);
     return M;
 }
