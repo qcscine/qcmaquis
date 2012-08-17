@@ -14,7 +14,7 @@
 
 #include "tools.h"
 
-#define Size_vec 128
+#define Size_vec 16384
 #define Order 10
 #define Size_vli 3
 
@@ -65,7 +65,7 @@ typedef boost::mpl::vector<polynomial_type_each_x,
        #ifdef VLI_USE_GPU
        Timer t1("GPU ");
        t1.begin();
-       p2_res =  detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
+       p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
        t1.end();
       
        if(p1_res == p2_res) 
