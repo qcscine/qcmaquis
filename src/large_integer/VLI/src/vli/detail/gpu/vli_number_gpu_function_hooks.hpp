@@ -3,6 +3,7 @@
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
+*Maxim Milakov – NVIDIA
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -47,21 +48,21 @@ namespace vli {
     //????_assign functions
     template <class BaseInt, std::size_t Size>
     void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2){
-        //if one day I success to remove branching ....
+    //if one day I success to remove branching ....
 	unsigned int sign = (c1[Size-1]>>31) ^ (c2[Size-1]>>31);
 
 	if(c1[Size-1] >> 31 != 0) // 31 because uint , 63 a day if ulint
-             neg<BaseInt, Size>(c1);
+       neg<BaseInt, Size>(c1);
 
 	if(c2[Size-1] >> 31 != 0)
-             neg<BaseInt, Size>(c2);
+       neg<BaseInt, Size>(c2);
 
-        mul<BaseInt, 2*Size>(res1,c1,c2);
+       mul<BaseInt, 2*Size>(res1,c1,c2);
 
 	if(sign != 0)
-             neg<BaseInt, 2*Size>(res1);
+       neg<BaseInt, 2*Size>(res1);
 
-        add<BaseInt, 2*Size>(res,res1);
+    add<BaseInt, 2*Size>(res,res1);
     }
     
     /* ---------------------------------------------------- Begin Addition specialization ---------------------------------------------------- */

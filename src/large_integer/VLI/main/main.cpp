@@ -14,7 +14,7 @@
 
 #include "tools.h"
 
-#define Size_vec 1024
+#define Size_vec 128
 #define Order 10
 #define Size_vli 3
 
@@ -37,7 +37,7 @@ typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<
 typedef boost::mpl::vector<polynomial_type_each_x,
                            polynomial_type_each_xy,
                            polynomial_type_each_xyz,
-                           //polynomial_type_each_xyzw, // buffer too large
+                           //polynomial_type_each_xyzw, // buffer too large cpu/gpu
                            polynomial_type_combined_x,
                            polynomial_type_combined_xy,
                            polynomial_type_combined_xyz,
@@ -61,16 +61,18 @@ typedef boost::mpl::vector<polynomial_type_each_x,
        t0.begin();
        p1_res = vli::detail::inner_product_cpu(v1,v2);
        t0.end();
-      
+    
+       #ifdef VLI_USE_GPU
        Timer t1("GPU ");
        t1.begin();
-       p2_res = vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
+       p2_res =  detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
        t1.end();
       
        if(p1_res == p2_res) 
            printf("OK gpu \n"); 
        else
-           printf("NO OK \n");  
+           printf("NO OK gpu \n");
+       #endif
        }
    };
    
