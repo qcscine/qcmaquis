@@ -28,13 +28,13 @@ void ng()
     maquis::cout << "Norm after normalization: " << mps.scalar_norm() << std::endl;
     
     MPSTensor<Matrix, grp> mps2 = mps;
-    block_matrix<Matrix, grp> left = identity_matrix(block_matrix<Matrix,grp>(),mps.row_dim());
+    block_matrix<Matrix, grp> left = identity_matrix<Matrix, grp>(mps.row_dim());
     left = contraction::overlap_left_step(mps, mps2, left);
     maquis::cout << left << std::endl;
     
     mps.normalize_right(SVD);
     mps2 = mps;
-    block_matrix<Matrix, grp> right = identity_matrix(block_matrix<Matrix,grp>(),mps.row_dim());
+    block_matrix<Matrix, grp> right = identity_matrix<Matrix, grp>(mps.row_dim());
     right = contraction::overlap_right_step(mps, mps2, right);
     maquis::cout << right << std::endl;
     
@@ -101,7 +101,7 @@ void u1()
     mps.normalize_left(SVD);
     mps2 = mps;
     Boundary<Matrix, grp> mleft(mps.row_dim(), mps.row_dim(), 1);
-    mleft.data_[0] = identity_matrix(block_matrix<Matrix,grp>(),mps.row_dim());
+    mleft.data_[0] = identity_matrix<Matrix, grp>(mps.row_dim());
 //    maquis::cout << mleft.data_[0] << std::endl;
 //    mleft = contraction::overlap_mpo_left_step(mps, mps2, mleft, splus);
 //    maquis::cout << mleft.data_[0] << std::endl;
@@ -109,11 +109,11 @@ void u1()
     mps.normalize_right(SVD);
     mps2 = mps;
     
-    mleft.data_[0] = identity_matrix(block_matrix<Matrix,grp>(),mps.col_dim());
+    mleft.data_[0] = identity_matrix<Matrix, grp>(mps.col_dim());
     mleft.data_[0] = contraction::overlap_right_step(mps, mps2, mleft.data_[0]);
     maquis::cout << mleft.data_[0] << std::endl;
     
-    mleft.data_[0] = identity_matrix(block_matrix<Matrix,grp>(),mps.col_dim());
+    mleft.data_[0] = identity_matrix<Matrix, grp>(mps.col_dim());
     mleft = contraction::overlap_mpo_right_step(mps, mps2, mleft, ident);
     maquis::cout << mleft.data_[0] << std::endl;
 }

@@ -145,10 +145,10 @@ public:
                 size_t bsize = converter[type].block_size(i);
                 // maquis::cout << "Inserting " << c << " for " << states[i] << std::endl;
                 if (!tident[type].has_block(c, c))
-                    tident[type].insert_block(identity_matrix(Matrix(),bsize), c, c);
+                    tident[type].insert_block(Matrix::identity_matrix(bsize), c, c);
                 int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
                 if (!tfill[type].has_block(c, c))
-                    tfill[type].insert_block(identity_matrix(Matrix(),bsize), c, c);
+                    tfill[type].insert_block(Matrix::identity_matrix(bsize), c, c);
                 tfill[type](converter[type].coords(i), converter[type].coords(i)) = sign;
             }
         }

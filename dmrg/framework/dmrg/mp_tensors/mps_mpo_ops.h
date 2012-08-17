@@ -244,7 +244,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
         maquis::cout << "k2 = " << k2 << std::endl;
         assert( k0 > 0 ); // not always the case!!!
         
-        block_matrix<Matrix, SymmGroup> rescale = identity_matrix(block_matrix<Matrix, SymmGroup>(),phys);
+        block_matrix<Matrix, SymmGroup> rescale = identity_matrix<Matrix>(phys);
         rescale(empty, empty) *= std::sqrt(k0);
         rescale(up, up) *= std::sqrt(k1);
         rescale(down, down) *= std::sqrt(k2);

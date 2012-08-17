@@ -89,7 +89,7 @@ namespace meas_detail {
         , left_(L)
         , right_(L)
         {
-            ident(0,0) = identity_matrix(block_matrix<Matrix, SymmGroup>(),phys_i);
+            ident(0,0) = identity_matrix<Matrix>(phys_i);
             
             // init right_ & left_
             Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
