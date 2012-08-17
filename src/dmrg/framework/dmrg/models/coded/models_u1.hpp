@@ -196,7 +196,7 @@ class BoseHubbard : public Model<Matrix, U1>
     typedef typename ham::op_t op_t;
     
 public:
-    BoseHubbard (const Lattice& lat, int Nmax=2, double t=1., double U=1.)
+    BoseHubbard (const Lattice& lat, int Nmax=2, double t=1., double U=1., double V=1.)
     {
         phys.insert(std::make_pair(0, 1));
         ident.insert_block(Matrix(1, 1, 1), 0, 0);
@@ -226,9 +226,9 @@ public:
                 terms.push_back(term);
             }
             
-            /* hopping */
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
+                /* hopping */
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
@@ -241,6 +241,14 @@ public:
                     term.fill_operator = ident;
                     term.operators.push_back( std::make_pair(p, -t*destroy) );
                     term.operators.push_back( std::make_pair(neighs[n], create) );
+                    terms.push_back(term);
+                }
+                /* nearest-neighborn interaction */
+                {
+                    hamterm_t term;
+                    term.fill_operator = ident;
+                    term.operators.push_back( std::make_pair(p, V*count) );
+                    term.operators.push_back( std::make_pair(neighs[n], count) );
                     terms.push_back(term);
                 }
             }
