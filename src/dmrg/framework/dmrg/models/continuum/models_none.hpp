@@ -34,7 +34,7 @@ public:
         TrivialGroup::charge c = TrivialGroup::IdentityCharge;
         
         phys.insert(std::make_pair(c, phys_size));
-        ident.insert_block(identity_matrix(Matrix(),phys_size), c, c);
+        ident.insert_block(Matrix::identity_matrix(phys_size), c, c);
         count.insert_block(Matrix(phys_size, phys_size, 0), c, c);
         interaction.insert_block(Matrix(phys_size, phys_size, 0), c, c);
         create.insert_block(Matrix(phys_size, phys_size, 0), c, c);

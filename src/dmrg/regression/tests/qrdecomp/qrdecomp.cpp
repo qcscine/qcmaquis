@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( test )
     phys.insert(std::make_pair(2, 1));
     SymmGroup::charge initc = L/2;
     
-    block_matrix<matrix, SymmGroup> ident = identity_matrix(block_matrix<matrix,SymmGroup>(),phys);
+    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
     default_mps_init<matrix, SymmGroup> initializer;
     
