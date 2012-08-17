@@ -97,8 +97,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void(gemm_general::*F)(const matrix<T>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
-            this->ctxt_select("1 from ambient as gemm_general"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(b));
             this->assign(ui_l_current(c));
         }
@@ -139,9 +138,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(b)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(a_diag));
-            this->pin(ui_l_current(b));
             this->assign(ui_l_current(c));
         }
 
@@ -168,9 +166,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_lhs"); //if(!ctxt.involved()) return;
+            this->pin(ui_l_current(b)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(a_diag));
-            this->pin(ui_l_current(b));
             this->assign(ui_l_current(c));
         }
 
@@ -198,8 +195,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(b_diag));
             this->assign(ui_l_current(c));
         }
@@ -227,8 +223,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            this->ctxt_select("1 from ambient as gemm_diagonal_rhs"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(b_diag));
             this->assign(ui_l_current(c));
         }
@@ -258,8 +253,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void(copy::*F)(weak_view<T>&, const matrix<T>&);
 
         inline void l(weak_view<T>& ac, const matrix<T>& a){
-            this->ctxt_select("1 from ambient as copy"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(ac));
         }
 
@@ -285,8 +279,7 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& ldim1, const size_t& ldim2, 
                       const size_t& rdim1, const size_t& rdim2)
         {
-            this->ctxt_select("1 from ambient as op_kron"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
+            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(in));
             this->assign(ui_l_current(alfa));
         }
@@ -322,8 +315,7 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, 
                       const size_t& ldim, const size_t& rdim)
         {
-            this->ctxt_select("1 from ambient as reshape_l2b"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
+            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(in));
         }
 
@@ -367,8 +359,7 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, 
                       const size_t& ldim, const size_t& rdim)
         {
-            this->ctxt_select("1 from ambient as reshape_b2l"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
+            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(in));
         }
 
@@ -409,8 +400,7 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(right));
+            this->pin(ui_l_current(right)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(left));
         }
 
@@ -440,8 +430,7 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            this->ctxt_select("1 from ambient as reshape_l2r"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(left));
+            this->pin(ui_l_current(left)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(right));
         }
 
@@ -470,8 +459,7 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
+            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(in));
             this->assign(ui_l_current(alfa));
         }
@@ -503,8 +491,7 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            this->ctxt_select("1 from ambient as rb_tensor_mpo"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(out));
+            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(in));
             this->assign(ui_l_current(alfa));
         }
@@ -531,7 +518,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (trace::*F)(const matrix<T>&, future<T>&);
 
         inline void l(const matrix<T>& a, future<T>& trace){
-            this->ctxt_select("* from ambient as trace"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -556,7 +542,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scalar_norm::*F)(const matrix<T>&, future<double>&);
 
         inline void l(const matrix<T>& a, future<double>& norm){
-            this->ctxt_select("* from ambient as scalar_norm"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -574,8 +559,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (overlap::*F)(const matrix<T>&, const matrix<T>&, future<T>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
-            this->ctxt_select("* from ambient as overlap"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(b));
         }
 
@@ -595,8 +579,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (add::*F)(matrix<T>&, const matrix<T>&);
 
         inline void l(matrix<T>& a, const matrix<T>& b){
-            this->ctxt_select("1 from ambient as add"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(b));
         }
 
@@ -620,8 +603,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (sub::*F)(matrix<T>&, const matrix<T>&);
 
         inline void l(matrix<T>& a, const matrix<T>& b){
-            this->ctxt_select("1 from ambient as sub"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(b));
         }
 
@@ -643,7 +625,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scale::*F)(matrix<T>&, const future<T>&);
 
         inline void l(matrix<T>& a, const future<T>& t){
-            this->ctxt_select("1 from ambient as scale"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -673,7 +654,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scale_inverse::*F)(matrix<T>&, const future<T>&);
 
         inline void l(matrix<T>& a, const future<T>& t){
-            this->ctxt_select("1 from ambient as scale_inverse"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -704,8 +684,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (transpose_out::*F)(const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& t){
-            this->ctxt_select("1 from ambient as transpose_out"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(t));
         }
 
@@ -730,8 +709,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (resize::*F)(weak_view<T>&, const matrix<T>&, const size_t&, const size_t&);
 
         inline void l(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
-            this->ctxt_select("1 from ambient as resize"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(r));
         }
 
@@ -749,7 +727,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (init_identity::*F)(weak_view<T>&);
 
         inline void l(weak_view<T>& a){
-            this->ctxt_select("1 from ambient as init_identity"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -777,7 +754,6 @@ namespace ambient { namespace numeric { namespace kernels {
         }
 
         inline void l(weak_view<T>& a){
-            this->ctxt_select("1 from ambient as init_random"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
         
@@ -801,7 +777,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (init_value::*F)(weak_view<T>&, const T&);
 
         inline void l(weak_view<T>& a, const T& value){
-            this->ctxt_select("1 from ambient as init_value"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -826,7 +801,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (round_square::*F)(const matrix<T>&, std::vector<T>*&);
 
         inline void l(const matrix<T>& a, std::vector<T>*& ac){
-            this->ctxt_select("* from ambient as round_square"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -849,7 +823,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix<T>&, const size_t&, const size_t&);
 
         inline void l(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
-            this->ctxt_select("* from ambient as cast_to_vector"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -868,7 +841,6 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (cast_from_vector::*F)(const std::vector<T>*&, matrix<T>&, const size_t&, const size_t&, const size_t&);
 
         inline void l(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda){
-            this->ctxt_select("1 from ambient as cast_from_vector"); //if(!ctxt.involved()) return;
             this->pin(ui_l_current(a));
         }
 
@@ -886,8 +858,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (validation::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
-            this->ctxt_select("1 from ambient as validation"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a)); 
+            this->pin(ui_l_current(a));  //if(!ctxt.involved()) return;
             this->assign(ui_l_current(b)); 
         }
         
@@ -922,17 +893,15 @@ namespace ambient { namespace numeric { namespace kernels {
     {
         typedef void (svd::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&, weak_view<double>&);
 
-        inline void l(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s)
-        {
-            this->ctxt_select("1 from ambient as svd"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+        inline void l(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(s));
             this->assign(ui_l_current(u));
             this->assign(ui_l_current(vt));
         }
 
-        inline void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s)
-        { // gs
+        inline void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
+            // gs
             __A_TIME_C("ambient_svd_c_kernel"); 
             int m = ui_c_get_dim(a).y;
             int n = ui_c_get_dim(a).x;
@@ -961,16 +930,14 @@ namespace ambient { namespace numeric { namespace kernels {
     {
         typedef void (qr::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
 
-        inline void l(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r)
-        {
-            this->ctxt_select("1 from ambient as qr"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+        inline void l(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(q));
             this->assign(ui_l_current(r));
         }
 
-        inline void c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r)
-        { // gs
+        inline void c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
+            // gs
             __A_TIME_C("ambient_qr_c_kernel"); 
             int m = ui_c_get_dim(a).y; //numrow a
             int n = ui_c_get_dim(a).x; //numcol a, numcol r
@@ -1020,16 +987,14 @@ namespace ambient { namespace numeric { namespace kernels {
     {
         typedef void (lq::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
 
-        inline void l(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q)
-        {
-            this->ctxt_select("1 from ambient as lq"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+        inline void l(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(l));
             this->assign(ui_l_current(q));
         }
 
-        inline void c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q)
-        { // gs
+        inline void c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
+            // gs
             __A_TIME_C("ambient_lq_c_kernel"); 
             int m = ui_c_get_dim(a).y; //numrow a, numrow l
             int n = ui_c_get_dim(a).x; //numcol a
@@ -1082,8 +1047,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (heev::*F)(matrix<T>&, weak_view<double>&);
 
         inline void l(matrix<T>& a, weak_view<double>& w){
-            this->ctxt_select("1 from ambient as heev"); //if(!ctxt.involved()) return;
-            this->pin(ui_l_current(a));
+            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
             this->assign(ui_l_current(w));
         }
 

@@ -50,18 +50,6 @@ namespace ambient{
     }
 
     template<typename T>
-    inline void touchstack<T>::clear(){
-        while(ri != wi) delete *ri++;
-        ri = wi = content;
-    }
-
-    template<typename T>
-    inline void touchstack<T>::purge(){
-        while(ri != wi) free(*ri++);
-        ri = wi = content;
-    }
-
-    template<typename T>
     inline bool touchstack<T>::empty(){
         return (wi == content);
     }

@@ -36,6 +36,7 @@
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/future.hpp"
 
+
 namespace ambient{
 
     using models::velvet::history;

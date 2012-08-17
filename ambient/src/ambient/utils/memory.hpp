@@ -4,6 +4,7 @@
 #include "boost/pool/singleton_pool.hpp"
 
 #define BULK_LENGTH 8388608*50
+#define FUTURE_SIZE 16
 
 namespace ambient { namespace utils {
 
@@ -16,9 +17,19 @@ namespace ambient { namespace utils {
              return boost::singleton_pool<empty, sizeof(T)>::malloc();
         }
 
+        template<size_t S>
+        static void* malloc(){
+             return boost::singleton_pool<empty, S>::malloc();
+        }
+
         template<typename T>
         static void free(void* ptr){
              boost::singleton_pool<empty, sizeof(T)>::free(ptr);
+        }
+
+        template<size_t S>
+        static void free(void* ptr){
+             boost::singleton_pool<empty, S>::free(ptr);
         }
     };
 

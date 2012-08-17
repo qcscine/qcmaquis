@@ -31,8 +31,10 @@ namespace ambient{
 
         void clear(){
             for(int i = 0; i < size; i++){
-                str[i].clear();
-                raw[i].purge();
+                while(!str[i].end_reached())
+                    delete str[i].pick();
+                while(!raw[i].end_reached())
+                    ambient::static_memory::free<FUTURE_SIZE>(raw[i].pick());
             }
         }
 

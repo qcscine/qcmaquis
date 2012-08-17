@@ -35,7 +35,7 @@ namespace ambient {
         explicit inline future(const future& f)
         : symlink(false) 
         {
-            ghost = malloc(sizeof(T));
+            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = f.calc_value();
         }
@@ -44,7 +44,7 @@ namespace ambient {
         inline future(const future<S>& f) // can be optimized later
         : symlink(false) 
         {
-            ghost = malloc(sizeof(T));
+            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = (T)f.calc_value();
         }
@@ -74,7 +74,7 @@ namespace ambient {
         inline future(double v)
         : symlink(false)
         {
-            ghost = malloc(sizeof(T));
+            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = v;
         }
@@ -82,7 +82,7 @@ namespace ambient {
         inline future(std::complex<double> v)
         : symlink(false)
         {
-            ghost = malloc(sizeof(T));
+            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = v;
         }
