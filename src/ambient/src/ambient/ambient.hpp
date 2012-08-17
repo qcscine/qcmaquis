@@ -35,21 +35,4 @@
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/future.hpp"
-
-
-namespace ambient{
-
-    using models::velvet::history;
-    using models::velvet::revision;
-    using controllers::velvet::c_revision;
-    using controllers::velvet::w_revision;
-    using controllers::velvet::p_revision;
-    using controllers::velvet::r_revision;
-    using controllers::velvet::cfunctor;
-
-
-    template<typename T> inline dim2   ui_c_get_dim        (T& ref){ return ref.impl->spec.dim;   }
-    template<typename T> inline size_t ui_c_get_mem_size   (T& ref){ return ref.impl->spec.size;  }
-}
-
 #endif
