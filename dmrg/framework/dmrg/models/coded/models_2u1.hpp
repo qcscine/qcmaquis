@@ -17,14 +17,14 @@
 
 /* ****************** FERMI HUBBARD */
 template<class Matrix>
-class TwoU1_FermiHubbard : public Model<Matrix, TwoU1>
+class FermiHubbardTwoU1 : public Model<Matrix, TwoU1>
 {
 public:
     typedef Hamiltonian<Matrix, TwoU1> ham;        
     typedef typename ham::hamterm_t hamterm_t;        
     typedef typename ham::op_t op_t;
     
-    TwoU1_FermiHubbard(const Lattice& lat, BaseParameters & parms)
+    FermiHubbardTwoU1(const Lattice& lat, BaseParameters & parms)
     {
         op_t create_up, create_down, destroy_up, destroy_down;
         op_t count_up, count_down, doubly_occ;
