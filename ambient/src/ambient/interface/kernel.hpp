@@ -45,16 +45,15 @@ namespace ambient {
         
         inline void operator delete (void* ptr){ }
 
-        virtual void place()       { return kernel_inliner<typename K::F,&K::c>::place(this);      }
         virtual bool ready(void* e){ return kernel_inliner<typename K::F,&K::c>::ready(this, e);   }
         virtual bool match(void* t){ return kernel_inliner<typename K::F,&K::c>::match(this, t);   }
-        virtual void tag(void* t)  { return kernel_inliner<typename K::F,&K::c>::tag(this, t);     }
-        virtual void computation() {        kernel_inliner<typename K::F,&K::c>::invoke((K*)this); 
-                                     return kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
-        virtual void logistics()   { return kernel_inliner<typename K::F,&K::l>::invoke((K*)this); }
+        virtual void place()       {        kernel_inliner<typename K::F,&K::c>::place(this);      }
+        virtual void tag(void* t)  {        kernel_inliner<typename K::F,&K::c>::tag(this, t);     }
+        virtual void invoke()      {        kernel_inliner<typename K::F,&K::c>::invoke((K*)this); 
+                                            kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
 
         inline void pin(revision& r){
-            this->set_group(channel.world()); 
+            //this->set_group(channel.world()); 
             ambient::controller.ifetch(r);
             ambient::controller.schedule(this);
         }
@@ -69,43 +68,63 @@ namespace ambient {
 
         template <class T0>
         static inline void spawn(T0& arg0){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0));
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0));
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0, class T1>
         static inline void spawn(T0& arg0, T1& arg1){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1));
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0), info<T1>::unfold(arg1));
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0, class T1, class T2>
         static inline void spawn(T0& arg0, T1& arg1, T2& arg2){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0), info<T1>::unfold(arg1), info<T2>::unfold(arg2));
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0), info<T1>::unfold(arg1), info<T2>::unfold(arg2));
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0 , class T1 , class T2 , class T3 >
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 ){
-            kernel_inliner<typename K::F, &K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) );
+            K* op = new K();
+            kernel_inliner<typename K::F, &K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0 , class T1 , class T2 , class T3 , class T4 >
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 ){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) );
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 >
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 ){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) );
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 >
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 ){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) );
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 >
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 ){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) );
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 >
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 ){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) );
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
         template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 , class T9 >
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9 ){
-            kernel_inliner<typename K::F,&K::c>::latch(new K(), info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) , info<T9>::unfold(arg9) );
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) , info<T9>::unfold(arg9) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
 
     };

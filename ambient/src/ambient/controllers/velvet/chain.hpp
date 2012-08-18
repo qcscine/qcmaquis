@@ -20,7 +20,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void chain::execute(){
         std::vector<cfunctor*>::iterator i = this->content.begin(); 
         while(i != this->content.end())
-            (*i++)->computation();
+            (*i++)->invoke();
     }
 
     inline bool chain::ready(){
