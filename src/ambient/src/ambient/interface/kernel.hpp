@@ -36,11 +36,11 @@ namespace ambient {
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
     static inline void assign(revision& r){ ambient::controller.ifetch(r); }
-    template <typename T> static inline revision&   current(T& obj)  { return *obj.impl->content[obj.ref];                  }
-    template <typename T> static inline c_revision& c_current(T& obj){ return *(c_revision*)obj.impl->content[obj.ref];     }
-    template <typename T> static inline w_revision& w_updated(T& obj){ return *(w_revision*)(obj.impl->content[obj.ref+1]); }
-    template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)(obj.impl->content[obj.ref+1]); }
-    template <typename T> static inline r_revision& r_updated(T& obj){ return *(r_revision*)(obj.impl->content[obj.ref+1]); }
+    template <typename T> static inline revision&   current(T& obj)  { return *obj.impl->content[obj.ref];                }
+    template <typename T> static inline c_revision& c_current(T& obj){ return *(c_revision*)obj.impl->content[obj.ref];   }
+    template <typename T> static inline w_revision& w_updated(T& obj){ return *(w_revision*)obj.impl->content[obj.ref+1]; }
+    template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)obj.impl->content[obj.ref+1]; }
+    template <typename T> static inline r_revision& r_updated(T& obj){ return *(r_revision*)obj.impl->content[obj.ref+1]; }
 
     template<class K>
     class kernel : public cfunctor
