@@ -10,7 +10,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void context::set_group(group* grp){
-        this->functor->set_group(grp);
+        //this->functor->set_group(grp);
         this->grp = grp;
     }
 

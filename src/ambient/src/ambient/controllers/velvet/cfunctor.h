@@ -5,12 +5,10 @@ namespace ambient { namespace controllers { namespace velvet {
 
     class cfunctor : public models::velvet::sfunctor {
     public:
-        virtual void logistics()   = 0;
-        virtual void computation() = 0;
+        virtual void invoke()      = 0;
         virtual bool ready(void*)  = 0;
         virtual bool match(void*)  = 0;
         virtual void tag(void*)    = 0;
-        inline cfunctor();
     };
 
 } } }

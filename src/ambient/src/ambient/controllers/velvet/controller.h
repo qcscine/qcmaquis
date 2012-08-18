@@ -22,7 +22,6 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         controller();
         inline void   acquire(channels::mpi::channel* channel);
-        inline void   push(cfunctor* op);
         inline void   schedule(cfunctor* op);
 
         inline void alloc (revision& r);
@@ -35,18 +34,17 @@ namespace ambient { namespace controllers { namespace velvet {
         template<typename T> inline void destroy(T* o);
 
         inline void flush();
-        inline void schedule();
-        inline void conditional_flush();
         inline void execute(chain* op);
         inline void atomic_receive(revision& r);
         inline ~controller();
     public:
         bool muted;
         collector garbage;
-        touchstack< chain* > chains;
     private:
-        touchstack< cfunctor* >* stacks;
+        touchstack< chain* >* chains;
+        touchstack< chain* > stack;
         touchstack< chain* > mirror;
+        int arity;
     };
     
 } } }
