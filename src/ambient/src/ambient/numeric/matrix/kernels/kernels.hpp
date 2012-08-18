@@ -1,15 +1,11 @@
-#ifndef __AMBIENT_NUMERIC_MATRIX_KERNELS_HPP__
-#define __AMBIENT_NUMERIC_MATRIX_KERNELS_HPP__
+#ifndef AMBIENT_NUMERIC_MATRIX_KERNELS
+#define AMBIENT_NUMERIC_MATRIX_KERNELS
 
-#define ui_l_current this->ui_l_current
-#define ui_c_current this->ui_c_current
-#define ui_w_updated this->ui_w_updated
-#define ui_p_updated this->ui_p_updated
-#define ui_r_updated this->ui_r_updated
-
-extern "C" {
-    void dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, const double*, const int*, const double*, const int*, const double*, double*, const int*);
-}
+#define current this->current
+#define c_current this->c_current
+#define w_updated this->w_updated
+#define p_updated this->p_updated
+#define r_updated this->r_updated
 
 namespace ambient { namespace numeric { namespace kernels {
 
@@ -17,20 +13,20 @@ namespace ambient { namespace numeric { namespace kernels {
     using ambient::numeric::weak_view;
 
     template<class ViewA, class ViewB, typename T>
-    struct gemm_general : public kernel< gemm_general<ViewA, ViewB, T> > 
+    struct gemm : public kernel< gemm<ViewA, ViewB, T> > 
     { // gs
-        typedef void(gemm_general::*F)(const matrix<T>&, const matrix<T>&, weak_view<T>&);
+        typedef void(gemm::*F)(const matrix<T>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(b));
-            this->assign(ui_l_current(c));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(b));
+            this->assign(current(c));
         }
         inline void c(const matrix<double>& a, const matrix<double>& b, weak_view<double>& c){
             __A_TIME_C("ambient_gemm_general_c_kernel"); 
-            double* ad = ui_c_current(a);
-            double* bd = ui_c_current(b);
-            double* cd = ui_w_updated(c);
+            double* ad = c_current(a);
+            double* bd = c_current(b);
+            double* cd = w_updated(c);
             int m = ViewA::rows(a);
             int k = ViewA::cols(a);
             int n = ViewB::cols(b);
@@ -44,15 +40,15 @@ namespace ambient { namespace numeric { namespace kernels {
         }
         inline void c(const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& b, weak_view<std::complex<double> >& c){
             __A_TIME_C("ambient_gemm_general_c_kernel"); 
-            T* ad   = ui_c_current(a);
-            T* bd   = ui_c_current(b);
-            T* cd   = ui_w_updated(c);
+            T* ad   = c_current(a);
+            T* bd   = c_current(b);
+            T* cd   = w_updated(c);
             int m   = __a_get_dim(a).y;
             int n   = __a_get_dim(b).x;
             int k   = __a_get_dim(b).y;
             T alpha(1.0); 
             T beta(0.0);
-            gemm("N","N", &m, &n, &k, &alpha, ad, &m, bd, &k, &beta, cd, &m);
+            __a_gemm("N","N", &m, &n, &k, &alpha, ad, &m, bd, &k, &beta, cd, &m);
             __A_TIME_C_STOP
         }
     };
@@ -63,9 +59,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            this->pin(ui_l_current(b)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(a_diag));
-            this->assign(ui_l_current(c));
+            this->pin(current(b)); //if(!ctxt.involved()) return;
+            this->assign(current(a_diag));
+            this->assign(current(c));
         }
 
         inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
@@ -74,9 +70,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int sizey = __a_get_dim(a_diag).y;
             int size = __a_get_dim(b).x;
             int ONE  = 1;
-            D* bd = ui_c_current(b);
-            D* cd = ui_p_updated(c);
-            D* alpha = ui_c_current(a_diag);
+            D* bd = c_current(b);
+            D* cd = p_updated(c);
+            D* alpha = c_current(a_diag);
         
             for(int k = 0 ; k < sizey; k++){
         	     axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey);
@@ -91,9 +87,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            this->pin(ui_l_current(b)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(a_diag));
-            this->assign(ui_l_current(c));
+            this->pin(current(b)); //if(!ctxt.involved()) return;
+            this->assign(current(a_diag));
+            this->assign(current(c));
         }
 
         inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
@@ -103,9 +99,9 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t sizex = __a_get_dim(b).x;
             int size  = __a_get_dim(a_diag).y;
             int ONE  = 1;
-            D* bd = ui_c_current(b);
-            D* cd = ui_p_updated(c);
-            D* alpha = ui_c_current(a_diag);
+            D* bd = c_current(b);
+            D* cd = p_updated(c);
+            D* alpha = c_current(a_diag);
         
             for(int k = 0 ; k < sizex; k++){
         	     axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);
@@ -120,9 +116,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(b_diag));
-            this->assign(ui_l_current(c));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(b_diag));
+            this->assign(current(c));
         }
 
         inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
@@ -131,9 +127,9 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t sizex = __a_get_dim(b_diag).y;
             int size = __a_get_dim(a).y; // for the case of complex
             int ONE = 1;
-            D* ad = ui_c_current(a);
-            D* cd = ui_p_updated(c);
-        	D* alpha = ui_c_current(b_diag);
+            D* ad = c_current(a);
+            D* cd = p_updated(c);
+        	D* alpha = c_current(b_diag);
         
             for(int k = 0 ; k < sizex; k++){
         	    axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
@@ -148,9 +144,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(b_diag));
-            this->assign(ui_l_current(c));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(b_diag));
+            this->assign(current(c));
         }
 
         inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
@@ -160,9 +156,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int sizey = __a_get_dim(b_diag).y;
             int size = __a_get_dim(a).x;
             int ONE = 1;
-            D* ad = ui_c_current(a);
-            D* cd = ui_p_updated(c);
-        	D* alpha = ui_c_current(b_diag);
+            D* ad = c_current(a);
+            D* cd = p_updated(c);
+        	D* alpha = c_current(b_diag);
         
             for(int k = 0 ; k < sizey; k++){
         	    axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);
@@ -178,14 +174,14 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void(copy::*F)(weak_view<T>&, const matrix<T>&);
 
         inline void l(weak_view<T>& ac, const matrix<T>& a){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(ac));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(ac));
         }
 
         inline void c(weak_view<T>& ac, const matrix<T>& a){
             __A_TIME_C("ambient_copy_c_kernel"); 
-            T* ad  = ui_c_current(a);
-            T* acd  = ui_w_updated(ac);
+            T* ad  = c_current(a);
+            T* acd  = w_updated(ac);
             memcpy(acd, ad, __a_sizeof(a));
             __A_TIME_C_STOP
         }
@@ -204,9 +200,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& ldim1, const size_t& ldim2, 
                       const size_t& rdim1, const size_t& rdim2)
         {
-            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(in));
-            this->assign(ui_l_current(alfa));
+            this->pin(current(out)); //if(!ctxt.involved()) return;
+            this->assign(current(in));
+            this->assign(current(alfa));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
@@ -215,11 +211,11 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& rdim1, const size_t& rdim2)
         {
             __A_TIME_C("ambient_op_kron_c_kernel"); 
-            T* alfad = ui_c_current(alfa);
+            T* alfad = c_current(alfa);
             for(size_t l1 = 0; l1 < ldim1; ++l1)
             for(size_t r1 = 0; r1 < rdim1; ++r1)
-            __a_memptf_r<T, __a_memscal>(ui_r_updated(out), __a_get_dim(out).y, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
-                                                ui_c_current(in), __a_get_dim(in).y,  dim2(0, 0), 
+            __a_memptf_r<T, __a_memscal>(r_updated(out), __a_get_dim(out).y, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
+                                                c_current(in), __a_get_dim(in).y,  dim2(0, 0), 
                                                 dim2(rdim2, ldim2), alfad[l1 + r1*__a_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
@@ -240,8 +236,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, 
                       const size_t& ldim, const size_t& rdim)
         {
-            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(in));
+            this->pin(current(out)); //if(!ctxt.involved()) return;
+            this->assign(current(in));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in,
@@ -255,11 +251,11 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t in_y_offset  = in_left_offset + ldim*in_phys_offset;
             size_t out_y_offset = out_left_offset;
 
-            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), __a_sizeof(out));
+            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    __a_memptf_r<T, __a_memcpy>(ui_r_updated(out), __a_get_dim(out).y, dim2(out_x_offset + rdim*ss2, out_y_offset), 
-                                                       ui_c_current(in), __a_get_dim(in).y,  dim2(0, in_y_offset), 
+                    __a_memptf_r<T, __a_memcpy>(r_updated(out), __a_get_dim(out).y, dim2(out_x_offset + rdim*ss2, out_y_offset), 
+                                                       c_current(in), __a_get_dim(in).y,  dim2(0, in_y_offset), 
                                                        dim2( rdim, ldim ));
                     in_y_offset += ldim;
                 }
@@ -284,8 +280,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, 
                       const size_t& ldim, const size_t& rdim)
         {
-            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(in));
+            this->pin(current(out)); //if(!ctxt.involved()) return;
+            this->assign(current(in));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in,
@@ -299,12 +295,12 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t in_y_offset  = in_left_offset;
             size_t out_y_offset = out_left_offset + out_phys_offset*ldim;
 
-            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), __a_sizeof(out));
+            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
                 {
-                    __a_memptf_r<T, __a_memcpy>(ui_r_updated(out), __a_get_dim(out).y, dim2(0, out_y_offset), 
-                                                       ui_c_current(in), __a_get_dim(in).y,  dim2(in_x_offset + rdim*ss2, in_y_offset), 
+                    __a_memptf_r<T, __a_memcpy>(r_updated(out), __a_get_dim(out).y, dim2(0, out_y_offset), 
+                                                       c_current(in), __a_get_dim(in).y,  dim2(in_x_offset + rdim*ss2, in_y_offset), 
                                                        dim2( rdim, ldim ));
                     out_y_offset += ldim;
                 }
@@ -325,8 +321,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(ui_l_current(right)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(left));
+            this->pin(current(right)); //if(!ctxt.involved()) return;
+            this->assign(current(left));
         }
 
         inline void c(const matrix<T>& left, matrix<T>& right,
@@ -334,10 +330,10 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_reshape_l2r_c_kernel"); 
-            __a_refresh<T>(ui_w_updated(right), ui_c_current(right), __a_sizeof(right));
+            __a_refresh<T>(w_updated(right), c_current(right), __a_sizeof(right));
             for(size_t ss = 0; ss < sdim; ++ss){
-                __a_memptf_r<T, __a_memcpy>(ui_r_updated(right), __a_get_dim(right).y, dim2(ss*rdim + right_offset, 0), 
-                                                   ui_c_current(left), __a_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
+                __a_memptf_r<T, __a_memcpy>(r_updated(right), __a_get_dim(right).y, dim2(ss*rdim + right_offset, 0), 
+                                                   c_current(left), __a_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
                                                    dim2( rdim, ldim ));
             }
             __A_TIME_C_STOP
@@ -355,8 +351,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(ui_l_current(left)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(right));
+            this->pin(current(left)); //if(!ctxt.involved()) return;
+            this->assign(current(right));
         }
 
         inline void c(matrix<T>& left, const matrix<T>& right,
@@ -364,10 +360,10 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_reshape_r2l_c_kernel"); 
-            __a_refresh<T>(ui_w_updated(left), ui_c_current(left), __a_sizeof(left));
+            __a_refresh<T>(w_updated(left), c_current(left), __a_sizeof(left));
             for(size_t ss = 0; ss < sdim; ++ss)
-                __a_memptf_r<T, __a_memcpy>(ui_r_updated(left), __a_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
-                                                   ui_c_current(right), __a_get_dim(right).y, dim2(ss*rdim + right_offset,0), 
+                __a_memptf_r<T, __a_memcpy>(r_updated(left), __a_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
+                                                   c_current(right), __a_get_dim(right).y, dim2(ss*rdim + right_offset,0), 
                                                    dim2( rdim, ldim ));
             __A_TIME_C_STOP
         }
@@ -384,9 +380,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(in));
-            this->assign(ui_l_current(alfa));
+            this->pin(current(out)); //if(!ctxt.involved()) return;
+            this->assign(current(in));
+            this->assign(current(alfa));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
@@ -394,12 +390,12 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_lb_tensor_mpo_c_kernel"); 
-            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), __a_sizeof(out));
-            T* alfad = ui_c_current(alfa);
+            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
+            T* alfad = c_current(alfa);
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-            __a_memptf_r<T, __a_memscal>(ui_r_updated(out), __a_get_dim(out).y, dim2(0, out_offset + ss2*ldim),
-                                                ui_c_current(in), __a_get_dim(in).y,  dim2(0, in_offset + ss1*ldim),
+            __a_memptf_r<T, __a_memscal>(r_updated(out), __a_get_dim(out).y, dim2(0, out_offset + ss2*ldim),
+                                                c_current(in), __a_get_dim(in).y,  dim2(0, in_offset + ss1*ldim),
                                                 dim2(rdim, ldim), alfad[ss1 + ss2*__a_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
@@ -416,9 +412,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(ui_l_current(out)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(in));
-            this->assign(ui_l_current(alfa));
+            this->pin(current(out)); //if(!ctxt.involved()) return;
+            this->assign(current(in));
+            this->assign(current(alfa));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
@@ -426,12 +422,12 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
             __A_TIME_C("ambient_rb_tensor_mpo_c_kernel"); 
-            __a_refresh<T>(ui_w_updated(out), ui_c_current(out), __a_sizeof(out));
-            T* alfad = ui_c_current(alfa);
+            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
+            T* alfad = c_current(alfa);
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-            __a_memptf_r<T, __a_memscal>(ui_r_updated(out), __a_get_dim(out).y, dim2(out_offset + ss2*rdim, 0),
-                                                ui_c_current(in), __a_get_dim(in).y,  dim2(in_offset + ss1*rdim, 0),
+            __a_memptf_r<T, __a_memscal>(r_updated(out), __a_get_dim(out).y, dim2(out_offset + ss2*rdim, 0),
+                                                c_current(in), __a_get_dim(in).y,  dim2(in_offset + ss1*rdim, 0),
                                                 dim2(rdim, ldim), alfad[ss1 + ss2*__a_get_dim(alfa).y]);
             __A_TIME_C_STOP
         }
@@ -443,7 +439,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (trace::*F)(const matrix<T>&, future<T>&);
 
         inline void l(const matrix<T>& a, future<T>& trace){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(const matrix<T>& a, future<T>& trace){
@@ -451,7 +447,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_trace_c_kernel"); 
             size_t m = __a_get_dim(a).y;
             size_t n = __a_get_dim(a).x;
-            T* ad = ui_c_current(a);
+            T* ad = c_current(a);
         
             size_t sizex = std::min(n,m);
             for(size_t jj = 0; jj < sizex; jj++){
@@ -467,12 +463,12 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scalar_norm::*F)(const matrix<T>&, future<double>&);
 
         inline void l(const matrix<T>& a, future<double>& norm){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(const matrix<T>& a, future<double>& norm){
             __A_TIME_C("ambient_scalar_norm_c_kernel"); 
-            T* ad = ui_c_current(a);
+            T* ad = c_current(a);
             norm.get_value() = alps::numeric::real(__a_dot(ad, ad, __a_get_dim(a).square()));
             __A_TIME_C_STOP
         }
@@ -484,14 +480,14 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (overlap::*F)(const matrix<T>&, const matrix<T>&, future<T>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(b));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(b));
         }
 
         inline void c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
             __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* bd = ui_c_current(b);
+            T* ad = c_current(a);
+            T* bd = c_current(b);
             overlap.get_value() = __a_dot(ad, bd, __a_get_dim(a).square());
             __A_TIME_C_STOP
         }
@@ -504,15 +500,15 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (add::*F)(matrix<T>&, const matrix<T>&);
 
         inline void l(matrix<T>& a, const matrix<T>& b){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(b));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(b));
         }
 
         inline void c(matrix<T>& a, const matrix<T>& b){
             __A_TIME_C("ambient_add_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* bd = ui_c_current(b);
-            T* ar = ui_r_updated(a);
+            T* ad = c_current(a);
+            T* bd = c_current(b);
+            T* ar = r_updated(a);
             int size = __a_get_dim(a).square();
             static const T sign = 1.;
             static const int ONE = 1;
@@ -528,14 +524,14 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (sub::*F)(matrix<T>&, const matrix<T>&);
 
         inline void l(matrix<T>& a, const matrix<T>& b){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(b));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(b));
         }
 
         inline void c(matrix<T>& a, const matrix<T>& b){
             __A_TIME_C("ambient_sub_c_kernel"); 
-            T* bd = ui_c_current(b);
-            T* ar = ui_r_updated(a);
+            T* bd = c_current(b);
+            T* ar = r_updated(a);
             int size = __a_get_dim(a).square();
             static const T sign = -1.;
             static const int ONE = 1;
@@ -550,12 +546,12 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scale::*F)(matrix<T>&, const future<T>&);
 
         inline void l(matrix<T>& a, const future<T>& t){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(matrix<double>& a, const future<double>& t){
             __A_TIME_C("ambient_scale_c_kernel"); 
-            T* ar = ui_r_updated(a);
+            T* ar = r_updated(a);
             int size = __a_get_dim(a).square();
             static const int ONE = 1;
             dscal_( &size, &t.get_value(), ar, &ONE );
@@ -564,8 +560,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<std::complex<double> >& a, const future< std::complex<double> >& t){
             __A_TIME_C("ambient_scale_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* ar = ui_w_updated(a);
+            T* ad = c_current(a);
+            T* ar = w_updated(a);
             int size = __a_get_dim(a).square();
             for(int k=0; k < size; k++) 
                 ar[k] = ad[k] * t.get_value();
@@ -579,12 +575,12 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scale_inverse::*F)(matrix<T>&, const future<T>&);
 
         inline void l(matrix<T>& a, const future<T>& t){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(matrix<double>& a, const future<double>& t){
             __A_TIME_C("ambient_scale_inverse_c_kernel"); 
-            T* ar = ui_r_updated(a);
+            T* ar = r_updated(a);
             int size = __a_get_dim(a).square();
             static const int ONE = 1;
             double factor = 1. / t.get_value();
@@ -594,8 +590,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<std::complex<double> >& a, const future< std::complex<double> >& t){
             __A_TIME_C("ambient_scale_inverse_c_kernel"); 
-            T* ad = ui_c_current(a);
-            T* ar = ui_w_updated(a);
+            T* ad = c_current(a);
+            T* ar = w_updated(a);
             int size = __a_get_dim(a).square();
             for(int k=0; k < size; k++) 
                 ar[k] = ad[k] / t.get_value();
@@ -609,14 +605,14 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (transpose_out::*F)(const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& t){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(t));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(t));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& t){
             __A_TIME_C("ambient_transpose_out_c_kernel"); 
-            T* od = ui_c_current(a);
-            T* td = ui_w_updated(t);
+            T* od = c_current(a);
+            T* td = w_updated(t);
             int m = __a_get_dim(a).y;
             int n = __a_get_dim(a).x;
 
@@ -634,14 +630,14 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (resize::*F)(weak_view<T>&, const matrix<T>&, const size_t&, const size_t&);
 
         inline void l(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(r));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(r));
         }
 
         inline void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_c_kernel"); 
-            __a_memptf_r<T, __a_memcpy>(ui_r_updated(r), __a_get_dim(r).y, dim2(0,0), 
-                                               ui_c_current(a), __a_get_dim(a).y, dim2(0,0), dim2(n, m)); 
+            __a_memptf_r<T, __a_memcpy>(r_updated(r), __a_get_dim(r).y, dim2(0,0), 
+                                               c_current(a), __a_get_dim(a).y, dim2(0,0), dim2(n, m)); 
             __A_TIME_C_STOP
         }
     };
@@ -652,14 +648,14 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (init_identity::*F)(weak_view<T>&);
 
         inline void l(weak_view<T>& a){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(weak_view<T>& a){
             __A_TIME_C("ambient_init_identity_c_kernel"); 
             size_t n = __a_get_dim(a).x;
             size_t m = __a_get_dim(a).y;
-            T* ad = ui_r_updated(a);
+            T* ad = r_updated(a);
 
             size_t sizex = std::min(m,n); // respecting borders
             for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
@@ -679,14 +675,14 @@ namespace ambient { namespace numeric { namespace kernels {
         }
 
         inline void l(weak_view<T>& a){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
         
         inline void c(weak_view<T>& a){
             __A_TIME_C("ambient_init_random_c_kernel"); 
             size_t m = __a_get_dim(a).y;
             size_t n = __a_get_dim(a).x;
-            T* ad = ui_w_updated(a);
+            T* ad = w_updated(a);
           
             for(size_t jj = 0; jj < n; jj++){
                 for(size_t ii = 0; ii < m; ii++)
@@ -702,12 +698,12 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (init_value::*F)(weak_view<T>&, const T&);
 
         inline void l(weak_view<T>& a, const T& value){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(weak_view<T>& a, const T& value){
             __A_TIME_C("ambient_init_value_c_kernel"); 
-            T* ad = ui_w_updated(a);
+            T* ad = w_updated(a);
             size_t m = __a_get_dim(a).y;
             size_t n = __a_get_dim(a).x;
         
@@ -726,13 +722,13 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (round_square::*F)(const matrix<T>&, std::vector<T>*&);
 
         inline void l(const matrix<T>& a, std::vector<T>*& ac){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(const matrix<T>& a, std::vector<T>*& ac){
             // gs
             __A_TIME_C("ambient_round_square_c_kernel"); 
-            T* ad = ui_c_current(a);
+            T* ad = c_current(a);
             size_t sizey = __a_get_dim(a).y;
             for(int i=0; i < sizey; i++){
                 double v = std::abs(ad[i]);
@@ -748,13 +744,13 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix<T>&, const size_t&, const size_t&);
 
         inline void l(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
             // gs
             __A_TIME_C("ambient_cast_to_vector_c_kernel"); 
-            T* ad = ui_c_current(a);
+            T* ad = c_current(a);
             for(int j=0; j < n; ++j) memcpy((void*)&(*ac)[j*m],(void*)&ad[j*m], m*sizeof(T));  
             __A_TIME_C_STOP
         }
@@ -766,12 +762,12 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (cast_from_vector::*F)(const std::vector<T>*&, matrix<T>&, const size_t&, const size_t&, const size_t&);
 
         inline void l(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda){
-            this->pin(ui_l_current(a));
+            this->pin(current(a));
         }
 
         inline void c(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda){
             __A_TIME_C("ambient_cast_from_vector_c_kernel"); 
-            T* ad = ui_w_updated(a);
+            T* ad = w_updated(a);
             for(int j=0; j < n; ++j) memcpy((void*)&ad[j*m],(void*)&(*ac)[j*lda], m*sizeof(T));
             __A_TIME_C_STOP 
         }
@@ -783,13 +779,13 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (validation::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
-            this->pin(ui_l_current(a));  //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(b)); 
+            this->pin(current(a));  //if(!ctxt.involved()) return;
+            this->assign(current(b)); 
         }
         
         inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
-            T* ad = ui_c_current(a); 
-            T* bd = ui_c_current(b); 
+            T* ad = c_current(a); 
+            T* bd = c_current(b); 
             double res; 
             double epsilon = std::numeric_limits<double>::epsilon();
             size_t position_xy; 
@@ -819,10 +815,10 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (svd::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&, weak_view<double>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(s));
-            this->assign(ui_l_current(u));
-            this->assign(ui_l_current(vt));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(s));
+            this->assign(current(u));
+            this->assign(current(vt));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
@@ -834,10 +830,10 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             int lwork = -1; // C - Alex, netlib said -1 for the best workspace
             T wkopt;
-            T* ad  = ui_c_current(a);
-            T* ud  = ui_r_updated(u);
-            T* vtd = ui_r_updated(vt);
-            double* sd  = ui_r_updated(s);
+            T* ad  = c_current(a);
+            T* ud  = r_updated(u);
+            T* vtd = r_updated(vt);
+            double* sd  = r_updated(s);
             double* rwork; // = new double[5*m]; // C - useless for double but need for complex 
             T* work;
             gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, rwork, &info ); // query and allocate the optimal workspace
@@ -856,9 +852,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (qr::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(q));
-            this->assign(ui_l_current(r));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(q));
+            this->assign(current(r));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
@@ -871,9 +867,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int lwork = -1; 
             T wkopt;
             T* tau = (T*)malloc(k*sizeof(T));
-            T* ad  = ui_c_current(a);
-            T* qd  = ui_w_updated(q);
-            T* rd = ui_p_updated(r);
+            T* ad  = c_current(a);
+            T* qd  = w_updated(q);
+            T* rd = p_updated(r);
             T* work;
             T* more_work;
             T  kwork;
@@ -913,9 +909,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (lq::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(l));
-            this->assign(ui_l_current(q));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(l));
+            this->assign(current(q));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
@@ -928,9 +924,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int lwork = -1; 
             T wkopt;
             T* tau = (T*)malloc(k*sizeof(T));
-            T* ad  = ui_c_current(a);
-            T* ld  = ui_p_updated(l);
-            T* qd  = ui_w_updated(q);
+            T* ad  = c_current(a);
+            T* ld  = p_updated(l);
+            T* qd  = w_updated(q);
             T* work;
             T* more_work;
             T  kwork;
@@ -972,8 +968,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (heev::*F)(matrix<T>&, weak_view<double>&);
 
         inline void l(matrix<T>& a, weak_view<double>& w){
-            this->pin(ui_l_current(a)); //if(!ctxt.involved()) return;
-            this->assign(ui_l_current(w));
+            this->pin(current(a)); //if(!ctxt.involved()) return;
+            this->assign(current(w));
         }
 
         inline void c(matrix<T>& a, weak_view<double>& w){
@@ -983,8 +979,8 @@ namespace ambient { namespace numeric { namespace kernels {
             int info, lwork = -1;
             double wkopt;
             double* work;
-            double* ad = (double*)__a_solidify(ui_c_current(a), __a_sizeof(a));
-            double* wd = (double*)__a_solidify(ui_c_current(w), __a_sizeof(w));
+            double* ad = (double*)__a_solidify(c_current(a), __a_sizeof(a));
+            double* wd = (double*)__a_solidify(c_current(w), __a_sizeof(w));
 
             dsyev_("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
             lwork = (int)wkopt;
@@ -1005,8 +1001,8 @@ namespace ambient { namespace numeric { namespace kernels {
                 memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
                 memcpy(&ad[(m-1-i)*m], work, len);
             }
-            __a_disperse(ad, ui_w_updated(a), __a_sizeof(a));
-            __a_disperse(wd, ui_w_updated(w), __a_sizeof(w));
+            __a_disperse(ad, w_updated(a), __a_sizeof(a));
+            __a_disperse(wd, w_updated(w), __a_sizeof(w));
             free(work);
             __A_TIME_C_STOP
         }
@@ -1015,9 +1011,9 @@ namespace ambient { namespace numeric { namespace kernels {
     // }}}
 } } }
 
-#undef ui_l_current
-#undef ui_c_current
-#undef ui_w_updated
-#undef ui_p_updated
-#undef ui_r_updated
+#undef current
+#undef c_current
+#undef w_updated
+#undef p_updated
+#undef r_updated
 #endif

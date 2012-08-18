@@ -1,5 +1,5 @@
-#ifndef __MAQUIS_TYPES_KERNELS_UTILS_HPP__
-#define __MAQUIS_TYPES_KERNELS_UTILS_HPP__
+#ifndef AMBIENT_NUMERIC_KERNELS_UTILS
+#define AMBIENT_NUMERIC_KERNELS_UTILS
 
 #include <limits>
 #include "utils/timings.h"
@@ -10,25 +10,25 @@
 #ifdef AMBIENT_CHECK_BOUNDARIES
 #include <execinfo.h>
 #endif
+    
+#include "ambient/utils/ceil.h"
+
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+    #define __A_TIME_C(name) static __a_timer time(name); time.begin();
+    #define __A_TIME_C_STOP time.end();
+#else
+    #define __A_TIME_C(name) 
+    #define __A_TIME_C_STOP 
+#endif
 
 extern "C" {
     double ddot_(const int*, const double*, const int*, const double*, const int*);
+    void dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, const double*, const int*, const double*, const int*, const double*, double*, const int*);
 }
 
 namespace ambient { namespace numeric { namespace kernels {
 
-    using ambient::numeric::matrix;
-
-    #include "ambient/utils/numeric.h" // BLAS/LAPACK prototypes
-    #include "ambient/utils/ceil.h"
-   
-    #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-        #define __A_TIME_C(name) static __a_timer time(name); time.begin();
-        #define __A_TIME_C_STOP time.end();
-    #else
-        #define __A_TIME_C(name) 
-        #define __A_TIME_C_STOP 
-    #endif
+    #include "ambient/utils/numeric.h"
 
     template<typename T> inline dim2 __a_get_dim(T& ref){ 
         return ref.impl->spec.dim;
