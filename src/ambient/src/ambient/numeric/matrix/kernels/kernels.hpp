@@ -1,11 +1,6 @@
 #ifndef AMBIENT_NUMERIC_MATRIX_KERNELS
 #define AMBIENT_NUMERIC_MATRIX_KERNELS
-
-#define current this->current
-#define c_current this->c_current
-#define w_updated this->w_updated
-#define p_updated this->p_updated
-#define r_updated this->r_updated
+#define pin this->pin
 
 namespace ambient { namespace numeric { namespace kernels {
 
@@ -18,9 +13,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void(gemm::*F)(const matrix<T>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(b));
-            this->assign(current(c));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(b));
+            assign(current(c));
         }
         inline void c(const matrix<double>& a, const matrix<double>& b, weak_view<double>& c){
             __A_TIME_C("ambient_gemm_general_c_kernel"); 
@@ -59,9 +54,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            this->pin(current(b)); //if(!ctxt.involved()) return;
-            this->assign(current(a_diag));
-            this->assign(current(c));
+            pin(current(b)); //if(!ctxt.involved()) return;
+            assign(current(a_diag));
+            assign(current(c));
         }
 
         inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
@@ -87,9 +82,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            this->pin(current(b)); //if(!ctxt.involved()) return;
-            this->assign(current(a_diag));
-            this->assign(current(c));
+            pin(current(b)); //if(!ctxt.involved()) return;
+            assign(current(a_diag));
+            assign(current(c));
         }
 
         inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
@@ -116,9 +111,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(b_diag));
-            this->assign(current(c));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(b_diag));
+            assign(current(c));
         }
 
         inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
@@ -144,9 +139,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(b_diag));
-            this->assign(current(c));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(b_diag));
+            assign(current(c));
         }
 
         inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
@@ -174,8 +169,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void(copy::*F)(weak_view<T>&, const matrix<T>&);
 
         inline void l(weak_view<T>& ac, const matrix<T>& a){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(ac));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(ac));
         }
 
         inline void c(weak_view<T>& ac, const matrix<T>& a){
@@ -200,9 +195,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& ldim1, const size_t& ldim2, 
                       const size_t& rdim1, const size_t& rdim2)
         {
-            this->pin(current(out)); //if(!ctxt.involved()) return;
-            this->assign(current(in));
-            this->assign(current(alfa));
+            pin(current(out)); //if(!ctxt.involved()) return;
+            assign(current(in));
+            assign(current(alfa));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
@@ -236,8 +231,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, 
                       const size_t& ldim, const size_t& rdim)
         {
-            this->pin(current(out)); //if(!ctxt.involved()) return;
-            this->assign(current(in));
+            pin(current(out)); //if(!ctxt.involved()) return;
+            assign(current(in));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in,
@@ -280,8 +275,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& sdim1, const size_t& sdim2, 
                       const size_t& ldim, const size_t& rdim)
         {
-            this->pin(current(out)); //if(!ctxt.involved()) return;
-            this->assign(current(in));
+            pin(current(out)); //if(!ctxt.involved()) return;
+            assign(current(in));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in,
@@ -321,8 +316,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(current(right)); //if(!ctxt.involved()) return;
-            this->assign(current(left));
+            pin(current(right)); //if(!ctxt.involved()) return;
+            assign(current(left));
         }
 
         inline void c(const matrix<T>& left, matrix<T>& right,
@@ -351,8 +346,8 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& left_offset, const size_t& right_offset, 
                       const size_t& sdim, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(current(left)); //if(!ctxt.involved()) return;
-            this->assign(current(right));
+            pin(current(left)); //if(!ctxt.involved()) return;
+            assign(current(right));
         }
 
         inline void c(matrix<T>& left, const matrix<T>& right,
@@ -380,9 +375,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(current(out)); //if(!ctxt.involved()) return;
-            this->assign(current(in));
-            this->assign(current(alfa));
+            pin(current(out)); //if(!ctxt.involved()) return;
+            assign(current(in));
+            assign(current(alfa));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
@@ -412,9 +407,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& out_offset, const size_t& in_offset, 
                       const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
         {
-            this->pin(current(out)); //if(!ctxt.involved()) return;
-            this->assign(current(in));
-            this->assign(current(alfa));
+            pin(current(out)); //if(!ctxt.involved()) return;
+            assign(current(in));
+            assign(current(alfa));
         }
 
         inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
@@ -439,7 +434,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (trace::*F)(const matrix<T>&, future<T>&);
 
         inline void l(const matrix<T>& a, future<T>& trace){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(const matrix<T>& a, future<T>& trace){
@@ -463,7 +458,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scalar_norm::*F)(const matrix<T>&, future<double>&);
 
         inline void l(const matrix<T>& a, future<double>& norm){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(const matrix<T>& a, future<double>& norm){
@@ -480,8 +475,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (overlap::*F)(const matrix<T>&, const matrix<T>&, future<T>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(b));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(b));
         }
 
         inline void c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
@@ -500,8 +495,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (add::*F)(matrix<T>&, const matrix<T>&);
 
         inline void l(matrix<T>& a, const matrix<T>& b){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(b));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(b));
         }
 
         inline void c(matrix<T>& a, const matrix<T>& b){
@@ -524,8 +519,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (sub::*F)(matrix<T>&, const matrix<T>&);
 
         inline void l(matrix<T>& a, const matrix<T>& b){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(b));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(b));
         }
 
         inline void c(matrix<T>& a, const matrix<T>& b){
@@ -546,7 +541,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scale::*F)(matrix<T>&, const future<T>&);
 
         inline void l(matrix<T>& a, const future<T>& t){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(matrix<double>& a, const future<double>& t){
@@ -575,7 +570,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (scale_inverse::*F)(matrix<T>&, const future<T>&);
 
         inline void l(matrix<T>& a, const future<T>& t){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(matrix<double>& a, const future<double>& t){
@@ -605,8 +600,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (transpose_out::*F)(const matrix<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& t){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(t));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(t));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& t){
@@ -630,8 +625,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (resize::*F)(weak_view<T>&, const matrix<T>&, const size_t&, const size_t&);
 
         inline void l(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(r));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(r));
         }
 
         inline void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
@@ -648,7 +643,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (init_identity::*F)(weak_view<T>&);
 
         inline void l(weak_view<T>& a){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(weak_view<T>& a){
@@ -675,7 +670,7 @@ namespace ambient { namespace numeric { namespace kernels {
         }
 
         inline void l(weak_view<T>& a){
-            this->pin(current(a));
+            pin(current(a));
         }
         
         inline void c(weak_view<T>& a){
@@ -698,7 +693,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (init_value::*F)(weak_view<T>&, const T&);
 
         inline void l(weak_view<T>& a, const T& value){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(weak_view<T>& a, const T& value){
@@ -722,7 +717,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (round_square::*F)(const matrix<T>&, std::vector<T>*&);
 
         inline void l(const matrix<T>& a, std::vector<T>*& ac){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(const matrix<T>& a, std::vector<T>*& ac){
@@ -744,7 +739,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix<T>&, const size_t&, const size_t&);
 
         inline void l(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
@@ -762,7 +757,7 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (cast_from_vector::*F)(const std::vector<T>*&, matrix<T>&, const size_t&, const size_t&, const size_t&);
 
         inline void l(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda){
-            this->pin(current(a));
+            pin(current(a));
         }
 
         inline void c(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda){
@@ -779,8 +774,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (validation::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
 
         inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
-            this->pin(current(a));  //if(!ctxt.involved()) return;
-            this->assign(current(b)); 
+            pin(current(a));  //if(!ctxt.involved()) return;
+            assign(current(b)); 
         }
         
         inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
@@ -815,10 +810,10 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (svd::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&, weak_view<double>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(s));
-            this->assign(current(u));
-            this->assign(current(vt));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(s));
+            assign(current(u));
+            assign(current(vt));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
@@ -852,9 +847,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (qr::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(q));
-            this->assign(current(r));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(q));
+            assign(current(r));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
@@ -909,9 +904,9 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (lq::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
 
         inline void l(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(l));
-            this->assign(current(q));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(l));
+            assign(current(q));
         }
 
         inline void c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
@@ -968,8 +963,8 @@ namespace ambient { namespace numeric { namespace kernels {
         typedef void (heev::*F)(matrix<T>&, weak_view<double>&);
 
         inline void l(matrix<T>& a, weak_view<double>& w){
-            this->pin(current(a)); //if(!ctxt.involved()) return;
-            this->assign(current(w));
+            pin(current(a)); //if(!ctxt.involved()) return;
+            assign(current(w));
         }
 
         inline void c(matrix<T>& a, weak_view<double>& w){
@@ -1011,9 +1006,5 @@ namespace ambient { namespace numeric { namespace kernels {
     // }}}
 } } }
 
-#undef current
-#undef c_current
-#undef w_updated
-#undef p_updated
-#undef r_updated
+#undef pin
 #endif
