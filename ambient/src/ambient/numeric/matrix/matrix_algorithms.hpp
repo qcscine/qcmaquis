@@ -46,7 +46,7 @@ namespace ambient { namespace numeric {
 
     template<class MatrixViewA, class MatrixViewB, typename T>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T>& c){
-        kernels::gemm_general<MatrixViewA,MatrixViewB,T>::spawn(a, b, c); 
+        kernels::gemm<MatrixViewA,MatrixViewB,T>::spawn(a, b, c); 
     }
 
     template<class MatrixViewA, typename T, typename D>

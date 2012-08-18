@@ -75,7 +75,7 @@ BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 * wrapper to the lib call 
 */
 #define BOOST_PP_DEF(z, I, _) \
-    inline void gemm(const char *transa, const char *transb, const int  *m, const int *n, const int *k, \
+    inline void __a_gemm(const char *transa, const char *transb, const int  *m, const int *n, const int *k, \
                      const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *alpha, const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *a, const int *lda, const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *b, const int *ldb, \
                      const BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *beta, BOOST_PP_TUPLE_ELEM(2,0,TUPLE_WRAPPER ## I) *c, const int *ldc) \
                 { \
