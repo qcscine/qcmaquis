@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2011-2012 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *
  *****************************************************************************/
@@ -10,17 +10,256 @@
 #ifndef MULTIGRID_H
 #define MULTIGRID_H
 
-#include "dmrg/mp_tensors/mpstensor.h"
-#include "dmrg/block_matrix/indexing.h"
-
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/optimize.h"
+
+#include <boost/optional.hpp>
 
 struct multigrid {
     
+    /******** Isometry T *******
+     * Elements stored as:     *
+     * T(s, fuse(s1,s2))       *
+     *                         *
+     *          s1  s2         *
+     *          ^   ^          *
+     *          |   |          *
+     *          ^   ^          *
+     *          -----          *
+     *          \ T /          *
+     *           \ /           *
+     *            ^            *
+     *            |            *
+     *            ^            *
+     *            s            *
+     ***************************/
+
     template<class Matrix, class SymmGroup>
     void
-    static restriction (MPS<Matrix, SymmGroup> const & mps_large,
-                        MPS<Matrix, SymmGroup> & mps_small)
+    static normalize_restriction_isometry(block_matrix<Matrix, SymmGroup> & T)
+    {
+        for (size_t k=0; k<T.n_blocks(); k++)
+            for (size_t i=0; i<num_rows(T[k]); ++i)
+            {
+                typename Matrix::value_type nn = 0.;
+                for (size_t j=0; j<num_cols(T[k]); ++j) nn += T[k](i,j);
+                nn = sqrt(nn);
+                for (size_t j=0; j<num_cols(T[k]); ++j) T[k](i,j) /= nn;
+            }
+    }
+
+    template<class Matrix, class SymmGroup>
+    block_matrix<Matrix, SymmGroup>
+    static default_restriction_isometry(Index<SymmGroup> const & phys_large,
+                                        Index<SymmGroup> const & phys_small)
+    {
+        ProductBasis<SymmGroup> pb(phys_large, phys_large);
+        
+        typedef std::size_t size_t;
+        typedef typename SymmGroup::charge charge;
+        block_matrix<Matrix, SymmGroup> T;
+        for (size_t s1=0; s1<phys_large.size(); ++s1)
+            for (size_t s2=0; s2<phys_large.size(); ++s2)
+            {
+                charge s1_charge = phys_large[s1].first;
+                charge s2_charge = phys_large[s2].first;
+                charge s_charge = SymmGroup::fuse(s1_charge, s2_charge);
+                
+                size_t s = phys_small.position(s_charge);
+                if (s == phys_small.size())
+                    continue;
+                
+                if (! T.has_block(s_charge, s_charge))
+                    T.insert_block(new Matrix(phys_small[s].second, pb.size(s1_charge, s2_charge), 0.), s_charge, s_charge);
+                
+                size_t out_offset = pb(s1_charge, s2_charge);
+                Matrix & oblock = T(s_charge, s_charge);
+                for(size_t ss1 = 0; ss1 < phys_large[s1].second; ++ss1)
+                    for(size_t ss2 = 0; ss2 < phys_large[s2].second; ++ss2)
+                        oblock(0, out_offset + ss1*phys_large[s2].second+ss2) = typename Matrix::value_type(1.);
+            }
+        normalize_restriction_isometry(T);
+        return T;
+    }
+    
+    template<class Matrix, class SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
+    static restriction(MPSTensor<Matrix, SymmGroup> const & M1, MPSTensor<Matrix, SymmGroup> const & M2,
+                       block_matrix<Matrix, SymmGroup> const & T)
+    {
+        M1.make_left_paired();
+        M2.make_right_paired();
+        
+        // contracting M1, M2
+        block_matrix<Matrix, SymmGroup> MM;
+        gemm(M1.data(), M2.data(), MM);
+        
+        // init index objects
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
+        
+        Index<SymmGroup> left_i = M1.row_dim(), right_i = M2.col_dim();
+        Index<SymmGroup> phys_large = M1.site_dim(), phys_small = T.left_basis();
+        
+        ProductBasis<SymmGroup> in_left(phys_large, left_i);
+        ProductBasis<SymmGroup> in_right(phys_large, right_i,
+                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                                 -boost::lambda::_1, boost::lambda::_2));
+        ProductBasis<SymmGroup> out_left(phys_small, left_i);
+        ProductBasis<SymmGroup> phys_pb(phys_large, phys_large);
+        
+        // reshape + multiplication
+        block_matrix<Matrix, SymmGroup> data;
+        for (size_t Mblock = 0; Mblock < MM.n_blocks(); ++Mblock)
+            for (size_t Tb = 0; Tb < T.n_blocks(); ++Tb)
+                for (size_t s1=0; s1<phys_large.size(); ++s1) {
+                    size_t s2 = phys_large.position(SymmGroup::fuse(T.right_basis()[Tb].first,
+                                                                    -phys_large[s1].first));
+                    if(s2 == phys_large.size()) continue;
+                    size_t l = left_i.position(SymmGroup::fuse(MM.left_basis()[Mblock].first,
+                                                               -phys_large[s1].first));
+                    if(l == left_i.size()) continue;
+                    size_t r = right_i.position(SymmGroup::fuse(MM.right_basis()[Mblock].first,
+                                                                phys_large[s2].first));
+                    if(r == right_i.size()) continue;
+                    size_t s = phys_small.position(T.left_basis()[Tb].first);
+                    
+                    {
+                        charge in_l_charge = SymmGroup::fuse(phys_large[s1].first, left_i[l].first);
+                        charge in_r_charge = SymmGroup::fuse(-phys_large[s2].first, right_i[r].first);
+                        
+                        charge T_l_charge = T.left_basis()[Tb].first;
+                        charge T_r_charge = SymmGroup::fuse(phys_large[s1].first, phys_large[s2].first);
+                        
+                        charge out_l_charge = SymmGroup::fuse(phys_small[s].first, left_i[l].first);
+                        charge out_r_charge = right_i[r].first;
+                        
+                        if (! MM.has_block(in_l_charge, in_r_charge) )
+                            continue;
+                        if (! T.has_block(T_l_charge, T_r_charge) )
+                            continue;
+                        
+                        if (! data.has_block(out_l_charge, out_r_charge))
+                            data.insert_block(new Matrix(out_left.size(phys_small[s].first, left_i[l].first), right_i[r].second, 0),
+                                              out_l_charge, out_r_charge);
+                        
+                        size_t in_l_offset = in_left(phys_large[s1].first, left_i[l].first);
+                        size_t in_r_offset = in_right(phys_large[s2].first, right_i[r].first);
+                        size_t out_l_offset = out_left(phys_small[s].first, left_i[l].first);
+                        size_t T_r_offset = phys_pb(phys_large[s1].first, phys_large[s2].first);
+                        
+                        Matrix const & in_block = MM(in_l_charge, in_r_charge);
+                        Matrix const & T_block = T(T_l_charge, T_r_charge);
+                        Matrix & out_block = data(out_l_charge, out_r_charge);
+                        
+                        for (size_t ss=0; ss<phys_small[s].second; ++ss) {
+                            for(size_t ss1 = 0; ss1 < phys_large[s1].second; ++ss1)
+                                for(size_t ss2 = 0; ss2 < phys_large[s2].second; ++ss2) {
+                                    typename Matrix::value_type const & Tval = T_block(ss, T_r_offset + ss1*phys_large[s2].second+ss2);
+                                    for(size_t rr = 0; rr < right_i[r].second; ++rr)
+                                    /* blas implementation */
+                                        maquis::dmrg::detail::iterator_axpy(&in_block(in_l_offset + ss1*left_i[l].second, in_r_offset + ss2*right_i[r].second+rr),
+                                                      &in_block(in_l_offset + ss1*left_i[l].second, in_r_offset + ss2*right_i[r].second+rr) + left_i[l].second,
+                                                      &out_block(out_l_offset + ss*left_i[l].second, rr),
+                                                      Tval);
+                                    /* loop implementation:
+                                     for(size_t ll = 0; ll < left_i[l].second; ++ll)
+                                     out_block(out_l_offset + ss*left_i[l].second+ll, rr)
+                                     += in_block(in_l_offset + ss1*left_i[l].second+ll, in_r_offset + ss2*right_i[r].second+rr) * Tval;
+                                     */
+                                }
+                        }
+                    }
+                    
+                }
+        
+        MPSTensor<Matrix, SymmGroup> M;
+        swap(M.data_, data);
+        M.cur_storage = LeftPaired;
+        M.left_i = left_i;
+        M.right_i = right_i;
+        M.phys_i = phys_small;
+        return M;
+    }
+    
+    template<class Matrix, class SymmGroup>
+    MPS<Matrix, SymmGroup>
+    static restrict_mps(MPS<Matrix, SymmGroup> const & mps_large,
+                        boost::optional<block_matrix<Matrix, SymmGroup> const& > T_ = (boost::optional<block_matrix<Matrix, SymmGroup> const& >()))
+    {
+        std::size_t LL = mps_large.length();
+        assert(LL % 2 == 0);
+        std::size_t L = LL/2;
+        
+        MPS<Matrix, SymmGroup> mps_small; mps_small.resize(L);
+
+        block_matrix<Matrix, SymmGroup> T;
+        if (!T_)
+            // Assuming same physical index everywhere!
+            T = default_restriction_isometry<Matrix>(mps_large.site_dim(0), mps_large.site_dim(0));
+        else
+            T = T_.get();
+        
+        for (std::size_t p = 0; p < L; ++p)
+        {            
+            mps_small[p] = restriction(mps_large[2*p], mps_large[2*p+1], T);
+            mps_small.move_normalization_l2r(p, p+1);
+        }
+        return mps_small;
+    }
+
+    template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup>
+    static restrict_mpo(MPO<Matrix, SymmGroup> const & mpo_large,
+                        boost::optional<block_matrix<Matrix, SymmGroup> const& > T_ = (boost::optional<block_matrix<Matrix, SymmGroup> const& >()))
+    {
+        std::size_t LL = mpo_large.length();
+        assert(LL % 2 == 0);
+        std::size_t L = LL/2;
+        
+        MPO<Matrix, SymmGroup> mpo_small(L);
+        
+        block_matrix<Matrix, SymmGroup> T;
+        if (!T_) {
+            // Assuming same physical index everywhere!
+            Index<SymmGroup> phys_i;
+            for (size_t b1=0; b1<mpo_large[0].col_dim() && phys_i.size()==0; ++b1)
+                for (size_t b2=0; b2<mpo_large[0].row_dim() && phys_i.size()==0; ++b2)
+                    if (mpo_large[0].has(b1, b2))
+                        phys_i = mpo_large[0](b1,b2).left_basis();
+
+            T = default_restriction_isometry<Matrix>(phys_i, phys_i);
+        } else {
+            T = T_.get();
+        }
+        
+        for (std::size_t p = 0; p < L; ++p)
+        {
+            Index<SymmGroup> phys_i;
+            for (size_t b1=0; b1<mpo_large[2*p].col_dim() && phys_i.size()==0; ++b1)
+                for (size_t b2=0; b2<mpo_large[2*p].row_dim() && phys_i.size()==0; ++b2)
+                    if (mpo_large[2*p].has(b1, b2))
+                        phys_i = mpo_large[2*p](b1,b2).left_basis();
+            MPOTensor<Matrix, SymmGroup> mpot = make_twosite_mpo(mpo_large[2*p], mpo_large[2*p+1], phys_i);
+            for (size_t b1=0; b1<mpot.col_dim(); ++b1)
+                for (size_t b2=0; b2<mpot.row_dim(); ++b2)
+                {
+                    if (! mpot.has(b1, b2))
+                        continue;
+                    block_matrix<Matrix, SymmGroup> tmp;
+                    gemm(T, mpot(b1, b2), tmp);
+                    gemm(tmp, transpose(T), mpot(b1, b2));
+                }
+            mpo_small[p] = mpot;
+        }
+        return mpo_small;
+    }
+
+    template<class Matrix, class SymmGroup>
+    void
+    static restriction_old (MPS<Matrix, SymmGroup> const & mps_large,
+                            MPS<Matrix, SymmGroup> & mps_small)
     {
         std::size_t L = mps_small.length();
         std::size_t LL = mps_large.length();
@@ -164,12 +403,6 @@ struct multigrid {
         Index<SymmGroup> s1_basis = M1.site_dim();
         Index<SymmGroup> s2_basis = M2.site_dim();
         
-        //            maquis::cout << "alpha_basis:" <<std::endl << alpha_basis << std::endl;
-        //            maquis::cout << "beta_basis:" <<std::endl << beta_basis << std::endl;
-        //            maquis::cout << "s_basis:" <<std::endl << s_basis << std::endl;
-        //            maquis::cout << "s1_basis:" <<std::endl << s1_basis << std::endl;
-        //            maquis::cout << "s2_basis:" <<std::endl << s2_basis << std::endl;
-        
         
         mps_small.make_left_paired();
         
@@ -180,7 +413,6 @@ struct multigrid {
                                           boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                               -boost::lambda::_1, boost::lambda::_2));
         
-        //            maquis::cout << mps_small[p].data() << std::endl;
         for (bi_t alpha = alpha_basis.basis_begin(); !alpha.end(); ++alpha)
             for (bi_t beta = beta_basis.basis_begin(); !beta.end(); ++beta)
                 for (bi_t s1 = s1_basis.basis_begin(); !s1.end(); ++s1)
@@ -201,13 +433,6 @@ struct multigrid {
                         charge out_left_c = SymmGroup::fuse(s1->first, alpha->first);
                         charge out_right_c = SymmGroup::fuse(-s2->first, beta->first);
                         
-                        //                            maquis::cout << "--" << std::endl;
-                        //                            maquis::cout << "alpha: " << alpha->first << ", " << alpha->second << std::endl;
-                        //                            maquis::cout << "beta: " << beta->first << ", " << beta->second << std::endl;
-                        //                            maquis::cout << "s1: " << s1->first << ", " << s1->second << std::endl;
-                        //                            maquis::cout << "s2: " << s2->first << ", " << s2->second << std::endl;
-                        //                            maquis::cout << "s: " << s.first << ", " << s.second << std::endl;
-                        
                         if (!M.has_block(out_left_c, out_right_c))
                             M.insert_block(new Matrix(out_left.size(s1->first, alpha->first),
                                                       out_right.size(s2->first, beta->first,
@@ -216,28 +441,11 @@ struct multigrid {
                                                       0),
                                            out_left_c, out_right_c);
                         
-                        
-                        //                            maquis::cout << "block has size " << out_left.size(s1->first, alpha->first)
-                        //                            << "x"
-                        //                            << out_right.size(s2->first, beta->first,
-                        //                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                        //                                                                  -boost::lambda::_1, boost::lambda::_2)) << std::endl;
-                        
                         std::size_t in_left_offset = in_left(s.first, alpha->first);
                         std::size_t in_right_offset = 0;
                         
                         std::size_t out_left_offset = out_left(s1->first, alpha->first);
                         std::size_t out_right_offset = out_right(s2->first, beta->first);
-                        
-                        //                            maquis::cout << "M[" << out_left_c << ", " << out_right_c << "]"
-                        //                            << "(" << out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second << ", " << out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second << ")" << std::endl;
-                        //                            maquis::cout << " = " << M(std::make_pair(out_left_c, out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second),
-                        //                                                    std::make_pair(out_right_c, out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second)) << std::endl;
-                        //                            
-                        //                            maquis::cout << "mps[" << in_left_c << ", " << in_right_c << "]"
-                        //                            << "(" << in_left_offset + s.second*alpha_basis.size_of_block(alpha->first) + alpha->second << ", " << in_right_offset + beta->second << ")" << std::endl;
-                        //                            maquis::cout << " = " << mps_small[p].data()(std::make_pair(in_left_c, in_left_offset + s.second*alpha_basis.size_of_block(alpha->first) + alpha->second),
-                        //                                                                      std::make_pair(in_right_c, in_right_offset + beta->second)) << std::endl;
                         
                         M(std::make_pair(out_left_c, out_left_offset + s1->second*alpha_basis.size_of_block(alpha->first)+alpha->second),
                           std::make_pair(out_right_c, out_right_offset + s2->second*beta_basis.size_of_block(beta->first)+beta->second))
