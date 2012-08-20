@@ -8,7 +8,7 @@
 #define value_type  typename tiles<Matrix>::value_type
 #define scalar_type typename tiles<Matrix>::scalar_type
 
-#define TILE_SIZE 256
+#define TILE_SIZE 16384 //256
 
 namespace ambient { namespace numeric {
 
@@ -18,18 +18,8 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline void* tiles<Matrix>::operator new (size_t size, void* placement){
-        return placement; 
-    }
-
-    template<class Matrix>
     inline void tiles<Matrix>::operator delete (void* ptr){
         ambient::static_memory::free<tiles<Matrix> >(ptr); 
-    }
-
-    template<class Matrix>
-    inline void tiles<Matrix>::operator delete (void*, void*){
-        // in case of new placement fails // to implement if needed
     }
 
     template <class Matrix>
@@ -136,6 +126,16 @@ namespace ambient { namespace numeric {
     template<class Matrix>
     inline void tiles<Matrix>::remove_cols(size_type j, size_type k){
         remove_cols(*this, j, k); 
+    }
+
+    template<class Matrix>
+    inline Matrix& tiles<Matrix>::operator[] (size_type k){
+        return this->data[k];
+    }
+
+    template<class Matrix>
+    inline const Matrix& tiles<Matrix>::operator[] (size_type k) const {
+        return this->data[k];
     }
 
     template<class Matrix>
