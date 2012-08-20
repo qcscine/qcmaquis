@@ -1,7 +1,7 @@
 max_bond_dimension = 2000
 truncation_final = 1e-16
 
-nsweeps = 1
+nsweeps = 4
 ngrowsweeps = 0
 nmainsweeps = 1
 
@@ -11,8 +11,7 @@ donotsave = 1
 chkpfile = "bench_hubbard_large.out.ckp.h5"
 storagedir = "bench_hubbard_large"
 resultfile = "bench_hubbard_large.out.res.h5"
-initfile ="bench_hubbard_large.out.ckp.h5"
-run_seconds = [INSERT NECESSARY VALUE HERE]
+//run_seconds = [INSERT NECESSARY VALUE HERE]
 
 use_compressed = 1
 calc_h2 = 1
