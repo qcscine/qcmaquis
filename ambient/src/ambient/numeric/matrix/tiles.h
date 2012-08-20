@@ -14,8 +14,6 @@ namespace ambient { namespace numeric {
 
         inline void* operator new (size_t);
         inline void operator delete (void* ptr);
-        inline void* operator new (size_t size, void* placement);
-        inline void operator delete (void*, void*);
         static inline tiles<Matrix> identity_matrix(size_type size);
 
         explicit inline tiles();
@@ -33,6 +31,8 @@ namespace ambient { namespace numeric {
         inline void resize(size_type rows, size_type cols); 
         inline void remove_rows(size_type i, size_type k = 1);
         inline void remove_cols(size_type j, size_type k = 1);
+        inline Matrix& operator[] (size_type k);
+        inline const Matrix& operator[] (size_type k) const;
         inline tiles& operator += (const tiles& rhs);
         inline tiles& operator -= (const tiles& rhs);
         template <typename T2> inline tiles& operator *= (const T2& t);

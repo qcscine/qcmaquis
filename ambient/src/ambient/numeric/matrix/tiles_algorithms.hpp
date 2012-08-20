@@ -13,7 +13,7 @@ inline size_t __a_mod(size_t size, size_t tile){
     return mask[!mask[0]];
 }
 
-inline size_t __a_mod2(size_t size, size_t tile){
+inline size_t __a_mod_classic(size_t size, size_t tile){
     size_t m = size % tile;
     if(m == 0) m = tile;
     return m;
@@ -54,12 +54,12 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, class DiagonalMatrix>
     inline void svd(const tiles<Matrix>& a, tiles<Matrix>& u, tiles<Matrix>& vt, tiles<DiagonalMatrix>& s){
-
+        svd(a[0], u[0], vt[0], s[0]);
     }
 
     template<class Matrix, class DiagonalMatrix>
     inline void heev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
-
+        heev(a[0], evecs[0], evals[0]);
     }
 
     template<class Matrix, class DiagonalMatrix>
@@ -68,11 +68,13 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix> 
-    inline void qr(const tiles<Matrix>& a, tiles<Matrix>& q, tiles<Matrix>& r){ 
+    inline void qr(const tiles<Matrix>& a, tiles<Matrix>& q, tiles<Matrix>& r){
+       qr(a[0], q[0], r[0]); 
     }
 
     template<class Matrix> 
     inline void lq(const tiles<Matrix>& a, tiles<Matrix>& l, tiles<Matrix>& q){ 
+       qr(a[0], l[0], q[0]); 
     } 
 
     template<class Matrix>
@@ -92,30 +94,30 @@ namespace ambient { namespace numeric {
 
         for(int j = 0; j < nb_min; j++){
             for(int i = 0; i < mb_min; i++){
-                r.data[i+j*mb] = m.data[i+j*mbo];
+                r[i+j*mb] = m[i+j*mbo];
             }
         }
         if(mb > mbo){
             for(int j = 0; j < nb_min; j++){
-                Matrix& block = r.data[mb_min-1 + j*mb];
+                Matrix& block = r[mb_min-1 + j*mb];
                 resize(block, TILE_SIZE, block.num_cols());
             }
         }else{
             size_t margin = __a_mod(rows, TILE_SIZE);
             for(int j = 0; j < nb; j++){
-                Matrix& block = r.data[mb-1 + j*mb];
+                Matrix& block = r[mb-1 + j*mb];
                 resize(block, margin, block.num_cols());
             }
         }
         if(nb > nbo){
             for(int i = 0; i < mb_min; i++){
-                Matrix& block = r.data[i + (nb_min-1)*mb];
+                Matrix& block = r[i + (nb_min-1)*mb];
                 resize(block, block.num_rows(), TILE_SIZE);
             }
         }else{
             size_t margin = __a_mod(cols, TILE_SIZE);
             for(int i = 0; i < mb; i++){
-                Matrix& block = r.data[i + (nb-1)*mb];
+                Matrix& block = r[i + (nb-1)*mb];
                 resize(block, block.num_rows(), margin);
             }
         }
@@ -180,7 +182,7 @@ namespace ambient { namespace numeric {
         t.reserve(mb*nb);
         for(int i = 0; i < mb; i++){
             for(int j = 0; j < nb; j++){
-                Matrix* block = a.data[i+mb*j];
+                Matrix* block = a[i+mb*j];
                 transpose_inplace(block);
                 t.push_back(block);
             }
@@ -196,7 +198,7 @@ namespace ambient { namespace numeric {
         int mb = __a_ceil(a.num_rows()/TILE_SIZE);
         for(int j = 0; j < nb; i++){
             for(int i = 0; i < mb; j++){
-                t.data[j+i*nb] = transpose(a.data[i+j*mb]);
+                t[j+i*nb] = transpose(a[i+j*mb]);
             }
         }
     }
@@ -215,7 +217,7 @@ namespace ambient { namespace numeric {
     inline void generate(tiles<Matrix>& m, G g){
         int size = m.data.size();
         for(int i = 0; i < size; i++){
-            generate(m.data[i], g);
+            generate(m[i], g);
         }
     }
 
@@ -233,7 +235,7 @@ namespace ambient { namespace numeric {
     inline void add_inplace(tiles<Matrix>& lhs, const tiles<Matrix>& rhs){ 
         int size = lhs.data.size();
         for(int i = 0; i < size; i++){
-            lhs.data[i] += rhs.data[i];
+            lhs[i] += rhs[i];
         }
     }
 
@@ -241,7 +243,7 @@ namespace ambient { namespace numeric {
     inline void sub_inplace(tiles<Matrix>& lhs, const tiles<Matrix>& rhs){ 
         int size = lhs.data.size();
         for(int i = 0; i < size; i++){
-            lhs.data[i] -= rhs.data[i];
+            lhs[i] -= rhs[i];
         }
     }
 
@@ -254,7 +256,7 @@ namespace ambient { namespace numeric {
     inline void mul_inplace(tiles<Matrix>& a, const scalar_type& rhs) { 
         int size = a.data.size();
         for(int i = 0; i < size; i++){
-            a.data[i] *= rhs;
+            a[i] *= rhs;
         }
     }
 
@@ -262,7 +264,7 @@ namespace ambient { namespace numeric {
     inline void div_inplace(tiles<Matrix>& a, const scalar_type& rhs){
         int size = a.data.size();
         for(int i = 0; i < size; i++){
-            a.data[i] /= rhs;
+            a[i] /= rhs;
         }
     }
 
