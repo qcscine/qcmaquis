@@ -63,8 +63,8 @@ public:
     void normalize_left();
     void normalize_right();
     
-    void move_normalization_l2r(size_t p1, size_t p2, DecompMethod method);
-    void move_normalization_r2l(size_t p1, size_t p2, DecompMethod method);
+    void move_normalization_l2r(size_t p1, size_t p2, DecompMethod method=DefaultSolver());
+    void move_normalization_r2l(size_t p1, size_t p2, DecompMethod method=DefaultSolver());
     
     std::string description() const;
     
