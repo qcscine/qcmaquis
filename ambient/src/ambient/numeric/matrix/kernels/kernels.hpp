@@ -736,17 +736,17 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct cast_to_vector : public kernel< cast_to_vector<T> > 
     {
-        typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix<T>&, const size_t&, const size_t&);
+        typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix<T>&, const size_t&, const size_t&, const size_t&);
 
-        inline void l(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
+        inline void l(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& offset){
             pin(current(a));
         }
 
-        inline void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n){
+        inline void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& offset){
             // gs
             __A_TIME_C("ambient_cast_to_vector_c_kernel"); 
             T* ad = c_current(a);
-            for(int j=0; j < n; ++j) memcpy((void*)&(*ac)[j*m],(void*)&ad[j*m], m*sizeof(T));  
+            for(int j=0; j < n; ++j) memcpy((void*)&(*ac)[j*m + offset],(void*)&ad[j*m], m*sizeof(T));  
             __A_TIME_C_STOP
         }
     };
@@ -787,15 +787,42 @@ namespace ambient { namespace numeric { namespace kernels {
        
             for(size_t ii=0; ii < __a_get_dim(a).y; ++ii){
                 for(size_t jj=0; jj < __a_get_dim(a).x; ++jj){
-                    if(jj < std::min(__a_get_dim(a).x,__a_get_dim(b).x) && 
-                       ii < std::min(__a_get_dim(a).y,__a_get_dim(b).y)  )
-                    {
-                        position_xy = jj*__a_get_dim(a).y+ii;
-                        res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
-                        if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
-                            std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
-                            ret.get_value() = false; // test failed return 0 (bool false)
-                        }
+                    position_xy = jj*__a_get_dim(a).y+ii;
+                    res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
+                    if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
+                        std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
+                        ret.get_value() = false; // test failed return 0 (bool false)
+                    }
+                }
+            }
+        }
+    };
+
+    template<typename T>
+    struct validation_t : public kernel< validation_t<T> > 
+    {
+        typedef void (validation_t::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
+
+        inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
+            pin(current(a));  //if(!ctxt.involved()) return;
+            assign(current(b)); 
+        }
+        
+        inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
+            T* ad = c_current(a); 
+            T* bd = c_current(b); 
+            double res; 
+            double epsilon = std::numeric_limits<double>::epsilon();
+            size_t position_xy, position_xy_t; 
+       
+            for(size_t ii=0; ii < __a_get_dim(a).y; ++ii){
+                for(size_t jj=0; jj < __a_get_dim(a).x; ++jj){
+                    position_xy = jj*__a_get_dim(a).y+ii;
+                    position_xy_t = ii*__a_get_dim(a).y+jj;
+                    res = (norm(ad[position_xy])-norm(bd[position_xy_t]))/fabs(epsilon*norm(bd[position_xy_t])); // to do : rotation pb  with complex to change
+                    if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
+                        std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy_t] << std::endl;
+                        ret.get_value() = false; // test failed return 0 (bool false)
                     }
                 }
             }

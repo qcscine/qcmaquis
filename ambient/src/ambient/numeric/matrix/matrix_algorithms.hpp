@@ -262,8 +262,17 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     bool operator == (const matrix<T>& a, const matrix<T>& b){
+        if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)) return false;
         ambient::future<bool> ret(true);
         kernels::validation<T>::spawn(a, b, ret); 
+        return (bool)ret;
+    }
+
+    template<typename T>
+    bool operator == (const matrix<T>& a, const transpose_view<matrix<T> >& b){
+        if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)) return false;
+        ambient::future<bool> ret(true);
+        kernels::validation_t<T>::spawn(a, b, ret); 
         return (bool)ret;
     }
 

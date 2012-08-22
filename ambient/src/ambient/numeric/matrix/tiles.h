@@ -1,5 +1,7 @@
-#ifndef __AMBIENT_NUMERIC_MATRIX_H__
-#define __AMBIENT_NUMERIC_MATRIX_H__
+#ifndef __AMBIENT_NUMERIC_TILES_H__
+#define __AMBIENT_NUMERIC_TILES_H__
+
+#define TILE_SIZE 16384 //256
 
 namespace ambient { namespace numeric {
 
@@ -20,6 +22,7 @@ namespace ambient { namespace numeric {
         explicit inline tiles(size_type rows, size_type cols, value_type init_value = value_type()); 
         inline tiles(const tiles& m);
         tiles& operator = (const tiles& rhs); 
+        inline ~tiles();
     public:
         inline size_type num_rows() const;
         inline size_type num_cols() const;

@@ -21,6 +21,7 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::size_type size_type; 
         typedef typename Matrix::value_type value_type;
         typedef typename Matrix::scalar_type scalar_type;
+        typedef typename Matrix::difference_type difference_type;
         inline void* operator new (size_t);
         inline void operator delete (void*);
         explicit transpose_view(const Matrix& m);
