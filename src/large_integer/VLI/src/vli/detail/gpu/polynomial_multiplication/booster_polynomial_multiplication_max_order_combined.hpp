@@ -29,7 +29,6 @@
  */
 
 #define VLI__ExtendStride extend_stride<Var0, Order>::value // 2*order+1
-#include<algorithm>
 
 namespace vli {
     namespace detail {
