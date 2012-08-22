@@ -50,6 +50,38 @@ namespace ambient { namespace numeric {
         size_t cols;
     };
 
+    template <typename T>
+    class tiles<ambient::numeric::diagonal_matrix<T> > {
+    public:
+        typedef typename diagonal_matrix<T>::value_type  value_type;
+        typedef typename diagonal_matrix<T>::size_type   size_type;
+        typedef typename diagonal_matrix<T>::real_type   real_type;
+        typedef typename diagonal_matrix<T>::scalar_type scalar_type;
+        typedef typename diagonal_matrix<T>::difference_type difference_type;
+
+        inline void* operator new (size_t);
+        inline void operator delete (void* ptr);
+
+        explicit inline tiles(size_type size, value_type init_value = value_type()); 
+        inline tiles(const tiles& m);
+        tiles& operator = (const tiles& rhs); 
+        inline ~tiles();
+    public:
+        inline size_type num_rows() const;
+        inline size_type num_cols() const;
+        inline void swap(tiles& r);
+        inline void resize(size_type rows, size_type cols); 
+        inline void remove_rows(size_type i, size_type k = 1);
+        inline void remove_cols(size_type j, size_type k = 1);
+        inline diagonal_matrix<T>& operator[] (size_type k);
+        inline const diagonal_matrix<T>& operator[] (size_type k) const;
+        inline value_type& operator() (size_type i, size_type j);
+        inline const value_type& operator() (size_type i, size_type j) const;
+    public:
+        std::vector<diagonal_matrix<T>*> data;
+        size_t size;
+    };
+
 } }
 
 #endif

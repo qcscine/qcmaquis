@@ -35,10 +35,47 @@ namespace ambient { namespace numeric {
         return false;
     }
 
-    template<class MatrixA, class MatrixB, typename MatrixC>
+    template<class Matrix>
+    inline void merge(tiles<Matrix>& a){
+        if(a.data.size() == 1) return;
+        int mb = __a_ceil(a.rows/TILE_SIZE);
+        int nb = __a_ceil(a.cols/TILE_SIZE);
+
+        std::vector<Matrix*> merge; 
+        merge.push_back(new Matrix(a.rows, a.cols));
+
+        for(int j = 0; j < nb; j++){
+            for(int i = 0; i < mb; i++){
+                Matrix* src = a.data[i+j*mb];
+                copy(*merge[0], i*TILE_SIZE, j*TILE_SIZE, *src, 0, 0, src->num_rows(), src->num_cols());
+                delete src;
+            }
+        }
+        std::swap(a.data, merge);
+    }
+
+    template<class Matrix>
+    inline void split(tiles<Matrix>& a){
+        if(a.data.size() != 1) return;
+        int mb = __a_ceil(a.rows/TILE_SIZE);
+        int nb = __a_ceil(a.cols/TILE_SIZE);
+
+        tiles<Matrix> split(a.rows, a.cols);
+        Matrix& src = a[0];
+
+        for(int j = 0; j < nb; j++){
+            for(int i = 0; i < mb; i++){
+                Matrix& dst = split[i+j*mb];
+                copy(dst, 0, 0, src, i*TILE_SIZE, j*TILE_SIZE, dst.num_rows(), dst.num_cols());
+            }
+        }
+        swap(a, split);
+    }
+
+    template<class MatrixA, class MatrixB, class MatrixC>
     inline void gemm(const tiles<MatrixA>& a, const tiles<MatrixB>& b, tiles<MatrixC>& c){
-        int nb = __a_ceil(c.cols/TILE_SIZE);
         int mb = __a_ceil(c.rows/TILE_SIZE);
+        int nb = __a_ceil(c.cols/TILE_SIZE);
         int kb = __a_ceil(a.cols/TILE_SIZE);
         int lda = __a_ceil(a.rows/TILE_SIZE);
         int ldb = __a_ceil(b.rows/TILE_SIZE);
@@ -59,6 +96,32 @@ namespace ambient { namespace numeric {
                 __a_reduce(ctree);
                 for(int k = 1; k < kb; k++) 
                     delete ctree[k];
+            }
+        }
+    }
+
+    template<class MatrixA, class MatrixC, typename T>
+    inline void gemm(const tiles<MatrixA>& a, const tiles<diagonal_matrix<T> >& b, tiles<MatrixC>& c){
+        int mb = __a_ceil(c.rows/TILE_SIZE);
+        int nb = __a_ceil(c.cols/TILE_SIZE);
+        int lda = __a_ceil(a.rows/TILE_SIZE);
+
+        for(int i = 0; i < mb; i++){
+            for(int j = 0; j < nb; j++){
+                gemm(a[i + j*lda], b[j], c[i + mb*j]);
+            }
+        }
+    }
+
+    template<class MatrixB, class MatrixC, typename T>
+    inline void gemm(const tiles<diagonal_matrix<T> >& a, const tiles<MatrixB>& b, tiles<MatrixC>& c){
+        int mb = __a_ceil(c.rows/TILE_SIZE);
+        int nb = __a_ceil(c.cols/TILE_SIZE);
+        int ldb = __a_ceil(b.rows/TILE_SIZE);
+
+        for(int i = 0; i < mb; i++){
+            for(int j = 0; j < nb; j++){
+                gemm(a[i], b[i + j*ldb], c[i + mb*j]);
             }
         }
     }

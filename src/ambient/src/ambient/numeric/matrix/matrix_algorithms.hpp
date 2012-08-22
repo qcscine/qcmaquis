@@ -251,8 +251,16 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void copy(matrix<T>& ac, const matrix<T>& a){ 
-        kernels::copy<T>::spawn(ac, a); 
+    inline void copy(matrix<T>& dst, const matrix<T>& src){ 
+        kernels::copy<T>::spawn(dst, src); 
+    }
+
+    template<typename T>
+    inline void copy(matrix<T>& dst, size_t di, size_t dj, 
+                     const matrix<T>& src, size_t si, size_t sj, 
+                     size_t m, size_t n)
+    { 
+        kernels::copy_partial<T>::spawn(dst, di, dj, src, si, sj, m, n); 
     }
 
     template<typename T>
