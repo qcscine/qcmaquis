@@ -27,49 +27,28 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/utils/gpu_manager.h"
+#ifndef __GPU_MANAGER__
+#define __GPU_MANAGER__
 
-namespace gpu 
-{
-	gpu_manager::gpu_manager(int device = 0):device_(device)
-	{
-		cuInit(device_);
-		cudaGetDeviceProperties(&deviceProp_, device_);
-	}
+#include <cuda.h>
 
-        gpu_manager::~gpu_manager()
-	{
-	}
-    
-	gpu_manager& gpu_manager::instance()
-	{
-		static gpu_manager* singleton = NULL;
-		if (!singleton)
-		{
-			singleton = new gpu_manager();
-		}
-		return *singleton;
-	}
-    
-    void gpu_manager::constructor()
-    {
-        this->instance();        
-    }
-    
-	void gpu_manager::destructor()
-	{
-	}
-	
-    std::size_t gpu_manager::GetmaxThreadsPerBlock()
-    {
-        return this->instance().GetDeviceProperties().maxThreadsPerBlock; 
-    }    
-    	
-	cudaDeviceProp gpu_manager::GetDeviceProperties() const
-	{
-		return deviceProp_;
-	}
-	
-	
+#include "boost/lexical_cast.hpp"
+#include <cuda_runtime_api.h>
+#include <stdexcept>
+
+namespace gpu {    
+     // static because this file shared between cpu and gpu, else error link
+     static void cu_check_error(cudaError_t  const& err, std::size_t line) {
+        switch (err) {
+            case cudaSuccess:
+                break;
+           
+            default:
+                char const* cuda_msg = cudaGetErrorString(err);
+                throw(std::runtime_error("CUDA error (Error:"+ boost::lexical_cast<std::string>(err) +") in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) + "\n cuda message:" + std::string(cuda_msg) ));
+                // break  I think the "throw" break the exception
+        }
+     }
 }
 
+#endif

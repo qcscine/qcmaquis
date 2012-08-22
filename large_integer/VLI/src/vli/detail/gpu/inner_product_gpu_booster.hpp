@@ -38,7 +38,7 @@
 #include <omp.h>
 #endif
 
-#include "vli/utils/gpu_manager.h"
+#include "vli/utils/gpu_error_message.h"
 #include "utils/timings.h"
 
 #include "vli/detail/kernels_gpu.h"

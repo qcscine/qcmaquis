@@ -34,7 +34,7 @@ namespace vli {
     namespace detail {
 
 	struct single_coefficient_task {
-		unsigned short step_count; // how many time the coeff wil be calculate
+		unsigned int step_count; // how many time the coeff wil be calculate
 		unsigned char output_degree_x;
 		unsigned char output_degree_y;
 		unsigned char output_degree_z;
