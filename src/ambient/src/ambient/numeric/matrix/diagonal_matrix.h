@@ -13,6 +13,8 @@ namespace ambient { namespace numeric {
         typedef matrix<T> container;
         typedef typename container::difference_type difference_type;
         typedef typename container::value_type value_type;
+        typedef typename container::scalar_type scalar_type;
+        typedef typename container::real_type real_type;
         typedef typename container::size_type size_type;
         
         inline diagonal_matrix(size_t rows, const value_type& init = value_type());

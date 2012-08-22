@@ -3,6 +3,7 @@
 
 #include "ambient/numeric/matrix/tiles.h"
 
+#define value_type      typename tiles<Matrix>::value_type
 #define size_type       typename tiles<Matrix>::size_type
 #define real_type       typename tiles<Matrix>::real_type
 #define scalar_type     typename tiles<Matrix>::scalar_type
@@ -20,14 +21,19 @@ inline size_t __a_mod_classic(size_t size, size_t tile){
 }
 
 template<typename T>
-inline T& __a_reduce(std::vector<T>& seq){
+inline void __a_reduce(std::vector<T*>& seq){
+    if(seq.size() == 1) return;
     for(int stride = 1; stride < seq.size(); stride *= 2)
         for(int k = stride; k < seq.size(); k += stride*2)
-            seq[k-stride] += seq[k];
-    return seq[0];
+            *seq[k-stride] += *seq[k];
 }
 
 namespace ambient { namespace numeric {
+
+    template<class Matrix>
+    bool is_hermitian(const tiles<Matrix>& m){
+        return false;
+    }
 
     template<class MatrixA, class MatrixB, typename MatrixC>
     inline void gemm(const tiles<MatrixA>& a, const tiles<MatrixB>& b, tiles<MatrixC>& c){
@@ -39,15 +45,20 @@ namespace ambient { namespace numeric {
 
         for(int i = 0; i < mb; i++){
             for(int j = 0; j < nb; j++){
-                std::vector<MatrixC> ctree;
-                ctree.reserve(kb);
+                std::vector<MatrixC*> ctree; ctree.reserve(kb);
+                ctree.push_back(&c[i + mb*j]);
+                size_t rows = c[i + mb*j].num_rows();
+                size_t cols = c[i + mb*j].num_cols();
+                for(int k = 1; k < kb; k++) 
+                    ctree.push_back(new MatrixC(rows, cols));
                 for(int k = 0; k < kb; k++){
-                    MatrixA ab = a[i + kb*lda];
-                    MatrixB bb = b[kb + j*ldb];
-                    ctree.push_back(MatrixC(ab.num_rows(), bb.num_cols()));
-                    gemm(ab, bb, ctree[k]);
+                    const MatrixA& ab = a[i + k*lda];
+                    const MatrixB& bb = b[k + j*ldb];
+                    gemm(ab, bb, *ctree[k]);
                 }
-                c[i + mb*j] = __a_reduce(ctree);
+                __a_reduce(ctree);
+                for(int k = 1; k < kb; k++) 
+                    delete ctree[k];
             }
         }
     }
@@ -63,8 +74,8 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix, class DiagonalMatrix>
-    inline void heev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
-        heev(a, evecs, evals);
+    inline void syev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
+        syev(a[0], evecs[0], evals[0]);
     }
 
     template<class Matrix> 
@@ -78,11 +89,12 @@ namespace ambient { namespace numeric {
     } 
 
     template<class Matrix>
-    inline tiles<Matrix> exp(const tiles<Matrix>& m, const T& alfa = 1.){
+    inline tiles<Matrix> exp(const tiles<Matrix>& m, const value_type& alfa = 1.){
         assert(false); printf("ERROR: NOT TESTED (EXP)\n");
     }
 
-    template<class Matrix> inline void resize(tiles<Matrix>& m, size_t rows, size_t cols){ 
+    template<class Matrix> 
+    inline void resize(tiles<Matrix>& m, size_t rows, size_t cols){ 
         if(m.num_rows() == rows && m.num_cols() == cols) return;
         tiles<Matrix> r(rows, cols);
         int nb = __a_ceil(cols/TILE_SIZE);
@@ -121,40 +133,50 @@ namespace ambient { namespace numeric {
                 resize(block, block.num_rows(), margin);
             }
         }
+        swap(m, r);
     }
 
-    template<class Matrix> inline scalar_type trace(const tiles<Matrix>& m){
-        int nb = __a_ceil(a.num_cols()/TILE_SIZE);
-        int mb = __a_ceil(a.num_rows()/TILE_SIZE);
+    template<class Matrix> 
+    inline void sqrt_inplace(tiles<Matrix>& m){
+        assert(false); printf("ERROR: NOT TESTED (SQRT DIAG)\n");
+    }
+
+    template<class Matrix> 
+    inline scalar_type trace(const tiles<Matrix>& m){
+        int nb = __a_ceil(m.num_cols()/TILE_SIZE);
+        int mb = __a_ceil(m.num_rows()/TILE_SIZE);
         int size = std::min(nb, mb);
-        Matrix::scalar_type result(0);
-        std::vector<Matrix::scalar_type> parts;
+        scalar_type result(0.);
+        std::vector<scalar_type> parts;
         parts.reserve(size);
 
-        for(int k = 0; k < size; k++) parts[k + k*mb] = trace(a[k]);
+        for(int k = 0; k < size; k++) parts.push_back(trace(m[k + k*mb]));
         for(int k = 0; k < size; k++) result += parts[k];
+        return result;
     }
 
     template <class Matrix>
-    inline real_type norm_square(const tiles<Matrix>& a){ 
-        int size = __a_ceil(a.num_cols()/TILE_SIZE) * __a_ceil(a.num_rows()/TILE_SIZE);
-        Matrix::scalar_type result(0);
-        std::vector<Matrix::scalar_type> parts;
+    inline real_type norm_square(const tiles<Matrix>& m){ 
+        int size = __a_ceil(m.num_cols()/TILE_SIZE) * __a_ceil(m.num_rows()/TILE_SIZE);
+        real_type result(0.);
+        std::vector<real_type> parts;
         parts.reserve(size);
 
-        for(int k = 0; k < size; k++) parts[k] = norm_square(a[k]);
+        for(int k = 0; k < size; k++) parts.push_back(norm_square(m[k]));
         for(int k = 0; k < size; k++) result += parts[k];
+        return result;
     }
 
     template <class Matrix>
     inline scalar_type overlap(const tiles<Matrix>& a, const tiles<Matrix>& b){
         int size = __a_ceil(a.num_cols()/TILE_SIZE) * __a_ceil(a.num_rows()/TILE_SIZE);
-        Matrix::scalar_type result(0);
-        std::vector<Matrix::scalar_type> parts;
+        scalar_type result(0.);
+        std::vector<scalar_type> parts;
         parts.reserve(size);
 
-        for(int k = 0; k < size; k++) parts[k] = overlap(a[k], b[k]);
+        for(int k = 0; k < size; k++) parts.push_back(overlap(a[k], b[k]));
         for(int k = 0; k < size; k++) result += parts[k];
+        return result;
     }
         
     template<class Matrix>
@@ -182,9 +204,9 @@ namespace ambient { namespace numeric {
         t.reserve(mb*nb);
         for(int i = 0; i < mb; i++){
             for(int j = 0; j < nb; j++){
-                Matrix* block = a[i+mb*j];
+                Matrix& block = a[i+mb*j];
                 transpose_inplace(block);
-                t.push_back(block);
+                t.push_back(&block);
             }
         }
         std::swap(a.rows, a.cols);
@@ -192,15 +214,19 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline tiles<Matrix> transpose(const tiles<Matrix>& a){
-        tiles<Matrix> t(a.num_cols(), a.num_rows());
+    inline tiles<transpose_view<Matrix> > transpose(const tiles<Matrix>& a){
+        tiles<transpose_view<Matrix> > t;
         int nb = __a_ceil(a.num_cols()/TILE_SIZE);
         int mb = __a_ceil(a.num_rows()/TILE_SIZE);
-        for(int j = 0; j < nb; i++){
-            for(int i = 0; i < mb; j++){
-                t[j+i*nb] = transpose(a[i+j*mb]);
-            }
-        }
+        std::vector<transpose_view<Matrix>*> data;
+        data.reserve(mb*nb);
+        for(int i = 0; i < mb; i++)
+            for(int j = 0; j < nb; j++)
+                data.push_back(new transpose_view<Matrix>(a[i+mb*j]));
+        std::swap(t.data, data);
+        t.cols = a.num_rows();
+        t.rows = a.num_cols();
+        return t;
     }
 
     template<class Matrix>
