@@ -84,8 +84,8 @@ typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_p
     #else
         typename inner_product_result_type<vector_polynomial<Polynomial> >::type res;
     #endif 
-   
-    #pragma omp parallel for schedule(dynamic)
+
+    #pragma omp parallel for schedule(dynamic) 
     for(std::size_t i=0 ; i < size_v ; ++i){
         #ifdef _OPENMP
            res[omp_get_thread_num()] += v1[i]*v2[i];

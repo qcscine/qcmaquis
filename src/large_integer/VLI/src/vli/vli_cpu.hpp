@@ -53,8 +53,11 @@ namespace detail {
 // C - constructors, copy-swap, access operators
 template<typename BaseInt, std::size_t Size>
 vli_cpu<BaseInt, Size>::vli_cpu(){
-    for(size_type i=0; i<size; ++i)
-        data_[i] = 0; 
+// C - I change because the compiler complains  warning: dereferencing pointer ‘<anonymous>’
+// does break strict-aliasing rules, memset is no so bad 
+    memset((void*)data_,0,Size*sizeof(BaseInt));
+//    for(size_type i=0; i<Size; ++i)
+//        data_[i] = 0; 
 }
 
 template<typename BaseInt, std::size_t Size>

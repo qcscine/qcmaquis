@@ -35,16 +35,16 @@ namespace vli {
     tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
-        cudaMalloc((void**)&(this->execution_plan_), MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, Var3>::value*MaxIterationCount<max_order_each<Order>, Var0, Var1, Var2, Var3>::value*sizeof(single_coefficient_task));
-        cudaMalloc((void**)&(this->workblock_count_by_warp_), MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, Var3>::value/32*sizeof(unsigned int));
+        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, Var3>::value*MaxIterationCount<max_order_each<Order>, Var0, Var1, Var2, Var3>::value*sizeof(single_coefficient_task)),__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, Var3>::value/32*sizeof(unsigned int)),__LINE__);
         element_count_prepared=0;
         plan();
     }
 
     template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::~tasklist_keep_order(){
-        cudaFree(this->execution_plan_);
-        cudaFree(this->workblock_count_by_warp_);
+        gpu::cu_check_error(cudaFree(this->execution_plan_),__LINE__);
+        gpu::cu_check_error(cudaFree(this->workblock_count_by_warp_),__LINE__);
     } 
 
     template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
@@ -98,8 +98,8 @@ namespace vli {
                 work_total_by_size[warp_id] += max_step_count;
          }
         
-	 cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice);
-	 cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice);
+	 gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__LINE__);
+	 gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__LINE__);
     }
 
     } // end namespace detail

@@ -30,11 +30,11 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
 #include "vli/vli_config.h"
+#include <cassert>
 
-#ifdef __CUBLAS__
+#ifdef VLI_USE_GPU
 #include "cuda_runtime_api.h"
 #endif
-
 //prototype for removing warning of my compiler
 unsigned long getcpuclocks();
 
@@ -99,7 +99,7 @@ protected:
     unsigned long long freq, nCounter;
 };
 
-#ifdef __CUBLAS__
+#ifdef VLI_USE_GPU
 class TimerCuda : public Timer
 {
 public:

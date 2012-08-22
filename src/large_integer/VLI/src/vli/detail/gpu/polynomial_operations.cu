@@ -31,7 +31,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
-
+#include "vli/utils/gpu_error_message.h"
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu + structure max_order_each, max_order_combined
 #include "vli/detail/gpu/utils/variables_gpu.h" //compile time  variable
 #include "vli/detail/gpu/tasklist/tasklist.h" //tasklist

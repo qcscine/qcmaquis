@@ -46,7 +46,7 @@ endif(NOT MACHINE_CONFIG)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
-set (VLI_COMPILE_TYPES "((unsigned long int,2,10,1))((unsigned long int,2,10,2))((unsigned long int,2,10,3))((unsigned long int,2,10,4))((unsigned long int,3,10,1))((unsigned long int,3,10,2))((unsigned long int,3,10,3))((unsigned long int,3,10,4))((unsigned long int,4,10,1))((unsigned long int,4,10,2))((unsigned long int,4,10,3))((unsigned long int,4,10,4)) " CACHE STRING "BaseInt, Size VLI, Order Poly, number of variables into polynomials")
+set (VLI_COMPILE_TYPES "((unsigned long int,3,5,1))((unsigned long int,3,5,2))((unsigned long int,3,5,3))((unsigned long int,3,5,4))" CACHE STRING "BaseInt, Size VLI, Order Poly, number of variables into polynomials")
 
 ########################################################################
 #
@@ -61,7 +61,7 @@ endif(VLI_USE_OPENMP)
 if (VLI_COMPILE_GPU)
    find_package (CUDA)
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_20")
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_20 --ptxas-options=-v") 
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_20 --ptxas-options=-v  -D__cudart_builtin__=__device__") 
    include_directories(${CUDA_INCLUDE_DIRS})
 else (VLI_COMPILE_GPU)
    set (CUDA_LIBRARIES "")
