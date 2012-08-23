@@ -40,10 +40,10 @@ namespace vli {
     namespace detail {
 
     #define VLI_DECLARE_GPU_FUNCTIONS(TYPE, VLI_SIZE, POLY_ORDER, VAR) \
-        template<std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3 >      \
+        template<std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3 >      \
         void gpu_inner_product_vector(std::size_t vector_size, TYPE const * A, TYPE const * B); \
         \
-        template<std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3 >      \
+        template<std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3 >      \
         unsigned int * gpu_get_polynomial(); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
    
     #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_ORDER_VAR_TUPLE) \

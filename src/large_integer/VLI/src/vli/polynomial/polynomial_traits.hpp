@@ -5,7 +5,7 @@ namespace vli {
 
 class no_variable;
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 class polynomial;
 
 
@@ -29,35 +29,15 @@ template <class Polynomial>
 struct polynomial_multiply_keep_order_result_type {
 };
 
-template <typename Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_keep_order_result_type< polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> type;
+template <typename Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+struct polynomial_multiply_keep_order_result_type< polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > {
+    typedef polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> type;
 };
 
-
-template <typename Polynomial>
-struct exponent_type{
-    typedef typename Polynomial::exponent_type type;
-};
 
 template <class Polynomial>
-struct iterator {
-    typedef typename Polynomial::iterator type;
-};
-
-template <class Polynomial>
-struct const_iterator {
-    typedef typename Polynomial::const_iterator type;
-};
-
-template <class Polynomial>
-struct element_descriptor {
-    typedef typename Polynomial::element_descriptor type;
-};
-
-template <class Polynomial>
-struct order_specification {
-    typedef typename Polynomial::order_specification type;
+struct max_order {
+    typedef typename Polynomial::max_order type;
 };
 
 template <class Polynomial, unsigned int N>

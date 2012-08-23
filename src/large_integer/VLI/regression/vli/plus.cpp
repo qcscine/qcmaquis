@@ -1,6 +1,6 @@
-#include <regression/vli_cpu/test_header.hpp>
+#include <regression/vli/test_header.hpp>
 
-using namespace vli::test;
+using namespace vlilib::test;
 
 VLI_FUZZABLE_TEST( plus_assign_plus_equivalence )
 {
@@ -44,11 +44,11 @@ VLI_FUZZABLE_TEST( plus_assign_plus_equivalence_int )
 VLI_STATIC_TEST( plus_assign_carry )
 {
     vli_type a,b,c;
-    for(std::size_t i(0); i < vli_type::size-1; ++i) 
+    for(std::size_t i(0); i < vli_type::numwords-1; ++i) 
         a[i] = static_cast<vli_type::value_type>(-1);  
     b[0] = 1;
     a+=b; 
-    c[vli_type::size-1] = 1;  
+    c[vli_type::numwords-1] = 1;  
     BOOST_CHECK_EQUAL(a,c);
 }
 

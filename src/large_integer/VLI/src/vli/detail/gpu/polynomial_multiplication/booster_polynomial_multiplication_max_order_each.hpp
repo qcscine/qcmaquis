@@ -37,7 +37,7 @@ namespace vli {
 *  on fermi 2 variables with cloud = 0.22 s withou 0.17 s, to retest on kerpler and remove if necessarry
 * just recopy the 4 variables version (compatible 1 <-> 4) into polynomial_mul_full_kepler and remove the booster    
 */
-    template <typename BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <typename BaseInt, std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     struct booster;
 
     // 4 variables
@@ -61,7 +61,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * stride<Var3,Order>::value * Size;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, Var3>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -174,7 +174,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<Var0,Order>::value * stride<Var1,Order>::value *  stride<Var2,Order>::value * Size;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, vli::no_variable>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, Var0, Var1, Var2, vli::no_variable>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -276,7 +276,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<Var0,Order>::value * stride<Var1,Order>::value * Size;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<max_order_each<Order>, Var0, Var1, vli::no_variable, vli::no_variable>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, Var0, Var1, vli::no_variable, vli::no_variable>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -363,7 +363,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<Var0,Order>::value * Size;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * MulBlockSize<max_order_each<Order>, Var0, vli::no_variable, vli::no_variable, vli::no_variable>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, Var0, vli::no_variable, vli::no_variable, vli::no_variable>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {

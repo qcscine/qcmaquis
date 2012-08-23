@@ -49,11 +49,11 @@
 // the red zone is a zone of 128 bytes, enough for my arithmetic        
 
 // to check :  g++ -E -P -I /BOOST_PATH/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
-namespace vli{
+namespace vlilib{
     namespace detail{
                      //new functions type : VLI<n*64> *= long int;
                      #define FUNCTION_mul_nbits_64bits(z, n, unused) \
-                         void NAME_MUL_NBITS_64BITS(n)(unsigned long int* x, unsigned long int const* y){           \
+                         void NAME_MUL_NBITS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){           \
                          asm(                                                                                       \
                              "movq (%%rsi)          ,%%rax                  \n" /* a0 into rax */                   \
                              "xorq %%rcx            ,%%rcx                  \n" /* rcx to 0 */                      \
@@ -97,7 +97,7 @@ namespace vli{
 /* PP_REPEAT limited to 3 nested */ 
 
                        #define BOOST_PP_LOCAL_MACRO(n) \
-                          void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))(unsigned long int* x, unsigned long int const* y){ \
+                          void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))( boost::uint64_t* x,  boost::uint64_t const* y){ \
                           asm(                                                                                            \
                               BOOST_PP_REPEAT(n, MULNTON0, BOOST_PP_SUB(n,1))                                             \
                               BOOST_PP_REPEAT(n, SAVEr_register, n) /* for saving */                                      \
@@ -109,7 +109,7 @@ namespace vli{
 
                        #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
 // the expansion gives
-//                      void mul192_192(unsigned long int* x, unsigned long int const * y){
+//                      void mul192_192( boost::uint64_t* x,  boost::uint64_t const * y){
 //                          asm( 
 //                              "movq 16(%%rsi)         ,%%rax    \n" // 0 
 //                              "mulq 0(%%rdi)                    \n"
@@ -143,7 +143,7 @@ namespace vli{
 //                      };
                      
 
-                       void mul128_64_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rcx */){
+                       void mul128_64_64( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rcx */){
                           asm( 
                               "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
                               "movq %%rdx            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
@@ -161,7 +161,7 @@ namespace vli{
 
 
 
-                       void mul256_128_128_old(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                       void mul256_128_128_old( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
 	                          asm( 
 	                              "subq $0x20            ,%%rsp             \n" /* create stack frame */           
 	                              "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
@@ -243,7 +243,7 @@ namespace vli{
 
 
 
-                      void mul256_128_128(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                      void mul256_128_128( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
                               "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   
@@ -307,7 +307,7 @@ namespace vli{
                               : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r13","r14","r15","memory"   
                               );
                       }
-                      void toto(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                      void toto( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                                asm( 
                             /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
                             /*38*/  "xorq %%r10            ,%%r10             \n" /* r9 = 0  due to carry effect */   
@@ -422,7 +422,7 @@ namespace vli{
                                ); 
                             }
 
-                      void mul384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                      void mul384_192_192( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                                asm( 
                             /*-01*/ "subq $0x30            ,%%rsp             \n" /* create stack frame */            
                             /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
@@ -545,7 +545,7 @@ namespace vli{
                                ); 
                             }
 
-                             void mul512_256_256(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                             void mul512_256_256( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                                 asm( 
                                     "subq $0x50            ,%%rsp             \n" /* destroy stack frame */           
                                     "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   

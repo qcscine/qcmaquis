@@ -1,8 +1,8 @@
-#include <regression/vli_cpu/test_header.hpp>
+#include <regression/vli/test_header.hpp>
 
 #include <gmpxx.h>
 
-using namespace vli::test;
+using namespace vlilib::test;
 
 VLI_FUZZABLE_TEST( gmp_multiplies_negative )
 {

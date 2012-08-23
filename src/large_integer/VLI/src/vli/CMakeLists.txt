@@ -5,8 +5,8 @@
 #
 ########################################################################
 configure_file (
-        "${PROJECT_SOURCE_DIR}/src/vli/vli_config.h.in"
-        "${PROJECT_BINARY_DIR}/vli/vli_config.h"
+        "${PROJECT_SOURCE_DIR}/src/vli/config.hpp.in"
+        "${PROJECT_BINARY_DIR}/vli/config.hpp"
         )
 
 
@@ -24,7 +24,7 @@ if(VLI_ARCH_POWER)
     set(ARCHITECTURE cpu_power)
 endif(VLI_ARCH_POWER)
 
-add_library(vli_cpu 
+add_library(vli 
             detail/${ARCHITECTURE}/kernels_cpu_add_asm.cpp
             detail/${ARCHITECTURE}/kernels_cpu_sub_asm.cpp
             detail/${ARCHITECTURE}/kernels_cpu_mul_asm.cpp

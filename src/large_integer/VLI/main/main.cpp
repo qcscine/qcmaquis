@@ -6,24 +6,24 @@
 //#include "vli/utils/gpu_manager.hpp"
 #endif //VLI_USE_GPU
 
-#include "vli/polynomial/vector_polynomial_cpu.hpp"
-#include "vli/polynomial/polynomial.hpp"
-#include "vli/vli_cpu.h"
-#include "vli/vli_traits.hpp"
+//#include "vli/polynomial/vector_polynomial_cpu.hpp"
+//#include "vli/polynomial/polynomial.hpp"
+#include "vli/vli.hpp"
 #include "utils/timings.h"
 
-#include "tools.h"
+//#include "tools.h"
 
 #define Size_vec 1024
 #define Order 10
 #define Size_vli 3
 
-using vli::vli_cpu;
-using vli::polynomial;
-using vli::vector_polynomial;
+using vlilib::vli;
+//using vlilib::polynomial;
+//using vlilib::vector_polynomial;
 //typedef vli
-typedef vli_cpu< unsigned long int, Size_vli> vli_type_cpu;
+typedef vli< 192> vli_type_cpu;
 //typedef poly max order each
+/*
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x;
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy;
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz;
@@ -66,7 +66,7 @@ typedef boost::mpl::vector<polynomial_type_each_x,
        #ifdef VLI_USE_GPU
        Timer t1("GPU ");
        t1.begin();
-       p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
+    //   p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
        t1.end();
       
        if(p1_res == p2_res) 
@@ -77,8 +77,13 @@ typedef boost::mpl::vector<polynomial_type_each_x,
        }
        }
    };
-   
-   int main(int argc, char* argv[]) {
-       boost::mpl::for_each<polynomial_list>(test_case());
+   */
+int main(int argc, char* argv[]) {
+    
+    vli_type_cpu a(-212476);
+    std::cout << std::hex << a << std::endl;
+       
+
+//       boost::mpl::for_each<polynomial_list>(test_case());
        return 0;
    }

@@ -6,7 +6,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <stdexcept>
-#include <vli/vli_cpu.h>
+#include <vli/vli.hpp>
 #ifdef VLI_FUZZ_TESTS
 #include <ctime>
 #include <boost/lexical_cast.hpp>
@@ -20,8 +20,8 @@
     static void BOOST_PP_CAT(TEST_NAME,_test(Initalizer init)); \
     BOOST_AUTO_TEST_CASE( TEST_NAME )                           \
     {                                                           \
-        std::cout<<"Running "<<vli::test::fuzz_initializer::fuzz_iterations<<" iterations..."<<std::endl;    \
-        for(unsigned int i=0; i < vli::test::fuzz_initializer::fuzz_iterations; ++i)                                  \
+        std::cout<<"Running "<<vlilib::test::fuzz_initializer::fuzz_iterations<<" iterations..."<<std::endl;    \
+        for(unsigned int i=0; i < vlilib::test::fuzz_initializer::fuzz_iterations; ++i)                                  \
             BOOST_PP_CAT(TEST_NAME,_test(fuzz_initializer())); \
     }                                                           \
     template <typename Initalizer>                              \
@@ -42,12 +42,12 @@
     static void BOOST_PP_CAT(TEST_NAME,_test(Initalizer init))
 #endif // VLI_FUZZ_TESTS
 
-namespace vli {
+namespace vlilib{
 namespace test {
 
-typedef vli::vli_cpu<unsigned long int, VLI_SIZE> vli_type;
-typedef vli::vli_cpu<unsigned long int, 2*VLI_SIZE> vli_type_double;
-
+typedef vlilib::vli<VLI_SIZE*64> vli_type;
+typedef vlilib::vli<2*VLI_SIZE*64> vli_type_double;
+typedef vlilib::vli<2*VLI_SIZE*64>::value_type type;
     
 enum variant_enum {
       max_positive = 0      // fill with the max positive number
@@ -58,18 +58,18 @@ enum variant_enum {
 
 struct initializer {
     void operator()(vli_type& v, variant_enum variant = overflow_safe) {
-            for(std::size_t i=0; i != vli_type::size; ++i)
+            for(std::size_t i=0; i != vli_type::numwords; ++i)
                 v[i] = std::numeric_limits<vli_type::value_type>::max();
         switch(variant) {
             case overflow_safe:
-                v[vli_type::size-1] = 1;
+                v[vli_type::numwords-1] = 1;
                 break;
             case max_positive:
-                v[vli_type::size-1] = 0x7fffffffffffffff;
+                v[vli_type::numwords-1] = 0x7fffffffffffffff;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type::size/2-1] = 0x7fffffffffffffff;
-                for(std::size_t i=vli_type::size/2; i != vli_type::size; ++i)
+                v[vli_type::numwords/2-1] = 0x7fffffffffffffff;
+                for(std::size_t i=vli_type::numwords/2; i != vli_type::numwords; ++i)
                     v[i] = 0;
                 break;
             case fill_ff:
@@ -79,18 +79,18 @@ struct initializer {
         }
     }
     void operator()(vli_type_double& v, variant_enum variant = overflow_safe) {
-        for(std::size_t i=0; i != vli_type_double::size; ++i)
+        for(std::size_t i=0; i != vli_type_double::numwords; ++i)
             v[i] = std::numeric_limits<vli_type::value_type>::max();
         switch(variant) {
             case max_positive:
-                v[vli_type_double::size-1] = v[vli_type_double::size-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
+                v[vli_type_double::numwords-1] = v[vli_type_double::numwords-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
                 break;
             case overflow_safe:
-                v[vli_type_double::size-1] = 1;
+                v[vli_type_double::numwords-1] = 1;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type_double::size/2-1] = v[vli_type_double::size/2-1] & 0x7fffffffffffffff;
-                for(std::size_t i=vli_type_double::size/2; i != vli_type_double::size; ++i)
+                v[vli_type_double::numwords/2-1] = v[vli_type_double::numwords/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=vli_type_double::numwords/2; i != vli_type_double::numwords; ++i)
                     v[i] = 0;
                 break;
             default:
@@ -120,18 +120,18 @@ struct fuzz_initializer {
       static boost::random::uniform_int_distribution<int>                     int_plus_rnd;
     static unsigned int                                                     fuzz_iterations;
     void operator()(vli_type& v, variant_enum variant = overflow_safe) {
-        for(std::size_t i=0; i != vli_type::size; ++i)
+        for(std::size_t i=0; i != vli_type::numwords; ++i)
             v[i] = vli_value_type_max_rnd(rng);
         switch(variant) {
             case max_positive:
-                v[vli_type::size-1] = v[vli_type::size-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type::value_type)*8-1));
+                v[vli_type::numwords-1] = v[vli_type::numwords-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type::value_type)*8-1));
                 break;
             case overflow_safe:
-                v[vli_type::size-1] = 1;
+                v[vli_type::numwords-1] = 1;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type::size/2-1] = v[vli_type::size/2-1] & 0x7fffffffffffffff;
-                for(std::size_t i=vli_type::size/2; i != vli_type::size; ++i)
+                v[vli_type::numwords/2-1] = v[vli_type::numwords/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=vli_type::numwords/2; i != vli_type::numwords; ++i)
                     v[i] = 0;
                 break;
             default:
@@ -139,18 +139,18 @@ struct fuzz_initializer {
         }
     }
     void operator()(vli_type_double& v, variant_enum variant = overflow_safe) {
-        for(std::size_t i=0; i != vli_type_double::size; ++i)
+        for(std::size_t i=0; i != vli_type_double::numwords; ++i)
             v[i] = vli_value_type_max_rnd(rng);
         switch(variant) {
             case max_positive:
-                v[vli_type_double::size-1] = v[vli_type_double::size-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
+                v[vli_type_double::numwords-1] = v[vli_type_double::numwords-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
                 break;
             case overflow_safe:
-                v[vli_type_double::size-1] = 1;
+                v[vli_type_double::numwords-1] = 1;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type_double::size/2-1] = v[vli_type_double::size/2-1] & 0x7fffffffffffffff;
-                for(std::size_t i=vli_type_double::size/2; i != vli_type_double::size; ++i)
+                v[vli_type_double::numwords/2-1] = v[vli_type_double::numwords/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=vli_type_double::numwords/2; i != vli_type_double::numwords; ++i)
                     v[i] = 0;
                 break;
             default:
@@ -176,22 +176,22 @@ boost::random::uniform_int_distribution<int>                  fuzz_initializer::
 #endif // VLI_FUZZ_TESTS
 
 
-template <typename T>
+template <typename  T>
 struct extended {
 };
 
-template <typename T, std::size_t Size>
-struct extended<vli::vli_cpu<T,Size> > {
-    typedef vli::vli_cpu<T,Size+1> type;
+template <std::size_t NumBits>
+struct extended<vlilib::vli<NumBits> > {
+    typedef vlilib::vli<NumBits+64> type;
 };
 
 template <typename T>
 struct double_sized_vli {
 };
 
-template <typename T, std::size_t Size>
-struct double_sized_vli<vli::vli_cpu<T,Size> > {
-    typedef vli::vli_cpu<T,2*Size> type;
+template <std::size_t NumBits>
+struct double_sized_vli<vlilib::vli<NumBits> > {
+    typedef vlilib::vli<2*NumBits> type;
 };
 
 } // end namespace test
@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
 #ifdef VLI_FUZZ_TESTS
 
     if(argc > 1 && argc <= 3) {
-        vli::test::fuzz_initializer::fuzz_iterations = boost::lexical_cast<unsigned int>(argv[1]);
+        vlilib::test::fuzz_initializer::fuzz_iterations = boost::lexical_cast<unsigned int>(argv[1]);
         unsigned int seed = std::time(0);
         if (argc == 3)
             seed = boost::lexical_cast<unsigned int>(argv[2]);

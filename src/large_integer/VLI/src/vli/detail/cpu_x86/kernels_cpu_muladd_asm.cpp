@@ -26,11 +26,11 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
+#include <boost/cstdint.hpp>
 
-
-namespace vli{
+namespace vlilib{
     namespace detail{
-                   void muladd128_64_64(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rcx */){
+                   void muladd128_64_64( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rcx */){
                       asm( 
                           "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
                           "movq %%rdx            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
@@ -43,7 +43,7 @@ namespace vli{
                           );
                    }
 
-                   void muladd256_128_128(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                   void muladd256_128_128( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                       asm( 
                           "subq $0x20            ,%%rsp             \n" /* create stack frame */            
                           "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
@@ -127,7 +127,7 @@ namespace vli{
                          );
                    }
 
-                      void oldmuladd256_128_128(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                      void oldmuladd256_128_128( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
                               "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   
@@ -196,7 +196,7 @@ namespace vli{
                               );
                       }
 
-                  void muladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                  void muladd384_192_192( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                            asm( 
                         /*-01*/ "subq $0x30            ,%%rsp             \n" /* create stack frame */            
                         /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
@@ -325,7 +325,7 @@ namespace vli{
                            ); 
                         }
 
-                  void newmuladd384_192_192(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                  void newmuladd384_192_192( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                            asm( 
                         /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
                             /*38*/  "xorq %%r10            ,%%r10             \n" /* r9 = 0  due to carry effect */   
@@ -433,7 +433,7 @@ namespace vli{
                            ); 
                         }
 
-                         void muladd512_256_256(unsigned long int* x/* %%rdi */, unsigned long int const* y/* %%rsi */, unsigned long int const* z/* %%rdx -> rbx */){
+                         void muladd512_256_256( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                             asm( 
                                 "subq $0x50            ,%%rsp             \n" /* destroy stack frame */           
                                 "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   

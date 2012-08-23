@@ -1,10 +1,10 @@
-#include <regression/vli_cpu/test_header.hpp>
+#include <regression/vli/test_header.hpp>
 
-using namespace vli::test;
+using namespace vlilib::test;
 
 VLI_STATIC_TEST( comparison_vli )
 {
-    BOOST_STATIC_ASSERT(vli_type::size > 1);
+    BOOST_STATIC_ASSERT(vli_type::numwords > 1);
 
     vli_type a(0);
     vli_type b(0);
@@ -51,7 +51,7 @@ VLI_STATIC_TEST( comparison_vli )
 
 VLI_STATIC_TEST( comparison_int )
 {
-    BOOST_STATIC_ASSERT(vli_type::size > 1);
+    BOOST_STATIC_ASSERT(vli_type::numwords > 1);
     
     vli_type a(0);
     vli_type a_orig(a);

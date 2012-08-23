@@ -31,9 +31,9 @@
 #define VLI_polynomial_FUNCTION_HOOKS_HPP
 
 #include "vli/polynomial/algorithms_polynomial.hpp"
-#include "vli/vli_cpu.h"
+#include "vli/vli.h"
 
-namespace vli{
+namespace vlilib{
 
 template<class Vli, unsigned int Order>
 class polynomial;
@@ -42,13 +42,13 @@ template<class Vli>
 struct monomial;
 
 template<class BaseInt, std::size_t Size>
-class vli_cpu;
+class vli;
     
 /** Algo based on triangle + diagnoal decomposition, nthreads maximum **/
 template <class BaseInt, std::size_t Size, unsigned int Order>
-void poly_multiply_block_algo(polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> & result, 
-                        polynomial<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                        polynomial<vli_cpu<BaseInt, Size>, Order> const & p2) {
+void poly_multiply_block_algo(polynomial<vli<BaseInt, 2*Size>, 2*Order> & result, 
+                        polynomial<vli<NumBits>, Order> const & p1, 
+                        polynomial<vli<NumBits>, Order> const & p2) {
     // first PASS, half top right corner, 
     unsigned int n(0);
     for(unsigned int i=0;i< Order;++i){ // i will be a thread here, independence loop
@@ -70,9 +70,9 @@ void poly_multiply_block_algo(polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> & re
     
 /** Algo based on diagonal decomposition, nthreads*nthreads maximum **/    
 template <class BaseInt, std::size_t Size, unsigned int Order>
-void poly_multiply_diag_algo(polynomial<vli_cpu<BaseInt, 2*Size>, 2*Order> & result, 
-                             polynomial<vli_cpu<BaseInt, Size>, Order> const & p1, 
-                             polynomial<vli_cpu<BaseInt, Size>, Order> const & p2) {   
+void poly_multiply_diag_algo(polynomial<vli<BaseInt, 2*Size>, 2*Order> & result, 
+                             polynomial<vli<NumBits>, Order> const & p1, 
+                             polynomial<vli<NumBits>, Order> const & p2) {   
     //first pass
     for(unsigned int i(0); i < Order*Order ; ++i)
         diagonal_up(i,result,p1,p2);

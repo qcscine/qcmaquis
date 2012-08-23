@@ -44,7 +44,7 @@ namespace vli {
                          return !(b>a)?a:b; 
                       } 
 
-                      template <class BaseInt, std::size_t Size>
+                      template <std::size_t NumBits>
                       __device__ void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2);
                       //addition 256+256, 384+384, 512+512
                       #define FUNCTION_add_nbits_nbits(z, n, unused) \

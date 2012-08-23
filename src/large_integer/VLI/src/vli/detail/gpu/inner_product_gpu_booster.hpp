@@ -44,69 +44,11 @@
 #include "vli/detail/kernels_gpu.h"
 #include "vli/polynomial/variable.hpp"
 
-namespace max_order_combined_helpers {
-    template <class Var0, class Var1, class Var2, class Var3>
-    struct num_of_variables_helper {
-        static unsigned int const value = 4;
-    };  
-        
-    template <class Var0, class Var1, class Var2>
-    struct num_of_variables_helper<Var0, Var1, Var2, vli::no_variable> {
-        static unsigned int const value = 3;
-    };  
-
-    template <class Var0, class Var1>
-    struct num_of_variables_helper<Var0, Var1, vli::no_variable, vli::no_variable> {
-        static unsigned int const value = 2;
-    };  
-
-    template <class Var0>
-    struct num_of_variables_helper<Var0, vli::no_variable, vli::no_variable, vli::no_variable> {
-        static unsigned int const value = 1;
-    };  
-    template<unsigned int NK, unsigned int K>
-    struct size_helper {
-        static unsigned int const value = NK*size_helper<NK-1,K>::value;
-    };
-
-    template <unsigned int K>
-    struct size_helper<K,K> {
-        static unsigned int const value = 1;
-    };
-
-    template <unsigned int N>
-    struct factorial {
-        static unsigned int const value = N*factorial<N-1>::value;
-    };
-
-    template <>
-    struct factorial<0> {
-        static unsigned int const value = 1;
-    };
-
-    template <unsigned int N, unsigned int K>
-    struct size {
-        // N variables, max order K -> n+k-1 over k  = (n+k-1)! / ( (n-1)! k! ) combinations
-        // Assuming N > 0
-        static unsigned int const value = size_helper<N+K-1,K>::value/factorial<N-1>::value;
-    };
-
-}
-
 namespace vli
 {
-    template <class Variable, unsigned int Order>
-    struct extend_stride {
-        static unsigned int const value = 2*Order+1;
-    };
-   
-    template <unsigned int Order>
-    struct extend_stride<no_variable,Order> {
-        static unsigned int const value = 1;
-    };
-
+ 
     // a lot of forward declaration    
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     class polynomial;
 
     template <class polynomial>
@@ -115,13 +57,13 @@ namespace vli
     template <class VectorPolynomial>
     struct inner_product_result_type;
    
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-    struct inner_product_result_type< vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > >; 
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+    struct inner_product_result_type< vector_polynomial<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > >; 
 
     namespace detail {
 
         // this class helper distinguishes keep_order and max_order polynomial by template specialization
-       // template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+       // template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
         template <class polynomial>
         struct inner_product_gpu_helper{
         };
@@ -146,7 +88,7 @@ namespace vli
             typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type poly;
           
             std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
-            vli::detail::gpu_inner_product_vector<Coeff::size, max_order_each<Order>, Var0, Var1, Var2, Var3 >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
+                vli::detail::gpu_inner_product_vector<Coeff::size, max_order_each<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
           
             #pragma omp parallel for schedule(dynamic)
             for(std::size_t i=split ; i < size_v ; ++i){
@@ -162,11 +104,11 @@ namespace vli
                 res[0]+=res[i];
             #endif
             
-            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial<Coeff::size, max_order_each<Order>, Var0, Var1, Var2, Var3 >(),
-                               2*Coeff::size*extend_stride<Var0,max_order_each<Order>::value>::value
-                                            *extend_stride<Var1,max_order_each<Order>::value>::value
-                                            *extend_stride<Var2,max_order_each<Order>::value>::value
-                                            *extend_stride<Var3,max_order_each<Order>::value>::value
+            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial<Coeff::size, max_order_each<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(),
+                               2*Coeff::size*result_stride<Var0,max_order_each<Order>::value>::value
+                                            *result_stride<Var1,max_order_each<Order>::value>::value
+                                            *result_stride<Var2,max_order_each<Order>::value>::value
+                                            *result_stride<Var3,max_order_each<Order>::value>::value
                                             *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
           
             #ifdef _OPENMP
