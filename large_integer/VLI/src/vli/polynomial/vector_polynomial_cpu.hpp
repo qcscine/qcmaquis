@@ -32,7 +32,7 @@
 #include "vli/vli_config.h"
 #include "vli/polynomial/polynomial.hpp"
 #include "vli/polynomial/variable.hpp"
-#include "vli/vli_cpu.h"
+#include "vli/vli.h"
 #include <vector>
 #include <ostream>
 #include <cassert>
@@ -48,8 +48,8 @@
 
 namespace vli {
 
-template <class BaseInt, std::size_t Size>
-class vli_cpu;
+template <std::size_t NumBits>
+class vli;
 
 template<class Polynomial>
 class vector_polynomial : public std::vector<Polynomial> { 
@@ -64,9 +64,9 @@ template <class VectorPolynomial>
 struct inner_product_result_type {
 };
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-struct inner_product_result_type< vector_polynomial<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> > > {
-    typedef typename polynomial_multiply_result_type<polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> >::type type;
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+struct inner_product_result_type< vector_polynomial<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > > {
+    typedef typename polynomial_multiply_result_type<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >::type type;
 };
 
 namespace detail {    

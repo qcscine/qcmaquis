@@ -39,6 +39,12 @@
 namespace gpu {    
      // static because this file shared between cpu and gpu, else error link
      static void cu_check_error(cudaError_t  const& err, std::size_t line) {
+         if(err != cudaSuccess){
+             char const* cuda_msg = cudaGetErrorString(err);
+             throw(std::runtime_error("CUDA error (Error:"+ boost::lexical_cast<std::string>(err) +") in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) + "\n cuda message:" + std::string(cuda_msg) ));
+         }
+     }
+         /*
         switch (err) {
             case cudaSuccess:
                 break;
@@ -48,7 +54,7 @@ namespace gpu {
                 throw(std::runtime_error("CUDA error (Error:"+ boost::lexical_cast<std::string>(err) +") in " + boost::lexical_cast<std::string>(__FILE__) + boost::lexical_cast<std::string>(line) + "\n cuda message:" + std::string(cuda_msg) ));
                 // break  I think the "throw" break the exception
         }
-     }
+     }*/
 }
 
 #endif

@@ -1,6 +1,6 @@
-#include <regression/vli_cpu/test_header.hpp>
+#include <regression/vli/test_header.hpp>
 
-using namespace vli::test;
+using namespace vlilib::test;
 
 VLI_FUZZABLE_TEST( multiplies_assign_multiplies_equivalence_negative )
 {
@@ -83,27 +83,27 @@ VLI_STATIC_TEST( multiplies_carry_int_negative )
     long int b = -2;
     long int d = -1;
 
-    for(std::size_t i(0); i < vli_type::size-1; ++i)
+    for(std::size_t i(0); i < vli_type::numwords-1; ++i)
         a[i] = std::numeric_limits<vli_type::value_type>::max();
 
     a*=b;
     
     c[0] = 0x2;
  
-    for(std::size_t i(1); i < vli_type::size; ++i) 
+    for(std::size_t i(1); i < vli_type::numwords; ++i) 
         c[i] = 0;
      
-    c[vli_type::size-1] = std::numeric_limits<vli_type::value_type>::max()-1;
+    c[vli_type::numwords-1] = std::numeric_limits<vli_type::value_type>::max()-1;
     BOOST_CHECK_EQUAL(a,c);
 
     a*=d;
 
     c[0] = std::numeric_limits<vli_type::value_type>::max()-1;
  
-    for(std::size_t i(1); i < vli_type::size-1; ++i)
+    for(std::size_t i(1); i < vli_type::numwords-1; ++i)
         c[i] = std::numeric_limits<vli_type::value_type>::max();
      
-    c[vli_type::size-1] = 1;
+    c[vli_type::numwords-1] = 1;
 
     BOOST_CHECK_EQUAL(a,c);
 }
@@ -116,27 +116,27 @@ VLI_STATIC_TEST( multiplies_carry_negative )
     negate_inplace(b);
     negate_inplace(d);
 
-    for(std::size_t i(0); i < vli_type::size-1; ++i) 
+    for(std::size_t i(0); i < vli_type::numwords-1; ++i) 
         a[i] = std::numeric_limits<vli_type::value_type>::max();
 
     a*=b; 
     
     c[0] = 0x2;
  
-    for(std::size_t i(1); i < vli_type::size; ++i) 
+    for(std::size_t i(1); i < vli_type::numwords; ++i) 
         c[i] = 0;  
      
-    c[vli_type::size-1] = std::numeric_limits<vli_type::value_type>::max()-1;
+    c[vli_type::numwords-1] = std::numeric_limits<vli_type::value_type>::max()-1;
     BOOST_CHECK_EQUAL(a,c);
 
     a*=d;
 
     c[0] = std::numeric_limits<vli_type::value_type>::max()-1;
  
-    for(std::size_t i(1); i < vli_type::size-1; ++i) 
+    for(std::size_t i(1); i < vli_type::numwords-1; ++i) 
         c[i] = std::numeric_limits<vli_type::value_type>::max();  
      
-    c[vli_type::size-1] = 1;
+    c[vli_type::numwords-1] = 1;
 
     BOOST_CHECK_EQUAL(a,c);
 }

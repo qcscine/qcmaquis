@@ -35,18 +35,18 @@ namespace vli {
     namespace detail {
 
     //declaration wrapper
-    template<typename BaseInt, std::size_t Size>
+    value_type
     __device__ void add(BaseInt * x, BaseInt const* y); 
 
     //multiplication
-    template<typename BaseInt, std::size_t Size>
+    value_type
     __device__ void mul(BaseInt * x,BaseInt const* y,BaseInt const* z);
 
     template <typename BaseInt, std::size_t Size>
     __device__ void neg(BaseInt* x); 
 
     //????_assign functions
-    template <class BaseInt, std::size_t Size>
+    template <std::size_t NumBits>
     void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2){
     //if one day I success to remove branching ....
 	unsigned int sign = (c1[Size-1]>>31) ^ (c2[Size-1]>>31);

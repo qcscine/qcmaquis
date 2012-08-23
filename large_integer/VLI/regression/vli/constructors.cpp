@@ -1,6 +1,6 @@
-#include <regression/vli_cpu/test_header.hpp>
+#include <regression/vli/test_header.hpp>
 
-using namespace vli::test;
+using namespace vlilib::test;
 
 VLI_STATIC_TEST( constructors_test )
 {

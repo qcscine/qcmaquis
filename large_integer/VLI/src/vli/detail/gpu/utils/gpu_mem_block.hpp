@@ -55,7 +55,7 @@ namespace detail {
         return block_size_;
     }; 
 
-    template <class BaseInt, std::size_t size, class OrderSpecification ,class Var0, class Var1, class Var2, class Var3>
+    template <class BaseInt, std::size_t size, class MaxOrder ,class Var0, class Var1, class Var2, class Var3>
     struct resize_helper{
     };
     // A free function, syntax light compared nested into the class
@@ -77,8 +77,8 @@ namespace detail {
                 gpu::cu_check_error(cudaFree((void*)pgm->PoutData_),__LINE__);
             gpu::cu_check_error(cudaMalloc((void**)&(pgm->V1Data_), req_size*sizeof(BaseInt)),__LINE__); //input 1
             gpu::cu_check_error(cudaMalloc((void**)&(pgm->V2Data_), req_size*sizeof(BaseInt)),__LINE__); //input 2
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*size * extend_stride<Var0, Order>::value * extend_stride<Var1, Order>::value * extend_stride<Var2, Order>::value * extend_stride<Var3, Order>::value * sizeof(BaseInt)),__LINE__); 
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm->PoutData_),                  2*size * extend_stride<Var0, Order>::value * extend_stride<Var1, Order>::value * extend_stride<Var2, Order>::value * extend_stride<Var3, Order>::value * sizeof(BaseInt)),__LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm->VinterData_), vector_size *  2*size * result_stride<Var0, Order>::value * result_stride<Var1, Order>::value * result_stride<Var2, Order>::value * result_stride<Var3, Order>::value * sizeof(BaseInt)),__LINE__); 
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm->PoutData_),                  2*size * result_stride<Var0, Order>::value * result_stride<Var1, Order>::value * result_stride<Var2, Order>::value * result_stride<Var3, Order>::value * sizeof(BaseInt)),__LINE__);
         } // end if
 
         } // end function
@@ -111,7 +111,7 @@ namespace detail {
     }; //end struct
 
 
-    template <class BaseInt, std::size_t Size, class OrderSpecification ,class Var0, class Var1, class Var2, class Var3>
+    template <class BaseInt, std::size_t Size, class MaxOrder ,class Var0, class Var1, class Var2, class Var3>
     struct memory_transfer_helper;
     
     // max order each specialization 

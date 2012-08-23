@@ -32,10 +32,6 @@
  #define VLI_VARIABLES_GPU_H
 
 namespace vli {
-    template <char X>
-    class var;
-   
-    class no_variable; 
 
     namespace detail {
 
@@ -70,113 +66,65 @@ namespace vli {
 
     }
 
-    template <class Var0, class Var1, class Var2, class Var3>
-    struct num_of_variables_helper {
-        static unsigned int const value = 4;
+    template <int Var, int NumVars, unsigned int Order>
+    struct result_stride {
+        static unsigned int const value = Var < NumVars ? 2*Order+1 : 1;
     };  
+
         
-    template <class Var0, class Var1, class Var2>
-    struct num_of_variables_helper<Var0, Var1, Var2, no_variable> {
-        static unsigned int const value = 3;
-    };  
-
-    template <class Var0, class Var1>
-    struct num_of_variables_helper<Var0, Var1, no_variable, no_variable> {
-        static unsigned int const value = 2;
-    };  
-
-    template <class Var0>
-    struct num_of_variables_helper<Var0, no_variable, no_variable, no_variable> {
-        static unsigned int const value = 1;
-    };  
-
-    template <class Variable, unsigned int Order>
-    struct extend_stride {
-        static unsigned int const value = 2*Order+1;
-    };  
-        
-    template <unsigned int Order>
-    struct extend_stride<no_variable,Order> {
-        static unsigned int const value = 1;
-    };  
-
-    template <class Variable, unsigned int Order>
+    template <int Var, int NumVars, unsigned int Order>
     struct stride {
-        static unsigned int const value = Order+1;
+        static unsigned int const value = Var < NumVars ? Order+1 : 1;
     };  
-        
-    template <unsigned int Order>
-    struct stride<no_variable,Order> {
-        static unsigned int const value = 1;
-    };  
-   
-    template <class Variable, unsigned int Order>
+
+    template <int Var, int NumVars, unsigned int Order>
     struct stride_pad {
-        static unsigned int const value = Order+1;
-    };  
-        
-    template <unsigned int Order>
-    struct stride_pad<no_variable,Order> {
-        static unsigned int const value = 0;
-    };  
+        static unsigned int const value = Var < NumVars ? Order+1 : 0;
+    };
+
 
     struct SumBlockSize {
        enum { value = 256};
     };
 
-    template<class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-    struct MulBlockSize;
+    template<class MaxOrder, int NumVars>
+    struct num_coefficients;
 
-    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MulBlockSize<max_order_each<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = ((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value)/2U >= 256U) ? 
-                       256U :
-                       (((extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value))/2U+32U-1U)/32U*32U };
-    };
-    // TO DO CHECK !!!!!!!!!!!! 2*Order or 2*Order+1
-    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MulBlockSize<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = (( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value   )/2U >= 256U) ?
-                       256U :
-                       ((( vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value   ))/2U+32U-1U)/32U*32U };
+        
+    template<class MaxOrder>
+    struct num_coefficients<MaxOrder, 0>{
+        enum {value = 1};
     };
 
-    template<class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-    struct MaxIterationCount;
-
-    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MaxIterationCount<max_order_each<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = (extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value+32U-1U)/32U};
+    template<unsigned int Order, int NumVars>
+    struct num_coefficients<max_order_each<Order>, NumVars>{
+        enum {value = (2*Order+1)*num_coefficients<max_order_each<Order>, NumVars-1>::value};
     };
 
-    // TO DO CHECK !!!!!!!!!!!! 2*Order or 2*Order+1
-    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MaxIterationCount<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = (vli::detail::max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, 2*Order>::value+32U-1U)/32U};
+    template<unsigned int Order, int NumVars>
+    struct num_coefficients<max_order_combined<Order>, NumVars>{
+        enum {value = vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value};
     };
 
-
-    template<class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-    struct MaxNumberCoefficientExtend;
-
-    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MaxNumberCoefficientExtend<max_order_each<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = extend_stride<Var0,Order>::value*extend_stride<Var1,Order>::value*extend_stride<Var2,Order>::value*extend_stride<Var3,Order>::value};
+    template<class MaxOrder, int NumVars>
+    struct mul_block_size {
+        enum {value = num_coefficients<MaxOrder,NumVars>::value/2 >= 256U) ? 256U
+               : (num_coefficients<MaxOrder,NumVars>::value/2U+32U-1U)/32U*32U };
     };
 
-    // TO DO CHECK !!!!!!!!!!!! 2*Order or 2*Order+1
-    template<unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct MaxNumberCoefficientExtend<max_order_combined<Order>, Var0, Var1, Var2, Var3>{
-        enum {value = vli::detail::max_order_combined_helpers::size<vli::detail::num_of_variables_helper<Var0,Var1,Var2,Var3 >::value+1, 2*Order>::value };
+ 
+    template<class MaxOrder, int NumVars>
+    struct MaxIterationCount {
+        enum {value = (num_coefficients<MaxOrder,NumVars>::value+32U-1U)/32U};
     };
 
+    // replace in the code MaxNumberCoefficientExtend by num_coefficients
+
+    
     template<std::size_t Size>
     struct size_pad{
-        enum {value = (((Size>>1)<<1)+1)};
+        enum {value = Size | 1};
     };
-
-
-
 
     }
 }

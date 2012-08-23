@@ -1,6 +1,6 @@
-#include <regression/vli_cpu/test_header.hpp>
+#include <regression/vli/test_header.hpp>
 
-using namespace vli::test;
+using namespace vlilib::test;
 
 VLI_STATIC_TEST( pointer_range_overflow )
 {
@@ -33,7 +33,7 @@ VLI_STATIC_TEST( pointer_range_overflow )
 VLI_STATIC_TEST( multiplies_by_two_not_equal_minus_assign_one )
 {
     vli_type a;
-    for(std::size_t i=0; i<vli_type::size; ++i)
+    for(std::size_t i=0; i<vli_type::numwords; ++i)
         a[i] = std::numeric_limits<vli_type::value_type>::max();
 
     vli_type c(a); 

@@ -10,7 +10,7 @@
 #include <vli/polynomial/detail/polynomial_impl.hpp>
 #include <boost/type_traits/is_fundamental.hpp>
 
-#define POLYNOMIAL_CLASS polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3>
+#define POLYNOMIAL_CLASS polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3>
 
 namespace vli {
 
@@ -18,13 +18,13 @@ namespace vli {
 // The polynomial class
 //------------------------------------------------------------------------ 
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1 = vli::no_variable, class Var2 = vli::no_variable, class Var3 = vli::no_variable>
-class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> {
+template <class Coeff, class MaxOrder, class Var0, class Var1 = vli::no_variable, class Var2 = vli::no_variable, class Var3 = vli::no_variable>
+class polynomial : public detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> {
   public:
-    typedef detail::storage<Coeff,OrderSpecification,Var0,Var1,Var2,Var3> base_type;
+    typedef detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> base_type;
     typedef typename  base_type::value_type                 value_type;
     typedef typename  base_type::element_descriptor         element_descriptor;
-    typedef OrderSpecification                              order_specification;
+    typedef MaxOrder                                        max_order;
     typedef typename  base_type::iterator                   iterator;
     typedef typename  base_type::const_iterator             const_iterator;
     typedef typename  base_type::reverse_iterator           reverse_iterator;
@@ -41,9 +41,9 @@ class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var
     }
     
     template <class Coeff2>
-    explicit polynomial(polynomial<Coeff2,OrderSpecification,Var0,Var1,Var2,Var3> const& p) {
+    explicit polynomial(polynomial<Coeff2,MaxOrder,Var0,Var1,Var2,Var3> const& p) {
         iterator it = this->begin();
-        typename polynomial<Coeff2,OrderSpecification,Var0,Var1,Var2,Var3>::const_iterator it2 = p.begin();
+        typename polynomial<Coeff2,MaxOrder,Var0,Var1,Var2,Var3>::const_iterator it2 = p.begin();
         while(it != this->end() )
             *it++ = static_cast<Coeff>(*it2++);
     }
@@ -117,81 +117,81 @@ class polynomial : public detail::storage<Coeff,OrderSpecification,Var0,Var1,Var
 // Operators and free functions
 //------------------------------------------------------------------------ 
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 POLYNOMIAL_CLASS operator + (POLYNOMIAL_CLASS p1, POLYNOMIAL_CLASS const& p2) {
     p1 += p2;
     return p1;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Addend>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Addend>
 POLYNOMIAL_CLASS operator + (POLYNOMIAL_CLASS p, Addend const& a) {
     p += a;
     return p;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Addend>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Addend>
 POLYNOMIAL_CLASS operator + (Addend const& a, POLYNOMIAL_CLASS const& p) {
     return p + a;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 POLYNOMIAL_CLASS operator - (POLYNOMIAL_CLASS p1, POLYNOMIAL_CLASS const& p2) {
     p1 -= p2;
     return p1;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Addend>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Addend>
 POLYNOMIAL_CLASS operator - (POLYNOMIAL_CLASS p, Addend const& a) {
     p -= a;
     return p;
 }
 
 // Polynomial * Polynomial  for the moment we only provide the multiplication between two identical polynomial types
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 typename polynomial_multiply_result_type<POLYNOMIAL_CLASS >::type operator * (POLYNOMIAL_CLASS const& p1, POLYNOMIAL_CLASS const& p2) {
     return detail::polynomial_multiply_helper<POLYNOMIAL_CLASS>::apply(p1,p2);
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 typename polynomial_multiply_keep_order_result_type<POLYNOMIAL_CLASS>::type multiply_keep_order(POLYNOMIAL_CLASS const& p1, POLYNOMIAL_CLASS const& p2) {
     return detail::polynomial_multiply_keep_order_helper<POLYNOMIAL_CLASS>::apply(p1,p2);
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
 POLYNOMIAL_CLASS operator * (POLYNOMIAL_CLASS p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m) {
     p *= m;
     return p;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
 POLYNOMIAL_CLASS operator * (monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m, POLYNOMIAL_CLASS const& p) {
     return p*m;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Coeff2>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Coeff2>
 POLYNOMIAL_CLASS operator * (POLYNOMIAL_CLASS p, Coeff2 const& c) {
     p*=c;
     return p; 
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Coeff2>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Coeff2>
 POLYNOMIAL_CLASS operator * (Coeff2 const& c, POLYNOMIAL_CLASS const& p ) {
     return p*c; 
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 POLYNOMIAL_CLASS operator / (POLYNOMIAL_CLASS p, int c) {
     p /= c;
     return p;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 POLYNOMIAL_CLASS operator / (POLYNOMIAL_CLASS p, Coeff const& c) {
     p /= c;
     return p;
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 std::ostream& operator << (std::ostream& os, POLYNOMIAL_CLASS const& p) {
     p.print(os);
     return os;
@@ -202,66 +202,66 @@ std::ostream& operator << (std::ostream& os, POLYNOMIAL_CLASS const& p) {
 // Specializations
 //------------------------------------------------------------------------ 
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 bool is_zero(POLYNOMIAL_CLASS const& p) {
     return detail::is_zero_helper(p);
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 void negate_inplace(POLYNOMIAL_CLASS& p) {
     detail::negate(p);
 }
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 struct variable<POLYNOMIAL_CLASS,0> {
     typedef Var0 type;
 };
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 struct variable<POLYNOMIAL_CLASS,1> {
     typedef Var1 type;
 };
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 struct variable<POLYNOMIAL_CLASS,2> {
     typedef Var2 type;
 };
 
-template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 struct variable<POLYNOMIAL_CLASS,3> {
     typedef Var3 type;
 };
 
 
 //------------------------------------------------------------------------ 
-// Specializations for vli_cpu
+// Specializations for vli
 //------------------------------------------------------------------------ 
 
 // TODO move someplace else
 
-template <class BaseInt, std::size_t Size>
-class vli_cpu;
+template <std::size_t NumBits>
+class vli;
 
 template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_result_type<polynomial<vli_cpu<BaseInt,Size>,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli_cpu<BaseInt,2*Size>,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
+struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
+    typedef polynomial<vli<BaseInt,2*Size>,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
 template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_result_type<polynomial<vli_cpu<BaseInt,Size>,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli_cpu<BaseInt,2*Size>,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
+struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
+    typedef polynomial<vli<BaseInt,2*Size>,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
-template <typename BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_keep_order_result_type<polynomial<vli_cpu<BaseInt,Size>,OrderSpecification,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli_cpu<BaseInt,2*Size>,OrderSpecification,Var0,Var1,Var2,Var3> type;
+template <typename BaseInt, std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+struct polynomial_multiply_keep_order_result_type<polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
+    typedef polynomial<vli<BaseInt,2*Size>,MaxOrder,Var0,Var1,Var2,Var3> type;
 };
 
 
 namespace detail {
-    template <class BaseInt, std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
-    struct equal_helper<polynomial<vli_cpu<BaseInt,Size>,OrderSpecification,Var0,Var1,Var2,Var3> > {
-        typedef polynomial<vli_cpu<BaseInt,Size>,OrderSpecification,Var0,Var1,Var2,Var3> polynomial_type;
+    template <class BaseInt, std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+    struct equal_helper<polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
+        typedef polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> polynomial_type;
             bool operator()(polynomial_type const& p, polynomial_type const& p2) {
             // TODO check if this is ok
             int n = memcmp((void*)p.begin(),(void*)p2.begin(),((char*)p.end()-(char*)p.begin())*sizeof(char));

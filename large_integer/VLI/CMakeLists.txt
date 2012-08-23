@@ -144,7 +144,7 @@ if(VLI_TESTS)
     set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
       mark_as_advanced(BUILDNAME)
     add_subdirectory (regression/polynomial)
-    add_subdirectory (regression/vli_cpu)
+    add_subdirectory (regression/vli)
     add_subdirectory (regression/inner_product_gpu)
 endif(VLI_TESTS)
 
@@ -164,7 +164,7 @@ endif(VLI_BENCHMARKS)
 ########################################################################
 
 install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
-install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_cpu.a DESTINATION lib)
+install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli.a DESTINATION lib)
 install(FILES ${PROJECT_BINARY_DIR}/vli/vli_config.h DESTINATION include/vli/)
 if(VLI_COMPILE_GPU)
 install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli_gpu.a DESTINATION lib)

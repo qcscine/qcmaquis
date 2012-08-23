@@ -37,7 +37,7 @@
 namespace vli {
     namespace detail {
 
-    template <std::size_t Size, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     class tasklist_keep_order;
 
     template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>

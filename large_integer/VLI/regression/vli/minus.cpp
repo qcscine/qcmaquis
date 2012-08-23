@@ -1,7 +1,7 @@
 
-#include <regression/vli_cpu/test_header.hpp>
+#include <regression/vli/test_header.hpp>
 
-using namespace vli::test;
+using namespace vlilib::test;
 
 VLI_FUZZABLE_TEST( minus_assign_minus_equivalence )
 {
@@ -53,11 +53,11 @@ VLI_STATIC_TEST( minus_assign_borrow )
 {
     vli_type a,b,c;
 
-    a[vli_type::size-1] = 1;  
+    a[vli_type::numwords-1] = 1;  
     b[0] = 1; 
     a-=b; 
     
-    for(std::size_t i(0); i < vli_type::size-1; ++i) 
+    for(std::size_t i(0); i < vli_type::numwords-1; ++i) 
         c[i] = static_cast<vli_type::value_type>(-1);  
    
     BOOST_CHECK_EQUAL(a,c);

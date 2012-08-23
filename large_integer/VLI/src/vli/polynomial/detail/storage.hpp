@@ -231,7 +231,7 @@ namespace detail {
     };
 
 
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     struct storage {
     };
     
@@ -246,28 +246,27 @@ namespace detail {
         typedef typename base_type::size_type   size_type;
         // operator used for the inner product
         inline Coeff& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) {
-            return base_type::operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);            
+            assert(i < stride0);
+            assert(j < stride1);
+            assert(k < stride2);
+            assert(l < stride3);
+            return this->operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);
         }
 
         inline Coeff const& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) const{
-            return base_type::operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);            
+            assert(i < stride0);
+            assert(j < stride1);
+            assert(k < stride2);
+            assert(l < stride3);
+            return this->operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);
         }
 
         inline Coeff& operator()(element_descriptor const& e) {
-            // TODO think of something smarter
-            assert(e.var0.exp < stride0);
-            assert(e.var1.exp < stride1);
-            assert(e.var2.exp < stride2);
-            assert(e.var3.exp < stride3);
-            return base_type::operator[](e.var0.exp*stride1*stride2*stride3 + e.var1.exp*stride2*stride3 + e.var2.exp*stride3 + e.var3.exp);
+            return this->operator()(e.var0.exp,e.var1.exp,e.var2.exp,e.var3.exp);
         }
         
         inline Coeff const& operator()(element_descriptor const& e) const {
-            assert(e.var0.exp < stride0);
-            assert(e.var1.exp < stride1);
-            assert(e.var2.exp < stride2);
-            assert(e.var3.exp < stride3);
-            return base_type::operator[](e.var0.exp*stride1*stride2*stride3 + e.var1.exp*stride2*stride3 + e.var2.exp*stride3 + e.var3.exp);
+            return this->operator()(e.var0.exp,e.var1.exp,e.var2.exp,e.var3.exp);
         }
  
       private:

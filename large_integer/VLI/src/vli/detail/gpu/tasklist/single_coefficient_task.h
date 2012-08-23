@@ -28,7 +28,7 @@
  *DEALINGS IN THE SOFTWARE.
  */
 #ifndef COEFF_TASK_H
- #define COEFF_TASK_H
+#define COEFF_TASK_H
 
 namespace vli {
     namespace detail {
@@ -41,7 +41,7 @@ namespace vli {
 		unsigned char output_degree_w;
 	};
 
-        bool single_coefficient_task_sort(single_coefficient_task const & i, single_coefficient_task const & j);
+    bool single_coefficient_task_sort(single_coefficient_task const & i, single_coefficient_task const & j);
 
     } // end namespace detail
 } // end name space vli

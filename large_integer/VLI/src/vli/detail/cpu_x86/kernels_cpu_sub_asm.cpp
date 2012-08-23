@@ -28,12 +28,12 @@
 */
 
 #include "vli/detail/cpu_x86/kernel_implementation_macros.h"
-#include <cassert>
-namespace vli{
+
+namespace vlilib{
     namespace detail{
                      // new functions type : VLI<n*64> - VLI<n*64> : sub128_128, sub192_192 ...
                      #define FUNCTION_sub_nbits_nbits(z, n, unused) \
-                         void NAME_SUB_NBITS_MINUS_NBITS(n)(unsigned long int* x, unsigned long int const* y){\
+                         void NAME_SUB_NBITS_MINUS_NBITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){\
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Substraction, ~)                          \
                                  : : :"rax","memory"                                                          \
@@ -46,7 +46,7 @@ namespace vli{
                      //new functions type : VLI<n*64> - VLI<64> : sub192_64, sub256_64
                      //the case is done after sub128_64
                      #define FUNCTION_sub_nbits_64bits(z, n, unused) \
-                          void NAME_SUB_NBITS_MINUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){ \
+                          void NAME_SUB_NBITS_MINUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){ \
                           asm(                                                                                   \
                               "movq   (%%rsi)            , %%rax   \n"                                           \
                               "movq   (%%rdi)            , %%r9    \n"                                           \

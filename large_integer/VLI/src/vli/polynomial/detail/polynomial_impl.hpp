@@ -12,7 +12,7 @@
 #include <ostream>
 #include <cassert>
 
-#define POLYNOMIAL_CLASS polynomial<Coeff,OrderSpecification,Var0,Var1,Var2,Var3>
+#define POLYNOMIAL_CLASS polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3>
 
 namespace vli {
 namespace detail {
@@ -118,19 +118,19 @@ namespace detail {
     //
     // simple helper functions
     //
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     void init(POLYNOMIAL_CLASS & p, boost::false_type dummy) {
         // This is a non fundamental type -> it will be default constructed
     }
     
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     void init(POLYNOMIAL_CLASS & p, boost::true_type dummy) {
         // This is a fundamental type (e.g. unsigned int, double, ...) -> we have to initalize
         for(typename iterator<POLYNOMIAL_CLASS>::type it = p.begin(); it != p.end(); ++it)
             *it = Coeff();
     }
     
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
     void additive_op_assign(POLYNOMIAL_CLASS& p, POLYNOMIAL_CLASS const& p2, Operation op) {
         typename iterator<POLYNOMIAL_CLASS>::type it = p.begin();
         typename const_iterator<POLYNOMIAL_CLASS>::type it2 = p2.begin();
@@ -138,28 +138,28 @@ namespace detail {
             op(*it++, *it2++);
     }
 
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3, class Operation>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3, class Operation>
     void additive_op_assign(POLYNOMIAL_CLASS& p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m, Operation op) {
         op(p(typename element_descriptor<POLYNOMIAL_CLASS>::type(m)), m.c_);
     }
     
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
     void additive_op_assign(POLYNOMIAL_CLASS& p, Coeff const& c, Operation op) {
         op(*p.begin(),c);
     }
 
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
     void additive_op_assign(POLYNOMIAL_CLASS& p, typename boost::enable_if<boost::is_same<Coeff,int>,int>::type a, Operation op) {
         op(*p.begin(),a);
     }
     
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation, class Coeff2>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation, class Coeff2>
     void multiplicative_op_assign(POLYNOMIAL_CLASS& p, Coeff2 const& c, Operation op) {
         for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
             op(*it, c);
     }
     
-//    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3, class Operation>
+//    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
 //    void multiplicative_op_assign(POLYNOMIAL_CLASS& p, typename boost::enable_if<boost::is_same<Coeff,int>,int>::type a, Operation op) {
 //        for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
 //            op(*it, a);
@@ -199,13 +199,13 @@ namespace detail {
         T c_;
     };
   
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     void negate(POLYNOMIAL_CLASS& p) {
         for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
             negate_inplace(*it);
     }
     
-    template <class Coeff, class OrderSpecification, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     bool is_zero_helper(POLYNOMIAL_CLASS const& p) {
         for(typename const_iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
             if (!is_zero(*it))

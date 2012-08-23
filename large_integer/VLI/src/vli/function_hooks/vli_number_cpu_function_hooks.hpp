@@ -32,88 +32,88 @@
 
 #include "vli/detail/kernels_cpu.h"
 
-namespace vli 
+namespace vlilib
 {
     //forwart declaration
-    template <class BaseInt, std::size_t Size>
-    class vli_cpu;
+    template <std::size_t NumBits>
+    class vli;
     
     //declaration wrapper
     //addition
-    template<typename BaseInt, std::size_t Size>
-    void add(BaseInt * x, BaseInt const b);
+    template <std::size_t NumWords>
+    void add( boost::uint64_t * x,  boost::uint64_t const b);
     
-    template<typename BaseInt, std::size_t Size>
-    void add(BaseInt * x, BaseInt const* y); 
+    template <std::size_t NumWords>
+    void add( boost::uint64_t * x,  boost::uint64_t const* y); 
 
-    template<typename BaseInt, std::size_t Size>
-    void add_extension(BaseInt * x, BaseInt const* y, BaseInt const* z); 
+    template <std::size_t NumWords>
+    void add_extension( boost::uint64_t * x,  boost::uint64_t const* y,  boost::uint64_t const* z); 
 
     //substraction
-    template<typename BaseInt, std::size_t Size>
-    void sub(BaseInt * x, BaseInt const b);
+    template <std::size_t NumWords>
+    void sub( boost::uint64_t * x,  boost::uint64_t const b);
     
-    template<typename BaseInt, std::size_t Size>
-    void sub(BaseInt * x, BaseInt const* y); 
+    template <std::size_t NumWords>
+    void sub( boost::uint64_t * x,  boost::uint64_t const* y); 
 
     //multiplication
-    template<typename BaseInt, std::size_t Size>
-    void mul(BaseInt * x,BaseInt const b);
+    template <std::size_t NumWords>
+    void mul( boost::uint64_t * x, boost::uint64_t const b);
 
-    template<typename BaseInt, std::size_t Size>
-    void mul(BaseInt * x,BaseInt const* y);
+    template <std::size_t NumWords>
+    void mul( boost::uint64_t * x, boost::uint64_t const* y);
 
-    template<typename BaseInt, std::size_t Size>
-    void mul(BaseInt * x,BaseInt const* y,BaseInt const* z);
+    template <std::size_t NumWords>
+    void mul( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
 
     //multiplication Addition (only for the inner product)
-    template<typename BaseInt, std::size_t Size>
-    void muladd(BaseInt * x,BaseInt const* y,BaseInt const* z);
+    template <std::size_t NumWords>
+    void muladd( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
 
     //????_assign functions
-    template <class BaseInt, std::size_t Size>
-    void plus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b ){
-        add<BaseInt,Size>(&vli_a[0],&vli_b[0]);
+    template <std::size_t NumBits>
+    void plus_assign(vli<NumBits> & vli_a, vli<NumBits> const& vli_b ){
+        add<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0]);
     }
      
-    template <class BaseInt, std::size_t Size>
-    void plus_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const b ){  
-        add<BaseInt,Size>(&vli_a[0],b);
+    template <std::size_t NumBits>
+    void plus_assign(vli<NumBits> & vli_a,  boost::uint64_t const b ){  
+        add<vli<NumBits>::numwords>(&vli_a[0],b);
     }
     
-    template <class BaseInt, std::size_t Size>
-    void plus_extend_assign(vli_cpu<BaseInt,Size+1> & vli_a, vli_cpu<BaseInt,Size> const& vli_b, vli_cpu<BaseInt,Size> const& vli_c){
-        add_extension<BaseInt, Size>(&vli_a[0],&vli_b[0],&vli_c[0]);
+    template <std::size_t NumBits>
+    void plus_extend_assign(vli<NumBits+64> & vli_a, vli<NumBits> const& vli_b, vli<NumBits> const& vli_c){
+        add_extension<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0],&vli_c[0]);
     }
 
-    template <class BaseInt, std::size_t Size>
-    void minus_assign(vli_cpu<BaseInt,Size> & vli_a, vli_cpu<BaseInt,Size> const& vli_b ){
-        sub<BaseInt,Size>(&vli_a[0],&vli_b[0]);
+    template <std::size_t NumBits>
+    void minus_assign(vli<NumBits> & vli_a, vli<NumBits> const& vli_b ){
+        sub<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0]);
     }
     
-    template <class BaseInt, std::size_t Size>
-    void minus_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const b ){  
-        sub<BaseInt,Size>(&vli_a[0],b);
+    template <std::size_t NumBits>
+    void minus_assign(vli<NumBits> & vli_a,  boost::uint64_t const b ){  
+        sub<vli<NumBits>::numwords>(&vli_a[0],b);
     }
 
-    template <class BaseInt, std::size_t Size>
-    void multiplies_assign( vli_cpu<BaseInt, Size>& vli_a , vli_cpu<BaseInt,Size> const & vli_b){ 
-        mul<BaseInt,Size>(&vli_a[0],&vli_b[0]);
+    template <std::size_t NumBits>
+    void multiplies_assign( vli<NumBits>& vli_a , vli<NumBits> const & vli_b){ 
+        mul<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0]);
     }
 
-    template <class BaseInt, std::size_t Size>
-    void multiplies_assign(vli_cpu<BaseInt,Size> & vli_a, BaseInt const b){
-        mul<BaseInt,Size>(&vli_a[0],b);
+    template <std::size_t NumBits>
+    void multiplies_assign(vli<NumBits> & vli_a,  boost::uint64_t const b){
+        mul<vli<NumBits>::numwords>(&vli_a[0],b);
     }
 
-    template <class BaseInt, std::size_t Size>
-    void multiplies(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
-        mul<BaseInt,Size>(&vli_res[0],&vli_a[0],&vli_b[0]);
+    template <std::size_t NumBits>
+    void multiplies(vli<2*NumBits>& vli_res , vli<NumBits> const & vli_a, vli<NumBits> const & vli_b){
+        mul<vli<NumBits>::numwords>(&vli_res[0],&vli_a[0],&vli_b[0]);
     }
     
-    template <class BaseInt, std::size_t Size>
-    void multiply_add_assign(vli_cpu<BaseInt, 2*Size>& vli_res , vli_cpu<BaseInt,Size> const & vli_a, vli_cpu<BaseInt,Size> const & vli_b){
-        muladd<BaseInt,Size>(&vli_res[0],&vli_a[0],&vli_b[0]);
+    template <std::size_t NumBits>
+    void multiply_add_assign(vli<2*NumBits>& vli_res , vli<NumBits> const & vli_a, vli<NumBits> const & vli_b){
+        muladd<vli<NumBits>::numwords>(&vli_res[0],&vli_a[0],&vli_b[0]);
     }
 
     /* ---------------------------------------------------- Begin Addition specialization ---------------------------------------------------- */
@@ -121,7 +121,7 @@ namespace vli
     //specialization addnbits_nbits, until 512 bits
     #define FUNCTION_add_nbits_nbits(z, n, unused) \
         template<> \
-        void add<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y){ \
+        void add<BOOST_PP_ADD(n,2)>( boost::uint64_t* x, boost::uint64_t const* y){ \
         detail::NAME_ADD_NBITS_PLUS_NBITS(n)(x,y); \
         }; \
 
@@ -131,7 +131,7 @@ namespace vli
     //specialization addnbits_64bits, until 512 bits
     #define FUNCTION_add_nbits_64bits(z, n, unused) \
         template<> \
-        void add<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const y){ \
+        void add<BOOST_PP_ADD(n,2)>( boost::uint64_t* x, boost::uint64_t const y){ \
         detail::NAME_ADD_NBITS_PLUS_64BITS(n)(x,&y); \
         }; \
 
@@ -140,7 +140,7 @@ namespace vli
     // specialization extention addition 
     #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
         template<> \
-        void add_extension<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
+        void add_extension<BOOST_PP_ADD(n,2)>( boost::uint64_t* x, boost::uint64_t const* y,  boost::uint64_t const* w){ \
         detail::NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(x,y,w); \
         }; \
 
@@ -152,7 +152,7 @@ namespace vli
     //specialization subnbits_nbits, until 512 bits
     #define FUNCTION_sub_nbits_nbits(z, n, unused) \
         template<> \
-        void sub<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y){ \
+        void sub<BOOST_PP_ADD(n,2)>( boost::uint64_t* x, boost::uint64_t const* y){ \
         detail::NAME_SUB_NBITS_MINUS_NBITS(n)(x,y); \
         }; \
 
@@ -161,7 +161,7 @@ namespace vli
     //specialization subnbits_64bits, until 512 bits
     #define FUNCTION_sub_nbits_64bits(z, n, unused) \
         template<> \
-        void sub<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const y){ \
+        void sub<BOOST_PP_ADD(n,2)>( boost::uint64_t* x, boost::uint64_t const y){ \
         detail::NAME_SUB_NBITS_MINUS_64BITS(n)(x,&y); \
         }; \
 
@@ -171,11 +171,10 @@ namespace vli
     /* ---------------------------------------------------- end Substraction specialization ---------------------------------------------------- */
 
     /* ---------------------------------------------------- Begin Multiplication specialization ---------------------------------------------------- */
-    //specialization mul    
     //specialization mulnbits_64bits, until 512 bits
     #define FUNCTION_mul_nbits_64bits(z, n, unused) \
         template<> \
-        void mul<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const y){ \
+        void mul<BOOST_PP_ADD(n,2)>( boost::uint64_t* x, boost::uint64_t const y){ \
         detail::NAME_MUL_NBITS_64BITS(n)(x,&y); \
         }; \
 
@@ -184,7 +183,7 @@ namespace vli
     //specialization mulnbits_nbits, until 512 bits
     #define FUNCTION_mul_nbits_nbits(z, n, unused) \
         template<> \
-        void mul<unsigned long int,BOOST_PP_ADD(n,2)>(unsigned long int* x,unsigned long int const* y){ \
+        void mul<BOOST_PP_ADD(n,2)>( boost::uint64_t* x, boost::uint64_t const* y){ \
         detail::NAME_MUL_NBITS_NBITS(n)(x,y); \
         }; \
 
@@ -193,7 +192,7 @@ namespace vli
     //specialization mul2nbits_nbits_nbits, until 512 bits
     #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
         template<> \
-        void mul<unsigned long int,BOOST_PP_ADD(n,1)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
+        void mul<BOOST_PP_ADD(n,1)>( boost::uint64_t* x, boost::uint64_t const* y,  boost::uint64_t const* w){ \
         detail::NAME_MUL_TWONBITS_NBITS_NBITS(n)(x,y,w); \
         }; \
 
@@ -204,7 +203,7 @@ namespace vli
     //specialization muladd2nbits_nbits_nbits, until 512 bits
     #define FUNCTION_muladd_twonbits_nbits_nbits(z, n, unused) \
         template<> \
-        void muladd<unsigned long int,BOOST_PP_ADD(n,1)>(unsigned long int* x,unsigned long int const* y, unsigned long int const* w){ \
+        void muladd<BOOST_PP_ADD(n,1)>( boost::uint64_t* x, boost::uint64_t const* y,  boost::uint64_t const* w){ \
         detail::NAME_MULADD_TWONBITS_NBITS_NBITS(n)(x,y,w); \
         }; \
 
@@ -213,6 +212,6 @@ namespace vli
 
     /* ---------------------------------------------------- End Multiplication Addition specialization ---------------------------------------------------- */
     
-} //namespace vli
+} //namespace vlilib
 
 #endif //VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP
