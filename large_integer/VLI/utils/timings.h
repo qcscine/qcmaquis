@@ -29,8 +29,10 @@
 
 #ifndef TIMINGS_H
 #define TIMINGS_H
-#include "vli/vli_config.h"
+#include "vli/config.hpp"
 #include <cassert>
+#include <iostream>
+#include <omp.h>
 
 #ifdef VLI_USE_GPU
 #include "cuda_runtime_api.h"

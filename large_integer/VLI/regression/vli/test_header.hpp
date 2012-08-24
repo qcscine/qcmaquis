@@ -176,7 +176,7 @@ boost::random::uniform_int_distribution<int>                  fuzz_initializer::
 #endif // VLI_FUZZ_TESTS
 
 
-template <typename  T>
+template <typename T>
 struct extended {
 };
 
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
         if (argc == 3)
             seed = boost::lexical_cast<unsigned int>(argv[2]);
         std::cout<<"Using random seed: "<<seed<<std::endl;
-       // vli::test::fuzz_initializer::rng.seed(seed);
+        vli::test::fuzz_initializer::rng.seed(seed);
 
     } else {
         std::cerr<<"Usage:"<<std::endl;

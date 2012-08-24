@@ -169,7 +169,7 @@ void vli<NumBits>::negate(){
 
 template <std::size_t NumBits>
 bool vli<NumBits>::is_negative() const{
-    return static_cast<bool>(data_[numwords-1]>>std::numeric_limits<value_type>::digits-1);
+    return static_cast<bool>( data_[numwords-1] >> (std::numeric_limits<value_type>::digits-1) );
 }
 // c - basic operators
 template <std::size_t NumBits>

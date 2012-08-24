@@ -55,9 +55,9 @@ namespace detail {
     
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct loop_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
-        typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> polynomial_type;
-        typedef typename exponent_type<polynomial_type>::type               exponent_type;
-        typedef typename element_descriptor<polynomial_type>::type          element_descriptor;
+        typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>     polynomial_type;
+        typedef typename polynomial_type::exponent_type                         exponent_type;
+        typedef typename polynomial_type::element_descriptor                    element_descriptor;
 
         template <class Operation>
         static void apply(polynomial_type const& p, Operation op) {
@@ -72,8 +72,8 @@ namespace detail {
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct loop_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
-        typedef typename exponent_type<polynomial_type>::type                   exponent_type;
-        typedef typename element_descriptor<polynomial_type>::type              element_descriptor;
+        typedef typename polynomial_type::exponent_type                         exponent_type;
+        typedef typename polynomial_type::element_descriptor                    element_descriptor;
 
         template <class Operation>
         static void apply(polynomial_type const& p, Operation op) {
@@ -126,21 +126,21 @@ namespace detail {
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     void init(POLYNOMIAL_CLASS & p, boost::true_type dummy) {
         // This is a fundamental type (e.g. unsigned int, double, ...) -> we have to initalize
-        for(typename iterator<POLYNOMIAL_CLASS>::type it = p.begin(); it != p.end(); ++it)
+        for(typename POLYNOMIAL_CLASS::iterator it = p.begin(); it != p.end(); ++it)
             *it = Coeff();
     }
     
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
     void additive_op_assign(POLYNOMIAL_CLASS& p, POLYNOMIAL_CLASS const& p2, Operation op) {
-        typename iterator<POLYNOMIAL_CLASS>::type it = p.begin();
-        typename const_iterator<POLYNOMIAL_CLASS>::type it2 = p2.begin();
+        typename POLYNOMIAL_CLASS::iterator       it  = p.begin();
+        typename POLYNOMIAL_CLASS::const_iterator it2 = p2.begin();
         while(it != p.end())
             op(*it++, *it2++);
     }
 
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3, class Operation>
     void additive_op_assign(POLYNOMIAL_CLASS& p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m, Operation op) {
-        op(p(typename element_descriptor<POLYNOMIAL_CLASS>::type(m)), m.c_);
+        op(p(typename POLYNOMIAL_CLASS::element_descriptor(m)), m.c_);
     }
     
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
@@ -155,7 +155,7 @@ namespace detail {
     
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation, class Coeff2>
     void multiplicative_op_assign(POLYNOMIAL_CLASS& p, Coeff2 const& c, Operation op) {
-        for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
+        for(typename POLYNOMIAL_CLASS::iterator it = p.begin(); it != p.end(); ++it)
             op(*it, c);
     }
     
@@ -171,13 +171,17 @@ namespace detail {
             print_element(std::ostream& os)
             : os_(os) {
             }
-            
-            void operator()(Polynomial const& p, typename element_descriptor<Polynomial>::type const& e) {
-                if( !(p(e) < typename Polynomial::value_type(0)) ) 
+
+            void operator()(Polynomial const& p, typename Polynomial::element_descriptor const& e) {
+#ifndef VLI_POLYNOMIAL_PRINT_ZEROS
+                if(is_zero(p(e)))
+                    return;
+#endif // VLI_POLYNOMIAL_PRINT_ZEROS
+                if( !(p(e) < typename Polynomial::value_type(0)) )
                     os_<<"+";
-                os_<<p(e)<<e<<" "; //<< std::endl;
+                os_<<p(e)<<e<<" ";
             }
-            
+
           private:
             std::ostream&       os_;
         };
@@ -192,22 +196,22 @@ namespace detail {
         : c_(factor){
         }
         template <class Polynomial, class ElementDescriptor>
-        inline void operator()(Polynomial& p, Polynomial const& p2, ElementDescriptor const& shift, typename element_descriptor<Polynomial>::type const& element) {
+        inline void operator()(Polynomial& p, Polynomial const& p2, ElementDescriptor const& shift, typename Polynomial::element_descriptor const& element) {
             p(element) = p2(element-shift) * c_;
         }
-        private:
+      private:
         T c_;
     };
   
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     void negate(POLYNOMIAL_CLASS& p) {
-        for(typename iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
+        for(typename POLYNOMIAL_CLASS::iterator it = p.begin(); it != p.end(); ++it)
             negate_inplace(*it);
     }
     
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     bool is_zero_helper(POLYNOMIAL_CLASS const& p) {
-        for(typename const_iterator<POLYNOMIAL_CLASS>::type it=p.begin(); it != p.end(); ++it)
+        for(typename POLYNOMIAL_CLASS::const_iterator it = p.begin(); it != p.end(); ++it)
             if (!is_zero(*it))
                 return false;
         return true;
@@ -216,8 +220,7 @@ namespace detail {
     template <class Polynomial>
     struct equal_helper {
         bool operator()(Polynomial const& p1, Polynomial const& p2) {
-            typedef typename const_iterator<Polynomial>::type const_iterator;
-            const_iterator it(p1.begin()), it2(p2.begin());
+            typename Polynomial::const_iterator it(p1.begin()), it2(p2.begin());
             while(it != p1.end()) {
                 if (!(*it == *it2))
                     return false;
@@ -240,7 +243,7 @@ namespace detail {
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct multiply_assign_monomial_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> polynomial_type;
-        typedef typename exponent_type<polynomial_type>::type               exponent_type;
+        typedef typename polynomial_type::exponent_type                     exponent_type;
 
         template <class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
         static void apply(polynomial_type& p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m) {
@@ -266,14 +269,14 @@ namespace detail {
            for(reverse_iterator it = p.rbegin() + exponent(m,Var0()); it !=p.rend(); ++it)
                *(it-m.var0.exp) = m.c_ * (*it);
            for(reverse_iterator it = p.rend() - exponent(m,Var0()); it != p.rend(); ++it)
-               *(it) = value_type(0);
+               *it = value_type(0);
         }
     };
     
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct multiply_assign_monomial_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
-        typedef typename exponent_type<polynomial_type>::type               exponent_type;
+        typedef typename polynomial_type::exponent_type                         exponent_type;
         template <class MVar0, class MVar1, class MVar2, class MVar3>
         static void apply(polynomial_type& p, monomial<Coeff,MVar0,MVar1,MVar2,MVar3> const& m) {
            polynomial_type p2;
@@ -295,24 +298,20 @@ namespace detail {
     struct polynomial_multiply_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>     polynomial_type;
         typedef typename polynomial_multiply_result_type<polynomial_type>::type result_type;
-        typedef typename element_descriptor<result_type>::type                  result_element_descriptor;
-        typedef typename exponent_type<polynomial_type>::type                   exponent_type;
-        typedef typename element_descriptor<polynomial_type>::type              element_descriptor;
+        typedef typename polynomial_type::exponent_type                         exponent_type;
+        typedef typename polynomial_type::element_descriptor                    element_descriptor;
         static result_type apply(polynomial_type const& p1 , polynomial_type const& p2) {
             // TODO optimize
             result_type result;
-
             for(exponent_type i = 0; i < stride<Var0,Order>::value; ++i)
                 for(exponent_type i2 = 0; i2 < stride<Var0,Order>::value; ++i2)
                     for(exponent_type j = 0; j < stride<Var1,Order>::value; ++j)
-                        for(exponent_type j2 = 0; j2 < stride<Var1,Order>::value; ++j2)                        
+                        for(exponent_type j2 = 0; j2 < stride<Var1,Order>::value; ++j2)
                             for(exponent_type k = 0; k < stride<Var2,Order>::value; ++k)
                                 for(exponent_type k2 = 0; k2 < stride<Var2,Order>::value; ++k2)
                                     for(exponent_type l = 0; l < stride<Var3,Order>::value; ++l)
                                         for(exponent_type l2 = 0; l2 < stride<Var3,Order>::value; ++l2)
                                             multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
-            
-
              return result;
         };
     };
@@ -321,9 +320,9 @@ namespace detail {
     struct polynomial_multiply_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename polynomial_multiply_result_type<polynomial_type>::type result_type;
-        typedef typename element_descriptor<result_type>::type                  result_element_descriptor;
-        typedef typename exponent_type<polynomial_type>::type                   exponent_type;
-        typedef typename element_descriptor<polynomial_type>::type              element_descriptor;
+        typedef typename result_type::element_descriptor                        result_element_descriptor;
+        typedef typename polynomial_type::exponent_type                         exponent_type;
+        typedef typename polynomial_type::element_descriptor                    element_descriptor;
         static result_type apply(polynomial_type const& p1 , polynomial_type const& p2) {
             result_type result;
             apply_helper<0>(result,p1,p2,result_element_descriptor(0),element_descriptor(0),element_descriptor(0),0,0,Var0());
@@ -360,9 +359,9 @@ namespace detail {
     struct polynomial_multiply_keep_order_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>                 polynomial_type;
         typedef typename polynomial_multiply_keep_order_result_type<polynomial_type>::type  result_type;
-        typedef typename element_descriptor<result_type>::type                              result_element_descriptor;
-        typedef typename exponent_type<polynomial_type>::type                               exponent_type;
-        typedef typename element_descriptor<polynomial_type>::type                          element_descriptor;
+        typedef typename result_type::element_descriptor                                    result_element_descriptor;
+        typedef typename polynomial_type::exponent_type                                     exponent_type;
+        typedef typename polynomial_type::element_descriptor                                element_descriptor;
         static typename polynomial_multiply_keep_order_result_type<polynomial_type>::type apply(polynomial_type const& p1, polynomial_type const& p2) {
             result_type result;
             for(exponent_type i = 0; i < stride<Var0,Order>::value; ++i)
@@ -380,11 +379,11 @@ namespace detail {
     
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_keep_order_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
-        typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
-        typedef typename polynomial_multiply_keep_order_result_type<polynomial_type>::type result_type;
-        typedef typename element_descriptor<result_type>::type                  result_element_descriptor;
-        typedef typename exponent_type<polynomial_type>::type                   exponent_type;
-        typedef typename element_descriptor<polynomial_type>::type              element_descriptor;
+        typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3>             polynomial_type;
+        typedef typename polynomial_multiply_keep_order_result_type<polynomial_type>::type  result_type;
+        typedef typename result_type::element_descriptor                                    result_element_descriptor;
+        typedef typename polynomial_type::exponent_type                                     exponent_type;
+        typedef typename polynomial_type::element_descriptor                                element_descriptor;
         static result_type apply(polynomial_type const& p1 , polynomial_type const& p2) {
             result_type result;
             apply_helper<0>(result,p1,p2,result_element_descriptor(0),element_descriptor(0),element_descriptor(0),0,0,Var0());

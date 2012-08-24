@@ -32,11 +32,11 @@ class polynomial : public detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> {
     typedef unsigned int                                    exponent_type;      // Type of the exponents (has to be the same type as Vli::size_type)
 
     polynomial() {
-        detail::init(*this, typename boost::is_fundamental<Coeff>::type());
+        detail::init(*this, typename boost::is_fundamental<value_type>::type());
     }
     
     explicit polynomial(int i) {
-        detail::init(*this, typename boost::is_fundamental<Coeff>::type());
+        detail::init(*this, typename boost::is_fundamental<value_type>::type());
         base_type::operator[](0) = value_type(i);
     }
     
@@ -242,24 +242,24 @@ struct variable<POLYNOMIAL_CLASS,3> {
 template <std::size_t NumBits>
 class vli;
 
-template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+template <std::size_t NumBits, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
 struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli<BaseInt,2*Size>,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
+    typedef polynomial<vli<2*NumBits>,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
-template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+template <std::size_t NumBits, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
 struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli<BaseInt,2*Size>,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
+    typedef polynomial<vli<2*NumBits>,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
-template <typename BaseInt, std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+template <std::size_t NumBits, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 struct polynomial_multiply_keep_order_result_type<polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli<BaseInt,2*Size>,MaxOrder,Var0,Var1,Var2,Var3> type;
+    typedef polynomial<vli<2*NumBits>,MaxOrder,Var0,Var1,Var2,Var3> type;
 };
 
 
 namespace detail {
-    template <class BaseInt, std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t NumBits, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     struct equal_helper<polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
         typedef polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> polynomial_type;
             bool operator()(polynomial_type const& p, polynomial_type const& p2) {
