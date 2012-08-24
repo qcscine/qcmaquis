@@ -1,5 +1,5 @@
-#include <regression/vli/test_header.hpp>
 #include <gmpxx.h>
+#include <regression/vli/test_header.hpp>
 
 using namespace vlilib::test;
 
@@ -9,13 +9,13 @@ VLI_FUZZABLE_TEST( gmp_plus )
 
     init(a,overflow_safe);
     init(b,overflow_safe);
-    
-    mpz_class agmp(a.get_str()), bgmp(b.get_str());
-    
+
+    mpz_class agmp(a), bgmp(b);
+
     vli_type c = a+b;
     mpz_class cgmp = agmp + bgmp;
-    
-    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+
+    BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
 }
 
 VLI_FUZZABLE_TEST( gmp_plus_int )
@@ -25,11 +25,11 @@ VLI_FUZZABLE_TEST( gmp_plus_int )
 
     int b;
     init(b);
-    
-    mpz_class agmp(a.get_str());
-    
+
+    mpz_class agmp(a);
+
     vli_type c = a+b;
     mpz_class cgmp = agmp + b;
-    
-    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+
+    BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
 }
