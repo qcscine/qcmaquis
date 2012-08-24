@@ -1,5 +1,5 @@
-#include <regression/vli/test_header.hpp>
 #include <gmpxx.h>
+#include <regression/vli/test_header.hpp>
 
 using namespace vlilib::test;
 
@@ -9,12 +9,12 @@ VLI_FUZZABLE_TEST( plus_assign_extend_positive )
     vli_type b;
     init(a,max_positive);
     init(b,max_positive);
-    mpz_class agmp(a.get_str()), bgmp(b.get_str());
+    mpz_class agmp(a), bgmp(b);
 
     typename extended<vli_type>::type c = plus_extend(a,b);
     mpz_class cgmp = agmp + bgmp;
 
-    BOOST_CHECK_EQUAL(c.get_str(),cgmp.get_str());
+    BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
 }
 /*
 VLI_FUZZABLE_TEST( plus_assign_extend_negative )
