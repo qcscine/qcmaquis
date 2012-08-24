@@ -5,6 +5,7 @@
 #include <boost/mpl/size.hpp>
 #include <limits>
 #include <fstream>
+#include <iostream>
 
 #include <vli/polynomial/polynomial.hpp>
 

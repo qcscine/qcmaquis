@@ -7,8 +7,8 @@
 #include <boost/preprocessor/cat.hpp>
 #include <stdexcept>
 #include <vli/vli.hpp>
+#include <iostream>
 #ifdef VLI_FUZZ_TESTS
-#include <ctime>
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
@@ -48,7 +48,7 @@ namespace test {
 typedef vlilib::vli<VLI_SIZE*64> vli_type;
 typedef vlilib::vli<2*VLI_SIZE*64> vli_type_double;
 typedef vlilib::vli<2*VLI_SIZE*64>::value_type type;
-    
+
 enum variant_enum {
       max_positive = 0      // fill with the max positive number
     , overflow_safe = 1     // fill such that x+x doesn't cause an overflow
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
         if (argc == 3)
             seed = boost::lexical_cast<unsigned int>(argv[2]);
         std::cout<<"Using random seed: "<<seed<<std::endl;
-        vli::test::fuzz_initializer::rng.seed(seed);
+        vlilib::test::fuzz_initializer::rng.seed(seed);
 
     } else {
         std::cerr<<"Usage:"<<std::endl;

@@ -13,6 +13,12 @@ if(MACHINE_CONFIG)
     message(ERROR " Machine config not found!")
   endif(EXISTS ${MACHINE_CONFIG})
 endif(MACHINE_CONFIG)
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.")
+if(NOT MACHINE_CONFIG)
+    set(CMAKE_CXX_FLAGS_RELEASE "-Wall -DNDEBUG -O3 -funroll-loops -m64" CACHE STRING "Compiler flags for Release compiles.")
+    set(CMAKE_CXX_FLAGS_DEBUG "-Wall -g -O0 -m64" CACHE STRING "Compiler flags for Debug compiles.")
+endif(NOT MACHINE_CONFIG)
 ########################################################################
 #
 # Project and version information
@@ -30,7 +36,6 @@ set (VLI_VERSION_MINOR 1)
 ########################################################################
 
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
-option (VLI_DEBUG_COMPILE "Create a debug compile of VLI" OFF)
 option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" OFF)
 option (VLI_TESTS "Build the VLI regression tests" OFF)
 option (VLI_BENCHMARKS "Build the VLI benchmarks" OFF)
@@ -38,11 +43,6 @@ option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
 option (VLI_ARCH_X86  "Build VLI on x86 architecture  " ON)
 option (VLI_ARCH_POWER  "Build VLI on Power architecture " OFF)
-
-if(NOT MACHINE_CONFIG)
-    set (VLI_COMPILER_FLAGS_RELEASE " -Wall -O2 -funroll-loops -m64" CACHE STRING "Compiler flags for a regular compile.")
-    set (VLI_COMPILER_FLAGS_DEBUG " -Wall -g -O0 -m64" CACHE STRING "Compiler flags for a debug compile.")
-endif(NOT MACHINE_CONFIG)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
@@ -101,14 +101,6 @@ endif()
 #
 ########################################################################
 
-mark_as_advanced(CMAKE_BUILD_TYPE)
-if(VLI_DEBUG_COMPILE)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
-else(VLI_DEBUG_COMPILE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "CMake Build Type (Release/Debug)" FORCE)
-endif(VLI_DEBUG_COMPILE)
-set(CMAKE_CXX_FLAGS_RELEASE ${VLI_COMPILER_FLAGS_RELEASE} CACHE STRING "Compiler flags for Release compiles." FORCE)
-set(CMAKE_CXX_FLAGS_DEBUG ${VLI_COMPILER_FLAGS_DEBUG} CACHE STRING "Compiler flags for Debug compiles." FORCE)
 
 
 ########################################################################
@@ -143,10 +135,7 @@ if(VLI_TESTS)
     enable_testing() 
     set(BUILDNAME "${PROJECT_VERSION}" CACHE STRING "Name of build on the dashboard")
       mark_as_advanced(BUILDNAME)
-    set(VLI_TEST_LIBRARIES ${Boost_LIBRARIES} ${GMP_LIBRARY_CXX} ${PROJECT_BINARY_DIR}/src/vli/libvli.a)
-    add_subdirectory (regression/vli)
-    add_subdirectory (regression/polynomial)
-    add_subdirectory (regression/inner_product_gpu)
+    add_subdirectory (regression)
 endif(VLI_TESTS)
 
 if(VLI_BENCHMARKS)
