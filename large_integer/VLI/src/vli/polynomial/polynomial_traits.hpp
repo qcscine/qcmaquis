@@ -1,5 +1,8 @@
 #ifndef VLI__POLYNOMIAL_TRAITS_HPP
 #define VLI__POLYNOMIAL_TRAITS_HPP
+
+#include <boost/mpl/int.hpp>
+
 namespace vli {
 
 
@@ -38,6 +41,30 @@ struct polynomial_multiply_keep_order_result_type< polynomial<Coeff,MaxOrder,Var
 template <class Polynomial>
 struct max_order {
     typedef typename Polynomial::max_order type;
+};
+
+template <class Polynomial>
+struct num_variables {
+};
+
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+struct num_variables<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >
+: boost::mpl::int_<4> {
+};
+
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2>
+struct num_variables<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,no_variable> >
+: boost::mpl::int_<3> {
+};
+
+template <class Coeff, class MaxOrder, class Var0, class Var1>
+struct num_variables<polynomial<Coeff,MaxOrder,Var0,Var1,no_variable,no_variable> >
+: boost::mpl::int_<2> {
+};
+
+template <class Coeff, class MaxOrder, class Var0>
+struct num_variables<polynomial<Coeff,MaxOrder,Var0,no_variable,no_variable,no_variable> >
+: boost::mpl::int_<1> {
 };
 
 template <class Polynomial, unsigned int N>

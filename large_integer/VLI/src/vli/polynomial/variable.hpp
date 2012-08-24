@@ -1,11 +1,12 @@
 #ifndef VLI_POLYNOMIAL_VARIABLE_HPP
 #define VLI_POLYNOMIAL_VARIABLE_HPP
+#include <boost/mpl/char.hpp>
+
 namespace vli {
 
 template <char X>
-class var{
-  public:
-    static char const value = X;
+class var
+: public boost::mpl::char_<X> {
 };
 
 class no_variable {

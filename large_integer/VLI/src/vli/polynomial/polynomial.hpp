@@ -5,6 +5,7 @@
 #ifndef VLI_POLYNOMIAL_HPP
 #define VLI_POLYNOMIAL_HPP
 #include <vli/polynomial/variable.hpp>
+#include <vli/polynomial/polynomial_traits.hpp>
 #include <vli/polynomial/numeric.hpp>
 #include <vli/polynomial/monomial.hpp>
 #include <vli/polynomial/detail/polynomial_impl.hpp>
@@ -19,11 +20,11 @@ namespace vli {
 //------------------------------------------------------------------------ 
 
 template <class Coeff, class MaxOrder, class Var0, class Var1 = vli::no_variable, class Var2 = vli::no_variable, class Var3 = vli::no_variable>
-class polynomial : public detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> {
+class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >::value> {
   public:
-    typedef detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> base_type;
+    typedef detail::storage<Coeff,MaxOrder,num_variables<polynomial>::value> base_type;
     typedef typename  base_type::value_type                 value_type;
-    typedef typename  base_type::element_descriptor         element_descriptor;
+    typedef detail::element_descriptor_impl<Var0, Var1, Var2, Var3> element_descriptor;
     typedef MaxOrder                                        max_order;
     typedef typename  base_type::iterator                   iterator;
     typedef typename  base_type::const_iterator             const_iterator;
@@ -34,12 +35,12 @@ class polynomial : public detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> {
     polynomial() {
         detail::init(*this, typename boost::is_fundamental<value_type>::type());
     }
-    
-    explicit polynomial(int i) {
+
+    explicit polynomial(value_type const& v) {
         detail::init(*this, typename boost::is_fundamental<value_type>::type());
-        base_type::operator[](0) = value_type(i);
+        base_type::operator[](0) = v;
     }
-    
+
     template <class Coeff2>
     explicit polynomial(polynomial<Coeff2,MaxOrder,Var0,Var1,Var2,Var3> const& p) {
         iterator it = this->begin();
@@ -90,7 +91,7 @@ class polynomial : public detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> {
         detail::multiply_assign_monomial_helper<polynomial>::apply(*this,m);
         return *this;
     }
-    
+
     polynomial operator - () const {
         polynomial p(*this);
         detail::negate(p);
@@ -103,12 +104,12 @@ class polynomial : public detail::storage<Coeff,MaxOrder,Var0,Var1,Var2,Var3> {
 
     using base_type::operator();
     // for direct access, I removed the element descriptor
-    inline value_type& operator()(exponent_type i, exponent_type j=0, exponent_type k=0, exponent_type l=0) {
-        return base_type::operator()(i,j,k,l);
+    inline value_type& operator()(element_descriptor const& e) {
+        return base_type::operator()(exponent(e,Var0()),exponent(e,Var1()),exponent(e,Var2()),exponent(e,Var3()));
     }
 
-    inline value_type const& operator()(exponent_type i, exponent_type j=0, exponent_type k=0, exponent_type l=0) const {
-        return base_type::operator()(i,j,k,l);
+    inline value_type const& operator()(element_descriptor const& e) const {
+        return base_type::operator()(exponent(e,Var0()),exponent(e,Var1()),exponent(e,Var2()),exponent(e,Var3()));
     }
 };
 
@@ -170,13 +171,13 @@ POLYNOMIAL_CLASS operator * (monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m, 
 
 template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Coeff2>
 POLYNOMIAL_CLASS operator * (POLYNOMIAL_CLASS p, Coeff2 const& c) {
-    p*=c;
-    return p; 
+    p *= c;
+    return p;
 }
 
 template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Coeff2>
 POLYNOMIAL_CLASS operator * (Coeff2 const& c, POLYNOMIAL_CLASS const& p ) {
-    return p*c; 
+    return p*c;
 }
 
 template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
