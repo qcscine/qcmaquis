@@ -27,13 +27,13 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu_power/kernel_implementation_macros.h"
+#include "vli/detail/cpu/powerpc64/kernel_implementation_macros.h"
 
-namespace vli{
+namespace vlilib{
     namespace detail{
                      // new functions type : VLI<n*64> + VLI<n*64> : add128_128, add192_192 ...
                      #define FUNCTION_add_nbits_nbits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_NBITS(n)(unsigned long int* x, unsigned long int const* y){ \
+                         void NAME_ADD_NBITS_PLUS_NBITS(n)(unsigned long int* x, boost::uint64_tconst* y){ \
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                      \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r4,BOOST_PP_ADD(n,2))       \
@@ -48,7 +48,7 @@ namespace vli{
                      #undef FUNCTION_add_nbits_nbits
 
                      #define FUNCTION_add_nbits_64bits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, unsigned long int const* y){ \
+                         void NAME_ADD_NBITS_PLUS_64BITS(n)(unsigned long int* x, boost::uint64_tconst* y){ \
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                      \
                                  "ld   5,0(4)   \n" \
@@ -66,7 +66,7 @@ namespace vli{
 
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(unsigned long int* x , unsigned long int const* y , unsigned long int const* w /* z used by boost pp !*/){ \
+                         void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(unsigned long int* x , boost::uint64_tconst* y , boost::uint64_tconst* w /* z used by boost pp !*/){ \
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), LOAD_register_r5,~ )                      \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), LOAD_register_r4,BOOST_PP_ADD(n,1))       \

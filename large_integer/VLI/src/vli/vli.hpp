@@ -343,12 +343,6 @@ const vli<NumBits+64> plus_extend (vli<NumBits> const &vli_a, vli<NumBits> const
       plus_extend_assign<NumBits>(vli_res,vli_a,vli_b);
       return vli_res;
 }
-
-template <std::size_t NumBits>
-const vli<NumBits> operator + (vli<NumBits> vli_a, vli<NumBits> const& vli_b){
-    vli_a += vli_b;
-    return vli_a;
-}
     
 template <std::size_t NumBits>
 const vli<NumBits> operator + (vli<NumBits> vli_a, int b){
@@ -360,13 +354,7 @@ template <std::size_t NumBits>
 const vli<NumBits> operator + (int b, vli<NumBits> const& vli_a){
     return vli_a+b;
 }
-    
-template <std::size_t NumBits>
-const vli<NumBits> operator - (vli<NumBits> vli_a, vli<NumBits> const& vli_b){
-    vli_a -= vli_b;
-    return vli_a;
-}
-    
+        
 template <std::size_t NumBits>
 const vli<NumBits> operator - (vli<NumBits> vli_a, int b){
     vli_a -= b;

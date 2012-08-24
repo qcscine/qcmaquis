@@ -27,7 +27,7 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu_x86/kernel_implementation_macros.h"
+#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
 
 
 namespace vlilib{

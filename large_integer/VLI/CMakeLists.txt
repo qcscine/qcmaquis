@@ -19,6 +19,8 @@ if(NOT MACHINE_CONFIG)
     set(CMAKE_CXX_FLAGS_RELEASE "-Wall -DNDEBUG -O3 -funroll-loops -m64" CACHE STRING "Compiler flags for Release compiles.")
     set(CMAKE_CXX_FLAGS_DEBUG "-Wall -g -O0 -m64" CACHE STRING "Compiler flags for Debug compiles.")
 endif(NOT MACHINE_CONFIG)
+
+
 ########################################################################
 #
 # Project and version information
@@ -41,8 +43,6 @@ option (VLI_TESTS "Build the VLI regression tests" OFF)
 option (VLI_BENCHMARKS "Build the VLI benchmarks" OFF)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
-option (VLI_ARCH_X86  "Build VLI on x86 architecture  " ON)
-option (VLI_ARCH_POWER  "Build VLI on Power architecture " OFF)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")

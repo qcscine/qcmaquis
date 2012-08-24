@@ -53,15 +53,17 @@ namespace vlilib{
     
     template<std::size_t NumBits>
     class vli
-        :boost::equality_comparable<vli<NumBits> >, // generate != oeprator
-         boost::less_than_comparable<vli<NumBits>, int> // generate <= >= > < whatever the paire VLI/int
+        :boost::equality_comparable<vli<NumBits> >, // generate != operator
+         boost::less_than_comparable<vli<NumBits>, int>, // generate <= >= > < whatever the paire VLI/int
+         boost::addable<vli<NumBits> >, // generate VLI<nbits> = VLIVLI<nbits> + VLI<VLI<nbits> 
+         boost::subtractable<vli<NumBits> > // generate VLI<nbits> = VLIVLI<nbits> - VLI<VLI<nbits>
     {
     public:
         typedef boost::uint64_t      value_type;     // Data type to store parts of the very long integer (usually int) -
         typedef std::size_t          size_type;      // Size type of the very long integers (number of parts)
 
-        static const std::size_t numbits = NumBits;                     // Number of parts of the very long integer (eg. how many ints)
-        static const std::size_t numwords = (NumBits+63)/64;                     // Number of parts of the very long integer (eg. how many ints)
+        static const std::size_t numbits = NumBits;           // Number of bits of the vli
+        static const std::size_t numwords = (NumBits+63)/64;  // Number of words (here word = 64 bits) of the very long integer (eg. how many ints)
         // c - constructors, copy-swap, access   
         vli();
         explicit vli(long int num);
@@ -109,15 +111,14 @@ namespace vlilib{
     
     /**
      multiply and addition operators, suite ...
+     no boost::operators for VLI operator int, because I have specific assembly solver, 
+     I do not want VLI tmp(int) and work with the tmp as for > < operators
      */
     template <std::size_t NumBits>
     bool is_zero(vli<NumBits> const& v);
     
     template <std::size_t NumBits>
     void negate_inplace(vli<NumBits>& v);
-
-    template <std::size_t NumBits>
-    const vli<NumBits> operator + (vli<NumBits> vli_a, vli<NumBits> const& vli_b);
 
     template <std::size_t NumBits>
     const vli<NumBits> operator + (vli<NumBits> vli_a, int b);
@@ -127,16 +128,13 @@ namespace vlilib{
     
     template <std::size_t NumBits> //extented arithmetic
     const vli<NumBits+64> plus_extend(vli<NumBits> const& vli_a, vli<NumBits> const& vli_b);
-
-    template <std::size_t NumBits>
-    const vli<NumBits> operator - (vli<NumBits> vli_a, vli<NumBits> const& vli_b);
     
     template <std::size_t NumBits>
     const vli<NumBits> operator - (vli<NumBits> vli_a, int b);
     
     template <std::size_t NumBits>
     const vli<NumBits> operator * (vli<NumBits>  vli_a, vli<NumBits> const& vli_b);
-
+    
     template <std::size_t NumBits>
     const vli<NumBits> operator * (vli<NumBits> vli_a, int b);
 

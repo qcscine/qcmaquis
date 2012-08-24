@@ -82,9 +82,20 @@ int main(int argc, char* argv[]) {
     std::cout << std::numeric_limits<unsigned long long int>::digits << std::endl;
     vli_type_cpu a(1);
     vli_type_cpu b(0);
+    vli_type_cpu c(0);
     
-    if( 0 >= b)
-        std::cout << "ok" << std::endl;
+    a[0]=0xffffffffffffffff;
+    a[1]=0xffffffffffffffff;
+
+    b[0]=0xffffffffffffffff;
+    b[1]=0xffffffffffffffff;
+  
+  TimerOMP t("1");
+   t.begin();
+   for(long i=0 ; i <0xfffffff; ++i)  
+    c = a +b;
+   t.end();
+    
     
     
     /*
