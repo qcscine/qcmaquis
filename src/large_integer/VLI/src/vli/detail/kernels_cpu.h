@@ -30,7 +30,7 @@
 
 #ifndef VLI_ASM_KERNELS_CPU_ASM_H
 #define VLI_ASM_KERNELS_CPU_ASM_H 
-#include "vli/detail/cpu_x86/kernel_macros.h"
+#include "vli/detail/cpu/x86_64/kernel_macros.h"
 #include <boost/preprocessor/repetition.hpp>
 
 namespace vlilib{
