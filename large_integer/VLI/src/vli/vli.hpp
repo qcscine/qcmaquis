@@ -61,11 +61,7 @@ namespace detail {
 // C - constructors, copy-swap, access operators
 template <std::size_t NumBits>
 vli<NumBits>::vli(){
-// C - I change because the compiler complains  warning: dereferencing pointer ‘<anonymous>’
-// does break strict-aliasing rules, memset is no so bad 
     memset((void*)&data_[0],0,numwords*sizeof(value_type));
-//    for(size_type i=0; i<Size; ++i)
-//        data_[i] = 0; 
 }
 
 template <std::size_t NumBits>
@@ -111,26 +107,19 @@ vli<NumBits> vli<NumBits>::operator-() const{
     return tmp;
 }
 
-
 template <std::size_t NumBits>
 bool vli<NumBits>::operator == (vli const& vli_a) const{
     int n = memcmp((void*)data_,(void*)vli_a.data_,numwords*sizeof(value_type));
     return (0 == n);
 }
-        
-template <std::size_t NumBits>
-bool vli<NumBits>::operator != (vli const& vli_a) const{
-    for(size_type i(0); i < numwords-1 ; ++i){
-        if((*this)[i] != vli_a[i])
-            return true;
-    }        
-    return false;
-}
 
 template <std::size_t NumBits>
-bool vli<NumBits>::operator < (vli vli_a) const{
+bool vli<NumBits>::operator < (vli const& vli_a) const{
     vli tmp(*this);
     return ( (tmp -= vli_a).is_negative() );
+    //   return ( !((vli_a-=*this).is_negative()) );
+    // C - Andreas  it does not work because it will be wrong if the values are equals
+    // C - because  we check the bit sign 1 means  negative and 0 means  positive or equal
 }
 
 template <std::size_t NumBits>

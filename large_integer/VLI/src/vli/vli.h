@@ -32,6 +32,7 @@
 #include "vli/function_hooks/vli_number_cpu_function_hooks.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/cstdint.hpp> // for the type boost::uint64_t
+#include <boost/operators.hpp>
 #include <vector>
 #include <string>
 #include <cassert>
@@ -51,7 +52,9 @@ namespace vlilib{
     }
     
     template<std::size_t NumBits>
-    class vli 
+    class vli
+        :boost::equality_comparable<vli<NumBits> >, // generate != oeprator
+         boost::less_than_comparable<vli<NumBits>, int> // generate <= >= > < whatever the paire VLI/int
     {
     public:
         typedef boost::uint64_t      value_type;     // Data type to store parts of the very long integer (usually int) -
@@ -84,12 +87,11 @@ namespace vlilib{
         vli& operator *= (vli const& a); // 192 bits -> 192 bits
         
         vli operator -() const;
-        bool operator == (vli const& vli_a) const;
-        bool operator != (vli const& vli_a) const;
-        bool operator < (vli vli_a) const;
-        bool operator < (int i) const;
-        bool operator > (vli vli_a) const;
-        bool operator > (int i) const;
+        bool operator == (vli const& vli_a) const; // need by boost::equality_comparable
+        bool operator < (vli const& vli_a) const; // need by less_than_comparable
+        bool operator < (int i) const; // need by less_than_comparable
+        bool operator > (vli vli_a) const; // need by less_than_comparable
+        bool operator > (int i) const; // need by less_than_comparable
         bool is_zero() const;
         void print_raw(std::ostream& os) const;
         void print(std::ostream& os) const;

@@ -79,11 +79,28 @@ typedef boost::mpl::vector<polynomial_type_each_x,
    };
    */
 int main(int argc, char* argv[]) {
+    std::cout << std::numeric_limits<unsigned long long int>::digits << std::endl;
+    vli_type_cpu a(1);
+    vli_type_cpu b(0);
     
-    vli_type_cpu a(-212476);
-    std::cout << std::hex << a << std::endl;
-       
-
+    if( 0 >= b)
+        std::cout << "ok" << std::endl;
+    
+    
+    /*
+    Timer A("tpotot");
+    A.begin();
+    
+    for( long int i =0; i < 0xffffffff; ++i){
+        vli_type_cpu a(-26+i);
+        vli_type_cpu b(-2116+i);
+        if( a != b){
+        int c = 2;
+            c += 1;}
+    }
+    
+    A.end();
+    */
 //       boost::mpl::for_each<polynomial_list>(test_case());
        return 0;
    }
