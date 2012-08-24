@@ -60,7 +60,7 @@ static const reference_data_storage reference_data;
 
 template <typename Polynomial>
 int fill_polynomial(Polynomial& p,int offset=0) {
-    for(typename vli::iterator<Polynomial>::type it=p.begin(); it != p.end(); ++it)
+    for(typename Polynomial::iterator it=p.begin(); it != p.end(); ++it)
         *it = offset++;
     return offset;
 }
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( copy_constructor, Poly, polynomial_types ) {
 
     Poly b(a);
 
-    typename vli::iterator<Poly>::type it(a.begin()), it2(b.begin());
+    typename Poly::iterator it(a.begin()), it2(b.begin());
     while(it != a.end())
         BOOST_CHECK_EQUAL(*it++,*it2++);
 }
@@ -96,18 +96,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( copy_constructor, Poly, polynomial_types ) {
 BOOST_AUTO_TEST_CASE_TEMPLATE ( converting_copy_constructor, Poly, polynomial_types ) {
     typedef vli::polynomial<
           double
-        , typename vli::order_specification<Poly>::type
+        , typename Poly::max_order
         , typename vli::variable<Poly,0>::type
         , typename vli::variable<Poly,1>::type
         , typename vli::variable<Poly,2>::type
         , typename vli::variable<Poly,3>::type
-        > polynomial_double_type; 
+        > polynomial_double_type;
     Poly a;
     fill_polynomial(a);
     polynomial_double_type b(a);
 
-    typename vli::iterator<Poly>::type                      it(a.begin());
-    typename vli::iterator<polynomial_double_type>::type    it2(b.begin());
+    typename Poly::iterator                     it(a.begin());
+    typename polynomial_double_type::iterator   it2(b.begin());
     while(it != a.end())
         BOOST_CHECK_EQUAL(static_cast<double>(*it++),*it2++);
 }
@@ -184,12 +184,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign, Poly, polynomial_types) {
 
     fill_polynomial(pb,63243);
 
-    for(typename vli::iterator<Poly>::type it=pa.begin(); it != pa.end(); ++it)
+    for(typename Poly::iterator it=pa.begin(); it != pa.end(); ++it)
         *it = 1;
 
     pa += pb;
 
-    typename vli::iterator<Poly>::type it(pa.begin()), it2(pb.begin());
+    typename Poly::iterator it(pa.begin()), it2(pb.begin());
     while(it != pa.end())
         BOOST_CHECK_EQUAL(*it++,(*it2++)+1);
 }
@@ -230,8 +230,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign, Poly, polynomial_types ) {
 
     pa -= pb;
 
-    typename vli::iterator<Poly>::type it,it2;
-    it  = pa.begin(), it2 = pb.begin();
+    typename Poly::iterator it(pa.begin()), it2(pb.begin());
     while( it != pa.end() )
         BOOST_CHECK_EQUAL(*it++,-*it2++);
 }
@@ -272,8 +271,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_constant, Poly, polynomial_type
     typename Poly::value_type a = 42;
     pa *= a;
 
-    typename vli::iterator<Poly>::type it,it2;
-    it  = pa.begin(), it2 = pb.begin();
+    typename Poly::iterator it(pa.begin()), it2(pb.begin());
     while( it != pa.end() )
         BOOST_CHECK_EQUAL(*it++,(*it2++)*a);
 }
@@ -286,8 +284,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_int, Poly, polynomial_types) {
     int a = 42;
     pa *= a;
 
-    typename vli::iterator<Poly>::type it,it2;
-    it  = pa.begin(), it2 = pb.begin();
+    typename Poly::iterator it(pa.begin()), it2(pb.begin());
     while( it != pa.end() )
         BOOST_CHECK_EQUAL(*it++,(*it2++)*a);
 }
@@ -299,8 +296,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( negate, Poly, polynomial_types ) {
 
     negate_inplace(pa);
 
-    typename vli::iterator<Poly>::type it,it2;
-    it  = pa.begin(), it2 = pb.begin();
+    typename Poly::iterator it(pa.begin()), it2(pb.begin());
     while( it != pa.end() )
         BOOST_CHECK_EQUAL(*it++,-*it2++);
     
