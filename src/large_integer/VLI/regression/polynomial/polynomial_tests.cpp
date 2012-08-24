@@ -323,6 +323,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( monomial_multiply, Poly, polynomial_types ) {
     BOOST_CHECK_EQUAL(pa_str.str(),(reference_data.get_result(1,pa)));
 }
 
+//BOOST_AUTO_TEST_CASE_TEMPLATE (multivar_monomial_multiply, Poly, polynomial_types ) {
+//    if(vli::num_variables<Poly>::value >= 2) {
+//        Poly pa;
+//        fill_polynomial(pa);
+//        // test variables in reverse order:
+//        vli::monomial<typename Poly::value_type, typename vli::variable<Poly,1>::type, typename vli::variable<Poly,0>::type> m(2,1);
+//        m *= 3;
+//        pa *= m;
+//        std::stringstream pa_str;
+//        pa_str << pa;
+//        BOOST_CHECK_EQUAL(pa_str.str(),(reference_data.get_result(x,pa)));
+//    }
+//}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE ( polynomial_multiply, Poly, polynomial_types ) {
     Poly pa;
     Poly pb;

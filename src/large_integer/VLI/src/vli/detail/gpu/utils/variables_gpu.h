@@ -35,47 +35,11 @@ namespace vli {
 
     namespace detail {
 
-    namespace max_order_combined_helpers {
-
-        template<unsigned int NK, unsigned int K>
-        struct size_helper {
-            static unsigned int const value = NK*size_helper<NK-1,K>::value;
-        };
-
-        template <unsigned int K>
-        struct size_helper<K,K> {
-            static unsigned int const value = 1;
-        };
-
-        template <unsigned int N>
-        struct factorial {
-            static unsigned int const value = N*factorial<N-1>::value;
-        };
-
-        template <>
-        struct factorial<0> {
-            static unsigned int const value = 1;
-        };
-
-        template <unsigned int N, unsigned int K>
-        struct size {
-            // N variables, max order K -> n+k-1 over k  = (n+k-1)! / ( (n-1)! k! ) combinations
-            // Assuming N > 0
-            static unsigned int const value = size_helper<N+K-1,K>::value/factorial<N-1>::value;
-        };
-
-    }
 
     template <int Var, int NumVars, unsigned int Order>
     struct result_stride {
-        static unsigned int const value = Var < NumVars ? 2*Order+1 : 1;
-    };  
-
-        
-    template <int Var, int NumVars, unsigned int Order>
-    struct stride {
-        static unsigned int const value = Var < NumVars ? Order+1 : 1;
-    };  
+        static unsigned int const value = stride<Var,NumVars,2*Order>::value;
+    };
 
     template <int Var, int NumVars, unsigned int Order>
     struct stride_pad {
@@ -87,24 +51,26 @@ namespace vli {
        enum { value = 256};
     };
 
-    template<class MaxOrder, int NumVars>
-    struct num_coefficients;
-
-        
-    template<class MaxOrder>
-    struct num_coefficients<MaxOrder, 0>{
-        enum {value = 1};
-    };
-
-    template<unsigned int Order, int NumVars>
-    struct num_coefficients<max_order_each<Order>, NumVars>{
-        enum {value = (2*Order+1)*num_coefficients<max_order_each<Order>, NumVars-1>::value};
-    };
-
-    template<unsigned int Order, int NumVars>
-    struct num_coefficients<max_order_combined<Order>, NumVars>{
-        enum {value = vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value};
-    };
+//    TODO Remove this, all num_coefficients in the gpu code should probably be replaced by num_coefficients<...<2*Order>,...>
+//
+//    template<class MaxOrder, int NumVars>
+//    struct num_coefficients;
+//
+//        
+//    template<class MaxOrder>
+//    struct num_coefficients<MaxOrder, 0>{
+//        enum {value = 1};
+//    };
+//
+//    template<unsigned int Order, int NumVars>
+//    struct num_coefficients<max_order_each<Order>, NumVars>{
+//        enum {value = (2*Order+1)*num_coefficients<max_order_each<Order>, NumVars-1>::value};
+//    };
+//
+//    template<unsigned int Order, int NumVars>
+//    struct num_coefficients<max_order_combined<Order>, NumVars>{
+//        enum {value = vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value};
+//    };
 
     template<class MaxOrder, int NumVars>
     struct mul_block_size {

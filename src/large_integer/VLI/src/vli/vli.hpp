@@ -39,13 +39,13 @@ namespace detail {
     struct gmp_convert_helper {
         template <std::size_t NumBits>
         static GMPClass apply(vli<NumBits> a) {
+            typedef typename vli<NumBits>::value_type value_type;
             bool const neg = a.is_negative();
             if(neg)
                 negate_inplace(a);
             GMPClass result(0);
             GMPClass factor(1);
-            GMPClass const segment_factor( mpz_class(~(vli<NumBits>::value_type(0))) + 1 );
-//              GMPClass const segment_factor( mpz_class(~long(0)) + 1 );
+            GMPClass const segment_factor( mpz_class(~value_type(0)) + 1 );
 
             for(typename vli<NumBits>::size_type i=0; i< vli<NumBits>::numwords; ++i) {
                 result += factor * a[i];
@@ -117,9 +117,6 @@ template <std::size_t NumBits>
 bool vli<NumBits>::operator < (vli const& vli_a) const{
     vli tmp(*this);
     return ( (tmp -= vli_a).is_negative() );
-    //   return ( !((vli_a-=*this).is_negative()) );
-    // C - Andreas  it does not work because it will be wrong if the values are equals
-    // C - because  we check the bit sign 1 means  negative and 0 means  positive or equal
 }
 
 template <std::size_t NumBits>

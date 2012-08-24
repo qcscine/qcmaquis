@@ -10,6 +10,7 @@
 #include <vli/polynomial/polynomial_traits.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <ostream>
+#include <algorithm>
 #include <cassert>
 
 #define POLYNOMIAL_CLASS polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3>
@@ -19,28 +20,28 @@ namespace detail {
     namespace operations {
         struct plus_assign {
             template <class T, class T2>
-            void operator()(T& t, T2 const& t2) {
+            inline void operator()(T& t, T2 const& t2) {
                 t += t2;
             }
         };
 
         struct minus_assign {
             template <class T, class T2>
-            void operator()(T& t, T2 const& t2) {
+            inline void operator()(T& t, T2 const& t2) {
                 t -= t2;
             }
         };
 
         struct multiply_assign {
             template <class T, class T2>
-            void operator()(T& t, T2 const& t2) {
+            inline void operator()(T& t, T2 const& t2) {
                 t *= t2;
             }
         };
 
         struct devide_assign {
             template <class T, class T2>
-            void operator()(T& t, T2 const& t2) {
+            inline void operator()(T& t, T2 const& t2) {
                 t /= t2;
             }
         };
@@ -50,21 +51,22 @@ namespace detail {
     // loop helper
     //
     template <class Polynomial>
-    struct loop_helper {
-    };
+    struct loop_helper;
     
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct loop_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>     polynomial_type;
         typedef typename polynomial_type::exponent_type                         exponent_type;
         typedef typename polynomial_type::element_descriptor                    element_descriptor;
+        static unsigned int const num_vars = num_variables<polynomial_type>::value;
 
         template <class Operation>
         static void apply(polynomial_type const& p, Operation op) {
-            for(exponent_type i=0; i < stride<Var0,Order>::value; ++i)
-                for(exponent_type j=0; j < stride<Var1,Order>::value; ++j)
-                    for(exponent_type k=0; k < stride<Var2,Order>::value; ++k)
-                        for(exponent_type l=0; l < stride<Var3,Order>::value; ++l) 
+            // We rely on the compiler to optimize loops like i=0..1
+            for(exponent_type i=0; i < stride<0,num_vars,Order>::value; ++i)
+                for(exponent_type j=0; j < stride<1,num_vars,Order>::value; ++j)
+                    for(exponent_type k=0; k < stride<2,num_vars,Order>::value; ++k)
+                        for(exponent_type l=0; l < stride<3,num_vars,Order>::value; ++l)
                             op(p,element_descriptor(i,j,k,l));
         }
     };
@@ -74,6 +76,7 @@ namespace detail {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename polynomial_type::exponent_type                         exponent_type;
         typedef typename polynomial_type::element_descriptor                    element_descriptor;
+        static unsigned int const num_vars = num_variables<polynomial_type>::value;
 
         template <class Operation>
         static void apply(polynomial_type const& p, Operation op) {
@@ -83,7 +86,7 @@ namespace detail {
         
         template <class Operation, unsigned int N, class VarN>
         static inline void apply_helper(polynomial_type const& p, Operation op, element_descriptor el, exponent_type order_sum, VarN d) {
-            for(exponent_type i=0; i+order_sum < stride<VarN,Order>::value; ++i) {
+            for(exponent_type i=0; i+order_sum < stride<N,num_vars,Order>::value; ++i) {
                 exponent(el,VarN()) = i;
                 apply_helper<Operation,N+1>(p, op, el, order_sum+i, typename variable<polynomial_type,N+1>::type() );
             }
@@ -103,7 +106,7 @@ namespace detail {
         // These templates iterate over all variables starting from VarN
         template <class BinaryOperation, class ElementDescriptor, unsigned int N, class VarN>
         static inline void apply_helper(polynomial_type& p, polynomial_type const& p2, BinaryOperation op, ElementDescriptor const& shift, element_descriptor el, exponent_type order_sum, VarN d) {
-            for(exponent_type i=exponent(shift,VarN()); i+order_sum < stride<VarN,Order>::value; ++i) {
+            for(exponent_type i=exponent(shift,VarN()); i+order_sum < stride<N,num_vars,Order>::value; ++i) {
                 exponent(el,VarN()) = i;
                 apply_helper<BinaryOperation,ElementDescriptor,N+1>(p, p2, op, shift, el, order_sum+i, typename variable<polynomial_type,N+1>::type() );
             }
@@ -126,8 +129,8 @@ namespace detail {
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     void init(POLYNOMIAL_CLASS & p, boost::true_type dummy) {
         // This is a fundamental type (e.g. unsigned int, double, ...) -> we have to initalize
-        for(typename POLYNOMIAL_CLASS::iterator it = p.begin(); it != p.end(); ++it)
-            *it = Coeff();
+        using std::fill;
+        fill(p.begin(),p.end(),Coeff(0));
     }
     
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
@@ -237,22 +240,22 @@ namespace detail {
     // monomial multiply helper
     //
     template <class Polynomial>
-    struct multiply_assign_monomial_helper{
-    };
+    struct multiply_assign_monomial_helper;
    
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct multiply_assign_monomial_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename polynomial_type::exponent_type                     exponent_type;
+        static unsigned int const num_vars = num_variables<polynomial_type>::value;
 
         template <class MCoeff, class MVar0, class MVar1, class MVar2, class MVar3>
         static void apply(polynomial_type& p, monomial<MCoeff,MVar0,MVar1,MVar2,MVar3> const& m) {
            //TODO optimize: this operation should be possible without creating a new copy (is it worth the effort?)
            polynomial_type p2;
-           for(exponent_type i=exponent(m,Var0()); i < stride<Var0,Order>::value; ++i)
-               for(exponent_type j=exponent(m,Var1()); j < stride<Var1,Order>::value; ++j)
-                   for(exponent_type k=exponent(m,Var2()); k < stride<Var2,Order>::value; ++k)
-                       for(exponent_type l=exponent(m,Var3()); l < stride<Var2,Order>::value; ++l) 
+           for(exponent_type i=exponent(m,Var0()); i < stride<0,num_vars,Order>::value; ++i)
+               for(exponent_type j=exponent(m,Var1()); j < stride<1,num_vars,Order>::value; ++j)
+                   for(exponent_type k=exponent(m,Var2()); k < stride<2,num_vars,Order>::value; ++k)
+                       for(exponent_type l=exponent(m,Var3()); l < stride<3,num_vars,Order>::value; ++l)
                            p2(i,j,k,l) = m.c_ * p(i-exponent(m,Var0()),j-exponent(m,Var1()),k-exponent(m,Var2()),l-exponent(m,Var3()));
            swap(p2,p);
         }
@@ -281,7 +284,7 @@ namespace detail {
         static void apply(polynomial_type& p, monomial<Coeff,MVar0,MVar1,MVar2,MVar3> const& m) {
            polynomial_type p2;
            loop_helper<polynomial_type>::apply(p2,p,multiply_factor_op<Coeff>(m.c_),m);
-           swap(p2,p); 
+           swap(p2,p);
         }
     };
     
@@ -289,28 +292,25 @@ namespace detail {
     // polynomial_multiply_helper
     //
     template <class Polynomial>
-    struct polynomial_multiply_helper {
-    };
-    
- 
+    struct polynomial_multiply_helper;
 
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>     polynomial_type;
         typedef typename polynomial_multiply_result_type<polynomial_type>::type result_type;
         typedef typename polynomial_type::exponent_type                         exponent_type;
-        typedef typename polynomial_type::element_descriptor                    element_descriptor;
+        static unsigned int const num_vars = num_variables<polynomial_type>::value;
         static result_type apply(polynomial_type const& p1 , polynomial_type const& p2) {
             // TODO optimize
             result_type result;
-            for(exponent_type i = 0; i < stride<Var0,Order>::value; ++i)
-                for(exponent_type i2 = 0; i2 < stride<Var0,Order>::value; ++i2)
-                    for(exponent_type j = 0; j < stride<Var1,Order>::value; ++j)
-                        for(exponent_type j2 = 0; j2 < stride<Var1,Order>::value; ++j2)
-                            for(exponent_type k = 0; k < stride<Var2,Order>::value; ++k)
-                                for(exponent_type k2 = 0; k2 < stride<Var2,Order>::value; ++k2)
-                                    for(exponent_type l = 0; l < stride<Var3,Order>::value; ++l)
-                                        for(exponent_type l2 = 0; l2 < stride<Var3,Order>::value; ++l2)
+            for(exponent_type i = 0; i < stride<0,num_vars,Order>::value; ++i)
+                for(exponent_type i2 = 0; i2 < stride<0,num_vars,Order>::value; ++i2)
+                    for(exponent_type j = 0; j < stride<1,num_vars,Order>::value; ++j)
+                        for(exponent_type j2 = 0; j2 < stride<1,num_vars,Order>::value; ++j2)
+                            for(exponent_type k = 0; k < stride<2,num_vars,Order>::value; ++k)
+                                for(exponent_type k2 = 0; k2 < stride<2,num_vars,Order>::value; ++k2)
+                                    for(exponent_type l = 0; l < stride<3,num_vars,Order>::value; ++l)
+                                        for(exponent_type l2 = 0; l2 < stride<3,num_vars,Order>::value; ++l2)
                                             multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
              return result;
         };
@@ -323,6 +323,7 @@ namespace detail {
         typedef typename result_type::element_descriptor                        result_element_descriptor;
         typedef typename polynomial_type::exponent_type                         exponent_type;
         typedef typename polynomial_type::element_descriptor                    element_descriptor;
+        static unsigned int const num_vars = num_variables<polynomial_type>::value;
         static result_type apply(polynomial_type const& p1 , polynomial_type const& p2) {
             result_type result;
             apply_helper<0>(result,p1,p2,result_element_descriptor(0),element_descriptor(0),element_descriptor(0),0,0,Var0());
@@ -332,9 +333,9 @@ namespace detail {
         // TODO this is a naive loop algorithm using element-wise access -> optimize
         template <unsigned int N,class VarN>
         static void apply_helper(result_type& result, polynomial_type const& p1, polynomial_type const& p2, result_element_descriptor er, element_descriptor e1, element_descriptor e2, exponent_type order_sum, exponent_type order_sum2, VarN d) {
-            for(exponent_type i=0; i+order_sum < stride<VarN,Order>::value; ++i) {
+            for(exponent_type i=0; i+order_sum < stride<N,num_vars,Order>::value; ++i) {
                 exponent(e1,VarN()) = i;
-                for(exponent_type i2=0; i2+order_sum2 < stride<VarN,Order>::value; ++i2) {
+                for(exponent_type i2=0; i2+order_sum2 < stride<N,num_vars,Order>::value; ++i2) {
                     exponent(e2,VarN()) = i2;
                     exponent(er,VarN()) = i+i2;
                     apply_helper<N+1>(result,p1,p2,er,e1,e2,order_sum+i,order_sum2+i2,typename variable<polynomial_type,N+1>::type());
@@ -352,8 +353,7 @@ namespace detail {
     // polynomial_multiply_helper
     //
     template <class Polynomial>
-    struct polynomial_multiply_keep_order_helper {
-    };
+    struct polynomial_multiply_keep_order_helper;
     
     template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_keep_order_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
@@ -362,16 +362,17 @@ namespace detail {
         typedef typename result_type::element_descriptor                                    result_element_descriptor;
         typedef typename polynomial_type::exponent_type                                     exponent_type;
         typedef typename polynomial_type::element_descriptor                                element_descriptor;
+        static unsigned int const num_vars = num_variables<polynomial_type>::value;
         static typename polynomial_multiply_keep_order_result_type<polynomial_type>::type apply(polynomial_type const& p1, polynomial_type const& p2) {
             result_type result;
-            for(exponent_type i = 0; i < stride<Var0,Order>::value; ++i)
-                for(exponent_type i2 = 0; i2+i < stride<Var0,Order>::value; ++i2)
-                    for(exponent_type j = 0; j < stride<Var1,Order>::value; ++j)
-                        for(exponent_type j2 = 0; j2+j < stride<Var1,Order>::value; ++j2)
-                            for(exponent_type k = 0; k < stride<Var2,Order>::value; ++k)
-                                for(exponent_type k2 = 0; k2+k < stride<Var2,Order>::value; ++k2)
-                                    for(exponent_type l = 0; l < stride<Var3,Order>::value; ++l)
-                                        for(exponent_type l2 = 0; l2+l < stride<Var3,Order>::value; ++l2)
+            for(exponent_type i = 0; i < stride<0,num_vars,Order>::value; ++i)
+                for(exponent_type i2 = 0; i2+i < stride<0,num_vars,Order>::value; ++i2)
+                    for(exponent_type j = 0; j < stride<1,num_vars,Order>::value; ++j)
+                        for(exponent_type j2 = 0; j2+j < stride<2,num_vars,Order>::value; ++j2)
+                            for(exponent_type k = 0; k < stride<2,num_vars,Order>::value; ++k)
+                                for(exponent_type k2 = 0; k2+k < stride<2,num_vars,Order>::value; ++k2)
+                                    for(exponent_type l = 0; l < stride<3,num_vars,Order>::value; ++l)
+                                        for(exponent_type l2 = 0; l2+l < stride<3,num_vars,Order>::value; ++l2)
                                               multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
             return result;
         }
@@ -384,6 +385,7 @@ namespace detail {
         typedef typename result_type::element_descriptor                                    result_element_descriptor;
         typedef typename polynomial_type::exponent_type                                     exponent_type;
         typedef typename polynomial_type::element_descriptor                                element_descriptor;
+        static unsigned int const num_vars = num_variables<polynomial_type>::value;
         static result_type apply(polynomial_type const& p1 , polynomial_type const& p2) {
             result_type result;
             apply_helper<0>(result,p1,p2,result_element_descriptor(0),element_descriptor(0),element_descriptor(0),0,0,Var0());
@@ -393,9 +395,9 @@ namespace detail {
         // TODO this is a naive loop algorithm using element-wise access -> optimize
         template <unsigned int N,class VarN>
         static void apply_helper(result_type& result, polynomial_type const& p1, polynomial_type const& p2, result_element_descriptor er, element_descriptor e1, element_descriptor e2, exponent_type order_sum, exponent_type order_sum2, VarN d) {
-            for(exponent_type i=0; i+order_sum < stride<VarN,Order>::value; ++i) {
+            for(exponent_type i=0; i+order_sum < stride<N,num_vars,Order>::value; ++i) {
                 exponent(e1,VarN()) = i;
-                for(exponent_type i2=0; i2+order_sum2 < stride<VarN,Order>::value; ++i2) {
+                for(exponent_type i2=0; i2+order_sum2 < stride<N,num_vars,Order>::value; ++i2) {
                     exponent(e2,VarN()) = i2;
                     exponent(er,VarN()) = i+i2;
                     apply_helper<N+1>(result,p1,p2,er,e1,e2,order_sum+i,order_sum2+i2,typename variable<polynomial_type,N+1>::type());

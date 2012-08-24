@@ -1,6 +1,8 @@
 #ifndef VLI_POLYNOMIAL_STORAGE_HPP
 #define VLI_POLYNOMIAL_STORAGE_HPP
 
+#include <vli/polynomial/polynomial_traits.hpp>
+#include <vli/polynomial/detail/helpers.hpp>
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -60,32 +62,32 @@ namespace detail {
     }
     
     template <class Var0, class Var1, class Var2, class Var3>
-    inline unsigned int & exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> & e, typename boost::disable_if<boost::is_same<Var1,no_variable>,Var1>::type dummy) {
+    inline typename boost::disable_if<boost::is_same<Var1,no_variable>,unsigned int&>::type exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> & e, Var1 dummy) {
         return e.var1.exp;
     }
     
     template <class Var0, class Var1, class Var2, class Var3>
-    inline unsigned int const& exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> const& e, typename boost::disable_if<boost::is_same<Var1,no_variable>,Var1>::type dummy) {
+    inline typename boost::disable_if<boost::is_same<Var1,no_variable>,unsigned int const&>::type exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> const& e, Var1 dummy) {
         return e.var1.exp;
     }
     
     template <class Var0, class Var1, class Var2, class Var3>
-    inline unsigned int & exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> & e, typename boost::disable_if<boost::is_same<Var2,no_variable>,Var2>::type dummy) {
+    inline typename boost::disable_if<boost::is_same<Var2,no_variable>,unsigned int&>::type exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> & e, Var2 dummy) {
         return e.var2.exp;
     }
     
     template <class Var0, class Var1, class Var2, class Var3>
-    inline unsigned int const& exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> const& e, typename boost::disable_if<boost::is_same<Var2,no_variable>,Var2>::type dummy) {
+    inline typename boost::disable_if<boost::is_same<Var2,no_variable>,unsigned int const&>::type exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> const& e, Var2 dummy) {
         return e.var2.exp;
     }
     
     template <class Var0, class Var1, class Var2, class Var3>
-    inline unsigned int & exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> & e, typename boost::disable_if<boost::is_same<Var3,no_variable>,Var3>::type dummy) {
+    inline typename boost::disable_if<boost::is_same<Var3,no_variable>,unsigned int&>::type exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> & e, Var3 dummy) {
         return e.var3.exp;
     }
 
     template <class Var0, class Var1, class Var2, class Var3>
-    inline unsigned int const& exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> const& e, typename boost::disable_if<boost::is_same<Var3,no_variable>,Var3>::type dummy) {
+    inline typename boost::disable_if<boost::is_same<Var3,no_variable>,unsigned int const&>::type exponent(element_descriptor_impl<Var0,Var1,Var2,Var3> const& e, Var3 dummy) {
         return e.var3.exp;
     }
 
@@ -166,125 +168,49 @@ namespace detail {
     }
 
 
-    namespace max_order_combined_helpers {
-
-        template<unsigned int NK, unsigned int K>
-        struct size_helper {
-            static unsigned int const value = NK*size_helper<NK-1,K>::value;
-        };
-
-        template <unsigned int K>
-        struct size_helper<K,K> {
-            static unsigned int const value = 1;
-        };
-
-        template <unsigned int N>
-        struct factorial {
-            static unsigned int const value = N*factorial<N-1>::value;
-        };
-
-        template <>
-        struct factorial<0> {
-            static unsigned int const value = 1;
-        };
-
-        template <unsigned int N, unsigned int K>
-        struct size {
-            // N variables, max order K -> n+k-1 over k  = (n+k-1)! / ( (n-1)! k! ) combinations
-            // Assuming N > 0
-            static unsigned int const value = size_helper<N+K-1,K>::value/factorial<N-1>::value;
-        };
-
-    }
+    template <class Coeff, class MaxOrder, int NumVars>
+    struct storage;
 
 
-    template <class Variable, unsigned int Order>
-    struct stride {
-        static unsigned int const value = Order+1;
-    };
-
-    template <unsigned int Order>
-    struct stride<no_variable,Order> {
-        static unsigned int const value = 1;
-    };
-
-
-    template <class Var0, class Var1, class Var2, class Var3>
-    struct num_of_variables_helper {
-        // May be generalized using boost MPL
-        static unsigned int const value = 4;
-    };
-    
-    template <class Var0, class Var1, class Var2>
-    struct num_of_variables_helper<Var0, Var1, Var2, no_variable> {
-        static unsigned int const value = 3;
-    };
-
-    template <class Var0, class Var1>
-    struct num_of_variables_helper<Var0, Var1, no_variable, no_variable> {
-        static unsigned int const value = 2;
-    };
-
-    template <class Var0>
-    struct num_of_variables_helper<Var0, no_variable, no_variable, no_variable> {
-        static unsigned int const value = 1;
-    };
-
-
-    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
-    struct storage {
-    };
-    
-    
-    // C - note for Andreas, sorry your element_descriptor costs too much, so I add an operator for direct access
-    // C - I keep it for the print
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct storage<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> : public boost::array<Coeff, stride<Var0,Order>::value * stride<Var1,Order>::value * stride<Var2,Order>::value * stride<Var3,Order>::value> {
-        typedef boost::array<Coeff, stride<Var0,Order>::value * stride<Var1,Order>::value * stride<Var2,Order>::value * stride<Var3,Order>::value>   base_type;
-        typedef detail::element_descriptor_impl<Var0,Var1,Var2,Var3> element_descriptor;
-//        typedef typename base_type::value_type  value_type;
+    template <class Coeff, unsigned int Order, int NumVars>
+    struct storage<Coeff, max_order_each<Order>, NumVars> : public boost::array<Coeff, num_coefficients<max_order_each<Order>,NumVars>::value> {
+        typedef boost::array<Coeff, num_coefficients<max_order_each<Order>,NumVars>::value>   base_type;
         typedef typename base_type::size_type   size_type;
-        // operator used for the inner product
-        inline Coeff& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) {
+        inline Coeff& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) {
             assert(i < stride0);
             assert(j < stride1);
             assert(k < stride2);
             assert(l < stride3);
-            return this->operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);
+            return base_type::operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);
         }
 
-        inline Coeff const& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) const{
+        inline Coeff const& operator ()(std::size_t i,std::size_t j=0, std::size_t k=0, std::size_t l=0) const {
             assert(i < stride0);
             assert(j < stride1);
             assert(k < stride2);
             assert(l < stride3);
-            return this->operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);
+            return base_type::operator[](i*stride1*stride2*stride3 + j*stride2*stride3 + k*stride3 + l);
         }
 
-        inline Coeff& operator()(element_descriptor const& e) {
-            return this->operator()(e.var0.exp,e.var1.exp,e.var2.exp,e.var3.exp);
-        }
-        
-        inline Coeff const& operator()(element_descriptor const& e) const {
-            return this->operator()(e.var0.exp,e.var1.exp,e.var2.exp,e.var3.exp);
-        }
- 
       private:
-        static unsigned int const stride0 = detail::stride<Var0,Order>::value; 
-        static unsigned int const stride1 = detail::stride<Var1,Order>::value; 
-        static unsigned int const stride2 = detail::stride<Var2,Order>::value; 
-        static unsigned int const stride3 = detail::stride<Var3,Order>::value;
+        static unsigned int const stride0 = detail::stride<0,NumVars,Order>::value;
+        static unsigned int const stride1 = detail::stride<1,NumVars,Order>::value;
+        static unsigned int const stride2 = detail::stride<2,NumVars,Order>::value;
+        static unsigned int const stride3 = detail::stride<3,NumVars,Order>::value;
     };
-    
 
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
-    struct storage<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> : public boost::array<Coeff, max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value > {
-        typedef boost::array<Coeff, max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value >    base_type;
-        typedef detail::element_descriptor_impl<Var0, Var1, Var2, Var3> element_descriptor;
+
+    template <class Coeff, unsigned int Order>
+    struct storage<Coeff, max_order_combined<Order>, 4> : public boost::array<Coeff, max_order_combined_helpers::size<4+1, Order>::value > {
+        typedef boost::array<Coeff, max_order_combined_helpers::size<4+1, Order>::value >    base_type;
         typedef typename base_type::size_type   size_type;
 
         
-        inline Coeff& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) {
+        inline Coeff& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) {
+            assert(i <= Order);
+            assert(j <= Order-i);
+            assert(k <= Order-i-j);
+            assert(l <= Order-i-j-k);
             return base_type::operator[](
                                          (i*(2*stride+3-i)*(2*stride*stride+6*stride+2 +i*i -2*stride*i - 3*i))/24 // Sum[1/6*(1*a^3+3*a^2+2*a)),{a,n-i+1,n}]
                                          + (j*( j*j - 3*j*(stride+1-i) + 3*(stride-i)*(stride+2-i) + 2))/6         // See <Var0,Var1,Var2>
@@ -292,155 +218,82 @@ namespace detail {
             );            
         }
         
-        inline Coeff const& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) const{
+        inline Coeff const& operator ()(std::size_t i,std::size_t j=0, std::size_t k=0, std::size_t l=0) const {
+            assert(i <= Order);
+            assert(j <= Order-i);
+            assert(k <= Order-i-j);
+            assert(l <= Order-i-j-k);
             return base_type::operator[](
                                          (i*(2*stride+3-i)*(2*stride*stride+6*stride+2 +i*i -2*stride*i - 3*i))/24 // Sum[1/6*(1*a^3+3*a^2+2*a)),{a,n-i+1,n}]
                                          + (j*( j*j - 3*j*(stride+1-i) + 3*(stride-i)*(stride+2-i) + 2))/6         // See <Var0,Var1,Var2>
                                          + (stride-i-j)*k - (k*k-k)/2 + l
                                          );             
         }
-
-        inline Coeff& operator()(element_descriptor const& e) {
-            size_type const& i = e.var0.exp;
-            size_type const& j = e.var1.exp;
-            size_type const& k = e.var2.exp;
-            size_type const& l = e.var3.exp;
-            assert(i <= Order);
-            assert(j <= Order-i);
-            assert(k <= Order-i-j);
-            assert(l <= Order-i-j-k);
-            return base_type::operator[](
-                  (i*(2*stride+3-i)*(2*stride*stride+6*stride+2 +i*i -2*stride*i - 3*i))/24 // Sum[1/6*(1*a^3+3*a^2+2*a)),{a,n-i+1,n}]
-                + (j*( j*j - 3*j*(stride+1-i) + 3*(stride-i)*(stride+2-i) + 2))/6         // See <Var0,Var1,Var2>
-                + (stride-i-j)*k - (k*k-k)/2 + l
-                );
-        }
-        
-        inline Coeff const& operator()(element_descriptor const& e) const {
-            size_type const& i = e.var0.exp;
-            size_type const& j = e.var1.exp;
-            size_type const& k = e.var2.exp;
-            size_type const& l = e.var3.exp;
-            assert(i <= Order);
-            assert(j <= Order-i);
-            assert(k <= Order-i-j);
-            assert(l <= Order-i-j-k);
-            return base_type::operator[](
-                  (i*(2*stride+3-i)*(2*stride*stride+6*stride+2 +i*i -2*stride*i - 3*i))/24
-                + (j*( j*j - 3*j*(stride+1-i) + 3*(stride-i)*(stride+2-i) + 2))/6
-                + (stride-i-j)*k - (k*k-k)/2 + l
-                );
-        }
-
       private:
-        static unsigned int const stride = detail::stride<Var0,Order>::value; 
+        static unsigned int const stride = detail::stride<0,4,Order>::value;
     };
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2>
-    struct storage<Coeff, max_order_combined<Order>, Var0, Var1, Var2, no_variable> : public boost::array<Coeff, max_order_combined_helpers::size<3+1,Order>::value> {
+    template <class Coeff, unsigned int Order>
+    struct storage<Coeff, max_order_combined<Order>, 3> : public boost::array<Coeff, max_order_combined_helpers::size<3+1, Order>::value> {
         typedef boost::array<Coeff, max_order_combined_helpers::size<3+1, Order>::value >    base_type;
-        typedef detail::element_descriptor_impl<Var0, Var1, Var2, no_variable> element_descriptor;
         typedef typename base_type::size_type   size_type;
 
         
-        inline Coeff& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) {
+        inline Coeff& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) {
+            assert(i <= Order);
+            assert(j <= Order-i);
+            assert(k <= Order-i-j);
             return base_type::operator[](
                                          (i*( i*i - 3*i*(stride+1) + 3*stride*(stride+2) + 2))/6  // Sum[(a^2+a)/2, {a,n-i+1,n}]
                                          + (stride-i)*j - (j*j-j)/2 + k                           // see <Var0,Var1>
                                          );            
         }
         
-        inline Coeff const& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) const{
+        inline Coeff const& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) const {
+            assert(i <= Order);
+            assert(j <= Order-i);
+            assert(k <= Order-i-j);
             return base_type::operator[](
                                          (i*( i*i - 3*i*(stride+1) + 3*stride*(stride+2) + 2))/6  // Sum[(a^2+a)/2, {a,n-i+1,n}]
                                          + (stride-i)*j - (j*j-j)/2 + k                           // see <Var0,Var1>
                                          );             
         }
-        
-        inline Coeff& operator()(element_descriptor const& e) {
-            size_type const& i = e.var0.exp;
-            size_type const& j = e.var1.exp;
-            size_type const& k = e.var2.exp;
-            assert(i <= Order);
-            assert(j <= Order-i);
-            assert(k <= Order-i-j);
-            return base_type::operator[](
-                  (i*( i*i - 3*i*(stride+1) + 3*stride*(stride+2) + 2))/6  // Sum[(a^2+a)/2, {a,n-i+1,n}]
-                + (stride-i)*j - (j*j-j)/2 + k                           // see <Var0,Var1>
-                );
-        }
-        inline Coeff const& operator()(element_descriptor const& e) const {
-            size_type const& i = e.var0.exp;
-            size_type const& j = e.var1.exp;
-            size_type const& k = e.var2.exp;
-            assert(i <= stride);
-            assert(j <= stride-i);
-            assert(k <= stride-i-j);
-            return base_type::operator[](
-                  (i*( i*i - 3*i*(stride+1) + 3*stride*(stride+2) + 2))/6
-                + (stride-i)*j - (j*j-j)/2 + k
-                );
-        }
-         
       private:
-        static unsigned int const stride = detail::stride<Var0,Order>::value; 
+        static unsigned int const stride = detail::stride<0,3,Order>::value;
     };
 
-    template <class Coeff, unsigned int Order, class Var0, class Var1>
-    struct storage<Coeff, max_order_combined<Order>, Var0, Var1, no_variable, no_variable> : public boost::array<Coeff, max_order_combined_helpers::size<2+1,Order>::value> {
+    template <class Coeff, unsigned int Order>
+    struct storage<Coeff, max_order_combined<Order>, 2> : public boost::array<Coeff, max_order_combined_helpers::size<2+1, Order>::value> {
         typedef boost::array<Coeff, max_order_combined_helpers::size<2+1, Order>::value >    base_type;
-        typedef detail::element_descriptor_impl<Var0, Var1, no_variable, no_variable> element_descriptor;
         typedef typename base_type::size_type   size_type;
-        inline Coeff& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) {
+        inline Coeff& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) {
+            assert(i <= Order);
+            assert(j <= Order-i);
             return base_type::operator[](stride*i - (i*i - i)/2 + j);            
         }
         
-        inline Coeff const& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) const{
+        inline Coeff const& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) const {
+            assert(i <= Order);
+            assert(j <= Order-i);
             return base_type::operator[](stride*i - (i*i - i)/2 + j);             
         }
-        
-        inline Coeff& operator()(element_descriptor const& e) {
-            size_type const& i = e.var0.exp;
-            size_type const& j = e.var1.exp;
-            assert(i <= Order);
-            assert(j <= Order-i);
-            return base_type::operator[]( stride*i - (i*i - i)/2 + j); // Sum[a,{a,n-i+1,n}] + j
-        }
-        
-        inline Coeff const& operator()(element_descriptor const& e) const {
-            size_type const& i = e.var0.exp;
-            size_type const& j = e.var1.exp;
-            assert(i <= Order);
-            assert(j <= Order-i);
-            return base_type::operator[]( stride*i - (i*i - i)/2 + j);
-        }
-         
       private:
-        static unsigned int const stride = detail::stride<Var0,Order>::value; 
+        static unsigned int const stride = detail::stride<0,2,Order>::value;
     };
     
-    template <class Coeff, unsigned int Order, class Var0>
-    struct storage<Coeff, max_order_combined<Order>, Var0, no_variable, no_variable, no_variable> : public boost::array<Coeff, max_order_combined_helpers::size<1+1,Order>::value> {
+    template <class Coeff, unsigned int Order>
+    struct storage<Coeff, max_order_combined<Order>, 1> : public boost::array<Coeff, max_order_combined_helpers::size<1+1, Order>::value> {
         typedef boost::array<Coeff, max_order_combined_helpers::size<1+1, Order>::value >    base_type;
-        typedef detail::element_descriptor_impl<Var0, no_variable, no_variable, no_variable> element_descriptor;
         typedef typename base_type::size_type   size_type;
 
-        inline Coeff& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) {
-            return base_type::operator[](i);            
+        inline Coeff& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) {
+            assert(i <= Order);
+            return base_type::operator[](i);
         }
         
-        inline Coeff const& operator ()(std::size_t i,std::size_t j,std::size_t k,std::size_t l) const{
-            return base_type::operator[](i);             
+        inline Coeff const& operator ()(std::size_t i, std::size_t j=0, std::size_t k=0, std::size_t l=0) const {
+            assert(i <= Order);
+            return base_type::operator[](i);
         }
-        
-        inline Coeff& operator()(element_descriptor const& e) {
-            assert(e.var0.exp <= Order);
-            return base_type::operator[](e.var0.exp);
-        }
-        inline Coeff const& operator()(element_descriptor const& e) const {
-            assert(e.var0.exp <= Order);
-            return base_type::operator[](e.var0.exp);
-        }
-
     };
 } // end namespace detail
 } // end namespace vli
