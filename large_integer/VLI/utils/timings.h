@@ -32,7 +32,10 @@
 #include "vli/config.hpp"
 #include <cassert>
 #include <iostream>
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #ifdef VLI_USE_GPU
 #include "cuda_runtime_api.h"

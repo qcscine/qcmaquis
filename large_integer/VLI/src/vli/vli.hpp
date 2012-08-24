@@ -45,10 +45,19 @@ namespace detail {
                 negate_inplace(a);
             GMPClass result(0);
             GMPClass factor(1);
-            GMPClass const segment_factor( mpz_class(~value_type(0)) + 1 );
+            
+// C - Andreas  I do not know why it compiles on your machine, as the boost::uint64_t is an unsigned long long int, it should be not compatible with gmp,
+// C           12.2 C++ Interface Integers
+// C
+// C          — Function: mpz_class::mpz_class (type n)
+// C        Construct an mpz_class. All the standard C++ types may be used, except long long and long double, and all the GMP C++ classes can be used.
+// C        Any necessary conversion follows the corresponding C function, for example double follows mpz_set_d (see Assigning Integers).
+// C        do your compiler make a cast during the compilation ? it sounds 16/32/64 bits machines history ....
+            
+            GMPClass const segment_factor( mpz_class(~boost::lexical_cast<unsigned long int >(value_type(0))) + 1 );
 
             for(typename vli<NumBits>::size_type i=0; i< vli<NumBits>::numwords; ++i) {
-                result += factor * a[i];
+                result += factor * static_cast<unsigned long int>(a[i]);
                 factor *= segment_factor;
             }
             if(neg)
