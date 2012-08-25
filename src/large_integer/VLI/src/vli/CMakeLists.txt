@@ -16,7 +16,7 @@ configure_file (
 #
 ########################################################################
 
-add_library(vli 
+add_library(vli SHARED 
             detail/cpu/kernels_cpu_add_asm.cpp
             detail/cpu/kernels_cpu_sub_asm.cpp
             detail/cpu/kernels_cpu_mul_asm.cpp
