@@ -36,7 +36,7 @@ namespace vlilib{
     namespace detail{
                      //new functions type : VLI<n*64> *= long int;
                      #define FUNCTION_mul_nbits_64bits(z, n, unused) \
-                         void NAME_MUL_NBITS_64BITS(n)(boost::uint64_t* x, boost::uint64_t* y){           \
+                         void NAME_MUL_NBITS_64BITS(n)(boost::uint64_t* x, boost::uint64_t const* y){           \
                          asm(                                                                                       \
                              "xor   6,6,6 \n" \
                              "ld    "R(0)", 0(3)   \n" /* x arg */                                                     \
@@ -68,7 +68,7 @@ namespace vlilib{
                       // remark same than x86, look cpu_x86 for details
 
                        #define BOOST_PP_LOCAL_MACRO(n) \
-                          void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))(boost::uint64_t* x, boost::uint64_t* y){ \
+                          void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))(boost::uint64_t* x, boost::uint64_t const* y){ \
                          asm(                                                                                       \
                               BOOST_PP_REPEAT(n, MULNTON0, BOOST_PP_SUB(n,1))                                             \
                               BOOST_PP_REPEAT(n, STORE_register_r3mul2,BOOST_PP_ADD(n,2) )                     \
@@ -81,7 +81,7 @@ namespace vlilib{
                        #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
 
 
-                       void mul128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rcx */){
+                       void mul128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rcx */){
                           asm( 
                               "ld 14, 0(4)     \n"                   
                               "ld 15, 0(5)     \n"                   
@@ -93,7 +93,7 @@ namespace vlilib{
                               );
                        }
 
-                       void mul256_128_128(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rbx */){
+                       void mul256_128_128(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -161,7 +161,7 @@ namespace vlilib{
 
                        }
 
-                      void mul384_192_192(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rbx */){
+                      void mul384_192_192(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -268,7 +268,7 @@ namespace vlilib{
                               );
                             }
 
-                     void mul512_256_256(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rbx */){
+                     void mul512_256_256(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                             asm(
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   

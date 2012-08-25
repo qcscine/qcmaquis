@@ -90,11 +90,8 @@ int main(int argc, char* argv[]) {
     b[0]=0xffffffffffffffff;
     b[1]=0xffffffffffffffff;
   
-  TimerOMP t("1");
-   t.begin();
    for(long i=0 ; i <0xfffffff; ++i)  
     c = a +b;
-   t.end();
     
     
     
