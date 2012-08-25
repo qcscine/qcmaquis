@@ -31,6 +31,6 @@
 #include "vli/detail/cpu/x86_64/kernels_cpu_sub_asm.h"
 #endif
 
-#if defined (__ppc64__)
+#if defined (__powerpc__)
 #include "vli/detail/cpu/powerpc64/kernels_cpu_sub_asm.h"
 #endif

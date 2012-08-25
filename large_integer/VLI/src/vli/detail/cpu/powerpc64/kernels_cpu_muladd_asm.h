@@ -26,11 +26,12 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
+#include <boost/cstdint.hpp>
 #include <cassert>
 
 namespace vlilib{
     namespace detail{
-                   void muladd128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_tconst* y/* %%rsi */, boost::uint64_tconst* z/* %%rdx -> rcx */){
+                   void muladd128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rcx */){
                           asm( 
                               "ld 14, 0(4)     \n"                   
                               "ld 15, 0(5)     \n"                   
@@ -46,7 +47,7 @@ namespace vlilib{
                               );
                    }
 
-                   void muladd256_128_128(boost::uint64_t* x/* %%rdi */, boost::uint64_tconst* y/* %%rsi */, boost::uint64_tconst* z/* %%rdx -> rbx */){
+                   void muladd256_128_128(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -121,7 +122,7 @@ namespace vlilib{
                              );
                    }
 
-                  void muladd384_192_192(boost::uint64_t* x/* %%rdi */, boost::uint64_tconst* y/* %%rsi */, boost::uint64_tconst* z/* %%rdx -> rbx */){
+                  void muladd384_192_192(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -240,7 +241,7 @@ namespace vlilib{
                               );
                         }
 
-                         void muladd512_256_256(boost::uint64_t* x/* %%rdi */, boost::uint64_tconst* y/* %%rsi */, boost::uint64_tconst* z/* %%rdx -> rbx */){
+                         void muladd512_256_256(boost::uint64_t* x/* %%rdi */, boost::uint64_t* y/* %%rsi */, boost::uint64_t* z/* %%rdx -> rbx */){
                             asm(
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
