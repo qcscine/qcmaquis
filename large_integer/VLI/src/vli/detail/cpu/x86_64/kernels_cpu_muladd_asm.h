@@ -28,7 +28,7 @@
 */
 #include <boost/cstdint.hpp>
 
-namespace vlilib{
+namespace vli {
     namespace detail{
                    void muladd128_64_64( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rcx */){
                       asm( 
@@ -629,5 +629,5 @@ namespace vlilib{
                                  : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15","memory"   
                             ); 
                     } 
-    } //namespase detail
+    } //namespace detail
 } //namespace vli

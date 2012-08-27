@@ -1,7 +1,7 @@
 #include <gmpxx.h>
 #include <regression/vli/test_header.hpp>
 
-using namespace vlilib::test;
+using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_plus )
 {

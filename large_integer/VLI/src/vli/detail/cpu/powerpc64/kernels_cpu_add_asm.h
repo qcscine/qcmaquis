@@ -29,7 +29,7 @@
 
 #include "vli/detail/cpu/powerpc64/kernel_implementation_macros.h"
 
-namespace vlilib{
+namespace vli {
     namespace detail{
                      // new functions type : VLI<n*64> + VLI<n*64> : add128_128, add192_192 ...
                      #define FUNCTION_add_nbits_nbits(z, n, unused) \
@@ -81,6 +81,5 @@ namespace vlilib{
 
                      BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_nminus1bits, ~)
                      #undef FUNCTION_add_nbits_nminus1bits
-
-                    } // end namespace detail
-             } // end namespace vli
+    } // end namespace detail
+} // end namespace vli

@@ -29,8 +29,8 @@
 
 #include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
 
-namespace vlilib{
-    namespace detail{
+namespace vli {
+    namespace detail {
                      // new functions type : VLI<n*64> - VLI<n*64> : sub128_128, sub192_192 ...
                      #define FUNCTION_sub_nbits_nbits(z, n, unused) \
                          void NAME_SUB_NBITS_MINUS_NBITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){\
@@ -64,5 +64,5 @@ namespace vlilib{
                      BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
                      #undef FUNCTION_sub_nbits_64bits
 
-                    } // end namespace detail
-             } // end namespace vli
+    } // end namespace detail
+} // end namespace vli

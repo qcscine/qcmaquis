@@ -32,8 +32,8 @@
 #include <cassert>
 
 // to check :  g++ -E -P -I /BOOST_PATH/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
-namespace vlilib{
-    namespace detail{
+namespace vli {
+    namespace detail {
                      //new functions type : VLI<n*64> *= long int;
                      #define FUNCTION_mul_nbits_64bits(z, n, unused) \
                          void NAME_MUL_NBITS_64BITS(n)(boost::uint64_t* x, boost::uint64_t const* y){           \
@@ -433,5 +433,5 @@ namespace vlilib{
                               : : : "r6","r7","r8","r9","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29","memory"   
                               );
                      }
-                    } // end namespace detail
-             } // end namespace vli
+    } // end namespace detail
+} // end namespace vli

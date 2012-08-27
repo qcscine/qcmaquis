@@ -1,6 +1,6 @@
 #include <regression/vli/test_header.hpp>
 
-using namespace vlilib::test;
+using namespace vli::test;
 
 VLI_FUZZABLE_TEST( negate )
 {
@@ -9,15 +9,15 @@ VLI_FUZZABLE_TEST( negate )
 
     vli_type b(a);
     BOOST_CHECK_EQUAL(a.is_negative(), false);
-    
+
     negate_inplace(a);
     BOOST_CHECK_EQUAL(a.is_negative(), true);
     BOOST_CHECK_EQUAL(a == b, false);
-    
+
     negate_inplace(a);
     BOOST_CHECK_EQUAL(a.is_negative(), false);
     BOOST_CHECK_EQUAL(a,b);
-} 
+}
 
 VLI_FUZZABLE_TEST( negate_unary_minus_operator_equivalence )
 {

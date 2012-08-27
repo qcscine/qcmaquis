@@ -32,7 +32,7 @@
 
 #include "vli.h"
 
-namespace vlilib {
+namespace vli {
 namespace detail {
 
 #if defined __GNU_MP_VERSION
@@ -165,42 +165,36 @@ bool vli<NumBits>::is_negative() const{
 // c - basic operators
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator += (vli<NumBits> const& vli_a){
-    using vlilib::plus_assign;
     plus_assign(*this,vli_a);
     return *this;
 }
 
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator += (value_type const a){
-    using vlilib::plus_assign;
     plus_assign(*this,a);
     return *this;
 }
 
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator -= (vli<NumBits> const& vli_a){
-    using vlilib::minus_assign;
     minus_assign(*this,vli_a);
     return *this;
 }
 
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator -= (value_type const a){
-    using vlilib::minus_assign;
     minus_assign(*this,a);
     return *this;
 }
 
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator *= (value_type const a){
-    using vlilib::multiplies_assign;
     multiplies_assign(*this,a);
     return *this;
 }
 
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator *= (vli<NumBits> const& vli_a){
-    using vlilib::multiplies_assign;
     multiplies_assign(*this,vli_a);
     return *this;
 }
@@ -212,7 +206,7 @@ void vli<NumBits>::print_raw(std::ostream& os) const{
         os << data_[i]<<" ";
     os << data_[0];
     os << ")";
-}    
+}
 
 template <std::size_t NumBits>
 void vli<NumBits>::print(std::ostream& os) const{
