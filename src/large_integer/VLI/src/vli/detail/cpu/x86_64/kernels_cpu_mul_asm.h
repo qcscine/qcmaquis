@@ -42,14 +42,14 @@
 // n64 * 64  = n64 : necessitate to adapt (if), use for VLI *= long , VLI * long
 // n64 * n64 = n64 : natively compatible VLI *= VLI, VLI*VLI
 // n64 * n64 = 2n64 : necessitate to adapt : mul and muladd
-        
+
 // Note, the ASM X86-64 allows a different managment of the stack
 // I am presently using the red zone there I do not have to allocate 
 // the stack pointer (the frame pointer is removed under x86-64)
 // the red zone is a zone of 128 bytes, enough for my arithmetic        
 
 // to check :  g++ -E -P -I /BOOST_PATH/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
-namespace vlilib{
+namespace vli{
     namespace detail{
                      //new functions type : VLI<n*64> *= long int;
                      #define FUNCTION_mul_nbits_64bits(z, n, unused) \
@@ -733,5 +733,5 @@ namespace vlilib{
                                      : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15","memory"   
                                 ); 
                              }
-                    } // end namespace detail
-             } // end namespace vli
+    } // end namespace detail
+} // end namespace vli

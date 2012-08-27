@@ -1,7 +1,7 @@
 #include <gmpxx.h>
 #include <regression/vli/test_header.hpp>
 
-using namespace vlilib::test;
+using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_minus )
 {
@@ -29,6 +29,6 @@ VLI_FUZZABLE_TEST( gmp_minus_int )
 
     vli_type c = a-b;
     mpz_class cgmp = agmp - b;
-    
+
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
 }

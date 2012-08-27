@@ -42,7 +42,7 @@
 #include <boost/swap.hpp>
 
 
-namespace vlilib{
+namespace vli {
     
     template<std::size_t NumBits> class vli;
 

@@ -17,7 +17,7 @@
 #define Order 10
 #define Size_vli 3
 
-using vlilib::vli;
+using vli::vli;
 //using vlilib::polynomial;
 //using vlilib::vector_polynomial;
 //typedef vli

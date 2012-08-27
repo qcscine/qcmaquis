@@ -1,7 +1,7 @@
 
 #include <regression/vli/test_header.hpp>
 
-using namespace vlilib::test;
+using namespace vli::test;
 
 VLI_FUZZABLE_TEST( minus_assign_minus_equivalence )
 {
@@ -16,7 +16,7 @@ VLI_FUZZABLE_TEST( minus_assign_minus_equivalence )
     BOOST_CHECK_EQUAL(a,ab);
     negate_inplace(a);
     BOOST_CHECK_EQUAL(a,ba);
-    
+
     //Check that b hasn't changed
     BOOST_CHECK_EQUAL(b,b_orig);
 }
@@ -25,40 +25,37 @@ VLI_FUZZABLE_TEST( minus_assign_minus_equivalence_int )
 {
     vli_type a;
     init(a);
-    
+
     int b;
     init(b);
     int b_orig(b);
-    
+
     vli_type ab = a - b;
     a -= b;
     BOOST_CHECK_EQUAL(a,ab);
-    
+
     //Check that b hasn't changed
     BOOST_CHECK_EQUAL(b,b_orig);
-    
+
     //b become negative
     b=-b;
     ab = a - b;
     a -= b;
     BOOST_CHECK_EQUAL(a,ab);
-    
+
     BOOST_CHECK_EQUAL(b,-b_orig);
 }
-
-
-
 
 VLI_STATIC_TEST( minus_assign_borrow )
 {
     vli_type a,b,c;
 
-    a[vli_type::numwords-1] = 1;  
-    b[0] = 1; 
-    a-=b; 
-    
-    for(std::size_t i(0); i < vli_type::numwords-1; ++i) 
-        c[i] = static_cast<vli_type::value_type>(-1);  
-   
+    a[vli_type::numwords-1] = 1;
+    b[0] = 1;
+    a-=b;
+
+    for(std::size_t i(0); i < vli_type::numwords-1; ++i)
+        c[i] = static_cast<vli_type::value_type>(-1);
+
     BOOST_CHECK_EQUAL(a,c);
 }

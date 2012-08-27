@@ -20,8 +20,8 @@
     static void BOOST_PP_CAT(TEST_NAME,_test(Initalizer init)); \
     BOOST_AUTO_TEST_CASE( TEST_NAME )                           \
     {                                                           \
-        std::cout<<"Running "<<vlilib::test::fuzz_initializer::fuzz_iterations<<" iterations..."<<std::endl;    \
-        for(unsigned int i=0; i < vlilib::test::fuzz_initializer::fuzz_iterations; ++i)                                  \
+        std::cout<<"Running "<<vli::test::fuzz_initializer::fuzz_iterations<<" iterations..."<<std::endl;    \
+        for(unsigned int i=0; i < vli::test::fuzz_initializer::fuzz_iterations; ++i)                                  \
             BOOST_PP_CAT(TEST_NAME,_test(fuzz_initializer())); \
     }                                                           \
     template <typename Initalizer>                              \
@@ -42,12 +42,12 @@
     static void BOOST_PP_CAT(TEST_NAME,_test(Initalizer init))
 #endif // VLI_FUZZ_TESTS
 
-namespace vlilib{
+namespace vli {
 namespace test {
 
-typedef vlilib::vli<VLI_SIZE*64> vli_type;
-typedef vlilib::vli<2*VLI_SIZE*64> vli_type_double;
-typedef vlilib::vli<2*VLI_SIZE*64>::value_type type;
+typedef vli<VLI_SIZE*64> vli_type;
+typedef vli<2*VLI_SIZE*64> vli_type_double;
+typedef vli<2*VLI_SIZE*64>::value_type type;
 
 enum variant_enum {
       max_positive = 0      // fill with the max positive number
@@ -181,8 +181,8 @@ struct extended {
 };
 
 template <std::size_t NumBits>
-struct extended<vlilib::vli<NumBits> > {
-    typedef vlilib::vli<NumBits+64> type;
+struct extended<vli<NumBits> > {
+    typedef vli<NumBits+64> type;
 };
 
 template <typename T>
@@ -190,8 +190,8 @@ struct double_sized_vli {
 };
 
 template <std::size_t NumBits>
-struct double_sized_vli<vlilib::vli<NumBits> > {
-    typedef vlilib::vli<2*NumBits> type;
+struct double_sized_vli<vli<NumBits> > {
+    typedef vli<2*NumBits> type;
 };
 
 } // end namespace test
@@ -202,12 +202,12 @@ int main(int argc, char* argv[])
 #ifdef VLI_FUZZ_TESTS
 
     if(argc > 1 && argc <= 3) {
-        vlilib::test::fuzz_initializer::fuzz_iterations = boost::lexical_cast<unsigned int>(argv[1]);
+        vli::test::fuzz_initializer::fuzz_iterations = boost::lexical_cast<unsigned int>(argv[1]);
         unsigned int seed = std::time(0);
         if (argc == 3)
             seed = boost::lexical_cast<unsigned int>(argv[2]);
         std::cout<<"Using random seed: "<<seed<<std::endl;
-        vlilib::test::fuzz_initializer::rng.seed(seed);
+        vli::test::fuzz_initializer::rng.seed(seed);
 
     } else {
         std::cerr<<"Usage:"<<std::endl;

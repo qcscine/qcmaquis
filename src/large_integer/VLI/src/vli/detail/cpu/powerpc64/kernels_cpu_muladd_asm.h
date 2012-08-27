@@ -29,8 +29,8 @@
 #include <boost/cstdint.hpp>
 #include <cassert>
 
-namespace vlilib{
-    namespace detail{
+namespace vli {
+    namespace detail {
                    void muladd128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rcx */){
                           asm( 
                               "ld 14, 0(4)     \n"                   

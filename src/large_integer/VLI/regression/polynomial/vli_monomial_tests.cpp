@@ -41,8 +41,8 @@ using vli::monomial;
 typedef boost::mpl::list<
       double
     , int
-    , vlilib::vli<128>
-    , vlilib::vli<256>
+    , vli::vli<128>
+    , vli::vli<256>
 > types;
 
 //

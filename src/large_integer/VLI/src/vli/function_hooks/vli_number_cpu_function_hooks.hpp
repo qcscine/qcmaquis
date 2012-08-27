@@ -32,7 +32,7 @@
 
 #include "vli/detail/kernels_cpu.h"
 
-namespace vlilib
+namespace vli
 {
     //forwart declaration
     template <std::size_t NumBits>
@@ -212,6 +212,6 @@ namespace vlilib
 
     /* ---------------------------------------------------- End Multiplication Addition specialization ---------------------------------------------------- */
     
-} //namespace vlilib
+} //namespace vli
 
 #endif //VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP

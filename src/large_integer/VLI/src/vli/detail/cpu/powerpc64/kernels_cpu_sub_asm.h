@@ -29,8 +29,8 @@
 
 #include "vli/detail/cpu/powerpc64/kernel_implementation_macros.h"
 #include <cassert>
-namespace vlilib{
-    namespace detail{
+namespace vli {
+    namespace detail {
                      // new functions type : VLI<n*64> - VLI<n*64> : sub128_128, sub192_192 ...
                      #define FUNCTION_sub_nbits_nbits(z, n, unused) \
                          void NAME_SUB_NBITS_MINUS_NBITS(n)(boost::uint64_t* x, boost::uint64_t const* y){ \
@@ -75,5 +75,5 @@ assert(false);\
                      BOOST_PP_REPEAT(MAX_ITERATION_MINUS_ONE, FUNCTION_sub_nbits_nminus1bits, ~)
                      #undef FUNCTION_sub_nbits_nminus1bits
 
-                    } // end namespace detail
-             } // end namespace vli
+    } // end namespace detail
+} // end namespace vli
