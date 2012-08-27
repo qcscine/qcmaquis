@@ -50,10 +50,9 @@ namespace vli{
                          void NAME_ADD_NBITS_PLUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){  \
                          asm(                                                                                   \
                                  "movq   (%%rsi)            , %%rax   \n"                                       \
-                                 "movq   %%rax              , %%r8    \n" /* XOR then AND could make a cpy */   \
-                                 "xorq   %%rcx              , %%rcx   \n" /* rcx to 0 */                        \
-                                 "shrq   $63                , %%r8    \n" /* get the sign */                    \
-                                 "subq   %%r8               , %%rcx   \n" /* 0 or 0xffffff...    */             \
+                                 "movq   %%rax              , %%rcx   \n" /* XOR then AND could make a cpy */   \
+                                 "shrq   $63                , %%rcx   \n" /* get the sign */                    \
+                                 "negq   %%rcx                        \n" /* 0 or 0xffffff...    */             \
                                  "addq   (%%rdi)            , %%rax   \n"                                       \
                                  "movq   %%rax              , (%%rdi) \n"                                       \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), Addition2, ~)                               \
@@ -68,11 +67,16 @@ namespace vli{
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
                          void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)( boost::uint64_t* x ,  boost::uint64_t const* y ,  boost::uint64_t const* w /* z used by boost pp !*/){ \
                          asm(                                                                 \
-                                 "xorq %%rcx  ,%%rcx \n"                                      \
+                                 "movq " PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdx), %%r8  \n"    \
+                                 "movq " PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rsi), %%r9  \n"    \
+                                 "shrq $63                    , %%r8                   \n"    \
+                                 "shrq $63                    , %%r9                   \n"    \
+                                 "negq %%r8                                            \n"    \
+                                 "negq %%r9                                            \n"    \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Addition3, ~)             \
-                                 "adcq $0x0   ,%%rcx \n"                                      \
-                                 "movq %%rcx  ,"PPS(VLI_AOS,BOOST_PP_ADD(n,2))"(%%rdi) \n "       \
-                                 : : :"rax","rcx","memory"                                    \
+                                 "adcq %%r8                  , %%r9                    \n"    \
+                                 "movq %%r9                  ,"PPS(VLI_AOS,BOOST_PP_ADD(n,2))"(%%rdi) \n "   \
+                                 : : :"rax","rcx","r8","r9","memory"                          \
                             );                                                                \
                         }                                                                     \
 
