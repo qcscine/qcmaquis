@@ -34,27 +34,24 @@
 
 namespace vlilib {
 namespace detail {
-    
+
+#if defined __GNU_MP_VERSION
     template <typename GMPClass>
     struct gmp_convert_helper {
         template <std::size_t NumBits>
         static GMPClass apply(vli<NumBits> a) {
-            typedef typename vli<NumBits>::value_type value_type;
+            // vli::value_type = boost::uint64_t is an unsigned long long on some machines.
+            // GMP doesn't work with unsigned long longs, but only with unsigned long int.
+            // Hence we will cast to unsigned long int manually,
+            // given that sizeof(unsigned long long) == sizeof(unsigned long int).
+            BOOST_STATIC_ASSERT(sizeof(typename vli<NumBits>::value_type) == sizeof(unsigned long int));
             bool const neg = a.is_negative();
             if(neg)
                 negate_inplace(a);
             GMPClass result(0);
             GMPClass factor(1);
-            
-// C - Andreas  I do not know why it compiles on your machine, as the boost::uint64_t is an unsigned long long int, it should be not compatible with gmp,
-// C           12.2 C++ Interface Integers
-// C
-// C          — Function: mpz_class::mpz_class (type n)
-// C        Construct an mpz_class. All the standard C++ types may be used, except long long and long double, and all the GMP C++ classes can be used.
-// C        Any necessary conversion follows the corresponding C function, for example double follows mpz_set_d (see Assigning Integers).
-// C        do your compiler make a cast during the compilation ? it sounds 16/32/64 bits machines history ....
-            
-            GMPClass const segment_factor( mpz_class(~boost::lexical_cast<unsigned long int >(value_type(0))) + 1 );
+
+            GMPClass const segment_factor( mpz_class(~static_cast<unsigned long int>(0)) + 1 );
 
             for(typename vli<NumBits>::size_type i=0; i< vli<NumBits>::numwords; ++i) {
                 result += factor * static_cast<unsigned long int>(a[i]);
@@ -65,9 +62,9 @@ namespace detail {
             return result;
         }
     };
+#endif //__GNU_MP_VERSION
 } // end namespace detail
 
-// C - constructors, copy-swap, access operators
 template <std::size_t NumBits>
 vli<NumBits>::vli(){
     memset((void*)&data_[0],0,numwords*sizeof(value_type));
@@ -107,7 +104,6 @@ const typename vli<NumBits>::value_type& vli<NumBits>::operator[](size_type i) c
     assert( i < numwords );
     return *(data_+i);
 }
-// c equality operator
 
 template <std::size_t NumBits>
 vli<NumBits> vli<NumBits>::operator-() const{
