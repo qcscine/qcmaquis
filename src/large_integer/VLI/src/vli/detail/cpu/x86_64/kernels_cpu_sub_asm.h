@@ -46,16 +46,15 @@ namespace vli {
                      //new functions type : VLI<n*64> - VLI<64> : sub192_64, sub256_64
                      //the case is done after sub128_64
                      #define FUNCTION_sub_nbits_64bits(z, n, unused) \
-                          void NAME_SUB_NBITS_MINUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){ \
+                          void NAME_SUB_NBITS_MINUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){   \
                           asm(                                                                                   \
                               "movq   (%%rsi)            , %%rax   \n"                                           \
+                              "movq   %%rax              , %%rcx   \n" /*  XOR then AND could make a cpy */      \
                               "movq   (%%rdi)            , %%r9    \n"                                           \
-                              "movq   %%rax              , %%r8    \n" /*  XOR then AND could make a cpy */      \
-                              "xorq   %%rcx              , %%rcx   \n" /*rbx to 0 */                             \
-                              "shrq   $63                , %%r8    \n" /* get the sign */                        \
-                              "subq   %%r8               , %%rcx   \n" /* 0 or 0xffffff...    */                 \
+                              "shrq   $63                , %%rcx   \n" /* get the sign */                        \
+                              "negq   %%rcx                        \n" /* 0 or 0xffffff...    */                 \
                               "subq   (%%rsi)            , %%r9    \n"                                           \
-                              "movq   %%r9              , (%%rdi) \n"                                           \
+                              "movq   %%r9              , (%%rdi)  \n"                                           \
                               BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), Substraction2, ~)                               \
                               : : :"rax","r8","r9","rcx","memory"                                                \
                             );                                                                                   \

@@ -80,7 +80,7 @@ namespace vli{
                             );                                                                \
                         }                                                                     \
 
-                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nminus1bits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
                      #undef FUNCTION_add_nbits_nminus1bits
 
     } // end namespace detail
