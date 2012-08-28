@@ -246,7 +246,7 @@ namespace vli{
                       void mul256_128_128( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
-                              "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   
+                              "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */
                               "xorq %%r11            ,%%r11             \n" /* r11 = 0 due to carry effect */   
                               "xorq %%r13            ,%%r13             \n" /* r11 = 0 due to carry effect */   
                               "xorq %%r14            ,%%r14             \n" /* r11 = 0 due to carry effect */   
