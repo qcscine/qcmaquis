@@ -14,7 +14,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplies )
     mpz_class agmp(a), bgmp(b);
 
     typename double_sized_vli<vli_type>::type c;
-    mul(c,a,b); // TODO
+    multiply_extend(c,a,b); // TODO
     mpz_class cgmp = agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);

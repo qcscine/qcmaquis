@@ -17,8 +17,8 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplies_negative )
     typename double_sized_vli<vli_type>::type c;
     typename double_sized_vli<vli_type>::type d;
 
-    mul(c,a,b);
-    mul(d,b,a);
+    multiply_extend(c,a,b);
+    multiply_extend(d,b,a);
     mpz_class cgmp = agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
@@ -41,7 +41,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplies_double_negative )
 
     typename double_sized_vli<vli_type>::type c;
 
-    mul(c,a,b);
+    multiply_extend(c,a,b);
     mpz_class cgmp = agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);

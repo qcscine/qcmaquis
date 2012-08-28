@@ -308,12 +308,12 @@ std::string vli<NumBits>::get_str_helper_inplace(vli<NumBits>& value, size_type 
 
 // free function algebra 
 template <std::size_t NumBits>
-void mul(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b) {
+void multiply_extend(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b) {
     multiplies<NumBits>(vli_res, vli_a, vli_b);
 }
 
 template <std::size_t NumBits>
-void multiply_add(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b) {
+void multiply_add_extend(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b) {
     multiply_add_assign<NumBits>(vli_res, vli_a, vli_b);
 }
 

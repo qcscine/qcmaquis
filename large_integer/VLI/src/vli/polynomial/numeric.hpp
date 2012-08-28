@@ -19,7 +19,7 @@ void negate_inplace(T& t) {
 }
 
 template <typename T, typename T2, typename T3>
-void multiply_add(T& t, T2 const& t2, T3 const& t3) {
+void multiply_add_extend(T& t, T2 const& t2, T3 const& t3) {
     t += t2 * t3;
 }
 
