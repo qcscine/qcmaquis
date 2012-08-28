@@ -32,19 +32,19 @@
 #include <boost/preprocessor/stringize.hpp>
 
 //g++ -DNUM=1 -E -P -I /opt/boost/include/ main.cpp | sed  "s/n/; \\`echo -e '\n\r      '`/g"
-#define MAX_ITERATION 7
-#define MAX_ITERATION_MINUS_ONE 6
-#define FOUR 4
-#define THREE 3
-#define AOS 1 // if you change this value you move to the SOA structure be carefull 
+#define VLI_MAX_ITERATION 7
+#define VLI_MAX_ITERATION_MINUS_ONE 6
+#define VLI_FOUR 4
+#define VLI_THREE 3
+#define VLI_AOS 1 // if you change this value you move to the SOA structure be carefull 
+
 //give the name of the function addition
 #define NAME_ADD_NBITS_PLUS_NBITS(n)                 BOOST_PP_CAT(BOOST_PP_CAT(add,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)))  /* addnx64_nx64 */
-#define NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)           BOOST_PP_CAT(BOOST_PP_CAT(add,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64)))  /* addnx64_(n-1)x64 starts from 128_64 */
+#define NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)           BOOST_PP_CAT(BOOST_PP_CAT(add,BOOST_PP_CAT(BOOST_PP_ADD(n,3),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)))  /* addnx64_(n-1)x64 starts from 128_64 */
 #define NAME_ADD_NBITS_PLUS_64BITS(n)                BOOST_PP_CAT(BOOST_PP_CAT(add,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))  /* addnx64_64 starts from 128_64 */
 //give the name of the function substraction        
 #define NAME_SUB_NBITS_MINUS_NBITS(n)                BOOST_PP_CAT(BOOST_PP_CAT(sub,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)))  /* addnx64_nx64 */
-#define NAME_SUB_NBITS_MINUS_NMINUS1BITS(n)          BOOST_PP_CAT(BOOST_PP_CAT(sub,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,1),x64)))  /* addnx64_(n-1)x64 starts from 128_64 */
-#define NAME_SUB_NBITS_MINUS_64BITS(n)               BOOST_PP_CAT(BOOST_PP_CAT(sub,BOOST_PP_CAT(BOOST_PP_ADD(n,3),x64)),BOOST_PP_CAT(_,64))  /* addnx64_64 starts from 192_64 */
+#define NAME_SUB_NBITS_MINUS_64BITS(n)               BOOST_PP_CAT(BOOST_PP_CAT(sub,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64))  /* addnx64_64 starts from 192_64 */
 //give the name of the multiplication VLI<64*n> *= long
 #define NAME_MUL_NBITS_64BITS(n)                     BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,64)) /* mulnx64_64*/
 #define NAME_MUL_NBITS_NBITS(n)                      BOOST_PP_CAT(BOOST_PP_CAT(mul,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64)),BOOST_PP_CAT(_,BOOST_PP_CAT(BOOST_PP_ADD(n,2),x64))) /* mulnx64_nx64*/

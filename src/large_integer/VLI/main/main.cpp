@@ -17,11 +17,10 @@
 #define Order 10
 #define Size_vli 3
 
-using vli::vli;
 //using vlilib::polynomial;
 //using vlilib::vector_polynomial;
 //typedef vli
-typedef vli< 192> vli_type_cpu;
+typedef vli::vli< 192> vli_type_cpu;
 //typedef poly max order each
 /*
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x;

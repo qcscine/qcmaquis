@@ -32,5 +32,5 @@
 #endif
 
 #if defined (__powerpc__)
-#include "vli/detail/cpu/powerpc64/kernels_cpu_add_asm.h"
+#include "vli/detail/cpu/powerpc/kernels_cpu_add_asm.h"
 #endif
