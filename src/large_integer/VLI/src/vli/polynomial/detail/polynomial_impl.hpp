@@ -311,7 +311,7 @@ namespace detail {
                                 for(exponent_type k2 = 0; k2 < stride<2,num_vars,Order>::value; ++k2)
                                     for(exponent_type l = 0; l < stride<3,num_vars,Order>::value; ++l)
                                         for(exponent_type l2 = 0; l2 < stride<3,num_vars,Order>::value; ++l2)
-                                            multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
+                                            multiply_add_extend(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
              return result;
         };
     };
@@ -345,7 +345,7 @@ namespace detail {
 
         template <unsigned int N>
         static inline void apply_helper(result_type& result, polynomial_type const& p1, polynomial_type const& p2, result_element_descriptor const& er, element_descriptor const& e1, element_descriptor const& e2, exponent_type order_sum, exponent_type order_sum2, no_variable d) {
-            multiply_add(result(er), p1(e1), p2(e2));
+            multiply_add_extend(result(er), p1(e1), p2(e2));
         }
     };
     
@@ -373,7 +373,7 @@ namespace detail {
                                 for(exponent_type k2 = 0; k2+k < stride<2,num_vars,Order>::value; ++k2)
                                     for(exponent_type l = 0; l < stride<3,num_vars,Order>::value; ++l)
                                         for(exponent_type l2 = 0; l2+l < stride<3,num_vars,Order>::value; ++l2)
-                                              multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
+                                              multiply_add_extend(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
             return result;
         }
     };
@@ -407,7 +407,7 @@ namespace detail {
 
         template <unsigned int N>
         static inline void apply_helper(result_type& result, polynomial_type const& p1, polynomial_type const& p2, result_element_descriptor const& er, element_descriptor const& e1, element_descriptor const& e2, exponent_type order_sum, exponent_type order_sum2, no_variable d) {
-            multiply_add(result(er), p1(e1), p2(e2));
+            multiply_add_extend(result(er), p1(e1), p2(e2));
         }
     };
 

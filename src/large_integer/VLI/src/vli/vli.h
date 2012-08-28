@@ -142,10 +142,10 @@ namespace vli {
     const vli<NumBits> operator * (int b, vli<NumBits> const& a);
 
     template <std::size_t NumBits>
-    void mul(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b); // C nt = non truncated
+    void multiply_extend(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b); // C nt = non truncated
 
     template <std::size_t NumBits>
-    void multiply_add(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b); // C
+    void multiply_add_extend(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b); // C
     /**
     stream 
     */

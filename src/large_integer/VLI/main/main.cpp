@@ -6,23 +6,22 @@
 //#include "vli/utils/gpu_manager.hpp"
 #endif //VLI_USE_GPU
 
-//#include "vli/polynomial/vector_polynomial_cpu.hpp"
-//#include "vli/polynomial/polynomial.hpp"
+#include "vli/polynomial/vector_polynomial_cpu.hpp"
+#include "vli/polynomial/polynomial.hpp"
 #include "vli/vli.hpp"
 #include "utils/timings.h"
 
-//#include "tools.h"
+#include "utils/tools.h"
 
 #define Size_vec 1024
 #define Order 10
 #define Size_vli 3
 
-//using vlilib::polynomial;
-//using vlilib::vector_polynomial;
+using vli::polynomial;
+using vli::vector_polynomial;
 //typedef vli
 typedef vli::vli< 192> vli_type_cpu;
-//typedef poly max order each
-/*
+
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x;
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy;
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz;
@@ -65,7 +64,7 @@ typedef boost::mpl::vector<polynomial_type_each_x,
        #ifdef VLI_USE_GPU
        Timer t1("GPU ");
        t1.begin();
-    //   p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
+       p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
        t1.end();
       
        if(p1_res == p2_res) 
@@ -76,38 +75,8 @@ typedef boost::mpl::vector<polynomial_type_each_x,
        }
        }
    };
-   */
+   
 int main(int argc, char* argv[]) {
-    std::cout << std::numeric_limits<unsigned long long int>::digits << std::endl;
-    vli_type_cpu a(1);
-    vli_type_cpu b(0);
-    vli_type_cpu c(0);
-    
-    a[0]=0xffffffffffffffff;
-    a[1]=0xffffffffffffffff;
-
-    b[0]=0xffffffffffffffff;
-    b[1]=0xffffffffffffffff;
-  
-   for(long i=0 ; i <0xfffffff; ++i)  
-    c = a +b;
-    
-    
-    
-    /*
-    Timer A("tpotot");
-    A.begin();
-    
-    for( long int i =0; i < 0xffffffff; ++i){
-        vli_type_cpu a(-26+i);
-        vli_type_cpu b(-2116+i);
-        if( a != b){
-        int c = 2;
-            c += 1;}
-    }
-    
-    A.end();
-    */
-//       boost::mpl::for_each<polynomial_list>(test_case());
+       boost::mpl::for_each<polynomial_list>(test_case());
        return 0;
    }

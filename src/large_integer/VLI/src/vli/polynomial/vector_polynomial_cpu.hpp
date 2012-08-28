@@ -29,10 +29,10 @@
 
 #ifndef VLI_VECTOR_POLYNOME_CPU_H
 #define VLI_VECTOR_POLYNOME_CPU_H
-#include "vli/vli_config.h"
+//#include "vli/config.hpp"
 #include "vli/polynomial/polynomial.hpp"
 #include "vli/polynomial/variable.hpp"
-#include "vli/vli.h"
+//#include "vli/vli.h"
 #include <vector>
 #include <ostream>
 #include <cassert>
