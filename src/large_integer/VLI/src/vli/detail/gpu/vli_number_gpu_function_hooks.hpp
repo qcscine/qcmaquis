@@ -31,38 +31,40 @@
 #ifndef VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
 #define VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
 #include "vli/detail/gpu/kernels/kernel_macros.h"
+
 namespace vli {
     namespace detail {
 
     //declaration wrapper
-    value_type
-    __device__ void add(BaseInt * x, BaseInt const* y); 
+    template <std::size_t NumBits>
+    __device__ void add(boost::uint32_t* x, boost::uint32_t const* y); 
 
     //multiplication
-    value_type
-    __device__ void mul(BaseInt * x,BaseInt const* y,BaseInt const* z);
+    template <std::size_t NumBits>
+    __device__ void mul(boost::uint32_t * x,boost::uint32_t const* y,boost::uint32_t const* z);
 
-    template <typename BaseInt, std::size_t Size>
-    __device__ void neg(BaseInt* x); 
+    template <std::size_t NumBits>
+    __device__ void neg(boost::uint32_t* x); 
 
     //????_assign functions
     template <std::size_t NumBits>
-    void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2){
+    void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
     //if one day I success to remove branching ....
-	unsigned int sign = (c1[Size-1]>>31) ^ (c2[Size-1]>>31);
+	boost::uint32_t sign = (c1[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1) ^ (c2[num_words<NumBits>::value-1]>>std::numeric_limits<boost::uint32_t>::digits-1);
 
-	if(c1[Size-1] >> 31 != 0) // 31 because uint , 63 a day if ulint
-       neg<BaseInt, Size>(c1);
+	if(c1[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1!= 0) // 31 because uint , 63 a day if ulint
+            neg<NumBits>(c1);
 
-	if(c2[Size-1] >> 31 != 0)
-       neg<BaseInt, Size>(c2);
+	if(c2[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1!= 0)
+            neg<NumBits>(c2);
 
-       mul<BaseInt, 2*Size>(res1,c1,c2);
+       mul<2*NumBits>(res1,c1,c2);
 
 	if(sign != 0)
-       neg<BaseInt, 2*Size>(res1);
+       neg<2*NumBits>(res1);
 
-    add<BaseInt, 2*Size>(res,res1);
+       add<2*NumBits>(res,res1);
+
     }
     
     /* ---------------------------------------------------- Begin Addition specialization ---------------------------------------------------- */
@@ -71,7 +73,7 @@ namespace vli {
 
     #define FUNCTION_add_nbits_nbits(z, n, unused) \
         template<> \
-        void add<unsigned int,BOOST_PP_ADD(BOOST_PP_MUL(n,4),8)>(unsigned int* x,unsigned int const* y){ \
+        void add<32*BOOST_PP_ADD(BOOST_PP_MUL(n,4),8)>(boost::uint32_t* x,boost::uint32_t const* y){ \
         NAME_ADD_NBITS_PLUS_NBITS(BOOST_PP_MUL(2,BOOST_PP_ADD(n,1)))(x,y); \
         }; \
 
@@ -84,7 +86,7 @@ namespace vli {
     //specialization mul2nbits_nbits_nbits, until 512 bits
     #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
         template<> \
-        void mul<unsigned int,BOOST_PP_ADD(BOOST_PP_MUL(n,4),8)>(unsigned int* x,unsigned int const* y, unsigned int const* w){ \
+        void mul<32*BOOST_PP_ADD(BOOST_PP_MUL(n,4),8)>(boost::uint32_t* x,boost::uint32_t const* y, boost::uint32_t const* w){ \
         NAME_MUL_TWONBITS_NBITS_NBITS(BOOST_PP_ADD(n,1))(x,y,w); \
         }; \
 
@@ -96,7 +98,7 @@ namespace vli {
 
     #define FUNCTION_negate_nbits(z, n, unused) \
         template<> \
-            void neg<unsigned int, BOOST_PP_ADD(4,BOOST_PP_MUL(2,n))>(unsigned int* x){ \
+            void neg<32*BOOST_PP_ADD(4,BOOST_PP_MUL(2,n))>(boost::uint32_t* x){ \
             NAME_NEGATE_NBITS(n)(x); \
         }; \
 

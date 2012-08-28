@@ -42,7 +42,8 @@
 #include "utils/timings.h"
 
 #include "vli/detail/kernels_gpu.h"
-#include "vli/polynomial/variable.hpp"
+#include "vli/detail/gpu/utils/variables_gpu.h"
+
 
 namespace vli
 {
@@ -68,7 +69,7 @@ namespace vli
         struct inner_product_gpu_helper{
         };
 
-        template <class Coeff,  unsigned int  Order, class Var0, class Var1, class Var2, class Var3>
+        template <class Coeff,  int  Order, class Var0, class Var1, class Var2, class Var3>
         struct inner_product_gpu_helper<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> >{
             static inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type /* return type ~~'*/
             inner_product_gpu(
@@ -88,7 +89,7 @@ namespace vli
             typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type poly;
           
             std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
-                vli::detail::gpu_inner_product_vector<Coeff::size, max_order_each<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
+            vli::detail::gpu_inner_product_vector<Coeff::numbits, max_order_each<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
           
             #pragma omp parallel for schedule(dynamic)
             for(std::size_t i=split ; i < size_v ; ++i){
@@ -104,12 +105,12 @@ namespace vli
                 res[0]+=res[i];
             #endif
             
-            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial<Coeff::size, max_order_each<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(),
-                               2*Coeff::size*result_stride<Var0,max_order_each<Order>::value>::value
-                                            *result_stride<Var1,max_order_each<Order>::value>::value
-                                            *result_stride<Var2,max_order_each<Order>::value>::value
-                                            *result_stride<Var3,max_order_each<Order>::value>::value
-                                            *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+            gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial(),
+                               2*Coeff::numwords*result_stride<0,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
+                                                *result_stride<1,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
+                                                *result_stride<2,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
+                                                *result_stride<3,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
+                                                *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
           
             #ifdef _OPENMP
                 res[0] += poly;
@@ -141,7 +142,7 @@ namespace vli
                 typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> > >::type poly;
               
                 std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
-                vli::detail::gpu_inner_product_vector<Coeff::size, max_order_combined<Order>, Var0, Var1, Var2, Var3 >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
+                vli::detail::gpu_inner_product_vector<Coeff::numbits, max_order_combined<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
             
                 #pragma omp parallel for schedule(dynamic)
                 for(std::size_t i=split ; i < size_v ; ++i){
@@ -157,8 +158,8 @@ namespace vli
                     res[0]+=res[i];
                 #endif
                 
-                gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial<Coeff::size, max_order_combined<Order>, Var0, Var1, Var2, Var3 >(),
-                                                2*Coeff::size*max_order_combined_helpers::size<max_order_combined_helpers::num_of_variables_helper<Var0,Var1,Var2,Var3 >::value+1, 2*Order>::value
+                gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial(),
+                                                2*Coeff::numwords*max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3 >::value+1, 2*Order>::value
                                                 *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
                                
                 #ifdef _OPENMP

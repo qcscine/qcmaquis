@@ -32,7 +32,9 @@
 namespace vli {
     namespace detail {
 
-    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
+#define VLI_SIZE num_words<NumBits>::value 
+
+    template <std::size_t NumBits, int Order, int NumVars>
     __global__ void
     __launch_bounds__(SumBlockSize::value, 2)
     polynomial_sum_intermediate_full(
@@ -40,22 +42,22 @@ namespace vli {
 		    const unsigned int element_count,
 		    unsigned int * __restrict__ out)
     {
-	    __shared__ unsigned int buf[SumBlockSize::value * size_pad<2*Size>::value]; 
+	    __shared__ unsigned int buf[SumBlockSize::value * size_pad<2*VLI_SIZE>::value]; 
 
 	    unsigned int local_thread_id = threadIdx.x;
 	    unsigned int coefficient_id = blockIdx.x;
 
-	    unsigned int * t1 = buf + (local_thread_id * size_pad<2*Size>::value);
+	    unsigned int * t1 = buf + (local_thread_id * size_pad<2*VLI_SIZE>::value);
         #pragma unroll
-	    for(unsigned int i = 0; i < 2*Size; ++i)
+	    for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
 		    t1[i] = 0;
 
-	    const unsigned int * in2 = intermediate + (coefficient_id * element_count *2*Size) + local_thread_id;
+	    const unsigned int * in2 = intermediate + (coefficient_id * element_count *2*VLI_SIZE) + local_thread_id;
 	    for(unsigned int element_id = local_thread_id; element_id < element_count; element_id += SumBlockSize::value)
 	    {
                  asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(t1[0]):"r"(in2[0])); 
                  #pragma unroll
-                 for(int i=1; i < 2*Size; ++i)
+                 for(int i=1; i < 2*VLI_SIZE; ++i)
                      asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(t1[i]):"r"(in2[i*element_count])); 
 
      	         in2 += SumBlockSize::value;
@@ -65,18 +67,19 @@ namespace vli {
 	    for(unsigned int stride = SumBlockSize::value >> 1; stride > 0; stride >>= 1) {
 		    __syncthreads();
 		    if (local_thread_id < stride) {
-			    unsigned int * t2 = buf + (local_thread_id + stride) * size_pad<2*Size>::value;
-                            add<BaseInt, 2*Size>(t1,t2);
+			    unsigned int * t2 = buf + (local_thread_id + stride) * size_pad<2*VLI_SIZE>::value;
+                            add<2*NumBits>(t1,t2);
 		    }
 	    }
 
 	    if (local_thread_id == 0) {
-  		    unsigned int * out2 = out+(coefficient_id*2*Size); 
+  		    unsigned int * out2 = out+(coefficient_id*2*VLI_SIZE); 
             #pragma unroll
-		    for(unsigned int i=0; i<2*Size; ++i)
+		    for(unsigned int i=0; i<2*VLI_SIZE; ++i)
 		        out2[i] = buf[i];
 	    }
     }
 
+#undef VLI_SIZE
     }
 }

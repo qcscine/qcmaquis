@@ -45,7 +45,9 @@ namespace vli {
                       } 
 
                       template <std::size_t NumBits>
-                      __device__ void multiplies(BaseInt* res, BaseInt* res1, BaseInt* c1, BaseInt* c2);
+                      __device__ void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2);
+                      // template function with specialization ........
+
                       //addition 256+256, 384+384, 512+512
                       #define FUNCTION_add_nbits_nbits(z, n, unused) \
                            __device__ void NAME_ADD_NBITS_PLUS_NBITS(BOOST_PP_MUL(2,BOOST_PP_ADD(n,1)))(unsigned int* x, unsigned int const* y); \

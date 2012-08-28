@@ -7,15 +7,12 @@
 #include <boost/mpl/list.hpp>
  
 #ifdef VLI_USE_GPU
-#include "vli/detail/gpu/inner_product_gpu_booster.hpp"
-#include "vli/utils/gpu_manager.h"
-#include "vli/utils/gpu_manager.hpp"
+#include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
 #endif //VLI_USE_GPU
 
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial.hpp"
-#include "vli/vli_cpu.h"
-#include "vli/vli_traits.hpp"
+#include "vli/vli.hpp"
 #include "utils/timings.h"
 
 #include "utils/tools.h"
@@ -24,11 +21,10 @@
 #define Size_vec 8
 #define Order 10
 
-using vli::vli_cpu;
 using vli::polynomial;
 using vli::vector_polynomial;
 //typedef vli
-typedef vli_cpu< unsigned long int, VLI_SIZE> vli_type_cpu;
+typedef vli::vli<64*VLI_SIZE> vli_type_cpu;
 //typedef poly max order each
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x;
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy;
