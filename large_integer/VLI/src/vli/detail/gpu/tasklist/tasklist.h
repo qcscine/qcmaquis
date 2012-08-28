@@ -27,21 +27,20 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
+#ifndef GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
+#define GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
 
 #include "vli/detail/gpu/utils/singleton.h"
 #include "vli/detail/gpu/kernels/numeric.h"
 
-#ifndef GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
-#define GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
-
 namespace vli {
     namespace detail {
 
-    template <std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t NumBits, class MaxOrder, int NumVars>
     class tasklist_keep_order;
 
-    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
-    class tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3 > : public Singleton<tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3> > {
+    template <std::size_t NumBits, int Order, int NumVars>
+    class tasklist_keep_order<NumBits, max_order_each<Order>, NumVars > : public Singleton<tasklist_keep_order<NumBits, max_order_each<Order>, NumVars> > {
         friend class Singleton<tasklist_keep_order>; // to have access to the Instance, Destroy functions into the singleton class
     private:
         tasklist_keep_order();
@@ -55,8 +54,8 @@ namespace vli {
         unsigned int  element_count_prepared;
     };
 
-    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
-    class tasklist_keep_order<Size, max_order_combined<Order>, Var0, Var1, Var2, Var3 > : public Singleton<tasklist_keep_order<Size, max_order_combined<Order>, Var0, Var1, Var2, Var3> > {
+    template <std::size_t NumBits, int Order, int NumVars>
+    class tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars> : public Singleton<tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars> > {
         friend class Singleton<tasklist_keep_order>; // to have access to the Instance, Destroy functions into the singleton class
     private:
         tasklist_keep_order();

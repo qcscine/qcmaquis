@@ -1,9 +1,7 @@
 #include <boost/mpl/for_each.hpp>
  
 #ifdef VLI_USE_GPU
-#include "vli/detail/gpu/inner_product_gpu_booster.hpp"
-//#include "vli/utils/gpu_manager.h"
-//#include "vli/utils/gpu_manager.hpp"
+#include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
 #endif //VLI_USE_GPU
 
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
@@ -35,7 +33,7 @@ typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<
 typedef boost::mpl::vector<polynomial_type_each_x,
                            polynomial_type_each_xy,
                            polynomial_type_each_xyz,
-                         //  polynomial_type_each_xyzw  // buffer too large cpu/gpu
+                          // polynomial_type_each_xyzw  // buffer too large cpu/gpu
                            polynomial_type_combined_x,
                            polynomial_type_combined_xy,
                            polynomial_type_combined_xyz,

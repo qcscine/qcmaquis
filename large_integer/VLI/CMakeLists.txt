@@ -46,7 +46,7 @@ option (VLI_MAIN  "Build and execute the main" ON)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "0.8" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
-set (VLI_COMPILE_TYPES "((unsigned long int,3,5,1))((unsigned long int,3,5,2))((unsigned long int,3,5,3))((unsigned long int,3,5,4))" CACHE STRING "BaseInt, Size VLI, Order Poly, number of variables into polynomials")
+set (VLI_COMPILE_TYPES "((128,10,1))((128,10,2))((128,10,3))((128,10,4))((192,10,1))((192,10,2))((192,10,3))((192,10,4))((256,10,1))((256,10,2))((256,10,3))((256,10,4))" CACHE STRING "Numbers of bits, Order Poly, number of variables into the polynomials")
 
 ########################################################################
 #

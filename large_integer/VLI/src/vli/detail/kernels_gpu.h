@@ -3,7 +3,7 @@
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
-*Maxim Milakov – NVIDIA
+*Maxim Milakov - NVIDIA
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -33,23 +33,22 @@
 
 #include "vli/polynomial/variable.hpp"
 #include "vli/detail/gpu/kernels/kernel_macros.h"
-
-#include "vli/vli_config.h"
+#include "vli/config.hpp"
 
 namespace vli {
     namespace detail {
 
-    #define VLI_DECLARE_GPU_FUNCTIONS(TYPE, VLI_SIZE, POLY_ORDER, VAR) \
-        template<std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3 >      \
-        void gpu_inner_product_vector(std::size_t vector_size, TYPE const * A, TYPE const * B); \
+    boost::uint32_t* gpu_get_polynomial(); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
+
+    #define VLI_DECLARE_GPU_FUNCTIONS(NUM_BITS, POLY_ORDER, VAR) \
+        template<std::size_t NumBits, class MaxOrder, int NumVars >      \
+        void gpu_inner_product_vector(std::size_t vector_size, boost::uint64_t const * A, boost::uint64_t const * B); \
         \
-        template<std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3 >      \
-        unsigned int * gpu_get_polynomial(); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
    
-    #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_ORDER_VAR_TUPLE) \
-        VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(4,0,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,1,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,2,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,3,BASEINT_SIZE_ORDER_VAR_TUPLE))
+    #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, NUMBITS_ORDER_VAR_TUPLE_SEQ) \
+        VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(3,0,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,1,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,2,NUMBITS_ORDER_VAR_TUPLE_SEQ) )
    
-    BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_BASEINT_SIZE_ORDER_VAR_TUPLE_SEQ)
+    BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_NUMBITS_ORDER_VAR_TUPLE_SEQ)
    
     #undef VLI_DECLARE_GPU_FUNCTIONS_FOR
     #undef VLI_DECLARE_GPU_FUNCTIONS 

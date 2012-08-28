@@ -31,10 +31,11 @@
  #ifndef VLI_VARIABLES_GPU_H
  #define VLI_VARIABLES_GPU_H
 
+
+#include "vli/polynomial/detail/helpers.hpp"
+
 namespace vli {
-
     namespace detail {
-
 
     template <int Var, int NumVars, int Order>
     struct result_stride {
@@ -46,38 +47,20 @@ namespace vli {
         static unsigned int const value = Var < NumVars ? Order+1 : 0;
     };
 
-
     struct SumBlockSize {
        enum { value = 256};
     };
 
-//    TODO Remove this, all num_coefficients in the gpu code should probably be replaced by num_coefficients<...<2*Order>,...>
-//
-//    template<class MaxOrder, int NumVars>
-//    struct num_coefficients;
-//
-//        
-//    template<class MaxOrder>
-//    struct num_coefficients<MaxOrder, 0>{
-//        enum {value = 1};
-//    };
-//
-//    template<int Order, int NumVars>
-//    struct num_coefficients<max_order_each<Order>, NumVars>{
-//        enum {value = (2*Order+1)*num_coefficients<max_order_each<Order>, NumVars-1>::value};
-//    };
-//
-//    template<int Order, int NumVars>
-//    struct num_coefficients<max_order_combined<Order>, NumVars>{
-//        enum {value = vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value};
-//    };
+    template<std::size_t NumBits>
+    struct num_words{
+        enum { value = (NumBits+31)/32};
+    };
 
     template<class MaxOrder, int NumVars>
     struct mul_block_size {
-        enum {value = num_coefficients<MaxOrder,NumVars>::value/2 >= 256U) ? 256U
+        enum {value = (num_coefficients<MaxOrder,NumVars>::value/2 >= 256U) ? 256U
                : (num_coefficients<MaxOrder,NumVars>::value/2U+32U-1U)/32U*32U };
     };
-
  
     template<class MaxOrder, int NumVars>
     struct MaxIterationCount {
@@ -85,8 +68,6 @@ namespace vli {
     };
 
     // replace in the code MaxNumberCoefficientExtend by num_coefficients
-
-    
     template<std::size_t Size>
     struct size_pad{
         enum {value = Size | 1};

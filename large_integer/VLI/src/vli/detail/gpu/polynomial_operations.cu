@@ -31,6 +31,8 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <boost/cstdint.hpp> 
+#include <limits>
 #include "vli/utils/gpu_error_message.h"
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu + structure max_order_each, max_order_combined
 #include "vli/detail/gpu/utils/variables_gpu.h" //compile time  variable
@@ -47,78 +49,66 @@
 namespace vli {
     namespace detail {
    
-    template <typename BaseInt, std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t NumBits, class MaxOrder, int NumVars>
     __global__ void
-    __launch_bounds__(mul_block_size<MaxOrder, Var0, Var1, Var2, Var3>::value , 2)
+    __launch_bounds__(mul_block_size<MaxOrder, NumVars>::value , 2)
     polynomial_mul_full_kepler( // TO DO change the name
-    	const unsigned int * __restrict__ in1,
-    	const unsigned int * __restrict__ in2,
-        const unsigned int element_count,
-        unsigned int* __restrict__ out,
-        unsigned int* __restrict__ workblock_count_by_warp,
+    	const boost::uint32_t * __restrict__ in1,
+    	const boost::uint32_t * __restrict__ in2,
+        const boost::uint32_t element_count,
+        boost::uint32_t* __restrict__ out,
+        boost::uint32_t* __restrict__ workblock_count_by_warp,
         single_coefficient_task* __restrict__ execution_plan)
     {
-        booster<BaseInt, Size, MaxOrder, Var0, Var1, Var2, Var3>::polynomial_multiplication_max_order(in1, in2, element_count, out, workblock_count_by_warp, execution_plan); // TO DO change the name
+        booster<NumBits, MaxOrder, NumVars>::polynomial_multiplication_max_order(in1, in2, element_count, out, workblock_count_by_warp, execution_plan); // TO DO change the name
     }
 
-    template <typename BaseInt, std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
-    void gpu_inner_product_vector(std::size_t VectorSize, BaseInt const* A, BaseInt const* B) {
-
-	    gpu_memblock<BaseInt>* pgm = gpu_memblock<BaseInt>::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial, could we change the pattern by a ref ? 
-            resize_helper<BaseInt, Size, MaxOrder, Var0, Var1, Var2, Var3>::resize(pgm, VectorSize);
+    template <std::size_t NumBits, class MaxOrder, int NumVars>
+    void gpu_inner_product_vector(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
+            // TO DO CHANGE THE SINGLE BY BOOST SINGLETON
+	    gpu_memblock* pgm = gpu_memblock::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial, could we change the pattern by a ref ? 
+            resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, VectorSize);
             
-  	    tasklist_keep_order<Size,MaxOrder, Var0, Var1, Var2, Var3>* ghc = tasklist_keep_order<Size, MaxOrder, Var0, Var1, Var2, Var3>::Instance(); // calculate the different packet, singleton only one time 
+  	    tasklist_keep_order<NumBits,MaxOrder, NumVars>* ghc = tasklist_keep_order<NumBits, MaxOrder, NumVars>::Instance(); // calculate the different packet, singleton only one time 
 
-            memory_transfer_helper<BaseInt, Size, MaxOrder, Var0, Var1, Var2, Var3>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
+            memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
              
 	    {
                 dim3 grid(VectorSize) ;
-                dim3 threads(mul_block_size<MaxOrder, Var0, Var1, Var2, Var3>::value);
-                polynomial_mul_full_kepler<BaseInt, Size, MaxOrder, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->V1Data_, pgm->V2Data_,VectorSize, pgm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
+                dim3 threads(mul_block_size<MaxOrder, NumVars>::value);
+                polynomial_mul_full_kepler<NumBits, MaxOrder, NumVars><<<grid,threads>>>(pgm->V1Data_, pgm->V2Data_,VectorSize, pgm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
-                dim3 grid(MaxNumberCoefficientExtend<MaxOrder, Var0, Var1, Var2, Var3>::value);
+                dim3 grid(num_coefficients<MaxOrder, NumVars>::value);
                 dim3 threads(SumBlockSize::value);
-                polynomial_sum_intermediate_full<BaseInt, Size, MaxOrder::value, Var0, Var1, Var2, Var3><<<grid,threads>>>(pgm->VinterData_, VectorSize, pgm->PoutData_); //the reduction is independent of the order specification
+                polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm->VinterData_, VectorSize, pgm->PoutData_); //the reduction is independent of the order specification
 	    }
+
     } 
 
-    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
-    BaseInt* gpu_get_polynomial(){
-	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // I just get the mem pointer
+    boost::uint32_t* gpu_get_polynomial(){
+	    gpu_memblock* gm = gpu_memblock::Instance(); // I just get the mem pointer
 	    return gm->PoutData_;
     }
 
-    //to do clean memory for gpu
+#define VLI_IMPLEMENT_GPU_FUNCTIONS(NUM_BITS, POLY_ORDER, VAR) \
+    template<std::size_t NumBits, class MaxOrder, int NumVars >      \
+    void gpu_inner_product_vector(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B); \
+    \
+    template<>      \
+    void gpu_inner_product_vector<NUM_BITS, max_order_each<POLY_ORDER>, VAR >(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B) \
+    {gpu_inner_product_vector<NUM_BITS, max_order_each<POLY_ORDER>, VAR >(vector_size, const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(A)), const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(B)));} \
+    \
+    template<>      \
+    void gpu_inner_product_vector<NUM_BITS, max_order_combined<POLY_ORDER>, VAR >(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B) \
+    {gpu_inner_product_vector<NUM_BITS, max_order_combined<POLY_ORDER>, VAR >(vector_size, const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(A)), const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(B)));} \
+    \
 
-#define VLI_IMPLEMENT_GPU_FUNCTIONS(TYPE, VLI_SIZE, POLY_ORDER, VAR) \
-    template<std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3 >      \
-    void gpu_inner_product_vector(std::size_t vector_size, TYPE const* A, TYPE const* B); \
-    \
-    template<>      \
-    void gpu_inner_product_vector<VLI_SIZE, max_order_each<POLY_ORDER>, EXPEND_VAR(VAR) >(std::size_t vector_size, TYPE const* A, TYPE const* B) \
-    {gpu_inner_product_vector<unsigned int, 2*VLI_SIZE, max_order_each<POLY_ORDER>, EXPEND_VAR(VAR) >(vector_size, const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(A)), const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(B)));} \
-    \
-    template<>      \
-    void gpu_inner_product_vector<VLI_SIZE, max_order_combined<POLY_ORDER>, EXPEND_VAR(VAR) >(std::size_t vector_size, TYPE const* A, TYPE const* B) \
-    {gpu_inner_product_vector<unsigned int, 2*VLI_SIZE, max_order_combined<POLY_ORDER>, EXPEND_VAR(VAR) >(vector_size, const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(A)), const_cast<unsigned int*>(reinterpret_cast<unsigned int const*>(B)));} \
-    \
-    template<std::size_t Size, class MaxOrder, class Var0, class Var1, class Var2, class Var3 >      \
-    unsigned int* gpu_get_polynomial();/* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
-    \
-    template<>      \
-    unsigned int* gpu_get_polynomial<VLI_SIZE, max_order_each<POLY_ORDER>, EXPEND_VAR(VAR) >() /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
-    {return gpu_get_polynomial<unsigned int, 2*VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>();}\
-    \
-    template<>      \
-    unsigned int* gpu_get_polynomial<VLI_SIZE, max_order_combined<POLY_ORDER>, EXPEND_VAR(VAR) >() /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */ \
-    {return gpu_get_polynomial<unsigned int, 2*VLI_SIZE, POLY_ORDER, EXPEND_VAR(VAR)>();}\
+#define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, NUMBITS_ORDER_VAR_TUPLE_SEQ) \
+    VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(3,0,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,1,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,2,NUMBITS_ORDER_VAR_TUPLE_SEQ) )
 
-#define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, BASEINT_SIZE_ORDER_VAR_TUPLE) \
-    VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(4,0,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,1,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,2,BASEINT_SIZE_ORDER_VAR_TUPLE), BOOST_PP_TUPLE_ELEM(4,3,BASEINT_SIZE_ORDER_VAR_TUPLE) )
-
-    BOOST_PP_SEQ_FOR_EACH(VLI_IMPLEMENT_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_BASEINT_SIZE_ORDER_VAR_TUPLE_SEQ)
+    BOOST_PP_SEQ_FOR_EACH(VLI_IMPLEMENT_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_NUMBITS_ORDER_VAR_TUPLE_SEQ)
 
 #undef VLI_IMPLEMENT_GPU_FUNCTIONS_FOR
 #undef VLI_IMPLEMENT_GPU_FUNCTIONS

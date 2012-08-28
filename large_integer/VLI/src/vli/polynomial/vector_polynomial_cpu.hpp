@@ -43,7 +43,7 @@
 
 #ifdef VLI_COMPILE_GPU
 #include "vli/detail/kernels_gpu.h"
-#include "vli/detail/gpu/inner_product_gpu_booster.hpp"
+#include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
 #endif //VLI_COMPILE_GPU
 
 namespace vli {

@@ -31,50 +31,51 @@
 namespace vli {
     namespace detail {
 
-    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
-    tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::tasklist_keep_order(){
+    template <std::size_t NumBits, int Order, int NumVars>
+    tasklist_keep_order<NumBits, max_order_each<Order>, NumVars>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
-        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value*MaxIterationCount<max_order_each<Order>, Var0, Var1, Var2, Var3>::value*sizeof(single_coefficient_task)),__LINE__);
-        gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value/32*sizeof(unsigned int)),__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_each<Order>, NumVars>::value*MaxIterationCount<max_order_each<Order>, NumVars>::value*sizeof(single_coefficient_task)),__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), mul_block_size<max_order_each<Order>, NumVars>::value/32*sizeof(int)),__LINE__);
         element_count_prepared=0;
         plan();
     }
 
-    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
-    tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::~tasklist_keep_order(){
+    template <std::size_t NumBits, int Order, int NumVars>
+    tasklist_keep_order<NumBits, max_order_each<Order>, NumVars>::~tasklist_keep_order(){
         gpu::cu_check_error(cudaFree(this->execution_plan_),__LINE__);
         gpu::cu_check_error(cudaFree(this->workblock_count_by_warp_),__LINE__);
     } 
 
-    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
-    void tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::plan(){
-        std::vector<unsigned int> workblock_count_by_warp_local(mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value / 32U,0);
-        std::vector<unsigned int> work_total_by_size(mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value / 32U,0);
-        std::vector<vli::detail::single_coefficient_task > tasks(((result_stride<Var0, Order>::value*result_stride<Var1, Order>::value*result_stride<Var2, Order>::value*result_stride<Var3, Order>::value + 32U - 1) / 32U) * 32U);
+    template <std::size_t NumBits, int Order, int NumVars>
+    void tasklist_keep_order<NumBits, max_order_each<Order>, NumVars>::plan(){
+        std::vector<int> workblock_count_by_warp_local(mul_block_size<max_order_each<Order>, NumVars>::value / 32U,0);
+        std::vector<int> work_total_by_size(mul_block_size<max_order_each<Order>, NumVars>::value / 32U,0);
+        // TO DO CHECK stride and result_stride, there is pb with the Var argument
+        std::vector<vli::detail::single_coefficient_task > tasks(((result_stride<0,NumVars,Order>::value*result_stride<1,NumVars,Order>::value*result_stride<2,NumVars,Order>::value*result_stride<3,NumVars,Order>::value + 32U - 1) / 32U) * 32U);
 
-        for(unsigned int degree_w = 0; degree_w <result_stride<4,NumVars, Order>::value; ++degree_w) {
-            for(unsigned int degree_z = 0; degree_z <result_stride<3,NumVars, Order>::value; ++degree_z) {
-                for(unsigned int degree_y = 0; degree_y <result_stride<2,NumVars, Order>::value; ++degree_y) {
-                    for(unsigned int degree_x = 0; degree_x <result_stride<1,NumVars, Order>::value; ++degree_x) {
-                        vli::detail::single_coefficient_task& task = tasks[  degree_w * result_stride<Var1, Order>::value * result_stride<Var2, Order>::value * result_stride<Var3, Order>::value
-                                                                           + degree_z * result_stride<Var1, Order>::value * result_stride<Var2, Order>::value 
-                                                                           + degree_y * result_stride<Var1, Order>::value
+        for(unsigned int degree_w = 0; degree_w <result_stride<3,NumVars, Order>::value; ++degree_w) {
+            for(unsigned int degree_z = 0; degree_z <result_stride<2,NumVars, Order>::value; ++degree_z) {
+                for(unsigned int degree_y = 0; degree_y <result_stride<1,NumVars, Order>::value; ++degree_y) {
+                    for(unsigned int degree_x = 0; degree_x <result_stride<0,NumVars, Order>::value; ++degree_x) {
+                        vli::detail::single_coefficient_task& task = tasks[  degree_w * result_stride<1,NumVars, Order>::value * result_stride<2,NumVars, Order>::value * result_stride<3,NumVars, Order>::value
+                                                                           + degree_z * result_stride<1,NumVars, Order>::value * result_stride<2,NumVars, Order>::value 
+                                                                           + degree_y * result_stride<1,NumVars, Order>::value
                                                                            + degree_x];
                         task.output_degree_x = degree_x;
                         task.output_degree_y = degree_y;
                         task.output_degree_z = degree_z;
                         task.output_degree_w = degree_w;
-                        task.step_count =   (std::min<unsigned int>((result_stride<Var0, Order>::value - 1) - degree_x, degree_x) + 1)
-                                          * (std::min<unsigned int>((result_stride<Var1, Order>::value - 1) - degree_y, degree_y) + 1) 
-                                          * (std::min<unsigned int>((result_stride<Var2, Order>::value - 1) - degree_z, degree_z) + 1) 
-                                          * (std::min<unsigned int>((result_stride<Var3, Order>::value - 1) - degree_w, degree_w) + 1);
+                        task.step_count =   (std::min<int>((result_stride<0, NumVars ,Order>::value - 1) - degree_x, degree_x) + 1)
+                                          * (std::min<int>((result_stride<1, NumVars ,Order>::value - 1) - degree_y, degree_y) + 1) 
+                                          * (std::min<int>((result_stride<2, NumVars ,Order>::value - 1) - degree_z, degree_z) + 1) 
+                                          * (std::min<int>((result_stride<3, NumVars ,Order>::value - 1) - degree_w, degree_w) + 1);
                     }
                 }
             }
         }
         // Fill the task list up to the multiple of the warp size
-        for(unsigned int i = result_stride<Var0, Order>::value*result_stride<Var1, Order>::value*result_stride<Var2, Order>::value*result_stride<Var3, Order>::value; i < tasks.size(); ++i) {
+        for(unsigned int i = result_stride<0, NumVars, Order>::value*result_stride<1, NumVars, Order>::value*result_stride<2, NumVars, Order>::value*result_stride<3, NumVars, Order>::value; i < tasks.size(); ++i) {
                vli::detail::single_coefficient_task& task = tasks[i];
                task.output_degree_x = 0;
                task.output_degree_y = 0;
@@ -84,21 +85,21 @@ namespace vli {
         }
        // Sort the tasks in step_count descending order
          std::sort(tasks.begin(), tasks.end(), vli::detail::single_coefficient_task_sort);
-         std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value * MaxIterationCount<max_order_each<Order>, Var0, Var1, Var2, Var3>::value);
+         std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_each<Order>, NumVars>::value * MaxIterationCount<max_order_each<Order>, NumVars>::value);
          // this thing should be generic ... yes it is ! 
          for(unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
-                unsigned int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
+                int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
                 std::copy(
                 	tasks.begin() + (batch_id * 32),
                 	tasks.begin() + ((batch_id + 1) * 32),
-                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value) + (warp_id * 32));
-                unsigned int max_step_count = tasks[batch_id * 32].step_count;
+                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size<max_order_each<Order>, NumVars>::value) + (warp_id * 32));
+                int max_step_count = tasks[batch_id * 32].step_count;
         
                 workblock_count_by_warp_local[warp_id]++;
                 work_total_by_size[warp_id] += max_step_count;
          }
         
-	 gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(unsigned int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__LINE__);
+	 gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__LINE__);
 	 gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__LINE__);
     }
 

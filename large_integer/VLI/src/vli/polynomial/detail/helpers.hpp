@@ -41,7 +41,26 @@ struct stride {
     static unsigned int const value = Var < NumVars ? Order+1 : 1;
 };
 
-
+template <class Var0, class Var1, class Var2, class Var3> 	 	 
+struct num_of_variables_helper { 	 	 
+    // May be generalized using boost MPL 	 	 
+    static unsigned int const value = 4; 	 	 
+}; 	 	 
+ 	 	 
+template <class Var0, class Var1, class Var2> 	 	 
+struct num_of_variables_helper<Var0, Var1, Var2, no_variable> { 	 	 
+    static unsigned int const value = 3; 	 	 
+}; 	 	 
+     	 
+template <class Var0, class Var1> 	 	 
+struct num_of_variables_helper<Var0, Var1, no_variable, no_variable> { 	 	 
+    static unsigned int const value = 2; 	 	 
+}; 	 	 
+     	 
+template <class Var0> 	 	 
+struct num_of_variables_helper<Var0, no_variable, no_variable, no_variable> { 	 	 
+    static unsigned int const value = 1; 	 	 
+}; 	 	 
 
 template <class MaxOrder, int NumVars>
 struct num_coefficients;
