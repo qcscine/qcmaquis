@@ -371,10 +371,10 @@ const vli<NumBits> operator * (int b, vli<NumBits> const& a){
 //stream
 template <std::size_t NumBits>
 std::ostream& operator<< (std::ostream& os,  vli<NumBits> const& vli){
-   // if(os.flags() & std::ios_base::hex)
+    if(os.flags() & std::ios_base::hex)
         vli.print_raw(os);
-  //  else
-   //     vli.print(os);
+    else
+        vli.print(os);
     return os;
 }
 
