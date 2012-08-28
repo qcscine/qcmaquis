@@ -26,28 +26,73 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include <boost/cstdint.hpp>
+#include "vli/detail/cpu/powerpc/kernel_implementation_macros.h"
+
 #include <cassert>
 
+// to check :  g++ -E -P -I /BOOST_PATH/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
 namespace vli {
     namespace detail {
-                   void muladd128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rcx */){
+                     //new functions type : VLI<n*64> *= long int;
+                     #define FUNCTION_mul_nbits_64bits(z, n, unused) \
+                         void NAME_MUL_NBITS_64BITS(n)(boost::uint64_t* x, boost::uint64_t const* y){           \
+                         asm(                                                                                       \
+                             "xor   6,6,6 \n" \
+                             "ld    "R(0)", 0(3)   \n" /* x arg */                                                     \
+                             "ld    "R(1)", 0(4)   \n" /* y arg */                                                     \
+                             "cmpi 0,0,"R(1)",0                  \n" /* rax is negative ? */             \
+                             "bgt 0, "NAME_CONDITIONAL_MUL_NBITS_64BITS(n)"   \n" /* if statements begins */          \
+                             "neg   "R(1)","R(1)"                              \n" /* negate the number */             \
+                             "addi 6,6,1 \n" \
+                             " "NAME_CONDITIONAL_MUL_NBITS_64BITS(n)" :     \n" /* putain de : */                   \
+                             "mulld   "R(2)","R(0)","R(1)" \n" /*low part of the product */                           \
+                             "mulhdu  "R(3)","R(0)","R(1)" \n" /*low part of the product */                           \
+                             BOOST_PP_REPEAT(n, MUL_register, ~)               /* mul algo */                      \
+                             "ld      "R(0)", "PPS(1,BOOST_PP_ADD(1,n))"(3) \n"                                       \
+                             "mulld   5     ,"R(0)","R(1)" \n "                                                          \
+                             "add  "R(BOOST_PP_ADD(3,n))", 5, "R(BOOST_PP_ADD(3,n))"  \n"  \
+                             "cmpi 0,0,6,0                  \n" /* rax is negative ? */             \
+                             "beq 0, "NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)" \n" /* not equal ZF = 0, negate*/       \
+                              BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), NOT_register, ~) /* if for final sign */           \
+                             "addic. 16,16, 1                 \n  " /* 2cm add 1 */                   \
+                              BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC0_register, ~)/* propagate carry bit */         \
+                             " "NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)" : \n"   /* end final if */                \
+                              BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3mul,~)                                  \
+                              : : :"r5","r6",BOOST_PP_REPEAT(BOOST_PP_ADD(n,4), CLOTHER_register, ~) "memory"   /* clother register*/      \
+                             ); \
+                         } \
+ 
+                      BOOST_PP_REPEAT(7, FUNCTION_mul_nbits_64bits, ~) // 7 -> expand until 512 !
+
+                      // remark same than x86, look cpu_x86 for details
+
+                       #define BOOST_PP_LOCAL_MACRO(n) \
+                          void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))(boost::uint64_t* x, boost::uint64_t const* y){ \
+                         asm(                                                                                       \
+                              BOOST_PP_REPEAT(n, MULNTON0, BOOST_PP_SUB(n,1))                                             \
+                              BOOST_PP_REPEAT(n, STORE_register_r3mul2,BOOST_PP_ADD(n,2) )                     \
+                              : : :"r5","r6","r14","r15",BOOST_PP_REPEAT(n, CLOTHER_register2,n ) "memory"   /* clother register*/      \
+                             ); \
+                         } \
+                     
+                       #define BOOST_PP_LOCAL_LIMITS (2, 8)
+
+                       #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
+
+
+                       void mul128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rcx */){
                           asm( 
                               "ld 14, 0(4)     \n"                   
                               "ld 15, 0(5)     \n"                   
                               "mulld  16,14,15 \n"  
-                              "mulhdu 17,14,15 \n"  
-                              "ld 14, 0(3)     \n"                   
-                              "ld 15, 8(3)     \n"                   
-                              "addc 16, 14,16     \n"                   
-                              "adde 17, 15,17     \n"                   
                               "std 16 ,0(3)    \n"
-                              "std 17 ,8(3)    \n"
-                              : : :"r14","r15","r16","r17"
+                              "mulhdu 16,14,15 \n"  
+                              "std 16 ,8(3)    \n"
+                              : : :"r14","r15","r16"
                               );
-                   }
+                       }
 
-                   void muladd256_128_128(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
+                       void mul256_128_128(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -106,23 +151,16 @@ namespace vli {
                               "addze  22, 22            \n"
                               "addze  23, 23            \n"
                               "_IsNegativeResult_256_128_ :  \n"       
-                              "ld 14, 0(3)              \n"                   
-                              "ld 15, 8(3)              \n"                   
-                              "ld 16, 16(3)              \n"                   
-                              "ld 17, 24(3)              \n"                   
-                              "addc  20 ,14,20          \n"
-                              "adde  21 ,15,21          \n"
-                              "adde  22 ,16,22          \n"
-                              "adde  23 ,17,23          \n"
                               "std 20, 0(3)             \n"
                               "std 21, 8(3)             \n"
                               "std 22, 16(3)             \n"
                               "std 23, 24(3)             \n"
                               : : : "r6","r7","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","memory"   
                              );
-                   }
 
-                  void muladd384_192_192(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
+                       }
+
+                      void mul384_192_192(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -219,18 +257,6 @@ namespace vli {
                               "addze  24, 24            \n"
                               "addze  25, 25            \n"
                               "_IsNegativeResult_384_192_ :  \n"       
-                              "ld 14, 0(3)              \n"                   
-                              "ld 15, 8(3)              \n"                   
-                              "ld 16, 16(3)              \n"                   
-                              "ld 17, 24(3)              \n"                   
-                              "ld 18, 32(3)              \n"                   
-                              "ld 19, 40(3)              \n"                   
-                              "addc  20 ,14,20          \n"
-                              "adde  21 ,15,21          \n"
-                              "adde  22 ,16,22          \n"
-                              "adde  23 ,17,23          \n"
-                              "adde  24 ,18,24          \n"
-                              "adde  25 ,19,25          \n"
                               "std 20, 0(3)             \n"
                               "std 21, 8(3)             \n"
                               "std 22, 16(3)             \n"
@@ -239,9 +265,9 @@ namespace vli {
                               "std 25, 40(3)             \n"
                               : : : "r6","r7","r8","r9","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","memory"   
                               );
-                        }
+                            }
 
-                         void muladd512_256_256(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
+                     void mul512_256_256(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                             asm(
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -395,22 +421,6 @@ namespace vli {
                               "addze  28, 28            \n"
                               "addze  29, 29            \n"
                               "_IsNegativeResult_512_256_ :  \n"       
-                              "ld 14, 0(3)              \n"                   
-                              "ld 15, 8(3)              \n"                   
-                              "ld 16, 16(3)              \n"                   
-                              "ld 17, 24(3)              \n"                   
-                              "ld 18, 32(3)              \n"                   
-                              "ld 19, 40(3)              \n"                   
-                              "ld 20, 48(3)              \n"                   
-                              "ld 21, 56(3)              \n"                   
-                              "addc  22 ,14,22          \n"
-                              "adde  23 ,15,23          \n"
-                              "adde  24 ,16,24          \n"
-                              "adde  25 ,17,25          \n"
-                              "adde  26 ,18,26          \n"
-                              "adde  27 ,19,27          \n"
-                              "adde  28 ,20,28          \n"
-                              "adde  29 ,21,29          \n"
                               "std 22, 0(3)             \n"
                               "std 23, 8(3)             \n"
                               "std 24, 16(3)             \n"
@@ -420,7 +430,7 @@ namespace vli {
                               "std 28, 48(3)             \n"
                               "std 29, 56(3)             \n"
                               : : : "r6","r7","r8","r9","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29","memory"   
-                           );
-                    } 
-    } //namespase detail
-} //namespace vli
+                              );
+                     }
+    } // end namespace detail
+} // end namespace vli

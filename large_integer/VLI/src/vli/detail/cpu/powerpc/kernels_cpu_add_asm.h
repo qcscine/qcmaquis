@@ -27,7 +27,7 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu/powerpc64/kernel_implementation_macros.h"
+#include "vli/detail/cpu/powerpc/kernel_implementation_macros.h"
 
 namespace vli {
     namespace detail{
@@ -44,7 +44,7 @@ namespace vli {
                             );                                                                                \
                          }                                                                                    \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
                      #undef FUNCTION_add_nbits_nbits
 
                      #define FUNCTION_add_nbits_64bits(z, n, unused) \
@@ -61,25 +61,29 @@ namespace vli {
                                 ); \
                          }                                                                                     \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
                      #undef FUNCTION_add_nbits_64bits
 
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
                          void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(boost::uint64_t* x , boost::uint64_t const* y , boost::uint64_t const* w /* z used by boost pp !*/){ \
                          asm(                                                                                 \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), LOAD_register_r5,~ )                      \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), LOAD_register_r4,BOOST_PP_ADD(n,1))       \
-                                 "addc 14,14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,1)))" \n"    \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,0), ADC_register    ,BOOST_PP_ADD(n,1))       \
-                                 "xor  "R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))" \n"                    \
-                                 "adde  "R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))","R(BOOST_PP_ADD(z,BOOST_PP_SUB(n,1)))" \n"                    \
+                                 "ld  30,"PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(4)  \n"    \
+                                 "ld  31,"PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(5)  \n"    \
+                                 "sradi 30,30,63   \n" \
+                                 "sradi 31,31,63   \n" \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r5,~ )                      \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r4,BOOST_PP_ADD(n,2))       \
+                                 "addc 14,14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,2)))" \n"    \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC_register    ,BOOST_PP_ADD(n,2))       \
+                                 "adde  30,30,31 \n"                    \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
-                                 : : :BOOST_PP_REPEAT(BOOST_PP_MUL(BOOST_PP_ADD(n,1),2), CLOTHER_register, ~) "memory"        \
+                                 "std   30,"PPS(VLI_AOS,BOOST_PP_ADD(n,2))"(3)  \n"    \
+                                 : : :"r30","r31",BOOST_PP_REPEAT(BOOST_PP_MUL(BOOST_PP_ADD(n,2),2), CLOTHER_register, ~) "memory"        \
                             );                                                                                \
                         }                                                                                                                         \
 
-                     BOOST_PP_REPEAT(MAX_ITERATION, FUNCTION_add_nbits_nminus1bits, ~)
+                     BOOST_PP_REPEAT(VLI_MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
                      #undef FUNCTION_add_nbits_nminus1bits
     } // end namespace detail
 } // end namespace vli
