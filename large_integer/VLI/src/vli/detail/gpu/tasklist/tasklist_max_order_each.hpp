@@ -31,7 +31,7 @@
 namespace vli {
     namespace detail {
 
-    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
@@ -41,13 +41,13 @@ namespace vli {
         plan();
     }
 
-    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::~tasklist_keep_order(){
         gpu::cu_check_error(cudaFree(this->execution_plan_),__LINE__);
         gpu::cu_check_error(cudaFree(this->workblock_count_by_warp_),__LINE__);
     } 
 
-    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     void tasklist_keep_order<Size, max_order_each<Order>, Var0, Var1, Var2, Var3>::plan(){
         std::vector<unsigned int> workblock_count_by_warp_local(mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value / 32U,0);
         std::vector<unsigned int> work_total_by_size(mul_block_size<max_order_each<Order>, Var0, Var1, Var2, Var3>::value / 32U,0);

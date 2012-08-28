@@ -12,12 +12,12 @@ class var
 class no_variable {
 };
 
-template <unsigned int Order>
+template <int Order>
 struct max_order_each {
     static unsigned int const value = Order;
 };
 
-template <unsigned int Order>
+template <int Order>
 struct max_order_combined {
     static unsigned int const value = Order;
 };

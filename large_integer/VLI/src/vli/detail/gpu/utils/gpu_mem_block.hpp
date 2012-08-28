@@ -60,7 +60,7 @@ namespace detail {
     };
     // A free function, syntax light compared nested into the class
     // max order each specialization 
-    template <class BaseInt, std::size_t size,  unsigned int Order,class Var0, class Var1, class Var2, class Var3>
+    template <class BaseInt, std::size_t size,  int Order,class Var0, class Var1, class Var2, class Var3>
     struct resize_helper<BaseInt, size, max_order_each<Order>, Var0, Var1, Var2, Var3>{
         static void resize(gpu_memblock<BaseInt> const* pgm,  std::size_t vector_size){
 
@@ -85,7 +85,7 @@ namespace detail {
     }; // end struct
 
     // max order combined specialization 
-    template <class BaseInt, std::size_t size, unsigned int Order,class Var0, class Var1, class Var2, class Var3>
+    template <class BaseInt, std::size_t size, int Order,class Var0, class Var1, class Var2, class Var3>
     struct resize_helper<BaseInt, size, max_order_combined<Order>, Var0, Var1, Var2, Var3>{
         static void resize(gpu_memblock<BaseInt> const* pgm,  std::size_t vector_size){
 
@@ -115,7 +115,7 @@ namespace detail {
     struct memory_transfer_helper;
     
     // max order each specialization 
-    template <class BaseInt, std::size_t Size, unsigned int Order,class Var0, class Var1, class Var2, class Var3>
+    template <class BaseInt, std::size_t Size, int Order,class Var0, class Var1, class Var2, class Var3>
     struct memory_transfer_helper<BaseInt, Size, max_order_each<Order>, Var0, Var1, Var2, Var3>{
          static void transfer_up(gpu_memblock<BaseInt> const* pgm, BaseInt const* pData1, BaseInt const* pData2,  std::size_t VectorSize){
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm->V1Data_,(void*)pData1,VectorSize*stride<Var0,Order>::value*stride<Var1,Order>::value*stride<Var2,Order>::value*stride<Var3,Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice),__LINE__);
@@ -124,7 +124,7 @@ namespace detail {
     };
 
     // max order combined  specialization 
-    template <class BaseInt, std::size_t Size, unsigned int Order,class Var0, class Var1, class Var2, class Var3>
+    template <class BaseInt, std::size_t Size, int Order,class Var0, class Var1, class Var2, class Var3>
     struct memory_transfer_helper<BaseInt, Size, max_order_combined<Order>, Var0, Var1, Var2, Var3>{
          static void transfer_up(gpu_memblock<BaseInt> const* pgm, BaseInt const* pData1, BaseInt const* pData2,  std::size_t VectorSize){
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm->V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3>::value+1, Order>::value*Size*sizeof(BaseInt),cudaMemcpyHostToDevice),__LINE__);

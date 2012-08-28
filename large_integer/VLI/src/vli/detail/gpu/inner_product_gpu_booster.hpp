@@ -121,7 +121,7 @@ namespace vli
             } // end function
         }; // end specialization class helper
 
-        template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+        template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
         struct inner_product_gpu_helper<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> >{
         static inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > >::type
             inner_product_gpu(

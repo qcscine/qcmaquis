@@ -172,7 +172,7 @@ namespace detail {
     struct storage;
 
 
-    template <class Coeff, unsigned int Order, int NumVars>
+    template <class Coeff, int Order, int NumVars>
     struct storage<Coeff, max_order_each<Order>, NumVars> : public boost::array<Coeff, num_coefficients<max_order_each<Order>,NumVars>::value> {
         typedef boost::array<Coeff, num_coefficients<max_order_each<Order>,NumVars>::value>   base_type;
         typedef typename base_type::size_type   size_type;
@@ -200,7 +200,7 @@ namespace detail {
     };
 
 
-    template <class Coeff, unsigned int Order>
+    template <class Coeff, int Order>
     struct storage<Coeff, max_order_combined<Order>, 4> : public boost::array<Coeff, max_order_combined_helpers::size<4+1, Order>::value > {
         typedef boost::array<Coeff, max_order_combined_helpers::size<4+1, Order>::value >    base_type;
         typedef typename base_type::size_type   size_type;
@@ -232,7 +232,7 @@ namespace detail {
       private:
         static unsigned int const stride = detail::stride<0,4,Order>::value;
     };
-    template <class Coeff, unsigned int Order>
+    template <class Coeff, int Order>
     struct storage<Coeff, max_order_combined<Order>, 3> : public boost::array<Coeff, max_order_combined_helpers::size<3+1, Order>::value> {
         typedef boost::array<Coeff, max_order_combined_helpers::size<3+1, Order>::value >    base_type;
         typedef typename base_type::size_type   size_type;
@@ -261,7 +261,7 @@ namespace detail {
         static unsigned int const stride = detail::stride<0,3,Order>::value;
     };
 
-    template <class Coeff, unsigned int Order>
+    template <class Coeff, int Order>
     struct storage<Coeff, max_order_combined<Order>, 2> : public boost::array<Coeff, max_order_combined_helpers::size<2+1, Order>::value> {
         typedef boost::array<Coeff, max_order_combined_helpers::size<2+1, Order>::value >    base_type;
         typedef typename base_type::size_type   size_type;
@@ -280,7 +280,7 @@ namespace detail {
         static unsigned int const stride = detail::stride<0,2,Order>::value;
     };
     
-    template <class Coeff, unsigned int Order>
+    template <class Coeff, int Order>
     struct storage<Coeff, max_order_combined<Order>, 1> : public boost::array<Coeff, max_order_combined_helpers::size<1+1, Order>::value> {
         typedef boost::array<Coeff, max_order_combined_helpers::size<1+1, Order>::value >    base_type;
         typedef typename base_type::size_type   size_type;

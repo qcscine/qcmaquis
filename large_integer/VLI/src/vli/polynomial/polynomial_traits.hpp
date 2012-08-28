@@ -17,12 +17,12 @@ template <typename Polynomial>
 struct polynomial_multiply_result_type {
 };
 
-template <typename Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+template <typename Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
 struct polynomial_multiply_result_type<polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
     typedef polynomial<Coeff,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
-template <typename Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+template <typename Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
 struct polynomial_multiply_result_type<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
     typedef polynomial<Coeff,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
 };

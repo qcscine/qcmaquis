@@ -32,7 +32,7 @@
 namespace vli {
     namespace detail {
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     __global__ void
     __launch_bounds__(SumBlockSize::value, 2)
     polynomial_sum_intermediate_full(

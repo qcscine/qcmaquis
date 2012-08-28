@@ -37,7 +37,7 @@ namespace vli {
     struct booster;
 
     // 4 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    template <typename BaseInt, std::size_t Size, int Order>
     struct booster<BaseInt, Size, max_order_combined<Order>, 4>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
@@ -129,7 +129,7 @@ namespace vli {
     }; //end struct
 
     // 3 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order>
+    template <typename BaseInt, std::size_t Size, int Order>
     struct booster<BaseInt, Size, max_order_combined<Order>,3> {
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
@@ -214,7 +214,7 @@ namespace vli {
     }; //end struct
 
     // 2 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1>
     struct booster<BaseInt, Size, max_order_combined<Order>, Var0, Var1, vli::no_variable, vli::no_variable>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
@@ -287,7 +287,7 @@ namespace vli {
     };// end struct
 
     // 1 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0>
     struct booster<BaseInt, Size, max_order_combined<Order>, Var0, vli::no_variable,vli::no_variable,vli::no_variable>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,

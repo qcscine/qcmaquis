@@ -84,7 +84,7 @@ namespace vli {
 	    }
     } 
 
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     BaseInt* gpu_get_polynomial(){
 	    gpu_memblock<BaseInt>* gm = gpu_memblock<BaseInt>::Instance(); // I just get the mem pointer
 	    return gm->PoutData_;

@@ -243,12 +243,12 @@ struct variable<POLYNOMIAL_CLASS,3> {
 template <std::size_t NumBits>
 class vli;
 
-template <std::size_t NumBits, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+template <std::size_t NumBits, int Order, class Var0, class Var1, class Var2, class Var3>
 struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
     typedef polynomial<vli<2*NumBits>,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
-template <std::size_t NumBits, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+template <std::size_t NumBits, int Order, class Var0, class Var1, class Var2, class Var3>
 struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
     typedef polynomial<vli<2*NumBits>,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
 };
