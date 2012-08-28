@@ -36,12 +36,12 @@ namespace vli {
     namespace detail {
 
 
-    template <int Var, int NumVars, unsigned int Order>
+    template <int Var, int NumVars, int Order>
     struct result_stride {
         static unsigned int const value = stride<Var,NumVars,2*Order>::value;
     };
 
-    template <int Var, int NumVars, unsigned int Order>
+    template <int Var, int NumVars, int Order>
     struct stride_pad {
         static unsigned int const value = Var < NumVars ? Order+1 : 0;
     };
@@ -62,12 +62,12 @@ namespace vli {
 //        enum {value = 1};
 //    };
 //
-//    template<unsigned int Order, int NumVars>
+//    template<int Order, int NumVars>
 //    struct num_coefficients<max_order_each<Order>, NumVars>{
 //        enum {value = (2*Order+1)*num_coefficients<max_order_each<Order>, NumVars-1>::value};
 //    };
 //
-//    template<unsigned int Order, int NumVars>
+//    template<int Order, int NumVars>
 //    struct num_coefficients<max_order_combined<Order>, NumVars>{
 //        enum {value = vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value};
 //    };

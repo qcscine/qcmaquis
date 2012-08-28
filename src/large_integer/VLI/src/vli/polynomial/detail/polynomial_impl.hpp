@@ -53,7 +53,7 @@ namespace detail {
     template <class Polynomial>
     struct loop_helper;
     
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct loop_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>     polynomial_type;
         typedef typename polynomial_type::exponent_type                         exponent_type;
@@ -71,7 +71,7 @@ namespace detail {
         }
     };
 
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct loop_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename polynomial_type::exponent_type                         exponent_type;
@@ -242,7 +242,7 @@ namespace detail {
     template <class Polynomial>
     struct multiply_assign_monomial_helper;
    
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct multiply_assign_monomial_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename polynomial_type::exponent_type                     exponent_type;
@@ -261,7 +261,7 @@ namespace detail {
         }
     };
     
-    template <class Coeff, unsigned int Order, class Var0>
+    template <class Coeff, int Order, class Var0>
     struct multiply_assign_monomial_helper< polynomial<Coeff, max_order_each<Order>, Var0, no_variable, no_variable, no_variable> > {
         typedef polynomial<Coeff, max_order_each<Order>, Var0, no_variable, no_variable, no_variable>   polynomial_type;
         typedef typename polynomial_type::reverse_iterator                                              reverse_iterator;
@@ -276,7 +276,7 @@ namespace detail {
         }
     };
     
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct multiply_assign_monomial_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename polynomial_type::exponent_type                         exponent_type;
@@ -294,7 +294,7 @@ namespace detail {
     template <class Polynomial>
     struct polynomial_multiply_helper;
 
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>     polynomial_type;
         typedef typename polynomial_multiply_result_type<polynomial_type>::type result_type;
@@ -316,7 +316,7 @@ namespace detail {
         };
     };
 
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> polynomial_type;
         typedef typename polynomial_multiply_result_type<polynomial_type>::type result_type;
@@ -355,7 +355,7 @@ namespace detail {
     template <class Polynomial>
     struct polynomial_multiply_keep_order_helper;
     
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_keep_order_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>                 polynomial_type;
         typedef typename polynomial_multiply_keep_order_result_type<polynomial_type>::type  result_type;
@@ -378,7 +378,7 @@ namespace detail {
         }
     };
     
-    template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_keep_order_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3>             polynomial_type;
         typedef typename polynomial_multiply_keep_order_result_type<polynomial_type>::type  result_type;

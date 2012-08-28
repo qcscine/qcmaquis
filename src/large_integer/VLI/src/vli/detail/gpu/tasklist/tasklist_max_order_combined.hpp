@@ -34,7 +34,7 @@ namespace vli {
     namespace detail {
         // see doc for the origine of these equations
         // 2 variables            
-        template< unsigned int Order>
+        template< int Order>
         int CalculateStepCount(int output_degree_x,int output_degree_y){
             unsigned int sum(0);
             for(int i1 = std::max(0,(int)(output_degree_x-(int)Order)); i1 <= std::min(output_degree_x, (int)Order); ++i1)
@@ -43,7 +43,7 @@ namespace vli {
             }        
        
         //3 variables
-        template< unsigned int Order>
+        template< int Order>
         int CalculateStepCount(int output_degree_x,int output_degree_y, int output_degree_z){
                 unsigned int sum(0);
                 for(int i1 = std::max(0,(int)(output_degree_x-(int)Order)); i1 <= std::min(output_degree_x, (int)Order); ++i1)
@@ -53,7 +53,7 @@ namespace vli {
             }        
 
         //4 variables
-        template< unsigned int Order>
+        template< int Order>
         int CalculateStepCount(int output_degree_x,int output_degree_y, int output_degree_z, int output_degree_w){
                 unsigned int sum(0);
                 for(int i1 = std::max(0,(int)(output_degree_x-(int)Order)); i1 <= std::min(output_degree_x, (int)Order); ++i1)
@@ -63,10 +63,10 @@ namespace vli {
                 return sum;
             }        
         
-        template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+        template< int Order, class Var0, class Var1, class Var2, class Var3>
         struct BuildTaskList_helper;
         // one variable 'x', similar max_order_each one variable
-        template< unsigned int Order, class Var0>
+        template< int Order, class Var0>
         struct BuildTaskList_helper<Order, Var0, vli::no_variable, vli::no_variable, vli::no_variable>{
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x){
@@ -80,7 +80,7 @@ namespace vli {
              }
         };
         // two variables 'x','y'
-        template< unsigned int Order, class Var0, class Var1>
+        template< int Order, class Var0, class Var1>
         struct BuildTaskList_helper<Order, Var0, Var1, vli::no_variable, vli::no_variable>{
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x)
@@ -96,7 +96,7 @@ namespace vli {
             }
         };
         // tree variables 'x','y','z'
-        template< unsigned int Order, class Var0, class Var1, class Var2>
+        template< int Order, class Var0, class Var1, class Var2>
         struct BuildTaskList_helper<Order, Var0, Var1, Var2, vli::no_variable>{
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x)
@@ -115,7 +115,7 @@ namespace vli {
             }
         };
         // four variables 'x','y','z','w'
-        template< unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+        template< int Order, class Var0, class Var1, class Var2, class Var3>
         struct BuildTaskList_helper{
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
                 for(unsigned int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x)
@@ -136,7 +136,7 @@ namespace vli {
             }
         };
 
-    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     tasklist_keep_order<Size, max_order_combined<Order>, Var0, Var1, Var2, Var3>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
@@ -146,13 +146,13 @@ namespace vli {
         plan();
     }
 
-    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     tasklist_keep_order<Size, max_order_combined<Order>, Var0, Var1, Var2, Var3>::~tasklist_keep_order(){
         gpu::cu_check_error(cudaFree(this->execution_plan_),__LINE__);
         gpu::cu_check_error(cudaFree(this->workblock_count_by_warp_),__LINE__);
     } 
 
-    template <std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     void tasklist_keep_order<Size, max_order_combined<Order>, Var0, Var1, Var2, Var3>::plan(){
         std::vector<unsigned int> workblock_count_by_warp_local(mul_block_size<max_order_combined<Order>, Var0, Var1, Var2, Var3>::value / 32U,0);
         std::vector<unsigned int> work_total_by_size(mul_block_size<max_order_combined<Order>, Var0, Var1, Var2, Var3>::value / 32U,0);

@@ -41,7 +41,7 @@ namespace vli {
     struct booster;
 
     // 4 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1, class Var2, class Var3>
     struct booster<BaseInt, Size, max_order_each<Order>, Var0, Var1, Var2, Var3 >{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
@@ -154,7 +154,7 @@ namespace vli {
     }; //end struct
 
     // 3 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1, class Var2>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1, class Var2>
     struct booster<BaseInt, Size, max_order_each<Order>, Var0, Var1, Var2,vli::no_variable>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
@@ -256,7 +256,7 @@ namespace vli {
     }; //end struct
 
     // 2 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0, class Var1>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0, class Var1>
     struct booster<BaseInt, Size, max_order_each<Order>, Var0, Var1, vli::no_variable, vli::no_variable>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
@@ -343,7 +343,7 @@ namespace vli {
     };// end struct
 
     // 1 variables
-    template <typename BaseInt, std::size_t Size, unsigned int Order, class Var0>
+    template <typename BaseInt, std::size_t Size, int Order, class Var0>
     struct booster<BaseInt, Size, max_order_each<Order>, Var0, vli::no_variable,vli::no_variable,vli::no_variable>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,

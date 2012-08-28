@@ -36,7 +36,7 @@ namespace max_order_combined_helpers {
 
 }
 
-template <int Var, int NumVars, unsigned int Order>
+template <int Var, int NumVars, int Order>
 struct stride {
     static unsigned int const value = Var < NumVars ? Order+1 : 1;
 };
@@ -47,17 +47,17 @@ template <class MaxOrder, int NumVars>
 struct num_coefficients;
 
 
-template <unsigned int Order, int NumVars>
+template <int Order, int NumVars>
 struct num_coefficients<max_order_each<Order>, NumVars>{
     static unsigned int const value = (Order+1)*num_coefficients<max_order_each<Order>, NumVars-1>::value;
 };
 
-template <unsigned int Order>
+template <int Order>
 struct num_coefficients<max_order_each<Order>, 0>{
     static unsigned int const value = 1;
 };
 
-template<unsigned int Order, int NumVars>
+template<int Order, int NumVars>
 struct num_coefficients<max_order_combined<Order>, NumVars>{
     static unsigned int const value = vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value;
 };
