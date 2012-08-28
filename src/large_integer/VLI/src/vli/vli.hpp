@@ -352,12 +352,6 @@ const vli<NumBits> operator - (vli<NumBits> vli_a, int b){
 }
 
 template <std::size_t NumBits>
-const vli<NumBits> operator * (vli<NumBits>  vli_a, vli<NumBits> const& vli_b){
-    vli_a *= vli_b;
-    return vli_a;
-}
-
-template <std::size_t NumBits>
 const vli<NumBits> operator * (vli<NumBits> vli_a, int b){
     vli_a *= b;
     return vli_a;
