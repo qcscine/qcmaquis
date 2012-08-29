@@ -104,7 +104,7 @@ namespace vli
             for(int i=1; i < omp_get_max_threads(); ++i)
                 res[0]+=res[i];
             #endif
-            
+
             gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial(),
                                2*Coeff::numwords*result_stride<0,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
                                                 *result_stride<1,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value

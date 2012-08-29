@@ -56,15 +56,15 @@ namespace vli {
         enum { value = (NumBits+31)/32};
     };
 
-    template<class MaxOrder, int NumVars>
+    template<class MaxOrder, int NumVars, int Coeff=1>
     struct mul_block_size {
-        enum {value = (num_coefficients<MaxOrder,NumVars>::value/2 >= 256U) ? 256U
+        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value/2 >= 256U) ? 256U
                : (num_coefficients<MaxOrder,NumVars>::value/2U+32U-1U)/32U*32U };
     };
  
-    template<class MaxOrder, int NumVars>
+    template<class MaxOrder, int NumVars, int Coeff=1>
     struct MaxIterationCount {
-        enum {value = (num_coefficients<MaxOrder,NumVars>::value+32U-1U)/32U};
+        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value+32U-1U)/32U};
     };
 
     // replace in the code MaxNumberCoefficientExtend by num_coefficients

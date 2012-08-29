@@ -62,7 +62,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<0,4,Order>::value * stride<1,4,Order>::value *  stride<2,4,Order>::value * stride<3,4,Order>::value * VLI_SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, 4>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<2*Order>, 4>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -175,7 +175,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<0,3,Order>::value * stride<1,3,Order>::value *  stride<2,3,Order>::value * VLI_SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, 3>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<2*Order>, 3>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -277,7 +277,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<0,2,Order>::value * stride<1,2,Order>::value * VLI_SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, 2>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<2*Order>, 2>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -287,7 +287,7 @@ namespace vli {
                 
                 const unsigned int output_degree_x = task.output_degree_x;
                 const unsigned int output_degree_y = task.output_degree_y;
-                
+                // TO DO try the version with 2 loop for like max_order_combined         
                 const unsigned int start_degree_x_inclusive = output_degree_x > Order ? output_degree_x - Order : 0;
                 const unsigned int end_degree_x_inclusive = output_degree_x < (Order+1) ? output_degree_x : Order;
                 unsigned int current_degree_x = start_degree_x_inclusive;
@@ -364,7 +364,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<0,1,Order>::value * VLI_SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<Order>, 1>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_each<2*Order>, 1>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {

@@ -48,10 +48,10 @@
 
 namespace vli {
     namespace detail {
-   
+
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     __global__ void
-    __launch_bounds__(mul_block_size<MaxOrder, NumVars>::value , 2)
+    __launch_bounds__(mul_block_size<MaxOrder, NumVars,2>::value , 2)
     polynomial_mul_full_kepler( // TO DO change the name
     	const boost::uint32_t * __restrict__ in1,
     	const boost::uint32_t * __restrict__ in2,
@@ -67,20 +67,21 @@ namespace vli {
     void gpu_inner_product_vector(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
             // TO DO CHANGE THE SINGLE BY BOOST SINGLETON
 	    gpu_memblock* pgm = gpu_memblock::Instance(); // allocate memory for vector input, intermediate and output, singleton only one time, whatever the type of polynomial, could we change the pattern by a ref ? 
+
             resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, VectorSize);
             
   	    tasklist_keep_order<NumBits,MaxOrder, NumVars>* ghc = tasklist_keep_order<NumBits, MaxOrder, NumVars>::Instance(); // calculate the different packet, singleton only one time 
 
             memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
-             
+
 	    {
                 dim3 grid(VectorSize) ;
-                dim3 threads(mul_block_size<MaxOrder, NumVars>::value);
+                dim3 threads(mul_block_size<MaxOrder, NumVars,2>::value);
                 polynomial_mul_full_kepler<NumBits, MaxOrder, NumVars><<<grid,threads>>>(pgm->V1Data_, pgm->V2Data_,VectorSize, pgm->VinterData_,ghc->workblock_count_by_warp_,ghc->execution_plan_);
 	    }
 
 	    {
-                dim3 grid(num_coefficients<MaxOrder, NumVars>::value);
+                dim3 grid(num_coefficients<MaxOrder, NumVars,2>::value);
                 dim3 threads(SumBlockSize::value);
                 polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm->VinterData_, VectorSize, pgm->PoutData_); //the reduction is independent of the order specification
 	    }

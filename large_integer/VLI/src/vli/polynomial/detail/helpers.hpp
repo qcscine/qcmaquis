@@ -62,23 +62,22 @@ struct num_of_variables_helper<Var0, no_variable, no_variable, no_variable> {
     static unsigned int const value = 1; 	 	 
 }; 	 	 
 
-template <class MaxOrder, int NumVars>
+template <class MaxOrder, int NumVars, int Coeff=1> // this coeff is equal to 2 when I start the thread grid 
 struct num_coefficients;
 
-
-template <int Order, int NumVars>
-struct num_coefficients<max_order_each<Order>, NumVars>{
-    static unsigned int const value = (Order+1)*num_coefficients<max_order_each<Order>, NumVars-1>::value;
+template <int Order, int NumVars, int Coeff>
+struct num_coefficients<max_order_each<Order>, NumVars, Coeff>{
+    static unsigned int const value = (Coeff*Order+1)*num_coefficients<max_order_each<Order>, NumVars-1, Coeff>::value;
 };
 
-template <int Order>
-struct num_coefficients<max_order_each<Order>, 0>{
+template <int Order, int Coeff>
+struct num_coefficients<max_order_each<Order>, 0, Coeff>{
     static unsigned int const value = 1;
 };
 
-template<int Order, int NumVars>
-struct num_coefficients<max_order_combined<Order>, NumVars>{
-    static unsigned int const value = vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value;
+template<int Order, int NumVars, int Coeff>
+struct num_coefficients<max_order_combined<Order>, NumVars, Coeff>{
+    static unsigned int const value = vli::detail::max_order_combined_helpers::size<NumVars+1, Coeff*Order>::value;
 };
 
 } // end namespace detail
