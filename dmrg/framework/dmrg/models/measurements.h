@@ -37,7 +37,7 @@ class Measurement_Term
 {
 public:
     typedef block_matrix<Matrix, SymmGroup> op_t;
-    enum type_t {Local, MPSBonds, Average, Overlap, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN};
+    enum type_t {Local, MPSBonds, Average, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN, Custom, Overlap};
 
     Measurement_Term() {}
 
@@ -45,6 +45,9 @@ public:
     type_t type;
     std::vector<std::pair<op_t, bool> > operators;
     op_t fill_operator;
+    
+    // this is somewhat unlucky interface-wise, to say the least
+    std::vector< std::vector< std::pair<int, op_t> > > custom_ops;
     
     Measurement_Term<Matrix, SymmGroup> * clone() const
     {
@@ -214,6 +217,11 @@ void measure_on_mps(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].operators,
                                                      h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, true);
+                    break;
+                case Measurement_Term<Matrix, SymmGroup>::Custom:
+                    meas_detail::measure_custom(mps, lat, meas.get_identity(),
+                                                meas[i].fill_operator, meas[i].custom_ops,
+                                                h5name, basepath + alps::hdf5_name_encode(meas[i].name));
                     break;
             }
         }

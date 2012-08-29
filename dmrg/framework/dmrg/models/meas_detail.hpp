@@ -127,7 +127,8 @@ namespace meas_detail {
             
             { // should be moved out to the main loop (todo: 30.04.12 / Matthias scalar/value types discussion)
                 alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(vals)));
+                std::vector<std::vector<double> > tmp(1, alps::numeric::real(vals));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
                 ar << alps::make_pvp(base_path + std::string("/labels"), labels);
             }
         }
@@ -158,7 +159,8 @@ namespace meas_detail {
             
             {
                 alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(vals)));
+                std::vector<std::vector<double> > tmp(1, alps::numeric::real(vals));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
                 ar << alps::make_pvp(base_path + std::string("/labels"), labels);
             }
         }
@@ -216,13 +218,41 @@ namespace meas_detail {
             ar << alps::make_pvp(base_path + std::string("/labels"), labels);
             if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
                                                               boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
-                          ) )
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(vals)));
-            else
+                          ) ) {
+                std::vector<std::vector<double> > tmp(1, alps::numeric::real(vals));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            } else
                 ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> >(1, vals));
         }
 	}
+    
+    template<class Matrix, class SymmGroup>
+    void measure_custom(MPS<Matrix, SymmGroup> const & mps,
+                       const Lattice & lat,
+                       block_matrix<Matrix, SymmGroup> const & identity,
+                       block_matrix<Matrix, SymmGroup> const & fill,
+                       std::vector< std::vector< std::pair<int, block_matrix<Matrix, SymmGroup> > > > const & ops,
+                       std::string const & h5name,
+                       std::string base_path)
+    {
+        generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
 
+        for (int k = 0; k < ops.size(); ++k) {
+            generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+            term.operators = ops[k];
+            term.fill_operator = fill;
+            mpom.add_term(term);
+        }
+
+        MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
+        double val = expval(mps, mpo);
+
+        {
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, val));
+        }
+    }
+    
 	template<class Matrix, class SymmGroup>
 	void measure_average(MPS<Matrix, SymmGroup> const & mps,
                          const Lattice & lat,
@@ -259,9 +289,10 @@ namespace meas_detail {
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
                                                               boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
-                          ) )
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, alps::numeric::real(val)));
-            else
+                          ) ) {
+                std::vector<double> tmp(1, alps::numeric::real(val));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            } else
                 ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>(1, val));
         }
 	}
@@ -407,9 +438,10 @@ namespace meas_detail {
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
                                                               boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
-                          ) )
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<double> >(1, alps::numeric::real(dc)));
-            else
+                          ) ) {
+                std::vector<std::vector<double> > tmp(1, alps::numeric::real(dc));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            } else
                 ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> >(1, dc));           
             ar << alps::make_pvp(base_path + std::string("/labels"), labels);
         }
