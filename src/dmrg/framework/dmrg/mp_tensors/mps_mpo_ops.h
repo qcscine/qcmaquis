@@ -73,7 +73,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
-typename MPS<Matrix, SymmGroup>::scalar_type expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
               bool verbose = false)
 {
     assert(mpo.length() == mps.length());
@@ -88,7 +88,7 @@ typename MPS<Matrix, SymmGroup>::scalar_type expval(MPS<Matrix, SymmGroup> const
         left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
     }
     
-    return left[0].trace();
+    return alps::numeric::real(left[0].trace());
 }
 
 template<class Matrix, class SymmGroup>
