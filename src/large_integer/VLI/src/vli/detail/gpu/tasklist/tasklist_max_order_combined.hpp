@@ -177,6 +177,7 @@ namespace vli {
                                                                             * MaxIterationCount<max_order_combined<Order>, NumVars>::value);
          // this thing should be generic ... yes it is ! 
          for( unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
+                 //TO DO : std::distance more safe !!!!!
                  int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
                 std::copy(
                 	tasks.begin() + (batch_id * 32),

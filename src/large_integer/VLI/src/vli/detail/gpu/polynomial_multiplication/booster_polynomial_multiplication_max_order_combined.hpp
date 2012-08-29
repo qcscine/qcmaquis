@@ -60,7 +60,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id *  vli::detail::max_order_combined_helpers::size<4+1, Order>::value * VLI__SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<Order>,4>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>,4>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -151,7 +151,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<3+1, Order>::value  * VLI__SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<Order>, 3>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 3>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -236,7 +236,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<2, Order>::value  * VLI__SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<Order>, 2>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 2>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
@@ -309,7 +309,7 @@ namespace vli {
         const unsigned int input_elem_offset = element_id * stride<0,1,Order>::value * VLI__SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
-            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<Order>, 1>::value)];
+            single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 1>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
