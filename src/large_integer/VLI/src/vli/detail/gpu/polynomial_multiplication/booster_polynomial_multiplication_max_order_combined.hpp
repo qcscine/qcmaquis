@@ -73,10 +73,10 @@ namespace vli {
                 const int output_degree_z = task.output_degree_z;
                 const int output_degree_w = task.output_degree_w;
 
-                for(int current_degree_x=max(0, output_degree_x-(int)Order); current_degree_x <= min(output_degree_x,(int)Order) ;++current_degree_x)
-                    for(int current_degree_y=max(0, output_degree_x+output_degree_y-(int)Order-current_degree_x); current_degree_y <= min(output_degree_y,(int)Order-current_degree_x) ; ++current_degree_y)
-                        for(int current_degree_z=max(0, output_degree_x+output_degree_y+output_degree_z-(int)Order-current_degree_x-current_degree_y); current_degree_z <= min(output_degree_z,(int)Order-current_degree_x - current_degree_y) ; ++current_degree_z)
-                            for(int current_degree_w=max(0, output_degree_x+output_degree_y+output_degree_z+output_degree_w-(int)Order-current_degree_x-current_degree_y-current_degree_z); current_degree_w <= min(output_degree_w,(int)Order-current_degree_x - current_degree_y - current_degree_z) ; ++current_degree_w){
+                for(int current_degree_x=max(0, output_degree_x-Order); current_degree_x <= min(output_degree_x,Order) ;++current_degree_x)
+                    for(int current_degree_y=max(0, output_degree_x+output_degree_y-Order-current_degree_x); current_degree_y <= min(output_degree_y,Order-current_degree_x) ; ++current_degree_y)
+                        for(int current_degree_z=max(0, output_degree_x+output_degree_y+output_degree_z-Order-current_degree_x-current_degree_y); current_degree_z <= min(output_degree_z,Order-current_degree_x - current_degree_y) ; ++current_degree_z)
+                            for(int current_degree_w=max(0, output_degree_x+output_degree_y+output_degree_z+output_degree_w-Order-current_degree_x-current_degree_y-current_degree_z); current_degree_w <= min(output_degree_w,Order-current_degree_x - current_degree_y - current_degree_z) ; ++current_degree_w){
                 
                              unsigned int in_polynomial_offset1 = ( //0____0'
                                                                    (current_degree_x*(2*(Order+1)+3-current_degree_x)*(2*(Order+1)*(Order+1)+6*(Order+1)+2 +current_degree_x*current_degree_x -2*(Order+1)*current_degree_x
@@ -163,9 +163,9 @@ namespace vli {
                 const int output_degree_y = task.output_degree_y;
                 const int output_degree_z = task.output_degree_z;
 
-                for(int current_degree_x=max(0, output_degree_x-(int)Order); current_degree_x <= min(output_degree_x,(int)Order) ;++current_degree_x)
-                    for(int current_degree_y=max(0, output_degree_x+output_degree_y-(int)Order-current_degree_x); current_degree_y <= min(output_degree_y,(int)Order-current_degree_x) ; ++current_degree_y)
-                        for(int current_degree_z=max(0, output_degree_x+output_degree_y+output_degree_z-(int)Order-current_degree_x-current_degree_y); current_degree_z <= min(output_degree_z,(int)Order-current_degree_x - current_degree_y) ; ++current_degree_z){
+                for(int current_degree_x=max(0, output_degree_x-Order); current_degree_x <= min(output_degree_x,Order) ;++current_degree_x)
+                    for(int current_degree_y=max(0, output_degree_x+output_degree_y-Order-current_degree_x); current_degree_y <= min(output_degree_y,Order-current_degree_x) ; ++current_degree_y)
+                        for(int current_degree_z=max(0, output_degree_x+output_degree_y+output_degree_z-Order-current_degree_x-current_degree_y); current_degree_z <= min(output_degree_z,Order-current_degree_x - current_degree_y) ; ++current_degree_z){
                 
                         unsigned int in_polynomial_offset1 = (
                                                               (current_degree_x*(current_degree_x*current_degree_x - 3*current_degree_x*((Order+1)+1)
@@ -233,7 +233,7 @@ namespace vli {
         
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
-        const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<2, Order>::value  * VLI__SIZE;
+        const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<2+1, Order>::value  * VLI__SIZE;
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 2>::value)];
@@ -247,8 +247,8 @@ namespace vli {
                 const int output_degree_x = task.output_degree_x;
                 const int output_degree_y = task.output_degree_y;
                 //note min and max are in numeric 
-                for(int current_degree_x=max(0, output_degree_x-(int)Order); current_degree_x <= min(output_degree_x,(int)Order) ;++current_degree_x)
-                    for(int current_degree_y=max(0, output_degree_x+output_degree_y-(int)Order-current_degree_x); current_degree_y <= min(output_degree_y,(int)Order-current_degree_x) ; ++current_degree_y){
+                for(int current_degree_x=max(0, output_degree_x-Order); current_degree_x <= min(output_degree_x,Order) ;++current_degree_x)
+                    for(int current_degree_y=max(0, output_degree_x+output_degree_y-Order-current_degree_x); current_degree_y <= min(output_degree_y,Order-current_degree_x) ; ++current_degree_y){
                         unsigned int in_polynomial_offset1 = (  
                                                                (Order+1)*current_degree_x - (current_degree_x*current_degree_x-current_degree_x)/2 + current_degree_y
                                                              ) * VLI__SIZE + input_elem_offset;

@@ -49,6 +49,8 @@ namespace vli {
 
     template <std::size_t NumBits, int Order, int NumVars>
     void tasklist_keep_order<NumBits, max_order_each<Order>, NumVars>::plan(){
+        std::cout << mul_block_size<max_order_each<2*Order>, NumVars>::value << std::endl;
+        std::cout << MaxIterationCount<max_order_each<2*Order>, NumVars>::value << std::endl;
         std::vector<int> workblock_count_by_warp_local(mul_block_size<max_order_each<2*Order>, NumVars>::value / 32U,0);
         std::vector<int> work_total_by_size(mul_block_size<max_order_each<2*Order>, NumVars>::value / 32U,0);
         // TO DO CHECK stride and result_stride, there is pb with the Var argument
@@ -82,24 +84,25 @@ namespace vli {
                task.output_degree_w = 0;
                task.step_count = 0;
         }
-       // Sort the tasks in step_count descending order
-         std::sort(tasks.begin(), tasks.end(), vli::detail::single_coefficient_task_sort);
-         std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_each<2*Order>, NumVars>::value * MaxIterationCount<max_order_each<2*Order>, NumVars>::value);
-         // this thing should be generic ... yes it is ! 
-         for(unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
-                int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
-                std::copy(
-                	tasks.begin() + (batch_id * 32),
-                	tasks.begin() + ((batch_id + 1) * 32),
-                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size<max_order_each<2*Order>, NumVars>::value) + (warp_id * 32));
+        // Sort the tasks in step_count descending order
+        std::sort(tasks.begin(), tasks.end(), vli::detail::single_coefficient_task_sort);
+        std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_each<2*Order>, NumVars>::value * MaxIterationCount<max_order_each<2*Order>, NumVars>::value);
+        // this thing should be generic ... yes it is ! 
+        for(unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
+               int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
+                //std::cout << warp_id << std::endl;
+               std::copy(
+               	tasks.begin() + (batch_id * 32),
+               	tasks.begin() + ((batch_id + 1) * 32),
+               	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size<max_order_each<2*Order>, NumVars>::value) + (warp_id * 32));
         
-                int max_step_count = tasks[batch_id * 32].step_count;
-                workblock_count_by_warp_local[warp_id]++;
-                work_total_by_size[warp_id] += max_step_count;
-         }
+               int max_step_count = tasks[batch_id * 32].step_count;
+               workblock_count_by_warp_local[warp_id]++;
+               work_total_by_size[warp_id] += max_step_count;
+        }
         
-	 gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__LINE__);
-	 gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__LINE__);
+	gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__LINE__);
+	gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__LINE__);
     }
 
     } // end namespace detail
