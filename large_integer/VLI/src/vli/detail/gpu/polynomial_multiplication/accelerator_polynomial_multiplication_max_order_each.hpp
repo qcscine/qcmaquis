@@ -36,14 +36,14 @@ namespace vli {
 /*
 *  I do this to remove the cloud of if of the general version l 92 to 101, for polynomial of 1 and 2 variables
 *  on fermi 2 variables with cloud = 0.22 s withou 0.17 s, to retest on kerpler and remove if necessarry
-* just recopy the 4 variables version (compatible 1 <-> 4) into polynomial_mul_full_kepler and remove the booster    
+* just recopy the 4 variables version (compatible 1 <-> 4) into polynomial_mul_full_kepler and remove the accelerator    
 */
     template <std::size_t NumBits, class MaxOrder, int NumVars>
-    struct booster;
+    struct accelerator;
 
     // 4 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_each<Order>, 4>{
+    struct accelerator<NumBits, max_order_each<Order>, 4>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,
@@ -156,7 +156,7 @@ namespace vli {
 
     // 3 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_each<Order>, 3>{
+    struct accelerator<NumBits, max_order_each<Order>, 3>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,
@@ -258,7 +258,7 @@ namespace vli {
 
     // 2 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_each<Order>, 2>{
+    struct accelerator<NumBits, max_order_each<Order>, 2>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,
@@ -345,7 +345,7 @@ namespace vli {
 
     // 1 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_each<Order>, 1>{
+    struct accelerator<NumBits, max_order_each<Order>, 1>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,

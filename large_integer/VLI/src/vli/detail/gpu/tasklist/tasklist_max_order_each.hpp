@@ -42,15 +42,7 @@ namespace vli {
     }
 
     template <std::size_t NumBits, int Order, int NumVars>
-    tasklist_keep_order<NumBits, max_order_each<Order>, NumVars>::~tasklist_keep_order(){
-        gpu::cu_check_error(cudaFree(this->execution_plan_),__LINE__);
-        gpu::cu_check_error(cudaFree(this->workblock_count_by_warp_),__LINE__);
-    } 
-
-    template <std::size_t NumBits, int Order, int NumVars>
     void tasklist_keep_order<NumBits, max_order_each<Order>, NumVars>::plan(){
-        std::cout << mul_block_size<max_order_each<2*Order>, NumVars>::value << std::endl;
-        std::cout << MaxIterationCount<max_order_each<2*Order>, NumVars>::value << std::endl;
         std::vector<int> workblock_count_by_warp_local(mul_block_size<max_order_each<2*Order>, NumVars>::value / 32U,0);
         std::vector<int> work_total_by_size(mul_block_size<max_order_each<2*Order>, NumVars>::value / 32U,0);
         // TO DO CHECK stride and result_stride, there is pb with the Var argument

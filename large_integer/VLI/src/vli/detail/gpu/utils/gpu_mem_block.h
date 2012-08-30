@@ -28,8 +28,6 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/gpu/utils/singleton.h"
-
 #ifndef GPU_MEM_BLOCK_H
 #define GPU_MEM_BLOCK_H
 
@@ -37,27 +35,16 @@ namespace vli {
 namespace detail {
 
     // we allocate the mem only one time so pattern of this class singleton
-    class gpu_memblock : public Singleton<gpu_memblock >  {
-        friend class Singleton<gpu_memblock>; // to have access to the Instance, Destroy functions into the singleton class
-        public:
+    struct gpu_memblock {
         typedef boost::uint32_t value_type;
-        private:
         gpu_memblock();
-        gpu_memblock(gpu_memblock const& );
-        gpu_memblock& operator=(gpu_memblock const& );
-
-        std::size_t block_size_;
-
-        public:
-        ~gpu_memblock();
         std::size_t  GetBlockSize() const;
-
+        std::size_t block_size_;
         value_type* V1Data_; // input vector 1
         value_type* V2Data_; // input vector 2
         value_type* VinterData_; // inter value before the final reduction
         value_type* PoutData_; // final output
     };
-
     
     } //end namespace detail
 } //end namespce vli  

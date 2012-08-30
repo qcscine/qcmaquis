@@ -36,11 +36,11 @@ namespace vli {
 #define VLI__SIZE num_words<NumBits>::value 
 // all this could be really simplified as the max_order version
     template <std::size_t NumBits, class MaxOrder, int NumVars>
-    struct booster;
+    struct accelerator;
 
     // 4 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_combined<Order>, 4>{
+    struct accelerator<NumBits, max_order_combined<Order>, 4>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,
@@ -132,7 +132,7 @@ namespace vli {
 
     // 3 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_combined<Order>, 3>{
+    struct accelerator<NumBits, max_order_combined<Order>, 3>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,
@@ -217,7 +217,7 @@ namespace vli {
 
     // 2 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_combined<Order>, 2>{
+    struct accelerator<NumBits, max_order_combined<Order>, 2>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,
@@ -290,7 +290,7 @@ namespace vli {
 
     // 1 variables
     template <std::size_t NumBits, int Order>
-    struct booster<NumBits, max_order_combined<Order>, 1>{
+    struct accelerator<NumBits, max_order_combined<Order>, 1>{
     inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
                                                                 const unsigned int * __restrict__ in2,
                                                                 const unsigned int element_count,

@@ -11,14 +11,13 @@
 
 #include "utils/tools.h"
 
-#define Size_vec 1024
+#define Size_vec 16384
 #define Order 10
-#define Size_vli 3
 
 using vli::polynomial;
 using vli::vector_polynomial;
 //typedef vli
-typedef vli::vli< 192> vli_type_cpu;
+typedef vli::vli<192> vli_type_cpu;
 
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x;
 typedef vli::polynomial< vli_type_cpu, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy;
@@ -30,14 +29,14 @@ typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<
 typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_xyz;
 typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw;
 
-typedef boost::mpl::vector< // polynomial_type_each_x,
-                            // polynomial_type_each_xy,
-                           //  polynomial_type_each_xyz,
-                           //  polynomial_type_each_xyzw, // buffer too large cpu/gpu
+typedef boost::mpl::vector<  polynomial_type_each_x,
+                             polynomial_type_each_xy,
+                 //          polynomial_type_each_xyz,
+                 //          polynomial_type_each_xyzw, // buffer too large cpu/gpu
                              polynomial_type_combined_x,
                              polynomial_type_combined_xy,
-                             polynomial_type_combined_xyz,
-                             polynomial_type_combined_xyzw
+                             polynomial_type_combined_xyz
+                 //          polynomial_type_combined_xyzw
                           > polynomial_list;
 
    struct test_case {
@@ -65,9 +64,6 @@ typedef boost::mpl::vector< // polynomial_type_each_x,
        p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
        t1.end();
       
-    //    std::cout << std::hex << p1_res << std::endl;
-    //   std::cout << std::hex << p2_res << std::endl;
-
        if(p1_res == p2_res) 
            printf("OK gpu \n"); 
        else
