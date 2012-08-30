@@ -28,7 +28,7 @@
  *DEALINGS IN THE SOFTWARE.
  */
 
-#define VLI__ExtendStride  2*Order+1
+#define VLI__ExtendStride  (2*Order+1) // PUTAIN DE PARENTHESE
 
 namespace vli {
     namespace detail {
@@ -85,7 +85,6 @@ namespace vli {
             static void BuildTaskList(std::vector<vli::detail::single_coefficient_task > & VecCoeff){
                 for( int degree_x = 0; degree_x <VLI__ExtendStride; ++degree_x)
                     for( int degree_y = 0; degree_y <VLI__ExtendStride - degree_x; ++degree_y){
-
                         vli::detail::single_coefficient_task& task = VecCoeff[VLI__ExtendStride*degree_x - (degree_x*degree_x-degree_x)/2 + degree_y];
                         task.output_degree_x = degree_x;
                         task.output_degree_y = degree_y;
@@ -140,8 +139,8 @@ namespace vli {
     tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
-        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_combined<Order>, NumVars>::value*MaxIterationCount<max_order_combined<Order>, NumVars>::value*sizeof(single_coefficient_task)),__LINE__);
-        gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), mul_block_size<max_order_combined<Order>, NumVars>::value/32*sizeof( int)),__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_combined<2*Order>, NumVars>::value*MaxIterationCount<max_order_combined<2*Order>, NumVars>::value*sizeof(single_coefficient_task)),__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), mul_block_size<max_order_combined<2*Order>, NumVars>::value/32*sizeof( int)),__LINE__);
         element_count_prepared=0;
         plan();
     }
@@ -154,12 +153,10 @@ namespace vli {
 
     template <std::size_t NumBits, int Order, int NumVars>
     void tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars>::plan(){
-        std::vector<int> workblock_count_by_warp_local(mul_block_size<max_order_combined<Order>, NumVars>::value / 32U,0);
-        std::vector<int> work_total_by_size(mul_block_size<max_order_combined<Order>, NumVars>::value / 32U,0);
-        //TO CHECK 2*Order or 2*order+1
+        std::vector<int> workblock_count_by_warp_local(mul_block_size<max_order_combined<2*Order>, NumVars>::value / 32U,0);
+        std::vector<int> work_total_by_size(mul_block_size<max_order_combined<2*Order>, NumVars>::value / 32U,0);
         std::vector<vli::detail::single_coefficient_task > tasks(((vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value
                                                                    + 32U - 1) / 32U) * 32U);
-        
         BuildTaskList_helper<Order,NumVars>::BuildTaskList(tasks);
         
         // Fill the task list up to the multiple of the warp size
@@ -173,23 +170,26 @@ namespace vli {
         }
        // Sort the tasks in step_count descending order
          std::sort(tasks.begin(), tasks.end(), vli::detail::single_coefficient_task_sort);
-         std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_combined<Order>, NumVars>::value
-                                                                            * MaxIterationCount<max_order_combined<Order>, NumVars>::value);
+         std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_combined<2*Order>, NumVars>::value
+                                                                            * MaxIterationCount<max_order_combined<2*Order>, NumVars>::value);
          // this thing should be generic ... yes it is ! 
          for( unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
                  //TO DO : std::distance more safe !!!!!
-                 int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
+                int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
                 std::copy(
                 	tasks.begin() + (batch_id * 32),
                 	tasks.begin() + ((batch_id + 1) * 32),
-                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size<max_order_combined<Order>, NumVars>::value) + (warp_id * 32));
+                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size<max_order_combined<2*Order>, NumVars>::value) + (warp_id * 32));
+
                  int max_step_count = tasks[batch_id * 32].step_count;
         
                 workblock_count_by_warp_local[warp_id]++;
                 work_total_by_size[warp_id] += max_step_count;
          }
+
 	 gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof( int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__LINE__);
          gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__LINE__);
+
     }
 
     } // end namespace detail

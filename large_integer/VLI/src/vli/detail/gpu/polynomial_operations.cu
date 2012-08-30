@@ -3,7 +3,7 @@
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
-*Maxim Milakov – NVIDIA 
+*Maxim Milakov -  NVIDIA 
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -70,10 +70,9 @@ namespace vli {
 
             resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, VectorSize);
             
-  	    tasklist_keep_order<NumBits,MaxOrder, NumVars>* ghc = tasklist_keep_order<NumBits, MaxOrder, NumVars>::Instance(); // calculate the different packet, singleton only one time 
+  	    tasklist_keep_order<NumBits, MaxOrder, NumVars>* ghc = tasklist_keep_order<NumBits, MaxOrder, NumVars>::Instance(); // calculate the different packet, singleton only one time 
 
             memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
-
 	    {
                 dim3 grid(VectorSize) ;
                 dim3 threads(mul_block_size<MaxOrder, NumVars,2>::value);
@@ -85,7 +84,6 @@ namespace vli {
                 dim3 threads(SumBlockSize::value);
                 polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm->VinterData_, VectorSize, pgm->PoutData_); //the reduction is independent of the order specification
 	    }
-
     } 
 
     boost::uint32_t* gpu_get_polynomial(){
@@ -94,17 +92,18 @@ namespace vli {
     }
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS(NUM_BITS, POLY_ORDER, VAR) \
-    template<std::size_t NumBits, class MaxOrder, int NumVars >      \
+    template<std::size_t NumBits, class MaxOrder, int NumVars > \
     void gpu_inner_product_vector(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B); \
     \
-    template<>      \
-    void gpu_inner_product_vector<NUM_BITS, max_order_each<POLY_ORDER>, VAR >(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B) \
-    {gpu_inner_product_vector<NUM_BITS, max_order_each<POLY_ORDER>, VAR >(vector_size, const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(A)), const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(B)));} \
+    template<> \
+    void gpu_inner_product_vector<NUM_BITS, max_order_each<POLY_ORDER>, VAR >(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B){ \
+        gpu_inner_product_vector<NUM_BITS, max_order_each<POLY_ORDER>, VAR >(vector_size, const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(A)), const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(B))); \
+    } \
     \
-    template<>      \
-    void gpu_inner_product_vector<NUM_BITS, max_order_combined<POLY_ORDER>, VAR >(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B) \
-    {gpu_inner_product_vector<NUM_BITS, max_order_combined<POLY_ORDER>, VAR >(vector_size, const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(A)), const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(B)));} \
-    \
+    template<> \
+    void gpu_inner_product_vector<NUM_BITS, max_order_combined<POLY_ORDER>, VAR >(std::size_t vector_size, boost::uint64_t const* A, boost::uint64_t const* B){ \
+        gpu_inner_product_vector<NUM_BITS, max_order_combined<POLY_ORDER>, VAR >(vector_size, const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(A)), const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(B))); \
+    } \
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS_FOR(r, data, NUMBITS_ORDER_VAR_TUPLE_SEQ) \
     VLI_IMPLEMENT_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(3,0,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,1,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,2,NUMBITS_ORDER_VAR_TUPLE_SEQ) )

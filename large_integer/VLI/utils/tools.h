@@ -34,14 +34,14 @@ namespace tools{
     template <typename Vli>
     void fill_random(Vli& v){
         for(typename Vli::size_type i=0; i < Vli::numwords-1; ++i)
-            v[i] = 1; //rnd_digit<Vli>(); 
+            v[i] = rnd_digit<Vli>(); 
     }
    
     template <typename Vli>
     void fill_random(Vli& v, typename Vli::size_type size){
         assert(size <= Vli::numwords);
         for(typename Vli::size_type i=0; i < Vli::numwords; ++i)
-            v[i] = 1; //rnd_digit<Vli>();
+            v[i] = rnd_digit<Vli>();
     }
 
     template <typename Polynomial>
