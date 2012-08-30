@@ -30,7 +30,6 @@
 #ifndef GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
 #define GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
 
-#include "vli/detail/gpu/utils/singleton.h"
 #include "vli/detail/gpu/kernels/numeric.h"
 
 namespace vli {
@@ -40,14 +39,9 @@ namespace vli {
     class tasklist_keep_order;
 
     template <std::size_t NumBits, int Order, int NumVars>
-    class tasklist_keep_order<NumBits, max_order_each<Order>, NumVars > : public Singleton<tasklist_keep_order<NumBits, max_order_each<Order>, NumVars> > {
-        friend class Singleton<tasklist_keep_order>; // to have access to the Instance, Destroy functions into the singleton class
-    private:
+    class tasklist_keep_order<NumBits, max_order_each<Order>, NumVars >  {
+        public:
         tasklist_keep_order();
-        tasklist_keep_order(tasklist_keep_order const &);
-        tasklist_keep_order& operator =(tasklist_keep_order const &);
-        ~tasklist_keep_order();
-    public:
         void plan();
         single_coefficient_task* execution_plan_;// we do not care the type
         unsigned int* workblock_count_by_warp_; // we do not care the type
@@ -55,14 +49,9 @@ namespace vli {
     };
 
     template <std::size_t NumBits, int Order, int NumVars>
-    class tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars> : public Singleton<tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars> > {
-        friend class Singleton<tasklist_keep_order>; // to have access to the Instance, Destroy functions into the singleton class
-    private:
+    class tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars> {
+        public:
         tasklist_keep_order();
-        tasklist_keep_order(tasklist_keep_order const &);
-        tasklist_keep_order& operator =(tasklist_keep_order const &);
-        ~tasklist_keep_order();
-    public:
         void plan();
         single_coefficient_task* execution_plan_;// we do not care the type
         unsigned int* workblock_count_by_warp_; // we do not care the type
