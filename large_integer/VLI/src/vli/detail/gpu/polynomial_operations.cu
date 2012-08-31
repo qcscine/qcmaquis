@@ -28,26 +28,10 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include <iostream>
-#include <limits>
-#include <vector>
-#include <algorithm>
+#ifndef POLYNOMIAL_OPERATION_CU
+#define POLYNOMIAL_OPERATION_CU
 
-#include <boost/cstdint.hpp> //boost type
-#include <boost/serialization/singleton.hpp> //boost singleton for mem and tasklist
-
-#include "vli/utils/gpu_error_message.h" //error message
-#include "vli/detail/kernels_gpu.h" // signature interface with cpu + structure max_order_each, max_order_combined
-#include "vli/detail/gpu/utils/variables_gpu.h" //compile time  variable
-#include "vli/detail/gpu/tasklist/tasklist.h" //tasklist
-#include "vli/detail/gpu/utils/gpu_mem_block.h" // memory
-#include "vli/detail/gpu/kernels/kernels_gpu_neg_asm.hpp" //kernels gpu boost pp
-#include "vli/detail/gpu/kernels/kernels_gpu_add_asm.hpp" //kernels gpu boost pp
-#include "vli/detail/gpu/kernels/kernels_gpu_mul_asm.hpp" //kernels gpu boost pp
-#include "vli/detail/gpu/vli_number_gpu_function_hooks.hpp" // wrapper
-#include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_each.hpp" // accelerator
-#include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_combined.hpp" // accelerator
-#include "vli/detail/gpu/polynomial_reduction/polynomial_reduction.hpp" // final reduction
+#include "vli/detail/gpu/polynomial_operations.h" //all include, system, boost, me
 
 namespace vli {
     namespace detail {
@@ -55,7 +39,7 @@ namespace vli {
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     __global__ void
     __launch_bounds__(mul_block_size<MaxOrder, NumVars,2>::value, 2)
-    polynomial_multiply_full( // TO DO change the name
+    polynomial_multiply_full(
     	const boost::uint32_t * __restrict__ in1,
     	const boost::uint32_t * __restrict__ in2,
         const boost::uint32_t element_count,
@@ -63,14 +47,14 @@ namespace vli {
         boost::uint32_t* __restrict__ workblock_count_by_warp,
         single_coefficient_task* __restrict__ execution_plan)
     {
-        accelerator<NumBits, MaxOrder, NumVars>::polynomial_multiplication_max_order(in1, in2, element_count, out, workblock_count_by_warp, execution_plan); // TO DO change the name
+        accelerator<NumBits, MaxOrder, NumVars>::polynomial_multiplication_max_order(in1, in2, element_count, out, workblock_count_by_warp, execution_plan);
     }
 
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     void gpu_inner_product_vector(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
 
-            gpu_memblock const& pgm  = boost::serialization::singleton<gpu_memblock>::get_const_instance();
-            resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, VectorSize);
+            gpu_memblock const& pgm  = boost::serialization::singleton<gpu_memblock>::get_const_instance(); // create memory block
+            resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, VectorSize); // allocate mem
   	    tasklist_keep_order<NumBits, MaxOrder, NumVars> const& ghc =  boost::serialization::singleton< tasklist_keep_order<NumBits, MaxOrder, NumVars> >::get_const_instance(); // calculate the different packet, singleton only one time 
             memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
 
@@ -82,7 +66,7 @@ namespace vli {
 
 	    {
                 dim3 grid(num_coefficients<MaxOrder, NumVars,2>::value);
-                dim3 threads(SumBlockSize::value);
+                dim3 threads(sum_block_size::value);
                 polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_); //the reduction is independent of the order specification
 	    }
     } 
@@ -116,3 +100,5 @@ namespace vli {
 
     }
 }
+
+#endif

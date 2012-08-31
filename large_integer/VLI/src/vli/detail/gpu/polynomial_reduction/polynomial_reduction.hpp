@@ -3,7 +3,7 @@
  *
  *Timothee Ewart - University of Geneva,
  *Andreas Hehn - Swiss Federal Institute of technology Zurich.
- *Maxim Milakov – NVIDIA
+ *Maxim Milakov - NVIDIA
  *
  *Permission is hereby granted, free of charge, to any person or organization
  *obtaining a copy of the software and accompanying documentation covered by
@@ -36,13 +36,13 @@ namespace vli {
 
     template <std::size_t NumBits, int Order, int NumVars>
     __global__ void
-    __launch_bounds__(SumBlockSize::value, 2)
+    __launch_bounds__(sum_block_size::value, 2)
     polynomial_sum_intermediate_full(
 		    const boost::uint32_t * __restrict__ intermediate,
 		    const boost::uint32_t element_count,
 		    boost::uint32_t * __restrict__ out)
     {
-	    __shared__ boost::uint32_t buf[SumBlockSize::value * size_pad<2*VLI_SIZE>::value]; 
+	    __shared__ boost::uint32_t buf[sum_block_size::value * size_pad<2*VLI_SIZE>::value]; 
 
 	    boost::uint32_t local_thread_id = threadIdx.x;
 	    boost::uint32_t coefficient_id = blockIdx.x;
@@ -53,18 +53,18 @@ namespace vli {
 		    t1[i] = 0;
 
 	    const boost::uint32_t * in2 = intermediate + (coefficient_id * element_count *2*VLI_SIZE) + local_thread_id;
-	    for(boost::uint32_t element_id = local_thread_id; element_id < element_count; element_id += SumBlockSize::value)
+	    for(boost::uint32_t element_id = local_thread_id; element_id < element_count; element_id += sum_block_size::value)
 	    {
                  asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(t1[0]):"r"(in2[0])); 
                  #pragma unroll
                  for(int i=1; i < 2*VLI_SIZE; ++i)
                      asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(t1[i]):"r"(in2[i*element_count])); 
 
-     	         in2 += SumBlockSize::value;
+     	         in2 += sum_block_size::value;
 	    }
 
             #pragma unroll
-	    for(boost::uint32_t stride = SumBlockSize::value >> 1; stride > 0; stride >>= 1) {
+	    for(boost::uint32_t stride = sum_block_size::value >> 1; stride > 0; stride >>= 1) {
                 __syncthreads();
                 if (local_thread_id < stride) {
                     boost::uint32_t * t2 = buf + (local_thread_id + stride) * size_pad<2*VLI_SIZE>::value;

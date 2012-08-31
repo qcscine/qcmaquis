@@ -32,9 +32,9 @@
 namespace vli {
     namespace detail {
 
-#define VLI__ExtendStride result_stride<0, 4, Order>::value // 2*order+1
-#define VLI__SIZE num_words<NumBits>::value 
-// all this could be really simplified as the max_order version
+    #define VLI__ExtendStride result_stride<0, 4, Order>::value // 2*order+1
+    #define VLI__SIZE num_words<NumBits>::value 
+    // all this could be really simplified as the max_order version
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     struct accelerator;
 
@@ -363,8 +363,8 @@ namespace vli {
         };  // end function
     }; // end struct
 
-#undef VLI__ExtendStride
-#undef VLI__SIZE
+    #undef VLI__ExtendStride
+    #undef VLI__SIZE
 
     }//end namesoace detail
 }//end namespace vli

@@ -32,12 +32,12 @@
 namespace vli {
     namespace detail {
 
-#define VLI_SIZE num_words<NumBits>::value 
-/*
-*  I do this to remove the cloud of if of the general version l 92 to 101, for polynomial of 1 and 2 variables
-*  on fermi 2 variables with cloud = 0.22 s withou 0.17 s, to retest on kerpler and remove if necessarry
-* just recopy the 4 variables version (compatible 1 <-> 4) into polynomial_mul_full_kepler and remove the accelerator    
-*/
+    #define VLI_SIZE num_words<NumBits>::value 
+    /*
+    *  I do this to remove the cloud of if of the general version l 92 to 101, for polynomial of 1 and 2 variables
+    *  on fermi 2 variables with cloud = 0.22 s withou 0.17 s, to retest on kerpler and remove if necessarry
+    * just recopy the 4 variables version (compatible 1 <-> 4) into polynomial_mul_full_kepler and remove the accelerator    
+    */
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     struct accelerator;
 
@@ -418,6 +418,6 @@ namespace vli {
         };  // end function
     }; // end struct
 
-#undef VLI_SIZE 
+    #undef VLI_SIZE 
     }//end namesoace detail
 }//end namespace vli

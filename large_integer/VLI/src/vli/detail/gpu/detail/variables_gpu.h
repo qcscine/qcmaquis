@@ -28,32 +28,50 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef VLI_KERNELS_GPU_H
-#define VLI_KERNELS_GPU_H
+#ifndef VLI_VARIABLES_GPU_H
+#define VLI_VARIABLES_GPU_H
 
-#include <boost/preprocessor/tuple/elem.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-#include "vli/polynomial/variable.hpp"
-#include "vli/config.hpp"
+#include "vli/polynomial/detail/helpers.hpp" // A part of variable comes from the polynomial class
 
 namespace vli {
     namespace detail {
 
-    boost::uint32_t* gpu_get_polynomial(); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
+    template <int Var, int NumVars, int Order>
+    struct result_stride {
+        static unsigned int const value = stride<Var,NumVars,2*Order>::value;
+    };
 
-    #define VLI_DECLARE_GPU_FUNCTIONS(NUM_BITS, POLY_ORDER, VAR) \
-        template<std::size_t NumBits, class MaxOrder, int NumVars >      \
-        void gpu_inner_product_vector(std::size_t vector_size, boost::uint64_t const* a, boost::uint64_t const* b); \
-   
-    #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, NUMBITS_ORDER_VAR_TUPLE_SEQ) \
-        VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(3,0,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,1,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,2,NUMBITS_ORDER_VAR_TUPLE_SEQ) )
-   
-    BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_NUMBITS_ORDER_VAR_TUPLE_SEQ)
-   
-    #undef VLI_DECLARE_GPU_FUNCTIONS_FOR
-    #undef VLI_DECLARE_GPU_FUNCTIONS 
-   
-    } //namespace detail
-} //namespace vli
+    template <int Var, int NumVars, int Order>
+    struct stride_pad {
+        static unsigned int const value = Var < NumVars ? Order+1 : 0;
+    };
+
+    struct sum_block_size{
+       enum { value = 256};
+    };
+
+    template<std::size_t NumBits>
+    struct num_words{
+        enum { value = (NumBits+31)/32};
+    };
+
+    template<class MaxOrder, int NumVars, int Coeff=1>
+    struct mul_block_size {
+        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value/2U >= 256U) ? 256U
+               : (num_coefficients<MaxOrder,NumVars, Coeff>::value/2U+32U-1U)/32U*32U };
+    };
+ 
+    template<class MaxOrder, int NumVars, int Coeff=1>
+    struct max_iteration_count {
+        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value+32U-1U)/32U};
+    };
+
+    template<std::size_t Size>
+    struct size_pad{
+        enum {value = Size | 1};
+    };
+
+    }
+}
 
 #endif

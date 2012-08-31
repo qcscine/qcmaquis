@@ -3,7 +3,7 @@
  *
  *Timothee Ewart - University of Geneva,
  *Andreas Hehn - Swiss Federal Institute of technology Zurich.
- *Maxim Milakov – NVIDIA
+ *Maxim Milakov - NVIDIA
  *
  *Permission is hereby granted, free of charge, to any person or organization
  *obtaining a copy of the software and accompanying documentation covered by
@@ -44,9 +44,9 @@ namespace vli{
      * for(int i=1; i < 11; ++i)
      *     asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
      *
-     * I have to break up into 2 parts because I can not have more than 30 input/output          
-     * load/write operation are done by the compiler (!= ASM x80-86) 
      */
+    template <std::size_t NumBits>
+    __device__ void add(boost::uint32_t* x, boost::uint32_t const* y); 
 
     #define addn128_n128_gpu(w, n, unused) \
         asm( \
@@ -59,11 +59,13 @@ namespace vli{
            ); \
 
     #define FUNCTION_add_nbits_nbits(z, n, unused) \
-       inline void NAME_ADD_NBITS_PLUS_NBITS(BOOST_PP_MUL(2,BOOST_PP_ADD(n,1)))(unsigned int* x, unsigned int const* y){                \
+        template<> \
+        void add<(n+2)*128>(boost::uint32_t* x,boost::uint32_t const* y){ \
            BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), addn128_n128_gpu, ~)                                                        \
-       }                                                                                                                                \
+        }; \
 
-    BOOST_PP_REPEAT(3, FUNCTION_add_nbits_nbits, ~) /* expend until 512 */
+    BOOST_PP_REPEAT(3, FUNCTION_add_nbits_nbits, ~)
+
     #undef FUNCTION_add_nbits_nbits 
     #undef add_m128_n128_gpu
 

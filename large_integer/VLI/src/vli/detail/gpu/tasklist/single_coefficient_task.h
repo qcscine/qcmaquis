@@ -3,7 +3,7 @@
  *
  *Timothee Ewart - University of Geneva,
  *Andreas Hehn - Swiss Federal Institute of technology Zurich.
- *Maxim Milakov – NVIDIA
+ *Maxim Milakov - NVIDIA
  *
  *Permission is hereby granted, free of charge, to any person or organization
  *obtaining a copy of the software and accompanying documentation covered by
@@ -33,31 +33,29 @@
 namespace vli {
     namespace detail {
 
-	struct single_coefficient_task {
-		unsigned int step_count; // how many time the coeff wil be calculate
-		unsigned char output_degree_x;
-		unsigned char output_degree_y;
-		unsigned char output_degree_z;
-		unsigned char output_degree_w;
-	};
+    struct single_coefficient_task {
+        unsigned int step_count; // how many time the coeff wil be calculate
+        unsigned char output_degree_x;
+        unsigned char output_degree_y;
+        unsigned char output_degree_z;
+        unsigned char output_degree_w;
+    };
 
-        bool inline single_coefficient_task_sort(single_coefficient_task const & i, single_coefficient_task const &j){
-		if (i.step_count != j.step_count)
-			return (i.step_count > j.step_count);
-
-		if (i.output_degree_w != j.output_degree_w)
-			return (i.output_degree_w < j.output_degree_w);
-
-		if (i.output_degree_z != j.output_degree_z)
-			return (i.output_degree_z < j.output_degree_z);
-
-		if (i.output_degree_y != j.output_degree_y)
-			return (i.output_degree_y < j.output_degree_y);
-
-		return (i.output_degree_x < j.output_degree_x);
-	}
-
-  //  inline bool single_coefficient_task_sort(single_coefficient_task const & i, single_coefficient_task const & j);
+    bool inline single_coefficient_task_sort(single_coefficient_task const& i, single_coefficient_task const& j){
+        if (i.step_count != j.step_count)
+           return (i.step_count > j.step_count);
+       
+        if (i.output_degree_w != j.output_degree_w)
+           return (i.output_degree_w < j.output_degree_w);
+       
+        if (i.output_degree_z != j.output_degree_z)
+           return (i.output_degree_z < j.output_degree_z);
+       
+        if (i.output_degree_y != j.output_degree_y)
+           return (i.output_degree_y < j.output_degree_y);
+       
+        return (i.output_degree_x < j.output_degree_x);
+    }
 
     } // end namespace detail
 } // end name space vli

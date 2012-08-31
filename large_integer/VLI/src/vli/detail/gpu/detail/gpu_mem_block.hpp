@@ -3,7 +3,7 @@
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
-*Maxim Milakov – NVIDIA
+*Maxim Milakov - NVIDIA
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -28,7 +28,10 @@
 *DEALINGS IN THE SOFTWARE.
 */
 // to remove when size ok
-#include <assert.h>
+#ifndef GPU_MEM_BLOCK_HPP
+#define GPU_MEM_BLOCK_HPP
+
+#include "vli/detail/gpu/detail/gpu_mem_block.h" // memory
 
 namespace vli{
 namespace detail {
@@ -125,3 +128,5 @@ namespace detail {
 
     } // end namespace detail
 }// end namespace vli
+
+#endif

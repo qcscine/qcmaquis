@@ -3,7 +3,7 @@
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
-*Maxim Milakov – NVIDIA 
+*Maxim Milakov - NVIDIA 
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -30,7 +30,8 @@
 #ifndef GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
 #define GPU_HARDWARE_CARRYOVER_IMPLEMENTATION_H
 
-#include "vli/detail/gpu/kernels/numeric.h"
+#include "vli/detail/gpu/detail/numeric.h"
+#include "vli/detail/gpu/tasklist/single_coefficient_task.h"
 
 namespace vli {
     namespace detail {
@@ -43,8 +44,8 @@ namespace vli {
         public:
         tasklist_keep_order();
         void plan();
-        single_coefficient_task* execution_plan_;// we do not care the type
-        unsigned int* workblock_count_by_warp_; // we do not care the type
+        single_coefficient_task* execution_plan_;
+        unsigned int* workblock_count_by_warp_;
         unsigned int  element_count_prepared;
     };
 
@@ -53,8 +54,8 @@ namespace vli {
         public:
         tasklist_keep_order();
         void plan();
-        single_coefficient_task* execution_plan_;// we do not care the type
-        unsigned int* workblock_count_by_warp_; // we do not care the type
+        single_coefficient_task* execution_plan_;
+        unsigned int* workblock_count_by_warp_;
         unsigned int  element_count_prepared;
     };
 

@@ -3,7 +3,7 @@
  *
  *Timothee Ewart - University of Geneva,
  *Andreas Hehn - Swiss Federal Institute of technology Zurich.
- *Maxim Milakov – NVIDIA
+ *Maxim Milakov - NVIDIA
  *
  *Permission is hereby granted, free of charge, to any person or organization
  *obtaining a copy of the software and accompanying documentation covered by
@@ -35,7 +35,7 @@ namespace vli {
     tasklist_keep_order<NumBits, max_order_each<Order>, NumVars>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
-        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_each<2*Order>, NumVars>::value*MaxIterationCount<max_order_each<2*Order>, NumVars>::value*sizeof(single_coefficient_task)),__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_each<2*Order>, NumVars>::value*max_iteration_count<max_order_each<2*Order>, NumVars>::value*sizeof(single_coefficient_task)),__LINE__);
         gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), mul_block_size<max_order_each<2*Order>, NumVars>::value/32*sizeof(int)),__LINE__);
         element_count_prepared=0;
         plan();
@@ -78,12 +78,11 @@ namespace vli {
         }
         // Sort the tasks in step_count descending order
         std::sort(tasks.begin(), tasks.end(), vli::detail::single_coefficient_task_sort);
-        std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_each<2*Order>, NumVars>::value * MaxIterationCount<max_order_each<2*Order>, NumVars>::value);
+        std::vector<vli::detail::single_coefficient_task > tasks_reordered(mul_block_size<max_order_each<2*Order>, NumVars>::value * max_iteration_count<max_order_each<2*Order>, NumVars>::value);
         // this thing should be generic ... yes it is ! 
         for(unsigned int batch_id = 0; batch_id < tasks.size() / 32; ++batch_id) {
                int warp_id = std::min_element(work_total_by_size.begin(), work_total_by_size.end()) - work_total_by_size.begin(); // - to get the position
-                //std::cout << warp_id << std::endl;
-               std::copy(
+                std::copy(
                	tasks.begin() + (batch_id * 32),
                	tasks.begin() + ((batch_id + 1) * 32),
                	tasks_reordered.begin() + (workblock_count_by_warp_local[warp_id] * mul_block_size<max_order_each<2*Order>, NumVars>::value) + (warp_id * 32));

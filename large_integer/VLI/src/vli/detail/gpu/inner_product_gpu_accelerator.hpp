@@ -3,7 +3,7 @@
  *
  *Timothee Ewart - University of Geneva,
  *Andreas Hehn - Swiss Federal Institute of technology Zurich.
- *Maxim Milakov – NVIDIA
+ *Maxim Milakov - NVIDIA
  *
  *Permission is hereby granted, free of charge, to any person or organization
  *obtaining a copy of the software and accompanying documentation covered by
@@ -38,12 +38,11 @@
 #include <omp.h>
 #endif
 
-#include "vli/utils/gpu_error_message.h"
+#include "vli/detail/gpu/detail/gpu_error_message.h"
 #include "utils/timings.h"
 
 #include "vli/detail/kernels_gpu.h"
-#include "vli/detail/gpu/utils/variables_gpu.h"
-
+#include "vli/detail/gpu/detail/variables_gpu.h"
 
 namespace vli
 {
@@ -76,7 +75,6 @@ namespace vli
                  vector_polynomial<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > const& v1,
                  vector_polynomial<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > const& v2
             ) {
-            std::cout<<"CUDA max_order_each"<<std::endl;
             assert(v1.size() == v2.size());
             std::size_t size_v = v1.size();
           
@@ -129,7 +127,6 @@ namespace vli
                  vector_polynomial<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > const& v1,
                  vector_polynomial<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > const& v2
             ) {
-                std::cout<<"CUDA max_order_combined"<<std::endl;
                 assert(v1.size() == v2.size());
                 std::size_t size_v = v1.size();
               
