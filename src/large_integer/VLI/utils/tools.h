@@ -5,8 +5,6 @@
 #include <boost/random/uniform_int.hpp>
 #include <limits>
 
-
-
 namespace tools{
     template <class T>
     struct iterator;

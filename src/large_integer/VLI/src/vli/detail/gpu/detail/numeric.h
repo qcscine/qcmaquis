@@ -26,40 +26,27 @@
  *FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *DEALINGS IN THE SOFTWARE.
- 
  */
 
-#ifndef KERNELS_GPU_NEG_HPP
-#define KERNELS_GPU_NEG_HPP
 
-#include "vli/detail/gpu/kernels/kernel_macros.h"
+namespace vli {
+    namespace detail  {
+                        
+    template<class T>
+    __device__ const T& min(T const& a, const T& b){
+       return !(b<a)?a:b; 
+    } 
 
-namespace vli{
-    namespace detail{
+    template<class T>
+    __device__ const T& max(T const& a, const T& b){
+       return !(b>a)?a:b; 
+    } 
 
     template <std::size_t NumBits>
-    __device__ void negate(boost::uint32_t* x); 
+    __device__ void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2);
 
-    #define negn64_n64_gpu(z, n, unused) \
-        asm( \
-            "not.b32  %0, %0 ; \n\t"                                                        \
-            "not.b32  %1, %1 ; \n\t"                                                        \
-             BOOST_PP_IF(n,"addc.cc.u32 %0, %0, %3; \n\t","add.cc.u32  %0, %0, %2 ; \n\t")  \
-            "addc.cc.u32 %1, %1, %3 ; \n\t" /* x[i+1] += y[i+1] + CB                     */ \
-            :"+r"(x[BOOST_PP_MUL(2,n)]),"+r"(x[BOOST_PP_ADD(BOOST_PP_MUL(2,n),1)])          \
-            :"r"(one),"r"(zero)                                                             \
-           ); \
+    } // end namespace detail
+} // end namespace vli
 
-    #define FUNCTION_negate_nbits(z, n, unused) \
-       template<> \
-       inline void negate<(n+2)*64>(unsigned int* x){         \
-           unsigned int one(1);                                   \
-           unsigned int zero(0);                                  \
-           BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), negn64_n64_gpu , ~) \
-    }  \
 
-    BOOST_PP_REPEAT(7, FUNCTION_negate_nbits, ~)
-     #undef FUNCTION_negate_nbits
-     #undef negn64_n64_gpu
-}}
-#endif
+

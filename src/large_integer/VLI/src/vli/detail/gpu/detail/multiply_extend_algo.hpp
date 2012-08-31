@@ -28,32 +28,32 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef VLI_KERNELS_GPU_H
-#define VLI_KERNELS_GPU_H
-
-#include <boost/preprocessor/tuple/elem.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-#include "vli/polynomial/variable.hpp"
-#include "vli/config.hpp"
+#ifndef VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
+#define VLI_NUMBER_GPU_FUNCTION_HOOKS_HPP
 
 namespace vli {
     namespace detail {
 
-    boost::uint32_t* gpu_get_polynomial(); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
+    template <std::size_t NumBits>
+    void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
+    //if one day I success to remove branching ....
+	boost::uint32_t sign = (c1[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1) ^ (c2[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1);
 
-    #define VLI_DECLARE_GPU_FUNCTIONS(NUM_BITS, POLY_ORDER, VAR) \
-        template<std::size_t NumBits, class MaxOrder, int NumVars >      \
-        void gpu_inner_product_vector(std::size_t vector_size, boost::uint64_t const* a, boost::uint64_t const* b); \
-   
-    #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, NUMBITS_ORDER_VAR_TUPLE_SEQ) \
-        VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(3,0,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,1,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,2,NUMBITS_ORDER_VAR_TUPLE_SEQ) )
-   
-    BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_NUMBITS_ORDER_VAR_TUPLE_SEQ)
-   
-    #undef VLI_DECLARE_GPU_FUNCTIONS_FOR
-    #undef VLI_DECLARE_GPU_FUNCTIONS 
-   
+	if(c1[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1!= 0) 
+            negate<NumBits>(c1);
+
+	if(c2[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1!= 0)
+            negate<NumBits>(c2);
+
+       mul_extend<2*NumBits>(res1,c1,c2);
+
+	if(sign != 0)
+       negate<2*NumBits>(res1);
+
+       add<2*NumBits>(res,res1);
+    }
+    
     } //namespace detail
 } //namespace vli
 
-#endif
+#endif //VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP

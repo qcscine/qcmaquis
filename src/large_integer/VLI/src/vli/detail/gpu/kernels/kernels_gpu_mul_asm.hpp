@@ -3,7 +3,7 @@
  *
  *Timothee Ewart - University of Geneva,
  *Andreas Hehn - Swiss Federal Institute of technology Zurich.
- *Maxim Milakov – NVIDIA
+ *Maxim Milakov - NVIDIA
  *
  *Permission is hereby granted, free of charge, to any person or organization
  *obtaining a copy of the software and accompanying documentation covered by
@@ -36,6 +36,11 @@
 
 namespace vli{
     namespace detail{
+
+    //multiplication
+    template <std::size_t NumBits>
+    __device__ void mul_extend(boost::uint32_t * x,boost::uint32_t const* y,boost::uint32_t const* z);
+
     #define mul256bits_128bits_128bits(w, n, unused) \
         asm( \
               "mad.lo.cc.u32  %0, %6,  %5, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
@@ -51,7 +56,8 @@ namespace vli{
               :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3])                                                                         \
           );                                                                                                                               \
 
-    inline void mul256_128_128(unsigned int* x, unsigned int const* y, unsigned int const* z){
+    template<>
+    void mul_extend<256>(boost::uint32_t* x, boost::uint32_t const* y, boost::uint32_t const* z){
            BOOST_PP_REPEAT(4, mul256bits_128bits_128bits, ~)                                                                              \
     }
     #undef mul384bits_192bits_192bits
@@ -76,7 +82,8 @@ namespace vli{
               :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3]),"r"(y[4]),"r"(y[5])                                                       \
           );                                                                                                                               \
 
-    inline void mul384_192_192(unsigned int* x, unsigned int const* y, unsigned int const* z){
+    template<>
+    void mul_extend<384>(boost::uint32_t* x, boost::uint32_t const* y, boost::uint32_t const* z){
            BOOST_PP_REPEAT(6, mul384bits_192bits_192bits, ~)                                                      
     }
     #undef mul384bits_192bits_192bits
@@ -131,7 +138,8 @@ namespace vli{
             mulhig1_512bits_256bits_256bits(n) \
             mulhig2_512bits_256bits_256bits(n) 
 
-    inline void mul512_256_256(unsigned int* x, unsigned int const* y, unsigned int const* z){
+    template<>
+    void mul_extend<512>(boost::uint32_t* x, boost::uint32_t const* y, boost::uint32_t const* z){
            BOOST_PP_REPEAT(8, mul512bits_256bits_256bits, ~)
     }
 

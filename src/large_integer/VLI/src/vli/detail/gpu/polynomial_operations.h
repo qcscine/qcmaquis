@@ -3,7 +3,7 @@
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
-*Maxim Milakov – NVIDIA
+*Maxim Milakov - NVIDIA 
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -28,28 +28,29 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef GPU_MEM_BLOCK_H
-#define GPU_MEM_BLOCK_H
+#ifndef POLYNOMIAL_GPU_INTERFACE_H
+#define POLYNOMIAL_GPU_INTERFACE_H
 
-namespace vli {
-namespace detail {
+// system includes
+#include <iostream>
+#include <limits>
+#include <vector>
+#include <algorithm>
 
-    // we allocate the mem only one time so pattern of this class singleton
-    struct gpu_memblock {
-        typedef boost::uint32_t value_type;
-        gpu_memblock();
-        std::size_t  GetBlockSize() const;
-        std::size_t block_size_;
-        value_type* V1Data_; // input vector 1
-        value_type* V2Data_; // input vector 2
-        value_type* VinterData_; // inter value before the final reduction
-        value_type* PoutData_; // final output
-    };
-    
-    } //end namespace detail
-} //end namespce vli  
+#include <boost/cstdint.hpp> //boost type
+#include <boost/serialization/singleton.hpp> //boost singleton for mem and tasklist
 
-#include "vli/detail/gpu/utils/gpu_mem_block.hpp" // memory
+#include "vli/detail/kernels_gpu.h" // signature interface with cpu + structure max_order_each, max_order_combined
+#include "vli/detail/gpu/detail/gpu_error_message.h" //error message
+#include "vli/detail/gpu/detail/variables_gpu.h" //compile time  variable
+#include "vli/detail/gpu/tasklist/tasklist.h" //tasklist
+#include "vli/detail/gpu/detail/gpu_mem_block.hpp" // memory
+#include "vli/detail/gpu/kernels/kernels_gpu_neg_asm.hpp" //kernels gpu boost pp
+#include "vli/detail/gpu/kernels/kernels_gpu_add_asm.hpp" //kernels gpu boost pp
+#include "vli/detail/gpu/kernels/kernels_gpu_mul_asm.hpp" //kernels gpu boost pp
+#include "vli/detail/gpu/detail/multiply_extend_algo.hpp" // wrapper multiplication
+#include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_each.hpp" // accelerator max_order_each polynomial
+#include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_combined.hpp" // accelerator max_order_combined polynomial
+#include "vli/detail/gpu/polynomial_reduction/polynomial_reduction.hpp" // final reduction
 
-
-#endif //INNER_PRODUCT_GPU_BOOSTER_HPP
+#endif

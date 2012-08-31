@@ -3,7 +3,7 @@
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
-*Maxim Milakov – NVIDIA
+*Maxim Milakov - NVIDIA
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -28,52 +28,25 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
- #ifndef VLI_VARIABLES_GPU_H
- #define VLI_VARIABLES_GPU_H
-
-
-#include "vli/polynomial/detail/helpers.hpp"
+#ifndef GPU_MEM_BLOCK_H
+#define GPU_MEM_BLOCK_H
 
 namespace vli {
     namespace detail {
 
-    template <int Var, int NumVars, int Order>
-    struct result_stride {
-        static unsigned int const value = stride<Var,NumVars,2*Order>::value;
+    // we allocate the mem only one time so pattern of this class singleton
+    struct gpu_memblock {
+        typedef boost::uint32_t value_type;
+        gpu_memblock();
+        std::size_t  GetBlockSize() const;
+        std::size_t block_size_;
+        value_type* V1Data_; // input vector 1
+        value_type* V2Data_; // input vector 2
+        value_type* VinterData_; // inter value before the final reduction
+        value_type* PoutData_; // final output
     };
+    
+    } //end namespace detail
+} //end namespce vli  
 
-    template <int Var, int NumVars, int Order>
-    struct stride_pad {
-        static unsigned int const value = Var < NumVars ? Order+1 : 0;
-    };
-
-    struct SumBlockSize {
-       enum { value = 256};
-    };
-
-    template<std::size_t NumBits>
-    struct num_words{
-        enum { value = (NumBits+31)/32};
-    };
-
-    template<class MaxOrder, int NumVars, int Coeff=1>
-    struct mul_block_size {
-        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value/2U >= 256U) ? 256U
-               : (num_coefficients<MaxOrder,NumVars, Coeff>::value/2U+32U-1U)/32U*32U };
-    };
- 
-    template<class MaxOrder, int NumVars, int Coeff=1>
-    struct MaxIterationCount {
-        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value+32U-1U)/32U};
-    };
-
-    // replace in the code MaxNumberCoefficientExtend by num_coefficients
-    template<std::size_t Size>
-    struct size_pad{
-        enum {value = Size | 1};
-    };
-
-    }
-}
-
-#endif
+#endif //INNER_PRODUCT_GPU_BOOSTER_HPP
