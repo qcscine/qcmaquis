@@ -31,9 +31,12 @@
 
 namespace vli {
     namespace detail {
+                    template <std::size_t NumWords>
+                    void sub(boost::uint64_t* x,  boost::uint64_t const*  y);
                      // new functions type : VLI<n*64> - VLI<n*64> : sub128_128, sub192_192 ...
                      #define FUNCTION_sub_nbits_nbits(z, n, unused) \
-                         void NAME_SUB_NBITS_MINUS_NBITS(n)(boost::uint64_t* x, boost::uint64_t const* y){ \
+                         template<> \
+                         void sub<n+2>(boost::uint64_t* x, boost::uint64_t const* y){ \
                          asm(                                                                                  \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                       \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r4,BOOST_PP_ADD(n,2))        \
@@ -49,14 +52,16 @@ namespace vli {
 
                      //new functions type : VLI<n*64> - VLI<64> : sub192_64, sub256_64
                      //the case is done after sub128_64
+                    template <std::size_t NumWords>
+                    void sub(boost::uint64_t* x,  boost::uint64_t const  y);
+
                      #define FUNCTION_sub_nbits_64bits(z, n, unused) \
-                         void NAME_SUB_NBITS_MINUS_64BITS(n)(boost::uint64_t* x, boost::uint64_t const* y){ \
+                         template<> \
+                         void sub<n+2>(boost::uint64_t* x, boost::uint64_t const y){ \
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                      \
-                                 "ld    5,0(4)   \n" \
-                                 "addi  6,5,0    \n" \
-                                 "sradi 6,6,63   \n" \
-                                 "subfc 14,5,14  \n" \
+                                 "sradi 6,4,63   \n" \
+                                 "subfc 14,4,14  \n" \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), SUB00_register, ~)    \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
                                  : : :"r5","r6",BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"        \
