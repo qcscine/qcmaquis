@@ -29,74 +29,43 @@
 */
 
 #ifndef VLI_ASM_KERNELS_CPU_ASM_H
-#define VLI_ASM_KERNELS_CPU_ASM_H 
-#include "vli/detail/cpu/kernel_macros.h"
-#include <boost/preprocessor/repetition.hpp>
+#define VLI_ASM_KERNELS_CPU_ASM_H
 
 namespace vli {
     namespace detail {
-        // C first number output #bits, second and third input #bits
-        //Addition
-        // new functions type : VLI<n*64> + VLI<n*64> : add128_128, add192_192 ...
-        #define FUNCTION_add_nbits_nbits(z, n, unused) \
-            void NAME_ADD_NBITS_PLUS_NBITS(n)( boost::uint64_t* x,  boost::uint64_t const* y);
+    
+    //forward declaration for the template function, before specialization
+    //addition
+    template <std::size_t NumWords>
+    void add(boost::uint64_t * x, boost::uint64_t const* y);
 
-        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
-        #undef FUNCTION_add_nbits_nbits
-        /* ------------------------------------------------------- */
-        //new functions type : VLI<n*64> + VLI<64> : add192_64 ...
-        #define FUNCTION_add_nbits_64bits(z, n, unused) \
-            void NAME_ADD_NBITS_PLUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y);
+    template <std::size_t NumWords>
+    void add(boost::uint64_t * x, boost::uint64_t const b);
 
-        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
-        #undef FUNCTION_add_nbits_64bits
-        /* ------------------------------------------------------- */
-        //new functions type : VLI<n*64> + VLI<64> : add128_64, add256_128 ...
-        #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
-            void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y,  boost::uint64_t const* w);
+    template <std::size_t NumWords>
+    void add_extension( boost::uint64_t * x,  boost::uint64_t const* y,  boost::uint64_t const* z); 
 
-        BOOST_PP_REPEAT(VLI_MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
-        #undef FUNCTION_add_nbits_nminus1bits
-        /* ------------------------------------------------------- */
-        //substraction
-        #define FUNCTION_sub_nbits_nbits(z, n, unused) \
-            void NAME_SUB_NBITS_MINUS_NBITS(n)( boost::uint64_t* x,  boost::uint64_t const* y);
+    //substraction
+    template <std::size_t NumWords>
+    void sub(boost::uint64_t * x,  boost::uint64_t const b);
+    
+    template <std::size_t NumWords>
+    void sub(boost::uint64_t * x,  boost::uint64_t const* y);
 
-        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
-        #undef FUNCTION_sub_nbits_nbits
-        /* ------------------------------------------------------- */
-        #define FUNCTION_sub_nbits_64bits(z, n, unused) \
-            void NAME_SUB_NBITS_MINUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y);
+    //multiplication
+    template <std::size_t NumWords>
+    void mul(boost::uint64_t * x, boost::uint64_t const b);
 
-        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_64bits, ~)
-        #undef FUNCTION_sub_nbits_64bits
-        /* ------------------------------------------------------- */
-        //multiplication
-        #define FUNCTION_mul_nbits_64bits(z, n, unused) \
-            void NAME_MUL_NBITS_64BITS(n)( boost::uint64_t* x, boost::uint64_t const* y);
+    template <std::size_t NumWords>
+    void mul(boost::uint64_t * x, boost::uint64_t const* y);
 
-        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
-        #undef FUNCTION_mul_nbits_64bits
-        /* ------------------------------------------------------- */
-        #define FUNCTION_mul_nbits_nbits(z, n, unused) \
-            void NAME_MUL_NBITS_NBITS(n)( boost::uint64_t* x, boost::uint64_t const* y);
+    template <std::size_t NumWords>
+    void mul(boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
 
-        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
-        #undef FUNCTION_mul_nbits_nbits
-        /* ------------------------------------------------------- */
-        #define FUNCTION_mul_twonbits_nbits_nbits(z, n, unused) \
-            void NAME_MUL_TWONBITS_NBITS_NBITS(n)( boost::uint64_t* x,  boost::uint64_t const* y, boost::uint64_t const* w);
+    //multiplication Addition (only for the inner product)
+    template <std::size_t NumWords>
+    void muladd( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
 
-        BOOST_PP_REPEAT(VLI_FOUR, FUNCTION_mul_twonbits_nbits_nbits, ~)
-        #undef FUNCTION_mul_twonbits_nbits_nbits
-        /* ------------------------------------------------------- */
-        //multiplication Addition
-        #define FUNCTION_muladd_twonbits_nbits_nbits(z, n, unused) \
-            void NAME_MULADD_TWONBITS_NBITS_NBITS(n)( boost::uint64_t* x,  boost::uint64_t const* y, boost::uint64_t const* w);
-
-        BOOST_PP_REPEAT(VLI_FOUR, FUNCTION_muladd_twonbits_nbits_nbits, ~)
-        #undef FUNCTION_muladd_twonbits_nbits_nbits
-        /* ------------------------------------------------------- */
     }
 }
         

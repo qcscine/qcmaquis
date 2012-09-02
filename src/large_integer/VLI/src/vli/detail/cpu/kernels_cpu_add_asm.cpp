@@ -34,3 +34,7 @@
 #if defined (__powerpc__)
 #include "vli/detail/cpu/powerpc/kernels_cpu_add_asm.h"
 #endif
+
+#if defined (_WIN64)
+
+#endif

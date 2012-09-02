@@ -31,9 +31,13 @@
 
 namespace vli {
     namespace detail {
-                     // new functions type : VLI<n*64> - VLI<n*64> : sub128_128, sub192_192 ...
+                    // new functions type : VLI<n*64> - VLI<n*64> : sub128_128, sub192_192 ...
+                    template <std::size_t NumWords>
+                    void sub(boost::uint64_t* x,  boost::uint64_t const*  y);
+                     
                      #define FUNCTION_sub_nbits_nbits(z, n, unused) \
-                         void NAME_SUB_NBITS_MINUS_NBITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){\
+                         template<> \
+                         void sub<(n+2)>( boost::uint64_t* x,  boost::uint64_t const* y){\
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Substraction, ~)                          \
                                  : : :"rax","memory"                                                          \
@@ -42,19 +46,23 @@ namespace vli {
 
                      BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_sub_nbits_nbits, ~)
                      #undef FUNCTION_sub_nbits_nbits
+                     
+                    template <std::size_t NumWords>
+                    void sub(boost::uint64_t* x,  boost::uint64_t const b);
 
                      //new functions type : VLI<n*64> - VLI<64> : sub192_64, sub256_64
                      //the case is done after sub128_64
                      #define FUNCTION_sub_nbits_64bits(z, n, unused) \
-                          void NAME_SUB_NBITS_MINUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){   \
+                          template<> \
+                          void sub<(n+2)>( boost::uint64_t* x,  boost::uint64_t const b){   \
                           asm(                                                                                   \
-                              "movq   (%%rsi)            , %%rax   \n"                                           \
+                              "movq   %%rsi              , %%rax   \n"                                           \
                               "movq   %%rax              , %%rcx   \n" /*  XOR then AND could make a cpy */      \
                               "movq   (%%rdi)            , %%r9    \n"                                           \
                               "shrq   $63                , %%rcx   \n" /* get the sign */                        \
                               "negq   %%rcx                        \n" /* 0 or 0xffffff...    */                 \
-                              "subq   (%%rsi)            , %%r9    \n"                                           \
-                              "movq   %%r9              , (%%rdi)  \n"                                           \
+                              "subq   %%rsi              , %%r9    \n"                                           \
+                              "movq   %%r9               , (%%rdi) \n"                                          \
                               BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), Substraction2, ~)                               \
                               : : :"rax","r8","r9","rcx","memory"                                                \
                             );                                                                                   \

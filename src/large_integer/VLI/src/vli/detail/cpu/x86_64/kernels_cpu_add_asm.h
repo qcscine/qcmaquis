@@ -29,27 +29,34 @@
 
 #include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
 
-
 namespace vli{
     namespace detail{
                      // new functions type : VLI<n*64> + VLI<n*64> : add128_128, add192_192 ...
-                     #define FUNCTION_add_nbits_nbits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_NBITS(n)(boost::uint64_t* x,  boost::uint64_t const* y){ \
-                         asm(                                                                                 \
+                    template <std::size_t NumWords>
+                    void add(boost::uint64_t* x,  boost::uint64_t const*  y);
+                    
+                     #define FUNCTION_add_nbits_nbits(z, n, unused)                                           \
+                        template<>                                                                            \
+                        void add<(n+2)>(boost::uint64_t* x,  boost::uint64_t const* y){                       \
+                        asm(                                                                                  \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Addition, ~)                              \
                                  : : :"rax","memory"                                                          \
                             );                                                                                \
-                         }                                                                                    \
-
-                     BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
-                     #undef FUNCTION_add_nbits_nbits
-
-                     //new functions type : VLI<n*64> + VLI<64> : add192_64, add256_64
-                     //the case is done after add128_64
-                     #define FUNCTION_add_nbits_64bits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){  \
+                        }                                                                                     \
+    
+                    BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
+                    #undef FUNCTION_add_nbits_nbits
+ 
+                    //new functions type : VLI<n*64> + VLI<64> : add192_64, add256_64
+                    //the case is done after add128_64
+                    template <std::size_t NumWords>
+                    void add(boost::uint64_t* x,  boost::uint64_t const b);
+                     
+                     #define FUNCTION_add_nbits_64bits(z, n, unused)                                            \
+                         template<>                                                                             \
+                         void add<(n+2)>(boost::uint64_t* x,  boost::uint64_t b){                               \
                          asm(                                                                                   \
-                                 "movq   (%%rsi)            , %%rax   \n"                                       \
+                                 "movq   %%rsi              , %%rax   \n"                                       \
                                  "movq   %%rax              , %%rcx   \n" /* XOR then AND could make a cpy */   \
                                  "shrq   $63                , %%rcx   \n" /* get the sign */                    \
                                  "negq   %%rcx                        \n" /* 0 or 0xffffff...    */             \
@@ -62,10 +69,14 @@ namespace vli{
 
                      BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
                      #undef FUNCTION_add_nbits_64bits
+                     
+                    template <std::size_t NumWords>
+                    void add_extension( boost::uint64_t * x,  boost::uint64_t const* y,  boost::uint64_t const* z);
 
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)( boost::uint64_t* x ,  boost::uint64_t const* y ,  boost::uint64_t const* w /* z used by boost pp !*/){ \
+                         template<> \
+                         void add_extension<(n+2)>(boost::uint64_t* x ,  boost::uint64_t const* y ,  boost::uint64_t const* w /* z used by boost pp !*/){ \
                          asm(                                                                 \
                                  "movq " PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdx), %%r8  \n"    \
                                  "movq " PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rsi), %%r9  \n"    \
