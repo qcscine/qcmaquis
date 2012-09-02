@@ -52,10 +52,14 @@
 namespace vli{
     namespace detail{
                      //new functions type : VLI<n*64> *= long int;
+                    template <std::size_t NumWords>
+                    void mul( boost::uint64_t * x, boost::uint64_t const b);
+                     
                      #define FUNCTION_mul_nbits_64bits(z, n, unused) \
-                         void NAME_MUL_NBITS_64BITS(n)( boost::uint64_t* x,  boost::uint64_t const* y){           \
+                         template<>                      \
+                         void mul<(n+2)>( boost::uint64_t* x,  boost::uint64_t const b){           \
                          asm(                                                                                       \
-                             "movq (%%rsi)          ,%%rax                  \n" /* a0 into rax */                   \
+                             "movq %%rsi            ,%%rax                  \n" /* a0 into rax */                   \
                              "xorq %%rcx            ,%%rcx                  \n" /* rcx to 0 */                      \
                              "cmpq %%rax            ,%%rcx                  \n" /* rax is negative ? */             \
                              "js   "NAME_CONDITIONAL_MUL_NBITS_64BITS(n)"   \n" /* if statements begins */          \
@@ -68,7 +72,7 @@ namespace vli{
                              "movq %%rdx            ,%%r9                   \n" /* hia0b0 into r9 */                \
                              "movq %%rbx            ,%%rax                  \n" /* reload rax */                    \
                               BOOST_PP_REPEAT(n, MUL_register, ~)               /* mul algo */                      \
-                             "mulq "PPS(BOOST_PP_ADD(n,1),1)"(%%rdi)       \n" /* a0 * b2, we skip the the hi */   \
+                             "mulq "PPS(BOOST_PP_ADD(n,1),1)"(%%rdi)        \n" /* a0 * b2, we skip the the hi */   \
                              "addq %%rax            ,"R(BOOST_PP_ADD(n,1))" \n" /* add hi + low */                  \
                              "cmpq $0               ,%%rcx                  \n" /* rcx = 1 we negate */             \
                              "je "NAME_RES_CONDITIONAL_MUL_NBITS_64BITS(n)" \n" /* not equal ZF = 0, negate*/       \
@@ -94,10 +98,13 @@ namespace vli{
 //                      b0a2            //1 
 //         I do : b0a2, b1a1, b1a2, b2a2, b2a1, b2a0
 // the boost pp is very hard to understand, look hall of fame to understand what it does !!!!!!!!!!
-/* PP_REPEAT limited to 3 nested */ 
+/* PP_REPEAT limited to 3 nested */
+                       template <std::size_t NumWords>
+                       void mul( boost::uint64_t * x, boost::uint64_t const* y);
 
                        #define BOOST_PP_LOCAL_MACRO(n) \
-                          void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))( boost::uint64_t* x,  boost::uint64_t const* y){ \
+                          template<> \
+                          void mul<n>( boost::uint64_t* x,  boost::uint64_t const* y){ \
                           asm(                                                                                            \
                               BOOST_PP_REPEAT(n, MULNTON0, BOOST_PP_SUB(n,1))                                             \
                               BOOST_PP_REPEAT(n, SAVEr_register, n) /* for saving */                                      \
@@ -141,9 +148,11 @@ namespace vli{
 //                             : : :"rax","rbx","rdx","r15","r14","r13","memory" 
 //                         ); 
 //                      };
-                     
+                       template <std::size_t NumWords>
+                       void mul( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
 
-                       void mul128_64_64( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rcx */){
+                       template<>
+                       void mul<1>( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rcx */){
                           asm( 
                               "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
                               "movq %%rdx            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
@@ -160,90 +169,8 @@ namespace vli{
                       // TO DO write a notice for the cryptic lines 
 
 
-
-                       void mul256_128_128_old( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
-	                          asm( 
-	                              "subq $0x20            ,%%rsp             \n" /* create stack frame */           
-	                              "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
-	                              "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */   
-	                              "xorq %%r11            ,%%r11             \n" /* r11 = 0 due to carry effect */   
-	                              "xorq %%r14            ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   \
-	                              "xorq %%r15            ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   \
-	                               /* te a if negative and store into stack, in reverse order due to universal access */ 
-	                              "movq 8(%%rsi)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
-	                              "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-	                              "jns _Negativea_256_128_                  \n" /* number is negative, we negate */ 
-	                              "movq (%%rsi)          ,%%r8              \n" /* load a0 */                       
-	                              "notq %%r8                                \n" /* C2M, ~a0 */                     
-	                              "notq %%rax                               \n" /* C2M, ~a1 */                     
-	                              "addq $0x1             ,%%r8              \n" /* C2M, ~a0+1 */                   
-	                              "adcq $0x0             ,%%rax             \n" /* C2M, ~a1+CB */                   
-	                              "movq %%r8             ,-0x10(%%rsp)      \n" /* a0 into the stack -16 rsp */     
-	                              "movq %%rax            ,-0x08(%%rsp)      \n" /* a1 into the stack -8 rsp */     
-	                              "leaq  -0x10(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */   
-	                              "movq $1               ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   
-	                              "_Negativea_256_128_ :                    \n" /* end if structure */             
-	                              /* te a if negative and store into stack, in reverse order due to universal access */ 
-	                              "movq 8(%%rbx)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
-	                              "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-	                              "jns _Negativeb_256_128_                  \n" /* number is negative, we negate */ 
-	                              "movq (%%rbx)          ,%%r8              \n" /* load b0 */                       
-	                              "notq %%r8                                \n" /* C2M, ~b0 */                     
-	                              "notq %%rax                               \n" /* C2M, ~b1 */                     
-	                              "addq $0x1             ,%%r8              \n" /* C2M, ~b0+1 */                   
-	                              "adcq $0x0             ,%%rax             \n" /* C2M, ~b1+CB */                   
-	                              "movq %%r8             ,-0x20(%%rsp)      \n" /* b0 into the stack -16 rsp */     
-	                              "movq %%rax            ,-0x18(%%rsp)      \n" /* b1 into the stack -8 rsp */     
-	                              "leaq  -0x20(%%rsp)    ,%%rbx             \n" /* rsi points to stack b0 > 0 */   
-	                              "movq $1               ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   
-	                              "_Negativeb_256_128_ :                    \n" /* end if structure */             
-	                              /*----------------------- a0 * b0, a0 * b1 start ------------------------*/ 
-	                              "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
-	                              "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
-	                              "mulq (%%rbx)                             \n" /* lo rax, hi rdx   a0*b0 */       
-	                              "movq %%rax            ,%%r8              \n" /* only one term, write into c0 */ 
-	                              "movq %%rdx            ,%%r9              \n" /* a0b0hi into r8 */               
-	                              "movq %%rcx            ,%%rax             \n" /* reload rax(a0) from the stack */ 
-	                              "mulq 8(%%rbx)                            \n" /* a0 * b1 */                       
-	                              "addq %%rax            ,%%r9              \n" /* add a0b0hi + a0b1lo */           
-	                              "adcq %%rdx            ,%%r10             \n" /* save the a0b1hi into r9 */       
-	                              /*----------------------- a0 * b0, a0 * b1 end --------------------------*/ 
-	                              /*----------------------- a1 * b0, a1 * b1 start ------------------------*/ 
-	                              "movq 8(%%rsi)         ,%%rax             \n" /* a1 into rax */                   
-	                              "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
-	                              "mulq (%%rbx)                             \n" /* a1 * b0 */                       
-	                              "addq %%rax            ,%%r9              \n" /* l46 + a1b0lo */                 
-	                              "adcq %%rdx            ,%%r10             \n" /* l47 + a1b0hi + c */             
-	                              "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq */ 
-	                              "movq %%rcx            ,%%rax             \n" /* reload rax(a1) from the stack */ 
-	                              "mulq 8(%%rbx)                            \n" /* a1*b1 */                         
-	                              "addq %%rax            ,%%r10             \n" /* a1b2lo to r9 */                 
-	                              "adcq %%rdx            ,%%r11             \n" /* a1b2hi + c  */                   
-	                              /*----------------------- a1 * b0, a1 * b1 end --------------------------*/ 
-	                              "xorq %%r14            ,%%r15             \n"                                     
-	                              "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             
-	                              "je _IsNegativeResult_256_128_            \n" /* not equal ZF = 0, negate*/       
-	                              "notq %%r8                                \n" /* start2ComplementMethod negate */ 
-	                              "notq %%r9                                \n" /* 2CM negate */                   
-	                              "notq %%r10                               \n" /* 2CM negate */                   
-	                              "notq %%r11                               \n" /* 2CM negate */                   
-	                              "addq $0x1             ,%%r8              \n" /* 2CM add 1 */                     
-	                              "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */             
-	                              "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */             
-	                              "adcq $0x0             ,%%r11             \n" /* 2CM propagate CB */             
-	                              "_IsNegativeResult_256_128_ :             \n" /* end if negative result */       
-	                              "movq %%r8             ,(%%rdi)           \n" /* r8 -> c1 */                     
-	                              "movq %%r9             ,8(%%rdi)          \n" /* r9 -> c1 */                     
-	                              "movq %%r10            ,16(%%rdi)         \n" /* r10 -> c2 */                     
-	                              "movq %%r11            ,24(%%rdi)         \n" /* r11 -> c3 */                     
-	                              "addq $0x20            ,%%rsp             \n" /* destroy stack frame */           
-	                              : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r14","r15","memory"   
-	                             );
-	                       }
-
-
-
-                      void mul256_128_128( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
+                      template<>//128 -> 256
+                      void mul<2>( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
                               "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */
@@ -307,6 +234,7 @@ namespace vli{
                               : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r13","r14","r15","memory"   
                               );
                       }
+                      
                       void toto( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                                asm( 
                             /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
@@ -422,7 +350,8 @@ namespace vli{
                                ); 
                             }
 
-                      void mul384_192_192( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
+                      template<> //
+                      void mul<3>( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                                asm( 
                             /*-01*/ "subq $0x30            ,%%rsp             \n" /* create stack frame */            
                             /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
@@ -544,8 +473,9 @@ namespace vli{
                                : : : "rax","rdx","rcx","rbx","r8","r9","r10","r11","r12","r13","r14","r15","memory"   
                                ); 
                             }
-
-                             void mul512_256_256( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
+  
+                            template<>
+                             void mul<4>( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                                 asm( 
                                     "subq $0x50            ,%%rsp             \n" /* destroy stack frame */           
                                     "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
