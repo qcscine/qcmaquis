@@ -32,12 +32,16 @@
 namespace vli {
     namespace detail{
                      // new functions type : VLI<n*64> + VLI<n*64> : add128_128, add192_192 ...
+                    template <std::size_t NumWords>
+                    void add(boost::uint64_t* x,  boost::uint64_t const*  y);
+
                      #define FUNCTION_add_nbits_nbits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_NBITS(n)(boost::uint64_t* x, boost::uint64_t const* y){ \
+                         template<>                                                                           \
+                         void add<(n+2)>(boost::uint64_t* x, boost::uint64_t const* y){                         \
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                      \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r4,BOOST_PP_ADD(n,2))       \
-                                 "addc 14,14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,2)))" \n"    \
+                                 "addc 14,14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,2)))" \n"     \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC_register    ,BOOST_PP_ADD(n,2))       \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
                                  : : :BOOST_PP_REPEAT(BOOST_PP_MUL(BOOST_PP_ADD(n,2),2), CLOTHER_register, ~) "memory"        \
@@ -47,43 +51,50 @@ namespace vli {
                      BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_nbits, ~)
                      #undef FUNCTION_add_nbits_nbits
 
+                    template <std::size_t NumWords>
+                    void add(boost::uint64_t* x,  boost::uint64_t const b);
+
                      #define FUNCTION_add_nbits_64bits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_64BITS(n)(boost::uint64_t* x, boost::uint64_t const* y){ \
+                         template<>                                                                           \
+                         void add<(n+2)>(boost::uint64_t* x, boost::uint64_t const y){                        \
                          asm(                                                                                 \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r3,~ )                      \
-                                 "ld   5,0(4)   \n" \
-                                 "addi 6,5,0    \n" \
-                                 "sradi 6,6,63   \n" \
-                                 "addc 14,5,14  \n" \
-                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC00_register, ~)    \
+                                 "sradi 6,4,63   \n"                                                          \
+                                 "addc 14,4,14  \n"                                                           \
+                                 BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC00_register, ~)                        \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
-                                 : : :"r5","r6",BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory"        \
-                                ); \
-                         }                                                                                     \
+                                 : : :"r5","r6",BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), CLOTHER_register, ~) "memory" \
+                                );                                                                            \
+                         }                                                                                    \
 
                      BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_add_nbits_64bits, ~)
                      #undef FUNCTION_add_nbits_64bits
 
+                    template <std::size_t NumWords>
+                    void add_extension( boost::uint64_t * x,  boost::uint64_t const* y,  boost::uint64_t const* z);
+
                      //new functions type : VLI<n*64> = VLI<n*64> VLI<n*64> : add128_64, add192_128 ...
                      #define FUNCTION_add_nbits_nminus1bits(z, n, unused) \
-                         void NAME_ADD_NBITS_PLUS_NMINUS1BITS(n)(boost::uint64_t* x , boost::uint64_t const* y , boost::uint64_t const* w /* z used by boost pp !*/){ \
+                         template<>                                                                           \
+                         void add_extension<(n+2)>(boost::uint64_t* x , boost::uint64_t const* y , boost::uint64_t const* w /* z used by boost pp !*/){ \
                          asm(                                                                                 \
-                                 "ld  30,"PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(4)  \n"    \
-                                 "ld  31,"PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(5)  \n"    \
-                                 "sradi 30,30,63   \n" \
-                                 "sradi 31,31,63   \n" \
+                                 "ld  30,"PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(4)  \n"                             \
+                                 "ld  31,"PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(5)  \n"                             \
+                                 "sradi 30,30,63   \n"                                                        \
+                                 "sradi 31,31,63   \n"                                                        \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r5,~ )                      \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), LOAD_register_r4,BOOST_PP_ADD(n,2))       \
-                                 "addc 14,14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,2)))" \n"    \
+                                 "addc 14,14,"BOOST_PP_STRINGIZE(BOOST_PP_ADD(14,BOOST_PP_ADD(n,2)))" \n"     \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), ADC_register    ,BOOST_PP_ADD(n,2))       \
-                                 "adde  30,30,31 \n"                    \
+                                 "adde  30,30,31 \n"                                                          \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), STORE_register_r3,~ )                     \
-                                 "std   30,"PPS(VLI_AOS,BOOST_PP_ADD(n,2))"(3)  \n"    \
+                                 "std   30,"PPS(VLI_AOS,BOOST_PP_ADD(n,2))"(3)  \n"                           \
                                  : : :"r30","r31",BOOST_PP_REPEAT(BOOST_PP_MUL(BOOST_PP_ADD(n,2),2), CLOTHER_register, ~) "memory"        \
                             );                                                                                \
-                        }                                                                                                                         \
+                        }                                                                                     \
 
                      BOOST_PP_REPEAT(VLI_MAX_ITERATION_MINUS_ONE, FUNCTION_add_nbits_nminus1bits, ~)
                      #undef FUNCTION_add_nbits_nminus1bits
     } // end namespace detail
 } // end namespace vli
+

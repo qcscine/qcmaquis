@@ -34,12 +34,16 @@
 namespace vli {
     namespace detail {
                      //new functions type : VLI<n*64> *= long int;
+                    template <std::size_t NumWords>
+                    void mul( boost::uint64_t * x, boost::uint64_t const b);
+
                      #define FUNCTION_mul_nbits_64bits(z, n, unused) \
-                         void NAME_MUL_NBITS_64BITS(n)(boost::uint64_t* x, boost::uint64_t const* y){           \
+                         template<> \
+                         void mul<n+2>(boost::uint64_t* x, boost::uint64_t const b){           \
                          asm(                                                                                       \
                              "xor   6,6,6 \n" \
                              "ld    "R(0)", 0(3)   \n" /* x arg */                                                     \
-                             "ld    "R(1)", 0(4)   \n" /* y arg */                                                     \
+                             "mr    "R(1)", 4   \n" /* y arg */                                                     \
                              "cmpi 0,0,"R(1)",0                  \n" /* rax is negative ? */             \
                              "bgt 0, "NAME_CONDITIONAL_MUL_NBITS_64BITS(n)"   \n" /* if statements begins */          \
                              "neg   "R(1)","R(1)"                              \n" /* negate the number */             \
@@ -65,9 +69,12 @@ namespace vli {
                       BOOST_PP_REPEAT(7, FUNCTION_mul_nbits_64bits, ~) // 7 -> expand until 512 !
 
                       // remark same than x86, look cpu_x86 for details
+                       template <std::size_t NumWords>
+                       void mul( boost::uint64_t * x, boost::uint64_t const* y);
 
                        #define BOOST_PP_LOCAL_MACRO(n) \
-                          void NAME_MUL_NBITS_NBITS(BOOST_PP_SUB(n,2))(boost::uint64_t* x, boost::uint64_t const* y){ \
+                          template<> \
+                          void mul<n>(boost::uint64_t* x, boost::uint64_t const* y){ \
                          asm(                                                                                       \
                               BOOST_PP_REPEAT(n, MULNTON0, BOOST_PP_SUB(n,1))                                             \
                               BOOST_PP_REPEAT(n, STORE_register_r3mul2,BOOST_PP_ADD(n,2) )                     \
@@ -79,8 +86,11 @@ namespace vli {
 
                        #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
 
-
-                       void mul128_64_64(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rcx */){
+                       template <std::size_t NumWords>
+                       void mul( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
+                    
+                       template<>
+                       void mul<1>(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rcx */){
                           asm( 
                               "ld 14, 0(4)     \n"                   
                               "ld 15, 0(5)     \n"                   
@@ -91,8 +101,9 @@ namespace vli {
                               : : :"r14","r15","r16"
                               );
                        }
-
-                       void mul256_128_128(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
+          
+                       template<>
+                       void mul<2>(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -159,8 +170,9 @@ namespace vli {
                              );
 
                        }
-
-                      void mul384_192_192(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
+         
+                      template<>
+                      void mul<3>(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
@@ -267,7 +279,8 @@ namespace vli {
                               );
                             }
 
-                     void mul512_256_256(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
+                     template<>
+                     void mul<4>(boost::uint64_t* x/* %%rdi */, boost::uint64_t const* y/* %%rsi */, boost::uint64_t const* z/* %%rdx -> rbx */){
                             asm(
                               "ld 14, 0(4)              \n"                   
                               "ld 15, 8(4)              \n"                   
