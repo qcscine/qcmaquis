@@ -63,7 +63,7 @@ namespace vli {
      	         in2 += sum_block_size::value;
 	    }
 
-            #pragma unroll
+        #pragma unroll
 	    for(boost::uint32_t stride = sum_block_size::value >> 1; stride > 0; stride >>= 1) {
                 __syncthreads();
                 if (local_thread_id < stride) {

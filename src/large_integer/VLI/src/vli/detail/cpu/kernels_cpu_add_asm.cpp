@@ -36,6 +36,6 @@
 #endif
 
 #if defined (_WIN64)
-
+#include "vli/detail/cpu/generic/kernels_cpu_add_asm.h"
 #endif
 

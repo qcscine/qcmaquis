@@ -36,5 +36,5 @@
 #endif
 
 #if defined (_WIN64)
-
+#include "vli/detail/cpu/generic/kernels_cpu_sub_asm.h"
 #endif
