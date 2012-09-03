@@ -55,7 +55,7 @@ namespace vli {
 
             gpu_memblock const& pgm  = boost::serialization::singleton<gpu_memblock>::get_const_instance(); // create memory block
             resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, VectorSize); // allocate mem
-  	    tasklist_keep_order<NumBits, MaxOrder, NumVars> const& ghc =  boost::serialization::singleton< tasklist_keep_order<NumBits, MaxOrder, NumVars> >::get_const_instance(); // calculate the different packet, singleton only one time 
+  	        tasklist_keep_order<NumBits, MaxOrder, NumVars> const& ghc =  boost::serialization::singleton< tasklist_keep_order<NumBits, MaxOrder, NumVars> >::get_const_instance(); // calculate the different packet, singleton only one time 
             memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
 
 	    {
