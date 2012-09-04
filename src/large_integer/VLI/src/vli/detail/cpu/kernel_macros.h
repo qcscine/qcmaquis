@@ -26,6 +26,7 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
+#include <string.h> //for memset and the uint32_t version
 #include <boost/cstdint.hpp>
 #include <boost/preprocessor/arithmetic/add.hpp>
 #include <boost/preprocessor/arithmetic/mul.hpp>
