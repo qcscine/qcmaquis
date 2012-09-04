@@ -62,7 +62,7 @@ namespace vli{
                          void add<(n+2)>(boost::uint64_t* x,  boost::uint64_t b){                               \
                             boost::uint32_t cb = static_cast<boost::uint32_t>(b);                               \
                             boost::uint32_t* cx = reinterpret_cast<boost::uint32_t*>(x);                        \
-                            boost::uint32_t sign = cb >> std::numeric_limits<boost::uint32_t>::digits - 1;      \
+                            boost::uint32_t sign = cb >>(std::numeric_limits<boost::uint32_t>::digits - 1);     \
                             sign = -sign;                                                                       \
                             boost::uint32_t carry(0);                                                           \
                             boost::uint64_t tmp = static_cast<uint64_t>(cx[0]) + cb;                            \
@@ -89,8 +89,8 @@ namespace vli{
                              boost::uint32_t const* cw = const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(w)); \
                              boost::uint32_t const* cy = const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(y)); \
                              boost::uint32_t* cx = reinterpret_cast<boost::uint32_t*>(x);                                           \
-                             boost::uint32_t sign_y = - (cy[2*(n+2)-1] >> std::numeric_limits<boost::uint32_t>::digits - 1);        \
-                             boost::uint32_t sign_z = - (cw[2*(n+2)-1] >> std::numeric_limits<boost::uint32_t>::digits - 1);        \
+                             boost::uint32_t sign_y = - (cy[2*(n+2)-1] >>( std::numeric_limits<boost::uint32_t>::digits - 1));      \
+                             boost::uint32_t sign_z = - (cw[2*(n+2)-1] >>( std::numeric_limits<boost::uint32_t>::digits - 1));      \
                              boost::uint32_t carry(0);                                                                              \
                              for(int i(0); i<2*(n+2);++i){                                                                          \
                                   boost::uint64_t tmp = static_cast<uint64_t>(cw[i]) + cy[i] + carry;                               \

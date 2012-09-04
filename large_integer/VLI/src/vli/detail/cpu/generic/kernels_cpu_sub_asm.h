@@ -44,7 +44,7 @@ namespace vli {
                              boost::uint32_t borrow(0);                                                                             \
                              for(int i(0); i<2*(n+2);++i){                                                                          \
                                 boost::uint64_t tmp = static_cast<uint64_t>(cx[i]) - cy[i] - borrow;                                \
-                                borrow = (tmp >> (std::numeric_limits<boost::uint64_t>::digits)-1) ;                                \
+                                borrow = tmp >> (std::numeric_limits<boost::uint64_t>::digits-1) ;                                \
                                 cx[i] = tmp;                                                                                        \
                              }                                                                                                      \
                           }                                                                                                         \
@@ -62,7 +62,7 @@ namespace vli {
                           void sub<(n+2)>( boost::uint64_t* x,  boost::uint64_t const b){    \
                             boost::uint32_t cb = static_cast<boost::uint32_t>(b);                               \
                             boost::uint32_t* cx = reinterpret_cast<boost::uint32_t*>(x);                        \
-                            boost::uint32_t sign = cb >> std::numeric_limits<boost::uint32_t>::digits - 1;      \
+                            boost::uint32_t sign = cb >> (std::numeric_limits<boost::uint32_t>::digits - 1);    \
                             sign = -sign;                                                                       \
                             boost::uint32_t borrow(0);                                                          \
                             boost::uint64_t tmp = static_cast<uint64_t>(cx[0]) - cb;                            \

@@ -17,7 +17,7 @@ configure_file (
 ########################################################################
 
 add_library(vli 
-            detail/cpu/kernels_cpu_operations_asm.cpp
+            detail/cpu/kernels_cpu_operations.cpp
       )
 
 ########################################################################
