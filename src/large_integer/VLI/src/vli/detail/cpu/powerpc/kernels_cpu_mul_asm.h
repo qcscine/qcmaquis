@@ -26,9 +26,8 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include "vli/detail/cpu/powerpc/kernel_implementation_macros.h"
-
-#include <cassert>
+#ifndef KERNELS_CPU_POWERPC_MUL_ASM_H
+#define KERNELS_CPU_POWERPC_MUL_ASM_H
 
 // to check :  g++ -E -P -I /BOOST_PATH/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
 namespace vli {
@@ -67,6 +66,7 @@ namespace vli {
                          } \
  
                       BOOST_PP_REPEAT(7, FUNCTION_mul_nbits_64bits, ~) // 7 -> expand until 512 !
+                      #undef FUNCTION_mul_nbits_64bits
 
                       // remark same than x86, look cpu_x86 for details
                        template <std::size_t NumWords>
@@ -85,6 +85,9 @@ namespace vli {
                        #define BOOST_PP_LOCAL_LIMITS (2, 8)
 
                        #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
+                       
+                       #undef BOOST_PP_LOCAL_MACRO
+                       #undef BOOST_PP_LOCAL_LIMITS
 
                        template <std::size_t NumWords>
                        void mul( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
@@ -447,3 +450,5 @@ namespace vli {
                      }
     } // end namespace detail
 } // end namespace vli
+
+#endif

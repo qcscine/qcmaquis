@@ -27,9 +27,9 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
-#include <limits>
-#include <iostream>
+#ifndef KERNELS_CPU_GENERIC_ADD_ASM_H
+#define KERNELS_CPU_GENERIC_ADD_ASM_H
+
 namespace vli{
     namespace detail{
                      // new functions type : VLI<n*64> + VLI<n*64> : add128_128, add192_192 ...
@@ -109,3 +109,5 @@ namespace vli{
 
     } // end namespace detail
 } // end namespace vli
+
+#endif

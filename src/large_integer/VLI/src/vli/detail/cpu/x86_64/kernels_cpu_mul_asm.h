@@ -27,7 +27,10 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
+#ifndef KERNELS_CPU_X86_84_MUL_ASM_H
+#define KERNELS_CPU_X86_84_MUL_ASM_H
+
+//#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
 
 // This assembly code support both data layout SoA and AoS
 // clear the syntax
@@ -86,6 +89,7 @@ namespace vli{
                          } \
  
                       BOOST_PP_REPEAT(7, FUNCTION_mul_nbits_64bits, ~) // 7 -> expand until 512 !
+                      #undef FUNCTION_mul_nbits_64bits
 
 // remark the multiplication is done from bottom to the right top corner, different from the childhood method,
 // to avoid carry bit pb propagation,
@@ -115,6 +119,9 @@ namespace vli{
                        #define BOOST_PP_LOCAL_LIMITS (2, 8)
 
                        #include BOOST_PP_LOCAL_ITERATE() // the repetition, expand 128 -> 512
+                       
+                       #undef BOOST_PP_LOCAL_MACRO
+                       #undef BOOST_PP_LOCAL_LIMITS
 // the expansion gives
 //                      void mul192_192( boost::uint64_t* x,  boost::uint64_t const * y){
 //                          asm( 
@@ -665,3 +672,5 @@ namespace vli{
                              }
     } // end namespace detail
 } // end namespace vli
+
+#endif

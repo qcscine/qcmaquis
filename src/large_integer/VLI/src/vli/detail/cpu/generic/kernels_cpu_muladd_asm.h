@@ -27,19 +27,12 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
-#include <boost/cstdint.hpp>
+#ifndef KERNELS_CPU_GENERIC_MULADD_ASM_H
+#define KERNELS_CPU_GENERIC_MULADD_ASM_H
 
 namespace vli {
     namespace detail{
     
-                    //multiplication Addition (only for the inner product)
-                   template <std::size_t NumWords>
-                   void mul( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
-
-                   template <std::size_t NumWords>
-                   void add( boost::uint64_t * x, boost::uint64_t const* y);
-                   
                    template <std::size_t NumWords>
                    void muladd( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
  
@@ -51,10 +44,11 @@ namespace vli {
                         add<2*(n+2)>(x,tmp); \
                    } \
         
-                   BOOST_PP_REPEAT(3, FUNCTION_mul_add, ~)
-
-        
-        
+                   BOOST_PP_REPEAT(VLI_THREE, FUNCTION_mul_add, ~)
+                   
+                   #undef FUNCTION_mul_add
            
         } //namespace detail
 } //namespace vli
+
+#endif

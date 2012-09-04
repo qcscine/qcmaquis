@@ -26,7 +26,10 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include <boost/cstdint.hpp>
+#ifndef KERNELS_CPU_X86_84_MULADD_ASM_H
+#define KERNELS_CPU_X86_84_MULADD_ASM_H
+
+//#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
 
 namespace vli {
     namespace detail{
@@ -61,7 +64,7 @@ namespace vli {
                            /* te a if negative and store into stack, in reverse order due to universal access */ 
                           "movq 8(%%rsi)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
                           "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                          "jns _Negativea_256_128_                  \n" /* number is negative, we negate */ 
+                          "jns _Negativea_muladd_256_128_                  \n" /* number is negative, we negate */ 
                           "movq (%%rsi)          ,%%r8              \n" /* load a0 */                       
                           "notq %%r8                                \n" /* C2M, ~a0 */                      
                           "notq %%rax                               \n" /* C2M, ~a1 */                      
@@ -71,11 +74,11 @@ namespace vli {
                           "movq %%rax            ,-0x08(%%rsp)      \n" /* a1 into the stack -8 rsp */      
                           "leaq  -0x10(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    
                           "movq $1               ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   
-                          "_Negativea_256_128_ :                    \n" /* end if structure */              
+                          "_Negativea_muladd_256_128_ :                    \n" /* end if structure */              
                           /* te a if negative and store into stack, in reverse order due to universal access */ 
                           "movq 8(%%rbx)         ,%%rax             \n" /* load a3 into r8, for the sign */ 
                           "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                          "jns _Negativeb_256_128_                  \n" /* number is negative, we negate */ 
+                          "jns _Negativeb_muladd_256_128_                  \n" /* number is negative, we negate */ 
                           "movq (%%rbx)          ,%%r8              \n" /* load b0 */                       
                           "notq %%r8                                \n" /* C2M, ~b0 */                      
                           "notq %%rax                               \n" /* C2M, ~b1 */                      
@@ -85,7 +88,7 @@ namespace vli {
                           "movq %%rax            ,-0x18(%%rsp)      \n" /* b1 into the stack -8 rsp */      
                           "leaq  -0x20(%%rsp)    ,%%rbx             \n" /* rsi points to stack b0 > 0 */    
                           "movq $1               ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   
-                          "_Negativeb_256_128_ :                    \n" /* end if structure */              
+                          "_Negativeb_muladd_256_128_ :                    \n" /* end if structure */              
                           /*----------------------- a0 * b0, a0 * b1 start ------------------------*/ 
                           "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
                           "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
@@ -111,7 +114,7 @@ namespace vli {
                           /*----------------------- a1 * b0, a1 * b1 end --------------------------*/ 
                           "xorq %%r14            ,%%r15             \n"                                     
                           "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             
-                          "je _IsNegativeResult_256_128_            \n" /* not equal ZF = 0, negate*/       
+                          "je _IsNegativeResult_muladd_256_128_            \n" /* not equal ZF = 0, negate*/       
                           "notq %%r8                                \n" /* start2ComplementMethod negate */ 
                           "notq %%r9                                \n" /* 2CM negate */                    
                           "notq %%r10                               \n" /* 2CM negate */                    
@@ -120,7 +123,7 @@ namespace vli {
                           "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */              
                           "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */              
                           "adcq $0x0             ,%%r11             \n" /* 2CM propagate CB */              
-                          "_IsNegativeResult_256_128_ :             \n" /* end if negative result */        
+                          "_IsNegativeResult_muladd_256_128_ :             \n" /* end if negative result */        
                           "addq (%%rdi)          , %%r8             \n" /* add a0+b0 */      
                           "adcq 8(%%rdi)         , %%r9             \n" /* add a1+b1+c */    
                           "adcq 16(%%rdi)        , %%r10            \n" /* add a2+b2+c */    
@@ -148,7 +151,7 @@ namespace vli {
                         /* negate a if negative and store into stack, in reverse order due to universal access */ 
                         /*04*/  "movq 16(%%rsi)        ,%%rax             \n" /* load a3 into r8, for the sign */ 
                         /*05*/  "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                        /*06*/  "jns _Negativea_384_192_                  \n" /* number is negative, we negate */ 
+                        /*06*/  "jns _Negativea_muladd_384_192_                  \n" /* number is negative, we negate */ 
                         /*07*/  "movq (%%rsi)          ,%%r8              \n" /* load a0 */                       
                         /*08*/  "movq 8(%%rsi)         ,%%r9              \n" /* load a1 */                       
                         /*09*/  "notq %%r8                                \n" /* C2M, ~a0 */                      
@@ -162,11 +165,11 @@ namespace vli {
                         /*17*/  "movq %%rax            ,-0x08(%%rsp)      \n" /* a2 into the stack -8 rsp */      
                         /*18*/  "leaq  -0x18(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    
                         /*19*/  "movq $1               ,%%r14             \n" /* r13 = 0 it is the sign 0+ 1-*/   
-                        /*20*/  "_Negativea_384_192_ :                    \n" /* end if structure */              
+                        /*20*/  "_Negativea_muladd_384_192_ :                    \n" /* end if structure */              
                         /* negate a if negative and store into stack, in reverse order due to universal access */ 
                         /*21*/  "movq 16(%%rbx)        ,%%rax             \n" /* load a3 into r8, for the sign */ 
                         /*22*/  "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                        /*23*/  "jns _Negativeb_384_192_                  \n" /* number is negative, we negate */ 
+                        /*23*/  "jns _Negativeb_muladd_384_192_                  \n" /* number is negative, we negate */ 
                         /*24*/  "movq (%%rbx)          ,%%r8              \n" /* load b0 */                       
                         /*25*/  "movq 8(%%rbx)         ,%%r9              \n" /* load b1 */                       
                         /*26*/  "notq %%r8                                \n" /* C2M, ~b0 */                      
@@ -180,7 +183,7 @@ namespace vli {
                         /*34*/  "movq %%rax            ,-0x20(%%rsp)      \n" /* b2 into the stack -32 rsp */     
                         /*35*/  "leaq  -0x30(%%rsp)    ,%%rbx             \n" /* rsi points to stack b0 > 0 */    
                         /*36*/  "movq $1               ,%%r15             \n" /* r13 = 0 it is the sign 0+ 1-*/   
-                        /*37*/  "_Negativeb_384_192_ :                    \n" /* end if structure */              
+                        /*37*/  "_Negativeb_muladd_384_192_ :                    \n" /* end if structure */              
                         /*38*/  "xorq %%r10            ,%%r10             \n" /* r9 = 0  due to carry effect */   
                         /* --------------------------- a0 * b0, a0 * b1, a0 * b2 start ------------------------*/ 
                         /*39*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
@@ -234,7 +237,7 @@ namespace vli {
                         /* ---------------------------           sign                --------------------------*/ 
                         /*81*/  "xorq %%r14            ,%%r15             \n"                                     
                         /*82*/  "cmpq $0               ,%%r15             \n" /* r15 = 1 we negate */             
-                        /*83*/  "je _IsNegativeResult_384_192_            \n" /* not equal ZF = 0, negate*/       
+                        /*83*/  "je _IsNegativeResult_muladd_384_192_            \n" /* not equal ZF = 0, negate*/       
                         /*84*/  "notq %%r8                                \n" /* start2ComplementMethod negate */ 
                         /*85*/  "notq %%r9                                \n" /* 2CM negate */                    
                         /*86*/  "notq %%r10                               \n" /* 2CM negate */                    
@@ -247,7 +250,7 @@ namespace vli {
                                 "adcq $0x0             ,%%r11            \n"
                                 "adcq $0x0             ,%%r12            \n"
                                 "adcq $0x0             ,%%r13            \n"
-                        /*96*/  "_IsNegativeResult_384_192_ :             \n" /* end if negative result */        
+                        /*96*/  "_IsNegativeResult_muladd_384_192_ :             \n" /* end if negative result */        
                                 "addq (%%rdi)          ,%%r8             \n"
                                 "adcq 8(%%rdi)         ,%%r9              \n" /* add a1+b1+c */                   
                                 "adcq 16(%%rdi)        ,%%r10             \n" /* add a2+b2+c */                   
@@ -387,7 +390,7 @@ namespace vli {
                                 /*te a if negative and store into stack, in reverse order due to universal access */ 
                                 "movq 24(%%rsi)        ,%%rax             \n" /* load a3 into rax, for the sign*/ 
                                 "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                                "jns _Negativea_512_256_                  \n" /* number is negative, we negate */ 
+                                "jns _Negativea_muladd_512_256_                  \n" /* number is negative, we negate */ 
                                 "movq (%%rsi)          ,%%r8              \n" /* load a0 */                       
                                 "movq 8(%%rsi)         ,%%r9              \n" /* load a1 */                       
                                 "movq 16(%%rsi)        ,%%r10             \n" /* load a2 */                       
@@ -405,12 +408,12 @@ namespace vli {
                                 "movq %%rax            ,-0x08(%%rsp)      \n" /* a3 into the stack -8 rsp */      
                                 "leaq  -0x20(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    
                                 "movq $1               ,%%r14             \n" /* r14 = 0 it is the sign 0+ 1-*/   
-                                "_Negativea_512_256_ :                    \n" /* end if structure */              
+                                "_Negativea_muladd_512_256_ :                    \n" /* end if structure */              
                                 "movq %%r14            ,-0x48(%%rsp)      \n" /* a0 into the stack -72 rsp */     
                                 /*te a if negative and store into stack, in reverse order due to universal access */ 
                                 "movq 24(%%rbx)        ,%%rax             \n" /* load b3 into r8, for the sign */ 
                                 "cmpq $0               ,%%rax             \n" /* test a is negative(sign on a3)*/ 
-                                "jns _Negativeb_512_256_                  \n" /* number is negative, we negate */ 
+                                "jns _Negativeb_muladd_512_256_                  \n" /* number is negative, we negate */ 
                                 "movq (%%rbx)          ,%%r8              \n" /* load b0 */                       
                                 "movq 8(%%rbx)         ,%%r9              \n" /* load b1 */                       
                                 "movq 16(%%rbx)        ,%%r10             \n" /* load b2 */                       
@@ -428,7 +431,7 @@ namespace vli {
                                 "movq %%rax            ,-0x28(%%rsp)      \n" /* b2 into the stack -40 rsp */     
                                 "leaq  -0x40(%%rsp)    ,%%rbx             \n" /* rsi points to stack b0 > 0 */    
                                 "movq $1               ,%%r15             \n" /* r15 = 0 it is the sign 0+ 1-*/   
-                                "_Negativeb_512_256_ :                    \n" /* end if structure */              
+                                "_Negativeb_muladd_512_256_ :                    \n" /* end if structure */              
                                 "movq %%r15            ,-0x50(%%rsp)      \n" /* a0 into the stack -80 rsp */     
                                 /*----------------------- a0 * b0, a0 * b1, a0 * b2, a0 *b3  start ------------------------*/ 
                                 "xorq %%r10            ,%%r10             \n" /* reset to 0 because corrupted */ 
@@ -532,7 +535,7 @@ namespace vli {
                                 "movq -0x50(%%rsp)     ,%%rdx             \n"
                                 "xorq %%rax            ,%%rdx             \n"                                     
                                 "cmpq $0               ,%%rdx             \n" /* r15 = 1 we negate */             
-                                "je _IsNegativeResult_512_256_            \n" /* not equal ZF = 0, negate*/       
+                                "je _IsNegativeResult_muladd_512_256_            \n" /* not equal ZF = 0, negate*/       
                                 "notq %%r8                                \n" /* start2ComplementMethod negate */ 
                                 "notq %%r9                                \n" /* 2CM negate */                    
                                 "notq %%r10                               \n" /* 2CM negate */                    
@@ -549,7 +552,7 @@ namespace vli {
                                 "adcq $0x0             ,%%r13             \n" /* 2CM propagate CB */              
                                 "adcq $0x0             ,%%r14             \n" /* 2CM propagate CB */              
                                 "adcq $0x0             ,%%r15             \n" /* 2CM propagate CB */              
-                                "_IsNegativeResult_512_256_ :             \n" /* end if negative result */        
+                                "_IsNegativeResult_muladd_512_256_ :             \n" /* end if negative result */        
                                 "addq (%%rdi)          ,%%r8             \n" /* add a0+b0 */                     
                                 "adcq 8(%%rdi)         ,%%r9             \n" /* add a1+b1+c */                   
                                 "adcq 16(%%rdi)        ,%%r10            \n" /* add a2+b2+c */                   
@@ -572,3 +575,5 @@ namespace vli {
                     } 
     } //namespace detail
 } //namespace vli
+
+#endif

@@ -27,7 +27,6 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu/kernel_macros.h"
 #include <boost/preprocessor/arithmetic/sub.hpp>
 #include <boost/preprocessor/repetition.hpp>
 #include <boost/preprocessor/iteration/local.hpp>

@@ -26,7 +26,8 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include <boost/cstdint.hpp>
+#ifndef KERNELS_CPU_POWERPC_MULADD_ASM_H
+#define KERNELS_CPU_POWERPC_MULADD_ASM_H
 
 namespace vli {
     namespace detail {
@@ -63,22 +64,22 @@ namespace vli {
                               "xor 19, 19, 19               \n"                   
                               "sradi 6,15,63   \n" 
                               "cmpi 0,0,6,0            \n"
-                              "beq 0, _Negativea_256_128_  \n"
+                              "beq 0, _Negativea_muladd_256_128_  \n"
                               "not 14, 14               \n"
                               "not 15, 15               \n"
                               "addic. 14, 14, 1         \n"
                               "addze 15, 15             \n"
                               "addi 18, 18, 1          \n"
-                              "_Negativea_256_128_ :    \n"               
+                              "_Negativea_muladd_256_128_ :    \n"               
                               "sradi 7,17,63   \n" 
                               "cmpi 0,0,7,0            \n"
-                              "beq 0, _Negativeb_256_128_  \n"
+                              "beq 0, _Negativeb_muladd_256_128_  \n"
                               "not 16, 16               \n"
                               "not 17, 17               \n"
                               "addic. 16, 16, 1         \n"
                               "addze  17, 17            \n"
                               "addi  19, 19, 1         \n"
-                              "_Negativeb_256_128_ :    \n"               
+                              "_Negativeb_muladd_256_128_ :    \n"               
                               /*----------------------- a0 * b0, a0 * b1 start ------------------------*/ 
                               "mulld 20 ,14,16          \n" 
                               "mulhdu 21 ,14,16          \n" 
@@ -100,7 +101,7 @@ namespace vli {
                               /*----------------------- a1 * b0, a1 * b1 end   ------------------------*/ 
                               "xor 18, 19, 18               \n"                   
                               "cmpi 0,0,18,0            \n"
-                              "beq 0, _IsNegativeResult_256_128_  \n"     
+                              "beq 0, _IsNegativeResult_muladd_256_128_  \n"     
                               "not 20  , 20             \n"
                               "not 21  , 21             \n"
                               "not 22  , 22             \n"
@@ -109,7 +110,7 @@ namespace vli {
                               "addze  21, 21            \n"
                               "addze  22, 22            \n"
                               "addze  23, 23            \n"
-                              "_IsNegativeResult_256_128_ :  \n"       
+                              "_IsNegativeResult_muladd_256_128_ :  \n"       
                               "ld 14, 0(3)              \n"                   
                               "ld 15, 8(3)              \n"                   
                               "ld 16, 16(3)              \n"                   
@@ -142,7 +143,7 @@ namespace vli {
                               "xor 25, 25, 25               \n"                   
                               "sradi 6,16,63   \n" 
                               "cmpi 0,0,6,0            \n"
-                              "beq 0, _Negativea_384_192_  \n"
+                              "beq 0, _Negativea_muladd_384_192_  \n"
                               "not 14, 14               \n"
                               "not 15, 15               \n"
                               "not 16, 16               \n"
@@ -150,10 +151,10 @@ namespace vli {
                               "addze 15, 15             \n"
                               "addze 16, 16             \n"
                               "addi 8, 8, 1          \n"
-                              "_Negativea_384_192_ :    \n"               
+                              "_Negativea_muladd_384_192_ :    \n"               
                               "sradi 7,19,63   \n" 
                               "cmpi 0,0,7,0            \n"
-                              "beq 0, _Negativeb_384_192_  \n"
+                              "beq 0, _Negativeb_muladd_384_192_  \n"
                               "not 17, 17               \n"
                               "not 18, 18               \n"
                               "not 19, 19               \n"
@@ -161,7 +162,7 @@ namespace vli {
                               "addze  18, 18            \n"
                               "addze  19, 19            \n"
                               "addi  9, 9, 1         \n"
-                              "_Negativeb_384_192_ :    \n"               
+                              "_Negativeb_muladd_384_192_ :    \n"               
                               /*----------------------- start ------------------------*/ 
                               "mulld 20 ,14,17          \n" 
                               "mulhdu 21 ,14,17          \n" 
@@ -210,7 +211,7 @@ namespace vli {
                               /*----------------------- a1 * b0, a1 * b1 end   ------------------------*/ 
                               "xor 8, 8, 9               \n"                   
                               "cmpi 0,0,8,0            \n"
-                              "beq 0, _IsNegativeResult_384_192_  \n"     
+                              "beq 0, _IsNegativeResult_muladd_384_192_  \n"     
                               "not 20  ,20             \n"
                               "not 21  ,21             \n"
                               "not 22  ,22             \n"
@@ -223,7 +224,7 @@ namespace vli {
                               "addze  23, 23            \n"
                               "addze  24, 24            \n"
                               "addze  25, 25            \n"
-                              "_IsNegativeResult_384_192_ :  \n"       
+                              "_IsNegativeResult_muladd_384_192_ :  \n"       
                               "ld 14, 0(3)              \n"                   
                               "ld 15, 8(3)              \n"                   
                               "ld 16, 16(3)              \n"                   
@@ -267,7 +268,7 @@ namespace vli {
                               "xor 29, 29, 29               \n"                   
                               "sradi 6,17,63   \n" 
                               "cmpi 0,0,6,0            \n"
-                              "beq 0, _Negativea_512_256_  \n"
+                              "beq 0, _Negativea_muladd_512_256_  \n"
                               "not 14, 14               \n"
                               "not 15, 15               \n"
                               "not 16, 16               \n"
@@ -277,10 +278,10 @@ namespace vli {
                               "addze 16, 16             \n"
                               "addze 17, 17             \n"
                               "addi 8, 8, 1          \n"
-                              "_Negativea_512_256_ :    \n"               
+                              "_Negativea_muladd_512_256_ :    \n"               
                               "sradi 7,21,63   \n" 
                               "cmpi 0,0,7,0            \n"
-                              "beq 0, _Negativeb_512_256_  \n"
+                              "beq 0, _Negativeb_muladd_512_256_  \n"
                               "not 18, 18               \n"
                               "not 19, 19               \n"
                               "not 20, 20               \n"
@@ -290,7 +291,7 @@ namespace vli {
                               "addze  20, 20            \n"
                               "addze  21, 21            \n"
                               "addi  9, 9, 1         \n"
-                              "_Negativeb_512_256_ :    \n"               
+                              "_Negativeb_muladd_512_256_ :    \n"               
                               /*----------------------- start ------------------------*/ 
                               "mulld 22 ,14,18          \n" 
                               "mulhdu 23 ,14,18          \n" 
@@ -383,7 +384,7 @@ namespace vli {
                               /*----------------------- end   ------------------------*/ 
                               "xor 8, 8, 9               \n"                   
                               "cmpi 0,0,8,0            \n"
-                              "beq 0, _IsNegativeResult_512_256_  \n"     
+                              "beq 0, _IsNegativeResult_muladd_512_256_  \n"     
                               "not 22  , 22             \n"
                               "not 23  , 23             \n"
                               "not 24  , 24             \n"
@@ -400,7 +401,7 @@ namespace vli {
                               "addze  27, 27            \n"
                               "addze  28, 28            \n"
                               "addze  29, 29            \n"
-                              "_IsNegativeResult_512_256_ :  \n"       
+                              "_IsNegativeResult_muladd_512_256_ :  \n"       
                               "ld 14, 0(3)              \n"                   
                               "ld 15, 8(3)              \n"                   
                               "ld 16, 16(3)              \n"                   
@@ -430,3 +431,5 @@ namespace vli {
                     } 
     } //namespase detail
 } //namespace vli
+
+#endif

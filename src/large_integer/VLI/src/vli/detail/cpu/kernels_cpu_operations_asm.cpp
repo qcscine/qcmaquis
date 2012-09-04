@@ -27,15 +27,32 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
+#include <boost/cstdint.hpp> //boost type
+#include <limits>
+#include <string.h> // for memset generic version
+
+#include "vli/detail/cpu/kernel_macros.h"
+
 #if defined (__amd64__) || (__x86_64__)
+#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
 #include "vli/detail/cpu/x86_64/kernels_cpu_add_asm.h"
+#include "vli/detail/cpu/x86_64/kernels_cpu_sub_asm.h"
+#include "vli/detail/cpu/x86_64/kernels_cpu_mul_asm.h"
+#include "vli/detail/cpu/x86_64/kernels_cpu_muladd_asm.h"
 #endif
 
 #if defined (__powerpc__)
+#include "vli/detail/cpu/powerpc/kernel_implementation_macros.h"
 #include "vli/detail/cpu/powerpc/kernels_cpu_add_asm.h"
+#include "vli/detail/cpu/powerpc/kernels_cpu_sub_asm.h"
+#include "vli/detail/cpu/powerpc/kernels_cpu_mul_asm.h"
+#include "vli/detail/cpu/powerpc/kernels_cpu_muladd_asm.h"
 #endif
 
 #if defined (_WIN64)
 #include "vli/detail/cpu/generic/kernels_cpu_add_asm.h"
+#include "vli/detail/cpu/generic/kernels_cpu_sub_asm.h"
+#include "vli/detail/cpu/generic/kernels_cpu_mul_asm.h"
+#include "vli/detail/cpu/generic/kernels_cpu_muladd_asm.h"
 #endif
 
