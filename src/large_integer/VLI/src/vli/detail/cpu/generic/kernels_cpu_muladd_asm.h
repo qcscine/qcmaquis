@@ -1,9 +1,8 @@
-    /*
+/*
 *Very Large Integer Library, License - Version 1.0 - May 3rd, 2012
 *
 *Timothee Ewart - University of Geneva, 
 *Andreas Hehn - Swiss Federal Institute of technology Zurich.
-*Maxim Milakov - NVIDIA
 *
 *Permission is hereby granted, free of charge, to any person or organization
 *obtaining a copy of the software and accompanying documentation covered by
@@ -28,32 +27,34 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef VLI_KERNELS_GPU_H
-#define VLI_KERNELS_GPU_H
-
-#include <boost/preprocessor/tuple/elem.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-#include "vli/polynomial/variable.hpp"
-#include "vli/config.hpp"
+#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
+#include <boost/cstdint.hpp>
 
 namespace vli {
-    namespace detail {
+    namespace detail{
+    
+                    //multiplication Addition (only for the inner product)
+                   template <std::size_t NumWords>
+                   void mul( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
 
-    boost::uint32_t* gpu_get_polynomial(); /* cuda mem allocated on unsigned int (gpu_mem_block class), do not change the return type */\
+                   template <std::size_t NumWords>
+                   void add( boost::uint64_t * x, boost::uint64_t const* y);
+                   
+                   template <std::size_t NumWords>
+                   void muladd( boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* z);
+ 
+                   #define FUNCTION_mul_add(z, n, unused) \
+                   template<>                      \
+                   void muladd<n+2>(boost::uint64_t* x, boost::uint64_t const* y, boost::uint64_t const* w){ \
+                        boost::uint64_t tmp[2*(n+2)]; \
+                        mul<n+2>(tmp,y,w);   \
+                        add<2*(n+2)>(x,tmp); \
+                   } \
+        
+                   BOOST_PP_REPEAT(3, FUNCTION_mul_add, ~)
 
-    #define VLI_DECLARE_GPU_FUNCTIONS(NUM_BITS, POLY_ORDER, VAR) \
-        template<std::size_t NumBits, class MaxOrder, int NumVars >      \
-        void gpu_inner_product_vector(std::size_t vector_size, boost::uint64_t const* a, boost::uint64_t const* b); \
-   
-    #define VLI_DECLARE_GPU_FUNCTIONS_FOR(r, data, NUMBITS_ORDER_VAR_TUPLE_SEQ) \
-        VLI_DECLARE_GPU_FUNCTIONS( BOOST_PP_TUPLE_ELEM(3,0,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,1,NUMBITS_ORDER_VAR_TUPLE_SEQ), BOOST_PP_TUPLE_ELEM(3,2,NUMBITS_ORDER_VAR_TUPLE_SEQ) )
-   
-    BOOST_PP_SEQ_FOR_EACH(VLI_DECLARE_GPU_FUNCTIONS_FOR, _, VLI_COMPILE_NUMBITS_ORDER_VAR_TUPLE_SEQ)
-   
-    #undef VLI_DECLARE_GPU_FUNCTIONS_FOR
-    #undef VLI_DECLARE_GPU_FUNCTIONS 
-   
-    } //namespace detail
+        
+        
+           
+        } //namespace detail
 } //namespace vli
-
-#endif

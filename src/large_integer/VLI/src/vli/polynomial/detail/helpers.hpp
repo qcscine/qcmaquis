@@ -38,6 +38,7 @@ namespace max_order_combined_helpers {
 
 template <int Var, int NumVars, int Order>
 struct stride {
+    //Var+1???
     static unsigned int const value = Var < NumVars ? Order+1 : 1;
 };
 
