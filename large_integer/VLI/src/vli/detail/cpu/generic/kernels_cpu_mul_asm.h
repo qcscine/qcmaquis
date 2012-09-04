@@ -26,8 +26,8 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include <iostream>
-#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
+#ifndef KERNELS_CPU_GENERIC_MUL_ASM_H
+#define KERNELS_CPU_GENERIC_MUL_ASM_H
 
 namespace vli{
     namespace detail{
@@ -52,9 +52,10 @@ namespace vli{
                             } \
                             memcpy((void*)x,(void*)tmp,(n+2)*sizeof(boost::uint64_t)); \
                        } \
-
-
-                       BOOST_PP_REPEAT(7, FUNCTION_mul_nbits_nbits, ~)
+                       
+                       BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_nbits, ~)
+                       
+                       #undef FUNCTION_mul_nbits_nbits
         
                        template <std::size_t NumWords>
                        void mul( boost::uint64_t * x, boost::uint64_t const b);
@@ -70,7 +71,9 @@ namespace vli{
                               mul<n+2>(x,tmp); \
                            }
                    
-                       BOOST_PP_REPEAT(7, FUNCTION_mul_nbits_64bits, ~)
+                       BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
+                       
+                       #undef FUNCTION_mul_nbits_64bits
     
                       template <std::size_t NumWords>
                       void mul(boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* w);
@@ -82,17 +85,21 @@ namespace vli{
                               boost::uint64_t cw[2*(n+2)];\
                               boost::uint64_t masky = ((y[n+2-1] >> 63) > 0 ? 0xFFFFFFFFFFFFFFFF : 0);                         \
                               boost::uint64_t maskw = ((w[n+2-1] >> 63) > 0 ? 0xFFFFFFFFFFFFFFFF : 0);                         \
-                              for( int i = n+2 ; i < 2*(n+2); ++i){                                                             \
+                              for( int i = n+2 ; i < 2*(n+2); ++i){                                                            \
                                   cy[i] = masky;                                                                               \
                                   cw[i] = maskw;                                                                               \
                               }                                                                                                \
-                              memcpy((void*)cy,(void*)y,(n+2)*sizeof(boost::uint64_t));                                      \
-                              memcpy((void*)cw,(void*)w,(n+2)*sizeof(boost::uint64_t));                                      \
+                              memcpy((void*)cy,(void*)y,(n+2)*sizeof(boost::uint64_t));                                        \
+                              memcpy((void*)cw,(void*)w,(n+2)*sizeof(boost::uint64_t));                                        \
                               mul<2*(n+2)>(cy,cw);                                                                             \
                               memcpy((void*)x,(void*)cy,2*(n+2)*sizeof(boost::uint64_t));                                      \
                               }
         
-                      BOOST_PP_REPEAT(3, FUNCTION_mul_2nbits_nbits_nbits, ~)
+                      BOOST_PP_REPEAT(VLI_THREE, FUNCTION_mul_2nbits_nbits_nbits, ~)
+                      
+                      #undef FUNCTION_mul_2nbits_nbits_nbits
         
     } // end namespace detail
 } // end namespace vli
+
+#endif

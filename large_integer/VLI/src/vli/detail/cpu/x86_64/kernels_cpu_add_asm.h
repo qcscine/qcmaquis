@@ -27,7 +27,10 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
+#ifndef KERNELS_CPU_X86_84_ADD_ASM_H
+#define KERNELS_CPU_X86_84_ADD_ASM_H
+
+//#include "vli/detail/cpu/x86_64/kernel_implementation_macros.h"
 
 namespace vli{
     namespace detail{
@@ -96,3 +99,5 @@ namespace vli{
 
     } // end namespace detail
 } // end namespace vli
+
+#endif

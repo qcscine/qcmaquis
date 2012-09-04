@@ -26,10 +26,12 @@
 *ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 *DEALINGS IN THE SOFTWARE.
 */
-#include <string.h> //for memset and the uint32_t version
-#include <boost/cstdint.hpp>
 #include <boost/preprocessor/arithmetic/add.hpp>
 #include <boost/preprocessor/arithmetic/mul.hpp>
+#include <boost/preprocessor/arithmetic/sub.hpp>
+#include <boost/preprocessor/repetition.hpp>
+#include <boost/preprocessor/iteration/local.hpp>
+#include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
 //g++ -DNUM=1 -E -P -I /opt/boost/include/ main.cpp | sed  "s/n/; \\`echo -e '\n\r      '`/g"

@@ -28,11 +28,8 @@
 */
 
 #include "vli/detail/cpu/kernel_macros.h"
-#include <boost/preprocessor/arithmetic/sub.hpp>
-#include <boost/preprocessor/repetition.hpp>
-#include <boost/preprocessor/iteration/local.hpp>
-#include <boost/preprocessor/comparison/equal.hpp>
-#include <assert.h>
+
+
 //#include <boost/preprocessor/punctuation/comma_if.hpp>
 //#include <boost/preprocessor/comparison/greater_equal.hpp>
 

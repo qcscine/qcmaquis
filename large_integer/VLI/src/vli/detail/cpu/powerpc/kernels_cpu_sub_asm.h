@@ -27,7 +27,8 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#include "vli/detail/cpu/powerpc/kernel_implementation_macros.h"
+#ifndef KERNELS_CPU_POWERPC_SUB_ASM_H
+#define KERNELS_CPU_POWERPC_SUB_ASM_H
 
 namespace vli {
     namespace detail {
@@ -73,3 +74,5 @@ namespace vli {
 
     } // end namespace detail
 } // end namespace vli
+
+#endif
