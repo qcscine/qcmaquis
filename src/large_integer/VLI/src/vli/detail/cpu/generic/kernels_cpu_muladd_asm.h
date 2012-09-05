@@ -39,9 +39,7 @@ namespace vli {
                    #define FUNCTION_mul_add(z, n, unused) \
                    template<>                      \
                    void muladd<n+2>(boost::uint64_t* x, boost::uint64_t const* y, boost::uint64_t const* w){ \
-                        boost::uint64_t tmp[2*(n+2)]; \
-                        mul<n+2>(tmp,y,w);   \
-                        add<2*(n+2)>(x,tmp); \
+                        mul<n+2>(x,y,w);   \
                    } \
         
                    BOOST_PP_REPEAT(VLI_THREE, FUNCTION_mul_add, ~)
