@@ -35,19 +35,19 @@ namespace vli{
                        void mul( boost::uint64_t * x, boost::uint64_t const* y);
 
                        #define FUNCTION_mul_nbits_nbits(z, n, unused) \
-                          template<> \
-                          void mul<n+2>( boost::uint64_t* x,  boost::uint64_t const* y){ \
+                          template<>                                                                                         \
+                          void mul<n+2>( boost::uint64_t* x,  boost::uint64_t const* y){                                     \
                             boost::uint32_t* cy = const_cast<boost::uint32_t*>(reinterpret_cast<boost::uint32_t const*>(y)); \
                             boost::uint32_t* cx = reinterpret_cast<boost::uint32_t*>(x);                                     \
-                            boost::uint32_t tmp[2*(n+2)]; \
-                            memset((void*)tmp,0,(n+2)*sizeof(boost::uint64_t)); \
-                            boost::uint64_t new_val, carry(0); \
-                            for(int i(0); i < 2*(n+2);++i){ \
-                                carry = 0; \
-                                for(int j(0); j < 2*(n+2)-i;++j){ \
+                            boost::uint32_t tmp[2*(n+2)];                                                                    \
+                            memset((void*)tmp,0,(n+2)*sizeof(boost::uint64_t));                                              \
+                            boost::uint64_t new_val, carry(0);                                                               \
+                            for(int i(0); i < 2*(n+2);++i){                                                                  \
+                                carry = 0;                                                                                   \
+                                for(int j(0); j < 2*(n+2)-i;++j){                                                            \
                                    new_val = static_cast<boost::uint64_t>(cx[i])*static_cast<boost::uint64_t>(cy[j]) + static_cast<boost::uint64_t>(tmp[i+j]) + carry; \
-                                   tmp[i+j] = static_cast<boost::uint32_t>(new_val); \
-                                   carry = new_val >> 32; \
+                                   tmp[i+j] = static_cast<boost::uint32_t>(new_val);                                         \
+                                   carry = new_val >> 32;                                                                    \
                                 } \
                             } \
                             memcpy((void*)x,(void*)tmp,(n+2)*sizeof(boost::uint64_t)); \
@@ -60,15 +60,15 @@ namespace vli{
                        template <std::size_t NumWords>
                        void mul( boost::uint64_t * x, boost::uint64_t const b);
         
-                       #define FUNCTION_mul_nbits_64bits(z, n, unused) \
-                           template<>                      \
-                           void mul<(n+2)>( boost::uint64_t* x,  boost::uint64_t const b){ \
-                              boost::uint64_t tmp[n+2];                                    \
-                              tmp[0] = b;                                                  \
-                             boost::uint64_t mask = ((b >> 63) > 0 ? 0xFFFFFFFFFFFFFFFF : 0);    \
-                              for( int i = 1; i < n+2; ++i)                                \
-                                  tmp[i] = mask;                                           \
-                              mul<n+2>(x,tmp); \
+                       #define FUNCTION_mul_nbits_64bits(z, n, unused)                           \
+                           template<>                                                            \
+                           void mul<(n+2)>( boost::uint64_t* x,  boost::uint64_t const b){       \
+                              boost::uint64_t tmp[n+2];                                          \
+                              tmp[0] = b;                                                        \
+                             boost::uint64_t mask = -(b >> 63);                                  \
+                             for( int i = 1; i < n+2; ++i)                                       \
+                                  tmp[i] = mask;                                                 \
+                              mul<n+2>(x,tmp);                                                   \
                            }
                    
                        BOOST_PP_REPEAT(VLI_MAX_ITERATION, FUNCTION_mul_nbits_64bits, ~)
@@ -81,18 +81,26 @@ namespace vli{
                       #define FUNCTION_mul_2nbits_nbits_nbits(z, n, unused) \
                           template<>                      \
                           void mul<(n+2)>(boost::uint64_t * x, boost::uint64_t const* y, boost::uint64_t const* w){ \
-                              boost::uint64_t cy[2*(n+2)];\
-                              boost::uint64_t cw[2*(n+2)];\
-                              boost::uint64_t masky = ((y[n+2-1] >> 63) > 0 ? 0xFFFFFFFFFFFFFFFF : 0);                         \
-                              boost::uint64_t maskw = ((w[n+2-1] >> 63) > 0 ? 0xFFFFFFFFFFFFFFFF : 0);                         \
-                              for( int i = n+2 ; i < 2*(n+2); ++i){                                                            \
-                                  cy[i] = masky;                                                                               \
-                                  cw[i] = maskw;                                                                               \
-                              }                                                                                                \
-                              memcpy((void*)cy,(void*)y,(n+2)*sizeof(boost::uint64_t));                                        \
-                              memcpy((void*)cw,(void*)w,(n+2)*sizeof(boost::uint64_t));                                        \
-                              mul<2*(n+2)>(cy,cw);                                                                             \
-                              memcpy((void*)x,(void*)cy,2*(n+2)*sizeof(boost::uint64_t));                                      \
+                              boost::uint32_t* cx = reinterpret_cast<boost::uint32_t*>(x);                          \
+                              boost::uint32_t cy[4*(n+2)];                                                          \
+                              boost::uint32_t cw[4*(n+2)];                                                          \
+                              boost::uint32_t masky = -(y[(n+2)-1] >> 63);                                          \
+                              boost::uint32_t maskw = -(w[(n+2)-1] >> 63) ;                                         \
+                              for( int i = 2*(n+2) ; i < 4*(n+2); ++i){                                             \
+                                  cy[i] = masky;                                                                    \
+                                  cw[i] = maskw;                                                                    \
+                              }                                                                                     \
+                              memcpy((void*)cy,(void*)y,(n+2)*sizeof(boost::uint64_t));                             \
+                              memcpy((void*)cw,(void*)w,(n+2)*sizeof(boost::uint64_t));                             \
+                              boost::uint64_t new_val, carry(0);                                                    \
+                              for(int i(0); i < 4*(n+2);++i){                                                       \
+                                  carry = 0;                                                                        \
+                                  for(int j(0); j < 4*(n+2)-i;++j){                                                 \
+                                     new_val = static_cast<boost::uint64_t>(cw[i])*static_cast<boost::uint64_t>(cy[j]) + static_cast<boost::uint64_t>(cx[i+j]) + carry; \
+                                     cx[i+j] = static_cast<boost::uint32_t>(new_val);                               \
+                                     carry = new_val >> 32;                                                         \
+                                  }                                                                                 \
+                              }                                                                                     \
                               }
         
                       BOOST_PP_REPEAT(VLI_THREE, FUNCTION_mul_2nbits_nbits_nbits, ~)
