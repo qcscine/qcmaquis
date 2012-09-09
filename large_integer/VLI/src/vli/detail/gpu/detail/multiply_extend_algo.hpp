@@ -36,19 +36,55 @@ namespace vli {
 
     template <std::size_t NumBits>
     void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
-    //if one day I success to remove branching ....
-	boost::uint32_t sign = (c1[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1) ^ (c2[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1);
+        int mask1 = c1[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
+        int mask2 = c2[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
+	int mask3 = mask1 ^ mask2;
+/*
+    //no banching but slower ....
+        int bit1(mask1);
+        int bit2(mask2);
+        int bit3(mask3);
+        mask1 = -mask1;
+        mask2 = -mask2;
+        mask3 = -mask3;
 
-	if(c1[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1!= 0) 
+        #pragma unroll
+        for(int i(0); i<num_words<NumBits>::value ; ++i){
+            c1[i] ^= mask1; 
+            c2[i] ^= mask2; 
+        }
+
+        asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(c1[0]):"r"(bit1)); 
+        asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(c2[0]):"r"(bit2)); 
+
+        #pragma unroll
+        for(int i(1); i<num_words<NumBits>::value-1 ; ++i){
+            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c1[i])); 
+            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c2[i])); 
+        }
+*/
+	if(mask1) 
             negate<NumBits>(c1);
 
-	if(c2[num_words<NumBits>::value-1] >> std::numeric_limits<boost::uint32_t>::digits-1!= 0)
+	if(mask2)
             negate<NumBits>(c2);
 
        mul_extend<2*NumBits>(res1,c1,c2);
+/*
+        #pragma unroll
+        for(int i(0); i<2*num_words<NumBits>::value ; ++i){
+            res1[i] ^= mask3; 
+        }
 
-	if(sign != 0)
-       negate<2*NumBits>(res1);
+        asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(res1[0]):"r"(bit3)); 
+
+        for(int i(1); i<num_words<NumBits>::value-1 ; ++i){
+            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c1[i])); 
+        }
+  */     
+
+	if(mask3)
+           negate<2*NumBits>(res1);
 
        add<2*NumBits>(res,res1);
     }
