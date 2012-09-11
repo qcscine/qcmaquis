@@ -164,6 +164,33 @@ bool vli<NumBits>::is_negative() const{
 }
 // c - basic operators
 template <std::size_t NumBits>
+vli<NumBits>& vli<NumBits>::operator >>= (value_type const a){
+    assert(a < 64);
+    for(int i(0); i < numwords-1; ++i){
+        data_[i] >>= a;
+        data_[i] |= (data_[i+1] << (std::numeric_limits<long int>::digits-a+1));
+    }
+    // we right shift by 0 of 1 for the last element due to sign
+    value_type tmp (data_[numwords-1] >> std::numeric_limits<long int>::digits);
+    tmp -= tmp;
+    tmp = (tmp >> std::numeric_limits<long int>::digits-a+1) << std::numeric_limits<long int>::digits-a+1; // C - Andreas any ideas for shorter ?
+    data_[numwords-1] >>= a;
+    data_[numwords-1] |= tmp;
+    return *this;
+}
+
+template <std::size_t NumBits>
+vli<NumBits>& vli<NumBits>::operator <<= (value_type const a){
+    assert(a < 64);
+    for(int i = numwords-1; i > 0; --i){
+        data_[i] <<= a;
+        data_[i] |= (data_[i-1] >> (std::numeric_limits<long int>::digits-a+1));
+    }
+    data_[0] <<= a;
+    return *this;
+}
+
+template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator += (vli<NumBits> const& vli_a){
     plus_assign(*this,vli_a);
     return *this;
