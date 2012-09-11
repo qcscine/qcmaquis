@@ -176,8 +176,8 @@ namespace vli{
                       // TO DO write a notice for the cryptic lines 
 
 
-                      template<>//128 -> 256
-                      void mul<2>( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
+                    //  template<>//128 -> 256, 58 instructions
+                      void tutu( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                           asm( 
                               "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
                               "xorq %%r10            ,%%r10             \n" /* r10 = 0 due to carry effect */
@@ -187,7 +187,7 @@ namespace vli{
                               "movq 8(%%rbx)         ,%%r15             \n" 
                               "shrq $63              ,%%r15             \n"
                               "subq %%r15            ,%%r13             \n" // 0 ou fff...
-                              "movq 0(%%rsi)         ,%%r14             \n" 
+                              "movq 0(%%rsi)         ,%%r14             \n"
                               "andq %%r13            ,%%r14             \n"
                               "subq %%r14            ,%%r10             \n"
                               "movq 8(%%rsi)         ,%%r14             \n" 
@@ -242,61 +242,123 @@ namespace vli{
                               );
                       }
                       
-                      void toto( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
+                      template<> // 64 instructions
+                      void mul<2>( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
+                          asm( 
+                              "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */                             
+                              "xorq %%r12            ,%%r12             \n" /* r11 = 0 due to carry effect */   
+                              "xorq %%r13            ,%%r13             \n" /* r11 = 0 due to carry effect */   
+                              "xorq %%r14            ,%%r14             \n" /* r11 = 0 due to carry effect */   
+                              "xorq %%r15            ,%%r15             \n" /* r11 = 0 due to carry effect */
+                              "movq 8(%%rsi)         ,%%rax             \n" // start rsi sign
+                              "shrq $63              ,%%rax             \n" // 0 or 1
+                              "movq %%rax            ,%%rdx             \n" // 0 or 1 cpy for the final sign
+                              "negq %%rax                               \n" // 0 or 0xffffffffffffffff (mask)
+                              "movq 0(%%rsi)         ,%%r8              \n"
+                              "xorq %%rax            ,%%r8              \n"
+                              "movq 8(%%rsi)         ,%%r9              \n"
+                              "xorq %%rax            ,%%r9              \n"
+                              "addq %%rdx            ,%%r8              \n"
+                              "adcq $0               ,%%r9              \n" // rsi number ok
+                              "movq 8(%%rbx)         ,%%rax             \n" // start rsi sign
+                              "shrq $63              ,%%rax             \n" // 0 or 1
+                              "movq %%rax            ,%%rdx             \n" // 0 or 1 cpy for the final sign
+                              "negq %%rax                               \n" // 0 or 0xffffffffffffffff (mask)
+                              "movq 0(%%rbx)         ,%%r10             \n"
+                              "xorq %%rax            ,%%r10             \n"
+                              "movq 8(%%rbx)         ,%%r11             \n"
+                              "xorq %%rax            ,%%r11             \n"
+                              "addq %%rdx            ,%%r10             \n"
+                              "adcq $0               ,%%r11             \n" // rbx number ok
+                              /*----------------------- a0 * b0, a0 * b1 start ------------------------*/
+                              "movq %%r8             ,%%rax             \n" /* a0 into rax */
+                              "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
+                              "mulq %%r10                               \n" /* lo rax, hi rdx   a0*b0 */
+                              "orq %%rax            ,%%r12             \n" /* only one term, write into c0 */
+                              "orq %%rdx            ,%%r13             \n" /* a0b0hi into r8 */
+                              "movq %%rcx            ,%%rax             \n" /* reload rax(a0) from the stack */
+                              "mulq %%r11                               \n" /* a0 * b1 */
+                              "addq %%rax            ,%%r13             \n" /* add a0b0hi + a0b1lo */
+                              "adcq %%rdx            ,%%r14             \n" /* save the a0b1hi into r9 */
+                              /*----------------------- a0 * b0, a0 * b1 end --------------------------*/ 
+                              /*----------------------- a1 * b0, a1 * b1 start ------------------------*/ 
+                              "movq %%r9             ,%%rax             \n" /* a1 into rax */
+                              "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
+                              "mulq %%r10                               \n" /* a1 * b0 */
+                              "addq %%rax            ,%%r13             \n" /* l46 + a1b0lo */
+                              "adcq %%rdx            ,%%r14             \n" /* l47 + a1b0hi + c */
+                              "adcq $0               ,%%r15             \n" /* l47 + a1b0hi + c */
+                              "movq %%rcx            ,%%rax             \n" /* reload rax(a1) from the stack */
+                              "mulq %%r11                               \n" /* a1*b1 */
+                              "addq %%rax            ,%%r14             \n" /* a1b2lo to r9 */
+                              "adcq %%rdx            ,%%r15             \n" /* a1b2hi + c  */
+                              /*----------------------- a1 * b0, a1 * b1 end --------------------------*/
+                              "movq 8(%%rsi)         ,%%rax             \n" // start rsi sign
+                              "xorq 8(%%rbx)         ,%%rax             \n" //get the sign
+                              "shrq $63              ,%%rax             \n" // 0 or 1
+                              "movq %%rax            ,%%rdx             \n" // 0 or 1 cpy for the final sign
+                              "negq %%rax                               \n" // 0 or 0xffffffffffffffff (mask)
+                              "xorq %%rax            ,%%r12             \n"
+                              "xorq %%rax            ,%%r13             \n"
+                              "xorq %%rax            ,%%r14             \n"
+                              "xorq %%rax            ,%%r15             \n"
+                              "addq %%rdx            ,%%r12             \n"
+                              "adcq $0               ,%%r13             \n"
+                              "adcq $0               ,%%r14             \n"
+                              "adcq $0               ,%%r15             \n"
+                              "movq %%r12            ,(%%rdi)           \n" /* r8 -> c1 */
+                              "movq %%r13            ,8(%%rdi)          \n" /* r9 -> c1 */
+                              "movq %%r14            ,16(%%rdi)         \n" /* r10 -> c2 */
+                              "movq %%r15            ,24(%%rdi)         \n" /* r8 -> c1 */
+                              : : : "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15","memory"   
+                              );
+                      }
+
+                      void bubu( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */){
                                asm( 
+                            /*-01*/ "subq $0x30            ,%%rsp             \n" /* create stack frame */            
                             /*00*/  "movq %%rdx            ,%%rbx             \n" /* rdx uses by mul             */   
-                            /*38*/  "xorq %%r10            ,%%r10             \n" /* r9 = 0  due to carry effect */   
                             /*01*/  "xorq %%r11            ,%%r11             \n" /* r10 = 0 due to carry effect */   
                             /*02*/  "xorq %%r12            ,%%r12             \n" /* r11 = 0 due to carry effect */   
                             /*03*/  "xorq %%r13            ,%%r13             \n" /* r12 = 0 due to carry effect */   
                             /*03*/  "xorq %%r14            ,%%r14             \n" /* r13 = 0 it is the sign 0+ 1-*/   
                             /*03*/  "xorq %%r15            ,%%r15             \n" /* r13 = 0 it is the sign 0+ 1-*/   
-//first optional reverse on rsi number
-
-                                    "movq 16(%%rbx)        ,%%r15             \n" 
-                                    "shrq $63              ,%%r15             \n"
-                                    "subq %%r15            ,%%r13             \n" // 0 ou fff...
-                                    "movq 0(%%rsi)         ,%%r14             \n" 
-                                    "andq %%r13            ,%%r14             \n"
-                                    "subq %%r14            ,%%r11             \n"
-                                    "movq 8(%%rsi)         ,%%r14             \n" 
-                                    "andq %%r13            ,%%r14             \n"
-                                    "subq %%r14            ,%%r12             \n"
-                                    "addq %%r13            ,%%r12             \n"
-                                    "movq 16(%%rsi)        ,%%r14             \n" 
-                                    "andq %%r13            ,%%r14             \n"
-                                    "subq %%r14            ,%%r13             \n"
-
-//second optional reverse on rsi number
-
-                                    "xorq %%rax            ,%%rax             \n"    
-                                    "xorq %%rdx            ,%%rdx             \n"    
-                                    "movq 16(%%rsi)        ,%%r15             \n" 
-                                    "shrq $63              ,%%r15             \n"
-                                    "subq %%r15            ,%%rax             \n" // 0 ou fff...
-                                    "movq 0(%%rbx)         ,%%r14             \n" 
-                                    "andq %%rax            ,%%r14             \n"
-                                    "subq %%r14            ,%%rdx             \n"
-                                    "addq %%rdx            ,%%r11             \n"
-                                    "adcq $0               ,%%r12             \n"
-                                    "addq %%rax            ,%%r12             \n"
-                                    "adcq $0               ,%%r13             \n"
-                                    "addq %%rax            ,%%r13             \n"  
-                                    "movq 8(%%rbx)         ,%%r14             \n" 
-                                    "andq %%rax            ,%%r14             \n"
-                                    "xorq %%rdx            ,%%rdx             \n"    
-                                    "subq %%r14            ,%%rdx             \n"
-                                    "addq %%rdx            ,%%r12             \n"
-                                    "adcq $0               ,%%r13             \n"
-                                    "addq %%rax            ,%%r13             \n"  
-                                    "movq 16(%%rbx)        ,%%r14             \n" 
-                                    "andq %%rax            ,%%r14             \n"
-                                    "xorq %%rdx            ,%%rdx             \n"    
-                                    "subq %%r14            ,%%rdx             \n"
-                                    "addq %%rdx            ,%%r13             \n"
-                                    "addq %%rax            ,%%r13             \n"  
-
-//-----------------------------------------------------------------------------------------
+                            /* negate a if negative and store into stack, in reverse order due to universal access */ 
+                            /*04*/  "movq 16(%%rsi)        ,%%rax             \n" /* load a3 into r8, for the sign */ 
+                                    "shrq $63              ,%%rax             \n" // 0 or 1
+                                    "movq %%rax            ,%%rdx             \n" // 0 or 1 cpy for the final sign
+                                    "negq %%rax                               \n" // 0 or 0xffffffffffffffff (mask)
+                            /*07*/  "movq 0(%%rsi)         ,%%r8              \n" /* load a0 */                       
+                            /*08*/  "movq 8(%%rsi)         ,%%r9              \n" /* load a1 */                       
+                            /*08*/  "movq 16(%%rsi)        ,%%r10             \n" /* load a1 */                       
+                                    "xorq %%rax            ,%%r8              \n"
+                                    "xorq %%rax            ,%%r9              \n"
+                                    "xorq %%rax            ,%%r10             \n"
+                            /*12*/  "addq %%rdx            ,%%r8              \n" /* C2M, ~a0+1 */                    
+                            /*13*/  "adcq $0x0             ,%%r9              \n" /* C2M, ~a1+CB */                   
+                            /*14*/  "adcq $0x0             ,%%r10             \n" /* C2M, ~a2+CB */                   
+                            /*15*/  "movq %%r8             ,-0x18(%%rsp)      \n" /* a0 into the stack -24 rsp */     
+                            /*16*/  "movq %%r9             ,-0x10(%%rsp)      \n" /* a1 into the stack -16 rsp */     
+                            /*17*/  "movq %%r10            ,-0x08(%%rsp)      \n" /* a2 into the stack -8 rsp */      
+                            /*18*/  "leaq  -0x18(%%rsp)    ,%%rsi             \n" /* rsi points to stack a0 > 0 */    
+                            /*21*/  "movq 16(%%rbx)        ,%%rax             \n" /* load a3 into r8, for the sign */ 
+                                    "shrq $63              ,%%rax             \n" // 0 or 1
+                                    "movq %%rax            ,%%rdx             \n" // 0 or 1 cpy for the final sign
+                                    "negq %%rax                               \n" // 0 or 0xffffffffffffffff (mask)
+                            /*07*/  "movq 0(%%rbx)         ,%%r8              \n" /* load a0 */                       
+                            /*08*/  "movq 8(%%rbx)         ,%%r9              \n" /* load a1 */                       
+                            /*08*/  "movq 16(%%rbx)        ,%%r10             \n" /* load a1 */                       
+                                    "xorq %%rax            ,%%r8              \n"
+                                    "xorq %%rax            ,%%r9              \n"
+                                    "xorq %%rax            ,%%r10             \n"
+                            /*12*/  "addq %%rdx            ,%%r8              \n" /* C2M, ~a0+1 */                    
+                            /*13*/  "adcq $0x0             ,%%r9              \n" /* C2M, ~a1+CB */                   
+                            /*14*/  "adcq $0x0             ,%%r10             \n" /* C2M, ~a2+CB */                   
+                            /*15*/  "movq %%r8             ,-0x30(%%rsp)      \n" /* a0 into the stack -24 rsp */     
+                            /*16*/  "movq %%r9             ,-0x28(%%rsp)      \n" /* a1 into the stack -16 rsp */     
+                            /*17*/  "movq %%r10            ,-0x20(%%rsp)      \n" /* a2 into the stack -8 rsp */      
+                            /*18*/  "leaq  -0x30(%%rsp)    ,%%rbx             \n" /* rsi points to stack a0 > 0 */    
+                            /*38*/  "xorq %%r10            ,%%r10             \n" /* r9 = 0  due to carry effect */   
                             /* --------------------------- a0 * b0, a0 * b1, a0 * b2 start ------------------------*/ 
                             /*39*/  "movq (%%rsi)          ,%%rax             \n" /* a0 into rax */                   
                             /*40*/  "movq %%rax            ,%%rcx             \n" /* save a0-rcx faster than stack */ 
@@ -311,7 +373,6 @@ namespace vli{
                             /*49*/  "mulq 16(%%rbx)                           \n" /* a0 * b2 */                       
                             /*50*/  "addq %%rax            ,%%r10             \n" /* add l11 + a0b2lo + c */          
                             /*51*/  "adcq %%rdx            ,%%r11             \n" /* add l01 + a0b2hi + c, end */     
-//                            /*57*/  "adcq $0               ,%%r12            \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                
                             /* --------------------------- a0 * b0, a0 * b1, a0 * b2 end --------------------------*/ 
                             /* --------------------------- a1 * b0, a1 * b1, a1 * b2 start ------------------------*/ 
                             /*52*/  "movq 8(%%rsi)         ,%%rax             \n" /* a1 into rax */                   
@@ -319,7 +380,7 @@ namespace vli{
                             /*54*/  "mulq (%%rbx)                             \n" /* a1 * b0 */                       
                             /*55*/  "addq %%rax            ,%%r9              \n" /* l46 + a1b0lo */                  
                             /*56*/  "adcq %%rdx            ,%%r10             \n" /* l47 + a1b0hi + c */              
-                            /*57*/  "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                
+                            /*57*/  "adcq $0               ,%%r11             \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                \
                             /*58*/  "movq %%rcx            ,%%rax             \n" /* reload rax(a1) from the stack */ 
                             /*59*/  "mulq 16(%%rbx)                           \n" /* a1*b2 */                         
                             /*60*/  "addq %%rax            ,%%r11             \n" /* l57 + a1b2lo + c */              
@@ -328,6 +389,7 @@ namespace vli{
                             /*63*/  "mulq 8(%%rbx)                            \n" /* a1*b1 */                         
                             /*64*/  "addq %%rax            ,%%r10             \n" /* a1b2lo to r9 */                  
                             /*65*/  "adcq %%rdx            ,%%r11             \n" /* a1b2hi + c  */                   
+                            /*66*/  "adcq $0               ,%%r12             \n" /* r12 + c  */                      
                             /* --------------------------- a1 * b0, a1 * b1, a1 * b2 end --------------------------*/ 
                             /* --------------------------- a2 * b0, a2 * b1, a2 * b2 start ------------------------*/ 
                             /*67*/  "movq 16(%%rsi)        ,%%rax             \n" /* a2 to rax */                     
@@ -335,8 +397,8 @@ namespace vli{
                             /*69*/  "mulq (%%rbx)                             \n" /* a2*b0 */                         
                             /*70*/  "addq %%rax            ,%%r10             \n" /* l64 + a2b0lo */                  
                             /*71*/  "adcq %%rdx            ,%%r11             \n" /* l65 + a2b0hi + c */              
-                            /*73*/  "movq %%rcx            ,%%rax             \n" /* reload rax(a2) */                
                             /*72*/  "adcq $0               ,%%r12             \n" /* possible carry */                
+                            /*73*/  "movq %%rcx            ,%%rax             \n" /* reload rax(a2) */                
                             /*74*/  "mulq 16(%%rbx)                           \n" /* a2*b2 */                         
                             /*75*/  "addq %%rax            ,%%r12             \n" /* a2b2lo + l31 + c*/               
                             /*76*/  "adcq %%rdx            ,%%r13             \n" /* a2b2hi + l03 + c*/               
@@ -344,15 +406,33 @@ namespace vli{
                             /*78*/  "mulq 8(%%rbx)                            \n" /* a2*b1 */                         
                             /*79*/  "addq %%rax            ,%%r11             \n" /* a2b1lo + l36 */                  
                             /*80*/  "adcq %%rdx            ,%%r12             \n" /* a2b1hi + l39 */                  
-                            /*81*/  "adcq $0               ,%%r13             \n" /* possible carry, for 192 one adcq , 256 two adcq, 320 tree adcq .... */                \
+                            /*81*/  "adcq $0               ,%%r13             \n" /* r12 + c */                       
                             /* --------------------------- a2 * b0, a2 * b1, a2 * b2 end --------------------------*/ 
                             /* ---------------------------           sign                --------------------------*/ 
-                            /*97*/  "movq %%r8             ,(%%rdi)           \n" /* r8 -> c1 */                      
+                                    "movq 16(%%rsi)        ,%%rax             \n" // start rsi sign
+                                    "xorq 16(%%rbx)        ,%%rax             \n" //get the sign
+                                    "shrq $63              ,%%rax             \n" // 0 or 1
+                                    "movq %%rax            ,%%rdx             \n" // 0 or 1 cpy for the final sign
+                                    "negq %%rax                               \n" // 0 or 0xffffffffffffffff (mask)
+                                    "xorq %%rax            ,%%r8              \n"
+                                    "xorq %%rax            ,%%r9              \n"
+                                    "xorq %%rax            ,%%r10             \n"
+                                    "xorq %%rax            ,%%r11             \n"
+                                    "xorq %%rax            ,%%r12             \n"
+                                    "xorq %%rax            ,%%r13             \n"
+                            /*90*/  "addq %%rdx            ,%%r8              \n" /* 2CM add 1 */                     
+                            /*91*/  "adcq $0x0             ,%%r9              \n" /* 2CM propagate CB */              
+                            /*92*/  "adcq $0x0             ,%%r10             \n" /* 2CM propagate CB */              
+                            /*93*/  "adcq $0x0             ,%%r11             \n" /* 2CM propagate CB */              
+                            /*94*/  "adcq $0x0             ,%%r12             \n" /* 2CM propagate CB */              
+                            /*95*/  "adcq $0x0             ,%%r13             \n" /* 2CM propagate CB */              
+                            /*97*/  "movq %%r8             ,0(%%rdi)          \n" /* r8 -> c1 */                      
                             /*98*/  "movq %%r9             ,8(%%rdi)          \n" /* r9 -> c1 */                      
                             /*99*/  "movq %%r10            ,16(%%rdi)         \n" /* r10 -> c2 */                     
                             /*100*/ "movq %%r11            ,24(%%rdi)         \n" /* r11 -> c3 */                     
                             /*101*/ "movq %%r12            ,32(%%rdi)         \n" /* r12 -> c4 */                     
                             /*102*/ "movq %%r13            ,40(%%rdi)         \n" /* r13 -> c5 */                     
+                            /*103*/ "addq $0x30            ,%%rsp             \n" /* destroy stack frame */           
                                : : : "rax","rdx","rcx","rbx","r8","r9","r10","r11","r12","r13","r14","r15","memory"   
                                ); 
                             }

@@ -20,6 +20,7 @@ using vli::vector_polynomial;
 typedef vli::vli<128> vli_type_cpu_128;
 typedef vli::vli<192> vli_type_cpu_192;
 typedef vli::vli<256> vli_type_cpu_256;
+typedef vli::vli<384> vli_type_cpu_384;
 
 /*  -------------------------------------------------------------------- 128 bits ---------------------------------------------------------------------------------- */
 typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x_128;
@@ -113,10 +114,60 @@ typedef boost::mpl::vector< polynomial_type_each_x_256,
 
        }
    };
-   
+// to check :  g++ -E -P -I /BOOST_PATH/include/ -I ../.. vli_number_cpu_function_hooks.hpp | sed  "s/n/;\\`echo -e '\n\r'`/g"  
+namespace vli{
+    namespace detail{
+ void tutu( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */);
+ void bubu( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */);
+   }}
 int main(int argc, char* argv[]) {
+       vli_type_cpu_192 a,b;
+       vli_type_cpu_384 c,d;
+
+       a[0] = 1;
+
+       std::cout << std::hex <<  a << std::endl;
+       
+       a <<= 13;
+       
+       std::cout << std::hex  << a << std::endl;
+       
+//       a *= 4;
+       
+       
+ //      std::cout <<  a << std::endl;
+        
+/*
+       a[0] = 0xfffffff;
+       a[1] = 0xfffffff;
+       a[2] = 0;
+       b[0] = 0xfffffff;
+       b[1] = 0xfffffff    ;
+       b[2] = 0;
+       
+       Timer t0("new");
+       Timer t1("old");
+     
+       t1.begin();
+       for(int i=0; i < 0xffffff; ++i)
+           vli::detail::mul<3>(&d[0],&a[0],&b[0]);
+       t1.end();
+
+       t0.begin();
+       for(int i=0; i < 0xffffff; ++i)
+           vli::detail::bubu(&c[0],&a[0],&b[0]);
+       t0.end();
+
+
+       std::cout << std::hex << c << std::endl;
+       std::cout << std::hex << d << std::endl;
+     
+       if(d == c)
+           std::cout << " OK " << std::endl;
+
        boost::mpl::for_each<polynomial_list_128>(test_case());
        boost::mpl::for_each<polynomial_list_192>(test_case());
        boost::mpl::for_each<polynomial_list_256>(test_case());
+       */
        return 0;
 }
