@@ -113,7 +113,10 @@ namespace detail {
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
-
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
          }
     };
 
@@ -123,8 +126,15 @@ namespace detail {
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
          }
     };
+ 
+    void UnbindTexture(){
+        gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__LINE__);
+        gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__LINE__);
+    }
 
     } // end namespace detail
 }// end namespace vli
