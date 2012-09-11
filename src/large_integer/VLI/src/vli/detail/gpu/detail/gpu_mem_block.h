@@ -34,6 +34,9 @@
 namespace vli {
     namespace detail {
 
+    texture<unsigned int, cudaTextureType1D, cudaReadModeElementType> tex_reference_1; 
+    texture<unsigned int, cudaTextureType1D, cudaReadModeElementType> tex_reference_2; 
+
     // we allocate the mem only one time so pattern of this class singleton
     struct gpu_memblock {
         typedef boost::uint32_t value_type;

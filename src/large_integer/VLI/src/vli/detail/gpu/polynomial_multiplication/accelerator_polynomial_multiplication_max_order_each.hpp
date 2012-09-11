@@ -44,12 +44,8 @@ namespace vli {
     // 4 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 4>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
-                                                                const unsigned int * __restrict__ in2,
-                                                                const unsigned int element_count,
-                                                                unsigned int* __restrict__ out,
-                                                                unsigned int* __restrict__ workblock_count_by_warp,
-                                                                single_coefficient_task* __restrict__ execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order( const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
@@ -104,12 +100,13 @@ namespace vli {
                                                          ) * VLI_SIZE + input_elem_offset;
                 
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c1[i] = in1[in_polynomial_offset1 + i];
-                
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
+                    }
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c2[i] = in2[in_polynomial_offset2 + i];
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
+                    } 
                 
                     #pragma unroll
                     for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
@@ -157,12 +154,7 @@ namespace vli {
     // 3 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 3>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
-                                                                const unsigned int * __restrict__ in2,
-                                                                const unsigned int element_count,
-                                                                unsigned int* __restrict__ out,
-                                                                unsigned int* __restrict__ workblock_count_by_warp,
-                                                                single_coefficient_task* __restrict__ execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
@@ -211,12 +203,14 @@ namespace vli {
                                                          ) * VLI_SIZE + input_elem_offset;
                 
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c1[i] = in1[in_polynomial_offset1 + i];
-                
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
+                    }
+
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c2[i] = in2[in_polynomial_offset2 + i];
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
+                    } 
                 
                     #pragma unroll
                     for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
@@ -259,12 +253,8 @@ namespace vli {
     // 2 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 2>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
-                                                                const unsigned int * __restrict__ in2,
-                                                                const unsigned int element_count,
-                                                                unsigned int* __restrict__ out,
-                                                                unsigned int* __restrict__ workblock_count_by_warp,
-                                                                single_coefficient_task* __restrict__ execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order( const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
@@ -305,12 +295,14 @@ namespace vli {
                                                          ) * VLI_SIZE + input_elem_offset;
                 
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c1[i] = in1[in_polynomial_offset1 + i];
-                
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
+                    }
+
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c2[i] = in2[in_polynomial_offset2 + i];
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
+                    } 
                 
                     #pragma unroll
                     for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
@@ -346,12 +338,8 @@ namespace vli {
     // 1 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 1>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int * __restrict__ in1,
-                                                                const unsigned int * __restrict__ in2,
-                                                                const unsigned int element_count,
-                                                                unsigned int* __restrict__ out,
-                                                                unsigned int* __restrict__ workblock_count_by_warp,
-                                                                single_coefficient_task* __restrict__ execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order( const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
@@ -378,20 +366,20 @@ namespace vli {
                 
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
-                    unsigned int in_polynomial_offset1 = ( + current_degree_x
+                    unsigned int in_polynomial_offset1 = (  current_degree_x
                                                          ) * VLI_SIZE + input_elem_offset;
                     
-                    unsigned int in_polynomial_offset2 = ( + (output_degree_x - current_degree_x)
+                    unsigned int in_polynomial_offset2 = (  (output_degree_x - current_degree_x)
                                                          ) * VLI_SIZE + input_elem_offset;
                 
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c1[i] = in1[in_polynomial_offset1 + i];
-                
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
+                   }
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI_SIZE; ++i)
-                        c2[i] = in2[in_polynomial_offset2 + i];
-                
+                    for(unsigned int i = 0; i < VLI_SIZE; ++i){
+                        c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
+                    } 
                     #pragma unroll
                     for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                         res1[i] = 0;

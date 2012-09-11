@@ -35,6 +35,8 @@
 
 namespace vli {
     namespace detail {
+   
+
 
     template <int Var, int NumVars, int Order>
     struct result_stride {
