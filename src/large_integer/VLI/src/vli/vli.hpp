@@ -191,6 +191,43 @@ vli<NumBits>& vli<NumBits>::operator <<= (value_type const a){
 }
 
 template <std::size_t NumBits>
+vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> const& vli_a){
+    (*this) = (*this) - ((*this) % vli_a);
+    
+    std::cout <<  (*this ) << std::endl;
+    std::cout << (vli_a ) << std::endl;
+
+    vli<NumBits> counter(1),tmp(vli_a);
+    
+    while((*this) != tmp){
+        tmp <<= 1;
+        counter<<=1;
+    }
+    (*this) = counter;
+    return (*this);
+}
+
+// It is very slow
+template <std::size_t NumBits>
+vli<NumBits>& vli<NumBits>::operator %= (vli<NumBits> const& vli_a){
+
+    vli<NumBits> tmp(vli_a);
+    
+    if((*this) >= tmp){
+        while((*this) >= tmp)
+            tmp <<= 1;
+
+        tmp >>= 1;
+        (*this) -= tmp;
+    }else{
+        return (*this);
+    }
+    
+    (*this) %= vli_a;
+    
+}
+    
+template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator += (vli<NumBits> const& vli_a){
     plus_assign(*this,vli_a);
     return *this;
