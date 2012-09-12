@@ -11,7 +11,7 @@
 #include "utils/timings.h"
 #include "utils/tools.h"
 
-#define Size_vec 1024 // play with this 1024 - 16384
+#define Size_vec 128// play with this 1024 - 16384
 #define Order 5 // play 5 - 15, cautious outside memory, xyzw poly ( 10 is the real target)
 
 using vli::polynomial;
@@ -122,16 +122,30 @@ namespace vli{
    }}
 int main(int argc, char* argv[]) {
        vli_type_cpu_192 a,b;
-       vli_type_cpu_384 c,d;
+//       vli_type_cpu_384 c,d;
 
-       a[0] = 1;
+      a[0] = 0xfff;
+    //  a[1] = 0xfff;
+    //  a[2] = 0xfff;
+    
+      vli_type_cpu_192 c(a), d(a);
+    
+      b[0] = 0xf;
+   //   b[1] = 0xfff;
+    std::cout   << a << std::endl;
+    std::cout   << b << std::endl;
 
-       std::cout << std::hex <<  a << std::endl;
-       
-       a <<= 13;
-       
+    
+    vli_type_cpu_192 f = c % b;
+    
+      std::cout   << f << std::endl;
+      c /= b;
+      d %= b;
+    
        std::cout << std::hex  << a << std::endl;
+       std::cout << std::hex  << (d+(c*=b)) << std::endl;
        
+    
 //       a *= 4;
        
        

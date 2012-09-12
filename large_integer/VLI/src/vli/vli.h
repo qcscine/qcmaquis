@@ -55,11 +55,13 @@ namespace vli {
     class vli
         :boost::equality_comparable<vli<NumBits> >, // generate != operator
          boost::less_than_comparable<vli<NumBits>, int>, // generate <= >= > < whatever the paire VLI/int
-         boost::addable<vli<NumBits> >, // generate VLI<nbits> = VLIVLI<nbits> + VLI<VLI<nbits> 
+         boost::less_than_comparable<vli<NumBits> >, // generate <= >= > < whatever the paire VLI/VLI
+         boost::addable<vli<NumBits> >, // generate VLI<nbits> = VLIVLI<nbits> + VLI<VLI<nbits>
          boost::subtractable<vli<NumBits> >, // generate VLI<nbits> = VLIVLI<nbits> - VLI<VLI<nbits>
          boost::multipliable<vli<NumBits> >, //  generate VLI<nbits> = VLIVLI<nbits> * VLI<VLI<nbits>
          boost::left_shiftable<vli<NumBits>, int>, // enerate VLI<nbits> = VLIVLI<nbits> << int
-         boost::right_shiftable<vli<NumBits>, int> //enerate VLI<nbits> = VLIVLI<nbits> >> int
+         boost::right_shiftable<vli<NumBits>, int>, //enerate VLI<nbits> = VLIVLI<nbits> >> int
+         boost::modable<vli<NumBits> >
     {
     public:
         typedef boost::uint64_t      value_type;     // Data type to store parts of the very long integer (usually int) -
@@ -92,6 +94,8 @@ namespace vli {
         vli& operator -= (value_type a);
         vli& operator *= (value_type a);
         vli& operator *= (vli const& a); // conserve the total number of bits
+        vli& operator /= (vli const& a); // conserve the total number of bits
+        vli& operator %= (vli const& a); // conserve the total number of bits
 
         vli operator -() const;
         bool operator == (vli const& vli_a) const; // need by boost::equality_comparable
