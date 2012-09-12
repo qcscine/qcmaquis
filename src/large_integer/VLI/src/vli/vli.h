@@ -88,6 +88,7 @@ namespace vli {
         // c - basic operator
         vli& operator >>= (value_type const a); // bit shift
         vli& operator <<= (value_type const a); // bit shift
+        vli& operator |=  (vli const& vli_a); // bit shift
         vli& operator += (vli const& a);
         vli& operator += (value_type const a);
         vli& operator -= (vli const& vli_a);
