@@ -191,40 +191,50 @@ vli<NumBits>& vli<NumBits>::operator <<= (value_type const a){
 }
 
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> const& vli_a){
-    (*this) = (*this) - ((*this) % vli_a);
-    
-    std::cout <<  (*this ) << std::endl;
-    std::cout << (vli_a ) << std::endl;
+vli<NumBits>& vli<NumBits>::operator |= (vli const& vli_a){
+    for(int i(0); i < numwords; ++i)
+        (*this)[i] |= vli_a[i];
+    return *this;
+}
 
-    vli<NumBits> counter(1),tmp(vli_a);
-    
-    while((*this) != tmp){
-        tmp <<= 1;
-        counter<<=1;
+
+// vli_a %/= vli_b
+template <std::size_t NumBits>
+void quotient_rest_helper(vli<NumBits> const& vli_b, vli<NumBits>& vli_quotient, vli<NumBits>& vli_rest){
+    vli<NumBits> tmp(vli_b);
+    vli<NumBits> tmp_quotient(1);
+
+    if(vli_rest >= tmp){
+        while(vli_rest >= tmp){
+            tmp <<= 1;
+            tmp_quotient <<=1;
+        }
+
+        tmp >>= 1;
+        tmp_quotient >>= 1;
+        vli_quotient |= tmp_quotient;
+        
+        vli_rest -= tmp;
+    }else{
+        return;
     }
-    (*this) = counter;
-    return (*this);
+    quotient_rest_helper(vli_b, vli_quotient, vli_rest);
 }
 
 // It is very slow
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator %= (vli<NumBits> const& vli_a){
+  vli<NumBits> vli_quotient;
+  quotient_rest_helper(vli_a,vli_quotient,(*this));
+  return (*this);
+}
 
-    vli<NumBits> tmp(vli_a);
-    
-    if((*this) >= tmp){
-        while((*this) >= tmp)
-            tmp <<= 1;
-
-        tmp >>= 1;
-        (*this) -= tmp;
-    }else{
-        return (*this);
-    }
-    
-    (*this) %= vli_a;
-    
+template <std::size_t NumBits>
+vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> const& vli_a){
+  vli<NumBits> vli_quotient;
+  quotient_rest_helper(vli_a,vli_quotient,(*this));
+  (*this) = vli_quotient;
+  return (*this);
 }
     
 template <std::size_t NumBits>

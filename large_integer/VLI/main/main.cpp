@@ -123,27 +123,32 @@ namespace vli{
 int main(int argc, char* argv[]) {
        vli_type_cpu_192 a,b;
 //       vli_type_cpu_384 c,d;
-
-      a[0] = 0xfff;
-    //  a[1] = 0xfff;
-    //  a[2] = 0xfff;
+      a[0] = 0xc;
+      b[0] = 0xff;
+      b[1] = 0xf;
+//      a[2] = 0xffffffffff;
     
       vli_type_cpu_192 c(a), d(a);
     
-      b[0] = 0xf;
-   //   b[1] = 0xfff;
+     
+  //    b[1] = 0xf;
+//      b[2] = 0xffffffffffffffff;
+ 
     std::cout   << a << std::endl;
     std::cout   << b << std::endl;
 
     
-    vli_type_cpu_192 f = c % b;
+  //  vli_type_cpu_192 f = c % b;
     
-      std::cout   << f << std::endl;
+      //std::cout   << f << std::endl;
+      
       c /= b;
       d %= b;
+      
+      std::cout << d << std::endl;
     
-       std::cout << std::hex  << a << std::endl;
-       std::cout << std::hex  << (d+(c*=b)) << std::endl;
+    
+      std::cout   << (c*b +d) << std::endl;
        
     
 //       a *= 4;
