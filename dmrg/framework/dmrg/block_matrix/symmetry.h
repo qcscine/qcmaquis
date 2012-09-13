@@ -14,6 +14,7 @@
 #include <list>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/functional/hash.hpp>
 
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
@@ -25,10 +26,28 @@ class TrivialGroup
 {
 public:
 	typedef enum { Plus } charge;
-	static const charge IdentityCharge = Plus;
+	static const charge IdentityCharge = Plus;// init now before the main
     
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
+};
+
+namespace boost {
+    template <>
+    class hash<typename TrivialGroup::charge>{
+        public :
+            size_t operator()(typename TrivialGroup::charge const &Charge ) const {
+                return hash<int>()(TrivialGroup::IdentityCharge); // return 0 ??
+            }
+    };
+
+    template <>
+    class hash<std::pair<TrivialGroup::charge,TrivialGroup::charge > >{
+        public :
+            size_t operator()(std::pair<TrivialGroup::charge, TrivialGroup::charge> const &Pair_of_charge ) const {
+                return boost::hash_value(Pair_of_charge);
+            }
+    };
 };
 
 #ifdef HAVE_ALPS_HDF5
@@ -255,6 +274,37 @@ public:
     
 private:
     int data_[N];
+};
+
+namespace boost {
+    template <int N>
+    class hash<NU1Charge<N> >{
+        public :
+            size_t operator()(NU1Charge<N> const &Charge ) const {
+                return boost::hash_range(&Charge[0],&Charge[N]);
+            }
+    };
+
+    template <int N>
+    class hash<std::pair<NU1Charge<N>, NU1Charge<N> > >{
+        public :
+            size_t operator()(std::pair<NU1Charge<N>,NU1Charge<N> > const &Pair_of_charge ) const {
+                std::size_t seed = 0;
+                for(int i(0); i<N; i++){
+                    boost::hash_combine(seed, (Pair_of_charge.first)[i]);
+                    boost::hash_combine(seed, (Pair_of_charge.second)[i]);
+                }
+                return seed;
+            }
+    };
+
+    class hash<std::pair<int,int>  >{
+        public :
+            size_t operator()(std::pair<int, int> const &Pair_of_charge ) const {
+                return boost::hash_value(Pair_of_charge);
+            }
+    };
+
 };
 
 template<int N>
