@@ -39,6 +39,9 @@ void dmrg(DmrgParameters & parms, ModelParameters & model)
         throw std::runtime_error("Don't know this symmetry group. Please, check your compilation flags.");    
 }
 
+const typename TrivialGroup::charge TrivialGroup::IdentityCharge;
+const typename U1::charge U1::IdentityCharge;
+
 int main(int argc, char ** argv)
 {
     if (argc != 3)
