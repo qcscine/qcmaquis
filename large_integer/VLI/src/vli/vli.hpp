@@ -127,14 +127,14 @@ bool vli<NumBits>::operator < (vli const& vli_a) const{
 }
 
 template <std::size_t NumBits>
-bool vli<NumBits>::operator < (int i) const{
+bool vli<NumBits>::operator < (long int i) const{
     vli tmp1(*this);
     vli tmp2(i);
     return ( (tmp1-=tmp2).is_negative() );
 }
 
 template <std::size_t NumBits>
-bool vli<NumBits>::operator > (int i) const{
+bool vli<NumBits>::operator > (long int i) const{
     vli tmp(i);
     return ( (tmp-=*this).is_negative() );
 }
