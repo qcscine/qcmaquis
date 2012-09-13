@@ -12,8 +12,8 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
-#include <map>
 
+#include <boost/unordered_map.hpp>
 #include <boost/array.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
@@ -223,13 +223,13 @@ private:
               Index<SymmGroup> const & b,
               Fusion f)
     {
+        keys_vals_.rehash((keys_vals_.size() + a.size()*b.size()) / keys_vals_.max_load_factor() + 1); // from http://www.boost.org/doc/libs/1_37_0/doc/html/unordered/buckets.html
         for (typename Index<SymmGroup>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1)
             for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
             {
                 charge pc = f(it1->first, it2->first);
-                
-                keys_.push_back(std::make_pair(it1->first, it2->first));
-                vals_.push_back(size_[pc]);
+                keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc]; 	
+          //    keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc])); 	
                 size_[pc] += it1->second * it2->second;
             }
     }
@@ -237,9 +237,9 @@ private:
 public:
     size_t operator()(charge a, charge b) const
     {
-        assert( std::count(keys_.begin(), keys_.end(), std::make_pair(a, b)) > 0 );
-        size_t pos = std::find(keys_.begin(), keys_.end(), std::make_pair(a, b))-keys_.begin();
-        return vals_[pos];
+        //assert( std::count(keys_.begin(), keys_.end(), std::make_pair(a, b)) > 0 );
+        size_t res = (*keys_vals_.find(std::make_pair(a,b))).second;
+        return res;
     }
     
     inline size_t size(charge pc) const
@@ -262,9 +262,8 @@ public:
     }
 
 private:
-    mutable std::map<charge, size_t> size_;
-    std::vector<std::pair<charge, charge> > keys_;
-    std::vector<size_t> vals_;
+    mutable boost::unordered_map<charge, size_t> size_;
+    boost::unordered_map<std::pair<charge, charge>, size_t> keys_vals_;
 };
 
 template<class SymmGroup>
