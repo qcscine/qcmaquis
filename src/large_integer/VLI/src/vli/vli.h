@@ -43,24 +43,24 @@
 
 
 namespace vli {
-    
+
     template<std::size_t NumBits> class vli;
 
     template <std::size_t NumBits>
     void swap(vli<NumBits>& vli_a, vli<NumBits>& vli_b){
         boost::swap(vli_a.data_,vli_b.data_);
     }
-    
+
     template<std::size_t NumBits>
     class vli
         :boost::equality_comparable<vli<NumBits> >, // generate != operator
-         boost::less_than_comparable<vli<NumBits>, int>, // generate <= >= > < whatever the paire VLI/int
          boost::less_than_comparable<vli<NumBits> >, // generate <= >= > < whatever the paire VLI/VLI
+         boost::less_than_comparable<vli<NumBits>, long int>, // generate <= >= > < whatever the paire VLI/int
          boost::addable<vli<NumBits> >, // generate VLI<nbits> = VLIVLI<nbits> + VLI<VLI<nbits>
          boost::subtractable<vli<NumBits> >, // generate VLI<nbits> = VLIVLI<nbits> - VLI<VLI<nbits>
          boost::multipliable<vli<NumBits> >, //  generate VLI<nbits> = VLIVLI<nbits> * VLI<VLI<nbits>
-         boost::left_shiftable<vli<NumBits>, int>, // enerate VLI<nbits> = VLIVLI<nbits> << int
-         boost::right_shiftable<vli<NumBits>, int>, //enerate VLI<nbits> = VLIVLI<nbits> >> int
+         boost::left_shiftable<vli<NumBits>, long int>, // enerate VLI<nbits> = VLIVLI<nbits> << int
+         boost::right_shiftable<vli<NumBits>, long int>, //enerate VLI<nbits> = VLIVLI<nbits> >> int
          boost::modable<vli<NumBits> >
     {
     public:
@@ -86,28 +86,27 @@ namespace vli {
         void negate();
         bool is_negative() const;
         // c - basic operator
-        vli& operator >>= (value_type const a); // bit shift
-        vli& operator <<= (value_type const a); // bit shift
+        vli& operator >>= (long int const a); // bit shift
+        vli& operator <<= (long int const a); // bit shift
         vli& operator |=  (vli const& vli_a); // bit shift
         vli& operator += (vli const& a);
-        vli& operator += (value_type const a);
+        vli& operator += (long int const a);
         vli& operator -= (vli const& vli_a);
-        vli& operator -= (value_type a);
-        vli& operator *= (value_type a);
+        vli& operator -= (long int a);
+        vli& operator *= (long int a);
         vli& operator *= (vli const& a); // conserve the total number of bits
         vli& operator /= (vli const& a); // conserve the total number of bits
         vli& operator %= (vli const& a); // conserve the total number of bits
 
         vli operator -() const;
         bool operator == (vli const& vli_a) const; // need by boost::equality_comparable
-        bool operator < (vli const& vli_a) const; // need by less_than_comparable
-        bool operator < (int i) const; // need by less_than_comparable
-        bool operator > (vli vli_a) const; // need by less_than_comparable
-        bool operator > (int i) const; // need by less_than_comparable
+        bool operator < (vli const& vli_a) const; // need by less_than_comparable<T>
+        bool operator < (long int i) const; // need by less_than_comparable<T,U>
+        bool operator > (long int i) const; // need by less_than_comparable<T,U>
         bool is_zero() const;
         void print_raw(std::ostream& os) const;
         void print(std::ostream& os) const;
-        
+
         std::string get_str() const;
         size_type order_of_magnitude_base10(vli const& value) const;
         std::string get_str_helper_inplace(vli& value, size_type ten_exp) const;
@@ -115,10 +114,6 @@ namespace vli {
         value_type data_[numwords];
     };
 
-    template <std::size_t NumBits>
-    class extend_helper {
-    };
-    
     /**
      multiply and addition operators, suite ...
      no boost::operators for VLI operator int, because I have specific assembly solver, 
@@ -126,27 +121,27 @@ namespace vli {
      */
     template <std::size_t NumBits>
     bool is_zero(vli<NumBits> const& v);
-    
+
     template <std::size_t NumBits>
     void negate_inplace(vli<NumBits>& v);
 
     template <std::size_t NumBits>
-    const vli<NumBits> operator + (vli<NumBits> vli_a, int b);
-    
-    template <std::size_t NumBits>
-    const vli<NumBits> operator + (int b, vli<NumBits> const& vli_a);
-    
-    template <std::size_t NumBits> //extented arithmetic
-    const vli<NumBits+64> plus_extend(vli<NumBits> const& vli_a, vli<NumBits> const& vli_b);
-    
-    template <std::size_t NumBits>
-    const vli<NumBits> operator - (vli<NumBits> vli_a, int b);
-        
-    template <std::size_t NumBits>
-    const vli<NumBits> operator * (vli<NumBits> vli_a, int b);
+    const vli<NumBits> operator + (vli<NumBits> vli_a, long int b);
 
     template <std::size_t NumBits>
-    const vli<NumBits> operator * (int b, vli<NumBits> const& a);
+    const vli<NumBits> operator + (long int b, vli<NumBits> const& vli_a);
+
+    template <std::size_t NumBits> //extented arithmetic
+    const vli<NumBits+64> plus_extend(vli<NumBits> const& vli_a, vli<NumBits> const& vli_b);
+
+    template <std::size_t NumBits>
+    const vli<NumBits> operator - (vli<NumBits> vli_a, long int b);
+
+    template <std::size_t NumBits>
+    const vli<NumBits> operator * (vli<NumBits> vli_a, long int b);
+
+    template <std::size_t NumBits>
+    const vli<NumBits> operator * (long int b, vli<NumBits> const& a);
 
     template <std::size_t NumBits>
     void multiply_extend(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b); // C nt = non truncated

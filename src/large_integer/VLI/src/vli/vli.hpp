@@ -72,11 +72,13 @@ vli<NumBits>::vli(){
 
 template <std::size_t NumBits>
 vli<NumBits>::vli(long int num) {
-
+    // We rely on the implementation-defined >>= operator for negative long ints
+    // to fill the most significant part with 1 (only for negative values)
+    assert( -1l >> 1 == -1l );
     data_[0] = num;
-    long int a = num >> std::numeric_limits<long int>::digits;
+    value_type a = num >> std::numeric_limits<long int>::digits;
     for(size_type i=1; i< numwords; ++i)
-        data_[i] = a; // WARNING it should be -a, but it works like that WHY ??????
+        data_[i] = a;
 
 }
 
@@ -89,7 +91,7 @@ vli<NumBits>::operator mpz_class() const{
 template <std::size_t NumBits>
 vli<NumBits>::operator mpq_class() const{
     return detail::gmp_convert_helper<mpq_class>::apply(*this);
-}   
+}
 #endif //__GNU_MP_VERSION
 
 
@@ -127,13 +129,8 @@ bool vli<NumBits>::operator < (vli const& vli_a) const{
 template <std::size_t NumBits>
 bool vli<NumBits>::operator < (int i) const{
     vli tmp1(*this);
-    vli tmp2(i);    
+    vli tmp2(i);
     return ( (tmp1-=tmp2).is_negative() );
-}
-
-template <std::size_t NumBits>      
-bool vli<NumBits>::operator > (vli vli_a) const{
-    return ( (vli_a-=*this).is_negative() );
 }
 
 template <std::size_t NumBits>
@@ -164,27 +161,30 @@ bool vli<NumBits>::is_negative() const{
 }
 // c - basic operators
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator >>= (value_type const a){
-    assert(a < 64);
-    for(int i(0); i < numwords-1; ++i){
+vli<NumBits>& vli<NumBits>::operator >>= (long int const a){
+    assert( a >= 0 );
+    assert( a < 64 );
+    for(size_type i = 0; i < numwords-1; ++i){
         data_[i] >>= a;
-        data_[i] |= (data_[i+1] << (std::numeric_limits<long int>::digits-a+1));
+        data_[i] |= (data_[i+1] << (std::numeric_limits<value_type>::digits-a));
     }
-    // we right shift by 0 of 1 for the last element due to sign
-    value_type tmp (data_[numwords-1] >> std::numeric_limits<long int>::digits);
-    tmp -= tmp;
-    tmp = (tmp >> std::numeric_limits<long int>::digits-a+1) << std::numeric_limits<long int>::digits-a+1; // C - Andreas any ideas for shorter ?
-    data_[numwords-1] >>= a;
-    data_[numwords-1] |= tmp;
+    // We do an arithmentic shift, i.e. fill the left-most (most significant) part
+    // with 0 for positive and 1 for negative values
+    //
+    // We rely on the implementation-defined >>= operator for negative long ints
+    // to fill the most significant part with 1 (only for negative values)
+    assert( -1l >> 1 == -1l );
+    reinterpret_cast<boost::int64_t&>(data_[numwords-1]) >>= a;
     return *this;
 }
 
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator <<= (value_type const a){
+vli<NumBits>& vli<NumBits>::operator <<= (long int const a){
+    assert( a >= 0 );
     assert(a < 64);
-    for(int i = numwords-1; i > 0; --i){
+    for(size_type i = numwords-1; i > 0; --i){
         data_[i] <<= a;
-        data_[i] |= (data_[i-1] >> (std::numeric_limits<long int>::digits-a+1));
+        data_[i] |= (data_[i-1] >> (std::numeric_limits<value_type>::digits-a));
     }
     data_[0] <<= a;
     return *this;
@@ -192,7 +192,7 @@ vli<NumBits>& vli<NumBits>::operator <<= (value_type const a){
 
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator |= (vli const& vli_a){
-    for(int i(0); i < numwords; ++i)
+    for(std::size_t i=0; i < numwords; ++i)
         (*this)[i] |= vli_a[i];
     return *this;
 }
@@ -213,7 +213,7 @@ void quotient_rest_helper(vli<NumBits> const& vli_b, vli<NumBits>& vli_quotient,
         tmp >>= 1;
         tmp_quotient >>= 1;
         vli_quotient |= tmp_quotient;
-        
+
         vli_rest -= tmp;
     }else{
         return;
@@ -236,7 +236,7 @@ vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> const& vli_a){
   (*this) = vli_quotient;
   return (*this);
 }
-    
+
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator += (vli<NumBits> const& vli_a){
     plus_assign(*this,vli_a);
@@ -244,7 +244,7 @@ vli<NumBits>& vli<NumBits>::operator += (vli<NumBits> const& vli_a){
 }
 
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator += (value_type const a){
+vli<NumBits>& vli<NumBits>::operator += (long int const a){
     plus_assign(*this,a);
     return *this;
 }
@@ -256,13 +256,13 @@ vli<NumBits>& vli<NumBits>::operator -= (vli<NumBits> const& vli_a){
 }
 
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator -= (value_type const a){
+vli<NumBits>& vli<NumBits>::operator -= (long int const a){
     minus_assign(*this,a);
     return *this;
 }
 
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator *= (value_type const a){
+vli<NumBits>& vli<NumBits>::operator *= (long int const a){
     multiplies_assign(*this,a);
     return *this;
 }
@@ -293,20 +293,20 @@ void vli<NumBits>::print(std::ostream& os) const{
 template <std::size_t NumBits>
 std::string vli<NumBits>::get_str() const {
     vli<NumBits> tmp;
-    
+
     if((*this).is_negative()){
         const_cast<vli<NumBits> & >(*this).negate();
 
         for(size_type i=0; i<numwords; ++i)
             tmp[i] = (*this)[i];
-    
+
         tmp.negate();
         const_cast<vli<NumBits> & >(*this).negate();
     }else{
         for(size_type i=0; i<numwords; ++i)
             tmp[i] = (*this)[i];
     }
-    
+
     if(tmp.is_negative()){
         tmp.negate();
         size_type ten_exp = order_of_magnitude_base10(tmp);
@@ -323,11 +323,11 @@ std::string vli<NumBits>::get_str() const {
 template <std::size_t NumBits>
 typename vli<NumBits>::size_type vli<NumBits>::order_of_magnitude_base10(vli<NumBits> const& value) const {
     assert(!value.is_negative());
-    
+
     vli<NumBits> value_cpy(value);
     vli<NumBits> decimal(1);
     size_type exp = 0;
-    
+
     // Find correct order (10^exp) 
     while(!value_cpy.is_negative()){
         value_cpy=value; // reset
@@ -350,12 +350,12 @@ typename vli<NumBits>::size_type vli<NumBits>::order_of_magnitude_base10(vli<Num
 template <std::size_t NumBits>
 std::string vli<NumBits>::get_str_helper_inplace(vli<NumBits>& value, size_type ten_exp) const {
     assert(!value.is_negative());
-    
+
     // Create a number 10^(exponent-1) sin
     vli<NumBits> dec(1);
     for(size_type e=0; e < ten_exp; ++e)
         dec *= 10;
-    
+
     // Find the right digit for 10^ten_exp
     vli<NumBits> value_cpy(value);
     int digit=0;
@@ -368,12 +368,12 @@ std::string vli<NumBits>::get_str_helper_inplace(vli<NumBits>& value, size_type 
         value_cpy-= digit*dec;
     }
     --digit; // we went to far
-    
+
     assert(digit >=0);
-    assert(digit < 10); 
-    
+    assert(digit < 10);
+
     value-= digit*dec;
-    
+
     if(ten_exp <= 0)
         return boost::lexical_cast<std::string>(digit);
     else
@@ -407,32 +407,32 @@ const vli<NumBits+64> plus_extend (vli<NumBits> const &vli_a, vli<NumBits> const
       plus_extend_assign<NumBits>(vli_res,vli_a,vli_b);
       return vli_res;
 }
-    
+
 template <std::size_t NumBits>
-const vli<NumBits> operator + (vli<NumBits> vli_a, int b){
+const vli<NumBits> operator + (vli<NumBits> vli_a, long int b){
     vli_a += b;
     return vli_a;
 }
-    
+
 template <std::size_t NumBits>
-const vli<NumBits> operator + (int b, vli<NumBits> const& vli_a){
+const vli<NumBits> operator + (long int b, vli<NumBits> const& vli_a){
     return vli_a+b;
 }
-        
+
 template <std::size_t NumBits>
-const vli<NumBits> operator - (vli<NumBits> vli_a, int b){
+const vli<NumBits> operator - (vli<NumBits> vli_a, long int b){
     vli_a -= b;
     return vli_a;
 }
 
 template <std::size_t NumBits>
-const vli<NumBits> operator * (vli<NumBits> vli_a, int b){
+const vli<NumBits> operator * (vli<NumBits> vli_a, long int b){
     vli_a *= b;
     return vli_a;
 }
 
 template <std::size_t NumBits>
-const vli<NumBits> operator * (int b, vli<NumBits> const& a){
+const vli<NumBits> operator * (long int b, vli<NumBits> const& a){
     return a*b;
 }
 
