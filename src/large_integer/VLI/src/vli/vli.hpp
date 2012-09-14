@@ -197,10 +197,16 @@ vli<NumBits>& vli<NumBits>::operator |= (vli const& vli_a){
     return *this;
 }
 
+template <std::size_t NumBits>
+vli<NumBits>& vli<NumBits>::operator ^= (vli const& vli_a){
+    for(std::size_t i=0; i < numwords; ++i)
+        (*this)[i] ^= vli_a[i];
+    return *this;
+}
 
 // vli_a %/= vli_b
 template <std::size_t NumBits>
-void quotient_rest_helper(vli<NumBits> const& vli_b, vli<NumBits>& vli_quotient, vli<NumBits>& vli_rest){
+void quotient_helper(vli<NumBits> const& vli_b, vli<NumBits>& vli_quotient, vli<NumBits>& vli_rest){
     vli<NumBits> tmp(vli_b);
     vli<NumBits> tmp_quotient(1);
 
@@ -218,22 +224,70 @@ void quotient_rest_helper(vli<NumBits> const& vli_b, vli<NumBits>& vli_quotient,
     }else{
         return;
     }
-    quotient_rest_helper(vli_b, vli_quotient, vli_rest);
+    quotient_helper(vli_b, vli_quotient, vli_rest);
 }
 
-// It is very slow
+    
+// Saint HPC forgives me
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator %= (vli<NumBits> const& vli_a){
-  vli<NumBits> vli_quotient;
-  quotient_rest_helper(vli_a,vli_quotient,(*this));
-  return (*this);
+vli<NumBits>& vli<NumBits>::operator %= (vli<NumBits> vli_a){
+    int sign_this((*this)[numwords-1] >> std::numeric_limits<value_type>::digits-1);
+    int sign_vli_a(vli_a[numwords-1] >> std::numeric_limits<value_type>::digits-1);
+
+    if(sign_this)
+        (*this).negate();
+
+    if(sign_vli_a)
+        vli_a.negate();
+
+    vli<NumBits> tmp(vli_a);
+
+    while((*this) >= tmp)
+        tmp <<= 1;
+        
+    while((*this) >= vli_a){
+        tmp >>= 1;
+        if(tmp <= (*this) )
+            (*this) -= tmp;
+    }
+    
+    if((sign_this^sign_vli_a)){
+        (*this).negate();
+        /* say gmp convention is correct
+        if(sign_this)
+            (*this) = vli_a - (*this);*/
+    }
+    
+    return *this;
 }
 
+// Saint HPC forgives me
 template <std::size_t NumBits>
-vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> const& vli_a){
-  vli<NumBits> vli_quotient;
-  quotient_rest_helper(vli_a,vli_quotient,(*this));
-  (*this) = vli_quotient;
+vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> vli_a){
+  int sign_this((*this)[numwords-1] >> std::numeric_limits<value_type>::digits-1);
+  int sign_vli_a(vli_a[numwords-1] >> std::numeric_limits<value_type>::digits-1);
+    
+  if(sign_this)
+    (*this).negate();
+    
+  if(sign_vli_a)
+    vli_a.negate();
+    
+  vli<NumBits> vli_rest((*this));
+  (*this) ^= (*this); //flush to 0
+  quotient_helper(vli_a,(*this),vli_rest);
+    
+  if((sign_this^sign_vli_a))
+    (*this).negate();
+    /* say gmp convention is correct
+      if(sign_this){
+      (*this).negate();
+      (*this)-=1;
+    }
+    if(sign_vli_a)
+      (*this).negate();
+    }*/
+    
   return (*this);
 }
 
