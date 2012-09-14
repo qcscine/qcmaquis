@@ -89,15 +89,16 @@ namespace vli {
         // c - basic operator
         vli& operator >>= (long int const a); // bit shift
         vli& operator <<= (long int const a); // bit shift
-        vli& operator |=  (vli const& vli_a); // bit shift
+        vli& operator |= (vli const& vli_a); // bit shift
+        vli& operator ^= (vli const& vli_a); // bit shift
         vli& operator += (vli const& a);
         vli& operator += (long int const a);
         vli& operator -= (vli const& vli_a);
         vli& operator -= (long int a);
         vli& operator *= (long int a);
         vli& operator *= (vli const& a); // conserve the total number of bits
-        vli& operator /= (vli const& a); // conserve the total number of bits
-        vli& operator %= (vli const& a); // conserve the total number of bits
+        vli& operator /= (vli a); // conserve the total number of bits
+        vli& operator %= (vli a); // conserve the total number of bits
 
         vli operator -() const;
         bool operator == (vli const& vli_a) const; // need by boost::equality_comparable
