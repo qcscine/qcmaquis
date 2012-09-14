@@ -61,7 +61,8 @@ namespace vli {
          boost::multipliable<vli<NumBits> >, //  generate VLI<nbits> = VLIVLI<nbits> * VLI<VLI<nbits>
          boost::left_shiftable<vli<NumBits>, long int>, // enerate VLI<nbits> = VLIVLI<nbits> << int
          boost::right_shiftable<vli<NumBits>, long int>, //enerate VLI<nbits> = VLIVLI<nbits> >> int
-         boost::modable<vli<NumBits> >
+         boost::modable<vli<NumBits> >,
+         boost::dividable<vli<NumBits> >
     {
     public:
         typedef boost::uint64_t      value_type;     // Data type to store parts of the very long integer (usually int) -

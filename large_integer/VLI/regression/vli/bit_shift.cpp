@@ -37,15 +37,24 @@ VLI_STATIC_TEST( right_shift )
     BOOST_CHECK_EQUAL(a,b);
 }
 
+VLI_STATIC_TEST( minus_1_right_shift )
+{
+    vli_type a(-1);
+
+    for(vli_type::size_type i=0; i < 64; ++i) {
+        a >>= 1;
+        BOOST_CHECK_EQUAL(a,vli_type(-1));
+    }
+}
+
 VLI_FUZZABLE_TEST(left_shift_mul )
 {
     vli_type a;
     init(a,overflow_safe);
     vli_type b(a);
 
-    a <<=2;
-    b *=4;   
-
+    a <<= 2;
+    b *= 4;
     BOOST_CHECK_EQUAL(a,b);
 }
 
