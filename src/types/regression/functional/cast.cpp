@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
-    pA.fill_random();
+    fill_random(pA);
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
 
-    pA.get_data().fill_random();
+    fill_random(pA.get_data());
     sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA);
     BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }

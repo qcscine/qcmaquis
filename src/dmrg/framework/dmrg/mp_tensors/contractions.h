@@ -16,7 +16,7 @@
 #include "dmrg/block_matrix/indexing.h"
 
 #ifdef USE_AMBIENT
-#define parallel_for cilk_for
+#define parallel_for for
 #else
 #define parallel_for for
 #endif

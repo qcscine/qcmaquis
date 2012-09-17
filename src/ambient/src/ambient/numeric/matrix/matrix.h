@@ -47,6 +47,7 @@ namespace ambient { namespace numeric {
         inline void* operator new (size_t);
         inline void* operator new (size_t, void*);
         inline void operator delete (void*);
+        inline void operator delete (void*, void*){ } // doesn't throw
         static inline matrix<T> identity_matrix(size_type size);
         explicit inline matrix(const ptr& p, size_t r);
         explicit inline matrix();
@@ -68,6 +69,7 @@ namespace ambient { namespace numeric {
         inline void conj();
         inline bool empty() const;          
         inline void swap(matrix& r);
+        template<typename TT> 
         friend void swap(matrix& x, matrix& y);
         inline void resize(size_type rows, size_type cols); 
         inline void remove_rows(size_type i, size_type k = 1);
@@ -90,7 +92,7 @@ namespace ambient { namespace numeric {
     template <class T>
     class weak_view : public matrix<T> {
         public:
-        operator matrix<T>& (){ return *(matrix<T>*)this; }
+        //operator matrix<T>& (){ return *(matrix<T>*)this; }
         weak_view(const typename matrix<T>::ptr& p, size_t r) : matrix<T>(p, r) {}
     };
 

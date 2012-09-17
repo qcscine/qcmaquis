@@ -3,21 +3,6 @@
 
 namespace ambient { namespace models { namespace velvet {
 
-    class sfunctor;
-
-} } }
-
-namespace ambient { namespace controllers { namespace velvet {
-
-    class cfunctor;
-
-} } }
-
-namespace ambient { namespace models { namespace velvet {
-
-    using ambient::models::velvet::sfunctor;
-    using ambient::controllers::velvet::cfunctor;
-
     class revision
     {
     public:

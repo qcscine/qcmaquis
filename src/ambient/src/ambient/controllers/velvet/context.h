@@ -6,7 +6,6 @@
 namespace ambient { namespace controllers { namespace velvet { 
 
     using ambient::channels::mpi::group;
-    using ambient::controllers::velvet::cfunctor;
 
     class context : public singleton< context > 
     {

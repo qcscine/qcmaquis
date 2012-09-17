@@ -1,5 +1,5 @@
 #include <boost/preprocessor.hpp>
-#define ARGS_MAX_LEN 10
+#define ARGS_MAX_LEN 11
 
 #define cleanup_object(z, n, unused)                                                                                 \
     info<T ## n>::typed::deallocate<n>(o);

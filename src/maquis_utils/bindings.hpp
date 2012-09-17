@@ -38,11 +38,10 @@ namespace maquis { namespace bindings {
             for(size_t k = 0; k < m.n_blocks(); ++k) 
                 set.push_back(std::vector<T>(m[k].num_rows()));
             size_t num_cols(1);
-            size_t num_rows;
             for(size_t k = 0; k < m.n_blocks(); ++k){
                 std::vector<T>* v_ptr = &set[k];
                 size_t offset = 0;
-                for(size_t offset = 0, kk = 0; kk < m[k].data.size(); kk++){
+                for(size_t kk = 0; kk < m[k].data.size(); kk++){
                     size_t num_rows = m[k][kk].num_rows();
                     ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k][kk], num_rows, num_cols, offset);
                     offset += num_rows;

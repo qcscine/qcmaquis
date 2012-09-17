@@ -12,9 +12,6 @@
 #include "utils/timings.h"
 #include "utilities.h"
 
-#include "ambient/utils/numeric.h" 
-
-
 namespace Random{
    struct random {
        random(){};
@@ -58,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types)
        
     Timer time("blas");
     time.begin();
-    gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+    ambient::numeric::kernels::__a_gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     time.end();
 
     report(time, GFlopsGemm, x, y, nthreads); 

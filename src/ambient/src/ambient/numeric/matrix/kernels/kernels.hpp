@@ -202,255 +202,76 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& m, const size_t& n)
         {
             __A_TIME_C("ambient_copy_partial_c_kernel"); 
+            __a_refresh<T>(w_updated(dst), c_current(dst), __a_sizeof(dst));
             __a_memptf_r<T, __a_memcpy>(r_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
                                         c_current(src), __a_get_dim(src).y, dim2(sj, si), 
                                         dim2( n, m ));
             __A_TIME_C_STOP
         }
     };
-        
-    template<typename T>
-    struct op_kron : public kernel< op_kron<T> > 
-    { // gs - 2su
-        typedef void (op_kron::*F)(matrix<T>&, const matrix<T>&, const matrix<T>&,
-                                          const size_t&, const size_t&, 
-                                          const size_t&, const size_t&,
-                                          const size_t&, const size_t&);
 
-        inline void l(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                      const size_t& out_y_offset, const size_t& out_x_offset, 
-                      const size_t& ldim1, const size_t& ldim2, 
-                      const size_t& rdim1, const size_t& rdim2)
+    template<typename T>
+    struct copy_s : public kernel< copy_s<T> > 
+    { // gs
+        typedef void(copy_s::*F)(matrix<T>&, const size_t&, const size_t&, 
+                                 const matrix<T>&, const size_t&, const size_t&, 
+                                 const matrix<T>&, const size_t&, const size_t&, 
+                                 const size_t&, const size_t&);
+                                           
+        inline void l(matrix<T>& dst, const size_t& di, const size_t& dj, 
+                      const matrix<T>& src, const size_t& si, const size_t& sj,
+                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
+                      const size_t& m, const size_t& n)
         {
-            pin(current(out)); //if(!ctxt.involved()) return;
-            assign(current(in));
+            pin(current(src)); //if(!ctxt.involved()) return;
+            assign(current(dst));
             assign(current(alfa));
         }
 
-        inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                      const size_t& out_y_offset, const size_t& out_x_offset, 
-                      const size_t& ldim1, const size_t& ldim2, 
-                      const size_t& rdim1, const size_t& rdim2)
+        inline void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
+                      const matrix<T>& src, const size_t& si, const size_t& sj,
+                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
+                      const size_t& m, const size_t& n)
         {
-            __A_TIME_C("ambient_op_kron_c_kernel"); 
-            T* alfad = c_current(alfa);
-            for(size_t l1 = 0; l1 < ldim1; ++l1)
-            for(size_t r1 = 0; r1 < rdim1; ++r1)
-            __a_memptf_r<T, __a_memscal>(r_updated(out), __a_get_dim(out).y, dim2(out_x_offset + r1*rdim2, out_y_offset + l1*ldim2),
-                                         c_current(in), __a_get_dim(in).y,  dim2(0, 0), 
-                                         dim2(rdim2, ldim2), alfad[l1 + r1*__a_get_dim(alfa).y]);
+            __A_TIME_C("ambient_copy_sa_c_kernel"); 
+            T factor = ((T*)c_current(alfa))[ai + aj*__a_get_dim(alfa).y];
+            __a_refresh<T>(w_updated(dst), c_current(dst), __a_sizeof(dst));
+            __a_memptf_r<T, __a_memscal>(r_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
+                                         c_current(src), __a_get_dim(src).y, dim2(sj, si), 
+                                         dim2( n, m ), factor);
             __A_TIME_C_STOP
         }
     };
-        
+
     template<typename T>
-    struct reshape_l2b : public kernel< reshape_l2b<T> > 
-    { // gs - 2su
-        typedef void (reshape_l2b::*F)(matrix<T>&, const matrix<T>&,
-                                              const size_t&, const size_t&, 
-                                              const size_t&, const size_t&, 
-                                              const size_t&, const size_t&,
-                                              const size_t&, const size_t&);
-
-        inline void l(matrix<T>& out, const matrix<T>& in,
-                      const size_t& in_left_offset, const size_t& in_phys_offset, 
-                      const size_t& out_left_offset, const size_t& out_x_offset,
-                      const size_t& sdim1, const size_t& sdim2, 
-                      const size_t& ldim, const size_t& rdim)
-        {
-            pin(current(out)); //if(!ctxt.involved()) return;
-            assign(current(in));
-        }
-
-        inline void c(matrix<T>& out, const matrix<T>& in,
-                      const size_t& in_left_offset, const size_t& in_phys_offset, 
-                      const size_t& out_left_offset, const size_t& out_x_offset,
-                      const size_t& sdim1, const size_t& sdim2, 
-                      const size_t& ldim, const size_t& rdim)
-        {
-            __A_TIME_C("ambient_reshape_l2b_c_kernel"); 
-
-            size_t in_y_offset  = in_left_offset + ldim*in_phys_offset;
-            size_t out_y_offset = out_left_offset;
-
-            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
-            for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                    __a_memptf_r<T, __a_memcpy>(r_updated(out), __a_get_dim(out).y, dim2(out_x_offset + rdim*ss2, out_y_offset), 
-                                                c_current(in), __a_get_dim(in).y,  dim2(0, in_y_offset), 
-                                                dim2( rdim, ldim ));
-                    in_y_offset += ldim;
-                }
-                out_y_offset += ldim;
-            }
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct reshape_b2l : public kernel< reshape_b2l<T> > 
-    { // gs - 2su
-        typedef void (reshape_b2l::*F)(matrix<T>&, const matrix<T>&,
-                                              const size_t&, const size_t&, 
-                                              const size_t&, const size_t&, 
-                                              const size_t&, const size_t&,
-                                              const size_t&, const size_t&);
-
-        inline void l(matrix<T>& out, const matrix<T>& in,
-                      const size_t& in_left_offset, const size_t& in_x_offset, 
-                      const size_t& out_left_offset, const size_t& out_phys_offset,
-                      const size_t& sdim1, const size_t& sdim2, 
-                      const size_t& ldim, const size_t& rdim)
-        {
-            pin(current(out)); //if(!ctxt.involved()) return;
-            assign(current(in));
-        }
-
-        inline void c(matrix<T>& out, const matrix<T>& in,
-                      const size_t& in_left_offset, const size_t& in_x_offset, 
-                      const size_t& out_left_offset, const size_t& out_phys_offset,
-                      const size_t& sdim1, const size_t& sdim2, 
-                      const size_t& ldim, const size_t& rdim)
-        {
-            __A_TIME_C("ambient_reshape_b2l_c_kernel"); 
-
-            size_t in_y_offset  = in_left_offset;
-            size_t out_y_offset = out_left_offset + out_phys_offset*ldim;
-
-            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
-            for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
-                {
-                    __a_memptf_r<T, __a_memcpy>(r_updated(out), __a_get_dim(out).y, dim2(0, out_y_offset), 
-                                                c_current(in), __a_get_dim(in).y,  dim2(in_x_offset + rdim*ss2, in_y_offset), 
-                                                dim2( rdim, ldim ));
-                    out_y_offset += ldim;
-                }
-                in_y_offset += ldim;
-            }
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct reshape_l2r : public kernel< reshape_l2r<T> > 
+    struct copy_sa : public kernel< copy_sa<T> > 
     { // gs
-        typedef void (reshape_l2r::*F)(const matrix<T>&, matrix<T>&,
-                                              const size_t&, const size_t&, 
-                                              const size_t&, const size_t&, const size_t&);
-
-        inline void l(const matrix<T>& left, matrix<T>& right,
-                      const size_t& left_offset, const size_t& right_offset, 
-                      const size_t& sdim, const size_t& ldim, const size_t& rdim)
+        typedef void(copy_sa::*F)(matrix<T>&, const size_t&, const size_t&, 
+                                  const matrix<T>&, const size_t&, const size_t&, 
+                                  const matrix<T>&, const size_t&, const size_t&, 
+                                  const size_t&, const size_t&);
+                                           
+        inline void l(matrix<T>& dst, const size_t& di, const size_t& dj, 
+                      const matrix<T>& src, const size_t& si, const size_t& sj,
+                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
+                      const size_t& m, const size_t& n)
         {
-            pin(current(right)); //if(!ctxt.involved()) return;
-            assign(current(left));
-        }
-
-        inline void c(const matrix<T>& left, matrix<T>& right,
-                      const size_t& left_offset, const size_t& right_offset, 
-                      const size_t& sdim, const size_t& ldim, const size_t& rdim)
-        {
-            __A_TIME_C("ambient_reshape_l2r_c_kernel"); 
-            __a_refresh<T>(w_updated(right), c_current(right), __a_sizeof(right));
-            for(size_t ss = 0; ss < sdim; ++ss){
-                __a_memptf_r<T, __a_memcpy>(r_updated(right), __a_get_dim(right).y, dim2(ss*rdim + right_offset, 0), 
-                                            c_current(left), __a_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
-                                            dim2( rdim, ldim ));
-            }
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct reshape_r2l : public kernel< reshape_r2l<T> > 
-    { // gs
-        typedef void (reshape_r2l::*F)(matrix<T>&, const matrix<T>&,
-                                              const size_t&, const size_t&, 
-                                              const size_t&, const size_t&, const size_t&);
-
-        inline void l(matrix<T>& left, const matrix<T>& right,
-                      const size_t& left_offset, const size_t& right_offset, 
-                      const size_t& sdim, const size_t& ldim, const size_t& rdim)
-        {
-            pin(current(left)); //if(!ctxt.involved()) return;
-            assign(current(right));
-        }
-
-        inline void c(matrix<T>& left, const matrix<T>& right,
-                      const size_t& left_offset, const size_t& right_offset, 
-                      const size_t& sdim, const size_t& ldim, const size_t& rdim)
-        {
-            __A_TIME_C("ambient_reshape_r2l_c_kernel"); 
-            __a_refresh<T>(w_updated(left), c_current(left), __a_sizeof(left));
-            for(size_t ss = 0; ss < sdim; ++ss)
-                __a_memptf_r<T, __a_memcpy>(r_updated(left), __a_get_dim(left).y,  dim2(0, ss*ldim + left_offset), 
-                                            c_current(right), __a_get_dim(right).y, dim2(ss*rdim + right_offset,0), 
-                                            dim2( rdim, ldim ));
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct lb_tensor_mpo : public kernel< lb_tensor_mpo<T> > 
-    { // gs
-        typedef void (lb_tensor_mpo::*F)(matrix<T>&, const matrix<T>&, const matrix<T>&,
-                                                const size_t&, const size_t&, 
-                                                const size_t&, const size_t&, const size_t&, const size_t&);
-
-        inline void l(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                      const size_t& out_offset, const size_t& in_offset, 
-                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
-        {
-            pin(current(out)); //if(!ctxt.involved()) return;
-            assign(current(in));
+            pin(current(src)); //if(!ctxt.involved()) return;
+            assign(current(dst));
             assign(current(alfa));
         }
 
-        inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                      const size_t& out_offset, const size_t& in_offset, 
-                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
+        inline void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
+                      const matrix<T>& src, const size_t& si, const size_t& sj,
+                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
+                      const size_t& m, const size_t& n)
         {
-            __A_TIME_C("ambient_lb_tensor_mpo_c_kernel"); 
-            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
-            T* alfad = c_current(alfa);
-            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
-            for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-            __a_memptf_r<T, __a_memscal>(r_updated(out), __a_get_dim(out).y, dim2(0, out_offset + ss2*ldim),
-                                         c_current(in), __a_get_dim(in).y,  dim2(0, in_offset + ss1*ldim),
-                                         dim2(rdim, ldim), alfad[ss1 + ss2*__a_get_dim(alfa).y]);
-            __A_TIME_C_STOP
-        }
-    };
-        
-    template<typename T>
-    struct rb_tensor_mpo : public kernel< rb_tensor_mpo<T> > 
-    { // gs
-        typedef void (rb_tensor_mpo::*F)(matrix<T>&, const matrix<T>&, const matrix<T>&,
-                                                const size_t&, const size_t&, 
-                                                const size_t&, const size_t&, const size_t&, const size_t&);
-
-        inline void l(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                      const size_t& out_offset, const size_t& in_offset, 
-                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
-        {
-            pin(current(out)); //if(!ctxt.involved()) return;
-            assign(current(in));
-            assign(current(alfa));
-        }
-
-        inline void c(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                      const size_t& out_offset, const size_t& in_offset, 
-                      const size_t& sdim1, const size_t& sdim2, const size_t& ldim, const size_t& rdim)
-        {
-            __A_TIME_C("ambient_rb_tensor_mpo_c_kernel"); 
-            __a_refresh<T>(w_updated(out), c_current(out), __a_sizeof(out));
-            T* alfad = c_current(alfa);
-            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
-            for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-            __a_memptf_r<T, __a_memscal>(r_updated(out), __a_get_dim(out).y, dim2(out_offset + ss2*rdim, 0),
-                                         c_current(in), __a_get_dim(in).y,  dim2(in_offset + ss1*rdim, 0),
-                                         dim2(rdim, ldim), alfad[ss1 + ss2*__a_get_dim(alfa).y]);
+            __A_TIME_C("ambient_copy_sa_c_kernel"); 
+            T factor = ((T*)c_current(alfa))[ai + aj*__a_get_dim(alfa).y];
+            __a_refresh<T>(w_updated(dst), c_current(dst), __a_sizeof(dst));
+            __a_memptf_r<T, __a_memscala>(r_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
+                                         c_current(src), __a_get_dim(src).y, dim2(sj, si), 
+                                         dim2( n, m ), factor);
             __A_TIME_C_STOP
         }
     };
@@ -690,10 +511,12 @@ namespace ambient { namespace numeric { namespace kernels {
     {
         typedef void (init_random::*F)(weak_view<T>&);
      
-        template<typename T> inline void randomize(T* ad){ *ad = drand48(); }
-        template<typename T> inline void randomize(std::complex<T>* ad){
-            ad->real(drand48());
-            ad->imag(drand48());
+        template<typename T> inline void randomize(T& a){ 
+            a = drand48();
+        }
+        template<typename T> inline void randomize(std::complex<T>& a){
+            a.real(drand48());
+            a.imag(drand48());
         }
 
         inline void l(weak_view<T>& a){
@@ -702,14 +525,9 @@ namespace ambient { namespace numeric { namespace kernels {
         
         inline void c(weak_view<T>& a){
             __A_TIME_C("ambient_init_random_c_kernel"); 
-            size_t m = __a_get_dim(a).y;
-            size_t n = __a_get_dim(a).x;
+            size_t size = __a_get_dim(a).square();
             T* ad = w_updated(a);
-          
-            for(size_t jj = 0; jj < n; jj++){
-                for(size_t ii = 0; ii < m; ii++)
-                    randomize((ad+(jj*m+ii)));
-            }
+            for(size_t i = 0; i < size; ++i) randomize(ad[i]);
             __A_TIME_C_STOP
         }
     };
@@ -725,15 +543,9 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(weak_view<T>& a, const T& value){
             __A_TIME_C("ambient_init_value_c_kernel"); 
+            size_t size = __a_get_dim(a).square();
             T* ad = w_updated(a);
-            size_t m = __a_get_dim(a).y;
-            size_t n = __a_get_dim(a).x;
-        
-            for(size_t j=0; j < n; ++j){
-                for(size_t i = 0; i < m; ++i){
-                    ad[i+j*m] = value; // not a memset due to complex
-                }
-            }
+            for(size_t i = 0; i < size; ++i) ad[i] = value; // not a memset due to complex
             __A_TIME_C_STOP
         }
     };
@@ -806,6 +618,7 @@ namespace ambient { namespace numeric { namespace kernels {
         }
         
         inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
+            __A_TIME_C("ambient_validation_kernel"); 
             T* ad = c_current(a); 
             T* bd = c_current(b); 
             double res; 
@@ -822,6 +635,7 @@ namespace ambient { namespace numeric { namespace kernels {
                     }
                 }
             }
+            __A_TIME_C_STOP 
         }
     };
 
@@ -836,6 +650,7 @@ namespace ambient { namespace numeric { namespace kernels {
         }
         
         inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
+            __A_TIME_C("ambient_validation_t_kernel"); 
             T* ad = c_current(a); 
             T* bd = c_current(b); 
             double res; 
@@ -853,6 +668,7 @@ namespace ambient { namespace numeric { namespace kernels {
                     }
                 }
             }
+            __A_TIME_C_STOP 
         }
     };
 

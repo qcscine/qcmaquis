@@ -1,5 +1,11 @@
-#include "types/utils/bindings.hpp"
 #include <boost/static_assert.hpp> 
+
+#include "alps/numeric/matrix.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
+#include "ambient/numeric/matrix.hpp"
+
+#include "utils/traits.hpp"
+#include "utils/bindings.hpp"
 
 struct caveats{
     caveats(){ srand48(1); srand(1); }

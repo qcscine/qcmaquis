@@ -4,8 +4,6 @@
 #include <boost/test/test_case_template.hpp>
 #include <boost/mpl/list.hpp>
 
-#include "alps/numeric/matrix.hpp"
-#include "ambient/numeric/matrix.hpp"
 #include "ambient/utils/timings.hpp"
 #include "utilities.h"
 
@@ -20,9 +18,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     size_t y = get_input_y<T>();
     size_t nthreads = get_input_threads<T>();
 
-    ambient::model >> dim(256,256);
-    ambient::set_num_threads(nthreads);
-
     pMatrix pA(x, y);
     pMatrix pB(x, y);
     pMatrix pC(x, y);
@@ -30,15 +25,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sMatrix sA(x, y);
     sMatrix sB(x, y);
 
-    pA.fill_random();
-    pB.fill_random();
+    fill_random(pA);
+    fill_random(pB);
 
-    sA = maquis::traits::matrix_cast<sMatrix>(pA);
-    sB = maquis::traits::matrix_cast<sMatrix>(pB);
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    sB = maquis::bindings::matrix_cast<sMatrix>(pB);
     ambient::sync();
 
-    using maquis::types::NoTranspose;
-    ambient::numeric::gemm<NoTranspose,NoTranspose>(pA, pB, pC); 
+    ambient::numeric::gemm(pA, pB, pC); 
 
     __a_timer time("ambient");
     time.begin();

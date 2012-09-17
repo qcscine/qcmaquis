@@ -13,7 +13,6 @@ namespace ambient {
     using ambient::models::velvet::sfunctor;
     using ambient::controllers::velvet::cfunctor;
     using ambient::models::velvet::history;
- 
     // {{{ compile-time type info: singular types or simple types
     template <typename T> struct singular_info {
         template<size_t arg> static inline void deallocate    (sfunctor* m){ } //((T*)m->arguments[arg])->~T(); 
@@ -23,6 +22,17 @@ namespace ambient {
         template<size_t arg> static inline bool ready         (sfunctor* m, void* e){ return true;          }
         template<size_t arg> static inline bool match         (sfunctor* m, void* t){ return false;         }
         template<size_t arg> static inline void tag           (sfunctor* m, void* t){                       }
+    };
+    // }}}
+    // {{{ compile-time type info: singular inplace types or simple types
+    template <typename T> struct singular_inplace_info {
+        template<size_t arg> static inline void deallocate    (sfunctor* m){ }
+        template<size_t arg> static inline T&   revised       (sfunctor* m){ return *(T*)&m->arguments[arg]; }
+        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ *(T*)&m->arguments[arg] = obj;  }
+        template<size_t arg> static inline void place         (sfunctor* m){                                 }
+        template<size_t arg> static inline bool ready         (sfunctor* m, void* e){ return true;           }
+        template<size_t arg> static inline bool match         (sfunctor* m, void* t){ return false;          }
+        template<size_t arg> static inline void tag           (sfunctor* m, void* t){                        }
     };
     // }}}
     // {{{ compile-time type info: future types
@@ -139,6 +149,13 @@ namespace ambient {
     struct info { 
         typedef singular_info<T> typed; 
         static inline T& unfold(T& naked){ return naked; }
+    };
+
+    template <>
+    struct info < size_t > {
+        typedef size_t type;
+        typedef singular_inplace_info<type> typed; 
+        static inline type& unfold(type& naked){ return naked; }
     };
 
     template <typename S>
