@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
     pMatrix pA(T::valuex,T::valuex);
     sMatrix sA(T::valuex,T::valuex);
 
-    pA.fill_random();
+    fill_random(pA);
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
 
     typename T::dbl sa = trace(sA);

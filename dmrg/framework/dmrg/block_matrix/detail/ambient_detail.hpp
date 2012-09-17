@@ -10,97 +10,150 @@
 #ifndef MAQUIS_BLOCK_MATRIX_DEATAIL_AMBIENT_MATRIX_DETAIL_HPP
 #define MAQUIS_BLOCK_MATRIX_DEATAIL_AMBIENT_MATRIX_DETAIL_HPP
 
+#define value_type typename M::value_type
+
 template<class T, class SymmGroup>
 class block_matrix;
 
 namespace maquis { namespace dmrg { namespace detail {
 
-    template <typename T>
-    inline void op_kron(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
+    using ambient::numeric::tiles;
+
+    template <typename M>
+    inline void op_kron(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
                         size_t out_y_offset, size_t out_x_offset, 
                         size_t ldim1, size_t ldim2, 
                         size_t rdim1, size_t rdim2)
     {
-        ambient::numeric::kernels::op_kron<T>::spawn(out, in, alfa, 
-                                                     out_y_offset, out_x_offset, 
-                                                     ldim1, ldim2, rdim1, rdim2);
+        split_d(out); split_d(in); split_d(alfa);
+        for(size_t l1 = 0; l1 < ldim1; ++l1)
+        for(size_t r1 = 0; r1 < rdim1; ++r1)
+        copy_s(out, out_y_offset + l1*ldim2, out_x_offset + r1*rdim2, 
+               in, 0, 0, alfa, l1, r1, ldim2, rdim2);
     }
 
-    template <typename T>
-    inline void reshape_l2b(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
+    template <class M>
+    inline void reshape_l2b(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
                      size_t in_left_offset, size_t in_phys_offset, 
                      size_t out_left_offset, size_t out_right_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ambient::numeric::kernels::reshape_l2b<T>::spawn(out, in, in_left_offset, in_phys_offset, 
-                                                         out_left_offset, out_right_offset, 
-                                                         sdim1, sdim2, ldim, rdim);
+        split_d(out); split_d(in);
+        size_t in_y_offset  = in_left_offset + ldim*in_phys_offset;
+        size_t out_y_offset = out_left_offset;
+
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
+                copy(out, out_y_offset, out_right_offset + rdim*ss2,
+                     in,  in_y_offset, 0, 
+                     ldim, rdim);
+                in_y_offset += ldim;
+            }
+            out_y_offset += ldim;
+        }
     }
 
-    template <typename T>
-    inline void reshape_b2l(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in,
+    template <class M>
+    inline void reshape_b2l(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
                      size_t in_left_offset, size_t in_right_offset, 
                      size_t out_left_offset, size_t out_phys_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ambient::numeric::kernels::reshape_b2l<T>::spawn(out, in, in_left_offset, in_right_offset, 
-                                                         out_left_offset, out_phys_offset, 
-                                                         sdim1, sdim2, ldim, rdim);
+        split_d(out); split_d(in);
+        size_t in_y_offset  = in_left_offset;
+        size_t out_y_offset = out_left_offset + out_phys_offset*ldim;
+
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+            {
+                copy(out, out_y_offset, 0, 
+                     in, in_y_offset, in_right_offset + rdim*ss2,
+                     ldim, rdim);
+                out_y_offset += ldim;
+            }
+            in_y_offset += ldim;
+        }
     }
 
-    template <typename T>
-    inline void reshape_l2r(const ambient::numeric::matrix<T>& left, ambient::numeric::matrix<T>& right,
+    template <class M>
+    inline void reshape_l2r(const ambient::numeric::tiles<M>& left, ambient::numeric::tiles<M>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
-        ambient::numeric::kernels::reshape_l2r<T>::spawn(left, right, left_offset, right_offset, 
-                                                         sdim, ldim, rdim);
+        split_d(left); split_d(right);
+        for(size_t ss = 0; ss < sdim; ++ss){
+        copy(right, 0, ss*rdim + right_offset, 
+             left, ss*ldim + left_offset, 0, 
+             ldim, rdim);
+        }
     }
     
-    template <typename T>
-    inline void reshape_r2l(ambient::numeric::matrix<T>& left, const ambient::numeric::matrix<T>& right,
+    template <class M>
+    inline void reshape_r2l(ambient::numeric::tiles<M>& left, const ambient::numeric::tiles<M>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
-        ambient::numeric::kernels::reshape_r2l<T>::spawn(left, right, left_offset, right_offset, 
-                                                         sdim, ldim, rdim);
+        split_d(left); split_d(right);
+        for(size_t ss = 0; ss < sdim; ++ss)
+        copy(left, ss*ldim + left_offset, 0, 
+             right, 0, ss*rdim + right_offset, 
+             ldim, rdim);
     }
     
-    template <typename T>
-    inline void lb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
+    template <class M>
+    inline void lb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ambient::numeric::kernels::lb_tensor_mpo<T>::spawn(out, in, alfa, out_offset, in_offset, 
-                                                           sdim1, sdim2, ldim, rdim);
+        split_d(out); split_d(in); split_d(alfa);
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        copy_sa(out, out_offset + ss2*ldim, 0,
+                in, in_offset + ss1*ldim, 0,
+                alfa, ss1, ss2, ldim, rdim);
     }
     
-    template <typename T>
-    inline void rb_tensor_mpo(ambient::numeric::matrix<T>& out, const ambient::numeric::matrix<T>& in, const ambient::numeric::matrix<T>& alfa,
+    template <class M>
+    inline void rb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
-        ambient::numeric::kernels::rb_tensor_mpo<T>::spawn(out, in, alfa, out_offset, in_offset, 
-                                                           sdim1, sdim2, ldim, rdim);
+        split_d(out); split_d(in); split_d(alfa);
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        copy_sa(out, 0, out_offset + ss2*rdim,
+                in, 0, in_offset + ss1*rdim,
+                alfa, ss1, ss2, ldim, rdim);
     }
    
-    template<class T, class SymmGroup>
-    std::vector<double> bond_renyi_entropies(const block_matrix<ambient::numeric::diagonal_matrix<T>, SymmGroup>& set){
-        std::vector< std::vector<double> > r(set.n_blocks());
-        for(std::size_t k = 0; k < set.n_blocks(); ++k){
-            std::vector<T>* v_ptr = &r[k];
-            ambient::numeric::kernels::round_square<T>::spawn(set[k], v_ptr);
+    template<class M, class SymmGroup>
+    std::vector<double> bond_renyi_entropies(const block_matrix<ambient::numeric::tiles<M>, SymmGroup>& set){
+        size_t nblocks = 0;
+        size_t k_max = set.n_blocks();
+        for(size_t k = 0; k < k_max; ++k)
+            nblocks += set[k].data.size();
+
+        size_t vi = 0;
+        std::vector< std::vector<double> > r(nblocks);
+        for(size_t k = 0; k < k_max; ++k){
+            for(size_t kk = 0; kk < set[k].data.size(); kk++){
+                std::vector<value_type>* v_ptr = &r[vi++];
+                ambient::numeric::kernels::round_square<value_type>::spawn(set[k][kk], v_ptr);
+            }
         }
         ambient::sync();
 
         std::vector<double> ret;
-        for(std::size_t k = 0; k < set.n_blocks(); ++k)
+        for(size_t k = 0; k < nblocks; ++k)
             std::copy(r[k].begin(), r[k].end(), std::back_inserter(ret));
         
         return ret;
     }
 
-    template <typename T>
-    inline void left_right_boundary_init(ambient::numeric::matrix<T>& a){
-        fill_value(a, T(1.0));
+    template <class M>
+    inline void left_right_boundary_init(ambient::numeric::tiles<M>& a){
+        size_t k_max = a.data.size();
+        for(size_t k = 0; k < k_max; ++k)
+            fill_value(a[k], value_type(1.0));
     }
         
 } } }
 
+#undef value_type
 #endif

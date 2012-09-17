@@ -45,8 +45,8 @@ typedef alps::numeric::mt_matrix<std::complex<double> > cmtmatrix;
 
 // parallel matrix
 #ifdef USE_AMBIENT
-typedef ambient::numeric::matrix<double> pmatrix;
-typedef ambient::numeric::matrix<std::complex<double> > cpmatrix;
+typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > pmatrix;
+typedef ambient::numeric::tiles<ambient::numeric::matrix<std::complex<double> > > cpmatrix;
 #endif
 
 // Definition of init function

@@ -178,12 +178,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void matrix<T>::remove_rows(size_type i, size_type k){
-        remove_rows(*this, i, k);
+        ambient::numeric::remove_rows(*this, i, k);
     }
 
     template<typename T>
     inline void matrix<T>::remove_cols(size_type j, size_type k){
-        remove_cols(*this, j, k); 
+        ambient::numeric::remove_cols(*this, j, k); 
     }
 
     template<typename T>

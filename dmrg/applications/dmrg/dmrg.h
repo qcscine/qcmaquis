@@ -16,7 +16,7 @@
 #endif
 #if defined USE_AMBIENT
     #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::numeric::matrix<dmrg_value_type> matrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> > matrix;
 #elif defined USE_MTM
     #include "types/mt_matrix/mt_matrix.h"
     typedef alps::numeric::mt_matrix<dmrg_value_type> matrix;

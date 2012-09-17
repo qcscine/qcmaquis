@@ -12,7 +12,7 @@ if(BLAS_mkl_core_LIBRARY) # intel
     include_directories("${MPI_CXX_INCLUDE_PATH}") # cluster path
     set(BLAS_LAPACK_multi     ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_intel_thread_LIBRARY} iomp5 ${CMAKE_THREAD_LIBS_INIT} pthread) 
     set(BLAS_LAPACK_serial    ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY}) 
-    set(BLAS_SCALAPACK_serial ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY} mkl_blacs_intelmpi_lp64 mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64 )
+    set(BLAS_SCALAPACK_serial ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY} ${SCALAPACK_LIBRARY} )
 endif()
 
 if(BLAS_Accelerate_LIBRARY) # apple
@@ -31,5 +31,4 @@ target_link_libraries( gemm.pblas.out    ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIB
 target_link_libraries( gemm.ambient.out  ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES} ${BLAS_LAPACK_serial} ambient )
 
 add_test( gemm.blas.out    gemm.blas.out    )
-add_test( gemm.pblas.out   gemm.pblas.out   )
 add_test( gemm.ambient.out gemm.ambient.out )

@@ -264,6 +264,24 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
+    inline void copy_s(matrix<T>& dst, size_t di, size_t dj, 
+                       const matrix<T>& src, size_t si, size_t sj, 
+                       const matrix<T>& alfa, size_t ai, size_t aj,
+                       size_t m, size_t n)
+    { 
+        kernels::copy_s<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n); 
+    }
+
+    template<typename T>
+    inline void copy_sa(matrix<T>& dst, size_t di, size_t dj, 
+                        const matrix<T>& src, size_t si, size_t sj, 
+                        const matrix<T>& alfa, size_t ai, size_t aj,
+                        size_t m, size_t n)
+    { 
+        kernels::copy_sa<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n); 
+    }
+
+    template<typename T>
     inline void destroy(matrix<T>& a){
         ambient::destroy(a.impl); 
     }

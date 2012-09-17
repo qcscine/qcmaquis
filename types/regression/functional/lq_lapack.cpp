@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sMatrix sL(T::valuex,T::valuey);
     sMatrix sQ(T::valuex,T::valuey);
 
-    pA.fill_random();
+    fill_random(pA);
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
  
     lq(pA,pL,pQ);

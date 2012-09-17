@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( syev_comparison, T, test_types)
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sV(T::valuex,T::valuex);
 
-    pA.fill_random();
+    fill_random(pA);
     sA = maquis::traits::matrix_cast<sMatrix>(pA);
  
     typename alps::numeric::associated_diagonal_matrix<pMatrix>::type pE(T::valuex,T::valuex); 

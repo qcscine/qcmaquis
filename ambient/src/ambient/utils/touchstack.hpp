@@ -1,4 +1,4 @@
-//#define TOUCHSTACK_ACCESS_CHECK
+#define TOUCHSTACK_ACCESS_CHECK
 
 #include <cilk/cilk.h>
 
@@ -29,7 +29,7 @@ namespace ambient{
         *wi++ = e;
 #ifdef TOUCHSTACK_ACCESS_CHECK
         if(this->size() == TOUCHSTACK_LENGTH){
-            printf("ERROR: end of touchstack has been reached!\n");
+            printf("\n\n\n\n\n\n\n\nERROR: END OF TOUCHSTACK HAS BEEN REACHED!\n\n\n\n\n\n\n");
         }
 #endif
     }

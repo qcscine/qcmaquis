@@ -39,12 +39,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
    srand(3);
    int i, j, k;
    int minusone(-1);
-/************  MPI ***************************/
    int myrank_mpi, nprocs_mpi;
-   MPI_Init( &argc, &argv);
-   MPI_Comm_rank(MPI_COMM_WORLD, &myrank_mpi);
-   MPI_Comm_size(MPI_COMM_WORLD, &nprocs_mpi);
-
    int ictxt, nprow, npcol, myrow, mycol,nb;
 
    int info,itemp;
@@ -64,11 +59,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
    Timer time("time");
    time.begin();
 /************  BLACS ***************************/
-   nprow=1; // 1-d = one row
-   npcol= nprocs_mpi; // number of col for 1d cyclic distribution
-   nb=128; // # of element (width x direction of each column) also workgroup into ambient
-
    Cblacs_pinfo( &myrank_mpi, &nprocs_mpi) ;
+
+   nprow = 1; // 1-d = one row
+   npcol = nprocs_mpi; // number of col for 1d cyclic distribution
+   nb = 128; // # of element (width x direction of each column) also workgroup into ambient
+
    Cblacs_get(minusone, zero, &ictxt);
    Cblacs_gridinit( &ictxt, "C", nprow, npcol );
    Cblacs_gridinfo( ictxt, &nprow, &npcol, &myrow, &mycol );
@@ -90,7 +86,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
    time.end();
 
    if(myrank_mpi == 0) report(time, GFlopsGemm, x, x, nprocs_mpi);
-   int in(0);
-   Cblacs_gridexit(ictxt);
-   MPI_Finalize();
+   MPI_Barrier(MPI_COMM_WORLD);
+   Cblacs_exit(0);
 }

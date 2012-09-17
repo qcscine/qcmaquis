@@ -1,7 +1,8 @@
 #ifndef __AMBIENT_NUMERIC_TILES_H__
 #define __AMBIENT_NUMERIC_TILES_H__
 
-#define TILE_SIZE 16384 //256
+#define TILE_SIZE 512 //16384
+#define SPLIT_SIZE 512 //16384
 
 namespace ambient { namespace numeric {
 
@@ -34,6 +35,10 @@ namespace ambient { namespace numeric {
         inline void resize(size_type rows, size_type cols); 
         inline void remove_rows(size_type i, size_type k = 1);
         inline void remove_cols(size_type j, size_type k = 1);
+        inline Matrix& tile(size_type i, size_type j);
+        inline const Matrix& tile(size_type i, size_type j) const;
+        inline Matrix& locate(size_type i, size_type j);
+        inline const Matrix& locate(size_type i, size_type j) const;
         inline Matrix& operator[] (size_type k);
         inline const Matrix& operator[] (size_type k) const;
         inline tiles& operator += (const tiles& rhs);
@@ -48,6 +53,8 @@ namespace ambient { namespace numeric {
         std::vector<Matrix*> data;
         size_t rows;
         size_t cols;
+        size_t mt;
+        size_t nt;
     };
 
     template <typename T>
@@ -80,6 +87,7 @@ namespace ambient { namespace numeric {
     public:
         std::vector<diagonal_matrix<T>*> data;
         size_t size;
+        size_t nt;
     };
 
 } }

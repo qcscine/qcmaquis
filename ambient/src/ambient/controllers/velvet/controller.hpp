@@ -13,7 +13,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline controller::controller()
     : muted(false)
     {
-        this->acquire(&ambient::channel);
+        //this->acquire(&ambient::channel);
         this->arity = __cilkrts_get_nworkers();
         this->chains = new touchstack< chain* >[arity];
     }

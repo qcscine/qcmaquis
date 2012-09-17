@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Sqrt, T, test_types)
     pDiagMatrix pA(T::valuex,0);
     sDiagMatrix sA(T::valuex,0);
 
-    pA.get_data().fill_random();
+    fill_random(pA.get_data());
     sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA);
 
     sA = sqrt(sA);

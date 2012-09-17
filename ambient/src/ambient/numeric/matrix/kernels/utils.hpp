@@ -69,6 +69,12 @@ namespace ambient { namespace numeric { namespace kernels {
     template <typename T>
     inline void __a_memscal(T* dd, T *sd, size_t w, T alfa){
         int z = w/sizeof(T);
+        do{ *dd++ = alfa*(*sd++); }while(--z > 0); // be carefull that dd != sd
+    }
+
+    template <typename T>
+    inline void __a_memscala(T* dd, T *sd, size_t w, T alfa){
+        int z = w/sizeof(T);
         do{ *dd++ += alfa*(*sd++); }while(--z > 0); // be carefull that dd != sd
     }
 
@@ -77,7 +83,6 @@ namespace ambient { namespace numeric { namespace kernels {
                                     T* src, int lda, dim2 src_p, 
                                     dim2 size, T alfa = 0.0)
     {
-        __A_TIME_C("ambient_memptf_fr_kernel");
 #ifdef AMBIENT_CHECK_BOUNDARIES
         if(__a_get_dim(dst).x - dst_p.x < size.x || __a_get_dim(dst).y - dst_p.y < size.y ||
            __a_get_dim(src).x - src_p.x < size.x || __a_get_dim(src).y - src_p.y < size.y){
@@ -100,7 +105,6 @@ namespace ambient { namespace numeric { namespace kernels {
         T* dd = dst + dst_p.y + dst_p.x*ldb;
 
         do{ PTF(dd, sd, m, alfa); sd += lda; dd += ldb; }while(--n > 0);
-        __A_TIME_C_STOP
     }
 
     template <typename T>

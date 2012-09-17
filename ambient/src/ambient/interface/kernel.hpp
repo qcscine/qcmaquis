@@ -21,18 +21,7 @@ namespace ambient {
     using ambient::controllers::velvet::p_revision;
     using ambient::controllers::velvet::r_revision;
 
-    template<typename FP, FP fp>
-    struct kernel_inliner { 
-        private:
-        static void invoke    (){}
-        static void latch     (){}
-        static void cleanup   (){}
-        static void place     (){}
-        static bool ready(void*){}
-        static bool match(void*){}
-        static void tag  (void*){}
-    };
-
+    template<typename FP, FP fp> struct kernel_inliner{};
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
     static inline void assign(revision& r){ ambient::controller.ifetch(r); }
@@ -125,6 +114,13 @@ namespace ambient {
             kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) , info<T9>::unfold(arg9) );
             kernel_inliner<typename K::F,&K::l>::invoke(op); 
         }
+        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 , class T9, class T10 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9, T10 &arg10 ){
+            K* op = new K();
+            kernel_inliner<typename K::F,&K::c>::latch(op, info<T0>::unfold(arg0) , info<T1>::unfold(arg1) , info<T2>::unfold(arg2) , info<T3>::unfold(arg3) , info<T4>::unfold(arg4) , info<T5>::unfold(arg5) , info<T6>::unfold(arg6) , info<T7>::unfold(arg7) , info<T8>::unfold(arg8) , info<T9>::unfold(arg9), info<T10>::unfold(arg10) );
+            kernel_inliner<typename K::F,&K::l>::invoke(op); 
+        }
+
 
     };
 }
