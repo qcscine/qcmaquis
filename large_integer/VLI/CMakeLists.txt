@@ -38,7 +38,7 @@ set (VLI_VERSION_MINOR 1)
 ########################################################################
 
 set (BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Path to the Boost installation (or to the Boost source)")
-option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" ON)
+option (VLI_COMPILE_GPU "Compile the GPU enhanced VLI components" OFF)
 option (VLI_TESTS "Build the VLI regression tests" OFF)
 option (VLI_BENCHMARKS "Build the VLI benchmarks" OFF)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
@@ -46,7 +46,7 @@ option (VLI_MAIN  "Build and execute the main" ON)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "1.0" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
-set (VLI_COMPILE_TYPES "((128,5,1))((128,5,2))((128,5,3))((128,5,4))((192,5,1))((192,5,2))((192,5,3))((192,5,4))((256,5,1))((256,5,2))((256,5,3))((256,5,4))" CACHE STRING "Numbers of bits, Order Poly, number of variables into the polynomials")
+set (VLI_COMPILE_TYPES "((128,10,1))((128,10,2))((128,10,3))((128,10,4))((192,10,1))((192,10,2))((192,10,3))((192,10,4))((256,10,1))((256,10,2))((256,10,3))((256,10,4))" CACHE STRING "Numbers of bits, Order Poly, number of variables into the polynomials")
 
 ########################################################################
 #

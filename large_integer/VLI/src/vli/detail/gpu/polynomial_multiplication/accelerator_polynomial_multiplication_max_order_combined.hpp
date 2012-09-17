@@ -41,7 +41,8 @@ namespace vli {
     // 4 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 4>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<4+1, Order>::value];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
@@ -54,6 +55,11 @@ namespace vli {
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
         const unsigned int input_elem_offset = element_id *  vli::detail::max_order_combined_helpers::size<4+1, Order>::value * VLI__SIZE;
+
+        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<4+1, Order>::value; i+= mul_block_size<max_order_each<Order>, 4,2>::value )
+           in1shared[i] = in1[input_elem_offset + i];
+
+         __syncthreads();
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>,4>::value)];
@@ -79,7 +85,7 @@ namespace vli {
                                                                    - 3*current_degree_x))/24
                                                                    +(current_degree_y*(current_degree_y*current_degree_y - 3*current_degree_y*((Order+1)+1-current_degree_x) + 3*((Order+1)-current_degree_x)*((Order+1)+2-current_degree_x)+2))/6
                                                                    +((Order+1)-current_degree_x-current_degree_y)*current_degree_z - (current_degree_z*current_degree_z-current_degree_z)/2 + current_degree_w
-                                                                  ) * VLI__SIZE + input_elem_offset;
+                                                                  ) * VLI__SIZE;
                              
                              unsigned int in_polynomial_offset2 = ( //*.* 
                                                                    ((output_degree_x-current_degree_x)*(2*(Order+1)+3-(output_degree_x-current_degree_x))*(2*(Order+1)*(Order+1)+6*(Order+1)+2
@@ -93,7 +99,7 @@ namespace vli {
                              
                              #pragma unroll
                              for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                                 c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
+                                 c1[i] = in1shared[in_polynomial_offset1+i];        
                             }
                              #pragma unroll
                              for(unsigned int i = 0; i < VLI__SIZE; ++i){
@@ -130,7 +136,9 @@ namespace vli {
     // 3 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 3>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<3+1, Order>::value];
+        __shared__ unsigned int in2shared[VLI__SIZE*max_order_combined_helpers::size<3+1, Order>::value];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
@@ -142,6 +150,13 @@ namespace vli {
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
         const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<3+1, Order>::value  * VLI__SIZE;
+
+        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<3+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 3,2>::value ){ 
+           in1shared[i] = in1[input_elem_offset + i];
+           in2shared[i] = in2[input_elem_offset + i];
+        }
+
+         __syncthreads();
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 3>::value)];
@@ -164,7 +179,7 @@ namespace vli {
                                                               (current_degree_x*(current_degree_x*current_degree_x - 3*current_degree_x*((Order+1)+1)
                                                               + 3*(Order+1)*((Order+1)+2) +2))/6
                                                               + ((Order+1) - current_degree_x)*current_degree_y - (current_degree_y*current_degree_y-current_degree_y)/2 + current_degree_z
-                                                             ) * VLI__SIZE + input_elem_offset;
+                                                             ) * VLI__SIZE  ;
       
                         
                         unsigned int in_polynomial_offset2 = ( 
@@ -172,14 +187,14 @@ namespace vli {
                                                               + 3*(Order+1)*((Order+1)+2) +2))/6
                                                               + ((Order+1) - (output_degree_x-current_degree_x))*(output_degree_y-current_degree_y) - ((output_degree_y-current_degree_y)*(output_degree_y-current_degree_y)-(output_degree_y-current_degree_y))/2
                                                               + (output_degree_z-current_degree_z)
-                                                             ) * VLI__SIZE + input_elem_offset;
+                                                             ) * VLI__SIZE  ;
                         #pragma unroll
                         for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                            c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
+                            c1[i] = in1shared[in_polynomial_offset1+i];        
                        }
                         #pragma unroll
                         for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                            c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
+                            c2[i] = in2shared[in_polynomial_offset2+i];                 
                         } 
                           
                         #pragma unroll
@@ -211,7 +226,9 @@ namespace vli {
     // 2 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 2>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<2+1, Order>::value];
+        __shared__ unsigned int in2shared[VLI__SIZE*max_order_combined_helpers::size<2+1, Order>::value];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
@@ -223,6 +240,13 @@ namespace vli {
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
         const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<2+1, Order>::value  * VLI__SIZE;
+
+        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<2+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 2,2>::value ){ 
+           in1shared[i] = in1[input_elem_offset + i];
+           in2shared[i] = in2[input_elem_offset + i];
+        }
+
+         __syncthreads();
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 2>::value)];
@@ -240,19 +264,19 @@ namespace vli {
                     for(int current_degree_y=max(0, output_degree_x+output_degree_y-Order-current_degree_x); current_degree_y <= min(output_degree_y,Order-current_degree_x) ; ++current_degree_y){
                         unsigned int in_polynomial_offset1 = (  
                                                                (Order+1)*current_degree_x - (current_degree_x*current_degree_x-current_degree_x)/2 + current_degree_y
-                                                             ) * VLI__SIZE + input_elem_offset;
+                                                             ) * VLI__SIZE;
                         
                         unsigned int in_polynomial_offset2 = ( 
                                                                (Order+1)*(output_degree_x-current_degree_x) - ((output_degree_x-current_degree_x)*(output_degree_x-current_degree_x)-(output_degree_x-current_degree_x))/2 + (output_degree_y-current_degree_y)
-                                                             ) * VLI__SIZE + input_elem_offset;
+                                                             ) * VLI__SIZE;
+
                         #pragma unroll
-                        for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                            c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
-                        }
+                        for(unsigned int i = 0; i < VLI__SIZE; ++i)
+                             c1[i] = in1shared[in_polynomial_offset1+i];        
+
                         #pragma unroll
-                        for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                            c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
-                        } 
+                        for(unsigned int i = 0; i < VLI__SIZE; ++i)
+                             c2[i] = in2shared[in_polynomial_offset2+i];        
                     
                         #pragma unroll
                         for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
@@ -275,12 +299,15 @@ namespace vli {
         } // end for it
 
         }; //end function
+
     };// end struct
 
     // 1 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 1>{
-    inline static __device__ void polynomial_multiplication_max_order( const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<1+1, Order>::value];
+        __shared__ unsigned int in2shared[VLI__SIZE*max_order_combined_helpers::size<1+1, Order>::value];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
@@ -292,6 +319,13 @@ namespace vli {
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
         const unsigned int input_elem_offset = element_id * stride<0,1,Order>::value * VLI__SIZE;
+
+        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<1+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 1,2>::value ){ 
+           in1shared[i] = in1[input_elem_offset + i];
+           in2shared[i] = in2[input_elem_offset + i];
+        }
+
+         __syncthreads();
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 1>::value)];
@@ -309,18 +343,18 @@ namespace vli {
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
                     unsigned int in_polynomial_offset1 = ( + current_degree_x
-                                                         ) * VLI__SIZE + input_elem_offset;
+                                                         ) * VLI__SIZE;
                     
                     unsigned int in_polynomial_offset2 = ( + (output_degree_x - current_degree_x)
-                                                         ) * VLI__SIZE + input_elem_offset;
+                                                         ) * VLI__SIZE;
                 
                     #pragma unroll
                     for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                        c1[i] = tex1Dfetch(tex_reference_1,in_polynomial_offset1+i);        
+                          c1[i] = in1shared[in_polynomial_offset1+i];        
                     }
                     #pragma unroll
                     for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                        c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
+                          c2[i] = in2shared[in_polynomial_offset2+i];                 
                     } 
                 
                     #pragma unroll
