@@ -45,6 +45,7 @@
 #include "vli/detail/gpu/detail/variables_gpu.h" //compile time  variable
 #include "vli/detail/gpu/tasklist/tasklist.h" //tasklist
 #include "vli/detail/gpu/detail/gpu_mem_block.hpp" // memory
+#include "vli/detail/gpu/detail/scheduler.h" // scheduler for large buffer
 #include "vli/detail/gpu/kernels/kernels_gpu_neg_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/kernels/kernels_gpu_add_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/kernels/kernels_gpu_mul_asm.hpp" //kernels gpu boost pp

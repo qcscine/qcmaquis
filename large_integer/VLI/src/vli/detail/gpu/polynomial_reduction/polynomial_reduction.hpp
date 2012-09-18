@@ -74,9 +74,18 @@ namespace vli {
 
 	    if (local_thread_id == 0) {
                 boost::uint32_t * out2 = out+(coefficient_id*2*VLI_SIZE); 
+
+                //final addition if the pbs does not fit into the mem, else it will sum 0
+                 asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(out2[0]):"r"(t1[0])); 
+                #pragma unroll
+                for(int i=1; i < 2*VLI_SIZE; ++i)
+                    asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(out2[i]):"r"(t1[i])); 
+
+/*
                 #pragma unroll
 		for(boost::uint32_t i=0; i<2*VLI_SIZE; ++i)
 		    out2[i] = buf[i];
+*/
 	    }
     }
 

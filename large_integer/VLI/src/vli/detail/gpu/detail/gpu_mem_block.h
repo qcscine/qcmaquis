@@ -41,8 +41,8 @@ namespace vli {
     struct gpu_memblock {
         typedef boost::uint32_t value_type;
         gpu_memblock();
-        std::size_t  GetBlockSize() const;
-        std::size_t block_size_;
+        std::size_t const& BlockSize() const;
+        mutable std::size_t block_size_;
         value_type* V1Data_; // input vector 1
         value_type* V2Data_; // input vector 2
         value_type* VinterData_; // inter value before the final reduction

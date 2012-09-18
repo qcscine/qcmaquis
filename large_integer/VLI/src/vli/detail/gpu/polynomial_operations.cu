@@ -36,6 +36,8 @@
 namespace vli {
     namespace detail {
 
+    gpu_memblock const& pgm  = boost::serialization::singleton<gpu_memblock>::get_const_instance(); // create memory block
+
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     __global__ void
     __launch_bounds__(mul_block_size<MaxOrder, NumVars,2>::value, 2)
@@ -51,12 +53,9 @@ namespace vli {
     }
 
     template <std::size_t NumBits, class MaxOrder, int NumVars>
-    void gpu_inner_product_vector(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
-        gpu_memblock const& pgm  = boost::serialization::singleton<gpu_memblock>::get_const_instance(); // create memory block
-        resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, VectorSize); // allocate mem
-        tasklist_keep_order<NumBits, MaxOrder, NumVars> const& ghc =  boost::serialization::singleton< tasklist_keep_order<NumBits, MaxOrder, NumVars> >::get_const_instance(); // calculate the different packet, singleton only one time 
-        memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
-
+    void gpu_inner_product_vecto_helper(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
+            tasklist_keep_order<NumBits, MaxOrder, NumVars> const& ghc =  boost::serialization::singleton< tasklist_keep_order<NumBits, MaxOrder, NumVars> >::get_const_instance(); // calculate the different packet, singleton only one time 
+            memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
 	    {
                 dim3 grid(VectorSize) ;
                 dim3 threads(mul_block_size<MaxOrder, NumVars,2>::value);
@@ -64,11 +63,19 @@ namespace vli {
 	    }
 
 	    {
+                // TO DO verify the number of block must be lower than 65535
                 dim3 grid(num_coefficients<MaxOrder, NumVars,2>::value);
                 dim3 threads(sum_block_size::value);
                 polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_); //the reduction is independent of the order specification
 	    }
-            
+    }
+
+    template <std::size_t NumBits, class MaxOrder, int NumVars>
+    void gpu_inner_product_vector(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
+        scheduler sch;
+        scheduler_helper<NumBits, MaxOrder, NumVars>::determine_memory(sch,VectorSize);
+        resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, boost::get<0>(sch.get_tupple_data())  ); // allocate mem
+        sch.execute(gpu_inner_product_vecto_helper<NumBits,MaxOrder, NumVars>, A, B, full_value<NumBits, MaxOrder, NumVars>::value);
         UnbindTexture();      
     } 
 
