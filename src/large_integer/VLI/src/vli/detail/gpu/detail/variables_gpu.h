@@ -73,6 +73,20 @@ namespace vli {
         enum {value = Size | 1};
     };
 
+    template <std::size_t NumBits, class MaxOrder, int NumVars>
+    struct full_value{
+    };
+
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct full_value<NumBits, max_order_each<Order>, NumVars>{
+        enum {  value = num_words<NumBits>::value * stride<0,NumVars,Order>::value * stride<1,NumVars,Order>::value * stride<2,NumVars,Order>::value * stride<3,NumVars,Order>::value };
+    };
+
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct full_value<NumBits, max_order_combined<Order>, NumVars>{
+        enum {  value = num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value };
+    };
+
     }
 }
 
