@@ -1,4 +1,5 @@
 #include <boost/mpl/for_each.hpp>
+//#include <gmp.h>
  
 #ifdef VLI_USE_GPU
 #include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
@@ -12,12 +13,12 @@
 #include "utils/tools.h"
 
 //#define Size_vec 65535// play with this 1024 - 16384
-#define Size_vec 10// play with this 1024 - 16384
+#define Size_vec 4096// play with this 1024 - 16384
 #define Order 10 // play 5 - 15, cautious outside memory, xyzw poly ( 10 is the real target)
 
 using vli::polynomial;
 using vli::vector_polynomial;
-
+//vli::polynomial<mpq_class, max_order_each<Order>, var<'x'> >
 typedef vli::vli<128> vli_type_cpu_128;
 typedef vli::vli<192> vli_type_cpu_192;
 typedef vli::vli<256> vli_type_cpu_256;
@@ -54,21 +55,21 @@ typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<Order>, vli::
 typedef boost::mpl::vector< polynomial_type_each_x_128,
                             polynomial_type_each_xy_128,
                             polynomial_type_each_xyz_128,
-                            polynomial_type_each_xyzw_128,// buffer can be too large cpu/gpu, be cautious
+                 //           polynomial_type_each_xyzw_128,// buffer can be too large cpu/gpu, be cautious
                             polynomial_type_combined_x_128,
                             polynomial_type_combined_xy_128,
                             polynomial_type_combined_xyz_128,
                             polynomial_type_combined_xyzw_128// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_128;
 
-typedef boost::mpl::vector<// polynomial_type_each_x_192,
-                            polynomial_type_each_xy_192
-                        //    polynomial_type_each_xyz_192,
+typedef boost::mpl::vector< polynomial_type_each_x_192,
+                            polynomial_type_each_xy_192,
+                            polynomial_type_each_xyz_192,
                         //    polynomial_type_each_xyzw_192,// buffer can be too large cpu/gpu, be cautious
-                        //    polynomial_type_combined_x_192,
-                        //    polynomial_type_combined_xy_192,
-                        //    polynomial_type_combined_xyz_192,
-                        //    polynomial_type_combined_xyzw_192// buffer can be too large cpu/gpu, be cautious
+                            polynomial_type_combined_x_192,
+                            polynomial_type_combined_xy_192,
+                            polynomial_type_combined_xyz_192,
+                            polynomial_type_combined_xyzw_192// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_192;
 
 typedef boost::mpl::vector< polynomial_type_each_x_256,
@@ -120,7 +121,7 @@ typedef boost::mpl::vector< polynomial_type_each_x_256,
 
 int main(int argc, char* argv[]) {
        boost::mpl::for_each<polynomial_list_128>(test_case());
-//       boost::mpl::for_each<polynomial_list_192>(test_case());
-  //     boost::mpl::for_each<polynomial_list_256>(test_case());
+       boost::mpl::for_each<polynomial_list_192>(test_case());
+       boost::mpl::for_each<polynomial_list_256>(test_case());
        return 0;
 }
