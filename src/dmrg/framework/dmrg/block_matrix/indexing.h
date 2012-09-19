@@ -14,6 +14,7 @@
 #include <utility>
 
 #include <boost/unordered_map.hpp>
+#include <boost/container/flat_set.hpp>
 #include <boost/array.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
@@ -28,20 +29,24 @@
 
 namespace index_detail
 {
+/* C - Remove by Tim, not used 09-19-2012
+ * 
+ *   template<class SymmGroup>
+ *  bool lt(std::pair<typename SymmGroup::charge, std::size_t> const & a,
+ *          std::pair<typename SymmGroup::charge, std::size_t> const & b)
+ *  {
+ *      return a.first < b.first;
+ *  }
+ */  
+
     template<class SymmGroup>
-    bool lt(std::pair<typename SymmGroup::charge, std::size_t> const & a,
-            std::pair<typename SymmGroup::charge, std::size_t> const & b)
-    {
-        return a.first < b.first;
-    }
-    
-    template<class SymmGroup>
-    bool gt(std::pair<typename SymmGroup::charge, std::size_t> const & a,
-            std::pair<typename SymmGroup::charge, std::size_t> const & b)
-    {
-        return a.first > b.first;
-    }
-    
+    struct gt{
+        bool operator()(std::pair<typename SymmGroup::charge, std::size_t> const & a,
+                        std::pair<typename SymmGroup::charge, std::size_t> const & b){
+            return a.first > b.first;
+        }
+    };
+
     template<class SymmGroup>
     typename SymmGroup::charge get_first(std::pair<typename SymmGroup::charge, std::size_t> const & x)
     {
@@ -76,6 +81,7 @@ class basis_iterator_;
 
 template<class SymmGroup> class Index
 : public std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
+//: public boost::container::flat_set<std::pair<typename SymmGroup::charge, std::size_t>,index_detail::lt<SymmGroup>() >
 {
     typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > base;
 public:
@@ -88,14 +94,14 @@ public:
     std::size_t size_of_block(charge c) const // rename
     {
         assert( has(c) );
-        return std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>)->second;
+        return std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>())->second;
     }
     
     std::size_t position(charge c) const
     {
-        const_iterator match = std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>);
+        const_iterator match = std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
         if(match != this->end() && (*match).first != c) match = this->end();
-        return (match - this->begin());
+        return std::distance(this->begin(), match);
     }
 
     std::size_t position(std::pair<charge, std::size_t> x) const
@@ -103,7 +109,7 @@ public:
         assert( has(x.first) );
         assert( x.second < size_of_block(x.first) );
         return x.second + std::accumulate(this->begin(),
-                                          std::lower_bound(this->begin(), this->end(), x, index_detail::gt<SymmGroup>),
+                                          std::lower_bound(this->begin(), this->end(), x, index_detail::gt<SymmGroup>()),
                                           0,
                                           boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
                                           );
@@ -111,17 +117,17 @@ public:
 
     std::size_t destination(charge c) const
     {
-        return std::upper_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>) - this->begin();
+        return std::upper_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>()) - this->begin();
     }
     
     bool has(charge c) const
     {
-        return std::binary_search(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>);
+        return std::binary_search(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
     }
     
     void sort()
     {
-        std::sort(this->begin(), this->end(), index_detail::gt<SymmGroup>);
+        std::sort(this->begin(), this->end(), index_detail::gt<SymmGroup>());
     }
     
     std::size_t insert(std::pair<charge, std::size_t> const & x)
@@ -135,7 +141,7 @@ public:
     {
         std::vector<std::pair<charge, std::size_t> >::insert(this->begin() + position, x);
     }
-    
+
     bool operator==(Index const & o) const
     {
         return (this->size() == o.size()) && std::equal(this->begin(), this->end(), o.begin());
