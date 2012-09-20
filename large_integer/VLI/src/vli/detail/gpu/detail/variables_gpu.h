@@ -56,6 +56,10 @@ namespace vli {
     struct num_words{
         enum { value = (NumBits+31)/32};
     };
+    
+    struct numblock_constant_reduction{
+        static unsigned int const value = 16384;
+    };
 
     template<class MaxOrder, int NumVars, int Coeff=1>
     struct mul_block_size {

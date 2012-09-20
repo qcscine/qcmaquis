@@ -40,18 +40,19 @@ namespace vli {
     polynomial_sum_intermediate_full(
 		    const boost::uint32_t * __restrict__ intermediate,
 		    const boost::uint32_t element_count,
-		    boost::uint32_t * __restrict__ out)
+		    boost::uint32_t * __restrict__ out,
+                    const std::size_t offset)
     {
 	    __shared__ boost::uint32_t buf[sum_block_size::value * size_pad<2*VLI_SIZE>::value]; 
 
 	    boost::uint32_t local_thread_id = threadIdx.x;
-	    boost::uint32_t coefficient_id = blockIdx.x;
+	    boost::uint32_t coefficient_id = blockIdx.x + offset;
 
 	    boost::uint32_t * t1 = buf + (local_thread_id * size_pad<2*VLI_SIZE>::value);
             #pragma unroll
 	    for(boost::uint32_t i = 0; i < 2*VLI_SIZE; ++i)
 		    t1[i] = 0;
-
+//etape 1 tout metre dans la shared
 	    const boost::uint32_t * in2 = intermediate + (coefficient_id * element_count *2*VLI_SIZE) + local_thread_id;
 	    for(boost::uint32_t element_id = local_thread_id; element_id < element_count; element_id += sum_block_size::value)
 	    {
@@ -62,7 +63,7 @@ namespace vli {
 
      	         in2 += sum_block_size::value;
 	    }
-
+//etape 2 la reduction en elle meme
         #pragma unroll
 	    for(boost::uint32_t stride = sum_block_size::value >> 1; stride > 0; stride >>= 1) {
                 __syncthreads();
