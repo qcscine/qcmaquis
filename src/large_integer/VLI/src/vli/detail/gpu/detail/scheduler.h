@@ -72,11 +72,10 @@ namespace vli {
         template <class function>
         void execute(function f, boost::uint32_t const* A, boost::uint32_t const* B, std::size_t full_value){
              std::size_t offset;
-             for(int i(0); i<boost::get<1>(tupple_data); ++i){
+             for(std::size_t i(0); i<boost::get<1>(tupple_data); ++i){
                 offset = boost::get<0>(tupple_data)*i*full_value;
                 f(boost::get<0>(tupple_data),&A[offset],&B[offset]); 
              }
-
              if(boost::get<2>(tupple_data)!=0){
                 offset = boost::get<0>(tupple_data)*boost::get<1>(tupple_data)*full_value;
                 f(boost::get<2>(tupple_data),&A[offset],&B[offset]);

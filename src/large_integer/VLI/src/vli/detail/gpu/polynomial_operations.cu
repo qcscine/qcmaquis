@@ -56,17 +56,36 @@ namespace vli {
     void gpu_inner_product_vecto_helper(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
             tasklist_keep_order<NumBits, MaxOrder, NumVars> const& ghc =  boost::serialization::singleton< tasklist_keep_order<NumBits, MaxOrder, NumVars> >::get_const_instance(); // calculate the different packet, singleton only one time 
             memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
+            //first kernels multiplications polynomials
 	    {
+                std::cout << VectorSize << std::endl;
                 dim3 grid(VectorSize) ;
                 dim3 threads(mul_block_size<MaxOrder, NumVars,2>::value);
                 polynomial_multiply_full<NumBits, MaxOrder, NumVars><<<grid,threads>>>(pgm.V1Data_, pgm.V2Data_,VectorSize, pgm.VinterData_,ghc.workblock_count_by_warp_,ghc.execution_plan_);
 	    }
 
+            //second kernels reduction polynomials
 	    {
-                // TO DO verify the number of block must be lower than 65535
-                dim3 grid(num_coefficients<MaxOrder, NumVars,2>::value);
-                dim3 threads(sum_block_size::value);
-                polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_); //the reduction is independent of the order specification
+                dim3 grid, threads(sum_block_size::value);
+                std::size_t num_block_offset(0),quotient(1),rest(0);
+                if(num_coefficients<MaxOrder, NumVars,2>::value > numblock_constant_reduction::value){
+                    quotient = num_coefficients<MaxOrder, NumVars,2>::value/numblock_constant_reduction::value;
+                    rest = num_coefficients<MaxOrder, NumVars,2>::value%numblock_constant_reduction::value;
+                    grid.x = numblock_constant_reduction::value;
+                }else{
+                    grid.x = num_coefficients<MaxOrder, NumVars,2>::value ;
+                } 
+
+                for(std::size_t i=0; i < quotient; ++i){ 
+                    std::cout << num_block_offset << " quotient " << quotient << " rest " << rest  << std::endl;
+                    polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_, num_block_offset); 
+                    num_block_offset += numblock_constant_reduction::value;
+                }
+
+                if(rest != 0){
+                    grid.x = rest;
+                    polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_, num_block_offset); 
+                }
 	    }
     }
 
