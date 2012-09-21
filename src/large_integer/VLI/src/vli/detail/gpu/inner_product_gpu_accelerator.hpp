@@ -108,7 +108,7 @@ namespace vli
                                                 *result_stride<1,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
                                                 *result_stride<2,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
                                                 *result_stride<3,num_of_variables_helper<Var0, Var1, Var2, Var3>::value, max_order_each<Order>::value>::value
-                                                *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+                                                *sizeof(long),cudaMemcpyDeviceToHost),__FILE__,__LINE__);// this thing synchronizes 
           
             #ifdef _OPENMP
                 res[0] += poly;
@@ -157,7 +157,7 @@ namespace vli
                 
                 gpu::cu_check_error(cudaMemcpy((void*)&poly(0,0),(void*)gpu_get_polynomial(),
                                                 2*Coeff::numwords*max_order_combined_helpers::size<num_of_variables_helper<Var0,Var1,Var2,Var3 >::value+1, 2*Order>::value
-                                                *sizeof(long),cudaMemcpyDeviceToHost),__LINE__);// this thing synchronizes 
+                                                *sizeof(long),cudaMemcpyDeviceToHost),__FILE__,__LINE__);// this thing synchronizes 
                                
                 #ifdef _OPENMP
                     res[0] += poly;

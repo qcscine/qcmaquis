@@ -39,7 +39,7 @@ namespace vli {
     class scheduler{
         public:
         scheduler(){
-            gpu::cu_check_error(cudaMemGetInfo(&free_memory_card, &total_memory_card),__LINE__);
+            gpu::cu_check_error(cudaMemGetInfo(&free_memory_card, &total_memory_card),__FILE__,__LINE__);
             total_memory_card = total_memory_card*0.9;// save 10% for the tasklistis, swap, and the final result
             tupple_data = boost::make_tuple(0,0,0);
         }

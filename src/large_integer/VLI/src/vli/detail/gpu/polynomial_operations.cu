@@ -58,7 +58,6 @@ namespace vli {
             memory_transfer_helper<NumBits, MaxOrder, NumVars>::transfer_up(pgm, A, B, VectorSize); //transfer data poly to gpu
             //first kernels multiplications polynomials
 	    {
-                std::cout << VectorSize << std::endl;
                 dim3 grid(VectorSize) ;
                 dim3 threads(mul_block_size<MaxOrder, NumVars,2>::value);
                 polynomial_multiply_full<NumBits, MaxOrder, NumVars><<<grid,threads>>>(pgm.V1Data_, pgm.V2Data_,VectorSize, pgm.VinterData_,ghc.workblock_count_by_warp_,ghc.execution_plan_);
@@ -77,7 +76,6 @@ namespace vli {
                 } 
 
                 for(std::size_t i=0; i < quotient; ++i){ 
-                    std::cout << num_block_offset << " quotient " << quotient << " rest " << rest  << std::endl;
                     polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_, num_block_offset); 
                     num_block_offset += numblock_constant_reduction::value;
                 }

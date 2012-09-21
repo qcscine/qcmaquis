@@ -59,22 +59,22 @@ namespace detail {
         if( req_size > pgm.BlockSize() ) {
             pgm.block_size_  = req_size;
             if(pgm.V1Data_ != 0 )
-                gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__LINE__);
+                gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__FILE__,__LINE__);
             if(pgm.V2Data_ != 0 )
-                gpu::cu_check_error(cudaFree((void*)pgm.V2Data_),__LINE__);
+                gpu::cu_check_error(cudaFree((void*)pgm.V2Data_),__FILE__,__LINE__);
             if(pgm.VinterData_ != 0)
-                gpu::cu_check_error(cudaFree((void*)pgm.VinterData_),__LINE__);
+                gpu::cu_check_error(cudaFree((void*)pgm.VinterData_),__FILE__,__LINE__);
             if(pgm.PoutData_ != 0)
-                gpu::cu_check_error(cudaFree((void*)pgm.PoutData_),__LINE__);
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size*sizeof(boost::uint32_t)),__LINE__); //input 1
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size*sizeof(boost::uint32_t)),__LINE__); //input 2
+                gpu::cu_check_error(cudaFree((void*)pgm.PoutData_),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 1
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 2
             gpu::cu_check_error(cudaMalloc((void**)&(pgm.VinterData_), vector_size *  2*num_words<NumBits>::value 
-                                                     * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__LINE__); 
+                                                     * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__); 
             gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value 
-                                                     * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__LINE__);
+                                                     * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);
         } // end if
-        gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value
-                                               * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__LINE__);       
+          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value
+                                                 * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);       
 
         } // end function
     }; // end struct
@@ -89,21 +89,21 @@ namespace detail {
         if( req_size > pgm.BlockSize() ) {
             pgm.block_size_  = req_size;
             if(pgm.V1Data_ != 0 )
-                gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__LINE__);
+                gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__FILE__,__LINE__);
             if(pgm.V2Data_ != 0 )
-                gpu::cu_check_error(cudaFree((void*)pgm.V2Data_),__LINE__);
+                gpu::cu_check_error(cudaFree((void*)pgm.V2Data_),__FILE__,__LINE__);
             if(pgm.VinterData_ != 0)
-                gpu::cu_check_error(cudaFree((void*)pgm.VinterData_),__LINE__);
+                gpu::cu_check_error(cudaFree((void*)pgm.VinterData_),__FILE__,__LINE__);
             if(pgm.PoutData_ != 0)
-                gpu::cu_check_error(cudaFree((void*)pgm.PoutData_),__LINE__);
+                gpu::cu_check_error(cudaFree((void*)pgm.PoutData_),__FILE__,__LINE__);
 
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size*sizeof(boost::uint32_t)),__LINE__); //input 1
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size*sizeof(boost::uint32_t)),__LINE__); //input 2
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.VinterData_), vector_size *  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__LINE__); 
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 1
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 2
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.VinterData_), vector_size *  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__); 
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
 
             } // end if
-        gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__LINE__);
+          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
         } // end fonction
     }; //end struct
 
@@ -117,9 +117,9 @@ namespace detail {
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
             BOOST_STATIC_ASSERT( NumVars <= 2);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
-                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
-                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
          }
     };
 
@@ -128,13 +128,13 @@ namespace detail {
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
             
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,3,Order>::value*stride<1,3,Order>::value*stride<2,3,Order>::value*stride<3,3,Order>::value
-                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,3,Order>::value*stride<1,3,Order>::value*stride<2,3,Order>::value*stride<3,3,Order>::value
-                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
 
             //only the second poly is cashed into the texture memory
             gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,3,Order>::value*stride<1,3,Order>::value*stride<2,3,Order>::value*stride<3,3,Order>::value
-                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
 
          }
     };
@@ -142,12 +142,12 @@ namespace detail {
     template <std::size_t NumBits, int Order>
     struct memory_transfer_helper<NumBits, max_order_each<Order>, 4 >{
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
 
             //two polys are cached, too large
-            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
-            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
          }
     };
 
@@ -156,24 +156,24 @@ namespace detail {
     struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars>{
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
             BOOST_STATIC_ASSERT( NumVars <= 3);
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
          }
     };
 
     template <std::size_t NumBits, int Order>
     struct memory_transfer_helper<NumBits, max_order_combined<Order>, 4>{
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
             //only the second poly is cashed into the texture memory
-            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
          }
     };
  
     void UnbindTexture(){
-        gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__LINE__);
-        gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__LINE__);
+        gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
+        gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
     }
 
     } // end namespace detail
