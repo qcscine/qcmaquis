@@ -22,9 +22,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sMatrix sR(T::valuex,T::valuey);
 
 
-    fill_random(pA);
+    generate(pA);
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
- 
+
     qr(pA,pQ,pR);
     qr(sA,sQ,sR);
 

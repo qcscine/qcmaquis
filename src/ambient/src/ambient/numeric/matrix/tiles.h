@@ -1,9 +1,6 @@
 #ifndef __AMBIENT_NUMERIC_TILES_H__
 #define __AMBIENT_NUMERIC_TILES_H__
 
-#define TILE_SIZE 512 //16384
-#define SPLIT_SIZE 512 //16384
-
 namespace ambient { namespace numeric {
 
     template <class Matrix>

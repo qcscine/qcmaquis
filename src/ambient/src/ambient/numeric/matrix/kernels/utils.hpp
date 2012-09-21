@@ -21,9 +21,63 @@
     #define __A_TIME_C_STOP 
 #endif
 
+typedef int PLASMA_enum;
+#define PlasmaNoTrans 111
+#define PlasmaTrans   112
+#define PlasmaLeft    141
+#define PlasmaRight   142
+
 extern "C" {
-    double ddot_(const int*, const double*, const int*, const double*, const int*);
-    void dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, const double*, const int*, const double*, const int*, const double*, double*, const int*);
+void      dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, 
+                 const double*, const int*, const double*, const int*, 
+                 const double*, double*, const int*);
+double     ddot_(const int*, const double*, const int*, 
+                 const double*, const int*);
+int  CORE_dgeqrt(int M, int N, int IB,
+                 double *A, int LDA,
+                 double *T, int LDT,
+                 double *TAU, double *WORK);
+int  CORE_dormqr(PLASMA_enum side, PLASMA_enum trans,
+                 int M, int N, int K, int IB,
+                 const double *V, int LDV,
+                 const double *T, int LDT,
+                 double *C, int LDC,
+                 double *WORK, int LDWORK);
+int  CORE_dtsqrt(int M, int N, int IB,
+                 double *A1, int LDA1,
+                 double *A2, int LDA2,
+                 double *T, int LDT,
+                 double *TAU, double *WORK);
+int  CORE_dtsmqr(PLASMA_enum side, PLASMA_enum trans,
+                 int M1, int N1, int M2, int N2, int K, int IB,
+                 double *A1, int LDA1,
+                 double *A2, int LDA2,
+                 const double *V, int LDV,
+                 const double *T, int LDT,
+                 double *WORK, int LDWORK);
+int  CORE_dgelqt(int M, int N, int IB,
+                 double *A, int LDA,
+                 double *T, int LDT,
+                 double *TAU,
+                 double *WORK);
+int  CORE_dormlq(PLASMA_enum side, PLASMA_enum trans,
+                 int M, int N, int IB, int K,
+                 const double *V, int LDV,
+                 const double *T, int LDT,
+                 double *C, int LDC,
+                 double *WORK, int LDWORK);
+int  CORE_dtslqt(int M, int N, int IB,
+                 double *A1, int LDA1,
+                 double *A2, int LDA2,
+                 double *T, int LDT,
+                 double *TAU, double *WORK);
+int  CORE_dtsmlq(PLASMA_enum side, PLASMA_enum trans,
+                 int M1, int N1, int M2, int N2, int K, int IB,
+                 double *A1, int LDA1,
+                 double *A2, int LDA2,
+                 const double *V, int LDV,
+                 const double *T, int LDT,
+                 double *WORK, int LDWORK);
 }
 
 namespace ambient { namespace numeric { namespace kernels {

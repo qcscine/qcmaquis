@@ -7,7 +7,7 @@ add_definitions(-DAMBIENT)
 
 if(BLAS_mkl_core_LIBRARY) # intel
     include_directories("${MPI_CXX_INCLUDE_PATH}") # cluster path
-    set(BLAS_LAPACK ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY}) 
+    set(BLAS_LAPACK ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY} ${PLASMA_LIBRARY}) 
 endif()
 
 if(BLAS_Accelerate_LIBRARY) # apple

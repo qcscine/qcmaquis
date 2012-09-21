@@ -18,8 +18,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substraction, T, test_types)
     sMatrix sB(T::valuex,T::valuey);
     sMatrix sC(T::valuex,T::valuey);
 
-    fill_random(pA);
-    fill_random(pB);
+    generate(pA);
+    generate(pB);
 
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
     sB = maquis::bindings::matrix_cast<sMatrix>(pB);
@@ -28,9 +28,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substraction, T, test_types)
     sC = sA - sB; 
     pC = pA - pB; 
 
-    ambient::sync();
-    BOOST_CHECK(pA == sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
-    BOOST_CHECK(pB == sB); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
     BOOST_CHECK(pC == sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 
@@ -44,8 +41,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substraction_assign, T, test_types)
     sMatrix sB(T::valuex,T::valuey);
     sMatrix sC(T::valuex,T::valuey);
 
-    fill_random(pA);
-    fill_random(pB);
+    generate(pA);
+    generate(pB);
 
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
     sB = maquis::bindings::matrix_cast<sMatrix>(pB);
@@ -54,6 +51,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substraction_assign, T, test_types)
     sA -= sB; 
     pA -= pB; 
 
-    BOOST_CHECK(pC==sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA == sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 

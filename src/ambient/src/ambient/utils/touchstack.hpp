@@ -29,7 +29,7 @@ namespace ambient{
         *wi++ = e;
 #ifdef TOUCHSTACK_ACCESS_CHECK
         if(this->size() == TOUCHSTACK_LENGTH){
-            printf("\n\n\n\n\n\n\n\nERROR: END OF TOUCHSTACK HAS BEEN REACHED!\n\n\n\n\n\n\n");
+            printf("\n\n\n\n\n\n\n\nERROR: END OF TOUCHSTACK HAS BEEN REACHED (%d)!\n\n\n\n\n\n\n", TOUCHSTACK_LENGTH);
         }
 #endif
     }

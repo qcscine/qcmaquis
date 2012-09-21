@@ -82,6 +82,46 @@ namespace ambient { namespace numeric {
         heev(a, evecs, evals);
     }
 
+    template<typename T>
+    inline void geqrt(matrix<T>& a, matrix<T>& t){
+        kernels::geqrt<T>::spawn(a, t);
+    }
+
+    template<PLASMA_enum TR, typename T>
+    inline void ormqr(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
+        kernels::ormqr<T,TR>::spawn(a, t, c);
+    }
+
+    template<typename T>
+    inline void tsqrt(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
+        kernels::tsqrt<T>::spawn(a1, a2, t);
+    }
+
+    template<PLASMA_enum TR, typename T>
+    inline void tsmqr(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+        kernels::tsmqr<T,TR>::spawn(a1, a2, v, t);
+    }
+
+    template<typename T>
+    inline void gelqt(matrix<T>& a, matrix<T>& t){
+        kernels::gelqt<T>::spawn(a, t);
+    }
+
+    template<PLASMA_enum TR, typename T>
+    inline void ormlq(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
+        kernels::ormlq<T,TR>::spawn(a, t, c);
+    }
+
+    template<typename T>
+    inline void tslqt(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
+        kernels::tslqt<T>::spawn(a1, a2, t);
+    }
+
+    template<PLASMA_enum TR, typename T>
+    inline void tsmlq(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+        kernels::tsmlq<T,TR>::spawn(a1, a2, v, t);
+    }
+
     template<typename T> 
     inline void qr(matrix<T> a, matrix<T>& q, matrix<T>& r){ 
         int m = num_rows(a);            
@@ -181,11 +221,6 @@ namespace ambient { namespace numeric {
         return transpose(m);
     }
 
-    template<typename T, class G>
-    inline void generate(matrix<T>& m, G g){ 
-        fill_random(m);  // G isn't used
-    }
-
     template<typename T>
     inline void fill_identity(matrix<T>& m){
         kernels::init_identity<T>::spawn(m);
@@ -261,6 +296,16 @@ namespace ambient { namespace numeric {
                      size_t m, size_t n)
     { 
         kernels::copy_partial<T>::spawn(dst, di, dj, src, si, sj, m, n); 
+    }
+
+    template<typename T>
+    inline void copy_rt(matrix<T>& dst, const matrix<T>& src){ 
+        kernels::copy_rt<T>::spawn(dst, src); 
+    }
+
+    template<typename T>
+    inline void copy_lt(matrix<T>& dst, const matrix<T>& src){ 
+        kernels::copy_lt<T>::spawn(dst, src); 
     }
 
     template<typename T>

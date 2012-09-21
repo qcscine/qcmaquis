@@ -21,12 +21,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sMatrix sL(T::valuex,T::valuey);
     sMatrix sQ(T::valuex,T::valuey);
 
-    fill_random(pA);
+    generate(pA);
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
  
     lq(pA,pL,pQ);
     lq(sA,sL,sQ);
-
 
     BOOST_CHECK(sL == pL); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
     BOOST_CHECK(sQ == pQ); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 

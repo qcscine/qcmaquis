@@ -23,10 +23,10 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     inline tiles<Matrix> tiles<Matrix>::identity_matrix(size_type size){
         tiles t(size, size);
-        int nb = __a_ceil(size/TILE_SIZE);
-        int tailn = __a_mod(size, TILE_SIZE);
+        int nb = __a_ceil(size/AMBIENT_IB);
+        int tailn = __a_mod(size, AMBIENT_IB);
         for(int i = 0; i < nb-1; i++)
-            *t.data[i*nb + i] = Matrix::identity_matrix(TILE_SIZE);
+            *t.data[i*nb + i] = Matrix::identity_matrix(AMBIENT_IB);
         *t.data[nb*nb-1] = Matrix::identity_matrix(tailn);
         return t;
     }
@@ -38,19 +38,19 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline tiles<Matrix>::tiles(size_type rows, size_type cols, value_type init_value)
-    : rows(rows), cols(cols), mt(__a_ceil(rows/TILE_SIZE)), nt(__a_ceil(cols/TILE_SIZE))
+    : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
     {
-        int tailn = __a_mod(cols, TILE_SIZE);
-        int tailm = __a_mod(rows, TILE_SIZE);
+        int tailn = __a_mod(cols, AMBIENT_IB);
+        int tailm = __a_mod(rows, AMBIENT_IB);
         this->data.reserve(mt*nt);
 
         for(int j = 1; j < nt; j++){
             for(int i = 1; i < mt; i++) 
-                this->data.push_back(new Matrix(TILE_SIZE, TILE_SIZE, init_value));
-            this->data.push_back(new Matrix(tailm, TILE_SIZE, init_value));
+                this->data.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB, init_value));
+            this->data.push_back(new Matrix(tailm, AMBIENT_IB, init_value));
         }
         for(int i = 1; i < mt; i++) 
-            this->data.push_back(new Matrix(TILE_SIZE, tailn, init_value));
+            this->data.push_back(new Matrix(AMBIENT_IB, tailn, init_value));
         this->data.push_back(new Matrix(tailm, tailn, init_value));
     }
 
@@ -153,12 +153,12 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline Matrix& tiles<Matrix>::locate(size_type i, size_type j){
-        return this->tile(i/SPLIT_SIZE, j/SPLIT_SIZE);
+        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
     }
 
     template<class Matrix>
     inline const Matrix& tiles<Matrix>::locate(size_type i, size_type j) const {
-        return this->tile(i/SPLIT_SIZE, j/SPLIT_SIZE);
+        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
     }
 
     template<class Matrix>
@@ -237,13 +237,13 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     inline tiles<diagonal_matrix<T> >::tiles(size_type size, value_type init_value)
-    : size(size), nt(__a_ceil(size/TILE_SIZE))
+    : size(size), nt(__a_ceil(size/AMBIENT_IB))
     {
-        int tailm = __a_mod(size, TILE_SIZE);
+        int tailm = __a_mod(size, AMBIENT_IB);
         this->data.reserve(nt);
 
         for(int i = 1; i < nt; i++) 
-            this->data.push_back(new diagonal_matrix<T>(TILE_SIZE, init_value));
+            this->data.push_back(new diagonal_matrix<T>(AMBIENT_IB, init_value));
         this->data.push_back(new diagonal_matrix<T>(tailm, init_value));
     }
 
