@@ -56,7 +56,7 @@ namespace vli {
         
         const unsigned int input_elem_offset = element_id *  vli::detail::max_order_combined_helpers::size<4+1, Order>::value * VLI__SIZE;
 
-        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<4+1, Order>::value; i+= mul_block_size<max_order_each<Order>, 4,2>::value )
+        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<4+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 4,2>::value )
            in1shared[i] = in1[input_elem_offset + i];
 
          __syncthreads();
@@ -100,7 +100,7 @@ namespace vli {
                              #pragma unroll
                              for(unsigned int i = 0; i < VLI__SIZE; ++i){
                                  c1[i] = in1shared[in_polynomial_offset1+i];        
-                            }
+                             }
                              #pragma unroll
                              for(unsigned int i = 0; i < VLI__SIZE; ++i){
                                  c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
