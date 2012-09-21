@@ -26,7 +26,7 @@ class TrivialGroup
 {
 public:
 	typedef enum { Plus } charge;
-	static const charge IdentityCharge = Plus;// init now before the main
+	static const charge IdentityCharge = Plus;
     
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
@@ -298,6 +298,7 @@ namespace boost {
             }
     };
 
+    template <>
     class hash<std::pair<int,int>  >{
         public :
             size_t operator()(std::pair<int, int> const &Pair_of_charge ) const {
