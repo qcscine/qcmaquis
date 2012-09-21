@@ -139,8 +139,8 @@ namespace vli {
     tasklist_keep_order<NumBits, max_order_combined<Order>, NumVars>::tasklist_keep_order(){
         // As templated this array will be allocated a couple of time for every tupple of the cmake global size negligible  
         // only once due to singleton
-        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_combined<2*Order>, NumVars>::value*max_iteration_count<max_order_combined<2*Order>, NumVars>::value*sizeof(single_coefficient_task)),__LINE__);
-        gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), mul_block_size<max_order_combined<2*Order>, NumVars>::value/32*sizeof( int)),__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->execution_plan_), mul_block_size<max_order_combined<2*Order>, NumVars>::value*max_iteration_count<max_order_combined<2*Order>, NumVars>::value*sizeof(single_coefficient_task)),__FILE__,__LINE__);
+        gpu::cu_check_error(cudaMalloc((void**)&(this->workblock_count_by_warp_), mul_block_size<max_order_combined<2*Order>, NumVars>::value/32*sizeof( int)),__FILE__,__LINE__);
         element_count_prepared=0;
         plan();
     }
@@ -181,8 +181,8 @@ namespace vli {
                 work_total_by_size[warp_id] += max_step_count;
          }
 
-	 gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof( int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__LINE__);
-         gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__LINE__);
+	 gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof( int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__FILE__,__LINE__);
+         gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__FILE__,__LINE__);
 
     }
 
