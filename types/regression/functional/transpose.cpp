@@ -12,17 +12,14 @@
 BOOST_AUTO_TEST_CASE_TEMPLATE( Transpose, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
-    pMatrix ptA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
-    sMatrix stA(T::valuex,T::valuey);
 
-    fill_random(pA);
-
+    generate(pA);
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
 
-    ptA = transpose(pA); 
-    stA = transpose(sA); 
+    transpose_inplace(pA); 
+    transpose_inplace(sA); 
 
-    BOOST_CHECK(ptA==stA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
 }
 

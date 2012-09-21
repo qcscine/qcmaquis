@@ -18,8 +18,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     sMatrix sB(T::valuex,T::valuex);
     sMatrix sC(T::valuex,T::valuex);
 
-    fill_random(pA);
-    fill_random(pB);
+    generate(pA);
+    generate(pB);
 
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
     sB = maquis::bindings::matrix_cast<sMatrix>(pB);

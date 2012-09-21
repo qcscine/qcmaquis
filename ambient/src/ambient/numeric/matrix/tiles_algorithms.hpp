@@ -43,8 +43,8 @@ public:
         return (first >= lim);
     }
     void measure_step(){
-        step = std::min(std::min((SPLIT_SIZE*__a_ceil((first+1)/SPLIT_SIZE) - first), 
-                                 (SPLIT_SIZE*__a_ceil((second+1)/SPLIT_SIZE) - second)),
+        step = std::min(std::min((AMBIENT_IB*__a_ceil((first+1)/AMBIENT_IB) - first), 
+                                 (AMBIENT_IB*__a_ceil((second+1)/AMBIENT_IB) - second)),
                                  (lim-first));
     }
     size_t first;
@@ -66,16 +66,16 @@ namespace ambient { namespace numeric {
         if(a.mt == 1 && a.nt == 1) return;
 
         std::vector<Matrix*> split;
-        int tailm = __a_mod(a.rows, SPLIT_SIZE);
-        int tailn = __a_mod(a.cols, SPLIT_SIZE);
+        int tailm = __a_mod(a.rows, AMBIENT_IB);
+        int tailn = __a_mod(a.cols, AMBIENT_IB);
         split.reserve(a.mt*a.nt);
         for(int j = 1; j < a.nt; j++){
             for(int i = 1; i < a.mt; i++) 
-                split.push_back(new Matrix(SPLIT_SIZE, SPLIT_SIZE));
-            split.push_back(new Matrix(tailm, SPLIT_SIZE));
+                split.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB));
+            split.push_back(new Matrix(tailm, AMBIENT_IB));
         }
         for(int i = 1; i < a.mt; i++) 
-            split.push_back(new Matrix(SPLIT_SIZE, tailn));
+            split.push_back(new Matrix(AMBIENT_IB, tailn));
         split.push_back(new Matrix(tailm, tailn));
 
         const Matrix* src = a.data[0];
@@ -84,7 +84,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *split[i+j*a.mt];
-                copy(dst, 0, 0, *src, i*SPLIT_SIZE, j*SPLIT_SIZE, dst.num_rows(), dst.num_cols());
+                copy(dst, 0, 0, *src, i*AMBIENT_IB, j*AMBIENT_IB, dst.num_rows(), dst.num_cols());
             }
         }
 
@@ -94,7 +94,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void split_d(const tiles<transpose_view<Matrix> >& a){
-        if(a.data.size() == 1 && (__a_ceil(a.rows/SPLIT_SIZE) != 1 || __a_ceil(a.cols/SPLIT_SIZE) != 1)) printf("We have to split but we don't :(\n");
+        if(a.data.size() == 1 && (__a_ceil(a.rows/AMBIENT_IB) != 1 || __a_ceil(a.cols/AMBIENT_IB) != 1)) printf("We have to split but we don't :(\n");
     }
 
     template<typename T>
@@ -103,10 +103,10 @@ namespace ambient { namespace numeric {
         if(a.nt == 1) return;
 
         std::vector<diagonal_matrix<T> *> split;
-        int tailm = __a_mod(a.size, SPLIT_SIZE);
+        int tailm = __a_mod(a.size, AMBIENT_IB);
         split.reserve(a.nt);
         for(int i = 1; i < a.nt; i++) 
-            split.push_back(new diagonal_matrix<T>(SPLIT_SIZE));
+            split.push_back(new diagonal_matrix<T>(AMBIENT_IB));
         split.push_back(new diagonal_matrix<T>(tailm));
 
         const diagonal_matrix<T>* src = a.data[0];
@@ -114,7 +114,7 @@ namespace ambient { namespace numeric {
         if(!a[0].get_data().impl->weak())
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *split[i];
-            copy(dst.get_data(), 0, 0, src->get_data(), i*SPLIT_SIZE, 0, dst.num_rows(), 1);
+            copy(dst.get_data(), 0, 0, src->get_data(), i*AMBIENT_IB, 0, dst.num_rows(), 1);
         }
 
         delete src;
@@ -133,7 +133,7 @@ namespace ambient { namespace numeric {
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = a.data[i+j*a.mt];
                 if(!src->impl->weak())
-                copy(*merge[0], i*SPLIT_SIZE, j*SPLIT_SIZE, *src, 0, 0, src->num_rows(), src->num_cols());
+                copy(*merge[0], i*AMBIENT_IB, j*AMBIENT_IB, *src, 0, 0, src->num_rows(), src->num_cols());
                 delete src;
             }
         }
@@ -147,16 +147,16 @@ namespace ambient { namespace numeric {
         if(a.mt == 1 && a.nt == 1) return;
 
         std::vector<Matrix*> split;
-        int tailm = __a_mod(a.rows, SPLIT_SIZE);
-        int tailn = __a_mod(a.cols, SPLIT_SIZE);
+        int tailm = __a_mod(a.rows, AMBIENT_IB);
+        int tailn = __a_mod(a.cols, AMBIENT_IB);
         split.reserve(a.mt*a.nt);
         for(int j = 1; j < a.nt; j++){
             for(int i = 1; i < a.mt; i++) 
-                split.push_back(new Matrix(SPLIT_SIZE, SPLIT_SIZE));
-            split.push_back(new Matrix(tailm, SPLIT_SIZE));
+                split.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB));
+            split.push_back(new Matrix(tailm, AMBIENT_IB));
         }
         for(int i = 1; i < a.mt; i++) 
-            split.push_back(new Matrix(SPLIT_SIZE, tailn));
+            split.push_back(new Matrix(AMBIENT_IB, tailn));
         split.push_back(new Matrix(tailm, tailn));
 
         const Matrix* src = a.data[0];
@@ -165,7 +165,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *split[i+j*a.mt];
-                copy(dst, 0, 0, *src, i*SPLIT_SIZE, j*SPLIT_SIZE, dst.num_rows(), dst.num_cols());
+                copy(dst, 0, 0, *src, i*AMBIENT_IB, j*AMBIENT_IB, dst.num_rows(), dst.num_cols());
             }
         }
 
@@ -184,7 +184,7 @@ namespace ambient { namespace numeric {
         for(int i = 0; i < a.nt; i++){
             const diagonal_matrix<T>* src = a.data[i];
             if(!src->get_data().impl->weak())
-            copy(merge[0]->get_data(), i*SPLIT_SIZE, 0, src->get_data(), 0, 0, src->num_rows(), 1);
+            copy(merge[0]->get_data(), i*AMBIENT_IB, 0, src->get_data(), 0, 0, src->num_rows(), 1);
             delete src;
         }
         std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), merge);
@@ -197,10 +197,10 @@ namespace ambient { namespace numeric {
         if(a.nt == 1) return;
 
         std::vector<diagonal_matrix<T> *> split;
-        int tailm = __a_mod(a.size, SPLIT_SIZE);
+        int tailm = __a_mod(a.size, AMBIENT_IB);
         split.reserve(a.nt);
         for(int i = 1; i < a.nt; i++) 
-            split.push_back(new diagonal_matrix<T>(SPLIT_SIZE));
+            split.push_back(new diagonal_matrix<T>(AMBIENT_IB));
         split.push_back(new diagonal_matrix<T>(tailm));
 
         const diagonal_matrix<T>* src = a.data[0];
@@ -208,7 +208,7 @@ namespace ambient { namespace numeric {
         if(!a[0].get_data().impl->weak())
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *split[i];
-            copy(dst.get_data(), 0, 0, src->get_data(), i*SPLIT_SIZE, 0, dst.num_rows(), 1);
+            copy(dst.get_data(), 0, 0, src->get_data(), i*AMBIENT_IB, 0, dst.num_rows(), 1);
         }
 
         delete src;
@@ -223,8 +223,8 @@ namespace ambient { namespace numeric {
     {
         for(cross_iterator row(oi,ii,m); !row.end(); ++row)
         for(cross_iterator col(oj,ij,n); !col.end(); ++col)
-        copy(out.locate(row.first, col.first), row.first%SPLIT_SIZE, col.first%SPLIT_SIZE, 
-             in.locate(row.second, col.second), row.second%SPLIT_SIZE, col.second%SPLIT_SIZE,
+        copy(out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+             in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
              row.step, col.step);
     }
 
@@ -235,11 +235,11 @@ namespace ambient { namespace numeric {
                        size_t m, size_t n)
     {
         const Matrix& factor = alfa.locate(ai, aj); 
-        ai %= SPLIT_SIZE; aj %= SPLIT_SIZE;
+        ai %= AMBIENT_IB; aj %= AMBIENT_IB;
         for(cross_iterator row(oi,ii,m); !row.end(); ++row)
         for(cross_iterator col(oj,ij,n); !col.end(); ++col)
-        copy_s(out.locate(row.first, col.first), row.first%SPLIT_SIZE, col.first%SPLIT_SIZE, 
-               in.locate(row.second, col.second), row.second%SPLIT_SIZE, col.second%SPLIT_SIZE,
+        copy_s(out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+               in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
                factor, ai, aj, row.step, col.step);
     }
 
@@ -250,11 +250,11 @@ namespace ambient { namespace numeric {
                         size_t m, size_t n)
     {
         const Matrix& factor = alfa.locate(ai, aj); 
-        ai %= SPLIT_SIZE; aj %= SPLIT_SIZE;
+        ai %= AMBIENT_IB; aj %= AMBIENT_IB;
         for(cross_iterator row(oi,ii,m); !row.end(); ++row)
         for(cross_iterator col(oj,ij,n); !col.end(); ++col)
-        copy_sa(out.locate(row.first, col.first), row.first%SPLIT_SIZE, col.first%SPLIT_SIZE, 
-                in.locate(row.second, col.second), row.second%SPLIT_SIZE, col.second%SPLIT_SIZE,
+        copy_sa(out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+                in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
                 factor, ai, aj, row.step, col.step);
     }
 
@@ -323,19 +323,105 @@ namespace ambient { namespace numeric {
         heev(a, evecs, evals);
     }
 
-    template<class Matrix> 
-    inline void qr(const tiles<Matrix>& a, tiles<Matrix>& q, tiles<Matrix>& r){
-        merge(a); merge(q); merge(r);
-        qr(a[0], q[0], r[0]); 
-        split(a); split(q); split(r);
+    template<class Matrix>
+    inline void qr(tiles<Matrix> a, tiles<Matrix>& q, tiles<Matrix>& r){
+        split_d(a); split_d(q); split_d(r);
+
+        int am = num_rows(a);
+        int an = num_cols(a);
+        int ak = std::min(am,an);
+        resize(q, am, ak);
+        resize(r, ak, an);
+
+        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        int k, m, n;
+
+        for(k = 0; k < std::min(a.mt, a.nt); k++){
+            geqrt(a.tile(k, k), t.tile(k, k));
+    
+            for(n = k+1; n < a.nt; n++)
+                ormqr<PlasmaTrans>(a.tile(k, k), t.tile(k, k), a.tile(k, n));
+            
+            for(m = k+1; m < a.mt; m++){
+                tsqrt(a.tile(k, k), a.tile(m, k), t.tile(m, k));
+    
+                for(n = k+1; n < a.nt; n++)
+                    tsmqr<PlasmaTrans>(a.tile(k, n), a.tile(m, n), a.tile(m, k), t.tile(m, k));
+            }
+        }
+
+        // restoring R from A //
+        for(int j = 0; j < a.nt; j++)
+        for(int i = 0; i < j && i < std::min(a.mt, a.nt); i++)
+            copy(r.tile(i,j), a.tile(i,j));
+
+        for(int k = 0; k < std::min(a.mt, a.nt); k++)
+            copy_rt(r.tile(k,k), a.tile(k,k));
+
+        // restoring Q from T //
+        // do we need to memset Q first?
+        for(int i = 0; i < std::min(a.mt, a.nt); i++)
+            fill_identity(q.tile(i,i));
+
+        for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
+            for(m = q.mt - 1; m > k; m--)
+                for(n = 0; n < q.nt; n++)
+                    tsmqr<PlasmaNoTrans>(q.tile(k, n), q.tile(m, n), a.tile(m, k), t.tile(m, k));
+            
+            for(n = 0; n < q.nt; n++)
+                ormqr<PlasmaNoTrans>(a.tile(k, k), t.tile(k, k), q.tile(k, n));
+        }
     }
 
-    template<class Matrix> 
-    inline void lq(const tiles<Matrix>& a, tiles<Matrix>& l, tiles<Matrix>& q){ 
-        merge(a); merge(l); merge(q);
-        qr(a[0], l[0], q[0]); 
-        split(a); split(l); split(q);
-    } 
+    template<class Matrix>
+    inline void lq(tiles<Matrix> a, tiles<Matrix>& l, tiles<Matrix>& q){
+        split_d(a); split_d(l); split_d(q);
+
+        int am = num_rows(a);
+        int an = num_cols(a);
+        int ak = std::min(am,an);
+        resize(l, am, ak);
+        resize(q, ak, an);
+
+        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        int k, m, n;
+        
+        for(k = 0; k < std::min(a.mt, a.nt); k++) {
+            gelqt(a.tile(k, k), t.tile(k, k));
+        
+            for(m = k+1; m < a.mt; m++)
+                ormlq<PlasmaTrans>(a.tile(k, k), t.tile(k, k), a.tile(m, k));
+        
+            for(n = k+1; n < a.nt; n++) {
+                tslqt(a.tile(k, k), a.tile(k, n), t.tile(k, n));
+        
+                for(m = k+1; m < a.mt; m++)
+                    tsmlq<PlasmaTrans>(a.tile(m, k), a.tile(m, n), a.tile(k, n), t.tile(k, n));
+            }
+        }
+
+        // restoring L from A //
+        for(int j = 0; j < std::min(a.mt, a.nt); ++j)
+        for(int i = j+1; i < a.mt; ++i)
+            copy(l.tile(i,j), a.tile(i,j));
+
+        for(int k = 0; k < std::min(a.mt, a.nt); k++)
+            copy_lt(l.tile(k,k), a.tile(k,k));
+
+        // restoring Q from T //
+        // do we need to memset Q first?
+        for(int i = 0; i < std::min(a.mt, a.nt); i++)
+            fill_identity(q.tile(i,i));
+
+        for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
+            for(n = q.nt-1; n > k; n--)
+                for(m = 0; m < q.mt; m++)
+                    tsmlq<PlasmaNoTrans>(q.tile(m, k), q.tile(m, n), a.tile(k, n), t.tile(k, n));
+
+            for(m = 0; m < q.mt; m++)
+                ormlq<PlasmaNoTrans>(a.tile(k, k), t.tile(k, k), q.tile(m, k));
+        }
+    }
 
     template<class Matrix>
     inline tiles<Matrix> exp(const tiles<Matrix>& m, const value_type& alfa = 1.){
@@ -355,14 +441,14 @@ namespace ambient { namespace numeric {
                 r[i+j*r.mt] = m[i+j*m.mt];
             }
         }
-        size_t margin = SPLIT_SIZE;
-        if(r.mt <= m.mt) margin = __a_mod(rows, SPLIT_SIZE);
+        size_t margin = AMBIENT_IB;
+        if(r.mt <= m.mt) margin = __a_mod(rows, AMBIENT_IB);
         for(int j = 0; j < nb_min; j++){
             Matrix& block = r[mb_min-1 + j*r.mt];
             resize(block, margin, block.num_cols());
         }
-        margin = SPLIT_SIZE;
-        if(r.nt <= m.nt) margin = __a_mod(cols, SPLIT_SIZE);
+        margin = AMBIENT_IB;
+        if(r.nt <= m.nt) margin = __a_mod(cols, AMBIENT_IB);
         for(int i = 0; i < mb_min; i++){
             Matrix& block = r[i + (nb_min-1)*r.mt];
             resize(block, block.num_rows(), margin);
@@ -382,9 +468,9 @@ namespace ambient { namespace numeric {
             r[i] = m[i];
         }
         if(r.nt > m.nt){
-            resize(r[nb_min-1], SPLIT_SIZE, SPLIT_SIZE);
+            resize(r[nb_min-1], AMBIENT_IB, AMBIENT_IB);
         }else{
-            size_t margin = __a_mod(rows, SPLIT_SIZE);
+            size_t margin = __a_mod(rows, AMBIENT_IB);
             resize(r[r.nt-1], margin, margin);
         }
         swap(m, r);
@@ -498,10 +584,15 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, class G>
     inline void generate(tiles<Matrix>& m, G g){
+        generate(m);
+    }
+
+    template<class Matrix>
+    inline void generate(tiles<Matrix>& m){
         split_d(m);
         int size = m.data.size();
         for(int i = 0; i < size; i++){
-            generate(m[i], g);
+            fill_random(m[i]);
         }
     }
 

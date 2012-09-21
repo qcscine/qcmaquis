@@ -43,7 +43,7 @@ namespace maquis { namespace bindings {
                 size_t offset = 0;
                 for(size_t kk = 0; kk < m[k].data.size(); kk++){
                     size_t num_rows = m[k][kk].num_rows();
-                    ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k][kk], num_rows, num_cols, offset);
+                    ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k][kk], num_rows, num_cols, num_rows, offset);
                     offset += num_rows;
                 }
             }
@@ -64,10 +64,35 @@ namespace maquis { namespace bindings {
             for(size_t k = 0; k < m.n_blocks(); ++k){
                 num_rows = m[k].num_rows();
                 std::vector<T>* v_ptr = &set[k];
-                ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k], num_rows, num_cols, offset);
+                ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k], num_rows, num_cols, num_rows, offset);
             }
             ambient::sync();
             return set;
+        }
+    };
+
+    template <typename T>
+    struct binding< ambient::numeric::tiles<ambient::numeric::matrix<T> >, alps::numeric::matrix<T> > {
+        static ambient::numeric::tiles<ambient::numeric::matrix<T> > convert(const alps::numeric::matrix<T>& m){
+            size_t num_rows = m.num_rows();
+            size_t num_cols = m.num_cols();
+            size_t lda = m.stride2();
+            ambient::numeric::tiles<ambient::numeric::matrix<T> > pm(num_rows, num_cols);    
+            const std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
+
+            for(size_t j = 0; j < pm.nt; ++j){
+                size_t offset = j*lda*AMBIENT_IB;
+                for(size_t i = 0; i < pm.mt; ++i){
+                    ambient::numeric::matrix<T>& tile = pm.tile(i,j);
+                    size_t rows = tile.num_rows();
+                    size_t cols = tile.num_cols();
+                    ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, tile, rows, cols, lda, offset);
+                    offset += rows;
+                }
+            }
+
+            ambient::sync();
+            return pm;
         }
     };
 
@@ -77,11 +102,38 @@ namespace maquis { namespace bindings {
             size_t num_rows = m.num_rows();
             size_t num_cols = m.num_cols();
             size_t lda = m.stride2();
+            size_t offset(0);
             ambient::numeric::matrix<T> pm(num_rows, num_cols);    
             const std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, lda);
+            ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, lda, offset);
             ambient::sync();
             return pm;
+        }
+    };
+
+    template <typename T>
+    struct binding< alps::numeric::matrix<T>, ambient::numeric::tiles<ambient::numeric::matrix<T> > > {
+        static alps::numeric::matrix<T> convert(const ambient::numeric::tiles<ambient::numeric::matrix<T> >& pm){
+            size_t num_rows = pm.num_rows();
+            size_t num_cols = pm.num_cols();
+            size_t offset(0);
+            alps::numeric::matrix<T> m(num_rows, num_cols);    
+            std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
+            size_t lda = m.stride2();
+
+            for(size_t j = 0; j < pm.nt; ++j){
+                size_t offset = j*lda*AMBIENT_IB;
+                for(size_t i = 0; i < pm.mt; ++i){
+                    const ambient::numeric::matrix<T>& tile = pm.tile(i,j);
+                    size_t rows = tile.num_rows();
+                    size_t cols = tile.num_cols();
+                    ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, tile, rows, cols, lda, offset);
+                    offset += rows;
+                }
+            }
+
+            ambient::sync();
+            return m;
         }
     };
 
@@ -93,7 +145,7 @@ namespace maquis { namespace bindings {
             size_t offset(0);
             alps::numeric::matrix<T> m(num_rows, num_cols);    
             std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, offset);
+            ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
             ambient::sync();
             return m;
         }
@@ -104,9 +156,10 @@ namespace maquis { namespace bindings {
         static ambient::numeric::diagonal_matrix<T> convert(const alps::numeric::diagonal_matrix<T>& m){
             size_t num_rows(m.num_rows());
             size_t num_cols(1);
+            size_t offset(0);
             ambient::numeric::diagonal_matrix<T> pm(num_rows, num_rows);    
             const std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows);
+            ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
             ambient::sync();
             return pm;
         }
@@ -120,7 +173,7 @@ namespace maquis { namespace bindings {
             size_t num_rows = pm.num_rows();
             alps::numeric::diagonal_matrix<T> m(num_rows, num_rows);    
             std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, offset);
+            ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
             ambient::sync();
             return m;
         }

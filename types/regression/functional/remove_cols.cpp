@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_first_col, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    fill_random(pA);
+    generate(pA);
 
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
 
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_col, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    fill_random(pA);
+    generate(pA);
 
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
 
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_one_col, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    fill_random(pA);
+    generate(pA);
 
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
     int col =  Rd.IntRd()%(sA.num_cols());  
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_cols, T, test_types)
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
 
-    fill_random(pA);
+    generate(pA);
 
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
     int col =  Rd.IntRd()%(sA.num_cols()); 

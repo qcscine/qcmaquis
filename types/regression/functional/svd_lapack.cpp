@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     typename alps::numeric::associated_real_diagonal_matrix<pMatrix>::type pS;
     typename alps::numeric::associated_real_diagonal_matrix<sMatrix>::type sS; 
 
-    fill_random(pA);
+    generate(pA);
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
  
     svd(pA,pU,pV,pS);

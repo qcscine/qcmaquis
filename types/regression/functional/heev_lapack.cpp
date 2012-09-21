@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( heev_comparison, T, test_types)
     typename alps::numeric::associated_diagonal_matrix<pMatrix>::type pE(T::valuex,T::valuex); 
     typename alps::numeric::associated_diagonal_matrix<sMatrix>::type sE(T::valuex,T::valuex);
  
-    fill_random(pA);
+    generate(pA);
     sA = maquis::traits::matrix_cast<sMatrix>(pA);
 
     heev(pA,pV,pE); // to modify the algo we need the reverse inside !
