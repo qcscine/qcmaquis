@@ -2,6 +2,7 @@
 #define AMBIENT_NUMERIC_MATRIX_KERNELS
 #define pin this->pin
 #define AMBIENT_IB 512
+#define PLASMA_IB 64
 
 namespace ambient { namespace numeric { namespace kernels {
 
@@ -23,10 +24,10 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(matrix<double>& a, matrix<double>& t){
             __A_TIME_C("ambient_geqrt_c_kernel"); 
             T* tau  = (T*)malloc(sizeof(T)*AMBIENT_IB);
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(a), c_current(a), __a_sizeof(a));
             __a_refresh<T>(w_updated(t), c_current(t), __a_sizeof(t));
-            CORE_dgeqrt(a.num_rows(), a.num_cols(), AMBIENT_IB,
+            CORE_dgeqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
                         (T*)r_updated(a), a.num_rows(),
                         (T*)r_updated(t), t.num_rows(), 
                         tau, work);
@@ -53,10 +54,10 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormqr_c_kernel"); 
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormqr(PlasmaLeft, TR,
-                        c.num_rows(), c.num_cols(), c.num_rows(), AMBIENT_IB,
+                        c.num_rows(), c.num_cols(), c.num_rows(), PLASMA_IB,
                         (T*)c_current(a), a.num_rows(),
                         (T*)c_current(t), t.num_rows(),
                         (T*)r_updated(c), c.num_rows(),
@@ -83,11 +84,11 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormqr_c_kernel"); 
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormqr(PlasmaLeft, PlasmaNoTrans,
                         c.num_rows(), c.num_cols(), 
-                        std::min(a.num_rows(), a.num_cols()), AMBIENT_IB,
+                        std::min(a.num_rows(), a.num_cols()), PLASMA_IB,
                         (T*)c_current(a), a.num_rows(),
                         (T*)c_current(t), t.num_rows(),
                         (T*)r_updated(c), c.num_rows(),
@@ -115,11 +116,11 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(matrix<double>& a1, matrix<double>& a2, matrix<double>& t){
             __A_TIME_C("ambient_tsqrt_c_kernel"); 
             T* tau  = (T*)malloc(sizeof(T)*AMBIENT_IB);
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
             __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             __a_refresh<T>(w_updated(t),  c_current(t), __a_sizeof(t));
-            CORE_dtsqrt(a2.num_rows(), a2.num_cols(), AMBIENT_IB,
+            CORE_dtsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                         (T*)r_updated(a1), a1.num_rows(),
                         (T*)r_updated(a2), a2.num_rows(),
                         (T*)r_updated(t), t.num_rows(),
@@ -148,12 +149,12 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
             __A_TIME_C("ambient_tsmqr_c_kernel"); 
-            int ldwork = AMBIENT_IB;
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            int ldwork = PLASMA_IB;
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
             __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsmqr(PlasmaLeft, TR,
-                        AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), AMBIENT_IB, AMBIENT_IB,
+                        AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), AMBIENT_IB, PLASMA_IB,
                         (T*)r_updated(a1), a1.num_rows(),
                         (T*)r_updated(a2), a2.num_rows(),
                         (T*)c_current(v), v.num_rows(),
@@ -183,10 +184,10 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(matrix<double>& a, matrix<double>& t){
             __A_TIME_C("ambient_gelqt_c_kernel"); 
             T* tau  = (T*)malloc(sizeof(T)*AMBIENT_IB);
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(a), c_current(a), __a_sizeof(a));
             __a_refresh<T>(w_updated(t), c_current(t), __a_sizeof(t));
-            CORE_dgelqt(a.num_rows(), a.num_cols(), AMBIENT_IB,
+            CORE_dgelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
                         (T*)r_updated(a), a.num_rows(), 
                         (T*)r_updated(t), t.num_rows(),
                         tau, work);
@@ -213,10 +214,10 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormlq_c_kernel"); 
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormlq(PlasmaRight, TR,
-                        c.num_rows(), c.num_cols(), c.num_cols(), AMBIENT_IB,
+                        c.num_rows(), c.num_cols(), c.num_cols(), PLASMA_IB,
                         (T*)c_current(a), a.num_rows(),
                         (T*)c_current(t), t.num_rows(),
                         (T*)r_updated(c), c.num_rows(),
@@ -243,11 +244,11 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormlq_c_kernel"); 
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormlq(PlasmaRight, PlasmaNoTrans,
                         c.num_rows(), c.num_cols(), 
-                        std::min(a.num_rows(), a.num_cols()), AMBIENT_IB,
+                        std::min(a.num_rows(), a.num_cols()), PLASMA_IB,
                         (T*)c_current(a), a.num_rows(),
                         (T*)c_current(t), t.num_rows(),
                         (T*)r_updated(c), c.num_rows(),
@@ -275,11 +276,11 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(matrix<double>& a1, matrix<double>& a2, matrix<double>& t){
             __A_TIME_C("ambient_tslqt_c_kernel"); 
             T* tau  = (T*)malloc(sizeof(T)*AMBIENT_IB);
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
             __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             __a_refresh<T>(w_updated(t),  c_current(t),  __a_sizeof(t));
-            CORE_dtslqt(a2.num_rows(), a2.num_cols(), AMBIENT_IB,
+            CORE_dtslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                         (T*)r_updated(a1), a1.num_rows(),
                         (T*)r_updated(a2), a2.num_rows(),
                         (T*)r_updated(t), t.num_rows(),
@@ -309,11 +310,11 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
             __A_TIME_C("ambient_tsmlq_c_kernel"); 
             int ldwork = AMBIENT_IB;
-            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*AMBIENT_IB);
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
             __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
             __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsmlq(PlasmaRight, TR,
-                        a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), AMBIENT_IB, AMBIENT_IB,
+                        a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), AMBIENT_IB, PLASMA_IB,
                         (T*)r_updated(a1), a1.num_rows(),
                         (T*)r_updated(a2), a2.num_rows(),
                         (T*)c_current(v), v.num_rows(),
@@ -993,51 +994,17 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_validation_kernel"); 
             T* ad = c_current(a); 
             T* bd = c_current(b); 
-            double res; 
             double epsilon = std::numeric_limits<double>::epsilon();
-            size_t position_xy; 
             int count = 0;
-            for(size_t ii=0; ii < __a_get_dim(a).y; ++ii){
-                for(size_t jj=0; jj < __a_get_dim(a).x; ++jj){
-                    position_xy = jj*__a_get_dim(a).y+ii;
-                    res = (norm(ad[position_xy])-norm(bd[position_xy]))/fabs(epsilon*norm(bd[position_xy])); // to do : rotation pb  with complex to change
-                    if(res > 16777216){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
-                        std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy] << std::endl;
-                        ret.get_value() = false; // test failed return 0 (bool false)
+            for(size_t i=0; i < __a_get_dim(a).y; ++i){
+                for(size_t j=0; j < __a_get_dim(a).x; ++j){
+                    double av = ad[i+j*a.num_rows()];
+                    double bv = bd[i+j*b.num_rows()];
+                    double delta = fabs(av)-fabs(bv);
+                    if(delta > epsilon*256 && delta/fabs(bv) > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
+                        std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << delta << std::endl;
+                        ret.get_value() = false;
                         if(++count > 10) return;
-                    }
-                }
-            }
-            __A_TIME_C_STOP 
-        }
-    };
-
-    template<typename T>
-    struct validation_t : public kernel< validation_t<T> > 
-    {
-        typedef void (validation_t::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
-
-        inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
-            pin(current(a));  //if(!ctxt.involved()) return;
-            assign(current(b)); 
-        }
-        
-        inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
-            __A_TIME_C("ambient_validation_t_kernel"); 
-            T* ad = c_current(a); 
-            T* bd = c_current(b); 
-            double res; 
-            double epsilon = std::numeric_limits<double>::epsilon();
-            size_t position_xy, position_xy_t; 
-       
-            for(size_t ii=0; ii < __a_get_dim(a).y; ++ii){
-                for(size_t jj=0; jj < __a_get_dim(a).x; ++jj){
-                    position_xy = jj*__a_get_dim(a).y+ii;
-                    position_xy_t = ii*__a_get_dim(a).y+jj;
-                    res = (norm(ad[position_xy])-norm(bd[position_xy_t]))/fabs(epsilon*norm(bd[position_xy_t])); // to do : rotation pb  with complex to change
-                    if(res > 256){ // 16 is recommended by Dongara, 256 because lapack gives != runs after runs
-                        std::cout << ii << " " << jj << " : " << ad[position_xy] << " " << bd[position_xy_t] << std::endl;
-                        ret.get_value() = false; // test failed return 0 (bool false)
                     }
                 }
             }

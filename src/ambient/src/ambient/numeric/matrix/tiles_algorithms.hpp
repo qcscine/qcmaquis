@@ -392,7 +392,7 @@ namespace ambient { namespace numeric {
             for(m = k+1; m < a.mt; m++)
                 ormlq<PlasmaTrans>(a.tile(k, k), t.tile(k, k), a.tile(m, k));
         
-            for(n = k+1; n < a.nt; n++) {
+            for(n = k+1; n < a.nt; n++){
                 tslqt(a.tile(k, k), a.tile(k, n), t.tile(k, n));
         
                 for(m = k+1; m < a.mt; m++)

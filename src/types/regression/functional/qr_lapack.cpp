@@ -1,4 +1,3 @@
-
 #define BOOST_TEST_MODULE ambient_c_kernels
 #include <mpi.h>
 #include <boost/test/unit_test.hpp>

@@ -340,10 +340,11 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    bool operator == (const matrix<T>& a, const transpose_view<matrix<T> >& b){
+    bool operator == (matrix<T> a, const transpose_view<matrix<T> >& b){
         if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)) return false;
+        transpose_inplace(a);
         ambient::future<bool> ret(true);
-        kernels::validation_t<T>::spawn(a, b, ret); 
+        kernels::validation<T>::spawn(a, b, ret); 
         return (bool)ret;
     }
 

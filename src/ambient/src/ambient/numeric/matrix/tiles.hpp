@@ -131,14 +131,15 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, class OtherMatrix>
     bool operator == (const tiles<Matrix>& a, const tiles<OtherMatrix>& b){
+        bool result = true;
         if(a.data.size() != b.data.size()) 
             return false;
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             if(a[i] == b[i]) continue;
-            else return false;
+            else result = false;
         }
-        return true;
+        return result;
     }
 
     template<class Matrix>
