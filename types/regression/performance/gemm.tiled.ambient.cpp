@@ -8,12 +8,9 @@
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
-
-    __a_timer gtime("total"); gtime.begin();
-
     typedef ambient::dim2 dim;
     typedef alps::numeric::matrix<typename T::value_type> sMatrix;
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+    typedef ambient::numeric::tiles< ambient::numeric::matrix<typename T::value_type> > pMatrix;
 
     size_t x = get_input_x<T>();
     size_t y = get_input_y<T>();
@@ -35,15 +32,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
 
     ambient::numeric::gemm(pA, pB, pC); 
 
-    printf("Computing GEMM now...\n");
     __a_timer time("ambient");
     time.begin();
     ambient::sync();
     time.end();
 
     report(time, GFlopsGemm, x, y, nthreads);
-
-    gtime.end();
-    std::cout << "Global time: " << gtime.get_time() << "\n";
 }
 

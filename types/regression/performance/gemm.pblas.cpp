@@ -8,7 +8,7 @@
 #include <boost/test/test_case_template.hpp>
 #include <boost/mpl/list.hpp>
 
-#include "utils/timings.h"
+#include "ambient/utils/timings.hpp"
 #include "utilities.h"
 
 #define AA(i,j) AA[(i)*M+(j)]
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
         BB[i*M+j]=rand();
         CC[i*M+j]=-1;
      }
-   Timer time("time");
+   __a_timer time("time");
    time.begin();
 /************  BLACS ***************************/
    Cblacs_pinfo( &myrank_mpi, &nprocs_mpi) ;

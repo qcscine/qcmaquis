@@ -30,14 +30,13 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::schedule(cfunctor* op){
         touchstack< chain* >& queue = this->chains[__cilkrts_get_worker_number()];
-        if(!queue.empty() && op->match(queue.back())) 
+        if(!queue.empty() && false) //queue.back()->size() < 3 && op->match(queue.back())) 
             queue.back()->push_back(op);
         else
             queue.push_back(new chain(op));
     }
 
     inline void controller::flush(){
-
         for(int i = 0; i < this->arity; i++){
             touchstack< chain* >& queue = this->chains[i];
             while(!queue.end_reached()) this->stack.push_back(queue.pick());

@@ -9,7 +9,7 @@
 #include <cmath>
 #include <complex>
 
-#include "utils/timings.h"
+#include "ambient/utils/timings.hpp"
 #include "utilities.h"
 
 namespace Random{
@@ -20,8 +20,7 @@ namespace Random{
    };
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types)
-{
+BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types){
     size_t x = get_input_x<T>();
     size_t y = get_input_y<T>();
     size_t nthreads = get_input_threads<T>();
@@ -53,13 +52,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types)
         bd[i] = Rd();
     }
        
-    Timer time("blas");
+    __a_timer time("blas");
     time.begin();
     ambient::numeric::kernels::__a_gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     time.end();
 
-    report(time, GFlopsGemm, x, y, nthreads); 
-  
+    report(time, GFlopsGemm, x, y, nthreads);
     delete [] ad;   
     delete [] bd;   
     delete [] cd;   
