@@ -91,6 +91,10 @@ namespace vli {
         enum {  value = num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value };
     };
 
+    struct shared_min{
+        static std::size_t const value = 24576; // Note Fermi 48 KB shared, 24 KB for every poly 
+    };
+
     }
 }
 

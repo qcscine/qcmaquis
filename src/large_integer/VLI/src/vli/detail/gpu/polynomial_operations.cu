@@ -62,7 +62,6 @@ namespace vli {
                 dim3 threads(mul_block_size<MaxOrder, NumVars,2>::value);
                 polynomial_multiply_full<NumBits, MaxOrder, NumVars><<<grid,threads>>>(pgm.V1Data_, pgm.V2Data_,VectorSize, pgm.VinterData_,ghc.workblock_count_by_warp_,ghc.execution_plan_);
 	    }
-
             //second kernels reduction polynomials
 	    {
                 dim3 grid, threads(sum_block_size::value);
@@ -91,9 +90,10 @@ namespace vli {
     void gpu_inner_product_vector(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
         scheduler sch;
         scheduler_helper<NumBits, MaxOrder, NumVars>::determine_memory(sch,VectorSize);
+   //     sch.print();
         resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, boost::get<0>(sch.get_tupple_data())  ); // allocate mem
         sch.execute(gpu_inner_product_vecto_helper<NumBits,MaxOrder, NumVars>, A, B, full_value<NumBits, MaxOrder, NumVars>::value);
-        UnbindTexture();      
+        memory_transfer_helper<NumBits, MaxOrder, NumVars>::unbind_texture();      
     } 
 
     boost::uint32_t* gpu_get_polynomial(){

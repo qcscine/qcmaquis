@@ -48,6 +48,8 @@ namespace vli {
         value_type* VinterData_; // inter value before the final reduction
         value_type* PoutData_; // final output
     };
+   
+
     
     } //end namespace detail
 } //end namespce vli  
